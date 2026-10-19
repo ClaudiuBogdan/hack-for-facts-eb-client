@@ -1,0 +1,1372 @@
+{
+  "generatedBy": "scripts/generate-elections-alegere-fixture.mjs",
+  "api": "https://dev-chronos-api.transparenta.eu/api/v1/graphql",
+  "readAt": "2026-10-14T15:51:45.607Z",
+  "editions": {
+    "aep-european-2019": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "aep-local-2012": {
+      "rows": 116,
+      "nullLabels": 1,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 115,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "aep-local-2014": {
+      "rows": 6415,
+      "nullLabels": 1,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3186,
+        "byCounty": [
+          ["SV", "Suceava", 114, 228],
+          ["OT", "Olt", 112, 224],
+          ["DJ", "Dolj", 111, 222],
+          ["PH", "Prahova", 104, 208],
+          ["AG", "Argeș", 102, 204],
+          ["MS", "Mureș", 102, 204],
+          ["BH", "Bihor", 101, 202],
+          ["TM", "Timiș", 99, 198],
+          ["IS", "Iași", 98, 196],
+          ["TR", "Teleorman", 97, 194],
+          ["BC", "Bacău", 93, 186],
+          ["DB", "Dâmbovița", 89, 178],
+          ["VL", "Vâlcea", 89, 178],
+          ["BZ", "Buzău", 87, 174],
+          ["VS", "Vaslui", 86, 172],
+          ["NT", "Neamț", 83, 166],
+          ["CJ", "Cluj", 81, 162],
+          ["AB", "Alba", 78, 156],
+          ["AR", "Arad", 78, 156],
+          ["BT", "Botoșani", 78, 156],
+          ["CS", "Caraș-Severin", 77, 154],
+          ["MM", "Maramureș", 76, 152],
+          ["VN", "Vrancea", 73, 146],
+          ["CT", "Constanța", 70, 140],
+          ["GJ", "Gorj", 70, 140],
+          ["HD", "Hunedoara", 69, 138],
+          ["HR", "Harghita", 67, 134],
+          ["IL", "Ialomița", 66, 132],
+          ["MH", "Mehedinți", 66, 132],
+          ["GL", "Galați", 65, 130],
+          ["SM", "Satu Mare", 65, 130],
+          ["SB", "Sibiu", 64, 128],
+          ["BN", "Bistrița-Năsăud", 62, 124],
+          ["SJ", "Sălaj", 61, 122],
+          ["BV", "Brașov", 58, 116],
+          ["CL", "Călărași", 55, 110],
+          ["GR", "Giurgiu", 54, 108],
+          ["TL", "Tulcea", 51, 102],
+          ["CV", "Covasna", 45, 90],
+          ["BR", "Brăila", 44, 88],
+          ["IF", "Ilfov", 40, 80],
+          ["B", "București", 6, 12]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 1,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "aep-local-2014-t1": {
+      "rows": 6415,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3186,
+        "byCounty": [
+          ["SV", "Suceava", 114, 228],
+          ["OT", "Olt", 112, 224],
+          ["DJ", "Dolj", 111, 222],
+          ["PH", "Prahova", 104, 208],
+          ["AG", "Argeș", 102, 204],
+          ["MS", "Mureș", 102, 204],
+          ["BH", "Bihor", 101, 202],
+          ["TM", "Timiș", 99, 198],
+          ["IS", "Iași", 98, 196],
+          ["TR", "Teleorman", 97, 194],
+          ["BC", "Bacău", 93, 186],
+          ["DB", "Dâmbovița", 89, 178],
+          ["VL", "Vâlcea", 89, 178],
+          ["BZ", "Buzău", 87, 174],
+          ["VS", "Vaslui", 86, 172],
+          ["NT", "Neamț", 83, 166],
+          ["CJ", "Cluj", 81, 162],
+          ["AB", "Alba", 78, 156],
+          ["AR", "Arad", 78, 156],
+          ["BT", "Botoșani", 78, 156],
+          ["CS", "Caraș-Severin", 77, 154],
+          ["MM", "Maramureș", 76, 152],
+          ["VN", "Vrancea", 73, 146],
+          ["CT", "Constanța", 70, 140],
+          ["GJ", "Gorj", 70, 140],
+          ["HD", "Hunedoara", 69, 138],
+          ["HR", "Harghita", 67, 134],
+          ["IL", "Ialomița", 66, 132],
+          ["MH", "Mehedinți", 66, 132],
+          ["GL", "Galați", 65, 130],
+          ["SM", "Satu Mare", 65, 130],
+          ["SB", "Sibiu", 64, 128],
+          ["BN", "Bistrița-Năsăud", 62, 124],
+          ["SJ", "Sălaj", 61, 122],
+          ["BV", "Brașov", 58, 116],
+          ["CL", "Călărași", 55, 110],
+          ["GR", "Giurgiu", 54, 108],
+          ["TL", "Tulcea", 51, 102],
+          ["CV", "Covasna", 45, 90],
+          ["BR", "Brăila", 44, 88],
+          ["IF", "Ilfov", 40, 80],
+          ["B", "București", 6, 12]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "aep-local-2014-t2": {
+      "rows": 6415,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3186,
+        "byCounty": [
+          ["SV", "Suceava", 114, 228],
+          ["OT", "Olt", 112, 224],
+          ["DJ", "Dolj", 111, 222],
+          ["PH", "Prahova", 104, 208],
+          ["AG", "Argeș", 102, 204],
+          ["MS", "Mureș", 102, 204],
+          ["BH", "Bihor", 101, 202],
+          ["TM", "Timiș", 99, 198],
+          ["IS", "Iași", 98, 196],
+          ["TR", "Teleorman", 97, 194],
+          ["BC", "Bacău", 93, 186],
+          ["DB", "Dâmbovița", 89, 178],
+          ["VL", "Vâlcea", 89, 178],
+          ["BZ", "Buzău", 87, 174],
+          ["VS", "Vaslui", 86, 172],
+          ["NT", "Neamț", 83, 166],
+          ["CJ", "Cluj", 81, 162],
+          ["AB", "Alba", 78, 156],
+          ["AR", "Arad", 78, 156],
+          ["BT", "Botoșani", 78, 156],
+          ["CS", "Caraș-Severin", 77, 154],
+          ["MM", "Maramureș", 76, 152],
+          ["VN", "Vrancea", 73, 146],
+          ["CT", "Constanța", 70, 140],
+          ["GJ", "Gorj", 70, 140],
+          ["HD", "Hunedoara", 69, 138],
+          ["HR", "Harghita", 67, 134],
+          ["IL", "Ialomița", 66, 132],
+          ["MH", "Mehedinți", 66, 132],
+          ["GL", "Galați", 65, 130],
+          ["SM", "Satu Mare", 65, 130],
+          ["SB", "Sibiu", 64, 128],
+          ["BN", "Bistrița-Năsăud", 62, 124],
+          ["SJ", "Sălaj", 61, 122],
+          ["BV", "Brașov", 58, 116],
+          ["CL", "Călărași", 55, 110],
+          ["GR", "Giurgiu", 54, 108],
+          ["TL", "Tulcea", 51, 102],
+          ["CV", "Covasna", 45, 90],
+          ["BR", "Brăila", 44, 88],
+          ["IF", "Ilfov", 40, 80],
+          ["B", "București", 6, 12]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "aep-local-2020": {
+      "rows": 9734,
+      "nullLabels": 9567,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3185,
+        "byCounty": [
+          ["SV", "Suceava", 114, 342],
+          ["OT", "Olt", 112, 336],
+          ["DJ", "Dolj", 111, 333],
+          ["PH", "Prahova", 104, 312],
+          ["AG", "Argeș", 102, 306],
+          ["MS", "Mureș", 102, 306],
+          ["BH", "Bihor", 101, 303],
+          ["TM", "Timiș", 99, 298],
+          ["IS", "Iași", 98, 294],
+          ["TR", "Teleorman", 97, 292],
+          ["BC", "Bacău", 93, 279],
+          ["DB", "Dâmbovița", 89, 267],
+          ["VL", "Vâlcea", 89, 267],
+          ["BZ", "Buzău", 87, 261],
+          ["VS", "Vaslui", 86, 258],
+          ["NT", "Neamț", 83, 249],
+          ["CJ", "Cluj", 81, 243],
+          ["AB", "Alba", 78, 234],
+          ["AR", "Arad", 78, 234],
+          ["BT", "Botoșani", 78, 234],
+          ["CS", "Caraș-Severin", 77, 231],
+          ["MM", "Maramureș", 76, 228],
+          ["VN", "Vrancea", 73, 219],
+          ["GJ", "Gorj", 70, 210],
+          ["CT", "Constanța", 69, 207],
+          ["HD", "Hunedoara", 69, 207],
+          ["HR", "Harghita", 67, 201],
+          ["IL", "Ialomița", 66, 198],
+          ["MH", "Mehedinți", 66, 198],
+          ["GL", "Galați", 65, 195],
+          ["SM", "Satu Mare", 65, 195],
+          ["SB", "Sibiu", 64, 192],
+          ["BN", "Bistrița-Năsăud", 62, 187],
+          ["SJ", "Sălaj", 61, 183],
+          ["BV", "Brașov", 58, 174],
+          ["CL", "Călărași", 55, 165],
+          ["GR", "Giurgiu", 54, 162],
+          ["TL", "Tulcea", 51, 153],
+          ["CV", "Covasna", 45, 135],
+          ["BR", "Brăila", 44, 132],
+          ["IF", "Ilfov", 40, 120],
+          ["B", "București", 6, 24],
+          [null, null, 1, 3]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "aep-parliamentary-2012": {
+      "rows": 43,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 42,
+        "county": 0,
+        "diaspora": 1,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "aep-parliamentary-2016": {
+      "rows": 3284,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3186,
+        "byCounty": [
+          ["SV", "Suceava", 114, 114],
+          ["OT", "Olt", 112, 112],
+          ["DJ", "Dolj", 111, 111],
+          ["PH", "Prahova", 104, 104],
+          ["AG", "Argeș", 102, 102],
+          ["MS", "Mureș", 102, 102],
+          ["BH", "Bihor", 101, 101],
+          ["TM", "Timiș", 99, 99],
+          ["IS", "Iași", 98, 98],
+          ["TR", "Teleorman", 97, 97],
+          ["BC", "Bacău", 93, 93],
+          ["DB", "Dâmbovița", 89, 89],
+          ["VL", "Vâlcea", 89, 89],
+          ["BZ", "Buzău", 87, 87],
+          ["VS", "Vaslui", 86, 86],
+          ["NT", "Neamț", 83, 83],
+          ["CJ", "Cluj", 81, 81],
+          ["AB", "Alba", 78, 78],
+          ["AR", "Arad", 78, 78],
+          ["BT", "Botoșani", 78, 78],
+          ["CS", "Caraș-Severin", 77, 77],
+          ["MM", "Maramureș", 76, 76],
+          ["VN", "Vrancea", 73, 73],
+          ["CT", "Constanța", 70, 70],
+          ["GJ", "Gorj", 70, 70],
+          ["HD", "Hunedoara", 69, 69],
+          ["HR", "Harghita", 67, 67],
+          ["IL", "Ialomița", 66, 66],
+          ["MH", "Mehedinți", 66, 66],
+          ["GL", "Galați", 65, 65],
+          ["SM", "Satu Mare", 65, 65],
+          ["SB", "Sibiu", 64, 64],
+          ["BN", "Bistrița-Năsăud", 62, 62],
+          ["SJ", "Sălaj", 61, 61],
+          ["BV", "Brașov", 58, 58],
+          ["CL", "Călărași", 55, 55],
+          ["GR", "Giurgiu", 54, 54],
+          ["TL", "Tulcea", 51, 51],
+          ["CV", "Covasna", 45, 45],
+          ["BR", "Brăila", 44, 44],
+          ["IF", "Ilfov", 40, 40],
+          ["B", "București", 6, 6]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 98,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "aep-parliamentary-2020": {
+      "rows": 3182,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 3181,
+        "named": 3179,
+        "byCounty": [
+          ["SV", "Suceava", 114, 114],
+          ["OT", "Olt", 112, 112],
+          ["DJ", "Dolj", 111, 111],
+          ["PH", "Prahova", 104, 104],
+          ["AG", "Argeș", 102, 102],
+          ["MS", "Mureș", 102, 102],
+          ["BH", "Bihor", 101, 101],
+          ["TM", "Timiș", 99, 99],
+          ["IS", "Iași", 98, 98],
+          ["TR", "Teleorman", 97, 97],
+          ["BC", "Bacău", 93, 93],
+          ["DB", "Dâmbovița", 89, 89],
+          ["VL", "Vâlcea", 89, 89],
+          ["BZ", "Buzău", 87, 87],
+          ["VS", "Vaslui", 86, 86],
+          ["NT", "Neamț", 83, 83],
+          ["CJ", "Cluj", 81, 81],
+          ["AB", "Alba", 78, 78],
+          ["AR", "Arad", 78, 78],
+          ["BT", "Botoșani", 78, 78],
+          ["CS", "Caraș-Severin", 77, 77],
+          ["MM", "Maramureș", 76, 76],
+          ["VN", "Vrancea", 73, 73],
+          ["GJ", "Gorj", 70, 70],
+          ["CT", "Constanța", 69, 69],
+          ["HD", "Hunedoara", 69, 69],
+          ["HR", "Harghita", 67, 67],
+          ["IL", "Ialomița", 66, 66],
+          ["MH", "Mehedinți", 66, 66],
+          ["GL", "Galați", 65, 65],
+          ["SM", "Satu Mare", 65, 65],
+          ["SB", "Sibiu", 64, 64],
+          ["BN", "Bistrița-Năsăud", 62, 62],
+          ["SJ", "Sălaj", 61, 61],
+          ["BV", "Brașov", 58, 58],
+          ["CL", "Călărași", 55, 55],
+          ["GR", "Giurgiu", 54, 54],
+          ["TL", "Tulcea", 51, 51],
+          ["CV", "Covasna", 45, 45],
+          ["BR", "Brăila", 44, 44],
+          ["IF", "Ilfov", 40, 40],
+          [null, null, 2, 2]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 1,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "aep-referendum-2019": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "alegeri-pentru-autoritatile-administratiei-publice-locale-2012": {
+      "rows": 115,
+      "nullLabels": 1,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 115,
+        "county": 0,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "alegeri-pentru-autoritatile-administratiei-publice-locale-2014-t1": {
+      "rows": 2,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "alegeri-pentru-autoritatile-administratiei-publice-locale-2014-t2": {
+      "rows": 2,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "alegeri-pentru-autoritatile-administratiei-publice-locale-2020": {
+      "rows": 168,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-bucharest-general-mayor-1998": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 1,
+        "county": 0,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-european-2007": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-european-2009": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-european-2014": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-european-2019": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-local-1996": {
+      "rows": 8908,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 2954,
+        "named": 2948,
+        "byCounty": [
+          ["OT", "Olt", 101, 303],
+          ["PH", "Prahova", 100, 300],
+          ["AG", "Argeș", 99, 297],
+          ["DJ", "Dolj", 99, 297],
+          ["MS", "Mureș", 97, 291],
+          ["SV", "Suceava", 97, 291],
+          ["BH", "Bihor", 95, 285],
+          ["IS", "Iași", 89, 267],
+          ["TR", "Teleorman", 88, 264],
+          ["BC", "Bacău", 87, 261],
+          ["BZ", "Buzău", 85, 255],
+          ["VL", "Vâlcea", 85, 255],
+          ["DB", "Dâmbovița", 82, 246],
+          ["TM", "Timiș", 82, 246],
+          ["CJ", "Cluj", 80, 240],
+          ["CS", "Caraș-Severin", 77, 231],
+          ["AB", "Alba", 76, 228],
+          ["VS", "Vaslui", 75, 225],
+          ["AR", "Arad", 74, 222],
+          ["NT", "Neamț", 74, 222],
+          ["BT", "Botoșani", 72, 216],
+          ["MM", "Maramureș", 70, 210],
+          ["GJ", "Gorj", 69, 207],
+          ["HD", "Hunedoara", 69, 207],
+          ["MH", "Mehedinți", 64, 192],
+          ["VN", "Vrancea", 64, 192],
+          ["CT", "Constanța", 62, 186],
+          ["SB", "Sibiu", 62, 186],
+          ["GL", "Galați", 60, 180],
+          ["SM", "Satu Mare", 60, 180],
+          ["HR", "Harghita", 58, 174],
+          ["SJ", "Sălaj", 58, 174],
+          ["BN", "Bistrița-Năsăud", 57, 171],
+          ["CL", "Călărași", 53, 159],
+          ["IL", "Ialomița", 53, 159],
+          ["BV", "Brașov", 52, 156],
+          ["GR", "Giurgiu", 49, 147],
+          ["TL", "Tulcea", 48, 144],
+          ["BR", "Brăila", 43, 129],
+          ["IF", "Ilfov", 39, 117],
+          ["CV", "Covasna", 38, 114],
+          ["B", "București", 6, 24],
+          [null, null, 6, 16]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-local-2004": {
+      "rows": 9808,
+      "nullLabels": 230,
+      "siruta": {
+        "distinct": 3137,
+        "named": 3137,
+        "byCounty": [
+          ["SV", "Suceava", 112, 336],
+          ["DJ", "Dolj", 111, 333],
+          ["OT", "Olt", 111, 333],
+          ["PH", "Prahova", 103, 309],
+          ["AG", "Argeș", 102, 306],
+          ["MS", "Mureș", 102, 306],
+          ["BH", "Bihor", 100, 300],
+          ["IS", "Iași", 97, 291],
+          ["TR", "Teleorman", 97, 291],
+          ["TM", "Timiș", 94, 282],
+          ["VL", "Vâlcea", 89, 267],
+          ["BC", "Bacău", 88, 264],
+          ["BZ", "Buzău", 86, 258],
+          ["VS", "Vaslui", 86, 258],
+          ["DB", "Dâmbovița", 84, 252],
+          ["CJ", "Cluj", 81, 243],
+          ["NT", "Neamț", 81, 243],
+          ["AR", "Arad", 78, 234],
+          ["AB", "Alba", 77, 231],
+          ["BT", "Botoșani", 77, 231],
+          ["CS", "Caraș-Severin", 77, 231],
+          ["MM", "Maramureș", 76, 228],
+          ["VN", "Vrancea", 72, 216],
+          ["GJ", "Gorj", 70, 210],
+          ["HD", "Hunedoara", 69, 207],
+          ["CT", "Constanța", 68, 204],
+          ["HR", "Harghita", 67, 201],
+          ["MH", "Mehedinți", 66, 198],
+          ["SB", "Sibiu", 64, 192],
+          ["GL", "Galați", 63, 189],
+          ["SM", "Satu Mare", 63, 189],
+          ["BN", "Bistrița-Năsăud", 60, 180],
+          ["SJ", "Sălaj", 60, 180],
+          ["IL", "Ialomița", 59, 177],
+          ["BV", "Brașov", 57, 171],
+          ["GR", "Giurgiu", 54, 162],
+          ["CL", "Călărași", 53, 159],
+          ["TL", "Tulcea", 50, 150],
+          ["BR", "Brăila", 44, 132],
+          ["CV", "Covasna", 44, 132],
+          ["IF", "Ilfov", 39, 117],
+          ["B", "București", 6, 24]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 112,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-local-2008": {
+      "rows": 449,
+      "nullLabels": 279,
+      "siruta": {
+        "distinct": 6,
+        "named": 6,
+        "byCounty": [["B", "București", 6, 12]]
+      },
+      "distinct": {
+        "source_constituency": 114,
+        "county": 42,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-local-2012": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-local-2012-archive": {
+      "rows": 324,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 6,
+        "named": 6,
+        "byCounty": [["B", "București", 6, 12]]
+      },
+      "distinct": {
+        "source_constituency": 114,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-local-2016": {
+      "rows": 6414,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3186,
+        "byCounty": [
+          ["SV", "Suceava", 114, 228],
+          ["OT", "Olt", 112, 224],
+          ["DJ", "Dolj", 111, 222],
+          ["PH", "Prahova", 104, 208],
+          ["AG", "Argeș", 102, 204],
+          ["MS", "Mureș", 102, 204],
+          ["BH", "Bihor", 101, 202],
+          ["TM", "Timiș", 99, 198],
+          ["IS", "Iași", 98, 196],
+          ["TR", "Teleorman", 97, 194],
+          ["BC", "Bacău", 93, 186],
+          ["DB", "Dâmbovița", 89, 178],
+          ["VL", "Vâlcea", 89, 178],
+          ["BZ", "Buzău", 87, 174],
+          ["VS", "Vaslui", 86, 172],
+          ["NT", "Neamț", 83, 166],
+          ["CJ", "Cluj", 81, 162],
+          ["AB", "Alba", 78, 156],
+          ["AR", "Arad", 78, 156],
+          ["BT", "Botoșani", 78, 156],
+          ["CS", "Caraș-Severin", 77, 154],
+          ["MM", "Maramureș", 76, 152],
+          ["VN", "Vrancea", 73, 146],
+          ["CT", "Constanța", 70, 140],
+          ["GJ", "Gorj", 70, 140],
+          ["HD", "Hunedoara", 69, 138],
+          ["HR", "Harghita", 67, 134],
+          ["IL", "Ialomița", 66, 132],
+          ["MH", "Mehedinți", 66, 132],
+          ["GL", "Galați", 65, 130],
+          ["SM", "Satu Mare", 65, 130],
+          ["SB", "Sibiu", 64, 128],
+          ["BN", "Bistrița-Năsăud", 62, 124],
+          ["SJ", "Sălaj", 61, 122],
+          ["BV", "Brașov", 58, 116],
+          ["CL", "Călărași", 55, 110],
+          ["GR", "Giurgiu", 54, 108],
+          ["TL", "Tulcea", 51, 102],
+          ["CV", "Covasna", 45, 90],
+          ["BR", "Brăila", 44, 88],
+          ["IF", "Ilfov", 40, 80],
+          ["B", "București", 6, 12]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-local-2020": {
+      "rows": 9650,
+      "nullLabels": 9567,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3185,
+        "byCounty": [
+          ["SV", "Suceava", 114, 342],
+          ["OT", "Olt", 112, 336],
+          ["DJ", "Dolj", 111, 333],
+          ["PH", "Prahova", 104, 312],
+          ["AG", "Argeș", 102, 306],
+          ["MS", "Mureș", 102, 306],
+          ["BH", "Bihor", 101, 303],
+          ["TM", "Timiș", 99, 298],
+          ["IS", "Iași", 98, 294],
+          ["TR", "Teleorman", 97, 292],
+          ["BC", "Bacău", 93, 279],
+          ["DB", "Dâmbovița", 89, 267],
+          ["VL", "Vâlcea", 89, 267],
+          ["BZ", "Buzău", 87, 261],
+          ["VS", "Vaslui", 86, 258],
+          ["NT", "Neamț", 83, 249],
+          ["CJ", "Cluj", 81, 243],
+          ["AB", "Alba", 78, 234],
+          ["AR", "Arad", 78, 234],
+          ["BT", "Botoșani", 78, 234],
+          ["CS", "Caraș-Severin", 77, 231],
+          ["MM", "Maramureș", 76, 228],
+          ["VN", "Vrancea", 73, 219],
+          ["GJ", "Gorj", 70, 210],
+          ["CT", "Constanța", 69, 207],
+          ["HD", "Hunedoara", 69, 207],
+          ["HR", "Harghita", 67, 201],
+          ["IL", "Ialomița", 66, 198],
+          ["MH", "Mehedinți", 66, 198],
+          ["GL", "Galați", 65, 195],
+          ["SM", "Satu Mare", 65, 195],
+          ["SB", "Sibiu", 64, 192],
+          ["BN", "Bistrița-Năsăud", 62, 187],
+          ["SJ", "Sălaj", 61, 183],
+          ["BV", "Brașov", 58, 174],
+          ["CL", "Călărași", 55, 165],
+          ["GR", "Giurgiu", 54, 162],
+          ["TL", "Tulcea", 51, 153],
+          ["CV", "Covasna", 45, 135],
+          ["BR", "Brăila", 44, 132],
+          ["IF", "Ilfov", 40, 120],
+          ["B", "București", 6, 24],
+          [null, null, 1, 3]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-local-2024": {
+      "rows": 16192,
+      "nullLabels": 43,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3186,
+        "byCounty": [
+          ["SV", "Suceava", 114, 342],
+          ["OT", "Olt", 112, 336],
+          ["DJ", "Dolj", 111, 333],
+          ["PH", "Prahova", 104, 312],
+          ["AG", "Argeș", 102, 306],
+          ["MS", "Mureș", 102, 307],
+          ["BH", "Bihor", 101, 303],
+          ["TM", "Timiș", 99, 297],
+          ["IS", "Iași", 98, 294],
+          ["TR", "Teleorman", 97, 291],
+          ["BC", "Bacău", 93, 279],
+          ["DB", "Dâmbovița", 89, 267],
+          ["VL", "Vâlcea", 89, 267],
+          ["BZ", "Buzău", 87, 261],
+          ["VS", "Vaslui", 86, 258],
+          ["NT", "Neamț", 83, 249],
+          ["CJ", "Cluj", 81, 243],
+          ["AB", "Alba", 78, 235],
+          ["AR", "Arad", 78, 234],
+          ["BT", "Botoșani", 78, 234],
+          ["CS", "Caraș-Severin", 77, 231],
+          ["MM", "Maramureș", 76, 228],
+          ["VN", "Vrancea", 73, 219],
+          ["CT", "Constanța", 70, 210],
+          ["GJ", "Gorj", 70, 210],
+          ["HD", "Hunedoara", 69, 207],
+          ["HR", "Harghita", 67, 201],
+          ["IL", "Ialomița", 66, 198],
+          ["MH", "Mehedinți", 66, 198],
+          ["GL", "Galați", 65, 195],
+          ["SM", "Satu Mare", 65, 195],
+          ["SB", "Sibiu", 64, 192],
+          ["BN", "Bistrița-Năsăud", 62, 186],
+          ["SJ", "Sălaj", 61, 183],
+          ["BV", "Brașov", 58, 174],
+          ["CL", "Călărași", 55, 165],
+          ["GR", "Giurgiu", 54, 162],
+          ["TL", "Tulcea", 51, 153],
+          ["CV", "Covasna", 45, 135],
+          ["BR", "Brăila", 44, 132],
+          ["IF", "Ilfov", 40, 120],
+          ["B", "București", 6, 24]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 3228,
+        "county": 82,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-1992": {
+      "rows": 84,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-1996": {
+      "rows": 84,
+      "nullLabels": 84,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-2000": {
+      "rows": 86,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 1,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-2004": {
+      "rows": 86,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 42,
+        "diaspora": 1,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-2008": {
+      "rows": 968,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 740,
+        "county": 42,
+        "diaspora": 1,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-2012": {
+      "rows": 138,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 42,
+        "county": 0,
+        "diaspora": 96,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-2016": {
+      "rows": 6568,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 3186,
+        "named": 3186,
+        "byCounty": [
+          ["SV", "Suceava", 114, 228],
+          ["OT", "Olt", 112, 224],
+          ["DJ", "Dolj", 111, 222],
+          ["PH", "Prahova", 104, 208],
+          ["AG", "Argeș", 102, 204],
+          ["MS", "Mureș", 102, 204],
+          ["BH", "Bihor", 101, 202],
+          ["TM", "Timiș", 99, 198],
+          ["IS", "Iași", 98, 196],
+          ["TR", "Teleorman", 97, 194],
+          ["BC", "Bacău", 93, 186],
+          ["DB", "Dâmbovița", 89, 178],
+          ["VL", "Vâlcea", 89, 178],
+          ["BZ", "Buzău", 87, 174],
+          ["VS", "Vaslui", 86, 172],
+          ["NT", "Neamț", 83, 166],
+          ["CJ", "Cluj", 81, 162],
+          ["AB", "Alba", 78, 156],
+          ["AR", "Arad", 78, 156],
+          ["BT", "Botoșani", 78, 156],
+          ["CS", "Caraș-Severin", 77, 154],
+          ["MM", "Maramureș", 76, 152],
+          ["VN", "Vrancea", 73, 146],
+          ["CT", "Constanța", 70, 140],
+          ["GJ", "Gorj", 70, 140],
+          ["HD", "Hunedoara", 69, 138],
+          ["HR", "Harghita", 67, 134],
+          ["IL", "Ialomița", 66, 132],
+          ["MH", "Mehedinți", 66, 132],
+          ["GL", "Galați", 65, 130],
+          ["SM", "Satu Mare", 65, 130],
+          ["SB", "Sibiu", 64, 128],
+          ["BN", "Bistrița-Năsăud", 62, 124],
+          ["SJ", "Sălaj", 61, 122],
+          ["BV", "Brașov", 58, 116],
+          ["CL", "Călărași", 55, 110],
+          ["GR", "Giurgiu", 54, 108],
+          ["TL", "Tulcea", 51, 102],
+          ["CV", "Covasna", 45, 90],
+          ["BR", "Brăila", 44, 88],
+          ["IF", "Ilfov", 40, 80],
+          ["B", "București", 6, 12]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 98,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-2020": {
+      "rows": 6364,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 3181,
+        "named": 3179,
+        "byCounty": [
+          ["SV", "Suceava", 114, 228],
+          ["OT", "Olt", 112, 224],
+          ["DJ", "Dolj", 111, 222],
+          ["PH", "Prahova", 104, 208],
+          ["AG", "Argeș", 102, 204],
+          ["MS", "Mureș", 102, 204],
+          ["BH", "Bihor", 101, 202],
+          ["TM", "Timiș", 99, 198],
+          ["IS", "Iași", 98, 196],
+          ["TR", "Teleorman", 97, 194],
+          ["BC", "Bacău", 93, 186],
+          ["DB", "Dâmbovița", 89, 178],
+          ["VL", "Vâlcea", 89, 178],
+          ["BZ", "Buzău", 87, 174],
+          ["VS", "Vaslui", 86, 172],
+          ["NT", "Neamț", 83, 166],
+          ["CJ", "Cluj", 81, 162],
+          ["AB", "Alba", 78, 156],
+          ["AR", "Arad", 78, 156],
+          ["BT", "Botoșani", 78, 156],
+          ["CS", "Caraș-Severin", 77, 154],
+          ["MM", "Maramureș", 76, 152],
+          ["VN", "Vrancea", 73, 146],
+          ["GJ", "Gorj", 70, 140],
+          ["CT", "Constanța", 69, 138],
+          ["HD", "Hunedoara", 69, 138],
+          ["HR", "Harghita", 67, 134],
+          ["IL", "Ialomița", 66, 132],
+          ["MH", "Mehedinți", 66, 132],
+          ["GL", "Galați", 65, 130],
+          ["SM", "Satu Mare", 65, 130],
+          ["SB", "Sibiu", 64, 128],
+          ["BN", "Bistrița-Năsăud", 62, 124],
+          ["SJ", "Sălaj", 61, 122],
+          ["BV", "Brașov", 58, 116],
+          ["CL", "Călărași", 55, 110],
+          ["GR", "Giurgiu", 54, 108],
+          ["TL", "Tulcea", 51, 102],
+          ["CV", "Covasna", 45, 90],
+          ["BR", "Brăila", 44, 88],
+          ["IF", "Ilfov", 40, 80],
+          [null, null, 2, 4]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 1,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-parliamentary-2024": {
+      "rows": 43,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 43,
+        "county": 0,
+        "diaspora": 0,
+        "national": 0,
+        "chamber": 0
+      }
+    },
+    "bec-presidential-1992": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-presidential-1996": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-presidential-2000": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-presidential-2004": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-presidential-2009": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-presidential-2014": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-presidential-2019": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-referendum-2003": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-referendum-2007": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-referendum-2012": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-referendum-2018": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "bec-referendum-2019": {
+      "rows": 1,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 0,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "locale-2000": {
+      "rows": 3096,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 0,
+        "named": 0,
+        "byCounty": []
+      },
+      "distinct": {
+        "source_constituency": 2962,
+        "county": 41,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    },
+    "roaep-election-databases-local-2024": {
+      "rows": 167,
+      "nullLabels": 0,
+      "siruta": {
+        "distinct": 2,
+        "named": 2,
+        "byCounty": [
+          ["AB", "Alba", 1, 1],
+          ["MS", "Mureș", 1, 1]
+        ]
+      },
+      "distinct": {
+        "source_constituency": 0,
+        "county": 41,
+        "diaspora": 0,
+        "national": 1,
+        "chamber": 0
+      }
+    }
+  }
+}

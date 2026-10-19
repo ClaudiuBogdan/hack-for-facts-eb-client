@@ -1,0 +1,826 @@
+{
+  "generatedBy": "scripts/generate-elections-hub-fixture.mjs",
+  "api": "https://dev-chronos-api.transparenta.eu/api/v1/graphql",
+  "readAt": "2026-10-14T15:51:45.607Z",
+  "readiness": {
+    "edition": {
+      "identity": "HELD",
+      "sourceSelection": "HELD",
+      "sourceOpening": "HELD",
+      "results": "UNAVAILABLE",
+      "mandates": "UNAVAILABLE",
+      "issues": [
+        "EDITION_IDENTITY_UNVERIFIED",
+        "SOURCE_SELECTION_UNVERIFIED",
+        "SOURCE_ARTIFACT_ACCESS_HELD",
+        "RESULT_STATUS_UNQUALIFIED",
+        "RESULTS_UNAVAILABLE",
+        "MANDATES_UNAVAILABLE",
+        "REPORTED_DATE_MISSING",
+        "EVENT_LINK_UNVERIFIED"
+      ]
+    },
+    "contest": {
+      "identity": "HELD",
+      "sourceSelection": "HELD",
+      "sourceOpening": "HELD",
+      "results": "UNAVAILABLE",
+      "mandates": "UNAVAILABLE",
+      "issues": [
+        "CONTEST_IDENTITY_UNVERIFIED",
+        "CONTEST_SCOPE_UNVERIFIED",
+        "SOURCE_SELECTION_UNVERIFIED",
+        "SOURCE_ARTIFACT_ACCESS_HELD",
+        "RESULTS_UNAVAILABLE",
+        "MANDATES_UNAVAILABLE",
+        "EVENT_LINK_UNVERIFIED"
+      ]
+    }
+  },
+  "places": {
+    "siruta": 3193,
+    "named": 3186,
+    "insUats": 3186
+  },
+  "editions": [
+    {
+      "key": "aep-european-2019",
+      "eventKey": "ro:european:2019",
+      "name": "aep-european-2019",
+      "year": 2019,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["european_parliament", "national", null, 1]]
+    },
+    {
+      "key": "aep-local-2012",
+      "eventKey": "ro:local:2012",
+      "name": "aep-local-2012",
+      "year": 2012,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 116,
+      "counts": [
+        ["local_election", "source_constituency", "1", 115],
+        ["local_election", "national", null, 1]
+      ]
+    },
+    {
+      "key": "aep-local-2014",
+      "eventKey": "ro:local:2014",
+      "name": "aep-local-2014",
+      "year": 2014,
+      "family": "local",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 6415,
+      "counts": [
+        ["local_council", "siruta", "tur2", 3186],
+        ["mayor", "siruta", "tur2", 3186],
+        ["county_council", "county", "tur2", 42],
+        ["mayor", "source_constituency", "tur2", 1]
+      ]
+    },
+    {
+      "key": "aep-local-2014-t1",
+      "eventKey": "ro:local:2014",
+      "name": "aep-local-2014-t1",
+      "year": 2014,
+      "family": "local",
+      "round": "tur1",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 6415,
+      "counts": [
+        ["local_council", "siruta", "tur1", 3186],
+        ["mayor", "siruta", "tur1", 3186],
+        ["county_council", "county", "tur1", 42],
+        ["mayor", "county", "tur1", 1]
+      ]
+    },
+    {
+      "key": "aep-local-2014-t2",
+      "eventKey": "ro:local:2014",
+      "name": "aep-local-2014-t2",
+      "year": 2014,
+      "family": "local",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 6415,
+      "counts": [
+        ["local_council", "siruta", "tur2", 3186],
+        ["mayor", "siruta", "tur2", 3186],
+        ["county_council", "county", "tur2", 42],
+        ["mayor", "county", "tur2", 1]
+      ]
+    },
+    {
+      "key": "aep-local-2020",
+      "eventKey": "ro:local:2020",
+      "name": "aep-local-2020",
+      "year": 2020,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 9734,
+      "counts": [
+        ["local_council", "siruta", "tur2", 3186],
+        ["mayor", "siruta", "tur2", 3186],
+        ["county_president", "siruta", "tur2", 3180],
+        ["county_president", "county", null, 42],
+        ["local_election", "county", null, 42],
+        ["mayor", "county", null, 42],
+        ["county_council", "county", "tur2", 41],
+        ["local_election", "siruta", "tur2", 9],
+        ["bucharest_general_council", "siruta", "tur2", 6]
+      ]
+    },
+    {
+      "key": "aep-parliamentary-2012",
+      "eventKey": "ro:parliamentary:2012",
+      "name": "aep-parliamentary-2012",
+      "year": 2012,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 43,
+      "counts": [
+        ["chamber_deputies", "source_constituency", null, 42],
+        ["chamber_deputies", "diaspora", null, 1]
+      ]
+    },
+    {
+      "key": "aep-parliamentary-2016",
+      "eventKey": "ro:parliamentary:2016",
+      "name": "aep-parliamentary-2016",
+      "year": 2016,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 3284,
+      "counts": [
+        ["local_election", "siruta", null, 3186],
+        ["local_election", "diaspora", null, 98]
+      ]
+    },
+    {
+      "key": "aep-parliamentary-2020",
+      "eventKey": "ro:parliamentary:2020",
+      "name": "aep-parliamentary-2020",
+      "year": 2020,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 3182,
+      "counts": [
+        ["chamber_deputies", "siruta", null, 3181],
+        ["chamber_deputies", "diaspora", null, 1]
+      ]
+    },
+    {
+      "key": "aep-referendum-2019",
+      "eventKey": "ro:referendum:2019",
+      "name": "aep-referendum-2019",
+      "year": 2019,
+      "family": "referendum",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["referendum", "national", null, 1]]
+    },
+    {
+      "key": "alegeri-pentru-autoritatile-administratiei-publice-locale-2012",
+      "eventKey": "ro:local:2012",
+      "name": "alegeri-pentru-autoritatile-administratiei-publice-locale-2012",
+      "year": 2012,
+      "family": "local",
+      "round": "1",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 115,
+      "counts": [["regional_2012_candidate_vote_rows", "source_constituency", "1", 115]]
+    },
+    {
+      "key": "alegeri-pentru-autoritatile-administratiei-publice-locale-2014-t1",
+      "eventKey": "ro:local:2014",
+      "name": "alegeri-pentru-autoritatile-administratiei-publice-locale-2014-t1",
+      "year": 2014,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 2,
+      "counts": [
+        ["long_vote_results", "national", null, 1],
+        ["territorial_mandate_allocations", "national", null, 1]
+      ]
+    },
+    {
+      "key": "alegeri-pentru-autoritatile-administratiei-publice-locale-2014-t2",
+      "eventKey": "ro:local:2014",
+      "name": "alegeri-pentru-autoritatile-administratiei-publice-locale-2014-t2",
+      "year": 2014,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 2,
+      "counts": [
+        ["long_vote_results", "national", null, 1],
+        ["territorial_mandate_allocations", "national", null, 1]
+      ]
+    },
+    {
+      "key": "alegeri-pentru-autoritatile-administratiei-publice-locale-2020",
+      "eventKey": "ro:local:2020",
+      "name": "alegeri-pentru-autoritatile-administratiei-publice-locale-2020",
+      "year": 2020,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 168,
+      "counts": [
+        ["county_council_or_cgmb", "county", null, 42],
+        ["county_president_or_primar_general", "county", null, 42],
+        ["local_council", "county", null, 42],
+        ["mayor", "county", null, 42]
+      ]
+    },
+    {
+      "key": "bec-bucharest-general-mayor-1998",
+      "eventKey": "ro:local:1998:partial",
+      "name": "bec-bucharest-general-mayor-1998",
+      "year": 1998,
+      "family": "local",
+      "round": "tur3",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["general_mayor", "source_constituency", "tur3", 1]]
+    },
+    {
+      "key": "bec-european-2007",
+      "eventKey": "ro:european:2007",
+      "name": "bec-european-2007",
+      "year": 2007,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["european_parliament", "national", null, 1]]
+    },
+    {
+      "key": "bec-european-2009",
+      "eventKey": "ro:european:2009",
+      "name": "bec-european-2009",
+      "year": 2009,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["european_parliament", "national", null, 1]]
+    },
+    {
+      "key": "bec-european-2014",
+      "eventKey": "ro:european:2014",
+      "name": "bec-european-2014",
+      "year": 2014,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["european_parliament", "national", null, 1]]
+    },
+    {
+      "key": "bec-european-2019",
+      "eventKey": "ro:european:2019",
+      "name": "bec-european-2019",
+      "year": 2019,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["european_parliament", "national", null, 1]]
+    },
+    {
+      "key": "bec-local-1996",
+      "eventKey": "ro:local:1996",
+      "name": "bec-local-1996",
+      "year": 1996,
+      "family": "local",
+      "round": "final",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 8908,
+      "counts": [
+        ["mayor", "siruta", "final", 2954],
+        ["county_council", "siruta", "tur1", 2953],
+        ["local_council", "siruta", "final", 2953],
+        ["county_council", "county", "final", 42],
+        ["local_1996_tippv_0", "siruta", "tur1", 6]
+      ]
+    },
+    {
+      "key": "bec-local-2004",
+      "eventKey": "ro:local:2004",
+      "name": "bec-local-2004",
+      "year": 2004,
+      "family": "local",
+      "round": "tur1",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 9808,
+      "counts": [
+        ["county_result_tippv_3", "siruta", "tur1", 3137],
+        ["local_result_tippv_2", "siruta", "tur1", 3137],
+        ["local_result_tippv_1", "siruta", "tur2", 1838],
+        ["local_result_tippv_1", "siruta", "tur1", 1295],
+        ["local_result_tippv_1", "source_constituency", "tur1", 112],
+        ["local_result_tippv_2", "source_constituency", "tur1", 110],
+        ["county_result_tippv_3", "county", "tur1", 42],
+        ["local_election_administration", "county", "tur1", 42],
+        ["local_result_tippv_2", "county", "tur1", 42],
+        ["local_result_tippv_1", "county", "tur2", 38],
+        ["county_result_tippv_0", "siruta", "tur1", 6],
+        ["local_result_tippv_1", "county", "tur3", 4],
+        ["local_result_tippv_1", "siruta", "tur3", 4],
+        ["county_result_tippv_0", "county", "tur1", 1]
+      ]
+    },
+    {
+      "key": "bec-local-2008",
+      "eventKey": "ro:local:2008",
+      "name": "bec-local-2008",
+      "year": 2008,
+      "family": "local",
+      "round": "tur1",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 449,
+      "counts": [
+        ["local_result_tippv_1", "source_constituency", "tur1", 114],
+        ["local_result_tippv_2", "source_constituency", "tur1", 114],
+        ["county_result_tippv_0", "county", "tur1", 42],
+        ["county_result_tippv_3", "county", "tur1", 42],
+        ["local_result_tippv_1", "county", "tur2", 42],
+        ["local_election_administration", "county", "tur1", 41],
+        ["local_result_tippv_2", "county", "tur1", 41],
+        ["local_result_tippv_2", "siruta", "tur1", 6],
+        ["local_result_tippv_1", "siruta", "tur2", 4],
+        ["local_result_tippv_1", "siruta", "tur1", 2],
+        ["local_election_administration", "national", null, 1]
+      ]
+    },
+    {
+      "key": "bec-local-2012",
+      "eventKey": "ro:local:2012",
+      "name": "bec-local-2012",
+      "year": 2012,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["local_election", "national", null, 1]]
+    },
+    {
+      "key": "bec-local-2012-archive",
+      "eventKey": "ro:local:2012",
+      "name": "bec-local-2012-archive",
+      "year": 2012,
+      "family": "local",
+      "round": "1",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 324,
+      "counts": [
+        ["local_result_tippv_1", "source_constituency", "1", 114],
+        ["local_result_tippv_2", "source_constituency", "1", 114],
+        ["county_result_tippv_0", "county", "1", 42],
+        ["county_result_tippv_3", "county", "1", 42],
+        ["local_result_tippv_1", "siruta", "1", 6],
+        ["local_result_tippv_2", "siruta", "1", 6]
+      ]
+    },
+    {
+      "key": "bec-local-2016",
+      "eventKey": "ro:local:2016",
+      "name": "bec-local-2016",
+      "year": 2016,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 6414,
+      "counts": [
+        ["local_council", "siruta", null, 3186],
+        ["mayor", "siruta", null, 3186],
+        ["county_council", "county", null, 42]
+      ]
+    },
+    {
+      "key": "bec-local-2020",
+      "eventKey": "ro:local:2020",
+      "name": "bec-local-2020",
+      "year": 2020,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 9650,
+      "counts": [
+        ["local_council", "siruta", "tur2", 3186],
+        ["mayor", "siruta", "tur2", 3186],
+        ["county_president", "siruta", "tur2", 3180],
+        ["county_council", "county", "tur2", 41],
+        ["local_election", "county", null, 39],
+        ["local_election", "siruta", "tur2", 9],
+        ["bucharest_general_council", "siruta", "tur2", 6],
+        ["local_election", "county", "tur2", 3]
+      ]
+    },
+    {
+      "key": "bec-local-2024",
+      "eventKey": "ro:local:2024",
+      "name": "bec-local-2024",
+      "year": 2024,
+      "family": "local",
+      "round": "tur1",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 16192,
+      "counts": [
+        ["local_council", "siruta", "tur1", 3186],
+        ["local_council", "source_constituency", "tur1", 3186],
+        ["mayor", "siruta", "tur1", 3186],
+        ["mayor", "source_constituency", "tur1", 3186],
+        ["county_president", "siruta", "tur1", 3180],
+        ["consiliu-judetean", "source_constituency", "tur1", 41],
+        ["county_council", "county", null, 41],
+        ["county_council", "county", "tur1", 41],
+        ["county_president", "county", "tur1", 41],
+        ["local_council", "county", null, 41],
+        ["mayor", "county", null, 40],
+        ["bucharest_general_council", "siruta", "tur1", 6],
+        ["local_election", "siruta", "tur1", 6],
+        ["local_election", "siruta", "tur2", 2],
+        ["bucharest_general_council", "national", null, 1],
+        ["bucharest_general_mayor", "source_constituency", "tur1", 1],
+        ["consiliu-general", "source_constituency", "tur1", 1],
+        ["county_council", "national", null, 1],
+        ["county_president", "national", null, 1],
+        ["local_council", "national", null, 1],
+        ["local_election", "national", null, 1],
+        ["mayor", "county", "tur2", 1],
+        ["mayor", "national", null, 1]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-1992",
+      "eventKey": "ro:parliamentary:1992",
+      "name": "bec-parliamentary-1992",
+      "year": 1992,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 84,
+      "counts": [
+        ["chamber_deputies", "county", null, 42],
+        ["senate", "county", null, 42]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-1996",
+      "eventKey": "ro:parliamentary:1996",
+      "name": "bec-parliamentary-1996",
+      "year": 1996,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 84,
+      "counts": [
+        ["chamber_deputies", "county", null, 42],
+        ["senate", "county", null, 42]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-2000",
+      "eventKey": "ro:parliamentary:2000",
+      "name": "bec-parliamentary-2000",
+      "year": 2000,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 86,
+      "counts": [
+        ["chamber_deputies", "county", null, 42],
+        ["senate", "county", null, 42],
+        ["chamber_deputies", "diaspora", null, 1],
+        ["senate", "diaspora", null, 1]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-2004",
+      "eventKey": "ro:parliamentary:2004",
+      "name": "bec-parliamentary-2004",
+      "year": 2004,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 86,
+      "counts": [
+        ["chamber_deputies", "county", null, 42],
+        ["senate", "county", null, 42],
+        ["chamber_deputies", "diaspora", null, 1],
+        ["senate", "diaspora", null, 1]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-2008",
+      "eventKey": "ro:parliamentary:2008",
+      "name": "bec-parliamentary-2008",
+      "year": 2008,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 968,
+      "counts": [
+        ["chamber_deputies", "source_constituency", null, 615],
+        ["senate", "source_constituency", null, 267],
+        ["chamber_deputies", "county", null, 42],
+        ["senate", "county", null, 42],
+        ["chamber_deputies", "diaspora", null, 1],
+        ["senate", "diaspora", null, 1]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-2012",
+      "eventKey": "ro:parliamentary:2012",
+      "name": "bec-parliamentary-2012",
+      "year": 2012,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 138,
+      "counts": [
+        ["local_election", "diaspora", null, 96],
+        ["local_election", "source_constituency", null, 42]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-2016",
+      "eventKey": "ro:parliamentary:2016",
+      "name": "bec-parliamentary-2016",
+      "year": 2016,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 6568,
+      "counts": [
+        ["chamber_deputies", "siruta", null, 3186],
+        ["senate", "siruta", null, 3186],
+        ["chamber_deputies", "diaspora", null, 98],
+        ["senate", "diaspora", null, 98]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-2020",
+      "eventKey": "ro:parliamentary:2020",
+      "name": "bec-parliamentary-2020",
+      "year": 2020,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 6364,
+      "counts": [
+        ["chamber_deputies", "siruta", null, 3181],
+        ["senate", "siruta", null, 3181],
+        ["chamber_deputies", "diaspora", null, 1],
+        ["senate", "diaspora", null, 1]
+      ]
+    },
+    {
+      "key": "bec-parliamentary-2024",
+      "eventKey": "ro:parliamentary:2024",
+      "name": "bec-parliamentary-2024",
+      "year": 2024,
+      "family": "parliamentary",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 43,
+      "counts": [["chamber_deputies", "source_constituency", null, 43]]
+    },
+    {
+      "key": "bec-presidential-1992",
+      "eventKey": "ro:presidential:1992",
+      "name": "bec-presidential-1992",
+      "year": 1992,
+      "family": "presidential",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["president", "national", "tur2", 1]]
+    },
+    {
+      "key": "bec-presidential-1996",
+      "eventKey": "ro:presidential:1996",
+      "name": "bec-presidential-1996",
+      "year": 1996,
+      "family": "presidential",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["president", "national", "tur2", 1]]
+    },
+    {
+      "key": "bec-presidential-2000",
+      "eventKey": "ro:presidential:2000",
+      "name": "bec-presidential-2000",
+      "year": 2000,
+      "family": "presidential",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["president", "national", "tur2", 1]]
+    },
+    {
+      "key": "bec-presidential-2004",
+      "eventKey": "ro:presidential:2004",
+      "name": "bec-presidential-2004",
+      "year": 2004,
+      "family": "presidential",
+      "round": "tur1",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["president", "national", "tur1", 1]]
+    },
+    {
+      "key": "bec-presidential-2009",
+      "eventKey": "ro:presidential:2009",
+      "name": "bec-presidential-2009",
+      "year": 2009,
+      "family": "presidential",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["president", "national", "tur2", 1]]
+    },
+    {
+      "key": "bec-presidential-2014",
+      "eventKey": "ro:presidential:2014",
+      "name": "bec-presidential-2014",
+      "year": 2014,
+      "family": "presidential",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["president", "national", "tur2", 1]]
+    },
+    {
+      "key": "bec-presidential-2019",
+      "eventKey": "ro:presidential:2019",
+      "name": "bec-presidential-2019",
+      "year": 2019,
+      "family": "presidential",
+      "round": "tur2",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["president", "national", "tur2", 1]]
+    },
+    {
+      "key": "bec-referendum-2003",
+      "eventKey": "ro:referendum:2003",
+      "name": "bec-referendum-2003",
+      "year": 2003,
+      "family": "referendum",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["referendum", "national", null, 1]]
+    },
+    {
+      "key": "bec-referendum-2007",
+      "eventKey": "ro:referendum:2007",
+      "name": "bec-referendum-2007",
+      "year": 2007,
+      "family": "referendum",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["referendum", "national", null, 1]]
+    },
+    {
+      "key": "bec-referendum-2012",
+      "eventKey": "ro:referendum:2012",
+      "name": "bec-referendum-2012",
+      "year": 2012,
+      "family": "referendum",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["referendum", "national", null, 1]]
+    },
+    {
+      "key": "bec-referendum-2018",
+      "eventKey": "ro:referendum:2018",
+      "name": "bec-referendum-2018",
+      "year": 2018,
+      "family": "referendum",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["referendum", "national", null, 1]]
+    },
+    {
+      "key": "bec-referendum-2019",
+      "eventKey": "ro:referendum:2019",
+      "name": "bec-referendum-2019",
+      "year": 2019,
+      "family": "referendum",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 1,
+      "counts": [["referendum", "national", null, 1]]
+    },
+    {
+      "key": "locale-2000",
+      "eventKey": "ro:local:2000",
+      "name": "locale-2000",
+      "year": 2000,
+      "family": "local",
+      "round": "final",
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 3096,
+      "counts": [
+        ["mayor", "source_constituency", "final", 2962],
+        ["county_council", "county", "tur1", 41],
+        ["local_council", "county", "tur1", 41],
+        ["mayor", "county", "final", 40],
+        ["local_council", "source_constituency", "tur1", 7],
+        ["county_council", "national", "tur1", 1],
+        ["county_council", "source_constituency", "tur1", 1],
+        ["local_council", "national", "tur1", 1],
+        ["mayor", "county", "tur1", 1],
+        ["mayor", "national", "final", 1]
+      ]
+    },
+    {
+      "key": "roaep-election-databases-local-2024",
+      "eventKey": "ro:local:2024",
+      "name": "roaep-election-databases-local-2024",
+      "year": 2024,
+      "family": "local",
+      "round": null,
+      "date": null,
+      "authority": "BEC/AEP/ROAEP",
+      "contests": 167,
+      "counts": [
+        ["county_council_or_cgmb", "county", null, 41],
+        ["county_president_or_primar_general", "county", null, 41],
+        ["local_council", "county", null, 41],
+        ["mayor", "county", null, 41],
+        ["polling_station_results", "siruta", null, 2],
+        ["polling_station_results", "national", null, 1]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+ "generatedBy": "scripts/generate-elections-hub-places.mjs",
+ "readAt": "2026-10-14T15:51:45.607Z",
+ "insUats": 3186,
+ "populationYear": 2021,
+ "editions": [
+  {
+   "key": "aep-local-2014",
+   "siruta": 3186,
+   "named": 3186
+  },
+  {
+   "key": "aep-local-2014-t1",
+   "siruta": 3186,
+   "named": 3186
+  },
+  {
+   "key": "aep-local-2014-t2",
+   "siruta": 3186,
+   "named": 3186
+  },
+  {
+   "key": "aep-local-2020",
+   "siruta": 3186,
+   "named": 3185
+  },
+  {
+   "key": "aep-parliamentary-2016",
+   "siruta": 3186,
+   "named": 3186
+  },
+  {
+   "key": "aep-parliamentary-2020",
+   "siruta": 3181,
+   "named": 3179
+  },
+  {
+   "key": "bec-local-1996",
+   "siruta": 2954,
+   "named": 2948
+  },
+  {
+   "key": "bec-local-2004",
+   "siruta": 3137,
+   "named": 3137
+  },
+  {
+   "key": "bec-local-2008",
+   "siruta": 6,
+   "named": 6
+  },
+  {
+   "key": "bec-local-2012-archive",
+   "siruta": 6,
+   "named": 6
+  },
+  {
+   "key": "bec-local-2016",
+   "siruta": 3186,
+   "named": 3186
+  },
+  {
+   "key": "bec-local-2020",
+   "siruta": 3186,
+   "named": 3185
+  },
+  {
+   "key": "bec-local-2024",
+   "siruta": 3186,
+   "named": 3186
+  },
+  {
+   "key": "bec-parliamentary-2016",
+   "siruta": 3186,
+   "named": 3186
+  },
+  {
+   "key": "bec-parliamentary-2020",
+   "siruta": 3181,
+   "named": 3179
+  },
+  {
+   "key": "roaep-election-databases-local-2024",
+   "siruta": 2,
+   "named": 2
+  }
+ ],
+ "largest": [
+  {
+   "siruta": "179169",
+   "name": "București Sectorul 3",
+   "kind": "Sectoarele municipiului Bucuresti",
+   "county": "București",
+   "population": 373566,
+   "editions": 13
+  },
+  {
+   "siruta": "179196",
+   "name": "București Sectorul 6",
+   "kind": "Sectoarele municipiului Bucuresti",
+   "county": "București",
+   "population": 325759,
+   "editions": 13
+  },
+  {
+   "siruta": "179150",
+   "name": "București Sectorul 2",
+   "kind": "Sectoarele municipiului Bucuresti",
+   "county": "București",
+   "population": 290507,
+   "editions": 13
+  },
+  {
+   "siruta": "54975",
+   "name": "Cluj-Napoca",
+   "kind": "Municipiu resedinta de judet",
+   "county": "Cluj",
+   "population": 286598,
+   "editions": 13
+  },
+  {
+   "siruta": "95060",
+   "name": "Iași",
+   "kind": "Municipiu resedinta de judet",
+   "county": "Iași",
+   "population": 271692,
+   "editions": 13
+  },
+  {
+   "siruta": "60419",
+   "name": "Constanța",
+   "kind": "Municipiu resedinta de judet",
+   "county": "Constanța",
+   "population": 263707,
+   "editions": 13
+  },
+  {
+   "siruta": "179178",
+   "name": "București Sectorul 4",
+   "kind": "Sectoarele municipiului Bucuresti",
+   "county": "București",
+   "population": 262780,
+   "editions": 13
+  },
+  {
+   "siruta": "155243",
+   "name": "Timișoara",
+   "kind": "Municipiu resedinta de judet",
+   "county": "Timiș",
+   "population": 250849,
+   "editions": 13
+  },
+  {
+   "siruta": "179187",
+   "name": "București Sectorul 5",
+   "kind": "Sectoarele municipiului Bucuresti",
+   "county": "București",
+   "population": 239607,
+   "editions": 13
+  },
+  {
+   "siruta": "40198",
+   "name": "Brașov",
+   "kind": "Municipiu resedinta de judet",
+   "county": "Brașov",
+   "population": 237589,
+   "editions": 13
+  },
+  {
+   "siruta": "69900",
+   "name": "Craiova",
+   "kind": "Municipiu resedinta de judet",
+   "county": "Dolj",
+   "population": 234140,
+   "editions": 13
+  },
+  {
+   "siruta": "179141",
+   "name": "București Sectorul 1",
+   "kind": "Sectoarele municipiului Bucuresti",
+   "county": "București",
+   "population": 224764,
+   "editions": 13
+  }
+ ]
+}
