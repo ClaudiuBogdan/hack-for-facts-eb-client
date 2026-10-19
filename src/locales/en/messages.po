@@ -19661,8 +19661,8 @@ msgid "Evenimentele fără dată nu pot fi filtrate după perioadă — alege al
 msgstr "Undated events cannot be filtered by period — choose another view for a date range."
 
 #: src/features/legal/components/act-timeline-band.tsx:56
-msgid "Evenimentele marcate „Monitorul Oficial” sunt susținute de o publicare în Monitor; cele marcate „Portal” provin din evidența Portal Legislativ. Deciziile Curții Constituționale nu apar aici."
-msgstr "Events marked “Official Gazette” are backed by a publication in the Gazette; those marked “Portal” come from Portal Legislativ’s records. Constitutional Court decisions do not appear here."
+msgid "Evenimentele marcate „Monitorul Oficial” sunt susținute de o publicare în Monitor; cele marcate „Portal” provin din evidența Portal Legislativ. Unele trimiteri ale instanțelor la modificări sau completări sunt omise; trimiterile la abrogări și evenimentele de statut înregistrate sunt păstrate."
+msgstr "Events marked “Official Gazette” are backed by a publication in the Gazette; those marked “Portal” come from Portal Legislativ’s records. Some court references to amendments or additions are omitted; references to repeals and recorded status events are kept."
 
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:228
 msgid "Ever wondered where your money actually goes?"

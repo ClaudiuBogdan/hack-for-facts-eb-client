@@ -56,7 +56,9 @@ export function ActTimelineBand({ timeline, complete = true }: Props) {
         <Trans>
           Evenimentele marcate „Monitorul Oficial” sunt susținute de o publicare
           în Monitor; cele marcate „Portal” provin din evidența Portal
-          Legislativ. Deciziile Curții Constituționale nu apar aici.
+          Legislativ. Unele trimiteri ale instanțelor la modificări sau completări
+          sunt omise; trimiterile la abrogări și evenimentele de statut
+          înregistrate sunt păstrate.
         </Trans>
       }
     >
