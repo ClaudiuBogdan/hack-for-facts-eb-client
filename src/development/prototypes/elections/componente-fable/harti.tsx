@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { useUatResults } from '../principal/model'
 import { useFormat } from '../shared/parts'
 import {
+  ChartPlaceholder,
   ClassMap,
   Legend,
   PanelVariants,
@@ -89,6 +90,7 @@ function StrengthMap() {
         classes={classes}
         read={read}
         ready={Boolean(data.data)}
+        failed={data.isError}
         label={t`Ponderea ${style.label} la Cameră, pe localități, ${year}`}
         legendTitle={t`${style.label}, % din voturi, ${year}`}
       />
@@ -248,6 +250,7 @@ function SwingMap() {
         classes={classes}
         read={read}
         ready={Boolean(data.data)}
+        failed={data.isError}
         label={t`Schimbarea ponderii ${style.label} la Cameră, 2016–2020`}
         legendTitle={mode === 'absolute' ? t`${style.label}, 2016 → 2020` : t`${style.label}, față de media sa`}
         aside={
@@ -276,6 +279,13 @@ interface Flip {
   readonly afterKey: string | null
   /** Null on a 2024 tie (no most-voted party). */
   readonly continuity: Continuity | null
+}
+
+/** Whether the rows the flips are read from failed to load (the map and the flows then say so, not "loading"). */
+function useFlipsFailed(): boolean {
+  const evolution = useEvolutionUat()
+  const results = useUatResults()
+  return evolution.isError || results.isError
 }
 
 function useFlips() {
@@ -308,6 +318,7 @@ function competitorName(key: string): string {
 
 function FlipMap() {
   const flips = useFlips()
+  const flipsFailed = useFlipsFailed()
   const format = useFormat()
   const [only, setOnly] = useSearchChoice('doar', ['all', 'changed'] as const, 'all')
   const classes: readonly MapClass[] = useMemo(
@@ -508,7 +519,7 @@ function FlipMap() {
           </p>
         ) : null}
       </div>
-      <ClassMap classes={classes} read={read} ready={Boolean(flips)} label={t`Primării păstrate sau schimbate, 2016–2024`} legend={legend} />
+      <ClassMap classes={classes} read={read} ready={Boolean(flips)} failed={flipsFailed} label={t`Primării păstrate sau schimbate, 2016–2024`} legend={legend} />
     </div>
   )
 }
@@ -529,13 +540,15 @@ interface FlowLink {
 
 function FlowSankey() {
   const flips = useFlips()
+  const flipsFailed = useFlipsFailed()
   const scope = useInScope()
   const { boxRef, tip, move, leave } = useTip()
   const [ref, width] = useChartWidth(720)
   const format = useFormat()
   const height = 420
   const narrow = width < 480
-  const pad = narrow ? 84 : 118
+  // Room for the longest left label on a phone („Alte partide 89" at 11 px), so it is not cut at the edge.
+  const pad = narrow ? 92 : 118
   const layout = useMemo(() => {
     // Not before the scope can filter: an empty graph makes d3-sankey throw.
     if (!flips || !scope.ready) return null
@@ -592,11 +605,18 @@ function FlowSankey() {
       links: links.map((l) => ({ ...l })),
     })
   }, [flips, width, pad, scope])
-  if (!layout || !scope.ready) return <div ref={ref} className="h-[420px] border border-dashed" />
+  if (!layout || !scope.ready)
+    return (
+      <div ref={ref}>
+        <ChartPlaceholder className="h-[420px]" failed={flipsFailed || scope.failed} />
+      </div>
+    )
   if (layout === 'empty')
     return (
-      <div ref={ref} className="flex h-40 items-center justify-center border border-dashed text-sm text-muted-foreground">
-        <Trans>Nicio primărie de comparat aici.</Trans>
+      <div ref={ref}>
+        <ChartPlaceholder className="h-40">
+          <Trans>Nicio primărie de comparat aici.</Trans>
+        </ChartPlaceholder>
       </div>
     )
   const path = sankeyLinkHorizontal<FlowNode, FlowLink>()
@@ -760,7 +780,16 @@ function TurnoutChangeMap() {
   )
   // eslint-disable-next-line react-hooks/exhaustive-deps -- static classes
   const stable = useMemo(() => classes, [])
-  return <ClassMap classes={stable} read={read} ready={Boolean(data.data)} label={t`Schimbarea prezenței la parlamentare, 2016–2020`} legendTitle={t`Prezența, 2016 → 2020`} />
+  return (
+    <ClassMap
+      classes={stable}
+      read={read}
+      ready={Boolean(data.data)}
+      failed={data.isError}
+      label={t`Schimbarea prezenței la parlamentare, 2016–2020`}
+      legendTitle={t`Prezența, 2016 → 2020`}
+    />
+  )
 }
 
 // ─────────────────────────────────────────── F: how close ──
@@ -836,6 +865,7 @@ function MarginMap() {
       classes={classes}
       read={read}
       ready={Boolean(results.data)}
+      failed={results.isError}
       label={t`Cât de strânse au fost alegerile pentru primărie, 2024`}
       legendTitle={t`Diferența dintre primii doi, 2024`}
     />

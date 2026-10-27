@@ -6,6 +6,7 @@ import { useUatResults } from '../principal/model'
 import { useFormat } from '../shared/parts'
 import {
   AXIS_TEXT,
+  ChartPlaceholder,
   FigureCaption,
   GRID_LINE,
   Legend,
@@ -247,7 +248,7 @@ function TurnoutHistogram() {
       b: count(data.data.turnout2020),
     }
   }, [data.data, scope])
-  if (!bins) return <div className="h-64 border border-dashed" />
+  if (!bins) return <ChartPlaceholder className="h-64" failed={data.isError || scope.failed} />
   const h = 240
   const m = { l: 40, r: 8, t: 10, b: 26 }
   const iw = width - m.l - m.r
@@ -470,7 +471,7 @@ function TurnoutByKind() {
       },
     ]
   }, [data.data, results.data, scope])
-  if (!rows) return <div className="h-48 border border-dashed" />
+  if (!rows) return <ChartPlaceholder className="h-48" failed={data.isError || results.isError || scope.failed} />
   return (
     <div>
       <Legend

@@ -7,6 +7,7 @@ import { useUatResults } from '../principal/model'
 import { useFormat } from '../shared/parts'
 import {
   AXIS_TEXT,
+  ChartPlaceholder,
   FigureCaption,
   GRID_LINE,
   Legend,
@@ -16,7 +17,9 @@ import {
   useChartWidth,
   useCountyScope,
   useGeometry,
+  useDimmed,
   useInScope,
+  usePartyFocus,
   usePct,
   useTip,
   type Panel,
@@ -71,7 +74,7 @@ function MarginHistogram() {
     }
     return { bins, step, solo, folded }
   }, [results.data, scope])
-  if (!model) return <div className="h-64 border border-dashed" />
+  if (!model) return <ChartPlaceholder className="h-64" failed={results.isError || scope.failed} />
   const h = 260
   const m = { l: 40, r: 12, t: 10, b: 28 }
   const iw = width - m.l - m.r
@@ -154,12 +157,14 @@ function MarginHistogram() {
  * the gap, then the larger race). Both 2024 ties are in the national list,
  * which also names their two parties.
  */
-function useClosestRaces(): readonly CloseRace[] | null {
+/** The closest races in scope, null while a county's rows load; `failed` when one of them did not load. */
+function useClosestRaces(): { readonly races: readonly CloseRace[] | null; readonly failed: boolean } {
   const county = useCountyScope()
   const evolution = useEvolutionUat()
   const results = useUatResults()
   const geometry = useGeometry()
-  return useMemo(() => {
+  const failed = county !== null && (evolution.isError || results.isError || geometry.isError)
+  const races = useMemo(() => {
     if (county === null) return EVOLUTION.closestMayorRaces2024
     const e = evolution.data
     const r = results.data
@@ -182,13 +187,14 @@ function useClosestRaces(): readonly CloseRace[] | null {
     })
     return out.sort((a, b) => a[5] - b[5] || b[6] - a[6]).slice(0, 10)
   }, [county, evolution.data, results.data, geometry.data])
+  return { races, failed }
 }
 
 function ClosestRaces() {
   const format = useFormat()
   const pct = usePct()
-  const races = useClosestRaces()
-  if (!races) return <div className="h-64 border border-dashed" />
+  const { races, failed } = useClosestRaces()
+  if (!races) return <ChartPlaceholder className="h-64" failed={failed} />
   return (
     <ol className="divide-y divide-border/70 border-y border-border/70">
       {races.map(([siruta, place, county, first, second, gap, votes], i) => {
@@ -250,7 +256,7 @@ function CandidatesPerRace() {
     }
     return out
   }, [results.data, scope])
-  if (!counts) return <div className="h-48 border border-dashed" />
+  if (!counts) return <ChartPlaceholder className="h-56" failed={results.isError || scope.failed} />
   const whole = [...counts.values()].reduce((s, v) => s + v, 0)
   const max = Math.max(...counts.values())
   const keys = Array.from({ length: 10 }, (_, i) => i + 1)
@@ -296,11 +302,17 @@ function PartyByKind() {
   const pct = usePct()
   const format = useFormat()
   const { boxRef, tip, move, leave } = useTip()
+  const focus = usePartyFocus()?.value ?? null
+  const dimVotes = useDimmed(KIND_LINES)
+  const dimMayors = useDimmed(WIN_LINES)
   const model = useMemo(() => {
     if (!data.data || !results.data || !scope.ready) return null
     const d = data.data
     const votes = new Map<string, Map<Line, number>>()
     const totals = new Map<string, number>()
+    // Every line's own votes and mayoralties per kind of place, before the bars fold them: the focus readout reads these.
+    const ownVotes = new Map<string, Map<Line, number>>()
+    const ownMayors = new Map<string, Map<Line, number>>()
     for (const [siruta, row] of Object.entries(d.chamber2020)) {
       if (!scope.has(siruta)) continue
       const kind = d.kinds[siruta]
@@ -308,15 +320,18 @@ function PartyByKind() {
       const whole = row[0]
       totals.set(kind, (totals.get(kind) ?? 0) + whole)
       const m = votes.get(kind) ?? new Map<Line, number>()
+      const own = ownVotes.get(kind) ?? new Map<Line, number>()
       let named = 0
-      for (const line of KIND_LINES) {
-        const index = d.families.indexOf(line)
+      d.families.forEach((line, index) => {
         const v = ((row[index + 1] ?? 0) / 1000) * whole
+        own.set(line, (own.get(line) ?? 0) + v)
+        if (!KIND_LINES.includes(line)) return
         named += v
         m.set(line, (m.get(line) ?? 0) + v)
-      }
+      })
       m.set('other', (m.get('other') ?? 0) + Math.max(0, whole - named))
       votes.set(kind, m)
+      ownVotes.set(kind, own)
     }
     const mayors = new Map<string, Map<Line, number>>()
     const folded = new Map<Line, number>()
@@ -325,16 +340,19 @@ function PartyByKind() {
       const kind = d.kinds[siruta]
       if (!kind || kind === 'B' || row[0] === '~tie') continue
       const m = mayors.get(kind) ?? new Map<Line, number>()
+      const own = ownMayors.get(kind) ?? new Map<Line, number>()
       const raw = lineOf(row[0])
       const line = fold(raw)
       if (line === 'other') folded.set(raw, (folded.get(raw) ?? 0) + 1)
       m.set(line, (m.get(line) ?? 0) + 1)
+      own.set(raw, (own.get(raw) ?? 0) + 1)
       mayors.set(kind, m)
+      ownMayors.set(kind, own)
     }
-    return { votes, totals, mayors, folded }
+    return { votes, totals, mayors, folded, ownVotes, ownMayors }
   }, [data.data, results.data, scope])
-  if (!model) return <div className="h-48 border border-dashed" />
-  const bar = (m: Map<Line, number> | undefined, order: readonly Line[], kind: string, unit: 'votes' | 'mayors') => {
+  if (!model) return <ChartPlaceholder className="h-48" failed={data.isError || results.isError || scope.failed} />
+  const bar = (m: Map<Line, number> | undefined, order: readonly Line[], kind: string, unit: 'votes' | 'mayors', dimmed: (key: string) => boolean) => {
     const whole = m ? [...m.values()].reduce((s, v) => s + v, 0) : 0
     return (
       <span className="flex h-5 w-full overflow-hidden rounded-[2px] bg-muted">
@@ -346,17 +364,68 @@ function PartyByKind() {
           return (
             <span
               key={line}
-              className={cn('flex h-full items-center justify-center overflow-hidden border-r border-background/60 text-[10px] font-semibold', style.swatch, onSwatch(line))}
+              className={cn(
+                'flex h-full items-center justify-center overflow-hidden border-r border-background/60 text-[10px] font-semibold transition-opacity motion-reduce:transition-none',
+                style.swatch,
+                onSwatch(line),
+                dimmed(line) && 'opacity-30',
+              )}
               style={{ width: `${(100 * v).toFixed(2)}%` }}
               onPointerMove={(event) => move(event, `${style.label} · ${kind}`, [unit === 'votes' ? t`${pct(v)} din voturi` : t`${format.n(n)} primării · ${pct(v)}`])}
             >
-              {v >= 0.09 ? pct(v, 0) : null}
+              {/* A faded segment drops its label: faded text would be unreadable, and the tip still has it. */}
+              {v >= 0.09 && !dimmed(line) ? pct(v, 0) : null}
             </span>
           )
         })}
       </span>
     )
   }
+  /**
+   * The party in focus beside each kind of place, so the kinds compare at a glance: its own share or mayoralties (on the bar's whole),
+   * "în „Alte partide"" after it when the bar folds it there, and the cards' words when it has none — never a zero, never a fold of nothing.
+   */
+  const readout = (m: Map<Line, number> | undefined, own: Map<Line, number> | undefined, order: readonly Line[], unit: 'votes' | 'mayors') => {
+    if (focus === null || !m) return null
+    const style = lineStyle(focus)
+    const whole = [...m.values()].reduce((s, v) => s + v, 0)
+    const n = own?.get(focus) ?? 0
+    const value = unit === 'votes' ? pct(share(n, whole)) : t`${format.n(n)} din ${format.n(whole)}`
+    return (
+      <span className="flex min-w-0 items-center gap-1.5 text-xs tabular-nums text-foreground">
+        <span className={cn('size-2.5 shrink-0 rounded-[2px]', style.swatch)} aria-hidden="true" />
+        <span className="truncate">
+          {style.label}{' '}
+          {n <= 0 ? (
+            <span className="text-muted-foreground">{unit === 'votes' ? t`nu e în date` : t`nu apare separat`}</span>
+          ) : order.includes(focus) ? (
+            <strong className="font-semibold">{value}</strong>
+          ) : (
+            <>
+              <strong className="font-semibold">{value}</strong>
+              <span className="text-muted-foreground">{t`, în „Alte partide"`}</span>
+            </>
+          )}
+        </span>
+      </span>
+    )
+  }
+  const row = (
+    kind: (typeof KIND_ORDER)[number],
+    m: Map<Line, number> | undefined,
+    own: Map<Line, number> | undefined,
+    order: readonly Line[],
+    unit: 'votes' | 'mayors',
+    dimmed: (key: string) => boolean,
+  ) => (
+    <li key={kind}>
+      <span className="mb-1 flex items-baseline justify-between gap-3">
+        <span className="text-sm text-foreground">{kindLabel(kind)}</span>
+        {readout(m, own, order, unit)}
+      </span>
+      {bar(m, order, kindLabel(kind), unit, dimmed)}
+    </li>
+  )
   return (
     <TipBox boxRef={boxRef} tip={tip}>
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2" onPointerLeave={leave}>
@@ -364,20 +433,14 @@ function PartyByKind() {
           <FigureCaption>
             <Trans>Camera 2020, % din voturi</Trans>
           </FigureCaption>
-          <ol className="space-y-3">
-            {KIND_ORDER.map((kind) => (
-              <li key={kind}>
-                <span className="mb-1 block text-sm text-foreground">{kindLabel(kind)}</span>
-                {bar(model.votes.get(kind), [...KIND_LINES, 'other'], kindLabel(kind), 'votes')}
-              </li>
-            ))}
-          </ol>
+          <ol className="space-y-3">{KIND_ORDER.map((kind) => row(kind, model.votes.get(kind), model.ownVotes.get(kind), [...KIND_LINES, 'other'], 'votes', dimVotes))}</ol>
           <Legend
             className="mt-4"
             items={[...KIND_LINES, 'other' as const].map((line) => ({
               key: line,
               label: lineStyle(line).label,
               swatch: lineStyle(line).swatch,
+              opacity: dimVotes(line) ? 0.3 : undefined,
             }))}
           />
         </figure>
@@ -385,20 +448,14 @@ function PartyByKind() {
           <FigureCaption>
             <Trans>Primării 2024, după cel mai votat</Trans>
           </FigureCaption>
-          <ol className="space-y-3">
-            {KIND_ORDER.map((kind) => (
-              <li key={kind}>
-                <span className="mb-1 block text-sm text-foreground">{kindLabel(kind)}</span>
-                {bar(model.mayors.get(kind), WIN_LINES, kindLabel(kind), 'mayors')}
-              </li>
-            ))}
-          </ol>
+          <ol className="space-y-3">{KIND_ORDER.map((kind) => row(kind, model.mayors.get(kind), model.ownMayors.get(kind), WIN_LINES, 'mayors', dimMayors))}</ol>
           <Legend
             className="mt-4"
             items={WIN_LINES.map((line) => ({
               key: line,
               label: lineStyle(line).label,
               swatch: lineStyle(line).swatch,
+              opacity: dimMayors(line) ? 0.3 : undefined,
               value: line === 'other' ? foldedLabel(model.folded, format.n) : undefined,
             }))}
           />

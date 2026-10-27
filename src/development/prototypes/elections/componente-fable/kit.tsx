@@ -87,6 +87,46 @@ export function FigureCaption({ children, className }: { readonly children: Reac
   return <p className={cn('mb-3 text-sm font-medium text-foreground', className)}>{children}</p>
 }
 
+/**
+ * Where a chart will be once its rows arrive: one dashed frame, the same
+ * words, at the chart's own height — in every panel. `failed` says the rows
+ * did not load (never "loading" for ever); `children` replace the words (an
+ * empty scope, the map's own wording). No live region: the frame is mounted
+ * with its words and unmounted when the chart comes, so one would announce
+ * nothing.
+ */
+export function ChartPlaceholder({ className, failed = false, children }: { readonly className?: string; readonly failed?: boolean; readonly children?: ReactNode }) {
+  return (
+    <div className={cn('flex items-center justify-center border border-dashed border-border px-4 text-center text-sm text-muted-foreground', className)}>
+      {children ?? (failed ? <Trans>Datele nu s-au încărcat.</Trans> : <Trans>Se încarcă…</Trans>)}
+    </div>
+  )
+}
+
+/**
+ * A panel's foot, the same under a gallery variant and a page section: its
+ * plain line (or the words „Despre date"), then every caveat behind the one
+ * amber marker.
+ */
+export function PanelFoot({ foot, notes, className }: { readonly foot?: ReactNode; readonly notes?: readonly ReactNode[]; readonly className?: string }) {
+  const list = notes ?? []
+  if (!foot && list.length === 0) return null
+  // Plain text, not a flex row: the marker follows the sentence's last word instead of dropping to a line of its own on a phone.
+  return (
+    <p className={cn('mt-5 text-xs leading-relaxed text-muted-foreground', className)}>
+      {foot ?? <Trans>Despre date</Trans>}
+      {list.length > 0 ? (
+        <>
+          {' '}
+          <span className="inline-flex align-middle">
+            <CaveatsMarker notes={list} />
+          </span>
+        </>
+      ) : null}
+    </p>
+  )
+}
+
 // ─────────────────────────────────────────────────── panels ──
 
 /**
@@ -229,6 +269,8 @@ export function useSirutaCounty(): ReadonlyMap<string, string> | null {
 
 export interface Scope {
   readonly ready: boolean
+  /** A county was asked for and the geometry that maps places to counties failed to load: never ready. */
+  readonly failed: boolean
   readonly county: string | null
   readonly has: (siruta: string) => boolean
 }
@@ -241,11 +283,12 @@ export interface Scope {
 export function useInScope(): Scope {
   const county = useCountyScope()
   const counties = useSirutaCounty()
+  const geometryFailed = useGeometry().isError
   return useMemo(() => {
-    if (county === null) return { ready: true, county, has: (siruta: string) => !BUCHAREST_SECTORS.has(siruta) }
-    if (!counties) return { ready: false, county, has: () => false }
-    return { ready: true, county, has: (siruta: string) => counties.get(siruta) === county }
-  }, [county, counties])
+    if (county === null) return { ready: true, failed: false, county, has: (siruta: string) => !BUCHAREST_SECTORS.has(siruta) }
+    if (!counties) return { ready: false, failed: geometryFailed, county, has: () => false }
+    return { ready: true, failed: false, county, has: (siruta: string) => counties.get(siruta) === county }
+  }, [county, counties, geometryFailed])
 }
 
 /** Whether a row for `key` is dimmed: only when the focus is one of the keys drawn, and not this one. */
@@ -297,12 +340,7 @@ export function Option({
       </h3>
       <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{question}</p>
       <div className="mt-6">{children}</div>
-      {foot || list.length > 0 ? (
-        <p className="mt-3 flex min-h-8 flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
-          <span>{foot ?? <Trans>Despre date</Trans>}</span>
-          {list.length > 0 ? <CaveatsMarker notes={list} /> : null}
-        </p>
-      ) : null}
+      <PanelFoot foot={foot} notes={list} />
     </section>
   )
 }
@@ -400,6 +438,44 @@ export function useTip() {
   return { boxRef, tip, move, leave } as const
 }
 
+/** The width of every chart's hover panel. */
+export const TIP_WIDTH = 208
+
+/**
+ * Where a hover panel's left edge goes: beside the pointer, or to its left when it would leave the chart's box; when neither side has
+ * room (a phone), on the side with more room, kept inside the box, so it covers as little as it can of what is hovered.
+ */
+export function tipLeft(x: number, boxWidth: number): number {
+  const right = x + 14
+  const left = x - TIP_WIDTH - 8
+  if (boxWidth <= 0 || right + TIP_WIDTH <= boxWidth) return right
+  if (left >= 0) return left
+  return boxWidth - x > x ? Math.max(0, boxWidth - TIP_WIDTH) : 0
+}
+
+/**
+ * The one floating panel every hand-drawn chart answers hover with (the
+ * columns, the maps, the lines, the waffles): the same frame, type and shadow,
+ * placed by the caller inside its chart's box.
+ */
+export function TipPanel({ left, top, children }: { readonly left: number; readonly top: number; readonly children: ReactNode }) {
+  return (
+    <div className="pointer-events-none absolute z-10 border bg-popover p-2.5 text-xs leading-snug text-foreground shadow-md" style={{ width: TIP_WIDTH, left, top }}>
+      {children}
+    </div>
+  )
+}
+
+/** A hover panel's head: what is hovered, in bold, with an optional quiet line under it (the county of a locality). */
+export function TipTitle({ children, note }: { readonly children: ReactNode; readonly note?: ReactNode }) {
+  return (
+    <>
+      <p className="font-semibold text-foreground">{children}</p>
+      {note ? <p className="text-muted-foreground">{note}</p> : null}
+    </>
+  )
+}
+
 /** A chart's box: measured for its width, and the frame its tip floats in. */
 export function TipBox({
   boxRef,
@@ -420,24 +496,16 @@ export function TipBox({
     observer.observe(element)
     return () => observer.disconnect()
   }, [boxRef])
-  const tipW = 208
-  const flip = tip !== null && width > 0 && tip.x + 14 + tipW > width
+  const hasRows = tip !== null && tip.rows !== undefined && tip.rows.length > 0
   return (
     <div ref={boxRef} className={cn('relative', className)}>
       {children}
       {tip ? (
-        <div
-          className="pointer-events-none absolute z-10 border bg-popover p-2.5 text-xs shadow-md"
-          style={{
-            width: tipW,
-            left: flip ? Math.max(0, tip.x - tipW - 8) : tip.x + 14,
-            top: tip.y + 12,
-          }}
-        >
-          <p className="font-semibold text-foreground">{tip.title}</p>
-          {tip.rows && tip.rows.length > 0 ? (
+        <TipPanel left={tipLeft(tip.x, width)} top={tip.y + 12}>
+          <TipTitle>{tip.title}</TipTitle>
+          {hasRows ? (
             <dl className="mt-1.5 grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-0.5">
-              {tip.rows.map((row) => (
+              {tip.rows?.map((row) => (
                 <div key={row.label} className={cn('contents', row.ruled && '[&>*]:mt-1 [&>*]:border-t [&>*]:pt-1')}>
                   <dt className="text-muted-foreground">{row.label}</dt>
                   <dd className={cn('text-right tabular-nums text-foreground', row.strong && 'font-semibold')}>{row.value}</dd>
@@ -446,11 +514,11 @@ export function TipBox({
             </dl>
           ) : null}
           {tip.lines.map((line) => (
-            <p key={line} className={cn('text-foreground', tip.rows && tip.rows.length > 0 ? 'mt-1.5 text-muted-foreground' : 'mt-0.5')}>
+            <p key={line} className={cn('tabular-nums', hasRows ? 'mt-1.5 text-muted-foreground' : 'mt-0.5 text-foreground')}>
               {line}
             </p>
           ))}
-        </div>
+        </TipPanel>
       ) : null}
     </div>
   )
@@ -622,8 +690,6 @@ export function LineChart({
     setHoverX(best)
   }
   const hovered = hoverX === null ? [] : series.map((s) => ({ s, p: s.points.find((p) => p.x === hoverX) })).filter((row) => row.p)
-  const tipW = 192
-  const tipLeft = hoverX === null ? 0 : sx(hoverX) + 12 + tipW > width ? Math.max(0, sx(hoverX) - tipW - 12) : sx(hoverX) + 12
 
   return (
     <div ref={ref} className="relative w-full">
@@ -743,18 +809,21 @@ export function LineChart({
           : null}
       </svg>
       {hoverX !== null && hovered.length > 0 ? (
-        <div className="pointer-events-none absolute z-10 border bg-popover p-2.5 text-xs shadow-md" style={{ width: tipW, left: tipLeft, top: margin.top }}>
-          <p className="mb-1 font-semibold text-foreground">{hoverX}</p>
-          {[...hovered]
-            .sort((a, b) => (b.p?.y ?? 0) - (a.p?.y ?? 0))
-            .map(({ s, p }) => (
-              <p key={s.key} className="flex items-center gap-1.5">
-                <span className={cn('size-2 shrink-0 rounded-[1px]', s.swatch)} aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate text-foreground">{s.label}</span>
-                <span className="tabular-nums text-foreground">{format(p?.y ?? 0)}</span>
-              </p>
-            ))}
-        </div>
+        <TipPanel left={tipLeft(sx(hoverX), width)} top={margin.top}>
+          <TipTitle>{hoverX}</TipTitle>
+          <div className="mt-1 space-y-0.5">
+            {[...hovered]
+              .sort((a, b) => (b.p?.y ?? 0) - (a.p?.y ?? 0))
+              .map(({ s, p }) => (
+                // A party out of focus reads quieter in muted text (still legible), its swatch faded like its line.
+                <p key={s.key} className={cn('flex items-center gap-1.5', dimmed(s.key) && 'text-muted-foreground')}>
+                  <span className={cn('size-2 shrink-0 rounded-[1px]', s.swatch, dimmed(s.key) && 'opacity-40')} aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">{s.label}</span>
+                  <span className="tabular-nums">{format(p?.y ?? 0)}</span>
+                </p>
+              ))}
+          </div>
+        </TipPanel>
       ) : null}
     </div>
   )
@@ -830,6 +899,7 @@ export function ClassMap({
   read,
   label,
   ready = true,
+  failed = false,
   className,
   aside,
   legend,
@@ -839,6 +909,8 @@ export function ClassMap({
   readonly read: (index: number, geometry: UatMapGeometry) => MapReading
   readonly label: string
   readonly ready?: boolean
+  /** The caller's rows failed to load: the frame says so instead of loading for ever. */
+  readonly failed?: boolean
   readonly className?: string
   /** Controls or a short reading, above the legend in the side column. */
   readonly aside?: ReactNode
@@ -938,9 +1010,9 @@ export function ClassMap({
   if (!geometry.data || !model) {
     return (
       <div className={cn('flex flex-col gap-6 lg:flex-row', className)}>
-        <div className="flex aspect-[4000/2827] w-full min-w-0 items-center justify-center border border-dashed text-sm text-muted-foreground">
-          {geometry.isError ? <Trans>Harta nu s-a încărcat.</Trans> : <Trans>Se încarcă harta…</Trans>}
-        </div>
+        <ChartPlaceholder className="aspect-[4000/2827] w-full min-w-0">
+          {geometry.isError || failed ? <Trans>Harta nu s-a încărcat.</Trans> : <Trans>Se încarcă harta…</Trans>}
+        </ChartPlaceholder>
         {side}
       </div>
     )
@@ -976,21 +1048,14 @@ export function ClassMap({
           onPointerLeave={() => setHover(null)}
         />
         {hover && reading ? (
-          <div
-            className="pointer-events-none absolute z-10 w-56 border bg-popover p-3 text-sm shadow-md"
-            style={{
-              left: hover.x + 14 + 224 > svgW ? Math.max(0, hover.x - 238) : hover.x + 14,
-              top: hover.y + 14,
-            }}
-          >
-            <p className="font-semibold text-foreground">{g.name[hover.index]}</p>
-            <p className="text-xs text-muted-foreground">{countyName(g.county[hover.index] ?? '')}</p>
+          <TipPanel left={tipLeft(hover.x, svgW)} top={hover.y + 12}>
+            <TipTitle note={countyName(g.county[hover.index] ?? '')}>{g.name[hover.index]}</TipTitle>
             {reading.lines.map((line) => (
-              <p key={line} className="mt-1 text-xs text-foreground">
+              <p key={line} className="mt-1 tabular-nums">
                 {line}
               </p>
             ))}
-          </div>
+          </TipPanel>
         ) : null}
       </div>
       {side}

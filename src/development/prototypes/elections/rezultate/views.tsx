@@ -18,7 +18,7 @@ import { useEvolutionPanels } from '../componente-fable/evolutie'
 import { galleryNotes } from '../componente-fable/gallery'
 import { useMapPanels } from '../componente-fable/harti'
 import { useRacePanels } from '../componente-fable/intreceri'
-import { CountyScopeProvider, PartyFocusProvider, useInScope, type Panel } from '../componente-fable/kit'
+import { CountyScopeProvider, PanelFoot, PartyFocusProvider, useInScope, type Panel } from '../componente-fable/kit'
 import { useMandatePanels } from '../componente-fable/mandate'
 import {
   byLine,
@@ -571,7 +571,8 @@ function ViewBar({ state, move }: { readonly state: PageState; readonly move: (p
         <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground lg:block lg:max-w-md">
           {state.county ? t`Rezultatele alegerilor, ${countyName(state.county)}` : t`Rezultatele alegerilor`}
         </span>
-        <ol className="hide-scrollbar -mx-1 flex min-w-0 flex-1 gap-5 overflow-x-auto px-1 sm:gap-6 lg:flex-none lg:justify-end lg:ml-auto">
+        {/* On a phone the five words fit the width without their marks (a step smaller and closer under 360 px), so no view hides past the edge. */}
+        <ol className="hide-scrollbar -mx-1 flex min-w-0 flex-1 justify-between gap-2 overflow-x-auto min-[360px]:gap-3 px-1 sm:justify-start sm:gap-6 lg:flex-none lg:justify-end lg:ml-auto">
           {VIEWS.map(({ key, icon: Icon }) => {
             const active = state.view === key
             return (
@@ -586,11 +587,11 @@ function ViewBar({ state, move }: { readonly state: PageState; readonly move: (p
                     if (figures && figures.getBoundingClientRect().top < 0) figures.scrollIntoView({ block: 'start' })
                   }}
                   className={cn(
-                    'flex min-h-11 items-center gap-1.5 whitespace-nowrap border-b-2 text-sm leading-tight transition-colors',
+                    'flex min-h-11 items-center gap-1.5 whitespace-nowrap border-b-2 text-[13px] leading-tight min-[360px]:text-sm transition-colors',
                     active ? 'border-primary font-medium text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
-                  <Icon className={cn('size-4 shrink-0', active && 'text-primary')} aria-hidden="true" />
+                  <Icon className={cn('hidden size-4 shrink-0 sm:block', active && 'text-primary')} aria-hidden="true" />
                   {viewLabel(key)}
                 </button>
               </li>
@@ -827,18 +828,6 @@ function Figures({ state }: { readonly state: PageState }) {
 
 // ──────────────────────────────────────────────────────── the answer ──
 
-/** One answer's foot: its plain line, then its caveats behind the marker. */
-function PanelFoot({ panel }: { readonly panel: Panel }) {
-  const notes = panel.notes ?? []
-  if (!panel.foot && notes.length === 0) return null
-  return (
-    <p className="mt-6 flex min-h-8 flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
-      <span>{panel.foot ?? <Trans>Despre date</Trans>}</span>
-      {notes.length > 0 ? <CaveatsMarker notes={notes} /> : null}
-    </p>
-  )
-}
-
 /**
  * A ref that writes its element's height (in px) as a CSS variable on the
  * page root, and keeps it current as the element wraps or the fonts load.
@@ -944,16 +933,17 @@ function SectionsAnswer({ state, panels }: { readonly state: PageState; readonly
     // On a phone the row scrolls sideways: keep the section being read in sight (sideways only — never the page).
     const nav = navRef.current
     const link = active ? nav?.querySelector<HTMLElement>(`[data-section="${active}"]`) : null
-    if (nav && link) nav.scrollTo({ left: Math.max(0, link.offsetLeft - 16), behavior: 'smooth' })
+    if (nav && link) nav.scrollTo({ left: Math.max(0, link.offsetLeft - 20), behavior: 'smooth' })
   }, [active, navRef])
   return (
     <section className="border-b" aria-label={viewLabel(state.view)}>
-      <RuledFrame className="py-10 sm:py-14">
+      {/* The links sit close under the figures (they are navigation, with the view bar), the first section a step lower. */}
+      <RuledFrame className="pb-10 pt-4 sm:pb-14 sm:pt-5">
         {/* Sticky under the view bar; the page root carries both heights (--bar-h, --jump-h) for the sections' scroll margin. */}
         <nav
           ref={navRef}
           aria-label={t`Secțiunile`}
-          className="hide-scrollbar sticky z-10 -mx-4 flex gap-5 overflow-x-auto bg-background/90 px-4 shadow-[inset_0_-1px_0_hsl(var(--border))] backdrop-blur sm:mx-0 sm:px-0"
+          className="hide-scrollbar sticky z-10 -mx-5 flex gap-5 overflow-x-auto bg-background/90 px-5 text-sm shadow-[inset_0_-1px_0_hsl(var(--border))] backdrop-blur sm:mx-0 sm:gap-6 sm:px-0"
           style={{ top: 'var(--bar-h, 0px)' }}
         >
           {tabs.map((tab) => {
@@ -1007,7 +997,7 @@ function SectionsAnswer({ state, panels }: { readonly state: PageState; readonly
                   </p>
                 ) : null}
                 <div className="mt-6">{index === 0 ? panel.body : <Deferred>{panel.body}</Deferred>}</div>
-                <PanelFoot panel={panel} />
+                <PanelFoot foot={panel.foot} notes={panel.notes} />
               </section>
             )
           })}

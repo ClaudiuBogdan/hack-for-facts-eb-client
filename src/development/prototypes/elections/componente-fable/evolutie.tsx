@@ -66,6 +66,18 @@ function evolutionData(county: string | null): EvolutionData {
 
 const useEvolutionData = () => evolutionData(useCountyScope())
 
+/**
+ * Whether a county's Chamber year folds a line into „Alte partide": its rows keep the county's first seven parties, so a party on that
+ * year's national tally is folded there; one the national tally lacks did not run on a list of its own — never a fold of nothing.
+ */
+function chamberFolded(county: string | null, year: string, line: Line): boolean {
+  const key = CHAMBER_YEARS.find((y) => y === year)
+  return county !== null && key !== undefined && (byLine(EVOLUTION.chamber[key].national).get(line) ?? 0) > 0
+}
+
+/** Why a Chamber year has no value for a line, in the cards' and the columns' words. */
+const chamberMissingText = (county: string | null, year: string, line: Line) => (chamberFolded(county, year, line) ? t`în „Alte partide"` : t`nu e în date`)
+
 const GAP_LABEL = () => t`nu e în date`
 
 /** Text on a party colour: the two light fills take the dark foreground. */
@@ -198,13 +210,32 @@ interface ColumnSpec {
   readonly label: string
   readonly counts: readonly PartyCount[]
   readonly note?: string
+  /** Whether a line this column has no row for is folded into its „Alte partide" (a county's Chamber year), rather than absent. */
+  readonly folds?: (line: Line) => boolean
 }
 
-/** Each election one column of 100%, the lines stacked in the same order, labels inside when there is room; hover names every segment. */
-function StackedColumns({ columns, lines, unit }: { readonly columns: readonly ColumnSpec[]; readonly lines: readonly Line[]; readonly unit: 'votes' | 'seats' }) {
+/**
+ * Each election one column of 100%, the lines stacked in the same order, labels inside when there is room; hover names every segment.
+ * A party in focus keeps its colour, the rest fade, and its value is written under every column: `missing` where a column lacks it, or
+ * „în „Alte partide"" where the column folds it there — and then that segment keeps its colour too.
+ */
+function StackedColumns({
+  columns,
+  lines,
+  unit,
+  missing,
+}: {
+  readonly columns: readonly ColumnSpec[]
+  readonly lines: readonly Line[]
+  readonly unit: 'votes' | 'seats'
+  readonly missing: string
+}) {
   const pct = usePct()
   const format = useFormat()
   const { boxRef, tip, move, leave } = useTip()
+  const dimmed = useDimmed(lines)
+  const focus = usePartyFocus()?.value ?? null
+  const focused = focus !== null && lines.includes(focus) ? focus : null
   const order: readonly Line[] = [...lines, 'unlinked', 'other']
   const tallies = columns.map((column) => {
     const whole = sum(column.counts)
@@ -215,43 +246,65 @@ function StackedColumns({ columns, lines, unit }: { readonly columns: readonly C
         return [line, n, share(n, whole)] as const
       })
       .filter(([, n]) => n > 0)
-    return { column, whole, rows }
+    const mine = focused === null ? undefined : rows.find(([line]) => line === focused)
+    const folded = focused !== null && mine === undefined && (column.folds?.(focused) ?? false)
+    return { column, whole, rows, mine, folded }
   })
   const present = order.filter((line) => tallies.some(({ rows }) => rows.some(([l]) => l === line)))
+  // „Alte partide" holds the party in focus in a column that folds it: it keeps its colour there (and in the legend).
+  const anyFolded = tallies.some(({ folded }) => folded)
+  const fades = (line: Line, folded: boolean) => dimmed(line) && !(folded && line === 'other')
   return (
     <TipBox boxRef={boxRef} tip={tip}>
       <div className="grid grid-cols-3 gap-3 sm:gap-5" onPointerLeave={leave}>
-        {tallies.map(({ column, whole, rows }) => (
-          <figure key={column.key} className="min-w-0">
-            <div
-              className="flex h-72 flex-col-reverse overflow-hidden rounded-[2px] bg-muted"
-              role="img"
-              aria-label={`${column.label}: ${rows.map(([line, n, value]) => `${lineStyle(line).label} ${unit === 'votes' ? pct(value) : format.n(n)}`).join(', ')}`}
-            >
-              {rows.map(([line, n, value]) => {
-                const style = lineStyle(line)
-                return (
-                  <div
-                    key={line}
-                    className={cn(
-                      'flex shrink-0 items-center justify-center overflow-hidden border-t border-background/60 text-[11px] font-semibold',
-                      style.swatch,
-                      onSwatch(line),
+        {tallies.map(({ column, whole, rows, mine, folded }) => {
+          return (
+            <figure key={column.key} className="min-w-0">
+              <div
+                className="flex h-72 flex-col-reverse overflow-hidden rounded-[2px] bg-muted"
+                role="img"
+                aria-label={`${column.label}: ${rows.map(([line, n, value]) => `${lineStyle(line).label} ${unit === 'votes' ? pct(value) : format.n(n)}`).join(', ')}`}
+              >
+                {rows.map(([line, n, value]) => {
+                  const style = lineStyle(line)
+                  return (
+                    <div
+                      key={line}
+                      className={cn(
+                        'flex shrink-0 items-center justify-center overflow-hidden border-t border-background/60 text-[11px] font-semibold transition-opacity motion-reduce:transition-none',
+                        style.swatch,
+                        onSwatch(line),
+                        fades(line, folded) && 'opacity-30',
+                      )}
+                      style={{ height: `${(100 * value).toFixed(2)}%` }}
+                      onPointerMove={(event) =>
+                        move(event, `${style.label} · ${column.label}`, [unit === 'votes' ? t`${pct(value)} din voturi` : t`${format.n(n)} primării · ${pct(value)}`])
+                      }
+                    >
+                      {/* A faded segment drops its label: faded text would be unreadable, and the tip still has it. */}
+                      {value >= 0.06 && !fades(line, folded) ? `${style.label} ${pct(value, 0)}` : null}
+                    </div>
+                  )
+                })}
+              </div>
+              <figcaption className="mt-2 text-sm font-semibold tabular-nums text-foreground">{column.label}</figcaption>
+              {focused === null ? null : (
+                <p className="mt-0.5 flex min-w-0 items-start gap-1.5 text-xs leading-snug tabular-nums text-foreground">
+                  <span className={cn('mt-[3px] size-2.5 shrink-0 rounded-[2px]', lineStyle(focused).swatch)} aria-hidden="true" />
+                  <span className="min-w-0">
+                    {lineStyle(focused).label}{' '}
+                    {mine ? (
+                      <strong className="font-semibold">{unit === 'votes' ? pct(mine[2]) : t`${format.n(mine[1])} din ${format.n(whole)}`}</strong>
+                    ) : (
+                      <span className="text-muted-foreground">{folded ? t`în „Alte partide"` : missing}</span>
                     )}
-                    style={{ height: `${(100 * value).toFixed(2)}%` }}
-                    onPointerMove={(event) =>
-                      move(event, `${style.label} · ${column.label}`, [unit === 'votes' ? t`${pct(value)} din voturi` : t`${format.n(n)} primării · ${pct(value)}`])
-                    }
-                  >
-                    {value >= 0.06 ? `${style.label} ${pct(value, 0)}` : null}
-                  </div>
-                )
-              })}
-            </div>
-            <figcaption className="mt-2 text-sm font-semibold tabular-nums text-foreground">{column.label}</figcaption>
-            <p className="text-xs tabular-nums text-muted-foreground">{column.note ?? (unit === 'votes' ? t`${format.n(whole)} voturi` : t`${format.n(whole)} primării`)}</p>
-          </figure>
-        ))}
+                  </span>
+                </p>
+              )}
+              <p className="text-xs tabular-nums text-muted-foreground">{column.note ?? (unit === 'votes' ? t`${format.n(whole)} voturi` : t`${format.n(whole)} primării`)}</p>
+            </figure>
+          )
+        })}
       </div>
       <Legend
         className="mt-3"
@@ -259,6 +312,7 @@ function StackedColumns({ columns, lines, unit }: { readonly columns: readonly C
           key: line,
           label: lineStyle(line).label,
           swatch: lineStyle(line).swatch,
+          opacity: fades(line, anyFolded) ? 0.3 : undefined,
         }))}
       />
     </TipBox>
@@ -400,8 +454,6 @@ function PartyCards() {
   const focus = usePartyFocus()?.value ?? null
   const dimmed = useDimmed(CARD_LINES)
   const lines = focus !== null && CARD_LINES.includes(focus) ? [focus, ...CARD_LINES.filter((l) => l !== focus)] : CARD_LINES
-  // In a county the Chamber rows keep its first seven parties: a missing one is folded into „Alte partide", not absent.
-  const chamberMissing = data.county ? t`în „Alte partide"` : t`nu e în date`
   const chamberLabel = t`Camera Deputaților · din voturi`
   const mayorLabel = data.county ? t`Primării câștigate în ${countyName(data.county)}` : t`Primării câștigate, fără București`
   const partialNote = t`2016: din voturile partidelor identificate, deci puțin peste procentul oficial.`
@@ -422,15 +474,17 @@ function PartyCards() {
           const lastShare = shares[2]?.value ?? null
           const lastMayors = mayors[2]?.value ?? null
           const name = style.label
+          // In a county the Chamber rows keep its first seven parties: a party missing there is folded into „Alte partide" only in a year it ran.
+          const chamberMissing = (year: string) => chamberMissingText(data.county, year, line)
+          const previousYear = shares[shares.length - 2]?.year ?? ''
           const chamberTip = {
             title: t`${name} · Camera Deputaților`,
             rows: tipRows(
               shares,
               (y) => `${pct(y.value)}${y.partial ? '*' : ''}`,
               (a, b) => signed.points(a - b),
-              // In a county a party outside its first seven is folded, in any year: the same words for each.
-              () => chamberMissing,
-              data.county ? t`fără comparație` : t`prima dată în date`,
+              (y) => chamberMissing(y.year),
+              chamberFolded(data.county, previousYear, line) ? t`fără comparație` : t`prima dată în date`,
             ),
             lines: [t`Procent din voturile valabile.`, ...(shares.some((y) => y.partial && y.value !== null) ? [t`* ${partialNote}`] : [])],
           }
@@ -460,7 +514,7 @@ function PartyCards() {
                   swatch={style.swatch}
                   value={
                     lastShare === null ? (
-                      <span className={absent}>{t`2020: ${chamberMissing}`}</span>
+                      <span className={absent}>{t`2020: ${chamberMissing('2020')}`}</span>
                     ) : (
                       <span className={big}>
                         {pct(lastShare)} <span className="text-sm font-normal text-muted-foreground">{t`în 2020`}</span>
@@ -471,7 +525,7 @@ function PartyCards() {
                   bar={{
                     text: (v) => pct(v, 0),
                     title: (year) => t`${name} · Camera, ${year}`,
-                    lines: (y) => (y.value === null ? [chamberMissing] : [t`${pct(y.value)} din voturi`, ...(y.partial ? [partialNote] : [])]),
+                    lines: (y) => (y.value === null ? [chamberMissing(y.year)] : [t`${pct(y.value)} din voturi`, ...(y.partial ? [partialNote] : [])]),
                   }}
                   onTip={move}
                 />
@@ -710,6 +764,7 @@ export function useEvolutionPanels(): readonly Panel[] {
     label: y,
     counts: data.chamberTally(y) ?? [],
     note: EVOLUTION.chamber[y].basis === 'linked' ? t`doar partidele identificate` : undefined,
+    folds: (line: Line) => chamberFolded(data.county, y, line),
   }))
   const mayorCols: readonly ColumnSpec[] = MAYOR_YEARS.map((y) => ({
     key: y,
@@ -766,13 +821,13 @@ export function useEvolutionPanels(): readonly Panel[] {
             <FigureCaption>
               <Trans>Camera, voturi</Trans>
             </FigureCaption>
-            <StackedColumns columns={chamberCols} lines={CHAMBER_LINES} unit="votes" />
+            <StackedColumns columns={chamberCols} lines={CHAMBER_LINES} unit="votes" missing={t`nu e în date`} />
           </figure>
           <figure>
             <FigureCaption>
               <Trans>Primării</Trans>
             </FigureCaption>
-            <StackedColumns columns={mayorCols} lines={MAYOR_LINES} unit="seats" />
+            <StackedColumns columns={mayorCols} lines={MAYOR_LINES} unit="seats" missing={t`nu apare separat`} />
           </figure>
         </div>
       ),
