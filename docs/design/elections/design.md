@@ -1161,8 +1161,9 @@ The owner liked every gallery option and wants them all on one analytics page.
   - a sticky bar with the sections and the party focus;
   - five sections: parties over time, mandates, the map, turnout, mayoral races.
 - **URL state:**
-  - `partid` (the focus) dims the other parties in the lines, the cards and the
-    gain/loss bars, and drives the party maps' choice;
+  - `partid` (the focus) dims the other parties in the lines, the cards, the
+    gain/loss bars, the 100 % columns and the place-kind bars, and drives the
+    party maps' choice;
   - `harta` picks the map mode (strength, swing, flips with the flow diagram,
     turnout, margins), so one map takes the place of six.
 - **Phone:** a toggle whose labels don't fit becomes a list below `md`
@@ -1213,7 +1214,30 @@ The owner liked every gallery option and wants them all on one analytics page.
     `DOMESTIC_TURNOUT_2020`);
   - home vs abroad uses the summary's complete 2020 tallies, not the folded
     evolution extract.
-- **Not yet:** the party focus on the stacked and place-kind bars.
+- **Party focus on the stacked and place-kind bars (2026-10-27):** the 100 %
+  columns and the town/village bars now follow `partid` like the other charts:
+  - the other parties fade, the focused one keeps its colour;
+  - its value is written under each column and beside each kind of place:
+    the vote share, or the mayoralties as "17 din 75";
+  - a column without the party says why, in the cards' words: "nu apare
+    separat" for mayoralties; for the Chamber "nu e în date", or in a county
+    "în „Alte partide"" only in a year the party is on the national tally (a
+    county keeps its first seven parties), and then that column's „Alte
+    partide" keeps its colour;
+  - beside the kinds of place the readout reads the party's own votes and
+    mayoralties, before the bar folds them. Where a bar folds the party into
+    „Alte partide" (the 2024 mayors bar keeps PSD, PNL, UDMR and
+    independents), it says "n din N, în „Alte partide"" and nothing
+    fades; where the party has none there, it says "nu apare separat" or "nu e
+    în date", never a zero and never a fold of nothing.
+  - The party cards follow the same per-year rule for the Chamber (review,
+    2026-10-27: a county used to say "în „Alte partide"" for a party that did
+    not run that year).
+- **Review fixes to the polish (2026-10-27):** labels inside faded segments
+  are dropped (faded text was unreadable, the tooltip keeps the value); a
+  chart whose rows fail to load says "Datele nu s-au încărcat." instead of
+  loading for ever; the tooltip goes to the side with more room when neither
+  side fits a phone.
 
 **API contract:** `docs/design/elections/results-api.md` (2026-10-19) proposes the
 reads that replace the four fixtures: tallies per scope, columnar UAT tables,
