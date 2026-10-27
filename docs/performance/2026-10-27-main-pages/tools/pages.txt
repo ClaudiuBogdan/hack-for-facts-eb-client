@@ -1,0 +1,16 @@
+home|/|0
+national-budget|/national-budget|0
+local-budgets|/entity-analytics|0
+local-budgets|/map|0
+local-budgets|/charts|0
+companies|/companies|0
+ngos|/ngos|0
+procurement|/procurement|0
+justice|/justice|1
+public-enterprises|/public-enterprises|0
+elections|/alegeri|1
+parliament|/parlament|1
+ins|/ins|0
+legislation|/legislation|0
+pnrr|/pnrr|0
+primarie|/primarie|0
