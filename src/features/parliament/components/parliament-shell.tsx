@@ -34,11 +34,13 @@ type Props = {
 /** Shared layout — UK Parliament typography on default surface */
 export function ParliamentShell({ activeTab, children, actions }: Props) {
   const [infoOpen, setInfoOpen] = useState(false)
-  const { data } = useParliamentHub()
+  const { data, isError } = useParliamentHub()
   const { data: freshness } = useParliamentFreshness()
 
   const legislatureLabel = data?.legislature.label ?? 'Legislatura curentă'
-  const lastSynced = data?.lastSyncedAt
+  // When the DATA was last loaded (`lastLoadedAt`), never the request time;
+  // absent when the API has no freshness signal, and the line then omits it.
+  const lastSynced = freshness?.lastLoadedAt
   // The freshness line used to sit on the hub body, repeating "Actualizat …"
   // that this meta line already carries. Only the part it ADDS moves up here.
   const latestVote = formatParliamentVoteDay(freshness?.latestVoteDate)
@@ -124,26 +126,33 @@ export function ParliamentShell({ activeTab, children, actions }: Props) {
                   : null}
               </p>
 
-              {data ? (
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <div className={parliamentHeaderStatClassName}>
-                    <span className={parliamentHeaderStatValueClassName}>
-                      {data.memberCountByChamber.camera}
-                    </span>
-                    <span className={parliamentHeaderStatLabelClassName}>
-                      deputați
-                    </span>
-                  </div>
-                  <div className={parliamentHeaderStatClassName}>
-                    <span className={parliamentHeaderStatValueClassName}>
-                      {data.memberCountByChamber.senat}
-                    </span>
-                    <span className={parliamentHeaderStatLabelClassName}>
-                      senatori
-                    </span>
-                  </div>
+              {isError && !data ? null : (
+                // min-h reserves the chip row (border-2 + py-2 + text-base =
+                // 44px) while the counts load, so they cannot push the tab nav
+                // and the page down when they arrive.
+                <div className="mt-8 flex min-h-11 flex-wrap gap-3">
+                  {data ? (
+                    <>
+                      <div className={parliamentHeaderStatClassName}>
+                        <span className={parliamentHeaderStatValueClassName}>
+                          {data.memberCountByChamber.camera}
+                        </span>
+                        <span className={parliamentHeaderStatLabelClassName}>
+                          deputați
+                        </span>
+                      </div>
+                      <div className={parliamentHeaderStatClassName}>
+                        <span className={parliamentHeaderStatValueClassName}>
+                          {data.memberCountByChamber.senat}
+                        </span>
+                        <span className={parliamentHeaderStatLabelClassName}>
+                          senatori
+                        </span>
+                      </div>
+                    </>
+                  ) : null}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
 

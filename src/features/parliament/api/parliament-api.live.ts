@@ -44,6 +44,7 @@ import {
   type VoteChamber,
 } from '@/schemas/parliament'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
+import { createServerMemo } from '@/lib/ssr/server-memo'
 import {
   PARLIAMENT_BILL_QUERY,
   PARLIAMENT_BILLS_QUERY,
@@ -131,6 +132,7 @@ import {
   toGraphqlChamber,
   toGraphqlVoteChamber,
 } from './graphql/parliament-translate'
+import { serverReadSignal } from './server-read-deadline'
 import { resolveGroupColor } from '../lib/group-colors'
 import { isCurrentLegislature } from '../lib/group-roster'
 import { toVoteSortArgs, type VotesListScope } from '../lib/votes-filter-state'
@@ -147,13 +149,25 @@ const BALLOTS_PAGE_SIZE = 500
 /** Defensive client ceiling while retaining one fallback page for future growth. */
 const MAX_BALLOTS = BALLOTS_PAGE_SIZE * 2
 
+/**
+ * How long the module's directory reads (groups, the current roster, the
+ * counties) are kept. In the browser they used to live as long as the tab; on
+ * the server, where the hub is now read for the first render, a module-level
+ * cache lives as long as the process and is shared by every request, so each
+ * read is kept for as long as a shared cache may keep the page
+ * (`s-maxage=600`) and then read again. Only a read that succeeded is kept.
+ */
+const DIRECTORY_KEEP_MS = 10 * 60 * 1000
+
 // ── groups ──────────────────────────────────────────────────────────────────
 
 // Cached per (legislature, current). It used to be two module-level slots keyed
 // on `current` alone, which would have served the 2024 directory for every
 // legislature the moment one became selectable — the cache key has to name
 // every axis the request varies on.
-const groupsCaches = new Map<string, Promise<ParliamentGroup[]>>()
+const groupsCaches = createServerMemo<ParliamentGroup[]>(DIRECTORY_KEEP_MS, {
+  maxEntries: 64,
+})
 
 async function loadGroupsForChamber(
   chamber: 'camera_deputatilor' | 'senat',
@@ -163,7 +177,7 @@ async function loadGroupsForChamber(
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_GROUPS_QUERY,
     { legislature, chamber, ...(current ? { current: true } : {}) },
-    { operationName: 'parliamentGroups' },
+    { operationName: 'parliamentGroups', signal: serverReadSignal() },
   )
   return parliamentGroupsResponseSchema.parse(data).parliamentGroups.map(mapGroup)
 }
@@ -186,21 +200,13 @@ async function loadAllGroups(
   legislature: string = LATEST_LEGISLATURE,
 ): Promise<ParliamentGroup[]> {
   const cacheKey = `${legislature}|${current ? 'current' : 'all'}`
-  const cached = groupsCaches.get(cacheKey)
-  if (cached) return cached
-
-  const built = (async () => {
+  return groupsCaches(cacheKey, async () => {
     const [camera, senat] = await Promise.all([
       loadGroupsForChamber('camera_deputatilor', current, legislature),
       loadGroupsForChamber('senat', current, legislature),
     ])
     return [...camera, ...senat]
-  })().catch((error) => {
-    groupsCaches.delete(cacheKey)
-    throw error
   })
-  groupsCaches.set(cacheKey, built)
-  return built
 }
 
 export async function fetchParliamentGroupsLive(
@@ -403,16 +409,16 @@ function sumByChamber(
   )
 }
 
+/**
+ * The hub's composition: groups and seat counts. It no longer reads the
+ * freshness (the shell reads it once, as its own query, for the sync time and
+ * the latest vote) nor a page of recent votes no component rendered.
+ */
 export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
   // Composition + headline = CURRENT seats (SC-1). Secondary = all mandates.
-  const [currentGroups, allGroups, recent, freshness] = await Promise.all([
+  const [currentGroups, allGroups] = await Promise.all([
     loadAllGroups(true),
     loadAllGroups(),
-    fetchParliamentVotesLive({ pageSize: 6 }),
-    // REAL sync time. This used to be `new Date().toISOString()` — the shell then
-    // rendered "Actualizat <now>" on every page load, i.e. it presented REQUEST
-    // time as DATA time, which is always "just now" and therefore always wrong.
-    fetchParliamentFreshnessLive(),
   ])
 
   return ParliamentHubDataSchema.parse({
@@ -422,12 +428,9 @@ export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
       startYear: Number(LATEST_LEGISLATURE),
       endYear: Number(LATEST_LEGISLATURE) + 4,
     },
-    // Omitted (→ the UI drops the line) when the API has no freshness signal.
-    ...(freshness.lastLoadedAt !== undefined && { lastSyncedAt: freshness.lastLoadedAt }),
     sources: ['cdep.ro', 'senat.ro'],
     // Composition swatches reflect CURRENT seats (AUR 90, not 91).
     groups: currentGroups,
-    recentVotes: recent.votes,
     memberCountByChamber: sumByChamber(currentGroups), // 330 / 134 (current)
     memberCountByChamberAllMandates: sumByChamber(allGroups), // 335 / 137 (all)
     budgetInstitutionSlugs: {
@@ -441,9 +444,12 @@ export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
 
 // Both chamber panels need the same current roster, and every filter change
 // rebuilds the composition from it. Keep one promise (like the group caches
-// above) so all API-capped pages are fetched once per app runtime, not
-// once per chamber and once again for every URL filter.
-let currentMembersForCompositionCache: Promise<ParliamentMember[]> | undefined
+// above) so all API-capped pages are fetched once per window, not once per
+// chamber and once again for every URL filter.
+const currentMembersForCompositionCache = createServerMemo<ParliamentMember[]>(
+  DIRECTORY_KEEP_MS,
+  { maxEntries: 1 },
+)
 
 export async function fetchParliamentChamberCompositionLive(
   chamber: ParliamentChamber,
@@ -473,10 +479,7 @@ export async function fetchParliamentChamberCompositionLive(
  * mandate rows) so the hard rule holds — current:true is composition-only.
  */
 async function fetchCurrentMembersForComposition(): Promise<ParliamentMember[]> {
-  const cached = currentMembersForCompositionCache
-  if (cached) return cached
-
-  const built = (async () => {
+  return currentMembersForCompositionCache(LATEST_LEGISLATURE, async () => {
     const loadPage = async (page: number) => {
       const data = await graphqlQuery<unknown>(
         PARLIAMENT_MEMBERS_QUERY,
@@ -485,7 +488,7 @@ async function fetchCurrentMembersForComposition(): Promise<ParliamentMember[]> 
           page,
           pageSize: MAX_MEMBERS_PAGE_SIZE,
         },
-        { operationName: 'parliamentMembersCurrent' },
+        { operationName: 'parliamentMembersCurrent', signal: serverReadSignal() },
       )
       return parliamentMembersResponseSchema.parse(data).parliamentMembers
     }
@@ -502,13 +505,7 @@ async function fetchCurrentMembersForComposition(): Promise<ParliamentMember[]> 
       .flatMap((page) => page.members)
       .map(mapMember)
       .sort((a, b) => a.lastName.localeCompare(b.lastName, 'ro'))
-  })().catch((error) => {
-    currentMembersForCompositionCache = undefined
-    throw error
   })
-
-  currentMembersForCompositionCache = built
-  return built
 }
 
 // ── votes ─────────────────────────────────────────────────────────────────
@@ -526,7 +523,7 @@ export async function fetchParliamentVotesLive(
     // they must be re-sent unchanged on every page — a cursor minted under one
     // ordering is refused under another rather than paging the wrong way.
     { filter, ...toVoteSortArgs(search.ordine), first: pageSize, ...(after ? { after } : {}) },
-    { operationName: 'parliamentVotes' },
+    { operationName: 'parliamentVotes', signal: serverReadSignal() },
   )
   const parsed = parliamentVotesResponseSchema.parse(data)
   const votes = parsed.parliamentVotes.edges.map((e) => mapVoteListItem(e.node))
@@ -675,7 +672,7 @@ export async function fetchParliamentVoteActivityLive(
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTE_ACTIVITY_QUERY,
     { year, ...(filter ? { filter } : {}) },
-    { operationName: 'parliamentVoteActivity' },
+    { operationName: 'parliamentVoteActivity', signal: serverReadSignal() },
   )
   const parsed = parliamentVoteActivityResponseSchema.parse(data)
   if (!parsed.parliamentVoteActivity) return null
@@ -698,7 +695,7 @@ export async function fetchParliamentBillActivityLive(
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_BILL_ACTIVITY_QUERY,
     { year, ...(filter ? { filter } : {}) },
-    { operationName: 'parliamentBillActivity' },
+    { operationName: 'parliamentBillActivity', signal: serverReadSignal() },
   )
   const parsed = parliamentBillActivityResponseSchema.parse(data)
   if (!parsed.parliamentBillActivity) return null
@@ -800,7 +797,7 @@ export async function fetchParliamentBillsLive(
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_BILLS_QUERY,
     { filter, sort, page, pageSize },
-    { operationName: 'parliamentBills' },
+    { operationName: 'parliamentBills', signal: serverReadSignal() },
   )
   const parsed = parliamentBillsResponseSchema.parse(data)
   const { total, bills } = parsed.parliamentBills
@@ -848,28 +845,25 @@ export async function fetchParliamentBillRelatedVotesLive(
  * `parliamentResolveFilter` has no "list all" mode, so we enumerate the distinct
  * `constituencyName`s from a full members page and fold them to slugs. (Cached.)
  */
-let judeteCache: Promise<ReadonlyArray<{ slug: string; name: string }>> | null = null
+const judeteCache = createServerMemo<ReadonlyArray<{ slug: string; name: string }>>(
+  DIRECTORY_KEEP_MS,
+  { maxEntries: 1 },
+)
 
 export async function fetchParliamentJudeteLive(): Promise<
   ReadonlyArray<{ slug: string; name: string }>
 > {
-  if (!judeteCache) {
-    judeteCache = (async () => {
-      const members = await fetchParliamentMembersLive({ pageSize: 500 })
-      const seen = new Map<string, string>()
-      for (const m of members.members) {
-        if (m.judetName && !seen.has(m.judetSlug)) seen.set(m.judetSlug, m.judetName)
-      }
-      // `foldSlug` is already applied by mapMember; keep names as the DB display.
-      return Array.from(seen.entries())
-        .map(([slug, name]) => ({ slug, name }))
-        .sort((a, b) => a.name.localeCompare(b.name, 'ro'))
-    })().catch((error) => {
-      judeteCache = null
-      throw error
-    })
-  }
-  return judeteCache
+  return judeteCache(LATEST_LEGISLATURE, async () => {
+    const members = await fetchParliamentMembersLive({ pageSize: 500 })
+    const seen = new Map<string, string>()
+    for (const m of members.members) {
+      if (m.judetName && !seen.has(m.judetSlug)) seen.set(m.judetSlug, m.judetName)
+    }
+    // `foldSlug` is already applied by mapMember; keep names as the DB display.
+    return Array.from(seen.entries())
+      .map(([slug, name]) => ({ slug, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ro'))
+  })
 }
 
 /** Best-effort resolve passthrough for callers that need the raw resolve hits. */
@@ -900,15 +894,18 @@ export async function fetchParliamentFreshnessLive(): Promise<ParliamentDataFres
     const data = await graphqlQuery<unknown>(
       PARLIAMENT_FRESHNESS_QUERY,
       {},
-      { operationName: 'parliamentDataFreshness' },
+      { operationName: 'parliamentDataFreshness', signal: serverReadSignal() },
     )
     const parsed = parliamentFreshnessResponseSchema.parse(data)
     return mapDataFreshness(
       parsed.parliamentDataFreshness ?? { latestVoteDate: null, lastLoadedAt: null },
     )
   } catch (error) {
-    // Freshness is a decorative header line — never fail the hub over it.
-    if (error instanceof GraphQLRequestError) return {}
+    // Freshness is a decorative header line — never fail the page over it in
+    // the browser. On the server the read still fails, so the render that
+    // missed it is not cached, its result is not kept for the next renders,
+    // and the browser reads it again (see `parliament-hub-ssr.ts`).
+    if (error instanceof GraphQLRequestError && typeof window !== 'undefined') return {}
     throw error
   }
 }

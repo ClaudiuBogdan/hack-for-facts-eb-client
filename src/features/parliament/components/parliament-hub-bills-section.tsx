@@ -1,13 +1,16 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAfterIdle } from '@/hooks/use-after-idle'
+import {
+  HUB_BILLS_PAGE_SIZE,
+  HUB_BILLS_SEARCH,
+} from '../hooks/parliament-hub-queries'
 import { useParliamentBills } from '../hooks/use-parliament-data'
 import { BillListCard } from './bill-list-card'
 import { ParliamentHubBillActivity } from './parliament-hub-bill-activity'
 import { ParliamentHubSection } from './parliament-hub-section'
 import { ParliamentInlineLoadError } from './parliament-load-error-page'
-
-const HUB_BILLS_PAGE_SIZE = 4
 
 /**
  * Recent legislative bills preview on the Parlament hub.
@@ -19,11 +22,9 @@ const HUB_BILLS_PAGE_SIZE = 4
  * same thing.
  */
 export function ParliamentHubBillsSection() {
-  const { data, isLoading, isError, refetch } = useParliamentBills({
-    tab: 'proiecte',
-    page: 1,
-    pageSize: HUB_BILLS_PAGE_SIZE,
-  })
+  const { data, isLoading, isError, refetch } = useParliamentBills(HUB_BILLS_SEARCH)
+  // Below the fold and drawn from the clock: after hydration, as the votes'.
+  const showActivity = useAfterIdle()
 
   return (
     <ParliamentHubSection
@@ -63,7 +64,11 @@ export function ParliamentHubBillsSection() {
         </p>
       )}
       <div className="border-t-2 border-[var(--pnrr-border)] p-5 sm:p-6">
-        <ParliamentHubBillActivity />
+        {showActivity ? (
+          <ParliamentHubBillActivity />
+        ) : (
+          <Skeleton className="h-32 w-full rounded-none" />
+        )}
       </div>
     </ParliamentHubSection>
   )

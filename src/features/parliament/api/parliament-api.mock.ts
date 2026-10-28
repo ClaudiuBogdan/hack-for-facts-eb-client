@@ -243,10 +243,8 @@ function voteDetailBreakdownMatchesTally(
 function buildHubData(): ParliamentHubData {
   return ParliamentHubDataSchema.parse({
     legislature: legislatureData,
-    lastSyncedAt: MOCK_LAST_SYNCED,
     sources: ['cdep.ro', 'senat.ro'],
     groups,
-    recentVotes: voteSummaries,
     memberCountByChamber: { camera: 330, senat: 135 },
     budgetInstitutionSlugs: {
       camera: 'camera-deputatilor',

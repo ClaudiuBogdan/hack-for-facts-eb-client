@@ -16,31 +16,25 @@ export function ParliamentHubContent() {
 
       <ParliamentHubAgendaSection />
 
-      {/* Fetches its own votes, so it stands whether or not the hub aggregate
-          answered — the chambers' latest divisions are not hostage to the
+      {/* The votes and the bills fetch their own reads, so they stand whether
+          or not the hub aggregate answered — neither is hostage to the
           composition query that follows. */}
       <ParliamentHubVotesSection />
 
-      {/* One skeleton per section still waiting on the hub aggregate: bills and
-          the composition. */}
+      <ParliamentHubBillsSection />
+
       {isLoading ? (
-        <>
-          <Skeleton className="h-96 w-full rounded-none" />
-          <Skeleton className="h-[32rem] w-full rounded-none" />
-        </>
+        <Skeleton className="h-[32rem] w-full rounded-none" />
       ) : isError || !data ? (
         <p className="text-[var(--pnrr-muted)]">
           Nu am putut încărca datele parlamentare.
         </p>
       ) : (
-        <>
-          <ParliamentHubBillsSection />
-          <ParliamentHubParlamentariSection
-            groups={data.groups}
-            memberCountByChamber={data.memberCountByChamber}
-            memberCountByChamberAllMandates={data.memberCountByChamberAllMandates}
-          />
-        </>
+        <ParliamentHubParlamentariSection
+          groups={data.groups}
+          memberCountByChamber={data.memberCountByChamber}
+          memberCountByChamberAllMandates={data.memberCountByChamberAllMandates}
+        />
       )}
     </div>
   )

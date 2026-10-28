@@ -10,6 +10,7 @@ import type {
   ParliamentBillScheduling,
 } from '@/schemas/parliament'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { serverReadSignal } from './server-read-deadline'
 import {
   PARLIAMENT_AGENDA_QUERY,
   PARLIAMENT_AGENDAS_QUERY,
@@ -61,7 +62,7 @@ export async function fetchParliamentAgendasLive(
       limit: AGENDAS_PAGE_SIZE,
       ...(filter && Object.keys(filter).length > 0 ? { filter } : {}),
     },
-    { operationName: 'ParliamentAgendas' },
+    { operationName: 'ParliamentAgendas', signal: serverReadSignal() },
   )
   const parsed = parliamentAgendasResponseSchema.parse(data)
   if (!parsed.parliamentAgendas) {

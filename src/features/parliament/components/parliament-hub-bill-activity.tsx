@@ -6,14 +6,13 @@ import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import type { ParliamentSearch } from '@/schemas/parliament'
 import { useParliamentBillActivity } from '../hooks/use-parliament-data'
+import { HUB_ACTIVITY_MONTHS } from '../hooks/parliament-hub-queries'
 import { billBucketFor, rollingWindow } from '../lib/vote-activity-grid'
 import {
   ParliamentHubActivityHeatmap,
   type ActivityHeatmapDay,
 } from './parliament-hub-activity-heatmap'
 import { formatActivityDate } from '../lib/activity-heatmap-format'
-
-const ROLLING_MONTHS = 12
 
 /** A square opens the bills list at its day (the heatmap adds `from`/`to`). */
 const BILLS_DAY_SEARCH: ParliamentSearch = { tab: 'proiecte' }
@@ -32,7 +31,7 @@ const BILLS_DAY_SEARCH: ParliamentSearch = { tab: 'proiecte' }
  */
 export function ParliamentHubBillActivity() {
   const window = useMemo(
-    () => rollingWindow({ months: ROLLING_MONTHS, today: new Date() }),
+    () => rollingWindow({ months: HUB_ACTIVITY_MONTHS, today: new Date() }),
     [],
   )
 

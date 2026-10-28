@@ -9,24 +9,20 @@ import type {
 import type { VotesListScope } from '../lib/votes-filter-state'
 import {
   fetchParliamentAgenda,
-  fetchParliamentAgendas,
   fetchParliamentBillScheduling,
   fetchParliamentSpeechContext,
   fetchParliamentStenogramSessions,
   fetchParliamentTranscript,
   fetchParliamentBillDetail,
-  fetchParliamentBills,
   fetchParliamentChamberComposition,
   fetchParliamentCommittee,
   fetchParliamentCommitteeDocuments,
   fetchParliamentCommittees,
-  fetchParliamentFreshness,
   fetchParliamentGroup,
   fetchParliamentGroupCohesion,
   fetchParliamentVoteKindCounts,
   fetchParliamentGroupMembers,
   fetchParliamentGroups,
-  fetchParliamentHub,
   fetchParliamentJudete,
   fetchParliamentMember,
   fetchParliamentMemberInitiatives,
@@ -41,10 +37,18 @@ import {
   fetchParliamentSpeeches,
   fetchParliamentVoteDetail,
   fetchParliamentVotes,
-  fetchParliamentBillActivity,
-  fetchParliamentVoteActivity,
 } from '../api/parliament-api'
 import { LATEST_LEGISLATURE } from '../api/graphql/parliament-translate'
+import {
+  PARLIAMENT_QUERY_KEY,
+  parliamentAgendasQuery,
+  parliamentBillActivityQuery,
+  parliamentBillsQuery,
+  parliamentFreshnessQuery,
+  parliamentHubQuery,
+  parliamentVoteActivityQuery,
+  parliamentVotesQuery,
+} from './parliament-hub-queries'
 import type { ParliamentVotesFilterInput } from '../api/graphql/parliament-filters'
 import type { ParliamentAgendaFilterInput } from '../api/parliament-agenda-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
@@ -52,13 +56,8 @@ import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
 import type { ParliamentStenogramSessionsFilterInput } from '../lib/parliament-stenogram-filter'
 
-const PARLIAMENT_QUERY_KEY = ['parliament'] as const
-
 export function useParliamentHub() {
-  return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'hub'],
-    queryFn: fetchParliamentHub,
-  })
+  return useQuery(parliamentHubQuery())
 }
 
 export function useParliamentMembers(search: ParliamentMembersSearch) {
@@ -161,10 +160,7 @@ export function useParliamentVoteKindCounts(scope: VotesListScope) {
 
 /** A single (newest-first) page of votes — the hub's "recent votes" strips. */
 export function useParliamentVotes(search: ParliamentVotesSearch) {
-  return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'votes', search],
-    queryFn: () => fetchParliamentVotes(search),
-  })
+  return useQuery(parliamentVotesQuery(search))
 }
 
 /**
@@ -329,10 +325,8 @@ export function useParliamentVoteActivity(
   filter?: ParliamentVotesFilterInput,
 ) {
   return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'vote-activity', year, filter ?? null],
-    queryFn: () => fetchParliamentVoteActivity(year, filter),
+    ...parliamentVoteActivityQuery(year, filter),
     enabled: Boolean(year),
-    retry: false,
   })
 }
 
@@ -343,10 +337,8 @@ export function useParliamentVoteActivity(
  */
 export function useParliamentBillActivity(year: number) {
   return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'bill-activity', year],
-    queryFn: () => fetchParliamentBillActivity(year),
+    ...parliamentBillActivityQuery(year),
     enabled: Boolean(year),
-    retry: false,
   })
 }
 
@@ -441,10 +433,7 @@ export function useParliamentJudete() {
 }
 
 export function useParliamentBills(search: ParliamentBillsSearch) {
-  return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'bills', search],
-    queryFn: () => fetchParliamentBills(search),
-  })
+  return useQuery(parliamentBillsQuery(search))
 }
 
 export function useParliamentBillDetail(billId: string) {
@@ -456,10 +445,7 @@ export function useParliamentBillDetail(billId: string) {
 }
 
 export function useParliamentFreshness() {
-  return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'freshness'],
-    queryFn: fetchParliamentFreshness,
-  })
+  return useQuery(parliamentFreshnessQuery())
 }
 
 export function useParliamentCommittees(params: {
@@ -550,11 +536,7 @@ export function useParliamentCommitteeDocuments(
 // ── plenary agenda (ordinea de zi) ───────────────────────────────────────────
 
 export function useParliamentAgendas(page: number, filter?: ParliamentAgendaFilterInput) {
-  return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'agendas', page, filter],
-    queryFn: () => fetchParliamentAgendas(page, filter),
-    staleTime: 5 * 60 * 1000,
-  })
+  return useQuery(parliamentAgendasQuery(page, filter))
 }
 
 export function useParliamentAgenda(agendaKey: string) {

@@ -677,18 +677,15 @@ export type ParliamentBillActivity = z.infer<
   typeof ParliamentBillActivitySchema
 >;
 
+/**
+ * The hub's composition. The sync time is not part of it: the shell reads
+ * `ParliamentDataFreshness` (its `lastLoadedAt`, never the request time) as
+ * its own query, once, beside the latest vote date.
+ */
 export const ParliamentHubDataSchema = z.object({
   legislature: ParliamentLegislatureSchema,
-  /**
-   * When the DATA was last loaded (`parliamentDataFreshness.lastLoadedAt`) — NOT
-   * when this request ran. Optional on purpose: the API can legitimately have no
-   * freshness signal, and the UI must then omit the line rather than stamp
-   * `Date.now()` and present request time as sync time.
-   */
-  lastSyncedAt: z.string().optional(),
   sources: z.array(z.string()),
   groups: z.array(ParliamentGroupSchema),
-  recentVotes: z.array(ParliamentVoteSummarySchema),
   // Headline = CURRENT seats (SC-1: superseded/deceased members excluded; e.g.
   // camera 330 / senat 134).
   memberCountByChamber: z.object({

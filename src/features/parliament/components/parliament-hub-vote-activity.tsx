@@ -5,9 +5,13 @@ import { plural, t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import { Button } from "@/components/ui/button";
 import type { ParliamentSearch } from "@/schemas/parliament";
-import { buildVotesFilter } from "../api/graphql/parliament-filters";
 import { toGraphqlVoteChamber } from "../api/graphql/parliament-translate";
 import { useParliamentVoteActivity } from "../hooks/use-parliament-data";
+import {
+  HUB_ACTIVITY_MONTHS,
+  HUB_VOTE_DAY_SEARCH,
+  voteActivityFilterFor,
+} from "../hooks/parliament-hub-queries";
 import { bucketFor, rollingWindow } from "../lib/vote-activity-grid";
 import {
   ParliamentHubActivityHeatmap,
@@ -15,10 +19,6 @@ import {
 } from "./parliament-hub-activity-heatmap";
 import { formatActivityDate } from "../lib/activity-heatmap-format";
 
-const ROLLING_MONTHS = 12;
-
-/** The mixed all-chambers list: what a square's cross-chamber count matches. */
-const DEFAULT_DAY_SEARCH: ParliamentSearch = { tab: "voturi", chamber: "all" };
 
 function formatCoverageAsOf(value: string): string {
   const parsed = new Date(value);
@@ -61,27 +61,21 @@ type Props = {
  * not the tens of thousands its ballots would.
  */
 export function ParliamentHubVoteActivity({
-  daySearch = DEFAULT_DAY_SEARCH,
+  // The mixed all-chambers list: what a square's cross-chamber count matches.
+  daySearch = HUB_VOTE_DAY_SEARCH,
   onSelectDay,
   cta,
 }: Props = {}) {
   const window = useMemo(
-    () => rollingWindow({ months: ROLLING_MONTHS, today: new Date() }),
+    () => rollingWindow({ months: HUB_ACTIVITY_MONTHS, today: new Date() }),
     [],
   );
 
-  /**
-   * The list's own filter, minus its day bound. `from`/`to` are dropped for two
-   * reasons: the server REJECTS a voteDate inside this field (the year argument
-   * is the bound), and a chart collapsed to the one day the reader already
-   * picked could not show them the year they are picking within.
-   */
-  const activityFilter = useMemo(() => {
-    const { from: _from, to: _to, ...rest } = daySearch;
-    const filter = buildVotesFilter(rest);
-    delete filter.voteDate;
-    return Object.keys(filter).length > 0 ? filter : undefined;
-  }, [daySearch]);
+  // The list's own filter, minus its day bound (see `voteActivityFilterFor`).
+  const activityFilter = useMemo(
+    () => voteActivityFilterFor(daySearch),
+    [daySearch],
+  );
 
   // Two hooks, always called. A 12-month window crosses a new year, and the
   // aggregate is served one calendar year at a time; when the window needs only

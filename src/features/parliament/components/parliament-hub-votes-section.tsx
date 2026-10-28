@@ -1,4 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAfterIdle } from '@/hooks/use-after-idle'
+import { hubChamberVotesSearch } from '../hooks/parliament-hub-queries'
 import { useParliamentVotes } from '../hooks/use-parliament-data'
 import { parliamentVotesOverviewGridClassName } from '../lib/hub-theme'
 import { ParliamentHubSection } from './parliament-hub-section'
@@ -29,16 +31,15 @@ const panelSurfaceClassName = 'bg-[#f3f2f1] dark:bg-[var(--pnrr-subtle)]'
  * and its link opens the list where they appear alongside the rest.
  */
 export function ParliamentHubVotesSection() {
-  const { data: cameraData, isLoading: cameraLoading } = useParliamentVotes({
-    chamber: 'camera',
-    page: 1,
-    pageSize: 4,
-  })
-  const { data: senatData, isLoading: senatLoading } = useParliamentVotes({
-    chamber: 'senat',
-    page: 1,
-    pageSize: 4,
-  })
+  const { data: cameraData, isLoading: cameraLoading } = useParliamentVotes(
+    hubChamberVotesSearch('camera'),
+  )
+  const { data: senatData, isLoading: senatLoading } = useParliamentVotes(
+    hubChamberVotesSearch('senat'),
+  )
+  // A year of squares, below the fold, drawn from the clock: drawn after
+  // hydration, so it neither weighs on it nor depends on the server's time.
+  const showActivity = useAfterIdle()
 
   const isLoading = cameraLoading || senatLoading
 
@@ -70,7 +71,11 @@ export function ParliamentHubVotesSection() {
 
       {/* The section's own footer: WHEN the chambers voted, then the list. */}
       <div className="border-t-2 border-[var(--pnrr-border)] p-5 sm:p-6">
-        <ParliamentHubVoteActivity />
+        {showActivity ? (
+          <ParliamentHubVoteActivity />
+        ) : (
+          <Skeleton className="h-32 w-full rounded-none" />
+        )}
       </div>
     </ParliamentHubSection>
   )
