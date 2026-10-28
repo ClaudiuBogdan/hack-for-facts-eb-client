@@ -13,6 +13,7 @@ import { reasonText } from '@/features/national-budget/analytics/lib/analytics-v
 import { cn } from '@/lib/utils'
 import { readKey, siteKeys, type YearView } from '../lib/home-data'
 import { useNationalCatalog } from '@/features/national-budget/analytics/hooks/use-national-budget-analytics'
+import { useCheckedYear } from '../hooks/use-home-year'
 
 /**
  * The page's frame: the pinned bar that carries the year, and one band per
@@ -33,6 +34,21 @@ export type BandEntry = {
   readonly yearless?: true
 }
 
+/** A band's place in the page: its anchor, its rules and its question. */
+function bandHead(band: BandEntry, position: number) {
+  const titleId = `${band.id}-title`
+  const index = `${String(position).padStart(2, '0')} / ${band.nav}`
+  return { titleId, index, head: <HubSectionHead titleId={titleId} index={index} title={band.title} /> }
+}
+
+function BandFrame({ id, titleId, children }: { readonly id: string; readonly titleId: string; readonly children: ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-14 border-b" aria-labelledby={titleId}>
+      <RuledFrame className="py-14 sm:py-20">{children}</RuledFrame>
+    </section>
+  )
+}
+
 /**
  * One numbered band: the ruled column with its design, read on its own. A
  * new year is a new read (the boundary is keyed by it, so a failure for one
@@ -41,30 +57,36 @@ export type BandEntry = {
  */
 export function Band({ band, view, position }: { readonly band: BandEntry; readonly view: YearView; readonly position: number }) {
   const catalog = useNationalCatalog()
-  const titleId = `${band.id}-title`
-  const index = `${String(position).padStart(2, '0')} / ${band.nav}`
+  const { titleId, index, head } = bandHead(band, position)
   const Component = band.component
-  const head = <HubSectionHead titleId={titleId} index={index} title={band.title} />
   return (
-    <section id={band.id} className="scroll-mt-14 border-b" aria-labelledby={titleId}>
-      <RuledFrame className="py-14 sm:py-20">
-        <BandRead
-          key={band.yearless ? readKey(null, catalog) : readKey(view, catalog)}
-          resetKey={`${band.id}|${band.yearless ? readKey(null, catalog) : readKey(view, catalog)}`}
-          fallback={<BandPending head={head} />}
-          renderError={(retry) => (
-            <div>
-              {head}
-              <div className="mt-6">
-                <HubLoadError onRetry={retry} />
-              </div>
+    <BandFrame id={band.id} titleId={titleId}>
+      <BandRead
+        key={band.yearless ? readKey(null, catalog) : readKey(view, catalog)}
+        resetKey={`${band.id}|${band.yearless ? readKey(null, catalog) : readKey(view, catalog)}`}
+        fallback={<BandPending head={head} />}
+        renderError={(retry) => (
+          <div>
+            {head}
+            <div className="mt-6">
+              <HubLoadError onRetry={retry} />
             </div>
-          )}
-        >
-          <Component view={view} index={index} titleId={titleId} />
-        </BandRead>
-      </RuledFrame>
-    </section>
+          </div>
+        )}
+      >
+        <Component view={view} index={index} titleId={titleId} />
+      </BandRead>
+    </BandFrame>
+  )
+}
+
+/** A band before the page knows its year: as `Band` waits for its read, so nothing moves when the page's catalog arrives. */
+export function PendingBand({ band, position }: { readonly band: BandEntry; readonly position: number }) {
+  const { titleId, head } = bandHead(band, position)
+  return (
+    <BandFrame id={band.id} titleId={titleId}>
+      <BandPending head={head} />
+    </BandFrame>
   )
 }
 
@@ -80,21 +102,7 @@ function BandPending({ head }: { readonly head: ReactNode }) {
 }
 
 /** The pinned bar: the page's name, its numbered bands, and the year every band reads. */
-export function PageBar({
-  title,
-  bands,
-  view,
-  views,
-  unavailable,
-  onYear,
-}: {
-  readonly title: string
-  readonly bands: readonly BandEntry[]
-  readonly view: YearView
-  readonly views: readonly YearView[]
-  readonly unavailable: ReadonlyMap<number, string | null>
-  readonly onYear: (year: number) => void
-}) {
+export function PageBar({ title, bands }: { readonly title: string; readonly bands: readonly BandEntry[] }) {
   return (
     <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-5 py-0">
@@ -114,11 +122,30 @@ export function PageBar({
         </ol>
         <label className="flex shrink-0 items-center border-l pl-4">
           <span className="sr-only">{t`Anul`}</span>
-          <YearOptions view={view} views={views} unavailable={unavailable} onYear={onYear} className="min-h-9 px-2 pr-8 text-sm" />
+          <YearMenu className="min-h-9 px-2 pr-8 text-sm" pendingClassName="h-9 w-48" />
         </label>
       </RuledFrame>
     </nav>
   )
+}
+
+/**
+ * A year menu, read on its own: it lists the years the bulletins don't
+ * finish without offering them, so it waits for that read; the page around
+ * it doesn't. Until then, its place, the height of the menu.
+ */
+export function YearMenu({ className, pendingClassName }: { readonly className: string; readonly pendingClassName: string }) {
+  const pending = <span aria-hidden="true" className={cn('inline-block animate-pulse rounded-sm border bg-muted/60', pendingClassName)} />
+  return (
+    <BandRead fallback={pending} quiet={pending}>
+      <CheckedYearOptions className={className} />
+    </BandRead>
+  )
+}
+
+function CheckedYearOptions({ className }: { readonly className: string }) {
+  const { view, views, unavailable, setYear } = useCheckedYear()
+  return <YearOptions view={view} views={views} unavailable={unavailable} onYear={setYear} className={className} />
 }
 
 /**

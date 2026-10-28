@@ -4,21 +4,19 @@ import { t } from '@lingui/core/macro'
 import { RevealStyles } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, stopCounting } from '@/features/landing/components/count-up'
-import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
-import { useHomePrefetch, useUnfinishedYears } from '../hooks/use-home-data'
-import { useHomeYear } from '../hooks/use-home-year'
-import { viewOfYear } from '../lib/home-data'
-import { useNationalCatalog } from '@/features/national-budget/analytics/hooks/use-national-budget-analytics'
-import { reasonText } from '@/features/national-budget/analytics/lib/analytics-view'
+import { BandRead } from '@/features/national-budget/analytics/components/analytics-parts'
+import { useHomePrefetch } from '../hooks/use-home-data'
+import { useAskedYear, useHomeYear, useShownYear } from '../hooks/use-home-year'
+import type { YearView } from '../lib/home-data'
 import { BalanceBand } from './home-balance'
 import { BudgetsBand } from './home-budgets'
 import { DomainsBand } from './home-domains'
-import { FiguresBand, PageHead } from './home-head'
+import { FiguresBand, PageHead, PendingFiguresBand } from './home-head'
 import { LawBand } from './home-law'
 import { MinistriesBand } from './home-ministries'
 import { NowBand } from './home-now'
 import { RevenueBand } from './home-revenue'
-import { Band, PageBar, type BandEntry } from './home-shell'
+import { Band, PageBar, PendingBand, type BandEntry } from './home-shell'
 import { SpendingBand } from './home-spending'
 import { StartBand } from './home-start'
 
@@ -46,67 +44,85 @@ function bands(): readonly BandEntry[] {
   ]
 }
 
-type PageProps = ReturnType<typeof useHomeYear> & { readonly unavailable: ReadonlyMap<number, string | null> }
-
 /**
- * The page with its years' availability (a read that never fails: without
- * it every year is offered). A year the bulletins don't finish, asked for in
- * the address (the menus don't offer it), opens the default year instead,
- * and says why.
+ * Why the page shows another year than the address asks for: a year the
+ * bulletins don't finish, asked for in the address (the menus don't offer
+ * it), opens the default year instead. Only an address with a year reads it.
  */
-function Page() {
-  const props = useHomeYear()
-  // Every read of the year, at once: the bands below find theirs in flight.
-  useHomePrefetch(props.view)
-  // The count-up driver is module state; an unmount mid-flight would leave it ticking against nodes that are gone.
-  useEffect(() => () => stopCounting(), [])
-  const catalog = useNationalCatalog()
-  const unavailable = useUnfinishedYears(props.views)
-  const asked = props.view.year
-  if (!unavailable.has(asked)) return <PageBody {...props} unavailable={unavailable} />
-  const shown = viewOfYear(catalog, undefined)
+function YearNotice() {
+  const asked = useAskedYear()
+  if (asked === undefined) return null
   return (
-    <PageBody
-      {...props}
-      view={shown}
-      unavailable={unavailable}
-      notice={t`Pentru ${asked} buletinele nu au anul întreg (${reasonText(unavailable.get(asked) ?? null)}); arătăm ${shown.text}.`}
-    />
+    <BandRead fallback={null} quiet={null}>
+      <Notice />
+    </BandRead>
   )
 }
 
-function PageBody({ view, views, setYear, unavailable, notice }: PageProps & { readonly notice?: string }) {
-  const entries = bands()
+function Notice() {
+  const { notice } = useShownYear()
+  if (!notice) return null
   return (
-    <div className="relative w-full overflow-x-clip bg-background">
-      <RevealStyles />
-      <SmearFilters />
-      {notice ? (
-        <div role="status" className="border-b border-amber-500/40 bg-amber-50 dark:bg-amber-950/30">
-          <RuledFrame className="py-3 text-sm text-amber-950 dark:text-amber-100">{notice}</RuledFrame>
-        </div>
-      ) : null}
-      <PageHead view={view} views={views} unavailable={unavailable} onYear={setYear} />
-      <PageBar title={t`Bugetul național`} bands={entries} view={view} views={views} unavailable={unavailable} onYear={setYear} />
-      <FiguresBand view={view} />
-      {entries.map((band, position) => (
-        <Band key={band.id} band={band} view={view} position={position + 1} />
-      ))}
-      <StartBand view={view} index={`${String(entries.length + 1).padStart(2, '0')} / ${t`Analize`}`} />
+    <div role="status" className="border-b border-amber-500/40 bg-amber-50 dark:bg-amber-950/30">
+      <RuledFrame className="py-3 text-sm text-amber-950 dark:text-amber-100">{notice}</RuledFrame>
     </div>
   )
 }
 
-export function NationalBudgetHomePage() {
+/**
+ * The page's reads, from the catalog on: every read of the address's year
+ * starts at once, then the bands for the year shown.
+ */
+function PageData({ bands }: { readonly bands: readonly BandEntry[] }) {
+  const asked = useHomeYear()
+  // Every read of the asked year, at once, before the year is checked: the bands below find theirs in flight.
+  useHomePrefetch(asked.view)
+  const { view } = useShownYear()
+  return <PageBody bands={bands} view={view} />
+}
+
+function PageBody({ bands, view }: { readonly bands: readonly BandEntry[]; readonly view: YearView }) {
   return (
-    <Suspense
-      fallback={
-        <RuledFrame className="py-20">
-          <HubPending rows={10} />
-        </RuledFrame>
-      }
-    >
-      <Page />
-    </Suspense>
+    <>
+      <FiguresBand view={view} />
+      {bands.map((band, position) => (
+        <Band key={band.id} band={band} view={view} position={position + 1} />
+      ))}
+      <StartBand view={view} index={`${String(bands.length + 1).padStart(2, '0')} / ${t`Analize`}`} />
+    </>
+  )
+}
+
+/** The bands before the catalog: as they stand while their reads wait, so nothing moves when it arrives and the footer stays below. */
+function PagePending({ bands }: { readonly bands: readonly BandEntry[] }) {
+  return (
+    <>
+      <PendingFiguresBand />
+      {bands.map((band, position) => (
+        <PendingBand key={band.id} band={band} position={position + 1} />
+      ))}
+    </>
+  )
+}
+
+/**
+ * The head and the pinned bar are the page's first paint; the year's menus,
+ * its balance and its bands follow their reads.
+ */
+export function NationalBudgetHomePage() {
+  const entries = bands()
+  // The count-up driver is module state; an unmount mid-flight would leave it ticking against nodes that are gone.
+  useEffect(() => () => stopCounting(), [])
+  return (
+    <div className="relative w-full overflow-x-clip bg-background">
+      <RevealStyles />
+      <SmearFilters />
+      <YearNotice />
+      <PageHead />
+      <PageBar title={t`Bugetul național`} bands={entries} />
+      <Suspense fallback={<PagePending bands={entries} />}>
+        <PageData bands={entries} />
+      </Suspense>
+    </div>
   )
 }

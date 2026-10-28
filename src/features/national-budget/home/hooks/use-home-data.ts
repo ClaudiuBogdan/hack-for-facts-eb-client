@@ -141,22 +141,24 @@ export function useTotalsHistory() {
  * years these are is the API's answer for the snapshot, never a list kept
  * here. The same read as the years of `useTotalsHistory`.
  */
-export function useUnfinishedYears(views: readonly YearView[]): ReadonlyMap<number, string | null> {
+export function useUnfinishedYears(views: readonly YearView[], read = true): ReadonlyMap<number, string | null> {
   const catalog = useNationalCatalog()
   const client = useQueryClient()
   const [years] = totalsHistoryOptions(client, catalog)
   // Its own key over the years' read (shared through the cache, one request): it never fails. If the years can't be
   // read, the menus offer every year — on the server too, where an error boundary can't catch it — and the page stands.
-  const { data } = useSuspenseQuery({
+  // Unread (`read` false), none is held back and nothing waits; one hook either way, so the tree under it keeps its state.
+  const unfinishedRead = queryOptions({
     queryKey: ['national-budget-home', 'unfinished-years', catalog.snapshots.execution] as const,
     queryFn: () =>
       client
         .fetchQuery(years)
         .then((grid) => unfinishedYearsOf(grid.results))
-        .catch(() => []),
+        .catch((): ReturnType<typeof unfinishedYearsOf> => []),
     staleTime: 5 * 60_000,
   })
-  const unfinished = new Map(data)
+  const results = useSuspenseQueries({ queries: read ? [unfinishedRead] : ([] as (typeof unfinishedRead)[]) })
+  const unfinished = new Map(results[0]?.data ?? [])
   return new Map(views.filter((view) => !view.partial && unfinished.has(String(view.year))).map((view) => [view.year, unfinished.get(String(view.year)) ?? null]))
 }
 
