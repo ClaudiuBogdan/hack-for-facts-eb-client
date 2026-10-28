@@ -5,7 +5,10 @@ import {
 } from '@tanstack/react-start/server'
 import type { Register } from '@tanstack/react-router'
 import type { RequestHandler } from '@tanstack/react-start/server'
+import { installServerCatalogs } from '@/lib/i18n-server-catalogs'
 import { resolveSsrResponseStatus } from '@/lib/ssr/response-status'
+
+installServerCatalogs()
 
 /**
  * The default TanStack Start server entry, plus one thing: a status a loader

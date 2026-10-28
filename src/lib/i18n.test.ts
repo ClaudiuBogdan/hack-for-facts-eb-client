@@ -60,3 +60,31 @@ describe('browserLocaleFor', () => {
     expect(browserLocaleFor({ pathname: '/ins' })).toBe('ro')
   })
 })
+
+describe('registerServerCatalogs', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.resetModules()
+  })
+
+  it('serves every catalog from the compiled-in modules, and loads the default language at once', async () => {
+    vi.resetModules()
+    const { i18n: lingui } = await import('@lingui/core')
+    const load = vi.spyOn(lingui, 'load')
+    const { dynamicActivate, registerServerCatalogs } = await import('./i18n')
+
+    registerServerCatalogs({
+      messages: {
+        '../locales/ro/messages.po': { messages: { greeting: 'Salut' } },
+        '../locales/en/messages.po': { messages: { greeting: 'Hello' } },
+      },
+      admin: {},
+      pnrr: { '../locales/en/pnrr.po': { messages: { plan: 'Recovery plan' } } },
+    })
+    expect(load).toHaveBeenCalledWith('ro', { greeting: 'Salut' })
+
+    // No loader runs: the language and the route's catalog come from the modules registered above.
+    await dynamicActivate('en', { pathname: '/pnrr' })
+    expect(load).toHaveBeenLastCalledWith('en', { greeting: 'Hello', plan: 'Recovery plan' })
+  })
+})
