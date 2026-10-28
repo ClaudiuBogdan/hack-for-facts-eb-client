@@ -23,7 +23,6 @@ import { useUserInflationAdjusted } from "@/lib/hooks/useUserInflationAdjusted";
 import { parseCurrencyParam, parseBooleanParam } from "@/lib/globalSettings/params";
 import { normalizeNormalizationOptions } from "@/lib/normalization";
 import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
-import { getSiteUrl } from "@/config/env";
 
 export const Route = createLazyFileRoute("/map")({ component: MapPage });
 
@@ -181,25 +180,4 @@ function StandaloneMapWorkspace({
       }}
     />
   );
-}
-
-function buildMapHead() {
-  const site = getSiteUrl();
-  const canonical = `${site}/map`;
-  const title = t`Romania spending heatmap - Transparenta.eu`;
-  const description = t`Explore choropleth maps of public spending by UAT/County with per-capita or total normalization.`;
-  return {
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { name: "og:title", content: title },
-      { name: "og:description", content: description },
-      { name: "og:url", content: canonical },
-      { name: "canonical", content: canonical },
-    ],
-  };
-}
-
-export function head() {
-  return buildMapHead();
 }

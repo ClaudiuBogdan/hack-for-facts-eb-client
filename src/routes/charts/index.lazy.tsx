@@ -19,7 +19,6 @@ import { cn, slugify } from "@/lib/utils";
 import { usePersistedState } from "@/lib/hooks/usePersistedState";
 import { ChartCategories } from "@/components/charts/components/chart-categories/ChartCategories";
 import ChartsBackupRestore from "@/components/charts/components/backup-restore/ChartsBackupRestore";
-import { getSiteUrl } from "@/config/env";
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 import { FloatingQuickNav } from "@/components/ui/FloatingQuickNav";
@@ -161,7 +160,6 @@ function ChartsListPage() {
           normalization: 'total',
         }}
       />
-      {/* Head handled by Route.head */}
       <div className="rounded-xl border bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-6 md:p-8 shadow-md">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-2">
@@ -323,27 +321,6 @@ function ChartsListPage() {
       {/* Category dialogs and triggers moved into ChartCategories to avoid rerenders of the list when typing */}
     </div>
   );
-}
-
-function buildChartsListHead() {
-  const site = getSiteUrl()
-  const canonical = `${site}/charts/`
-  const title = 'Saved charts – Transparenta.eu'
-  const description = 'Manage and search your locally saved charts. Create, favorite, categorize, and share your visualizations.'
-  return {
-    meta: [
-      { title },
-      { name: 'description', content: description },
-      { name: 'og:title', content: title },
-      { name: 'og:description', content: description },
-      { name: 'og:url', content: canonical },
-      { name: 'canonical', content: canonical },
-    ],
-  }
-}
-
-export function head() {
-  return buildChartsListHead()
 }
 
 // Category triggers and dialogs moved to ChartCategories component
