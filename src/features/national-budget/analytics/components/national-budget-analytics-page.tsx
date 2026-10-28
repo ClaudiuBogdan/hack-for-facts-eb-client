@@ -1,7 +1,7 @@
 import { Fragment, Suspense, createContext, useContext, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { ErrorBoundary } from '@sentry/react'
+import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { QueryErrorResetBoundary, useQueryClient, useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { ArrowLeft, Coins, Landmark, Scale, ScrollText, Wallet, X, type LucideIcon } from 'lucide-react'
 import { Link } from '@tanstack/react-router'

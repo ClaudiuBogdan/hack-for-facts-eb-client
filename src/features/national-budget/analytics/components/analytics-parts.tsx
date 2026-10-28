@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { plural, t } from '@lingui/core/macro'
-import { ErrorBoundary } from '@sentry/react'
+import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Check, FileSearch, Info, Link2, TriangleAlert } from 'lucide-react'
 
