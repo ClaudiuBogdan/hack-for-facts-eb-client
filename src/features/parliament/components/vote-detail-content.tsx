@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import type { ParliamentVoteDetail } from "@/schemas/parliament";
 import type { VoteTab } from "../lib/vote-detail-search";
-import { exportVoteDetailAsCsv } from "../api/parliament-api";
+import { exportVoteDetailAsCsv } from "../api/parliament-api-sync";
 import { downloadCsv, formatVoteDayLong } from "../lib/formatting";
 import { cn } from "@/lib/utils";
 import {

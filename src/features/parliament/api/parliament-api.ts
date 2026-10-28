@@ -4,13 +4,10 @@
  * private-companies pilot). UI components import only from here; the mock/live
  * split is invisible to them and the returned data shapes are identical.
  *
- * The four synchronous getters (`getParliamentGroupColorMap`, `getMemberJudetMap`,
- * `getVoteDivisionNumber`, `getParliamentVoteSummary`) are read at render — and
- * one at module scope (the vote-detail route). They cannot await live data, so
- * the live implementations resolve from pure derivation (group colour) or a
- * module-level cache primed by the async fetchers (vote summaries / divisions).
- * `getMemberJudetMap` has no live backing (ballots carry no constituency) and
- * returns an empty map in live mode — a documented server gap, not fabrication.
+ * The mock modules, and the fixtures they carry, are imported on demand: only
+ * in mock mode, on the first read that needs them. A static import put them in
+ * every parliament page's code, live builds included. The synchronous,
+ * render-time getters live in `parliament-api-sync.ts`.
  */
 import type {
   ParliamentBillDetail,
@@ -39,7 +36,6 @@ import type {
   ParliamentBillActivity,
   ParliamentVoteActivity,
   ParliamentVoteDetail,
-  ParliamentVoteSummary,
   ParliamentVotesList,
   ParliamentVotesSearch,
   VoteChamber,
@@ -61,11 +57,6 @@ import type {
   ParliamentStenogramTranscript,
 } from '@/schemas/parliament'
 import {
-  fetchParliamentSpeechesMock,
-  fetchParliamentSpeechActivityMock,
-  fetchParliamentSpeechDetailMock,
-} from './parliament-speeches-api.mock'
-import {
   fetchParliamentSpeechesLive,
   fetchParliamentSpeechActivityLive,
   fetchParliamentSpeechDetailLive,
@@ -81,60 +72,9 @@ import {
   fetchParliamentBillSchedulingLive,
   type ParliamentAgendaFilterInput,
 } from './parliament-agenda-api.live'
-import {
-  fetchParliamentAgendaMock,
-  fetchParliamentAgendasMock,
-  fetchParliamentBillSchedulingMock,
-} from './parliament-agenda-api.mock'
-import {
-  fetchParliamentSpeechContextMock,
-  fetchParliamentStenogramSessionsMock,
-  fetchParliamentStenogramTranscriptMock,
-  fetchParliamentTranscriptMock,
-} from './parliament-stenograms-api.mock'
 import { fetchParliamentTranscriptLive } from './parliament-transcript-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
-import {
-  PARLIAMENT_GROUP_FALLBACK_COLOR,
-  resolveGroupColor,
-} from '../lib/group-colors'
-import {
-  getMemberJudetCache,
-  lookupDivisionNumber,
-  lookupVoteSummary,
-} from './graphql/vote-summary-cache'
-import {
-  fetchParliamentBillDetailMock,
-  fetchParliamentBillRelatedVotesMock,
-  fetchParliamentBillsMock,
-  fetchParliamentChamberCompositionMock,
-  fetchParliamentGroupMembersMock,
-  fetchParliamentGroupMock,
-  fetchParliamentGroupsMock,
-  fetchParliamentHubMock,
-  fetchParliamentJudeteMock,
-  fetchParliamentMemberInitiativesMock,
-  fetchParliamentMemberMock,
-  fetchParliamentMemberProfileMock,
-  fetchParliamentMemberVoteActivityMock,
-  fetchParliamentMemberVotingHistoryMock,
-  fetchParliamentMemberSpeechesMock,
-  fetchParliamentMemberSpeechActivityMock,
-  fetchParliamentMembersMock,
-  fetchParliamentCommitteeDocumentsMock,
-  fetchParliamentCommitteeMock,
-  fetchParliamentCommitteesMock,
-  fetchParliamentFreshnessMock,
-  fetchParliamentBillActivityMock,
-  fetchParliamentVoteActivityMock,
-  fetchParliamentVoteDetailMock,
-  fetchParliamentVotesMock,
-  getMemberJudetMapMock,
-  getParliamentGroupColorMapMock,
-  getParliamentVoteSummaryMock,
-  getVoteDivisionNumberMock,
-} from './parliament-api.mock'
 import {
   fetchParliamentBillDetailLive,
   fetchParliamentBillRelatedVotesLive,
@@ -165,9 +105,15 @@ import {
   fetchParliamentVotesLive,
 } from './parliament-api.live'
 
+// Fixtures, in their own chunks: fetched in mock mode only (see the header).
+const loadParliamentMocks = () => import('./parliament-api.mock')
+const loadAgendaMocks = () => import('./parliament-agenda-api.mock')
+const loadSpeechesMocks = () => import('./parliament-speeches-api.mock')
+const loadStenogramsMocks = () => import('./parliament-stenograms-api.mock')
+
 export async function fetchParliamentHub(): Promise<ParliamentHubData> {
   return isParliamentMockEnabled()
-    ? fetchParliamentHubMock()
+    ? (await loadParliamentMocks()).fetchParliamentHubMock()
     : fetchParliamentHubLive()
 }
 
@@ -175,7 +121,7 @@ export async function fetchParliamentMembers(
   search: ParliamentMembersSearch = {},
 ): Promise<ParliamentMembersList> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMembersMock(search)
+    ? (await loadParliamentMocks()).fetchParliamentMembersMock(search)
     : fetchParliamentMembersLive(search)
 }
 
@@ -184,7 +130,7 @@ export async function fetchParliamentChamberComposition(
   search: ParliamentMembersSearch = {},
 ): Promise<ParliamentChamberComposition> {
   return isParliamentMockEnabled()
-    ? fetchParliamentChamberCompositionMock(chamber, search)
+    ? (await loadParliamentMocks()).fetchParliamentChamberCompositionMock(chamber, search)
     : fetchParliamentChamberCompositionLive(chamber, search)
 }
 
@@ -192,7 +138,7 @@ export async function fetchParliamentMember(
   memberId: string,
 ): Promise<ParliamentMember | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberMock(memberId)
+    ? (await loadParliamentMocks()).fetchParliamentMemberMock(memberId)
     : fetchParliamentMemberLive(memberId)
 }
 
@@ -200,7 +146,7 @@ export async function fetchParliamentGroups(
   chamber?: 'camera' | 'senat',
 ): Promise<ParliamentGroup[]> {
   return isParliamentMockEnabled()
-    ? fetchParliamentGroupsMock(chamber)
+    ? (await loadParliamentMocks()).fetchParliamentGroupsMock(chamber)
     : fetchParliamentGroupsLive(chamber)
 }
 
@@ -209,7 +155,7 @@ export async function fetchParliamentGroup(
   legislature?: string,
 ): Promise<ParliamentGroup | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentGroupMock(groupId, legislature)
+    ? (await loadParliamentMocks()).fetchParliamentGroupMock(groupId, legislature)
     : fetchParliamentGroupLive(groupId, legislature)
 }
 
@@ -218,7 +164,7 @@ export async function fetchParliamentGroupMembers(
   legislature?: string,
 ): Promise<ParliamentMember[]> {
   return isParliamentMockEnabled()
-    ? fetchParliamentGroupMembersMock(groupId, legislature)
+    ? (await loadParliamentMocks()).fetchParliamentGroupMembersMock(groupId, legislature)
     : fetchParliamentGroupMembersLive(groupId, legislature)
 }
 
@@ -254,7 +200,7 @@ export async function fetchParliamentVotes(
   after?: string,
 ): Promise<ParliamentVotesList> {
   return isParliamentMockEnabled()
-    ? fetchParliamentVotesMock(search, after)
+    ? (await loadParliamentMocks()).fetchParliamentVotesMock(search, after)
     : fetchParliamentVotesLive(search, after)
 }
 
@@ -262,7 +208,7 @@ export async function fetchParliamentBills(
   search: ParliamentBillsSearch = {},
 ): Promise<ParliamentBillList> {
   return isParliamentMockEnabled()
-    ? fetchParliamentBillsMock(search)
+    ? (await loadParliamentMocks()).fetchParliamentBillsMock(search)
     : fetchParliamentBillsLive(search)
 }
 
@@ -270,7 +216,7 @@ export async function fetchParliamentBillDetail(
   billId: string,
 ): Promise<ParliamentBillDetail | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentBillDetailMock(billId)
+    ? (await loadParliamentMocks()).fetchParliamentBillDetailMock(billId)
     : fetchParliamentBillDetailLive(billId)
 }
 
@@ -278,7 +224,7 @@ export async function fetchParliamentBillRelatedVotes(
   billId: string,
 ): Promise<readonly ParliamentBillRelatedVote[]> {
   return isParliamentMockEnabled()
-    ? fetchParliamentBillRelatedVotesMock(billId)
+    ? (await loadParliamentMocks()).fetchParliamentBillRelatedVotesMock(billId)
     : fetchParliamentBillRelatedVotesLive(billId)
 }
 
@@ -287,7 +233,7 @@ export async function fetchParliamentVoteDetail(
   voteId: string,
 ): Promise<ParliamentVoteDetail | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentVoteDetailMock(chamber, voteId)
+    ? (await loadParliamentMocks()).fetchParliamentVoteDetailMock(chamber, voteId)
     : fetchParliamentVoteDetailLive(chamber, voteId)
 }
 
@@ -297,7 +243,7 @@ export async function fetchParliamentMemberVotingHistory(
   filter?: MemberVotesFilterInput,
 ): Promise<ParliamentMemberVotingHistory | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberVotingHistoryMock(memberId, after, filter)
+    ? (await loadParliamentMocks()).fetchParliamentMemberVotingHistoryMock(memberId, after, filter)
     : fetchParliamentMemberVotingHistoryLive(memberId, after, filter)
 }
 
@@ -307,7 +253,7 @@ export async function fetchParliamentMemberVoteActivity(
   filter?: MemberVotesFilterInput,
 ): Promise<ParliamentMemberVoteActivity | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberVoteActivityMock(memberId, year, filter)
+    ? (await loadParliamentMocks()).fetchParliamentMemberVoteActivityMock(memberId, year, filter)
     : fetchParliamentMemberVoteActivityLive(memberId, year, filter)
 }
 
@@ -318,7 +264,7 @@ export async function fetchParliamentMemberSpeeches(
   q?: string,
 ): Promise<ParliamentMemberSpeechesHistory | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberSpeechesMock(memberId, after, filter, q)
+    ? (await loadParliamentMocks()).fetchParliamentMemberSpeechesMock(memberId, after, filter, q)
     : fetchParliamentMemberSpeechesLive(memberId, after, filter, q)
 }
 
@@ -329,7 +275,7 @@ export async function fetchParliamentMemberSpeechActivity(
   q?: string,
 ): Promise<ParliamentMemberSpeechActivity | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberSpeechActivityMock(memberId, year, filter, q)
+    ? (await loadParliamentMocks()).fetchParliamentMemberSpeechActivityMock(memberId, year, filter, q)
     : fetchParliamentMemberSpeechActivityLive(memberId, year, filter, q)
 }
 
@@ -347,7 +293,7 @@ export async function fetchParliamentVoteActivity(
   filter?: ParliamentVotesFilterInput,
 ): Promise<ParliamentVoteActivity | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentVoteActivityMock(year, filter)
+    ? (await loadParliamentMocks()).fetchParliamentVoteActivityMock(year, filter)
     : fetchParliamentVoteActivityLive(year, filter)
 }
 
@@ -362,7 +308,7 @@ export async function fetchParliamentBillActivity(
   year: number,
 ): Promise<ParliamentBillActivity | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentBillActivityMock(year)
+    ? (await loadParliamentMocks()).fetchParliamentBillActivityMock(year)
     : fetchParliamentBillActivityLive(year)
 }
 
@@ -374,7 +320,7 @@ export async function fetchParliamentSpeeches(
   q?: string,
 ): Promise<ParliamentSpeechesList> {
   return isParliamentMockEnabled()
-    ? fetchParliamentSpeechesMock(after, filter, q)
+    ? (await loadSpeechesMocks()).fetchParliamentSpeechesMock(after, filter, q)
     : fetchParliamentSpeechesLive(after, filter, q)
 }
 
@@ -384,7 +330,7 @@ export async function fetchParliamentSpeechActivity(
   q?: string,
 ): Promise<ParliamentSpeechActivity | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentSpeechActivityMock(year, filter, q)
+    ? (await loadSpeechesMocks()).fetchParliamentSpeechActivityMock(year, filter, q)
     : fetchParliamentSpeechActivityLive(year, filter, q)
 }
 
@@ -392,7 +338,7 @@ export async function fetchParliamentSpeechDetail(
   speechKey: string,
 ): Promise<ParliamentSpeech | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentSpeechDetailMock(speechKey)
+    ? (await loadSpeechesMocks()).fetchParliamentSpeechDetailMock(speechKey)
     : fetchParliamentSpeechDetailLive(speechKey)
 }
 
@@ -406,7 +352,7 @@ export async function fetchParliamentAgendas(
   filter?: ParliamentAgendaFilterInput,
 ): Promise<ParliamentAgendaList> {
   return isParliamentMockEnabled()
-    ? fetchParliamentAgendasMock(page, filter)
+    ? (await loadAgendaMocks()).fetchParliamentAgendasMock(page, filter)
     : fetchParliamentAgendasLive(page, filter)
 }
 
@@ -415,7 +361,7 @@ export async function fetchParliamentAgenda(
   agendaKey: string,
 ): Promise<ParliamentAgendaDetail | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentAgendaMock(agendaKey)
+    ? (await loadAgendaMocks()).fetchParliamentAgendaMock(agendaKey)
     : fetchParliamentAgendaLive(agendaKey)
 }
 
@@ -427,7 +373,7 @@ export async function fetchParliamentBillScheduling(
   billKey: string,
 ): Promise<ParliamentBillScheduling[]> {
   return isParliamentMockEnabled()
-    ? fetchParliamentBillSchedulingMock(billKey)
+    ? (await loadAgendaMocks()).fetchParliamentBillSchedulingMock(billKey)
     : fetchParliamentBillSchedulingLive(billKey)
 }
 
@@ -439,7 +385,7 @@ export async function fetchParliamentStenogramSessions(
   q?: string,
 ): Promise<ParliamentStenogramSessionsList> {
   return isParliamentMockEnabled()
-    ? fetchParliamentStenogramSessionsMock(after, filter, q)
+    ? (await loadStenogramsMocks()).fetchParliamentStenogramSessionsMock(after, filter, q)
     : fetchParliamentStenogramSessionsLive(after, filter, q)
 }
 
@@ -456,7 +402,7 @@ export async function fetchParliamentTranscript(
   options?: { readonly signal?: AbortSignal },
 ): Promise<ParliamentStenogramTranscript> {
   return isParliamentMockEnabled()
-    ? fetchParliamentTranscriptMock(sessionKey)
+    ? (await loadStenogramsMocks()).fetchParliamentTranscriptMock(sessionKey)
     : fetchParliamentTranscriptLive(sessionKey, options)
 }
 
@@ -467,7 +413,7 @@ export async function fetchParliamentStenogramTranscript(
   limit?: number,
 ): Promise<ParliamentStenogramTranscript> {
   return isParliamentMockEnabled()
-    ? fetchParliamentStenogramTranscriptMock(sessionKey, offset, limit)
+    ? (await loadStenogramsMocks()).fetchParliamentStenogramTranscriptMock(sessionKey, offset, limit)
     : fetchParliamentStenogramTranscriptLive(sessionKey, offset, limit)
 }
 
@@ -475,7 +421,7 @@ export async function fetchParliamentSpeechContext(
   speechKey: string,
 ): Promise<ParliamentSpeechContext | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentSpeechContextMock(speechKey)
+    ? (await loadStenogramsMocks()).fetchParliamentSpeechContextMock(speechKey)
     : fetchParliamentSpeechContextLive(speechKey)
 }
 
@@ -483,7 +429,7 @@ export async function fetchParliamentMemberProfile(
   memberId: string,
 ): Promise<ParliamentMemberProfile | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberProfileMock(memberId)
+    ? (await loadParliamentMocks()).fetchParliamentMemberProfileMock(memberId)
     : fetchParliamentMemberProfileLive(memberId)
 }
 
@@ -493,7 +439,7 @@ export async function fetchParliamentMemberInitiatives(
   pageSize?: number,
 ): Promise<ParliamentMemberInitiativesList | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberInitiativesMock(memberId, page, pageSize)
+    ? (await loadParliamentMocks()).fetchParliamentMemberInitiativesMock(memberId, page, pageSize)
     : fetchParliamentMemberInitiativesLive(memberId, page, pageSize)
 }
 
@@ -501,13 +447,13 @@ export async function fetchParliamentJudete(): Promise<
   ReadonlyArray<{ slug: string; name: string }>
 > {
   return isParliamentMockEnabled()
-    ? fetchParliamentJudeteMock()
+    ? (await loadParliamentMocks()).fetchParliamentJudeteMock()
     : fetchParliamentJudeteLive()
 }
 
 export async function fetchParliamentFreshness(): Promise<ParliamentDataFreshness> {
   return isParliamentMockEnabled()
-    ? fetchParliamentFreshnessMock()
+    ? (await loadParliamentMocks()).fetchParliamentFreshnessMock()
     : fetchParliamentFreshnessLive()
 }
 
@@ -526,7 +472,7 @@ export async function fetchParliamentCommittees(params: {
   endCursor?: string
 }> {
   return isParliamentMockEnabled()
-    ? fetchParliamentCommitteesMock(params)
+    ? (await loadParliamentMocks()).fetchParliamentCommitteesMock(params)
     : fetchParliamentCommitteesLive(params)
 }
 
@@ -534,7 +480,7 @@ export async function fetchParliamentCommittee(
   committeeKey: string,
 ): Promise<ParliamentCommitteeDetail | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentCommitteeMock(committeeKey)
+    ? (await loadParliamentMocks()).fetchParliamentCommitteeMock(committeeKey)
     : fetchParliamentCommitteeLive(committeeKey)
 }
 
@@ -548,65 +494,6 @@ export async function fetchParliamentCommitteeDocuments(
   after?: string,
 ): Promise<ParliamentCommitteeDocumentPage> {
   return isParliamentMockEnabled()
-    ? fetchParliamentCommitteeDocumentsMock(committeeKey, after)
+    ? (await loadParliamentMocks()).fetchParliamentCommitteeDocumentsMock(committeeKey, after)
     : fetchParliamentCommitteeDocumentsLive(committeeKey, after)
-}
-
-// ── synchronous getters (render-time) ───────────────────────────────────────
-
-export function getVoteDivisionNumber(voteId: string): number | undefined {
-  return isParliamentMockEnabled()
-    ? getVoteDivisionNumberMock(voteId)
-    : lookupDivisionNumber(voteId)
-}
-
-export function getParliamentVoteSummary(
-  chamber: ParliamentChamber,
-  voteId: string,
-): ParliamentVoteSummary | undefined {
-  return isParliamentMockEnabled()
-    ? getParliamentVoteSummaryMock(chamber, voteId)
-    : lookupVoteSummary(chamber, voteId)
-}
-
-/**
- * Group → colour map. Group colour is not a stored field, so this returns a
- * derive-on-access object: any `groupId` (`<slug>-<chamber>`) resolves to its
- * party brand colour via the single `resolveGroupColor` resolver (the chamber
- * suffix is folded there — colour is per party). Mock mode returns the fixture
- * map unchanged.
- */
-export function getParliamentGroupColorMap(): Readonly<Record<string, string>> {
-  if (isParliamentMockEnabled()) {
-    return getParliamentGroupColorMapMock()
-  }
-  return new Proxy<Record<string, string>>(
-    {},
-    {
-      get: (_target, prop) =>
-        typeof prop === 'string'
-          ? resolveGroupColor({ groupId: prop })
-          : PARLIAMENT_GROUP_FALLBACK_COLOR,
-    },
-  )
-}
-
-/**
- * Member → county map, used to label ballot rows on the vote-detail page. In
- * live mode it's primed from the vote's ballots (each resolved ballot now
- * carries the member's `constituencyName`) when the vote detail is fetched, so
- * the județ column is populated for the votes the user opens. Mock mode returns
- * the fixture map.
- */
-export function getMemberJudetMap(): Readonly<Record<string, string>> {
-  return isParliamentMockEnabled() ? getMemberJudetMapMock() : getMemberJudetCache()
-}
-
-/** Pure CSV serialiser — identical in both modes. */
-export function exportVoteDetailAsCsv(detail: ParliamentVoteDetail): string {
-  const header = 'memberId,memberName,groupName,choice'
-  const rows = detail.memberVotes.map(
-    (mv) => `${mv.memberId},"${mv.memberName}","${mv.groupName}",${mv.choice}`,
-  )
-  return [header, ...rows].join('\n')
 }

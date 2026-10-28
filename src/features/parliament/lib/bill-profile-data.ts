@@ -1,7 +1,6 @@
 import type {
   BillCurrentLocation,
   BillStageStatus,
-  BillType,
   ParliamentBillDetail,
   ParliamentBillPassage,
   ParliamentBillPassageStage,
@@ -290,39 +289,5 @@ export function getDefaultBillPassageLabels(
     final: FINAL_STAGES.map((stage) =>
       buildStage(stage.stageId, stage.label, 'not_reached'),
     ),
-  }
-}
-
-export function getBillTypeLabel(billType: BillType): string {
-  switch (billType) {
-    case 'guvern':
-      return 'Proiect al Guvernului'
-    case 'parlamentar':
-      return 'Inițiativă parlamentară'
-    case 'cetateni':
-      return 'Inițiativă a cetățenilor'
-    case 'ordonanta':
-      return 'Ordonanță de urgență'
-  }
-}
-
-export function getBillLocationLabel(location: BillCurrentLocation): string {
-  switch (location) {
-    case 'camera':
-      return 'Camera Deputaților'
-    case 'senat':
-      return 'Senat'
-    case 'mediere':
-      return 'Comisie de mediere'
-    case 'presedinte':
-      return 'La Președinte'
-    case 'promulgat':
-      return 'Promulgat'
-    case 'respins':
-      return 'Respins'
-    case 'retras':
-      return 'Retras'
-    case 'clasat':
-      return 'Clasat'
   }
 }

@@ -28,7 +28,7 @@ import {
   getBillLocationChipLabel,
   getBillTypeChipLabel,
 } from '../lib/bills-filter'
-import { getBillLocationLabel, getBillTypeLabel } from '../lib/bill-profile-data'
+import { getBillLocationLabel, getBillTypeLabel } from '../lib/bill-labels'
 import {
   ParliamentActiveFilterChips,
   type ParliamentFilterChip,

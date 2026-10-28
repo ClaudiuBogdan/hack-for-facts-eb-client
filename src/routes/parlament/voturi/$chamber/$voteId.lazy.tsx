@@ -2,7 +2,7 @@ import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   getMemberJudetMap,
   getParliamentGroupColorMap,
-} from '@/features/parliament/api/parliament-api'
+} from '@/features/parliament/api/parliament-api-sync'
 import {
   DEFAULT_VOTE_TAB,
   voteDetailSearchWithTab,

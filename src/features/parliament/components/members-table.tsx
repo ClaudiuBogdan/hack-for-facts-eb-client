@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { getParliamentGroupColorMap } from '../api/parliament-api'
+import { getParliamentGroupColorMap } from '../api/parliament-api-sync'
 import {
   formatMemberName,
   getChamberShortLabel,

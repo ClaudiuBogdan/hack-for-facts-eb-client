@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { ParliamentBillSummary } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import { formatBillUpdatedAt, getChamberLabel } from '../lib/formatting'
-import { getBillTypeLabel } from '../lib/bill-profile-data'
+import { getBillTypeLabel } from '../lib/bill-labels'
 import {
   PARLIAMENT_CAMERA_GREEN,
   PARLIAMENT_SENAT_RED,

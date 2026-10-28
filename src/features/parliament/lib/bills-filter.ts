@@ -6,7 +6,7 @@
  */
 import type { ParliamentBillsSearch } from '@/schemas/parliament'
 import { t } from '@lingui/core/macro'
-import { getBillLocationLabel, getBillTypeLabel } from './bill-profile-data'
+import { getBillLocationLabel, getBillTypeLabel } from './bill-labels'
 
 /**
  * Count the active FILTER facets (type + location + last-event period). The

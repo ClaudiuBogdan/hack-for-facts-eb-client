@@ -31,7 +31,7 @@ vi.mock('@tanstack/react-router', () => ({
   },
 }))
 // The bill tab reads vote summaries via sync getters; no related votes here.
-vi.mock('../api/parliament-api', () => ({
+vi.mock('../api/parliament-api-sync', () => ({
   getParliamentVoteSummary: () => undefined,
   getVoteDivisionNumber: () => undefined,
 }))

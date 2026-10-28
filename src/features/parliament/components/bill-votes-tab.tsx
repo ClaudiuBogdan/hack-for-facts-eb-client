@@ -1,5 +1,5 @@
 import type { ParliamentBillDetail } from '@/schemas/parliament'
-import { getParliamentVoteSummary } from '../api/parliament-api'
+import { getParliamentVoteSummary } from '../api/parliament-api-sync'
 import { VoteChamberVoteCard } from './vote-chamber-vote-card'
 
 type Props = {

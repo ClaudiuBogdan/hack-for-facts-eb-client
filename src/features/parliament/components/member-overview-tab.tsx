@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ParliamentMember } from "@/schemas/parliament";
-import { getParliamentGroupColorMap } from "../api/parliament-api";
+import { getParliamentGroupColorMap } from "../api/parliament-api-sync";
 import {
   formatMemberMandatePeriod,
   formatMemberName,

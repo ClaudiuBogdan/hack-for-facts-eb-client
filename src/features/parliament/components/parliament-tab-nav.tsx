@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import type { ParliamentTabId } from '@/schemas/parliament'
+import { warmParliamentTab } from './parliament-tab-loaders'
 
 export type ParliamentTab =
   | 'hub'
@@ -65,12 +66,18 @@ export function ParliamentTabNav({ activeTab }: Props) {
     >
       {TABS.map((tab) => {
         const isActive = tab.id === activeTab
+        // A list tab's code loads on its own; intent starts it, as the
+        // router's own preload does for a route's.
+        const warm = 'tab' in tab ? () => warmParliamentTab(tab.tab) : undefined
         return (
           <Link
             key={tab.id}
             ref={isActive ? activeRef : undefined}
             to={tab.to}
             search={'tab' in tab ? { tab: tab.tab } : undefined}
+            onPointerEnter={warm}
+            onFocus={warm}
+            onTouchStart={warm}
             className={cn(
               'relative whitespace-nowrap px-4 py-3 text-base transition-colors sm:px-5',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
