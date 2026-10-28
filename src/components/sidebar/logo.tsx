@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../ui/sidebar";
 import { Link } from "@tanstack/react-router";
-import logo from "@/assets/logo/logo.png";
+import logo from "@/assets/logo/logo-mark.webp";
 
 const Logo: FC = () => {
   const { setOpenMobile } = useSidebar();

@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
 import { Check, Link2, MessageSquare, Search } from "lucide-react";
-import logo from "@/assets/logo/logo.png";
+import logo from "@/assets/logo/logo-mark.webp";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FloatingEntitySearch } from "@/components/entities/FloatingEntitySearch";

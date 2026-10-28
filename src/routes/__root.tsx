@@ -222,7 +222,7 @@ function getGlobalHead() {
       },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: "/logo.png" },
+      { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon.png" },
       ...fontPreloads,
       { rel: "stylesheet", href: appCss },
     ],
