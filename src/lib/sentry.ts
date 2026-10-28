@@ -1,83 +1,193 @@
-import * as Sentry from "@sentry/react";
+import type * as SentryNamespace from "@sentry/react";
 import { env } from "@/config/env";
-import { hasAnalyticsConsent, hasSentryConsent } from "@/lib/consent";
-import {
-  isJusticeLitigationProfilePath,
-  isJusticePath,
-  sanitizeJusticeTelemetryValue,
-} from "@/lib/privacy/sensitive-route-sanitizer";
-import {
-  captureConsoleIntegration,
-  extraErrorDataIntegration,
-  replayIntegration,
-} from "@sentry/react";
+import { quietImport } from "@/lib/quiet-chunk-load";
+import { hasSentryConsent } from "@/lib/consent";
+import { sanitizeJusticeTelemetryValue } from "@/lib/privacy/sensitive-route-sanitizer";
+
+/**
+ * Sentry, loaded when it is first needed. The SDK and its setup live in
+ * `sentry-sdk.ts`, a chunk of its own: this module only queues calls for it.
+ *
+ * - `initSentry` starts the load and initialises the SDK when it arrives. Its
+ *   callers decide when, as before: the app shell once the visitor consents,
+ *   the global error page always.
+ * - A call made while the SDK loads (`withSentry`, the React root handlers,
+ *   `cleanupSentry`) waits, and runs in order once `initSentry` has, so an
+ *   error raised in that window is still reported; so does an uncaught error
+ *   or rejection, which Sentry's own handlers only catch after `init`.
+ * - A call made before any `initSentry` finds no client, as calling the SDK
+ *   before `Sentry.init` always did: it is dropped, and nothing is loaded.
+ * - The SDK loads quietly (`quietImport`): if its chunk fails, telemetry is
+ *   lost, but the page is not reloaded for it.
+ */
+
+type SentrySdk = typeof import("./sentry-sdk");
+export type SentryApi = typeof SentryNamespace;
+type SentryTask = (sdk: SentrySdk) => void;
+/** A lifecycle task (init, cleanup, a feedback click) is never dropped; a report may be. */
+type SentryTaskKind = "lifecycle" | "report";
 
 /**
  * Public handles to open customized Sentry Feedback dialogs programmatically.
- * These are set only after Sentry.init + feedbackIntegration are active on the client.
+ * These are set only after Sentry.init + feedbackIntegration are active on the client,
+ * or, while the SDK loads for an init that will enable Feedback, open it once it has.
  */
 export let openSentryFeedback: (() => void) | null = null;
 export let openSentryBugReport: (() => void) | null = null;
 
-/** Small helper */
 const isBrowser = typeof window !== "undefined";
-const CSS_CROSS_ORIGIN_ERROR_MARKERS = [
-  "cssrules",
-  "cssstylesheet",
-  "cannot access rules",
-  "failed to read the 'cssrules' property",
-  "failed to read the \"cssrules\" property",
-  "securityerror",
-] as const;
-const DOM_NODE_REMOVAL_ERROR_MARKERS = [
-  "removechild",
-  "not a child of this node",
-  "notfounderror",
-] as const;
-const FACEBOOK_IN_APP_BROWSER_USER_AGENT_MARKERS = [
-  "fban/",
-  "fbav/",
-  "fb_iab",
-] as const;
-const FACEBOOK_DOM_PROBE_MESSAGE_PATTERN = /^[a-z_]+_and_dom:\s*[a-f0-9]{8,}$/i;
-const FACEBOOK_IAB_INVALID_ACCESS_ERROR_MESSAGE =
-  "the object does not support the operation or argument.";
-const FACEBOOK_IN_APP_BROWSER_MESSAGE_PREFIX = "fbnav";
-const CLERK_FAILED_TO_LOAD_MESSAGE_MARKER = "clerk: failed to load clerk";
-const CLERK_FAILED_TO_LOAD_TIMEOUT_CODE = "failed_to_load_clerk_js_timeout";
-const CLERK_REDIRECT_URL_DEPRECATION_DOC_ANCHOR =
-  "clerk.com/docs/guides/custom-redirects#redirect-url-props";
+/** Reports kept while the SDK loads; past this, newer ones are dropped. */
+const MAX_PENDING_REPORTS = 100;
 
-type SentryStackFrameLike = {
-  function?: string;
-  filename?: string;
-  abs_path?: string;
-};
+let loadedSdk: SentrySdk | null = null;
+let sdkLoad: Promise<void> | null = null;
+let pendingTasks: SentryTask[] = [];
+let pendingReports = 0;
 
-type SentryExceptionValueLike = {
-  type?: string;
-  value?: string;
-  mechanism?: {
-    type?: string;
-  };
-  stacktrace?: {
-    frames?: SentryStackFrameLike[];
-  };
-  raw_stacktrace?: {
-    frames?: SentryStackFrameLike[];
-  };
-};
+function runTask(sdk: SentrySdk, task: SentryTask): void {
+  try {
+    task(sdk);
+  } catch {
+    // Keep the app unaffected if a Sentry call throws.
+  }
+}
 
-type SentryBeforeSendEventLike = {
-  message?: string;
-  logger?: string;
-  exception?: {
-    values?: SentryExceptionValueLike[];
-  };
-  contexts?: Record<string, unknown>;
-};
+/**
+ * Uncaught errors and rejections while the SDK loads. Sentry's own global
+ * handlers start with `Sentry.init`; until then these listeners keep what
+ * they would have caught, and leave once the SDK has arrived.
+ */
+function queueGlobalError(event: ErrorEvent): void {
+  const error: unknown = event.error ?? event.message;
+  whenSdkLoaded((sdk) => {
+    sdk.Sentry.captureException(error, {
+      mechanism: { type: "auto.browser.global_handlers.onerror", handled: false },
+    });
+  });
+}
 
-type SentryTelemetryEventLike = {
+function queueUnhandledRejection(event: PromiseRejectionEvent): void {
+  const reason: unknown = event.reason;
+  whenSdkLoaded((sdk) => {
+    sdk.Sentry.captureException(reason, {
+      mechanism: { type: "auto.browser.global_handlers.onunhandledrejection", handled: false },
+    });
+  });
+}
+
+function listenForGlobalErrors(listen: boolean): void {
+  if (listen) {
+    window.addEventListener("error", queueGlobalError);
+    window.addEventListener("unhandledrejection", queueUnhandledRejection);
+  } else {
+    window.removeEventListener("error", queueGlobalError);
+    window.removeEventListener("unhandledrejection", queueUnhandledRejection);
+  }
+}
+
+function loadSdk(): void {
+  if (loadedSdk || sdkLoad) return;
+  listenForGlobalErrors(true);
+  sdkLoad = quietImport(() => import("./sentry-sdk")).then(
+    (sdk) => {
+      listenForGlobalErrors(false);
+      loadedSdk = sdk;
+      const tasks = pendingTasks;
+      pendingTasks = [];
+      pendingReports = 0;
+      for (const task of tasks) runTask(sdk, task);
+    },
+    () => {
+      // The chunk did not load (offline, or a deploy removed it): drop what
+      // waited for it; the next `initSentry` tries again.
+      listenForGlobalErrors(false);
+      pendingTasks = [];
+      pendingReports = 0;
+      sdkLoad = null;
+      openSentryFeedback = null;
+      openSentryBugReport = null;
+    },
+  );
+}
+
+function whenSdkLoaded(task: SentryTask, kind: SentryTaskKind = "report"): void {
+  if (loadedSdk) {
+    runTask(loadedSdk, task);
+    return;
+  }
+  if (!sdkLoad) return;
+  if (kind === "report") {
+    if (pendingReports >= MAX_PENDING_REPORTS) return;
+    pendingReports += 1;
+  }
+  pendingTasks.push(task);
+}
+
+function syncFeedbackOpeners(sdk: SentrySdk): void {
+  openSentryFeedback = sdk.openSentryFeedback;
+  openSentryBugReport = sdk.openSentryBugReport;
+}
+
+/**
+ * Initialize Sentry for the client app: loads the SDK, then runs its setup
+ * (`sentry-sdk.ts`). A no-op on the server and when Sentry is not configured.
+ */
+export function initSentry(router: unknown): void {
+  if (!isBrowser) return;
+  if (!env.VITE_SENTRY_ENABLED || !env.VITE_SENTRY_DSN) return;
+  loadSdk();
+  // The setup enables Feedback under these same conditions (`sentry-sdk.ts`);
+  // a click on it while the SDK loads opens it once it is up.
+  if (!loadedSdk && env.VITE_SENTRY_FEEDBACK_ENABLED !== false && hasSentryConsent()) {
+    openSentryFeedback ??= () => whenSdkLoaded((sdk) => sdk.openSentryFeedback?.(), "lifecycle");
+    openSentryBugReport ??= () => whenSdkLoaded((sdk) => sdk.openSentryBugReport?.(), "lifecycle");
+  }
+  whenSdkLoaded((sdk) => {
+    sdk.initSentry(router);
+    syncFeedbackOpeners(sdk);
+  }, "lifecycle");
+}
+
+/**
+ * Disable Sentry without tearing down the app.
+ * (We avoid draining/closing to keep it instant; flip `enabled` instead.)
+ */
+export function cleanupSentry(): void {
+  if (!isBrowser) return;
+  openSentryFeedback = null;
+  openSentryBugReport = null;
+  whenSdkLoaded((sdk) => {
+    sdk.cleanupSentry();
+    syncFeedbackOpeners(sdk);
+  }, "lifecycle");
+}
+
+/**
+ * Runs `report` with the Sentry SDK: now when it is loaded, once it is when
+ * `initSentry` has started loading it, and not at all before that.
+ */
+export function withSentry(report: (sentry: SentryApi) => void): void {
+  whenSdkLoaded((sdk) => report(sdk.Sentry));
+}
+
+/**
+ * React 19 createRoot error handlers.
+ * These capture uncaught, caught, and recoverable errors via Sentry.
+ */
+export function getReactRootErrorHandlers() {
+  const report = (error: unknown, info: { componentStack?: string }) => {
+    withSentry((Sentry) => {
+      Sentry.reactErrorHandler()(error, info);
+    });
+  };
+  return {
+    onUncaughtError: report,
+    onCaughtError: report,
+    onRecoverableError: report,
+  } as const;
+}
+
+export type SentryTelemetryEventLike = {
   readonly [key: string]: unknown;
   user?: unknown;
   request?: unknown;
@@ -106,408 +216,4 @@ const JUSTICE_ROUTE_IN_EVENT = /\/(?:justice|justitie)(?=[/"?#\s]|$)/;
 export function sanitizeSentryTransaction<T extends SentryTelemetryEventLike>(event: T): T | null {
   if (JUSTICE_ROUTE_IN_EVENT.test(JSON.stringify(event))) return null;
   return sanitizeSentryEventPayload(event);
-}
-
-function isFacebookInAppBrowserUserAgent(): boolean {
-  if (!isBrowser) return false;
-  const userAgent = window.navigator?.userAgent?.toLowerCase() ?? "";
-  return FACEBOOK_IN_APP_BROWSER_USER_AGENT_MARKERS.some((marker) =>
-    userAgent.includes(marker)
-  );
-}
-
-function isFacebookInAppPostMessageInvalidAccessError(
-  event: SentryBeforeSendEventLike
-): boolean {
-  if (!isFacebookInAppBrowserUserAgent()) return false;
-
-  const exception = event.exception?.values?.[0];
-  if (!exception) return false;
-
-  const exceptionType = exception.type?.toLowerCase() ?? "";
-  const exceptionValue = exception.value?.toLowerCase() ?? "";
-  const mechanismType = exception.mechanism?.type ?? "";
-
-  if (exceptionType !== "invalidaccesserror") return false;
-  if (!exceptionValue.includes(FACEBOOK_IAB_INVALID_ACCESS_ERROR_MESSAGE)) {
-    return false;
-  }
-  if (mechanismType !== "auto.browser.global_handlers.onunhandledrejection") {
-    return false;
-  }
-
-  const frames = [
-    ...(exception.stacktrace?.frames ?? []),
-    ...(exception.raw_stacktrace?.frames ?? []),
-  ];
-
-  const hasPostMessageFrame = frames.some((frame) =>
-    (frame.function ?? "").toLowerCase().includes("postmessage")
-  );
-  const hasNativeCodeFrame = frames.some((frame) =>
-    `${frame.filename ?? frame.abs_path ?? ""}`.toLowerCase().includes("[native code]")
-  );
-  const hasUserScriptFrame = frames.some((frame) =>
-    `${frame.filename ?? frame.abs_path ?? ""}`.toLowerCase().includes("user-script")
-  );
-
-  const invalidAccessContext = event.contexts?.InvalidAccessError as
-    | { sourceURL?: unknown }
-    | undefined;
-  const hasUserScriptContext =
-    typeof invalidAccessContext?.sourceURL === "string" &&
-    invalidAccessContext.sourceURL.toLowerCase().includes("user-script");
-
-  return (
-    (hasPostMessageFrame && hasNativeCodeFrame) ||
-    hasUserScriptFrame ||
-    hasUserScriptContext
-  );
-}
-
-function isFacebookInAppClerkTimeoutMessage(normalizedMessage: string): boolean {
-  return (
-    isFacebookInAppBrowserUserAgent() &&
-    normalizedMessage.includes(CLERK_FAILED_TO_LOAD_MESSAGE_MARKER) &&
-    normalizedMessage.includes(CLERK_FAILED_TO_LOAD_TIMEOUT_CODE)
-  );
-}
-
-function isFacebookInAppConsoleNoiseMessage(
-  event: SentryBeforeSendEventLike,
-  normalizedMessage: string
-): boolean {
-  if (!isFacebookInAppBrowserUserAgent()) return false;
-  if (event.logger !== "console") return false;
-
-  if (normalizedMessage.startsWith(FACEBOOK_IN_APP_BROWSER_MESSAGE_PREFIX)) {
-    return true;
-  }
-
-  return FACEBOOK_DOM_PROBE_MESSAGE_PATTERN.test(normalizedMessage);
-}
-
-/**
- * Disable Sentry without tearing down the app.
- * (We avoid draining/closing to keep it instant; flip `enabled` instead.)
- */
-export function cleanupSentry(): void {
-  if (!isBrowser) return;
-  const client = Sentry.getClient();
-  if (client) client.getOptions().enabled = false;
-  openSentryFeedback = null;
-  openSentryBugReport = null;
-}
-
-/**
- * React 19 createRoot error handlers.
- * These capture uncaught, caught, and recoverable errors via Sentry.
- */
-export function getReactRootErrorHandlers() {
-  const sentryErrorHandler = Sentry.reactErrorHandler();
-  return {
-    onUncaughtError: (error: unknown, info: { componentStack?: string }) => {
-      sentryErrorHandler(error, info);
-    },
-    onCaughtError: (error: unknown, info: { componentStack?: string }) => {
-      sentryErrorHandler(error, info);
-    },
-    onRecoverableError: (error: unknown, info: { componentStack?: string }) => {
-      sentryErrorHandler(error, info);
-    },
-  } as const;
-}
-
-function isCurrentJusticeSensitiveLocation(): boolean {
-  if (!isBrowser) return false;
-  return (
-    isJusticePath(window.location.pathname) ||
-    isJusticeLitigationProfilePath(
-      window.location.pathname,
-      window.location.search,
-    )
-  );
-}
-
-function sanitizeReplayRecordingValue<T>(value: T, depth = 0): T {
-  if (depth > 8) return value;
-  if (typeof value === "string") return sanitizeJusticeTelemetryValue(value);
-  if (Array.isArray(value)) {
-    let changed = false;
-    const next = value.map((item) => {
-      const sanitized = sanitizeReplayRecordingValue(item, depth + 1);
-      if (sanitized !== item) changed = true;
-      return sanitized;
-    });
-    return (changed ? next : value) as T;
-  }
-  if (!value || typeof value !== "object") {
-    return value;
-  }
-  if (value instanceof Date || value instanceof RegExp) {
-    return value;
-  }
-
-  const entries = Object.entries(value as Record<string, unknown>);
-  let changed = false;
-  const next: Record<string, unknown> = {};
-  for (const [key, entryValue] of entries) {
-    const sanitized = sanitizeReplayRecordingValue(entryValue, depth + 1);
-    if (sanitized !== entryValue) changed = true;
-    next[key] = sanitized;
-  }
-  return (changed ? next : value) as T;
-}
-
-function sanitizeReplayRecordingEvent<T>(event: T): T | null | undefined {
-  return sanitizeReplayRecordingValue(event);
-}
-
-/**
- * Initialize Sentry for the client app.
- * Call before rendering React.
- */
-export function initSentry(router: unknown): void {
-  const sentryEnabled = Boolean(env.VITE_SENTRY_ENABLED) && Boolean(env.VITE_SENTRY_DSN);
-  if (!sentryEnabled || !isBrowser) return;
-
-  // If already initialized, just re-enable and stop.
-  const existing = Sentry.getClient();
-  if (existing) {
-    existing.getOptions().enabled = true;
-    return;
-  }
-
-  const analyticsConsent = hasAnalyticsConsent();
-  const sentryConsent = hasSentryConsent();
-  const currentJusticeSensitiveLocation = isCurrentJusticeSensitiveLocation();
-
-  const integrations: NonNullable<
-    Parameters<typeof Sentry.init>[0]
-  >["integrations"] = [];
-
-  // Replays (only with analytics consent). Justice-sensitive route URLs are
-  // scrubbed from custom replay events; text/input/media are masked globally.
-  if (analyticsConsent && !currentJusticeSensitiveLocation) {
-    integrations.push(
-      replayIntegration({
-        maskAllText: true,
-        maskAllInputs: true,
-        blockAllMedia: true,
-        networkDetailDenyUrls: [
-          /\/(?:justice|justitie)(?:\/|$)/,
-          /\/(?:companies|entities)\/[^?#]+(?:\?[^#]*(?:\btab=litigii\b|\b(?:partyKey|caseNumber|from)=))/,
-        ],
-        beforeAddRecordingEvent: sanitizeReplayRecordingEvent,
-        beforeErrorSampling: () => !isCurrentJusticeSensitiveLocation(),
-      }),
-    );
-  }
-
-  // Performance tracing — only if sampling > 0 AND analytics consent granted
-  const configuredTracesSampleRate = Number(env.VITE_SENTRY_TRACES_SAMPLE_RATE ?? 0);
-  const tracesSampleRate =
-    analyticsConsent && !Number.isNaN(configuredTracesSampleRate)
-      ? configuredTracesSampleRate
-      : 0;
-
-  if (tracesSampleRate > 0 && router) {
-    const anySentry = Sentry as unknown as Record<string, unknown>;
-    const tanstack = anySentry["tanstackRouterBrowserTracingIntegration"];
-    if (typeof tanstack === "function") {
-      type SentryIntegrationArray = Extract<NonNullable<(typeof integrations)>, unknown[]>
-      ;(integrations as SentryIntegrationArray).push(
-        (tanstack as (r: unknown) => unknown)(router) as SentryIntegrationArray[number]
-      );
-    } else if (typeof Sentry.browserTracingIntegration === "function") {
-      integrations.push(Sentry.browserTracingIntegration());
-    }
-  }
-
-  // Feedback widget (only if allowed + consented)
-  const feedbackEnabled = env.VITE_SENTRY_FEEDBACK_ENABLED !== false;
-  if (feedbackEnabled && sentryConsent) {
-    integrations.push(
-      Sentry.feedbackIntegration({
-        colorScheme: "system",
-        enableScreenshot: true,
-        autoInject: false,
-        // Default text (you can still override per-open via attachTo)
-        formTitle: "Send Feedback",
-        messageLabel: "What happened?",
-        messagePlaceholder:
-          "Describe the bug or request. Steps to reproduce, expected vs. actual…",
-        submitButtonLabel: "Send Feedback",
-        cancelButtonLabel: "Close",
-      }),
-    );
-  }
-
-  // Extra context + console capture
-  integrations.push(
-    extraErrorDataIntegration({ depth: 5 }),
-    captureConsoleIntegration({
-      // Keep logs if you want Sentry breadcrumbs to mirror console activity
-      levels: ["error", "warn", "log", "info", "debug"],
-    }),
-  );
-
-  function sanitizeEventForNoConsent(
-    event: SentryTelemetryEventLike
-  ): SentryTelemetryEventLike {
-    return {
-      ...event,
-      user: undefined,
-      request: undefined,
-      breadcrumbs: undefined,
-      extra: undefined,
-      contexts: undefined,
-      tags: undefined,
-      server_name: undefined,
-    };
-  }
-
-  try {
-    Sentry.init({
-      dsn: env.VITE_SENTRY_DSN!,
-      environment: env.VITE_APP_ENVIRONMENT,
-      release: env.VITE_APP_VERSION,
-      integrations,
-      ignoreErrors: [
-        /cssrules/i,
-        /cssstylesheet/i,
-        /cannot access rules/i,
-        /failed to read the ['"]cssrules['"] property/i,
-        /securityerror/i,
-        /failed to execute 'removechild' on 'node'/i,
-      ],
-      // Performance
-      tracesSampleRate,
-      replaysOnErrorSampleRate: currentJusticeSensitiveLocation ? 0 : 1.0,
-      replaysSessionSampleRate:
-        analyticsConsent && !currentJusticeSensitiveLocation ? 0.1 : 0,
-      beforeSendTransaction: (event) => sanitizeSentryTransaction(event as unknown as SentryTelemetryEventLike) as unknown as typeof event | null,
-      // Respect privacy consent
-      beforeSend(event) {
-        if (
-          isFacebookInAppPostMessageInvalidAccessError(
-            event as SentryBeforeSendEventLike
-          )
-        ) {
-          return null;
-        }
-
-        // Filter out Facebook in-app browser telemetry noise
-        const message = event.message || event.exception?.values?.[0]?.value;
-        if (message && typeof message === "string") {
-          // Facebook in-app browser telemetry noise (e.g. FBNavCLS:0, FBNavLoadEventEnd:...)
-          if (message.match(/^FB[A-Z][a-zA-Z]+Event(Start|End):/)) {
-            return null;
-          }
-          const normalizedMessage = message.toLowerCase();
-          // Facebook IAB can block/timeout third-party script loading for ClerkJS.
-          // Keep this scoped to IAB + explicit timeout code to avoid hiding real Clerk incidents.
-          if (isFacebookInAppClerkTimeoutMessage(normalizedMessage)) {
-            return null;
-          }
-          if (
-            isFacebookInAppConsoleNoiseMessage(
-              event as SentryBeforeSendEventLike,
-              normalizedMessage
-            )
-          ) {
-            return null;
-          }
-          // Clerk console warning noise (known deprecation emitted by ClerkJS)
-          if (
-            normalizedMessage.startsWith("clerk:") &&
-            normalizedMessage.includes(CLERK_REDIRECT_URL_DEPRECATION_DOC_ANCHOR)
-          ) {
-            return null;
-          }
-          if (
-            CSS_CROSS_ORIGIN_ERROR_MARKERS.some((marker) =>
-              normalizedMessage.includes(marker)
-            )
-          ) {
-            return null;
-          }
-          if (
-            DOM_NODE_REMOVAL_ERROR_MARKERS.some((marker) =>
-              normalizedMessage.includes(marker)
-            )
-          ) {
-            return null;
-          }
-        }
-
-        if (!hasSentryConsent()) {
-          // Send a minimal, anonymous error payload (no breadcrumbs/contexts/user/request)
-          const sanitized = sanitizeEventForNoConsent(
-            event as unknown as SentryTelemetryEventLike
-          );
-          return sanitized as unknown as typeof event;
-        }
-
-        // Consent granted: still scrub sensitive justice route data from URLs,
-        // breadcrumbs, extra/context payloads, messages, and exception strings.
-        // Privacy is structural, not consent-gated, for `/justitie*` URLs.
-        const telemetrySanitized = sanitizeSentryEventPayload(
-          event as unknown as SentryTelemetryEventLike,
-        );
-        return telemetrySanitized as unknown as typeof event;
-      },
-    });
-  } catch {
-    // If init fails, keep openers null and return quietly.
-    openSentryFeedback = null;
-    openSentryBugReport = null;
-    return;
-  }
-
-  // Ensure no user identity is attached without consent
-  if (!sentryConsent) {
-    Sentry.setUser(null);
-  }
-
-  // Programmatic Feedback openers (client-only, after init)
-  const feedback = Sentry.getFeedback?.();
-  if (!feedback) {
-    openSentryFeedback = null;
-    openSentryBugReport = null;
-    return;
-  }
-
-  // Utility to open with per-call overrides using attachTo()
-  const createOpener = (
-    options: Parameters<NonNullable<typeof feedback>["attachTo"]>[1],
-  ) => () => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.style.display = "none";
-    document.body.appendChild(btn);
-    try {
-      feedback.attachTo(btn, options);
-      btn.click();
-    } finally {
-      // Clean up immediately after triggering
-      btn.remove();
-    }
-  };
-
-  openSentryFeedback = createOpener({
-    formTitle: "Send Feedback",
-    messageLabel: "What happened?",
-    messagePlaceholder:
-      "Describe your feedback or idea. Steps, expectations, or suggestions…",
-    submitButtonLabel: "Send Feedback",
-  });
-
-  openSentryBugReport = createOpener({
-    formTitle: "Report a Bug",
-    messageLabel: "What is the bug?",
-    messagePlaceholder:
-      "Describe the bug. Include steps to reproduce, expected vs actual, and any screenshots.",
-    submitButtonLabel: "Report Bug",
-  });
 }

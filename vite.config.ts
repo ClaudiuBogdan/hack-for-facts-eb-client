@@ -59,6 +59,21 @@ const esmExtensionFixesPlugin = () => ({
   },
 });
 
+// Modules that do nothing on import but define components, so the bundler may
+// drop the ones an import leaves unused. The data-trust barrel re-exports the
+// provenance drawer, whose copy button pulls framer-motion: a page importing
+// only a badge from the barrel shipped motion too (2026-10-27 audit, PERF-018:
+// 47 KB of /legislation's 76 KB route code). Without a `sideEffects` field,
+// the bundler has to keep every module a barrel names.
+const SIDE_EFFECT_FREE_MODULE = /\/src\/components\/data-trust\/[^/?]+\.tsx?(?:\?|$)/;
+
+const sideEffectFreeModulesPlugin = () => ({
+  name: "side-effect-free-modules",
+  transform(_code: string, id: string) {
+    return SIDE_EFFECT_FREE_MODULE.test(id) ? { moduleSideEffects: false as const } : null;
+  },
+});
+
 const getContentLocale = (id: string) => {
   if (id.includes('.en.mdx')) {
     return 'en';
@@ -87,44 +102,23 @@ const getContentManualChunk = (id: string) => {
   return undefined;
 };
 
-const getClientManualChunk = (id: string) => {
-  const contentChunk = getContentManualChunk(id);
-  if (contentChunk) {
-    return contentChunk;
-  }
-
-  if (id.includes('/node_modules/recharts/')) {
-    return 'recharts';
-  }
-  if (
-    id.includes('/node_modules/leaflet/') ||
-    id.includes('/node_modules/react-leaflet/') ||
-    id.includes('/node_modules/maplibre-gl/') ||
-    id.includes('/node_modules/pmtiles/')
-  ) {
-    return 'maps';
-  }
-  if (id.includes('/node_modules/@clerk/clerk-react/')) {
-    return 'clerk';
-  }
-  if (id.includes('/node_modules/framer-motion/') || id.includes('/node_modules/motion/')) {
-    return 'motion';
-  }
-  if (id.includes('/node_modules/@sentry/')) {
-    return 'sentry';
-  }
-  if (id.includes('/node_modules/posthog-js/')) {
-    return 'posthog';
-  }
-  if (
-    id.includes('/node_modules/@tanstack/react-query/') ||
-    id.includes('/node_modules/@tanstack/react-table/') ||
-    id.includes('/node_modules/@tanstack/react-virtual/')
-  ) {
-    return 'tanstack';
-  }
-
-  return undefined;
+// The client's only named chunks: the MDX content, one per locale and kind.
+// A named group also takes in every dependency of its modules that no other
+// group claims (`includeDependenciesRecursively`, on by default), and any
+// chunk that needs one of those then imports the whole group. That is how
+// `react/jsx-runtime` came to live in the English challenge content, and
+// `react` in Clerk, `clsx` and `use-sync-external-store` in recharts: every
+// page loaded all three. MDX modules are leaves reached only through dynamic
+// imports, so their group can leave its dependencies to the automatic
+// chunking without creating a chunk cycle. Libraries get no named groups:
+// each lands in the chunks of the pages that import it.
+const CLIENT_CODE_SPLITTING = {
+  groups: [
+    {
+      name: (id: string) => getContentManualChunk(id) ?? null,
+      includeDependenciesRecursively: false,
+    },
+  ],
 };
 
 
@@ -232,6 +226,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       esmExtensionFixesPlugin(),
+      sideEffectFreeModulesPlugin(),
       createSafariRegexFixPlugin(),
       createChallengeStepSectionsPlugin(),
       lingui(),
@@ -354,15 +349,15 @@ export default defineConfig(({ mode }) => {
         'd3-shape',
       ],
     },
-    // Client-specific build options (manualChunks don't apply to SSR where packages are external)
+    // Client chunking. `codeSplitting` takes precedence over the top-level
+    // `manualChunks` merged in here (rolldown warns that it ignores it, as it
+    // already does for Nitro's own server build); SSR keeps that function.
     environments: {
       client: {
         build: {
           rollupOptions: {
             output: {
-              manualChunks(id) {
-                return getClientManualChunk(id);
-              },
+              codeSplitting: CLIENT_CODE_SPLITTING,
             },
           },
         },

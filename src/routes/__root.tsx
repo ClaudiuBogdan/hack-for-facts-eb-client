@@ -1,6 +1,5 @@
 import {
   createRootRouteWithContext,
-  HeadContent,
   Link,
   Scripts,
 } from "@tanstack/react-router";
@@ -23,6 +22,7 @@ import {
   resolveLocale,
 } from "@/lib/i18n";
 import { AppShell } from "@/components/app/app-shell";
+import { AppHeadContent } from "@/components/app/app-head-content";
 import {
   THEME_COOKIE_NAME,
   type ResolvedTheme,
@@ -96,7 +96,7 @@ function RootComponent() {
   return (
     <html lang={i18n.locale || DEFAULT_LOCALE} className={themeClass}>
       <head>
-        <HeadContent />
+        <AppHeadContent />
       </head>
       <body>
         <AppShell
@@ -222,7 +222,7 @@ function getGlobalHead() {
       },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: "/logo.png" },
+      { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon.png" },
       ...fontPreloads,
       { rel: "stylesheet", href: appCss },
     ],

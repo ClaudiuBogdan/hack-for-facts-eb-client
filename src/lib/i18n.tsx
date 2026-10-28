@@ -19,46 +19,31 @@ const loadingCatalogs = new Map<string, Promise<Messages>>();
 /** Catalogs already in Lingui's messages for their locale (`i18n.load` merges). */
 const mergedCatalogs = new Set<string>();
 
-const defaultCatalogsEager = import.meta.glob("../locales/*/messages.po", {
-  eager: true,
-}) as Record<string, unknown>;
-
-const defaultCatalogsLazy = import.meta.glob("../locales/*/messages.po", {
-  eager: false,
-}) as Record<string, CatalogLoader>;
-
-const adminCatalogsEager = import.meta.glob("../locales/*/admin.po", {
-  eager: true,
-}) as Record<string, unknown>;
-
-const adminCatalogsLazy = import.meta.glob("../locales/*/admin.po", {
-  eager: false,
-}) as Record<string, CatalogLoader>;
-
-const pnrrCatalogsEager = import.meta.glob("../locales/*/pnrr.po", {
-  eager: true,
-}) as Record<string, unknown>;
-
-const pnrrCatalogsLazy = import.meta.glob("../locales/*/pnrr.po", {
-  eager: false,
-}) as Record<string, CatalogLoader>;
-
-const localeCatalogs: Record<CatalogName, Record<string, CatalogEntry>> =
-  import.meta.env.SSR
-    ? {
-        messages: defaultCatalogsEager,
-        admin: adminCatalogsEager,
-        pnrr: pnrrCatalogsEager,
-      }
-    : {
-        messages: defaultCatalogsLazy,
-        admin: adminCatalogsLazy,
-        pnrr: pnrrCatalogsLazy,
-      };
+// The client's loaders: one chunk per language and catalog, fetched when a page
+// needs it. Eager globs here would compile into static imports, so both
+// languages' catalogs would load on every page, whatever this module picks at
+// runtime (2026-10-27 audit, PERF-004). The server compiles them in instead:
+// see `registerServerCatalogs`.
+const localeCatalogs: Record<CatalogName, Record<string, CatalogEntry>> = {
+  messages: import.meta.glob("../locales/*/messages.po") as Record<string, CatalogLoader>,
+  admin: import.meta.glob("../locales/*/admin.po") as Record<string, CatalogLoader>,
+  pnrr: import.meta.glob("../locales/*/pnrr.po") as Record<string, CatalogLoader>,
+};
 
 const DEFAULT_SCOPE = [DEFAULT_CATALOG] as const;
 
-if (import.meta.env.SSR) {
+/**
+ * The server's catalogs, every language compiled in, from
+ * `i18n-server-catalogs.ts`, which only the server entry imports. They replace
+ * the lazy loaders, and the default language is loaded before the first
+ * request, as the server always did.
+ */
+export function registerServerCatalogs(
+  catalogs: Readonly<Record<CatalogName, Record<string, unknown>>>,
+): void {
+  localeCatalogs.messages = catalogs.messages;
+  localeCatalogs.admin = catalogs.admin;
+  localeCatalogs.pnrr = catalogs.pnrr;
   const defaultEntry =
     localeCatalogs.messages[`../locales/${DEFAULT_LOCALE}/messages.po`];
   if (defaultEntry && typeof defaultEntry !== "function") {

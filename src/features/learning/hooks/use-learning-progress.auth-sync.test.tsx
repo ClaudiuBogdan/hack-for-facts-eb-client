@@ -64,8 +64,9 @@ vi.mock('@/lib/logger', () => ({
   },
 }))
 
-vi.mock('@sentry/react', () => ({
-  captureException: (error: unknown, context?: unknown) => captureExceptionMock(error, context),
+vi.mock('@/lib/sentry', () => ({
+  withSentry: (report: (sentry: { captureException: (error: unknown, context?: unknown) => void }) => void) =>
+    report({ captureException: (error: unknown, context?: unknown) => captureExceptionMock(error, context) }),
 }))
 
 vi.mock('sonner', () => ({

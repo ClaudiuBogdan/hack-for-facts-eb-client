@@ -1,5 +1,5 @@
 import * as React from "react"
-import * as Sentry from "@sentry/react"
+import { withSentry } from "@/lib/sentry"
 import { Trans } from "@lingui/react/macro"
 
 interface ErrorBoundaryProps {
@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("ErrorBoundary caught:", error, errorInfo)
 
-    try {
+    withSentry((Sentry) => {
       Sentry.withScope((scope) => {
         scope.setLevel("error")
         scope.setTag("source", "error-boundary")
@@ -36,9 +36,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         })
         Sentry.captureException(error)
       })
-    } catch {
-      // Keep rendering unaffected if Sentry is unavailable.
-    }
+    })
 
     this.props.onError?.(error, errorInfo)
   }

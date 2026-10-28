@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useState } from "react";
-import * as Sentry from "@sentry/react";
 import { AppError, ErrorSource } from "@/lib/errors/types";
 import { logger } from "@/lib/logger";
 import { Analytics } from "@/lib/analytics";
+import { withSentry } from "@/lib/sentry";
 
 interface ErrorContextValue {
   error: AppError | null;
@@ -39,13 +39,15 @@ export function ErrorProvider({ children, onError }: ErrorProviderProps) {
       });
 
       // Capture error in Sentry
-      Sentry.captureException(appError, {
-        extra: {
-          type: appError.type,
-          code: appError.code,
-          severity: appError.severity,
-          context: appError.context,
-        },
+      withSentry((Sentry) => {
+        Sentry.captureException(appError, {
+          extra: {
+            type: appError.type,
+            code: appError.code,
+            severity: appError.severity,
+            context: appError.context,
+          },
+        });
       });
 
       Analytics.capture(Analytics.EVENTS.ErrorOccurred, {

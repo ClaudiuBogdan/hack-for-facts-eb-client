@@ -1,9 +1,8 @@
 import { t } from "@lingui/core/macro";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import * as Sentry from "@sentry/react";
 import { useSentryConsent } from "@/hooks/useSentryConsent";
-import { openSentryBugReport } from "@/lib/sentry";
+import { openSentryBugReport, withSentry } from "@/lib/sentry";
 
 export function useSendBugReport() {
   const hasConsent = useSentryConsent();
@@ -26,12 +25,13 @@ export function useSendBugReport() {
       if (typeof openSentryBugReport === "function") {
         openSentryBugReport();
       } else {
-        Sentry.captureMessage("User initiated bug report", {
-          level: "error",
-          tags: { source: "quick-actions" },
-          extra: {
-            url: typeof window !== "undefined" ? window.location.href : "",
-          },
+        const url = typeof window !== "undefined" ? window.location.href : "";
+        withSentry((Sentry) => {
+          Sentry.captureMessage("User initiated bug report", {
+            level: "error",
+            tags: { source: "quick-actions" },
+            extra: { url },
+          });
         });
         toast.success(t`Error signal sent`);
       }

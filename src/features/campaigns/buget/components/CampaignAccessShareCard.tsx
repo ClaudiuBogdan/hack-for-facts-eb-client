@@ -37,6 +37,7 @@ function CampaignShareCard({
           <img
             src={funkyLogo}
             alt="Funky Citizens"
+            loading="lazy"
             className="h-14 w-14 shrink-0 rounded-2xl shadow-sm ring-1 ring-black/5"
           />
           <div className="min-w-0">
