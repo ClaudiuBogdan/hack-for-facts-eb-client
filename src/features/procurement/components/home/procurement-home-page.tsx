@@ -34,12 +34,12 @@ import {
   Bone,
   HomeSectionNav,
   HomeSourceLine,
-  ProcurementHomeSearchField,
   SHOW_MORE_CLASS,
   ShowMorePending,
   TextPending,
   type NationalState,
 } from './home-chrome'
+import { ProcurementHomeSearchField } from './procurement-home-search-field'
 import { HomeCountiesBand, HomeHowBand, HomeRecentBand, HomeStartBand, HomeYearsBand } from './home-context-bands'
 import { HomeSellersBand, HomeWhatBand } from './home-money-bands'
 import { PartyRows, PendingRows } from './home-rows'

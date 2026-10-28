@@ -1,10 +1,9 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
-import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { useInView } from 'react-intersection-observer'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { countyNameRo } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubCountyLayer, StatisticsHubCountyValue } from '@/schemas/statistics'
@@ -15,12 +14,11 @@ import {
   STEP_TEXT,
   COUNTY_MAP_WIDTH,
   countyLabelPixels,
-  countyShapes,
   layerDecimals,
   layerScale,
-  type CountyProperties,
   type CountyScale,
 } from '../../lib/county-map'
+import { retryCountyShapes, useCountyShapes } from '../../hooks/use-county-shapes'
 import { formatHubValue, hubUnitWord, isAdditiveUnit } from '../../lib/units'
 import { formatHubPeriod } from '../../lib/period'
 import { describeAgainstNational } from '../../lib/change'
@@ -64,9 +62,10 @@ export function CountyMap({
   readonly onActiveChange?: (code: string | undefined) => void
   readonly selection: CountyMapSelection
 }) {
-  const geo = useGeoJsonData('County')
-  const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
-  const shapes = features ? countyShapes(features) : undefined
+  // The shapes come as the map nears the screen (a screen ahead): a map below the fold is none of the page's first load.
+  const { ref: nearRef, inView: near } = useInView({ triggerOnce: true, rootMargin: '100% 0px' })
+  const geo = useCountyShapes({ enabled: near })
+  const shapes = geo.data
   const scale = useMemo(() => layerScale(layer), [layer])
   const byCode = useMemo(() => new Map(layer.values.map((county) => [county.code, county])), [layer.values])
   const ranks = useMemo(
@@ -120,7 +119,7 @@ export function CountyMap({
         </p>
         <button
           type="button"
-          onClick={() => void geo.refetch()}
+          onClick={() => retryCountyShapes(geo.refetch)}
           className="inline-flex min-h-9 items-center rounded-sm border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
         >
           <Trans>Încearcă din nou</Trans>
@@ -295,7 +294,7 @@ export function CountyMap({
           })}
         </svg>
       ) : (
-        <div className="mt-4 aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
+        <div ref={nearRef} className="mt-4 aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
       )}
       <figcaption className="mt-6">
         <CountyLegend

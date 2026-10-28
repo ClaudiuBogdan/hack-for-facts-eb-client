@@ -1,14 +1,9 @@
-import { useLocation } from '@tanstack/react-router'
-import { Landmark } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { LandingSearch } from '@/features/landing/components/search/landing-search'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { monthText } from '../../lib/home-format'
-import { procurementHrefOf } from '../../lib/home-links'
 
 // The bar and the band live apart from the search, so a page's loading state can draw them without it.
 export { HomeBand, HomeSectionNav } from './home-section-nav'
@@ -107,30 +102,5 @@ export function HomeSourceLine({ month, className }: { readonly month: string | 
       </a>
       {month ? <>, {t`date până în ${monthText(month)}`}</> : month === undefined ? <Bone className="ml-1.5 w-40" /> : null}
     </p>
-  )
-}
-
-/**
- * The site's search, scoped to who buys and who sells: institutions, state
- * companies and firms. A result opens its procurement page — the reader came
- * here for contracts.
- *
- * It takes focus on arrival only when the reader arrived at the top, as the
- * hubs' searches do: a link to one of the page's bands would otherwise land
- * on the band and be thrown back to the hero.
- */
-export function ProcurementHomeSearchField({ autoFocus, className }: { readonly autoFocus?: boolean; readonly className?: string }) {
-  const isMobile = useIsMobile()
-  const { hash } = useLocation()
-  return (
-    <LandingSearch
-      className={className}
-      docTypes={['organization', 'public_enterprise', 'company']}
-      fixedScope={{ label: t`Achiziții`, Icon: Landmark }}
-      placeholder={t`Instituție, firmă sau CUI…`}
-      autoFocus={autoFocus && !isMobile && !hash}
-      scrollToTopOnFocus={isMobile}
-      hrefOf={procurementHrefOf}
-    />
   )
 }

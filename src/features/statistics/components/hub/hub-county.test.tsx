@@ -4,6 +4,7 @@ import type { FeatureCollection, Polygon } from 'geojson'
 import { fireEvent, render, screen, waitFor, within } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
+import { countyShapes } from '../../lib/county-map'
 import { HUB_COUNTY_LAYERS, type HubCountyLayerDefinition } from '../../lib/landing-constants'
 import { hubCountyLayer } from '../../test/hub-fixtures'
 import { CountyMap } from '../county-map/county-map'
@@ -62,8 +63,10 @@ const COUNTIES: FeatureCollection<Polygon, { name: string; mnemonic: string }> =
   ],
 }
 
-vi.mock('@/hooks/useGeoJson', () => ({
-  useGeoJsonData: () => ({ data: COUNTIES, isError: false, refetch: vi.fn() }),
+// The maps read projected shapes (`useCountyShapes`); these are the projection of the squares above.
+vi.mock('@/features/statistics/hooks/use-county-shapes', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/statistics/hooks/use-county-shapes')>()),
+  useCountyShapes: () => ({ data: countyShapes(COUNTIES.features), isError: false, refetch: vi.fn() }),
 }))
 
 const LIFE = hubCountyLayer('POP217A', 'years', 'Ani', '2025', [

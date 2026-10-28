@@ -1,7 +1,7 @@
 import { useLocation } from '@tanstack/react-router'
 import { HeartHandshake } from 'lucide-react'
 import { t } from '@lingui/core/macro'
-import { LandingSearch } from '@/features/landing/components/search/landing-search'
+import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 /** The registry's organisations: the hub's population, whatever kind the index files each under. */
@@ -25,7 +25,7 @@ export function NgoHubSearch({ autoFocus, className }: { readonly autoFocus?: bo
   const isMobile = useIsMobile()
   const { hash } = useLocation()
   return (
-    <LandingSearch
+    <DeferredLandingSearch
       className={className}
       entityTags={REGISTRY_TAGS}
       fixedScope={{ label: t`ONG-uri`, Icon: HeartHandshake }}

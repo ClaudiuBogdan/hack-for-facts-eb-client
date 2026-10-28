@@ -1,7 +1,7 @@
 import { useLocation } from '@tanstack/react-router'
 import { Building2 } from 'lucide-react'
 import { t } from '@lingui/core/macro'
-import { LandingSearch } from '@/features/landing/components/search/landing-search'
+import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 /**
@@ -17,7 +17,7 @@ export function HubSearch({ autoFocus, className }: { readonly autoFocus?: boole
   const isMobile = useIsMobile()
   const { hash } = useLocation()
   return (
-    <LandingSearch
+    <DeferredLandingSearch
       className={className}
       docTypes={['company']}
       fixedScope={{ label: t`Firme`, Icon: Building2 }}

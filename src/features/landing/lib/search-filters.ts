@@ -2,8 +2,8 @@ import type { LucideIcon } from 'lucide-react'
 import { Building2, HeartHandshake, Landmark, MapPin, Scale, Factory, Sprout, Tag, ChartNoAxesCombined } from 'lucide-react'
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
-import vocabulary from '@/assets/entity-tags.json'
 import type { EntitySearchInput } from '@/schemas/entity-search'
+import { quietImport } from '@/lib/chunk-recovery'
 
 /** Scope chips are sent to the server before ranking/pagination.
  * One identity scope at a time; PNRR is an independent role qualifier.
@@ -154,7 +154,26 @@ const TAG_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   'kind::school::nursery': ['cresa', 'crese'],
 }
 
-export function tagSearchFilters(locale: string): readonly SearchFilter[] {
+/** The tag vocabulary (`src/assets/entity-tags.json`, generated in the scrapper repo), as the chips read it. */
+export interface EntityTagVocabulary {
+  readonly facets: readonly {
+    readonly labelRo: string
+    readonly labelEn: string
+    readonly tags: readonly { readonly tag: string; readonly labelRo: string; readonly labelEn: string }[]
+  }[]
+}
+
+/**
+ * The vocabulary, fetched when a field first offers chips: 39 KB that a field
+ * with a fixed scope (every hub's) never reads, kept out of the code a page
+ * waits for. A failed load leaves the field without tag chips; it never
+ * reloads the page (`quietImport`).
+ */
+export function loadEntityTagVocabulary(): Promise<EntityTagVocabulary> {
+  return quietImport(() => import('@/assets/entity-tags.json')).then((module) => module.default)
+}
+
+export function tagSearchFilters(vocabulary: EntityTagVocabulary, locale: string): readonly SearchFilter[] {
   return vocabulary.facets.flatMap(facet => facet.tags.flatMap(tag => {
     const label = locale === 'ro' ? tag.labelRo : tag.labelEn
     const facetLabel = locale === 'ro' ? facet.labelRo : facet.labelEn

@@ -1,8 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- the row class, the
    hint and announcement copy and the rows that render them are one surface. */
-import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
@@ -13,6 +11,10 @@ import { statusLabel } from '@/features/ngos/organization/words'
 import { highlightSegments } from '@/features/landing/lib/search-highlight'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
+import { ScopePill } from './search-field'
+
+// The field's own chrome lives in `search-field`, which the plain field drawn before the combobox shares.
+export { ScopePill, useModifierKey, usePrefersReducedMotion } from './search-field'
 
 /**
  * The row, the marks, the place line, the chips, the skeleton, the messages and
@@ -168,38 +170,6 @@ export function ResultRowContent({
  * exact object that will appear in the field if they accept it, so accepting
  * reads as the pill moving up rather than as one thing turning into another.
  */
-/**
- * The pill itself: an icon and a name. `FilterPill` resolves a filter's
- * descriptor into one; a page with a fixed scope draws one directly, with a
- * label it owns, so the field says what it searches in without the word
- * having to be a filter the reader could take off.
- */
-export function ScopePill({
-  label,
-  Icon,
-  className,
-  children,
-}: {
-  readonly label: string
-  readonly Icon: LucideIcon
-  readonly className?: string
-  readonly children?: React.ReactNode
-}) {
-  return (
-    <span
-      className={cn(
-        'inline-flex h-7 max-w-full shrink-0 items-center gap-1.5 rounded-sm bg-muted pl-2 text-xs font-medium text-foreground',
-        children ? 'pr-0.5' : 'pr-2',
-        className,
-      )}
-    >
-      <Icon aria-hidden="true" className="size-3.5 text-muted-foreground" />
-      <span className="truncate">{label}</span>
-      {children}
-    </span>
-  )
-}
-
 export function FilterPill({
   filter,
   className,
@@ -305,52 +275,6 @@ export function Skeleton() {
       ))}
     </div>
   )
-}
-
-/**
- * The modifier key this reader actually presses.
- *
- * `mod+k` binds to Cmd on macOS and Ctrl everywhere else, so a hardcoded ⌘ is
- * wrong for most readers. It cannot be resolved during render either: the
- * server has no platform to read, and returning a different glyph on the client
- * than the one in the SSR HTML is a hydration mismatch. So it starts as the
- * server's guess and is corrected in an effect, after hydration has matched.
- */
-export function useModifierKey() {
-  const [label, setLabel] = useState('⌘')
-
-  useEffect(() => {
-    const isApple = /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent)
-    if (!isApple) setLabel('Ctrl')
-  }, [])
-
-  return label
-}
-
-/**
- * Whether this reader has asked for less motion.
- *
- * Needed as a value rather than as a `motion-safe:` class because the animation
- * is not ours: it comes from the shared `PopoverContent`, whose
- * `data-[state=open]:animate-in` is a later rule than any `motion-reduce:`
- * utility added beside it, so the class-level guard silently loses the cascade —
- * measured, not assumed. An inline `animation: none` outranks both.
- *
- * Starts false so the server and the first client render agree; the effect
- * corrects it before anything has had a chance to animate.
- */
-export function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const sync = () => setReduced(query.matches)
-    sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
-  }, [])
-
-  return reduced
 }
 
 /**

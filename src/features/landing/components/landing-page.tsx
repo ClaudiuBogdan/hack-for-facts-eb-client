@@ -28,7 +28,7 @@ import { PixelFieldCanvas, useCanvasFieldMotion } from './pixel-canvas'
 import { ProvenanceBand } from './provenance-band'
 import { scrambleWithin, stopScrambling } from './scramble-text'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './scroll-light'
-import { LandingSearch } from './search/landing-search'
+import { DeferredLandingSearch } from './search/deferred-landing-search'
 import { SectionLight, SectionLightStyles, useSectionLight } from './section-light'
 import { ShardDefs } from './shards'
 import { StartHerePanel } from './start-here-panel'
@@ -102,7 +102,7 @@ function HeroSearch({ inputRef }: { readonly inputRef: RefObject<HTMLInputElemen
     // The placeholder is kept short deliberately: at 375px the field has about
     // thirty characters after the magnifier's padding, and the longer wording
     // truncated mid-word.
-    <LandingSearch
+    <DeferredLandingSearch
       inputRef={inputRef}
       placeholder={t`Caută entități, statistici sau identificatori...`}
       autoFocus={!isMobile}

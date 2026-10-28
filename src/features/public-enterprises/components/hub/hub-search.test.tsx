@@ -6,8 +6,8 @@ const state = vi.hoisted(() => ({ hash: '', mobile: false, props: [] as Record<s
 
 vi.mock('@tanstack/react-router', () => ({ useLocation: () => ({ hash: state.hash }) }))
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => state.mobile }))
-vi.mock('@/features/landing/components/search/landing-search', () => ({
-  LandingSearch: (props: Record<string, unknown>) => {
+vi.mock('@/features/landing/components/search/deferred-landing-search', () => ({
+  DeferredLandingSearch: (props: Record<string, unknown>) => {
     state.props.push(props)
     return null
   },

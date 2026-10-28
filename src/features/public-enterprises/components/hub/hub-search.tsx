@@ -2,7 +2,7 @@ import { useLocation } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Building2 } from 'lucide-react'
 
-import { LandingSearch } from '@/features/landing/components/search/landing-search'
+import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ENTERPRISE_ROLE, enterpriseHitHref } from '../../lib/hub-links'
 
@@ -24,7 +24,7 @@ export function EnterpriseSearch() {
   const isMobile = useIsMobile()
   const { hash } = useLocation()
   return (
-    <LandingSearch
+    <DeferredLandingSearch
       docTypes={ENTERPRISE_DOC_TYPES}
       roles={ENTERPRISE_ROLES}
       fixedScope={{ label: t`Întreprinderi`, Icon: Building2 }}

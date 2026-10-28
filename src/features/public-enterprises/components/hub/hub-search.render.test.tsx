@@ -70,7 +70,8 @@ async function typeAndWait(term: string) {
   await user.click(input)
   await user.type(input, term)
   await waitFor(() => expect(screen.getAllByRole('option').length).toBeGreaterThan(0))
-  return input
+  // The field the hub server-renders hands over to the combobox once its code is in: a new node.
+  return screen.getByRole('combobox')
 }
 
 describe('the hub’s search, end to end', () => {
