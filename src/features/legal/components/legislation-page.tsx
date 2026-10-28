@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/react/macro'
-import type { LegislationOverview } from '@/schemas/legal'
 import {
-  useLegislationOverview,
+  useLegislationFrontDoor,
   useLegislationStatusCounts,
 } from '../hooks/use-legislation'
 import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
@@ -11,10 +10,6 @@ import { LegislationHonestyNotes } from './legislation-honesty-notes'
 import { LegislationOverviewSkeleton } from './legislation-overview-skeleton'
 import { LegislationSearchBand } from './legislation-search-band'
 import { LegislationShell } from './legislation-shell'
-
-type Props = {
-  readonly initialOverview?: LegislationOverview
-}
 
 /**
  * `/legislation` — the module front door, and a finding aid rather than a
@@ -36,9 +31,12 @@ type Props = {
  * There is no "recently changed acts" band: the server has no global,
  * date-ordered status-event query (§6.1), and a placeholder over 84 420 real
  * events would misrepresent the data. The gazette band runs full width instead.
+ *
+ * Its one read is the gazette band's (`useLegislationFrontDoor`), which the
+ * route's loader fills on the server.
  */
-export function LegislationPage({ initialOverview }: Props) {
-  const { data, isLoading, isError } = useLegislationOverview(initialOverview)
+export function LegislationPage() {
+  const { data, isLoading, isError } = useLegislationFrontDoor()
   // The header chips ride the status-counts aggregate (shared query key with
   // the analytics strip); `?? {}` keeps the chip row's space reserved while
   // the counts are on the wire, so their arrival does not shift the tab nav.

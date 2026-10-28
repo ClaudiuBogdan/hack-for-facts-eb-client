@@ -22,6 +22,7 @@ import {
   type ProcurementSearchState,
 } from '@/schemas/procurement-search'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { createServerMemo } from '@/lib/ssr/server-memo'
 import {
   PROCUREMENT_AGGREGATES_QUERY,
   PROCUREMENT_CONTRACTS_QUERY,
@@ -74,29 +75,60 @@ const TOP_N = 10
 /** Supplier "load more" connection page size. */
 const SUPPLIER_RECORDS_PAGE_SIZE = 20
 
-// ── shared CPV taxonomy cache ───────────────────────────────────────────────
+// ── shared reference caches ─────────────────────────────────────────────────
 
-let cpvDivisionsCache: Promise<RawProcurementCpvDivision[]> | null = null
-const partyNameCache = new Map<string, string | null>()
+/**
+ * The CPV divisions' names and the parties' canonical names change with an
+ * API release, not from one page to the next: each is kept for six hours, as
+ * the analytics page keeps the same vocabulary (`procurement-analytics-ssr.ts`),
+ * then read again. Past the window the divisions are served stale while one
+ * read refreshes them; a party's name is read again with the next page that
+ * needs it.
+ */
+const KEEP_REFERENCE_MS = 6 * 60 * 60 * 1000
+/** Party names are keyed by CUI, an open set: past this many, the oldest go. */
+const MAX_PARTY_NAMES = 5_000
 
-async function loadCpvDivisions(): Promise<RawProcurementCpvDivision[]> {
-  if (!cpvDivisionsCache) {
-    cpvDivisionsCache = graphqlQuery<unknown>(
+let cpvDivisions = createServerMemo<RawProcurementCpvDivision[]>(KEEP_REFERENCE_MS)
+/** `null`: the spine has no name for the CUI (it stays a CUI). */
+const partyNameCache = new Map<string, { readonly name: string | null; readonly expires: number }>()
+
+function loadCpvDivisions(): Promise<RawProcurementCpvDivision[]> {
+  return cpvDivisions('all', () =>
+    graphqlQuery<unknown>(
       PROCUREMENT_CPV_DIVISIONS_QUERY,
       {},
       { operationName: 'ProcurementCpvDivisions' },
-    )
-      .then(
-        (data) =>
-          procurementCpvDivisionsResponseSchema.parse(data)
-            .procurementCpvDivisions,
-      )
-      .catch((error: unknown) => {
-        cpvDivisionsCache = null
-        throw error
-      })
+    ).then(
+      (data) =>
+        procurementCpvDivisionsResponseSchema.parse(data)
+          .procurementCpvDivisions,
+    ),
+  )
+}
+
+/** A kept name inside its window; an expired one is forgotten, so the caller reads it again. */
+function cachedPartyName(
+  cacheKey: string,
+  now: number,
+): { readonly name: string | null } | undefined {
+  const kept = partyNameCache.get(cacheKey)
+  if (kept === undefined) return undefined
+  if (kept.expires > now) return kept
+  partyNameCache.delete(cacheKey)
+  return undefined
+}
+
+function rememberPartyName(cacheKey: string, name: string | null, now: number): void {
+  // Re-inserted, so a name read again counts as the newest.
+  partyNameCache.delete(cacheKey)
+  partyNameCache.set(cacheKey, { name, expires: now + KEEP_REFERENCE_MS })
+  // A Map iterates in insertion order: the first key is the oldest name.
+  while (partyNameCache.size > MAX_PARTY_NAMES) {
+    const oldest = partyNameCache.keys().next()
+    if (oldest.done) break
+    partyNameCache.delete(oldest.value)
   }
-  return cpvDivisionsCache
 }
 
 async function loadAggregates(
@@ -134,6 +166,8 @@ type PartyDimension = 'authority' | 'supplier'
 async function loadPartyNames(
   aggregates: RawProcurementAggregates,
 ): Promise<ReadonlyMap<string, string>> {
+  const now = Date.now()
+  const names = new Map<string, string>()
   const requested = new Map<string, { readonly dimension: PartyDimension; readonly cui: string }>()
 
   for (const [dimension, blocks] of [
@@ -144,8 +178,11 @@ async function loadPartyNames(
       for (const bucket of block.buckets ?? []) {
         if (bucket.key === null) continue
         const cacheKey = `${dimension}:${bucket.key}`
-        if (!partyNameCache.has(cacheKey)) {
+        const kept = cachedPartyName(cacheKey, now)
+        if (kept === undefined) {
           requested.set(cacheKey, { dimension, cui: bucket.key })
+        } else if (kept.name !== null) {
+          names.set(cacheKey, kept.name)
         }
       }
     }
@@ -171,7 +208,9 @@ async function loadPartyNames(
       },
     )
     const parsed = procurementPartyNamesResponseSchema.parse(raw)
-    for (const cacheKey of requested.keys()) partyNameCache.set(cacheKey, null)
+    const resolved = new Map<string, string | null>(
+      [...requested.keys()].map((cacheKey) => [cacheKey, null]),
+    )
     // Positional correlation, per role: the server returns the NORMALIZED
     // identifier (null when unavailable), so the response cui is not a safe
     // cache key for an input that was formatted differently.
@@ -190,19 +229,20 @@ async function loadPartyNames(
         const requestedCui = sent[index]
         if (requestedCui === undefined) return
         if (label.status === 'named' && label.canonicalName !== null) {
-          partyNameCache.set(`${dimension}:${requestedCui}`, label.canonicalName)
+          resolved.set(`${dimension}:${requestedCui}`, label.canonicalName)
         }
       })
     }
     cacheNames(parsed.authorities ?? [], authorityCuis, 'authority')
     cacheNames(parsed.suppliers ?? [], supplierCuis, 'supplier')
+    for (const [cacheKey, name] of resolved) {
+      rememberPartyName(cacheKey, name, now)
+      if (name !== null) names.set(cacheKey, name)
+    }
   }
 
-  return new Map(
-    [...partyNameCache].filter(
-      (entry): entry is [string, string] => entry[1] !== null,
-    ),
-  )
+  // This aggregate's names only: the cache holds other pages' too.
+  return names
 }
 
 // ── search ──────────────────────────────────────────────────────────────────
@@ -459,9 +499,8 @@ async function resolvePartyName(
   dimension: PartyDimension,
 ): Promise<string | null> {
   const cacheKey = `${dimension}:${cui}`
-  if (partyNameCache.has(cacheKey)) {
-    return partyNameCache.get(cacheKey) ?? null
-  }
+  const kept = cachedPartyName(cacheKey, Date.now())
+  if (kept !== undefined) return kept.name
   const isAuthority = dimension === 'authority'
   const raw = await graphqlQuery<unknown>(
     PROCUREMENT_PARTY_NAMES_QUERY,
@@ -476,7 +515,7 @@ async function resolvePartyName(
   const parsed = procurementPartyNamesResponseSchema.parse(raw)
   const label = (isAuthority ? parsed.authorities : parsed.suppliers)?.[0]
   const name = label?.status === 'named' ? (label.canonicalName ?? null) : null
-  partyNameCache.set(cacheKey, name)
+  rememberPartyName(cacheKey, name, Date.now())
   return name
 }
 
@@ -484,7 +523,7 @@ async function resolvePartyName(
 
 /** Reset the module-level caches (unit tests only). */
 export function resetProcurementLiveCachesForTests(): void {
-  cpvDivisionsCache = null
+  cpvDivisions = createServerMemo<RawProcurementCpvDivision[]>(KEEP_REFERENCE_MS)
   partyNameCache.clear()
   resetProcurementReferenceCacheForTests()
 }

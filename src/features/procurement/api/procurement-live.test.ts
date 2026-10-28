@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/graphql/graphql-client', () => ({
   graphqlQuery: vi.fn(),
@@ -177,5 +177,55 @@ describe('live procurement adapter', () => {
     const [aggregates] = callsOf('ProcurementAggregates')
     expect(aggregates?.[0]).toContain('rankBy: $rankBy')
     expect(aggregates?.[1]).toMatchObject({ rankBy: 'value', includeAuthorities: false })
+  })
+})
+
+describe('live procurement reference caches', () => {
+  const SIX_HOURS = 6 * 60 * 60 * 1000
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('keeps the parties’ names and the CPV divisions for six hours, then reads them again', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(0)
+    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] })
+    await fetchSupplierProcurementSliceLive('222')
+    const namesRead = callsOf('ProcurementPartyNames').length
+    expect(namesRead).toBeGreaterThan(0)
+    expect(callsOf('ProcurementCpvDivisions')).toHaveLength(1)
+
+    vi.setSystemTime(SIX_HOURS - 1)
+    const kept = await fetchSupplierProcurementSliceLive('222')
+    expect(kept.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    expect(callsOf('ProcurementPartyNames')).toHaveLength(namesRead)
+    expect(callsOf('ProcurementCpvDivisions')).toHaveLength(1)
+
+    vi.setSystemTime(SIX_HOURS)
+    const again = await fetchSupplierProcurementSliceLive('222')
+    expect(again.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    // The names are read again with the page; the divisions are served stale while one read refreshes them.
+    expect(callsOf('ProcurementPartyNames')).toHaveLength(2 * namesRead)
+    expect(callsOf('ProcurementCpvDivisions')).toHaveLength(2)
+  })
+
+  it('holds at most 5 000 parties’ names: past it, the oldest go', async () => {
+    answerByOperation()
+    const namesAskedFor = (cui: string) =>
+      callsOf('ProcurementPartyNames').filter((call) => {
+        const variables = call[1] as { readonly authorityCuis?: readonly string[]; readonly supplierCuis?: readonly string[] }
+        return [...(variables.authorityCuis ?? []), ...(variables.supplierCuis ?? [])].includes(cui)
+      }).length
+    // Each firm's own name is one key; the first page also keeps the aggregates' ranked buyer and firm.
+    for (let cui = 1; cui <= 5_000; cui += 1) await fetchSupplierProcurementSliceLive(String(100_000 + cui))
+    expect(namesAskedFor('105000')).toBe(1)
+    expect(namesAskedFor('100001')).toBe(1)
+    // Still kept: the newest firm's name.
+    await fetchSupplierProcurementSliceLive('105000')
+    expect(namesAskedFor('105000')).toBe(1)
+    // Evicted: the first firm's, the oldest key.
+    await fetchSupplierProcurementSliceLive('100001')
+    expect(namesAskedFor('100001')).toBe(2)
   })
 })

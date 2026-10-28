@@ -82,6 +82,27 @@ describe('/ins loader', () => {
     expect(route.headers({ loaderData: data })).toEqual({ 'Cache-Control': 'public', Vary: 'Accept-Encoding, Cookie' })
   })
 
+  it('keeps a complete hub for the next render, and reads one with a failed section again', async () => {
+    const complete = hubData()
+    const partial = hubData({ failures: ['counties'] })
+    fetchStatisticsHubMock.mockResolvedValueOnce(partial).mockResolvedValueOnce(complete)
+    const route = await importRoute()
+    expect(await asServerRender(() => route.loader(input()))).toEqual({ hub: partial })
+    expect(await asServerRender(() => route.loader(input()))).toEqual({ hub: complete })
+    expect(await asServerRender(() => route.loader(input()))).toEqual({ hub: complete })
+    expect(fetchStatisticsHubMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('reads the hub under its own deadline, not the request’s signal: the read is shared', async () => {
+    fetchStatisticsHubMock.mockResolvedValue(hubData())
+    const route = await importRoute()
+    const request = input()
+    await asServerRender(() => route.loader(request))
+    const signal = fetchStatisticsHubMock.mock.calls[0][0] as AbortSignal
+    request.abortController.abort()
+    expect(signal.aborted).toBe(false)
+  })
+
   it('names the hub for the tab and for a shared link’s card', async () => {
     const route = await importRoute()
     const { meta } = route.head()

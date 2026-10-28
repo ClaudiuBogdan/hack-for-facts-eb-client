@@ -15,8 +15,9 @@ import {
  * TanStack Start sends no HTML until every loader resolves, and the three
  * reads take 0.5–1 s against the API. SEAP loads daily at most, so each read
  * is kept in the server process for as long as a shared cache may keep the
- * page (ten minutes): the first render after the window reads, the rest answer
- * from memory. Each read has its own deadline, not the request's signal — it
+ * page (ten minutes): the first render reads, the rest answer from memory,
+ * and past the window the kept read is served while one read refreshes it
+ * (`createServerMemo`). Each read has its own deadline, not the request's signal — it
  * is shared across requests, and one reader leaving must not fail it for the
  * others. Past the deadline a read fails as a read: its band retries in the
  * browser and the render goes out `no-store`.
