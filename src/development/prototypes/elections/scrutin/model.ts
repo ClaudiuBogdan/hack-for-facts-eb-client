@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro'
-import type { ElectionContest } from '@/schemas/elections-catalog'
+import type { ElectionContest } from '../shared/legacy-catalog'
 import { eventTitle, officeLabel, roundLabel } from '../shared/labels'
 import { contestKeyOf as sharedContestKeyOf, hubData, isDisputedEvent, SCOPE_TYPES, type Edition, type ElectionEvent, type ScopeType } from '../shared/model'
 import type { InsPlace, Place, PlaceIndex } from '../shared/places'

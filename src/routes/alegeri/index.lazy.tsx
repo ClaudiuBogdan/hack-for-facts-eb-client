@@ -11,7 +11,7 @@ function ElectionsCatalogRoutePage() {
   const { page, seedKey } = Route.useLoaderData()
   const navigate = useNavigate({ from: '/alegeri/' })
   // The server's page seeds the query only for the address it was read for.
-  const initialPage = page && seedKey === seedKeyOf(electionsCatalogKeys.catalog(search)) ? page : undefined
+  const initialPage = page && seedKey === seedKeyOf(electionsCatalogKeys.events(search)) ? page : undefined
 
   return (
     <ElectionsCatalogPage

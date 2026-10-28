@@ -14,8 +14,8 @@ import { ELECTIONS_PAGE_SIZE } from '@/schemas/elections-catalog'
 
 /**
  * The pieces the three elections pages share, on the hubs' frame
- * (`RuledFrame`, `MonoLabel`): the head, the availability note, the facts
- * list, the filter form, and a list's body with its states and pager.
+ * (`RuledFrame`, `MonoLabel`): the head, the facts list, the filter form, and
+ * a list's body with its states and pager.
  */
 
 /** The page's head: a caption, the title, and what follows it. */
@@ -35,7 +35,7 @@ export function ElectionsPageHead({
       <RuledFrame className="py-10 sm:py-14">
         {back ? <div className="mb-6">{back}</div> : null}
         <MonoLabel className="text-muted-foreground">{caption}</MonoLabel>
-        {/* Keys run long and unspaced („alegeri-pentru-autoritatile-…-2014-t1"): they break anywhere rather than run off a phone. */}
+        {/* Keys run long and unspaced („ro:local:2024:2024-06-09:mayor:uat:116046"): they break anywhere rather than run off a phone. */}
         <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl">{title}</h1>
         {children}
       </RuledFrame>
@@ -46,8 +46,16 @@ export function ElectionsPageHead({
 const BACK_LINK_CLASS =
   'inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:min-h-0'
 
-/** Back to the catalog, or to the edition a contest belongs to. */
-export function ElectionsBackLink({ electionKey, children }: { readonly electionKey?: string; readonly children: ReactNode }) {
+/** Back to the list of events, or to the event (and the ballot day) a contest belongs to. */
+export function ElectionsBackLink({
+  electionKey,
+  ballotDate,
+  children,
+}: {
+  readonly electionKey?: string
+  readonly ballotDate?: string
+  readonly children: ReactNode
+}) {
   const body = (
     <>
       <ArrowLeft className="size-4" aria-hidden="true" />
@@ -59,28 +67,15 @@ export function ElectionsBackLink({ electionKey, children }: { readonly election
       {body}
     </Link>
   ) : (
-    <Link to="/alegeri/$electionKey" params={{ electionKey }} className={BACK_LINK_CLASS}>
+    <Link
+      to="/alegeri/$electionKey"
+      params={{ electionKey }}
+      // Every key written: the root's search passes through, so an omitted key would carry over.
+      search={{ data: ballotDate, functie: undefined, arie: undefined, judet: undefined, pagina: undefined }}
+      className={BACK_LINK_CLASS}
+    >
       {body}
     </Link>
-  )
-}
-
-/**
- * What these pages hold and what they do not, said once. Results, turnout,
- * candidates and mandates have no served projection; `unverified` adds that
- * the record's identity is the source's own claim.
- */
-export function ElectionsAvailabilityNote({ unverified = false, className }: { readonly unverified?: boolean; readonly className?: string }) {
-  return (
-    <p role="note" className={cn('max-w-[60ch] border-l-2 border-primary/60 pl-4 text-sm leading-relaxed text-muted-foreground', className)}>
-      <Trans>Rezultatele, prezența la vot, candidații și mandatele nu sunt disponibile în această versiune.</Trans>
-      {unverified ? (
-        <>
-          {' '}
-          <Trans>Datele de identificare sunt cele raportate de sursă și nu au fost încă verificate.</Trans>
-        </>
-      ) : null}
-    </p>
   )
 }
 
@@ -155,7 +150,7 @@ export function ElectionsRecordMissing({ title, children, notice }: { readonly t
           {notice}
           <div className="mt-4">
             <ElectionsBackLink>
-              <Trans>Toate edițiile de sursă</Trans>
+              <Trans>Toate alegerile</Trans>
             </ElectionsBackLink>
           </div>
         </div>

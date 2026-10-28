@@ -29,24 +29,24 @@ beforeEach(() => {
 
 describe('the /alegeri route page', () => {
   it('seeds the page with the server’s read when it was for this address', () => {
-    state.search = { an: 2024 }
-    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.catalog({ an: 2024 })), page: PAGE }
+    state.search = { pagina: 2 }
+    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.events({ pagina: 2 })), page: PAGE }
     render(<RoutePage />)
-    expect(propsOfLastRender()).toMatchObject({ search: { an: 2024 }, initialPage: PAGE })
+    expect(propsOfLastRender()).toMatchObject({ search: { pagina: 2 }, initialPage: PAGE })
   })
 
   it('never seeds another address’s page', () => {
-    state.search = { an: 2020 }
-    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.catalog({ an: 2024 })), page: PAGE }
+    state.search = {}
+    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.events({ pagina: 2 })), page: PAGE }
     render(<RoutePage />)
     expect(propsOfLastRender()).not.toHaveProperty('initialPage')
   })
 
-  it('moves the filters and the page through the address, keeping the reader’s place', () => {
+  it('moves the page through the address, keeping the reader’s place', () => {
     state.search = {}
-    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.catalog({})) }
+    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.events({})) }
     render(<RoutePage />)
-    propsOfLastRender().onSearchChange({ tip: 'local' })
-    expect(state.navigate).toHaveBeenCalledWith({ search: { tip: 'local' }, resetScroll: false })
+    propsOfLastRender().onSearchChange({ pagina: 2 })
+    expect(state.navigate).toHaveBeenCalledWith({ search: { pagina: 2 }, resetScroll: false })
   })
 })

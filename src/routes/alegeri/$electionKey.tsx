@@ -1,33 +1,30 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
-import { buildEditionDocumentTitle } from '@/features/elections/catalog/elections-catalog-text'
+import { buildEventDocumentTitle, eventName } from '@/features/elections/catalog/elections-catalog-text'
+import { selectBallotDay } from '@/features/elections/lib/election-days'
 import { electionsCatalogKeys, seedKeyOf } from '@/features/elections/lib/elections-catalog-keys'
 import { electionsNoStoreHeaders, electionsPageHead } from '@/features/elections/lib/elections-head'
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import {
-  isElectionRecordKey,
-  parseElectionContestsSearch,
-  type ElectionContestPage,
-  type ElectionEdition,
-} from '@/schemas/elections-catalog'
+import { isElectionRecordKey, parseElectionContestsSearch, type ElectionContestPage, type ElectionEvent } from '@/schemas/elections-catalog'
 
 export interface ElectionEditionLoaderData {
   readonly electionKey: string
   /** Present on a server render whose read succeeded; the page's own query reads it otherwise. */
-  readonly edition?: ElectionEdition
-  /** The contests query the server read was for: it seeds the list only under the same key. */
-  readonly contestsSeedKey: string
-  readonly contests?: ElectionContestPage
+  readonly event?: ElectionEvent
+  /** The first contests of the day the address names, with the key they were read under: they seed the list only under the same key. */
+  readonly contests?: { readonly occurrenceKey: string; readonly seedKey: string; readonly page: ElectionContestPage }
 }
 
 /**
- * One source edition and a page of its contests. Both are read on the
- * server, side by side under a deadline: an edition the API does not have is
- * a 404, a failed read is the page's own retry, and a failed contest list
- * leaves the edition standing. In the browser the loader starts both reads
- * and returns at once. A key the API could never hold is no page.
+ * One election event and a page of one ballot day's contests. On the server
+ * the event is read, then the contests of the day the address names, both
+ * within one short deadline: an event the API does not have is a 404, a
+ * failed read is the page's own retry, and a failed contest list leaves the
+ * event standing. In the browser the loader starts both reads, the second
+ * once the first names the day, and returns at once. A key the API could
+ * never hold is no page.
  */
 export const Route = createFileRoute('/alegeri/$electionKey')({
   ssr: true,
@@ -36,36 +33,45 @@ export const Route = createFileRoute('/alegeri/$electionKey')({
   loader: async ({ context, params, deps, abortController }): Promise<ElectionEditionLoaderData> => {
     const { electionKey } = params
     if (!isElectionRecordKey(electionKey)) throw notFound()
-    const contestsSeedKey = seedKeyOf(electionsCatalogKeys.contests(electionKey, deps))
     if (!shouldBlockLoaderForSsr()) {
       const hooks = await import('@/features/elections/hooks/use-elections-catalog')
-      void context.queryClient.prefetchQuery(hooks.electionEditionQueryOptions(electionKey)).catch(() => undefined)
-      void context.queryClient.prefetchQuery(hooks.electionContestsQueryOptions(electionKey, deps)).catch(() => undefined)
-      return { electionKey, contestsSeedKey }
+      const { queryClient } = context
+      void queryClient
+        .fetchQuery(hooks.electionEventQueryOptions(electionKey))
+        .then((event) => {
+          const day = event ? selectBallotDay(event, deps.data) : null
+          return day ? queryClient.prefetchQuery(hooks.electionContestsQueryOptions(day.occurrenceKey, deps)) : undefined
+        })
+        .catch(() => undefined)
+      return { electionKey }
     }
-    const { readElectionEditionForSsr } = await import('@/features/elections/api/elections-catalog-ssr')
-    const read = await readElectionEditionForSsr(electionKey, deps, abortController.signal)
-    if (read.edition === null) throw notFound()
+    const { readElectionEventForSsr } = await import('@/features/elections/api/elections-catalog-ssr')
+    const read = await readElectionEventForSsr(electionKey, deps, abortController.signal)
+    if (read.event === null) throw notFound()
     return {
       electionKey,
-      contestsSeedKey,
-      ...(read.edition ? { edition: read.edition } : {}),
-      ...(read.contests ? { contests: read.contests } : {}),
+      ...(read.event ? { event: read.event } : {}),
+      ...(read.contests
+        ? {
+            contests: {
+              occurrenceKey: read.contests.occurrenceKey,
+              seedKey: seedKeyOf(electionsCatalogKeys.contests(read.contests.occurrenceKey, deps)),
+              page: read.contests.page,
+            },
+          }
+        : {}),
     }
   },
   headers: electionsNoStoreHeaders,
   // In the request's own language: the shared Lingui instance may hold another request's by the time a head that waited on its loader runs.
   head: ({ params, loaderData, match }) => {
     const translator = translatorFor(match.context.locale)
-    // After a client-side navigation the loader returns no edition: the query cache may hold it.
-    const edition =
-      loaderData?.edition ?? match.context.queryClient.getQueryData<ElectionEdition | null>(electionsCatalogKeys.edition(params.electionKey)) ?? null
-    const name = edition?.reportedName || params.electionKey
+    // After a client-side navigation the loader returns no event: the query cache may hold it.
+    const event = loaderData?.event ?? match.context.queryClient.getQueryData<ElectionEvent | null>(electionsCatalogKeys.event(params.electionKey)) ?? null
+    const name = event ? eventName(translator, event) : params.electionKey
     return electionsPageHead({
-      title: buildEditionDocumentTitle(translator, { electionKey: params.electionKey, name: edition?.reportedName }),
-      description: translator._(
-        msg`Ediția de sursă ${name}: anul, tipul și turul raportate de sursă, și scrutinele ei. Rezultatele nu sunt încă disponibile.`,
-      ),
+      title: buildEventDocumentTitle(translator, { eventKey: params.electionKey, event }),
+      description: translator._(msg`${name}: zilele de vot și scrutinele lor, cu voturile la nivel de partid și prezența la vot.`),
       canonical: `${getSiteUrl()}/alegeri/${encodeURIComponent(params.electionKey)}`,
     })
   },

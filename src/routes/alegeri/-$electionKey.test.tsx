@@ -1,15 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { event as eventOf } from '@/features/elections/test/catalog-fixtures'
 
-const { readEditionForSsr, editionOptions, contestsOptions, notFoundError } = vi.hoisted(() => ({
-  readEditionForSsr: vi.fn(),
-  editionOptions: vi.fn((key: string) => ({ queryKey: ['edition', key] })),
+const { readEventForSsr, eventOptions, contestsOptions, notFoundError } = vi.hoisted(() => ({
+  readEventForSsr: vi.fn(),
+  eventOptions: vi.fn((key: string) => ({ queryKey: ['event', key] })),
   contestsOptions: vi.fn((key: string, search: unknown) => ({ queryKey: ['contests', key, search] })),
   notFoundError: new Error('not-found'),
 }))
 
 vi.mock('@tanstack/react-router', () => ({ createFileRoute: () => (options: Record<string, unknown>) => options, notFound: () => notFoundError }))
-vi.mock('@/features/elections/api/elections-catalog-ssr', () => ({ readElectionEditionForSsr: readEditionForSsr }))
-vi.mock('@/features/elections/hooks/use-elections-catalog', () => ({ electionEditionQueryOptions: editionOptions, electionContestsQueryOptions: contestsOptions }))
+vi.mock('@/features/elections/api/elections-catalog-ssr', () => ({ readElectionEventForSsr: readEventForSsr }))
+vi.mock('@/features/elections/hooks/use-elections-catalog', () => ({ electionEventQueryOptions: eventOptions, electionContestsQueryOptions: contestsOptions }))
 vi.mock('@/config/env', () => ({ getSiteUrl: () => 'https://transparenta.eu' }))
 vi.mock('@/lib/i18n', () => ({ translatorFor: () => ({ _: (descriptor: unknown) => String(descriptor) }) }))
 
@@ -17,6 +18,7 @@ const { Route } = await import('./$electionKey')
 const { electionsCatalogKeys, seedKeyOf } = await import('@/features/elections/lib/elections-catalog-keys')
 
 interface QueryClientStub {
+  readonly fetchQuery: ReturnType<typeof vi.fn>
   readonly prefetchQuery: ReturnType<typeof vi.fn>
   readonly getQueryData: ReturnType<typeof vi.fn>
 }
@@ -37,7 +39,11 @@ const route = Route as unknown as {
   }) => { readonly meta: readonly Record<string, string>[]; readonly links: readonly Record<string, string>[] }
 }
 
-const queryClient = (data?: unknown): QueryClientStub => ({ prefetchQuery: vi.fn(() => new Promise(() => undefined)), getQueryData: vi.fn(() => data) })
+const queryClient = (data?: unknown, event: unknown = null): QueryClientStub => ({
+  fetchQuery: vi.fn(() => Promise.resolve(event)),
+  prefetchQuery: vi.fn(() => Promise.resolve()),
+  getQueryData: vi.fn(() => data),
+})
 const input = (electionKey: string, deps: Record<string, unknown> = {}, client = queryClient()): LoaderInput => ({
   context: { queryClient: client },
   params: { electionKey },
@@ -55,56 +61,64 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
   }
 }
 
-const EDITION = { electionKey: 'bec-local-2024', reportedName: 'bec-local-2024' }
+const EVENT = eventOf()
 const PAGE = { items: [], page: 1, pageSize: 20, total: 0, hasMore: false }
 const titleOf = (head: { readonly meta: readonly Record<string, string>[] }) => head.meta[0]?.title
 
 beforeEach(() => {
-  readEditionForSsr.mockReset()
-  editionOptions.mockClear()
+  readEventForSsr.mockReset()
+  eventOptions.mockClear()
   contestsOptions.mockClear()
 })
 
 describe('/alegeri/$electionKey', () => {
-  it('reads the contests’ filters and page from the address, exactly', () => {
-    expect(route.validateSearch({ functie: ' mayor', arie: 'county', tur: 1, pagina: 2, tab: 'sumar' })).toEqual({ functie: ' mayor', arie: 'county', tur: '1', pagina: 2 })
-  })
-
-  it('starts both reads in the browser and returns at once', async () => {
-    const loaderInput = input('bec-local-2024', { functie: 'mayor' })
-    await expect(route.loader(loaderInput)).resolves.toEqual({
-      electionKey: 'bec-local-2024',
-      contestsSeedKey: seedKeyOf(electionsCatalogKeys.contests('bec-local-2024', { functie: 'mayor' })),
+  it('reads the ballot day, the filters and the page from the address, exactly', () => {
+    expect(route.validateSearch({ data: '2024-06-23', functie: 'mayor', arie: 'uat', judet: 'CJ', pagina: 2, tur: 'tur1', tab: 'sumar' })).toEqual({
+      data: '2024-06-23',
+      functie: 'mayor',
+      arie: 'uat',
+      judet: 'CJ',
+      pagina: 2,
     })
-    expect(loaderInput.context.queryClient.prefetchQuery.mock.calls.map(([options]) => options)).toEqual([
-      { queryKey: ['edition', 'bec-local-2024'] },
-      { queryKey: ['contests', 'bec-local-2024', { functie: 'mayor' }] },
-    ])
   })
 
-  it('reads the edition and its contests while server-rendering', async () => {
-    readEditionForSsr.mockResolvedValue({ edition: EDITION, contests: PAGE })
-    const loaderInput = input('bec-local-2024', { pagina: 2 })
-    const data = await asServerRender(() => route.loader(loaderInput))
-    expect(data).toEqual({
-      electionKey: 'bec-local-2024',
-      contestsSeedKey: seedKeyOf(electionsCatalogKeys.contests('bec-local-2024', { pagina: 2 })),
-      edition: EDITION,
-      contests: PAGE,
+  it('in the browser, starts the event’s read, then the named day’s contests, and returns at once', async () => {
+    const client = queryClient(undefined, EVENT)
+    await expect(route.loader(input('ro:local:2024', { data: '2024-06-23', functie: 'mayor' }, client))).resolves.toEqual({ electionKey: 'ro:local:2024' })
+    expect(client.fetchQuery).toHaveBeenCalledWith({ queryKey: ['event', 'ro:local:2024'] })
+    await vi.waitFor(() => expect(client.prefetchQuery).toHaveBeenCalledWith({ queryKey: ['contests', 'ro:local:2024:2024-06-23', { data: '2024-06-23', functie: 'mayor' }] }))
+  })
+
+  it('in the browser, reads no contests for an event the API does not have', async () => {
+    const client = queryClient(undefined, null)
+    await route.loader(input('ro:local:1999', {}, client))
+    await Promise.resolve()
+    expect(client.prefetchQuery).not.toHaveBeenCalled()
+  })
+
+  it('reads the event and its day’s contests while server-rendering, keyed to what they were read for', async () => {
+    readEventForSsr.mockResolvedValue({ event: EVENT, contests: { occurrenceKey: 'ro:local:2024:2024-06-09', page: PAGE } })
+    const loaderInput = input('ro:local:2024', { pagina: 2 })
+    await expect(asServerRender(() => route.loader(loaderInput))).resolves.toEqual({
+      electionKey: 'ro:local:2024',
+      event: EVENT,
+      contests: {
+        occurrenceKey: 'ro:local:2024:2024-06-09',
+        seedKey: seedKeyOf(electionsCatalogKeys.contests('ro:local:2024:2024-06-09', { pagina: 2 })),
+        page: PAGE,
+      },
     })
-    expect(readEditionForSsr).toHaveBeenCalledWith('bec-local-2024', { pagina: 2 }, loaderInput.abortController.signal)
+    expect(readEventForSsr).toHaveBeenCalledWith('ro:local:2024', { pagina: 2 }, loaderInput.abortController.signal)
   })
 
-  it('answers an edition the API does not have with a 404 on the server', async () => {
-    readEditionForSsr.mockResolvedValue({ edition: null })
-    await expect(asServerRender(() => route.loader(input('missing')))).rejects.toBe(notFoundError)
+  it('answers an event the API does not have with a 404 on the server', async () => {
+    readEventForSsr.mockResolvedValue({ event: null })
+    await expect(asServerRender(() => route.loader(input('ro:local:1999')))).rejects.toBe(notFoundError)
   })
 
-  it('leaves a failed edition read to the page, never to a 404', async () => {
-    readEditionForSsr.mockResolvedValue({ contests: PAGE })
-    const data = await asServerRender(() => route.loader(input('bec-local-2024')))
-    expect(data).not.toHaveProperty('edition')
-    expect(data).toHaveProperty('contests', PAGE)
+  it('leaves a failed event read to the page, never to a 404', async () => {
+    readEventForSsr.mockResolvedValue({})
+    await expect(asServerRender(() => route.loader(input('ro:local:2024')))).resolves.toEqual({ electionKey: 'ro:local:2024' })
   })
 
   it('answers a key the API could never hold with a 404, reading nothing', async () => {
@@ -113,21 +127,24 @@ describe('/alegeri/$electionKey', () => {
       await expect(route.loader(input(key, {}, client))).rejects.toBe(notFoundError)
       await expect(asServerRender(() => route.loader(input(key, {}, client)))).rejects.toBe(notFoundError)
     }
-    expect(readEditionForSsr).not.toHaveBeenCalled()
-    expect(client.prefetchQuery).not.toHaveBeenCalled()
+    expect(readEventForSsr).not.toHaveBeenCalled()
+    expect(client.fetchQuery).not.toHaveBeenCalled()
   })
 
   it('is never cached, by the browser or the CDN', () => {
     expect(route.headers()).toEqual({ 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' })
   })
 
-  it('names the edition in the head, from the server’s read or the cache, canonical on its encoded key', () => {
-    const fromLoader = route.head({ params: { electionKey: 'bec-local-2024' }, loaderData: { edition: EDITION }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
-    expect(titleOf(fromLoader)).toBe('bec-local-2024 — Alegeri — Transparenta.eu')
-    const fromCache = route.head({ params: { electionKey: 'a b' }, match: { context: { locale: 'ro', queryClient: queryClient({ ...EDITION, reportedName: 'Ediția AB' }) } } })
-    expect(titleOf(fromCache)).toBe('Ediția AB — Alegeri — Transparenta.eu')
-    expect(fromCache.links).toEqual([{ rel: 'canonical', href: 'https://transparenta.eu/alegeri/a%20b' }])
+  it('names the event in the head, from the server’s read or the cache, canonical on its encoded key', () => {
+    const fromLoader = route.head({ params: { electionKey: 'ro:local:2024' }, loaderData: { event: EVENT }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
+    expect(titleOf(fromLoader)).toBe('Alegeri locale 2024 — Transparenta.eu')
+    expect(fromLoader.links).toEqual([{ rel: 'canonical', href: 'https://transparenta.eu/alegeri/ro%3Alocal%3A2024' }])
+    const fromCache = route.head({
+      params: { electionKey: 'ro:presidential:2025' },
+      match: { context: { locale: 'ro', queryClient: queryClient(eventOf({ eventKey: 'ro:presidential:2025', family: 'presidential', year: 2025 })) } },
+    })
+    expect(titleOf(fromCache)).toBe('Alegeri prezidențiale 2025 — Transparenta.eu')
     const unknown = route.head({ params: { electionKey: 'k:1' }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
-    expect(titleOf(unknown)).toBe('Ediția de sursă k:1 — Alegeri — Transparenta.eu')
+    expect(titleOf(unknown)).toBe('Alegerea k:1 — Transparenta.eu')
   })
 })

@@ -4,56 +4,69 @@ import {
   ELECTIONS_PAGE_SIZE,
   electionContestPageSchema,
   electionContestSchema,
-  electionEditionPageSchema,
-  electionEditionSchema,
+  electionEventPageSchema,
+  electionEventSchema,
+  electionResultSchema,
   type ElectionContest,
   type ElectionContestPage,
   type ElectionContestsSearch,
-  type ElectionEdition,
-  type ElectionEditionPage,
+  type ElectionEvent,
+  type ElectionEventPage,
+  type ElectionResult,
   type ElectionsCatalogSearch,
 } from '@/schemas/elections-catalog'
 
 /**
  * The elections pages' reads (server `elections/shell/graphql/schema.ts`):
- * the catalog of source editions, one edition, its contests, one contest.
- * Each is one request, parsed before the page sees it. A record the API
- * does not have is `null`; a request that fails throws, and is never read
- * as an absent record or an empty list. Filters reach the API exactly as the
- * address holds them.
+ * the events, one event with its ballot days, one day's contests, one
+ * contest, and the figures of a contest's own place. Each is one request,
+ * parsed before the page sees it. A record the API does not have is `null`;
+ * a request that fails throws, and is never read as an absent record or an
+ * empty list. Filters reach the API exactly as the address holds them.
+ *
+ * Competitors are read by kind and label only: no competitor key, no
+ * reported labels, since an independent's key and labels name a person (the
+ * parse drops an independent's label too).
  */
 
-const READINESS = 'readiness { identity sourceSelection }'
+const COMPETITOR = 'competitor { kind label }'
+const SHARE = 'share { percent }'
+const QUALITY = 'value finality geographicCompleteness includesDiaspora status issues'
 
-const EDITION_FIELDS = `
-  electionKey eventKey reportedName reportedYear reportedFamily reportedRound reportedDate reportedAuthority
-  ${READINESS}
+const EVENT_FIELDS = `
+  eventKey family year publication { activatedAt }
+  occurrences { occurrenceKey eventKey ballotDate round kind status offices { office contests } }
 `
+
+const RACE_ENTRY = `votes ${SHARE} ${COMPETITOR}`
 
 const CONTEST_FIELDS = `
-  contestKey electionKey reportedOffice chamber reportedRound scopeType sourceScopeKey scopeLabel
-  constituencyCode constituencyName
-  ${READINESS}
+  contestKey occurrenceKey eventKey office status replacedBy
+  jurisdiction { placeKey placeType sirutaCode countyCode name countyName }
+  race {
+    competitorCount status geographicCompleteness finality issues tied marginVotes marginPoints
+    leader { ${RACE_ENTRY} } runnerUp { ${RACE_ENTRY} }
+  }
 `
 
-export const ELECTION_CATALOG_QUERY = /* GraphQL */ `
-  query ElectionCatalog($filter: ElectionCatalogFilter, $page: Int, $pageSize: Int) {
-    electionCatalog(filter: $filter, page: $page, pageSize: $pageSize) {
-      items { ${EDITION_FIELDS} }
+export const ELECTION_EVENTS_QUERY = /* GraphQL */ `
+  query ElectionEvents($page: Int, $pageSize: Int) {
+    electionEvents(page: $page, pageSize: $pageSize) {
+      items { ${EVENT_FIELDS} }
       page pageSize total hasMore
     }
   }
 `
 
-export const ELECTION_EDITION_QUERY = /* GraphQL */ `
-  query ElectionEdition($electionKey: ID!) {
-    electionEdition(electionKey: $electionKey) { ${EDITION_FIELDS} }
+export const ELECTION_EVENT_QUERY = /* GraphQL */ `
+  query ElectionEvent($eventKey: ID!) {
+    electionEvent(eventKey: $eventKey) { ${EVENT_FIELDS} }
   }
 `
 
 export const ELECTION_CONTESTS_QUERY = /* GraphQL */ `
-  query ElectionContests($electionKey: ID!, $filter: ElectionContestsFilter, $page: Int, $pageSize: Int) {
-    electionContests(electionKey: $electionKey, filter: $filter, page: $page, pageSize: $pageSize) {
+  query ElectionContests($occurrenceKey: ID!, $filter: ElectionContestsFilter, $page: Int, $pageSize: Int) {
+    electionContests(occurrenceKey: $occurrenceKey, filter: $filter, page: $page, pageSize: $pageSize) {
       items { ${CONTEST_FIELDS} }
       page pageSize total hasMore
     }
@@ -66,61 +79,81 @@ export const ELECTION_CONTEST_QUERY = /* GraphQL */ `
   }
 `
 
+export const ELECTION_RESULT_QUERY = /* GraphQL */ `
+  query ElectionResult($occurrenceKey: ID!, $office: String!, $scopeKey: ID!, $contestKey: ID) {
+    electionResult(occurrenceKey: $occurrenceKey, office: $office, scopeKey: $scopeKey, contestKey: $contestKey) {
+      tallies { measure allocationPhase countedPopulation ${SHARE} ${COMPETITOR} ${QUALITY} }
+      turnout { measure ${QUALITY} }
+      participation { percent }
+      race { tied marginVotes marginPoints issues }
+      coverage { measure allocationPhase placeSpecific state issues }
+    }
+  }
+`
+
 type InFilter<Value> = { readonly in: readonly Value[] }
 
-/** The catalog's filter: each field only when the address sets it, one exact value. */
-export function catalogFilterOf(search: ElectionsCatalogSearch): Record<string, InFilter<string | number>> {
-  return {
-    ...(search.an !== undefined ? { reportedYears: { in: [search.an] } } : {}),
-    ...(search.tip !== undefined ? { reportedFamilies: { in: [search.tip] } } : {}),
-  }
-}
-
-/** An edition's contest filter: each field only when the address sets it, one exact value. */
+/** A day's contest filter: each field only when the address sets it, one exact value. */
 export function contestsFilterOf(search: ElectionContestsSearch): Record<string, InFilter<string>> {
   return {
-    ...(search.functie !== undefined ? { reportedOffices: { in: [search.functie] } } : {}),
-    ...(search.arie !== undefined ? { scopeTypes: { in: [search.arie] } } : {}),
-    ...(search.tur !== undefined ? { reportedRounds: { in: [search.tur] } } : {}),
+    ...(search.functie !== undefined ? { offices: { in: [search.functie] } } : {}),
+    ...(search.arie !== undefined ? { jurisdictionTypes: { in: [search.arie] } } : {}),
+    ...(search.judet !== undefined ? { countyCodes: { in: [search.judet] } } : {}),
   }
 }
 
-const catalogResponseSchema = z.object({ electionCatalog: electionEditionPageSchema })
-const editionResponseSchema = z.object({ electionEdition: electionEditionSchema.nullable() })
+const eventsResponseSchema = z.object({ electionEvents: electionEventPageSchema })
+const eventResponseSchema = z.object({ electionEvent: electionEventSchema.nullable() })
 const contestsResponseSchema = z.object({ electionContests: electionContestPageSchema })
 const contestResponseSchema = z.object({ electionContest: electionContestSchema.nullable() })
+const resultResponseSchema = z.object({ electionResult: electionResultSchema.nullable() })
 
-export async function fetchElectionCatalog(search: ElectionsCatalogSearch, signal?: AbortSignal): Promise<ElectionEditionPage> {
+export async function fetchElectionEvents(search: ElectionsCatalogSearch, signal?: AbortSignal): Promise<ElectionEventPage> {
   const data = await graphqlQuery<unknown>(
-    ELECTION_CATALOG_QUERY,
-    { filter: catalogFilterOf(search), page: search.pagina ?? 1, pageSize: ELECTIONS_PAGE_SIZE },
-    { operationName: 'ElectionCatalog', signal, auth: 'none' },
+    ELECTION_EVENTS_QUERY,
+    { page: search.pagina ?? 1, pageSize: ELECTIONS_PAGE_SIZE },
+    { operationName: 'ElectionEvents', signal, auth: 'none' },
   )
-  return catalogResponseSchema.parse(data).electionCatalog
+  return eventsResponseSchema.parse(data).electionEvents
 }
 
-/** `null`: the API has no public edition under this key. */
-export async function fetchElectionEdition(electionKey: string, signal?: AbortSignal): Promise<ElectionEdition | null> {
-  const data = await graphqlQuery<unknown>(ELECTION_EDITION_QUERY, { electionKey }, { operationName: 'ElectionEdition', signal, auth: 'none' })
-  return editionResponseSchema.parse(data).electionEdition
+/** `null`: the API has no event with published figures under this key. */
+export async function fetchElectionEvent(eventKey: string, signal?: AbortSignal): Promise<ElectionEvent | null> {
+  const data = await graphqlQuery<unknown>(ELECTION_EVENT_QUERY, { eventKey }, { operationName: 'ElectionEvent', signal, auth: 'none' })
+  return eventResponseSchema.parse(data).electionEvent
 }
 
-/** An edition the API does not have answers NOT_FOUND here, as an error: the edition's own read says whether it exists. */
+/** A ballot day the API does not have answers NOT_FOUND here, as an error: the event's own read says which days exist. */
 export async function fetchElectionContests(
-  electionKey: string,
+  occurrenceKey: string,
   search: ElectionContestsSearch,
   signal?: AbortSignal,
 ): Promise<ElectionContestPage> {
   const data = await graphqlQuery<unknown>(
     ELECTION_CONTESTS_QUERY,
-    { electionKey, filter: contestsFilterOf(search), page: search.pagina ?? 1, pageSize: ELECTIONS_PAGE_SIZE },
+    { occurrenceKey, filter: contestsFilterOf(search), page: search.pagina ?? 1, pageSize: ELECTIONS_PAGE_SIZE },
     { operationName: 'ElectionContests', signal, auth: 'none' },
   )
   return contestsResponseSchema.parse(data).electionContests
 }
 
-/** `null`: the API has no public contest under this key. */
+/** `null`: the API has no contest under this key. */
 export async function fetchElectionContest(contestKey: string, signal?: AbortSignal): Promise<ElectionContest | null> {
   const data = await graphqlQuery<unknown>(ELECTION_CONTEST_QUERY, { contestKey }, { operationName: 'ElectionContest', signal, auth: 'none' })
   return contestResponseSchema.parse(data).electionContest
+}
+
+/** The contest a result is read for: its day, office and own place, all from the contest's record. */
+export type ElectionResultTarget = Pick<ElectionContest, 'contestKey' | 'occurrenceKey' | 'office'> & {
+  readonly jurisdiction: Pick<ElectionContest['jurisdiction'], 'placeKey'>
+}
+
+/** `null`: the contest's place has no figures (an annulled contest may have none). */
+export async function fetchElectionResult(contest: ElectionResultTarget, signal?: AbortSignal): Promise<ElectionResult | null> {
+  const data = await graphqlQuery<unknown>(
+    ELECTION_RESULT_QUERY,
+    { occurrenceKey: contest.occurrenceKey, office: contest.office, scopeKey: contest.jurisdiction.placeKey, contestKey: contest.contestKey },
+    { operationName: 'ElectionResult', signal, auth: 'none' },
+  )
+  return resultResponseSchema.parse(data).electionResult
 }

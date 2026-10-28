@@ -89,6 +89,29 @@ export function isGraphQLInvalidInput(error: unknown): error is GraphQLRequestEr
   )
 }
 
+/** Field errors that name the request, not the moment: the same request gets the same answer. */
+const DETERMINISTIC_FIELD_CODES: ReadonlySet<unknown> = new Set([GRAPHQL_INVALID_INPUT_CODE, 'NOT_FOUND', 'BAD_USER_INPUT'])
+
+/**
+ * The server will answer this request the same way again, so a retry only
+ * adds a call and its wait: the document failed parsing or validation (an
+ * error with no `path` that points into the document, as when a field the
+ * client asks for was removed), every field error refused its input or found
+ * nothing, or the HTTP status is a client error other than a timeout or a
+ * rate limit. A network failure, a timeout, a 5xx, a request-level error
+ * that names no place in the document and any other field error stay
+ * retryable.
+ */
+export function isDeterministicGraphQLFailure(error: unknown): boolean {
+  if (!(error instanceof GraphQLRequestError) || error.timedOut) return false
+  const status = error.status
+  if (status !== undefined) return status >= 400 && status < 500 && status !== 408 && status !== 429
+  const entries = error.graphQLErrors
+  const deterministic = (entry: GraphQLErrorEntry) =>
+    entry.path === undefined ? (entry.locations?.length ?? 0) > 0 : DETERMINISTIC_FIELD_CODES.has(entry.extensions?.code)
+  return entries.length > 0 && entries.every(deterministic)
+}
+
 /** The request ran past its deadline (see `withDeadline`): a failure of the read, not an abort. */
 export function isGraphQLTimeout(error: unknown): boolean {
   return (error instanceof GraphQLRequestError && error.timedOut) || isTimeoutReason(error)

@@ -11,19 +11,20 @@ function ElectionEditionRoutePage() {
   const search = Route.useSearch()
   const data = Route.useLoaderData()
   const navigate = useNavigate({ from: '/alegeri/$electionKey' })
-  // The server's reads seed the page only for the edition and the address they were read for.
-  const sameEdition = data.electionKey === electionKey
-  const contestsSeeded = sameEdition && data.contestsSeedKey === seedKeyOf(electionsCatalogKeys.contests(electionKey, search))
+  // The server's reads seed the page only for the event and the address they were read for.
+  const sameEvent = data.electionKey === electionKey
+  const contests = data.contests
+  const contestsSeeded = sameEvent && contests !== undefined && contests.seedKey === seedKeyOf(electionsCatalogKeys.contests(contests.occurrenceKey, search))
 
   return (
     <ElectionEditionPage
-      // Another edition is another page: nothing carries over from this one.
+      // Another event is another page: nothing carries over from this one.
       key={electionKey}
       electionKey={electionKey}
       search={search}
       onSearchChange={(next) => void navigate({ search: next, resetScroll: false })}
-      {...(sameEdition && data.edition ? { initialEdition: data.edition } : {})}
-      {...(contestsSeeded && data.contests ? { initialContests: data.contests } : {})}
+      {...(sameEvent && data.event ? { initialEvent: data.event } : {})}
+      {...(contestsSeeded ? { initialContests: { occurrenceKey: contests.occurrenceKey, page: contests.page } } : {})}
     />
   )
 }

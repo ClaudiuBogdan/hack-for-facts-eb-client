@@ -17,24 +17,33 @@ const { Route } = await import('./$contestKey.lazy')
 const RoutePage = (Route as unknown as { readonly options: { readonly component: ComponentType } }).options.component
 const propsOfLastRender = () => state.page.mock.lastCall?.[0] as Record<string, unknown>
 
-const KEY = 'contest:bec-local-2024:mayor:source_constituency:8-19'
+const KEY = 'ro:local:2024:2024-06-09:mayor:uat:100004'
 const CONTEST = { contestKey: KEY }
+const RESULT = { tallies: [] }
+const EVENT = { eventKey: 'ro:local:2024' }
 
 beforeEach(() => {
   state.page.mockClear()
 })
 
 describe('the /alegeri/contest/$contestKey route page', () => {
-  it('seeds the page with the server’s read of this contest', () => {
+  it('seeds the page with the server’s reads of this contest', () => {
     state.params = { contestKey: KEY }
-    state.loaderData = { contestKey: KEY, contest: CONTEST }
+    state.loaderData = { contestKey: KEY, contest: CONTEST, result: RESULT, event: EVENT }
     render(<RoutePage />)
-    expect(propsOfLastRender()).toEqual({ contestKey: KEY, initialContest: CONTEST })
+    expect(propsOfLastRender()).toEqual({ contestKey: KEY, initialContest: CONTEST, initialResult: RESULT, initialEvent: EVENT })
+  })
+
+  it('seeds a place without figures as null', () => {
+    state.params = { contestKey: KEY }
+    state.loaderData = { contestKey: KEY, contest: CONTEST, result: null }
+    render(<RoutePage />)
+    expect(propsOfLastRender()).toEqual({ contestKey: KEY, initialContest: CONTEST, initialResult: null })
   })
 
   it('never seeds another contest’s page', () => {
     state.params = { contestKey: `${KEY}-2` }
-    state.loaderData = { contestKey: KEY, contest: CONTEST }
+    state.loaderData = { contestKey: KEY, contest: CONTEST, result: RESULT, event: EVENT }
     render(<RoutePage />)
     expect(propsOfLastRender()).toEqual({ contestKey: `${KEY}-2` })
   })

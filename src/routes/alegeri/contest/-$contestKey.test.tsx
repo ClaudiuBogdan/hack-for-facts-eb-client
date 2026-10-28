@@ -1,20 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { contest as contestOf, event as eventOf, result as resultOf } from '@/features/elections/test/catalog-fixtures'
 
-const { readContestForSsr, contestOptions, notFoundError } = vi.hoisted(() => ({
+const { readContestForSsr, contestOptions, resultOptions, eventOptions, notFoundError } = vi.hoisted(() => ({
   readContestForSsr: vi.fn(),
   contestOptions: vi.fn((key: string) => ({ queryKey: ['contest', key] })),
+  resultOptions: vi.fn((contest: { readonly contestKey: string }) => ({ queryKey: ['result', contest.contestKey] })),
+  eventOptions: vi.fn((key: string) => ({ queryKey: ['event', key] })),
   notFoundError: new Error('not-found'),
 }))
 
 vi.mock('@tanstack/react-router', () => ({ createFileRoute: () => (options: Record<string, unknown>) => options, notFound: () => notFoundError }))
 vi.mock('@/features/elections/api/elections-catalog-ssr', () => ({ readElectionContestForSsr: readContestForSsr }))
-vi.mock('@/features/elections/hooks/use-elections-catalog', () => ({ electionContestQueryOptions: contestOptions }))
+vi.mock('@/features/elections/hooks/use-elections-catalog', () => ({
+  electionContestQueryOptions: contestOptions,
+  electionResultQueryOptions: resultOptions,
+  electionEventQueryOptions: eventOptions,
+}))
 vi.mock('@/config/env', () => ({ getSiteUrl: () => 'https://transparenta.eu' }))
 vi.mock('@/lib/i18n', () => ({ translatorFor: () => ({ _: (descriptor: unknown) => String(descriptor) }) }))
 
 const { Route } = await import('./$contestKey')
 
 interface QueryClientStub {
+  readonly fetchQuery: ReturnType<typeof vi.fn>
   readonly prefetchQuery: ReturnType<typeof vi.fn>
   readonly getQueryData: ReturnType<typeof vi.fn>
 }
@@ -34,7 +42,11 @@ const route = Route as unknown as {
   }) => { readonly meta: readonly Record<string, string>[]; readonly links: readonly Record<string, string>[] }
 }
 
-const queryClient = (data?: unknown): QueryClientStub => ({ prefetchQuery: vi.fn(() => new Promise(() => undefined)), getQueryData: vi.fn(() => data) })
+const queryClient = (data?: unknown, contest: unknown = null): QueryClientStub => ({
+  fetchQuery: vi.fn(() => Promise.resolve(contest)),
+  prefetchQuery: vi.fn(() => Promise.resolve()),
+  getQueryData: vi.fn(() => data),
+})
 const input = (contestKey: string, client = queryClient()): LoaderInput => ({ context: { queryClient: client }, params: { contestKey }, abortController: new AbortController() })
 
 async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
@@ -47,12 +59,14 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
   }
 }
 
-const KEY = 'contest:bec-local-2024:mayor:source_constituency:8-19'
-const CONTEST = { contestKey: KEY, electionKey: 'bec-local-2024', reportedOffice: 'mayor', sourceScopeKey: '8:19', scopeLabel: 'CINCU' }
+const CONTEST = contestOf()
+const KEY = CONTEST.contestKey
+const RESULT = resultOf()
+const EVENT = eventOf()
 
 beforeEach(() => {
   readContestForSsr.mockReset()
-  contestOptions.mockClear()
+  for (const mock of [contestOptions, resultOptions, eventOptions]) mock.mockClear()
 })
 
 describe('/alegeri/contest/$contestKey', () => {
@@ -60,29 +74,32 @@ describe('/alegeri/contest/$contestKey', () => {
     expect(route.validateSearch).toBeUndefined()
   })
 
-  it('starts the read in the browser and returns at once', async () => {
-    const loaderInput = input(KEY)
-    await expect(route.loader(loaderInput)).resolves.toEqual({ contestKey: KEY })
-    expect(loaderInput.context.queryClient.prefetchQuery).toHaveBeenCalledWith({ queryKey: ['contest', KEY] })
+  it('in the browser, starts the contest’s read, then its figures and event, and returns at once', async () => {
+    const client = queryClient(undefined, CONTEST)
+    await expect(route.loader(input(KEY, client))).resolves.toEqual({ contestKey: KEY })
+    expect(client.fetchQuery).toHaveBeenCalledWith({ queryKey: ['contest', KEY] })
+    await vi.waitFor(() => expect(client.prefetchQuery).toHaveBeenCalledTimes(2))
+    expect(client.prefetchQuery.mock.calls.map(([options]) => options)).toEqual([{ queryKey: ['result', KEY] }, { queryKey: ['event', 'ro:local:2024'] }])
   })
 
-  it('reads the contest while server-rendering, and answers a missing one with a 404', async () => {
-    readContestForSsr.mockResolvedValueOnce(CONTEST).mockResolvedValueOnce(null)
+  it('reads the contest, its figures and its event while server-rendering, and answers a missing contest with a 404', async () => {
+    readContestForSsr.mockResolvedValueOnce({ contest: CONTEST, result: RESULT, event: EVENT }).mockResolvedValueOnce({ contest: null })
     const loaderInput = input(KEY)
-    await expect(asServerRender(() => route.loader(loaderInput))).resolves.toEqual({ contestKey: KEY, contest: CONTEST })
+    await expect(asServerRender(() => route.loader(loaderInput))).resolves.toEqual({ contestKey: KEY, contest: CONTEST, result: RESULT, event: EVENT })
     expect(readContestForSsr).toHaveBeenCalledWith(KEY, loaderInput.abortController.signal)
     await expect(asServerRender(() => route.loader(input('missing')))).rejects.toBe(notFoundError)
   })
 
-  it('leaves a failed server read to the page’s own retry', async () => {
-    readContestForSsr.mockResolvedValue(undefined)
+  it('keeps a place without figures as null, and leaves failed reads to the page', async () => {
+    readContestForSsr.mockResolvedValueOnce({ contest: CONTEST, result: null }).mockResolvedValueOnce({})
+    await expect(asServerRender(() => route.loader(input(KEY)))).resolves.toEqual({ contestKey: KEY, contest: CONTEST, result: null })
     await expect(asServerRender(() => route.loader(input(KEY)))).resolves.toEqual({ contestKey: KEY })
   })
 
   it('answers a key the API could never hold with a 404, reading nothing', async () => {
     const client = queryClient()
     await expect(route.loader(input('bad\u0000key', client))).rejects.toBe(notFoundError)
-    expect(client.prefetchQuery).not.toHaveBeenCalled()
+    expect(client.fetchQuery).not.toHaveBeenCalled()
     expect(readContestForSsr).not.toHaveBeenCalled()
   })
 
@@ -92,7 +109,7 @@ describe('/alegeri/contest/$contestKey', () => {
 
   it('names the contest by its place and office, canonical on its encoded key', () => {
     const head = route.head({ params: { contestKey: KEY }, loaderData: { contest: CONTEST }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
-    expect(head.meta[0]).toEqual({ title: 'CINCU · mayor — Alegeri — Transparenta.eu' })
+    expect(head.meta[0]).toEqual({ title: 'VICTORIA · Primar — Alegeri — Transparenta.eu' })
     expect(head.links).toEqual([{ rel: 'canonical', href: `https://transparenta.eu/alegeri/contest/${encodeURIComponent(KEY)}` }])
     const pending = route.head({ params: { contestKey: KEY }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
     expect(pending.meta[0]).toEqual({ title: `Scrutinul ${KEY} — Alegeri — Transparenta.eu` })

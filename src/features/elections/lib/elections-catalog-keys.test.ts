@@ -1,54 +1,48 @@
 import { hashKey } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
+import { event as eventOf, day } from '../test/catalog-fixtures'
+import { ballotDaysOf, selectBallotDay } from './election-days'
 import { electionsCatalogKeys, seedKeyOf } from './elections-catalog-keys'
 
 vi.mock('../api/elections-catalog-api', () => ({
-  fetchElectionCatalog: vi.fn(),
+  fetchElectionEvents: vi.fn(),
+  fetchElectionEvent: vi.fn(),
   fetchElectionContest: vi.fn(),
   fetchElectionContests: vi.fn(),
-  fetchElectionEdition: vi.fn(),
+  fetchElectionResult: vi.fn(),
 }))
 
 const { electionContestsQueryOptions } = await import('../hooks/use-elections-catalog')
 
-describe('the catalog key', () => {
-  it('carries the filters, the page and the page size', () => {
-    expect(electionsCatalogKeys.catalog({ an: 2024, tip: 'local', pagina: 2 })).toEqual([
-      'elections-catalog',
-      'catalog',
-      { year: 2024, family: 'local', page: 2, pageSize: 20 },
-    ])
-  })
-
-  it('is one entry for the default view however the address spells it', () => {
-    const plain = hashKey(electionsCatalogKeys.catalog({}))
-    expect(hashKey(electionsCatalogKeys.catalog({ an: undefined, tip: undefined, pagina: undefined }))).toBe(plain)
-    expect(hashKey(electionsCatalogKeys.catalog({ pagina: 1 }))).toBe(plain)
-  })
-
-  it('tells every filter and page apart', () => {
-    const keys = [{}, { an: 2024 }, { tip: 'local' }, { tip: 'Local' }, { tip: ' local' }, { pagina: 2 }, { an: 2024, tip: 'local' }].map((search) =>
-      hashKey(electionsCatalogKeys.catalog(search)),
-    )
-    expect(new Set(keys).size).toBe(keys.length)
+describe('the events key', () => {
+  it('carries the page and the page size, one entry however the address spells the first page', () => {
+    expect(electionsCatalogKeys.events({ pagina: 2 })).toEqual(['elections-catalog', 'events', { page: 2, pageSize: 20 }])
+    expect(hashKey(electionsCatalogKeys.events({ pagina: 1 }))).toBe(hashKey(electionsCatalogKeys.events({})))
   })
 })
 
-describe('an edition’s contests key', () => {
-  it('carries the edition’s key, the filters, the page and the page size', () => {
-    expect(electionsCatalogKeys.contests('bec-local-2024', { functie: 'mayor', arie: 'county', tur: 'tur1', pagina: 3 })).toEqual([
+describe('a day’s contests key', () => {
+  it('carries the day’s key, the filters, the page and the page size, and not the date', () => {
+    expect(electionsCatalogKeys.contests('ro:local:2024:2024-06-09', { data: '2024-06-09', functie: 'mayor', arie: 'uat', judet: 'CJ', pagina: 3 })).toEqual([
       'elections-catalog',
       'contests',
-      'bec-local-2024',
-      { office: 'mayor', scope: 'county', round: 'tur1', page: 3, pageSize: 20 },
+      'ro:local:2024:2024-06-09',
+      { office: 'mayor', placeType: 'uat', county: 'CJ', page: 3, pageSize: 20 },
     ])
+    expect(hashKey(electionsCatalogKeys.contests('d', { data: '2024-06-09' }))).toBe(hashKey(electionsCatalogKeys.contests('d', {})))
   })
 
-  it('never lets a comma or a colon in a label or key run two values together', () => {
+  it('tells every filter and page apart', () => {
+    const keys = [{}, { functie: 'mayor' }, { arie: 'uat' as const }, { judet: 'CJ' }, { pagina: 2 }, { functie: 'mayor', judet: 'CJ' }].map((search) =>
+      hashKey(electionsCatalogKeys.contests('d', search)),
+    )
+    expect(new Set(keys).size).toBe(keys.length)
+  })
+
+  it('never lets a colon in a key run two values together', () => {
     const pairs = [
-      [electionsCatalogKeys.contests('a', { functie: 'b,c' }), electionsCatalogKeys.contests('a', { functie: 'b', tur: 'c' })],
       [electionsCatalogKeys.contests('a:b', {}), electionsCatalogKeys.contests('a', { functie: 'b' })],
-      [electionsCatalogKeys.edition('contest:x'), electionsCatalogKeys.contest('x')],
+      [electionsCatalogKeys.event('contest:x'), electionsCatalogKeys.contest('x')],
     ] as const
     for (const [first, second] of pairs) expect(hashKey(first)).not.toBe(hashKey(second))
   })
@@ -56,24 +50,40 @@ describe('an edition’s contests key', () => {
 
 describe('the seed guard', () => {
   it('matches only the key the read was for', () => {
-    const seed = seedKeyOf(electionsCatalogKeys.catalog({ an: 2024 }))
-    expect(seedKeyOf(electionsCatalogKeys.catalog({ an: 2024, pagina: 1 }))).toBe(seed)
-    expect(seedKeyOf(electionsCatalogKeys.catalog({ an: 2020 }))).not.toBe(seed)
+    const seed = seedKeyOf(electionsCatalogKeys.contests('d', { judet: 'CJ' }))
+    expect(seedKeyOf(electionsCatalogKeys.contests('d', { judet: 'CJ', pagina: 1 }))).toBe(seed)
+    expect(seedKeyOf(electionsCatalogKeys.contests('d', { judet: 'B' }))).not.toBe(seed)
+    expect(seedKeyOf(electionsCatalogKeys.contests('e', { judet: 'CJ' }))).not.toBe(seed)
   })
 })
 
 describe('the contests list while the next page loads', () => {
-  const placeholderOf = (electionKey: string) =>
-    electionContestsQueryOptions(electionKey, {}).placeholderData as unknown as (previous: unknown, previousQuery: { readonly queryKey: readonly unknown[] } | undefined) => unknown
+  const placeholderOf = (occurrenceKey: string) =>
+    electionContestsQueryOptions(occurrenceKey, {}).placeholderData as unknown as (previous: unknown, previousQuery: { readonly queryKey: readonly unknown[] } | undefined) => unknown
   const previousPage = { items: [], page: 1, pageSize: 20, total: 0, hasMore: false }
 
-  it('keeps the same edition’s rows', () => {
-    const previousQuery = { queryKey: electionsCatalogKeys.contests('bec-local-2024', { pagina: 2 }) }
-    expect(placeholderOf('bec-local-2024')(previousPage, previousQuery)).toBe(previousPage)
+  it('keeps the same day’s rows', () => {
+    const previousQuery = { queryKey: electionsCatalogKeys.contests('ro:local:2024:2024-06-09', { pagina: 2 }) }
+    expect(placeholderOf('ro:local:2024:2024-06-09')(previousPage, previousQuery)).toBe(previousPage)
   })
 
-  it('never shows another edition’s rows as this one’s', () => {
-    const previousQuery = { queryKey: electionsCatalogKeys.contests('bec-local-2020', {}) }
-    expect(placeholderOf('bec-local-2024')(previousPage, previousQuery)).toBeUndefined()
+  it('never shows another day’s rows as this one’s', () => {
+    const previousQuery = { queryKey: electionsCatalogKeys.contests('ro:local:2024:2024-06-23', {}) }
+    expect(placeholderOf('ro:local:2024:2024-06-09')(previousPage, previousQuery)).toBeUndefined()
+  })
+})
+
+describe('the ballot days', () => {
+  const event = eventOf({ occurrences: [day('2024-07-07', { kind: 'repeat' }), day('2024-06-09'), day('2024-06-23', { kind: 'runoff' })] })
+
+  it('run earliest first, whatever the API’s order', () => {
+    expect(ballotDaysOf(event).map((entry) => entry.ballotDate)).toEqual(['2024-06-09', '2024-06-23', '2024-07-07'])
+  })
+
+  it('are chosen by date, the first when none is named, and none for a date the event lacks', () => {
+    expect(selectBallotDay(event, '2024-06-23')?.kind).toBe('runoff')
+    expect(selectBallotDay(event, undefined)?.ballotDate).toBe('2024-06-09')
+    expect(selectBallotDay(event, '2024-01-01')).toBeNull()
+    expect(selectBallotDay(eventOf({ occurrences: [] }), undefined)).toBeNull()
   })
 })

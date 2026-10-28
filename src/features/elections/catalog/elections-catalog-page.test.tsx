@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, createTestQueryClient, fireEvent, render, screen, within } from '@/test/test-utils'
-import type { ElectionEdition, ElectionEditionPage } from '@/schemas/elections-catalog'
+import type { ElectionEventPage } from '@/schemas/elections-catalog'
+import { day, event, pageOf } from '../test/catalog-fixtures'
 
-const fetchElectionCatalog = vi.hoisted(() => vi.fn())
+const fetchElectionEvents = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', async () => {
   const { MockElectionsLink } = await import('@/features/elections/test/elections-router-mock')
@@ -10,204 +11,126 @@ vi.mock('@tanstack/react-router', async () => {
 })
 vi.mock('@/hooks/use-warm-route-code', () => ({ useWarmRouteCode: () => undefined }))
 vi.mock('../api/elections-catalog-api', () => ({
-  fetchElectionCatalog,
-  fetchElectionEdition: vi.fn(),
+  fetchElectionEvents,
+  fetchElectionEvent: vi.fn(),
   fetchElectionContests: vi.fn(),
   fetchElectionContest: vi.fn(),
+  fetchElectionResult: vi.fn(),
 }))
 
 const { ElectionsCatalogPage } = await import('./elections-catalog-page')
 
-const edition = (electionKey: string, extra: Partial<ElectionEdition> = {}): ElectionEdition => ({
-  electionKey,
-  eventKey: null,
-  reportedName: electionKey,
-  reportedYear: 2024,
-  reportedFamily: 'local',
-  reportedRound: null,
-  reportedDate: null,
-  reportedAuthority: 'BEC/AEP/ROAEP',
-  readiness: { identity: 'HELD', sourceSelection: 'HELD' },
-  ...extra,
-})
-const pageOf = (items: readonly ElectionEdition[], extra: Partial<ElectionEditionPage> = {}): ElectionEditionPage => ({
-  items: [...items],
-  page: 1,
-  pageSize: 20,
-  total: items.length,
-  hasMore: false,
-  ...extra,
+const LOCAL = event()
+const PRESIDENTIAL = event({
+  eventKey: 'ro:presidential:2024',
+  family: 'presidential',
+  occurrences: [day('2024-11-24', { eventKey: 'ro:presidential:2024', occurrenceKey: 'ro:presidential:2024:2024-11-24', status: 'annulled' })],
 })
 
 const onSearchChange = vi.fn()
 
-function renderCatalog(search = {}, initialPage?: ElectionEditionPage) {
+function renderCatalog(search = {}, initialPage?: ElectionEventPage) {
   return render(<ElectionsCatalogPage search={search} onSearchChange={onSearchChange} initialPage={initialPage} />, { queryClient: createTestQueryClient() })
 }
 
 beforeEach(() => {
-  fetchElectionCatalog.mockReset()
+  fetchElectionEvents.mockReset()
   onSearchChange.mockReset()
   Element.prototype.scrollIntoView = vi.fn()
 })
 
-describe('the elections catalog', () => {
-  it('lists source editions in the API’s order, counted as source editions, each opening its page', async () => {
-    fetchElectionCatalog.mockResolvedValue(
-      pageOf([edition('bec-local-2024', { reportedRound: 'tur1' }), edition('aep-european-2019', { reportedFamily: 'parliamentary', reportedYear: 2019 })], { total: 50, hasMore: true }),
-    )
+describe('the elections list', () => {
+  it('lists events in the API’s order, named by family and year, each opening its page', async () => {
+    fetchElectionEvents.mockResolvedValue(pageOf([LOCAL, PRESIDENTIAL], { total: 26, hasMore: true }))
     renderCatalog()
 
-    const list = await screen.findByRole('list', { name: 'Ediții de sursă' })
+    const list = await screen.findByRole('list', { name: 'Alegeri' })
     const links = within(list).getAllByRole('link')
-    expect(links.map((link) => link.textContent)).toEqual(['bec-local-2024', 'aep-european-2019'])
-    expect(links[0]).toHaveAttribute('href', '/alegeri/bec-local-2024')
-    expect(screen.getByText('50 de ediții de sursă')).toBeInTheDocument()
-    // A stored family label is shown as stored, never corrected.
-    expect(within(list).getByText('parliamentary')).toBeInTheDocument()
-    expect(fetchElectionCatalog).toHaveBeenCalledWith({}, expect.any(AbortSignal))
+    expect(links.map((link) => link.textContent)).toEqual(['Alegeri locale 2024', 'Alegeri prezidențiale 2024'])
+    expect(links[0]).toHaveAttribute('href', '/alegeri/ro:local:2024')
+    expect(screen.getByText('26 de alegeri')).toBeInTheDocument()
+    expect(fetchElectionEvents).toHaveBeenCalledWith({}, expect.any(AbortSignal))
   })
 
-  it('says once that results are not available, without any result figure', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([edition('bec-local-2024')]))
+  it('shows each ballot day with its kind, and an annulled day as annulled', async () => {
+    fetchElectionEvents.mockResolvedValue(pageOf([LOCAL, PRESIDENTIAL]))
     renderCatalog()
-    await screen.findByRole('list', { name: 'Ediții de sursă' })
-    expect(screen.getAllByRole('note')).toHaveLength(1)
-    expect(screen.getByRole('note')).toHaveTextContent('Rezultatele, prezența la vot, candidații și mandatele nu sunt disponibile în această versiune.')
-    expect(screen.queryByText(/câștigător|voturi valabile|prezență \d/iu)).not.toBeInTheDocument()
-  })
-
-  it('names a missing year and shows a round labelled „final" as the source’s text, not a status', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([edition('bec-referendum-2019', { reportedYear: null, reportedRound: 'final' })]))
-    renderCatalog()
-    expect(await screen.findByText('An neraportat')).toBeInTheDocument()
-    expect(screen.getByText('final')).toBeInTheDocument()
-    expect(screen.queryByText('Final')).not.toBeInTheDocument()
+    const rows = within(await screen.findByRole('list', { name: 'Alegeri' })).getAllByRole('listitem')
+    expect(rows[0]).toHaveTextContent('June 9, 2024, vot general')
+    expect(rows[0]).toHaveTextContent('June 23, 2024, balotaj')
+    expect(rows[1]).toHaveTextContent('November 24, 2024, vot general, anulat')
   })
 
   it('stands on the server’s page without reading it again', () => {
-    renderCatalog({}, pageOf([edition('bec-local-2024')]))
-    expect(screen.getByRole('link', { name: 'bec-local-2024' })).toBeInTheDocument()
-    expect(fetchElectionCatalog).not.toHaveBeenCalled()
+    renderCatalog({}, pageOf([LOCAL]))
+    expect(screen.getByRole('link', { name: 'Alegeri locale 2024' })).toBeInTheDocument()
+    expect(fetchElectionEvents).not.toHaveBeenCalled()
   })
 
-  it('shows a failed read as a failure with a retry, never as an empty catalog', async () => {
-    fetchElectionCatalog.mockRejectedValueOnce(new Error('upstream down'))
+  it('shows a failed read as a failure with a retry, never as an empty list', async () => {
+    fetchElectionEvents.mockRejectedValueOnce(new Error('upstream down'))
     renderCatalog()
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('Lista edițiilor nu s-a încărcat.')
-    expect(screen.queryByText(/Nicio ediție|nu are încă/u)).not.toBeInTheDocument()
+    expect(alert).toHaveTextContent('Lista alegerilor nu s-a încărcat.')
+    expect(screen.queryByText('Nu există încă alegeri cu rezultate publicate.')).not.toBeInTheDocument()
     // No count is held pending beside a list that failed.
     expect(screen.queryByText('Se încarcă')).not.toBeInTheDocument()
 
-    fetchElectionCatalog.mockResolvedValueOnce(pageOf([edition('bec-local-2024')]))
+    fetchElectionEvents.mockResolvedValueOnce(pageOf([LOCAL]))
     fireEvent.click(within(alert).getByRole('button', { name: 'Încearcă din nou' }))
-    expect(await screen.findByRole('link', { name: 'bec-local-2024' })).toBeInTheDocument()
-    expect(fetchElectionCatalog).toHaveBeenCalledTimes(2)
+    expect(await screen.findByRole('link', { name: 'Alegeri locale 2024' })).toBeInTheDocument()
+    expect(fetchElectionEvents).toHaveBeenCalledTimes(2)
   })
 
-  it('says a filter that matches nothing is a genuine empty list', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([]))
-    renderCatalog({ an: 1990 })
-    expect(await screen.findByText('Nicio ediție de sursă nu corespunde filtrelor.')).toBeInTheDocument()
-    expect(screen.getByText('0 ediții de sursă')).toBeInTheDocument()
+  it('says an empty answer is a genuine empty list', async () => {
+    fetchElectionEvents.mockResolvedValue(pageOf([]))
+    renderCatalog()
+    expect(await screen.findByText('Nu există încă alegeri cu rezultate publicate.')).toBeInTheDocument()
+    expect(screen.getByText('0 alegeri')).toBeInTheDocument()
   })
 
   it('offers the first page from a page past the last one', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([], { page: 9, total: 50 }))
+    fetchElectionEvents.mockResolvedValue(pageOf([], { page: 9, total: 26 }))
     renderCatalog({ pagina: 9 })
     fireEvent.click(await screen.findByRole('button', { name: 'Mergi la prima pagină' }))
     expect(onSearchChange).toHaveBeenCalledWith({ pagina: undefined })
   })
 
-  it('applies the year and an exact family label together, from the first page', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([edition('bec-local-2024')], { total: 50 }))
-    renderCatalog({ pagina: 3 })
-    await screen.findByRole('link', { name: 'bec-local-2024' })
-
-    fireEvent.change(screen.getByLabelText('An raportat'), { target: { value: '2024' } })
-    fireEvent.change(screen.getByLabelText('Tip raportat'), { target: { value: 'presidential' } })
-    fireEvent.submit(screen.getByRole('search', { name: 'Filtrează edițiile de sursă' }))
-    expect(onSearchChange).toHaveBeenLastCalledWith({ an: 2024, tip: 'presidential' })
-  })
-
-  it('offers the family the address names even when it is not a documented label, and clears every filter', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([]))
-    renderCatalog({ tip: 'European Parliament', an: 2019 })
-    const family = await screen.findByLabelText<HTMLSelectElement>('Tip raportat')
-    expect(family.value).toBe('European Parliament')
-    fireEvent.click(screen.getByRole('button', { name: 'Șterge filtrele' }))
-    expect(onSearchChange).toHaveBeenLastCalledWith({})
-  })
-
-  it('drops a year outside the API’s range instead of sending it', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([]))
-    renderCatalog()
-    fireEvent.change(await screen.findByLabelText('An raportat'), { target: { value: '1700' } })
-    fireEvent.submit(screen.getByRole('search', { name: 'Filtrează edițiile de sursă' }))
-    expect(onSearchChange).toHaveBeenLastCalledWith({})
-  })
-
   it('pages through the API’s total with the shared pager', async () => {
-    fetchElectionCatalog.mockResolvedValue(pageOf([edition('bec-local-2024')], { total: 50, hasMore: true }))
+    fetchElectionEvents.mockResolvedValue(pageOf([LOCAL], { total: 26, hasMore: true }))
     renderCatalog()
     fireEvent.click(await screen.findByRole('button', { name: 'Pagina următoare' }))
     expect(onSearchChange).toHaveBeenCalledWith({ pagina: 2 })
   })
 
-  it('never says a new filter matches nothing while its page is still loading', async () => {
-    fetchElectionCatalog.mockResolvedValueOnce(pageOf([]))
-    const view = renderCatalog({ an: 1990 })
-    await screen.findByText('Nicio ediție de sursă nu corespunde filtrelor.')
-
-    fetchElectionCatalog.mockReturnValueOnce(new Promise(() => undefined))
-    view.rerender(<ElectionsCatalogPage search={{}} onSearchChange={onSearchChange} />)
-    expect(screen.getByText('Se încarcă edițiile de sursă')).toBeInTheDocument()
-    expect(screen.queryByText('Nicio ediție de sursă nu corespunde filtrelor.')).not.toBeInTheDocument()
-    expect(screen.queryByText('Catalogul nu are încă nicio ediție de sursă.')).not.toBeInTheDocument()
-    expect(screen.queryByText('0 ediții de sursă')).not.toBeInTheDocument()
-  })
-
-  it('never carries a page-past-the-end answer over to the page being loaded', async () => {
-    fetchElectionCatalog.mockResolvedValueOnce(pageOf([], { page: 9, total: 50 }))
-    const view = renderCatalog({ pagina: 9 })
-    await screen.findByRole('button', { name: 'Mergi la prima pagină' })
-
-    fetchElectionCatalog.mockReturnValueOnce(new Promise(() => undefined))
-    view.rerender(<ElectionsCatalogPage search={{}} onSearchChange={onSearchChange} />)
-    expect(screen.getByText('Se încarcă edițiile de sursă')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Mergi la prima pagină' })).not.toBeInTheDocument()
-  })
-
   it('keeps the previous rows only as previous, with no pager or count, while the next page loads', async () => {
-    const rows = Array.from({ length: 20 }, (_, index) => edition(`edition-${String(index).padStart(2, '0')}`))
-    fetchElectionCatalog.mockResolvedValueOnce(pageOf(rows, { total: 50, hasMore: true }))
+    const rows = Array.from({ length: 20 }, (_, index) => event({ eventKey: `ro:local:${String(2000 + index)}`, year: 2000 + index }))
+    fetchElectionEvents.mockResolvedValueOnce(pageOf(rows, { total: 26, hasMore: true }))
     const view = renderCatalog()
-    await screen.findByText('50 de ediții de sursă')
+    await screen.findByText('26 de alegeri')
 
-    fetchElectionCatalog.mockReturnValueOnce(new Promise(() => undefined))
+    fetchElectionEvents.mockReturnValueOnce(new Promise(() => undefined))
     view.rerender(<ElectionsCatalogPage search={{ pagina: 2 }} onSearchChange={onSearchChange} />)
-    expect(screen.getByRole('link', { name: 'edition-00' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Alegeri locale 2000' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Se încarcă pagina cerută. Rândurile de mai jos sunt cele afișate anterior.')
     expect(screen.queryByRole('button', { name: 'Pagina următoare' })).not.toBeInTheDocument()
-    expect(screen.queryByText(/Se afișează/u)).not.toBeInTheDocument()
-    expect(screen.queryByText('50 de ediții de sursă')).not.toBeInTheDocument()
+    expect(screen.queryByText('26 de alegeri')).not.toBeInTheDocument()
   })
 
   it('says a failed refresh failed, keeping the last answer marked as such, with a retry', async () => {
-    const view = renderCatalog({}, pageOf([edition('bec-local-2024')], { total: 1 }))
-    fetchElectionCatalog.mockRejectedValueOnce(new Error('upstream down'))
+    const view = renderCatalog({}, pageOf([LOCAL], { total: 1 }))
+    fetchElectionEvents.mockRejectedValueOnce(new Error('upstream down'))
     await act(() => view.queryClient.invalidateQueries())
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('Datele nu s-au putut actualiza. Se afișează ultimul răspuns primit.')
-    expect(screen.getByRole('link', { name: 'bec-local-2024' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Alegeri locale 2024' })).toBeInTheDocument()
 
-    fetchElectionCatalog.mockResolvedValueOnce(pageOf([edition('bec-local-2024')], { total: 1 }))
+    fetchElectionEvents.mockResolvedValueOnce(pageOf([LOCAL], { total: 1 }))
     fireEvent.click(within(alert).getByRole('button', { name: 'Încearcă din nou' }))
     await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
-    expect(fetchElectionCatalog).toHaveBeenCalledTimes(2)
-    expect(screen.getByText('1 ediție de sursă')).toBeInTheDocument()
+    expect(fetchElectionEvents).toHaveBeenCalledTimes(2)
+    expect(screen.getByText('1 alegere')).toBeInTheDocument()
   })
 })
 
@@ -252,4 +175,3 @@ describe('the lists’ pager in each language', () => {
     }
   })
 })
-
