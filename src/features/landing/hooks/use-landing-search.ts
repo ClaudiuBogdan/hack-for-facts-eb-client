@@ -75,6 +75,7 @@ export function useSearchResults({
   entityTags = NO_TAGS,
   roles = NO_ROLES,
   suggestions: suggestionsEnabled = true,
+  initialTerm = '',
 }: {
   readonly debounceMs?: number
   /**
@@ -104,8 +105,10 @@ export function useSearchResults({
    * narrow them to nothing.
    */
   readonly suggestions?: boolean
+  /** The text the field starts with: what was typed into the plain field before this one. */
+  readonly initialTerm?: string
 } = {}) {
-  const [term, setTerm] = useState('')
+  const [term, setTerm] = useState(initialTerm)
   const [filters, setFilters] = useState<readonly SearchFilter[]>([])
   const { i18n } = useLingui()
   // The tag chips' vocabulary, only where chips are offered: until it is in, the text offers the

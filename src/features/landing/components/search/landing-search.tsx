@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, RefObject } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
@@ -22,9 +22,19 @@ import {
   ScopePill,
   shortHint,
   Skeleton,
-  useModifierKey,
   usePrefersReducedMotion,
 } from '@/features/landing/components/search/search-parts'
+import {
+  NARROW_VIEWPORT,
+  SEARCH_ACTIONS_CLASS,
+  SEARCH_CLEAR_CLASS,
+  SEARCH_FIELD_CLASS,
+  SEARCH_FIELD_KEYBOARD_CLASS,
+  SEARCH_ICON_CLASS,
+  SEARCH_INPUT_CLASS,
+  ShortcutHint,
+  type SearchHandover,
+} from '@/features/landing/components/search/search-field'
 import { useEntitySelection, useSearchResults } from '@/features/landing/hooks/use-landing-search'
 import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
 
@@ -83,9 +93,6 @@ import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
  * descendant selectors, a hack that outranked the component's own classes and
  * broke silently when its internals moved.
  */
-
-/** Below this width the field is never focused on mount; `useIsMobile`'s breakpoint. */
-const NARROW_VIEWPORT = '(max-width: 767px)'
 
 /** What the list can hold: a filter to accept, or an entity to open. */
 type ListItem = SearchFilter | EntitySearchHit
@@ -198,6 +205,7 @@ export function LandingSearch({
   roles,
   fixedScope,
   hrefOf,
+  handover,
 }: {
   readonly className?: string
   /**
@@ -236,12 +244,18 @@ export function LandingSearch({
    * row renders, so the link, Enter and Cmd-click all agree.
    */
   readonly hrefOf?: (entity: EntitySearchHit) => string | null
+  /**
+   * The plain field this one replaces (`DeferredLandingSearch`): its text
+   * becomes the query, and its focus — caret, selection and whether the
+   * keyboard brought it — is taken back at mount. Read at mount only.
+   */
+  readonly handover?: SearchHandover
 }) {
   const { i18n } = useLingui()
   const placeholder = placeholderProp ?? t`Caută entități, statistici sau identificatori...`
   const {
     term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent,
-  } = useSearchResults({ docTypes, entityTags, roles, suggestions: fixedScope === undefined })
+  } = useSearchResults({ docTypes, entityTags, roles, suggestions: fixedScope === undefined, initialTerm: handover?.term })
   const commit = useEntitySelection({ onSelect })
 
   const [isOpen, setIsOpen] = useState(false)
@@ -257,13 +271,17 @@ export function LandingSearch({
   // which flips when a window is resized, and a resize is not a reason to take
   // focus from wherever the reader has put it.
   const autoFocusOnMountRef = useRef(autoFocus)
+  // The plain field's state at mount, and only then: what it hands over is a moment, not a binding.
+  const handoverOnMountRef = useRef(handover)
+  // Set while the plain field's focus is being taken back, which is not the reader arriving at the field.
+  const restoringFocusRef = useRef(false)
   // Which row the keyboard is on, if any. Kept in a ref rather than in state
   // because only the Enter handler reads it, and re-rendering the whole field
   // on every arrow key to store something nothing draws would be waste.
   const highlightedRef = useRef<ListItem | undefined>(undefined)
-  const modifier = useModifierKey()
   const prefersReducedMotion = usePrefersReducedMotion()
   const containerRef = useRef<HTMLDivElement>(null)
+  const clearRef = useRef<HTMLButtonElement>(null)
   const localInputRef = useRef<HTMLInputElement>(null)
   const inputRef = externalInputRef ?? localInputRef
 
@@ -280,10 +298,35 @@ export function LandingSearch({
   // focus is marked as not-keyboard for exactly this call, so a skipped one
   // leaves no flag behind to swallow the ring of the reader's first Tab.
   useEffect(() => {
+    // After a plain field the mount is not the page's arrival: that field had the
+    // autofocus, and whatever it did with it is restored below.
+    if (handoverOnMountRef.current?.focus.current) return
     if (!autoFocusOnMountRef.current || window.matchMedia(NARROW_VIEWPORT).matches) return
     pointerFocusRef.current = true
     inputRef.current?.focus()
     pointerFocusRef.current = false
+  }, [inputRef])
+
+  // The plain field's focus, taken back in the commit that replaced it, before
+  // the next key can land anywhere else: the clear button if it had it, else
+  // the input with its caret and selection, the ring only if the keyboard had
+  // brought the focus there. No scroll — the field is where the reader left it.
+  useLayoutEffect(() => {
+    const taken = handoverOnMountRef.current?.focus.current
+    const input = inputRef.current
+    if (!taken?.focused || !input) return
+    if (taken.focused === 'clear' && clearRef.current) {
+      clearRef.current.focus({ preventScroll: true })
+      return
+    }
+    restoringFocusRef.current = true
+    pointerFocusRef.current = !taken.keyboard
+    input.focus({ preventScroll: true })
+    pointerFocusRef.current = false
+    restoringFocusRef.current = false
+    if (taken.selectionStart !== null && taken.selectionEnd !== null) {
+      input.setSelectionRange(taken.selectionStart, taken.selectionEnd, taken.selectionDirection ?? undefined)
+    }
   }, [inputRef])
 
   const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
@@ -384,58 +427,10 @@ export function LandingSearch({
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) setKeyboardFocus(false)
           }}
-          className={cn(
-            // The field. Border, radius and lift live here rather than on the
-            // input because the chips are inside them too.
-            'flex min-h-12 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-card py-2 pl-10 pr-20 shadow-none',
-            // The border and the lift move together, so `transition-colors`
-            // is not enough: it would fade the border over 150ms while the
-            // shadow snapped in, which is visible on every focus.
-            'transition-[border-color,box-shadow] duration-150',
-            // Hover is a step below focus rather than a different colour,
-            // so the two read as one scale. Unfocused hover carries no
-            // contrast obligation, which is why it can sit this light.
-            'hover:border-foreground/30',
-            // Focus is one treatment that does not change when the results
-            // arrive: a neutral border and a lift, open or closed. Blue
-            // was tried and is too much colour for a surface whose point
-            // is being quiet; suppressing the indicator once the panel
-            // opened was worse, because it then vanished under a reader
-            // whose focus had not moved.
-            //
-            // This is as light as it goes. A focus indicator owes 3:1 both
-            // against what sits beside it and against its own unfocused
-            // state, and the second binds here: the resting border is
-            // already a light grey. At 55% of the foreground this is
-            // rgb(132) — 3.75:1 against the card, 3.005:1 against the
-            // resting border. /54 is 2.92 and fails. Dark mode is not the
-            // constraint (5.78 and 4.19), so light mode is what breaks if
-            // this is ever lightened again, and dark mode will not show it.
-            //
-            // `focus-within` rather than `focus`: the input is a child now,
-            // and so is each chip's remove button, and the field is focused
-            // whichever of them has the caret.
-            'focus-within:border-foreground/55 data-popup-open:border-foreground/55',
-            'focus-within:shadow-lg data-popup-open:shadow-lg',
-            // Squared and opened against whichever edge the panel actually
-            // landed on. `data-popup-side` is on the group, so the field
-            // follows the panel. The border on that edge goes with it: the
-            // divider under the header is the single line between the
-            // query and the answers, and a second one here would box the
-            // field off as its own object again.
-            'data-popup-open:data-[popup-side=bottom]:rounded-b-none data-popup-open:data-[popup-side=bottom]:border-b-0',
-            'data-popup-open:data-[popup-side=top]:rounded-t-none data-popup-open:data-[popup-side=top]:border-t-0',
-            // The blue ring is for keyboard focus only. A reader who clicked
-            // into the field can see where their pointer is; a reader who
-            // tabbed in cannot, and the neutral border alone is not enough
-            // of an answer for them.
-            keyboardFocus && 'outline-2 outline-offset-2 outline-ring',
-          )}
+          // The field's look is `search-field`'s, which the plain field before this one draws too.
+          className={cn(SEARCH_FIELD_CLASS, keyboardFocus && SEARCH_FIELD_KEYBOARD_CLASS)}
         >
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 top-6 size-4 -translate-y-1/2 text-muted-foreground"
-          />
+          <Search aria-hidden="true" className={SEARCH_ICON_CLASS} />
 
           {fixedScope ? <ScopePill label={fixedScope.label} Icon={fixedScope.Icon} /> : null}
 
@@ -453,7 +448,7 @@ export function LandingSearch({
           <Autocomplete.Input
             ref={inputRef}
             onFocus={() => {
-              if (scrollToTopOnFocus) {
+              if (scrollToTopOnFocus && !restoringFocusRef.current) {
                 // The scroll is motion too, and DESIGN.md §Motion makes
                 // reduced motion drop the flourish rather than shorten it.
                 containerRef.current?.scrollIntoView({
@@ -569,13 +564,7 @@ export function LandingSearch({
               reset()
               setIsOpen(false)
             }}
-            className={cn(
-              // Bare: the group draws the field. Keep room for the query and
-              // wrap it below long or multiple chips on narrow screens. No
-              // outline of its own: a text input is focus-visible on click
-              // too, and the group draws focus instead.
-              'h-7 min-w-24 flex-1 bg-transparent text-base text-foreground outline-hidden placeholder:text-muted-foreground md:text-base',
-            )}
+            className={SEARCH_INPUT_CLASS}
             // A chip narrows the field to a family whose hint the caller never
             // wrote, so the field falls back to the generic one. A fixed scope
             // is the caller's, and so is the hint that fits it — „Nume sau
@@ -591,12 +580,13 @@ export function LandingSearch({
             enterKeyHint="search"
           />
 
-          <div className="absolute right-3 top-6 flex -translate-y-1/2 items-center gap-1.5">
+          <div className={SEARCH_ACTIONS_CLASS}>
             {isBusy ? (
               <Loader2 aria-hidden="true" className="size-4 animate-spin text-muted-foreground" />
             ) : null}
             {hasContent ? (
               <Autocomplete.Clear
+                ref={clearRef}
                 aria-label={t`Șterge căutarea`}
                 // Base UI clears the text; the chips are ours to clear.
                 onClick={reset}
@@ -607,24 +597,12 @@ export function LandingSearch({
                 // lying. Escape stays the faster path; this is the discoverable
                 // one.
                 tabIndex={0}
-                // The drawn button is 24px, which is exactly WCAG 2.2's floor
-                // for a target and well under the 44px that is comfortable on
-                // a phone. The hit area is grown with a pseudo-element rather
-                // than padding so the visible box, and the focus ring around
-                // it, stay the size the field was designed for: 10px on every
-                // side makes 44×44, which fits inside the 48px field and,
-                // leftwards, overlaps only the decorative spinner.
-                className="relative rounded-sm p-1 text-muted-foreground transition-colors after:absolute after:-inset-2.5 after:content-[''] hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                className={SEARCH_CLEAR_CLASS}
               >
                 <X className="size-4" />
               </Autocomplete.Clear>
             ) : (
-              <kbd className="hidden items-center gap-0.5 rounded-sm border bg-muted px-1.5 py-0.5 font-mono text-[0.625rem] text-muted-foreground sm:flex">
-                <span className={modifier === '⌘' ? 'text-xs leading-none' : undefined}>
-                  {modifier}
-                </span>
-                K
-              </kbd>
+              <ShortcutHint />
             )}
           </div>
         </Autocomplete.InputGroup>

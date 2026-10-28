@@ -1,6 +1,6 @@
 import { ChartNoAxesCombined } from 'lucide-react'
 import { t } from '@lingui/core/macro'
-import { LandingSearch } from '@/features/landing/components/search/landing-search'
+import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 /**
@@ -16,7 +16,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 export function HubDatasetSearch({ autoFocus, className }: { readonly autoFocus?: boolean; readonly className?: string }) {
   const isMobile = useIsMobile()
   return (
-    <LandingSearch
+    <DeferredLandingSearch
       className={className}
       docTypes={['ins_dataset']}
       fixedScope={{ label: t`Statistici INS`, Icon: ChartNoAxesCombined }}

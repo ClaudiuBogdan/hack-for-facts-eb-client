@@ -1,7 +1,7 @@
 import { useLocation } from '@tanstack/react-router'
 import { Landmark } from 'lucide-react'
 import { t } from '@lingui/core/macro'
-import { LandingSearch } from '@/features/landing/components/search/landing-search'
+import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { procurementHrefOf } from '../../lib/home-links'
 
@@ -22,7 +22,7 @@ export function ProcurementHomeSearchField({ autoFocus, className }: { readonly 
   const isMobile = useIsMobile()
   const { hash } = useLocation()
   return (
-    <LandingSearch
+    <DeferredLandingSearch
       className={className}
       docTypes={['organization', 'public_enterprise', 'company']}
       fixedScope={{ label: t`Achiziții`, Icon: Landmark }}
