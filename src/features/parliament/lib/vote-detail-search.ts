@@ -1,4 +1,4 @@
-import { MemberVoteChoiceSchema } from '@/schemas/parliament'
+import { MemberVoteChoiceSchema } from '@/schemas/parliament-search'
 
 /**
  * The tabs on a division's "Voturi individuale pe grup" section.

@@ -6,14 +6,16 @@ import {
 } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
 import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
-import { getChallengeModuleBySlug } from '@/features/challenges/utils/modules'
 
 export const Route = createFileRoute(
   '/primarie/$cui/buget/provocari/$moduleSlug/',
 )({
   ssr: true,
   validateSearch: CampaignRouteSearchSchema,
-  loader: ({ params }) => {
+  // The module definitions (every module's JSON, parsed) load with the
+  // loader, not in every page's code.
+  loader: async ({ params }) => {
+    const { getChallengeModuleBySlug } = await import('@/features/challenges/utils/modules')
     const module = getChallengeModuleBySlug(params.moduleSlug)
     if (!module) {
       throw notFound()

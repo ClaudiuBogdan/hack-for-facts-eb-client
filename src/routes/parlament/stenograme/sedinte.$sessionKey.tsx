@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ParliamentStenogramReaderSearchSchema } from '@/schemas/parliament'
+import { ParliamentStenogramReaderSearchSchema } from '@/schemas/parliament-search'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 
 /**

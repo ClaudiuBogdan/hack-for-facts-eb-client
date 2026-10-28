@@ -1,18 +1,7 @@
 import { getSiteUrl } from '@/config/env'
-import {
-  cleanPnrrSearch,
-  type PnrrOfficialIndicators,
-  type PnrrProject,
-  type PnrrSearchState,
-} from '@/schemas/pnrr'
+import { cleanPnrrSearch, type PnrrSearchState } from '@/schemas/pnrr'
 import type { SupportedLocale } from '@/lib/i18n'
 import { serializeForInlineScript } from '@/lib/inline-script-json'
-import { PNRR_COMPONENTS } from '../data/component-definitions'
-import {
-  computeAggregates,
-  filterProjectsBySearch,
-  processPnrrData,
-} from '../lib/data-transform'
 import { PNRR_FILESET_ID } from '../lib/snapshot'
 
 const PNRR_ROUTE_PATH = '/pnrr'
@@ -161,16 +150,6 @@ type HeadMetaEntry = {
   readonly content?: string
 }
 
-function toFiniteNumber(value: number): number {
-  return Number.isFinite(value) ? value : 0
-}
-
-function sortSeoItems(
-  items: readonly PnrrSeoListItem[],
-): readonly PnrrSeoListItem[] {
-  return [...items].sort((a, b) => b.listedFundingRon - a.listedFundingRon)
-}
-
 function sortStringValues(values: readonly string[]): readonly string[] {
   return [...values].sort((a, b) => a.localeCompare(b))
 }
@@ -236,86 +215,6 @@ export function buildFallbackPnrrSeoSnapshot(): PnrrSeoSnapshot {
     officialAllocatedTotalEur: null,
     officialPaidTotalEur: null,
     paidBeneficiaryCount: null,
-  }
-}
-
-export function buildPnrrSeoSnapshotFromRawProjects(params: {
-  readonly rawProjects: readonly unknown[]
-  readonly search?: Partial<PnrrSearchState>
-  readonly officialIndicators?: PnrrOfficialIndicators | null
-}): PnrrSeoSnapshot {
-  const { projects } = processPnrrData(params.rawProjects)
-  return buildPnrrSeoSnapshotFromProjects({
-    projects,
-    search: params.search,
-    officialIndicators: params.officialIndicators,
-  })
-}
-
-export function buildPnrrSeoSnapshotFromProjects(params: {
-  readonly projects: readonly PnrrProject[]
-  readonly search?: Partial<PnrrSearchState>
-  readonly officialIndicators?: PnrrOfficialIndicators | null
-}): PnrrSeoSnapshot {
-  const { projects } = params
-  const filteredProjects = filterProjectsBySearch(projects, params.search ?? {})
-  const aggregates = computeAggregates(filteredProjects)
-  const anomalyCount = Object.values(aggregates.anomalyCounts).reduce(
-    (sum, item) => sum + item.count,
-    0,
-  )
-  const dataQualitySignalCount = Object.values(
-    aggregates.dataQualitySignalCounts,
-  ).reduce((sum, item) => sum + item.count, 0)
-
-  return {
-    lastUpdated: null,
-    projectCount: aggregates.projectCount,
-    projectRecordCount: aggregates.projectRecordCount,
-    deduplicatedProjectCount: aggregates.deduplicatedProjectCount,
-    listedFundingTotalRon: toFiniteNumber(aggregates.rawTotalValue),
-    deduplicatedListedFundingRon: toFiniteNumber(
-      aggregates.deduplicatedTotalValue,
-    ),
-    completedCount: aggregates.completedCount,
-    completedListedFundingRon: toFiniteNumber(aggregates.completedValue),
-    inProgressCount: aggregates.inProgressCount,
-    notStartedCount: aggregates.notStartedCount,
-    loanListedFundingRon: toFiniteNumber(aggregates.loanTotal),
-    loanPercent: toFiniteNumber(aggregates.loanPercent),
-    missingFinancialProgressCount: aggregates.missingFinProgressCount,
-    missingFinancialProgressPercent: toFiniteNumber(
-      aggregates.missingFinProgressPercent,
-    ),
-    anomalyCount,
-    dataQualitySignalCount,
-    topComponents: sortSeoItems(
-      Object.entries(aggregates.componentStats).map(([code, stats]) => ({
-        id: code,
-        label: PNRR_COMPONENTS[code]?.nameRo ?? code,
-        count: stats.count,
-        listedFundingRon: toFiniteNumber(stats.value),
-      })),
-    ).slice(0, 5),
-    topCounties: sortSeoItems(
-      Object.entries(aggregates.countyStats).map(([county, stats]) => ({
-        id: county,
-        label: county,
-        count: stats.count,
-        listedFundingRon: toFiniteNumber(stats.value),
-      })),
-    ).slice(0, 5),
-    topBeneficiaries: aggregates.topBeneficiaries.slice(0, 5).map((item) => ({
-      id: item.cui ?? item.beneficiary,
-      label: item.beneficiary,
-      count: item.count,
-      listedFundingRon: toFiniteNumber(item.value),
-    })),
-    officialAllocatedTotalEur:
-      params.officialIndicators?.allocatedTotalEur ?? null,
-    officialPaidTotalEur: params.officialIndicators?.paidTotalEur ?? null,
-    paidBeneficiaryCount:
-      params.officialIndicators?.paidBeneficiaryCount ?? null,
   }
 }
 

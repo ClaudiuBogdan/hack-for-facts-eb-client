@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ParliamentVotesSearchSchema } from '@/schemas/parliament'
+import { ParliamentVotesSearchSchema } from '@/schemas/parliament-search'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 
 export const Route = createFileRoute('/parlament/voturi/')({

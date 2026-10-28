@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ParliamentSpeechesSearchSchema } from '@/schemas/parliament'
+import { ParliamentSpeechesSearchSchema } from '@/schemas/parliament-search'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 
 export const Route = createFileRoute('/parlament/stenograme/')({

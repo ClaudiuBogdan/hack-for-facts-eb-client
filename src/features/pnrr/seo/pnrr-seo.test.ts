@@ -3,11 +3,11 @@ import type { RawPnrrProject } from '@/schemas/pnrr'
 import { parsePnrrSearchString } from '@/schemas/pnrr'
 import {
   buildPnrrRouteHead,
-  buildPnrrSeoSnapshotFromRawProjects,
   buildPnrrSeoSnapshotSearchKey,
   buildPnrrShareImageUrl,
   normalizePnrrSeoSnapshotSearch,
 } from './pnrr-seo'
+import { buildPnrrSeoSnapshotFromRawProjects } from './pnrr-seo-snapshot'
 
 type HeadMetaEntry = {
   readonly title?: string

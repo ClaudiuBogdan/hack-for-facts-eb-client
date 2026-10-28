@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ParliamentGroupsSearchSchema } from '@/schemas/parliament'
+import { ParliamentGroupsSearchSchema } from '@/schemas/parliament-search'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 
 export const Route = createFileRoute('/parlament/grupuri/')({

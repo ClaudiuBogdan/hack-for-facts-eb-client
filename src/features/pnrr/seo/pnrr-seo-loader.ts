@@ -183,7 +183,7 @@ async function loadServerSeoSnapshot(
   if (pendingSeoSnapshots.size >= PNRR_SEO_PENDING_SNAPSHOT_LIMIT) return null
 
   const request = (async (): Promise<PnrrSeoSnapshot> => {
-    const { buildPnrrSeoSnapshotFromProjects } = await import('./pnrr-seo')
+    const { buildPnrrSeoSnapshotFromProjects } = await import('./pnrr-seo-snapshot')
 
     const snapshot = buildPnrrSeoSnapshotFromProjects({
       projects: projectsResult.data,
@@ -224,7 +224,7 @@ async function refreshServerSeoSnapshot({
   if (pendingSeoSnapshots.size >= PNRR_SEO_PENDING_SNAPSHOT_LIMIT) return
 
   const request = (async (): Promise<PnrrSeoSnapshot> => {
-    const { buildPnrrSeoSnapshotFromProjects } = await import('./pnrr-seo')
+    const { buildPnrrSeoSnapshotFromProjects } = await import('./pnrr-seo-snapshot')
     const snapshot = buildPnrrSeoSnapshotFromProjects({
       projects,
       search: input.search,

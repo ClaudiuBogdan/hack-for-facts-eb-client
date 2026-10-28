@@ -1,6 +1,5 @@
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { registryNumberFromPath, registryNumberToPath } from '@/features/ngos/lib/ngo-address'
-import { fetchNgoRegistryProfile } from '@/features/ngos/organization/api'
 import { buildNgoProfileHead } from '@/features/ngos/organization/head'
 import { parseNgoProfileSearch } from '@/schemas/ngos'
 
@@ -19,6 +18,8 @@ export const Route = createFileRoute('/ngos/registry/$number')({
   loader: async ({ params, deps, abortController }) => {
     const registryNumber = registryNumberFromPath(params.number)
     if (!registryNumber) throw notFound()
+    // The registry read and its schemas load with the loader, not in every page's code.
+    const { fetchNgoRegistryProfile } = await import('@/features/ngos/organization/api')
     const read = await fetchNgoRegistryProfile(registryNumber, { signal: abortController.signal })
     if (!read) throw notFound()
     if (read.status === 'resolved' && read.organization.cui) {

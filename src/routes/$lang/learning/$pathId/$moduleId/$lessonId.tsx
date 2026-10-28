@@ -1,13 +1,17 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { preloadModuleContent } from '@/features/learning/utils/module-content-resource'
 import type { LearningLocale } from '@/features/learning/types'
-import { getLearningPathById } from '@/features/learning/utils/paths'
 
 export const Route = createFileRoute('/$lang/learning/$pathId/$moduleId/$lessonId')({
   ssr: true,
   pendingMs: 0,
   pendingMinMs: 250,
+  // The learning paths and the lesson loader load with the loader, not in
+  // every page's code.
   loader: async ({ params }) => {
+    const [{ getLearningPathById }, { preloadModuleContent }] = await Promise.all([
+      import('@/features/learning/utils/paths'),
+      import('@/features/learning/utils/module-content-resource'),
+    ])
     const learningPath = getLearningPathById(params.pathId)
     if (!learningPath) {
       throw notFound()

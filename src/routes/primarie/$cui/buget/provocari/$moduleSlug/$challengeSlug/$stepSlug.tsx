@@ -6,9 +6,7 @@ import {
 } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
 import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
-import { preloadChallengeStepContent } from '@/features/challenges/utils/challenge-step-content-resolver'
 import { buildChallengeStepRouteLoaderData } from '@/features/challenges/utils/challenge-step-route-search'
-import { getChallengeModuleBySlug } from '@/features/challenges/utils/modules'
 
 export const Route = createFileRoute(
   '/primarie/$cui/buget/provocari/$moduleSlug/$challengeSlug/$stepSlug',
@@ -22,7 +20,13 @@ export const Route = createFileRoute(
       section: search.section,
       view: search.view,
     }),
+  // The module definitions and the steps' section metadata load with the
+  // loader, not in every page's code.
   loader: async ({ params, deps, location }) => {
+    const [{ getChallengeModuleBySlug }, { preloadChallengeStepContent }] = await Promise.all([
+      import('@/features/challenges/utils/modules'),
+      import('@/features/challenges/utils/challenge-step-content-resolver'),
+    ])
     const module = getChallengeModuleBySlug(params.moduleSlug)
     if (!module) throw notFound()
 

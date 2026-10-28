@@ -8,9 +8,9 @@ import { parsePnrrSearchString } from '@/schemas/pnrr'
 import {
   buildFallbackPnrrSeoSnapshot,
   buildPnrrSeoSnapshotSearchKey,
-  buildPnrrSeoSnapshotFromProjects,
   type PnrrSeoSnapshot,
 } from '@/features/pnrr/seo/pnrr-seo'
+import { buildPnrrSeoSnapshotFromProjects } from '@/features/pnrr/seo/pnrr-seo-snapshot'
 import { PNRR_FILESET_ID } from '@/features/pnrr/lib/snapshot'
 import {
   fetchPnrrOfficialIndicators,

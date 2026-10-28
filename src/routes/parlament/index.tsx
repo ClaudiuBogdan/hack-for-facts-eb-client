@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ParliamentSearchSchema } from '@/schemas/parliament'
+import { ParliamentSearchSchema } from '@/schemas/parliament-search'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 

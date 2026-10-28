@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ParliamentSpeechesSearchSchema,
   ParliamentStenogramReaderSearchSchema,
-} from '@/schemas/parliament'
+} from '@/schemas/parliament-search'
 
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const createFileRouteMock = vi.fn(() => routeStub)

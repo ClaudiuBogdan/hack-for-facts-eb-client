@@ -1,6 +1,4 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { fetchPrivateCompanyProfile } from '@/features/private-companies/api/private-company-api'
-import { privateCompanyProfileQueryOptions } from '@/features/private-companies/hooks/use-private-company-profile'
 import { normalizeCompanyCui } from '@/features/private-companies/lib/normalize-company-cui'
 import { buildPrivateCompanyRouteHead } from '@/features/private-companies/seo/private-company-seo'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
@@ -28,7 +26,10 @@ export const Route = createFileRoute('/companies/$cui')({
       throw notFound()
     }
 
+    // The profile's reads (and their fixtures) load with the loader, not in
+    // every page's code: this file is in every route's entry chunk.
     if (!shouldBlockLoaderForSsr()) {
+      const { privateCompanyProfileQueryOptions } = await import('@/features/private-companies/hooks/use-private-company-profile')
       void context.queryClient.prefetchQuery(
         privateCompanyProfileQueryOptions(cui),
       )
@@ -49,6 +50,7 @@ export const Route = createFileRoute('/companies/$cui')({
     // Fetched directly, not through the query client — see the note on the
     // institution loader: seeding the server cache dehydrates the server's
     // `dataUpdatedAt`, which would make every CDN hit refetch on mount.
+    const { fetchPrivateCompanyProfile } = await import('@/features/private-companies/api/private-company-api')
     const profile = await fetchPrivateCompanyProfile(cui)
     if (!profile) {
       throw notFound()
