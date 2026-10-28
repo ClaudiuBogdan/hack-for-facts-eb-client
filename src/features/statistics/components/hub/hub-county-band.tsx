@@ -1,15 +1,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent, ReactNode } from 'react'
 import { Link, type LinkOptions } from '@tanstack/react-router'
-import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { useInView } from 'react-intersection-observer'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { countyNameRo } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubCountyLayer, StatisticsHubCountyValue } from '@/schemas/statistics'
+import { retryCountyShapes, useCountyShapes } from '../../hooks/use-county-shapes'
 import { insCountyLink } from '../../lib/county-link'
-import { COUNTY_MAP_WIDTH, countyLabelPixels, countyRanks, countyShapes, layerDecimals, type CountyProperties } from '../../lib/county-map'
+import { COUNTY_MAP_WIDTH, countyLabelPixels, countyRanks, layerDecimals } from '../../lib/county-map'
 import { formatHubValue, hubUnitWord } from '../../lib/units'
 import { ColourLegend } from '../uat-map/uat-map-legend'
 import { countyLabel } from '../uat-map/uat-map-series'
@@ -97,9 +97,10 @@ export function HubCountyBand({
 }) {
   const layer = useMemo(() => shownLayer(read, definition, definition.unit ?? null), [read, definition])
   const linkOf = countyLink === null ? null : (countyLink ?? ((code: string) => insCountyLink(layer.code, code)))
-  const geo = useGeoJsonData('County')
-  const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
-  const shapes = features ? countyShapes(features) : null
+  // The shapes come as the map nears the screen (a screen ahead): a map below the fold is none of the page's first load.
+  const { ref: nearRef, inView: near } = useInView({ triggerOnce: true, rootMargin: '100% 0px' })
+  const geo = useCountyShapes({ enabled: near })
+  const shapes = geo.data ?? null
   const values = layer.values
   const indexOf = useMemo(() => new Map(values.map((county, index) => [county.code, index])), [values])
   const digits = layerDecimals(layer)
@@ -353,14 +354,14 @@ export function HubCountyBand({
               </p>
               <button
                 type="button"
-                onClick={() => void geo.refetch()}
+                onClick={() => retryCountyShapes(geo.refetch)}
                 className="inline-flex min-h-9 items-center rounded-sm border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 <Trans>Încearcă din nou</Trans>
               </button>
             </div>
           ) : (
-            <div className="aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
+            <div ref={nearRef} className="aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
           )}
           {activeMissing ? (
             <div

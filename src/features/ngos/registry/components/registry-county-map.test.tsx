@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { i18n } from '@lingui/core'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { NGO_REGISTRY_SUMMARY } from '@/features/ngos/hub/registry-summary'
+import { countyShapes } from '@/features/statistics/lib/county-map'
 import type { Tally } from '../counts'
 import { EMPTY_QUERY } from '../model'
 import { RegistryCountyMap } from './registry-county-map'
@@ -47,7 +48,11 @@ const SHAPES: FeatureCollection<Polygon, { name: string; mnemonic: string }> = {
     { type: 'Feature', properties: { name: 'Arad', mnemonic: 'AR' }, geometry: { type: 'Polygon', coordinates: [square(21, 46)] } },
   ],
 }
-vi.mock('@/hooks/useGeoJson', () => ({ useGeoJsonData: () => ({ data: SHAPES, isError: false, refetch: vi.fn() }) }))
+// The maps read projected shapes (`useCountyShapes`); these are the projection of the squares above.
+vi.mock('@/features/statistics/hooks/use-county-shapes', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/statistics/hooks/use-county-shapes')>()),
+  useCountyShapes: () => ({ data: countyShapes(SHAPES.features), isError: false, refetch: vi.fn() }),
+}))
 
 i18n.load('ro', {})
 i18n.activate('ro')

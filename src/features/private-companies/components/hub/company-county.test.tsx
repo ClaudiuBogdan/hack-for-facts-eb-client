@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import type { FeatureCollection, Polygon } from 'geojson'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
+import { countyShapes } from '@/features/statistics/lib/county-map'
 import type { HubCountyLayer } from '../../lib/hub-counties'
 import { CompanyCountyMap } from './company-county-map'
 import { CompanyCountyRank } from './company-county-rank'
@@ -43,8 +44,10 @@ const COUNTIES: FeatureCollection<Polygon, { name: string; mnemonic: string }> =
   ],
 }
 
-vi.mock('@/hooks/useGeoJson', () => ({
-  useGeoJsonData: () => ({ data: COUNTIES, isError: false, refetch: vi.fn() }),
+// The maps read projected shapes (`useCountyShapes`); these are the projection of the squares above.
+vi.mock('@/features/statistics/hooks/use-county-shapes', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/statistics/hooks/use-county-shapes')>()),
+  useCountyShapes: () => ({ data: countyShapes(COUNTIES.features), isError: false, refetch: vi.fn() }),
 }))
 
 const DENSITY: HubCountyLayer = {

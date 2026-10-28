@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 import { Link } from '@tanstack/react-router'
-import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { useInView } from 'react-intersection-observer'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -12,11 +12,9 @@ import {
   STEP_TEXT,
   COUNTY_MAP_WIDTH,
   countyLabelPixels,
-  countyShapes,
-  type CountyProperties,
   type CountyScale,
 } from '@/features/statistics/lib/county-map'
-import { useGeoJsonData } from '@/hooks/useGeoJson'
+import { retryCountyShapes, useCountyShapes } from '@/features/statistics/hooks/use-county-shapes'
 import { cn } from '@/lib/utils'
 import {
   countyName,
@@ -67,9 +65,10 @@ export function CompanyCountyMap({
   readonly activeCode?: string
   readonly onActiveChange?: (code: string | undefined) => void
 }) {
-  const geo = useGeoJsonData('County')
-  const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
-  const shapes = features ? countyShapes(features) : undefined
+  // The shapes come as the map nears the screen (a screen ahead): a map below the fold is none of the page's first load.
+  const { ref: nearRef, inView: near } = useInView({ triggerOnce: true, rootMargin: '100% 0px' })
+  const geo = useCountyShapes({ enabled: near })
+  const shapes = geo.data
   const scale = useMemo(() => hubLayerScale(layer), [layer])
   const byCode = useMemo(() => new Map(layer.values.map((county) => [county.code, county])), [layer.values])
   const ranks = useMemo(() => new Map(rankCounties(layer.values).map((county, index) => [county.code, index + 1])), [layer.values])
@@ -112,7 +111,7 @@ export function CompanyCountyMap({
         </p>
         <button
           type="button"
-          onClick={() => void geo.refetch()}
+          onClick={() => retryCountyShapes(geo.refetch)}
           className="inline-flex min-h-9 items-center rounded-sm border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
         >
           <Trans>Încearcă din nou</Trans>
@@ -264,7 +263,7 @@ export function CompanyCountyMap({
           })}
         </svg>
       ) : (
-        <div className="mt-4 aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
+        <div ref={nearRef} className="mt-4 aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
       )}
       <figcaption className="mt-6">
         <CountyLegend
