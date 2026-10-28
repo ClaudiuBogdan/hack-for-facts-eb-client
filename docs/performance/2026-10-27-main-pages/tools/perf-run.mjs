@@ -12,6 +12,7 @@
 //   --out <dir>            evidence folder for this url/target/profile (required)
 //   --runs <n>             cold+warm pairs for the medians (default 3)
 //   --no-trace             skip the extra traced cold load
+//   --no-warm              cold loads only, no repeat view (the fix measurements compare cold loads)
 //   --people               page shows people: no screenshots, no saved HTML, no LCP text, trace without screenshots
 //   --proxy-log <file>     api-proxy.mjs log (local target): adds the server-side (SSR) API calls of each load
 //   --api-host <host,...>  hosts counted as API (default dev-chronos-api.transparenta.eu,127.0.0.1:3014)
@@ -32,6 +33,7 @@ const PROFILE = args.profile
 const OUT = args.out
 const RUNS = Number(args.runs ?? 3)
 const TRACE = !args['no-trace']
+const WARM = !args['no-warm']
 const PEOPLE = Boolean(args.people)
 const PROXY_LOG = args['proxy-log'] ?? null
 const API_HOSTS = (args['api-host'] ?? 'dev-chronos-api.transparenta.eu,127.0.0.1:3014').split(',')
@@ -418,7 +420,7 @@ try {
     if (traced) await browser.stopTracing()
     if (i === 1 && !PEOPLE) await page.screenshot({ path: path.join(OUT, `${tag}-cold.png`) }).catch(() => {})
     let warm = null
-    if (!traced) {
+    if (!traced && WARM) {
       await page.goto('about:blank')
       warm = await measureLoad(page, cdp, { label: `${tag}-warm`, saveHtml: false })
     }
