@@ -33,6 +33,15 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
   useNavigate: () => navigateMock,
+  // The heatmap's day squares: serialised once through the router, as JSON
+  // here so the test reads back exactly what a square carries.
+  useRouter: () => ({
+    buildLocation: ({ to, search }: { to: string; search?: Record<string, unknown> }) => ({
+      publicHref: `${to}?${new URLSearchParams({ search: JSON.stringify(search ?? {}) }).toString()}`,
+    }),
+    history: { createHref: (href: string) => href },
+    navigate: navigateMock,
+  }),
 }))
 
 const votesBrowseMock = vi.fn()
@@ -154,7 +163,12 @@ describe('VotesListLayout — the activity heatmap under the list', () => {
     // answer a different one than the list they are looking at.
     renderList({ tab: 'voturi', chamber: 'senat', q: 'buget', outcome: 'adoptat' })
     const day = screen.getByRole('link', { name: /20 martie 2026/ })
-    expect(JSON.parse(day.dataset.search ?? '{}')).toMatchObject({
+    const href = new URL(day.getAttribute('href') ?? '', 'https://example.test')
+    expect({
+      ...JSON.parse(href.searchParams.get('search') ?? '{}'),
+      from: href.searchParams.get('from'),
+      to: href.searchParams.get('to'),
+    }).toMatchObject({
       tab: 'voturi',
       chamber: 'senat',
       q: 'buget',

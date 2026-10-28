@@ -27,6 +27,20 @@ vi.mock('@tanstack/react-router', () => ({
       </a>
     )
   },
+  // The heatmap serialises its address once through the router and appends
+  // each day; the stub serialises the way the anchors above do.
+  useRouter: () => ({
+    buildLocation: ({ to, search }: { to: string; search?: Record<string, string | undefined> }) => {
+      const query = new URLSearchParams(
+        Object.entries(search ?? {}).filter(
+          (entry): entry is [string, string] => entry[1] !== undefined,
+        ),
+      ).toString()
+      return { publicHref: query ? `${to}?${query}` : to }
+    },
+    history: { createHref: (href: string) => href },
+    navigate: vi.fn(),
+  }),
 }))
 
 const useParliamentBillActivity = vi.fn()

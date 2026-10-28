@@ -277,11 +277,6 @@ export function ParliamentHubVoteActivity({
           label: settled
             ? t`${dateLabel} — ${countLabel}`
             : t`${dateLabel} — ${countLabel} (încă neconfirmat)`,
-          // The day is added to whatever the surface already asks for: on the
-          // hub that is the ALL-chambers list (the square's count sums camera,
-          // senat and comun), on the votes page the reader's own filters.
-          search: { ...daySearch, from: day.date, to: day.date },
-          onSelect: onSelectDay,
           tooltip: (
             <>
               <p className="font-semibold">{dateLabel}</p>
@@ -307,8 +302,6 @@ export function ParliamentHubVoteActivity({
     secondary.data,
     needsBothYears,
     window,
-    daySearch,
-    onSelectDay,
     verdictFor,
     coverageExplanation,
   ]);
@@ -340,20 +333,29 @@ export function ParliamentHubVoteActivity({
     [verdictFor],
   );
 
+  /** An empty square's name: its date and what we can say about it. */
+  const emptyDayLabel = useMemo(
+    () =>
+      (iso: string): string => {
+        const dateLabel = formatActivityDate(iso);
+        return t`${dateLabel} — ${coverageExplanation(iso)}`;
+      },
+    [coverageExplanation],
+  );
+
   return (
     <ParliamentHubActivityHeatmap
       ariaLabel={t`Activitatea de vot pe zile, ultimele 12 luni`}
       window={window}
       days={days}
+      // The day is added to whatever the surface already asks for: on the hub
+      // that is the ALL-chambers list (the square's count sums camera, senat
+      // and comun), on the votes page the reader's own filters.
+      daySearch={daySearch}
+      onSelectDay={onSelectDay}
       isCovered={isCovered}
-      uncapturedLabel={(iso) => {
-        const dateLabel = formatActivityDate(iso);
-        return t`${dateLabel} — ${coverageExplanation(iso)}`;
-      }}
-      coveredEmptyLabel={(iso) => {
-        const dateLabel = formatActivityDate(iso);
-        return t`${dateLabel} — ${coverageExplanation(iso)}`;
-      }}
+      uncapturedLabel={emptyDayLabel}
+      coveredEmptyLabel={emptyDayLabel}
       coverageNote={
         coverageProvenance ? (
           <Trans>

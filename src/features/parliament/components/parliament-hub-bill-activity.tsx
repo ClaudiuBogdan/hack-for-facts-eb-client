@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
+import type { ParliamentSearch } from '@/schemas/parliament'
 import { useParliamentBillActivity } from '../hooks/use-parliament-data'
 import { billBucketFor, rollingWindow } from '../lib/vote-activity-grid'
 import {
@@ -13,6 +14,9 @@ import {
 import { formatActivityDate } from '../lib/activity-heatmap-format'
 
 const ROLLING_MONTHS = 12
+
+/** A square opens the bills list at its day (the heatmap adds `from`/`to`). */
+const BILLS_DAY_SEARCH: ParliamentSearch = { tab: 'proiecte' }
 
 /**
  * Legislative volume per day over the last 12 months, and the way into the
@@ -67,11 +71,6 @@ export function ParliamentHubBillActivity() {
         map.set(day.date, {
           total: day.total,
           label: t`${dateLabel} — ${countLabel}`,
-          search: {
-            tab: 'proiecte',
-            from: day.date,
-            to: day.date,
-          },
           tooltip: (
             <>
               <p className="font-semibold">{dateLabel}</p>
@@ -92,6 +91,7 @@ export function ParliamentHubBillActivity() {
       ariaLabel={t`Activitatea legislativă pe zile, ultimele 12 luni`}
       window={window}
       days={days}
+      daySearch={BILLS_DAY_SEARCH}
       status={isLoading ? 'loading' : hasFailed ? 'error' : 'ready'}
       errorLead={
         <Trans>
