@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { PostHog } from "posthog-js";
 import { useLocation } from "@tanstack/react-router";
 import { env } from "@/config/env";
-import { quietImport } from "@/lib/chunk-recovery";
+import { quietImport } from "@/lib/quiet-chunk-load";
 import { hasAnalyticsConsent } from "@/lib/consent";
 import {
   sanitizeJusticeEventProperties,

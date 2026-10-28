@@ -1,6 +1,6 @@
 import type * as SentryNamespace from "@sentry/react";
 import { env } from "@/config/env";
-import { quietImport } from "@/lib/chunk-recovery";
+import { quietImport } from "@/lib/quiet-chunk-load";
 import { hasSentryConsent } from "@/lib/consent";
 import { sanitizeJusticeTelemetryValue } from "@/lib/privacy/sensitive-route-sanitizer";
 
