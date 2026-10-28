@@ -526,6 +526,13 @@ commit (it says the flag is off); the flag stays as the owner left it.
 
 ### 12.1 What the API serves
 
+> **Retired on 2026-10-21.** The server replaced this catalog with the
+> scrapper's serving model (server `9c438870`): `electionCatalog`,
+> `electionEdition` and the edition-keyed `electionContests` below no longer
+> exist, and `/alegeri` failed on every visit until the port of 2026-10-28
+> (PERF-001). The current reads and pages are in §12.11; §12.1–12.2 stay as
+> the record of what the retired catalog held.
+
 Read from the server's `origin/dev` (`src/modules/elections/`, commit
 `c8f946ec` „Serve Elections source metadata"; there is no
 `docs/server-redesign/` page for it) and probed through the worktree's Vite
@@ -757,6 +764,14 @@ analysis (2026-10-02), its issue tracker (E1–E25) and §12.2.
 
 Numbered for the owner to route to the server session. Evidence from the live
 API on 2026-10-14.
+
+> **Status on 2026-10-28.** The serving model (§12.11) answers 2 (events are
+> a read, with their ballot days and kinds), part of 11 (each event's
+> `publication.activatedAt`) and the party-level part of 13 (votes, mandates
+> per phase, turnout, quality and coverage). Asks 1 and 3–10 were about the
+> retired source editions and no longer apply as written; 9's
+> `electionCatalogStats` is answered by each ballot day's contest counts per
+> office.
 
 1. **Readable edition labels.** `reportedName` = `electionKey` on 50/50,
    `reportedDate` null on 50/50, `reportedAuthority` = `BEC/AEP/ROAEP` on
@@ -1291,3 +1306,88 @@ The default variant `vederi` (`rezultate/views.tsx`) uses the analytics pages' l
   "how to get the data" in the session). The fixtures say so in
   `generatedBy`, so they cannot be regenerated from the repo alone. They are
   prototype data, replaced by the API reads in `results-api.md`.
+
+### 12.11 The live pages on the serving model (2026-10-28, PERF-001)
+
+On 2026-10-21 the server replaced the source-edition catalog with the
+scrapper's serving model (server `9c438870`, its
+`docs/server-redesign/16-elections.md`). The client still asked for
+`electionCatalog`, so every read failed GraphQL validation and `/alegeri`
+showed „Lista edițiilor nu s-a încărcat" (performance audit PERF-001). The
+three routes keep their addresses and now read the current contract.
+
+**The reads** (server `origin/dev`, probed on dev on 2026-10-28):
+
+| Root | Returns | Filters (`in`) | Read by |
+|---|---|---|---|
+| `electionEvents(page, pageSize)` | events with published figures: family, year, `publication.activatedAt`, ballot days | none | `/alegeri` |
+| `electionEvent(eventKey)` | one event, or null | — | the event page; the contest page's ballot day |
+| `electionContests(occurrenceKey, filter, page, pageSize)` | one ballot day's contests, each with its race; `NOT_FOUND` for an unknown day | `offices`, `statuses`, `jurisdictionTypes`, `countyCodes` | the event page |
+| `electionContest(contestKey)` | one contest with its place and race, or null | — | the contest page |
+| `electionResult(occurrenceKey, office, scopeKey, contestKey)` | one place's tallies (votes; mandates per phase), turnout, participation and coverage, or null | — | the contest page, at the contest's own place |
+
+`electionResultScopes` (a contest's places) and `electionCompetitors` are not
+used yet. Dev serves 6 events: local 2024 (general, runoff and repeat days),
+parliamentary 2020 and 2024, presidential 2024 (its one day annulled) and
+2025 (two rounds), and European 2024.
+
+**The pages:**
+
+- **`/alegeri`:** one row per event, named by family and year (both parts of
+  its key), with each ballot day's date and kind; an annulled day says so.
+  The API filters events by nothing, so the page has no filter; only
+  `?pagina`.
+- **`/alegeri/$electionKey`:**
+  - the event's facts: type, year, when its figures were published on the
+    platform, and its key;
+  - the ballot days as links (`?data=YYYY-MM-DD`; the first day has none);
+  - the day's contests, filtered by office (the day's own offices, with their
+    counts), place type and county (`?functie`, `?arie`, `?judet`).
+
+  A row names the place, the office and the county, and the first by votes
+  with its share, never a winner. The API computes a race only where the
+  place's vote tallies count the same voters and none is suspect, so a
+  contest without one reads „Primul la voturi: necalculat", never „no
+  votes". A partial, provisional or flagged race is marked on its row; the
+  list's own marker says once that rankings are unchecked and what
+  „necalculat" means.
+- **`/alegeri/contest/$contestKey`:**
+  - the contest's facts: office, place type, county and SIRUTA code, the
+    ballot day and round (from its event), held or annulled, what replaced
+    it, and its key;
+  - its figures: the gap between the first two (from the result's own race,
+    so it always matches the votes shown), the votes in the API's order with
+    shares of the same place's valid votes, mandates per allocation phase
+    (never summed), and turnout with participation.
+
+  A measure the data lacks reads „Nu e în date"; a participation the API
+  does not compute says so.
+- **Caveats:** what to know sits behind one amber `CaveatsMarker` per contest:
+  unchecked, provisional or partial figures, diaspora inclusion (named per
+  measure when the national figures disagree), missing shares (without
+  guessing why), a gap the API does not compute, missing mandates, broken
+  coverage links, an annulment, and the API's issue codes as it lists them,
+  coverage cells' included. A suspect figure is also marked where it is
+  shown.
+
+**Privacy.** The API names an independent by their ballot label, a person's
+name, and spells it in their competitor key. The client never asks for
+competitor keys or reported labels, and the parse drops an independent's
+label before the cache or the HTML sees it. The pages say „Candidat
+independent" (checked on the presidential 2025 runoff's server HTML).
+
+**Loading:**
+
+- **Server:** each loader reads within one 1-second deadline (PERF-021),
+  shared by its two rounds (event, then the day's contests; contest, then its
+  result and event). A read past the deadline is left to the browser's query.
+- **Browser:** the loaders start the same reads and return at once.
+- **Retries:** the query client no longer retries a GraphQL failure the
+  server would repeat: a document that fails validation, `INVALID_INPUT`,
+  `NOT_FOUND`, or a 4xx other than 408 and 429. Network errors, timeouts and
+  5xx still retry once.
+
+**Prototypes.** The alegere, analize and scrutin prototypes were built on the
+retired contract. They now read it through
+`src/development/prototypes/elections/shared/legacy-catalog.ts`, so they
+compile and show their failed-read states. Porting them is separate work.
