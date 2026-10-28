@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import vocabulary from '@/assets/entity-tags.json'
 import {
   absorbTriggers,
   describeScope,
@@ -146,7 +147,7 @@ describe('the vocabulary', () => {
 
 
 describe('keyword-triggered entity tag chips', () => {
-  const tags = tagSearchFilters('ro')
+  const tags = tagSearchFilters(vocabulary, 'ro')
   it('offers the known hospital tag and consumes only its keyword', () => {
     const tag = suggestFilters('spital sibiu', [], tags).find(filter => filter.entityTag === 'kind::hospital')!
     expect(absorbTriggers('spital sibiu', tag)).toBe('sibiu')

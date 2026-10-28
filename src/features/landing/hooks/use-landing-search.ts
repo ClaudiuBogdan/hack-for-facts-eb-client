@@ -7,7 +7,7 @@ import { Analytics } from '@/lib/analytics'
 import { searchEntitiesLive } from '@/features/entity-search/api/entity-search-api.live'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import type { EntitySearchHit } from '@/schemas/entity-search'
-import { absorbTriggers, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
+import { absorbTriggers, loadEntityTagVocabulary, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 
 export type SearchStatus =
@@ -52,6 +52,7 @@ export function isProfileless(hit: Pick<EntitySearchHit, 'docType' | 'href'>): b
 const NO_TAGS: readonly string[] = []
 const NO_ROLES: readonly string[] = []
 const NO_RESULTS: readonly EntitySearchHit[] = []
+const NO_FILTERS: readonly SearchFilter[] = []
 
 /** How long an answer is trusted from the cache; a non-current one is asked again at once. */
 const CURRENT_STALE_MS = 1000 * 60 * 5
@@ -107,7 +108,15 @@ export function useSearchResults({
   const [term, setTerm] = useState('')
   const [filters, setFilters] = useState<readonly SearchFilter[]>([])
   const { i18n } = useLingui()
-  const tagFilters = useMemo(() => tagSearchFilters(i18n.locale), [i18n.locale])
+  // The tag chips' vocabulary, only where chips are offered: until it is in, the text offers the
+  // families' chips alone. The key is the filter labels' (`useEntityTagVocabulary`), so one load serves both.
+  const { data: vocabulary } = useQuery({
+    queryKey: ['entity-tag-vocabulary'],
+    queryFn: loadEntityTagVocabulary,
+    enabled: suggestionsEnabled,
+    staleTime: Infinity,
+  })
+  const tagFilters = useMemo(() => (vocabulary ? tagSearchFilters(vocabulary, i18n.locale) : NO_FILTERS), [vocabulary, i18n.locale])
   const serverFilters = searchFilterInput(filters)
   const trimmed = term.trim()
   const normalized = useDebouncedValue(trimmed, debounceMs)

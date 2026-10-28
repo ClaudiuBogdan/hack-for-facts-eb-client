@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import { render } from '@testing-library/react'
+import vocabulary from '@/assets/entity-tags.json'
 import { getSearchFilter, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { EntitySearchHit, EntitySearchResult } from '@/schemas/entity-search'
 import { LANDING_SEARCH_TYPES, useEntitySelection, useSearchResults } from '@/features/landing/hooks/use-landing-search'
@@ -67,6 +68,11 @@ async function search(result: { current: ReturnType<typeof useSearchResults> }, 
   act(() => result.current.setTerm(term))
   await waitFor(() => expect(['results', 'empty', 'incomplete', 'error']).toContain(result.current.status.kind))
 }
+/** A tag chip the text earns, once its vocabulary (loaded on demand) is in. */
+async function tagSuggestion(result: { current: ReturnType<typeof useSearchResults> }, tag: string) {
+  await waitFor(() => expect(result.current.suggestions.some(filter => filter.entityTag === tag)).toBe(true))
+  return result.current.suggestions.find(filter => filter.entityTag === tag)!
+}
 beforeEach(() => {
   navigate.mockReset(); capture.mockReset(); searchEntities.mockReset()
   searchEntities.mockResolvedValue(response())
@@ -108,6 +114,9 @@ describe('landing universal search', () => {
     }, expect.any(AbortSignal))
     // `firma` would earn a chip on the landing; over a fixed scope it is text.
     expect(result.current.suggestions).toEqual([])
+    // And the tag chips' vocabulary is never fetched for it.
+    expect(queryClient.getQueryState(['entity-tag-vocabulary'])?.fetchStatus ?? 'idle').toBe('idle')
+    expect(queryClient.getQueryData(['entity-tag-vocabulary'])).toBeUndefined()
     // The scope sits in the key, so the landing's rows for the same term are
     // never served to a field that asked for companies alone.
     expect(
@@ -129,7 +138,8 @@ describe('landing universal search', () => {
       expect.any(AbortSignal),
     )
     // The same term over the whole index is another answer: the tag sits in the key.
-    const keys = queryClient.getQueryCache().findAll().map((query) => String(query.queryKey[1]))
+    const keys = queryClient.getQueryCache().findAll({ queryKey: ['landingUniversalSearch'] }).map((query) => String(query.queryKey[1]))
+    expect(keys.length).toBeGreaterThan(0)
     expect(keys.every((key) => key.endsWith('|source::rnong'))).toBe(true)
   })
   it('sends a caller’s roles with the request, and keys the cache by them', async () => {
@@ -299,7 +309,8 @@ describe('landing universal search', () => {
     }
     const { result } = renderHook(() => useSearchResults({ debounceMs: 0, entityTags: ['source::rnong'] }), { wrapper: Wrapper })
     await search(result, 'spital Dante')
-    act(() => result.current.addFilter(result.current.suggestions.find(filter => filter.entityTag === 'kind::hospital')!))
+    const hospital = await tagSuggestion(result, 'kind::hospital')
+    act(() => result.current.addFilter(hospital))
     await waitFor(() =>
       expect(searchEntities).toHaveBeenLastCalledWith(
         expect.objectContaining({ entityTags: ['source::rnong', 'kind::hospital'] }),
@@ -310,8 +321,9 @@ describe('landing universal search', () => {
   it('refetches tag selection and removal for the same text', async () => {
     const { result } = setup()
     await search(result, 'spital Dante')
+    const hospital = await tagSuggestion(result, 'kind::hospital')
     searchEntities.mockResolvedValue(response([]))
-    act(() => result.current.addFilter(result.current.suggestions.find(filter => filter.entityTag === 'kind::hospital')!))
+    act(() => result.current.addFilter(hospital))
     await waitFor(() => expect(result.current.status).toEqual({ kind: 'empty', term: 'Dante' }))
     expect(searchEntities).toHaveBeenLastCalledWith(expect.objectContaining({ entityTags: ['kind::hospital'] }), expect.any(AbortSignal))
     searchEntities.mockResolvedValue(response([COMPANY]))
@@ -418,8 +430,8 @@ describe('landing selection', () => {
 
 
 describe('INS scope transitions', () => {
-  const hospital = tagSearchFilters('ro').find(filter => filter.entityTag === 'kind::hospital' && !filter.exclude)!
-  const excluded = tagSearchFilters('ro').find(filter => filter.entityTag === 'kind::school' && filter.exclude)!
+  const hospital = tagSearchFilters(vocabulary, 'ro').find(filter => filter.entityTag === 'kind::hospital' && !filter.exclude)!
+  const excluded = tagSearchFilters(vocabulary, 'ro').find(filter => filter.entityTag === 'kind::school' && filter.exclude)!
   it('replaces entity qualifiers and requests matrix results from the server', async () => {
     const matrix = { ...COMPANY, id: 'ins_dataset_POP107D_digest', docType: 'ins_dataset',
       href: '/ins/seturi/POP107D', docKey: 'POP107D', identifiers: ['POP107D'], roles: [] }
