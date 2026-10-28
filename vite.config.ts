@@ -59,6 +59,21 @@ const esmExtensionFixesPlugin = () => ({
   },
 });
 
+// Modules that do nothing on import but define components, so the bundler may
+// drop the ones an import leaves unused. The data-trust barrel re-exports the
+// provenance drawer, whose copy button pulls framer-motion: a page importing
+// only a badge from the barrel shipped motion too (2026-10-27 audit, PERF-018:
+// 47 KB of /legislation's 76 KB route code). Without a `sideEffects` field,
+// the bundler has to keep every module a barrel names.
+const SIDE_EFFECT_FREE_MODULE = /\/src\/components\/data-trust\/[^/?]+\.tsx?(?:\?|$)/;
+
+const sideEffectFreeModulesPlugin = () => ({
+  name: "side-effect-free-modules",
+  transform(_code: string, id: string) {
+    return SIDE_EFFECT_FREE_MODULE.test(id) ? { moduleSideEffects: false as const } : null;
+  },
+});
+
 const getContentLocale = (id: string) => {
   if (id.includes('.en.mdx')) {
     return 'en';
@@ -211,6 +226,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       esmExtensionFixesPlugin(),
+      sideEffectFreeModulesPlugin(),
       createSafariRegexFixPlugin(),
       createChallengeStepSectionsPlugin(),
       lingui(),
