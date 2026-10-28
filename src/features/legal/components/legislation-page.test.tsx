@@ -24,24 +24,24 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('../hooks/use-legislation', () => ({
-  useLegislationOverview: vi.fn(),
+  useLegislationFrontDoor: vi.fn(),
   useLegislationDomainCounts: vi.fn(),
   useLegislationStatusCounts: vi.fn(),
 }))
 
 import {
   useLegislationDomainCounts,
-  useLegislationOverview,
+  useLegislationFrontDoor,
   useLegislationStatusCounts,
 } from '../hooks/use-legislation'
 import { legislationStatusCountsFixture } from '../mocks/fixtures/legislation-status-counts'
 
 function mockOverviewReady() {
-  vi.mocked(useLegislationOverview).mockReturnValue({
+  vi.mocked(useLegislationFrontDoor).mockReturnValue({
     data: legislationOverviewFixture,
     isLoading: false,
     isError: false,
-  } as unknown as ReturnType<typeof useLegislationOverview>)
+  } as unknown as ReturnType<typeof useLegislationFrontDoor>)
   vi.mocked(useLegislationDomainCounts).mockReturnValue({
     data: legislationDomainCountsFixture,
     isError: false,
@@ -184,11 +184,11 @@ describe('LegislationPage', () => {
   })
 
   it('renders a skeleton while loading', () => {
-    vi.mocked(useLegislationOverview).mockReturnValue({
+    vi.mocked(useLegislationFrontDoor).mockReturnValue({
       data: undefined,
       isLoading: true,
       isError: false,
-    } as unknown as ReturnType<typeof useLegislationOverview>)
+    } as unknown as ReturnType<typeof useLegislationFrontDoor>)
 
     render(<LegislationPage />)
 
@@ -198,11 +198,11 @@ describe('LegislationPage', () => {
   })
 
   it('renders an error message when the overview fails', () => {
-    vi.mocked(useLegislationOverview).mockReturnValue({
+    vi.mocked(useLegislationFrontDoor).mockReturnValue({
       data: undefined,
       isLoading: false,
       isError: true,
-    } as unknown as ReturnType<typeof useLegislationOverview>)
+    } as unknown as ReturnType<typeof useLegislationFrontDoor>)
 
     render(<LegislationPage />)
 

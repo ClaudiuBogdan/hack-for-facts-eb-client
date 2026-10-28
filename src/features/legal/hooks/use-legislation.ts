@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import type { LegislationOverview } from '@/schemas/legal'
-import { fetchLegislationOverview } from '../api/legal-api'
+import { fetchLegislationFrontDoor, fetchLegislationOverview } from '../api/legal-api'
 import { fetchDomainActCounts } from '../api/legal-domain-counts-api'
 import { fetchStatusActCounts } from '../api/legal-status-counts-api'
 
@@ -15,6 +15,27 @@ export function useLegislationOverview(initialData?: LegislationOverview) {
     staleTime: 5 * 60 * 1000,
     initialData,
   })
+}
+
+export function legislationFrontDoorQueryKey() {
+  return ['legal', 'front-door'] as const
+}
+
+/**
+ * The front door's gazette band. The route loader fills it — on the server
+ * from the memoised read (`legal-front-door-ssr.ts`), hydrated into the
+ * browser's cache — so the page renders it without a read of its own.
+ */
+export function legislationFrontDoorQueryOptions() {
+  return queryOptions({
+    queryKey: legislationFrontDoorQueryKey(),
+    queryFn: ({ signal }) => fetchLegislationFrontDoor(signal),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useLegislationFrontDoor() {
+  return useQuery(legislationFrontDoorQueryOptions())
 }
 
 export function legislationDomainCountsQueryKey() {

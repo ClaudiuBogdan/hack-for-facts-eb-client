@@ -836,3 +836,11 @@ export const legislationOverviewSchema = z.object({
   coverage: coverageMetaSchema,
 })
 export type LegislationOverview = z.infer<typeof legislationOverviewSchema>
+
+/**
+ * The `/legislation` front door's payload: the overview without the
+ * citation ranking, which only the analytics tab renders and which costs the
+ * slowest part of the overview's request.
+ */
+export const legislationFrontDoorSchema = legislationOverviewSchema.omit({ mostCitedActs: true })
+export type LegislationFrontDoor = z.infer<typeof legislationFrontDoorSchema>

@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { fetchLegislationOverview } from '@/features/legal/api/legal-api'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import type { LegislationOverview } from '@/schemas/legal'
 
@@ -9,7 +8,9 @@ export type LegislationAnalyticsRouteLoaderData = {
 }
 
 export const Route = createFileRoute('/legislation/analytics')({
+  // The API module is imported here, not at the top: this file is in every page's route tree.
   loader: async () => {
+    const { fetchLegislationOverview } = await import('@/features/legal/api/legal-api')
     const overview = await fetchLegislationOverview()
     return { overview } satisfies LegislationAnalyticsRouteLoaderData
   },
