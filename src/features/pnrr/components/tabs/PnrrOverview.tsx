@@ -29,8 +29,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { hasPnrrDataFilters } from '../../lib/data-transform'
-import { usePnrrProjectDetail } from '../../hooks/usePnrrData'
-import type { PnrrWorkerOverviewModel } from '../../workers/pnrr-worker-types'
+import {
+  usePnrrProjectDetail,
+  usePnrrServerOverviewMapPreview,
+} from '../../hooks/usePnrrData'
+import type {
+  PnrrWorkerMapModel,
+  PnrrWorkerOverviewSummary,
+} from '../../workers/pnrr-worker-types'
 
 const PnrrMapPreview = lazy(() =>
   import('../PnrrMapPreview').then((module) => ({
@@ -64,13 +70,18 @@ export function PnrrOverview({
   cachedStats,
   isLoadingFullData = false,
   overview = null,
+  mapPreview,
+  onMapPreviewUnavailable,
   officialAllocatedTotalEur = null,
 }: {
   readonly aggregates: PnrrAggregates
   readonly filterState: ReturnType<typeof usePnrrFilterState>
   readonly cachedStats?: PnrrOverviewMetricStats | null
   readonly isLoadingFullData?: boolean
-  readonly overview?: PnrrWorkerOverviewModel | null
+  readonly overview?: PnrrWorkerOverviewSummary | null
+  /** The worker's map preview; without it the preview is fetched from the server. */
+  readonly mapPreview?: PnrrWorkerMapModel
+  readonly onMapPreviewUnavailable?: () => void
   readonly officialAllocatedTotalEur?: number | null
 }) {
   const currency = usePnrrCurrency()
@@ -268,7 +279,11 @@ export function PnrrOverview({
         <div className="flex min-w-0 flex-col lg:col-span-3">
           <Suspense fallback={<PnrrDeferredCardFallback minHeight={420} />}>
             {overview && (
-              <PnrrMapPreview model={overview.mapPreview} filterState={filterState} />
+              <PnrrOverviewMapPreview
+                mapPreview={mapPreview}
+                filterState={filterState}
+                onUnavailable={onMapPreviewUnavailable}
+              />
             )}
           </Suspense>
         </div>
@@ -355,6 +370,33 @@ export function PnrrOverview({
   )
 }
 
+function PnrrOverviewMapPreview({
+  mapPreview,
+  filterState,
+  onUnavailable,
+}: {
+  readonly mapPreview?: PnrrWorkerMapModel
+  readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly onUnavailable?: () => void
+}) {
+  // Mounted once the map section is on screen, so the UAT series (~110 KB
+  // compressed) is read only then.
+  const serverMapPreview = usePnrrServerOverviewMapPreview(filterState.search, {
+    enabled: mapPreview === undefined,
+  })
+  const isUnavailable = mapPreview === undefined && serverMapPreview.isError
+
+  useEffect(() => {
+    // The worker's overview carries the map preview: fall back to it.
+    if (isUnavailable) onUnavailable?.()
+  }, [isUnavailable, onUnavailable])
+
+  const model = mapPreview ?? serverMapPreview.data?.mapPreview
+  if (!model) return <PnrrDeferredCardFallback minHeight={420} />
+
+  return <PnrrMapPreview model={model} filterState={filterState} />
+}
+
 function DeferredOverviewSection({
   children,
   className,
@@ -365,7 +407,9 @@ function DeferredOverviewSection({
   readonly minHeight: number
 }) {
   const containerRef = useRef<HTMLElement | null>(null)
-  const [shouldRender, setShouldRender] = useState(() => typeof window === 'undefined')
+  // Server and first client render agree (nothing yet), so a server-rendered
+  // overview hydrates cleanly; the observer renders the section near the viewport.
+  const [shouldRender, setShouldRender] = useState(false)
 
   useEffect(() => {
     if (shouldRender) return
@@ -424,7 +468,7 @@ function PnrrDeferredCardFallback({
   )
 }
 
-function PnrrFullDataLoadingStatus() {
+export function PnrrFullDataLoadingStatus() {
   return (
     <section
       role="status"

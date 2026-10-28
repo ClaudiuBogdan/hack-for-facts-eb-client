@@ -1,14 +1,26 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import type { PnrrProject, PnrrSearchState } from '@/schemas/pnrr'
 import type { PnrrMapSeriesId } from './usePnrrMapSeries'
+import { PnrrRawDataReadyContext } from '../lib/pnrr-raw-data-context'
+import {
+  buildPnrrOverviewMapSearchKey,
+  buildPnrrOverviewRequestPath,
+  buildPnrrOverviewSearchKey,
+  pnrrOverviewMapPreviewQueryKey,
+  pnrrOverviewQueryKey,
+} from '../lib/pnrr-overview-request'
 import type {
+  PnrrServerOverview,
+  PnrrServerOverviewMapPreview,
   PnrrWorkerQueryPayload,
   PnrrWorkerQueryResult,
 } from '../workers/pnrr-worker-types'
 
 type PnrrWorkerHookOptions = {
   readonly mapSeriesId?: PnrrMapSeriesId
+  /** False keeps the raw dataset unloaded: the worker starts only when a view needs it. */
+  readonly enabled?: boolean
 }
 
 function buildWorkerPayload(
@@ -39,6 +51,55 @@ export function usePnrrWorkerModel(
       )
       return queryPnrrWorker(payload)
     },
+    enabled: options?.enabled ?? true,
+    staleTime: Infinity,
+    placeholderData: (previousData) => previousData,
+  })
+}
+
+async function fetchPnrrOverviewJson<TResult>(path: string): Promise<TResult> {
+  const response = await fetch(path, { headers: { accept: 'application/json' } })
+  if (!response.ok) {
+    throw new Error(`Failed to load the PNRR overview: ${response.status}`)
+  }
+  return (await response.json()) as TResult
+}
+
+/**
+ * The overview built on the server (`/api/pnrr/overview`), with the worker's
+ * code. SSR puts it in the query cache when the server has the data in memory.
+ */
+export function usePnrrServerOverview(
+  search: Partial<PnrrSearchState> | undefined,
+  options: { readonly enabled: boolean },
+) {
+  const searchKey = buildPnrrOverviewSearchKey(search)
+
+  return useQuery({
+    queryKey: pnrrOverviewQueryKey(searchKey),
+    queryFn: () =>
+      fetchPnrrOverviewJson<PnrrServerOverview>(
+        buildPnrrOverviewRequestPath(search),
+      ),
+    enabled: options.enabled,
+    staleTime: Infinity,
+  })
+}
+
+/** The overview's UAT map preview, fetched apart once the map section is on screen. */
+export function usePnrrServerOverviewMapPreview(
+  search: Partial<PnrrSearchState> | undefined,
+  options: { readonly enabled: boolean },
+) {
+  const mapSearchKey = buildPnrrOverviewMapSearchKey(search)
+
+  return useQuery({
+    queryKey: pnrrOverviewMapPreviewQueryKey(mapSearchKey),
+    queryFn: () =>
+      fetchPnrrOverviewJson<PnrrServerOverviewMapPreview>(
+        buildPnrrOverviewRequestPath(search, 'map-preview'),
+      ),
+    enabled: options.enabled,
     staleTime: Infinity,
     placeholderData: (previousData) => previousData,
   })
@@ -80,11 +141,19 @@ export function usePnrrProjectDetail(projectId?: string | null) {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const rawDataReady = useContext(PnrrRawDataReadyContext)
 
   useEffect(() => {
     if (!projectId) {
       setData({ project: null })
       setIsLoading(false)
+      setError(null)
+      return
+    }
+    if (!rawDataReady) {
+      // The dashboard is loading the raw dataset (and offers a retry).
+      setData({ project: null })
+      setIsLoading(true)
       setError(null)
       return
     }
@@ -118,7 +187,7 @@ export function usePnrrProjectDetail(projectId?: string | null) {
     return () => {
       cancelled = true
     }
-  }, [projectId])
+  }, [projectId, rawDataReady])
 
   return {
     data,

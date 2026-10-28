@@ -8,7 +8,7 @@ import {
   buildMapModel,
   buildTopBeneficiaries,
   findBeneficiaryDetail,
-} from './pnrr-data.worker'
+} from './pnrr-query-model'
 import type { PnrrWorkerModel } from './pnrr-worker-types'
 
 function makeProject(

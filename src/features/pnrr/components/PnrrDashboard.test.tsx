@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
-import { usePnrrWorkerModel } from "../hooks/usePnrrData";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  usePnrrServerOverview,
+  usePnrrWorkerModel,
+} from "../hooks/usePnrrData";
 import { usePnrrFilterState } from "../hooks/usePnrrFilterState";
 import {
   buildPnrrSeoSnapshotSearchKey,
@@ -9,9 +12,13 @@ import {
 } from "../seo/pnrr-seo";
 import { computeAggregates, processPnrrData } from "../lib/data-transform";
 import { PnrrDashboard } from "./PnrrDashboard";
-import type { PnrrWorkerQueryResult } from "../workers/pnrr-worker-types";
+import type {
+  PnrrServerOverview,
+  PnrrWorkerQueryResult,
+} from "../workers/pnrr-worker-types";
 
 vi.mock("../hooks/usePnrrData", () => ({
+  usePnrrServerOverview: vi.fn(),
   usePnrrWorkerModel: vi.fn(),
 }));
 
@@ -48,14 +55,24 @@ vi.mock("./PnrrHeader", () => ({
     projectsCount,
     totalValue,
     totalValueLabel,
+    beneficiaryNamesByCui,
+    uatLabelsBySiruta,
   }: {
     readonly actions: ReactNode;
     readonly isLoading: boolean;
     readonly projectsCount: number;
     readonly totalValue: number;
     readonly totalValueLabel?: ReactNode;
+    readonly beneficiaryNamesByCui?: ReadonlyMap<string, string>;
+    readonly uatLabelsBySiruta?: ReadonlyMap<string, string>;
   }) => (
     <header data-testid="pnrr-header" data-loading={String(isLoading)}>
+      <span data-testid="pnrr-header-labels">
+        {JSON.stringify([
+          [...(uatLabelsBySiruta ?? [])],
+          [...(beneficiaryNamesByCui ?? [])],
+        ])}
+      </span>
       <span data-testid="pnrr-header-projects">{projectsCount}</span>
       <span data-testid="pnrr-header-total">{totalValue}</span>
       <span data-testid="pnrr-header-total-label">{totalValueLabel}</span>
@@ -78,16 +95,23 @@ vi.mock("./PnrrSkeleton", () => ({
 }));
 
 vi.mock("./tabs/PnrrOverview", () => ({
+  PnrrFullDataLoadingStatus: () => <div data-testid="pnrr-full-data-loading" />,
   PnrrOverview: ({
     cachedStats,
     isLoadingFullData,
+    overview,
+    mapPreview,
   }: {
     readonly cachedStats?: { readonly rawTotalValue: number } | null;
     readonly isLoadingFullData?: boolean;
+    readonly overview?: object | null;
+    readonly mapPreview?: object;
   }) => (
     <div
       data-testid="pnrr-overview"
       data-loading-full-data={String(isLoadingFullData)}
+      data-has-overview={String(overview != null)}
+      data-has-map-preview={String(mapPreview !== undefined)}
     >
       {cachedStats?.rawTotalValue}
     </div>
@@ -112,7 +136,11 @@ vi.mock("./PnrrMapView", () => ({
 
 vi.mock("./filters/PnrrFilterSheet", () => ({
   PnrrFilterSheet: () => null,
-  PnrrFilterTriggerButton: () => <button type="button">Filters</button>,
+  PnrrFilterTriggerButton: ({ onClick }: { readonly onClick: () => void }) => (
+    <button type="button" onClick={onClick}>
+      Filters
+    </button>
+  ),
 }));
 
 vi.mock("./filters/PnrrInfoSheet", () => ({
@@ -313,7 +341,67 @@ function makeWorkerResult(
   };
 }
 
+function makeServerOverview(
+  overrides: Partial<PnrrServerOverview> = {},
+): PnrrServerOverview {
+  const { mapPreview: _mapPreview, ...overview } = makeWorkerResult().overview;
+
+  return {
+    fileSetId: "20260619",
+    overview: {
+      ...overview,
+      aggregates: { ...overview.aggregates, projectCount: 7, rawTotalValue: 700 },
+    },
+    meta: {
+      projectCount: 7,
+      projectRecordCount: 9,
+      beneficiaryPaymentCount: 0,
+      officialAllocatedTotalEur: null,
+      officialPaidTotalEur: null,
+      paidBeneficiaryCount: null,
+      paymentCapability: "legacy_unversioned",
+      indicatorCapability: "legacy_unversioned",
+    },
+    labels: { uats: [], beneficiaries: [] },
+    ...overrides,
+  };
+}
+
+function mockServerOverview(
+  result: Partial<ReturnType<typeof usePnrrServerOverview>> = {},
+) {
+  vi.mocked(usePnrrServerOverview).mockReturnValue({
+    data: undefined,
+    error: null,
+    isError: false,
+    isLoading: false,
+    isRefetching: false,
+    refetch: vi.fn(),
+    ...result,
+  } as unknown as ReturnType<typeof usePnrrServerOverview>);
+}
+
+function mockIdleWorker() {
+  vi.mocked(usePnrrWorkerModel).mockReturnValue({
+    data: undefined,
+    error: null,
+    isError: false,
+    isLoading: false,
+    isRefetching: false,
+    refetch: vi.fn(),
+  } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+}
+
+function lastWorkerOptions() {
+  return vi.mocked(usePnrrWorkerModel).mock.lastCall?.[1];
+}
+
 describe("PnrrDashboard", () => {
+  beforeEach(() => {
+    vi.mocked(usePnrrWorkerModel).mockReset();
+    mockServerOverview();
+  });
+
   it("uses distinct official project count in the header", () => {
     const data = processPnrrData([
       {
@@ -462,14 +550,8 @@ describe("PnrrDashboard", () => {
   });
 
   it("uses cached SSR stats for the overview cards and header while full data loads", () => {
-    vi.mocked(usePnrrWorkerModel).mockReturnValue({
-      data: undefined,
-      error: null,
-      isError: false,
-      isLoading: true,
-      isRefetching: false,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    mockIdleWorker();
+    mockServerOverview({ isLoading: true });
     vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
 
     render(
@@ -530,14 +612,8 @@ describe("PnrrDashboard", () => {
   });
 
   it("ignores cached SSR stats when they were built for different filters", () => {
-    vi.mocked(usePnrrWorkerModel).mockReturnValue({
-      data: undefined,
-      error: null,
-      isError: false,
-      isLoading: true,
-      isRefetching: false,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    mockIdleWorker();
+    mockServerOverview({ isLoading: true });
     vi.mocked(usePnrrFilterState).mockReturnValue(
       makeFilterState({
         search: {
@@ -565,6 +641,10 @@ describe("PnrrDashboard", () => {
 
   it("shows a retryable error state when the dataset fails to load", () => {
     const refetch = vi.fn();
+    mockServerOverview({
+      error: new Error("Failed to load the PNRR overview: 502"),
+      isError: true,
+    });
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: undefined,
       error: new Error("Failed to fetch PNRR projects"),
@@ -591,14 +671,8 @@ describe("PnrrDashboard", () => {
   // data. Rendering must not fall through to the data branch.
   it("renders a retryable state instead of crashing when the query is paused offline", () => {
     const refetch = vi.fn();
-    vi.mocked(usePnrrWorkerModel).mockReturnValue({
-      data: undefined,
-      error: null,
-      isError: false,
-      isLoading: false,
-      isRefetching: false,
-      refetch,
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    mockIdleWorker();
+    mockServerOverview({ refetch });
     vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
 
     expect(() => render(<PnrrDashboard />)).not.toThrow();
@@ -629,5 +703,192 @@ describe("PnrrDashboard", () => {
 
     expect(screen.queryByTestId("pnrr-projects")).not.toBeInTheDocument();
     expect(screen.getByText("Could not load PNRR data")).toBeInTheDocument();
+  });
+
+  it("renders the server overview without loading the raw dataset", () => {
+    mockIdleWorker();
+    mockServerOverview({ data: makeServerOverview() });
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    render(<PnrrDashboard />);
+
+    expect(lastWorkerOptions()).toEqual({ enabled: false });
+    expect(vi.mocked(usePnrrServerOverview).mock.lastCall?.[1]).toEqual({
+      enabled: true,
+    });
+    expect(screen.getByTestId("pnrr-header-projects")).toHaveTextContent("7");
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-has-overview",
+      "true",
+    );
+    // The map preview is fetched apart by the overview itself.
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-has-map-preview",
+      "false",
+    );
+  });
+
+  it("names active UAT and beneficiary filters from the server overview", () => {
+    mockIdleWorker();
+    mockServerOverview({
+      data: makeServerOverview({
+        labels: {
+          uats: [{ siruta: "179132", label: "București" }],
+          beneficiaries: [{ cui: "4267117", name: "Municipiul București" }],
+        },
+      }),
+    });
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    render(<PnrrDashboard />);
+
+    expect(screen.getByTestId("pnrr-header-labels")).toHaveTextContent(
+      JSON.stringify([
+        [["179132", "București"]],
+        [["4267117", "Municipiul București"]],
+      ]),
+    );
+  });
+
+  it("loads the raw dataset for an explorer tab", () => {
+    mockIdleWorker();
+    vi.mocked(usePnrrFilterState).mockReturnValue(
+      makeFilterState({
+        search: { ...makeFilterState().search, view: "beneficiaries" },
+      }),
+    );
+
+    render(<PnrrDashboard />);
+
+    expect(lastWorkerOptions()).toEqual({ enabled: true });
+  });
+
+  it("loads the raw dataset when the filter sheet opens", () => {
+    mockIdleWorker();
+    mockServerOverview({ data: makeServerOverview() });
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    render(<PnrrDashboard />);
+    expect(lastWorkerOptions()).toEqual({ enabled: false });
+
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+
+    expect(lastWorkerOptions()).toEqual({ enabled: true });
+    // The server overview stays on screen while the worker loads.
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-has-overview",
+      "true",
+    );
+  });
+
+  it("loads the raw dataset once a filter changes on the page", () => {
+    mockIdleWorker();
+    mockServerOverview({ data: makeServerOverview() });
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    const { rerender } = render(<PnrrDashboard />);
+    expect(lastWorkerOptions()).toEqual({ enabled: false });
+
+    vi.mocked(usePnrrFilterState).mockReturnValue(
+      makeFilterState({
+        search: { ...makeFilterState().search, search: "spital" },
+      }),
+    );
+    rerender(<PnrrDashboard />);
+
+    expect(lastWorkerOptions()).toEqual({ enabled: true });
+    // The server is asked only for the filters the page opened with.
+    expect(vi.mocked(usePnrrServerOverview).mock.lastCall?.[1]).toEqual({
+      enabled: false,
+    });
+  });
+
+  it("keeps the server overview and offers a retry when the raw dataset fails", () => {
+    const refetch = vi.fn();
+    vi.mocked(usePnrrWorkerModel).mockReturnValue({
+      data: undefined,
+      error: new Error("Failed to load /api/pnrr/raw/projects: 502"),
+      isError: true,
+      isLoading: false,
+      isRefetching: false,
+      refetch,
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    mockServerOverview({ data: makeServerOverview() });
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    render(<PnrrDashboard />);
+    expect(screen.queryByText("Could not load PNRR data")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-has-overview",
+      "true",
+    );
+    expect(screen.getByText("Could not load PNRR data")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Retry/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("loads the raw dataset, and says so, when a project is opened from the server overview", () => {
+    vi.mocked(usePnrrWorkerModel).mockReturnValue({
+      data: undefined,
+      error: null,
+      isError: false,
+      isFetching: true,
+      isLoading: true,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    mockServerOverview({ data: makeServerOverview() });
+    vi.mocked(usePnrrFilterState).mockReturnValue(
+      makeFilterState({
+        search: {
+          ...makeFilterState().search,
+          panel: "project",
+          panelProjectId: "engagement:123",
+        },
+      }),
+    );
+
+    render(<PnrrDashboard />);
+
+    expect(lastWorkerOptions()).toEqual({ enabled: true });
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-has-overview",
+      "true",
+    );
+    expect(screen.getByTestId("pnrr-full-data-loading")).toBeInTheDocument();
+  });
+
+  it("falls back to the worker when the server overview fails", () => {
+    mockIdleWorker();
+    mockServerOverview({ error: new Error("502"), isError: true });
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    render(<PnrrDashboard />);
+
+    expect(lastWorkerOptions()).toEqual({ enabled: true });
+  });
+
+  it("prefers the worker's overview, with its map preview, once it has loaded", () => {
+    vi.mocked(usePnrrWorkerModel).mockReturnValue({
+      data: makeWorkerResult(),
+      error: null,
+      isError: false,
+      isLoading: false,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    mockServerOverview({ data: makeServerOverview() });
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    render(<PnrrDashboard />);
+
+    expect(screen.getByTestId("pnrr-header-projects")).toHaveTextContent("0");
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-has-map-preview",
+      "true",
+    );
   });
 });

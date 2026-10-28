@@ -105,6 +105,7 @@ import { Route as AchizitiiCpvCodeRouteImport } from './routes/achizitii/cpv/$co
 import { Route as AchizitiiProceduriIdRouteImport } from './routes/achizitii/proceduri/$id'
 import { Route as AdminCampaignsCampaignKeyRouteRouteImport } from './routes/admin/campaigns/$campaignKey/route'
 import { Route as AlegeriContestContestKeyRouteImport } from './routes/alegeri/contest/$contestKey'
+import { Route as ApiPnrrOverviewRouteImport } from './routes/api/pnrr/overview'
 import { Route as ApiV1GraphqlRouteImport } from './routes/api/v1/graphql'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
@@ -777,6 +778,11 @@ const AlertsAlertIdIndexLazyRoute = AlertsAlertIdIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/alerts/$alertId/index.lazy').then((d) => d.Route),
 )
+const ApiPnrrOverviewRoute = ApiPnrrOverviewRouteImport.update({
+  id: '/api/pnrr/overview',
+  path: '/api/pnrr/overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1GraphqlRoute = ApiV1GraphqlRouteImport.update({
   id: '/api/v1/graphql',
   path: '/api/v1/graphql',
@@ -1625,6 +1631,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
+  '/api/pnrr/overview': typeof ApiPnrrOverviewRoute
   '/api/v1/graphql': typeof ApiV1GraphqlRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -1803,6 +1810,7 @@ export interface FileRoutesByTo {
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
+  '/api/pnrr/overview': typeof ApiPnrrOverviewRoute
   '/api/v1/graphql': typeof ApiV1GraphqlRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -1997,6 +2005,7 @@ export interface FileRoutesById {
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
+  '/api/pnrr/overview': typeof ApiPnrrOverviewRoute
   '/api/v1/graphql': typeof ApiV1GraphqlRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -2193,6 +2202,7 @@ export interface FileRouteTypes {
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
     | '/alegeri/contest/$contestKey'
+    | '/api/pnrr/overview'
     | '/api/v1/graphql'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -2371,6 +2381,7 @@ export interface FileRouteTypes {
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
     | '/alegeri/contest/$contestKey'
+    | '/api/pnrr/overview'
     | '/api/v1/graphql'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -2564,6 +2575,7 @@ export interface FileRouteTypes {
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
     | '/alegeri/contest/$contestKey'
+    | '/api/pnrr/overview'
     | '/api/v1/graphql'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -2729,6 +2741,7 @@ export interface RootRouteChildren {
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
   ParlamentProiecteBillIdRouteRoute: typeof ParlamentProiecteBillIdRouteRouteWithChildren
+  ApiPnrrOverviewRoute: typeof ApiPnrrOverviewRoute
   ApiV1GraphqlRoute: typeof ApiV1GraphqlRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
@@ -3460,6 +3473,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/alerts/$alertId/'
       preLoaderRoute: typeof AlertsAlertIdIndexLazyRouteImport
       parentRoute: typeof AlertsAlertIdRouteRoute
+    }
+    '/api/pnrr/overview': {
+      id: '/api/pnrr/overview'
+      path: '/api/pnrr/overview'
+      fullPath: '/api/pnrr/overview'
+      preLoaderRoute: typeof ApiPnrrOverviewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/v1/graphql': {
       id: '/api/v1/graphql'
@@ -4631,6 +4651,7 @@ const rootRouteChildren: RootRouteChildren = {
     ParlamentMembriMemberIdRouteRouteWithChildren,
   ParlamentProiecteBillIdRouteRoute:
     ParlamentProiecteBillIdRouteRouteWithChildren,
+  ApiPnrrOverviewRoute: ApiPnrrOverviewRoute,
   ApiV1GraphqlRoute: ApiV1GraphqlRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
@@ -4680,13 +4701,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
