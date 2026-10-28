@@ -68,11 +68,11 @@ msgstr "— forma consolidată, în vigoare, a fiecărui act;"
 msgid "— Monitorul Oficial, publicația oficială a României."
 msgstr "— Monitorul Oficial, publicația oficială a României."
 
-#: src/features/national-budget/home/components/home-head.tsx:168
+#: src/features/national-budget/home/components/home-head.tsx:170
 msgid ", {deficitShare} din PIB"
 msgstr ", {deficitShare} din PIB"
 
-#: src/features/national-budget/home/components/home-head.tsx:168
+#: src/features/national-budget/home/components/home-head.tsx:170
 msgid ", {deficitShare} din PIB-ul estimat pe tot anul"
 msgstr ", {deficitShare} din PIB-ul estimat pe tot anul"
 
@@ -83,7 +83,7 @@ msgstr ", actualizată {0}"
 
 #. placeholder {0}: formatHubPeriod(latestDataPeriod)
 #. placeholder {0}: monthText(catalog.execution.coverage.lastMonth)
-#: src/features/national-budget/home/components/home-head.tsx:109
+#: src/features/national-budget/home/components/home-head.tsx:113
 #: src/features/statistics/components/territory/territory-header.tsx:108
 msgid ", date până în {0}"
 msgstr ", date până în {0}"
@@ -124,7 +124,7 @@ msgstr ", iar profitul net {0}"
 msgid ", iar rezultatul net a ajuns la zero"
 msgstr ", iar rezultatul net a ajuns la zero"
 
-#: src/features/national-budget/home/components/home-head.tsx:169
+#: src/features/national-budget/home/components/home-head.tsx:171
 msgid "; ponderea în PIB nu e afișată: {deficitRefused}"
 msgstr ""
 
@@ -136,7 +136,7 @@ msgstr ""
 #~ msgid ": cum a fost legat"
 #~ msgstr ": cum a fost legat"
 
-#: src/features/procurement/components/home/home-chrome.tsx:31
+#: src/features/procurement/components/home/home-chrome.tsx:26
 msgid ": de ce"
 msgstr ": de ce"
 
@@ -347,11 +347,11 @@ msgstr "(provizoriu)"
 
 #: src/components/shared/procurement-data/evidence-link.tsx:53
 #: src/features/justice/components/justice-source-line.tsx:20
-#: src/features/national-budget/home/components/home-head.tsx:94
+#: src/features/national-budget/home/components/home-head.tsx:88
 #: src/features/parliament/components/parliament-stenogram-session-card.tsx:180
 #: src/features/procurement/components/contract/contract-block.tsx:63
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:41
-#: src/features/procurement/components/home/home-chrome.tsx:106
+#: src/features/procurement/components/home/home-chrome.tsx:101
 #: src/features/procurement/components/procedure/procedure-block.tsx:35
 msgid "(se deschide într-o filă nouă)"
 msgstr "(se deschide într-o filă nouă)"
@@ -501,7 +501,7 @@ msgid "{0, plural, one {# neconformă} few {# neconforme} other {# de neconforme
 msgstr "{0, plural, one {# neconformă} few {# neconforme} other {# de neconforme}}"
 
 #. placeholder {0}: day.total
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:62
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:65
 msgid "{0, plural, one {# proiect} few {# proiecte} other {# de proiecte}}"
 msgstr ""
 
@@ -516,7 +516,7 @@ msgid "{0, plural, one {# retrasă} few {# retrase} other {# de retrase}}"
 msgstr "{0, plural, one {# retrasă} few {# retrase} other {# de retrase}}"
 
 #. placeholder {0}: status.results.length
-#: src/features/landing/components/search/search-parts.tsx:380
+#: src/features/landing/components/search/search-parts.tsx:304
 msgid "{0, plural, one {# rezultat.} few {# rezultate.} other {# de rezultate.}}"
 msgstr "{0, plural, one {# rezultat.} few {# rezultate.} other {# de rezultate.}}"
 
@@ -551,7 +551,7 @@ msgid "{0, plural, one {# vorbitor} few {# vorbitori} other {# de vorbitori}}"
 msgstr ""
 
 #. placeholder {0}: day.total
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:262
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:256
 msgid "{0, plural, one {# vot} few {# voturi} other {# de voturi}}"
 msgstr ""
 
@@ -782,8 +782,8 @@ msgstr "{0, plural, one {Un domeniu} few {Toate cele # domenii} other {Toate cel
 
 #. placeholder {0}: layer.missingCounties.length
 #. placeholder {0}: missing.length
-#: src/features/private-companies/components/hub/company-county-map.tsx:385
-#: src/features/statistics/components/county-map/county-map.tsx:431
+#: src/features/private-companies/components/hub/company-county-map.tsx:384
+#: src/features/statistics/components/county-map/county-map.tsx:430
 msgid "{0, plural, one {un județ fără valoare} few {# județe fără valoare} other {# de județe fără valoare}}"
 msgstr "{0, plural, one {un județ fără valoare} few {# județe fără valoare} other {# de județe fără valoare}}"
 
@@ -856,7 +856,7 @@ msgstr "{0} – sub {1}"
 
 #. placeholder {0}: entry.year
 #. placeholder {1}: reasonText(unavailable.get(entry.year) ?? null)
-#: src/features/national-budget/home/components/home-shell.tsx:158
+#: src/features/national-budget/home/components/home-shell.tsx:185
 msgid "{0} — {1}"
 msgstr "{0} — {1}"
 
@@ -883,8 +883,8 @@ msgstr "{0} — nu e în {year}"
 
 #. placeholder {0}: county.name
 #. placeholder {0}: countyName(county.code)
-#: src/features/private-companies/components/hub/company-county-map.tsx:310
-#: src/features/statistics/components/county-map/county-map.tsx:340
+#: src/features/private-companies/components/hub/company-county-map.tsx:309
+#: src/features/statistics/components/county-map/county-map.tsx:339
 msgid "{0} · locul {rank} din {total}"
 msgstr "{0} · locul {rank} din {total}"
 
@@ -1219,8 +1219,8 @@ msgstr "{0} ediții în {year}"
 
 #. placeholder {0}: displayedSeriesRows.length
 #. placeholder {0}: rows.length
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:267
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:512
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:272
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:517
 msgid "{0} enabled series"
 msgstr "{0} serii activate"
 
@@ -1561,7 +1561,7 @@ msgid "{0} publicații în cuprins"
 msgstr "{0} publicații în cuprins"
 
 #. placeholder {0}: formatHubValue(gap, 'other', null, { digits }).value
-#: src/features/statistics/components/hub/hub-county-band.tsx:127
+#: src/features/statistics/components/hub/hub-county-band.tsx:128
 msgid "{0} puncte procentuale"
 msgstr "{0} puncte procentuale"
 
@@ -1740,7 +1740,7 @@ msgstr "{0} și încă {1}"
 #. placeholder {0}: group.memberSirutaCodes.length
 #. placeholder {0}: groupContext.memberCount
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:728
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:221
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:226
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:287
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:241
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2997
@@ -1890,7 +1890,7 @@ msgstr "{0}, în timp"
 
 #. placeholder {0}: entry.year
 #. placeholder {1}: monthText(entry.month).replace(/\s*\d{4}$/u, '')
-#: src/features/national-budget/home/components/home-shell.tsx:156
+#: src/features/national-budget/home/components/home-shell.tsx:183
 msgid "{0}, până în {1}"
 msgstr "{0}, până în {1}"
 
@@ -2036,7 +2036,7 @@ msgstr "{0}: doar lunile cu buletin Excel (din 2019), cifre de la 1 ianuarie; un
 #~ msgstr "{0}: fără date"
 
 #. placeholder {0}: countyName(code)
-#: src/features/private-companies/components/hub/company-county-map.tsx:126
+#: src/features/private-companies/components/hub/company-county-map.tsx:125
 msgid "{0}: fără valoare"
 msgstr "{0}: fără valoare"
 
@@ -2106,11 +2106,11 @@ msgstr "{amount} (echivalentul în lei al unei valori în valută)"
 msgid "{amount} fără TVA"
 msgstr "{amount} fără TVA"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:128
+#: src/features/statistics/components/hub/hub-county-band.tsx:129
 msgid "{amount} peste media națională"
 msgstr "{amount} peste media națională"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:128
+#: src/features/statistics/components/hub/hub-county-band.tsx:129
 msgid "{amount} sub media națională"
 msgstr "{amount} sub media națională"
 
@@ -2525,17 +2525,16 @@ msgstr "{cuiShare}; CUI legat de platformă"
 #~ msgstr "{cuiShare}; restul fără CUI declarat"
 
 #. placeholder {0}: coverageExplanation(iso)
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:351
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:355
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:335
 msgid "{dateLabel} — {0}"
 msgstr "{dateLabel} — {0}"
 
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:69
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:278
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:72
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:272
 msgid "{dateLabel} — {countLabel}"
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:279
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:273
 msgid "{dateLabel} — {countLabel} (încă neconfirmat)"
 msgstr "{dateLabel} — {countLabel} (încă neconfirmat)"
 
@@ -2547,11 +2546,11 @@ msgstr "{days, plural, one {a doua zi după contract} few {la # zile după contr
 msgid "{days, plural, one {după # zi} few {după # zile} other {după # de zile}}"
 msgstr "{days, plural, one {după # zi} few {după # zile} other {după # de zile}}"
 
-#: src/features/national-budget/home/components/home-head.tsx:242
+#: src/features/national-budget/home/components/home-head.tsx:280
 msgid "{deficitShare} din PIB"
 msgstr "{deficitShare} din PIB"
 
-#: src/features/national-budget/home/components/home-head.tsx:241
+#: src/features/national-budget/home/components/home-head.tsx:279
 msgid "{deficitShare} din PIB-ul estimat pe tot anul"
 msgstr "{deficitShare} din PIB-ul estimat pe tot anul"
 
@@ -3066,7 +3065,7 @@ msgstr "{name}: dosarele de pe portalul instanțelor, pe ani, materii și etape,
 msgid "{name}: dosarele de pe portalul instanțelor, pe ani, materii și etape. Persoanele nu sunt numite."
 msgstr "{name}: dosarele de pe portalul instanțelor, pe ani, materii și etape. Persoanele nu sunt numite."
 
-#: src/features/statistics/components/county-map/county-map.tsx:135
+#: src/features/statistics/components/county-map/county-map.tsx:134
 msgid "{name}: fără valoare"
 msgstr "{name}: fără valoare"
 
@@ -3178,7 +3177,7 @@ msgstr "{registered, plural, one {Un ONG înregistrat și {added} noi în {year}
 msgid "{registeredShare} din selecție"
 msgstr "{registeredShare} din selecție"
 
-#: src/features/landing/components/search/search-parts.tsx:361
+#: src/features/landing/components/search/search-parts.tsx:285
 msgid "{remaining, plural, one {Încă un caracter pentru a căuta.} few {Încă # caractere pentru a căuta.} other {Încă # de caractere pentru a căuta.}}"
 msgstr "{remaining, plural, one {Încă un caracter pentru a căuta.} few {Încă # caractere pentru a căuta.} other {Încă # de caractere pentru a căuta.}}"
 
@@ -3254,7 +3253,7 @@ msgstr "{small, plural, one {Încă un buget} few {Celelalte # bugete} other {Ce
 #~ msgid "{staleCount} surse incarcate dar vechi"
 #~ msgstr ""
 
-#: src/features/landing/components/search/search-parts.tsx:372
+#: src/features/landing/components/search/search-parts.tsx:296
 msgid "{suggestionCount, plural, one {Un filtru sugerat.} few {# filtre sugerate.} other {# de filtre sugerate.}}"
 msgstr "{suggestionCount, plural, one {Un filtru sugerat.} few {# filtre sugerate.} other {# de filtre sugerate.}}"
 
@@ -3990,7 +3989,7 @@ msgstr "1 element de grup potrivit"
 msgid "1 merged group"
 msgstr "1 grup unit"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:220
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:225
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:286
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:240
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2996
@@ -4145,7 +4144,7 @@ msgstr "Plafonul este maximul angajat printr-un acord-cadru, numărat o singură
 #~ msgid "A ceiling ranking sliced by buyer, supplier or territory can count the same framework's ceiling more than once and materially mislead the order, so only the overall total and the monthly series are served on the Overview. Switch the value logic back to awarded value to rank institutions and suppliers."
 #~ msgstr "Un clasament al plafoanelor defalcat după cumpărător, furnizor sau teritoriu poate număra plafonul aceluiași acord-cadru de mai multe ori și poate induce în eroare în mod semnificativ ordinea, de aceea în Prezentare generală sunt servite doar totalul general și seria lunară. Revino la logica valorii atribuite pentru a clasa instituțiile și furnizorii."
 
-#: src/features/national-budget/home/components/home-head.tsx:150
+#: src/features/national-budget/home/components/home-head.tsx:152
 msgid "A cheltuit"
 msgstr "A cheltuit"
 
@@ -4171,7 +4170,7 @@ msgstr "a doua zi"
 msgid "A fost negociat fără anunț public."
 msgstr "A fost negociat fără anunț public."
 
-#: src/features/national-budget/home/components/home-head.tsx:141
+#: src/features/national-budget/home/components/home-head.tsx:143
 msgid "A încasat"
 msgstr "A încasat"
 
@@ -4566,7 +4565,7 @@ msgid "Achiziție directă, notificată"
 msgstr "Achiziție directă, notificată"
 
 #: src/features/procurement/components/analytics/analytics-view.ts:50
-#: src/features/procurement/components/home/home-chrome.tsx:129
+#: src/features/procurement/components/home/procurement-home-search-field.tsx:28
 #: src/features/procurement/lib/analytics-text.ts:248
 msgid "Achiziții"
 msgstr "Achiziții"
@@ -4793,7 +4792,7 @@ msgstr ""
 
 #. placeholder {0}: coverageProvenance.scope
 #. placeholder {1}: coverageProvenance.asOf ?? "—"
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:359
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:355
 msgid "Acoperire: {0}. Actualizată la {1}."
 msgstr "Acoperire: {0}. Actualizată la {1}."
 
@@ -5076,8 +5075,8 @@ msgstr "Active nefinanciare (investiții)"
 #~ msgid "Active procurement filters"
 #~ msgstr "Filtre active pentru achiziții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:532
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:616
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:537
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:621
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:842
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2284
 msgid "Active series"
@@ -5187,11 +5186,11 @@ msgstr "activitate selectată (derivată): {0}"
 msgid "Activitate selectată exactă"
 msgstr "Activitate selectată exactă"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:372
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:368
 msgid "Activitatea de vot pe zile nu a putut fi încărcată. Lista de mai sus nu este afectată."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:345
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:342
 msgid "Activitatea de vot pe zile, ultimele 12 luni"
 msgstr ""
 
@@ -5212,11 +5211,11 @@ msgstr ""
 msgid "Activitatea în plen pe zile ({year})"
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:97
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:96
 msgid "Activitatea legislativă pe zile nu a putut fi încărcată. Lista de mai sus nu este afectată."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:92
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:90
 msgid "Activitatea legislativă pe zile, ultimele 12 luni"
 msgstr ""
 
@@ -5756,7 +5755,7 @@ msgid "Adding UATs"
 msgstr "Se adaugă UAT-uri"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:190
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:311
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:316
 msgid "Address"
 msgstr "Adresă"
 
@@ -6244,7 +6243,7 @@ msgstr "Alimente și catering"
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:155
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
 #: src/features/learning/components/interactive/DocumentLibrary.tsx:147
-#: src/routes/charts/index.lazy.tsx:246
+#: src/routes/charts/index.lazy.tsx:270
 msgid "All"
 msgstr "Toate"
 
@@ -6774,7 +6773,7 @@ msgstr "An raportat"
 msgid "An unexpected error occurred"
 msgstr "A apărut o eroare neașteptată"
 
-#: src/features/national-budget/home/components/home-head.tsx:105
+#: src/features/national-budget/home/components/home-head.tsx:99
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:280
 #: src/features/ngos/organization/components/profile-parts.tsx:653
 #: src/features/private-companies/components/analytics/analytics-source.tsx:31
@@ -6936,7 +6935,7 @@ msgstr "Analiza firmelor nu este disponibilă acum"
 msgid "Analiza firmelor: cifra de afaceri, profitul și salariații, pe județe și ani — Transparenta.eu"
 msgstr "Analiza firmelor: cifra de afaceri, profitul și salariații, pe județe și ani — Transparenta.eu"
 
-#: src/routes/legislation/analytics.tsx:23
+#: src/routes/legislation/analytics.tsx:24
 msgid "Analiza legislației"
 msgstr "Analiza legislației"
 
@@ -6950,7 +6949,7 @@ msgstr "Analiza nu s-a putut încărca"
 
 #: src/features/justice/components/analysis/analysis-head.tsx:106
 #: src/features/justice/components/hub/justice-hub-hero.tsx:57
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:95
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:91
 #: src/features/private-companies/components/analytics/analytics-head.tsx:79
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:466
 #: src/features/procurement/components/analytics/analytics-head.tsx:157
@@ -6967,7 +6966,7 @@ msgid "Analize ale dosarelor"
 msgstr "Analize ale dosarelor"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:363
-#: src/features/national-budget/home/components/home-head.tsx:76
+#: src/features/national-budget/home/components/home-head.tsx:71
 msgid "Analize avansate"
 msgstr "Analize avansate"
 
@@ -6991,11 +6990,11 @@ msgstr "Alertă pentru serie analitică"
 msgid "Analytics view"
 msgstr "Vizualizare analitică"
 
-#: src/routes/entity-analytics.tsx:38
+#: src/routes/entity-analytics.tsx:58
 msgid "Analyze aggregated values per entity and explore top entities by amount and per capita."
 msgstr "Analizați valorile cumulate pe entitate și explorați entitățile de top după sumă și pe cap de locuitor."
 
-#: src/routes/entity-analytics.lazy.tsx:161
+#: src/routes/entity-analytics.lazy.tsx:169
 msgid "Analyze aggregated values per entity and explore top entities."
 msgstr "Analizați valorile cumulate pe entitate și explorați entitățile de top."
 
@@ -7214,8 +7213,8 @@ msgstr "anual"
 #: src/features/justice/components/echr/echr-head.tsx:79
 #: src/features/legal/components/legislation-acts-directory.tsx:258
 #: src/features/legal/components/legislation-gazette-directory.tsx:209
-#: src/features/national-budget/home/components/home-head.tsx:64
-#: src/features/national-budget/home/components/home-shell.tsx:116
+#: src/features/national-budget/home/components/home-head.tsx:59
+#: src/features/national-budget/home/components/home-shell.tsx:124
 #: src/features/ngos/organization/components/profile-parts.tsx:445
 #: src/features/ngos/registry/components/registry-answer.tsx:538
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:299
@@ -7293,8 +7292,8 @@ msgstr "Anul hotărârii"
 msgid "anul în curs"
 msgstr "anul în curs"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:43
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:43
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:41
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:41
 msgid "Anul în curs"
 msgstr "Anul în curs"
 
@@ -7595,7 +7594,7 @@ msgstr "Apare în contracte și plăți publice fără valoare publicată."
 #~ msgid "Apartenente"
 #~ msgstr ""
 
-#: src/features/statistics/components/county-map/county-map.tsx:386
+#: src/features/statistics/components/county-map/county-map.tsx:385
 msgid "apasă ca să-l adaugi"
 msgstr "apasă ca să-l adaugi"
 
@@ -8691,7 +8690,7 @@ msgstr "Bilanțul pe {year}, de verificat"
 #~ msgstr "Bilanțul publicat de ANAF, {year}"
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:137
+#: src/features/national-budget/home/components/home-head.tsx:139
 msgid "Bilanțul, {0}"
 msgstr "Bilanțul, {0}"
 
@@ -8807,7 +8806,7 @@ msgstr "Echilibrul natalității, mortalității și migrației."
 #~ msgstr ""
 
 #: src/components/maps/HeatmapDataTable.tsx:478
-#: src/routes/entity-analytics.lazy.tsx:199
+#: src/routes/entity-analytics.lazy.tsx:207
 msgid "Both"
 msgstr "Ambele"
 
@@ -8994,7 +8993,7 @@ msgstr "Buget depus pentru {0}"
 msgid "Budgetary Academy"
 msgstr "Academia Bugetară"
 
-#: src/features/national-budget/home/components/home-head.tsx:57
+#: src/features/national-budget/home/components/home-head.tsx:52
 msgid "Buget / Național"
 msgstr "Buget / Național"
 
@@ -9007,7 +9006,7 @@ msgstr "Buget național"
 msgid "Bugetare"
 msgstr "Bugetare"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:44
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:42
 msgid "Bugetele"
 msgstr "Bugetele"
 
@@ -9103,7 +9102,7 @@ msgid "Bugetul instituției"
 msgstr "Bugetul instituției"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:359
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:90
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:122
 msgid "Bugetul național"
 msgstr "Bugetul național"
 
@@ -9119,7 +9118,7 @@ msgstr "Bugetul național: de unde vin banii publici și pe ce se duc — Transp
 msgid "Bugetul național: execuția și legile bugetului, pe rânduri, bugete și ani — Transparenta.eu"
 msgstr "Bugetul național: execuția și legile bugetului, pe rânduri, bugete și ani — Transparenta.eu"
 
-#: src/features/national-budget/home/components/home-head.tsx:197
+#: src/features/national-budget/home/components/home-head.tsx:235
 msgid "Bugetul României pe înțelesul tuturor: cât încasează statul, cât cheltuie, cine cheltuie și cât se împrumută."
 msgstr "Bugetul României pe înțelesul tuturor: cât încasează statul, cât cheltuie, cine cheltuie și cât se împrumută."
 
@@ -9127,7 +9126,7 @@ msgstr "Bugetul României pe înțelesul tuturor: cât încasează statul, cât 
 msgid "Build a custom dataset for use in the map editor."
 msgstr "Construiți un set de date personalizat pentru utilizare în editorul de hărți."
 
-#: src/routes/charts/index.lazy.tsx:171
+#: src/routes/charts/index.lazy.tsx:195
 msgid "Build and manage custom visualizations of public spending data."
 msgstr "Creați și gestionați vizualizări personalizate ale datelor privind cheltuielile publice."
 
@@ -9174,7 +9173,7 @@ msgstr "Buletinele nu dau o valoare pentru {0}: {1}."
 msgid "Buletinul"
 msgstr "Buletinul"
 
-#: src/features/national-budget/home/components/home-head.tsx:130
+#: src/features/national-budget/home/components/home-head.tsx:132
 msgid "Buletinul acestui an nu are totalurile."
 msgstr "Buletinul acestui an nu are totalurile."
 
@@ -9511,7 +9510,7 @@ msgstr "Cameră"
 #. placeholder {0}: day.camera
 #. placeholder {1}: day.senat
 #. placeholder {2}: day.comun
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:290
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:279
 msgid "Camera {0} · Senat {1} · Comun {2}"
 msgstr ""
 
@@ -9718,15 +9717,15 @@ msgstr ""
 #~ msgid "captură INS Tempo din {0}, completată cu ultimul an publicat"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:230
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:224
 msgid "captura programată nu a rulat"
 msgstr "captura programată nu a rulat"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:234
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:228
 msgid "captură provizorie, încă neconfirmată"
 msgstr "captură provizorie, încă neconfirmată"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:228
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:222
 msgid "captura sursei a eșuat"
 msgstr "captura sursei a eșuat"
 
@@ -9735,7 +9734,7 @@ msgstr "captura sursei a eșuat"
 msgid "Captura sursei, actualizată la {0}."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:224
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:218
 msgid "captura zilei nu a fost încă finalizată după încheiere"
 msgstr "captura zilei nu a fost încă finalizată după încheiere"
 
@@ -9829,7 +9828,7 @@ msgid "Cât cheltuie primăriile pe bunuri și servicii, an de an?"
 msgstr "Cât cheltuie primăriile pe bunuri și servicii, an de an?"
 
 #: src/features/national-budget/home/components/home-balance.tsx:88
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:42
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:40
 msgid "Cât cheltuie statul peste ce încasează"
 msgstr "Cât cheltuie statul peste ce încasează"
 
@@ -10124,7 +10123,7 @@ msgstr "Cauciuc și mase plastice"
 #~ msgstr ""
 
 #: src/features/justice/components/analysis/analysis-filters.tsx:55
-#: src/features/landing/components/search/landing-search.tsx:682
+#: src/features/landing/components/search/landing-search.tsx:660
 #: src/features/legal/components/legislation-act-finder.tsx:232
 #: src/features/legal/components/legislation-search-band.tsx:65
 #: src/features/legal/components/legislation-tab-nav.tsx:49
@@ -10192,7 +10191,8 @@ msgstr ""
 #~ msgstr "Caută entități sau CUI..."
 
 #: src/features/landing/components/landing-page.tsx:107
-#: src/features/landing/components/search/landing-search.tsx:241
+#: src/features/landing/components/search/deferred-landing-search.tsx:137
+#: src/features/landing/components/search/landing-search.tsx:255
 msgid "Caută entități, statistici sau identificatori..."
 msgstr "Caută entități, statistici sau identificatori..."
 
@@ -10414,7 +10414,8 @@ msgstr "Caută: {label}"
 msgid "Caută…"
 msgstr "Caută…"
 
-#: src/features/landing/components/search/landing-search.tsx:375
+#: src/features/landing/components/search/deferred-landing-search.tsx:206
+#: src/features/landing/components/search/landing-search.tsx:418
 #: src/routes/investitii-publice/route.tsx:66
 msgid "Căutare"
 msgstr "Căutare"
@@ -10491,8 +10492,9 @@ msgstr ""
 msgid "Căutarea nu a răspuns — încearcă din nou."
 msgstr "Căutarea nu a răspuns — încearcă din nou."
 
-#: src/features/landing/components/search/landing-search.tsx:175
-#: src/features/landing/components/search/search-parts.tsx:399
+#: src/features/landing/components/search/deferred-landing-search.tsx:280
+#: src/features/landing/components/search/landing-search.tsx:182
+#: src/features/landing/components/search/search-parts.tsx:323
 msgid "Căutarea nu a răspuns."
 msgstr "Căutarea nu a răspuns."
 
@@ -10551,7 +10553,7 @@ msgid "Ce a aprobat legea, pe capitole"
 msgstr "Ce a aprobat legea, pe capitole"
 
 #: src/features/national-budget/home/components/home-law.tsx:51
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:45
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:43
 msgid "Ce a aprobat Parlamentul"
 msgstr "Ce a aprobat Parlamentul"
 
@@ -11376,7 +11378,7 @@ msgstr "cetățeni"
 msgid "Challenge Question"
 msgstr "Întrebare de provocare"
 
-#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:44
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:45
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:183
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:293
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:586
@@ -11458,7 +11460,7 @@ msgstr "Vizualizare grafică"
 
 #: src/components/sidebar/nav-main.tsx:52
 #: src/components/ui/shortcuts.tsx:38
-#: src/routes/charts/index.lazy.tsx:168
+#: src/routes/charts/index.lazy.tsx:192
 msgid "Charts"
 msgstr "Grafice"
 
@@ -11576,7 +11578,7 @@ msgid "Cheltuieli publice"
 msgstr "Cheltuieli publice"
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:234
+#: src/features/national-budget/home/components/home-head.tsx:272
 msgid "Cheltuieli publice, {0}"
 msgstr "Cheltuieli publice, {0}"
 
@@ -11630,7 +11632,7 @@ msgstr "Cheltuielile statului pe capitole, de la minister la linie bugetară."
 msgid "Cheltuielile totale"
 msgstr "Cheltuielile totale"
 
-#: src/features/national-budget/home/components/home-head.tsx:256
+#: src/features/national-budget/home/components/home-head.tsx:294
 msgid "Cheltuielile, din PIB"
 msgstr "Cheltuielile, din PIB"
 
@@ -11794,7 +11796,7 @@ msgstr "Cifre de ansamblu"
 #: src/features/justice/components/echr/echr-head.tsx:101
 #: src/features/justice/components/hub/justice-hub-bands.tsx:96
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:676
-#: src/features/national-budget/home/components/home-head.tsx:287
+#: src/features/national-budget/home/components/home-head.tsx:324
 #: src/features/ngos/hub/ngo-hub-page.tsx:96
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:183
 #: src/features/ngos/registry/components/registry-answer.tsx:77
@@ -11816,7 +11818,7 @@ msgstr "Cifre-cheie"
 msgid "Cifrele acestei adrese au fost calculate pe o ediție care între timp a fost înlocuită. Nu le arătăm din altă ediție fără să știi: deschide ediția curentă pentru aceeași întrebare, iar cifrele pot fi diferite."
 msgstr "Cifrele acestei adrese au fost calculate pe o ediție care între timp a fost înlocuită. Nu le arătăm din altă ediție fără să știi: deschide ediția curentă pentru aceeași întrebare, iar cifrele pot fi diferite."
 
-#: src/routes/legislation/analytics.tsx:26
+#: src/routes/legislation/analytics.tsx:27
 msgid "Cifrele de ansamblu ale corpusului legislativ și actele pe care se sprijină restul legislației."
 msgstr "Cifrele de ansamblu ale corpusului legislativ și actele pe care se sprijină restul legislației."
 
@@ -11914,7 +11916,7 @@ msgstr "Cifrele, graficele și comparațiile folosesc doar valorile admise de po
 msgid "Cinci firme însumează {0} din valoarea achizițiilor directe din {1}; au vândut {2} în total."
 msgstr "Cinci firme însumează {0} din valoarea achizițiilor directe din {1}; au vândut {2} în total."
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:40
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:38
 #: src/features/private-companies/components/analytics/analytics-head.tsx:238
 #: src/features/private-companies/components/analytics/analytics-head.tsx:239
 msgid "Cine"
@@ -12191,8 +12193,8 @@ msgstr "Clasificația funcțională: pentru ce (învățământ, sănătate, ap�
 #~ msgid "Class"
 #~ msgstr "Clasă"
 
-#: src/components/common/classification-info-link.tsx:128
-#: src/components/common/classification-info-link.tsx:173
+#: src/components/common/classification-info-link.tsx:148
+#: src/components/common/classification-info-link.tsx:195
 msgid "classification"
 msgstr "clasificare"
 
@@ -12200,8 +12202,8 @@ msgstr "clasificare"
 msgid "Classification"
 msgstr "Clasificare"
 
-#: src/components/common/classification-info-link.tsx:119
-#: src/components/common/classification-info-link.tsx:164
+#: src/components/common/classification-info-link.tsx:139
+#: src/components/common/classification-info-link.tsx:186
 msgid "Classification Details"
 msgstr "Detalii clasificare"
 
@@ -12262,7 +12264,7 @@ msgstr "Șterge toate instantaneele"
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:408
 #: src/features/entity-search/components/entity-empty-state.tsx:167
-#: src/routes/entity-analytics.lazy.tsx:183
+#: src/routes/entity-analytics.lazy.tsx:191
 msgid "Clear filters"
 msgstr "Șterge filtrele"
 
@@ -12320,8 +12322,8 @@ msgstr "Apasă pe o fază pentru a explora detaliile"
 msgid "Click a region for detailed numbers."
 msgstr "Apasă pe o regiune pentru date detaliate."
 
-#: src/components/common/classification-info-link.tsx:136
-#: src/components/common/classification-info-link.tsx:181
+#: src/components/common/classification-info-link.tsx:158
+#: src/components/common/classification-info-link.tsx:205
 msgid "Click the link below to explore all {type} classifications."
 msgstr "Faceți clic pe linkul de mai jos pentru a explora toate clasificările {type}."
 
@@ -12373,7 +12375,7 @@ msgstr "Clonează instantaneul"
 msgid "Close"
 msgstr "Închide"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:179
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:184
 msgid "Close details"
 msgstr "Închide detaliile"
 
@@ -12849,7 +12851,7 @@ msgstr "Coloană"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1152
 #: src/components/maps/HeatmapDataTable.tsx:480
-#: src/routes/entity-analytics.lazy.tsx:201
+#: src/routes/entity-analytics.lazy.tsx:209
 msgid "Columns"
 msgstr "Coloane"
 
@@ -12891,7 +12893,7 @@ msgstr "Comerț și service auto"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1142
 #: src/components/maps/HeatmapDataTable.tsx:472
-#: src/routes/entity-analytics.lazy.tsx:193
+#: src/routes/entity-analytics.lazy.tsx:201
 msgid "Comfortable"
 msgstr "Confortabil"
 
@@ -12947,8 +12949,8 @@ msgstr "Angajamente minus plăți"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1148
 #: src/components/maps/HeatmapDataTable.tsx:473
 #: src/components/maps/HeatmapDataTable.tsx:477
-#: src/routes/entity-analytics.lazy.tsx:194
-#: src/routes/entity-analytics.lazy.tsx:198
+#: src/routes/entity-analytics.lazy.tsx:202
+#: src/routes/entity-analytics.lazy.tsx:206
 msgid "Compact"
 msgstr "Compact"
 
@@ -13099,7 +13101,7 @@ msgstr "Comparația cu ediția anterioară nu e concludentă: unele câmpuri au 
 msgid "Comparația cu ediția anterioară nu e disponibilă acum."
 msgstr "Comparația cu ediția anterioară nu e disponibilă acum."
 
-#: src/features/statistics/components/county-map/county-map.tsx:390
+#: src/features/statistics/components/county-map/county-map.tsx:389
 msgid "comparația e plină"
 msgstr "comparația e plină"
 
@@ -14008,13 +14010,13 @@ msgstr "Contribuții înregistrate"
 msgid "Control"
 msgstr "Control"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:111
-#: src/features/statistics/components/county-map/county-map.tsx:119
-#: src/features/statistics/components/hub/hub-county-band.tsx:352
+#: src/features/private-companies/components/hub/company-county-map.tsx:110
+#: src/features/statistics/components/county-map/county-map.tsx:118
+#: src/features/statistics/components/hub/hub-county-band.tsx:353
 msgid "Conturul județelor nu s-a încărcat."
 msgstr "Conturul județelor nu s-a încărcat."
 
-#: src/hooks/useSendBugReport.ts:14
+#: src/hooks/useSendBugReport.ts:13
 #: src/hooks/useSendFeedback.ts:13
 msgid "Cookie consent required"
 msgstr "Este necesar consimțământul pentru cookie-uri"
@@ -14426,7 +14428,7 @@ msgstr "Județe"
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2990
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1542
-#: src/routes/entity-analytics.lazy.tsx:203
+#: src/routes/entity-analytics.lazy.tsx:211
 msgid "County"
 msgstr "Județ"
 
@@ -14597,7 +14599,7 @@ msgstr "Creare alertă"
 msgid "Create alert from this series"
 msgstr "Creează alertă din această serie de date"
 
-#: src/routes/charts/index.lazy.tsx:192
+#: src/routes/charts/index.lazy.tsx:216
 msgid "Create chart"
 msgstr "Creează grafic"
 
@@ -14639,11 +14641,11 @@ msgstr "Creează o alertă nouă"
 msgid "Create or upload a dataset to make it available here."
 msgstr "Creați sau încărcați un set de date pentru a-l face disponibil aici."
 
-#: src/routes/charts/index.lazy.tsx:234
+#: src/routes/charts/index.lazy.tsx:258
 msgid "Create your first chart"
 msgstr "Creați primul dumneavoastră grafic"
 
-#: src/routes/charts/index.lazy.tsx:230
+#: src/routes/charts/index.lazy.tsx:254
 msgid "Create your first chart to start visualizing public spending data."
 msgstr "Creați primul dumneavoastră grafic pentru a începe vizualizarea datelor privind cheltuielile publice."
 
@@ -14913,11 +14915,11 @@ msgstr "cu starea {0}"
 msgid "cu statut „modificat”"
 msgstr "cu statut „modificat”"
 
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:80
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:78
 msgid "cu ultima etapă în această zi"
 msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:201
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:206
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:254
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:342
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3010
@@ -15283,7 +15285,7 @@ msgstr "Curățenie și întreținerea clădirilor"
 #: src/components/maps/HeatmapDataTable.tsx:475
 #: src/components/normalization/normalization-controls.tsx:85
 #: src/components/theme/currency-toggle.tsx:57
-#: src/routes/entity-analytics.lazy.tsx:196
+#: src/routes/entity-analytics.lazy.tsx:204
 msgid "Currency"
 msgstr "Monedă"
 
@@ -15800,7 +15802,7 @@ msgstr "date ONRC retrase"
 #~ msgstr "Date până în"
 
 #. placeholder {0}: monthText(month)
-#: src/features/procurement/components/home/home-chrome.tsx:108
+#: src/features/procurement/components/home/home-chrome.tsx:103
 msgid "date până în {0}"
 msgstr "date până în {0}"
 
@@ -16300,7 +16302,7 @@ msgstr "De știut"
 msgid "De știut despre aceste cifre: {0}"
 msgstr "De știut despre aceste cifre: {0}"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:41
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:39
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:254
 msgid "De unde"
 msgstr "De unde"
@@ -16321,9 +16323,9 @@ msgstr "De unde vând"
 msgid "De unde vin banii"
 msgstr "De unde vin banii"
 
-#: src/features/national-budget/home/components/home-head.tsx:192
+#: src/features/national-budget/home/components/home-head.tsx:230
 #: src/features/national-budget/home/components/home-revenue.tsx:47
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:41
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:39
 msgid "De unde vin banii publici"
 msgstr "De unde vin banii publici"
 
@@ -16585,7 +16587,7 @@ msgstr "Deficit prevăzut"
 #. placeholder {0}: view.text
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:740
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:797
-#: src/features/national-budget/home/components/home-head.tsx:246
+#: src/features/national-budget/home/components/home-head.tsx:284
 msgid "Deficit, {0}"
 msgstr "Deficit, {0}"
 
@@ -16594,7 +16596,7 @@ msgid "Deficit, {year}"
 msgstr "Deficit, {year}"
 
 #. placeholder {0}: sizeText(balance.exact)
-#: src/features/national-budget/home/components/home-head.tsx:167
+#: src/features/national-budget/home/components/home-head.tsx:169
 msgid "Deficit: {0}"
 msgstr "Deficit: {0}"
 
@@ -16602,12 +16604,12 @@ msgstr "Deficit: {0}"
 msgid "deficitul"
 msgstr "deficitul"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:42
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:40
 msgid "Deficitul"
 msgstr "Deficitul"
 
 #: src/features/national-budget/home/components/home-balance.tsx:60
-#: src/features/national-budget/home/components/home-head.tsx:82
+#: src/features/national-budget/home/components/home-head.tsx:77
 msgid "Deficitul, an de an"
 msgstr "Deficitul, an de an"
 
@@ -16731,7 +16733,7 @@ msgstr "Demografie"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1137
 #: src/components/maps/HeatmapDataTable.tsx:471
-#: src/routes/entity-analytics.lazy.tsx:192
+#: src/routes/entity-analytics.lazy.tsx:200
 msgid "Density"
 msgstr "Densitate"
 
@@ -16740,7 +16742,7 @@ msgid "Denumire"
 msgstr "Denumire"
 
 #: src/features/entity-search/components/entity-result-row.tsx:115
-#: src/features/landing/components/search/search-parts.tsx:126
+#: src/features/landing/components/search/search-parts.tsx:128
 msgid "denumire din directorul platformei, nu din ediția ONRC"
 msgstr "denumire din directorul platformei, nu din ediția ONRC"
 
@@ -16865,7 +16867,7 @@ msgstr "Deschide analiza entităților"
 #~ msgid "Deschide comparația"
 #~ msgstr "Deschide comparația"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:412
+#: src/features/statistics/components/hub/hub-county-band.tsx:413
 msgid "Deschide datele județului"
 msgstr "Deschide datele județului"
 
@@ -17592,7 +17594,7 @@ msgstr "din o parte a înscrierilor; restul nu au valoare"
 msgid "Din PIB"
 msgstr "Din PIB"
 
-#: src/features/national-budget/home/components/home-head.tsx:258
+#: src/features/national-budget/home/components/home-head.tsx:296
 msgid "din PIB-ul estimat pe tot anul"
 msgstr "din PIB-ul estimat pe tot anul"
 
@@ -18796,8 +18798,8 @@ msgstr "Economia,<0/>firmă cu firmă"
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:103
 #: src/components/classification-explorer/ClassificationExplorer.tsx:195
 #: src/components/classification-explorer/ClassificationExplorer.tsx:196
-#: src/components/common/classification-info-link.tsx:112
-#: src/components/common/classification-info-link.tsx:157
+#: src/components/common/classification-info-link.tsx:132
+#: src/components/common/classification-info-link.tsx:179
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:132
 #: src/lib/ins/ins-metric-registry.ts:106
 msgid "Economic"
@@ -19146,7 +19148,7 @@ msgstr ""
 msgid "Elimină filtrul {0}"
 msgstr ""
 
-#: src/features/landing/components/search/search-parts.tsx:242
+#: src/features/landing/components/search/search-parts.tsx:212
 #: src/features/procurement/components/procurement-category-bars.tsx:280
 #: src/features/statistics/components/explorer/statistics-active-filters.tsx:87
 msgid "Elimină filtrul {label}"
@@ -19269,7 +19271,7 @@ msgstr "Activează Toate Seriile"
 msgid "Enable annotation"
 msgstr "Activează adnotarea"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:275
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:280
 msgid "Enable at least one series to inspect values for the selected UAT here."
 msgstr "Activează cel puțin o serie pentru a inspecta valorile UAT-ului selectat aici."
 
@@ -19383,7 +19385,7 @@ msgstr "Se exclud entitățile care au oricare dintre etichetele selectate."
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:72
 #: src/lib/chart-filter-utils.ts:37
-#: src/routes/entity-analytics.lazy.tsx:202
+#: src/routes/entity-analytics.lazy.tsx:210
 msgid "Entity"
 msgstr "Entitate"
 
@@ -19393,7 +19395,7 @@ msgstr "Entitate"
 msgid "Entity Analytics"
 msgstr "Analiza entităților"
 
-#: src/routes/entity-analytics.tsx:37
+#: src/routes/entity-analytics.tsx:57
 msgid "Entity analytics – Transparenta.eu"
 msgstr "Analiza entităților – Transparenta.eu"
 
@@ -19455,7 +19457,7 @@ msgstr "Eroare de rețea sau de server — existența textului rămâne o între
 msgid "Error"
 msgstr "Eroare"
 
-#: src/routes/entity-analytics.lazy.tsx:176
+#: src/routes/entity-analytics.lazy.tsx:184
 msgid "Error loading analytics"
 msgstr "Eroare la încărcarea analizei"
 
@@ -19785,7 +19787,7 @@ msgstr "Excedent"
 #. placeholder {0}: view.text
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:740
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:797
-#: src/features/national-budget/home/components/home-head.tsx:246
+#: src/features/national-budget/home/components/home-head.tsx:284
 msgid "Excedent, {0}"
 msgstr "Excedent, {0}"
 
@@ -19794,7 +19796,7 @@ msgid "Excedent, {year}"
 msgstr "Excedent, {year}"
 
 #. placeholder {0}: moneyText(balance.exact)
-#: src/features/national-budget/home/components/home-head.tsx:167
+#: src/features/national-budget/home/components/home-head.tsx:169
 msgid "Excedent: {0}"
 msgstr "Excedent: {0}"
 
@@ -19841,7 +19843,7 @@ msgstr "Excelent"
 msgid "Exclude"
 msgstr "Exclude"
 
-#: src/features/landing/lib/search-filters.ts:166
+#: src/features/landing/lib/search-filters.ts:185
 msgid "Exclude entitățile cu această etichetă"
 msgstr "Exclude entitățile cu această etichetă"
 
@@ -19993,7 +19995,7 @@ msgstr "Expandează panoul filtrelor de valori"
 #: src/components/maps/utils.ts:39
 #: src/features/advanced-map-analytics/standalone-map-state.ts:67
 #: src/hooks/filters/useFilterLabels.tsx:279
-#: src/routes/entity-analytics.lazy.tsx:259
+#: src/routes/entity-analytics.lazy.tsx:268
 #: src/routes/map.lazy.tsx:70
 msgid "Expenses"
 msgstr "Cheltuieli"
@@ -20027,7 +20029,7 @@ msgstr "Progresul explorării"
 msgid "Explore budget classifications to understand how public spending is organized and categorized"
 msgstr "Explorați clasificările bugetare pentru a înțelege cum sunt organizate și clasificate cheltuielile publice"
 
-#: src/routes/map.tsx:23
+#: src/routes/map.tsx:33
 msgid "Explore choropleth maps of public spending by UAT/County with per-capita or total normalization."
 msgstr "Explorați hărți coropletice ale cheltuielilor publice pe UAT/Județ cu normalizare pe cap de locuitor sau totală."
 
@@ -20108,7 +20110,7 @@ msgid "Export config"
 msgstr "Exportă configurația"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1177
-#: src/routes/entity-analytics.lazy.tsx:209
+#: src/routes/entity-analytics.lazy.tsx:217
 msgid "Export CSV"
 msgstr "Exportă CSV"
 
@@ -20116,7 +20118,7 @@ msgstr "Exportă CSV"
 msgid "Export din {captured}"
 msgstr "Export din {captured}"
 
-#: src/routes/entity-analytics.lazy.tsx:209
+#: src/routes/entity-analytics.lazy.tsx:217
 msgid "Exporting…"
 msgstr "Se exportă…"
 
@@ -20180,7 +20182,7 @@ msgstr ""
 msgid "Extras raw"
 msgstr "Extras brut"
 
-#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:47
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:48
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:296
 msgid "Eyes on Local Budgets"
 msgstr "Cu ochii pe bugetele locale"
@@ -20964,7 +20966,7 @@ msgid "Fără profil în ediția ONRC"
 msgstr "Fără profil în ediția ONRC"
 
 #: src/features/entity-search/components/entity-result-row.tsx:95
-#: src/features/landing/components/search/search-parts.tsx:129
+#: src/features/landing/components/search/search-parts.tsx:131
 msgid "fără profil pe platformă"
 msgstr "fără profil pe platformă"
 
@@ -21184,11 +21186,11 @@ msgstr "fără utilitate publică declarată"
 msgid "fără valoare"
 msgstr "fără valoare"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:373
+#: src/features/statistics/components/hub/hub-county-band.tsx:374
 msgid "Fără valoare"
 msgstr "Fără valoare"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:328
+#: src/features/private-companies/components/hub/company-county-map.tsx:327
 msgctxt "county map readout"
 msgid "Fără valoare"
 msgstr "Fără valoare"
@@ -21198,7 +21200,7 @@ msgid "Fără valoare comună — {phrase}"
 msgstr "Fără valoare comună — {phrase}"
 
 #. placeholder {0}: layer.period
-#: src/features/statistics/components/hub/hub-county-band.tsx:373
+#: src/features/statistics/components/hub/hub-county-band.tsx:374
 msgid "Fără valoare în {0}"
 msgstr "Fără valoare în {0}"
 
@@ -21222,7 +21224,7 @@ msgstr "Fără valoare înscrisă"
 #~ msgid "Fără valoare pentru {0}"
 #~ msgstr "Fără valoare pentru {0}"
 
-#: src/features/statistics/components/county-map/county-map.tsx:361
+#: src/features/statistics/components/county-map/county-map.tsx:360
 msgid "Fără valoare pentru {period}"
 msgstr "Fără valoare pentru {period}"
 
@@ -21267,7 +21269,7 @@ msgstr "față de"
 #. placeholder {0}: before.fiscalYear
 #. placeholder {0}: monthsText(answer.period.previous)
 #. placeholder {0}: view.year - 1
-#: src/features/national-budget/home/components/home-head.tsx:212
+#: src/features/national-budget/home/components/home-head.tsx:250
 #: src/features/private-companies/components/profile/company-business-band.tsx:271
 #: src/features/procurement/components/analytics/analytics-head.tsx:331
 msgid "față de {0}"
@@ -21288,7 +21290,7 @@ msgstr "Față de {0}"
 #~ msgstr ""
 
 #. placeholder {0}: view.previous.slice(0, 4)
-#: src/features/national-budget/home/components/home-head.tsx:212
+#: src/features/national-budget/home/components/home-head.tsx:250
 msgid "față de {0}, aceleași luni"
 msgstr "față de {0}, aceleași luni"
 
@@ -21304,15 +21306,15 @@ msgstr "Față de anul trecut"
 msgid "Față de ediția din {from}, s-au schimbat înscrierile pentru: {fields}."
 msgstr "Față de ediția din {from}, s-au schimbat înscrierile pentru: {fields}."
 
-#: src/routes/charts/index.lazy.tsx:176
+#: src/routes/charts/index.lazy.tsx:200
 msgid "favorites"
 msgstr "favorite"
 
-#: src/routes/charts/index.lazy.tsx:248
+#: src/routes/charts/index.lazy.tsx:272
 msgid "Favorites"
 msgstr "Favorite"
 
-#: src/routes/charts/index.lazy.tsx:220
+#: src/routes/charts/index.lazy.tsx:244
 msgid "Favorites first"
 msgstr "Favoritele primele"
 
@@ -21479,7 +21481,7 @@ msgstr ""
 msgid "Fiecare pătrat este o zi; intensitatea arată câte intervenții au fost consemnate. Faceți clic pe o zi pentru a filtra lista."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:110
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:109
 msgid "Fiecare proiect este numărat în ziua ultimei etape publicate. Când proiectul avansează, se mută în ziua noii etape."
 msgstr ""
 
@@ -21581,8 +21583,8 @@ msgstr "Filtrare transferuri"
 msgid "Filtered"
 msgstr "Filtrat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:539
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:545
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:544
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:550
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:420
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2740
 msgid "Filtered out"
@@ -21687,7 +21689,7 @@ msgstr ""
 #~ msgid "Filtre servicii"
 #~ msgstr ""
 
-#: src/features/landing/components/search/landing-search.tsx:715
+#: src/features/landing/components/search/landing-search.tsx:693
 msgid "Filtre sugerate"
 msgstr "Filtre sugerate"
 
@@ -21715,7 +21717,7 @@ msgstr ""
 msgid "Filtrează edițiile de sursă"
 msgstr "Filtrează edițiile de sursă"
 
-#: src/features/landing/lib/search-filters.ts:166
+#: src/features/landing/lib/search-filters.ts:185
 msgid "Filtrează entitățile publice după etichetă"
 msgstr "Filtrează entitățile publice după etichetă"
 
@@ -21768,7 +21770,7 @@ msgstr "Filtrele se aplică imediat. Adresa paginii le păstrează."
 msgid "Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 msgstr "Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 
-#: src/features/landing/components/search/search-parts.tsx:278
+#: src/features/landing/components/search/search-parts.tsx:248
 #: src/features/ngos/registry/components/registry-head.tsx:155
 #: src/features/procurement/components/analytics/analytics-controls.tsx:147
 msgid "Filtru"
@@ -22345,7 +22347,7 @@ msgstr "Firmele în funcțiune fără bilanț"
 #~ msgid "Firmele înregistrate în {YEAR}, pe domenii"
 #~ msgstr "Firmele înregistrate în {YEAR}, pe domenii"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:340
+#: src/features/private-companies/components/hub/company-county-map.tsx:339
 msgid "Firmele județului"
 msgstr "Firmele județului"
 
@@ -22796,8 +22798,8 @@ msgstr "Funcție raportată"
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:96
 #: src/components/classification-explorer/ClassificationExplorer.tsx:192
 #: src/components/classification-explorer/ClassificationExplorer.tsx:193
-#: src/components/common/classification-info-link.tsx:112
-#: src/components/common/classification-info-link.tsx:157
+#: src/components/common/classification-info-link.tsx:132
+#: src/components/common/classification-info-link.tsx:179
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:125
 msgid "Functional"
 msgstr "Funcțional"
@@ -23099,11 +23101,11 @@ msgstr "Mergi la secțiunea anterioară"
 #~ msgid "gol"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:220
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:214
 msgid "gol confirmat de captură: ziua este în aria sursei, dar nu a fost colectată"
 msgstr "gol confirmat de captură: ziua este în aria sursei, dar nu a fost colectată"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:237
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:231
 msgid "gol de acoperire confirmat"
 msgstr "gol de acoperire confirmat"
 
@@ -23260,7 +23262,7 @@ msgstr "Vizualizare grilă"
 msgid "Gross"
 msgstr "Brut"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:538
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:543
 msgid "Group"
 msgstr "Grup"
 
@@ -23274,7 +23276,7 @@ msgstr "Grup {0}"
 msgid "Group / UAT"
 msgstr "Grup / UAT"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:207
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:212
 msgid "Group context"
 msgstr "Context de grup"
 
@@ -23282,12 +23284,12 @@ msgstr "Context de grup"
 msgid "Group name"
 msgstr "Nume grup"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:446
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:543
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:451
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:548
 msgid "Group value"
 msgstr "Valoare de grup"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:445
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:450
 msgid "Group value · Filtered out"
 msgstr "Valoare de grup · Exclus de filtru"
 
@@ -23489,11 +23491,11 @@ msgstr "Ascunde detaliile"
 msgid "Hide Map Controls"
 msgstr "Ascunde controalele hărții"
 
-#: src/components/maps/InteractiveMap.tsx:2578
+#: src/components/maps/InteractiveMap.tsx:2556
 msgid "Hide population grid"
 msgstr "Ascunde grila populației"
 
-#: src/components/maps/InteractiveMap.tsx:2569
+#: src/components/maps/InteractiveMap.tsx:2547
 msgid "Hide roads"
 msgstr "Ascunde drumurile"
 
@@ -23703,7 +23705,7 @@ msgstr "ian."
 #~ msgid "Identification"
 #~ msgstr "Identificare"
 
-#: src/features/landing/components/search/landing-search.tsx:685
+#: src/features/landing/components/search/landing-search.tsx:663
 msgid "Identificator"
 msgstr "Identificator"
 
@@ -23732,7 +23734,7 @@ msgstr ""
 msgid "Identificatorii din ediția ONRC"
 msgstr "Identificatorii din ediția ONRC"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:198
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:203
 msgid "Identifiers"
 msgstr "Identificatori"
 
@@ -24010,7 +24012,7 @@ msgstr "în taxe de consum „invizibile”."
 #. placeholder {0}: series.year
 #: src/features/private-companies/lib/company-analytics-text.ts:367
 #: src/features/procurement/components/home/home-context-bands.tsx:231
-#: src/features/statistics/components/hub/hub-county-band.tsx:392
+#: src/features/statistics/components/hub/hub-county-band.tsx:393
 #: src/features/statistics/components/uat-map/uat-map-series.ts:105
 msgid "în {0}"
 msgstr "în {0}"
@@ -24295,7 +24297,7 @@ msgstr "în aceeași zi"
 msgid "în acordul-cadru cu încă {count}"
 msgstr "în acordul-cadru cu încă {count}"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:216
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:210
 msgid "în afara intervalului istoric publicat de sursă"
 msgstr "în afara intervalului istoric publicat de sursă"
 
@@ -24363,7 +24365,7 @@ msgstr "În ce stare <0/>sunt"
 msgid "În circumscripția: {0}"
 msgstr "În circumscripția: {0}"
 
-#: src/features/statistics/components/county-map/county-map.tsx:380
+#: src/features/statistics/components/county-map/county-map.tsx:379
 msgid "în comparație"
 msgstr "în comparație"
 
@@ -24939,6 +24941,7 @@ msgstr "Încasările bugetului general consolidat (toate bugetele publice, făr�
 #: src/features/justice/components/company-litigation.tsx:76
 #: src/features/justice/components/company-litigation.tsx:131
 #: src/features/justice/components/court/justice-court-cases.tsx:64
+#: src/features/landing/components/search/deferred-landing-search.tsx:282
 #: src/features/legal/components/legislation-act-finder.tsx:317
 #: src/features/legal/components/legislation-acts-directory.tsx:377
 #: src/features/legal/components/legislation-changes-feed.tsx:460
@@ -24950,12 +24953,12 @@ msgstr "Încasările bugetului general consolidat (toate bugetele publice, făr�
 #: src/features/ngos/registry/components/registry-answer.tsx:417
 #: src/features/private-companies/components/analytics/analytics-notices.tsx:57
 #: src/features/private-companies/components/analytics/analytics-records.tsx:130
-#: src/features/private-companies/components/hub/company-county-map.tsx:118
+#: src/features/private-companies/components/hub/company-county-map.tsx:117
 #: src/features/private-companies/components/profile/company-profile-states.tsx:159
 #: src/features/procurement/components/analytics/analytics-answer.tsx:343
-#: src/features/statistics/components/county-map/county-map.tsx:126
+#: src/features/statistics/components/county-map/county-map.tsx:125
 #: src/features/statistics/components/hub/hub-chrome.tsx:62
-#: src/features/statistics/components/hub/hub-county-band.tsx:359
+#: src/features/statistics/components/hub/hub-county-band.tsx:360
 msgid "Încearcă din nou"
 msgstr "Încearcă din nou"
 
@@ -24963,7 +24966,7 @@ msgstr "Încearcă din nou"
 msgid "Încearcă din nou fără să pierzi filtrele curente."
 msgstr "Încearcă din nou fără să pierzi filtrele curente."
 
-#: src/features/landing/components/search/landing-search.tsx:178
+#: src/features/landing/components/search/landing-search.tsx:185
 msgid "Încearcă din nou într-un moment."
 msgstr "Încearcă din nou într-un moment."
 
@@ -25083,7 +25086,7 @@ msgstr "Include banii UE (PNRR) și profiturile companiilor de stat. Esențial, 
 #: src/components/maps/utils.ts:39
 #: src/features/advanced-map-analytics/standalone-map-state.ts:68
 #: src/hooks/filters/useFilterLabels.tsx:280
-#: src/routes/entity-analytics.lazy.tsx:259
+#: src/routes/entity-analytics.lazy.tsx:268
 #: src/routes/map.lazy.tsx:71
 msgid "Income"
 msgstr "Venituri"
@@ -25392,7 +25395,7 @@ msgstr "Ajustarea la inflație este ignorată pentru % din PIB."
 msgid "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 msgstr "Valorile ajustate cu inflația (reale) nu sunt încă disponibile; sumele afișate sunt nominale."
 
-#: src/components/common/classification-info-link.tsx:378
+#: src/components/common/classification-info-link.tsx:402
 msgid "Info"
 msgstr "Informații"
 
@@ -25645,7 +25648,7 @@ msgstr "INS nu a publicat încă valorile pe județe ale acestui indicator."
 msgid "INS nu a publicat încă valorile pe județe pentru {0}."
 msgstr "INS nu a publicat încă valorile pe județe pentru {0}."
 
-#: src/features/statistics/components/county-map/county-map.tsx:110
+#: src/features/statistics/components/county-map/county-map.tsx:109
 msgid "INS nu a publicat încă valorile pe județe pentru {period}."
 msgstr "INS nu a publicat încă valorile pe județe pentru {period}."
 
@@ -25776,7 +25779,7 @@ msgstr "Înscrierile CAEN ale firmei din ediție sunt complete."
 msgid "Insolvența persoanei fizice"
 msgstr "Insolvența persoanei fizice"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:168
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:173
 msgid "Inspect the live values for this UAT."
 msgstr "Inspectează valorile live pentru acest UAT."
 
@@ -26003,7 +26006,7 @@ msgstr "instituție nepublicată în SEAP"
 msgid "Instituție publică"
 msgstr "Instituție publică"
 
-#: src/features/procurement/components/home/home-chrome.tsx:130
+#: src/features/procurement/components/home/procurement-home-search-field.tsx:29
 msgid "Instituție, firmă sau CUI…"
 msgstr "Instituție, firmă sau CUI…"
 
@@ -26898,7 +26901,7 @@ msgid "județul instituției"
 msgstr "județul instituției"
 
 #: src/features/entity-search/components/entity-result-row.tsx:77
-#: src/features/landing/components/search/search-parts.tsx:120
+#: src/features/landing/components/search/search-parts.tsx:122
 msgid "județul instituției: {genericCounty}"
 msgstr "județul instituției: {genericCounty}"
 
@@ -27192,7 +27195,7 @@ msgstr "La judecătoriile țării sunt {0} dosare cu data din {year} la 1.000 de
 msgid "La materia „{0}”"
 msgstr "La materia „{0}”"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:125
+#: src/features/statistics/components/hub/hub-county-band.tsx:126
 msgid "la media națională"
 msgstr "la media națională"
 
@@ -27317,7 +27320,7 @@ msgstr "Cea mai recentă observație din sursă"
 msgid "Law 141/2025"
 msgstr "Legea 141/2025"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:303
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:308
 msgid "Leadership"
 msgstr "Conducere"
 
@@ -27471,7 +27474,7 @@ msgstr "Lege și justiție"
 #: src/features/national-budget/analytics/components/analytics-law.tsx:72
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:369
 #: src/features/national-budget/analytics/lib/analytics-view.ts:476
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:45
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:43
 msgid "Legea"
 msgstr "Legea"
 
@@ -27488,7 +27491,7 @@ msgid "Legea 53/2003 · Codul muncii · OUG 57/2019"
 msgstr "Legea 53/2003 · Codul muncii · OUG 57/2019"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:532
-#: src/features/national-budget/home/components/home-head.tsx:79
+#: src/features/national-budget/home/components/home-head.tsx:74
 msgid "Legea bugetului"
 msgstr "Legea bugetului"
 
@@ -27600,7 +27603,7 @@ msgstr ""
 msgid "legi, hotărâri și ordonanțe"
 msgstr "legi, hotărâri și ordonanțe"
 
-#: src/routes/legislation/index.tsx:26
+#: src/routes/legislation/index.tsx:53
 msgid "Legi, ordonanțe și hotărâri din Portal Legislativ, cu statutul lor și dovada publicării în Monitorul Oficial."
 msgstr "Legi, ordonanțe și hotărâri din Portal Legislativ, cu statutul lor și dovada publicării în Monitorul Oficial."
 
@@ -27629,7 +27632,7 @@ msgid "Legislația"
 msgstr "Legislația"
 
 #: src/features/legal/components/act-detail-header.tsx:121
-#: src/routes/legislation/index.tsx:23
+#: src/routes/legislation/index.tsx:50
 msgid "Legislația României"
 msgstr "Legislația României"
 
@@ -27644,7 +27647,7 @@ msgstr "Legislație"
 #: src/features/national-budget/analytics/components/analytics-period-bars.tsx:15
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:630
 #: src/features/national-budget/analytics/lib/analytics-format.ts:26
-#: src/features/national-budget/home/components/home-head.tsx:220
+#: src/features/national-budget/home/components/home-head.tsx:258
 #: src/features/ngos/hub/ngo-format.ts:37
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:340
 #: src/features/ngos/organization/head.ts:53
@@ -28757,8 +28760,8 @@ msgstr "Locul"
 #. placeholder {0}: rank.get(county.code) ?? '—'
 #. placeholder {1}: formatCount(standing.of)
 #. placeholder {1}: values.length
-#: src/features/statistics/components/hub/hub-county-band.tsx:247
-#: src/features/statistics/components/hub/hub-county-band.tsx:396
+#: src/features/statistics/components/hub/hub-county-band.tsx:248
+#: src/features/statistics/components/hub/hub-county-band.tsx:397
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:77
 msgid "locul {0} din {1}"
 msgstr "locul {0} din {1}"
@@ -29025,7 +29028,7 @@ msgstr "Mai mult de jumătate din valoarea contractelor din {year} e la {label}.
 msgid "Mai mult decât în {0}"
 msgstr "Mai mult decât în {0}"
 
-#: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:304
+#: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:525
 #: src/features/private-companies/components/profile/company-main-activity.tsx:394
 msgid "Mai multe"
 msgstr ""
@@ -29106,7 +29109,7 @@ msgstr "mai puțin"
 msgid "Mai puțin decât în {0}"
 msgstr "Mai puțin decât în {0}"
 
-#: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:293
+#: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:514
 #: src/features/procurement/components/contract/contract-block.tsx:468
 #: src/features/procurement/components/procedure/procedure-block.tsx:336
 #: src/features/procurement/components/procedure/procedure-block.tsx:597
@@ -29317,7 +29320,7 @@ msgstr "Filtre hartă"
 msgid "Map geometry is unavailable."
 msgstr "Geometria hărții nu este disponibilă."
 
-#: src/components/maps/InteractiveMap.tsx:2545
+#: src/components/maps/InteractiveMap.tsx:2523
 msgid "Map geometry not available."
 msgstr "Geometria hărții nu este disponibilă."
 
@@ -29325,12 +29328,12 @@ msgstr "Geometria hărții nu este disponibilă."
 msgid "Map geometry unavailable."
 msgstr "Geometria hărții indisponibilă."
 
-#: src/components/maps/InteractiveMap.tsx:1530
+#: src/components/maps/InteractiveMap.tsx:1508
 #: src/components/maps/ScrollWheelZoomControl.tsx:38
 msgid "Map interaction: Off"
 msgstr "Interacțiune hartă: Dezactivată"
 
-#: src/components/maps/InteractiveMap.tsx:1527
+#: src/components/maps/InteractiveMap.tsx:1505
 #: src/components/maps/ScrollWheelZoomControl.tsx:35
 msgid "Map interaction: On"
 msgstr "Interacțiune hartă: Activată"
@@ -29372,7 +29375,7 @@ msgstr "Starea hărții"
 msgid "Map title"
 msgstr "Titlul hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:265
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:270
 msgid "Map values"
 msgstr "Valori hartă"
 
@@ -29472,7 +29475,7 @@ msgstr "Mărirea hărții"
 msgid "Mark as complete"
 msgstr "Finalizează"
 
-#: src/routes/charts/index.lazy.tsx:282
+#: src/routes/charts/index.lazy.tsx:306
 msgid "Mark charts as favorites to quickly find them here."
 msgstr "Marcați graficele ca favorite pentru a le găsi rapid aici."
 
@@ -29612,12 +29615,12 @@ msgstr "Medie"
 msgid "Media {0}"
 msgstr "Media {0}"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:401
+#: src/features/statistics/components/hub/hub-county-band.tsx:402
 msgid "Media națională"
 msgstr "Media națională"
 
 #. placeholder {0}: figure(layer.national)
-#: src/features/statistics/components/hub/hub-county-band.tsx:441
+#: src/features/statistics/components/hub/hub-county-band.tsx:442
 msgid "Media națională {0}"
 msgstr "Media națională {0}"
 
@@ -29761,7 +29764,7 @@ msgstr "Metadate"
 #~ msgid "Metadate instantaneu"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:364
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:360
 msgid "Metadatele de acoperire nu sunt disponibile; zilele și totalurile sunt afișate ca neconfirmate."
 msgstr "Metadatele de acoperire nu sunt disponibile; zilele și totalurile sunt afișate ca neconfirmate."
 
@@ -29856,7 +29859,7 @@ msgstr "mil."
 #: src/features/national-budget/analytics/components/analytics-period-bars.tsx:14
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:630
 #: src/features/national-budget/analytics/lib/analytics-format.ts:26
-#: src/features/national-budget/home/components/home-head.tsx:220
+#: src/features/national-budget/home/components/home-head.tsx:258
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:339
 #: src/features/ngos/organization/head.ts:53
 #: src/features/private-companies/components/analytics/analytics-maps.tsx:106
@@ -29935,7 +29938,7 @@ msgstr "Ministerele"
 
 #: src/features/national-budget/home/components/home-ministries.tsx:78
 #: src/features/national-budget/home/components/home-ministries.tsx:171
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:40
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:38
 msgid "Ministerele care cheltuie cel mai mult"
 msgstr "Ministerele care cheltuie cel mai mult"
 
@@ -29975,7 +29978,7 @@ msgstr "Ministerul Educației"
 msgid "Ministerul Educației și Cercetării"
 msgstr "Ministerul Educației și Cercetării"
 
-#: src/features/national-budget/home/components/home-head.tsx:99
+#: src/features/national-budget/home/components/home-head.tsx:93
 #: src/features/national-budget/home/lib/home-format.ts:95
 #: src/features/private-companies/components/analytics/analytics-source.tsx:30
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:136
@@ -30097,7 +30100,7 @@ msgstr "mld."
 #: src/features/national-budget/analytics/components/analytics-period-bars.tsx:13
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:630
 #: src/features/national-budget/analytics/lib/analytics-format.ts:26
-#: src/features/national-budget/home/components/home-head.tsx:220
+#: src/features/national-budget/home/components/home-head.tsx:258
 #: src/features/ngos/hub/ngo-hub-page.tsx:225
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:338
 #: src/features/private-companies/components/analytics/analytics-maps.tsx:105
@@ -30573,8 +30576,8 @@ msgstr "N-au depus"
 #: src/components/maps/utils.ts:141
 #: src/components/maps/utils.ts:165
 #: src/components/maps/utils.ts:194
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:201
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:548
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:206
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:553
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:254
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:342
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3010
@@ -30983,7 +30986,7 @@ msgstr "Noua realitate"
 msgid "New value"
 msgstr "Valoare nouă"
 
-#: src/routes/charts/index.lazy.tsx:216
+#: src/routes/charts/index.lazy.tsx:240
 msgid "Newest"
 msgstr "Cele mai noi"
 
@@ -31573,7 +31576,7 @@ msgstr "Niciun ONG cu acest număr în registru"
 msgid "Niciun profil disponibil pentru acest CUI"
 msgstr "Niciun profil disponibil pentru acest CUI"
 
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:106
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:105
 msgid "Niciun proiect cu etape noi în ultimele 12 luni."
 msgstr ""
 
@@ -31608,11 +31611,11 @@ msgstr ""
 #~ msgstr "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau CUI-ul.</1>"
 
 #. placeholder {0}: status.term
-#: src/features/landing/components/search/landing-search.tsx:160
+#: src/features/landing/components/search/landing-search.tsx:167
 msgid "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau identificatorul.</1>"
 msgstr "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau identificatorul.</1>"
 
-#: src/features/landing/components/search/search-parts.tsx:395
+#: src/features/landing/components/search/search-parts.tsx:319
 msgid "Niciun rezultat."
 msgstr "Niciun rezultat."
 
@@ -31652,7 +31655,7 @@ msgstr "Niciun teritoriu nou nu se potrivește căutării."
 msgid "niciun venit"
 msgstr "niciun venit"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:380
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:376
 msgid "Niciun vot în plen în ultimele 12 luni."
 msgstr ""
 
@@ -31882,11 +31885,11 @@ msgid "No changes to save"
 msgstr "Nu există modificări de salvat"
 
 #. placeholder {0}: cat.name
-#: src/routes/charts/index.lazy.tsx:302
+#: src/routes/charts/index.lazy.tsx:326
 msgid "No charts in “{0}”"
 msgstr "Niciun grafic în „{0}”"
 
-#: src/routes/charts/index.lazy.tsx:229
+#: src/routes/charts/index.lazy.tsx:253
 msgid "No charts yet"
 msgstr "Niciun grafic încă"
 
@@ -32048,8 +32051,8 @@ msgstr "Nu au fost găsite valori extreme distincte în setul de date curent."
 msgid "No distinct outliers found. Try adjusting filters."
 msgstr "Nu au fost găsite valori extreme distincte. Încercați să ajustați filtrele."
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:267
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:512
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:272
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:517
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:347
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3101
 msgid "No enabled series"
@@ -32074,11 +32077,11 @@ msgstr "Niciun abonament pentru entitati"
 #~ msgid "No EU branches"
 #~ msgstr "Fără sucursale UE"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:346
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:351
 msgid "No extra profile details are available yet for this UAT."
 msgstr "Nu sunt disponibile detalii suplimentare de profil pentru acest UAT."
 
-#: src/routes/charts/index.lazy.tsx:281
+#: src/routes/charts/index.lazy.tsx:305
 msgid "No favorites yet"
 msgstr "Niciun favorit încă"
 
@@ -32090,7 +32093,7 @@ msgstr "Niciun filtru aplicat"
 msgid "No group items match this search."
 msgstr "Niciun element de grup nu corespunde acestei căutări."
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:561
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:566
 msgid "No group values are available for this selection."
 msgstr "Nu există valori de grup pentru această selecție."
 
@@ -32298,7 +32301,7 @@ msgstr "Nu există rapoarte pe această pagină pentru lunile de încheiere sele
 #~ msgid "No resolved UAT"
 #~ msgstr "Fără UAT rezolvat"
 
-#: src/routes/charts/index.lazy.tsx:263
+#: src/routes/charts/index.lazy.tsx:287
 msgid "No results"
 msgstr "Niciun rezultat"
 
@@ -32834,7 +32837,7 @@ msgstr "Nu am putut încărca datele de comparație"
 #~ msgstr ""
 
 #: src/features/legal/components/legislation-analytics-page.tsx:52
-#: src/features/legal/components/legislation-page.tsx:58
+#: src/features/legal/components/legislation-page.tsx:56
 msgid "Nu am putut încărca datele despre legislație."
 msgstr "Nu am putut încărca datele despre legislație."
 
@@ -33010,11 +33013,11 @@ msgstr "nu are încă observații încărcate în această interfață."
 msgid "nu au depus situații financiare"
 msgstr "nu au depus situații financiare"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:218
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:212
 msgid "nu avem acoperirea tuturor camerelor pentru această zi"
 msgstr "nu avem acoperirea tuturor camerelor pentru această zi"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:212
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:206
 msgid "nu avem metadate de acoperire; ziua nu este confirmată"
 msgstr "nu avem metadate de acoperire; ziua nu este confirmată"
 
@@ -33167,7 +33170,7 @@ msgstr "Nu există observații pentru acest teritoriu în setul curent."
 msgid "Nu există plăți încărcate pentru acest obiectiv."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-bills-section.tsx:62
+#: src/features/parliament/components/parliament-hub-bills-section.tsx:63
 msgid "Nu există proiecte de lege disponibile."
 msgstr ""
 
@@ -33236,11 +33239,11 @@ msgid "Nu putem spune că nu există rezultate pentru \"{query}\"."
 msgstr "Nu putem spune că nu există rezultate pentru \"{query}\"."
 
 #. placeholder {0}: status.term
-#: src/features/landing/components/search/landing-search.tsx:139
+#: src/features/landing/components/search/landing-search.tsx:146
 msgid "Nu putem spune că nu există rezultate pentru <0>{0}</0>: partea de firme a căutării nu este la zi acum. <1>Încearcă din nou într-un moment.</1>"
 msgstr "Nu putem spune că nu există rezultate pentru <0>{0}</0>: partea de firme a căutării nu este la zi acum. <1>Încearcă din nou într-un moment.</1>"
 
-#: src/features/landing/components/search/search-parts.tsx:389
+#: src/features/landing/components/search/search-parts.tsx:313
 msgid "Nu putem spune că nu există rezultate."
 msgstr "Nu putem spune că nu există rezultate."
 
@@ -33568,11 +33571,12 @@ msgstr "Nume sau CUI"
 msgid "Nume sau CUI..."
 msgstr "Nume sau CUI..."
 
-#: src/features/landing/components/search/landing-search.tsx:117
+#: src/features/landing/components/search/landing-search.tsx:124
 msgid "Nume sau identificator."
 msgstr "Nume sau identificator."
 
-#: src/features/landing/components/search/landing-search.tsx:583
+#: src/features/landing/components/search/deferred-landing-search.tsx:251
+#: src/features/landing/components/search/landing-search.tsx:572
 msgid "Nume sau identificator..."
 msgstr "Nume sau identificator..."
 
@@ -33747,7 +33751,7 @@ msgstr ""
 msgid "O eroare de citire nu înseamnă că acest parlamentar nu a votat. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-bills-section.tsx:47
+#: src/features/parliament/components/parliament-hub-bills-section.tsx:48
 msgid "O eroare de citire nu înseamnă că nu există proiecte de lege în lucru. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă."
 msgstr ""
 
@@ -34039,11 +34043,11 @@ msgstr "Anunț oficial"
 msgid "Official city hall website"
 msgstr "Site-ul oficial al primăriei"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:319
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:324
 msgid "Official email"
 msgstr "Email oficial"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:337
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:342
 msgid "Official website"
 msgstr "Website oficial"
 
@@ -34063,7 +34067,7 @@ msgstr "Cotele vechi"
 #~ msgid "Older years, selected {olderSelected}"
 #~ msgstr "Ani anteriori, selectat {olderSelected}"
 
-#: src/routes/charts/index.lazy.tsx:217
+#: src/routes/charts/index.lazy.tsx:241
 msgid "Oldest"
 msgstr "Cele mai vechi"
 
@@ -34302,7 +34306,7 @@ msgstr "Deschide meniul preset de intervale"
 msgid "Open Budget Explorer"
 msgstr "Deschide Exploratorul de Bugete"
 
-#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:58
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:59
 msgid "Open campaign"
 msgstr "Deschide provocarea"
 
@@ -34322,7 +34326,7 @@ msgstr "Deschide modalul de configurare"
 msgid "Open Config Panel"
 msgstr "Deschide panoul de configurare"
 
-#: src/hooks/useSendBugReport.ts:17
+#: src/hooks/useSendBugReport.ts:16
 #: src/hooks/useSendFeedback.ts:16
 msgid "Open cookies"
 msgstr "Deschide setările cookie"
@@ -34346,8 +34350,8 @@ msgstr "Deschide emailul din nou"
 msgid "Open email client"
 msgstr "Deschide clientul de email"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:359
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:365
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:364
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:370
 msgid "Open entity page"
 msgstr "Deschide pagina entității"
 
@@ -35061,7 +35065,7 @@ msgstr "până la {until}"
 msgid "până la 10.000"
 msgstr "până la 10.000"
 
-#: src/features/procurement/components/home/home-chrome.tsx:35
+#: src/features/procurement/components/home/home-chrome.tsx:30
 msgid "Până la următoarea actualizare a datelor, valorile contractelor includ și plafoanele unor acorduri-cadru din e-licitatie, care nu sunt cumpărături."
 msgstr "Până la următoarea actualizare a datelor, valorile contractelor includ și plafoanele unor acorduri-cadru din e-licitatie, care nu sunt cumpărături."
 
@@ -35133,7 +35137,7 @@ msgstr "Partea a VI-a"
 msgid "Partea a VII-a"
 msgstr "Partea a VII-a"
 
-#: src/features/landing/components/search/landing-search.tsx:131
+#: src/features/landing/components/search/landing-search.tsx:138
 msgid "Partea de firme a căutării nu este la zi acum: pot lipsi firme din listă."
 msgstr "Partea de firme a căutării nu este la zi acum: pot lipsi firme din listă."
 
@@ -35141,7 +35145,7 @@ msgstr "Partea de firme a căutării nu este la zi acum: pot lipsi firme din lis
 msgid "Partea de firme a căutării nu este la zi, așa că lipsa rezultatelor nu este un răspuns. Încearcă din nou mai târziu."
 msgstr "Partea de firme a căutării nu este la zi, așa că lipsa rezultatelor nu este un răspuns. Încearcă din nou mai târziu."
 
-#: src/features/landing/components/search/search-parts.tsx:385
+#: src/features/landing/components/search/search-parts.tsx:309
 msgid "Partea de firme a căutării nu este la zi."
 msgstr "Partea de firme a căutării nu este la zi."
 
@@ -35149,7 +35153,7 @@ msgstr "Partea de firme a căutării nu este la zi."
 msgid "Partea din județ: achizițiile directe ale instituției împărțite la cele ale tuturor cumpărătorilor publici din județ, calculat de Transparenta.eu."
 msgstr "Partea din județ: achizițiile directe ale instituției împărțite la cele ale tuturor cumpărătorilor publici din județ, calculat de Transparenta.eu."
 
-#: src/features/national-budget/home/components/home-head.tsx:171
+#: src/features/national-budget/home/components/home-head.tsx:173
 msgid "Partea hașurată: ce s-a cheltuit peste ce s-a încasat, acoperit din împrumuturi."
 msgstr "Partea hașurată: ce s-a cheltuit peste ce s-a încasat, acoperit din împrumuturi."
 
@@ -35457,7 +35461,7 @@ msgstr "pe categorii"
 msgid "Pe categorii"
 msgstr "Pe categorii"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:38
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:36
 msgid "Pe ce"
 msgstr "Pe ce"
 
@@ -35487,7 +35491,7 @@ msgstr "Pe ce domenii împarte legea pe {year} "
 
 #: src/features/national-budget/home/components/home-domains.tsx:122
 #: src/features/national-budget/home/components/home-domains.tsx:147
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:39
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:37
 msgid "Pe ce domenii plătește bugetul de stat"
 msgstr "Pe ce domenii plătește bugetul de stat"
 
@@ -35508,7 +35512,7 @@ msgid "Pe ce se duc banii achizițiilor directe?"
 msgstr "Pe ce se duc banii achizițiilor directe?"
 
 #: src/features/national-budget/home/components/home-spending.tsx:42
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:38
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:36
 msgid "Pe ce se duc banii publici"
 msgstr "Pe ce se duc banii publici"
 
@@ -35540,7 +35544,7 @@ msgstr "pe clase de categorii"
 msgid "pe coduri CPV"
 msgstr "pe coduri CPV"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:39
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:37
 #: src/features/statistics/pages/statistics-hub-page.tsx:187
 msgid "Pe domenii"
 msgstr "Pe domenii"
@@ -35849,7 +35853,7 @@ msgstr "Pentru {0}, lista ANAF și anunțurile AMEPIP numesc autorități diferi
 
 #. placeholder {0}: reasonText(unavailable.get(asked) ?? null)
 #. placeholder {1}: shown.text
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:73
+#: src/features/national-budget/home/hooks/use-home-year.ts:74
 msgid "Pentru {asked} buletinele nu au anul întreg ({0}); arătăm {1}."
 msgstr "Pentru {asked} buletinele nu au anul întreg ({0}); arătăm {1}."
 
@@ -35972,7 +35976,7 @@ msgstr "Pe cap de locuitor"
 #: src/components/common/NormalizationSelector.tsx:22
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:110
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:14
-#: src/routes/entity-analytics.lazy.tsx:205
+#: src/routes/entity-analytics.lazy.tsx:213
 msgid "Per Capita"
 msgstr "Pe cap de locuitor"
 
@@ -36219,7 +36223,7 @@ msgstr ""
 msgid "peste 1 mil."
 msgstr "peste 1 mil."
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:443
+#: src/features/statistics/components/hub/hub-county-band.tsx:444
 msgid "peste medie"
 msgstr "peste medie"
 
@@ -36246,19 +36250,19 @@ msgid "Phase: {0}"
 msgstr "Faza: {0}"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:181
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:328
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:333
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:93
 msgid "Phone"
 msgstr "Telefon"
 
 #. placeholder {0}: view.year
-#: src/features/national-budget/home/components/home-head.tsx:262
+#: src/features/national-budget/home/components/home-head.tsx:300
 msgid "PIB {0} nu e afișat: {gdpRefused}"
 msgstr ""
 
 #. placeholder {0}: view.year
 #. placeholder {1}: moneyText(gdp.gdp)
-#: src/features/national-budget/home/components/home-head.tsx:260
+#: src/features/national-budget/home/components/home-head.tsx:298
 msgid "PIB {0}: {1}"
 msgstr "PIB {0}: {1}"
 
@@ -36542,7 +36546,7 @@ msgstr "poliție, protecție civilă și pompieri, instanțe, penitenciare"
 #~ msgid "Pondere judeteana"
 #~ msgstr ""
 
-#: src/features/national-budget/home/components/home-head.tsx:244
+#: src/features/national-budget/home/components/home-head.tsx:282
 msgid "Ponderea în PIB nu e afișată: {deficitRefused}"
 msgstr ""
 
@@ -36559,12 +36563,12 @@ msgstr "Ponderea șomerilor înregistrați"
 #~ msgstr ""
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:277
+#: src/features/national-budget/home/components/home-head.tsx:315
 msgid "Ponderile în PIB pentru {0} nu sunt afișate: {spendingRefused}."
 msgstr ""
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:277
+#: src/features/national-budget/home/components/home-head.tsx:315
 msgid "Ponderile în PIB pentru {0} nu sunt disponibile în datele noastre."
 msgstr "Ponderile în PIB pentru {0} nu sunt disponibile în datele noastre."
 
@@ -36658,7 +36662,7 @@ msgstr "Populație, muncă și salarii, educație, sănătate"
 #: src/components/maps/utils.ts:163
 #: src/lib/ins/ins-metric-registry.ts:21
 #: src/lib/ins/ins-metric-registry.ts:27
-#: src/routes/entity-analytics.lazy.tsx:204
+#: src/routes/entity-analytics.lazy.tsx:212
 msgid "Population"
 msgstr "Populație"
 
@@ -36689,11 +36693,11 @@ msgstr "Câmp populație"
 msgid "Population from {sourceYear} · up to {0, plural, one {# year old} other {# years old}}"
 msgstr "Populație din {sourceYear} · vechime de până la {0, plural, one {# an} few {# ani} other {# de ani}}"
 
-#: src/components/maps/InteractiveMap.tsx:2579
+#: src/components/maps/InteractiveMap.tsx:2557
 msgid "Population grid: Off"
 msgstr "Grilă populație: Oprit"
 
-#: src/components/maps/InteractiveMap.tsx:2579
+#: src/components/maps/InteractiveMap.tsx:2557
 msgid "Population grid: On"
 msgstr "Grilă populație: Pornit"
 
@@ -37287,7 +37291,7 @@ msgstr "Primele acorduri-cadru, încheiate"
 #~ msgstr "Primele cinci teritorii în fiecare direcție. Procente rotunjite la o zecimală; ordinea folosește valorile exacte."
 
 #. placeholder {0}: status.term
-#: src/features/landing/components/search/landing-search.tsx:148
+#: src/features/landing/components/search/landing-search.tsx:155
 msgid "Primele rezultate pentru <0>{0}</0> nu pot fi afișate aici, dar căutarea are mai multe. <1>Încearcă numele complet sau identificatorul.</1>"
 msgstr "Primele rezultate pentru <0>{0}</0> nu pot fi afișate aici, dar căutarea are mai multe. <1>Încearcă numele complet sau identificatorul.</1>"
 
@@ -37319,7 +37323,7 @@ msgid "prin {0}"
 msgstr "prin {0}"
 
 #: src/features/national-budget/home/components/home-budgets.tsx:115
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:44
+#: src/features/national-budget/home/components/national-budget-home-page.tsx:42
 msgid "Prin ce bugete trec banii"
 msgstr "Prin ce bugete trec banii"
 
@@ -37539,11 +37543,11 @@ msgstr "profesii reglementate"
 #~ msgid "Profil ONRC/ANAF"
 #~ msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:284
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:289
 msgid "Profile details"
 msgstr "Detalii profil"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:347
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:352
 msgid "Profile details require a mapped entity CUI for this selected UAT."
 msgstr "Detaliile profilului necesită un CUI de entitate mapat pentru acest UAT selectat."
 
@@ -37752,7 +37756,7 @@ msgstr "proiectele cadrului 2014–2020 și ale Fondului de modernizare"
 msgid "proiectele cu fonduri europene din cadrul 2014–2020"
 msgstr "proiectele cu fonduri europene din cadrul 2014–2020"
 
-#: src/features/parliament/components/parliament-hub-bills-section.tsx:46
+#: src/features/parliament/components/parliament-hub-bills-section.tsx:47
 msgid "Proiectele de lege nu au putut fi încărcate"
 msgstr ""
 
@@ -37856,7 +37860,7 @@ msgid "Provizioanele"
 msgstr "Provizioanele"
 
 #: src/features/procurement/components/analytics/analytics-years.tsx:67
-#: src/features/procurement/components/home/home-chrome.tsx:29
+#: src/features/procurement/components/home/home-chrome.tsx:24
 msgid "provizoriu"
 msgstr "provizoriu"
 
@@ -38758,7 +38762,7 @@ msgstr "Recurent"
 msgid "Recurs"
 msgstr "Recurs"
 
-#: src/features/legal/components/legislation-header-visual.tsx:146
+#: src/features/legal/components/legislation-header-visual.tsx:154
 msgid "Redă din nou efectul digital al imaginii"
 msgstr "Redă din nou efectul digital al imaginii"
 
@@ -39982,8 +39986,8 @@ msgstr "Rezultat, {year}"
 #: src/features/elections/components/contest-result-explorer-page.tsx:166
 #: src/features/entity-search/components/entity-results-header.tsx:43
 #: src/features/entity-search/components/entity-search-skeleton.tsx:15
-#: src/features/landing/components/search/landing-search.tsx:682
-#: src/features/landing/components/search/landing-search.tsx:733
+#: src/features/landing/components/search/landing-search.tsx:660
+#: src/features/landing/components/search/landing-search.tsx:711
 #: src/features/legal/components/legislation-act-finder.tsx:372
 #: src/features/private-companies/components/profile/company-main-activity.tsx:346
 #: src/features/private-companies/components/profile/company-years-band.tsx:203
@@ -40097,11 +40101,11 @@ msgstr "Riscul principal de interpretare greșită din acest modul, spus pe faț
 msgid "RO {countryReference}<0/>"
 msgstr "RO {countryReference}<0/>"
 
-#: src/components/maps/InteractiveMap.tsx:2570
+#: src/components/maps/InteractiveMap.tsx:2548
 msgid "Roads: Off"
 msgstr "Drumuri: Oprit"
 
-#: src/components/maps/InteractiveMap.tsx:2570
+#: src/components/maps/InteractiveMap.tsx:2548
 msgid "Roads: On"
 msgstr "Drumuri: Pornit"
 
@@ -40114,8 +40118,8 @@ msgstr "Detectare robustă a anomaliilor bazată pe deviația absolută mediană
 #~ msgid "Rol"
 #~ msgstr "Rol"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:310
-#: src/features/statistics/components/county-map/county-map.tsx:342
+#: src/features/private-companies/components/hub/company-county-map.tsx:309
+#: src/features/statistics/components/county-map/county-map.tsx:341
 #: src/features/statistics/components/territory/territory-derived-list.tsx:115
 #: src/features/statistics/components/territory/territory-derived-list.tsx:257
 #: src/features/statistics/components/territory/territory-derived-section.tsx:267
@@ -40135,7 +40139,7 @@ msgid "România"
 msgstr "România"
 
 #. placeholder {0}: formatHubPeriod(layer.period)
-#: src/features/statistics/components/county-map/county-map.tsx:342
+#: src/features/statistics/components/county-map/county-map.tsx:341
 msgid "România · {0}"
 msgstr "România · {0}"
 
@@ -40160,7 +40164,7 @@ msgstr "România în cifre"
 #~ msgid "România în cifre: populație, salariați, șomaj, locuințe, speranță de viață și turism pentru fiecare localitate, județ și pentru întreaga țară — date oficiale INS Tempo."
 #~ msgstr ""
 
-#: src/routes/map.tsx:22
+#: src/routes/map.tsx:32
 msgid "Romania spending heatmap - Transparenta.eu"
 msgstr "Harta termică a cheltuielilor României - Transparenta.eu"
 
@@ -40443,7 +40447,7 @@ msgstr "Sari la textul actului"
 msgid "Sari la textul ședinței"
 msgstr ""
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:414
+#: src/features/statistics/components/hub/hub-county-band.tsx:415
 msgid "sau atinge-l încă o dată pe hartă"
 msgstr "sau atinge-l încă o dată pe hartă"
 
@@ -40457,7 +40461,7 @@ msgstr "sau atinge-o încă o dată pe hartă"
 
 #: src/features/justice/components/hub/justice-hub-hero.tsx:53
 #: src/features/landing/components/landing-page.tsx:280
-#: src/features/national-budget/home/components/home-head.tsx:73
+#: src/features/national-budget/home/components/home-head.tsx:68
 #: src/features/ngos/hub/ngo-hub-hero.tsx:62
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:63
 #: src/features/procurement/components/home/procurement-home-page.tsx:155
@@ -40685,7 +40689,7 @@ msgstr "Scrie un județ („Cluj”), o localitate, o formă („SRL”), o star
 msgid "Scrie un număr întreg de salariați."
 msgstr "Scrie un număr întreg de salariați."
 
-#: src/features/landing/components/search/landing-search.tsx:105
+#: src/features/landing/components/search/landing-search.tsx:112
 msgid "Scrie un nume pentru a căuta în <0>{scope}</0>."
 msgstr "Scrie un nume pentru a căuta în <0>{scope}</0>."
 
@@ -40693,7 +40697,7 @@ msgstr "Scrie un nume pentru a căuta în <0>{scope}</0>."
 #~ msgid "Scrie un nume pentru a căuta."
 #~ msgstr "Scrie un nume pentru a căuta."
 
-#: src/features/landing/components/search/search-parts.tsx:391
+#: src/features/landing/components/search/search-parts.tsx:315
 msgid "Scrie un nume sau un identificator pentru a căuta."
 msgstr "Scrie un nume sau un identificator pentru a căuta."
 
@@ -40701,12 +40705,12 @@ msgstr "Scrie un nume sau un identificator pentru a căuta."
 msgid "Scrie un nume, un CUI, o categorie („medicamente\", „drumuri\") sau un județ."
 msgstr "Scrie un nume, un CUI, o categorie („medicamente\", „drumuri\") sau un județ."
 
-#: src/components/maps/InteractiveMap.tsx:1531
+#: src/components/maps/InteractiveMap.tsx:1509
 #: src/components/maps/ScrollWheelZoomControl.tsx:39
 msgid "Scroll zoom: Off"
 msgstr "Zoom la scroll: Dezactivat"
 
-#: src/components/maps/InteractiveMap.tsx:1528
+#: src/components/maps/InteractiveMap.tsx:1506
 #: src/components/maps/ScrollWheelZoomControl.tsx:36
 msgid "Scroll zoom: On"
 msgstr "Zoom la scroll: Activat"
@@ -40742,7 +40746,7 @@ msgstr "Scrutinul nu a fost găsit"
 
 #: src/features/justice/components/hub/justice-hub-hero.tsx:51
 #: src/features/landing/components/landing-page.tsx:278
-#: src/features/national-budget/home/components/home-head.tsx:72
+#: src/features/national-budget/home/components/home-head.tsx:67
 #: src/features/ngos/hub/ngo-hub-hero.tsx:60
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:61
 #: src/features/procurement/components/home/procurement-home-page.tsx:153
@@ -40756,8 +40760,8 @@ msgid "Scurtături căutare"
 msgstr ""
 
 #: src/features/entity-search/components/entity-empty-state.tsx:149
-#: src/features/landing/components/search/landing-search.tsx:169
-#: src/features/landing/components/search/search-parts.tsx:397
+#: src/features/landing/components/search/landing-search.tsx:176
+#: src/features/landing/components/search/search-parts.tsx:321
 msgid "Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele."
 msgstr "Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele."
 
@@ -40769,7 +40773,7 @@ msgstr "SDG 2020"
 msgid "SDG 2030"
 msgstr "SDG 2030"
 
-#: src/features/landing/components/search/search-parts.tsx:379
+#: src/features/landing/components/search/search-parts.tsx:303
 msgid "Se actualizează rezultatele."
 msgstr "Se actualizează rezultatele."
 
@@ -40830,7 +40834,7 @@ msgstr "Se caută în legislație"
 msgid "Se caută intervenția…"
 msgstr ""
 
-#: src/features/landing/components/search/search-parts.tsx:401
+#: src/features/landing/components/search/search-parts.tsx:325
 msgid "Se caută."
 msgstr "Se caută."
 
@@ -41295,7 +41299,7 @@ msgstr "SEAP publică valoarea întregii asocieri, nu partea fiecărei firme"
 msgid "SEAP publică valoarea întregului contract, nu partea fiecărei firme, așa că niciun clasament al firmelor nu o poate arăta."
 msgstr "SEAP publică valoarea întregului contract, nu partea fiecărei firme, așa că niciun clasament al firmelor nu o poate arăta."
 
-#: src/features/procurement/components/home/home-chrome.tsx:104
+#: src/features/procurement/components/home/home-chrome.tsx:99
 msgid "SEAP, e-licitatie.ro"
 msgstr "SEAP, e-licitatie.ro"
 
@@ -41358,11 +41362,11 @@ msgstr "Căutare după nume, CUI sau SIRUTA"
 msgid "Search by UAT name, CUI, or SIRUTA"
 msgstr "Căutați după numele UAT-ului, CUI sau SIRUTA"
 
-#: src/routes/charts/index.lazy.tsx:207
+#: src/routes/charts/index.lazy.tsx:231
 msgid "Search charts"
 msgstr "Caută grafice"
 
-#: src/routes/charts/index.lazy.tsx:205
+#: src/routes/charts/index.lazy.tsx:229
 msgid "Search charts…"
 msgstr "Caută grafice…"
 
@@ -41555,7 +41559,7 @@ msgstr "Secțiuni Legislație"
 #~ msgid "Sectiuni profil ONG"
 #~ msgstr ""
 
-#: src/features/national-budget/home/components/home-shell.tsx:99
+#: src/features/national-budget/home/components/home-shell.tsx:107
 #: src/features/private-companies/components/profile/company-profile-page.tsx:146
 #: src/features/procurement/components/home/home-section-nav.tsx:11
 msgid "Secțiunile paginii"
@@ -41858,15 +41862,15 @@ msgid "Selected periods"
 msgstr "Perioade selectate"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-uat-properties.ts:67
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:156
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:456
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:548
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:161
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:461
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:553
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:659
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3275
 msgid "Selected UAT"
 msgstr "UAT selectat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:407
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:412
 msgid "Selected UAT details"
 msgstr "Detalii UAT selectat"
 
@@ -42566,7 +42570,7 @@ msgstr "Afișează legenda"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1527
 #: src/components/filters/base-filter/SelectedOptionsDisplay.tsx:63
 #: src/features/advanced-map-analytics/components/map-analytics-description-inline.tsx:92
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:248
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:253
 #: src/features/advanced-map-analytics/components/map-analytics-series-selector.tsx:156
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:244
 #: src/features/procurement/components/procurement-category-bars.tsx:330
@@ -42588,7 +42592,7 @@ msgstr "Afișează valorile membrilor"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:165
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1527
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:248
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:253
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:244
 #: src/features/procurement/components/procurement-category-bars.tsx:335
 #: src/features/procurement/components/procurement-party-ranking.tsx:202
@@ -42603,7 +42607,7 @@ msgstr "Afișează mai multe"
 msgid "Show period-over-period growth"
 msgstr "Afișează creșterea de la o perioadă la alta"
 
-#: src/components/maps/InteractiveMap.tsx:2578
+#: src/components/maps/InteractiveMap.tsx:2556
 msgid "Show population grid"
 msgstr "Afișează grila populației"
 
@@ -42619,7 +42623,7 @@ msgstr "Afișează valori relative (%)"
 msgid "Show revenue"
 msgstr "Arată venituri"
 
-#: src/components/maps/InteractiveMap.tsx:2569
+#: src/components/maps/InteractiveMap.tsx:2547
 msgid "Show roads"
 msgstr "Afișează drumurile"
 
@@ -42712,7 +42716,7 @@ msgstr "și încă {rest}"
 msgid "și încă un produs"
 msgstr "și încă un produs"
 
-#: src/features/national-budget/home/components/home-head.tsx:194
+#: src/features/national-budget/home/components/home-head.tsx:232
 msgid "și pe ce se duc"
 msgstr "și pe ce se duc"
 
@@ -42846,7 +42850,7 @@ msgstr "Singurul contract din {year} a fost câștigat împreună cu alte firme,
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1089
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:200
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:205
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:523
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1539
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:229
@@ -43172,7 +43176,7 @@ msgstr "Unele valori locale sunt invalide. Închiderea acum va elimina modifică
 msgid "Some periods are unavailable. Totals and calculations requiring them are not shown."
 msgstr "Unele perioade nu au date disponibile. Totalurile și calculele care depind de ele nu sunt afișate."
 
-#: src/lib/storage/read-json-from-local-storage.ts:63
+#: src/lib/storage/read-json-from-local-storage.ts:66
 msgid "Some saved local data was corrupted and has been reset."
 msgstr "Unele date locale salvate erau corupte și au fost resetate."
 
@@ -43206,7 +43210,7 @@ msgstr "A apărut o eroare la încărcarea datelor despre achiziții. Încearcă
 msgid "error.genericError"
 msgstr "Ceva nu a funcționat corect la redarea acestei pagini."
 
-#: src/components/errors/ErrorBoundary.tsx:61
+#: src/components/errors/ErrorBoundary.tsx:59
 #: src/features/agent/components/agent-chat.tsx:70
 msgid "Something went wrong."
 msgstr "Ceva nu a funcționat corect."
@@ -43215,7 +43219,7 @@ msgstr "Ceva nu a funcționat corect."
 #~ msgid "Sort"
 #~ msgstr "Sortează"
 
-#: src/routes/charts/index.lazy.tsx:213
+#: src/routes/charts/index.lazy.tsx:237
 msgid "Sort by"
 msgstr "Sortează după"
 
@@ -43454,7 +43458,7 @@ msgstr ""
 
 #: src/components/maps/HeatmapDataTable.tsx:476
 #: src/features/learning/components/interactive/VATReformCard.tsx:29
-#: src/routes/entity-analytics.lazy.tsx:197
+#: src/routes/entity-analytics.lazy.tsx:205
 msgid "Standard"
 msgstr "Standard"
 
@@ -43890,7 +43894,8 @@ msgstr "Șterge"
 msgid "Șterge anii din adresă"
 msgstr "Șterge anii din adresă"
 
-#: src/features/landing/components/search/landing-search.tsx:600
+#: src/features/landing/components/search/deferred-landing-search.tsx:260
+#: src/features/landing/components/search/landing-search.tsx:590
 #: src/features/statistics/components/uat-map/uat-map-finder.tsx:105
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:133
 msgid "Șterge căutarea"
@@ -44018,7 +44023,7 @@ msgstr "sub {0}"
 msgid "sub 0,1%"
 msgstr "sub 0,1%"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:443
+#: src/features/statistics/components/hub/hub-county-band.tsx:444
 msgid "sub medie"
 msgstr "sub medie"
 
@@ -44312,7 +44317,7 @@ msgstr "Sursă"
 msgid "Sursa a consemnat această intervenție în afara unui mandat parlamentar (membru al Guvernului, oficial sau invitat)."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:232
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:226
 msgid "sursa a listat ziua, dar parserul nu a extras voturi"
 msgstr "sursa a listat ziua, dar parserul nu a extras voturi"
 
@@ -44373,7 +44378,7 @@ msgstr ""
 msgid "Sursa nu conține o dată de ședință în care să putem avea încredere; data nu este dedusă."
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:236
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:230
 msgid "sursa nu publică voturi electronice pentru această zi"
 msgstr "sursa nu publică voturi electronice pentru această zi"
 
@@ -44416,7 +44421,7 @@ msgstr ""
 #: src/features/justice/components/justice-source-line.tsx:61
 #: src/features/procurement/components/contract/contract-block.tsx:489
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:370
-#: src/features/procurement/components/home/home-chrome.tsx:102
+#: src/features/procurement/components/home/home-chrome.tsx:97
 #: src/features/procurement/components/procedure/procedure-block.tsx:677
 msgid "Sursa:"
 msgstr "Sursa:"
@@ -44567,7 +44572,7 @@ msgstr ""
 #~ msgid "Surse și acoperire"
 #~ msgstr "Surse și acoperire"
 
-#: src/features/national-budget/home/components/home-head.tsx:97
+#: src/features/national-budget/home/components/home-head.tsx:91
 #: src/features/ngos/hub/ngo-hub-pending.tsx:49
 #: src/features/private-companies/components/hub/company-hub-pending.tsx:59
 #: src/features/private-companies/components/profile/company-registry-band.tsx:173
@@ -45847,7 +45852,7 @@ msgstr "Tipul"
 msgid "Title"
 msgstr "Titlu"
 
-#: src/routes/charts/index.lazy.tsx:218
+#: src/routes/charts/index.lazy.tsx:242
 msgid "Title A–Z"
 msgstr "Titlu A–Z"
 
@@ -45859,7 +45864,7 @@ msgstr "Titlu A–Z"
 #~ msgid "Title from source procedure"
 #~ msgstr "Titlu preluat din procedura sursă"
 
-#: src/routes/charts/index.lazy.tsx:219
+#: src/routes/charts/index.lazy.tsx:243
 msgid "Title Z–A"
 msgstr "Titlu Z–A"
 
@@ -46298,7 +46303,7 @@ msgstr "Comută limitele județene"
 #~ msgid "Toggle enhanced error reporting"
 #~ msgstr "Comutare raportare avansată a erorilor"
 
-#: src/components/maps/InteractiveMap.tsx:1523
+#: src/components/maps/InteractiveMap.tsx:1501
 #: src/components/maps/ScrollWheelZoomControl.tsx:31
 msgid "Toggle map interaction"
 msgstr "Comută interacțiunea cu harta"
@@ -46311,7 +46316,7 @@ msgstr "Comută vizibilitatea hărții"
 msgid "Toggle notifications for {name}"
 msgstr "Comută notificările pentru {name}"
 
-#: src/components/maps/InteractiveMap.tsx:1524
+#: src/components/maps/InteractiveMap.tsx:1502
 #: src/components/maps/ScrollWheelZoomControl.tsx:32
 msgid "Toggle scroll zoom"
 msgstr "Comută zoomul la scroll"
@@ -46424,7 +46429,7 @@ msgstr "Tot registrul"
 msgid "tot textul"
 msgstr "tot textul"
 
-#: src/routes/charts/index.lazy.tsx:174
+#: src/routes/charts/index.lazy.tsx:198
 msgid "total"
 msgstr "total"
 
@@ -46464,7 +46469,7 @@ msgstr "Sumă totală"
 #: src/components/maps/HeatmapDataTable.tsx:305
 #: src/components/maps/HeatmapDataTable.tsx:484
 #: src/components/maps/utils.ts:176
-#: src/routes/entity-analytics.lazy.tsx:206
+#: src/routes/entity-analytics.lazy.tsx:214
 msgid "Total Amount"
 msgstr "Sumă totală"
 
@@ -46795,12 +46800,12 @@ msgstr "Trimiteri afirmate de portal"
 #~ msgid "Trimiteri bazate pe CUI sau SIRUTA, fara reclasificare."
 #~ msgstr ""
 
-#: src/routes/charts/index.lazy.tsx:264
+#: src/routes/charts/index.lazy.tsx:288
 msgid "Try a different search term or sorting."
 msgstr "Încercați un alt termen de căutare sau o altă sortare."
 
 #: src/components/commitments/IntervalTable.tsx:97
-#: src/components/errors/ErrorBoundary.tsx:68
+#: src/components/errors/ErrorBoundary.tsx:66
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:199
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:489
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1116
@@ -47512,7 +47517,7 @@ msgstr "Unitate sanitară"
 #~ msgid "Unitate:"
 #~ msgstr "Unitate:"
 
-#: src/features/national-budget/home/components/home-head.tsx:119
+#: src/features/national-budget/home/components/home-head.tsx:121
 msgid "unitatea tipărită nu e cea așteptată"
 msgstr ""
 
@@ -47549,7 +47554,7 @@ msgstr "Județ necunoscut"
 msgid "Unknown CPV division"
 msgstr "Diviziune CPV necunoscută"
 
-#: src/routes/entity-analytics.lazy.tsx:177
+#: src/routes/entity-analytics.lazy.tsx:185
 msgid "Unknown error"
 msgstr "Eroare necunoscută"
 
@@ -47879,7 +47884,7 @@ msgstr "Folosiți valoarea medie când există mai multe observații în aceeaș
 msgid "Use the official details below to follow or join the public debate for this city hall."
 msgstr "Folosește detaliile oficiale de mai jos pentru a urmări sau pentru a participa la dezbaterea publică a acestei primării."
 
-#: src/routes/charts/index.lazy.tsx:303
+#: src/routes/charts/index.lazy.tsx:327
 msgid "Use the tag menu on a chart card to add it to this category."
 msgstr "Folosiți meniul de etichete de pe cardul unui grafic pentru a-l adăuga în această categorie."
 
@@ -48408,7 +48413,7 @@ msgstr ""
 msgid "Valorile suspecte ×1000 sunt păstrate ca puncte de acoperire, dar nu intră în mărimea punctului sau totaluri."
 msgstr ""
 
-#: src/features/national-budget/home/components/home-head.tsx:118
+#: src/features/national-budget/home/components/home-head.tsx:120
 msgid "valorile tipărite diferă"
 msgstr ""
 
@@ -48485,7 +48490,7 @@ msgstr "Filtre de valori"
 msgid "Value source"
 msgstr "Sursa valorii"
 
-#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:510
+#: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:515
 #: src/features/advanced-map-datasets/components/dataset-editor-map-preview.tsx:33
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1419
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:183
@@ -48690,7 +48695,7 @@ msgid "Venituri publice"
 msgstr "Venituri publice"
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:235
+#: src/features/national-budget/home/components/home-head.tsx:273
 msgid "Venituri publice, {0}"
 msgstr "Venituri publice, {0}"
 
@@ -48980,7 +48985,7 @@ msgstr "Vezi și în alte domenii"
 msgid "Vezi textul pe legislatie.just.ro"
 msgstr "Vezi textul pe legislatie.just.ro"
 
-#: src/features/parliament/components/parliament-hub-bill-activity.tsx:121
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:120
 msgid "Vezi toate proiectele"
 msgstr ""
 
@@ -48994,7 +48999,7 @@ msgstr ""
 msgid "Vezi toate stenogramele"
 msgstr ""
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:389
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:385
 msgid "Vezi toate voturile"
 msgstr ""
 
@@ -49014,7 +49019,7 @@ msgstr "Vezi-le pe pagina achiziției din SEAP"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1077
 #: src/components/maps/HeatmapDataTable.tsx:468
 #: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:44
-#: src/routes/entity-analytics.lazy.tsx:188
+#: src/routes/entity-analytics.lazy.tsx:196
 msgid "View"
 msgstr "Vizualizare"
 
@@ -49034,7 +49039,7 @@ msgstr "Vezi 1 avertisment"
 msgid "View all alerts"
 msgstr "Vezi toate alertele"
 
-#: src/components/common/classification-info-link.tsx:95
+#: src/components/common/classification-info-link.tsx:115
 msgid "View all classifications"
 msgstr "Vizualizați toate clasificările"
 
@@ -49063,7 +49068,7 @@ msgstr "Vezi graficul"
 msgid "View Details"
 msgstr "Vezi detalii"
 
-#: src/components/common/classification-info-link.tsx:82
+#: src/components/common/classification-info-link.tsx:102
 msgid "View full details"
 msgstr "Vizualizați detaliile complete"
 
@@ -49544,7 +49549,7 @@ msgstr "Nu aveți încă alerte pentru serii de date. Creați una dintr-o serie 
 msgid "You have unsaved changes. Are you sure you want to leave this page?"
 msgstr "Aveți modificări nesalvate. Sigur doriți să părăsiți această pagină?"
 
-#: src/hooks/useSendBugReport.ts:15
+#: src/hooks/useSendBugReport.ts:14
 msgid "You need to accept cookies to send an error report."
 msgstr "Trebuie să accepți cookie-urile pentru a trimite un raport de eroare."
 
@@ -49759,11 +49764,11 @@ msgstr "Scor Z"
 msgid "Zero variance"
 msgstr "Varianță zero"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:214
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:208
 msgid "zi verificată după încheiere: nicio divizare publicată (fără ședință sau fără vot electronic)"
 msgstr "zi verificată după încheiere: nicio divizare publicată (fără ședință sau fără vot electronic)"
 
-#: src/features/parliament/components/parliament-hub-vote-activity.tsx:222
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:216
 msgid "ziua curentă nu este încă confirmată după încheierea ședinței"
 msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 
