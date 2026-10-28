@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
-import * as Sentry from "@sentry/react";
 import { useEffect, useMemo, useState } from "react";
 import { classifyError, getTechnicalMessage, isUpdateAvailableError } from "@/lib/errors-utils";
 import { env } from "@/config/env";
 import { attemptChunkRecovery } from "@/lib/chunk-recovery";
-import { initSentry } from "@/lib/sentry";
+import { initSentry, withSentry } from "@/lib/sentry";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 type GlobalErrorPageProps = {
@@ -85,8 +84,10 @@ export function GlobalErrorPage({ error }: GlobalErrorPageProps) {
         try {
             initSentry(undefined);
             const rootError = getRootError(error);
+            const route = window.location.pathname;
+            const query = window.location.search;
 
-            Sentry.withScope((scope) => {
+            withSentry((Sentry) => Sentry.withScope((scope) => {
                 scope.setLevel("error");
                 scope.setTag("source", "global-error-page");
                 scope.setTag("error_name", errorFingerprint.name);
@@ -94,8 +95,8 @@ export function GlobalErrorPage({ error }: GlobalErrorPageProps) {
                     technicalMessage,
                     classifiedTitle: classifiedError.title.id,
                     classifiedMessage: classifiedError.friendlyMessage.id,
-                    route: window.location.pathname,
-                    query: window.location.search,
+                    route,
+                    query,
                     wrappedErrorClass: typeof error,
                     rootErrorMessage:
                         rootError instanceof Error ? rootError.message : typeof rootError,
@@ -104,7 +105,7 @@ export function GlobalErrorPage({ error }: GlobalErrorPageProps) {
                 });
 
                 Sentry.captureException(rootError);
-            });
+            }));
         } catch {
             // Keep rendering unaffected if Sentry is unavailable.
         }

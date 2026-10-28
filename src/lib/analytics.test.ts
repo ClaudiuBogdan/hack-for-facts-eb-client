@@ -34,8 +34,10 @@ describe('analytics privacy sanitization', () => {
     window.history.pushState({}, '', '/')
   })
 
-  it('scrubs what the SDK adds itself: the current and previous URLs, the referrer, the title, the person properties', () => {
+  it('scrubs what the SDK adds itself: the current and previous URLs, the referrer, the title, the person properties', async () => {
     Analytics.capturePageview({ pathname: '/justice' })
+    // The SDK is imported on first use: init runs once it has resolved.
+    await vi.waitFor(() => expect(posthogMock.init).toHaveBeenCalled())
     const init = posthogMock.init.mock.calls[0]?.[1] as { before_send?: unknown } | undefined
     expect(init?.before_send).toBe(sanitizePostHogEvent)
 
@@ -70,20 +72,22 @@ describe('analytics privacy sanitization', () => {
     expect(sanitizePostHogEvent(null)).toBeNull()
   })
 
-  it('scrubs justice case path and query identifiers from pageviews', () => {
+  it('scrubs justice case path and query identifiers from pageviews', async () => {
     Analytics.capturePageview({
       pathname: '/justitie/dosare/portal-just-bucuresti-2024-001',
       search: '?caseNumber=1234/3/2024&partyKey=sc-secret&court=TB-BUCURESTI',
     })
 
-    expect(posthogMock.capture).toHaveBeenCalledWith('$pageview', {
-      $current_url: `${window.location.origin}/justitie/dosare/:caseId?court=TB-BUCURESTI`,
-      $pathname: '/justitie/dosare/:caseId',
-      $host: window.location.host,
-    })
+    await vi.waitFor(() =>
+      expect(posthogMock.capture).toHaveBeenCalledWith('$pageview', {
+        $current_url: `${window.location.origin}/justitie/dosare/:caseId?court=TB-BUCURESTI`,
+        $pathname: '/justitie/dosare/:caseId',
+        $host: window.location.host,
+      }),
+    )
   })
 
-  it('scrubs justice URLs and keyed identifiers from custom event properties', () => {
+  it('scrubs justice URLs and keyed identifiers from custom event properties', async () => {
     Analytics.capture(Analytics.EVENTS.ErrorOccurred, {
       url: 'https://transparenta.eu/justitie/dosare/portal-just-bucuresti-2024-001?caseNumber=1234/3/2024',
       caseNumber: '1234/3/2024',
@@ -95,14 +99,16 @@ describe('analytics privacy sanitization', () => {
       safeMetric: 2,
     })
 
-    expect(posthogMock.capture).toHaveBeenCalledWith('error_occurred', {
-      url: 'https://transparenta.eu/justitie/dosare/:caseId',
-      caseNumber: '[scrubbed]',
-      context: {
-        partyKey: '[scrubbed]',
-        companyUrl: '/companies/14399840?tab=summary',
-      },
-      safeMetric: 2,
-    })
+    await vi.waitFor(() =>
+      expect(posthogMock.capture).toHaveBeenCalledWith('error_occurred', {
+        url: 'https://transparenta.eu/justitie/dosare/:caseId',
+        caseNumber: '[scrubbed]',
+        context: {
+          partyKey: '[scrubbed]',
+          companyUrl: '/companies/14399840?tab=summary',
+        },
+        safeMetric: 2,
+      }),
+    )
   })
 })

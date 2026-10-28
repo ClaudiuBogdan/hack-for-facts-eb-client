@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import posthog from "posthog-js";
+import type { PostHog } from "posthog-js";
 import { useLocation } from "@tanstack/react-router";
 import { env } from "@/config/env";
+import { quietImport } from "@/lib/chunk-recovery";
 import { hasAnalyticsConsent } from "@/lib/consent";
 import {
   sanitizeJusticeEventProperties,
@@ -93,6 +94,34 @@ export type AnalyticsEventName = typeof EVENTS[keyof typeof EVENTS];
 
 const isBrowser = typeof window !== "undefined";
 let posthogInitialized = false;
+let posthogLoad: Promise<PostHog> | null = null;
+
+/**
+ * Runs `send` with PostHog once its SDK is loaded and initialised. The SDK is
+ * a chunk of its own, fetched on the first event a consenting visitor sends:
+ * a static import shipped it to every visitor before hydration, consent or
+ * not (2026-10-27 audit, PERF-011). Consent is checked again when it arrives.
+ */
+function withPostHog(send: (posthog: PostHog) => void): void {
+  // Quietly: a failed analytics chunk loses the event, never reloads the page.
+  posthogLoad ??= quietImport(() => import("posthog-js")).then((module) => module.default);
+  posthogLoad.then(
+    (posthog) => {
+      try {
+        if (!isAnalyticsEnabled()) return;
+        ensurePostHogInitialized(posthog);
+        if (!posthogInitialized) return;
+        send(posthog);
+      } catch {
+        // silent, as every analytics call is
+      }
+    },
+    () => {
+      // The chunk did not load: drop this event, and let a later one retry.
+      posthogLoad = null;
+    },
+  );
+}
 
 export function isAnalyticsEnabled(): boolean {
   return (
@@ -104,7 +133,7 @@ export function isAnalyticsEnabled(): boolean {
   );
 }
 
-function ensurePostHogInitialized(): void {
+function ensurePostHogInitialized(posthog: PostHog): void {
   if (posthogInitialized) return;
   if (!isBrowser) return;
   if (!env.VITE_POSTHOG_ENABLED) return;
@@ -173,14 +202,15 @@ export function captureEvent(
 ): void {
   try {
     if (!isAnalyticsEnabled()) return;
-    ensurePostHogInitialized();
     const sanitized = sanitizeProps(properties);
     const key = `${name}:${JSON.stringify(sanitized ?? {})}`;
     const now = Date.now();
     if (_lastEventKey === key && now - _lastEventTs < DEDUPE_MS) return;
     _lastEventKey = key;
     _lastEventTs = now;
-    posthog.capture(name, sanitized);
+    withPostHog((posthog) => {
+      posthog.capture(name, sanitized);
+    });
   } catch {
     // silent
   }
@@ -245,7 +275,6 @@ export function capturePageview(payload?: {
 }): void {
   try {
     if (!isAnalyticsEnabled()) return;
-    ensurePostHogInitialized();
 
     const rawPathname = payload?.pathname ?? window.location.pathname;
     const searchRaw = payload?.search ?? window.location.search ?? "";
@@ -262,10 +291,13 @@ export function capturePageview(payload?: {
     const search = queryIndex === -1 ? "" : sanitizedFragment.slice(queryIndex);
 
     const url = `${window.location.origin}${pathname}${search}`;
-    posthog.capture("$pageview", {
-      $current_url: url,
-      $pathname: pathname,
-      $host: window.location.host,
+    const host = window.location.host;
+    withPostHog((posthog) => {
+      posthog.capture("$pageview", {
+        $current_url: url,
+        $pathname: pathname,
+        $host: host,
+      });
     });
   } catch {
     // silent

@@ -1,8 +1,6 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import { Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { PostHogProvider } from "posthog-js/react";
-import posthog from "posthog-js";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
 import { getUserLocale } from "@/lib/utils";
@@ -27,8 +25,6 @@ import { shouldHideMobileBottomDock } from "@/components/mobile/mobile-bottom-do
 import { Analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import type { Currency } from "@/schemas/charts";
-
-const isBrowser = typeof window !== 'undefined';
 
 type AppShellProps = {
   queryClient: QueryClient;
@@ -99,49 +95,47 @@ export function AppShell({
 
   return (
     <AuthProvider publishableKey={authKey}>
-      <SSRSafePostHogProvider>
-        <ErrorProvider>
-          <QueryClientProvider client={queryClient}>
-            <I18nProvider i18n={i18n}>
-              <ThemeProvider defaultTheme="light" ssrTheme={ssrTheme}>
-                <HotkeysProvider>
-                  <SidebarProvider>
-                    <NavigationProgress />
-                    <div className="flex min-h-screen min-w-full">
-                      <AppSidebar
-                        initialCurrency={ssrCurrency}
-                        initialInflationAdjusted={ssrInflationAdjusted}
-                      />
-                      <SidebarInset>
-                        <main
-                          role="main"
-                          className={cn(
-                            "flex min-h-0 min-w-0 flex-1 flex-col md:pb-0",
-                            hideMobileBottomDock
-                              ? "pb-0"
-                              : "pb-[calc(env(safe-area-inset-bottom)+4.5rem)]"
-                          )}
-                        >
-                          <div className="flex min-h-full min-w-0 flex-1 flex-col">
-                            <AnalyticsPageviewBridge />
-                            <Outlet />
-                            <Toaster />
-                          </div>
-                        </main>
-                        <AppFooter />
-                        <ChatFab />
-                        <FeedbackFab />
-                        <MobileBottomDock />
-                        <ConsentCardHost />
-                      </SidebarInset>
-                    </div>
-                  </SidebarProvider>
-                </HotkeysProvider>
-              </ThemeProvider>
-            </I18nProvider>
-          </QueryClientProvider>
-        </ErrorProvider>
-      </SSRSafePostHogProvider>
+      <ErrorProvider>
+        <QueryClientProvider client={queryClient}>
+          <I18nProvider i18n={i18n}>
+            <ThemeProvider defaultTheme="light" ssrTheme={ssrTheme}>
+              <HotkeysProvider>
+                <SidebarProvider>
+                  <NavigationProgress />
+                  <div className="flex min-h-screen min-w-full">
+                    <AppSidebar
+                      initialCurrency={ssrCurrency}
+                      initialInflationAdjusted={ssrInflationAdjusted}
+                    />
+                    <SidebarInset>
+                      <main
+                        role="main"
+                        className={cn(
+                          "flex min-h-0 min-w-0 flex-1 flex-col md:pb-0",
+                          hideMobileBottomDock
+                            ? "pb-0"
+                            : "pb-[calc(env(safe-area-inset-bottom)+4.5rem)]"
+                        )}
+                      >
+                        <div className="flex min-h-full min-w-0 flex-1 flex-col">
+                          <AnalyticsPageviewBridge />
+                          <Outlet />
+                          <Toaster />
+                        </div>
+                      </main>
+                      <AppFooter />
+                      <ChatFab />
+                      <FeedbackFab />
+                      <MobileBottomDock />
+                      <ConsentCardHost />
+                    </SidebarInset>
+                  </div>
+                </SidebarProvider>
+              </HotkeysProvider>
+            </ThemeProvider>
+          </I18nProvider>
+        </QueryClientProvider>
+      </ErrorProvider>
     </AuthProvider>
   );
 }
@@ -149,21 +143,4 @@ export function AppShell({
 function AnalyticsPageviewBridge() {
   Analytics.pageviewHook();
   return null;
-}
-
-/**
- * SSR-safe PostHog provider that only initializes PostHog on the client.
- * PostHog requires browser APIs (window, document) and cannot run during SSR.
- */
-function SSRSafePostHogProvider({ children }: { readonly children: ReactNode }) {
-  if (!isBrowser) {
-    // During SSR, skip PostHog entirely and just render children
-    return <>{children}</>;
-  }
-
-  return (
-    <PostHogProvider client={posthog}>
-      {children}
-    </PostHogProvider>
-  );
 }

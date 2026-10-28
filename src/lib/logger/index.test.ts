@@ -7,7 +7,11 @@ const sentryMocks = vi.hoisted(() => ({
   addBreadcrumb: vi.fn(),
 }));
 
-vi.mock("@sentry/react", () => sentryMocks);
+// The logger reaches Sentry through `withSentry`, which runs its callback
+// once the SDK is loaded: here, at once, with these mocks.
+vi.mock("@/lib/sentry", () => ({
+  withSentry: (report: (sentry: typeof sentryMocks) => void) => report(sentryMocks),
+}));
 
 type LoggerModule = typeof import("./index");
 

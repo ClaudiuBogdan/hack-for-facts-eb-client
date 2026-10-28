@@ -1,7 +1,7 @@
-import * as Sentry from '@sentry/react'
 import { t } from '@lingui/core/macro'
 import { toast } from 'sonner'
 import { logger } from '@/lib/logger'
+import { withSentry } from '@/lib/sentry'
 
 const CORRUPTED_STORAGE_SUFFIX = '__corrupted__'
 const RAW_PREVIEW_MAX_LENGTH = 200
@@ -49,13 +49,16 @@ function reportCorruptedStorage(params: {
     rawPreview,
   })
 
-  Sentry.captureException(new Error(`Corrupted localStorage entry detected for key "${params.key}"`), {
-    extra: {
-      key: params.key,
-      reason: params.reason,
-      expectedVersion: params.expectedVersion,
-      rawPreview,
-    },
+  const error = new Error(`Corrupted localStorage entry detected for key "${params.key}"`)
+  withSentry((Sentry) => {
+    Sentry.captureException(error, {
+      extra: {
+        key: params.key,
+        reason: params.reason,
+        expectedVersion: params.expectedVersion,
+        rawPreview,
+      },
+    })
   })
 
   if (!hasWarnedAboutCorruptedStorage) {

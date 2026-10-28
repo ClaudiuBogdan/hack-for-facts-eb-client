@@ -1,5 +1,5 @@
-import * as Sentry from "@sentry/react";
 import { env } from "@/config/env";
+import { withSentry } from "@/lib/sentry";
 
 type Primitive = string | number | boolean | null | undefined
 type ExtraInfo = Record<string, unknown> | Primitive
@@ -87,44 +87,48 @@ const extractError = (extraInfo?: ExtraInfo): Error | undefined => {
  *
  * `Sentry.getClient()` is undefined during SSR, before `initSentry` runs, and
  * whenever Sentry is disabled by env — so this is a no-op there rather than a
- * queued event, which keeps the logger free of init-order coupling.
+ * queued event, which keeps the logger free of init-order coupling. The one
+ * wait is `withSentry`'s: a log written while the SDK chunk loads, after
+ * `initSentry` started it, is sent once Sentry is up.
  */
 const emitToSentry = (
   level: LogLevelName,
   body: LogBody,
   attributes: LogAttributes,
 ) => {
-  try {
-    if (!Sentry.getClient()) return;
+  withSentry((Sentry) => {
+    try {
+      if (!Sentry.getClient()) return;
 
-    const severity = SENTRY_SEVERITY_BY_LEVEL[level];
+      const severity = SENTRY_SEVERITY_BY_LEVEL[level];
 
-    if (level !== "warn" && level !== "error") {
-      Sentry.addBreadcrumb({
-        category: "logger",
+      if (level !== "warn" && level !== "error") {
+        Sentry.addBreadcrumb({
+          category: "logger",
+          level: severity,
+          message: body.message,
+          data: { context: attributes.context, details: body.extraInfo },
+        });
+        return;
+      }
+
+      const captureContext = {
         level: severity,
-        message: body.message,
-        data: { context: attributes.context, details: body.extraInfo },
-      });
-      return;
+        tags: { logger_context: attributes.context },
+        extra: { details: body.extraInfo },
+      };
+
+      const error = extractError(body.extraInfo);
+      if (error) {
+        Sentry.captureException(error, captureContext);
+        return;
+      }
+
+      Sentry.captureMessage(body.message, captureContext);
+    } catch {
+      // Reporting must never break the code that is doing the logging.
     }
-
-    const captureContext = {
-      level: severity,
-      tags: { logger_context: attributes.context },
-      extra: { details: body.extraInfo },
-    };
-
-    const error = extractError(body.extraInfo);
-    if (error) {
-      Sentry.captureException(error, captureContext);
-      return;
-    }
-
-    Sentry.captureMessage(body.message, captureContext);
-  } catch {
-    // Reporting must never break the code that is doing the logging.
-  }
+  });
 };
 
 const emitLog = (
