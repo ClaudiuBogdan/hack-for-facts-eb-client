@@ -26,7 +26,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = resolve(ROOT, 'src/features/statistics/data/county-shapes.json')
 
 const { values: args } = parseArgs({
-  options: { source: { type: 'string', default: 'public/geojson/judete-2026-03-09.json' } },
+  options: { source: { type: 'string', default: 'public/geojson/judete-2026-10-28.json' } },
 })
 
 const kb = (bytes: number) => `${(bytes / 1024).toFixed(1)} KB`
