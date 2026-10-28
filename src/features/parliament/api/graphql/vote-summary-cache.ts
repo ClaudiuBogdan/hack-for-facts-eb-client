@@ -16,6 +16,22 @@ import type {
   ParliamentVoteSummary,
 } from '@/schemas/parliament'
 
+/**
+ * Most entries one map keeps; past it the oldest go first. A tab that walks
+ * through many bills and votes would otherwise grow these maps for as long as
+ * it stays open.
+ */
+const MAX_ENTRIES = 5_000
+
+/**
+ * Filled in the browser only. The getters bridge a browser render to the
+ * query cache; on the server a module-level map is shared by every request and
+ * lives as long as the process, and since the hub's votes are now read for the
+ * first render, every listed vote would accumulate there with no expiry. No
+ * server render reads these getters.
+ */
+const IS_SERVER = typeof window === 'undefined'
+
 const summaryByVoteId = new Map<string, ParliamentVoteSummary>()
 const divisionByVoteId = new Map<string, number>()
 /**
@@ -25,13 +41,25 @@ const divisionByVoteId = new Map<string, number>()
  */
 const judetByMemberId = new Map<string, string>()
 
+/** Set, keeping the most recent entries (a Map iterates oldest first). */
+function remember<V>(map: Map<string, V>, key: string, value: V): void {
+  map.delete(key)
+  map.set(key, value)
+  while (map.size > MAX_ENTRIES) {
+    const oldest = map.keys().next()
+    if (oldest.done) break
+    map.delete(oldest.value)
+  }
+}
+
 export function primeVoteSummary(
   summary: ParliamentVoteSummary,
   divisionNumber?: number,
 ): void {
-  summaryByVoteId.set(summary.voteId, summary)
+  if (IS_SERVER) return
+  remember(summaryByVoteId, summary.voteId, summary)
   if (typeof divisionNumber === 'number' && divisionNumber > 0) {
-    divisionByVoteId.set(summary.voteId, divisionNumber)
+    remember(divisionByVoteId, summary.voteId, divisionNumber)
   }
 }
 
@@ -39,8 +67,9 @@ export function primeMemberJudet(
   memberId: string,
   constituency: string | null | undefined,
 ): void {
+  if (IS_SERVER) return
   const c = constituency?.trim()
-  if (memberId && c) judetByMemberId.set(memberId, c)
+  if (memberId && c) remember(judetByMemberId, memberId, c)
 }
 
 export function getMemberJudetCache(): Readonly<Record<string, string>> {

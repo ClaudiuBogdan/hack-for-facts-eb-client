@@ -204,10 +204,15 @@ export function formatVoteDayLong(isoDate: string): string {
   }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`));
 }
 
+/**
+ * When the data was loaded, in Romanian time: the header is rendered on the
+ * server as well as in the browser, and the two must print the same clock.
+ */
 export function formatSyncDate(isoDate: string): string {
   return new Intl.DateTimeFormat("ro-RO", {
     dateStyle: "long",
     timeStyle: "short",
+    timeZone: "Europe/Bucharest",
   }).format(new Date(isoDate));
 }
 
@@ -309,6 +314,9 @@ export function formatBillDate(isoDate: string): string {
     day: "numeric",
     month: "long",
     year: "numeric",
+    // A date-only value: printed in UTC, the day it names, on the server and
+    // in every browser alike.
+    timeZone: "UTC",
   }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`));
 }
 

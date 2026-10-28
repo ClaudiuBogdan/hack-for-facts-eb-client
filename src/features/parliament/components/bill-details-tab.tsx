@@ -4,7 +4,7 @@ import { ChevronRight, Download, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ParliamentBillDetail } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
-import { getParliamentVoteSummary } from '../api/parliament-api'
+import { getParliamentVoteSummary } from '../api/parliament-api-sync'
 import {
   formatBillDate,
   formatBillUpdatedAt,
@@ -13,7 +13,7 @@ import {
 import {
   getBillLocationLabel,
   getBillTypeLabel,
-} from '../lib/bill-profile-data'
+} from '../lib/bill-labels'
 import {
   getDecisionChamberLabel,
   getInitiatorClassificationLabel,

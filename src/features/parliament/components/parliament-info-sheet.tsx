@@ -6,6 +6,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { formatSyncDate } from '../lib/formatting'
 
 type Props = {
   readonly open: boolean
@@ -35,10 +36,7 @@ export function ParliamentInfoSheet({
             <p>
               Ultima sincronizare:{' '}
               <span className="text-foreground">
-                {new Intl.DateTimeFormat('ro-RO', {
-                  dateStyle: 'long',
-                  timeStyle: 'short',
-                }).format(new Date(lastSyncedAt))}
+                {formatSyncDate(lastSyncedAt)}
               </span>
             </p>
           ) : null}

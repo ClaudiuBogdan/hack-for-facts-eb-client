@@ -1,7 +1,7 @@
 import type { ParliamentBillDetail } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import { formatBillUpdatedAt, getChamberLabel } from '../lib/formatting'
-import { getBillTypeLabel } from '../lib/bill-profile-data'
+import { getBillTypeLabel } from '../lib/bill-labels'
 import {
   getDecisionChamberLabel,
   getLawCharacterLabel,

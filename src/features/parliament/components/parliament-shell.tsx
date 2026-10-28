@@ -2,8 +2,9 @@ import { useState, type ReactNode } from 'react'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import parliamentHeader1280 from '../assets/header-parliament-allegory-1280.png'
-import parliamentHeader768 from '../assets/header-parliament-allegory-768.png'
+import { BLANK_IMAGE_SRC, WIDE_SCREEN_ART_MEDIA } from '@/lib/wide-screen-art'
+import parliamentHeader1280 from '../assets/header-parliament-allegory-1280.webp'
+import parliamentHeader768 from '../assets/header-parliament-allegory-768.webp'
 import {
   useParliamentFreshness,
   useParliamentHub,
@@ -33,11 +34,13 @@ type Props = {
 /** Shared layout — UK Parliament typography on default surface */
 export function ParliamentShell({ activeTab, children, actions }: Props) {
   const [infoOpen, setInfoOpen] = useState(false)
-  const { data } = useParliamentHub()
+  const { data, isError } = useParliamentHub()
   const { data: freshness } = useParliamentFreshness()
 
   const legislatureLabel = data?.legislature.label ?? 'Legislatura curentă'
-  const lastSynced = data?.lastSyncedAt
+  // When the DATA was last loaded (`lastLoadedAt`), never the request time;
+  // absent when the API has no freshness signal, and the line then omits it.
+  const lastSynced = freshness?.lastLoadedAt
   // The freshness line used to sit on the hub body, repeating "Actualizat …"
   // that this meta line already carries. Only the part it ADDS moves up here.
   const latestVote = formatParliamentVoteDay(freshness?.latestVoteDate)
@@ -56,19 +59,26 @@ export function ParliamentShell({ activeTab, children, actions }: Props) {
               className="pointer-events-none absolute inset-y-0 right-0 hidden w-[74%] items-end justify-end xl:flex"
               aria-hidden="true"
             >
-              <img
-                src={parliamentHeader768}
-                srcSet={`${parliamentHeader768} 768w, ${parliamentHeader1280} 1280w`}
-                sizes="(min-width: 1280px) 74vw, 0px"
-                width={1280}
-                height={687}
-                alt=""
-                loading="eager"
-                decoding="async"
-                fetchPriority="high"
-                draggable={false}
-                className="h-full w-full object-contain object-right-bottom"
-              />
+              {/* The column shows only from `xl`: the source is bound to the
+                  same width, so a phone keeps the blank fallback and fetches
+                  nothing (see `wide-screen-art.ts`). */}
+              <picture className="contents">
+                <source
+                  media={WIDE_SCREEN_ART_MEDIA}
+                  srcSet={`${parliamentHeader768} 768w, ${parliamentHeader1280} 1280w`}
+                  sizes="74vw"
+                />
+                <img
+                  src={BLANK_IMAGE_SRC}
+                  width={1280}
+                  height={687}
+                  alt=""
+                  decoding="async"
+                  fetchPriority="high"
+                  draggable={false}
+                  className="h-full w-full object-contain object-right-bottom"
+                />
+              </picture>
             </div>
 
             <div className="absolute right-0 top-0 z-20 flex items-center gap-2 sm:top-1">
@@ -116,26 +126,33 @@ export function ParliamentShell({ activeTab, children, actions }: Props) {
                   : null}
               </p>
 
-              {data ? (
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <div className={parliamentHeaderStatClassName}>
-                    <span className={parliamentHeaderStatValueClassName}>
-                      {data.memberCountByChamber.camera}
-                    </span>
-                    <span className={parliamentHeaderStatLabelClassName}>
-                      deputați
-                    </span>
-                  </div>
-                  <div className={parliamentHeaderStatClassName}>
-                    <span className={parliamentHeaderStatValueClassName}>
-                      {data.memberCountByChamber.senat}
-                    </span>
-                    <span className={parliamentHeaderStatLabelClassName}>
-                      senatori
-                    </span>
-                  </div>
+              {isError && !data ? null : (
+                // min-h reserves the chip row (border-2 + py-2 + text-base =
+                // 44px) while the counts load, so they cannot push the tab nav
+                // and the page down when they arrive.
+                <div className="mt-8 flex min-h-11 flex-wrap gap-3">
+                  {data ? (
+                    <>
+                      <div className={parliamentHeaderStatClassName}>
+                        <span className={parliamentHeaderStatValueClassName}>
+                          {data.memberCountByChamber.camera}
+                        </span>
+                        <span className={parliamentHeaderStatLabelClassName}>
+                          deputați
+                        </span>
+                      </div>
+                      <div className={parliamentHeaderStatClassName}>
+                        <span className={parliamentHeaderStatValueClassName}>
+                          {data.memberCountByChamber.senat}
+                        </span>
+                        <span className={parliamentHeaderStatLabelClassName}>
+                          senatori
+                        </span>
+                      </div>
+                    </>
+                  ) : null}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
 

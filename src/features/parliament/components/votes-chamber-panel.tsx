@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import type { ParliamentVoteSummary } from '@/schemas/parliament'
+import { useAfterIdle } from '@/hooks/use-after-idle'
 import { cn } from '@/lib/utils'
 import cameraVotes1024 from '../assets/votes-camera-1024.png'
 import cameraVotes512 from '../assets/votes-camera-512.png'
@@ -52,8 +53,17 @@ type VoteIllustrationProps = {
   readonly srcSet: string
 }
 
-/** Responsive native image: explicit geometry prevents CLS; srcSet avoids oversized mobile downloads. */
+/**
+ * Responsive native image: explicit geometry prevents CLS; srcSet avoids
+ * oversized mobile downloads. Mounted once the browser is idle after
+ * hydration: the hub is rendered on the server, and a server-rendered panel
+ * put this decoration (290 KB on a phone, near enough the viewport for
+ * `loading="lazy"` to fetch it at once) in the same window as the entry chunk,
+ * the font and the catalogs. Its 16:9 frame holds the space meanwhile.
+ */
 function VoteIllustration({ src, srcSet }: VoteIllustrationProps) {
+  const show = useAfterIdle()
+  if (!show) return null
   return (
     <img
       src={src}

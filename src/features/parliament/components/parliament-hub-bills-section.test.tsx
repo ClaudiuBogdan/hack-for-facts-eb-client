@@ -19,6 +19,12 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  // The bill heatmap serialises its day address once through the router.
+  useRouter: () => ({
+    buildLocation: ({ to }: { to: string }) => ({ publicHref: to }),
+    history: { createHref: (href: string) => href },
+    navigate: vi.fn(),
+  }),
 }))
 
 const useParliamentBills = vi.fn()
