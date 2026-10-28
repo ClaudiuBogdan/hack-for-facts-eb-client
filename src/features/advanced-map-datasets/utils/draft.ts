@@ -16,6 +16,9 @@ import {
   type AdvancedMapDatasetSavePayload,
   type AdvancedMapDatasetVisibility,
 } from '@/features/advanced-map-datasets/types';
+import { formatAdvancedMapDatasetJsonValue } from '@/features/advanced-map-datasets/utils/json-value-format';
+
+export { formatAdvancedMapDatasetJsonValue };
 
 const HEADER_ALIASES = {
   sirutaCode: ['siruta_code', 'siruta', 'siruta code', 'natcode'],
@@ -78,25 +81,6 @@ export function getAdvancedMapDatasetRowNumberText(
   }
 
   return '';
-}
-
-export function formatAdvancedMapDatasetJsonValue(
-  valueJson: AdvancedMapDatasetJsonItem | null | undefined
-): string {
-  if (!valueJson) {
-    return '';
-  }
-
-  if (valueJson.type === 'text') {
-    return valueJson.value.text;
-  }
-
-  if (valueJson.type === 'markdown') {
-    return valueJson.value.markdown;
-  }
-
-  const label = valueJson.value.label?.trim() ?? '';
-  return label.length > 0 ? `[${label}](${valueJson.value.url})` : valueJson.value.url;
 }
 
 export function getAdvancedMapDatasetPayloadTypes(

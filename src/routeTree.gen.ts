@@ -44,6 +44,7 @@ import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
+import { Route as ChartsIndexRouteImport } from './routes/charts/index'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
@@ -200,7 +201,6 @@ import { Route as PrimarieCuiBugetProvocariModuleSlugIndexRouteImport } from './
 import { Route as PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRouteImport } from './routes/primarie/$cui/buget/provocari/$moduleSlug/$challengeSlug/$stepSlug'
 
 const TermsLazyRouteImport = createFileRoute('/terms')()
-const ChartsIndexLazyRouteImport = createFileRoute('/charts/')()
 const ResearchEmployeesDataLazyRouteImport = createFileRoute(
   '/research/employees-data',
 )()
@@ -388,7 +388,7 @@ const CertificatesIdRoute = CertificatesIdRouteImport.update({
   path: '/certificates/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChartsIndexLazyRoute = ChartsIndexLazyRouteImport.update({
+const ChartsIndexRoute = ChartsIndexRouteImport.update({
   id: '/charts/',
   path: '/charts/',
   getParentRoute: () => rootRouteImport,
@@ -1599,6 +1599,7 @@ export interface FileRoutesByFullPath {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/achizitii/': typeof AchizitiiIndexRoute
   '/alegeri/': typeof AlegeriIndexRoute
+  '/charts/': typeof ChartsIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/development/': typeof DevelopmentIndexRoute
   '/entities/': typeof EntitiesIndexRoute
@@ -1614,7 +1615,6 @@ export interface FileRoutesByFullPath {
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
   '/public-enterprises/': typeof PublicEnterprisesIndexRoute
-  '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
   '/parlament/proiecte/$billId': typeof ParlamentProiecteBillIdRouteRouteWithChildren
@@ -1781,6 +1781,7 @@ export interface FileRoutesByTo {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/achizitii': typeof AchizitiiIndexRoute
   '/alegeri': typeof AlegeriIndexRoute
+  '/charts': typeof ChartsIndexRoute
   '/companies': typeof CompaniesIndexRoute
   '/development': typeof DevelopmentIndexRoute
   '/entities': typeof EntitiesIndexRoute
@@ -1796,7 +1797,6 @@ export interface FileRoutesByTo {
   '/primarie': typeof PrimarieIndexRoute
   '/procurement': typeof ProcurementIndexRoute
   '/public-enterprises': typeof PublicEnterprisesIndexRoute
-  '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/achizitii/achizitii-directe/$id': typeof AchizitiiAchizitiiDirecteIdRoute
   '/achizitii/contracte/$id': typeof AchizitiiContracteIdRoute
@@ -1971,6 +1971,7 @@ export interface FileRoutesById {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/achizitii/': typeof AchizitiiIndexRoute
   '/alegeri/': typeof AlegeriIndexRoute
+  '/charts/': typeof ChartsIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/development/': typeof DevelopmentIndexRoute
   '/entities/': typeof EntitiesIndexRoute
@@ -1986,7 +1987,6 @@ export interface FileRoutesById {
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
   '/public-enterprises/': typeof PublicEnterprisesIndexRoute
-  '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
   '/parlament/proiecte/$billId': typeof ParlamentProiecteBillIdRouteRouteWithChildren
@@ -2167,6 +2167,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/achizitii/'
     | '/alegeri/'
+    | '/charts/'
     | '/companies/'
     | '/development/'
     | '/entities/'
@@ -2182,7 +2183,6 @@ export interface FileRouteTypes {
     | '/primarie/'
     | '/procurement/'
     | '/public-enterprises/'
-    | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
     | '/parlament/proiecte/$billId'
@@ -2349,6 +2349,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/achizitii'
     | '/alegeri'
+    | '/charts'
     | '/companies'
     | '/development'
     | '/entities'
@@ -2364,7 +2365,6 @@ export interface FileRouteTypes {
     | '/primarie'
     | '/procurement'
     | '/public-enterprises'
-    | '/charts'
     | '/$lang/learning/onboarding'
     | '/achizitii/achizitii-directe/$id'
     | '/achizitii/contracte/$id'
@@ -2538,6 +2538,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/achizitii/'
     | '/alegeri/'
+    | '/charts/'
     | '/companies/'
     | '/development/'
     | '/entities/'
@@ -2553,7 +2554,6 @@ export interface FileRouteTypes {
     | '/primarie/'
     | '/procurement/'
     | '/public-enterprises/'
-    | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
     | '/parlament/proiecte/$billId'
@@ -2716,6 +2716,7 @@ export interface RootRouteChildren {
   ShareCodeRoute: typeof ShareCodeRoute
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
+  ChartsIndexRoute: typeof ChartsIndexRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
   InsIndexRoute: typeof InsIndexRoute
   IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
@@ -2725,7 +2726,6 @@ export interface RootRouteChildren {
   ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   PublicEnterprisesIndexRoute: typeof PublicEnterprisesIndexRoute
-  ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
   ParlamentProiecteBillIdRouteRoute: typeof ParlamentProiecteBillIdRouteRouteWithChildren
@@ -3017,7 +3017,7 @@ declare module '@tanstack/react-router' {
       id: '/charts/'
       path: '/charts'
       fullPath: '/charts/'
-      preLoaderRoute: typeof ChartsIndexLazyRouteImport
+      preLoaderRoute: typeof ChartsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/charts/$chartId': {
@@ -4615,6 +4615,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareCodeRoute: ShareCodeRoute,
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
+  ChartsIndexRoute: ChartsIndexRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
   InsIndexRoute: InsIndexRoute,
   IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
@@ -4624,7 +4625,6 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   PublicEnterprisesIndexRoute: PublicEnterprisesIndexRoute,
-  ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:
     AdminCampaignsCampaignKeyRouteRouteWithChildren,
   ParlamentMembriMemberIdRouteRoute:
@@ -4680,13 +4680,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

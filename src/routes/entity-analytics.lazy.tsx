@@ -1,5 +1,5 @@
 import { populationMethodologyReference } from '@/lib/population-methodology';
-import { useMemo, useState, useEffect, useCallback } from 'react'
+import { lazy, Suspense, useMemo, useState, useEffect, useCallback } from 'react'
 import { createLazyFileRoute, getRouteApi } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { EntityAnalyticsFilter as EntityAnalyticsFilterPanel } from '@/components/filters/EntityAnalyticsFilter'
@@ -15,11 +15,9 @@ import { SlidersHorizontal } from 'lucide-react'
 import { useTablePreferences } from '@/hooks/useTablePreferences'
 import { EntityAnalyticsLayout } from '@/components/entity-analytics/EntityAnalyticsLayout'
 import { AnalyticsFilterType } from '@/schemas/charts'
-import { EntityAnalyticsLineItems } from '@/components/entity-analytics/EntityAnalyticsLineItems'
-import { EntityAnalyticsTreemap } from '@/components/entity-analytics/EntityAnalyticsTreemap'
+import { EntityAnalyticsLineItemsSkeleton } from '@/components/entity-analytics/EntityAnalyticsLineItemsSkeleton'
 import { generateHash } from '@/lib/utils'
 import { Analytics } from '@/lib/analytics'
-import { getSiteUrl } from '@/config/env'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { FloatingQuickNav } from '@/components/ui/FloatingQuickNav'
@@ -30,6 +28,15 @@ import { resolveEntityAnalyticsFilter, entityAnalyticsQueryOptions } from '@/lib
 export const Route = createLazyFileRoute('/entity-analytics')({
   component: EntityAnalyticsPage,
 })
+
+// The line-items view (its treemap, the classification trees and motion)
+// loads when it is chosen: the page opens on the table.
+const EntityAnalyticsLineItems = lazy(() =>
+  import('@/components/entity-analytics/EntityAnalyticsLineItems').then((module) => ({ default: module.EntityAnalyticsLineItems })),
+)
+const EntityAnalyticsTreemap = lazy(() =>
+  import('@/components/entity-analytics/EntityAnalyticsTreemap').then((module) => ({ default: module.EntityAnalyticsTreemap })),
+)
 
 function EntityAnalyticsPage() {
   const { filter, sortBy, sortOrder, setSorting, page, pageSize, setPagination, resetFilter, view, treemapPrimary, treemapDepth, setTreemapPrimary, setTreemapDepth, treemapPath, setTreemapPath, transferFilter, setTransferFilter } = useEntityAnalyticsFilter()
@@ -88,7 +95,7 @@ function EntityAnalyticsPage() {
       per_capita_amount: true,
       total_amount: true,
     }
-  })
+  }, { serverRendered: true })
 
   const handleExportCsv = async () => {
     try {
@@ -157,7 +164,6 @@ function EntityAnalyticsPage() {
 
   return (
     <div className="container mx-auto py-4 px-2 md:px-6 max-w-full">
-      {/* Head handled by Route.head */}
       <EntityAnalyticsLayout
         filters={<EntityAnalyticsFilterPanel currency={effectiveCurrency} normalization={effectiveFilter.normalization} />}
         subtitle={t`Analyze aggregated values per entity and explore top entities.`}
@@ -244,6 +250,7 @@ function EntityAnalyticsPage() {
           </div>
         ) : (
           <div className="mt-4 space-y-4">
+            <Suspense fallback={<EntityAnalyticsLineItemsSkeleton />}>
             <EntityAnalyticsTreemap
               filter={effectiveFilter}
               data={aggregatedData}
@@ -266,32 +273,12 @@ function EntityAnalyticsPage() {
               transferFilter={transferFilter}
               onTransferFilterChange={setTransferFilter}
             />
+            </Suspense>
           </div>
         )}
       </EntityAnalyticsLayout>
     </div>
   )
-}
-
-function buildEntityAnalyticsHead() {
-  const site = getSiteUrl()
-  const canonical = `${site}/entity-analytics`
-  const title = 'Entity analytics – Transparenta.eu'
-  const description = 'Analyze aggregated values per entity and explore top entities by amount and per capita.'
-  return {
-    meta: [
-      { title },
-      { name: 'description', content: description },
-      { name: 'og:title', content: title },
-      { name: 'og:description', content: description },
-      { name: 'og:url', content: canonical },
-      { name: 'canonical', content: canonical },
-    ],
-  }
-}
-
-export function head() {
-  return buildEntityAnalyticsHead()
 }
 
 function mapColumnIdToSortBy(columnId: string): string {

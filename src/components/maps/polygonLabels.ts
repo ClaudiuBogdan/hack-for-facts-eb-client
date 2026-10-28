@@ -3,10 +3,28 @@ import L from 'leaflet';
 import { Feature, Geometry, MultiPolygon, Polygon } from 'geojson';
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
-import { formatValueWithUnit, getNormalizationUnit } from '@/lib/utils';
+import { getNormalizationUnit } from '@/lib/utils';
 import type { Currency, Normalization } from '@/schemas/charts';
+import {
+  ADVANCED_ZOOM_THRESHOLDS,
+  ZOOM_THRESHOLDS,
+  formatAmount,
+  getFeatureHeatmapData,
+  normalizeUatLabelName,
+  normalizeWhitespace,
+  type ActiveMapRenderUnit,
+  type LabelMode,
+} from './polygon-label-core';
 
-export type LabelMode = 'legacy-heatmap' | 'active-series';
+export {
+  ADVANCED_ZOOM_THRESHOLDS,
+  ZOOM_THRESHOLDS,
+  formatAmount,
+  getFeatureHeatmapData,
+  normalizeUatLabelName,
+  type ActiveMapRenderUnit,
+  type LabelMode,
+};
 
 export interface FeatureLabelGeometry {
   centroid: [number, number];
@@ -47,14 +65,6 @@ export interface PolygonLabelData {
   cacheKey: string;
 }
 
-export interface ActiveMapRenderUnit {
-  id: string;
-  label: string;
-  memberSirutaCodes: string[];
-  value?: string | number;
-  unit?: string;
-}
-
 export interface ProcessFeatureForLabelOptions {
   labelMode?: LabelMode;
   activeSeriesValuesBySirutaCode?: Map<string, string | number | undefined>;
@@ -73,19 +83,6 @@ export interface ProcessCountyFallbackLabelOptions {
   precomputedGeometry?: FeatureLabelGeometry;
 }
 
-// Legacy thresholds used by /map.
-export const ZOOM_THRESHOLDS = {
-  UAT_NAME_MIN: 9,
-  UAT_AMOUNT_MIN: 11,
-  COUNTY_AMOUNT_MIN: 0,
-} as const;
-
-// Advanced map analytics thresholds used by /maps/editor and /maps/public.
-export const ADVANCED_ZOOM_THRESHOLDS = {
-  UAT_NAME_MIN: 8,
-  UAT_AMOUNT_MIN: 9.5,
-} as const;
-
 const MIN_FALLBACK_LABEL_FONT_SIZE = 8;
 const MIN_COUNTY_LABEL_FONT_SIZE = 9;
 const MIN_ADVANCED_LABEL_FONT_SIZE = 9;
@@ -99,21 +96,6 @@ const ILFOV_FALLBACK_LABEL_OFFSET_Y = -14;
  * sharing cached records across opposite sides of a threshold.
  */
 const ZOOM_CACHE_BUCKET_MULTIPLIER = 10;
-
-function normalizeWhitespace(value: string): string {
-  return value.trim().replace(/\s+/g, ' ');
-}
-
-/**
- * "Short name" for map labels intentionally uses only the normal UAT name.
- */
-export function normalizeUatLabelName(rawName: unknown): string {
-  if (typeof rawName !== 'string') {
-    return '';
-  }
-
-  return normalizeWhitespace(rawName);
-}
 
 function truncateLabelText(text: string, maxLength: number): string {
   if (maxLength <= 1) {
@@ -296,42 +278,6 @@ function doesLabelFitWithinDimensions(
   const textWidth = estimateTextWidth(text, fontSize);
   const textHeight = fontSize * (withAmount ? 2.5 : 1.2);
   return textWidth <= dimensions.width * 0.8 && textHeight <= dimensions.height * 0.8;
-}
-
-/**
- * Format amount for legacy labels.
- */
-export function formatAmount(amount: number, unit: string): string {
-  return formatValueWithUnit(amount, unit, 'compact');
-}
-
-/**
- * Get heatmap data for a feature.
- */
-export function getFeatureHeatmapData(
-  feature: Feature<Geometry, Record<string, unknown>>,
-  heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>
-): HeatmapUATDataPoint | HeatmapCountyDataPoint | undefined {
-  const properties = feature.properties;
-  if (!properties) {
-    return undefined;
-  }
-
-  const candidates = [
-    properties.natcode,
-    properties.mnemonic,
-    properties.siruta_code,
-    properties.uat_code,
-  ].filter(Boolean) as Array<string | number>;
-
-  for (const key of candidates) {
-    const found = heatmapDataMap.get(key);
-    if (found) {
-      return found;
-    }
-  }
-
-  return undefined;
 }
 
 function extractGeometryData(geometry: Geometry): { primaryCoordinates: number[][][]; allCoordinates: number[][][] } | null {

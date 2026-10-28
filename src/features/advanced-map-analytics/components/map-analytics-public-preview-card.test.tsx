@@ -94,7 +94,8 @@ describe('MapAnalyticsPublicPreviewCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open map description' }));
 
     expect(screen.getByText('Map description')).toBeInTheDocument();
-    expect(screen.getByText('Public description')).toBeInTheDocument();
+    // The Markdown renderer loads with the description.
+    expect(await screen.findByText('Public description')).toBeInTheDocument();
   });
 
   it('applies runtime overrides to compatible remote series and the map title', async () => {

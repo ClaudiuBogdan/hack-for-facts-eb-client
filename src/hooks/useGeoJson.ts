@@ -13,10 +13,16 @@ export type GeoJsonAssetType = MapViewType | 'Region';
 // Public assets carry no content hash, so the `-YYYY-MM-DD` suffix is the
 // cache key: publish a boundary revision as a **new** dated file and repoint
 // the entry below. Never overwrite a dated file — clients hold the old one for
-// up to `gcTime`, and a shared URL would silently change underneath them.
+// up to `gcTime`, and a shared URL would silently change underneath them. So
+// `nitro.config.ts` serves `/geojson/**` as immutable, and an old file stays
+// published for the chunks of earlier deploys that still name it.
+//
+// The UAT and county files are the 2026-03-09 boundaries rounded to 5 decimals
+// (about 1 m) without the properties no map reads
+// (`scripts/publish-rounded-geojson.mjs`): 713 → 400 KB and 115 → 61 KB zstd.
 const GEO_JSON_ASSET_URLS: Record<GeoJsonAssetType, string> = {
-  UAT: '/geojson/uat-2026-03-09.json',
-  County: '/geojson/judete-2026-03-09.json',
+  UAT: '/geojson/uat-2026-10-28.json',
+  County: '/geojson/judete-2026-10-28.json',
   Region: '/geojson/region-2026-07-25.json',
 };
 

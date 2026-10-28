@@ -1,5 +1,5 @@
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import { BarChart3, Plus, Search as SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ChartCategory, StoredChart, getChartsStore } from "@/components/charts/chartsStore";
-import { ChartList } from "@/components/charts/components/chart-list/ChartList";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn, slugify } from "@/lib/utils";
 import { usePersistedState } from "@/lib/hooks/usePersistedState";
 import { ChartCategories } from "@/components/charts/components/chart-categories/ChartCategories";
 import ChartsBackupRestore from "@/components/charts/components/backup-restore/ChartsBackupRestore";
-import { getSiteUrl } from "@/config/env";
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 import { FloatingQuickNav } from "@/components/ui/FloatingQuickNav";
@@ -32,18 +31,41 @@ export const Route = createLazyFileRoute("/charts/")({
 // Get store lazily on first use to avoid SSR issues
 const getStore = () => getChartsStore();
 
+// The list, its cards and their chart previews load only when this browser
+// has saved charts: a new visitor's page is the empty state.
+const ChartList = lazy(() =>
+  import("@/components/charts/components/chart-list/ChartList").then((module) => ({ default: module.ChartList })),
+);
+
+function LazyChartList(props: ComponentProps<typeof ChartList>) {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" aria-hidden>
+          <Skeleton className="h-72 w-full rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-xl" />
+        </div>
+      }
+    >
+      <ChartList {...props} />
+    </Suspense>
+  );
+}
+
 type SortOption = "newest" | "oldest" | "a-z" | "z-a" | "favorites-first";
 
 type ActiveTab = "all" | "favorites" | `category:${string}`;
 
 function ChartsListPage() {
-  const [charts, setCharts] = useState<StoredChart[]>(() =>
-    getStore().loadSavedCharts({ filterDeleted: true, sort: true })
-  );
+  // The charts live in this browser's storage, which the server cannot read:
+  // the first render matches the server's, and the stored charts, categories
+  // and sort order are read once the page has hydrated.
+  const [charts, setCharts] = useState<StoredChart[]>([]);
   const [search, setSearch] = useState<string>("");
   const [activeTab, setActiveTab] = useState<ActiveTab>("all");
-  const [sortBy, setSortBy] = usePersistedState<SortOption>("charts-page-sort-by", "newest");
-  const [categories, setCategories] = useState<readonly ChartCategory[]>(() => getStore().loadCategories());
+  const [sortBy, setSortBy] = usePersistedState<SortOption>("charts-page-sort-by", "newest", { readStoredValueAfterMount: true });
+  const [categories, setCategories] = useState<readonly ChartCategory[]>([]);
   //
 
   const handleDeleteChart = useCallback(async (chartId: string) => {
@@ -76,6 +98,7 @@ function ChartsListPage() {
       setCharts(getStore().loadSavedCharts({ filterDeleted: true, sort: true }));
       setCategories(getStore().loadCategories());
     };
+    reloadFromStorage();
     window.addEventListener("storage", reloadFromStorage);
     return () => window.removeEventListener("storage", reloadFromStorage);
   }, []);
@@ -161,7 +184,6 @@ function ChartsListPage() {
           normalization: 'total',
         }}
       />
-      {/* Head handled by Route.head */}
       <div className="rounded-xl border bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-6 md:p-8 shadow-md">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-2">
@@ -266,7 +288,7 @@ function ChartsListPage() {
                 <p className="text-muted-foreground"><Trans>Try a different search term or sorting.</Trans></p>
               </div>
             ) : (
-              <ChartList
+              <LazyChartList
                 charts={filteredAllCharts}
                 onDelete={handleDeleteChart}
                 onToggleFavorite={handleToggleFavorite}
@@ -284,7 +306,7 @@ function ChartsListPage() {
                 <p className="text-muted-foreground"><Trans>Mark charts as favorites to quickly find them here.</Trans></p>
               </div>
             ) : (
-              <ChartList
+              <LazyChartList
                 charts={filteredFavoriteCharts}
                 onDelete={handleDeleteChart}
                 onToggleFavorite={handleToggleFavorite}
@@ -305,7 +327,7 @@ function ChartsListPage() {
                     <p className="text-muted-foreground"><Trans>Use the tag menu on a chart card to add it to this category.</Trans></p>
                   </div>
                 ) : (
-                  <ChartList
+                  <LazyChartList
                     charts={chartsInCat}
                     onDelete={handleDeleteChart}
                     onToggleFavorite={handleToggleFavorite}
@@ -323,27 +345,6 @@ function ChartsListPage() {
       {/* Category dialogs and triggers moved into ChartCategories to avoid rerenders of the list when typing */}
     </div>
   );
-}
-
-function buildChartsListHead() {
-  const site = getSiteUrl()
-  const canonical = `${site}/charts/`
-  const title = 'Saved charts – Transparenta.eu'
-  const description = 'Manage and search your locally saved charts. Create, favorite, categorize, and share your visualizations.'
-  return {
-    meta: [
-      { title },
-      { name: 'description', content: description },
-      { name: 'og:title', content: title },
-      { name: 'og:description', content: description },
-      { name: 'og:url', content: canonical },
-      { name: 'canonical', content: canonical },
-    ],
-  }
-}
-
-export function head() {
-  return buildChartsListHead()
 }
 
 // Category triggers and dialogs moved to ChartCategories component

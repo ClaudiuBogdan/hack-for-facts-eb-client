@@ -46,11 +46,11 @@ import { UatFeature, UatProperties } from './interfaces';
 import type {
   ActiveMapRenderUnit,
   LabelMode,
-} from './polygonLabels';
+} from './polygon-label-core';
 import {
   ADVANCED_ZOOM_THRESHOLDS,
   ZOOM_THRESHOLDS,
-} from './polygonLabels';
+} from './polygon-label-core';
 import {
   buildHeatmapTooltipLookup,
   buildHeatmapDataMap,
@@ -82,6 +82,11 @@ import {
 import {
   buildLabelSourceData,
 } from './interactive-map-label-sources';
+import {
+  MAP_LABEL_FONTSTACK,
+  MAPLIBRE_GLYPHS_URL,
+  resolveSelfHostedGlyphPath,
+} from './map-glyphs';
 
 const MAP_VIEW_EPSILON = 1e-6;
 const VIEWPORT_PROP_ECHO_CENTER_EPSILON = 1e-4;
@@ -118,7 +123,6 @@ const RENDER_UNIT_MEMBER_LABEL_LAYER_ID = 'interactive-map-render-unit-member-la
 const ROADS_LAYER_ID = 'interactive-map-roads-line';
 const POPULATION_GRID_LAYER_ID = 'interactive-map-population-grid-fill';
 
-const MAPLIBRE_GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
 const MAPLIBRE_ATTRIBUTION_LABEL = 'MapLibre';
 const MAPLIBRE_ATTRIBUTION_HTML =
   `<a href="https://maplibre.org/" target="_blank" rel="noopener noreferrer">${MAPLIBRE_ATTRIBUTION_LABEL}</a>`;
@@ -135,6 +139,14 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
   layers: [],
 };
 const MAP_TOOLTIP_POPUP_CLASS = 'interactive-map-tooltip-popup';
+
+/** The glyph ranges this site serves, from its own origin; any other request unchanged. */
+const transformMapRequest: maplibregl.RequestTransformFunction = (url, resourceType) => {
+  // `ResourceType` is an ambient const enum, so its member cannot be named here.
+  if (String(resourceType) !== 'Glyphs') return undefined;
+  const path = resolveSelfHostedGlyphPath(url);
+  return path ? { url: new URL(path, window.location.href).href } : undefined;
+};
 
 function buildMapAttributions(
   sourceAttribution: InteractiveMapProps['sourceAttribution'],
@@ -504,7 +516,7 @@ function buildSymbolLayout(
 ): maplibregl.SymbolLayerSpecification['layout'] {
   const layout: maplibregl.SymbolLayerSpecification['layout'] = {
     'text-field': ['get', textField],
-    'text-font': ['Noto Sans Regular'],
+    'text-font': [MAP_LABEL_FONTSTACK],
     'text-size': buildLabelTextSizeExpression(defaultFontSize),
     'text-line-height': 1.05,
     'text-anchor': 'center',
@@ -1779,6 +1791,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       minZoom,
       maxZoom,
       maxBounds: normalizeBounds(maxBounds),
+      transformRequest: transformMapRequest,
       attributionControl: {
         compact: false,
         customAttribution: buildMapAttributions(sourceAttribution),

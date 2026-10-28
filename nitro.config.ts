@@ -43,6 +43,15 @@ export default defineNitroConfig({
       },
     },
     "/budget-explorer": { cache: longPublicPageCache },
+    // Boundary files are published under a new dated name, never over an old
+    // one (`src/hooks/useGeoJson.ts`), so a copy never goes stale.
+    "/geojson/**": {
+      headers: { "cache-control": "public, max-age=31536000, immutable" },
+    },
+    // The map's label glyphs, in a dated folder (`src/components/maps/map-glyphs.ts`).
+    "/map-glyphs/**": {
+      headers: { "cache-control": "public, max-age=31536000, immutable" },
+    },
     // A withdrawn companies analytics release must stop reaching readers at the
     // next request: every render reads the API afresh, and none is ever kept.
     "/companies/analytics": { cache: false },

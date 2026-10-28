@@ -12,12 +12,12 @@ import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heat
 import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
 import { getNormalizationUnit } from '@/lib/utils';
 
-import type { ActiveMapRenderUnit, LabelMode } from './polygonLabels';
+import type { ActiveMapRenderUnit, LabelMode } from './polygon-label-core';
 import {
   formatAmount,
   getFeatureHeatmapData,
   normalizeUatLabelName,
-} from './polygonLabels';
+} from './polygon-label-core';
 import {
   type PreparedFeatureCollection,
   resolveFeatureIdentifier,

@@ -45,6 +45,7 @@ let latestSeriesPanelProps: Record<string, unknown> | undefined;
 let mockGeoJsonData: {
   data: unknown;
   isLoading: boolean;
+  isPending?: boolean;
   error: Error | null;
 } = {
   data: null,
@@ -212,8 +213,13 @@ vi.mock('@/lib/hooks/useEntityDetails', () => ({
 }));
 
 vi.mock('@/hooks/useGeoJson', () => ({
-  useGeoJsonData: (mapViewType: 'UAT' | 'County') =>
-    mapViewType === 'County' ? mockCountyGeoJsonData : mockGeoJsonData,
+  // A query that is fetching is also pending; one that has not started (the
+  // server render) is pending without loading.
+  useGeoJsonData: (mapViewType: 'UAT' | 'County') => {
+    const result: { data: unknown; isLoading: boolean; isPending?: boolean; error: Error | null } =
+      mapViewType === 'County' ? mockCountyGeoJsonData : mockGeoJsonData;
+    return { ...result, isPending: result.isPending ?? result.isLoading };
+  },
 }));
 
 vi.mock('@/hooks/useAdvancedMapAnalyticsSeriesData', () => ({
@@ -537,6 +543,31 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     expect(screen.getByText('Loading analytics data...')).toBeInTheDocument();
     expect(screen.queryByTestId('advanced-map-analytics-main-view')).not.toBeInTheDocument();
+  });
+
+  it('shows the map as loading, not unavailable, before the boundaries query has started', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: undefined,
+      isLoading: false,
+      isPending: true,
+      error: null,
+    };
+
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={vi.fn()}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    expect(screen.getByText('Loading advanced map analytics...')).toBeInTheDocument();
+    expect(screen.queryByText('Map geometry is unavailable.')).not.toBeInTheDocument();
   });
 
   it('shows analytics error when geojson-backed series request fails', async () => {
@@ -2088,8 +2119,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       'href',
       'https://example.com/report'
     );
+    // The Markdown renderer loads with the first Markdown payload.
+    expect(await within(detailsPanel).findByText('bullet item')).toBeInTheDocument();
     expect(within(detailsPanel).getAllByText('Summary').length).toBeGreaterThan(0);
-    expect(within(detailsPanel).getByText('bullet item')).toBeInTheDocument();
   });
 
   it('closes the desktop details container when clicking outside it', async () => {

@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useState,
   memo,
   useCallback,
@@ -31,11 +33,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ClassificationDescription } from '@/components/classification-explorer/ClassificationDescription'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { ClassificationType } from '@/types/classification-explorer'
 import { Link } from '@tanstack/react-router'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
+
+// The description and its Markdown renderer load when the dialog opens: every
+// filter list and line-item row carries this link.
+const ClassificationDescription = lazy(() =>
+  import('@/components/classification-explorer/ClassificationDescription').then((module) => ({
+    default: module.ClassificationDescription,
+  })),
+)
+
+function DescriptionFallback() {
+  return (
+    <div className="space-y-2" aria-hidden>
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
+    </div>
+  )
+}
 
 // Static classes extracted outside component to avoid recreation
 const BASE_CLASSES =
@@ -130,7 +150,9 @@ function DialogContentInner({
       </DialogHeader>
       <div className="py-2">
         {normalizedCode ? (
-          <ClassificationDescription type={type} code={normalizedCode} />
+          <Suspense fallback={<DescriptionFallback />}>
+            <ClassificationDescription type={type} code={normalizedCode} />
+          </Suspense>
         ) : (
           <p className="text-sm text-muted-foreground">
             <Trans>Click the link below to explore all {type} classifications.</Trans>
@@ -175,7 +197,9 @@ function SheetContentInner({
       </SheetHeader>
       <div className="py-2">
         {normalizedCode ? (
-          <ClassificationDescription type={type} code={normalizedCode} />
+          <Suspense fallback={<DescriptionFallback />}>
+            <ClassificationDescription type={type} code={normalizedCode} />
+          </Suspense>
         ) : (
           <p className="text-sm text-muted-foreground">
             <Trans>Click the link below to explore all {type} classifications.</Trans>

@@ -1,22 +1,13 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { lazy, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 
-const DISALLOWED_ELEMENTS = [
-  'script',
-  'style',
-  'iframe',
-  'object',
-  'embed',
-  'form',
-  'input',
-  'button',
-];
-
-const isSafeExternalHref = (href: string | undefined): boolean => {
-  if (!href) return false;
-  return href.startsWith('http://') || href.startsWith('https://');
-};
+// The Markdown renderer (react-markdown, remark-gfm: 48 KB zstd) loads when a
+// description is shown, not with every map page.
+const MapDescriptionMarkdown = lazy(() =>
+  import('@/components/maps/advanced-map-analytics/map-description-markdown').then((module) => ({
+    default: module.MapDescriptionMarkdown,
+  })),
+);
 
 interface MapDescriptionRendererProps {
   description: string;
@@ -53,24 +44,9 @@ export function MapDescriptionRenderer({
         className
       )}
     >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        disallowedElements={DISALLOWED_ELEMENTS}
-        components={{
-          a: ({ href, children }) => {
-            if (!isSafeExternalHref(href)) {
-              return <span>{children}</span>;
-            }
-            return (
-              <a href={href} target="_blank" rel="noopener noreferrer">
-                {children}
-              </a>
-            );
-          },
-        }}
-      >
-        {description}
-      </ReactMarkdown>
+      <Suspense fallback={null}>
+        <MapDescriptionMarkdown description={description} />
+      </Suspense>
     </div>
   );
 }
