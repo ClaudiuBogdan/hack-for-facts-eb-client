@@ -2005,9 +2005,12 @@ export function MapAnalyticsWorkspace({
     ]
   );
 
+  // Pending, not `isLoading`: on the server, and in the browser before the
+  // query has mounted, the boundaries are not loaded yet rather than missing,
+  // and the map says so (a spinner, not "Map geometry is unavailable").
   const {
     data: rawGeoJsonData,
-    isLoading: isGeoJsonLoading,
+    isPending: isGeoJsonLoading,
     error: geoJsonError,
   } = useGeoJsonData(mapViewType);
 

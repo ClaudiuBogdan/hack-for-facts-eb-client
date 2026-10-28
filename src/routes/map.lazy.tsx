@@ -1,5 +1,6 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { Filter } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { MapFilter } from "@/components/filters/MapFilter";
 import { MapAnalyticsWorkspace } from "@/features/advanced-map-analytics/components/map-analytics-workspace";
+import { warmAdvancedAnalyticsMapResources } from "@/features/advanced-map-analytics/analytics-map-warmup";
 import { buildStandaloneMapState } from "@/features/advanced-map-analytics/standalone-map-state";
 import { MapStateSchema, type MapUrlState } from "@/schemas/map-filters";
 import type { AdvancedMapAnalyticsUrlState } from "@/schemas/advanced-map-analytics";
@@ -117,6 +119,25 @@ function StandaloneMapWorkspace({
     ...interactionState,
     activeView,
   };
+  const queryClient = useQueryClient();
+  const { mapViewType } = state;
+  const drawsCountyBoundaries = state.mapLayers.countyBoundaries;
+  const showsMap = activeView === "map";
+  // The workspace fetches the boundaries once it mounts, but imports the
+  // renderer only when the boundaries and the figures are both in, and
+  // MapLibre then asks for its workers and the label glyphs only after it has
+  // laid the boundaries out. Started together here, at hydration, they overlap
+  // instead of following one another. The route's `beforeLoad` does the same
+  // for the boundaries on a client navigation; it does not run on hydration.
+  useEffect(() => {
+    void warmAdvancedAnalyticsMapResources({
+      queryClient,
+      mapViewType,
+      includeCountyGeoJson: drawsCountyBoundaries,
+      preloadInteractiveMap: showsMap,
+      prewarmRenderer: true,
+    });
+  }, [queryClient, mapViewType, drawsCountyBoundaries, showsMap]);
   const setMapState = (
     updater:
       | AdvancedMapAnalyticsUrlState
