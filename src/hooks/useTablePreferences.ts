@@ -19,6 +19,10 @@ type CurrencyFormat = NonNullable<TablePreferences['currencyFormat']>
 export function useTablePreferences(
   key: string,
   initial: Partial<TablePreferences> = {},
+  options: {
+    /** The table is server-rendered: apply the stored preferences after hydration, not in the markup. */
+    readonly serverRendered?: boolean
+  } = {},
 ) {
   const storageKey = `${STORAGE_KEY_PREFIX}${key}`
   const [prefs, setPrefs] = usePersistedState<TablePreferences>(storageKey, {
@@ -28,7 +32,7 @@ export function useTablePreferences(
     columnSizing: initial.columnSizing ?? {},
     columnOrder: initial.columnOrder ?? [],
     currencyFormat: initial.currencyFormat ?? 'both',
-  })
+  }, { readStoredValueAfterMount: options.serverRendered === true })
 
   const setDensity = useCallback((next: Updater<Density>) => {
     setPrefs((prev) => ({ ...prev, density: typeof next === 'function' ? (next as (p: Density) => Density)(prev.density) : next }))

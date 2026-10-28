@@ -88,7 +88,7 @@ function EntityAnalyticsPage() {
       per_capita_amount: true,
       total_amount: true,
     }
-  })
+  }, { serverRendered: true })
 
   const handleExportCsv = async () => {
     try {

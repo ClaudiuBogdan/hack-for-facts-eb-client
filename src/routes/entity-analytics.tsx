@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { defaultEntityAnalyticsFilter, entityAnalyticsFilterSchema, resolveEntityAnalyticsFilter, entityAnalyticsQueryOptions } from '@/lib/entity-analytics-query'
 import { readUserCurrencyPreference, readUserInflationAdjustedPreference } from '@/lib/user-preferences'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 
 const viewEnum = z.enum(['table', 'chart', 'line-items'])
 
@@ -33,10 +34,15 @@ export const Route = createFileRoute('/entity-analytics')({
     ])
     const entityAnalyticsPreferences = { currency, inflationAdjusted }
     if (parsed.view === 'table') {
-      void queryClient.prefetchQuery(entityAnalyticsQueryOptions({
+      const rows = queryClient.prefetchQuery(entityAnalyticsQueryOptions({
         ...parsed,
         filter: resolveEntityAnalyticsFilter(parsed.filter, entityAnalyticsPreferences),
       }))
+      // The server sends the table's rows in the HTML, not a skeleton that
+      // only hydration fills: the response waited for the query anyway (the
+      // route cache keeps the whole body). A client navigation shows the page
+      // at once and the rows when they come.
+      if (shouldBlockLoaderForSsr()) await rows
     }
     return { entityAnalyticsPreferences }
   },
