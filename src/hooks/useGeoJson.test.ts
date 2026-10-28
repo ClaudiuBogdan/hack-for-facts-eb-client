@@ -16,8 +16,8 @@ describe('useGeoJson query helpers', () => {
   it('resolves public asset URLs per map view type', async () => {
     const { resolveGeoJsonAssetUrl } = await import('./useGeoJson');
 
-    expect(resolveGeoJsonAssetUrl('UAT')).toBe('/geojson/uat-2026-03-09.json');
-    expect(resolveGeoJsonAssetUrl('County')).toBe('/geojson/judete-2026-03-09.json');
+    expect(resolveGeoJsonAssetUrl('UAT')).toBe('/geojson/uat-2026-10-28.json');
+    expect(resolveGeoJsonAssetUrl('County')).toBe('/geojson/judete-2026-10-28.json');
     expect(resolveGeoJsonAssetUrl('Region')).toBe('/geojson/region-2026-07-25.json');
   });
 
@@ -27,12 +27,12 @@ describe('useGeoJson query helpers', () => {
     expect(geoJsonQueryOptions('UAT').queryKey).toEqual([
       'geoJsonData',
       'UAT',
-      '/geojson/uat-2026-03-09.json',
+      '/geojson/uat-2026-10-28.json',
     ]);
     expect(geoJsonQueryOptions('County').queryKey).toEqual([
       'geoJsonData',
       'County',
-      '/geojson/judete-2026-03-09.json',
+      '/geojson/judete-2026-10-28.json',
     ]);
     expect(geoJsonQueryOptions('Region').queryKey).toEqual([
       'geoJsonData',
@@ -51,13 +51,13 @@ describe('useGeoJson query helpers', () => {
     });
 
     const { fetchGeoJsonData } = await import('./useGeoJson');
-    const data = await fetchGeoJsonData('/geojson/uat-2026-03-09.json');
+    const data = await fetchGeoJsonData('/geojson/uat-2026-10-28.json');
 
     expect(data).toEqual({
       type: 'FeatureCollection',
       features: [],
     });
-    expect(fetchMock).toHaveBeenCalledWith('/geojson/uat-2026-03-09.json');
+    expect(fetchMock).toHaveBeenCalledWith('/geojson/uat-2026-10-28.json');
     expect(fetchMock.mock.calls[0]?.[1]).toBeUndefined();
   });
 });

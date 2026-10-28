@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildAdvancedMapDatasetUatDirectory } from './use-advanced-map-dataset-uat-directory';
-import uatGeoJson from '../../../../public/geojson/uat-2026-03-09.json';
+import uatGeoJson from '../../../../public/geojson/uat-2026-10-28.json';
 
 describe('advanced-map-dataset-uat-directory', () => {
   it('loads the editor directory from local geojson data', () => {
