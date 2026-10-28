@@ -1,6 +1,6 @@
 import { compareMapDecimals } from '@/lib/map-series/decimal';
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { t } from '@lingui/core/macro';
 import {
@@ -13,8 +13,6 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,7 +23,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { AdvancedMapDatasetJsonItem } from '@/features/advanced-map-datasets/types';
 import type { EntityProfileData } from '@/lib/api/entities';
 import { cn } from '@/lib/utils';
-import type { Components } from 'react-markdown';
+
+// A Markdown payload's renderer (react-markdown, remark-gfm: 48 KB zstd) loads
+// when one is shown, not with every map page.
+const MapAnalyticsPayloadMarkdown = lazy(() =>
+  import('@/features/advanced-map-analytics/components/map-analytics-payload-markdown').then((module) => ({
+    default: module.MapAnalyticsPayloadMarkdown,
+  })),
+);
 
 export interface MapAnalyticsEntityDetailsSelection {
   readonly countyName?: string;
@@ -669,39 +674,6 @@ function MapAnalyticsPayloadRenderer({
 }: Readonly<{
   payload: AdvancedMapDatasetJsonItem;
 }>) {
-  const markdownComponents: Components = {
-    p: ({ children }) => <p className="my-2 first:mt-0 last:mb-0">{children}</p>,
-    ul: ({ children }) => <ul className="my-2 list-disc space-y-1 pl-5">{children}</ul>,
-    ol: ({ children }) => <ol className="my-2 list-decimal space-y-1 pl-5">{children}</ol>,
-    li: ({ children }) => <li>{children}</li>,
-    strong: ({ children }) => (
-      <strong className="font-semibold text-foreground">{children}</strong>
-    ),
-    em: ({ children }) => <em className="italic">{children}</em>,
-    code: ({ children }) => (
-      <code className="rounded bg-background/80 px-1 py-0.5 font-mono text-[0.92em]">
-        {children}
-      </code>
-    ),
-    a: ({ href, children }) => {
-      const safeHref = typeof href === 'string' && isSafeHttpUrl(href) ? href : undefined;
-      if (!safeHref) {
-        return <span>{children}</span>;
-      }
-
-      return (
-        <a
-          href={safeHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-primary underline-offset-4 hover:underline"
-        >
-          {children}
-        </a>
-      );
-    },
-  };
-
   if (payload.type === 'text') {
     return (
       <div
@@ -722,9 +694,9 @@ function MapAnalyticsPayloadRenderer({
         className="rounded-[18px] border border-border/70 bg-muted/[0.12] px-3 py-3"
       >
         <div className="break-words text-sm leading-6 text-foreground/90">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-            {payload.value.markdown}
-          </ReactMarkdown>
+          <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+            <MapAnalyticsPayloadMarkdown markdown={payload.value.markdown} />
+          </Suspense>
         </div>
       </div>
     );

@@ -251,7 +251,7 @@ describe('ClassificationInfoLink', () => {
     expect(trigger).not.toHaveClass('inline-flex')
   })
 
-  it('opens the details dialog directly when no menu actions are provided', () => {
+  it('opens the details dialog directly when no menu actions are provided', async () => {
     render(
       <ClassificationInfoLink
         type="functional"
@@ -268,7 +268,8 @@ describe('ClassificationInfoLink', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Classification Details')).toBeInTheDocument()
-    expect(screen.getByText('Classification description')).toBeInTheDocument()
+    // The description loads with the dialog.
+    expect(await screen.findByText('Classification description')).toBeInTheDocument()
   })
 
   it('does nothing when disabled', () => {
@@ -386,7 +387,7 @@ describe('ClassificationInfoLink', () => {
     expect(onOverlayOpenChange).toHaveBeenNthCalledWith(2, false)
   })
 
-  it('opens the details dialog from the menu info action', () => {
+  it('opens the details dialog from the menu info action', async () => {
     render(
       <ClassificationInfoLink
         type="economic"
@@ -410,7 +411,7 @@ describe('ClassificationInfoLink', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'Info' }))
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Classification description')).toBeInTheDocument()
+    expect(await screen.findByText('Classification description')).toBeInTheDocument()
   })
 
 })

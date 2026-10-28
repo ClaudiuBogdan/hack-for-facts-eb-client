@@ -14,7 +14,7 @@ import { UploadedMapDatasetDialog } from '@/features/advanced-map-analytics/comp
 import { createAdvancedMapStateFromUploadedDataset } from '@/features/advanced-map-analytics/uploaded-map-dataset';
 import { createMapCloneHandoff } from '@/features/advanced-map-analytics/store/map-clone-handoff';
 import { createAdvancedMapDatasetCloneDraft } from '@/features/advanced-map-datasets/utils/clone-draft';
-import { formatAdvancedMapDatasetJsonValue } from '@/features/advanced-map-datasets/utils/draft';
+import { formatAdvancedMapDatasetJsonValue } from '@/features/advanced-map-datasets/utils/json-value-format';
 
 interface AdvancedMapDatasetPublicPageProps {
   publicId: string;

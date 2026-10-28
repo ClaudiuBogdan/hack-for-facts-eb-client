@@ -26,7 +26,7 @@ import type {
   AdvancedMapDatasetSummary,
 } from '@/features/advanced-map-datasets/api/schemas';
 import type { UploadedMapDatasetReference } from '@/features/advanced-map-analytics/uploaded-map-dataset';
-import { formatAdvancedMapDatasetJsonValue } from '@/features/advanced-map-datasets/utils/draft';
+import { formatAdvancedMapDatasetJsonValue } from '@/features/advanced-map-datasets/utils/json-value-format';
 
 const DATASET_TABLE_PREVIEW_ROWS = 12;
 

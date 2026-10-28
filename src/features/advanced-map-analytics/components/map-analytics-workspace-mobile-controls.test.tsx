@@ -2119,8 +2119,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       'href',
       'https://example.com/report'
     );
+    // The Markdown renderer loads with the first Markdown payload.
+    expect(await within(detailsPanel).findByText('bullet item')).toBeInTheDocument();
     expect(within(detailsPanel).getAllByText('Summary').length).toBeGreaterThan(0);
-    expect(within(detailsPanel).getByText('bullet item')).toBeInTheDocument();
   });
 
   it('closes the desktop details container when clicking outside it', async () => {
