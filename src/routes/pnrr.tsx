@@ -14,6 +14,7 @@ import {
   loadPnrrSeoData,
   type PnrrSeoLoaderData,
 } from '@/features/pnrr/seo/pnrr-seo-loader'
+import { pnrrOverviewQueryKey } from '@/features/pnrr/lib/pnrr-overview-request'
 import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/i18n'
 
 export type PnrrRouteLoaderData = PnrrSeoLoaderData
@@ -55,15 +56,27 @@ export const Route = createFileRoute('/pnrr')({
       locale: normalizeLocale(i18n.locale) ?? DEFAULT_LOCALE,
     })
   },
-  loader: async ({ deps }) => {
+  loader: async ({ deps, context, location }): Promise<PnrrRouteLoaderData> => {
     const loaderDeps = deps as {
       readonly seoSnapshotSearch: Partial<PnrrSearchState>
       readonly seoSnapshotSearchKey: string
     }
+    const view = (location.search as Partial<PnrrSearchState>).view
 
-    return loadPnrrSeoData({
+    const { overview, ...loaderData } = await loadPnrrSeoData({
       search: loaderDeps.seoSnapshotSearch,
       searchKey: loaderDeps.seoSnapshotSearchKey,
+      // Another tab opens on the raw dataset; only the overview tab uses it.
+      includeOverview: view === undefined || view === 'overview',
     })
+    // The server-built overview travels with the page in the query cache.
+    if (overview) {
+      context.queryClient.setQueryData(
+        pnrrOverviewQueryKey(loaderDeps.seoSnapshotSearchKey),
+        overview,
+      )
+    }
+
+    return loaderData
   },
 })

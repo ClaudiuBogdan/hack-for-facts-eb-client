@@ -193,6 +193,47 @@ export type PnrrWorkerOverviewModel = {
   readonly mapPreview: PnrrWorkerMapModel
 }
 
+export type PnrrWorkerOverviewSummary = Omit<
+  PnrrWorkerOverviewModel,
+  'mapPreview'
+>
+
+/** What the overview needs from the query meta (the server builds it with the worker's code). */
+export type PnrrOverviewMeta = Pick<
+  PnrrWorkerMeta,
+  | 'projectCount'
+  | 'projectRecordCount'
+  | 'beneficiaryPaymentCount'
+  | 'officialAllocatedTotalEur'
+  | 'officialPaidTotalEur'
+  | 'paidBeneficiaryCount'
+  | 'paymentCapability'
+  | 'indicatorCapability'
+>
+
+/**
+ * The overview the server builds for `/pnrr` (SSR and `/api/pnrr/overview`),
+ * so the default view needs no raw dataset. `labels` names the active UAT and
+ * beneficiary filters the way the worker's facets and beneficiary page would.
+ */
+export type PnrrServerOverview = {
+  readonly fileSetId: string
+  readonly overview: PnrrWorkerOverviewSummary
+  readonly meta: PnrrOverviewMeta
+  readonly labels: {
+    readonly uats: readonly { readonly siruta: string; readonly label: string }[]
+    readonly beneficiaries: readonly {
+      readonly cui: string
+      readonly name: string
+    }[]
+  }
+}
+
+export type PnrrServerOverviewMapPreview = {
+  readonly fileSetId: string
+  readonly mapPreview: PnrrWorkerMapModel
+}
+
 export type PnrrWorkerQueryResult = {
   readonly overview: PnrrWorkerOverviewModel
   readonly projectPage: PnrrWorkerProjectPage

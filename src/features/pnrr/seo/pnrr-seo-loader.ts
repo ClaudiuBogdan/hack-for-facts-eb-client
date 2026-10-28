@@ -11,6 +11,7 @@ import {
   readUserCurrencyPreference,
 } from '@/lib/user-preferences'
 import type { PnrrDataCacheGeneration } from '@/server/handlers/pnrr-data-proxy'
+import type { PnrrServerOverview } from '../workers/pnrr-worker-types'
 import type { PnrrSeoSnapshot } from './pnrr-seo'
 
 export type PnrrSeoLoaderData = {
@@ -20,9 +21,19 @@ export type PnrrSeoLoaderData = {
   readonly requestSiteUrl?: string
 }
 
+/**
+ * The route puts `overview` in the query cache (dehydrated with the page)
+ * instead of the loader data, so the client reads it like any fetched overview.
+ */
+export type PnrrSeoLoaderResult = PnrrSeoLoaderData & {
+  readonly overview: PnrrServerOverview | null
+}
+
 export type PnrrSeoLoaderInput = {
   readonly search: Partial<PnrrSearchState>
   readonly searchKey: string
+  /** Build the server overview for SSR (only the overview tab shows it). */
+  readonly includeOverview?: boolean
 }
 
 const PNRR_SEO_SNAPSHOT_TTL_MS = 60 * 60 * 1000
@@ -271,22 +282,41 @@ function warmServerSeoDataCache(): void {
     })
 }
 
+async function loadServerOverview(
+  input: PnrrSeoLoaderInput,
+): Promise<PnrrServerOverview | null> {
+  if (!input.includeOverview) return null
+  try {
+    const { readPnrrOverviewForSsr } = await import(
+      '@/server/handlers/pnrr-overview'
+    )
+    return readPnrrOverviewForSsr(input.search)
+  } catch (error) {
+    console.error('[pnrr-seo-loader] PNRR overview for SSR failed', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return null
+  }
+}
+
 export const loadPnrrSeoData = createIsomorphicFn()
-  .client(async (input: PnrrSeoLoaderInput): Promise<PnrrSeoLoaderData> => {
+  .client(async (input: PnrrSeoLoaderInput): Promise<PnrrSeoLoaderResult> => {
     return {
       initialCurrency: readClientCurrencyPreference() ?? DEFAULT_CURRENCY,
       seoSnapshot: null,
       seoSnapshotSearchKey: input.searchKey,
       requestSiteUrl: typeof window === 'undefined' ? undefined : window.location.origin,
+      overview: null,
     }
   })
   .server(
-    async (input: PnrrSeoLoaderInput): Promise<PnrrSeoLoaderData> => {
+    async (input: PnrrSeoLoaderInput): Promise<PnrrSeoLoaderResult> => {
       const { getRequestUrl } = await import('@tanstack/react-start/server')
       const requestUrl = getRequestUrl()
-      const [seoSnapshot, initialCurrency] = await Promise.all([
+      const [seoSnapshot, initialCurrency, overview] = await Promise.all([
         loadServerSeoSnapshot(input),
         readUserCurrencyPreference(),
+        loadServerOverview(input),
       ])
 
       return {
@@ -294,6 +324,7 @@ export const loadPnrrSeoData = createIsomorphicFn()
         seoSnapshot,
         seoSnapshotSearchKey: input.searchKey,
         requestSiteUrl: requestUrl.origin,
+        overview,
       }
     },
   )

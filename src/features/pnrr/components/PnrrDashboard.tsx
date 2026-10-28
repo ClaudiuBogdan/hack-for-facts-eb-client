@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
-import { usePnrrWorkerModel } from "../hooks/usePnrrData";
+import {
+  usePnrrServerOverview,
+  usePnrrWorkerModel,
+} from "../hooks/usePnrrData";
 import { usePnrrFilterState } from "../hooks/usePnrrFilterState";
 import {
   computeAggregates,
@@ -12,7 +15,10 @@ import {
 import { PnrrCurrencyProvider } from "../lib/PnrrCurrencyProvider";
 import { PnrrContentSkeleton } from "./PnrrSkeleton";
 import { PnrrHeader } from "./PnrrHeader";
-import { PnrrOverview } from "./tabs/PnrrOverview";
+import {
+  PnrrFullDataLoadingStatus,
+  PnrrOverview,
+} from "./tabs/PnrrOverview";
 import { PnrrProjectsView } from "./tabs/PnrrProjectsView";
 import { PnrrAnomaliesView } from "./tabs/PnrrAnomaliesView";
 import { PnrrBeneficiariesView } from "./tabs/PnrrBeneficiariesView";
@@ -29,6 +35,8 @@ import {
   buildPnrrSeoSnapshotSearchKey,
   type PnrrSeoSnapshot,
 } from "../seo/pnrr-seo";
+import { buildPnrrOverviewSearchKey } from "../lib/pnrr-overview-request";
+import { PnrrRawDataReadyContext } from "../lib/pnrr-raw-data-context";
 import type { PnrrOverviewMetricStats } from "./tabs/PnrrOverview";
 import type { Currency } from "@/schemas/charts";
 
@@ -42,34 +50,68 @@ export function PnrrDashboard({
   readonly ssrSnapshotSearchKey?: string;
 }) {
   const filterState = usePnrrFilterState();
-  const {
-    data,
-    error,
-    isError,
-    isLoading,
-    isRefetching,
-    refetch,
-    isPlaceholderData,
-  } = usePnrrWorkerModel(filterState.search);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
   const emptyAggregates = useMemo(() => computeAggregates([]), []);
 
   const view = filterState.search.view ?? "overview";
   const effectiveCurrency = filterState.search.currency ?? initialCurrency;
+
+  // The raw dataset (3.4 MB, processed in a worker) loads only once the
+  // reader needs it: an explorer tab, the filter sheet, a filter changed on
+  // the page, an opened project, or a failed server overview. From then on
+  // the worker serves every view, the overview included.
+  const filterKey = buildPnrrOverviewSearchKey(filterState.search);
+  const [initialFilterKey] = useState(filterKey);
+  const [rawDataRequested, setRawDataRequested] = useState(false);
+  if (
+    !rawDataRequested &&
+    (view !== "overview" ||
+      filterSheetOpen ||
+      filterKey !== initialFilterKey ||
+      Boolean(filterState.search.panelProjectId))
+  ) {
+    setRawDataRequested(true);
+  }
+  const workerQuery = usePnrrWorkerModel(filterState.search, {
+    enabled: rawDataRequested,
+  });
+  const data = workerQuery.data;
+  // Until then the overview is the server's, built with the worker's code
+  // from the same files, for the filters the page opened with (SSR puts it
+  // in the query cache).
+  const serverOverviewQuery = usePnrrServerOverview(filterState.search, {
+    enabled: view === "overview" && !data && filterKey === initialFilterKey,
+  });
+  if (!rawDataRequested && serverOverviewQuery.isError) {
+    setRawDataRequested(true);
+  }
+  const serverOverview = data ? undefined : serverOverviewQuery.data;
+  const summary = data
+    ? { overview: data.overview, meta: data.meta }
+    : serverOverview
+      ? { overview: serverOverview.overview, meta: serverOverview.meta }
+      : null;
+
   const uatLabelsBySiruta = useMemo(() => {
     const labels = new Map<string, string>();
 
     for (const uat of data?.filterFacets.uats ?? []) {
       labels.set(uat.value, uat.label);
     }
+    for (const uat of serverOverview?.labels.uats ?? []) {
+      labels.set(uat.siruta, uat.label);
+    }
 
     return labels;
-  }, [data?.filterFacets.uats]);
+  }, [data?.filterFacets.uats, serverOverview?.labels.uats]);
   const beneficiaryNamesByCui = useMemo(() => {
     const labels = new Map<string, string>();
 
-    for (const beneficiary of data?.beneficiaryPage.rows ?? []) {
+    for (const beneficiary of [
+      ...(data?.beneficiaryPage.rows ?? []),
+      ...(serverOverview?.labels.beneficiaries ?? []),
+    ]) {
       if (!beneficiary.cui || !beneficiary.name) continue;
 
       const cui = beneficiary.cui.replace(/\D/g, "");
@@ -82,43 +124,61 @@ export function PnrrDashboard({
     }
 
     return labels;
-  }, [data?.beneficiaryPage.rows]);
+  }, [data?.beneficiaryPage.rows, serverOverview?.labels.beneficiaries]);
   const hasScopedFilters = hasPnrrDataFilters(filterState.search);
 
-  const filteredAggregates = data?.overview.aggregates ?? emptyAggregates;
+  const filteredAggregates = summary?.overview.aggregates ?? emptyAggregates;
 
-  const loading = isLoading;
-  const loadError = isError && !data ? error : null;
+  const isViewReady = view === "overview" ? summary !== null : data !== undefined;
+  const loading =
+    !isViewReady &&
+    (workerQuery.isLoading ||
+      (view === "overview" && serverOverviewQuery.isLoading));
+  const loadError = !isViewReady
+    ? (workerQuery.error ?? serverOverviewQuery.error)
+    : null;
   const currentSnapshotSearchKey = useMemo(
     () => buildPnrrSeoSnapshotSearchKey(filterState.search),
     [filterState.search],
   );
   const activeSsrSnapshot =
     ssrSnapshotSearchKey === currentSnapshotSearchKey ? ssrSnapshot : null;
-  const headerProjectCount = data
+  const headerProjectCount = summary
     ? filteredAggregates.projectCount
     : (activeSsrSnapshot?.projectCount ?? 0);
   const officialAllocatedTotalEur =
-    data?.meta?.officialAllocatedTotalEur ??
+    summary?.meta.officialAllocatedTotalEur ??
     activeSsrSnapshot?.officialAllocatedTotalEur ??
     null;
   const isUsingOfficialHeaderTotal =
     !hasScopedFilters &&
     typeof officialAllocatedTotalEur === "number" &&
     officialAllocatedTotalEur > 0;
-  const headerTotalValue = data
+  const headerTotalValue = summary
     ? isUsingOfficialHeaderTotal
       ? officialAllocatedTotalEur
       : filteredAggregates.rawTotalValue
     : isUsingOfficialHeaderTotal
       ? officialAllocatedTotalEur
       : (activeSsrSnapshot?.listedFundingTotalRon ?? 0);
-  const hasCachedHeaderStats = loading && !data && activeSsrSnapshot != null;
+  const isHeaderLoading =
+    !summary &&
+    (workerQuery.isLoading || serverOverviewQuery.isLoading) &&
+    activeSsrSnapshot == null;
   const cachedOverviewStats = activeSsrSnapshot
     ? buildCachedOverviewStats(activeSsrSnapshot)
     : null;
   const shouldRenderCachedOverview =
-    loading && !data && view === "overview" && cachedOverviewStats != null;
+    loading && view === "overview" && cachedOverviewStats != null;
+  const retryQuery = rawDataRequested ? workerQuery : serverOverviewQuery;
+  // The overview can stay on the server's data while the raw dataset failed:
+  // the filter facets and the map fallback depend on it, so say so and retry.
+  const rawDataError =
+    isViewReady && rawDataRequested && !data && workerQuery.isError
+      ? workerQuery.error
+      : null;
+  const isRawDataLoading =
+    isViewReady && rawDataRequested && !data && workerQuery.isFetching;
 
   return (
     <PnrrCurrencyProvider
@@ -143,7 +203,7 @@ export function PnrrDashboard({
           filterState={filterState}
           beneficiaryNamesByCui={beneficiaryNamesByCui}
           uatLabelsBySiruta={uatLabelsBySiruta}
-          isLoading={loading && !hasCachedHeaderStats}
+          isLoading={isHeaderLoading}
           actions={
             <div className="flex items-center gap-2">
               <Button
@@ -170,8 +230,8 @@ export function PnrrDashboard({
           }
         />
 
-        {(data?.meta.paymentCapability === "degraded" ||
-          data?.meta.indicatorCapability === "degraded") && (
+        {(summary?.meta.paymentCapability === "degraded" ||
+          summary?.meta.indicatorCapability === "degraded") && (
           <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-orange)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-orange)]" />
             <div>
@@ -209,75 +269,98 @@ export function PnrrDashboard({
         )}
 
         {/* Tab Content */}
-        <main
-          id={`pnrr-panel-${view}`}
-          role="tabpanel"
-          aria-labelledby={`pnrr-tab-${view}`}
-          className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
-        >
-          {shouldRenderCachedOverview ? (
-            <PnrrOverview
-              aggregates={emptyAggregates}
-              filterState={filterState}
-              cachedStats={cachedOverviewStats}
-              officialAllocatedTotalEur={
-                activeSsrSnapshot?.officialAllocatedTotalEur ?? null
-              }
-              isLoadingFullData
-            />
-          ) : loading ? (
-            <PnrrContentSkeleton />
-          ) : !data ? (
-            // `loading` and `loadError` do not cover every dataless state: with
-            // the default `networkMode: 'online'`, an offline browser parks the
-            // query at `fetchStatus: 'paused'`, where `isLoading` and `isError`
-            // are both false and `data` is undefined. Without this branch the
-            // render would fall through and dereference `undefined`.
-            <PnrrDataErrorState
-              error={loadError}
-              isRetrying={isRefetching}
-              onRetry={() => {
-                void refetch();
-              }}
-            />
-          ) : (
-            <>
-              {view === "overview" && (
+        <PnrrRawDataReadyContext value={data !== undefined}>
+          <main
+            id={`pnrr-panel-${view}`}
+            role="tabpanel"
+            aria-labelledby={`pnrr-tab-${view}`}
+            className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+          >
+            {isRawDataLoading && (
+              <div className="mb-8">
+                <PnrrFullDataLoadingStatus />
+              </div>
+            )}
+            {rawDataError && (
+              <div className="mb-8">
+                <PnrrDataErrorState
+                  error={rawDataError}
+                  isRetrying={workerQuery.isRefetching}
+                  onRetry={() => {
+                    void workerQuery.refetch();
+                  }}
+                />
+              </div>
+            )}
+            {shouldRenderCachedOverview ? (
+              <PnrrOverview
+                aggregates={emptyAggregates}
+                filterState={filterState}
+                cachedStats={cachedOverviewStats}
+                officialAllocatedTotalEur={
+                  activeSsrSnapshot?.officialAllocatedTotalEur ?? null
+                }
+                isLoadingFullData
+              />
+            ) : loading ? (
+              <PnrrContentSkeleton />
+            ) : !isViewReady ? (
+              // `loading` and `loadError` do not cover every dataless state: with
+              // the default `networkMode: 'online'`, an offline browser parks the
+              // query at `fetchStatus: 'paused'`, where `isLoading` and `isError`
+              // are both false and `data` is undefined. Without this branch the
+              // render would fall through and dereference `undefined`.
+              <PnrrDataErrorState
+                error={loadError}
+                isRetrying={retryQuery.isRefetching}
+                onRetry={() => {
+                  void retryQuery.refetch();
+                }}
+              />
+            ) : view === "overview" ? (
+              summary && (
                 <PnrrOverview
                   aggregates={filteredAggregates}
                   filterState={filterState}
-                  overview={data.overview}
+                  overview={summary.overview}
+                  mapPreview={data?.overview.mapPreview}
+                  onMapPreviewUnavailable={() => setRawDataRequested(true)}
                   officialAllocatedTotalEur={officialAllocatedTotalEur}
                 />
-              )}
-              {view === "projects" && (
-                <PnrrProjectsView
-                  page={data.projectPage}
-                  projectRecordCount={filteredAggregates.projectRecordCount}
-                  filterState={filterState}
-                  isPageStatePending={isPlaceholderData}
-                />
-              )}
-              {view === "map" && (
-                <PnrrMapView model={data.mapModel} filterState={filterState} />
-              )}
-              {view === "beneficiaries" && (
-                <PnrrBeneficiariesView
-                  page={data.beneficiaryPage}
-                  filterState={filterState}
-                />
-              )}
-              {view === "anomalies" && (
-                <PnrrAnomaliesView
-                  model={data.anomalyModel}
-                  aggregates={filteredAggregates}
-                  filterState={filterState}
-                  isPageStatePending={isPlaceholderData}
-                />
-              )}
-            </>
-          )}
-        </main>
+              )
+            ) : (
+              data && (
+              <>
+                {view === "projects" && (
+                  <PnrrProjectsView
+                    page={data.projectPage}
+                    projectRecordCount={filteredAggregates.projectRecordCount}
+                    filterState={filterState}
+                    isPageStatePending={workerQuery.isPlaceholderData}
+                  />
+                )}
+                {view === "map" && (
+                  <PnrrMapView model={data.mapModel} filterState={filterState} />
+                )}
+                {view === "beneficiaries" && (
+                  <PnrrBeneficiariesView
+                    page={data.beneficiaryPage}
+                    filterState={filterState}
+                  />
+                )}
+                {view === "anomalies" && (
+                  <PnrrAnomaliesView
+                    model={data.anomalyModel}
+                    aggregates={filteredAggregates}
+                    filterState={filterState}
+                    isPageStatePending={workerQuery.isPlaceholderData}
+                  />
+                )}
+              </>
+              )
+            )}
+          </main>
+        </PnrrRawDataReadyContext>
 
         {/* Data source disclaimer */}
         <footer
