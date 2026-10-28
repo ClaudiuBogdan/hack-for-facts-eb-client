@@ -12,29 +12,24 @@ import { monthText } from '@/features/national-budget/analytics/lib/analytics-fo
 import { changeOf } from '@/features/national-budget/analytics/lib/analytics-view'
 import { exactFigure } from '@/features/national-budget/analytics/lib/exact'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
-import { HUB_SHORTCUT_LINK_CLASS, HubPending } from '@/features/statistics/components/hub/hub-chrome'
+import { HUB_SHORTCUT_LINK_CLASS } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import { useGdp, useYearLines } from '../hooks/use-home-data'
 import { TOTAL_ITEMS, readKey, type GdpStatus, type YearView } from '../lib/home-data'
 import { deficitOf, gdpNumber, gdpSizeText, moneyText, sizeText } from '../lib/home-format'
-import { YearOptions } from './home-shell'
+import { useShownYear } from '../hooks/use-home-year'
+import { YearMenu } from './home-shell'
 import { siteKeys } from '../lib/home-data'
 
 /**
  * The page's head, in the hubs' language (the lattice, the corner ticks, the
  * mono breadcrumb): the question as the headline, the year, the shortcuts
  * into the analysis page, the year's balance beside them, the sources at its
- * foot. Then the figures band.
+ * foot. Then the figures band. The head's words are the page's first paint:
+ * only the year, the balance and the sources' date wait for a read, each in
+ * its own boundary.
  */
-
-export type HeadProps = {
-  readonly view: YearView
-  readonly views: readonly YearView[]
-  /** The years the bulletins don't finish: listed, not chosen. */
-  readonly unavailable: ReadonlyMap<number, string | null>
-  readonly onYear: (year: number) => void
-}
 
 function HeadFrame({ children, aside }: { readonly children: ReactNode; readonly aside: ReactNode }) {
   return (
@@ -58,11 +53,11 @@ function Crumb() {
 }
 
 /** The page's year, one dropdown (the pinned bar carries the same). */
-function YearDropdown({ view, views, unavailable, onYear }: HeadProps) {
+function YearDropdown() {
   return (
     <label className="mt-6 inline-flex items-center gap-3">
       <MonoLabel className="text-muted-foreground/70">{t`Anul`}</MonoLabel>
-      <YearOptions view={view} views={views} unavailable={unavailable} onYear={onYear} className="min-h-11 py-1 pl-4 pr-10 text-base" />
+      <YearMenu className="min-h-11 py-1 pl-4 pr-10 text-base" pendingClassName="h-11 w-56" />
     </label>
   )
 }
@@ -90,7 +85,6 @@ const SOURCE_LINK_CLASS = 'font-medium text-foreground underline-offset-4 hover:
 
 /** The sources in a few words, each a link, and how recent the data is: the procurement hub's source line. */
 function SourcesLine({ className }: { readonly className?: string }) {
-  const catalog = useNationalCatalog()
   const newTab = <span className="sr-only"> {t`(se deschide într-o filă nouă)`}</span>
   return (
     <p className={cn('text-sm text-muted-foreground', className)}>
@@ -106,9 +100,17 @@ function SourcesLine({ className }: { readonly className?: string }) {
         <span aria-hidden="true"> ↗</span>
         {newTab}
       </a>
-      {t`, date până în ${monthText(catalog.execution.coverage.lastMonth)}`}
+      <BandRead fallback={<span aria-hidden="true" className="ml-1 inline-block h-3.5 w-40 animate-pulse rounded-sm bg-muted/60 align-middle" />} quiet={null}>
+        <DataUntil />
+      </BandRead>
     </p>
   )
+}
+
+/** How recent the bulletins are: the catalog's last month. */
+function DataUntil() {
+  const catalog = useNationalCatalog()
+  return <>{t`, date până în ${monthText(catalog.execution.coverage.lastMonth)}`}</>
 }
 
 // ─────────────────────────────────────────────────── the year's balance ──
@@ -174,15 +176,51 @@ export function BalanceBars({ view }: { readonly view: YearView }) {
   )
 }
 
-/** The head: the question as the headline, the year and the shortcuts; the year's balance beside it; the sources at its foot. */
-export function PageHead(props: HeadProps) {
+/**
+ * The balance while it reads, in its shape (the label, two bars with their
+ * lines, the deficit and its two-line note), so the sources under it on a
+ * phone don't move when it arrives.
+ */
+function BalancePending() {
+  const bar = 'animate-pulse rounded-sm bg-muted/60'
+  return (
+    <div aria-hidden="true">
+      <div className={cn(bar, 'h-2.5 w-28')} />
+      <div className="mt-5 space-y-5">
+        {[0, 1].map((index) => (
+          <div key={index}>
+            <div className={cn(bar, 'h-5')} />
+            <div className={cn(bar, 'mt-2 h-7')} />
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 border-t pt-4">
+        <div className={cn(bar, 'h-5 w-2/3')} />
+        <div className={cn(bar, 'mt-1 h-10')} />
+      </div>
+    </div>
+  )
+}
+
+/** The year's balance for the year shown; a new year is a new read, as in the bands. */
+function HeadBalance() {
   const catalog = useNationalCatalog()
+  const { view } = useShownYear()
+  return (
+    <BandRead key={readKey(view, catalog)} resetKey={readKey(view, catalog)} fallback={<BalancePending />}>
+      <BalanceBars view={view} />
+    </BandRead>
+  )
+}
+
+/** The head: the question as the headline, the year and the shortcuts; the year's balance beside it; the sources at its foot. */
+export function PageHead() {
   return (
     <HeadFrame
       aside={
         <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6">
-          <BandRead key={readKey(props.view, catalog)} resetKey={readKey(props.view, catalog)} fallback={<HubPending rows={5} />}>
-            <BalanceBars view={props.view} />
+          <BandRead fallback={<BalancePending />}>
+            <HeadBalance />
           </BandRead>
         </div>
       }
@@ -196,7 +234,7 @@ export function PageHead(props: HeadProps) {
       <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
         {t`Bugetul României pe înțelesul tuturor: cât încasează statul, cât cheltuie, cine cheltuie și cât se împrumută.`}
       </p>
-      <YearDropdown {...props} />
+      <YearDropdown />
       <Shortcuts />
     </HeadFrame>
   )
@@ -281,17 +319,57 @@ function Figures({ view }: { readonly view: YearView }) {
   )
 }
 
-export function FiguresBand({ view }: { readonly view: YearView }) {
-  const catalog = useNationalCatalog()
+function FiguresFrame({ children }: { readonly children: ReactNode }) {
   return (
     <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
       <RuledFrame>
         <CruxMarks />
-        <BandRead key={readKey(view, catalog)} resetKey={readKey(view, catalog)} fallback={<div className="px-5 py-7"><HubPending rows={2} /></div>}>
-          <Figures view={view} />
-        </BandRead>
+        {children}
       </RuledFrame>
     </section>
+  )
+}
+
+/**
+ * The four figures' cells while they read, in `HubFiguresBand`'s shape (its
+ * padding, the value's line, a label of two lines on a phone and one wider,
+ * a note), so the bands below don't move when the numbers arrive.
+ */
+function FiguresPending() {
+  const bar = 'animate-pulse rounded-sm bg-muted/60'
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4" aria-hidden="true">
+      {[0, 1, 2, 3].map((index) => (
+        <div
+          key={index}
+          className={cn('flex flex-col px-5 py-6 sm:py-7', index % 2 === 1 && 'border-l', index >= 2 && 'border-t lg:border-t-0', index >= 1 && 'lg:border-l')}
+        >
+          <div className={cn(bar, 'h-8 w-3/4 sm:h-10')} />
+          <div className={cn(bar, 'mt-2.5 h-8 sm:h-4')} />
+          <div className={cn(bar, 'mt-3 h-4 w-2/3')} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function FiguresBand({ view }: { readonly view: YearView }) {
+  const catalog = useNationalCatalog()
+  return (
+    <FiguresFrame>
+      <BandRead key={readKey(view, catalog)} resetKey={readKey(view, catalog)} fallback={<FiguresPending />}>
+        <Figures view={view} />
+      </BandRead>
+    </FiguresFrame>
+  )
+}
+
+/** The figures band before the page knows its year: as `FiguresBand` waits for its read. */
+export function PendingFiguresBand() {
+  return (
+    <FiguresFrame>
+      <FiguresPending />
+    </FiguresFrame>
   )
 }
 
