@@ -348,13 +348,29 @@ export const PNRR_SEARCH_DEFAULTS = {
   beneficiaryPage: 1,
 } as const
 
-const optionalTextSearchParam = z.preprocess((value) => {
+function toOptionalTextParam(value: unknown): unknown {
   if (value === undefined || value === null) return undefined
   if (typeof value === 'string') return value
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value)
   }
   return value
+}
+
+const optionalTextSearchParam = z.preprocess(
+  toOptionalTextParam,
+  z.string().optional(),
+)
+
+// The project and beneficiary searches run their query against every project, on the server too, so a
+// URL can carry only this much of it; the filter itself also stops at its sixteenth term.
+export const PNRR_TEXT_SEARCH_MAX_LENGTH = 512
+
+const boundedTextSearchParam = z.preprocess((value) => {
+  const text = toOptionalTextParam(value)
+  return typeof text === 'string'
+    ? text.slice(0, PNRR_TEXT_SEARCH_MAX_LENGTH)
+    : text
 }, z.string().optional())
 
 const optionalIdentifierSearchParam = z.preprocess((value) => {
@@ -401,8 +417,8 @@ const optionalEntityTypesSearchParam = z.preprocess(
 
 export const PnrrSearchSchema = z.object({
   view: PnrrViewSchema.default(PNRR_SEARCH_DEFAULTS.view),
-  search: optionalTextSearchParam,
-  beneficiarySearch: optionalTextSearchParam,
+  search: boundedTextSearchParam,
+  beneficiarySearch: boundedTextSearchParam,
   beneficiaryCui: optionalIdentifierSearchParam,
   uatSiruta: optionalIdentifierSearchParam,
   uatName: optionalTextSearchParam,

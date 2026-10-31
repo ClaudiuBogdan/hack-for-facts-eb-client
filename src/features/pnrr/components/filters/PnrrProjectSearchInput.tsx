@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PNRR_TEXT_SEARCH_MAX_LENGTH } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 
 const SEARCH_DEBOUNCE_MS = 300
@@ -56,6 +57,7 @@ export function PnrrProjectSearchInput({
           autoComplete="off"
           aria-label={!showLabel ? t`Project search` : undefined}
           placeholder={t`Title, beneficiary, CUI, or locality...`}
+          maxLength={PNRR_TEXT_SEARCH_MAX_LENGTH}
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
           className="h-12 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-11 py-2 text-base font-bold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"

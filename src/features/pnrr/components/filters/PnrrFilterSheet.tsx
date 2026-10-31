@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type { PnrrBeneficiaryType, PnrrSearchState } from '@/schemas/pnrr'
+import {
+  PNRR_TEXT_SEARCH_MAX_LENGTH,
+  type PnrrBeneficiaryType,
+  type PnrrSearchState,
+} from '@/schemas/pnrr'
 import type { Currency } from '@/schemas/charts'
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
@@ -444,6 +448,7 @@ export function PnrrFilterSheet({
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
                   <Input
                     placeholder={t`Title, beneficiary, CUI, or locality...`}
+                    maxLength={PNRR_TEXT_SEARCH_MAX_LENGTH}
                     value={projectInput}
                     onChange={(e) => setProjectInput(e.target.value)}
                     className={FILTER_INPUT_CLASS}
@@ -505,6 +510,7 @@ export function PnrrFilterSheet({
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
                   <Input
                     placeholder={t`Beneficiary name...`}
+                    maxLength={PNRR_TEXT_SEARCH_MAX_LENGTH}
                     value={beneficiaryInput}
                     onChange={(e) => setBeneficiaryInput(e.target.value)}
                     className={FILTER_INPUT_CLASS}

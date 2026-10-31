@@ -13,7 +13,10 @@ import { formatPnrrCurrency, formatPnrrPercentage } from '../../lib/formatting'
 import {
   usePnrrBeneficiaryDetail,
 } from '../../hooks/usePnrrData'
-import type { PnrrBeneficiarySortBy } from '@/schemas/pnrr'
+import {
+  PNRR_TEXT_SEARCH_MAX_LENGTH,
+  type PnrrBeneficiarySortBy,
+} from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import {
@@ -324,6 +327,7 @@ export function PnrrBeneficiariesView({
           autoComplete="off"
           aria-label={t`Beneficiary search`}
           placeholder={t`Search beneficiary...`}
+          maxLength={PNRR_TEXT_SEARCH_MAX_LENGTH}
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value)

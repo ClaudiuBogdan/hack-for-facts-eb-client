@@ -17,6 +17,7 @@ import {
   type PnrrEntityType,
   type PnrrBeneficiaryType,
   type PnrrSearchState,
+  PNRR_TEXT_SEARCH_MAX_LENGTH,
 } from '@/schemas/pnrr'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
@@ -1418,10 +1419,17 @@ export function processPnrrData(rawProjects: readonly unknown[]): {
 //
 // Implementation: tokenize → resolve (...) groups → flat OR/AND/NOT parse.
 // One level of grouping only (no nested parens).
+// A query keeps its first PNRR_TEXT_SEARCH_MAX_LENGTH characters and its first
+// MAX_SEARCH_TERMS terms, and each term's pattern is compiled once per query.
 // ---------------------------------------------------------------------------
 
+const MAX_SEARCH_TERMS = 16
+const SEARCH_OPERATOR_TOKENS: ReadonlySet<string> = new Set(['AND', 'OR', '(', ')', '-('])
+const DANGLING_SEARCH_TOKENS: ReadonlySet<string> = new Set(['AND', 'OR', '(', '-('])
+
 type SearchExpr =
-  | { type: 'term'; value: string; exact: boolean }
+  // pattern is null for an empty term, which matches everything
+  | { type: 'term'; pattern: RegExp | null }
   | { type: 'not'; clause: SearchExpr }
   | { type: 'and'; clauses: SearchExpr[] }
   | { type: 'or'; clauses: SearchExpr[] }
@@ -1638,11 +1646,40 @@ function makeTerm(token: string): SearchExpr {
   const raw = isExact ? token.slice(1, -1) : token
   // Strip trailing * — prefix matching is the default, so * is redundant
   const value = raw.endsWith('*') ? raw.slice(0, -1) : raw
+  const term = normalizeTitle(value)
+  if (!term) return { type: 'term', pattern: null }
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  // Exact phrase: must appear contiguously with word boundaries on both sides.
+  // Prefix match: the term must appear at the start of a word.
   return {
     type: 'term',
-    value,
-    exact: isExact,
+    pattern: new RegExp(isExact ? `\\b${escaped}\\b` : `\\b${escaped}`),
   }
+}
+
+/**
+ * Keep the tokens up to the last term allowed by MAX_SEARCH_TERMS; operators
+ * and parentheses do not count as terms. A cut query also loses the operators
+ * and opening parentheses that only led to the dropped terms: an empty group
+ * would match every project, or none once negated. A group the cut leaves
+ * open runs to the end of the query, as an unclosed one always has.
+ */
+function limitSearchTerms(tokens: readonly string[]): string[] {
+  const kept: string[] = []
+  let terms = 0
+  for (const token of tokens) {
+    if (!SEARCH_OPERATOR_TOKENS.has(token)) {
+      terms++
+      if (terms > MAX_SEARCH_TERMS) {
+        while (kept.length > 0 && DANGLING_SEARCH_TOKENS.has(kept[kept.length - 1])) {
+          kept.pop()
+        }
+        break
+      }
+    }
+    kept.push(token)
+  }
+  return kept
 }
 
 // ---------------------------------------------------------------------------
@@ -1650,7 +1687,9 @@ function makeTerm(token: string): SearchExpr {
 // ---------------------------------------------------------------------------
 
 function buildSearchExpr(query: string): SearchExpr {
-  const tokens = tokenizeSearch(query)
+  const tokens = limitSearchTerms(
+    tokenizeSearch(query.slice(0, PNRR_TEXT_SEARCH_MAX_LENGTH)),
+  )
   const items = resolveGroups(tokens)
   return parseFlat(items)
 }
@@ -1660,17 +1699,8 @@ function buildSearchExpr(query: string): SearchExpr {
  */
 function evaluateSearchExpr(expr: SearchExpr, haystack: string): boolean {
   switch (expr.type) {
-    case 'term': {
-      const term = normalizeTitle(expr.value)
-      if (!term) return true // empty term matches everything
-      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      if (expr.exact) {
-        // Exact phrase: must appear contiguously with word boundaries on both sides
-        return new RegExp(`\\b${escaped}\\b`).test(haystack)
-      }
-      // Prefix match: the term must appear at the start of a word
-      return new RegExp(`\\b${escaped}`).test(haystack)
-    }
+    case 'term':
+      return expr.pattern ? expr.pattern.test(haystack) : true
     case 'not':
       return !evaluateSearchExpr(expr.clause, haystack)
     case 'and':
@@ -1923,14 +1953,28 @@ export function filterProjectRecords(
   })
 }
 
+type TextSearchExprs = {
+  readonly search: SearchExpr | null
+  readonly beneficiarySearch: SearchExpr | null
+}
+
+function buildTextSearchExprs(filters: PnrrFilters): TextSearchExprs {
+  return {
+    search: filters.search ? buildSearchExpr(filters.search) : null,
+    beneficiarySearch: filters.beneficiarySearch
+      ? buildSearchExpr(filters.beneficiarySearch)
+      : null,
+  }
+}
+
 function projectMatchesTextFilters(
   project: PnrrProject,
-  filters: PnrrFilters,
+  textSearch: TextSearchExprs,
 ): boolean {
   const records = project.records ?? [project]
 
-  if (filters.search) {
-    const searchExpr = buildSearchExpr(filters.search)
+  const searchExpr = textSearch.search
+  if (searchExpr) {
     const haystack = normalizeTitle(
       records
         .map(
@@ -1942,15 +1986,15 @@ function projectMatchesTextFilters(
     if (!evaluateSearchExpr(searchExpr, haystack)) return false
   }
 
-  if (filters.beneficiarySearch) {
-    const searchExpr = buildSearchExpr(filters.beneficiarySearch)
+  const beneficiaryExpr = textSearch.beneficiarySearch
+  if (beneficiaryExpr) {
     const matches = records.some((record) => {
       const nameMatch = evaluateSearchExpr(
-        searchExpr,
+        beneficiaryExpr,
         normalizeTitle(record.beneficiary),
       )
       const cuiMatch = record.cui
-        ? evaluateSearchExpr(searchExpr, record.cui)
+        ? evaluateSearchExpr(beneficiaryExpr, record.cui)
         : false
       return nameMatch || cuiMatch
     })
@@ -1963,8 +2007,9 @@ function projectMatchesTextFilters(
 function projectMatchesProjectFilters(
   project: PnrrProject,
   filters: PnrrFilters,
+  textSearch: TextSearchExprs,
 ): boolean {
-  if (!projectMatchesTextFilters(project, filters)) return false
+  if (!projectMatchesTextFilters(project, textSearch)) return false
 
   const projectValue = project.listedFundingTotalRon ?? project.listedFundingRon
   if (filters.excludeMicro && projectValue < 5000) return false
@@ -1995,7 +2040,8 @@ export function filterProjects(
     flattenPnrrProjectRecords(projects),
     filters,
   )
+  const textSearch = buildTextSearchExprs(filters)
   return groupPnrrProjects(matchingRecords).filter((project) =>
-    projectMatchesProjectFilters(project, filters),
+    projectMatchesProjectFilters(project, filters, textSearch),
   )
 }

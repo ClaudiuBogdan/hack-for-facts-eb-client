@@ -77,6 +77,18 @@ describe("pnrr search schema", () => {
     });
   });
 
+  it("keeps at most 512 characters of the project and beneficiary searches", () => {
+    const parsed = parsePnrrSearch({
+      search: "a".repeat(600),
+      beneficiarySearch: "b".repeat(513),
+    });
+    expect(parsed.search).toBe("a".repeat(512));
+    expect(parsed.beneficiarySearch).toBe("b".repeat(512));
+    expect(
+      parsePnrrSearchString(`?search=${"c ".repeat(1000)}`).search,
+    ).toHaveLength(511);
+  });
+
   it("keeps primitive-looking text search values as strings", () => {
     expect(parsePnrrSearchString("?search=2024&onlyAnomalies=true")).toEqual({
       search: "2024",

@@ -1528,6 +1528,44 @@ describe('search query parser', () => {
     expect(result).toHaveLength(4)
   })
 
+  it('uses only the first sixteen terms of a query', () => {
+    const sixteenTerms = Array.from({ length: 16 }, () => 'modernizare').join(' ')
+    const result = filterProjects(makeProjects(), { search: `${sixteenTerms} inexistent` })
+    expect(result.map((p) => p.title).sort()).toEqual(['Modernizare Drum National', 'Modernizare Scoala Gimnaziala'])
+  })
+
+  it('does not count operators and parentheses as terms', () => {
+    const terms = Array.from({ length: 15 }, () => 'modernizare').join(' AND ')
+    const result = filterProjects(makeProjects(), { search: `(${terms}) scoala` })
+    expect(result.map((p) => p.title)).toEqual(['Modernizare Scoala Gimnaziala'])
+  })
+
+  it('drops a group the term limit leaves empty', () => {
+    const sixteenTerms = Array.from({ length: 16 }, () => 'modernizare').join(' ')
+    const expected = ['Modernizare Drum National', 'Modernizare Scoala Gimnaziala']
+    for (const tail of ['OR (scoala)', '-(spital)', 'AND (spital OR solar)']) {
+      const result = filterProjects(makeProjects(), { search: `${sixteenTerms} ${tail}` })
+      expect(result.map((p) => p.title).sort(), tail).toEqual(expected)
+    }
+  })
+
+  it('keeps a group the term limit cuts open', () => {
+    const fifteenTerms = Array.from({ length: 15 }, () => 'modernizare').join(' ')
+    const result = filterProjects(makeProjects(), { search: `${fifteenTerms} (scoala inexistent)` })
+    expect(result.map((p) => p.title)).toEqual(['Modernizare Scoala Gimnaziala'])
+  })
+
+  it('ignores query text past 512 characters', () => {
+    const result = filterProjects(makeProjects(), { search: `modernizare${' '.repeat(600)}inexistent` })
+    expect(result).toHaveLength(2)
+  })
+
+  it('applies the beneficiary search with the same term limit', () => {
+    const sixteenTerms = Array.from({ length: 16 }, () => 'solar').join(' ')
+    const result = filterProjects(makeProjects(), { beneficiarySearch: `${sixteenTerms} inexistent` })
+    expect(result.map((p) => p.beneficiary)).toEqual(['Solar Energy SRL'])
+  })
+
   it('complex query: exact + AND + OR', () => {
     const result = filterProjects(
       makeProjects(),
