@@ -57,7 +57,7 @@ branch against the baseline is under [Result](#result).
 
 | id | stream | status | commit | mobile | desktop | notes |
 |---|---|---|---|---|---|---|
-| PERF-001 | Elections | fixed, on `elections` | `c9cd6ca6`, `8b9b8a78` | | | Not in `perf-fixes`. Also covers step 3 (no retry of GraphQL validation errors, `src/lib/queryClient.ts`) and PERF-021 step 3. Step 2 is Parked 7, step 4 Parked 6. Questions: Parked 10 |
+| PERF-001 | Elections | fixed, on `elections` | `acc2e55a`, `e746862a` | | | Not in `perf-fixes`; rebased onto `dev` after it (was `c9cd6ca6`, `8b9b8a78`). Also covers step 3 (no retry of GraphQL validation errors, `src/lib/queryClient.ts`) and PERF-021 step 3. Step 2 is Parked 7, step 4 Parked 6. Questions: Parked 10 (answered 2026-10-31) |
 | PERF-002 | A | fixed (steps 1–3) | `e1ef814a` | FCP on 4 pages (this commit with PERF-003): `/` 8.90 → 3.23 s, `/companies` 8.68 → 2.93 s, `/national-budget` 7.86 → 3.09 s, `/entity-analytics` 8.50 → 2.82 s | FCP 0.26–0.38 → 0.16–0.26 s | Step 2: `AppHeadContent` leaves out the root route's chunk preloads (entry and child-route preloads stay), so the stylesheet comes first, followed by the entry's modulepreload (plus the parent route's own on `/ngos`, `/procurement` and `/justice`). Steps 1 and 3 come through PERF-003, 004 and 008. Step 4 is Parked 9. |
 | PERF-003 | A | fixed (step 1), step 2 partly, step 3 not done | `d1893cf4`, `b20ecf3e` | Step 1: JS before hydration −142 to −158 KB on `/`, `/companies`, `/national-budget`, `/pnrr`. Step 2: JS −172 to −175 KB per page, hydrated −0.2 to −1.0 s on all 15 measured pages (`/` 14.65 → 14.10 s, `/public-enterprises` 13.79 → 12.83 s, `/parlament` 14.04 → 13.03 s) | flat | Step 1: the client vendor chunk groups are gone (MDX keeps per-locale chunks), so recharts, the English MDX and TanStack Table/Virtual leave the root graph. Step 2: data modules leave the route files the route tree imports: the PNRR SEO snapshot builders, the challenge and learning definitions, the company and NGO profile reads, the parliament search schemas (`schemas/parliament-search.ts`). Shared code before a page's own: 1,687 → 810 KB zstd with all of stream A (most of the cut is PERF-004's catalogs and PERF-011), then 820 → 644 KB with step 2. Step 2's numbers come from builds that both also carried PERF-005. Left, with no decision needed: the INS, procurement, map-series and NGO-head clusters (25, 12, 10, 7 KB), each needing several routes changed together, and step 3 (no schema is built lazily); see Gaps. Step 4 is Parked 6. |
 | PERF-004 | A | fixed (step 1, step 4's first half) | `6da12728` | catalogs per page 536 KB in 6 files → 237 KB in 1 (−299 KB) | same | The browser keeps only the lazy loaders; the eager catalogs moved to `lib/i18n-server-catalogs.ts`, imported only by `src/server.ts`. `admin` and `pnrr` load on their routes only. Steps 2–3 already held in `src/client.tsx`. Per-route catalogs (step 4's second half) are not done; see Gaps. A failed catalog download now hydrates with an empty catalog: REV-03. |
@@ -254,6 +254,7 @@ These need no owner decision unless noted; they were simply not done.
 - **`elections`** (PERF-001): `c9cd6ca6`, `8b9b8a78`, unchanged at the end of this work. A trial merge with
   `perf-fixes` conflicts only in `src/locales/{en,ro}/messages.po` (reference lines and B's new titles): take both
   sides, then `yarn i18n:extract`. Its `/alegeri` route files still need PERF-005 if it is merged (Parked 10).
+  Rebased onto `dev` on 2026-10-31 that way, as `acc2e55a`, `e746862a`; no translation lost.
 - **`national-budget`**, **`justice-portal`**, **`companies-hub-redesign`**: no new conflicts. Their trial merges with
   `perf-fixes` conflict in exactly the files they already conflict in against `origin/dev`.
 
@@ -270,7 +271,8 @@ These need no owner decision unless noted; they were simply not done.
    language or theme, or an old build after a deploy.
 4. **Server ([PERF-022](issues/PERF-022-slow-resolvers.md), [PERF-023](issues/PERF-023-national-budget-law-chain.md), [PERF-024](issues/PERF-024-preflight-max-age.md), [PERF-021](issues/PERF-021-blocking-ssr-loaders.md) step 4, [PERF-017](issues/PERF-017-html-cache.md) step 5).** Server repo work:
    resolver latency, a chapter-level aggregate, the CORS `maxAge`, the ranking query. Also the campaign
-   `subscription-stats` route that answers 404. PERF-023's client part waits for the aggregate.
+   `subscription-stats` route that answers 404. PERF-023's client part waits for the aggregate. Elections asks for
+   issue-code descriptions and the official publication date (Parked 10).
 5. **CDN rules ([PERF-007](issues/PERF-007-pnrr-dataset.md), [PERF-009](issues/PERF-009-map-first-frame.md), [PERF-019](issues/PERF-019-map-assets.md), [PERF-020](issues/PERF-020-county-map.md)).** Cloudflare cache rules for
    `/api/pnrr/raw/*`, `/geojson/*` and `/map-glyphs/*`. The agents set the origin headers; the rules are infra.
    The origin already compresses the glyph `.pbf` files (zstd), served as `text/plain`, which MapLibre ignores; the
@@ -286,22 +288,29 @@ These need no owner decision unless noted; they were simply not done.
    public-enterprise data be: 10 minutes as today, or 1–6 hours? The stale-while-revalidate part goes ahead.
 9. **Real devices and production (audit open questions 1, 2 and 5).** One WebPageTest or real-phone run before
    and after; production's Clerk and cache rules; how long old chunks stay fetchable after a deploy.
-10. **Elections (from the PERF-001 port on branch `elections`).**
+10. **Elections (from the PERF-001 port on branch `elections`).** The owner answered on 2026-10-31, through the root
+    session; each answer follows its question.
     - *Independent candidates:* the API serves an independent candidate's ballot name, and the pages show
-      „Candidat independent" instead. Should the pages show the name?
+      „Candidat independent" instead. Should the pages show the name? **Show the ballot name as the API serves it**
+      (next elections slice).
     - *Prototypes:* the `alegere`, `analize` and `scrutin` prototypes under `src/development/` still read the
-      retired API, so they compile but load no data. Port them or retire them?
+      retired API, so they compile but load no data. Port them or retire them? **Retire them, deleting them** (next
+      elections slice).
     - *Contest page:* it now shows results (votes and shares, margin, mandates per phase, turnout) where it
       showed only metadata, in the catalog layout rather than the results-analytics prototype's. Review the
-      design?
+      design? **Keep it; the owner reviews it on dev and sends changes.**
     - *Issue codes:* listed raw (for example `POSTAL_VOTED_ENVELOPES`), because the API does not describe them.
-      Ask the server for public descriptions?
+      Ask the server for public descriptions? **Yes. Server request:** a public description for each issue code.
+      The client shows the descriptions once the server serves them; the raw codes stay until then.
     - *Publication date:* „Cifre publicate pe platformă" shows when the API switched to that set of figures. Is
-      that the date readers should see?
+      that the date readers should see? **Show both: the official source's publication date and the date the
+      platform took the figures.** The API serves only the second (`publication.activatedAt`; `ElectionPublication`
+      has no other date on server `dev` at `c55a3da9`). **Server request:** the official publication date of each
+      event's figures. The client adds it once served (next elections slice for the client half).
     - *Route code ([PERF-005](issues/PERF-005-lazy-route-code.md)):* `/alegeri`'s route files are rewritten on
-      `elections`, so its component move waits until that branch is merged. Do it then, on `dev`?
+      `elections`, so its component move waits until that branch is merged. Do it then, on `dev`? Not answered.
     - *Old links:* old edition keys now answer 404, and the old `?an=` and `?tip=` filters are ignored. Add
-      redirects?
+      redirects? **No redirects.**
 11. **Local budgets (stream B).**
     - *`/primarie` map ([PERF-019](issues/PERF-019-map-assets.md) step 4):* on the 412×823 phone profile the map
       section starts about 746 px down, so it is already in view at hydration and loading it near the viewport saves
