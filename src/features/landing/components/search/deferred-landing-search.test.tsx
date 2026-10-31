@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { act, type ReactNode } from 'react'
+import { hydrateRoot, type Root } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Building2 } from 'lucide-react'
@@ -169,6 +170,45 @@ describe('DeferredLandingSearch', () => {
     const input = await handedOver()
     expect(input).toHaveValue('Municipiul Iasi')
     expect(input).toHaveFocus()
+  })
+
+  it('keeps what was typed into the server’s field before the page hydrated, through the hand-over', async () => {
+    const { DeferredLandingSearch } = await load()
+    const queryClient = createTestQueryClient()
+    const container = document.createElement('div')
+    container.innerHTML = renderToString(<DeferredLandingSearch fixedScope={SCOPE} />)
+    document.body.appendChild(container)
+    // The reader types into the server's markup while the page's code is still on its way.
+    const serverInput = container.querySelector('input')!
+    serverInput.focus()
+    serverInput.value = 'Iași'
+    serverInput.setSelectionRange(2, 2)
+
+    let root: Root | undefined
+    await act(async () => {
+      root = hydrateRoot(
+        container,
+        <QueryClientProvider client={queryClient}>
+          <DeferredLandingSearch fixedScope={SCOPE} />
+        </QueryClientProvider>,
+      )
+    })
+    try {
+      // The same node, its text now the field's own: the clear button stands where the shortcut hint was.
+      expect(field()).toBe(serverInput)
+      expect(serverInput).toHaveValue('Iași')
+      expect(screen.getByRole('button', { name: 'Șterge căutarea' })).toBeInTheDocument()
+      expect(serverInput.selectionStart).toBe(2)
+
+      arrive()
+      const input = await handedOver()
+      expect(input).toHaveValue('Iași')
+      expect(input).toHaveFocus()
+      expect(input.selectionStart).toBe(2)
+    } finally {
+      act(() => root?.unmount())
+      container.remove()
+    }
   })
 
   it('keeps the keyboard ring only for keyboard focus, across the hand-over', async () => {

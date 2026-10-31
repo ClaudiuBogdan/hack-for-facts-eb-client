@@ -28,7 +28,8 @@ import {
  * can use the combobox before the page has hydrated, so its code is no part of
  * what the page waits for.
  *
- * The hand-over loses nothing. What was typed becomes the combobox's query;
+ * The hand-over loses nothing. What was typed — before hydration too, into the
+ * server's field — becomes the combobox's query;
  * a focused field stays focused — the input with its caret and selection, or
  * the clear button — with the keyboard ring only if the keyboard brought the
  * focus. A composition in progress (an IME, a dead key) is finished in the
@@ -150,6 +151,14 @@ function PlainSearchField({
     keyboardFocusRef.current = keyboard
     setKeyboardFocus(keyboard)
   }
+
+  // What the reader typed into the server's field before the page hydrated. Hydration leaves it in the input but
+  // not in the state, and the next render would write the empty state over it; taken into the state now, it stays,
+  // with its caret, and reaches the combobox. A field mounted on the client holds the state already.
+  useLayoutEffect(() => {
+    const typed = inputRef.current?.value
+    if (typed) onTermChange(typed)
+  }, [inputRef, onTermChange])
 
   // Idle: the combobox comes in behind the page, ready before most readers reach the field.
   useEffect(() => {
