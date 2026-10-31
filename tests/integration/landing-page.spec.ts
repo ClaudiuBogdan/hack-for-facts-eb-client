@@ -78,17 +78,21 @@ test.describe('Landing Page', () => {
     }
   })
 
-  test('links the elections catalog, which opens with results unavailable', async ({ page }) => {
-    // `src/config/feature-flags.ts`: elections is on as source metadata only. A failed
-    // catalog read still renders the page, so neither check depends on the API's rows.
+  test('links the elections catalog, which opens on its list of elections', async ({ page }) => {
+    // `src/config/feature-flags.ts`: elections is on. The list reads the API's events; a failed
+    // read still renders the page with its retry, so no check depends on the API's rows.
     expect((await page.request.get('/alegeri')).status()).toBe(200)
     const politics = page.getByRole('region', { name: POLITICS })
     await politics.scrollIntoViewIfNeeded()
     await politics.locator('a[href="/alegeri"]').click()
     await expect(page).toHaveURL(/\/alegeri\/?$/)
     await expect(page.getByRole('heading', { name: /^(alegeri|elections)$/i, level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /^(alegerile din date|elections in the data)$/i })).toBeVisible()
     await expect(
-      page.getByRole('note').filter({ hasText: /rezultatele.*nu sunt disponibile|results.*not available/i }),
+      page
+        .getByRole('list', { name: /^(alegeri|elections)$/i })
+        .or(page.getByRole('alert').filter({ hasText: /lista alegerilor nu s-a încărcat|the list of elections did not load/i }))
+        .or(page.getByText(/nu există încă alegeri cu rezultate publicate|there are no elections with published results yet/i)),
     ).toBeVisible()
   })
 
