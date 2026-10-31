@@ -1370,11 +1370,13 @@ parliamentary 2020 and 2024, presidential 2024 (its one day annulled) and
   coverage cells' included. A suspect figure is also marked where it is
   shown.
 
-**Privacy.** The API names an independent by their ballot label, a person's
-name, and spells it in their competitor key. The client never asks for
-competitor keys or reported labels, and the parse drops an independent's
-label before the cache or the HTML sees it. The pages say „Candidat
-independent" (checked on the presidential 2025 runoff's server HTML).
+**Independents.** The API names an independent by their ballot label, a
+person's name, and spells it in their competitor key. Until 2026-10-31 the
+parse dropped that label and the pages said „Candidat independent". The
+owner then decided that the pages show the ballot name as the API serves it,
+followed by a muted „independent" (votes, mandates, and the leader on a
+contest row). The client still never asks for competitor keys or reported
+labels, and never joins people across sources.
 
 **Loading:**
 
@@ -1388,6 +1390,18 @@ independent" (checked on the presidential 2025 runoff's server HTML).
   5xx still retry once.
 
 **Prototypes.** The alegere, analize and scrutin prototypes were built on the
-retired contract. They now read it through
-`src/development/prototypes/elections/shared/legacy-catalog.ts`, so they
-compile and show their failed-read states. Porting them is separate work.
+retired contract and read it through a prototype-only module. The owner
+retired them on 2026-10-31: they, that module and their two fixture scripts
+are deleted. The hub and localitate prototypes now link an election to the
+live `/alegeri/<eventKey>` page (an event the API does not serve answers
+„not in the data"); their contest chips no longer link, and the analytics
+links are gone.
+
+**Owner's answers (2026-10-31).** The contest page keeps this design; the
+owner reviews it on dev. Old edition links get no redirects. Two server
+requests are open (`docs/performance/2026-10-27-main-pages/FIXES.md`, Parked
+10):
+- a public description for each issue code, which the pages show once
+  served (raw codes until then);
+- the official publication date of an event's figures. The pages are to show
+  it beside the platform's date (`publication.activatedAt`) once served.
