@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, createTestQueryClient, fireEvent, render, screen, within } from '@/test/test-utils'
 import type { ElectionContestPage, ElectionContestsSearch, ElectionEvent } from '@/schemas/elections-catalog'
-import { contest, event, pageOf } from '../test/catalog-fixtures'
+import { contest, event, independent, pageOf } from '../test/catalog-fixtures'
 
 const { fetchElectionEvent, fetchElectionContests } = vi.hoisted(() => ({ fetchElectionEvent: vi.fn(), fetchElectionContests: vi.fn() }))
 
@@ -160,14 +160,14 @@ describe('an election’s page', () => {
     expect(notes).toHaveTextContent('e marcat pe rândul lui')
   })
 
-  it('says an independent leader is an independent candidate, never by name', async () => {
+  it('names an independent leader by the ballot name the API serves, and says they are independent', async () => {
     fetchElectionEvent.mockResolvedValue(EVENT)
     const race = VICTORIA.race
     if (!race) throw new Error('fixture has a race')
-    fetchElectionContests.mockResolvedValue(pageOf([contest({ race: { ...race, leader: { ...race.leader, competitor: { kind: 'independent', label: null } } } })]))
+    fetchElectionContests.mockResolvedValue(pageOf([contest({ race: { ...race, leader: { ...race.leader, competitor: independent() } } })]))
     renderEvent()
     const list = await screen.findByRole('list', { name: 'Scrutinele zilei de vot' })
-    expect(list).toHaveTextContent('Primul la voturi: Candidat independent, 61.62%')
+    expect(list).toHaveTextContent('Primul la voturi: NUME DE PE BULETIN · independent, 61.62%')
   })
 
   it('offers the day’s own offices with their counts, and applies office, place type and county from the first page, on the same day', async () => {

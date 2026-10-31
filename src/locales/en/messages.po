@@ -238,7 +238,7 @@ msgstr "“Registered” means the organisation is in the registry, not that it 
 msgid "„laptop\", „deszăpezire\""
 msgstr "“laptop”, “deszăpezire”"
 
-#: src/features/elections/catalog/election-edition-page.tsx:442
+#: src/features/elections/catalog/election-edition-page.tsx:444
 msgid "„Necalculat\": locul nu are voturi în date, sau voturile lui nu numără aceiași votanți ori au un defect cunoscut."
 msgstr "“Not computed”: the place has no votes in the data, or its votes do not count the same voters or have a known defect."
 
@@ -4174,7 +4174,7 @@ msgstr "rose by {0}"
 msgid "a crescut de {0} ori"
 msgstr "rose {0}-fold"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:122
+#: src/features/elections/catalog/elections-catalog-text.ts:121
 msgid "a doua repartizare"
 msgstr "second allocation"
 
@@ -6186,7 +6186,7 @@ msgstr "Your own choice"
 msgid "Alegerea {0}"
 msgstr "Election {0}"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:54
+#: src/features/elections/catalog/elections-catalog-text.ts:53
 msgid "Alegerea {eventKey}"
 msgstr "Election {eventKey}"
 
@@ -6207,7 +6207,7 @@ msgstr "The election has no ballot days in the data."
 #: src/features/elections/catalog/elections-catalog-page.tsx:43
 #: src/features/elections/catalog/elections-catalog-page.tsx:52
 #: src/features/elections/catalog/elections-catalog-page.tsx:66
-#: src/features/elections/catalog/elections-catalog-text.ts:24
+#: src/features/elections/catalog/elections-catalog-text.ts:23
 #: src/features/elections/components/election-hub-page.tsx:32
 #: src/features/elections/components/elections-page-layout.tsx:56
 #: src/features/landing/lib/landing-groups.ts:149
@@ -6218,19 +6218,19 @@ msgstr "Elections"
 msgid "Alegeri / România"
 msgstr "Elections / Romania"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:35
+#: src/features/elections/catalog/elections-catalog-text.ts:34
 msgid "Alegeri europarlamentare"
 msgstr "European Parliament elections"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:32
+#: src/features/elections/catalog/elections-catalog-text.ts:31
 msgid "Alegeri locale"
 msgstr "Local elections"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:33
+#: src/features/elections/catalog/elections-catalog-text.ts:32
 msgid "Alegeri parlamentare"
 msgstr "Parliamentary elections"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:34
+#: src/features/elections/catalog/elections-catalog-text.ts:33
 msgid "Alegeri prezidențiale"
 msgstr "Presidential elections"
 
@@ -7730,7 +7730,7 @@ msgstr "API live neconectat"
 msgid "Aplică"
 msgstr "Apply"
 
-#: src/features/elections/catalog/catalog-parts.tsx:192
+#: src/features/elections/catalog/catalog-parts.tsx:207
 msgid "Aplică filtrele"
 msgstr "Apply filters"
 
@@ -8567,7 +8567,7 @@ msgstr "Backup before config import"
 msgid "Balance"
 msgstr "Balance"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:107
+#: src/features/elections/catalog/elections-catalog-text.ts:106
 msgid "balotaj"
 msgstr "runoff"
 
@@ -9602,7 +9602,7 @@ msgstr "Camera"
 msgid "Camera {0} · Senat {1} · Comun {2}"
 msgstr "Camera {0} · Senat {1} · Comun {2}"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:75
+#: src/features/elections/catalog/elections-catalog-text.ts:74
 #: src/features/legal/lib/legal-vocabulary.ts:199
 #: src/features/parliament/lib/stenogram-presentation.ts:23
 msgid "Camera Deputaților"
@@ -9699,8 +9699,8 @@ msgstr "When it buys"
 #~ msgstr "candidat"
 
 #: src/features/elections/catalog/elections-catalog-text.ts:132
-msgid "Candidat independent"
-msgstr "Independent candidate"
+#~ msgid "Candidat independent"
+#~ msgstr "Independent candidate"
 
 #: src/components/identity/identity-confidence-badge.tsx:57
 #~ msgid "Candidat neconfirmat dintr-un caz de revizuire; verifică încrederea."
@@ -13543,16 +13543,16 @@ msgstr "City councils"
 msgid "Consiliile orașelor"
 msgstr "Town councils"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:71
+#: src/features/elections/catalog/elections-catalog-text.ts:70
 #: src/features/procurement/lib/buyer-text.ts:48
 msgid "Consiliu județean"
 msgstr "County council"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:70
+#: src/features/elections/catalog/elections-catalog-text.ts:69
 msgid "Consiliu local"
 msgstr "Local council"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:74
+#: src/features/elections/catalog/elections-catalog-text.ts:73
 msgid "Consiliul General al Municipiului București"
 msgstr "Bucharest General Council"
 
@@ -15019,7 +15019,7 @@ msgstr "with line 5001 in annex 3"
 #~ msgid "cu sediul neidentificat"
 #~ msgstr "with an unidentified registered office"
 
-#: src/features/elections/catalog/election-edition-page.tsx:431
+#: src/features/elections/catalog/election-edition-page.tsx:433
 msgid "cu semnalări"
 msgstr "flagged"
 
@@ -16105,7 +16105,7 @@ msgstr "The data runs through {0}."
 msgid "Datele nu au putut fi citite acum. Asta nu spune nimic despre organizație."
 msgstr "The data could not be read just now. That says nothing about the organisation."
 
-#: src/features/elections/catalog/catalog-parts.tsx:132
+#: src/features/elections/catalog/catalog-parts.tsx:147
 msgid "Datele nu s-au putut actualiza. Se afișează ultimul răspuns primit."
 msgstr "The data could not be refreshed. Showing the last response received."
 
@@ -17305,8 +17305,8 @@ msgstr "Sustainable development — 2030 targets"
 msgid "Dialog competitiv"
 msgstr "Competitive dialogue"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:90
-#: src/features/elections/catalog/elections-catalog-text.ts:101
+#: src/features/elections/catalog/elections-catalog-text.ts:89
+#: src/features/elections/catalog/elections-catalog-text.ts:100
 msgid "Diaspora"
 msgstr "Diaspora"
 
@@ -22034,7 +22034,7 @@ msgstr "Final:"
 msgid "finală"
 msgstr "final"
 
-#: src/features/elections/catalog/election-edition-page.tsx:430
+#: src/features/elections/catalog/election-edition-page.tsx:432
 msgid "finalitate necunoscută"
 msgstr "finality unknown"
 
@@ -25125,8 +25125,8 @@ msgid "Încasările bugetului general consolidat (toate bugetele publice, fără
 msgstr "Revenue of the general consolidated budget (all public budgets, without the transfers between them), {0}. Source: the Ministry of Finance's monthly execution bulletins. The change is against the same period of the previous year, in current lei."
 
 #: src/components/filters/filter-sheet/filter-sheet-parts.tsx:137
-#: src/features/elections/catalog/catalog-parts.tsx:117
-#: src/features/elections/catalog/catalog-parts.tsx:135
+#: src/features/elections/catalog/catalog-parts.tsx:132
+#: src/features/elections/catalog/catalog-parts.tsx:150
 #: src/features/entity-search/components/entity-empty-state.tsx:48
 #: src/features/entity-search/components/entity-empty-state.tsx:191
 #: src/features/entity-search/components/entity-empty-state.tsx:275
@@ -25299,7 +25299,7 @@ msgstr "Income vs Expenses"
 msgid "Income/Expenses"
 msgstr "Income/Expenses"
 
-#: src/features/elections/catalog/election-edition-page.tsx:428
+#: src/features/elections/catalog/election-edition-page.tsx:430
 msgid "incomplet"
 msgstr "incomplete"
 
@@ -25335,6 +25335,10 @@ msgstr "Încredere identitate"
 #: src/features/justice/lib/judicial-labels.ts:106
 msgid "Inculpat"
 msgstr "Defendant (criminal)"
+
+#: src/features/elections/catalog/catalog-parts.tsx:29
+msgid "independent"
+msgstr "independent"
 
 #: src/features/elections/components/election-shared.tsx:410
 msgid "Independent"
@@ -26935,7 +26939,7 @@ msgstr "county"
 
 #: src/features/elections/catalog/election-contest-page.tsx:125
 #: src/features/elections/catalog/election-edition-page.tsx:342
-#: src/features/elections/catalog/elections-catalog-text.ts:88
+#: src/features/elections/catalog/elections-catalog-text.ts:87
 #: src/features/justice/components/analysis/analysis-filters.tsx:149
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:365
 #: src/features/private-companies/components/hub/company-county-rank.tsx:120
@@ -28766,7 +28770,7 @@ msgstr "Local"
 msgid "localitate"
 msgstr "locality"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:87
+#: src/features/elections/catalog/elections-catalog-text.ts:86
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:390
 msgid "Localitate"
 msgstr "Locality"
@@ -29978,7 +29982,7 @@ msgstr "Go to"
 msgid "Mergi la pagina"
 msgstr "Go to page"
 
-#: src/features/elections/catalog/catalog-parts.tsx:230
+#: src/features/elections/catalog/catalog-parts.tsx:245
 #: src/features/procurement/components/analytics/analytics-answer.tsx:358
 msgid "Mergi la prima pagină"
 msgstr "Go to the first page"
@@ -30887,7 +30891,7 @@ msgstr "Births above deaths"
 #~ msgid "National"
 #~ msgstr "National"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:89
+#: src/features/elections/catalog/elections-catalog-text.ts:88
 #: src/features/statistics/components/territory/territory-header.tsx:32
 msgid "Național"
 msgstr "National"
@@ -30994,7 +30998,7 @@ msgstr "Discrepancies"
 #~ msgid "neconectat"
 #~ msgstr "neconectat"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:117
+#: src/features/elections/catalog/elections-catalog-text.ts:116
 msgid "necunoscut"
 msgstr "unknown"
 
@@ -31120,7 +31124,7 @@ msgstr "Not published."
 #~ msgid "nepublicată"
 #~ msgstr "not published"
 
-#: src/features/elections/catalog/catalog-parts.tsx:100
+#: src/features/elections/catalog/catalog-parts.tsx:115
 msgid "Neraportat"
 msgstr "Not reported"
 
@@ -35166,7 +35170,7 @@ msgstr "Page {safeCurrent} of {totalPages}"
 msgid "pagina aceasta"
 msgstr "this page"
 
-#: src/features/elections/catalog/catalog-parts.tsx:225
+#: src/features/elections/catalog/catalog-parts.tsx:240
 msgid "Pagina aceasta nu are rânduri. Lista are {pages, plural, one {o pagină} few {# pagini} other {# de pagini}}."
 msgstr "This page has no rows. The list has {pages, plural, one {one page} other {# pages}}."
 
@@ -35357,7 +35361,7 @@ msgstr "Parliament"
 msgid "Parlamentar"
 msgstr "Parlamentar"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:78
+#: src/features/elections/catalog/elections-catalog-text.ts:77
 msgid "Parlamentul European"
 msgstr "European Parliament"
 
@@ -37343,11 +37347,11 @@ msgstr "Preparing new alert…"
 msgid "Preparing your share link..."
 msgstr "Preparing your share link..."
 
-#: src/features/elections/catalog/elections-catalog-text.ts:77
+#: src/features/elections/catalog/elections-catalog-text.ts:76
 msgid "Președinte"
 msgstr "President"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:72
+#: src/features/elections/catalog/elections-catalog-text.ts:71
 msgid "Președinte de consiliu județean"
 msgstr "County council president"
 
@@ -37506,7 +37510,7 @@ msgstr "first release"
 msgid "Prima publicare, {published}"
 msgstr "First release, {published}"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:121
+#: src/features/elections/catalog/elections-catalog-text.ts:120
 msgid "prima repartizare"
 msgstr "first allocation"
 
@@ -37514,11 +37518,11 @@ msgstr "first allocation"
 msgid "Prima vânzare în SEAP"
 msgstr "First sale in SEAP"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:69
+#: src/features/elections/catalog/elections-catalog-text.ts:68
 msgid "Primar"
 msgstr "Mayor"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:73
+#: src/features/elections/catalog/elections-catalog-text.ts:72
 msgid "Primar general"
 msgstr "General mayor"
 
@@ -37605,7 +37609,7 @@ msgstr "first"
 msgid "Primul contract, încheiat"
 msgstr "First contract, signed"
 
-#: src/features/elections/catalog/election-edition-page.tsx:418
+#: src/features/elections/catalog/election-edition-page.tsx:417
 msgid "Primul la voturi:"
 msgstr "First by votes:"
 
@@ -38164,7 +38168,7 @@ msgstr "Provisions"
 msgid "Provizioanele"
 msgstr "Provisions"
 
-#: src/features/elections/catalog/election-edition-page.tsx:429
+#: src/features/elections/catalog/election-edition-page.tsx:431
 #: src/features/procurement/components/analytics/analytics-years.tsx:67
 #: src/features/procurement/components/home/home-chrome.tsx:24
 msgid "provizoriu"
@@ -39107,7 +39111,7 @@ msgstr "Reference period"
 msgid "Reference year"
 msgstr "Reference year"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:36
+#: src/features/elections/catalog/elections-catalog-text.ts:35
 msgid "Referendum"
 msgstr "Referendum"
 
@@ -39724,7 +39728,7 @@ msgstr "Repair of personal goods"
 msgid "Reparații și întreținere"
 msgstr "Repairs and maintenance"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:123
+#: src/features/elections/catalog/elections-catalog-text.ts:122
 msgid "repartizarea finală"
 msgstr "final allocation"
 
@@ -40433,7 +40437,7 @@ msgstr "Robust anomaly detection based on median absolute deviation (MAD), less 
 #~ msgid "Rol"
 #~ msgstr "Role"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:100
+#: src/features/elections/catalog/elections-catalog-text.ts:99
 #: src/features/private-companies/components/hub/company-county-map.tsx:309
 #: src/features/statistics/components/county-map/county-map.tsx:341
 #: src/features/statistics/components/territory/territory-derived-list.tsx:115
@@ -41060,7 +41064,7 @@ msgstr "The election’s contests"
 msgid "Scrutinele zilei de vot"
 msgstr "The ballot day’s contests"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:64
+#: src/features/elections/catalog/elections-catalog-text.ts:63
 msgid "Scrutinul {contestKey}"
 msgstr "Contest {contestKey}"
 
@@ -41218,7 +41222,7 @@ msgstr "se deschide într-o pagină nouă"
 #~ msgid "Se exportă…"
 #~ msgstr "Exporting…"
 
-#: src/features/elections/catalog/catalog-parts.tsx:256
+#: src/features/elections/catalog/catalog-parts.tsx:271
 #: src/features/elections/catalog/election-contest-page.tsx:136
 #: src/features/statistics/components/comparison/comparison-standings.tsx:142
 msgid "Se încarcă"
@@ -41312,7 +41316,7 @@ msgstr "Loading the legislative changes"
 msgid "Se încarcă pagina"
 msgstr "Loading the page"
 
-#: src/features/elections/catalog/catalog-parts.tsx:317
+#: src/features/elections/catalog/catalog-parts.tsx:332
 msgid "Se încarcă pagina cerută. Rândurile de mai jos sunt cele afișate anterior."
 msgstr "Loading the requested page. The rows below are the ones shown before."
 
@@ -42308,7 +42312,7 @@ msgstr "Flags in the data: {list}."
 msgid "Semnale"
 msgstr "Signals"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:76
+#: src/features/elections/catalog/elections-catalog-text.ts:75
 #: src/features/parliament/lib/stenogram-presentation.ts:22
 #: src/features/parliament/lib/stenogram-presentation.ts:30
 msgid "Senat"
@@ -44268,7 +44272,7 @@ msgstr "Clear invalid classifications before choosing other values."
 #~ msgid "Șterge doar filtrul teritorial"
 #~ msgstr "Clear only the territory filter"
 
-#: src/features/elections/catalog/catalog-parts.tsx:196
+#: src/features/elections/catalog/catalog-parts.tsx:211
 #: src/features/legal/components/legislation-acts-directory.tsx:336
 #: src/features/legal/components/legislation-changes-feed.tsx:431
 #: src/features/parliament/components/parliament-list-surface.tsx:163
@@ -46359,7 +46363,7 @@ msgstr "Every selected activity, in the companies analysis"
 #~ msgid "Toate activitățile, în analiza bilanțurilor"
 #~ msgstr "Every activity, in the companies analysis"
 
-#: src/features/elections/catalog/catalog-parts.tsx:153
+#: src/features/elections/catalog/catalog-parts.tsx:168
 #: src/features/elections/catalog/election-contest-page.tsx:90
 #: src/features/elections/catalog/election-edition-page.tsx:101
 msgid "Toate alegerile"
@@ -47545,7 +47549,7 @@ msgstr "A budget opens over time; its years start in 2019 (December 2023 is a PD
 msgid "Un buget: coloana lui, cum o tipăresc buletinele Excel (din 2019, nu toate lunile), de la 1 ianuarie."
 msgstr "One budget: its column, as the Excel bulletins print it (from 2019, not every month), from 1 January."
 
-#: src/features/elections/catalog/election-edition-page.tsx:445
+#: src/features/elections/catalog/election-edition-page.tsx:447
 msgid "Un clasament incomplet, provizoriu sau cu semnalări e marcat pe rândul lui; detaliile sunt pe pagina scrutinului."
 msgstr "An incomplete, provisional or flagged ranking is marked on its row; the details are on the contest’s page."
 
@@ -47817,7 +47821,7 @@ msgstr "Unele cifre nu sunt disponibile."
 msgid "Unele cifre sunt provizorii."
 msgstr "Some figures are provisional."
 
-#: src/features/elections/catalog/election-edition-page.tsx:439
+#: src/features/elections/catalog/election-edition-page.tsx:441
 msgid "Unele clasamente nu au un total publicat separat cu care să fie comparate."
 msgstr "Some rankings have no separately published total to be checked against."
 
@@ -49564,15 +49568,15 @@ msgstr "Vorbitori"
 msgid "Vorbitorul nu a putut fi identificat pe baza a ceea ce publică sursa."
 msgstr "Vorbitorul nu a putut fi identificat pe baza a ceea ce publică sursa."
 
-#: src/features/elections/catalog/elections-catalog-text.ts:106
+#: src/features/elections/catalog/elections-catalog-text.ts:105
 msgid "vot general"
 msgstr "general vote"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:109
+#: src/features/elections/catalog/elections-catalog-text.ts:108
 msgid "vot parțial"
 msgstr "partial vote"
 
-#: src/features/elections/catalog/elections-catalog-text.ts:108
+#: src/features/elections/catalog/elections-catalog-text.ts:107
 msgid "vot repetat"
 msgstr "repeat vote"
 

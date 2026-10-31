@@ -2,7 +2,6 @@ import type { I18n, MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import type {
   ElectionAllocationPhase,
-  ElectionCompetitor,
   ElectionFamily,
   ElectionOccurrenceKind,
   ElectionPlace,
@@ -125,11 +124,6 @@ const PHASE_LABEL: Readonly<Record<Exclude<ElectionAllocationPhase, 'none'>, Mes
 
 export function allocationPhaseLabel(i18n: I18n, phase: ElectionAllocationPhase): string {
   return phase === 'none' ? '' : i18n._(PHASE_LABEL[phase])
-}
-
-/** A competitor by the API's label; an independent is a person, whose name the page never shows. */
-export function competitorName(i18n: I18n, competitor: ElectionCompetitor): string {
-  return competitor.label ?? i18n._(msg`Candidat independent`)
 }
 
 /** An ISO date in the reader's language, read as the calendar day it names; anything else as it came. */

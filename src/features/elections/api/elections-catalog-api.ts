@@ -24,9 +24,8 @@ import {
  * a request that fails throws, and is never read as an absent record or an
  * empty list. Filters reach the API exactly as the address holds them.
  *
- * Competitors are read by kind and label only: no competitor key, no
- * reported labels, since an independent's key and labels name a person (the
- * parse drops an independent's label too).
+ * Competitors are read by kind and label only: the pages need no competitor
+ * key or reported label, and an independent's key spells a person's name.
  */
 
 const COMPETITOR = 'competitor { kind label }'

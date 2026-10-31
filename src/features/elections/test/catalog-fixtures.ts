@@ -1,10 +1,13 @@
-import type { ElectionContest, ElectionEvent, ElectionOccurrence, ElectionResult, ElectionTally, ElectionTurnoutFigure } from '@/schemas/elections-catalog'
+import type { ElectionCompetitor, ElectionContest, ElectionEvent, ElectionOccurrence, ElectionResult, ElectionTally, ElectionTurnoutFigure } from '@/schemas/elections-catalog'
 
 /**
  * The elections pages' test records, shaped as the API serves them after the
- * parse (an independent's label already dropped). Keys follow the API's
- * grammar; names are places and parties, never people.
+ * parse. Keys follow the API's grammar; names are places and parties, and an
+ * independent's ballot name is a placeholder, never a real person's.
  */
+
+/** An independent competitor, labelled by a placeholder ballot name. */
+export const independent = (label = 'NUME DE PE BULETIN'): ElectionCompetitor => ({ kind: 'independent', label })
 
 export const day = (ballotDate: string, extra: Partial<ElectionOccurrence> = {}): ElectionOccurrence => ({
   occurrenceKey: `ro:local:2024:${ballotDate}`,
@@ -54,10 +57,11 @@ export const contest = (extra: Partial<ElectionContest> = {}): ElectionContest =
 
 const quality = () => ({ finality: 'final', geographicCompleteness: 'complete', includesDiaspora: null, status: 'UNCHECKED', issues: [] }) as const
 
-export const votes = (label: string | null, value: string, percent: string | null, extra: Partial<ElectionTally> = {}): ElectionTally => ({
+/** A tally for a party named `competitor`, or for the competitor given. */
+export const votes = (competitor: string | ElectionCompetitor, value: string, percent: string | null, extra: Partial<ElectionTally> = {}): ElectionTally => ({
   ...quality(),
   issues: [],
-  competitor: label === null ? { kind: 'independent', label: null } : { kind: 'party', label },
+  competitor: typeof competitor === 'string' ? { kind: 'party', label: competitor } : competitor,
   measure: 'votes',
   allocationPhase: 'none',
   countedPopulation: 'all',

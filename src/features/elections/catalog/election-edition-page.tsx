@@ -24,6 +24,7 @@ import {
 import { useElectionContests, useElectionEvent } from '../hooks/use-elections-catalog'
 import { ballotDaysOf, selectBallotDay } from '../lib/election-days'
 import {
+  CompetitorName,
   ElectionsBackLink,
   ElectionsCount,
   ElectionsFactList,
@@ -42,7 +43,6 @@ import {
 import {
   ballotDayKindLabel,
   buildEventDocumentTitle,
-  competitorName,
   eventName,
   familyLabel,
   formatCount,
@@ -411,11 +411,13 @@ function RaceSummary({ contest }: { readonly contest: ElectionContest }) {
       </span>
     )
   }
-  const leader = competitorName(i18n, race.leader.competitor)
   const share = race.leader.share ? formatPercent(i18n.locale, race.leader.share.percent) : null
   return (
     <span className={className}>
-      <Trans>Primul la voturi:</Trans> <span className="text-foreground">{leader}</span>
+      <Trans>Primul la voturi:</Trans>{' '}
+      <span className="text-foreground">
+        <CompetitorName competitor={race.leader.competitor} />
+      </span>
       {share ? <span className="tabular-nums">, {share}</span> : null}
       {mark}
     </span>

@@ -62,14 +62,13 @@ describe('the elections schema', () => {
     expect(page.items[0]?.occurrences[0]?.ballotDate).toBe('2025-05-04')
   })
 
-  it('drops an independent’s ballot label in every race entry, and keeps a party’s', () => {
+  it('keeps every competitor’s label as the API serves it, an independent’s ballot name included', () => {
     const contest = electionContestSchema.parse(CONTEST)
-    expect(contest.race?.leader.competitor).toEqual({ kind: 'independent', label: null })
+    expect(contest.race?.leader.competitor).toEqual(INDEPENDENT)
     expect(contest.race?.runnerUp?.competitor).toEqual(PARTY)
-    expect(JSON.stringify(contest)).not.toContain(INDEPENDENT.label)
   })
 
-  it('drops an independent’s ballot label in a result’s tallies', () => {
+  it('keeps the competitors’ labels in a result’s tallies', () => {
     const result = electionResultSchema.parse({
       tallies: [
         { ...quality, measure: 'votes', allocationPhase: 'none', countedPopulation: 'all', value: '6168642', share: { percent: '53.60' }, competitor: INDEPENDENT },
@@ -80,8 +79,7 @@ describe('the elections schema', () => {
       race: { tied: false, marginVotes: '829589', marginPoints: '7.21', issues: [] },
       coverage: [{ measure: 'mandates', allocationPhase: 'final', placeSpecific: false, state: 'absent', issues: ['NOT_IN_SOURCE'] }],
     })
-    expect(result.tallies.map((tally) => tally.competitor.label)).toEqual([null, PARTY.label])
-    expect(JSON.stringify(result)).not.toContain(INDEPENDENT.label)
+    expect(result.tallies.map((tally) => tally.competitor)).toEqual([INDEPENDENT, PARTY])
   })
 
   it('refuses a count that is not a decimal string, rather than reading it as a number', () => {

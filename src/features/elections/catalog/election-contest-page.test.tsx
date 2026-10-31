@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, createTestQueryClient, fireEvent, render, screen, within } from '@/test/test-utils'
 import type { ElectionContest, ElectionEvent, ElectionResult } from '@/schemas/elections-catalog'
-import { contest, event, result, turnout, votes } from '../test/catalog-fixtures'
+import { contest, event, independent, result, turnout, votes } from '../test/catalog-fixtures'
 
 const { fetchElectionContest, fetchElectionResult, fetchElectionEvent } = vi.hoisted(() => ({
   fetchElectionContest: vi.fn(),
@@ -75,11 +75,13 @@ describe('a contest’s page', () => {
     expect(fetchElectionResult).not.toHaveBeenCalled()
   })
 
-  it('names an independent as an independent candidate, never by name', () => {
-    const withIndependent = result({ tallies: [votes(null, '6168642', '53.60'), votes('ALIANȚA PENTRU UNIREA ROMÂNILOR', '5339053', '46.40')] })
+  it('names an independent by the ballot name the API serves, and says they are independent', () => {
+    const withIndependent = result({ tallies: [votes(independent(), '6168642', '53.60'), votes('ALIANȚA PENTRU UNIREA ROMÂNILOR', '5339053', '46.40')] })
     renderContest({ initialContest: CONTEST, initialResult: withIndependent, initialEvent: EVENT })
     const rows = within(screen.getByRole('table')).getAllByRole('row').slice(1)
-    expect(rows[0]).toHaveTextContent('Candidat independent')
+    expect(rows[0]).toHaveTextContent('NUME DE PE BULETIN · independent')
+    expect(rows[1]).toHaveTextContent('ALIANȚA PENTRU UNIREA ROMÂNILOR')
+    expect(rows[1]).not.toHaveTextContent('independent')
   })
 
   it('puts what to know behind one marker: unchecked figures, missing mandates and the issue codes', async () => {

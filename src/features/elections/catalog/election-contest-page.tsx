@@ -12,6 +12,7 @@ import type { ElectionContest, ElectionEvent, ElectionOccurrence, ElectionResult
 import { useElectionContest, useElectionEvent, useElectionResult } from '../hooks/use-elections-catalog'
 import { ballotDaysOf } from '../lib/election-days'
 import {
+  CompetitorName,
   ElectionsBackLink,
   ElectionsFactList,
   ElectionsLoadError,
@@ -25,7 +26,6 @@ import {
   allocationPhaseLabel,
   ballotDayKindLabel,
   buildContestDocumentTitle,
-  competitorName,
   eventName,
   formatCount,
   formatIsoDate,
@@ -268,8 +268,8 @@ function VotesTable({ tallies }: { readonly tallies: readonly ElectionTally[] })
         <tbody className="divide-y divide-border/70">
           {tallies.map((tally, index) => (
             <tr key={index}>
-              <th scope="row" className={cn(CELL, 'text-left font-normal', tally.competitor.label === null && 'text-muted-foreground')}>
-                {competitorName(i18n, tally.competitor)}
+              <th scope="row" className={cn(CELL, 'text-left font-normal')}>
+                <CompetitorName competitor={tally.competitor} />
                 <SuspectMark tally={tally} />
               </th>
               <td className={cn(CELL, 'text-right tabular-nums')}>{formatCount(i18n.locale, tally.value)}</td>
@@ -301,7 +301,7 @@ function Mandates({ result }: { readonly result: ElectionResult }) {
             <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
               {group.tallies.map((tally, index) => (
                 <li key={index}>
-                  <span className={cn(tally.competitor.label === null && 'text-muted-foreground')}>{competitorName(i18n, tally.competitor)}</span>{' '}
+                  <CompetitorName competitor={tally.competitor} />{' '}
                   <span className="font-medium tabular-nums">{formatCount(i18n.locale, tally.value)}</span>
                   <SuspectMark tally={tally} />
                 </li>

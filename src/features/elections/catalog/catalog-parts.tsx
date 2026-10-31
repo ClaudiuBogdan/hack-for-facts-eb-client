@@ -10,13 +10,28 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Pagination } from '@/components/ui/pagination'
 import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import { ELECTIONS_PAGE_SIZE } from '@/schemas/elections-catalog'
+import { ELECTIONS_PAGE_SIZE, type ElectionCompetitor } from '@/schemas/elections-catalog'
 
 /**
  * The pieces the three elections pages share, on the hubs' frame
  * (`RuledFrame`, `MonoLabel`): the head, the facts list, the filter form, and
  * a list's body with its states and pager.
  */
+
+/** A competitor as the API labels it; an independent's ballot name is followed by a muted „independent". */
+export function CompetitorName({ competitor }: { readonly competitor: ElectionCompetitor }) {
+  return (
+    <>
+      {competitor.label}
+      {competitor.kind === 'independent' ? (
+        <span className="text-muted-foreground">
+          {' · '}
+          <Trans>independent</Trans>
+        </span>
+      ) : null}
+    </>
+  )
+}
 
 /** The page's head: a caption, the title, and what follows it. */
 export function ElectionsPageHead({

@@ -10,11 +10,10 @@ import { z } from 'zod'
  * strings and stay strings until they are formatted; a missing figure has no
  * row, so nothing here ever reads one as zero.
  *
- * Privacy: an independent competitor is a person, and the API names them by
- * their ballot label. The parse drops that label before anything reaches a
- * page, its cache or the server-rendered HTML; the page says „candidat
- * independent" instead. No competitor key is read, since an independent's
- * key spells the name too.
+ * An independent competitor is a person, whom the API names by their ballot
+ * label; the pages show that label as served (the owner's call, 2026-10-31)
+ * and say the competitor is independent. No competitor key is read: the pages
+ * need none, and people are never joined across sources.
  */
 
 /** The page size every list reads with: the API's own default, within its bound of 100. */
@@ -129,10 +128,8 @@ const placeSchema = z.object({
 })
 export type ElectionPlace = z.infer<typeof placeSchema>
 
-/** A competitor as the pages may show it: an independent's label is dropped here, never later. */
-const competitorSchema = z
-  .object({ kind: z.enum(ELECTION_COMPETITOR_KINDS), label: z.string() })
-  .transform(({ kind, label }) => ({ kind, label: kind === 'independent' ? null : label }))
+/** A competitor by kind and the API's label: a party's or list's name, or an independent's ballot name. */
+const competitorSchema = z.object({ kind: z.enum(ELECTION_COMPETITOR_KINDS), label: z.string() })
 export type ElectionCompetitor = z.infer<typeof competitorSchema>
 
 /** A share of the same scope's valid votes (or registered voters), as the API rounds it: a decimal string. */
