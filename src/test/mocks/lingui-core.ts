@@ -43,4 +43,5 @@ export const i18n = {
   locales: ["en"],
   activate: () => {},
   load: () => {},
+  loadAndActivate: (_options: { locale: string; messages: Record<string, unknown> }) => {},
 };

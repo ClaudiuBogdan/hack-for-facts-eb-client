@@ -35,8 +35,8 @@ const DEFAULT_SCOPE = [DEFAULT_CATALOG] as const;
 /**
  * The server's catalogs, every language compiled in, from
  * `i18n-server-catalogs.ts`, which only the server entry imports. They replace
- * the lazy loaders, and the default language is loaded before the first
- * request, as the server always did.
+ * the lazy loaders, and the default language is loaded and active before the
+ * first request.
  */
 export function registerServerCatalogs(
   catalogs: Readonly<Record<CatalogName, Record<string, unknown>>>,
@@ -51,10 +51,14 @@ export function registerServerCatalogs(
       getCatalogCacheKey(DEFAULT_LOCALE, DEFAULT_CATALOG),
       extractMessages(defaultEntry),
     );
-    i18n.load(
-      DEFAULT_LOCALE,
-      buildMergedMessages(DEFAULT_LOCALE, DEFAULT_SCOPE),
-    );
+    // Active too: each request's Lingui state starts from this one, so a page
+    // that renders before the root's `beforeLoad` activates its language (an
+    // error there) still translates. Replaced, not merged (`load`): a dev
+    // server that reloads its entry runs this again over the frozen catalog.
+    i18n.loadAndActivate({
+      locale: DEFAULT_LOCALE,
+      messages: serverMessagesFor(DEFAULT_LOCALE, DEFAULT_SCOPE),
+    });
   }
 }
 
@@ -111,6 +115,33 @@ function buildMergedMessages(
       ...catalogMessages,
     };
   }, {});
+}
+
+/** The server's merged catalogs, per language and catalog set: built once, read by every request. */
+const serverMergedMessages = new Map<string, Messages>();
+
+/**
+ * `buildMergedMessages` for the server, where every request activates its
+ * language anew: copying the main catalog's ~11,000 messages took 4 ms a
+ * request, 8 ms with a second catalog. Frozen, since requests share them: a
+ * stray `i18n.load` in a request would merge into them and fails instead.
+ * A set with a catalog not loaded yet is built afresh, not kept.
+ */
+function serverMessagesFor(
+  locale: string,
+  catalogNames: readonly CatalogName[],
+): Messages {
+  const key = `${locale}|${catalogNames.join(",")}`;
+  const cached = serverMergedMessages.get(key);
+  if (cached) return cached;
+  const messages = buildMergedMessages(locale, catalogNames);
+  const complete = catalogNames.every((catalogName) =>
+    loadedCatalogs.has(getCatalogCacheKey(locale, catalogName)),
+  );
+  if (!complete) return messages;
+  Object.freeze(messages);
+  serverMergedMessages.set(key, messages);
+  return messages;
 }
 
 function getCatalogNamesForPathname(pathname?: string): readonly CatalogName[] {
@@ -241,6 +272,21 @@ export async function dynamicActivate(
   options?: ActivationOptions,
 ): Promise<void> {
   const catalogNames = getCatalogNamesForPathname(options?.pathname);
+  if (import.meta.env.SSR) {
+    // Each server request has its own Lingui state (`i18n-request-scope.ts`),
+    // which starts with the shared catalogs. Replace this language's messages
+    // with exactly this page's catalogs: `load` would merge into those shared
+    // objects, and a merge's order decides which of two catalogs wins an id
+    // they both translate (REV-02).
+    await Promise.all(
+      catalogNames.map((catalogName) => ensureCatalogLoaded(locale, catalogName)),
+    );
+    i18n.loadAndActivate({
+      locale,
+      messages: serverMessagesFor(locale, catalogNames),
+    });
+    return;
+  }
   const cacheKeys = catalogNames.map((catalogName) =>
     getCatalogCacheKey(locale, catalogName),
   );
@@ -265,16 +311,20 @@ export async function dynamicActivate(
 
 /**
  * A translator pinned to one locale, whatever the shared instance holds by
- * then: for a route's `head`. On the server the shared `i18n` is activated per
- * request by the root's `beforeLoad`, so a head that runs after its loader
- * awaited may find another request's language there; the request's own
- * locale is on the root's context (`match.context.locale`). Built from the
+ * then: for a route's `head`, which gets the request's own locale from the
+ * root's context (`match.context.locale`). The server now scopes `i18n` to
+ * each request (`i18n-request-scope.ts`), so this is a second guard there; in
+ * the browser a head can run while another language loads. Built from the
  * catalogs already loaded for that locale (the root loaded them for this
  * request); a message missing from them resolves to its source text.
  */
 export function translatorFor(locale: string, pathname?: string): I18n {
   const translator = setupI18n()
-  translator.load(locale, buildMergedMessages(locale, getCatalogNamesForPathname(pathname)))
+  const catalogNames = getCatalogNamesForPathname(pathname)
+  translator.load(
+    locale,
+    import.meta.env.SSR ? serverMessagesFor(locale, catalogNames) : buildMergedMessages(locale, catalogNames),
+  )
   translator.activate(locale)
   return translator
 }

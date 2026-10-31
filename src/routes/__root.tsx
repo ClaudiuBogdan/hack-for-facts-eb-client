@@ -78,9 +78,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     const ssrCurrency = await readUserCurrencyPreference();
     const ssrInflationAdjusted = await readUserInflationAdjustedPreference();
 
-    // The locale this request resolved, for a route's `head`: Lingui's
-    // instance is shared by every request the server renders, so a head that
-    // runs after its loader awaited may find another request's locale there.
+    // The locale this request resolved, for a route's `head` (`translatorFor`
+    // in lib/i18n).
     return { ssrTheme, ssrCurrency, ssrInflationAdjusted, locale };
   },
   errorComponent: ({ error }) => <GlobalErrorPage error={error} />,

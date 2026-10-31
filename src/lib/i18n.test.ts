@@ -41,6 +41,46 @@ describe('dynamicActivate', () => {
   })
 })
 
+describe('dynamicActivate on the server', () => {
+  beforeEach(() => {
+    vi.stubEnv('SSR', true)
+    vi.spyOn(i18n, 'load')
+    vi.spyOn(i18n, 'activate')
+  })
+  afterEach(() => {
+    // Not `unstubAllEnvs`: that would also drop the stubs `src/test/setup.ts` makes for every test.
+    vi.stubEnv('SSR', false)
+    vi.restoreAllMocks()
+  })
+
+  it('replaces the language with exactly the page catalogs on every request, never merging', async () => {
+    const loadAndActivate = vi.spyOn(i18n, 'loadAndActivate')
+    await dynamicActivate('ro', { pathname: '/pnrr' })
+    await dynamicActivate('en', { pathname: '/companies' })
+    await dynamicActivate('ro', { pathname: '/companies' })
+    await dynamicActivate('ro', { pathname: '/pnrr' })
+
+    expect(i18n.load).not.toHaveBeenCalled()
+    expect(i18n.activate).not.toHaveBeenCalled()
+    expect(loadAndActivate.mock.calls.map(([options]) => options.locale)).toEqual(['ro', 'en', 'ro', 'ro'])
+    const [firstPnrr, , companies, secondPnrr] = loadAndActivate.mock.calls.map(([options]) => options.messages)
+    // Built once per language and catalog set, and shared by every request, so frozen.
+    expect(secondPnrr).toBe(firstPnrr)
+    expect(Object.isFrozen(secondPnrr)).toBe(true)
+
+    // The ids both catalogs translate, differently: a PNRR page gets the PNRR wording, every other page the main one,
+    // whatever ran in between.
+    const { messages: main } = await import('../locales/ro/messages.po')
+    const { messages: pnrr } = await import('../locales/ro/pnrr.po')
+    const conflicting = Object.keys(pnrr).filter((id) => id in main && JSON.stringify(main[id]) !== JSON.stringify(pnrr[id]))
+    expect(conflicting.length).toBeGreaterThan(0)
+    for (const id of conflicting) {
+      expect(secondPnrr[id], id).toEqual(pnrr[id])
+      expect(companies[id], id).toEqual(main[id])
+    }
+  })
+})
+
 describe('browserLocaleFor', () => {
   afterEach(() => {
     document.cookie = 'user-locale=; path=/; max-age=0'
@@ -67,10 +107,11 @@ describe('registerServerCatalogs', () => {
     vi.resetModules()
   })
 
-  it('serves every catalog from the compiled-in modules, and loads the default language at once', async () => {
+  it('serves every catalog from the compiled-in modules, and activates the default language at once', async () => {
     vi.resetModules()
+    vi.stubEnv('SSR', true)
     const { i18n: lingui } = await import('@lingui/core')
-    const load = vi.spyOn(lingui, 'load')
+    const loadAndActivate = vi.spyOn(lingui, 'loadAndActivate')
     const { dynamicActivate, registerServerCatalogs } = await import('./i18n')
 
     registerServerCatalogs({
@@ -81,10 +122,16 @@ describe('registerServerCatalogs', () => {
       admin: {},
       pnrr: { '../locales/en/pnrr.po': { messages: { plan: 'Recovery plan' } } },
     })
-    expect(load).toHaveBeenCalledWith('ro', { greeting: 'Salut' })
+    expect(loadAndActivate).toHaveBeenCalledWith({ locale: 'ro', messages: { greeting: 'Salut' } })
 
     // No loader runs: the language and the route's catalog come from the modules registered above.
     await dynamicActivate('en', { pathname: '/pnrr' })
-    expect(load).toHaveBeenLastCalledWith('en', { greeting: 'Hello', plan: 'Recovery plan' })
+    expect(loadAndActivate).toHaveBeenLastCalledWith({ locale: 'en', messages: { greeting: 'Hello', plan: 'Recovery plan' } })
+
+    // A dev server that reloads its entry registers again, over the frozen catalog: replaced, so no error.
+    expect(() =>
+      registerServerCatalogs({ messages: { '../locales/ro/messages.po': { messages: { greeting: 'Salut' } } }, admin: {}, pnrr: {} }),
+    ).not.toThrow()
+    vi.stubEnv('SSR', false)
   })
 })
