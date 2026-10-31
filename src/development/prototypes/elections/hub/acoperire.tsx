@@ -107,7 +107,7 @@ function EditionRow({ event, edition }: { readonly event: ElectionEvent; readonl
   return (
     <li>
       <a
-        href={PROTOTYPE_HREF.election(event.key, edition.key)}
+        href={PROTOTYPE_HREF.election(event.key)}
         className={cn(EDITION_GRID, 'transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none')}
       >
         <span className="min-w-0 break-all font-mono text-xs tabular-nums text-muted-foreground">{edition.key}</span>

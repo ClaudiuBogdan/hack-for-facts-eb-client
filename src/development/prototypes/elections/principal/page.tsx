@@ -648,9 +648,6 @@ function MissingBand({ index }: { readonly index: string }) {
         <div className="lg:col-span-4">
           <HubSectionHead titleId="alegeri-lipsa-titlu" index={index} title={<Trans>Ce nu e încă aici</Trans>} />
           <nav aria-label={t`Mai departe`} className="mt-6 flex flex-col gap-2 text-sm">
-            <a href={PROTOTYPE_HREF.analytics()} className="font-medium text-foreground underline-offset-4 hover:underline">
-              <Trans>Analize avansate →</Trans>
-            </a>
             <a href={`${PROTOTYPE_HREF.hub()}?v=cronologie`} className="font-medium text-foreground underline-offset-4 hover:underline">
               <Trans>Toate alegerile din date →</Trans>
             </a>
@@ -720,7 +717,6 @@ export function ResultsHome() {
         shortcuts={[
           { key: 'harta', label: t`Harta`, href: '#harta' },
           { key: 'parl', label: t`Parlamentare 2020`, href: '#parlamentare' },
-          { key: 'analize', label: t`Analize avansate`, href: PROTOTYPE_HREF.analytics() },
         ]}
         panel={<LatestPanel />}
         source={<ResultsSourceLine />}

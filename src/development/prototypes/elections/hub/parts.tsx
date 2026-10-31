@@ -70,7 +70,6 @@ export function shortcuts(own: readonly { readonly key: string; readonly label: 
   return [
     ...own,
     ...(latest ? [{ key: 'latest', label: eventTitle(latest), href: PROTOTYPE_HREF.election(latest.key) }] : []),
-    { key: 'analytics', label: <Trans>Analize</Trans>, href: PROTOTYPE_HREF.analytics() },
     { key: 'catalog', label: <Trans>Catalogul edițiilor</Trans>, href: '/alegeri' },
   ]
 }

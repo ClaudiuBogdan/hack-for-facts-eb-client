@@ -142,29 +142,18 @@ export function roundShort(round: string | null): string {
   }
 }
 
-const CHIP =
-  'inline-flex h-6 min-w-8 items-center justify-center rounded-sm border px-1.5 text-xs tabular-nums text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+const CHIP = 'inline-flex h-6 min-w-8 items-center justify-center rounded-sm border px-1.5 text-xs tabular-nums text-foreground'
 
-/** The link to one contest row, shown as its round; the edition in the tooltip, so two editions' chips can be told apart. */
-export function ContestChip({
-  contestKey,
-  round,
-  editionKey,
-  label,
-}: {
-  readonly contestKey: string
-  readonly round: string | null
-  readonly editionKey: string
-  readonly label?: string
-}) {
+/** One contest row, shown as its round; the edition in the tooltip, so two editions' chips can be told apart. */
+export function ContestChip({ round, editionKey, label }: { readonly round: string | null; readonly editionKey: string; readonly label?: string }) {
   const full = label ? `${label}, ${roundLabel(round)}` : roundLabel(round)
   return (
-    <a href={PROTOTYPE_HREF.contest(contestKey)} className={cn(CHIP, round === null && 'text-muted-foreground')} title={`${editionKey} · ${full}`}>
+    <span className={cn(CHIP, round === null && 'text-muted-foreground')} title={`${editionKey} · ${full}`}>
       <span aria-hidden="true">{label ? `${label} ${roundShort(round)}` : roundShort(round)}</span>
       <span className="sr-only">
         {full}, {editionKey}
       </span>
-    </a>
+    </span>
   )
 }
 

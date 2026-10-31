@@ -20,16 +20,15 @@ export const BAND_GRID = 'grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8'
 /**
  * The prototypes' addresses for each other, so every page links the others
  * the same way (each prototype reads its own parameter with
- * `useSearch({ strict: false })`). At promotion these become the real routes.
+ * `useSearch({ strict: false })`). An election opens the live page, which
+ * answers „not in the data" for an event the API does not serve; the
+ * election, contest and analytics prototypes were retired on 2026-10-31.
  */
 export const PROTOTYPE_HREF = {
   hub: () => '/development/elections/hub',
-  /** One election (a platform event), optionally opened on one of its editions. */
-  election: (eventKey: string, editionKey?: string) =>
-    `/development/elections/alegere?alegere=${encodeURIComponent(eventKey)}${editionKey ? `&editie=${encodeURIComponent(editionKey)}` : ''}`,
-  contest: (contestKey: string) => `/development/elections/scrutin?scrutin=${encodeURIComponent(contestKey)}`,
+  /** One election (a platform event) on the live `/alegeri` page. */
+  election: (eventKey: string) => `/alegeri/${encodeURIComponent(eventKey)}`,
   place: (siruta: string) => `/development/elections/localitate?loc=${encodeURIComponent(siruta)}`,
-  analytics: () => '/development/elections/analize',
 } as const
 
 export const placeHref = PROTOTYPE_HREF.place

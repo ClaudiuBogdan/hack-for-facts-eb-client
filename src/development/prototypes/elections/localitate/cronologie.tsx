@@ -65,7 +65,7 @@ function EditionColumn({ entry, edition }: { readonly entry: PlaceEvent; readonl
   return (
     <div className="min-w-0">
       <a
-        href={PROTOTYPE_HREF.election(entry.event.key, edition.edition.key)}
+        href={PROTOTYPE_HREF.election(entry.event.key)}
         className="block truncate font-mono text-[11px] leading-4 text-muted-foreground hover:text-foreground hover:underline hover:underline-offset-4"
         title={edition.edition.key}
       >
@@ -86,7 +86,7 @@ function EditionColumn({ entry, edition }: { readonly entry: PlaceEvent; readonl
                   </MonoLabel>
                 ) : null}
               </span>
-              <ContestChip contestKey={row.contestKey} round={row.round} editionKey={row.edition.key} />
+              <ContestChip round={row.round} editionKey={row.edition.key} />
             </li>
           )
         })}

@@ -66,7 +66,7 @@ function MatrixSpine({ sheet }: { readonly sheet: PlaceSheet }) {
                   {column.editions.map((entry) => (
                     <li key={entry.edition.key}>
                       <a
-                        href={PROTOTYPE_HREF.election(column.event.key, entry.edition.key)}
+                        href={PROTOTYPE_HREF.election(column.event.key)}
                         className="block truncate font-mono text-[11px] leading-4 text-muted-foreground hover:text-foreground hover:underline hover:underline-offset-4"
                         title={entry.edition.key}
                       >
@@ -104,7 +104,7 @@ function GroupRows({ label, sheet, offices, muted }: { readonly label: string; r
                 {rows.length > 0 ? (
                   <span className="flex flex-wrap gap-1">
                     {rows.map((row) => (
-                      <ContestChip key={row.contestKey} contestKey={row.contestKey} round={row.round} editionKey={row.edition.key} />
+                      <ContestChip key={row.contestKey} round={row.round} editionKey={row.edition.key} />
                     ))}
                   </span>
                 ) : (

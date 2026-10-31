@@ -81,7 +81,7 @@ function ComparisonSpine({ sheet, places, hub }: { readonly sheet: PlaceSheet; r
                             <OfficeName office={office.office} className={cn('text-sm', office.role === 'own' ? 'text-foreground' : 'text-muted-foreground')} />
                             <span className="flex flex-wrap gap-1">
                               {rows.map((row) => (
-                                <ContestChip key={row.contestKey} contestKey={row.contestKey} round={row.round} editionKey={row.edition.key} />
+                                <ContestChip key={row.contestKey} round={row.round} editionKey={row.edition.key} />
                               ))}
                             </span>
                           </li>

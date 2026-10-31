@@ -330,7 +330,7 @@ function CoverageBand({ index }: { readonly index: string }) {
               ),
               value: t`${format.n(row.named)} din ${format.n(PLACE_COVERAGE.insUats)}`,
               fraction: row.named / PLACE_COVERAGE.insUats,
-              link: row.event ? hrefLink(PROTOTYPE_HREF.election(row.event.key, row.key)) : undefined,
+              link: row.event ? hrefLink(PROTOTYPE_HREF.election(row.event.key)) : undefined,
             }))}
           />
         </div>
