@@ -2,7 +2,7 @@ import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { StartClient } from "@tanstack/react-start/client";
 import { i18n } from "@lingui/core";
-import { dynamicActivate } from "@/lib/i18n";
+import { activateLanguageForHydration } from "@/lib/i18n-hydration";
 import { getUserLocale } from "@/lib/utils";
 import { getReactRootErrorHandlers } from "@/lib/sentry";
 import { registerChunkErrorHandler } from "@/lib/chunk-recovery";
@@ -14,17 +14,12 @@ async function bootstrap() {
 
   if (hasWindow) {
     registerChunkErrorHandler();
-    try {
-      await dynamicActivate(userLocale, {
-        pathname: window.location.pathname,
-      });
-    } catch (error) {
-      i18n.load(userLocale, {});
-      i18n.activate(userLocale);
-      if (import.meta.env.DEV) {
-        console.error("Failed to load translations:", error);
-      }
-    }
+    // Without its catalog the page stays as the server rendered it, or loads afresh.
+    const ready = await activateLanguageForHydration(
+      userLocale,
+      window.location.pathname,
+    );
+    if (!ready) return;
   } else {
     i18n.load(userLocale, {});
     i18n.activate(userLocale);

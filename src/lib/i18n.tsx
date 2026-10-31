@@ -188,6 +188,14 @@ async function ensureCatalogLoaded(
 
   const loadPromise = (async () => {
     const module = await loader();
+    // A chunk error that the app's handler took over (it reloads the page, and
+    // cancels the error) resolves the import to nothing: kept, it would be an
+    // empty catalog for the rest of the visit (REV-03).
+    if (!module || typeof module !== "object") {
+      throw new Error(
+        `The i18n catalog "${catalogName}" for "${locale}" did not load`,
+      );
+    }
     const messages = extractMessages(module);
     loadedCatalogs.set(cacheKey, messages);
     return messages;
