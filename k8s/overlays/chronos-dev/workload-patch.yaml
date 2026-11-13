@@ -48,6 +48,9 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
         - name: hack-for-facts-eb-client
+          env:
+            - name: VITE_VERIFIED_CONSOLIDATION
+              value: "true"
           envFrom:
             - configMapRef:
                 name: hack-for-facts-eb-client-config
