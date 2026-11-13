@@ -3886,18 +3886,6 @@ msgstr "0 salariați"
 #: src/features/private-companies/lib/company-profile-text.ts:275
 msgid "0 salariați raportați în bilanțul pe {year}"
 msgstr "0 salariați raportați în bilanțul pe {year}"
-#: src/components/entities/EntityEmployeesDataInfo.tsx:52
-msgid "<0>Plafon legal cu excepții (P)</0> este valoarea „TOTAL ACTUAL” din fișierul sursă și include posturile exceptate. Pentru numărul de posturi aprobate este nevoie de organigrama autorității."
-msgstr "<0>Plafon legal cu excepții (P)</0> este valoarea „TOTAL ACTUAL” din fișierul sursă și include posturile exceptate. Pentru numărul de posturi aprobate este nevoie de organigrama autorității."
-
-#: src/components/entities/EntityEmployeesDataInfo.tsx:51
-msgid "<0>Plafon legal de bază (G)</0> este numărul maxim de posturi stabilit în funcție de populație."
-msgstr "<0>Plafon legal de bază (G)</0> este numărul maxim de posturi stabilit în funcție de populație."
-
-#: src/components/entities/EntityEmployeesDataInfo.tsx:50
-msgid "<0>Posturi ocupate (S)</0> este numărul de posturi raportate ca ocupate."
-msgstr "<0>Posturi ocupate (S)</0> este numărul de posturi raportate ca ocupate."
-
 
 #: src/features/landing/components/landing-page.tsx:319
 msgid "01 / Ce găsești aici"
@@ -10956,10 +10944,6 @@ msgstr "Ce se judecă"
 #: src/features/justice/lib/analysis-questions.ts:39
 msgid "Ce se judecă în România?"
 msgstr "Ce se judecă în România?"
-#: src/components/entities/EntityEmployeesDataInfo.tsx:47
-msgid "Ce reprezintă posturile ocupate și plafoanele legale?"
-msgstr "Ce reprezintă posturile ocupate și plafoanele legale?"
-
 
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:274
 msgid "Ce spun ANAF și registrul"
@@ -23626,10 +23610,6 @@ msgstr "Hărți"
 msgid "Hârtie și carton"
 msgstr "Hârtie și carton"
 
-#: src/components/entities/EntityEmployeesDataInfo.tsx:14
-msgid "Guvernul României a publicat ediția în septembrie 2025, pe baza raportărilor prefecturilor privind aparatele proprii ale primăriilor și consiliilor județene. Fișierul nu precizează data la care a fost măsurată ocuparea posturilor pentru fiecare autoritate."
-msgstr "Guvernul României a publicat ediția în septembrie 2025, pe baza raportărilor prefecturilor privind aparatele proprii ale primăriilor și consiliilor județene. Fișierul nu precizează data la care a fost măsurată ocuparea posturilor pentru fiecare autoritate."
-
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:163
 msgid "Has the 2026 budget been published?"
 msgstr "A fost publicat bugetul pe 2026?"
@@ -33779,10 +33759,6 @@ msgstr "Numărul mediu, din aceleași bilanțuri"
 
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:328
 #~ msgid "Number of amendment records per month. Undated records are disclosed by the coverage notice, never guessed into a month."
-#: src/components/tables/EmployeesDataTable.tsx:57
-msgid "Numărul de posturi raportate ca ocupate în ediția din septembrie 2025."
-msgstr "Numărul de posturi raportate ca ocupate în ediția din septembrie 2025."
-
 #~ msgstr "Numărul înregistrărilor de modificări pe lună. Înregistrările fără dată sunt menționate în nota de acoperire, fără a li se atribui în mod speculativ o lună."
 
 #: src/features/procurement/components/procurement-monthly-chart.tsx:98
@@ -33803,14 +33779,6 @@ msgstr "Număr de UAT-uri"
 #~ msgstr "Nume de circumscripție"
 
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:258
-#: src/components/tables/EmployeesDataTable.tsx:90
-msgid "Numărul maxim de posturi calculat pe baza populației, conform OUG 63/2010, pct. 1 din anexă."
-msgstr "Numărul maxim de posturi calculat pe baza populației, conform OUG 63/2010, pct. 1 din anexă."
-
-#: src/components/tables/EmployeesDataTable.tsx:58
-msgid "Numărul maxim de posturi raportat în ediția din septembrie 2025, inclusiv posturile exceptate."
-msgstr "Numărul maxim de posturi raportat în ediția din septembrie 2025, inclusiv posturile exceptate."
-
 #: src/features/public-enterprises/components/hub/public-enterprise-hub-page.tsx:119
 msgid "nume din altă sursă"
 msgstr "nume din altă sursă"
@@ -36697,14 +36665,6 @@ msgstr "Platforma nu a legat un CUI de această organizație."
 msgid "Plăți"
 msgstr ""
 
-#: src/components/tables/EmployeesDataTable.tsx:58
-msgid "Plafon legal cu excepții (P)"
-msgstr "Plafon legal cu excepții (P)"
-
-#: src/components/tables/EmployeesDataTable.tsx:90
-msgid "Plafon legal de bază (G)"
-msgstr "Plafon legal de bază (G)"
-
 #: src/features/national-budget/analytics/lib/analytics-format.ts:94
 msgctxt "national budget classification"
 msgid "Plăți din anii trecuți, recuperate"
@@ -37237,10 +37197,6 @@ msgstr "Potriviri după numărul și denumirea actelor. Căutarea în textul leg
 #: src/features/private-companies/lib/company-main-activity-text.ts:297
 msgid "potrivit cu ONRC"
 msgstr "potrivit cu ONRC"
-#: src/components/tables/EmployeesDataTable.tsx:57
-msgid "Posturi ocupate (S)"
-msgstr "Posturi ocupate (S)"
-
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:299
 msgid "potrivit cu ONRC (cea mai recentă revizie)"
@@ -50306,3 +50262,47 @@ msgstr "Σ POP201D / Σ POP108D × 1.000"
 #: src/features/statistics/lib/territory-derived.ts:134
 msgid "Σ POP206D / Σ POP108D × 1.000"
 msgstr "Σ POP206D / Σ POP108D × 1.000"
+
+#: src/components/entities/EntityEmployeesDataInfo.tsx:52
+msgid "<0>Plafon legal cu excepții (P)</0> este valoarea „TOTAL ACTUAL” din fișierul sursă și include posturile exceptate. Pentru numărul de posturi aprobate este nevoie de organigrama autorității."
+msgstr "<0>Plafon legal cu excepții (P)</0> este valoarea „TOTAL ACTUAL” din fișierul sursă și include posturile exceptate. Pentru numărul de posturi aprobate este nevoie de organigrama autorității."
+
+#: src/components/entities/EntityEmployeesDataInfo.tsx:51
+msgid "<0>Plafon legal de bază (G)</0> este numărul maxim de posturi stabilit în funcție de populație."
+msgstr "<0>Plafon legal de bază (G)</0> este numărul maxim de posturi stabilit în funcție de populație."
+
+#: src/components/entities/EntityEmployeesDataInfo.tsx:50
+msgid "<0>Posturi ocupate (S)</0> este numărul de posturi raportate ca ocupate."
+msgstr "<0>Posturi ocupate (S)</0> este numărul de posturi raportate ca ocupate."
+
+#: src/components/entities/EntityEmployeesDataInfo.tsx:47
+msgid "Ce reprezintă posturile ocupate și plafoanele legale?"
+msgstr "Ce reprezintă posturile ocupate și plafoanele legale?"
+
+#: src/components/entities/EntityEmployeesDataInfo.tsx:14
+msgid "Guvernul României a publicat ediția în septembrie 2025, pe baza raportărilor prefecturilor privind aparatele proprii ale primăriilor și consiliilor județene. Fișierul nu precizează data la care a fost măsurată ocuparea posturilor pentru fiecare autoritate."
+msgstr "Guvernul României a publicat ediția în septembrie 2025, pe baza raportărilor prefecturilor privind aparatele proprii ale primăriilor și consiliilor județene. Fișierul nu precizează data la care a fost măsurată ocuparea posturilor pentru fiecare autoritate."
+
+#: src/components/tables/EmployeesDataTable.tsx:57
+msgid "Numărul de posturi raportate ca ocupate în ediția din septembrie 2025."
+msgstr "Numărul de posturi raportate ca ocupate în ediția din septembrie 2025."
+
+#: src/components/tables/EmployeesDataTable.tsx:90
+msgid "Numărul maxim de posturi calculat pe baza populației, conform OUG 63/2010, pct. 1 din anexă."
+msgstr "Numărul maxim de posturi calculat pe baza populației, conform OUG 63/2010, pct. 1 din anexă."
+
+#: src/components/tables/EmployeesDataTable.tsx:58
+msgid "Numărul maxim de posturi raportat în ediția din septembrie 2025, inclusiv posturile exceptate."
+msgstr "Numărul maxim de posturi raportat în ediția din septembrie 2025, inclusiv posturile exceptate."
+
+#: src/components/tables/EmployeesDataTable.tsx:58
+msgid "Plafon legal cu excepții (P)"
+msgstr "Plafon legal cu excepții (P)"
+
+#: src/components/tables/EmployeesDataTable.tsx:90
+msgid "Plafon legal de bază (G)"
+msgstr "Plafon legal de bază (G)"
+
+#: src/components/tables/EmployeesDataTable.tsx:57
+msgid "Posturi ocupate (S)"
+msgstr "Posturi ocupate (S)"
