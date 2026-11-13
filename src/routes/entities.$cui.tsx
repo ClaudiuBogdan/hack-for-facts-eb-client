@@ -2,7 +2,7 @@ import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
 import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails'
 import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import { isCancelledError } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 import { entitySearchSchema } from '@/components/entities/validation'
 import {
@@ -176,6 +176,19 @@ function resolveAdapterWithEffectiveReportType(
 
 export const Route = createFileRoute('/entities/$cui')({
   validateSearch: entitySearchSchema,
+  beforeLoad: ({ params, search, location }) => {
+    if (search.normalization === 'percent_gdp') {
+      // The entity view supports total and per-capita values.
+      throw redirect({
+        to: '/entities/$cui',
+        params,
+        search: { ...location.search, normalization: 'total' },
+        hash: location.hash,
+        replace: true,
+        statusCode: 302,
+      })
+    }
+  },
   loader: async ({ context, params, location }): Promise<EntityRouteLoaderData> => {
     const queryClient = context.queryClient
     const requestSiteUrl = await readEntityPageRequestOrigin()
@@ -270,11 +283,15 @@ export const Route = createFileRoute('/entities/$cui')({
         ).queryKey
         const sourceState = queryClient.getQueryState(sourceKey)
         const targetState = queryClient.getQueryState(targetKey)
+        const sourceExpiry = sourceState?.data?.sourceExpiresAt
+        const targetExpiry = targetState?.data?.sourceExpiresAt
         if (
           sourceState?.status === 'success' &&
           !sourceState.isInvalidated &&
           sourceState.data !== undefined &&
-          sourceState.dataUpdatedAt > (targetState?.dataUpdatedAt ?? 0)
+          (sourceExpiry !== undefined && targetExpiry !== undefined
+            ? sourceExpiry > targetExpiry
+            : sourceState.dataUpdatedAt > (targetState?.dataUpdatedAt ?? 0))
         ) {
           queryClient.setQueryData(targetKey, sourceState.data, {
             updatedAt: sourceState.dataUpdatedAt,

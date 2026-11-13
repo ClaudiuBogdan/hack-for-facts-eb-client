@@ -1,4 +1,4 @@
-import { useQuery, queryOptions } from '@tanstack/react-query';
+import { useQuery, queryOptions, type QueryClient } from '@tanstack/react-query';
 import {
   getEntityDetails,
   getEntityExecutionLineItems,
@@ -21,6 +21,48 @@ type EntityDetailsQueryParams = {
   trendPeriod?: ReportPeriodInput
   mainCreditorCui?: string
 } & NormalizationOptions
+
+const ENTITY_DETAILS_STALE_TIME = 5 * 60 * 1000;
+
+type EntityDetailsSource<T> = { readonly data: T; readonly fetchedAt: number };
+
+async function readEntityDetailsSource<T>(
+  client: QueryClient,
+  queryKey: readonly unknown[],
+  load: (signal?: AbortSignal) => Promise<T>,
+  signal: AbortSignal,
+): Promise<EntityDetailsSource<T>> {
+  const fetchSource = async (sourceSignal: AbortSignal): Promise<EntityDetailsSource<T>> => {
+    const data = await load(sourceSignal);
+    sourceSignal.throwIfAborted();
+    return { data, fetchedAt: Date.now() };
+  };
+
+  signal.throwIfAborted();
+  if (typeof window !== 'undefined') {
+    // Other projections may still need this source if this one is cancelled.
+    const source = await client.fetchQuery({
+      queryKey,
+      queryFn: ({ signal: sourceSignal }) => fetchSource(sourceSignal),
+      staleTime: ENTITY_DETAILS_STALE_TIME,
+      retry: false,
+    });
+    signal.throwIfAborted();
+    return source;
+  }
+
+  const state = client.getQueryState<EntityDetailsSource<T>>(queryKey);
+  if (state?.data && !state.isInvalidated &&
+      Date.now() - state.data.fetchedAt < ENTITY_DETAILS_STALE_TIME) {
+    return state.data;
+  }
+  // SSR's deadline owns the transport signal. Seed successful sources only,
+  // so hydration cannot pick up a separate pending query after the deadline.
+  const source = await fetchSource(signal);
+  signal.throwIfAborted();
+  client.setQueryData(queryKey, source, { updatedAt: source.fetchedAt });
+  return source;
+}
 
 function normalizeEntityDetailsQueryParams(
   params: EntityDetailsQueryParams,
@@ -52,9 +94,27 @@ export const entityDetailsQueryOptions = (
 
   return queryOptions({
     queryKey: ['entityDetails', hash],
-    // The signal lets a cancelled query (the SSR deadline) abort the fetch.
-    queryFn: ({ signal }) => getEntityDetails(normalizedParams, { signal }),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    queryFn: async ({ client, signal }): Promise<EntityDetailsData | null> => {
+      let sourceExpiresAt = Infinity;
+      const details = await getEntityDetails(normalizedParams, {
+        signal,
+        readSource: async (queryKey, load) => {
+          const source = await readEntityDetailsSource(client, queryKey, load, signal);
+          sourceExpiresAt = Math.min(sourceExpiresAt, source.fetchedAt + ENTITY_DETAILS_STALE_TIME);
+          return source.data;
+        },
+      });
+      signal.throwIfAborted();
+      return details && { ...details, sourceExpiresAt };
+    },
+    staleTime: ({ state }) => {
+      // A missing entity has no projection timestamp. Its metadata still
+      // caches the lookup and controls when the transport runs again.
+      if (state.data === null) return 0;
+      return state.data?.sourceExpiresAt === undefined
+        ? ENTITY_DETAILS_STALE_TIME
+        : Math.max(0, state.data.sourceExpiresAt - state.dataUpdatedAt);
+    },
     enabled: !!normalizedParams.cui,
   });
 

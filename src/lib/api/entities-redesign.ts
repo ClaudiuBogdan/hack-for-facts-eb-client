@@ -478,6 +478,14 @@ function toAnalyticsSeries(params: {
   };
 }
 
+export interface EntityDetailsRequestOptions {
+  readonly signal?: AbortSignal;
+  readonly readSource?: <T>(
+    queryKey: readonly unknown[],
+    load: (signal?: AbortSignal) => Promise<T>,
+  ) => Promise<T>;
+}
+
 export async function fetchRedesignEntityDetails(
   params: {
     readonly cui: string;
@@ -486,18 +494,23 @@ export async function fetchRedesignEntityDetails(
     readonly trendPeriod?: ReportPeriodInput;
     readonly mainCreditorCui?: string;
   } & NormalizationOptions,
-  options: { readonly signal?: AbortSignal } = {},
+  options: EntityDetailsRequestOptions = {},
 ): Promise<EntityDetailsData | null> {
-  const metadataRaw = await graphqlQuery<unknown>(
-    ENTITY_METADATA_QUERY,
-    { cui: params.cui, populationYear: periodYearBounds(params.reportPeriod).yearTo },
-    {
-      operationName: "entity-metadata",
-      auth: "none",
-      signal: options.signal,
-    },
+  const readSource: NonNullable<EntityDetailsRequestOptions["readSource"]> =
+    options.readSource ?? ((_queryKey, load) => load(options.signal));
+  const populationYear = periodYearBounds(params.reportPeriod).yearTo;
+  const { entity: metadata } = await readSource(
+    ["entityBudgetMetadata", params.cui, populationYear],
+    async (signal) => EntityMetadataResponseSchema.parse(await graphqlQuery<unknown>(
+      ENTITY_METADATA_QUERY,
+      { cui: params.cui, populationYear },
+      {
+        operationName: "entity-metadata",
+        auth: "none",
+        signal,
+      },
+    )),
   );
-  const metadata = EntityMetadataResponseSchema.parse(metadataRaw).entity;
   if (metadata === null) return null;
 
   const reportType =
@@ -552,38 +565,33 @@ export async function fetchRedesignEntityDetails(
   base.normalizationCaveats = normalizationCaveats;
   const applied = resolveAppliedNormalization(params);
   const normalized = normalization !== "TOTAL" || applied.currency !== "RON" || applied.inflationAdjusted;
-  const budgetRaw = await graphqlQuery<unknown>(
-    ENTITY_BUDGET_QUERY,
-    {
-      cui: params.cui,
-      reportType,
-      frequency: params.reportPeriod.type,
-      summaryYearFrom,
-      summaryYearTo,
-      normalization,
-      normalized,
-      currency: applied.currency,
-      inflationAdjusted: applied.inflationAdjusted,
-      ...(params.mainCreditorCui !== undefined
-        ? { mainCreditorCui: params.mainCreditorCui }
-        : {}),
-    },
-    {
-      operationName: "entity-budget",
-      auth: "none",
-      signal: options.signal,
+  const budgetVariables = {
+    cui: params.cui,
+    reportType,
+    frequency: params.reportPeriod.type,
+    summaryYearFrom,
+    summaryYearTo,
+    normalization,
+    normalized,
+    currency: applied.currency,
+    inflationAdjusted: applied.inflationAdjusted,
+    ...(normalized && params.mainCreditorCui !== undefined
+      ? { mainCreditorCui: params.mainCreditorCui }
+      : {}),
+  };
+  const budget = await readSource(
+    ["entityBudgetSeries", budgetVariables],
+    async (signal) => {
+      const raw = await graphqlQuery<unknown>(ENTITY_BUDGET_QUERY, budgetVariables, {
+        operationName: "entity-budget",
+        auth: "none",
+        signal,
+      });
+      return normalized
+        ? { kind: "normalized" as const, ...EntityBudgetSeriesResponseSchema.parse(raw) }
+        : { kind: "nominal" as const, ...EntityBudgetSummaryResponseSchema.parse(raw) };
     },
   );
-  const budget =
-    !normalized
-      ? {
-          kind: "nominal" as const,
-          ...EntityBudgetSummaryResponseSchema.parse(budgetRaw),
-        }
-      : {
-          kind: "normalized" as const,
-          ...EntityBudgetSeriesResponseSchema.parse(budgetRaw),
-        };
   const choosePoints = (
     metric: "totalIncome" | "totalExpense" | "budgetBalance",
   ): BudgetSeriesPoint[] =>

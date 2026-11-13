@@ -7,6 +7,7 @@ import { GqlReportType, ReportPeriodInput } from "@/schemas/reporting";
 import type { NormalizationOptions } from "@/lib/normalization";
 import {
   type BudgetNormalizationCaveats,
+  type EntityDetailsRequestOptions,
   fetchRedesignEntityDetails,
   fetchRedesignEntityExecutionLineItems,
   fetchRedesignEntityRelationships,
@@ -44,6 +45,8 @@ export interface ExecutionLineItem {
 }
 
 export interface EntityDetailsData {
+  /** Query projections expire with their oldest metadata or budget source. */
+  sourceExpiresAt?: number;
   annualPopulation?: AnnualPopulation | null;
   cui: string;
   name: string;
@@ -175,7 +178,7 @@ export async function getEntityDetails(
     trendPeriod?: ReportPeriodInput;
     mainCreditorCui?: string;
   } & NormalizationOptions,
-  options: { readonly signal?: AbortSignal } = {},
+  options: EntityDetailsRequestOptions = {},
 ): Promise<EntityDetailsData | null> {
   logger.info(`Fetching entity details for CUI: ${params.cui}`);
 

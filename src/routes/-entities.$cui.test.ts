@@ -45,6 +45,7 @@ const readClientInflationAdjustedPreferenceMock = vi.fn(() => null)
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
+  redirect: (options: unknown) => Object.assign(new Error('Redirect'), { options }),
 }))
 
 vi.mock('@tanstack/react-start', () => ({
@@ -117,6 +118,7 @@ async function importRoute() {
   const { Route } = await import('./entities.$cui')
 
   return Route as unknown as {
+    beforeLoad: (input: Record<string, unknown>) => void
     pendingComponent: unknown
     head: (input: Record<string, unknown>) => unknown
     headers: (input: Record<string, unknown>) => Record<string, string>
@@ -225,6 +227,28 @@ describe('entities route', () => {
     generateHashMock.mockReturnValue('hash-123')
     readClientCurrencyPreferenceMock.mockReturnValue(null)
     readClientInflationAdjustedPreferenceMock.mockReturnValue(null)
+  })
+
+  it('redirects legacy GDP links before loading the entity', async () => {
+    const route = await importRoute()
+    const params = { cui: '4305857' }
+    const search = { normalization: 'percent_gdp', year: 2025, currency: 'EUR', view: 'profile' }
+    expect(() => route.beforeLoad({
+      params,
+      search,
+      location: { search, hash: 'details' },
+    })).toThrow(expect.objectContaining({
+      options: {
+        to: '/entities/$cui',
+        params,
+        search: { ...search, normalization: 'total' },
+        hash: 'details',
+        replace: true,
+        statusCode: 302,
+      },
+    }))
+    expect(entityDetailsQueryOptionsMock).not.toHaveBeenCalled()
+    expect(() => route.beforeLoad({ params, search: { normalization: 'per_capita' } })).not.toThrow()
   })
 
   it('uses the shared entity SEO builder for entities metadata', async () => {
@@ -634,6 +658,31 @@ describe('entities route', () => {
     expect(details).not.toHaveBeenCalled()
     expect(queryClient.getQueryState(targetKey)?.dataUpdatedAt).toBe(targetExists ? targetTime : sourceTime)
     expect(queryClient.getQueryData(targetKey)).toMatchObject({ name: targetExists ? 'Newer' : 'Discovery' })
+    queryClient.clear()
+  })
+
+  it('keeps a projection with fresher source data even if it was computed earlier', async () => {
+    const details = vi.fn(async () => createEntityDetailsData())
+    entityDetailsQueryOptionsMock.mockImplementation((input) => ({
+      queryKey: ['entity-details', input], queryFn: details, staleTime: 300_000,
+    }))
+    const queryClient = new QueryClient()
+    const route = await importRoute()
+    const input = { context: { queryClient }, params: { cui: '4305857' }, location: { search: { year: 2023 } } }
+    const initial = await route.loader(input)
+    const targetInput = initial.entityPageBootstrap.exactQueryInputs.entityDetails
+    const targetKey = ['entity-details', targetInput]
+    const sourceKey = ['entity-details', { ...targetInput, reportType: undefined }]
+    const now = Date.now()
+    queryClient.setQueryData(sourceKey, createEntityDetailsData({
+      name: 'Older source', sourceExpiresAt: now + 100_000,
+    }), { updatedAt: now })
+    queryClient.setQueryData(targetKey, createEntityDetailsData({
+      name: 'Fresher source', sourceExpiresAt: now + 200_000,
+    }), { updatedAt: now - 1_000 })
+
+    await route.loader(input)
+    expect(queryClient.getQueryData(targetKey)).toMatchObject({ name: 'Fresher source' })
     queryClient.clear()
   })
 
