@@ -1031,12 +1031,14 @@ async function fetchLineItemCategory(params: {
   readonly reportType: BudgetReportType;
   readonly accountCategory: "INCOME" | "EXPENSE";
   readonly mainCreditorCui?: string;
+  readonly signal?: AbortSignal;
 }): Promise<Array<z.infer<typeof BudgetLineItemSchema>> | null> {
   const filter = toLineItemFilter(params);
   const items: Array<z.infer<typeof BudgetLineItemSchema>> = [];
   let after: string | null = null;
 
   while (items.length < MAX_LINE_ITEMS_PER_CATEGORY) {
+    params.signal?.throwIfAborted();
     const raw: unknown = await graphqlQuery<unknown>(
       BUDGET_LINE_ITEMS_QUERY,
       {
@@ -1050,8 +1052,10 @@ async function fetchLineItemCategory(params: {
       {
         operationName: `entity-line-items-${params.accountCategory.toLowerCase()}`,
         auth: "none",
+        signal: params.signal,
       },
     );
+    params.signal?.throwIfAborted();
     const parsed: z.infer<typeof BudgetLineItemsResponseSchema> =
       BudgetLineItemsResponseSchema.parse(raw);
     const page: z.infer<
@@ -1132,6 +1136,7 @@ export async function fetchRedesignEntityExecutionLineItems(
     readonly reportType?: GqlReportType;
     readonly mainCreditorCui?: string;
   } & NormalizationOptions,
+  options: { readonly signal?: AbortSignal } = {},
 ): Promise<{
   nodes: ExecutionLineItem[];
   fundingSources: FundingSourceOption[];
@@ -1148,6 +1153,7 @@ export async function fetchRedesignEntityExecutionLineItems(
       reportPeriod: params.reportPeriod,
       reportType,
       accountCategory: "EXPENSE",
+      signal: options.signal,
       ...(params.mainCreditorCui
         ? { mainCreditorCui: params.mainCreditorCui }
         : {}),
@@ -1160,6 +1166,7 @@ export async function fetchRedesignEntityExecutionLineItems(
       reportPeriod: params.reportPeriod,
       reportType,
       accountCategory: "INCOME",
+      signal: options.signal,
       ...(params.mainCreditorCui
         ? { mainCreditorCui: params.mainCreditorCui }
         : {}),

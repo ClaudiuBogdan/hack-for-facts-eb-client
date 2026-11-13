@@ -49,6 +49,8 @@ type ChallengeEntityReportControlsProps = {
   readonly onChange: (
     patch: ChallengeEntityReportControlsChange,
   ) => void
+  readonly onPeriodIntent?: (patch: ChallengeEntityReportControlsChange) => void
+  readonly onCancelPeriodIntent?: () => void
 }
 
 const ALL_MAIN_CREDITOR_OPTION_ID = '__all_main_creditors__'
@@ -111,6 +113,8 @@ export function ChallengeEntityReportControls({
   mainCreditorOptions = [],
   mainCreditorCui,
   onChange,
+  onPeriodIntent,
+  onCancelPeriodIntent,
 }: ChallengeEntityReportControlsProps) {
   const resolvedLocale = locale === 'en' ? 'en' : 'ro'
   const copy = CONTROL_COPY[resolvedLocale]
@@ -178,6 +182,14 @@ export function ChallengeEntityReportControls({
   }, [copy.all, hasMainCreditorOptions, mainCreditorOptions])
   const selectedMainCreditorValue =
     mainCreditorCui ?? ALL_MAIN_CREDITOR_OPTION_ID
+  const periodIntentEvents = (patch: ChallengeEntityReportControlsChange) => ({
+    onPointerEnter: (event: React.PointerEvent) => {
+      if (event.pointerType === 'mouse') onPeriodIntent?.(patch)
+    },
+    onPointerLeave: onCancelPeriodIntent,
+    onFocus: () => onPeriodIntent?.(patch),
+    onBlur: onCancelPeriodIntent,
+  })
 
   const handlePeriodTypeChange = (value: string | number | boolean | undefined) => {
     if (!value) {
@@ -309,6 +321,7 @@ export function ChallengeEntityReportControls({
             <ToggleGroupItem
               key={yearOption}
               value={String(yearOption)}
+              {...periodIntentEvents({ selectedYear: yearOption })}
               className="justify-center tabular-nums data-[state=on]:bg-foreground data-[state=on]:text-background"
             >
               {yearOption}
@@ -332,6 +345,7 @@ export function ChallengeEntityReportControls({
               <ToggleGroupItem
                 key={quarterOption.id}
                 value={quarterOption.id}
+                {...periodIntentEvents({ quarter: quarterOption.id })}
                 className="data-[state=on]:bg-foreground data-[state=on]:text-background"
               >
                 {quarterOption.label}
@@ -356,6 +370,7 @@ export function ChallengeEntityReportControls({
               <ToggleGroupItem
                 key={monthOption.id}
                 value={monthOption.id}
+                {...periodIntentEvents({ month: monthOption.id })}
                 className="justify-center tabular-nums data-[state=on]:bg-foreground data-[state=on]:text-background"
               >
                 {monthOption.label}

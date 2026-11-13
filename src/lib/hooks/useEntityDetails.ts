@@ -156,7 +156,7 @@ export function entityExecutionLineItemsQueryOptions(params: {
 
   return queryOptions({
     queryKey: ['entityLineItems', cui, normalization, currency, inflation_adjusted, reportPeriod, reportType, mainCreditorCui],
-    queryFn: () => getEntityExecutionLineItems({ cui, reportPeriod, reportType, mainCreditorCui, normalization, currency, inflation_adjusted }),
+    queryFn: ({ signal }) => getEntityExecutionLineItems({ cui, reportPeriod, reportType, mainCreditorCui, normalization, currency, inflation_adjusted }, { signal }),
     enabled: !!cui && enabled,
     staleTime: 1000 * 60 * 5,
   });

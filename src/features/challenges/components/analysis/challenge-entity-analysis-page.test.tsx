@@ -246,6 +246,13 @@ vi.mock('@/components/entities/EntityFinancialTrends', () => ({
       <button type="button" onClick={() => props.onSelectPeriod?.('03')}>
         Select month 03
       </button>
+      <button
+        type="button"
+        onMouseEnter={() => props.onPrefetchPeriod?.('2024')}
+        onMouseLeave={props.onCancelPrefetchPeriod}
+      >
+        Hover 2024
+      </button>
     </div>
   ),
 }))
@@ -380,6 +387,7 @@ vi.mock('./challenge-entity-analysis-header', () => ({
       <div>{props.entity?.name}</div>
       <div>{props.reportControlsLabel}</div>
       <div>{props.activeView}</div>
+      {props.renderReportControls?.()}
       {props.availableViews?.map((view: any) => (
         <button
           key={view.id}
@@ -937,6 +945,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
     useQueryClientMock.mockReturnValue({
       prefetchQuery: prefetchQueryMock,
+      isFetching: () => 0,
       getQueryData: vi.fn(),
     })
     budgetTreemapMock.mockReset()
@@ -986,7 +995,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
 
     expect(screen.getByText('Primăria Sibiu')).toBeInTheDocument()
-    expect(screen.getByText('2025')).toBeInTheDocument()
+    expect(screen.getByTestId('analysis-header')).toHaveTextContent('2025')
     expect(
       screen.getByText(/Datele din această pagină vin din execuții bugetare agregate/i),
     ).toBeInTheDocument()
@@ -1993,6 +2002,106 @@ describe('ChallengeEntityAnalysisPage', () => {
       expect.objectContaining({ treemapPath: [] }),
     )
     expect(resetTreemapMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps the last confirmed overview and focus during a same-entity year switch and retry', () => {
+    const retry = vi.fn()
+    const props = {
+      entityCui: entityDetails.cui,
+      pageVariant: 'entities' as const,
+      languageQuery: 'en' as const,
+      state: DEFAULT_PAGE_STATE,
+      onStateChange: vi.fn(),
+    }
+    const view = render(<ChallengeEntityAnalysisPage {...props} />)
+    const header = screen.getByTestId('analysis-header')
+    const chart = screen.getByTestId('financial-trends')
+    const chartButton = within(chart).getByRole('button', { name: 'Select 2024' })
+    chartButton.focus()
+    const previousSummary = screen.getByTestId('financial-summary').textContent
+    const nextState = { ...DEFAULT_PAGE_STATE, selectedYear: 2024 }
+    const pending = { isLoading: false, isFetching: true, isError: false, refetch: retry }
+    useEntityDetailsMock.mockReturnValue({ ...pending, isPlaceholderData: true, data: entityDetails })
+    view.rerender(<ChallengeEntityAnalysisPage {...props} state={nextState} />)
+
+    expect(screen.getByTestId('analysis-header')).toBe(header)
+    expect(screen.getByTestId('financial-trends')).toBe(chart)
+    expect(chartButton).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Show per capita' })).toBeVisible()
+    expect(screen.getByTestId('financial-summary').textContent).toBe(previousSummary)
+    expect(screen.getByText('Loading 2024. Showing 2025.')).toBeVisible()
+
+    useEntityDetailsMock.mockReturnValue({ ...pending, isError: true, isFetching: false, data: undefined })
+    view.rerender(<ChallengeEntityAnalysisPage {...props} state={nextState} />)
+    expect(screen.getByText('Could not load 2024. Showing 2025.')).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }))
+    expect(retry).toHaveBeenCalledOnce()
+
+    useEntityDetailsMock.mockReturnValue({ ...pending, isFetching: false, data: { ...entityDetails, totalIncome: 4321 } })
+    view.rerender(<ChallengeEntityAnalysisPage {...props} state={nextState} />)
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent('2024:YoY:4321')
+    expect(screen.getByTestId('financial-trends')).toBe(chart)
+    expect(screen.queryByText(/Showing 2025/)).not.toBeInTheDocument()
+
+    useEntityDetailsMock.mockReturnValue({ ...pending, isPlaceholderData: true, data: entityDetails })
+    view.rerender(<ChallengeEntityAnalysisPage {...props} entityCui="87654321" state={nextState} />)
+    expect(screen.queryByTestId('financial-summary')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('analysis-header')).not.toBeInTheDocument()
+  })
+
+  it('prefetches the exact summary after chart hover dwell or year focus', () => {
+    renderAnalysisPage({ pageVariant: 'entities', languageQuery: 'en', hasExplicitReportType: true })
+    const hover = screen.getByRole('button', { name: 'Hover 2024' })
+    const yearOption = within(screen.getByTestId('analysis-header')).getByRole('radio', { name: '2024' })
+    const expectedPeriod = { type: 'YEAR', selection: { interval: { start: '2024', end: '2024' } } }
+    prefetchQueryMock.mockClear()
+    vi.useFakeTimers()
+    try {
+      fireEvent.mouseEnter(hover)
+      fireEvent.mouseLeave(hover)
+      act(() => vi.advanceTimersByTime(150))
+      expect(prefetchQueryMock).not.toHaveBeenCalled()
+      fireEvent.mouseEnter(hover)
+      expect(prefetchQueryMock).not.toHaveBeenCalled()
+      act(() => vi.advanceTimersByTime(150))
+      expect(prefetchQueryMock).toHaveBeenCalledOnce()
+      const chartPrefetch = prefetchQueryMock.mock.calls[0]?.[0]
+      fireEvent.focus(yearOption)
+      act(() => vi.advanceTimersByTime(150))
+      expect(prefetchQueryMock).toHaveBeenLastCalledWith(chartPrefetch)
+      fireEvent.click(yearOption)
+      expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ reportPeriod: expectedPeriod }),
+        expect.anything(),
+      )
+      const [selectedParams] = useEntityDetailsMock.mock.lastCall ?? []
+      expect(chartPrefetch).toEqual(entityDetailsQueryOptionsMock(selectedParams))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it.each([
+    ['MONTH', 'Select month 03', { month: '03' }],
+    ['QUARTER', 'Select quarter Q2', { quarter: 'Q2' }],
+  ] as const)('selects a %s from the year still displayed in the chart', (periodType, button, period) => {
+    const onStateChange = vi.fn()
+    const props = {
+      entityCui: entityDetails.cui,
+      pageVariant: 'entities' as const,
+      state: { ...DEFAULT_PAGE_STATE, periodType },
+      onStateChange,
+    }
+    const view = render(<ChallengeEntityAnalysisPage {...props} />)
+    useEntityDetailsMock.mockReturnValue({
+      data: entityDetails,
+      isPlaceholderData: true,
+      isFetching: true,
+      isError: false,
+    })
+    view.rerender(<ChallengeEntityAnalysisPage {...props} state={{ ...props.state, selectedYear: 2024 }} />)
+    fireEvent.click(screen.getByRole('button', { name: button }))
+    expect(onStateChange).toHaveBeenCalledWith({ selectedYear: 2025, ...period })
   })
 
   it('uses explicit period growth state for entity details fetches', async () => {

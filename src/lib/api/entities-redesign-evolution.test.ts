@@ -268,6 +268,26 @@ describe("native entity evolution", () => {
     expect(result?.incomeTrend?.data).toEqual([{ x: "2025", y: 50 }]);
   });
 
+  it("cancels both line-item requests before reading the next cursor", async () => {
+    const controller = new AbortController();
+    const cancellation = new Error("Period changed");
+    const read = vi.mocked(graphqlQuery);
+    read.mockImplementation(async (_query, _variables, options) => {
+      expect(options?.signal).toBe(controller.signal);
+      if (read.mock.calls.length === 2) controller.abort(cancellation);
+      return {
+        budgetExecutionLineItems: {
+          edges: [],
+          pageInfo: { hasNextPage: true, endCursor: "unused-next-page" },
+        },
+      };
+    });
+
+    await expect(fetchRedesignEntityExecutionLineItems(params, { signal: controller.signal }))
+      .rejects.toBe(cancellation);
+    expect(read).toHaveBeenCalledTimes(2);
+  });
+
   it.each(["per_capita", "total"] as const)("discards unavailable %s CPI line items without falling back to nominal", async (normalization) => {
     vi.mocked(graphqlQuery).mockImplementation(async () => {
       return {

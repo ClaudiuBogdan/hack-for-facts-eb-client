@@ -315,11 +315,12 @@ export async function getEntityExecutionLineItems(
     reportType?: GqlReportType;
     mainCreditorCui?: string;
   } & NormalizationOptions,
+  options: { readonly signal?: AbortSignal } = {},
 ): Promise<{
   nodes: ExecutionLineItem[];
   fundingSources: FundingSourceOption[];
 }> {
-  return fetchRedesignEntityExecutionLineItems(params);
+  return fetchRedesignEntityExecutionLineItems(params, options);
 }
 
 const ENTITY_SEARCH_QUERY = `

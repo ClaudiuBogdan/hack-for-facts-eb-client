@@ -230,16 +230,17 @@ export function ChallengeEntityReportsSection({
     setIsExpanded(false)
   }, [entityCui, mainCreditorCui, reportPeriodType, reportPeriodSelectionKey, reportType])
 
+  const currentReports = reportsQuery.isPlaceholderData ? undefined : reportsQuery.data
   const sortedReports = useMemo(
     () =>
-      [...(reportsQuery.data?.nodes ?? [])].sort(
+      [...(currentReports?.nodes ?? [])].sort(
         (firstReport, secondReport) =>
           toTimestamp(secondReport.report_date) -
           toTimestamp(firstReport.report_date),
       ),
-    [reportsQuery.data?.nodes],
+    [currentReports?.nodes],
   )
-  const totalCount = reportsQuery.data?.pageInfo.totalCount ?? sortedReports.length
+  const totalCount = currentReports?.pageInfo.totalCount ?? sortedReports.length
   const hiddenReportCount = Math.max(sortedReports.length - MAX_VISIBLE_REPORTS, 0)
   const visibleReports = isExpanded
     ? sortedReports
@@ -256,9 +257,9 @@ export function ChallengeEntityReportsSection({
           <Badge variant="secondary" className="px-3 py-1 font-medium tabular-nums">
             {copy.selectedPeriod} {periodLabel}
           </Badge>
-          <Badge variant="outline" className="px-3 py-1 font-medium tabular-nums">
+          {currentReports && <Badge variant="outline" className="px-3 py-1 font-medium tabular-nums">
             {copy.totalCount(totalCount)}
-          </Badge>
+          </Badge>}
         </div>
         <CardDescription className="max-w-3xl text-sm leading-6">
           <span className="font-medium text-foreground">
@@ -268,7 +269,7 @@ export function ChallengeEntityReportsSection({
       </CardHeader>
 
       <CardContent className="space-y-5" aria-live="polite">
-        {reportsQuery.isLoading && !reportsQuery.data ? (
+        {(reportsQuery.isLoading || reportsQuery.isPlaceholderData) && !currentReports ? (
           <ChallengeEntityReportsSectionSkeleton />
         ) : reportsQuery.isError ? (
           <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-5 py-6">

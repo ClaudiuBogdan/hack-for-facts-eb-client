@@ -14427,6 +14427,10 @@ msgstr "Could not copy series to clipboard"
 msgid "Could not delete the conversation. Please try again."
 msgstr "Could not delete the conversation. Please try again."
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2993
+msgid "Could not load {periodLabel}. Showing {overviewPeriodLabel}."
+msgstr "Could not load {periodLabel}. Showing {overviewPeriodLabel}."
+
 #: src/components/filters/budget-sector-filter/BudgetSectorFilter.tsx:75
 msgid "Could Not Load Budget Sectors"
 msgstr "Could Not Load Budget Sectors"
@@ -28481,6 +28485,10 @@ msgstr "Load local snapshot?"
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:255
 msgid "Load snapshot"
 msgstr "Load snapshot"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2994
+msgid "Loading {periodLabel}. Showing {overviewPeriodLabel}."
+msgstr "Loading {periodLabel}. Showing {overviewPeriodLabel}."
 
 #: src/features/learning/components/loading/LearningHubLoading.tsx:15
 msgid "Loading Academy"

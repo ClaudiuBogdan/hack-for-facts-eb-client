@@ -416,6 +416,23 @@ describe('EntityFinancialTrends', () => {
   })
 
   describe('chart interactions', () => {
+    it('uses the new hover callback even when chart data is unchanged', () => {
+      const props = {
+        currentYear: 2024,
+        entityName: 'Test Entity',
+        incomeTrend: createMockTrendSeries('income'),
+        normalizationOptions: createDefaultNormalizationOptions(),
+      }
+      const nextPrefetch = vi.fn()
+      const view = render(<EntityFinancialTrends {...props} onPrefetchPeriod={mockOnPrefetchPeriod} />)
+      const chart = screen.getByTestId('composed-chart')
+      fireEvent.mouseMove(chart)
+      view.rerender(<EntityFinancialTrends {...props} onPrefetchPeriod={nextPrefetch} />)
+      fireEvent.mouseMove(chart)
+      expect(mockOnPrefetchPeriod).toHaveBeenCalledExactlyOnceWith('2023')
+      expect(nextPrefetch).toHaveBeenCalledExactlyOnceWith('2023')
+    })
+
     it('calls onYearChange when chart is clicked in YEAR mode', () => {
       render(
         <EntityFinancialTrends

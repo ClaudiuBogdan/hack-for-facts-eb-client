@@ -114,6 +114,7 @@ interface EntityFinancialTrendsProps {
   selectedQuarter?: string;
   selectedMonth?: string;
   onPrefetchPeriod?: (label: string) => void;
+  onCancelPrefetchPeriod?: () => void;
   showControls?: boolean;
   showChartEditorLink?: boolean;
 }
@@ -135,6 +136,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
   selectedQuarter,
   selectedMonth,
   onPrefetchPeriod,
+  onCancelPrefetchPeriod,
   showControls = true,
   showChartEditorLink = true,
 }) => {
@@ -225,11 +227,17 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
     }
   };
 
-  const lastPrefetchLabelRef = React.useRef<string | null>(null);
-  const lastPrefetchTsRef = React.useRef<number>(0);
+  const lastPrefetchLabelRef = React.useRef<{ label: string; callback: typeof onPrefetchPeriod } | null>(null);
+  const handleChartLeave = () => {
+    lastPrefetchLabelRef.current = null;
+    onCancelPrefetchPeriod?.();
+  };
   const handleChartHover = (e: { activeLabel?: string | number }) => {
     if (!onPrefetchPeriod) return;
-    if (!e || !e.activeLabel) return;
+    if (!e?.activeLabel) {
+      handleChartLeave();
+      return;
+    }
     const raw = String(e.activeLabel);
     let label = raw;
     if (periodType === 'MONTH') {
@@ -242,10 +250,8 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
       const match = raw.match(/^(\d{4})/);
       if (match) label = match[1];
     }
-    const now = Date.now();
-    if (label === lastPrefetchLabelRef.current && now - lastPrefetchTsRef.current < 400) return;
-    lastPrefetchLabelRef.current = label;
-    lastPrefetchTsRef.current = now;
+    if (label === lastPrefetchLabelRef.current?.label && onPrefetchPeriod === lastPrefetchLabelRef.current.callback) return;
+    lastPrefetchLabelRef.current = { label, callback: onPrefetchPeriod };
     onPrefetchPeriod(label);
   };
 
@@ -382,6 +388,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
               }
               onClick={handleChartClick}
               onMouseMove={handleChartHover}
+              onMouseLeave={handleChartLeave}
               className="cursor-pointer"
             >
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
@@ -494,6 +501,12 @@ function arePropsEqual(prev: EntityFinancialTrendsProps, next: EntityFinancialTr
     prev.selectedQuarter === next.selectedQuarter &&
     prev.selectedMonth === next.selectedMonth &&
     prev.showControls === next.showControls &&
+    prev.allowPerCapita === next.allowPerCapita &&
+    prev.onYearChange === next.onYearChange &&
+    prev.onSelectPeriod === next.onSelectPeriod &&
+    prev.onNormalizationChange === next.onNormalizationChange &&
+    prev.onPrefetchPeriod === next.onPrefetchPeriod &&
+    prev.onCancelPrefetchPeriod === next.onCancelPrefetchPeriod &&
     prev.showChartEditorLink === next.showChartEditorLink &&
     !!prev.isLoading === !!next.isLoading
   )
