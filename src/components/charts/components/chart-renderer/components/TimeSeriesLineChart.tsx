@@ -7,10 +7,10 @@ import { yValueFormatter } from '../utils';
 import { useChartDiff } from '../hooks/useChartDiff';
 import { DiffArea } from './diff-select/DiffArea';
 import { useChartAnimation } from '../hooks/useChartAnimation';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
 
-export function TimeSeriesLineChart({ chart, unitMap, timeSeriesData, onAnnotationPositionChange, onXAxisClick, xAxisMarker, margins }: ChartRendererProps) {
+export function TimeSeriesLineChart({ chart, unitMap, timeSeriesData, onAnnotationPositionChange, onXAxisClick, onXAxisHover, xAxisMarker, margins }: ChartRendererProps) {
   const enabledSeries = useMemo(() => chart.series.filter(s => s.enabled), [chart.series]);
   const { isAnimationActive, animationDuration } = useChartAnimation({ duration: 600 });
   const {
@@ -24,6 +24,12 @@ export function TimeSeriesLineChart({ chart, unitMap, timeSeriesData, onAnnotati
   } = useChartDiff(timeSeriesData, enabledSeries);
   const diffEnabled = chart.config.showDiffControl && !!refAreaLeft && !!refAreaRight && enabledSeries.length > 0;
   const shouldRenderLabels = (chart.config.showDataLabels ?? false) || enabledSeries.some(s => s.config.showDataLabels);
+  const lastHover = useRef<{ value: number | string | undefined; callback: typeof onXAxisHover }>(undefined);
+  const notifyHover = (value: number | string | undefined) => {
+    if (!onXAxisHover || (lastHover.current?.callback === onXAxisHover && lastHover.current.value === value)) return;
+    lastHover.current = { value, callback: onXAxisHover };
+    onXAxisHover(value);
+  };
 
   // Create a key that changes when diff state changes to trigger MultiAxisChartContainer re-render
   const diffStateKey = useMemo(
@@ -36,15 +42,22 @@ export function TimeSeriesLineChart({ chart, unitMap, timeSeriesData, onAnnotati
       <LineChart
         data={timeSeriesData}
         margin={{ top: 30, right: 50, left: 50, bottom: 20, ...margins }}
-        onMouseDown={(e) => {
-          handleMouseDown(e)
+        onMouseDown={chart.config.showDiffControl ? handleMouseDown : undefined}
+        onClick={onXAxisClick ? (e) => {
           if (e?.activeLabel !== undefined) {
             onXAxisClick?.(String(e.activeLabel));
           }
+        } : undefined}
+        onMouseMove={(e) => {
+          if (chart.config.showDiffControl) handleMouseMove(e);
+          notifyHover(e.activeLabel);
         }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
+        onMouseUp={chart.config.showDiffControl ? handleMouseUp : undefined}
+        onMouseLeave={() => {
+          handleMouseLeave();
+          notifyHover(undefined);
+        }}
+        className={onXAxisClick ? 'cursor-pointer' : undefined}
       >
         <MultiAxisChartContainer disableTooltip={diffEnabled} chart={chart} unitMap={unitMap} onAnnotationPositionChange={onAnnotationPositionChange} diffStateKey={diffStateKey}>
           {(getYAxisId: (seriesId: string) => string) => (

@@ -12,6 +12,9 @@ import { useTreemapChartLink } from '@/components/budget-explorer/useTreemapChar
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { usePeriodLabel } from '@/hooks/use-period-label'
+import { cn } from '@/lib/utils'
+import type { ChallengeEntityReportControlsChange } from './challenge-entity-report-controls'
 import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
@@ -21,7 +24,7 @@ import type { ExecutionLineItem } from '@/lib/api/entities'
 import type { NormalizationOptions } from '@/lib/normalization'
 import { Link } from '@tanstack/react-router'
 import { ExternalLink } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import type { Chart } from '@/schemas/charts'
 import type { ExecutionGqlReportType, ReportPeriodInput, ReportPeriodType, TMonth, TQuarter } from '@/schemas/reporting'
 import { toReportTypeValue } from '@/schemas/reporting'
@@ -35,15 +38,21 @@ type ChallengeCategoryEvolutionProps = {
   readonly locale: ChallengeLocale
   readonly entityCui: string
   readonly mainCreditorCui?: string
-  readonly lineItems: ExecutionLineItem[]
+  readonly lineItems: ExecutionLineItem[] | undefined
+  readonly reportPeriod?: ReportPeriodInput
+  readonly lineItemsFallback?: ReactNode
+  readonly hasLineItemsError?: boolean
   readonly currentYear: number
   readonly reportType: ExecutionGqlReportType
   readonly periodType: ReportPeriodType
   readonly trendPeriod: ReportPeriodInput
   readonly queryNormalizationOptions: NormalizationOptions
   readonly displayNormalizationOptions: NormalizationOptions
-  readonly onYearChange: (year: number) => void
+  readonly onYearChange?: (year: number) => void
   readonly onSelectPeriod?: (label: string) => void
+  readonly onPeriodChange?: (patch: ChallengeEntityReportControlsChange) => void
+  readonly onPrefetchPeriod?: (patch: ChallengeEntityReportControlsChange) => void
+  readonly onCancelPrefetchPeriod?: () => void
   readonly selectedQuarter?: TQuarter
   readonly selectedMonth?: TMonth
   readonly accountCategory: ChallengeTreemapAccountCategory
@@ -61,6 +70,7 @@ type ChallengeEvolutionPrimary = 'fn' | 'ec'
 const TOP_CATEGORY_LIMIT = 5
 const NOOP_ANNOTATION_HANDLER = () => {}
 const EMPTY_AGGREGATED_DATA: DataPointPayload[] = []
+const EMPTY_LINE_ITEMS: ExecutionLineItem[] = []
 const EMPTY_CHART: Chart = {
   id: 'challenge-entity-category-evolution-empty',
   title: '',
@@ -168,6 +178,9 @@ export function ChallengeEntityCategoryEvolution({
   entityCui,
   mainCreditorCui,
   lineItems,
+  reportPeriod,
+  lineItemsFallback,
+  hasLineItemsError,
   currentYear,
   reportType,
   periodType,
@@ -176,6 +189,9 @@ export function ChallengeEntityCategoryEvolution({
   displayNormalizationOptions,
   onYearChange,
   onSelectPeriod,
+  onPeriodChange,
+  onPrefetchPeriod,
+  onCancelPrefetchPeriod,
   selectedQuarter,
   selectedMonth,
   accountCategory,
@@ -195,7 +211,7 @@ export function ChallengeEntityCategoryEvolution({
 
   const filteredLineItems = useMemo(
     () =>
-      lineItems.filter(
+      (lineItems ?? EMPTY_LINE_ITEMS).filter(
         (lineItem) => lineItem.account_category === accountCategory,
       ),
     [accountCategory, lineItems],
@@ -345,41 +361,81 @@ export function ChallengeEntityCategoryEvolution({
     })
   }
 
-  const handleXAxisClick = (value: number | string) => {
-    const rawValue = String(value)
-
-    if (periodType === 'MONTH') {
-      const monthMatch =
-        rawValue.match(/^\d{4}-(0[1-9]|1[0-2])$/) ??
-        rawValue.match(/^(0[1-9]|1[0-2])$/)
-      if (monthMatch) {
-        onSelectPeriod?.(monthMatch[1])
-      }
-      return
-    }
-
-    if (periodType === 'QUARTER') {
-      const quarterMatch =
-        rawValue.match(/^\d{4}-(Q[1-4])$/) ??
-        rawValue.match(/^(Q[1-4])$/)
-      if (quarterMatch) {
-        onSelectPeriod?.(quarterMatch[1])
-      }
-      return
-    }
-
-    const nextYear = Number(rawValue.slice(0, 4))
-    if (Number.isFinite(nextYear)) {
-      onYearChange(nextYear)
-    }
-  }
-
   const xAxisMarker =
     periodType === 'MONTH' && selectedMonth
       ? `${currentYear}-${selectedMonth}`
       : periodType === 'QUARTER' && selectedQuarter
         ? `${currentYear}-${selectedQuarter}`
         : currentYear
+  const pending = lineItems === undefined || isLoadingData
+  const failed = hasLineItemsError || Boolean(dataError)
+  const scope = JSON.stringify([entityCui, accountCategory, primary, reportType, mainCreditorCui, displayNormalizationOptions])
+  const previousChart = useRef<{
+    readonly scope: string
+    readonly reportPeriod: ReportPeriodInput
+    readonly chart: Chart
+    readonly dataMap: NonNullable<typeof dataSeriesMap>
+    readonly timeSeriesData: typeof timeSeriesData
+    readonly unitMap: typeof unitMap
+    readonly marker: number | string
+  } | undefined>(undefined)
+  useEffect(() => {
+    if (!reportPeriod || showsIncomeEconomicMessage || previousChart.current?.scope !== scope) {
+      previousChart.current = undefined
+    }
+    if (pending || failed) return
+    previousChart.current = reportPeriod && !showsIncomeEconomicMessage && dataSeriesMap?.size && timeSeriesData.length
+      ? { scope, reportPeriod, chart: inlineChart, dataMap: dataSeriesMap, timeSeriesData, unitMap, marker: xAxisMarker }
+      : undefined
+  }, [scope, reportPeriod, showsIncomeEconomicMessage, pending, failed, inlineChart, dataSeriesMap, timeSeriesData, unitMap, xAxisMarker])
+  const previous = previousChart.current
+  const retained = (pending || failed) && !showsIncomeEconomicMessage && previous?.scope === scope ? previous : undefined
+  const shownPeriod = retained?.reportPeriod ?? reportPeriod
+  const shownPeriodLabel = usePeriodLabel(shownPeriod)
+  const requestedPeriodLabel = usePeriodLabel(reportPeriod)
+  const shownFrequency = shownPeriod?.type ?? periodType
+  const shownYear = retained ? Number(String(retained.marker).slice(0, 4)) : currentYear
+
+  const selectionFor = (value: number | string) => {
+    if (shownFrequency !== periodType) return
+    const label = String(value)
+    if (shownFrequency === 'MONTH') {
+      const match = /^(?:(\d{4})-)?(0[1-9]|1[0-2])$/.exec(label)
+      if (match) return { selectedYear: Number(match[1] ?? shownYear), month: match[2] as TMonth }
+    } else if (shownFrequency === 'QUARTER') {
+      const match = /^(?:(\d{4})-)?(Q[1-4])$/.exec(label)
+      if (match) return { selectedYear: Number(match[1] ?? shownYear), quarter: match[2] as TQuarter }
+    } else if (/^\d{4}$/.test(label)) {
+      return { selectedYear: Number(label) }
+    }
+  }
+
+  const handleXAxisClick = (value: number | string) => {
+    const selection = selectionFor(value)
+    if (!selection) return
+    if (onPeriodChange) {
+      onPeriodChange(selection)
+    } else if (selection.month) {
+      onSelectPeriod?.(selection.month)
+    } else if (selection.quarter) {
+      onSelectPeriod?.(selection.quarter)
+    } else {
+      onYearChange?.(selection.selectedYear)
+    }
+  }
+
+  const handleXAxisHover = (value: number | string | undefined) => {
+    const selection = value === undefined ? undefined : selectionFor(value)
+    if (selection) onPrefetchPeriod?.(selection)
+    else onCancelPrefetchPeriod?.()
+  }
+
+  if (lineItemsFallback && !retained) return lineItemsFallback
+
+  const shownDataMap = retained?.dataMap ?? dataSeriesMap
+  const shownChart = retained?.chart ?? inlineChart
+  const shownTimeSeries = retained?.timeSeriesData ?? timeSeriesData
+  const shownUnitMap = retained?.unitMap ?? unitMap
 
   return (
     <div className="space-y-3">
@@ -390,7 +446,7 @@ export function ChallengeEntityCategoryEvolution({
               <CardTitle className="min-w-0 text-xl font-black tracking-tight">
                 {title}
               </CardTitle>
-              {chartLink && !showsIncomeEconomicMessage ? (
+              {chartLink && !retained && !showsIncomeEconomicMessage ? (
                 <Button
                   asChild
                   variant="ghost"
@@ -410,45 +466,54 @@ export function ChallengeEntityCategoryEvolution({
               ) : null}
             </div>
             <p className="text-sm font-medium text-muted-foreground">
-              {subtitle}
+              {subtitle}{shownPeriodLabel && !showsIncomeEconomicMessage ? ` · ${shownPeriodLabel}` : ''}
             </p>
           </div>
         </CardHeader>
-        {!isLoadingData && <div className="px-6"><ChartCoverageNotice dataSeriesMap={dataSeriesMap} /></div>}
+        {(!pending || retained) && <div className="px-6"><ChartCoverageNotice dataSeriesMap={shownDataMap} /></div>}
+        {retained && failed && (
+          <p role="status" className="px-6 text-sm text-muted-foreground">
+            {t`Could not load ${requestedPeriodLabel}. Showing ${shownPeriodLabel}.`}
+          </p>
+        )}
 
         <CardContent>
           {showsIncomeEconomicMessage ? (
             <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
               {copy.noEconomicCode}
             </div>
-          ) : seriesConfigs.length === 0 ? (
+          ) : !retained && lineItems !== undefined && seriesConfigs.length === 0 ? (
             <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
               {copy.noData}
             </div>
-          ) : isLoadingData ? (
+          ) : !retained && pending ? (
             <div className="flex min-h-[360px] items-center justify-center rounded-[24px] border border-border/50 bg-muted/[0.14]">
               <LoadingSpinner text={copy.loading} />
             </div>
-          ) : dataError ? (
+          ) : !retained && dataError ? (
             <div className="rounded-[24px] border border-dashed border-destructive/40 bg-destructive/5 px-6 py-12 text-center text-sm font-medium text-destructive">
               {dataError.message}
             </div>
-          ) : !dataSeriesMap || dataSeriesMap.size === 0 ? (
+          ) : !shownDataMap || shownDataMap.size === 0 ? (
             <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
               {copy.noData}
             </div>
           ) : (
-            <div className="rounded-[24px] border border-border/50 bg-muted/[0.12] px-2 py-4 sm:px-4">
+            <div
+              aria-busy={Boolean(retained) && !failed || undefined}
+              className={cn('rounded-[24px] border border-border/50 bg-muted/[0.12] px-2 py-4 sm:px-4', retained && !failed && 'opacity-65')}
+            >
               <ChartRenderer
-                chart={inlineChart}
-                dataMap={dataSeriesMap}
-                timeSeriesData={timeSeriesData}
+                chart={shownChart}
+                dataMap={shownDataMap}
+                timeSeriesData={shownTimeSeries}
                 aggregatedData={EMPTY_AGGREGATED_DATA}
-                unitMap={unitMap}
+                unitMap={shownUnitMap}
                 height={360}
                 isPreview
-                xAxisMarker={xAxisMarker}
-                onXAxisClick={handleXAxisClick}
+                xAxisMarker={retained?.marker ?? xAxisMarker}
+                onXAxisClick={shownFrequency === periodType ? handleXAxisClick : undefined}
+                onXAxisHover={onPrefetchPeriod ? handleXAxisHover : undefined}
                 onAnnotationPositionChange={NOOP_ANNOTATION_HANDLER}
               />
             </div>

@@ -28,14 +28,13 @@ let capturedLineProps: any[] = []
 // Mock Recharts
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: any) => <div data-testid="responsive-container">{children}</div>,
-  LineChart: ({ children, onMouseDown, onMouseMove, onMouseUp, onMouseLeave, ...props }: any) => {
+  LineChart: ({ children, onClick, onMouseDown, onMouseMove, onMouseUp, onMouseLeave, ...props }: any) => {
     capturedLineChartProps = { ...props, onMouseDown, onMouseMove, onMouseUp, onMouseLeave }
     return (
       <div
         data-testid="line-chart"
-        onClick={() => {
-          if (onMouseDown) onMouseDown({ activeLabel: '2023' })
-        }}
+        onClick={() => onClick?.({ activeLabel: '2023' })}
+        onMouseDown={() => onMouseDown?.({ activeLabel: '2022' })}
       >
         {typeof children === 'function' ? children((id: string) => `y-axis-${id}`) : children}
       </div>
@@ -355,7 +354,7 @@ describe('TimeSeriesLineChart', () => {
   })
 
   describe('x-axis click', () => {
-    it('calls onXAxisClick on mouse down with active label', () => {
+    it('navigates only on click, using the active label at click time', () => {
       render(
         <TimeSeriesLineChart
           {...defaultProps}
@@ -367,8 +366,10 @@ describe('TimeSeriesLineChart', () => {
         />
       )
 
-      // Click triggers onMouseDown with activeLabel: '2023'
-      fireEvent.click(screen.getByTestId('line-chart'))
+      const chart = screen.getByTestId('line-chart')
+      fireEvent.mouseDown(chart)
+      expect(mockOnXAxisClick).not.toHaveBeenCalled()
+      fireEvent.click(chart)
 
       expect(mockOnXAxisClick).toHaveBeenCalledWith('2023')
     })

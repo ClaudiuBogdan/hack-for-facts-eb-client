@@ -487,6 +487,46 @@ describe('ChallengeEntityCategoryEvolution', () => {
     expect(onYearChange).toHaveBeenCalledWith(2021)
   })
 
+  it('keeps the chart and its period while new rows and series load', () => {
+    const onPeriodChange = vi.fn()
+    const props = {
+      locale: 'en',
+      entityCui: '12345678',
+      reportType: 'DETAILED',
+      periodType: 'YEAR',
+      trendPeriod: { type: 'YEAR', selection: { interval: { start: '2021', end: '2026' } } },
+      queryNormalizationOptions: { normalization: 'total', currency: 'RON' },
+      displayNormalizationOptions: { normalization: 'total', currency: 'RON' },
+      accountCategory: 'ch',
+      primary: 'fn',
+      onPeriodChange,
+      onStateChange: vi.fn(),
+    } as const
+    const oldPeriod = { type: 'YEAR', selection: { interval: { start: '2025', end: '2025' } } } as const
+    const nextPeriod = { type: 'YEAR', selection: { interval: { start: '2021', end: '2021' } } } as const
+    const view = render(<ChallengeEntityCategoryEvolution {...props} currentYear={2025} reportPeriod={oldPeriod} lineItems={lineItems} />)
+    const chart = screen.getByTestId('category-evolution-chart')
+    fireEvent.click(screen.getByRole('button', { name: 'Pick 2021' }))
+    expect(onPeriodChange).toHaveBeenCalledWith({ selectedYear: 2021 })
+
+    useChartDataMock.mockReturnValue({ dataSeriesMap: undefined, isLoadingData: true, dataError: null })
+    view.rerender(<ChallengeEntityCategoryEvolution {...props} currentYear={2021} reportPeriod={nextPeriod} lineItems={undefined} />)
+    expect(screen.getByTestId('category-evolution-chart')).toBe(chart)
+    expect(chart).toHaveTextContent('2025:5')
+    expect(chart.closest('[aria-busy]')).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByText(/categories for the selected year · 2025/)).toBeVisible()
+
+    view.rerender(<ChallengeEntityCategoryEvolution {...props} currentYear={2021} reportPeriod={nextPeriod} lineItems={lineItems} />)
+    expect(screen.getByTestId('category-evolution-chart')).toBe(chart)
+    expect(chart).toHaveTextContent('2025:5')
+
+    useChartDataMock.mockReturnValue({ dataSeriesMap: new Map([['series-1', { data: [] }]]), isLoadingData: false, dataError: null })
+    view.rerender(<ChallengeEntityCategoryEvolution {...props} currentYear={2021} reportPeriod={nextPeriod} lineItems={lineItems} />)
+    expect(screen.getByTestId('category-evolution-chart')).toBe(chart)
+    expect(chart).toHaveTextContent('2021:5')
+    expect(screen.getByText(/categories for the selected year · 2021/)).toBeVisible()
+  })
+
   it('changes the shared quarter when the user clicks a quarter in the chart', () => {
     const onSelectPeriod = vi.fn()
 

@@ -24,10 +24,11 @@ export interface ChartRendererProps {
   isPreview?: boolean;
   xAxisMarker?: number | string;
   onXAxisClick?: (value: number | string) => void;
+  onXAxisHover?: (value: number | string | undefined) => void;
   onAnnotationPositionChange: (pos: AnnotationPositionChange) => void;
 }
 
-export function ChartRenderer({ chart, dataMap, unitMap, aggregatedData, timeSeriesData, className, height = 400, isPreview, margins, onAnnotationPositionChange, xAxisMarker, onXAxisClick }: ChartRendererProps) {
+export function ChartRenderer({ chart, dataMap, unitMap, aggregatedData, timeSeriesData, className, height = 400, isPreview, margins, onAnnotationPositionChange, xAxisMarker, onXAxisClick, onXAxisHover }: ChartRendererProps) {
   const isMobile = useIsMobile();
   const effectiveMargins = useMemo(() => {
     if (!isMobile) return margins;
@@ -69,7 +70,7 @@ export function ChartRenderer({ chart, dataMap, unitMap, aggregatedData, timeSer
 
   return (
     <div className={className} style={{ width: '100%', height }}>
-      {!isAggregated && chart.config.chartType === 'line' && <TimeSeriesLineChart {...data} onAnnotationPositionChange={onAnnotationPositionChange} />}
+      {!isAggregated && chart.config.chartType === 'line' && <TimeSeriesLineChart {...data} onXAxisHover={onXAxisHover} onAnnotationPositionChange={onAnnotationPositionChange} />}
       {!isAggregated && chart.config.chartType === 'bar' && <TimeSeriesBarChart {...data} onAnnotationPositionChange={onAnnotationPositionChange} />}
       {!isAggregated && chart.config.chartType === 'area' && <TimeSeriesAreaChart {...data} onAnnotationPositionChange={onAnnotationPositionChange} />}
       {isAggregated && chart.config.chartType === 'bar-aggr' && <AggregatedBarChart {...data} onAnnotationPositionChange={onAnnotationPositionChange} />}

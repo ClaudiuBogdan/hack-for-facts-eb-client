@@ -5,7 +5,7 @@ import { supportsEntityPopulation } from '@/lib/entity-population'
 import { t } from '@lingui/core/macro'
 import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
@@ -1162,6 +1162,8 @@ export function ChallengeEntityAnalysisPage({
     useState(false)
   const [isTreemapControlsExpanded, setIsTreemapControlsExpanded] =
     useState(false)
+  const lineItemsFrameRef = useRef<HTMLDivElement>(null)
+  const lineItemsHeightRef = useRef<{ cui: string; height: number }>(undefined)
   const [publicMapViewport, setPublicMapViewport] =
     useState<PublicMapViewport>()
   const seededPublicMapEntityCuiRef = useRef<string | null>(null)
@@ -1432,40 +1434,46 @@ export function ChallengeEntityAnalysisPage({
       ? entityDetailsQuery.data
       : null,
   )
-  const overviewScope = JSON.stringify([
-    entityCui,
-    periodType,
-    entityDetailsReportType,
-    inferredMainCreditorCui,
-    queryNormalizationOptions,
-  ])
   const previousOverviewRef = useRef<{
-    readonly scope: string
     readonly data: EntityDetailsData
     readonly period: ReportPeriodInput
+    readonly normalization: NormalizationOptions
+    readonly reportType: ChallengeEntityReportType | undefined
+    readonly creditor: string | undefined
   } | undefined>(undefined)
   const confirmedBudget = budgetEntityDetailsQuery.data
   const canRetainOverview = pageVariant === 'entities' && activeView === 'main-info'
   useEffect(() => {
     if (canRetainOverview && confirmedBudget?.cui === entityCui) {
-      previousOverviewRef.current = { scope: overviewScope, data: confirmedBudget, period: reportPeriod }
+      previousOverviewRef.current = {
+        data: confirmedBudget,
+        period: reportPeriod,
+        normalization: displayNormalizationOptions,
+        reportType: entityDetailsReportType ?? toChallengeEntityReportType(confirmedBudget.default_report_type),
+        creditor: inferredMainCreditorCui,
+      }
     } else if (!canRetainOverview || confirmedBudget === null || previousOverviewRef.current?.data.cui !== entityCui) {
       previousOverviewRef.current = undefined
     }
-  }, [canRetainOverview, confirmedBudget, entityCui, overviewScope, reportPeriod])
+  }, [canRetainOverview, confirmedBudget, displayNormalizationOptions, entityCui, entityDetailsReportType, inferredMainCreditorCui, reportPeriod])
 
-  // Keep prior values in the overview while the new period loads. Inference
-  // and budget capability checks continue to use the requested query.
+  // Keep the displayed period and units tied to the result that supplied them.
   const previousOverview = previousOverviewRef.current
   const retainedOverview =
-    canRetainOverview &&
-    confirmedBudget === undefined &&
-    previousOverview?.scope === overviewScope
+    canRetainOverview && confirmedBudget === undefined && previousOverview?.data.cui === entityCui
       ? previousOverview
       : undefined
-  const isOverviewRefreshing = Boolean(retainedOverview) && !entityDetailsQuery.isError
   const overviewEntity = entityDetailsQuery.data ?? retainedOverview?.data
-  const overviewPeriod = retainedOverview?.period ?? reportPeriod
+  const requestedReportType = entityDetailsReportType ?? stateReportType
+  const displayedOverview = retainedOverview &&
+    retainedOverview.reportType === requestedReportType &&
+    retainedOverview.creditor === inferredMainCreditorCui &&
+    retainedOverview.normalization.inflation_adjusted === appliedInflationAdjusted
+      ? retainedOverview
+      : undefined
+  const overviewBudget = entityDetailsQuery.data ?? displayedOverview?.data
+  const overviewPeriod = displayedOverview?.period ?? reportPeriod
+  const overviewNormalization = displayedOverview?.normalization ?? displayNormalizationOptions
   const overviewPeriodLabel = usePeriodLabel(overviewPeriod) || periodLabel
   const overviewAnchor = overviewPeriod.selection.interval?.start
   const overviewYear = overviewAnchor ? Number(overviewAnchor.slice(0, 4)) : selectedYear
@@ -1630,6 +1638,8 @@ export function ChallengeEntityAnalysisPage({
     ...entityLineItemsResult,
     data: entityLineItemsResult.isPlaceholderData ? undefined : entityLineItemsResult.data,
   }
+  const isLineItemsUnavailable =
+    entityLineItemsQuery.isError || entityLineItemsQuery.data === undefined || Boolean(retainedOverview)
   useEffect(() => {
     if (
       !shouldUseEntityDefaultReportType ||
@@ -1722,6 +1732,20 @@ export function ChallengeEntityAnalysisPage({
   const isInitialLoading =
     ((entityDetailsQuery.isLoading || entityDetailsQuery.isPlaceholderData) && !overviewEntity) ||
     (!isIndependentNativeView && isResolvingEntityDefaultReportType)
+  const canMeasureLineItems = activeView === 'main-info' && !isInitialLoading &&
+    Boolean(overviewEntity) && !isLineItemsUnavailable
+  useLayoutEffect(() => {
+    const frame = lineItemsFrameRef.current
+    if (!frame || !canMeasureLineItems) return
+    const measure = () => {
+      lineItemsHeightRef.current = { cui: entityCui, height: frame.offsetHeight }
+    }
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(frame)
+    return () => observer.disconnect()
+  }, [entityCui, canMeasureLineItems])
 
   const treemapLineItems = useMemo(
     () =>
@@ -1844,13 +1868,13 @@ export function ChallengeEntityAnalysisPage({
 
   const summaryTrends = useMemo(
     () => ({
-      income: toTrendValues(overviewEntity?.incomeTrend, overviewPeriod),
-      expenses: toTrendValues(overviewEntity?.expenseTrend, overviewPeriod),
-      balance: toTrendValues(overviewEntity?.balanceTrend, overviewPeriod),
+      income: toTrendValues(overviewBudget?.incomeTrend, overviewPeriod),
+      expenses: toTrendValues(overviewBudget?.expenseTrend, overviewPeriod),
+      balance: toTrendValues(overviewBudget?.balanceTrend, overviewPeriod),
     }),
     [
       overviewPeriod,
-      overviewEntity,
+      overviewBudget,
     ],
   )
 
@@ -2086,6 +2110,7 @@ export function ChallengeEntityAnalysisPage({
     }))
   }, [canPrefetchPeriod, cancelPeriodPrefetch, entityDetailsQueryParams, month, periodType, prefetchPeriod, quarter, reportPeriod, selectedYear])
   const handleChartPeriodIntent = useCallback((label: string) => {
+    if (overviewPeriod.type !== periodType) return
     if (periodType === 'YEAR' && CHALLENGE_AVAILABLE_YEARS.includes(Number(label))) {
       handlePeriodIntent({ selectedYear: Number(label) })
     } else if (periodType === 'QUARTER' && /^Q[1-4]$/.test(label)) {
@@ -2095,8 +2120,9 @@ export function ChallengeEntityAnalysisPage({
     } else {
       cancelPeriodPrefetch()
     }
-  }, [cancelPeriodPrefetch, handlePeriodIntent, overviewYear, periodType])
+  }, [cancelPeriodPrefetch, handlePeriodIntent, overviewPeriod.type, overviewYear, periodType])
   const handleChartPeriodChange = useCallback((label: string) => {
+    if (overviewPeriod.type !== periodType) return
     if (overviewYear === selectedYear) {
       handleSelectedPeriodChange(label)
     } else if (periodType === 'QUARTER') {
@@ -2104,7 +2130,17 @@ export function ChallengeEntityAnalysisPage({
     } else if (periodType === 'MONTH') {
       onStateChange({ selectedYear: overviewYear, month: label as TMonth })
     }
-  }, [handleSelectedPeriodChange, onStateChange, overviewYear, periodType, selectedYear])
+  }, [handleSelectedPeriodChange, onStateChange, overviewPeriod.type, overviewYear, periodType, selectedYear])
+
+  const handleCategoryPeriodChange = useCallback((patch: ChallengeEntityReportControlsChange) => {
+    if (
+      (patch.selectedYear === undefined || patch.selectedYear === selectedYear) &&
+      (patch.month === undefined || patch.month === month) &&
+      (patch.quarter === undefined || patch.quarter === quarter)
+    ) return
+
+    onStateChange(patch)
+  }, [month, onStateChange, quarter, selectedYear])
 
   const analyticsView = analyticsTarget?.view ?? getDefaultBudgetItemAnalyticsViewState()
   const selectedBudgetItemAnalyticsProps =
@@ -2819,9 +2855,9 @@ export function ChallengeEntityAnalysisPage({
   const hasVisibleSubordinateCards = subordinateCards.length > 0
   const hasVisibleParentMainCreditorCards = parentMainCreditorCards.length > 0
   const summaryTrendLabel =
-    periodType === 'QUARTER'
+    overviewPeriod.type === 'QUARTER'
       ? 'QoQ'
-      : periodType === 'MONTH'
+      : overviewPeriod.type === 'MONTH'
         ? 'MoM'
         : undefined
   const isSubordinatesSectionLoading =
@@ -2982,48 +3018,42 @@ export function ChallengeEntityAnalysisPage({
               copyVariant={isUatEntity ? 'city-hall' : 'entity'}
             />
 
-            <div>
-              <div
-                className={retainedOverview ? 'opacity-65' : undefined}
-                aria-busy={isOverviewRefreshing || undefined}
-              >
-                <EntityFinancialSummary
-                  totalIncome={entity.totalIncome}
-                  totalExpenses={entity.totalExpenses}
-                  budgetBalance={entity.budgetBalance}
-                  periodLabel={overviewPeriodLabel}
-                  normalizationOptions={displayNormalizationOptions}
-                  trends={summaryTrends}
-                  trendLabel={summaryTrendLabel}
-                  density="compact-desktop"
-                />
-              </div>
-              <div role="status" className="min-h-8 py-1 text-sm text-muted-foreground">
-                {retainedOverview && (entityDetailsQuery.isError
+            <EntityFinancialSummary
+              totalIncome={overviewBudget?.totalIncome}
+              totalExpenses={overviewBudget?.totalExpenses}
+              budgetBalance={overviewBudget?.budgetBalance}
+              periodLabel={overviewPeriodLabel}
+              normalizationOptions={overviewNormalization}
+              trends={summaryTrends}
+              trendLabel={summaryTrendLabel}
+              density="compact-desktop"
+              isRefreshing={Boolean(retainedOverview) && !entityDetailsQuery.isError}
+            />
+            {canRetainOverview && entityDetailsQuery.isError && (
+              <div role="status" className="text-sm text-muted-foreground">
+                {displayedOverview
                   ? t`Could not load ${periodLabel}. Showing ${overviewPeriodLabel}.`
-                  : t`Loading ${periodLabel}. Showing ${overviewPeriodLabel}.`)}
-                {canRetainOverview && !retainedOverview && entityDetailsQuery.isError && t`We could not load the analysis.`}
-                {canRetainOverview && entityDetailsQuery.isError && (
-                  <Button type="button" size="sm" variant="link" className="h-auto py-0" onClick={handleRetry}>
-                    {t`Try Again`}
-                  </Button>
-                )}
+                  : t`We could not load the analysis.`}
+                <Button type="button" size="sm" variant="link" className="h-auto py-0" onClick={handleRetry}>
+                  {t`Try Again`}
+                </Button>
               </div>
-            </div>
+            )}
 
             <EntityFinancialTrends
               entityCui={entityCui}
-              incomeTrend={entity.incomeTrend ?? null}
-              expenseTrend={entity.expenseTrend ?? null}
-              balanceTrend={entity.balanceTrend ?? null}
+              incomeTrend={overviewBudget?.incomeTrend ?? null}
+              expenseTrend={overviewBudget?.expenseTrend ?? null}
+              balanceTrend={overviewBudget?.balanceTrend ?? null}
+              isLoading={Boolean(retainedOverview && !displayedOverview && !entityDetailsQuery.isError)}
               currentYear={overviewYear}
               entityName={entity.name}
-              normalizationOptions={displayNormalizationOptions}
-              onYearChange={handleYearChange}
+              normalizationOptions={overviewNormalization}
+              onYearChange={overviewPeriod.type === periodType ? handleYearChange : undefined}
               onSelectPeriod={handleChartPeriodChange}
-              periodType={periodType}
-              selectedQuarter={periodType === 'QUARTER' ? overviewAnchor?.slice(5) ?? quarter : quarter}
-              selectedMonth={periodType === 'MONTH' ? overviewAnchor?.slice(5) ?? month : month}
+              periodType={overviewPeriod.type}
+              selectedQuarter={overviewPeriod.type === 'QUARTER' ? overviewAnchor?.slice(5) ?? quarter : quarter}
+              selectedMonth={overviewPeriod.type === 'MONTH' ? overviewAnchor?.slice(5) ?? month : month}
               onPrefetchPeriod={canPrefetchPeriod ? handleChartPeriodIntent : undefined}
               onCancelPrefetchPeriod={canPrefetchPeriod ? cancelPeriodPrefetch : undefined}
               showControls={false}
@@ -3127,6 +3157,12 @@ export function ChallengeEntityAnalysisPage({
               </div>
             ) : null}
 
+            <div
+              ref={lineItemsFrameRef}
+              style={isLineItemsUnavailable && lineItemsHeightRef.current?.cui === entityCui
+                ? { minHeight: lineItemsHeightRef.current.height }
+                : undefined}
+            >
             {lineItemsFallback ?? (
             <div className="space-y-3">
               <Card className={CHALLENGE_ENTITY_TREEMAP_CARD_CLASS_NAME}>
@@ -3309,6 +3345,7 @@ export function ChallengeEntityAnalysisPage({
               </Card>
             </div>
             )}
+            </div>
 
             <DeferredSectionGate
                 className="min-h-[520px] sm:min-h-[540px]"
@@ -3321,25 +3358,32 @@ export function ChallengeEntityAnalysisPage({
                 }
                 onPrefetch={handleCategoryEvolutionPrefetch}
               >
-                {lineItemsFallback ?? <DeferredChallengeEntityCategoryEvolution
+                <DeferredChallengeEntityCategoryEvolution
+                  key={entityCui}
                   locale={locale}
                   entityCui={entityCui}
                   mainCreditorCui={inferredMainCreditorCui}
-                  lineItems={entityLineItemsQuery.data?.nodes ?? []}
+                  lineItems={entityLineItemsQuery.data?.nodes}
+                  reportPeriod={reportPeriod}
+                  lineItemsFallback={entityLineItemsQuery.data === undefined || entityLineItemsQuery.isError
+                    ? lineItemsFallback
+                    : null}
+                  hasLineItemsError={entityLineItemsQuery.isError}
                   currentYear={selectedYear}
                   reportType={selectedReportType}
                   periodType={periodType}
                   trendPeriod={trendPeriod}
                   queryNormalizationOptions={isRedesignOnlyApi ? displayNormalizationOptions : queryNormalizationOptions}
                   displayNormalizationOptions={displayNormalizationOptions}
-                  onYearChange={handleYearChange}
-                  onSelectPeriod={handleSelectedPeriodChange}
+                  onPeriodChange={handleCategoryPeriodChange}
+                  onPrefetchPeriod={canPrefetchPeriod ? handlePeriodIntent : undefined}
+                  onCancelPrefetchPeriod={canPrefetchPeriod ? cancelPeriodPrefetch : undefined}
                   selectedQuarter={quarter}
                   selectedMonth={month}
                   accountCategory={evolutionAccountCategory}
                   primary={evolutionPrimary}
-                  onStateChange={(patch) => onStateChange(patch)}
-                />}
+                  onStateChange={onStateChange}
+                />
               </DeferredSectionGate>
 
             <ChallengeEntitySubordinatesSection

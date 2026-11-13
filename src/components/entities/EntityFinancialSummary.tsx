@@ -25,6 +25,7 @@ interface EntityFinancialSummaryCardProps {
   trendLabel?: string;
   density?: EntityFinancialSummaryDensity;
   metricKind: EntityFinancialSummaryMetricKind;
+  readonly isRefreshing?: boolean;
 }
 
 export type EntityFinancialSummaryTrend = {
@@ -144,11 +145,6 @@ function toCompactDesktopTitle(title: string): string {
     .trim()
 }
 
-function toCompactDesktopYear(periodLabel: string): string {
-  const yearMatch = periodLabel.match(/\b(\d{4})\b/)
-  return yearMatch?.[1] ?? periodLabel
-}
-
 function splitCompactCurrencyValue(
   displayValue: string,
   currency: 'RON' | 'EUR' | 'USD',
@@ -167,14 +163,15 @@ function splitCompactCurrencyValue(
   }
 }
 
-export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProps> = ({ title, value, icon: Icon, color, periodLabel, currency, format, isPerCapita = false, trend, trendLabel, density = 'default', metricKind }) => {
-  const displayValueCompact = formatDisplayValue(value, 'compact', format, currency);
-  const displayValueStandard = formatDisplayValue(value, 'standard', format, currency);
+export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProps> = ({ title, value, icon: Icon, color, periodLabel, currency, format, isPerCapita = false, trend, trendLabel, density = 'default', metricKind, isRefreshing }) => {
+  const showPendingAmount = isRefreshing && value == null;
+  const displayValueCompact = showPendingAmount ? '—' : formatDisplayValue(value, 'compact', format, currency);
+  const displayValueStandard = showPendingAmount ? '—' : formatDisplayValue(value, 'standard', format, currency);
   const iconColor = iconColorMap[color] ?? 'text-slate-500 dark:text-slate-400';
   const isCompactDesktop = density === 'compact-desktop';
   const shouldShowPerCapitaSuffix = isPerCapita && Number.isFinite(value);
   const compactDesktopTitle = toCompactDesktopTitle(title);
-  const compactDesktopYear = toCompactDesktopYear(periodLabel);
+  const compactPeriodLabel = periodLabel.replace(/^(\d{4}) YTD$/, '$1');
   const compactCurrencyValueParts =
     isCompactDesktop && format === 'currency'
       ? splitCompactCurrencyValue(displayValueCompact, currency)
@@ -191,7 +188,7 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
                 {compactDesktopTitle}
               </CardTitle>
               <p className="text-left text-[9px] font-medium tracking-wide text-muted-foreground/70 tabular-nums sm:text-xs">
-                {compactDesktopYear}
+                {compactPeriodLabel}
               </p>
             </div>
           </div>
@@ -210,7 +207,7 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
           </>
         )}
       </CardHeader>
-      <CardContent className={frameClassNames.content}>
+      <CardContent className={cn(frameClassNames.content, isRefreshing && 'opacity-65')}>
         <div className={cn(isCompactDesktop && 'flex w-full min-w-0 items-baseline lg:min-h-[3rem]')}>
           {compactCurrencyValueParts ? (
             <p
@@ -272,6 +269,7 @@ interface EntityFinancialSummaryProps {
   budgetBalance: number | null | undefined;
   periodLabel: string;
   isLoading?: boolean;
+  readonly isRefreshing?: boolean;
   normalizationOptions: NormalizationOptions;
   trends?: {
     readonly income?: EntityFinancialSummaryTrend;
@@ -283,7 +281,7 @@ interface EntityFinancialSummaryProps {
 }
 
 export const EntityFinancialSummary: React.FC<EntityFinancialSummaryProps> = (
-  { totalIncome, totalExpenses, budgetBalance, periodLabel, isLoading, normalizationOptions, trends, trendLabel, density = 'default' }
+  { totalIncome, totalExpenses, budgetBalance, periodLabel, isLoading, isRefreshing, normalizationOptions, trends, trendLabel, density = 'default' }
 ) => {
   if (isLoading) {
     return <EntityFinancialSummarySkeleton density={density} />;
@@ -294,10 +292,10 @@ export const EntityFinancialSummary: React.FC<EntityFinancialSummaryProps> = (
   const isPerCapita = normalized.normalization === 'per_capita'
 
   return (
-    <section className={getEntityFinancialSummaryClassNames(density).section}>
-      <EntityFinancialSummaryCard title={t`Total Income`} value={totalIncome} icon={TrendingUp} color="green" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.income} trendLabel={trendLabel} density={density} metricKind="income" />
-      <EntityFinancialSummaryCard title={t`Total Expenses`} value={totalExpenses} icon={TrendingDown} color="red" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.expenses} trendLabel={trendLabel} density={density} metricKind="expenses" />
-      <EntityFinancialSummaryCard title={t`Income - Expenses`} value={budgetBalance} icon={Scale} color="blue" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.balance} trendLabel={trendLabel} density={density} metricKind="balance" />
+    <section className={getEntityFinancialSummaryClassNames(density).section} aria-busy={isRefreshing || undefined}>
+      <EntityFinancialSummaryCard title={t`Total Income`} value={totalIncome} icon={TrendingUp} color="green" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.income} trendLabel={trendLabel} density={density} metricKind="income" isRefreshing={isRefreshing} />
+      <EntityFinancialSummaryCard title={t`Total Expenses`} value={totalExpenses} icon={TrendingDown} color="red" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.expenses} trendLabel={trendLabel} density={density} metricKind="expenses" isRefreshing={isRefreshing} />
+      <EntityFinancialSummaryCard title={t`Income - Expenses`} value={budgetBalance} icon={Scale} color="blue" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.balance} trendLabel={trendLabel} density={density} metricKind="balance" isRefreshing={isRefreshing} />
     </section>
   );
 }; 

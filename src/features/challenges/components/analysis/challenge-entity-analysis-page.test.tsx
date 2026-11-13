@@ -227,7 +227,7 @@ vi.mock(
 
 vi.mock('@/components/entities/EntityFinancialSummary', () => ({
   EntityFinancialSummary: (props: any) => (
-    <div data-testid="financial-summary">
+    <div data-testid="financial-summary" aria-busy={props.isRefreshing || undefined}>
       {props.periodLabel}:{props.trendLabel ?? 'YoY'}:{props.totalIncome}:{props.totalExpenses}:{props.budgetBalance}:{props.normalizationOptions?.currency ?? 'no-currency'}:{String(props.normalizationOptions?.inflation_adjusted ?? 'no-inflation')}
     </div>
   ),
@@ -1955,7 +1955,9 @@ describe('ChallengeEntityAnalysisPage', () => {
         )
         expect(budgetTreemapMock).not.toHaveBeenCalled()
       } else {
-        expect(screen.queryByTestId('financial-summary')).not.toBeInTheDocument()
+        expect(screen.getByTestId('financial-summary')).toHaveTextContent('2024-02:MoM::::EUR:true')
+        expect(screen.getByTestId('financial-summary')).toHaveAttribute('aria-busy', 'true')
+        expect(budgetTreemapMock).not.toHaveBeenCalled()
       }
       detailsState = { ...detailsState, isPlaceholderData: false, isFetching: false }
       rowsState = { ...rowsState, isPlaceholderData: false, isFetching: false }
@@ -2029,7 +2031,8 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(chartButton).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Show per capita' })).toBeVisible()
     expect(screen.getByTestId('financial-summary').textContent).toBe(previousSummary)
-    expect(screen.getByText('Loading 2024. Showing 2025.')).toBeVisible()
+    expect(screen.getByTestId('financial-summary')).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByText(/Loading 2024/)).not.toBeInTheDocument()
 
     useEntityDetailsMock.mockReturnValue({ ...pending, isError: true, isFetching: false, data: undefined })
     view.rerender(<ChallengeEntityAnalysisPage {...props} state={nextState} />)
