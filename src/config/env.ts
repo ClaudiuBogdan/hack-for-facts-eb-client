@@ -9,6 +9,7 @@ const PUBLIC_RUNTIME_CONFIG_KEYS = [
   "VITE_API_URL",
   "VITE_API_USE_PROXY",
   "VITE_API_MODE",
+  "VITE_VERIFIED_CONSOLIDATION",
   "VITE_NGO_REGISTRY_ENABLED",
   "VITE_SITE_URL",
   "VITE_POSTHOG_ENABLED",
@@ -42,6 +43,7 @@ const envSchema = z
       .optional()
       .transform((val) => val === "true"),
     VITE_API_MODE: z.enum(["legacy", "redesign"]).optional().default("legacy"),
+    VITE_VERIFIED_CONSOLIDATION: z.string().optional().transform(value => value === "true"),
     VITE_NGO_REGISTRY_ENABLED: z
       .string()
       .optional()
