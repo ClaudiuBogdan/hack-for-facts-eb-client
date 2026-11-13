@@ -25,4 +25,4 @@ patches:
 images:
 - name: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
   newName: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
-  digest: sha256:54847ae92466b3309058d7d87fdfb23bf418c928382fa15bd3e3569b89399e2d
+  digest: sha256:847adc5fd3d2a54ff6c9e02a774474b848bfe6ea85ab53310c1cd1280099947a

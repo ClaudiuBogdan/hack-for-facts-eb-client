@@ -6,7 +6,6 @@ import { t } from '@lingui/core/macro'
 import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { CreditorConsolidation } from './creditor-consolidation'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
@@ -31,7 +30,7 @@ import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
-import { isRedesignOnlyApiDeployment, isVerifiedConsolidationEnabled } from '@/lib/api/api-mode'
+import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
 import type { EntityPageLoaderPayload } from '@/features/entities/page-core'
 import type {
   EntityDetailsData,
@@ -2949,16 +2948,6 @@ export function ChallengeEntityAnalysisPage({
               density="compact-desktop"
               isRefreshing={Boolean(retainedOverview) && !entityDetailsQuery.isError}
             />
-            {isRedesignOnlyApi && isVerifiedConsolidationEnabled() && selectedReportType === 'PRINCIPAL_AGGREGATED' &&
-              (!inferredMainCreditorCui || inferredMainCreditorCui === entityCui) && (
-              <CreditorConsolidation
-                key={`${entityCui}:${selectedYear}:${reportPeriod.type}`}
-                cui={entityCui}
-                year={selectedYear}
-                frequency={reportPeriod.type}
-                locale={locale}
-              />
-            )}
             {canRetainOverview && entityDetailsQuery.isError && (
               <div role="status" className="text-sm text-muted-foreground">
                 {displayedOverview

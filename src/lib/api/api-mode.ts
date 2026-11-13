@@ -4,7 +4,3 @@ import { env } from '@/config/env'
 export function isRedesignOnlyApiDeployment(): boolean {
   return env.VITE_API_MODE === 'redesign'
 }
-
-export function isVerifiedConsolidationEnabled(): boolean {
-  return env.VITE_VERIFIED_CONSOLIDATION
-}
