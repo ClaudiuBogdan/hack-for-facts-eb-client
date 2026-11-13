@@ -3886,6 +3886,18 @@ msgstr "0 employees"
 #: src/features/private-companies/lib/company-profile-text.ts:275
 msgid "0 salariați raportați în bilanțul pe {year}"
 msgstr "0 employees reported in the {year} statement"
+#: src/components/entities/EntityEmployeesDataInfo.tsx:52
+msgid "<0>Plafon legal cu excepții (P)</0> este valoarea „TOTAL ACTUAL” din fișierul sursă și include posturile exceptate. Pentru numărul de posturi aprobate este nevoie de organigrama autorității."
+msgstr "<0>Legal ceiling including exceptions (P)</0> is the figure labelled “TOTAL ACTUAL” in the source workbook and includes exempt posts. For the number of approved posts, consult the authority’s staffing schedule."
+
+#: src/components/entities/EntityEmployeesDataInfo.tsx:51
+msgid "<0>Plafon legal de bază (G)</0> este numărul maxim de posturi stabilit în funcție de populație."
+msgstr "<0>Base legal ceiling (G)</0> is the maximum number of posts based on population."
+
+#: src/components/entities/EntityEmployeesDataInfo.tsx:50
+msgid "<0>Posturi ocupate (S)</0> este numărul de posturi raportate ca ocupate."
+msgstr "<0>Occupied posts (S)</0> is the number of posts reported as occupied."
+
 
 #: src/features/landing/components/landing-page.tsx:319
 msgid "01 / Ce găsești aici"
@@ -10944,6 +10956,10 @@ msgstr "What is judged"
 #: src/features/justice/lib/analysis-questions.ts:39
 msgid "Ce se judecă în România?"
 msgstr "What is judged in Romania?"
+#: src/components/entities/EntityEmployeesDataInfo.tsx:47
+msgid "Ce reprezintă posturile ocupate și plafoanele legale?"
+msgstr "What do occupied posts and legal ceilings mean?"
+
 
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:274
 msgid "Ce spun ANAF și registrul"
@@ -23610,6 +23626,10 @@ msgstr "Maps"
 msgid "Hârtie și carton"
 msgstr "Paper and cardboard"
 
+#: src/components/entities/EntityEmployeesDataInfo.tsx:14
+msgid "Guvernul României a publicat ediția în septembrie 2025, pe baza raportărilor prefecturilor privind aparatele proprii ale primăriilor și consiliilor județene. Fișierul nu precizează data la care a fost măsurată ocuparea posturilor pentru fiecare autoritate."
+msgstr "The Romanian government published this release in September 2025 using prefecture reports on the staff of town halls and county councils. The workbook gives no date for when occupied posts were counted in each authority."
+
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:163
 msgid "Has the 2026 budget been published?"
 msgstr "Has the 2026 budget been published?"
@@ -33763,6 +33783,10 @@ msgstr "Average headcount, from the same statements"
 
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:328
 #~ msgid "Number of amendment records per month. Undated records are disclosed by the coverage notice, never guessed into a month."
+#: src/components/tables/EmployeesDataTable.tsx:57
+msgid "Numărul de posturi raportate ca ocupate în ediția din septembrie 2025."
+msgstr "Number of posts reported as occupied in the September 2025 release."
+
 #~ msgstr "Number of amendment records per month. Undated records are disclosed by the coverage notice, never guessed into a month."
 
 #: src/features/procurement/components/procurement-monthly-chart.tsx:98
@@ -33783,6 +33807,14 @@ msgstr "Number of UATs"
 #~ msgstr "Constituency name"
 
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:258
+#: src/components/tables/EmployeesDataTable.tsx:90
+msgid "Numărul maxim de posturi calculat pe baza populației, conform OUG 63/2010, pct. 1 din anexă."
+msgstr "Maximum number of posts based on population under point 1 of the annex to Emergency Ordinance 63/2010."
+
+#: src/components/tables/EmployeesDataTable.tsx:58
+msgid "Numărul maxim de posturi raportat în ediția din septembrie 2025, inclusiv posturile exceptate."
+msgstr "Maximum number of posts reported in the September 2025 release, including exempt posts."
+
 #: src/features/public-enterprises/components/hub/public-enterprise-hub-page.tsx:119
 msgid "nume din altă sursă"
 msgstr "name from another source"
@@ -36669,6 +36701,14 @@ msgstr "The platform has not linked a CUI to this organisation."
 msgid "Plăți"
 msgstr "Plăți"
 
+#: src/components/tables/EmployeesDataTable.tsx:58
+msgid "Plafon legal cu excepții (P)"
+msgstr "Legal ceiling including exceptions (P)"
+
+#: src/components/tables/EmployeesDataTable.tsx:90
+msgid "Plafon legal de bază (G)"
+msgstr "Base legal ceiling (G)"
+
 #: src/features/national-budget/analytics/lib/analytics-format.ts:94
 msgctxt "national budget classification"
 msgid "Plăți din anii trecuți, recuperate"
@@ -37201,6 +37241,10 @@ msgstr "Matches by the number and name of acts. Searching the text of laws is no
 #: src/features/private-companies/lib/company-main-activity-text.ts:297
 msgid "potrivit cu ONRC"
 msgstr "matched with ONRC"
+#: src/components/tables/EmployeesDataTable.tsx:57
+msgid "Posturi ocupate (S)"
+msgstr "Occupied posts (S)"
+
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:299
 msgid "potrivit cu ONRC (cea mai recentă revizie)"

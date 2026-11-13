@@ -10,6 +10,7 @@ import {
   ColumnDef,
 } from '@tanstack/react-table';
 import { Link } from '@tanstack/react-router';
+import { useLingui } from '@lingui/react/macro';
 import { EnrichedEmployeeData } from '@/schemas/employeeData';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/pagination';
@@ -33,6 +34,7 @@ type EmployeesDataTableProps = {
 };
 
 export function EmployeesDataTable({ data, sorting, setSorting, pagination, setPagination }: EmployeesDataTableProps) {
+  const { t } = useLingui();
   const columns = useMemo<ColumnDef<EmployeeRowData>[]>(() => [
     {
       accessorKey: 'uatName',
@@ -52,8 +54,8 @@ export function EmployeesDataTable({ data, sorting, setSorting, pagination, setP
       },
     },
     createNumericColumn('employeesPer1000Capita', 'Angajați / 1.000 loc.', 'Personal raportat la 1.000 locuitori. Mai mic = mai eficient.'),
-    createNumericColumn('occupiedPosts', 'Posturi ocupate (S)', 'Total angajați actuali (S).'),
-    createNumericColumn('totalPostsActual', 'Total posturi', 'Posturile din organigramă (ocupate + vacante).'),
+    createNumericColumn('occupiedPosts', t`Posturi ocupate (S)`, t`Numărul de posturi raportate ca ocupate în ediția din septembrie 2025.`),
+    createNumericColumn('totalPostsActual', t`Plafon legal cu excepții (P)`, t`Numărul maxim de posturi raportat în ediția din septembrie 2025, inclusiv posturile exceptate.`),
     createNumericColumn('uatPopulation', 'Populație', 'Populația estimată a UAT-ului.', false),
     {
       accessorKey: '__spendingTotal2024',
@@ -85,8 +87,8 @@ export function EmployeesDataTable({ data, sorting, setSorting, pagination, setP
       'Dif. -40% vs. ocupate (T)',
       'T = Q − S. Negativ = deficit; Pozitiv = excedent față de limita simulată. Literele corespund coloanelor din fișierul sursă XLS.'
     ),
-    createNumericColumn('maxPostsFromOUG63', 'Maxim legal (OUG 63/2010) (G)', 'Limită superioară în funcție de populație (G).', false),
-  ], []);
+    createNumericColumn('maxPostsFromOUG63', t`Plafon legal de bază (G)`, t`Numărul maxim de posturi calculat pe baza populației, conform OUG 63/2010, pct. 1 din anexă.`, false),
+  ], [t]);
 
   const table = useReactTable<EmployeeRowData>({
     data: [...(data ?? [])] as EmployeeRowData[],

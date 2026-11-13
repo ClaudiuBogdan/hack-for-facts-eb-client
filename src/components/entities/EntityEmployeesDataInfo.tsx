@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro';
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Accordion } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ export function EntityEmployeesDataInfo() {
         <Card className="bg-muted/30">
             <CardHeader><CardTitle className="flex items-center gap-2"><Info className="h-5 w-5" /><span>Despre Date și Metodologie</span></CardTitle></CardHeader>
             <CardContent>
-                <p className="text-sm text-muted-foreground mb-6">Informațiile prezentate au caracter informativ și reprezintă o imagine a personalului din aparatele proprii ale primăriilor și consiliilor județene din România, la nivelul lunii Septembrie 2025. Sursa datelor este Guvernul României, pe baza raportărilor prefecturilor.</p>
+                <p className="text-sm text-muted-foreground mb-6"><Trans>Guvernul României a publicat ediția în septembrie 2025, pe baza raportărilor prefecturilor privind aparatele proprii ale primăriilor și consiliilor județene. Fișierul nu precizează data la care a fost măsurată ocuparea posturilor pentru fiecare autoritate.</Trans></p>
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-5">
                         <AccordionTrigger>Cum se calculează limitele simulate?</AccordionTrigger>
@@ -43,14 +44,13 @@ export function EntityEmployeesDataInfo() {
                         <AccordionContent className="pb-4">Datele se bazează pe raportări multiple și, conform notei oficiale, s-ar putea înregistra un grad de eroare de aproximativ <strong>±2%</strong> la nivelul întregii țări din cauza unor posibile diferențe de raportare.</AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-3">
-                        <AccordionTrigger>Care e diferența dintre 'Posturi Ocupate' și 'Numărul Maxim de Posturi'?</AccordionTrigger>
+                        <AccordionTrigger><Trans>Ce reprezintă posturile ocupate și plafoanele legale?</Trans></AccordionTrigger>
                         <AccordionContent className="pb-4">
                             <ul className="list-disc pl-5 space-y-2">
-                                <li><strong>Posturi Ocupate:</strong> Numărul efectiv de angajați.</li>
-                                <li><strong>Posturi în Organigramă:</strong> Totalul posturilor aprobate de consiliul local, inclusiv cele vacante.</li>
-                                <li><strong>Număr Maxim Legal:</strong> Limita superioară de posturi pe care o entitate ar putea să o aibă, conform populației. Majoritatea organigramelor sunt sub acest maxim.</li>
+                                <li><Trans><strong>Posturi ocupate (S)</strong> este numărul de posturi raportate ca ocupate.</Trans></li>
+                                <li><Trans><strong>Plafon legal de bază (G)</strong> este numărul maxim de posturi stabilit în funcție de populație.</Trans></li>
+                                <li><Trans><strong>Plafon legal cu excepții (P)</strong> este valoarea „TOTAL ACTUAL” din fișierul sursă și include posturile exceptate. Pentru numărul de posturi aprobate este nevoie de organigrama autorității.</Trans></li>
                             </ul>
-                            <p className="mt-2 text-xs text-muted-foreground">La nivel național, aproximativ 32% din totalul posturilor prevăzute de lege sunt fie neînființate, fie vacante.</p>
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-4">
