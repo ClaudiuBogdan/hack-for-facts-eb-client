@@ -1,6 +1,5 @@
 import type { Currency } from '@/schemas/charts'
 import type { ExecutionGqlReportType } from '@/schemas/reporting'
-import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults'
 import {
   parseAdvancedMapAnalyticsUrlState,
   type AdvancedMapAnalyticsUrlState,
@@ -329,8 +328,7 @@ ${buildPreviewConfigSection({
 
 ### Ce include
 
-- Totalul cheltuielilor pentru UAT, folosind aceeași configurație de raportare ca în sumar și tendințe
-- Cheltuielile exclud transferurile interne (\`${DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES.join('`, `')}\`), la fel ca filtrul de cheltuieli din treemap`,
+- Totalul cheltuielilor pentru UAT, folosind aceeași configurație de raportare ca în sumar și tendințe`,
     }),
     mapState: createMapPreviewState({
       mapName: 'Cheltuieli UAT',
@@ -356,9 +354,6 @@ ${buildPreviewConfigSection({
           label: 'Cheltuieli',
           filter: {
             is_territorial_executive: true,
-            exclude: {
-              economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
-            },
             currency: 'RON',
             report_type: PRIMARY_EXECUTION_REPORT_TYPE,
             normalization: 'total',
@@ -469,8 +464,7 @@ ${buildPreviewConfigSection({
 
 ### Ce include
 
-- Venituri totale minus cheltuieli totale, folosind aceeași configurație de raportare ca în sumar și tendințe
-- Cheltuielile exclud transferurile interne (\`${DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES.join('`, `')}\`), la fel ca filtrul de cheltuieli din treemap`,
+- Venituri totale minus cheltuieli totale, folosind aceeași configurație de raportare ca în sumar și tendințe`,
     }),
     mapState: createMapPreviewState({
       mapName: 'Balanță bugetară UAT',
@@ -509,9 +503,6 @@ ${buildPreviewConfigSection({
           label: 'Cheltuieli',
           filter: {
             is_territorial_executive: true,
-            exclude: {
-              economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
-            },
             currency: 'RON',
             report_type: PRIMARY_EXECUTION_REPORT_TYPE,
             normalization: 'total',

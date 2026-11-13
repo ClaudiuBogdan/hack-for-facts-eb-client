@@ -217,7 +217,7 @@ export const FinancialDataCard: React.FC<FinancialDataCardProps> = ({
   normalization,
   currency,
   onPrefetchYear,
-  transferFilter = 'no-transfers',
+  transferFilter = 'all',
 }) => {
   const Icon = iconType === 'income' ? ArrowUpCircle : ArrowDownCircle;
   const iconColor = iconType === 'income' ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400';

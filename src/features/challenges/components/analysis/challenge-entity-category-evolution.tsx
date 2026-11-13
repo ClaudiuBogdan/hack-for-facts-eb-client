@@ -15,10 +15,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import { cn } from '@/lib/utils'
 import type { ChallengeEntityReportControlsChange } from './challenge-entity-report-controls'
-import {
-  DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
-  DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
-} from '@/lib/analytics-defaults'
 import { buildTreemapChartState } from '@/lib/chart-links'
 import type { ExecutionLineItem } from '@/lib/api/entities'
 import type { NormalizationOptions } from '@/lib/normalization'
@@ -237,16 +233,8 @@ export function ChallengeEntityCategoryEvolution({
         primary,
         path: [],
         rootDepth: 2,
-        excludeEcCodes:
-          accountCategory === 'ch'
-            ? [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES]
-            : [],
-        excludeFnCodes:
-          accountCategory === 'vn'
-            ? [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES]
-            : [],
       }),
-    [accountCategory, aggregatedNodes, primary],
+    [aggregatedNodes, primary],
   )
 
   const trendFilterInput = useMemo(

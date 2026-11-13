@@ -35,7 +35,7 @@ interface EntityAnalyticsLineItemsProps {
 
 export const EntityAnalyticsLineItems: React.FC<
   EntityAnalyticsLineItemsProps
-  > = ({ filter, title, groupBy, data, isLoading, error, transferFilter = 'no-transfers', onTransferFilterChange }) => {
+  > = ({ filter, title, groupBy, data, isLoading, error, transferFilter = 'all', onTransferFilterChange }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const executionLineItems: MinimalExecutionLineItem[] = useMemo(() => {

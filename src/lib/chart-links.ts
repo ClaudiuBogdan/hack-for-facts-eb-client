@@ -4,7 +4,7 @@ import type { CompanyAnalysisCohortMode, CompanyAnalysisMetric, CompanyAnalysisS
 import type { ChartUrlState } from '@/components/charts/page-schema';
 import { generateHash, getNormalizationUnit } from '@/lib/utils';
 import { t } from '@lingui/core/macro';
-import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults';
+import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults';
 import { normalizeNormalizationOptions, type NormalizationOptions } from '@/lib/normalization';
 import type { ReportPeriodInput } from '@/schemas/reporting';
 import { INS_CHART_PERIOD_TYPE } from '@/lib/ins/source-periods';
@@ -118,9 +118,6 @@ export function buildEntityIncomeExpenseChartState(
             currency: normalized.currency,
             inflation_adjusted: normalized.inflation_adjusted,
             show_period_growth: normalized.show_period_growth,
-            exclude: {
-                functional_prefixes: [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES],
-            },
         },
         config: { showDataLabels: false, color: incomeColor },
     };
@@ -137,9 +134,6 @@ export function buildEntityIncomeExpenseChartState(
             currency: normalized.currency,
             inflation_adjusted: normalized.inflation_adjusted,
             show_period_growth: normalized.show_period_growth,
-            exclude: {
-                economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
-            },
         },
         config: { showDataLabels: false, color: expenseColor },
     };

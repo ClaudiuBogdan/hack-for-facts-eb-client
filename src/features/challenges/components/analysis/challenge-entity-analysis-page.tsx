@@ -31,10 +31,6 @@ import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
 import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
-import {
-  DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
-  DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
-} from '@/lib/analytics-defaults'
 import type { EntityPageLoaderPayload } from '@/features/entities/page-core'
 import type {
   EntityDetailsData,
@@ -655,53 +651,11 @@ function resolveErrorMessage(error: unknown): string {
   return t`Try again in a few moments.`
 }
 
-function normalizeClassificationCode(code: string | null | undefined) {
-  return (code ?? '').replace(/[^0-9.]/g, '')
-}
-
-function hasClassificationPrefix(
-  code: string,
-  prefixes: readonly string[],
-) {
-  return prefixes.some((prefix) => code.startsWith(prefix))
-}
-
 function doesCodePathStartWith(
   path: readonly string[],
   prefix: readonly string[],
 ) {
   return prefix.every((segment, index) => path[index] === segment)
-}
-
-function filterTopLevelGroupedLineItems(
-  lineItems: readonly ExecutionLineItem[],
-  excludeEconomicCodes: readonly string[],
-  excludeFunctionalCodes: readonly string[],
-) {
-  return lineItems.filter((lineItem) => {
-    const economicCode = normalizeClassificationCode(
-      lineItem.economicClassification?.economic_code,
-    )
-    const functionalCode = normalizeClassificationCode(
-      lineItem.functionalClassification?.functional_code,
-    )
-
-    if (
-      excludeEconomicCodes.length > 0 &&
-      hasClassificationPrefix(economicCode, excludeEconomicCodes)
-    ) {
-      return false
-    }
-
-    if (
-      excludeFunctionalCodes.length > 0 &&
-      hasClassificationPrefix(functionalCode, excludeFunctionalCodes)
-    ) {
-      return false
-    }
-
-    return true
-  })
 }
 
 function getTreemapSubtitle(
@@ -1759,33 +1713,6 @@ export function ChallengeEntityAnalysisPage({
       ),
     [entityLineItemsQuery.data?.nodes, expenseType, treemapAccountCategory],
   )
-  const treemapExcludeEconomicCodes = useMemo(
-    () =>
-      treemapAccountCategory === 'ch'
-        ? [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES]
-        : [],
-    [treemapAccountCategory],
-  )
-  const treemapExcludeFunctionalCodes = useMemo(
-    () =>
-      treemapAccountCategory === 'vn'
-        ? [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES]
-        : [],
-    [treemapAccountCategory],
-  )
-  const groupedLineItems = useMemo(
-    () =>
-      filterTopLevelGroupedLineItems(
-        treemapLineItems,
-        treemapExcludeEconomicCodes,
-        treemapExcludeFunctionalCodes,
-      ),
-    [
-      treemapExcludeEconomicCodes,
-      treemapExcludeFunctionalCodes,
-      treemapLineItems,
-    ],
-  )
   const groupedLineItemsPresetSearchTerm = useMemo(() => {
     if (treemapAccountCategory !== 'ch' || treemapPrimary !== 'fn') {
       return undefined
@@ -1833,8 +1760,6 @@ export function ChallengeEntityAnalysisPage({
         : treemapDepth === 'subchapter'
           ? 4
           : 2,
-    excludeEcCodes: treemapExcludeEconomicCodes,
-    excludeFnCodes: treemapExcludeFunctionalCodes,
     onPathChange: (path) => onStateChange({ treemapPath: path }),
   })
   const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
@@ -2826,12 +2751,6 @@ export function ChallengeEntityAnalysisPage({
       currentTreemapPrimary: activePrimary,
       treemapDepth,
       breadcrumbs,
-      ...(treemapExcludeEconomicCodes.length > 0
-        ? { excludedEconomicCodes: treemapExcludeEconomicCodes }
-        : {}),
-      ...(treemapExcludeFunctionalCodes.length > 0
-        ? { excludedFunctionalCodes: treemapExcludeFunctionalCodes }
-        : {}),
       ...(hasModifiedTreemapRange
         ? {
             amountRange: {
@@ -3331,7 +3250,7 @@ export function ChallengeEntityAnalysisPage({
 
                   <ChallengeEntityGroupedLineItems
                     accountTitle={groupedLineItemsAccountTitle}
-                    lineItems={groupedLineItems}
+                    lineItems={treemapLineItems}
                     accountCategory={treemapAccountCategory}
                     groupBy={treemapPrimary}
                     depth={treemapDepth}

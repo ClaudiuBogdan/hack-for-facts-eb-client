@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { defaultEntityAnalyticsFilter, entityAnalyticsFilterSchema, resolveEntityAnalyticsFilter, entityAnalyticsQueryOptions } from './entity-analytics-query'
 
 describe('entity analytics shared request state', () => {
+  it('includes transfers in the default execution query', () => {
+    expect(defaultEntityAnalyticsFilter.exclude).toBeUndefined()
+  })
   it('keeps explicit URL settings authoritative over conflicting saved preferences', () => {
     const filter = entityAnalyticsFilterSchema.parse({ ...defaultEntityAnalyticsFilter, currency: 'EUR', inflation_adjusted: false })
     const resolved = resolveEntityAnalyticsFilter(filter, { currency: 'RON', inflationAdjusted: true })

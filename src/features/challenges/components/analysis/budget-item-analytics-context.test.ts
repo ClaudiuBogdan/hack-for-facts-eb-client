@@ -63,9 +63,6 @@ describe('buildBudgetItemAnalyticsFilters', () => {
       show_period_growth: false,
       functional_prefixes: ['65'],
       economic_prefixes: ['10.01'],
-      exclude: {
-        economic_prefixes: DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
-      },
     })
     expect(result.executionMapFilter).toMatchObject({
       account_category: 'ch',
@@ -77,10 +74,9 @@ describe('buildBudgetItemAnalyticsFilters', () => {
       show_period_growth: false,
       functional_prefixes: ['65'],
       economic_prefixes: ['10.01'],
-      exclude: {
-        economic_prefixes: DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
-      },
     })
+    expect(result.executionChartFilter.exclude).toBeUndefined()
+    expect(result.executionMapFilter.exclude).toBeUndefined()
     expect(result.commitmentsChartFilter).toMatchObject({
       entity_cuis: ['12345678'],
       report_period: HISTORY_REPORT_PERIOD,

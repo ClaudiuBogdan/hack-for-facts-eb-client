@@ -1,23 +1,17 @@
 import { queryOptions } from '@tanstack/react-query'
 import { AnalyticsFilterSchema, createDefaultExecutionYearReportPeriod } from '@/schemas/charts'
 import type { AnalyticsFilterType, Currency } from '@/schemas/charts'
-import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults'
-import { withDefaultExcludes } from '@/lib/filterUtils'
 import { parseSearchParamJson } from '@/lib/router-search'
 import { generateHash } from '@/lib/utils'
 import { fetchEntityAnalytics, entityRankingFilter } from '@/lib/api/entity-analytics'
 import { z } from 'zod'
 
-export const defaultEntityAnalyticsFilter: AnalyticsFilterType = withDefaultExcludes({
+export const defaultEntityAnalyticsFilter: AnalyticsFilterType = {
   account_category: 'ch',
   report_period: createDefaultExecutionYearReportPeriod(),
   normalization: 'total',
   report_type: 'Executie bugetara agregata la nivel de ordonator principal',
-  exclude: {
-    economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
-    functional_prefixes: [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES],
-  },
-})
+}
 
 export const entityAnalyticsFilterSchema = z.preprocess(parseSearchParamJson, AnalyticsFilterSchema)
 

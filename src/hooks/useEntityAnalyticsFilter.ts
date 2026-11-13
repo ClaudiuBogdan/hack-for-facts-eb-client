@@ -20,7 +20,7 @@ const searchSchema = z.object({
   treemapPrimary: z.enum(['fn', 'ec']).optional(),
   treemapDepth: z.enum(['chapter', 'subchapter', 'paragraph']).optional(),
   treemapPath: z.string().optional(),
-  transferFilter: z.enum(['all', 'no-transfers', 'transfers-only']).optional().default('no-transfers'),
+  transferFilter: z.enum(['all', 'no-transfers', 'transfers-only']).optional().default('all'),
 })
 
 export type EntityAnalyticsSearch = z.infer<typeof searchSchema>
@@ -69,7 +69,7 @@ export function useEntityAnalyticsFilter() {
   const resetFilter = () => {
     Analytics.capture(Analytics.EVENTS.EntityAnalyticsFilterReset)
     navigate({
-      search: (prev) => ({ ...prev, filter: defaultEntityAnalyticsFilter, page: 1 }),
+      search: (prev) => ({ ...prev, filter: defaultEntityAnalyticsFilter, transferFilter: 'all', page: 1 }),
       replace: true,
       resetScroll: false,
     })

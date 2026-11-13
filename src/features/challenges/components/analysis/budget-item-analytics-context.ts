@@ -11,7 +11,6 @@ import {
 } from '@/schemas/charts'
 import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
-  DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
 } from '@/lib/analytics-defaults'
 import type { ReportPeriodInput, GqlReportType } from '@/schemas/reporting'
 import {
@@ -261,14 +260,7 @@ function buildBaseExecutionFilter(
     ...(context.accountCategory === 'ch' && context.expenseType
       ? { expense_types: [context.expenseType] }
       : {}),
-    exclude:
-      context.accountCategory === 'ch'
-        ? {
-            economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
-          }
-        : {
-            functional_prefixes: [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES],
-          },
+
   }
 }
 

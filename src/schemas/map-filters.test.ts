@@ -15,6 +15,7 @@ describe('MapStateSchema', () => {
 
     expect(parsed.filters.is_territorial_executive).toBe(true)
     expect(parsed.filters.is_uat).toBeUndefined()
+    expect(parsed.filters.exclude).toBeUndefined()
     expect(parsed.activeView).toBe('map')
     expect(parsed.mapViewType).toBe('UAT')
     expect(parsed.mapCenter).toBeUndefined()
