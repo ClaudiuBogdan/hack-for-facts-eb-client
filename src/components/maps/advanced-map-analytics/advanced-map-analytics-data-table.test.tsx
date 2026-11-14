@@ -563,7 +563,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
       }) as typeof document.createElement);
 
     try {
-      vi.useFakeTimers();
+      // Freeze the export timestamp while leaving Radix focus cleanup on real timers.
+      vi.useFakeTimers({ toFake: ['Date'] });
       vi.setSystemTime(new Date('2026-03-02T03:17:19Z'));
 
       render(
