@@ -36,7 +36,11 @@ import type {
   PnrrOrganizationListFilters,
   PnrrProjectListFilters,
 } from "../../api/pnrr-api";
-import type { PnrrLiveProject, PnrrLiveRelease } from "@/schemas/pnrr-live";
+import type {
+  PnrrLiveCapability,
+  PnrrLiveProject,
+  PnrrLiveRelease,
+} from "@/schemas/pnrr-live";
 import { getUserLocale } from "@/lib/utils";
 import {
   downloadPnrrProjectPageCsv,
@@ -158,6 +162,27 @@ function projectRelationshipLabel(relationship: string | null): string | null {
   return relationship;
 }
 
+function answerStateLabel(state: PnrrLiveRelease["state"]): string {
+  switch (state) {
+    case "served":
+      return t`Data available`;
+    case "abstained":
+      return t`Data unavailable`;
+    case "degraded":
+      return t`Partial coverage`;
+    case "legacy_unversioned":
+      return t`Unversioned historical data`;
+  }
+}
+
+function releaseLimitation(release: PnrrLiveRelease): string {
+  return release.lanes.some((lane) =>
+    lane.reasonCodes.includes("no_active_release"),
+  )
+    ? t`There is no active PNRR data release.`
+    : release.limitation;
+}
+
 function PnrrLiveShell({
   release,
   children,
@@ -172,12 +197,6 @@ function PnrrLiveShell({
   const status = usePnrrLiveStatus();
   const servingRelease = status.data?.pnrrCurrentRelease ?? release;
   const isAbstained = servingRelease?.state === "abstained";
-  const releaseLabel =
-    servingRelease?.state === "served"
-      ? t`Data available`
-      : servingRelease?.state === "abstained"
-        ? t`Data unavailable`
-        : t`Partial coverage`;
 
   return (
     <div className="min-h-screen bg-[var(--pnrr-bg)] text-[var(--pnrr-fg)]">
@@ -205,11 +224,11 @@ function PnrrLiveShell({
                     }`}
                     aria-hidden="true"
                   />
-                  {releaseLabel}
+                  {answerStateLabel(servingRelease.state)}
                   <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="border-t border-[var(--pnrr-border)] px-3 py-3 text-xs leading-relaxed text-[var(--pnrr-muted)]">
-                  <p>{servingRelease.limitation}</p>
+                  <p>{releaseLimitation(servingRelease)}</p>
                   <p className="mt-2 break-all font-mono">
                     {servingRelease.releaseId}
                   </p>
@@ -401,7 +420,7 @@ function CaveatPanel({
       </summary>
       <div className="border-t border-current/30 px-4 pb-4 pt-3">
         <div className="ml-8">
-          <p className="mt-1 text-sm">{release.limitation}</p>
+          <p className="mt-1 text-sm">{releaseLimitation(release)}</p>
           {caveats.map((caveat) => (
             <p key={caveat} className="mt-1 text-sm">
               {caveat}
@@ -413,20 +432,21 @@ function CaveatPanel({
   );
 }
 
+function capabilityLimitation(capability: PnrrLiveCapability): string | null {
+  return capability.reasonCodes.includes("no_active_release")
+    ? t`There is no active PNRR data release.`
+    : capability.limitation;
+}
+
 function CapabilityStatus({
   capabilities,
 }: {
-  readonly capabilities: readonly {
-    readonly id: string;
-    readonly state: string;
-    readonly reasonCodes: readonly string[];
-    readonly limitation: string | null;
-  }[];
+  readonly capabilities: readonly PnrrLiveCapability[];
 }) {
   return (
     <section aria-labelledby="pnrr-capability-status">
       <h2 id="pnrr-capability-status" className="text-xl font-black">
-        Source capabilities
+        <Trans>Source capabilities</Trans>
       </h2>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {capabilities.map((capability) => (
@@ -437,11 +457,11 @@ function CapabilityStatus({
             <div className="flex items-center justify-between gap-3">
               <span className="font-bold">{capability.id}</span>
               <span className="font-mono text-xs uppercase">
-                {capability.state}
+                {answerStateLabel(capability.state)}
               </span>
             </div>
             {capability.limitation && (
-              <p className="mt-2 text-sm">{capability.limitation}</p>
+              <p className="mt-2 text-sm">{capabilityLimitation(capability)}</p>
             )}
             {capability.reasonCodes.length > 0 && (
               <p className="mt-2 font-mono text-xs text-[var(--pnrr-muted)]">
@@ -452,8 +472,10 @@ function CapabilityStatus({
         ))}
         {capabilities.length === 0 && (
           <p className="border-2 border-[var(--pnrr-border)] p-4 text-sm">
-            Capability details are unavailable. The global abstention still
-            prevents fact queries.
+            <Trans>
+              Capability details are unavailable. The global abstention still
+              prevents fact queries.
+            </Trans>
           </p>
         )}
       </div>
@@ -502,68 +524,76 @@ export function PnrrLiveOverviewPage() {
             />
             {overview.data.meta.state !== "abstained" && (
               <>
-                <h2 className="text-2xl font-black">National overview</h2>
+                <h2 className="text-2xl font-black">
+                  <Trans>National overview</Trans>
+                </h2>
                 <p className="mt-2 max-w-3xl text-[var(--pnrr-muted)]">
-                  Each card keeps its source grain and currency. The explorer
-                  never adds allocation, receipts, payments, commitments, or
-                  procurement.
+                  <Trans>
+                    Each card keeps its source grain and currency. The explorer
+                    never adds allocation, receipts, payments, commitments, or
+                    procurement.
+                  </Trans>
                 </p>
                 <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <MetricCard
-                    label="Plan allocation"
+                    label={t`Plan allocation`}
                     value={formatExactMoney(
                       overview.data.program.allocationEur.amount,
                       "EUR",
                     )}
-                    note={`MIPE national indicator · ${overview.data.program.snapshotDate ?? "date unavailable"}`}
+                    note={t`MIPE national indicator · ${overview.data.program.snapshotDate ?? t`date unavailable`}`}
                   />
                   <MetricCard
-                    label="EU receipts"
+                    label={t`EU receipts`}
                     value={formatExactMoney(
                       overview.data.program.receivedEur.amount,
                       "EUR",
                     )}
-                    note="MIPE national indicator, not beneficiary payments"
+                    note={t`MIPE national indicator, not beneficiary payments`}
                   />
                   <MetricCard
-                    label="National paid indicator"
+                    label={t`National paid indicator`}
                     value={formatExactMoney(
                       overview.data.program.paidEur.amount,
                       "EUR",
                     )}
-                    note="MIPE-reported national aggregate; distinct from accepted ORDS beneficiary payments"
+                    note={t`MIPE-reported national aggregate; distinct from accepted ORDS beneficiary payments`}
                   />
                   <MetricCard
-                    label="Beneficiary payment net"
+                    label={t`Beneficiary payment net`}
                     value={formatExactMoney(
                       overview.data.beneficiaryPayments.netRon.amount,
                       "RON",
                     )}
-                    note={`${overview.data.beneficiaryPayments.count.toLocaleString()} source-native payment rows`}
+                    note={t`${formatInteger(overview.data.beneficiaryPayments.count)} source-native payment rows`}
                   />
                   <MetricCard
-                    label="Commitment envelopes"
+                    label={t`Commitment envelopes`}
                     value={formatExactMoney(
                       overview.data.commitments.additiveRon.amount,
                       "RON",
                     )}
-                    note={`${overview.data.commitments.additiveCount}/${overview.data.commitments.count} envelopes additive; ${overview.data.commitments.unresolvedCount} unresolved`}
+                    note={t`${formatInteger(overview.data.commitments.additiveCount)}/${formatInteger(overview.data.commitments.count)} envelopes additive; ${formatInteger(overview.data.commitments.unresolvedCount)} unresolved`}
                   />
                   <MetricCard
-                    label="Delivery observations"
-                    value={overview.data.delivery.observedCount.toLocaleString()}
-                    note={`${overview.data.delivery.completedCount.toLocaleString()} reported at or above completion`}
+                    label={t`Delivery observations`}
+                    value={formatInteger(overview.data.delivery.observedCount)}
+                    note={t`${formatInteger(overview.data.delivery.completedCount)} reported at or above completion`}
                   />
                   <MetricCard
-                    label="Progress over 100%"
-                    value={overview.data.delivery.overHundredCount.toLocaleString()}
-                    note="Deterministic verification signal, not a finding"
+                    label={t`Progress over 100%`}
+                    value={formatInteger(
+                      overview.data.delivery.overHundredCount,
+                    )}
+                    note={t`Deterministic verification signal, not a finding`}
                   />
                 </div>
               </>
             )}
             <section className="mt-8">
-              <h2 className="text-xl font-black">Source capabilities</h2>
+              <h2 className="text-xl font-black">
+                <Trans>Source capabilities</Trans>
+              </h2>
               <div className="mt-3 grid gap-3 md:grid-cols-2">
                 {status.data.pnrrCapabilities.map((capability) => (
                   <div
@@ -573,12 +603,12 @@ export function PnrrLiveOverviewPage() {
                     <div className="flex justify-between gap-3">
                       <span className="font-bold">{capability.id}</span>
                       <span className="font-mono text-xs">
-                        {capability.state}
+                        {answerStateLabel(capability.state)}
                       </span>
                     </div>
                     {capability.limitation && (
                       <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                        {capability.limitation}
+                        {capabilityLimitation(capability)}
                       </p>
                     )}
                   </div>
@@ -649,10 +679,14 @@ export function PnrrLiveOrganizationsPage({
             />
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="text-3xl font-black">PNRR organizations</h2>
+                <h2 className="text-3xl font-black">
+                  <Trans>PNRR organizations</Trans>
+                </h2>
                 <p className="mt-2 max-w-3xl text-sm text-[var(--pnrr-muted)]">
-                  Beneficiaries, applicants, and procurement participants on the
-                  public organization identity spine.
+                  <Trans>
+                    Beneficiaries, applicants, and procurement participants on
+                    the public organization identity spine.
+                  </Trans>
                 </p>
               </div>
               <button
@@ -666,7 +700,8 @@ export function PnrrLiveOrganizationsPage({
                 }
                 className="inline-flex items-center gap-2 border-2 border-[var(--pnrr-border)] px-4 py-2 font-bold disabled:opacity-40"
               >
-                Next page <ArrowRight className="h-4 w-4" />
+                <Trans>Next page</Trans>
+                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
             <form
@@ -674,11 +709,11 @@ export function PnrrLiveOrganizationsPage({
               className="mt-6 grid gap-3 border-2 border-[var(--pnrr-border)] p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_220px_220px_120px_auto_auto]"
             >
               <label className="grid gap-1 text-sm font-bold">
-                Organization name
+                <Trans>Organization name</Trans>
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search the resolved public name"
+                  placeholder={t`Search the resolved public name`}
                   className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-3 py-2 font-normal"
                 />
               </label>
@@ -689,11 +724,21 @@ export function PnrrLiveOrganizationsPage({
                   onChange={(event) => setRole(event.target.value)}
                   className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-3 py-2 font-normal"
                 >
-                  <option value="">All roles</option>
-                  <option value="beneficiary">Beneficiary</option>
-                  <option value="applicant">Applicant</option>
-                  <option value="winner">Procurement winner flag</option>
-                  <option value="subcontractor">Subcontractor flag</option>
+                  <option value="">
+                    <Trans>All roles</Trans>
+                  </option>
+                  <option value="beneficiary">
+                    <Trans>Beneficiary</Trans>
+                  </option>
+                  <option value="applicant">
+                    <Trans>Applicant</Trans>
+                  </option>
+                  <option value="winner">
+                    <Trans>Procurement winner flag</Trans>
+                  </option>
+                  <option value="subcontractor">
+                    <Trans>Subcontractor flag</Trans>
+                  </option>
                 </select>
               </label>
               <label className="grid gap-1 text-sm font-bold">
@@ -703,11 +748,15 @@ export function PnrrLiveOrganizationsPage({
                   onChange={(event) => setHub(event.target.value)}
                   className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-3 py-2 font-normal"
                 >
-                  <option value="">All registries</option>
-                  <option value="public_entities">
-                    Public entity registry
+                  <option value="">
+                    <Trans>All registries</Trans>
                   </option>
-                  <option value="companies">Company registry</option>
+                  <option value="public_entities">
+                    <Trans>Public entity registry</Trans>
+                  </option>
+                  <option value="companies">
+                    <Trans>Company registry</Trans>
+                  </option>
                 </select>
               </label>
               <label className="grid gap-1 text-sm font-bold">
@@ -733,14 +782,14 @@ export function PnrrLiveOrganizationsPage({
                 type="submit"
                 className="self-end border-2 border-[var(--pnrr-border)] px-4 py-2 font-black"
               >
-                Apply
+                <Trans>Apply</Trans>
               </button>
               <button
                 type="button"
                 onClick={() => onSearch({ first: search.first })}
                 className="self-end border-2 border-[var(--pnrr-border)] px-4 py-2 font-bold"
               >
-                Clear
+                <Trans>Clear</Trans>
               </button>
             </form>
             {search.after && (
@@ -749,7 +798,8 @@ export function PnrrLiveOrganizationsPage({
                 onClick={() => onSearch({ ...search, after: undefined })}
                 className="mt-4 inline-flex items-center gap-2 underline"
               >
-                <ArrowLeft className="h-4 w-4" /> First page
+                <ArrowLeft className="h-4 w-4" />
+                <Trans>First page</Trans>
               </button>
             )}
             <div className="mt-6 grid gap-3">
@@ -783,7 +833,7 @@ export function PnrrLiveOrganizationsPage({
               })}
               {organizations.data.edges.length === 0 && (
                 <p className="border-2 border-[var(--pnrr-border)] p-5">
-                  No public organizations match this filter.
+                  <Trans>No public organizations match this filter.</Trans>
                 </p>
               )}
             </div>
@@ -2305,7 +2355,9 @@ export function PnrrLiveCountyPage({
       >
         {status.data && place.data === null && (
           <div className="border-2 border-[var(--pnrr-border)] p-6">
-            County not found in the canonical territory directory.
+            <Trans>
+              County not found in the canonical territory directory.
+            </Trans>
           </div>
         )}
         {place.data && (
@@ -2313,37 +2365,37 @@ export function PnrrLiveCountyPage({
             <CaveatPanel
               release={place.data.meta.release}
               caveats={[
-                "Payment county and commitment implementation county are separate source roles.",
-                "Source locality labels are count-only; no locality value is attributed or published.",
+                t`Payment county and commitment implementation county are separate source roles.`,
+                t`Source locality labels are count-only; no locality value is attributed or published.`,
               ]}
             />
             <h2 className="text-3xl font-black">
-              {place.data.countyName ?? `County ${countySiruta}`}
+              {place.data.countyName ?? t`County ${countySiruta}`}
             </h2>
             <p className="mt-2 font-mono">SIRUTA {place.data.countySiruta}</p>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               <MetricCard
-                label="Reported-county payments"
+                label={t`Reported-county payments`}
                 value={formatExactMoney(place.data.paymentNetRon, "RON")}
-                note={`${place.data.paymentCount} payment rows`}
+                note={t`${formatInteger(place.data.paymentCount)} payment rows`}
               />
               <MetricCard
-                label="Implementation commitments"
+                label={t`Implementation commitments`}
                 value={formatExactMoney(
                   place.data.additiveCommitmentRon,
                   "RON",
                 )}
-                note={`${place.data.additiveCommitmentCount}/${place.data.commitmentCount} additive`}
+                note={t`${formatInteger(place.data.additiveCommitmentCount)}/${formatInteger(place.data.commitmentCount)} additive`}
               />
               <MetricCard
-                label="MIPE project observations"
-                value={place.data.projectObservationCount.toLocaleString()}
-                note="Release-scoped project observations with this source county role"
+                label={t`MIPE project observations`}
+                value={formatInteger(place.data.projectObservationCount)}
+                note={t`Release-scoped project observations with this source county role`}
               />
               <MetricCard
-                label="Rows with a source locality label"
-                value={place.data.sourceLocalityLabelCount.toLocaleString()}
-                note="Count only; the source label is not treated as a resolved UAT"
+                label={t`Rows with a source locality label`}
+                value={formatInteger(place.data.sourceLocalityLabelCount)}
+                note={t`Count only; the source label is not treated as a resolved UAT`}
               />
             </div>
             <Link
@@ -2351,7 +2403,7 @@ export function PnrrLiveCountyPage({
               search={{ countySiruta }}
               className="mt-6 inline-flex items-center gap-2 border-2 border-[var(--pnrr-border)] px-4 py-3 font-bold"
             >
-              Explore this county’s project observations
+              <Trans>Explore this county’s project observations</Trans>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </>
@@ -2376,15 +2428,19 @@ export function PnrrLivePlacesPage() {
             <CaveatPanel
               release={status.data.pnrrCurrentRelease}
               caveats={[
-                "Payment county, commitment implementation county, and MIPE source locality labels are different source roles.",
-                "Source locality labels are shown as counts only and are not treated as resolved UAT geography.",
+                t`Payment county, commitment implementation county, and MIPE source locality labels are different source roles.`,
+                t`Source locality labels are shown as counts only and are not treated as resolved UAT geography.`,
               ]}
             />
-            <h2 className="text-3xl font-black">PNRR by county</h2>
+            <h2 className="text-3xl font-black">
+              <Trans>PNRR by county</Trans>
+            </h2>
             <p className="mt-2 max-w-3xl text-sm text-[var(--pnrr-muted)]">
-              Canonical counties provide the index. Each measure keeps its
-              original geography role instead of implying that all facts
-              describe the same location.
+              <Trans>
+                Canonical counties provide the index. Each measure keeps its
+                original geography role instead of implying that all facts
+                describe the same location.
+              </Trans>
             </p>
             <div className="mt-6 grid gap-3 md:hidden">
               {places.data.map((place) => (
@@ -2404,20 +2460,20 @@ export function PnrrLivePlacesPage() {
                   </p>
                   <dl className="mt-4 grid gap-3 text-sm">
                     <Detail
-                      label="Reported-county payments"
-                      value={`${formatExactMoney(place.paymentNetRon, "RON")} · ${place.paymentCount.toLocaleString()} rows`}
+                      label={t`Reported-county payments`}
+                      value={t`${formatExactMoney(place.paymentNetRon, "RON")} · ${formatInteger(place.paymentCount)} rows`}
                     />
                     <Detail
-                      label="Implementation commitments"
-                      value={`${formatExactMoney(place.additiveCommitmentRon, "RON")} · ${place.additiveCommitmentCount.toLocaleString()}/${place.commitmentCount.toLocaleString()} additive · ${place.unresolvedCommitmentCount.toLocaleString()} unresolved`}
+                      label={t`Implementation commitments`}
+                      value={t`${formatExactMoney(place.additiveCommitmentRon, "RON")} · ${formatInteger(place.additiveCommitmentCount)}/${formatInteger(place.commitmentCount)} additive · ${formatInteger(place.unresolvedCommitmentCount)} unresolved`}
                     />
                     <Detail
-                      label="MIPE project observations"
-                      value={place.projectObservationCount.toLocaleString()}
+                      label={t`MIPE project observations`}
+                      value={formatInteger(place.projectObservationCount)}
                     />
                     <Detail
-                      label="Source locality labels"
-                      value={`${place.sourceLocalityLabelCount.toLocaleString()} rows · count only`}
+                      label={t`Source locality labels`}
+                      value={t`${formatInteger(place.sourceLocalityLabelCount)} rows · count only`}
                     />
                   </dl>
                 </article>
@@ -2426,24 +2482,26 @@ export function PnrrLivePlacesPage() {
             <div className="mt-6 hidden overflow-x-auto border-2 border-[var(--pnrr-border)] md:block">
               <table className="w-full min-w-[900px] text-left text-sm">
                 <caption className="sr-only">
-                  Source-role-qualified PNRR facts by canonical county
+                  <Trans>
+                    Source-role-qualified PNRR facts by canonical county
+                  </Trans>
                 </caption>
                 <thead className="bg-[var(--pnrr-card)]">
                   <tr>
                     <th scope="col" className="p-3">
-                      County
+                      <Trans>County</Trans>
                     </th>
                     <th scope="col" className="p-3">
-                      Payment facts
+                      <Trans>Payment facts</Trans>
                     </th>
                     <th scope="col" className="p-3">
-                      Commitment envelopes
+                      <Trans>Commitment envelopes</Trans>
                     </th>
                     <th scope="col" className="p-3">
-                      MIPE project observations
+                      <Trans>MIPE project observations</Trans>
                     </th>
                     <th scope="col" className="p-3">
-                      Rows with locality label
+                      <Trans>Rows with locality label</Trans>
                     </th>
                   </tr>
                 </thead>
@@ -2468,8 +2526,10 @@ export function PnrrLivePlacesPage() {
                       <td className="p-3">
                         <p>{formatExactMoney(place.paymentNetRon, "RON")}</p>
                         <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                          {place.paymentCount.toLocaleString()} reported-county
-                          rows
+                          <Trans>
+                            {formatInteger(place.paymentCount)} reported-county
+                            rows
+                          </Trans>
                         </p>
                       </td>
                       <td className="p-3">
@@ -2477,19 +2537,21 @@ export function PnrrLivePlacesPage() {
                           {formatExactMoney(place.additiveCommitmentRon, "RON")}
                         </p>
                         <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                          {place.additiveCommitmentCount.toLocaleString()}/
-                          {place.commitmentCount.toLocaleString()} additive ·{" "}
-                          {place.unresolvedCommitmentCount.toLocaleString()}{" "}
-                          unresolved
+                          <Trans>
+                            {formatInteger(place.additiveCommitmentCount)}/
+                            {formatInteger(place.commitmentCount)} additive ·{" "}
+                            {formatInteger(place.unresolvedCommitmentCount)}{" "}
+                            unresolved
+                          </Trans>
                         </p>
                       </td>
                       <td className="p-3">
-                        {place.projectObservationCount.toLocaleString()}
+                        {formatInteger(place.projectObservationCount)}
                       </td>
                       <td className="p-3">
-                        {place.sourceLocalityLabelCount.toLocaleString()}
+                        {formatInteger(place.sourceLocalityLabelCount)}
                         <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                          count only
+                          <Trans>count only</Trans>
                         </p>
                       </td>
                     </tr>
@@ -2529,11 +2591,15 @@ export function PnrrLiveSourcesPage() {
         {status.data && (
           <>
             <CaveatPanel release={status.data.pnrrCurrentRelease} />
-            <h2 className="text-3xl font-black">Sources and freshness</h2>
+            <h2 className="text-3xl font-black">
+              <Trans>Sources and freshness</Trans>
+            </h2>
             <p className="mt-2 max-w-3xl text-sm text-[var(--pnrr-muted)]">
-              A release identifies a validated serving projection. Each source
-              lane reports its own freshness and suspension state; suspended or
-              legacy-unversioned lanes are never presented as fully served.
+              <Trans>
+                A release identifies a validated serving projection. Each source
+                lane reports its own freshness and suspension state; suspended
+                or legacy-unversioned lanes are never presented as fully served.
+              </Trans>
             </p>
             <section className="mt-6 grid gap-3 md:grid-cols-2">
               {status.data.pnrrCurrentRelease.lanes.map((lane) => (
@@ -2543,24 +2609,31 @@ export function PnrrLiveSourcesPage() {
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <h3 className="font-black">{lane.lane}</h3>
-                    <span className="font-mono text-xs">{lane.state}</span>
+                    <span className="font-mono text-xs">
+                      {answerStateLabel(lane.state)}
+                    </span>
                   </div>
                   <dl className="mt-4 grid gap-2 text-sm">
-                    <Detail label="As of" value={lane.asOf} />
                     <Detail
-                      label="Refresh"
-                      value={lane.suspended ? "suspended" : "enabled"}
+                      label={t`As of`}
+                      value={lane.asOf ? formatSourceDate(lane.asOf) : null}
                     />
                     <Detail
-                      label="Reason codes"
-                      value={lane.reasonCodes.join(", ") || "none"}
+                      label={t`Refresh`}
+                      value={lane.suspended ? t`Suspended` : t`Enabled`}
+                    />
+                    <Detail
+                      label={t`Reason codes`}
+                      value={lane.reasonCodes.join(", ") || t`None`}
                     />
                   </dl>
                 </article>
               ))}
             </section>
             <section className="mt-10">
-              <h2 className="text-2xl font-black">Serving capabilities</h2>
+              <h2 className="text-2xl font-black">
+                <Trans>Serving capabilities</Trans>
+              </h2>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {status.data.pnrrCapabilities.map((capability) => (
                   <article
@@ -2570,26 +2643,31 @@ export function PnrrLiveSourcesPage() {
                     <div className="flex flex-wrap justify-between gap-3">
                       <h3 className="font-bold">{capability.id}</h3>
                       <span className="font-mono text-xs">
-                        {capability.state}
+                        {answerStateLabel(capability.state)}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                      {capability.limitation ?? "No additional limitation."}
+                      {capabilityLimitation(capability) ??
+                        t`No additional limitation.`}
                     </p>
                     <p className="mt-2 font-mono text-xs">
-                      {capability.reasonCodes.join(", ") || "no reason code"}
+                      {capability.reasonCodes.join(", ") || t`no reason code`}
                     </p>
                   </article>
                 ))}
               </div>
             </section>
             <section className="mt-10">
-              <h2 className="text-2xl font-black">Program revisions</h2>
+              <h2 className="text-2xl font-black">
+                <Trans>Program revisions</Trans>
+              </h2>
               <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                Legal revisions remain distinct. A proposal is not treated as
-                the adopted plan merely because it is available. The last proven
-                adopted revision and any newer pending Council amendment are
-                shown separately.
+                <Trans>
+                  Legal revisions remain distinct. A proposal is not treated as
+                  the adopted plan merely because it is available. The last
+                  proven adopted revision and any newer pending Council
+                  amendment are shown separately.
+                </Trans>
               </p>
               <div className="mt-4">
                 <SectionState
@@ -2616,10 +2694,10 @@ export function PnrrLiveSourcesPage() {
                         </div>
                         <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
                           {node.isCurrentAdopted
-                            ? "Current adopted revision"
-                            : "Not the current adopted revision"}
+                            ? t`Current adopted revision`
+                            : t`Not the current adopted revision`}
                           {node.effectiveDate
-                            ? ` · effective ${node.effectiveDate}`
+                            ? t` · effective ${formatSourceDate(node.effectiveDate)}`
                             : ""}
                         </p>
                         <p className="mt-2 text-xs text-[var(--pnrr-muted)]">
@@ -2627,12 +2705,12 @@ export function PnrrLiveSourcesPage() {
                           {node.celex ? ` ${node.celex}` : ""}
                         </p>
                         <p className="mt-3 text-sm">
-                          {node.documentCount.toLocaleString()} document
-                          {node.documentCount === 1 ? "" : "s"} ·{" "}
-                          {node.textReadyDocumentCount.toLocaleString()}{" "}
-                          text-ready ·{" "}
-                          {node.ocrRequiredDocumentCount.toLocaleString()} need
-                          OCR
+                          <Trans>
+                            Documents: {formatInteger(node.documentCount)} ·
+                            text available:{" "}
+                            {formatInteger(node.textReadyDocumentCount)} · need
+                            OCR: {formatInteger(node.ocrRequiredDocumentCount)}
+                          </Trans>
                         </p>
                       </a>
                     ))}
@@ -2647,10 +2725,14 @@ export function PnrrLiveSourcesPage() {
               </div>
             </section>
             <section className="mt-10">
-              <h2 className="text-2xl font-black">Funding calls</h2>
+              <h2 className="text-2xl font-black">
+                <Trans>Funding calls</Trans>
+              </h2>
               <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                Source-published call budgets and eligibility envelopes. These
-                are not beneficiary payments.
+                <Trans>
+                  Source-published call budgets and eligibility envelopes. These
+                  are not beneficiary payments.
+                </Trans>
               </p>
               <div className="mt-4">
                 <SectionState
@@ -2670,11 +2752,12 @@ export function PnrrLiveSourcesPage() {
                         <p className="font-black">{node.title}</p>
                         <p className="mt-2 font-mono text-xs">{node.callId}</p>
                         <p className="mt-3 text-sm">
-                          Budget {formatExactMoney(node.budgetRon, "RON")}
+                          <Trans>
+                            Budget {formatExactMoney(node.budgetRon, "RON")}
+                          </Trans>
                         </p>
                         <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
-                          Eligible envelope{" "}
-                          {formatExactMoney(node.totalEligibleValueRon, "RON")}
+                          {t`Eligible envelope: ${formatExactMoney(node.totalEligibleValueRon, "RON")}`}
                         </p>
                       </a>
                     ))}
@@ -2690,11 +2773,13 @@ export function PnrrLiveSourcesPage() {
             </section>
             <section className="mt-10">
               <h2 className="text-2xl font-black">
-                Funding application listings
+                <Trans>Funding application listings</Trans>
               </h2>
               <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                Platform listings preserve both the payload call ID and the
-                request call ID so mismatches remain visible.
+                <Trans>
+                  Platform listings preserve both the payload call ID and the
+                  request call ID so mismatches remain visible.
+                </Trans>
               </p>
               <div className="mt-4">
                 <SectionState
@@ -2727,12 +2812,14 @@ export function PnrrLiveSourcesPage() {
                             </span>
                           </div>
                           <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                            Payload call {node.callId ?? "missing"} · request
-                            call {node.sourceRequestCallId ?? "missing"}
+                            <Trans>
+                              Payload call {node.callId ?? t`missing`} · request
+                              call {node.sourceRequestCallId ?? t`missing`}
+                            </Trans>
                           </p>
                           {callMismatch && (
                             <p className="mt-2 text-sm font-bold text-amber-700">
-                              Source call-ID mismatch
+                              <Trans>Source call-ID mismatch</Trans>
                             </p>
                           )}
                         </a>
@@ -2750,11 +2837,13 @@ export function PnrrLiveSourcesPage() {
             </section>
             <section className="mt-10">
               <h2 className="text-2xl font-black">
-                Open-data catalog evidence
+                <Trans>Open-data catalog evidence</Trans>
               </h2>
               <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                CKAN resources are discovery and provenance evidence until a
-                workbook family is explicitly conformed into facts.
+                <Trans>
+                  CKAN resources are discovery and provenance evidence until a
+                  workbook family is explicitly conformed into facts.
+                </Trans>
               </p>
               <div className="mt-4">
                 <SectionState
@@ -2775,10 +2864,10 @@ export function PnrrLiveSourcesPage() {
                           {node.resourceName ?? node.resourceId}
                         </p>
                         <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                          {node.format ?? node.mimeType ?? "unknown format"} ·{" "}
+                          {node.format ?? node.mimeType ?? t`unknown format`} ·{" "}
                           {node.datastoreActive
-                            ? "CKAN datastore active"
-                            : "file resource"}
+                            ? t`CKAN datastore active`
+                            : t`file resource`}
                         </p>
                       </a>
                     ))}
@@ -2793,11 +2882,15 @@ export function PnrrLiveSourcesPage() {
               </div>
             </section>
             <section className="mt-10">
-              <h2 className="text-2xl font-black">Document references</h2>
+              <h2 className="text-2xl font-black">
+                <Trans>Document references</Trans>
+              </h2>
               <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                Metadata and extraction state only. Document text, claims, and
-                OCR output remain unavailable until custody, quality, and PII
-                gates are complete.
+                <Trans>
+                  Metadata and extraction state only. Document text, claims, and
+                  OCR output remain unavailable until custody, quality, and PII
+                  gates are complete.
+                </Trans>
               </p>
               <div className="mt-4">
                 <SectionState
@@ -2818,11 +2911,11 @@ export function PnrrLiveSourcesPage() {
                           {node.fileName ?? node.documentKey}
                         </p>
                         <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-                          {node.documentType ?? node.mimeType ?? "document"} ·{" "}
+                          {node.documentType ?? node.mimeType ?? t`document`} ·{" "}
                           {node.extractionState} ·{" "}
                           {node.hasObjectCustody
-                            ? "object custody recorded"
-                            : "source reference only"}
+                            ? t`object custody recorded`
+                            : t`source reference only`}
                         </p>
                         {node.programRevisionId && (
                           <p className="mt-2 font-mono text-xs text-[var(--pnrr-muted)]">
@@ -2856,34 +2949,34 @@ export function PnrrLiveVerificationPage() {
   const signals = verification.data
     ? ([
         [
-          "Unresolved commitment envelopes",
+          t`Unresolved commitment envelopes`,
           verification.data.unresolvedCommitmentCount,
-          "Multiple or conflicting source observations cannot yet be summed as one commitment value.",
+          t`Multiple or conflicting source observations cannot yet be summed as one commitment value.`,
         ],
         [
-          "Potential duplicate payment groups",
+          t`Potential duplicate payment groups`,
           verification.data.duplicatePaymentGroupCount,
-          "Deterministic candidate groups still require a stratified review before payment totals are promoted.",
+          t`Deterministic candidate groups still require a stratified review before payment totals are promoted.`,
         ],
         [
-          "Missing commitment source URL",
+          t`Missing commitment source URL`,
           verification.data.missingCommitmentSourceUrlCount,
-          "The row lacks a direct human-openable evidence link.",
+          t`The row lacks a direct human-openable evidence link.`,
         ],
         [
-          "End date before start date",
+          t`End date before start date`,
           verification.data.endBeforeStartCount,
-          "The two source-reported dates are internally inconsistent.",
+          t`The two source-reported dates are internally inconsistent.`,
         ],
         [
-          "Reported progress over 100%",
+          t`Reported progress over 100%`,
           verification.data.overHundredProgressCount,
-          "A source-reported physical or financial ratio is greater than 1; the value is retained, not silently clamped.",
+          t`A source-reported physical or financial ratio is greater than 1; the value is retained, not silently clamped.`,
         ],
         [
-          "Missing accepted progress link",
+          t`Missing accepted progress link`,
           verification.data.missingProgressLinkCount,
-          "The progress observation has no accepted commitment relationship and remains separately visible.",
+          t`The progress observation has no accepted commitment relationship and remains separately visible.`,
         ],
       ] as const)
     : [];
@@ -2899,27 +2992,26 @@ export function PnrrLiveVerificationPage() {
             <CaveatPanel
               release={verification.data.meta.release}
               caveats={[
-                "These deterministic signals describe data quality and coverage. They are not findings of wrongdoing.",
+                t`These deterministic signals describe data quality and coverage. They are not findings of wrongdoing.`,
               ]}
             />
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="text-3xl font-black">Verification signals</h2>
+                <h2 className="text-3xl font-black">
+                  <Trans>Verification signals</Trans>
+                </h2>
                 <p className="mt-2 max-w-3xl text-sm text-[var(--pnrr-muted)]">
-                  Reproducible rules over the current release. Counts describe
-                  what needs interpretation; they do not assign fault or intent.
+                  <Trans>
+                    Reproducible rules over the current release. Counts describe
+                    what needs interpretation; they do not assign fault or
+                    intent.
+                  </Trans>
                 </p>
                 <p className="mt-2 max-w-3xl font-mono text-xs text-[var(--pnrr-muted)]">
-                  {verification.data.ruleSetVersion} · answer{" "}
-                  {verification.data.meta.state} · release{" "}
-                  {verification.data.meta.release.state}
+                  {t`${verification.data.ruleSetVersion} · answer: ${answerStateLabel(verification.data.meta.state)} · release: ${answerStateLabel(verification.data.meta.release.state)}`}
                 </p>
                 <p className="mt-1 max-w-3xl text-xs text-[var(--pnrr-muted)]">
-                  Reason codes:{" "}
-                  {verification.data.meta.reasonCodes.join(", ") || "none"} ·
-                  provenance:{" "}
-                  {verification.data.meta.provenance.join(", ") ||
-                    "unavailable"}
+                  {t`Reason codes: ${verification.data.meta.reasonCodes.join(", ") || t`None`} · provenance: ${verification.data.meta.provenance.join(", ") || t`Unavailable`}`}
                 </p>
               </div>
               <button
@@ -2927,7 +3019,7 @@ export function PnrrLiveVerificationPage() {
                 onClick={() => downloadPnrrVerificationCsv(verification.data)}
                 className="border-2 border-[var(--pnrr-border)] px-4 py-2 font-bold"
               >
-                Export signals
+                <Trans>Export signals</Trans>
               </button>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -2935,33 +3027,37 @@ export function PnrrLiveVerificationPage() {
                 <MetricCard
                   key={label}
                   label={label}
-                  value={value.toLocaleString("ro-RO")}
-                  note={`${explanation} · ${verification.data.ruleSetVersion} · review state unavailable`}
+                  value={formatInteger(value)}
+                  note={t`${explanation} · ${verification.data.ruleSetVersion} · review state unavailable`}
                 />
               ))}
             </div>
             {verification.data.meta.coverage.length > 0 && (
               <section className="mt-8">
-                <h3 className="text-xl font-black">Field coverage</h3>
+                <h3 className="text-xl font-black">
+                  <Trans>Field coverage</Trans>
+                </h3>
                 <div className="mt-3 overflow-x-auto border-2 border-[var(--pnrr-border)]">
                   <table className="w-full text-left text-sm">
                     <caption className="sr-only">
-                      Field-level coverage for the current PNRR verification
-                      answer
+                      <Trans>
+                        Field-level coverage for the current PNRR verification
+                        answer
+                      </Trans>
                     </caption>
                     <thead className="bg-[var(--pnrr-card)]">
                       <tr>
                         <th scope="col" className="p-3">
-                          Field
+                          <Trans>Field</Trans>
                         </th>
                         <th scope="col" className="p-3">
-                          Covered
+                          <Trans>Covered</Trans>
                         </th>
                         <th scope="col" className="p-3">
-                          Total
+                          <Trans>Total</Trans>
                         </th>
                         <th scope="col" className="p-3">
-                          Coverage
+                          <Trans>Coverage</Trans>
                         </th>
                       </tr>
                     </thead>
@@ -2973,17 +3069,20 @@ export function PnrrLiveVerificationPage() {
                         >
                           <td className="p-3 font-mono">{coverage.field}</td>
                           <td className="p-3">
-                            {coverage.covered.toLocaleString("ro-RO")}
+                            {formatInteger(coverage.covered)}
                           </td>
                           <td className="p-3">
-                            {coverage.total.toLocaleString("ro-RO")}
+                            {formatInteger(coverage.total)}
                           </td>
                           <td className="p-3">
                             {coverage.percent === null
                               ? "—"
-                              : `${coverage.percent.toLocaleString("ro-RO", {
-                                  maximumFractionDigits: 2,
-                                })}%`}
+                              : `${coverage.percent.toLocaleString(
+                                  getUserLocale(),
+                                  {
+                                    maximumFractionDigits: 2,
+                                  },
+                                )}%`}
                           </td>
                         </tr>
                       ))}

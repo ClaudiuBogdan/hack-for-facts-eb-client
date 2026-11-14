@@ -1,3 +1,4 @@
+import { formatNumber } from '@/lib/utils'
 import { useCallback, useEffect, memo, type ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
@@ -528,7 +529,7 @@ export function PnrrProjectTable({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm text-[var(--pnrr-muted)]">
           <span>
-            <Trans>{page.totalCount.toLocaleString('ro-RO')} projects</Trans>
+            <Trans>{formatNumber(page.totalCount)} projects</Trans>
           </span>
           <span>·</span>
           <span>

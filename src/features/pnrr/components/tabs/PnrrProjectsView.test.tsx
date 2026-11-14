@@ -1,3 +1,4 @@
+import { i18n } from '@lingui/core'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
@@ -12,7 +13,14 @@ vi.mock('../filters/PnrrProjectSearchInput', () => ({
 }))
 
 describe('PnrrProjectsView', () => {
-  it('labels project and official record counts separately', () => {
+  it.each([
+    ['ro', /21\.786\s+projects.*24\.967\s+records/],
+    ['en', /21,786\s+projects.*24,967\s+records/],
+  ])('formats project and record counts for %s', (locale, expected) => {
+    const lingui = i18n as { locale: string }
+    const previousLocale = lingui.locale
+    lingui.locale = locale
+
     render(
       <PnrrProjectsView
         page={{
@@ -28,7 +36,8 @@ describe('PnrrProjectsView', () => {
         filterState={{} as ReturnType<typeof usePnrrFilterState>}
       />,
     )
+    lingui.locale = previousLocale
 
-    expect(screen.getByText(/21\.786\s+projects.*24\.967\s+records/)).toBeInTheDocument()
+    expect(screen.getByText(expected)).toBeInTheDocument()
   })
 })

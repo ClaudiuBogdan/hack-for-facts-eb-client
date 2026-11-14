@@ -8,7 +8,7 @@ import type {
   DataQualitySignalType,
 } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
-import { cn } from '@/lib/utils'
+import { cn, formatNumber } from '@/lib/utils'
 import {
   ANOMALY_CONFIG,
   DATA_QUALITY_SIGNAL_CONFIG,
@@ -259,7 +259,7 @@ function AnomalyTile({
             isActive ? 'text-[var(--pnrr-bg)]' : 'text-[var(--pnrr-fg)]',
           )}
         >
-          {count.toLocaleString('ro-RO')}
+          {formatNumber(count)}
         </p>
         <div
           className={cn(

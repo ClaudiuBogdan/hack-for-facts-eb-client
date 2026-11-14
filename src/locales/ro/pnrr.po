@@ -13,21 +13,47 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:352
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:371
 msgid " · additional records are available"
 msgstr " · sunt disponibile și alte înregistrări"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:354
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:373
 msgid " · complete"
 msgstr " · listă completă"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:133
+#. placeholder {0}: formatSourceDate(node.effectiveDate)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2700
+msgid " · effective {0}"
+msgstr " · în vigoare din {0}"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:134
 msgid "\"Project count\" is the distinct number of id_angajament. The main file has more records than projects, because the same project can have multiple rows on measures, components or funding sources. Project tables group these rows, and charts that distribute values sum the official rows."
 msgstr "\"Număr proiecte\" este numărul distinct de id_angajament. Fișierul principal are mai multe înregistrări decât proiecte, deoarece același proiect poate avea mai multe rânduri pe măsuri, componente sau surse de finanțare. Tabelele de proiecte grupează aceste rânduri, iar graficele care distribuie valori însumează rândurile oficiale."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1099
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1149
 msgid "“Snapshot from” must not be after “Snapshot to”."
 msgstr "„Instantaneu de la” nu poate fi după „Instantaneu până la”."
+
+#. placeholder {0}: formatExactMoney(place.paymentNetRon, "RON")
+#. placeholder {1}: formatInteger(place.paymentCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2464
+msgid "{0} · {1} rows"
+msgstr "{0} · {1} înregistrări"
+
+#. placeholder {0}: formatExactMoney(place.additiveCommitmentRon, "RON")
+#. placeholder {1}: formatInteger(place.additiveCommitmentCount)
+#. placeholder {2}: formatInteger(place.commitmentCount)
+#. placeholder {3}: formatInteger(place.unresolvedCommitmentCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2468
+msgid "{0} · {1}/{2} additive · {3} unresolved"
+msgstr "{0} · {1}/{2} pot fi însumate · {3} neclarificate"
+
+#. placeholder {0}: verification.data.ruleSetVersion
+#. placeholder {1}: answerStateLabel(verification.data.meta.state)
+#. placeholder {2}: answerStateLabel(verification.data.meta.release.state)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3011
+msgid "{0} · answer: {1} · release: {2}"
+msgstr "{0} · răspuns: {1} · versiune: {2}"
 
 #. placeholder {0}: formatPnrrCurrency(amount, currency)
 #: src/features/pnrr/components/PnrrMapView.tsx:780
@@ -40,10 +66,15 @@ msgstr "{0} / locuitor"
 msgid "{0} listed EU funding in {1} records"
 msgstr "{0} finanțare UE listată în {1} înregistrări"
 
+#. placeholder {0}: formatInteger(place.data.paymentCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2380
+msgid "{0} payment rows"
+msgstr "{0} înregistrări de plată"
+
 #. placeholder {0}: formatNumber(amount, 'compact')
-#. placeholder {0}: page.totalCount.toLocaleString('ro-RO')
+#. placeholder {0}: formatNumber(page.totalCount)
 #: src/features/pnrr/components/PnrrMapView.tsx:778
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:531
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:532
 msgid "{0} projects"
 msgstr "{0} proiecte"
 
@@ -63,15 +94,55 @@ msgstr "{0} proiecte fără progres financiar publicat"
 msgid "{0} records in the official dataset"
 msgstr "{0} înregistrări în setul oficial"
 
+#. placeholder {0}: formatInteger(overview.data.delivery.completedCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:581
+msgid "{0} reported at or above completion"
+msgstr "{0} raportate la cel puțin 100%"
+
+#. placeholder {0}: formatInteger(place.paymentCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2529
+msgid "{0} reported-county rows"
+msgstr "{0} înregistrări cu județul raportat"
+
+#. placeholder {0}: formatInteger(place.sourceLocalityLabelCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2476
+msgid "{0} rows · count only"
+msgstr "{0} înregistrări · doar număr de cazuri"
+
 #. placeholder {0}: history.data.length
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1635
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1685
 msgid "{0} source updates available"
 msgstr "{0} actualizări disponibile în sursă"
 
+#. placeholder {0}: formatInteger(overview.data.beneficiaryPayments.count)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:568
+msgid "{0} source-native payment rows"
+msgstr "{0} înregistrări de plată din sursă"
+
 #. placeholder {0}: history.data.length
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1794
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1844
 msgid "{0} updates reported by MIPE"
 msgstr "{0} actualizări raportate de MIPE"
+
+#. placeholder {0}: formatInteger(place.data.additiveCommitmentCount)
+#. placeholder {1}: formatInteger(place.data.commitmentCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2388
+msgid "{0}/{1} additive"
+msgstr "{0}/{1} pot fi însumate"
+
+#. placeholder {0}: formatInteger(place.additiveCommitmentCount)
+#. placeholder {1}: formatInteger(place.commitmentCount)
+#. placeholder {2}: formatInteger(place.unresolvedCommitmentCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2540
+msgid "{0}/{1} additive · {2} unresolved"
+msgstr "{0}/{1} pot fi însumate · {2} neclarificate"
+
+#. placeholder {0}: formatInteger(overview.data.commitments.additiveCount)
+#. placeholder {1}: formatInteger(overview.data.commitments.count)
+#. placeholder {2}: formatInteger(overview.data.commitments.unresolvedCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:576
+msgid "{0}/{1} envelopes additive; {2} unresolved"
+msgstr "{0}/{1} angajamente pot fi însumate, {2} sunt neclarificate"
 
 #. placeholder {0}: formatNumber(amount, 'compact')
 #: src/features/pnrr/components/PnrrMapView.tsx:782
@@ -89,7 +160,7 @@ msgid "{0}% of projects do not have published financial progress in the dataset,
 msgstr "{0}% dintre proiecte nu au progres financiar publicat în set, ceea ce poate ascunde semnale bazate pe comparația dintre progresul tehnic și cel financiar."
 
 #. placeholder {0}: aggregates.missingFinProgressPercent.toFixed(0)
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:175
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:176
 msgid "{0}% of projects do not have published financial progress in the dataset. Signals based on financial progress may be underestimated."
 msgstr "{0}% dintre proiecte nu au progres financiar publicat în set. Semnalele bazate pe progres financiar pot fi subestimate."
 
@@ -98,11 +169,16 @@ msgstr "{0}% dintre proiecte nu au progres financiar publicat în set. Semnalele
 msgid "{0}% technically implemented"
 msgstr "{0}% implementat tehnic"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:348
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:352
 msgid "{activeCount} active filters"
 msgstr "{activeCount} filtre active"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:350
+#. placeholder {0}: verification.data.ruleSetVersion
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3031
+msgid "{explanation} · {0} · review state unavailable"
+msgstr "{explanation} · {0} · stadiul verificării este indisponibil"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:369
 msgid "{shownCount} loaded records"
 msgstr "{shownCount} înregistrări încărcate"
 
@@ -110,27 +186,35 @@ msgstr "{shownCount} înregistrări încărcate"
 msgid "100% technical, but under 80% financial"
 msgstr "100% tehnic, dar sub 80% financiar"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2178
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2598
+msgid "A release identifies a validated serving projection. Each source lane reports its own freshness and suspension state; suspended or legacy-unversioned lanes are never presented as fully served."
+msgstr "O versiune publicată identifică un set de date validat. Pentru fiecare sursă sunt afișate ultima actualizare și starea actualizărilor. Sursele suspendate sau fără versiune au acoperire parțială."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2974
+msgid "A source-reported physical or financial ratio is greater than 1; the value is retained, not silently clamped."
+msgstr "Progresul fizic sau financiar raportat depășește 100%. Valoarea este păstrată așa cum apare în sursă."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2228
 msgid "Active"
 msgstr "Activă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:326
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:345
 msgid "Additional records could not be loaded. The records already shown remain valid; use “Load more” to retry."
 msgstr "Înregistrările suplimentare nu au putut fi încărcate. Înregistrările deja afișate rămân valide; folosește „Încarcă mai multe” pentru a reîncerca."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:345
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:349
 msgid "Advanced filters"
 msgstr "Filtre avansate"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1949
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1999
 msgid "Aggregation state"
 msgstr "Starea agregării"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:974
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1024
 msgid "All components"
 msgstr "Toate componentele"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:997
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1047
 msgid "All counties"
 msgstr "Toate județele"
 
@@ -138,7 +222,7 @@ msgstr "Toate județele"
 msgid "All local and central public institutions"
 msgstr "Toate instituțiile publice locale și centrale"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:983
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1033
 msgid "All measures"
 msgstr "Toate măsurile"
 
@@ -146,27 +230,35 @@ msgstr "Toate măsurile"
 msgid "All projects"
 msgstr "Toate proiectele"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:990
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:752
+msgid "All registries"
+msgstr "Toate registrele"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:728
+msgid "All roles"
+msgstr "Toate rolurile"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1040
 msgid "All statuses"
 msgstr "Toate stările"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1489
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1539
 msgid "Allocated"
 msgstr "Alocat"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:705
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:709
 msgid "Also published as:"
 msgstr "Publicat și ca:"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1484
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1534
 msgid "Amount received"
 msgstr "Sumă primită"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:144
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:145
 msgid "Amounts received and payments"
 msgstr "Sume primite și plăți"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2287
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2337
 msgid "ANAF registry"
 msgstr "Registrul ANAF"
 
@@ -179,114 +271,148 @@ msgstr "și Reziliență"
 msgid "Anomalii de date"
 msgstr "Anomalii de date"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:734
+msgid "Applicant"
+msgstr "Solicitant"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:785
+msgid "Apply"
+msgstr "Aplică"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2618
+msgid "As of"
+msgstr "Data de referință"
+
 #: src/features/pnrr/lib/filter-constants.ts:21
 msgid "Avansate (70-99%)"
 msgstr "Avansate (70-99%)"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:750
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:754
 msgid "Average reported financial progress"
 msgstr "Media progresului financiar raportat"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:193
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:746
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:196
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:750
 msgid "Average reported technical progress"
 msgstr "Media progresului tehnic raportat"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2044
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2094
 msgid "Back to PNRR beneficiaries"
 msgstr "Înapoi la beneficiarii PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1535
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1585
 msgid "Back to PNRR projects"
 msgstr "Înapoi la proiectele PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:192
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:211
 msgid "Back to the PNRR dashboard"
 msgstr "Înapoi la tabloul de bord PNRR"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:311
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:314
 msgid "beneficiaries"
 msgstr "beneficiari"
 
 #: src/features/pnrr/components/PnrrTabNav.tsx:20
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:307
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:310
 msgid "Beneficiaries"
 msgstr "Beneficiari"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:686
+msgid "Beneficiaries, applicants, and procurement participants on the public organization identity spine."
+msgstr "Beneficiari, solicitanți și participanți la achiziții identificați în registrul public al organizațiilor."
+
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:66
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1658
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2277
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:731
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1708
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2327
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:149
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:458
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:383
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:673
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:459
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:387
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:677
 msgid "Beneficiary"
 msgstr "Beneficiar"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1122
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1172
 msgid "Beneficiary and place"
 msgstr "Beneficiar și localizare"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:298
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:299
 msgid "Beneficiary classification"
 msgstr "Clasificarea beneficiarilor"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:78
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:471
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1011
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:476
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1061
 msgid "Beneficiary CUI"
 msgstr "CUI beneficiar"
 
 #. placeholder {0}: search.beneficiaryCui
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:857
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:907
 msgid "Beneficiary CUI: {0}"
 msgstr "CUI beneficiar: {0}"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:507
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:512
 msgid "Beneficiary name..."
 msgstr "Nume beneficiar..."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1255
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1305
 msgid "Beneficiary not reported"
 msgstr "Beneficiar neraportat"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:502
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:325
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:563
+msgid "Beneficiary payment net"
+msgstr "Plăți nete către beneficiari"
+
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:507
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:328
 msgid "Beneficiary search"
 msgstr "Căutare beneficiar"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:221
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:531
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1662
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:537
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1712
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:190
 msgid "Beneficiary type"
 msgstr "Tip beneficiar"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2171
+#. placeholder {0}: formatExactMoney(node.budgetRon, "RON")
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2755
+msgid "Budget {0}"
+msgstr "Buget {0}"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2221
 msgid "CAEN code"
 msgstr "Cod CAEN"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1939
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1989
 msgid "Candidate commitment"
 msgstr "Angajament posibil asociat"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:155
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:159
 msgid "Candidate link — not confirmed"
 msgstr "Legătură posibilă — neconfirmată"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1943
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1993
 msgid "Candidate relationship"
 msgstr "Relație posibilă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2439
+msgid "Canonical counties provide the index. Each measure keeps its original geography role instead of implying that all facts describe the same location."
+msgstr "Datele sunt grupate după nomenclatorul oficial al județelor. Fiecare indicator păstrează semnificația geografică din sursă."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:475
+msgid "Capability details are unavailable. The global abstention still prevents fact queries."
+msgstr "Detaliile despre surse sunt indisponibile. Interogarea datelor este suspendată."
 
 #: src/features/pnrr/lib/filter-constants.ts:81
 msgid "Central agencies"
 msgstr "Agenții centrale"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:355
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:359
 msgid "Change the search or active filters and try again."
 msgstr "Modifică termenul de căutare sau filtrele active și încearcă din nou."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:956
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1006
 msgid "Change the selected view"
 msgstr "Schimbă vizualizarea selectată"
 
@@ -322,39 +448,39 @@ msgstr "Verifică sursa oficială a proiectului, cererile de transfer și alte d
 msgid "Check the updated project value, additional acts, and recent reports before drawing conclusions about payments."
 msgstr "Verifică valoarea actualizată a proiectului, actele adiționale și rapoartele recente înainte de a trage concluzii despre plăți."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:539
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:545
 msgid "Choose beneficiary type..."
 msgstr "Alege tip beneficiar..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:556
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:562
 msgid "Choose components..."
 msgstr "Alege componente..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:430
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:434
 msgid "Choose counties..."
 msgstr "Alege județe..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:669
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:675
 msgid "Choose data anomalies..."
 msgstr "Alege anomalii de date..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:584
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:590
 msgid "Choose institutions..."
 msgstr "Alege instituții..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:570
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:576
 msgid "Choose measures..."
 msgstr "Alege măsuri..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:655
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:661
 msgid "Choose risk type..."
 msgstr "Alege tip risc..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:639
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:645
 msgid "Choose status..."
 msgstr "Alege stadiu..."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:417
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:421
 msgid "Choose UAT..."
 msgstr "Alege UAT..."
 
@@ -362,27 +488,39 @@ msgstr "Alege UAT..."
 msgid "City halls, municipalities, towns, and communes"
 msgstr "Primării, municipii, orașe și comune"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2869
+msgid "CKAN datastore active"
+msgstr "Date disponibile prin CKAN DataStore"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2843
+msgid "CKAN resources are discovery and provenance evidence until a workbook family is explicitly conformed into facts."
+msgstr "Resursele CKAN ajută la găsirea și verificarea surselor până când fișierele tabelare sunt prelucrate și validate."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:792
+msgid "Clear"
+msgstr "Șterge"
+
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:329
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:372
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:746
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:939
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:752
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:989
 msgid "Clear all"
 msgstr "Șterge toate"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:403
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:404
 msgid "Clear all filters"
 msgstr "Șterge toate filtrele"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1082
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1132
 msgid "Clear filters"
 msgstr "Șterge filtrele"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:460
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:491
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:521
-#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:71
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:204
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:342
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:465
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:496
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:527
+#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:73
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:205
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:346
 msgid "Clear search"
 msgstr "Șterge căutarea"
 
@@ -390,15 +528,15 @@ msgstr "Șterge căutarea"
 msgid "Click a beneficiary to filter exactly by CUI."
 msgstr "Apasă pe un beneficiar pentru filtrare exactă după CUI."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:593
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:594
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:375
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:324
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:465
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:828
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:832
 msgid "Close"
 msgstr "Închide"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:438
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:439
 msgid "Close details"
 msgstr "Închide detaliile"
 
@@ -406,7 +544,7 @@ msgstr "Închide detaliile"
 msgid "Color scale clipped to the 5th–95th percentile"
 msgstr "Scara de culori este limitată la percentilele 5–95"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1935
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1985
 msgid "Commitment business ID"
 msgstr "Identificator angajament"
 
@@ -415,8 +553,13 @@ msgstr "Identificator angajament"
 msgid "Commitment date"
 msgstr "Data angajamentului"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:465
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:422
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:571
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2498
+msgid "Commitment envelopes"
+msgstr "Angajamente"
+
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:466
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:426
 msgid "Comp."
 msgstr "Comp."
 
@@ -428,7 +571,8 @@ msgstr "Companii"
 msgid "Companies, NGOs, religious organizations, and other non-public beneficiaries"
 msgstr "Companii, ONG-uri, organizații religioase și alți beneficiari non-publici"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2285
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:758
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2335
 msgid "Company registry"
 msgstr "Registrul companiilor"
 
@@ -441,14 +585,14 @@ msgid "Compare variants and identify the current row before calculations about t
 msgstr "Compară variantele și identifică rândul curent înainte de calcule despre totaluri, progres sau beneficiar."
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:111
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:973
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1676
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1023
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1726
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:288
 msgid "Component"
 msgstr "Componentă"
 
 #. placeholder {0}: search.componentCode
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:847
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:897
 msgid "Component: {0}"
 msgstr "Componentă: {0}"
 
@@ -456,35 +600,35 @@ msgstr "Componentă: {0}"
 msgid "Components"
 msgstr "Componente"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1240
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1315
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1582
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2128
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1290
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1365
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1632
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2178
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:344
 msgid "Contract"
 msgstr "Contract"
 
 #. placeholder {0}: project.contractNumber
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:109
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:113
 msgid "Contract {0}"
 msgstr "Contractul {0}"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1022
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1072
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:170
 msgid "Contract number"
 msgstr "Număr contract"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1697
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1747
 msgid "Contract or commitment"
 msgstr "Contract sau angajament"
 
 #. placeholder {0}: search.contractNumber
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:858
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:908
 msgid "Contract: {0}"
 msgstr "Contract: {0}"
 
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:160
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:684
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:688
 msgid "Copy CUI"
 msgstr "Copiază CUI"
 
@@ -492,28 +636,53 @@ msgstr "Copiază CUI"
 msgid "Could not load PNRR data"
 msgstr "Nu am putut încărca datele PNRR"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:424
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2554
+msgid "count only"
+msgstr "doar număr de cazuri"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2398
+msgid "Count only; the source label is not treated as a resolved UAT"
+msgstr "Se afișează numărul de cazuri. Denumirea din sursă nu identifică o UAT confirmată."
+
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:428
 msgid "Counties"
 msgstr "Județe"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:123
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:277
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:996
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:278
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1046
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2492
 #: src/features/pnrr/components/PnrrCountyDetailsPanel.tsx:42
 #: src/features/pnrr/components/PnrrMapView.tsx:720
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:351
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:472
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:473
 msgid "County"
 msgstr "Județ"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2373
+msgid "County {countySiruta}"
+msgstr "Județul {countySiruta}"
 
 #: src/features/pnrr/lib/filter-constants.ts:79
 msgid "County councils"
 msgstr "Consilii județene"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2358
+msgid "County not found in the canonical territory directory."
+msgstr "Județul nu a fost găsit în nomenclatorul teritorial."
+
 #. placeholder {0}: facets.data?.counties.find( (facet) => facet.value === search.countySiruta, )?.label ?? search.countySiruta
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:851
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:901
 msgid "County: {0}"
 msgstr "Județ: {0}"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3060
+msgid "Coverage"
+msgstr "Acoperire"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3054
+msgid "Covered"
+msgstr "Cu date disponibile"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:172
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:199
@@ -521,7 +690,7 @@ msgstr "Județ: {0}"
 msgid "CRI"
 msgstr "CRI"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:289
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:290
 msgid "CRI is the institution that coordinates implementation and reporting. The project beneficiary may be a different institution or entity."
 msgstr "CRI este instituția care coordonează implementarea și raportarea. Beneficiarul proiectului poate fi o altă instituție sau entitate."
 
@@ -537,28 +706,32 @@ msgstr "CUI"
 msgid "Culture"
 msgstr "Cultură"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:356
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:360
 msgid "Currency"
 msgstr "Monedă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2697
+msgid "Current adopted revision"
+msgstr "Versiunea adoptată în vigoare"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:194
 msgid "Data"
 msgstr "Data"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:663
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:669
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:167
 msgid "Data anomalies"
 msgstr "Anomalii de date"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:177
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:168
 msgid "Data available"
 msgstr "Date disponibile"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:456
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:457
 msgid "Data comes from the Ministry of Investments and European Projects (MIPE), through the official PNRR portal. The application serves file set {PNRR_FILESET_ID}; this is a publication identifier, not a source observation date or a freshness guarantee."
 msgstr "Datele provin de la Ministerul Investițiilor și Proiectelor Europene (MIPE), prin portalul oficial PNRR. Aplicația servește setul de fișiere {PNRR_FILESET_ID}; acesta este un identificator de publicare, nu data observării la sursă și nici o garanție de actualitate."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:239
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:240
 msgid "Data dimensions"
 msgstr "Dimensiuni ale datelor"
 
@@ -566,7 +739,7 @@ msgstr "Dimensiuni ale datelor"
 msgid "Data information"
 msgstr "Informații despre date"
 
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:132
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:133
 msgid "data quality issues"
 msgstr "probleme de calitate a datelor"
 
@@ -574,22 +747,30 @@ msgstr "probleme de calitate a datelor"
 msgid "Data quality issues mark rows that can distort analysis: possible duplicates or projects without published financial progress."
 msgstr "Problemele de calitate a datelor marchează rânduri care pot distorsiona analiza: posibile duplicate sau proiecte fără progres financiar publicat."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:86
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:87
 msgid "Data quality signal"
 msgstr "Semnal de calitate a datelor"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:453
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:454
 #: src/features/pnrr/components/PnrrDashboard.tsx:372
 msgid "Data source"
 msgstr "Sursa datelor"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:179
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:170
 msgid "Data unavailable"
 msgstr "Date indisponibile"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:380
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:399
 msgid "Data unavailable for this release"
 msgstr "Date indisponibile pentru această publicare"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:544
+msgid "date unavailable"
+msgstr "dată indisponibilă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:579
+msgid "Delivery observations"
+msgstr "Înregistrări privind progresul"
 
 #: src/features/pnrr/components/PnrrAnomalyRibbon.tsx:247
 msgid "Details about {label}"
@@ -599,7 +780,15 @@ msgstr "Detalii despre {label}"
 msgid "Detection rule"
 msgstr "Regulă de detecție"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:100
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2959
+msgid "Deterministic candidate groups still require a stratified review before payment totals are promoted."
+msgstr "Grupurile semnalate trebuie verificate pe un eșantion stratificat înainte de publicarea totalurilor plăților."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:588
+msgid "Deterministic verification signal, not a finding"
+msgstr "Semnal generat automat pentru verificare"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:101
 msgid "Dictionary for big figures"
 msgstr "Dicționar pentru cifrele mari"
 
@@ -607,15 +796,15 @@ msgstr "Dicționar pentru cifrele mari"
 msgid "Difference"
 msgstr "Diferență"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:381
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:385
 msgid "Display estimated values in EUR"
 msgstr "Afișează valori estimate în EUR"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:388
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:392
 msgid "Display estimated values in USD"
 msgstr "Afișează valori estimate în USD"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:374
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:378
 msgid "Display values in RON"
 msgstr "Afișează valorile în RON"
 
@@ -623,21 +812,53 @@ msgstr "Afișează valorile în RON"
 msgid "Distribution"
 msgstr "Distribuție"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:752
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2914
+msgid "document"
+msgstr "document"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2886
+msgid "Document references"
+msgstr "Referințe la documente"
+
+#. placeholder {0}: formatInteger(node.documentCount)
+#. placeholder {1}: formatInteger(node.textReadyDocumentCount)
+#. placeholder {2}: formatInteger(node.ocrRequiredDocumentCount)
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2708
+msgid "Documents: {0} · text available: {1} · need OCR: {2}"
+msgstr "Documente: {0} · text disponibil: {1} · necesită OCR: {2}"
+
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:758
 msgid "Done"
 msgstr "Gata"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:531
+msgid "Each card keeps its source grain and currency. The explorer never adds allocation, receipts, payments, commitments, or procurement."
+msgstr "Fiecare indicator păstrează unitatea de raportare și moneda din sursă. Alocările, încasările, plățile, angajamentele și achizițiile sunt afișate separat."
 
 #: src/features/pnrr/lib/filter-constants.ts:83
 msgid "Education"
 msgstr "Educație"
 
+#. placeholder {0}: formatExactMoney(node.totalEligibleValueRon, "RON")
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2760
+msgid "Eligible envelope: {0}"
+msgstr "Valoare eligibilă {0}"
+
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:341
 msgid "Emblematic Projects"
 msgstr "Proiecte Emblematice"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2623
+msgid "Enabled"
+msgstr "Activat"
+
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:362
 msgid "End date"
 msgstr "Data finalizării"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2967
+msgid "End date before start date"
+msgstr "Data de finalizare precedă data de început"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:209
 msgid "Entity"
@@ -647,7 +868,7 @@ msgstr "Entitate"
 msgid "Error loading data"
 msgstr "Eroare la încărcarea datelor"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:119
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:120
 msgid "Este suma câmpului valoare_fe din fișierul principal progres_tehnic_proiecte. Această sumă poate fi mai mică decât alocarea totală deoarece reprezintă valorile publicate pe rândurile de proiect, nu întregul buget al planului. Graficele, filtrele și topurile pe proiecte folosesc această valoare de rând."
 msgstr "Este suma câmpului valoare_fe din fișierul principal progres_tehnic_proiecte. Această sumă poate fi mai mică decât alocarea totală deoarece reprezintă valorile publicate pe rândurile de proiect, nu întregul buget al planului. Graficele, filtrele și topurile pe proiecte folosesc această valoare de rând."
 
@@ -655,12 +876,12 @@ msgstr "Este suma câmpului valoare_fe din fișierul principal progres_tehnic_pr
 msgid "Estimated currency conversion"
 msgstr "Conversie valutară estimată"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1464
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1514
 msgid "EU contribution"
 msgstr "Contribuție UE"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:479
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:443
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:480
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:447
 msgid "EU funding"
 msgstr "Finanțare UE"
 
@@ -668,11 +889,15 @@ msgstr "Finanțare UE"
 msgid "EU funds (RON)"
 msgstr "Fonduri UE (RON)"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:477
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:547
+msgid "EU receipts"
+msgstr "Sume primite de la UE"
+
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:482
 msgid "Exact CUI..."
 msgstr "CUI exact..."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1007
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1057
 msgid "Exact identifiers and snapshot dates"
 msgstr "Identificatori exacți și datele instantaneelor"
 
@@ -688,7 +913,7 @@ msgstr "Selecție de explorare: finanțare UE listată >= 10.000.000 RON și pro
 msgid "Exploration preset: listed EU funding >= 10,000,000 RON and reported technical progress under 30%, including the published \"under 30%\" category"
 msgstr "Selecție de explorare: finanțare UE listată >= 10.000.000 RON și progres tehnic raportat sub 30%, inclusiv categoria publicată „sub 30%”"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:386
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:387
 msgid "Exploration preset: listed EU funding over 10 mil. RON and reported technical progress under 30%."
 msgstr "Selecție de explorare: finanțare UE listată peste 10 mil. RON și progres tehnic raportat sub 30%."
 
@@ -708,7 +933,7 @@ msgstr "Selecție de explorare: progres tehnic raportat = 100%, finanțare UE li
 msgid "Explore loan-funded non-public beneficiaries"
 msgstr "Explorează beneficiarii nepublici finanțați prin împrumut"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1874
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1924
 msgid "Explore the beneficiary’s PNRR portfolio"
 msgstr "Explorează portofoliul PNRR al beneficiarului"
 
@@ -716,33 +941,57 @@ msgstr "Explorează portofoliul PNRR al beneficiarului"
 msgid "Explore the projects published in this MIPE snapshot, where EU funding is assigned, and automated signals that may merit verification. Signals are not findings of wrongdoing."
 msgstr "Explorează proiectele publicate în acest instantaneu MIPE, distribuirea finanțării UE și semnalele automate care pot necesita verificare. Semnalele nu reprezintă constatări de nereguli."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:894
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:944
 msgid "Explore the projects reported by MIPE, then open a profile for progress, dates, beneficiary, location, and source evidence."
 msgstr "Explorează proiectele raportate de MIPE, apoi deschide un profil pentru progres, date, beneficiar, localizare și dovezi din sursă."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2406
+msgid "Explore this county’s project observations"
+msgstr "Vezi datele raportate pentru proiectele din acest județ"
 
 #: src/features/pnrr/components/PnrrMapView.tsx:651
 #: src/features/pnrr/components/table/PnrrExportButton.tsx:37
 msgid "Export CSV"
 msgstr "Exportă CSV"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:919
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3022
+msgid "Export signals"
+msgstr "Exportă semnalele"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:969
 msgid "Export this page"
 msgstr "Exportă această pagină"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:777
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:782
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3051
+msgid "Field"
+msgstr "Câmp"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3038
+msgid "Field coverage"
+msgstr "Acoperirea câmpurilor"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3043
+msgid "Field-level coverage for the current PNRR verification answer"
+msgstr "Acoperirea fiecărui câmp în rezultatul curent al verificării PNRR"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2870
+msgid "file resource"
+msgstr "resursă disponibilă ca fișier"
+
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:783
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:788
 msgid "Filter data"
 msgstr "Filtrează datele"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:776
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:782
 msgid "Filter data, {activeCount} active filters"
 msgstr "Filtrează datele, {activeCount} filtre active"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:947
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:997
 msgid "Filters"
 msgstr "Filtre"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:736
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:742
 msgid "Filters apply immediately and are saved in the page URL."
 msgstr "Filtrele se aplică imediat și sunt salvate în adresa paginii."
 
@@ -751,18 +1000,18 @@ msgid "Filters are automatically calculated from reported data. They help with p
 msgstr "Filtrele sunt calculate automat din date raportate. Ajută la prioritizare; nu sunt concluzii oficiale."
 
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:37
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1285
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1365
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1835
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1335
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1415
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1885
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:399
 msgid "Financial"
 msgstr "Financiar"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1733
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1783
 msgid "Financial breakdown reported by the source"
 msgstr "Defalcarea financiară raportată de sursă"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:417
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:418
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:233
 msgid "Financial data not published in dataset"
 msgstr "Date financiare nepublicate în set"
@@ -771,11 +1020,11 @@ msgstr "Date financiare nepublicate în set"
 msgid "Financial percentage above usual threshold"
 msgstr "Procent financiar peste pragul obișnuit"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:366
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:367
 msgid "Financial percentage above usual threshold; may be error, regularization, or change in reference value."
 msgstr "Procent financiar peste pragul obișnuit; poate fi eroare, regularizare sau schimbare a valorii de referință."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1640
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1690
 msgid "Financial progress"
 msgstr "Progres financiar"
 
@@ -783,12 +1032,12 @@ msgstr "Progres financiar"
 msgid "Financial progress well above technical progress"
 msgstr "Progres financiar mult peste progresul tehnic"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:494
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:722
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:495
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:723
 msgid "Financial reported"
 msgstr "Financiar raportat"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:374
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:375
 #: src/features/pnrr/components/PnrrQuickInvestigation.tsx:29
 #: src/features/pnrr/lib/anomaly-definitions.ts:79
 msgid "Financial-technical gap"
@@ -798,20 +1047,21 @@ msgstr "Decalaj financiar-tehnic"
 msgid "Financiar raportat"
 msgstr "Financiar raportat"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1670
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1720
 msgid "Financing source"
 msgstr "Sursa finanțării"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2201
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2251
 msgid "First observed source"
 msgstr "Prima sursă observată"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1162
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:802
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1212
 msgid "First page"
 msgstr "Prima pagină"
 
 #. placeholder {0}: formatSourceDate(search.from)
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:859
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:909
 msgid "From: {0}"
 msgstr "De la: {0}"
 
@@ -821,17 +1071,25 @@ msgstr "De la: {0}"
 msgid "Funding"
 msgstr "Finanțare"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2278
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2328
 msgid "Funding applicant"
 msgstr "Solicitantul finanțării"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2776
+msgid "Funding application listings"
+msgstr "Liste de cereri de finanțare"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2729
+msgid "Funding calls"
+msgstr "Apeluri de finanțare"
 
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:226
 msgid "Funding from the loan component"
 msgstr "Finanțare din componenta de împrumut"
 
 #: src/features/pnrr/components/charts/PnrrFundingBar.tsx:69
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:595
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:329
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:601
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:330
 msgid "Funding source"
 msgstr "Sursă de finanțare"
 
@@ -839,13 +1097,13 @@ msgstr "Sursă de finanțare"
 msgid "Geographic distribution"
 msgstr "Distribuție geografică"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:600
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:601
 msgid "Go to project page {item}"
 msgstr "Mergi la pagina de proiecte {item}"
 
 #: src/features/pnrr/components/charts/PnrrFundingBar.tsx:42
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:611
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:136
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:617
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:140
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:593
 #: src/features/pnrr/lib/filter-constants.ts:51
 msgid "Grant"
@@ -865,26 +1123,26 @@ msgid "Grant %"
 msgstr "Grant %"
 
 #: src/features/pnrr/components/charts/PnrrFundingBar.tsx:54
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:623
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:629
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:595
 #: src/features/pnrr/lib/filter-constants.ts:53
 msgid "Grant + loan"
 msgstr "Grant + împrumut"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:137
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:141
 msgid "Grant and loan"
 msgstr "Grant și împrumut"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:331
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:332
 msgid "Grant, loan, or grant + loan. Project-row values in the MIPE source are published in RON. Other displayed currencies are client-side presentation conversions."
 msgstr "Grant, împrumut sau grant + împrumut. Valorile pe rând de proiect din sursa MIPE sunt publicate în RON. Celelalte monede afișate sunt conversii de prezentare realizate în client."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:189
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:190
 msgid "Grants and loans"
 msgstr "Granturi și împrumuturi"
 
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:109
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:157
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:158
 msgid "Guide"
 msgstr "Ghid"
 
@@ -892,7 +1150,7 @@ msgstr "Ghid"
 msgid "Health"
 msgstr "Sănătate"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:34
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:35
 msgid "How to read PNRR figures"
 msgstr "Cum citim cifrele PNRR"
 
@@ -904,11 +1162,11 @@ msgstr "Cum interpretăm filtrele"
 msgid "Identical title, CUI, component, and measure, but different value, progress, locality, funding, beneficiary, or CRI"
 msgstr "Titlu, CUI, componentă și măsură identice, dar valoare, progres, localitate, finanțare, beneficiar sau CRI diferite"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1900
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1950
 msgid "Identifiers and provenance"
 msgstr "Identificatori și proveniență"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:215
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:216
 msgid "If a project does not have published financial progress in the dataset, it does not automatically mean nothing was paid. And when we see very similar rows, we mark them as possible duplicates to make them easier to verify."
 msgstr "Dacă un proiect nu are progres financiar publicat în set, nu înseamnă automat că nu s-a plătit nimic. Iar când vedem rânduri foarte asemănătoare, le marcăm ca posibile duplicate ca să fie mai ușor de verificat."
 
@@ -916,17 +1174,22 @@ msgstr "Dacă un proiect nu are progres financiar publicat în set, nu înseamn�
 msgid "If you select multiple filters, the table shows projects that match at least one of them. Values are calculated in the context of active filters."
 msgstr "Dacă selectezi mai multe filtre, tabelul arată proiectele care se potrivesc cu cel puțin unul dintre ele. Valorile sunt calculate în contextul filtrelor active."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1687
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1737
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:196
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:369
 msgid "Impact"
 msgstr "Impact"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2383
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2467
+msgid "Implementation commitments"
+msgstr "Angajamente de implementare"
+
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:179
 msgid "Implementation period"
 msgstr "Perioada de implementare"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:631
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:637
 msgid "Implementation status"
 msgstr "Stadiu implementare"
 
@@ -938,8 +1201,8 @@ msgstr "Implementat %"
 #: src/features/pnrr/components/PnrrEmblematicProjects.tsx:26
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:493
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:452
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:110
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:870
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:111
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:874
 #: src/features/pnrr/lib/filter-constants.ts:24
 msgid "In implementation (percentage not published)"
 msgstr "În implementare (procent nepublicat)"
@@ -948,23 +1211,23 @@ msgstr "În implementare (procent nepublicat)"
 msgid "In progress (30-70%)"
 msgstr "În progres (30-70%)"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:42
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:43
 msgid "In short"
 msgstr "Pe scurt"
 
-#: src/features/pnrr/components/PnrrProjectsPreview.tsx:42
+#: src/features/pnrr/components/PnrrProjectsPreview.tsx:43
 msgid "in total"
 msgstr "în total"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2179
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2229
 msgid "Inactive"
 msgstr "Inactivă"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:721
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:727
 msgid "Include national projects"
 msgstr "Include proiecte naționale"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1479
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1529
 msgid "Ineligible value"
 msgstr "Valoare neeligibilă"
 
@@ -972,7 +1235,7 @@ msgstr "Valoare neeligibilă"
 msgid "Ineligible value (RON)"
 msgstr "Valoare neeligibilă (RON)"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:31
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:32
 msgid "Info"
 msgstr "Info"
 
@@ -988,11 +1251,11 @@ msgstr "Informații despre procentele peste 100%"
 msgid "Investment"
 msgstr "Investiție"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:107
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:108
 msgid "It is the official aggregated value from the indicatori_total file, the alocat_eur field. We display it as the main value for parity with the official table. Its source unit is EUR and it is shown only in EUR."
 msgstr "Este valoarea oficială agregată din fișierul indicatori_total, câmpul alocat_eur. O afișăm ca valoare principală pentru paritate cu tabelul oficial. Unitatea sursă este EUR și este afișată doar în EUR."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:384
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:385
 #: src/features/pnrr/lib/anomaly-definitions.ts:89
 msgid "Large value and low progress"
 msgstr "Valoare mare și progres scăzut"
@@ -1005,11 +1268,11 @@ msgstr "Valoare mare fără progres financiar publicat"
 msgid "Large value, low progress"
 msgstr "Valoare mare, progres scăzut"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1714
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1764
 msgid "Last funding date"
 msgstr "Ultima dată a finanțării"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1705
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1755
 msgid "Latest MIPE update"
 msgstr "Ultima actualizare MIPE"
 
@@ -1017,7 +1280,11 @@ msgstr "Ultima actualizare MIPE"
 msgid "Legacy source value (EUR)"
 msgstr "Valoare din sursa anterioară (EUR)"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:117
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2665
+msgid "Legal revisions remain distinct. A proposal is not treated as the adopted plan merely because it is available. The last proven adopted revision and any newer pending Council amendment are shown separately."
+msgstr "Versiunile juridice sunt afișate separat. Lista distinge ultima versiune confirmată ca adoptată de eventualele modificări ulterioare aflate în așteptare la Consiliu."
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:118
 msgid "Listed / contracted value"
 msgstr "Valoare listată / contractată"
 
@@ -1029,8 +1296,8 @@ msgstr "finanțare UE listată"
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:317
 #: src/features/pnrr/components/PnrrMapView.tsx:52
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:116
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:185
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:726
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:188
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:730
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:203
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:313
 msgid "Listed EU funding"
@@ -1040,7 +1307,7 @@ msgstr "Finanțare UE listată"
 msgid "Listed project value"
 msgstr "Valoarea proiectelor listate"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:364
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:383
 msgid "Load more"
 msgstr "Încarcă mai multe"
 
@@ -1053,15 +1320,15 @@ msgstr "Încarcă mai multe"
 msgid "Loading map..."
 msgstr "Se încarcă harta..."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:265
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:284
 msgid "Loading PNRR data…"
 msgstr "Se încarcă datele PNRR…"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:696
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:700
 msgid "Loading the complete beneficiary workspace…"
 msgstr "Se încarcă spațiul complet al beneficiarului…"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:417
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:418
 msgid "Loading the complete MIPE project record…"
 msgstr "Se încarcă înregistrarea completă a proiectului MIPE…"
 
@@ -1069,17 +1336,17 @@ msgstr "Se încarcă înregistrarea completă a proiectului MIPE…"
 msgid "Loading the full PNRR dataset for maps, charts, and project lists."
 msgstr "Se încarcă setul complet de date PNRR pentru hărți, grafice și liste de proiecte."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:304
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:323
 msgid "Loading this section…"
 msgstr "Se încarcă această secțiune…"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:364
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:383
 msgid "Loading…"
 msgstr "Se încarcă…"
 
 #: src/features/pnrr/components/charts/PnrrFundingBar.tsx:48
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:617
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:135
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:623
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:139
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:594
 #: src/features/pnrr/lib/filter-constants.ts:52
 msgid "Loan"
@@ -1089,7 +1356,7 @@ msgstr "Împrumut"
 msgid "Locality"
 msgstr "Localitate"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1684
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1734
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:185
 msgid "Location"
 msgstr "Localizare"
@@ -1116,23 +1383,27 @@ msgid "Marked as completed"
 msgstr "Marcate finalizate"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:147
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:982
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1680
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1032
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1730
 msgid "Measure"
 msgstr "Măsură"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:564
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:570
 msgid "Measure code"
 msgstr "Cod măsură"
 
 #. placeholder {0}: search.measureCode
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:848
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:898
 msgid "Measure: {0}"
 msgstr "Măsură: {0}"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:266
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:267
 msgid "Measures can be investments (I) or reforms (R), each shown with the dated reference labels bundled with this client. These labels are navigation aids and are not a claim that this snapshot contains the latest adopted legal revision of the plan."
 msgstr "Măsurile pot fi investiții (I) sau reforme (R), fiecare afișată cu etichetele de referință datate incluse în acest client. Aceste etichete ajută navigarea și nu afirmă că instantaneul conține cea mai recentă revizie legală adoptată a planului."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2889
+msgid "Metadata and extraction state only. Document text, claims, and OCR output remain unavailable until custody, quality, and PII gates are complete."
+msgstr "Sunt afișate metadatele și stadiul extragerii. Textul, informațiile extrase și rezultatele OCR sunt publicate după verificarea păstrării originalului, a calității și a protecției datelor personale."
 
 #: src/features/pnrr/lib/filter-constants.ts:85
 msgid "Military"
@@ -1150,11 +1421,11 @@ msgstr "Ministere și instituții centrale fără UAT local"
 msgid "Ministry of Investments and European Projects"
 msgstr "Ministerul Investițiilor și Proiectelor Europene"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2288
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2338
 msgid "MIPE data service"
 msgstr "Serviciul de date MIPE"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1923
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1973
 msgid "MIPE endpoint"
 msgstr "Set de date MIPE"
 
@@ -1162,7 +1433,16 @@ msgstr "Set de date MIPE"
 msgid "MIPE file set {PNRR_FILESET_ID}"
 msgstr "Set de fișiere MIPE {PNRR_FILESET_ID}"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1810
+#. placeholder {0}: overview.data.program.snapshotDate ?? t`date unavailable`
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:544
+msgid "MIPE national indicator · {0}"
+msgstr "Indicator național MIPE · {0}"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:552
+msgid "MIPE national indicator, not beneficiary payments"
+msgstr "Indicator național al MIPE"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1860
 msgid "MIPE observations with the same source identity. This history does not prove a link to payments or procurement."
 msgstr "Observații MIPE cu aceeași identitate în sursă. Acest istoric nu dovedește o legătură cu plățile sau achizițiile."
 
@@ -1170,15 +1450,42 @@ msgstr "Observații MIPE cu aceeași identitate în sursă. Acest istoric nu dov
 msgid "MIPE PNRR project file set {PNRR_FILESET_ID}. This identifier does not claim a source observation date. The official record cards preserve the source unit and the published variants."
 msgstr "Setul de fișiere MIPE pentru proiectele PNRR {PNRR_FILESET_ID}. Acest identificator nu indică o dată de observare la sursă. Fișele înregistrărilor oficiale păstrează unitatea sursă și variantele publicate."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:888
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2391
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2471
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2501
+msgid "MIPE project observations"
+msgstr "Înregistrări MIPE despre proiecte"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:938
 msgid "MIPE project progress"
 msgstr "Progresul proiectului MIPE"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1818
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:441
+msgid "MIPE project rows"
+msgstr "Înregistrări din fișierul MIPE cu proiecte"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1868
 msgid "MIPE source updates associated with this project observation"
 msgstr "Actualizări MIPE asociate acestei observații de proiect"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:213
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:560
+msgid "MIPE-reported national aggregate; distinct from accepted ORDS beneficiary payments"
+msgstr "Total național raportat de MIPE, afișat separat de plățile ORDS către beneficiari"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2816
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2817
+msgid "missing"
+msgstr "lipsește"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2977
+msgid "Missing accepted progress link"
+msgstr "Lipsește legătura validată cu un angajament"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2962
+msgid "Missing commitment source URL"
+msgstr "Lipsește adresa sursei pentru angajament"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:214
 msgid "Missing data and possible duplicates"
 msgstr "Date lipsă și posibile duplicate"
 
@@ -1186,22 +1493,26 @@ msgstr "Date lipsă și posibile duplicate"
 msgid "Missing from dataset"
 msgstr "Lipsă în dataset"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:419
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:420
 msgid "Missing published financial progress does not mean zero payments."
 msgstr "Lipsa progresului financiar publicat nu înseamnă zero plăți."
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2954
+msgid "Multiple or conflicting source observations cannot yet be summed as one commitment value."
+msgstr "Înregistrările multiple sau contradictorii împiedică stabilirea valorii angajamentului."
+
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:495
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:107
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:133
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:872
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:108
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:134
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:876
 msgid "N/A"
 msgstr "N/A"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2193
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2243
 msgid "Name source"
 msgstr "Sursa denumirii"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:958
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1008
 msgid "Narrow the project list"
 msgstr "Restrânge lista de proiecte"
 
@@ -1219,15 +1530,27 @@ msgstr "Național de"
 msgid "National contribution (RON)"
 msgstr "Contribuție națională (RON)"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:318
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:442
+msgid "National indicators"
+msgstr "Indicatori naționali"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:319
 msgid "National is a location or beneficiary category for rows without a unique local assignment; it is not a third main-level sector."
 msgstr "Național este o categorie de localizare sau beneficiar pentru rânduri fără o atribuire locală unică; nu este un al treilea sector de nivel principal."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:528
+msgid "National overview"
+msgstr "Situație națională"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:555
+msgid "National paid indicator"
+msgstr "Indicator național al sumelor plătite"
 
 #: src/features/pnrr/components/PnrrMapView.tsx:590
 msgid "national projects outside the map"
 msgstr "proiecte naționale în afara hărții"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1469
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1519
 msgid "National public contribution"
 msgstr "Contribuție publică națională"
 
@@ -1235,21 +1558,22 @@ msgstr "Contribuție publică națională"
 msgid "National ranking from the dedicated MIPE beneficiary-payment files."
 msgstr "Clasament național din fișierele MIPE dedicate plăților către beneficiari."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2238
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2288
 msgid "Net payments reported for the beneficiary"
 msgstr "Plăți nete raportate pentru beneficiar"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:621
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:592
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:622
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:596
 msgid "Next"
 msgstr "Următor"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1176
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:703
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1226
 msgid "Next page"
 msgstr "Pagina următoare"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:559
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:616
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:560
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:617
 msgid "Next project page"
 msgstr "Pagina următoare de proiecte"
 
@@ -1257,7 +1581,11 @@ msgstr "Pagina următoare de proiecte"
 msgid "NGOs / associations"
 msgstr "ONG / asociații"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:352
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2651
+msgid "No additional limitation."
+msgstr "Nu există alte limitări."
+
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:356
 msgid "No beneficiaries found"
 msgstr "Nu au fost găsiți beneficiari"
 
@@ -1273,11 +1601,11 @@ msgstr "Fără date"
 msgid "No description exists for this component."
 msgstr "Nu există descriere pentru această componentă."
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:195
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:198
 msgid "No exact percentage"
 msgstr "Fără procent exact"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:444
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:445
 msgid "No exchange rate is applied. Compare figures only when their source currency and fact type match."
 msgstr "Nu se aplică niciun curs de schimb. Compară cifrele doar când moneda sursă și tipul valorii coincid."
 
@@ -1285,27 +1613,44 @@ msgstr "Nu se aplică niciun curs de schimb. Compară cifrele doar când moneda 
 msgid "No national projects"
 msgstr "Fără proiecte naționale"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:383
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:384
 msgid "No projects found"
 msgstr "Niciun proiect găsit"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1144
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1194
 msgid "No projects match these filters."
 msgstr "Nu există proiecte care să corespundă acestor filtre."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2143
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2193
 msgid "No public MIPE project is available for this CUI."
 msgstr "Nu există niciun proiect MIPE public pentru acest CUI."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:836
+msgid "No public organizations match this filter."
+msgstr "Nicio organizație din registrul public nu corespunde filtrului."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2654
+msgid "no reason code"
+msgstr "niciun cod explicativ"
 
 #: src/features/pnrr/components/PnrrAnomalyRibbon.tsx:66
 msgid "No signal detected in the current data."
 msgstr "Niciun semnal detectat în datele curente."
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2627
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3014
+msgid "None"
+msgstr "Niciunul"
+
 #: src/features/pnrr/lib/filter-constants.ts:25
 msgid "Not started"
 msgstr "Neînceput"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2189
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2698
+msgid "Not the current adopted revision"
+msgstr "Altă versiune decât cea adoptată în vigoare"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2239
 msgid "Not VAT registered"
 msgstr "Neînregistrată în scopuri de TVA"
 
@@ -1313,12 +1658,16 @@ msgstr "Neînregistrată în scopuri de TVA"
 msgid "Note about data"
 msgstr "Notă despre date"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2917
+msgid "object custody recorded"
+msgstr "copia documentului este păstrată"
+
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:138
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:149
 msgid "of"
 msgstr "din"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:203
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:204
 msgid "Official data is published in EUR for national indicators and in RON for current MIPE project values. The client keeps those source units separate and does not estimate one from the other."
 msgstr "Datele oficiale sunt publicate în EUR pentru indicatorii naționali și în RON pentru valorile curente ale proiectelor MIPE. Clientul păstrează aceste unități sursă separate și nu estimează una din cealaltă."
 
@@ -1326,7 +1675,7 @@ msgstr "Datele oficiale sunt publicate în EUR pentru indicatorii naționali și
 msgid "Official records"
 msgstr "Înregistrări oficiale"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:693
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:699
 msgid "Only projects with risk signals"
 msgstr "Doar proiecte cu semnale de risc"
 
@@ -1334,23 +1683,23 @@ msgstr "Doar proiecte cu semnale de risc"
 msgid "Only risk signals"
 msgstr "Doar semnale de risc"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:795
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:799
 msgid "Only the largest projects are shown."
 msgstr "Sunt afișate doar cele mai mari proiecte."
 
 #. placeholder {0}: b.name
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:98
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:101
 msgid "Open beneficiary details: {0}"
 msgstr "Deschide detaliile beneficiarului: {0}"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1613
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1663
 msgid "Open MIPE source"
 msgstr "Deschide sursa MIPE"
 
 #. placeholder {0}: project.title
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:211
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:297
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:656
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:212
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:298
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:657
 msgid "Open project details: {0}"
 msgstr "Deschide detaliile proiectului: {0}"
 
@@ -1362,31 +1711,39 @@ msgstr "Deschide pagina completă a proiectului"
 msgid "Open the official MIPE dashboard"
 msgstr "Deschide tabloul de bord oficial MIPE"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1960
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2010
 msgid "Open the original source observation"
 msgstr "Deschide observația în sursa originală"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1798
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1848
 msgid "Open to inspect source updates"
 msgstr "Deschide pentru a vedea actualizările din sursă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2162
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2840
+msgid "Open-data catalog evidence"
+msgstr "Surse din catalogul de date deschise"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2212
 msgid "Organization details"
 msgstr "Detalii despre organizație"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2053
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:712
+msgid "Organization name"
+msgstr "Numele organizației"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2103
 msgid "Organization not found"
 msgstr "Organizația nu a fost găsită"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2173
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2223
 msgid "Organization status"
 msgstr "Starea organizației"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2218
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2268
 msgid "Organization-level payments and procurement context. These records are not attributed to a specific project."
 msgstr "Plăți și context de achiziții la nivelul organizației. Aceste înregistrări nu sunt atribuite unui proiect anume."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2215
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2265
 msgid "Other PNRR activity"
 msgstr "Alte activități PNRR"
 
@@ -1407,11 +1764,11 @@ msgstr "Peste 100% financiar"
 msgid "Overview"
 msgstr "Prezentare generală"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1494
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1544
 msgid "Paid"
 msgstr "Plătit"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:180
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:172
 msgid "Partial coverage"
 msgstr "Acoperire parțială"
 
@@ -1419,11 +1776,29 @@ msgstr "Acoperire parțială"
 msgid "Partial PNRR data availability"
 msgstr "Disponibilitate parțială a datelor PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2234
+#. placeholder {0}: node.callId ?? t`missing`
+#. placeholder {1}: node.sourceRequestCallId ?? t`missing`
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2815
+msgid "Payload call {0} · request call {1}"
+msgstr "Apel din răspuns: {0} · apel din cerere: {1}"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2368
+msgid "Payment county and commitment implementation county are separate source roles."
+msgstr "Județul raportat la plată și județul de implementare din angajament sunt câmpuri distincte."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2431
+msgid "Payment county, commitment implementation county, and MIPE source locality labels are different source roles."
+msgstr "Județul plății, județul de implementare din angajament și denumirea localității din sursa MIPE sunt câmpuri distincte."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2495
+msgid "Payment facts"
+msgstr "Înregistrări de plată"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2284
 msgid "Payment observations"
 msgstr "Observații privind plățile"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2259
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2309
 msgid "Payment totals remain subject to duplicate review. Procurement is shown as relationship counts only because participant-level money is not available."
 msgstr "Totalurile plăților rămân supuse verificării duplicatelor. Achizițiile sunt afișate doar ca număr de relații, deoarece sumele la nivel de participant nu sunt disponibile."
 
@@ -1436,13 +1811,13 @@ msgstr "Per capita"
 msgid "Percentages over 100% come from reported data. They can appear from changes in reference value, delayed updates, or entry errors."
 msgstr "Procentele peste 100% vin din datele raportate. Ele pot apărea din schimbări ale valorii de referință, actualizări întârziate sau erori de introducere."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1281
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1361
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1832
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1331
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1411
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1882
 msgid "Physical"
 msgstr "Fizic"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1631
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1681
 msgid "Physical progress"
 msgstr "Progres fizic"
 
@@ -1451,11 +1826,19 @@ msgstr "Progres fizic"
 msgid "pnrr.header.title.plan"
 msgstr "Planul"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1710
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:539
+msgid "Plan allocation"
+msgstr "Alocarea planului"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1760
 msgid "Planned end"
 msgstr "Finalizare planificată"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:279
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2779
+msgid "Platform listings preserve both the payload call ID and the request call ID so mismatches remain visible."
+msgstr "Listele păstrează atât identificatorul apelului din răspunsul platformei, cât și pe cel din cerere, pentru a evidenția diferențele."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:298
 msgid "Please try again in a moment. The established MIPE dashboard remains available from the link above."
 msgstr "Încearcă din nou peste puțin timp. Tabloul de bord MIPE consacrat rămâne disponibil prin linkul de mai sus."
 
@@ -1463,41 +1846,49 @@ msgstr "Încearcă din nou peste puțin timp. Tabloul de bord MIPE consacrat ră
 msgid "PNRR"
 msgstr "PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2066
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2116
 msgid "PNRR beneficiary"
 msgstr "Beneficiar PNRR"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:244
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2436
+msgid "PNRR by county"
+msgstr "PNRR pe județe"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:245
 msgid "PNRR Component"
 msgstr "Componentă PNRR"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:550
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:556
 msgid "PNRR components"
 msgstr "Componente PNRR"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:246
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:247
 msgid "PNRR components group thematic reforms and investments. They help with filtering, but alone they do not tell how much money was paid or what risk a project has."
 msgstr "Componentele PNRR grupează reforme și investiții tematice. Ele ajută la filtrare, dar nu spun singure câți bani au fost plătiți sau ce risc are proiectul."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:276
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:295
 msgid "PNRR details are temporarily unavailable."
 msgstr "Detaliile PNRR sunt temporar indisponibile."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:255
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:256
 msgid "PNRR Measure"
 msgstr "Măsură PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:111
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1562
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:683
+msgid "PNRR organizations"
+msgstr "Organizații PNRR"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:115
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1612
 msgid "PNRR project"
 msgstr "Proiect PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:891
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:700
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:941
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:704
 msgid "PNRR projects"
 msgstr "proiecte PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1114
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1164
 msgid "PNRR projects for the selected filters"
 msgstr "Proiecte PNRR pentru filtrele selectate"
 
@@ -1509,22 +1900,26 @@ msgstr "Secțiuni PNRR"
 msgid "Posibile duplicate"
 msgstr "Posibile duplicate"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:407
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:408
 #: src/features/pnrr/lib/anomaly-definitions.ts:112
 msgid "Possible duplicates with different data"
 msgstr "Posibile duplicate cu date diferite"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1504
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2957
+msgid "Potential duplicate payment groups"
+msgstr "Grupuri de plăți posibil duplicate"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1554
 msgid "Prefinancing"
 msgstr "Prefinanțare"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:581
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:553
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:582
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:557
 msgid "Previous"
 msgstr "Anterior"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:547
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:575
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:548
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:576
 msgid "Previous project page"
 msgstr "Pagina anterioară de proiecte"
 
@@ -1534,24 +1929,36 @@ msgstr "Pagina anterioară de proiecte"
 msgid "Private / non-public"
 msgstr "Privat / non-public"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2279
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2329
 msgid "Procurement participant"
 msgstr "Participant la achiziție"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2245
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2295
 msgid "Procurement participant relationships"
 msgstr "Relații între participanții la achiziții"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1125
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:737
+msgid "Procurement winner flag"
+msgstr "Marcat ca ofertant câștigător"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1175
 msgid "Program and status"
 msgstr "Program și stare"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2662
+msgid "Program revisions"
+msgstr "Versiunile planului"
+
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:159
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1131
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1181
 msgid "Progress"
 msgstr "Progress"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1642
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:584
+msgid "Progress over 100%"
+msgstr "Progres peste 100%"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1692
 msgid "Progress ratio reported by MIPE"
 msgstr "Procent de progres raportat de MIPE"
 
@@ -1565,11 +1972,11 @@ msgid "project"
 msgstr "proiect"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:57
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1119
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1169
 msgid "Project"
 msgstr "Proiect"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1654
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1704
 msgid "Project at a glance"
 msgstr "Proiectul pe scurt"
 
@@ -1578,54 +1985,54 @@ msgstr "Proiectul pe scurt"
 msgid "Project count"
 msgstr "Număr proiecte"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1912
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1962
 msgid "Project key"
 msgstr "Cheie proiect"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1914
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1964
 msgid "Project key version"
 msgstr "Versiunea cheii proiectului"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:398
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:399
 msgid "Project marked as technically completed, but with reported financial progress under 80%; indicates a gap that needs verification."
 msgstr "Proiect marcat finalizat tehnic, dar cu progres financiar raportat sub 80%; indică un decalaj care trebuie verificat."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1544
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1594
 msgid "Project not found"
 msgstr "Proiectul nu a fost găsit"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:543
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:571
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:544
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:572
 msgid "Project pages"
 msgstr "Pagini de proiecte"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2089
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2139
 msgid "Project portfolio"
 msgstr "Portofoliu de proiecte"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1561
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1611
 msgid "Project reported by MIPE"
 msgstr "Proiect raportat de MIPE"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:441
-#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:44
-#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:57
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:445
+#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:45
+#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:58
 msgid "Project search"
 msgstr "Căutare proiect"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:65
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:66
 msgid "Project table icon legend"
 msgstr "Legendă iconițe tabel proiecte"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1693
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1743
 msgid "Project timeline"
 msgstr "Calendarul proiectului"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:450
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:451
 msgid "Project Title"
 msgstr "Titlu Proiect"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:397
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:401
 #: src/features/pnrr/components/PnrrDashboard.tsx:260
 msgid "Project values are published in RON. EUR and USD displays use fixed estimates of 5 RON/EUR and 4.44 RON/USD, not live exchange rates. Official EUR indicators remain labeled separately."
 msgstr "Valorile proiectelor sunt publicate în RON. Afișarea în EUR și USD folosește estimări fixe de 5 RON/EUR și 4,44 RON/USD, nu cursuri de schimb în timp real. Indicatorii oficiali în EUR rămân etichetați separat."
@@ -1638,17 +2045,17 @@ msgstr "Valorile proiectelor sunt publicate în RON. Afișarea în EUR și USD f
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:590
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:597
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:790
-#: src/features/pnrr/components/tabs/PnrrProjectsView.tsx:30
+#: src/features/pnrr/components/tabs/PnrrProjectsView.tsx:31
 msgid "projects"
 msgstr "proiecte"
 
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:131
-#: src/features/pnrr/components/PnrrProjectsPreview.tsx:39
+#: src/features/pnrr/components/PnrrProjectsPreview.tsx:40
 #: src/features/pnrr/components/PnrrTabNav.tsx:19
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:177
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:404
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:738
-#: src/features/pnrr/components/tabs/PnrrProjectsView.tsx:26
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:180
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:408
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:742
+#: src/features/pnrr/components/tabs/PnrrProjectsView.tsx:27
 msgid "Projects"
 msgstr "Proiecte"
 
@@ -1656,23 +2063,23 @@ msgstr "Proiecte"
 msgid "Projects are ordered by listed EU funding."
 msgstr "Proiectele sunt ordonate după finanțarea UE listată."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2095
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2145
 msgid "Projects are taken from the MIPE dashboard and linked by the beneficiary’s CUI. Open any project for its dates, value breakdown and progress history."
 msgstr "Proiectele provin din tabloul de bord MIPE și sunt asociate prin CUI-ul beneficiarului. Deschide un proiect pentru perioadă, defalcarea valorii și istoricul progresului."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:904
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:954
 msgid "projects in the selected view"
 msgstr "proiecte în vizualizarea selectată"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1057
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1107
 msgid "Projects per page"
 msgstr "Proiecte pe pagină"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2092
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2142
 msgid "Projects reported for this beneficiary"
 msgstr "Proiecte raportate pentru acest beneficiar"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:131
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:132
 msgid "Projects vs official records"
 msgstr "Proiecte vs înregistrări oficiale"
 
@@ -1680,7 +2087,7 @@ msgstr "Proiecte vs înregistrări oficiale"
 msgid "projects with location"
 msgstr "proiecte cu localizare"
 
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:120
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:121
 msgid "projects with verification signals"
 msgstr "proiecte cu semnale de verificare"
 
@@ -1704,11 +2111,12 @@ msgstr "Public"
 msgid "Public companies"
 msgstr "Companii publice"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2286
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:755
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2336
 msgid "Public entity registry"
 msgstr "Registrul entităților publice"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:309
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:310
 msgid "Public includes local, county, central, and national institutions, plus public companies identified by CUI. Private / non-public includes companies, NGOs, foundations, religious organizations, and unclassified non-public beneficiaries."
 msgstr "Public include instituții locale, județene, centrale și naționale, plus companii publice identificate prin CUI. Privat / non-public include companii, ONG-uri, fundații, organizații religioase și beneficiari non-publici neclasificați."
 
@@ -1721,15 +2129,25 @@ msgstr "Instituții publice"
 msgid "Quick analytical views. A preset is not, by itself, evidence of a problem."
 msgstr "Vederi analitice rapide. O selecție predefinită nu este, în sine, dovada unei probleme."
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2626
+msgid "Reason codes"
+msgstr "Coduri explicative"
+
+#. placeholder {0}: verification.data.meta.reasonCodes.join(", ") || t`None`
+#. placeholder {1}: verification.data.meta.provenance.join(", ") || t`Unavailable`
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3014
+msgid "Reason codes: {0} · provenance: {1}"
+msgstr "Coduri explicative: {0} · proveniență: {1}"
+
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:311
 msgid "received"
 msgstr "primit"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1499
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1549
 msgid "Received"
 msgstr "Primit"
 
-#: src/features/pnrr/components/tabs/PnrrProjectsView.tsx:32
+#: src/features/pnrr/components/tabs/PnrrProjectsView.tsx:33
 msgid "records"
 msgstr "înregistrări"
 
@@ -1752,21 +2170,29 @@ msgstr "Redresare"
 msgid "Reform"
 msgstr "Reformă"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:287
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:288
 msgid "Reform/Investment Coordinator (CRI)"
 msgstr "Coordonator de reformă/investiție (CRI)"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2166
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2622
+msgid "Refresh"
+msgstr "Actualizare"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2216
 msgid "Registry evidence"
 msgstr "Date din registru"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1871
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1921
 msgid "Related organization context"
 msgstr "Context despre organizație"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:230
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:249
 msgid "Release status could not be refreshed. Cached abstention remains in force, so no facts are displayed."
 msgstr "Starea publicării nu a putut fi actualizată. Decizia de abținere păstrată în cache rămâne în vigoare, astfel încât nu sunt afișate fapte."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2393
+msgid "Release-scoped project observations with this source county role"
+msgstr "Înregistrări despre proiecte din versiunea publicată, după județul raportat"
 
 #: src/features/pnrr/lib/filter-constants.ts:88
 msgid "Religious organizations"
@@ -1787,7 +2213,7 @@ msgstr "Elimină filtrul"
 msgid "Remove filter: {0}"
 msgstr "Elimină filtrul: {0}"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1355
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1405
 msgid "reported by the source"
 msgstr "raportat de sursă"
 
@@ -1798,7 +2224,7 @@ msgstr "Categorie raportată; procent exact nepublicat"
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:31
 #: src/features/pnrr/components/PnrrEmblematicProjects.tsx:147
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:140
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:486
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:490
 msgid "Reported financial progress"
 msgstr "Progres financiar raportat"
 
@@ -1810,16 +2236,16 @@ msgstr "Progres financiar raportat > 0% și <= 100%, iar progresul tehnic este f
 msgid "Reported financial progress > 100%"
 msgstr "Progres financiar raportat > 100%"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:364
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:365
 #: src/features/pnrr/lib/anomaly-definitions.ts:69
 msgid "Reported financial progress over 100%"
 msgstr "Progres financiar raportat peste 100%"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:376
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:377
 msgid "Reported financial progress well above reported technical progress; requires verification in documents."
 msgstr "Progres financiar raportat mult peste progresul tehnic raportat; necesită verificare în documente."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:340
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:341
 msgid "Reported implementation status"
 msgstr "Stadiu de implementare raportat"
 
@@ -1827,19 +2253,23 @@ msgstr "Stadiu de implementare raportat"
 msgid "Reported progress difference"
 msgstr "Diferență de progres raportat"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1790
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1840
 msgid "Reported progress history"
 msgstr "Istoricul progresului raportat"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1273
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1626
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2972
+msgid "Reported progress over 100%"
+msgstr "Progres raportat peste 100%"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1323
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1676
 msgid "Reported project value"
 msgstr "Valoarea raportată a proiectului"
 
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:30
 #: src/features/pnrr/components/PnrrEmblematicProjects.tsx:139
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:131
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:463
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:467
 msgid "Reported technical progress"
 msgstr "Progres tehnic raportat"
 
@@ -1847,23 +2277,32 @@ msgstr "Progres tehnic raportat"
 msgid "Reported technical progress = 100% and reported financial progress < 80%"
 msgstr "Progres tehnic raportat = 100% și progres financiar raportat < 80%"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1128
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1178
 msgid "Reported value"
 msgstr "Valoare raportată"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1666
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2378
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2463
+msgid "Reported-county payments"
+msgstr "Plăți după județul raportat"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3004
+msgid "Reproducible rules over the current release. Counts describe what needs interpretation; they do not assign fault or intent."
+msgstr "Reguli reproductibile aplicate versiunii curente. Numărul de cazuri indică unde este nevoie de verificare."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1716
 msgid "Responsible institution"
 msgstr "Instituția responsabilă"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:578
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:584
 msgid "Responsible institutions (CRI)"
 msgstr "Instituții responsabile (CRI)"
 
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:213
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:214
 msgid "results"
 msgstr "rezultate"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1931
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1981
 msgid "Retrieved at"
 msgstr "Preluat la"
 
@@ -1871,23 +2310,23 @@ msgstr "Preluat la"
 msgid "Retry"
 msgstr "Reîncearcă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1514
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1564
 msgid "Revoked"
 msgstr "Revocat"
 
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:140
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:141
 msgid "Risk and data-quality groups can overlap. Counts and values are not additive, and every signal requires source verification."
 msgstr "Grupurile de risc și de calitate a datelor se pot suprapune. Numerele și valorile nu se adună, iar fiecare semnal necesită verificarea sursei."
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:677
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:683
 msgid "Risk and data-quality selections are combined with OR: projects matching either group are included."
 msgstr "Selecțiile de risc și de calitate a datelor sunt combinate cu SAU: sunt incluse proiectele care corespund oricăruia dintre grupuri."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:72
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:73
 msgid "Risk signal on this project"
 msgstr "Semnal de risc pentru acest proiect"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:649
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:655
 msgid "Risk signal type"
 msgstr "Tip semnal de risc"
 
@@ -1896,11 +2335,11 @@ msgstr "Tip semnal de risc"
 msgid "Risk signals"
 msgstr "Semnale de risc"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:353
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:354
 msgid "Risk signals and data quality"
 msgstr "Semnale de risc și calitatea datelor"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:227
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:228
 msgid "Risk signals are shortcuts for verification: large projects with low progress, gaps between technical and financial progress, or incomplete data. They are not official conclusions."
 msgstr "Semnalele de risc sunt scurtături pentru verificare: proiecte mari cu progres scăzut, decalaje între progresul tehnic și cel financiar sau date incomplete. Nu sunt concluzii oficiale."
 
@@ -1908,7 +2347,7 @@ msgstr "Semnalele de risc sunt scurtături pentru verificare: proiecte mari cu p
 msgid "Risk signals indicate projects where reported financial progress, reported technical progress, or listed EU funding suggest priority verification."
 msgstr "Semnalele de risc indică proiecte unde progresul financiar raportat, progresul tehnic raportat sau finanțarea UE listată sugerează o verificare prioritară."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:225
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:226
 msgid "Risk signals, not verdict"
 msgstr "Semnale de risc, nu verdict"
 
@@ -1916,27 +2355,39 @@ msgstr "Semnale de risc, nu verdict"
 msgid "risks"
 msgstr "riscuri"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1736
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1786
 msgid "RON and EUR values stay separate and are never converted or added together."
 msgstr "Valorile în RON și EUR rămân separate și nu sunt convertite sau adunate."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1628
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1678
 msgid "RON reported by MIPE; not added to payments or procurement"
 msgstr "RON raportați de MIPE; valoarea nu este adunată cu plățile sau achizițiile"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:326
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2396
+msgid "Rows with a source locality label"
+msgstr "Înregistrări cu localitate menționată în sursă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2504
+msgid "Rows with locality label"
+msgstr "Înregistrări cu localitate menționată"
+
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:329
 msgid "Search beneficiary..."
 msgstr "Caută beneficiar..."
 
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:193
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:194
 msgid "Search project..."
 msgstr "Caută proiect..."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1877
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:716
+msgid "Search the resolved public name"
+msgstr "Caută după denumirea din registrul public"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1927
 msgid "See the other projects associated with this beneficiary. Payments and procurement remain organization-level context and are not attributed to this project."
 msgstr "Vezi celelalte proiecte asociate acestui beneficiar. Plățile și achizițiile rămân context la nivelul organizației și nu sunt atribuite acestui proiect."
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:381
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:382
 msgid "Selected component and measure cannot match"
 msgstr "Componenta și măsura selectate nu se pot potrivi"
 
@@ -1960,11 +2411,15 @@ msgstr "Semnale de verificare"
 msgid "Semnalele de risc sunt separate de problemele de calitate a datelor pentru a păstra clară diferența dintre execuție și raportare."
 msgstr "Semnalele de risc sunt separate de problemele de calitate a datelor pentru a păstra clară diferența dintre execuție și raportare."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:356
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:357
 msgid "Semnalele de risc sunt separate de problemele de calitate a datelor. Ele ajută verificarea, dar nu sunt verdict juridic sau financiar."
 msgstr "Semnalele de risc sunt separate de problemele de calitate a datelor. Ele ajută verificarea, dar nu sunt verdict juridic sau financiar."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:158
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2635
+msgid "Serving capabilities"
+msgstr "Date disponibile prin API"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:159
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:219
 msgid "Share of value of projects marked as completed"
 msgstr "Ponderea valorii proiectelor marcate finalizate"
@@ -1989,12 +2444,12 @@ msgstr "Afișează toate județele"
 msgid "Show less"
 msgstr "Afișează mai puțin"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1090
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1140
 msgid "Show projects"
 msgstr "Afișează proiecte"
 
 #. placeholder {0}: projects.data.edges.length
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1150
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1200
 msgid "Showing {0} projects on this page"
 msgstr "Sunt afișate {0} proiecte pe această pagină"
 
@@ -2004,7 +2459,7 @@ msgstr "Sunt afișate {0} proiecte pe această pagină"
 msgid "Showing the {0} largest of {1} projects. Use “View projects” for the complete filtered list."
 msgstr "Sunt afișate cele mai mari {0} din {1} proiecte. Folosește „Vezi proiectele” pentru lista filtrată completă."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:163
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:164
 msgid "Shows how much of the listed EU funding belongs to projects marked as completed. It is not the official \"absorption rate\": it does not measure money received by Romania or payments to beneficiaries."
 msgstr "Arată cât din finanțarea UE listată aparține proiectelor marcate ca finalizate. Nu este „rata de absorbție” oficială: nu măsoară banii primiți de România sau plățile către beneficiari."
 
@@ -2016,7 +2471,7 @@ msgstr "Ghid pentru semnale"
 msgid "Signals"
 msgstr "Semnale"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:409
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:410
 msgid "Similar rows are reported with different values, progress, or locations."
 msgstr "Rânduri similare sunt raportate cu valori, progres sau localizări diferite."
 
@@ -2024,15 +2479,15 @@ msgstr "Rânduri similare sunt raportate cu valori, progres sau localizări dife
 msgid "Similar rows with different values or progress"
 msgstr "Rânduri similare cu valori sau progres diferit"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1032
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1082
 msgid "Snapshot from"
 msgstr "Instantaneu de la"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1921
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1971
 msgid "Snapshot ID"
 msgstr "Identificator instantaneu"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1043
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1093
 msgid "Snapshot to"
 msgstr "Instantaneu până la"
 
@@ -2044,33 +2499,70 @@ msgstr "Social"
 msgid "Source beneficiary type"
 msgstr "Tip beneficiar în sursă"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:201
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:430
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2822
+msgid "Source call-ID mismatch"
+msgstr "Identificatorii apelului diferă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:449
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:595
+msgid "Source capabilities"
+msgstr "Disponibilitatea datelor pe surse"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:202
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:431
 msgid "Source currency units"
 msgstr "Unități monetare în sursă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1918
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2475
+msgid "Source locality labels"
+msgstr "Denumiri de localități din sursă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2369
+msgid "Source locality labels are count-only; no locality value is attributed or published."
+msgstr "Localitățile menționate sunt doar numărate. Nu se atribuie și nu se publică valori la nivel de localitate."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2432
+msgid "Source locality labels are shown as counts only and are not treated as resolved UAT geography."
+msgstr "Denumirile localităților din sursă sunt folosite doar pentru numărare. UAT-urile corespunzătoare nu sunt confirmate."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1968
 msgid "Source observation ID"
 msgstr "Identificator observație în sursă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1927
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2918
+msgid "source reference only"
+msgstr "doar referința din sursă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1977
 msgid "Source system"
 msgstr "Sistem sursă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1519
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1524
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1569
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1574
 msgid "Source total"
 msgstr "Total în sursă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:383
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:402
 msgid "Source-aware data"
 msgstr "Date cu proveniență din sursă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1408
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2732
+msgid "Source-published call budgets and eligibility envelopes. These are not beneficiary payments."
+msgstr "Bugetele apelurilor și valorile eligibile publicate de sursă."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1458
 msgid "Source-reported value outside the 0–100% range"
 msgstr "Valoare raportată de sursă în afara intervalului 0–100%"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1701
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2485
+msgid "Source-role-qualified PNRR facts by canonical county"
+msgstr "Date PNRR pe județe, cu semnificația geografică din fiecare sursă"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2595
+msgid "Sources and freshness"
+msgstr "Surse și date de actualizare"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1751
 msgid "Start"
 msgstr "Început"
 
@@ -2082,13 +2574,13 @@ msgstr "Data începerii"
 msgid "State and local-owned companies from the official 2023 public companies list"
 msgstr "Companii de stat și locale din lista oficială a companiilor publice din 2023"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:989
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1829
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1039
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1879
 msgid "Status"
 msgstr "Stare"
 
 #. placeholder {0}: search.status
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:849
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:899
 msgid "Status: {0}"
 msgstr "Stare: {0}"
 
@@ -2096,11 +2588,16 @@ msgstr "Stare: {0}"
 msgid "Sub 30%"
 msgstr "Sub 30%"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2280
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2330
 msgid "Subcontractor"
 msgstr "Subcontractant"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1509
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:740
+msgid "Subcontractor flag"
+msgstr "Marcat ca subcontractant"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1559
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2623
 msgid "Suspended"
 msgstr "Suspendat"
 
@@ -2113,24 +2610,24 @@ msgstr "Tehnic"
 msgid "Technical - financial"
 msgstr "Tehnic - financiar"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:342
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:343
 msgid "Technical and financial progress reported in public data. Percentages over 100% are treated as data anomalies to be verified, not as verdicts."
 msgstr "Progres tehnic și financiar raportat în datele publice. Procentele peste 100% sunt tratate ca anomalii de date care trebuie verificate, nu ca verdict."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:179
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:180
 msgid "Technical progress shows how advanced the reported work or activity is. Financial progress shows how advanced the reported financial part is for the project. Neither is the same as European Commission payment."
 msgstr "Progresul tehnic spune cât de avansată este lucrarea sau activitatea raportată. Progresul financiar spune cât de avansată este partea financiară raportată pentru proiect. Niciunul nu este același lucru cu plata Comisiei Europene."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:174
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:175
 msgid "Technical progress vs reported financial progress"
 msgstr "Progres tehnic vs progres financiar raportat"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:487
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:713
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:488
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:714
 msgid "Technical reported"
 msgstr "Tehnic raportat"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1903
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1953
 msgid "Technical source keys, retrieval details, and candidate relationships"
 msgstr "Chei tehnice din sursă, detalii despre preluare și relații posibile"
 
@@ -2138,7 +2635,7 @@ msgstr "Chei tehnice din sursă, detalii despre preluare și relații posibile"
 msgid "Technically completed without published financial progress"
 msgstr "Finalizat tehnic fără progres financiar publicat"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:395
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:396
 #: src/features/pnrr/components/PnrrQuickInvestigation.tsx:49
 #: src/features/pnrr/lib/anomaly-definitions.ts:99
 msgid "Technically completed, low financial progress"
@@ -2156,27 +2653,27 @@ msgstr "teritorii omise deoarece progresul tehnic exact nu este disponibil"
 msgid "territories omitted because population is unavailable"
 msgstr "teritorii omise deoarece populația nu este disponibilă"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:718
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:722
 msgid "The beneficiary detail could not be loaded. Summary values below may be incomplete."
 msgstr "Detaliile beneficiarului nu au putut fi încărcate. Valorile de sinteză de mai jos pot fi incomplete."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:278
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:279
 msgid "The geographical location of the project. National projects or those without a unique location are marked separately so as not to distort county comparisons."
 msgstr "Locația geografică a proiectului. Proiectele naționale sau fără localizare unică sunt marcate separat pentru a nu distorsiona comparațiile județene."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:191
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:192
 msgid "The grant is the non-reimbursable part. The loan is the reimbursable part of the PNRR at Romania level. The \"loan\" label does not mean that each beneficiary took an individual credit."
 msgstr "Grantul este partea nerambursabilă. Împrumutul este partea rambursabilă a PNRR la nivelul României. Eticheta „împrumut\" nu înseamnă că fiecare beneficiar a luat un credit individual."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:46
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:47
 msgid "The main figure \"Total PNRR allocation\" comes from the official aggregated indicator published by MIPE. It is the official plan budget, not the sum of project rows."
 msgstr "Cifra principală „Alocat total PNRR\" vine din indicatorul oficial agregat publicat de MIPE. Ea este bugetul oficial al planului, nu suma rândurilor de proiecte."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:259
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:260
 msgid "The measure is the plan level under which projects are organized. A measure can include multiple projects, beneficiaries, milestones, and targets."
 msgstr "Măsura este nivelul de plan sub care sunt organizate proiectele. O măsură poate include mai multe proiecte, beneficiari, jaloane și ținte."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:433
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:434
 msgid "The MIPE project file publishes valoare_fe in RON. The national indicator file publishes allocation and payment indicators in EUR. The two source units remain distinct."
 msgstr "Fișierul MIPE de proiecte publică valoare_fe în RON. Fișierul de indicatori naționali publică alocarea și indicatorii de plată în EUR. Cele două unități sursă rămân distincte."
 
@@ -2196,25 +2693,46 @@ msgstr "Procentul arată ponderea componentei în finanțarea UE afișată. Nu e
 msgid "The percentage shows the county's share of displayed EU funding. National projects can distort local comparisons."
 msgstr "Procentul arată ponderea județului în finanțarea UE afișată. Proiectele naționale pot distorsiona comparațiile locale."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:88
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2979
+msgid "The progress observation has no accepted commitment relationship and remains separately visible."
+msgstr "Înregistrarea de progres este afișată separat, deoarece legătura cu un angajament nu a fost validată."
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:89
 msgid "The project has a published-data issue, such as possible duplicate rows or missing financial progress. It does not automatically indicate wrongdoing or zero payments."
 msgstr "Proiectul are o problemă în datele publicate, cum ar fi rânduri posibil duplicate sau progres financiar lipsă. Nu indică automat nereguli sau zero plăți."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:74
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:75
 msgid "The project matches at least one risk rule, such as high value with low progress, a financial-technical gap, or reported financial progress over 100%. It is a signal for verification, not a verdict."
 msgstr "Proiectul corespunde cel puțin unei reguli de risc, cum ar fi valoare mare cu progres scăzut, decalaj financiar-tehnic sau progres financiar raportat peste 100%. Este un semnal pentru verificare, nu un verdict."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:302
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:303
 msgid "The public / private or non-public classification is an operational rule of the dashboard. It helps analysis, but special cases may require manual verification."
 msgstr "Clasificarea public / privat sau non-public este o regulă operațională a dashboardului. Ea ajută analiza, dar cazurile speciale pot necesita verificare manuală."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:53
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:54
 msgid "The rest of the analyses use the official project list: projects grouped by id_angajament, official records at row level, and amounts listed separately from payments to beneficiaries."
 msgstr "Restul analizelor folosesc lista oficială de proiecte: proiecte grupate după id_angajament, înregistrări oficiale la nivel de rând și sume listate separat de plățile către beneficiari."
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:388
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2964
+msgid "The row lacks a direct human-openable evidence link."
+msgstr "Înregistrarea nu conține un link care să permită consultarea directă a sursei."
+
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:389
 msgid "The selected measure belongs to another component. Remove one of these filters or choose a measure from the selected component."
 msgstr "Măsura selectată aparține altei componente. Elimină unul dintre filtre sau alege o măsură din componenta selectată."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2969
+msgid "The two source-reported dates are internally inconsistent."
+msgstr "Cele două date raportate de sursă sunt incompatibile."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:182
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:437
+msgid "There is no active PNRR data release."
+msgstr "Nu există o versiune activă a datelor PNRR."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2995
+msgid "These deterministic signals describe data quality and coverage. They are not findings of wrongdoing."
+msgstr "Aceste semnale automate descriu calitatea și acoperirea datelor și indică ce merită verificat."
 
 #: src/features/pnrr/lib/anomaly-definitions.ts:91
 msgid "This exploratory preset highlights projects with large listed EU funding and low reported technical progress. It is not a finding and requires verification in official documents."
@@ -2244,37 +2762,37 @@ msgstr "Acest filtru arată proiecte unde progresul financiar raportat depășe�
 msgid "This filter shows projects where reported financial progress is well above reported technical progress. It may have legitimate explanations, including advances or delayed technical reporting."
 msgstr "Acest filtru arată proiecte unde progresul financiar raportat este mult peste progresul tehnic raportat. Poate avea explicații legitime, inclusiv avansuri sau raportare tehnică întârziată."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2056
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2106
 msgid "This organization is not available in the current PNRR release."
 msgstr "Organizația nu este disponibilă în versiunea curentă a datelor PNRR."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1619
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1669
 msgid "This profile uses the current detailed-data release. Its MIPE update date may differ from the dashboard snapshot you opened."
 msgstr "Acest profil folosește versiunea curentă a datelor detaliate. Data actualizării MIPE poate diferi de instantaneul deschis în tabloul de bord."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1547
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1597
 msgid "This project is not available in the current data release."
 msgstr "Proiectul nu este disponibil în versiunea curentă a datelor."
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:428
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:429
 msgid "This project link is stale or the project is unavailable in the loaded MIPE snapshot."
 msgstr "Legătura către proiect este expirată sau proiectul nu este disponibil în instantaneul MIPE încărcat."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:311
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:330
 msgid "This section is temporarily unavailable. The other source sections remain usable."
 msgstr "Această secțiune este temporar indisponibilă. Celelalte secțiuni ale sursei rămân utilizabile."
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:382
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:401
 msgid "This view has partial coverage"
 msgstr "Această vizualizare are acoperire parțială"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:446
-#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:58
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:450
+#: src/features/pnrr/components/filters/PnrrProjectSearchInput.tsx:59
 msgid "Title, beneficiary, CUI, or locality..."
 msgstr "Titlu, beneficiar, CUI sau localitate..."
 
 #. placeholder {0}: formatSourceDate(search.to)
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:860
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:910
 msgid "To: {0}"
 msgstr "Până la: {0}"
 
@@ -2302,19 +2820,23 @@ msgstr "Top județe: finanțare UE listată"
 msgid "Top projects"
 msgstr "Top proiecte"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:792
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:796
 msgid "Top projects by value"
 msgstr "Top proiecte după valoare"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:146
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:147
 msgid "Topul beneficiarilor după sume primite folosește fișierul oficial dedicat persoanelor/beneficiarilor cu plăți. Nu îl calculăm din progresul financiar al proiectelor, deoarece progresul financiar nu conține toate evenimentele de plată, prefinanțările, corecțiile sau tratamentul TVA/neeligibil."
 msgstr "Topul beneficiarilor după sume primite folosește fișierul oficial dedicat persoanelor/beneficiarilor cu plăți. Nu îl calculăm din progresul financiar al proiectelor, deoarece progresul financiar nu conține toate evenimentele de plată, prefinanțările, corecțiile sau tratamentul TVA/neeligibil."
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3057
+msgid "Total"
+msgstr "Total"
 
 #: src/features/pnrr/components/PnrrDashboard.tsx:198
 msgid "total allocated"
 msgstr "alocat total"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:105
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:106
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:202
 msgid "Total PNRR allocation"
 msgstr "Alocat total PNRR"
@@ -2323,13 +2845,13 @@ msgstr "Alocat total PNRR"
 msgid "Total value (RON)"
 msgstr "Valoare totală (RON)"
 
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:394
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:395
 msgid "Try changing the filters or searching for something else."
 msgstr "Încearcă să modifici filtrele sau să cauți altceva."
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:89
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:98
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:411
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:415
 #: src/features/pnrr/components/PnrrMapView.tsx:721
 #: src/features/pnrr/components/PnrrUatDetailsPanel.tsx:47
 #: src/features/pnrr/lib/filter-constants.ts:78
@@ -2340,11 +2862,15 @@ msgstr "UAT"
 msgid "UAT map"
 msgstr "Hartă UAT"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3014
+msgid "Unavailable"
+msgstr "Indisponibil"
+
 #: src/features/pnrr/components/PnrrEmblematicProjects.tsx:23
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:491
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:449
-#: src/features/pnrr/components/table/PnrrProjectTable.tsx:108
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:868
+#: src/features/pnrr/components/table/PnrrProjectTable.tsx:109
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:872
 msgid "Under 30% (reported category)"
 msgstr "Sub 30% (categorie raportată)"
 
@@ -2352,20 +2878,29 @@ msgstr "Sub 30% (categorie raportată)"
 msgid "Unknown"
 msgstr "Necunoscut"
 
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2867
+msgid "unknown format"
+msgstr "format necunoscut"
+
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:140
 msgid "Unpublished data"
 msgstr "Date nepublicate"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2251
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2301
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2952
 msgid "Unresolved commitment envelopes"
 msgstr "Pachete de angajamente nerezolvate"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1636
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:174
+msgid "Unversioned historical data"
+msgstr "Date istorice fără versiune"
+
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1686
 msgid "Update history loads independently"
 msgstr "Istoricul actualizărilor se încarcă separat"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1602
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1826
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1652
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1876
 msgid "Updated"
 msgstr "Actualizat"
 
@@ -2378,15 +2913,15 @@ msgstr "Valoare"
 msgid "value with complete data"
 msgstr "valoare cu date complete"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1762
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1812
 msgid "Values reported in EUR"
 msgstr "Valori raportate în EUR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1760
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1810
 msgid "Values reported in RON"
 msgstr "Valori raportate în RON"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1474
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1524
 msgid "VAT"
 msgstr "TVA"
 
@@ -2394,24 +2929,25 @@ msgstr "TVA"
 msgid "VAT (RON)"
 msgstr "TVA (RON)"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2188
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2238
 msgid "VAT registered"
 msgstr "Înregistrată în scopuri de TVA"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:2183
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:2233
 msgid "VAT status"
 msgstr "Statut TVA"
 
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:110
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:3001
+#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:111
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:357
 msgid "Verification signals"
 msgstr "Semnale de verificare"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:784
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:788
 msgid "View all filtered projects"
 msgstr "Vezi toate proiectele filtrate"
 
-#: src/features/pnrr/components/PnrrProjectsPreview.tsx:49
+#: src/features/pnrr/components/PnrrProjectsPreview.tsx:50
 msgid "View all projects"
 msgstr "Vezi toate proiectele"
 
@@ -2423,11 +2959,11 @@ msgstr "Vezi beneficiarii din UAT"
 msgid "View full map"
 msgstr "Vezi harta completă"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:398
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:417
 msgid "View limitations"
 msgstr "Limitări ale vizualizării"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1890
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1940
 msgid "View organization profile"
 msgstr "Vezi profilul organizației"
 
@@ -2435,7 +2971,7 @@ msgstr "Vezi profilul organizației"
 msgid "View PNRR profile"
 msgstr "Vezi profilul PNRR"
 
-#: src/features/pnrr/components/live/PnrrLivePages.tsx:1294
+#: src/features/pnrr/components/live/PnrrLivePages.tsx:1344
 msgid "View project"
 msgstr "Vezi proiectul"
 
@@ -2451,11 +2987,11 @@ msgstr "Ce merită verificat"
 msgid "What it means"
 msgstr "Ce înseamnă"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:771
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:775
 msgid "with data anomalies"
 msgstr "cu anomalii de date"
 
-#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:762
+#: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:766
 msgid "with risk signals"
 msgstr "cu semnale de risc"
 
@@ -2463,6 +2999,6 @@ msgstr "cu semnale de risc"
 msgid "Without micro-projects"
 msgstr "Fără micro-proiecte"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:707
+#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:713
 msgid "Without micro-projects (<€5k)"
 msgstr "Fără micro-proiecte (<€5k)"

@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import {
   Sheet,
@@ -437,8 +438,8 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                 </Trans>
               </p>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <CurrencyBox label="RON" value="MIPE project rows" />
-                <CurrencyBox label="EUR" value="National indicators" />
+                <CurrencyBox label="RON" value={t`MIPE project rows`} />
+                <CurrencyBox label="EUR" value={t`National indicators`} />
               </div>
               <p className="mt-3 text-xs font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>

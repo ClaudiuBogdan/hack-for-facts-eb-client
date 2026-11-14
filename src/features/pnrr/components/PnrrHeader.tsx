@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency, formatNumber } from '@/lib/utils'
 import type { PnrrView } from '@/schemas/pnrr'
 import type { Currency } from '@/schemas/charts'
 import { PnrrTabNav } from './PnrrTabNav'
@@ -236,7 +236,7 @@ export function PnrrHeader({
                   >
                     <Activity className="h-4 w-4 text-current" />
                     <span className="text-sm font-black text-current">
-                      {projectsCount.toLocaleString('ro-RO')}
+                      {formatNumber(projectsCount)}
                     </span>
                     <span className="text-sm font-bold text-current">
                       <Trans>projects</Trans>
