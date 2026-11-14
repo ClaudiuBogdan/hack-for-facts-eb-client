@@ -505,10 +505,45 @@ function MetricCard({
   );
 }
 
+export function PnrrReleaseSourceDates({
+  release,
+}: {
+  readonly release: PnrrLiveRelease;
+}) {
+  const mipe = release.lanes.find(
+    (lane) => lane.lane === "progress_observations",
+  );
+  const ords = release.lanes.find(
+    (lane) => lane.lane === "ords_payments_capture",
+  );
+
+  return (
+    <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+      <div>
+        <dt className="font-bold">
+          <Trans>MIPE project snapshot</Trans>
+        </dt>
+        <dd>{formatSourceDate(mipe?.asOf ?? null)}</dd>
+      </div>
+      <div>
+        <dt className="font-bold">
+          <Trans>ORDS payments capture</Trans>
+        </dt>
+        <dd>{formatSourceDate(ords?.asOf ?? null)}</dd>
+      </div>
+    </dl>
+  );
+}
+
 export function PnrrLiveOverviewPage() {
   const status = usePnrrLiveStatus();
   const overview = usePnrrLiveOverview();
   const error = (status.error ?? overview.error) as Error | null;
+  const paymentCapability = status.data?.pnrrCapabilities.find(
+    (capability) => capability.id === "payments",
+  );
+  const hasPublishedPayments =
+    paymentCapability !== undefined && paymentCapability.state !== "abstained";
 
   return (
     <PnrrLiveShell release={status.data?.pnrrCurrentRelease}>
@@ -527,6 +562,7 @@ export function PnrrLiveOverviewPage() {
                 <h2 className="text-2xl font-black">
                   <Trans>National overview</Trans>
                 </h2>
+                <PnrrReleaseSourceDates release={overview.data.meta.release} />
                 <p className="mt-2 max-w-3xl text-[var(--pnrr-muted)]">
                   <Trans>
                     Each card keeps its source grain and currency. The explorer
@@ -559,14 +595,22 @@ export function PnrrLiveOverviewPage() {
                     )}
                     note={t`MIPE-reported national aggregate; distinct from accepted ORDS beneficiary payments`}
                   />
-                  <MetricCard
-                    label={t`Beneficiary payment net`}
-                    value={formatExactMoney(
-                      overview.data.beneficiaryPayments.netRon.amount,
-                      "RON",
-                    )}
-                    note={t`${formatInteger(overview.data.beneficiaryPayments.count)} source-native payment rows`}
-                  />
+                  {hasPublishedPayments ? (
+                    <MetricCard
+                      label={t`Beneficiary payment net`}
+                      value={formatExactMoney(
+                        overview.data.beneficiaryPayments.netRon.amount,
+                        "RON",
+                      )}
+                      note={t`${formatInteger(overview.data.beneficiaryPayments.count)} source-native payment rows`}
+                    />
+                  ) : (
+                    <MetricCard
+                      label={t`Beneficiary payment net`}
+                      value="—"
+                      note={t`Payment totals are unavailable for this release.`}
+                    />
+                  )}
                   <MetricCard
                     label={t`Commitment envelopes`}
                     value={formatExactMoney(
