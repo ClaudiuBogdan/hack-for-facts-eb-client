@@ -517,6 +517,7 @@ export function usePnrrFilterState() {
 
           return cleanPnrrSearch({
             ...getPanelSearch(previous),
+            lang: previous.lang,
             view: search.view,
             currency: search.currency,
             page: 1,

@@ -416,6 +416,7 @@ const optionalEntityTypesSearchParam = z.preprocess(
 )
 
 export const PnrrSearchSchema = z.object({
+  lang: z.enum(['ro', 'en']).optional().catch(undefined),
   view: PnrrViewSchema.default(PNRR_SEARCH_DEFAULTS.view),
   search: boundedTextSearchParam,
   beneficiarySearch: boundedTextSearchParam,
@@ -648,6 +649,7 @@ export function parsePnrrSearch(search: unknown): Partial<PnrrSearchState> {
 
 const arraySearchKeySet = new Set<string>(arraySearchKeys)
 const textSearchKeySet = new Set<string>([
+  'lang',
   'view',
   'search',
   'beneficiarySearch',
