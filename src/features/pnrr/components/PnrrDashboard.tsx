@@ -269,25 +269,6 @@ function PnrrDashboardContent({
         </div>
       )}
 
-      {(summary?.meta.paymentCapability === "degraded" ||
-        summary?.meta.indicatorCapability === "degraded") && (
-        <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-orange)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-orange)]" />
-          <div>
-            <p className="font-black uppercase tracking-wide">
-              <Trans>Partial PNRR data availability</Trans>
-            </p>
-            <p className="mt-1 text-[var(--pnrr-muted)]">
-              <Trans>
-                The MIPE project index is available. One or more secondary
-                sources are temporarily unavailable, so payment or national
-                indicator sections may be incomplete.
-              </Trans>
-            </p>
-          </div>
-        </div>
-      )}
-
       {effectiveCurrency && effectiveCurrency !== "RON" && (
         <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-blue)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
           <Info className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-blue)]" />

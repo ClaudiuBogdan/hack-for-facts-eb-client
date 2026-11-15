@@ -1795,10 +1795,6 @@ msgstr "Plătit"
 msgid "Partial coverage"
 msgstr "Acoperire parțială"
 
-#: src/features/pnrr/components/PnrrDashboard.tsx:239
-msgid "Partial PNRR data availability"
-msgstr "Disponibilitate parțială a datelor PNRR"
-
 #. placeholder {0}: node.callId ?? t`missing`
 #. placeholder {1}: node.sourceRequestCallId ?? t`missing`
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:2859
@@ -2705,10 +2701,6 @@ msgstr "Măsura este nivelul de plan sub care sunt organizate proiectele. O măs
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:434
 msgid "The MIPE project file publishes valoare_fe in RON. The national indicator file publishes allocation and payment indicators in EUR. The two source units remain distinct."
 msgstr "Fișierul MIPE de proiecte publică valoare_fe în RON. Fișierul de indicatori naționali publică alocarea și indicatorii de plată în EUR. Cele două unități sursă rămân distincte."
-
-#: src/features/pnrr/components/PnrrDashboard.tsx:242
-msgid "The MIPE project index is available. One or more secondary sources are temporarily unavailable, so payment or national indicator sections may be incomplete."
-msgstr "Indexul MIPE al proiectelor este disponibil. Una sau mai multe surse secundare sunt temporar indisponibile, astfel încât secțiunile de plăți sau indicatori naționali pot fi incomplete."
 
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:317
 msgid "The payment ranking is national and does not change with the active project filters. Listed EU funding and project counts reflect the current filters."

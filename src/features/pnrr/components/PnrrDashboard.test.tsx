@@ -444,7 +444,7 @@ describe("PnrrDashboard", () => {
     );
   });
 
-  it("keeps the established degraded-source warning visible", () => {
+  it("shows the overview without a banner when payment data is unavailable", () => {
     vi.mocked(usePnrrServerOverview).mockReturnValue(
       queryResult({
         data: makeServerOverview({}, { paymentCapability: "degraded" }),
@@ -453,11 +453,13 @@ describe("PnrrDashboard", () => {
 
     render(<PnrrDashboard />);
 
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-has-overview",
+      "true",
+    );
     expect(
-      screen.getByText(
-        /partial pnrr data availability|disponibilitate parțială a datelor pnrr/i,
-      ),
-    ).toBeInTheDocument();
+      screen.queryByText(/partial pnrr data availability/i),
+    ).not.toBeInTheDocument();
   });
 
   it("discloses estimated conversion for non-RON currency", () => {
