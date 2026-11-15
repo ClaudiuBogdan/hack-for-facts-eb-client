@@ -265,7 +265,7 @@ function PnrrDashboardContent({
           className="mx-auto max-w-7xl px-4 text-[var(--pnrr-fg)] sm:px-6 lg:px-8"
           data-testid="pnrr-release-source-dates"
         >
-          <PnrrReleaseSourceDates release={release} />
+          <PnrrReleaseSourceDates release={release} showMipeSnapshot={false} />
         </div>
       )}
 

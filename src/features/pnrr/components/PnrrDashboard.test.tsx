@@ -75,6 +75,7 @@ vi.mock("./PnrrHeader", () => ({
     beneficiaryNamesByCui,
     uatLabelsBySiruta,
     releaseId,
+    snapshotDate,
   }: {
     readonly actions: ReactNode;
     readonly isLoading: boolean;
@@ -84,8 +85,13 @@ vi.mock("./PnrrHeader", () => ({
     readonly beneficiaryNamesByCui?: ReadonlyMap<string, string>;
     readonly uatLabelsBySiruta?: ReadonlyMap<string, string>;
     readonly releaseId?: string | null;
+    readonly snapshotDate?: string | null;
   }) => (
-    <header data-testid="pnrr-header" data-loading={String(isLoading)}>
+    <header
+      data-testid="pnrr-header"
+      data-loading={String(isLoading)}
+      data-snapshot-date={snapshotDate}
+    >
       <span data-testid="pnrr-header-release">{releaseId}</span>
       <span data-testid="pnrr-header-labels">
         {JSON.stringify([
@@ -353,7 +359,7 @@ describe("PnrrDashboard", () => {
     );
   });
 
-  it("shows the release's MIPE and ORDS source dates apart", () => {
+  it("uses the header for the MIPE date and the source row for the ORDS date", () => {
     vi.mocked(usePnrrServerOverview).mockReturnValue(
       queryResult({ data: makeServerOverview() }),
     );
@@ -361,9 +367,12 @@ describe("PnrrDashboard", () => {
     render(<PnrrDashboard />);
 
     const dates = screen.getByTestId("pnrr-release-source-dates");
-    expect(dates).toHaveTextContent("MIPE project snapshot");
+    expect(screen.getByTestId("pnrr-header")).toHaveAttribute(
+      "data-snapshot-date",
+      expect.stringContaining("2026-10-15"),
+    );
+    expect(dates).not.toHaveTextContent("MIPE project snapshot");
     expect(dates).toHaveTextContent("ORDS payments capture");
-    expect(dates).toHaveTextContent(/Oct 15, 2026|15 oct\.? 2026/);
     expect(dates).toHaveTextContent(/Nov 13, 2026|13 nov\.? 2026/);
   });
 
