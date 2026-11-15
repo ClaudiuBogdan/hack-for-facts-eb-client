@@ -359,21 +359,18 @@ describe("PnrrDashboard", () => {
     );
   });
 
-  it("uses the header for the MIPE date and the source row for the ORDS date", () => {
+  it("shows the MIPE date in the header without a separate source date row", () => {
     vi.mocked(usePnrrServerOverview).mockReturnValue(
       queryResult({ data: makeServerOverview() }),
     );
 
     render(<PnrrDashboard />);
 
-    const dates = screen.getByTestId("pnrr-release-source-dates");
     expect(screen.getByTestId("pnrr-header")).toHaveAttribute(
       "data-snapshot-date",
       expect.stringContaining("2026-10-15"),
     );
-    expect(dates).not.toHaveTextContent("MIPE project snapshot");
-    expect(dates).toHaveTextContent("ORDS payments capture");
-    expect(dates).toHaveTextContent(/Nov 13, 2026|13 nov\.? 2026/);
+    expect(screen.queryByText("ORDS payments capture")).not.toBeInTheDocument();
   });
 
   it("reads only the open tab's part, and the overview for the header", () => {

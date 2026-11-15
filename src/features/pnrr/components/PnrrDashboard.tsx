@@ -28,7 +28,6 @@ import { PnrrProjectsView } from "./tabs/PnrrProjectsView";
 import { PnrrAnomaliesView } from "./tabs/PnrrAnomaliesView";
 import { PnrrBeneficiariesView } from "./tabs/PnrrBeneficiariesView";
 import { PnrrMapView } from "./PnrrMapView";
-import { PnrrReleaseSourceDates } from "./live/PnrrReleaseSourceDates";
 import {
   PnrrFilterSheet,
   PnrrFilterTriggerButton,
@@ -259,15 +258,6 @@ function PnrrDashboardContent({
           </div>
         }
       />
-
-      {release && (
-        <div
-          className="mx-auto max-w-7xl px-4 text-[var(--pnrr-fg)] sm:px-6 lg:px-8"
-          data-testid="pnrr-release-source-dates"
-        >
-          <PnrrReleaseSourceDates release={release} showMipeSnapshot={false} />
-        </div>
-      )}
 
       {effectiveCurrency && effectiveCurrency !== "RON" && (
         <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-blue)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
