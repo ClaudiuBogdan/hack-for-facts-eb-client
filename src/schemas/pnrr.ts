@@ -159,6 +159,12 @@ export type PnrrGranularity = 'national' | 'county' | 'uat'
 
 export type PnrrProjectRecord = {
   readonly id: string
+  /**
+   * The API release's project key. When present it is the project identity:
+   * records group by it and nothing is derived from (possibly masked) source
+   * identifiers. Absent on rows read from the legacy file set.
+   */
+  readonly projectKey?: string | null
   readonly engagementId: string | null
   readonly title: string
   readonly beneficiary: string

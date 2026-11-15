@@ -1,6 +1,13 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { PnrrLiveOverviewPage } from '@/features/pnrr/components/live/PnrrLivePages'
+import { PnrrDashboard } from '@/features/pnrr/components/PnrrDashboard'
+import type { PnrrRouteLoaderData } from './pnrr'
 
 export const Route = createLazyFileRoute('/pnrr')({
-  component: PnrrLiveOverviewPage,
+  component: PnrrRoutePage,
 })
+
+function PnrrRoutePage() {
+  const loaderData = Route.useLoaderData() as PnrrRouteLoaderData | undefined
+
+  return <PnrrDashboard initialCurrency={loaderData?.initialCurrency} />
+}

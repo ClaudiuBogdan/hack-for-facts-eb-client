@@ -37,7 +37,6 @@ import type {
   PnrrProjectListFilters,
 } from "../../api/pnrr-api";
 import {
-  PNRR_RELEASE_LANES,
   type PnrrLiveCapability,
   type PnrrLiveProject,
   type PnrrLiveRelease,
@@ -47,6 +46,10 @@ import {
   downloadPnrrProjectPageCsv,
   downloadPnrrVerificationCsv,
 } from "../../lib/pnrr-live-export";
+import { formatPnrrSourceDate } from "../../lib/pnrr-release-context";
+import { PnrrReleaseSourceDates } from "./PnrrReleaseSourceDates";
+
+export { PnrrReleaseSourceDates };
 
 export type PnrrProjectsRouteSearch = PnrrProjectListFilters & {
   readonly after?: string;
@@ -113,17 +116,7 @@ function progressPercent(value: number | null): number | null {
   return Math.min(100, Math.max(0, value * 100));
 }
 
-function formatSourceDate(value: string | null): string {
-  if (!value) return "—";
-  const date = new Date(`${value.slice(0, 10)}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(getUserLocale(), {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(date);
-}
+const formatSourceDate = formatPnrrSourceDate;
 
 function projectDisplayTitle(project: PnrrLiveProject): string {
   return (
@@ -515,36 +508,6 @@ function MetricCard({
       </p>
       <p className="mt-2 text-sm text-[var(--pnrr-muted)]">{note}</p>
     </div>
-  );
-}
-
-export function PnrrReleaseSourceDates({
-  release,
-}: {
-  readonly release: PnrrLiveRelease;
-}) {
-  const mipe = release.lanes.find(
-    (lane) => lane.lane === PNRR_RELEASE_LANES.mipeProjects,
-  );
-  const ords = release.lanes.find(
-    (lane) => lane.lane === PNRR_RELEASE_LANES.ordsPaymentsCapture,
-  );
-
-  return (
-    <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
-      <div>
-        <dt className="font-bold">
-          <Trans>MIPE project snapshot</Trans>
-        </dt>
-        <dd>{formatSourceDate(mipe?.asOf ?? null)}</dd>
-      </div>
-      <div>
-        <dt className="font-bold">
-          <Trans>ORDS payments capture</Trans>
-        </dt>
-        <dd>{formatSourceDate(ords?.asOf ?? null)}</dd>
-      </div>
-    </dl>
   );
 }
 

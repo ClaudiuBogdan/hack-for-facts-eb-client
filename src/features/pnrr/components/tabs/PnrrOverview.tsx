@@ -392,6 +392,17 @@ function PnrrOverviewMapPreview({
   }, [isUnavailable, onUnavailable])
 
   const model = mapPreview ?? serverMapPreview.data?.mapPreview
+  if (!model && isUnavailable && !onUnavailable) {
+    // Nothing else can draw the preview: say it failed rather than load forever.
+    return (
+      <div
+        className="flex items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-6 text-sm font-bold text-[var(--pnrr-muted)]"
+        style={{ minHeight: 420 }}
+      >
+        <Trans>Could not load PNRR data</Trans>
+      </div>
+    )
+  }
   if (!model) return <PnrrDeferredCardFallback minHeight={420} />
 
   return <PnrrMapPreview model={model} filterState={filterState} />

@@ -15,14 +15,21 @@ import {
 } from '@/components/ui/accordion'
 import { FileWarning, Info, LibraryBig } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { PNRR_FILESET_ID } from '../../lib/snapshot'
 
 interface PnrrInfoSheetProps {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
+  /** The API release the dashboard serves. */
+  readonly releaseId?: string | null
 }
 
-export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
+export function PnrrInfoSheet({
+  open,
+  onOpenChange,
+  releaseId = null,
+}: PnrrInfoSheetProps) {
+  // Named as in the catalog message, which keeps its existing translations.
+  const PNRR_FILESET_ID = releaseId ?? '—'
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col gap-0 overflow-hidden border-l-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-0 sm:max-w-xl [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:h-8 [&>button.absolute]:w-8 [&>button.absolute]:rounded-none [&>button.absolute]:bg-transparent [&>button.absolute]:opacity-100 [&>button.absolute]:ring-offset-0 [&>button.absolute]:hover:bg-[var(--pnrr-card)] [&>button.absolute]:focus:ring-[var(--pnrr-blue)]">

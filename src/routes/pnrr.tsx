@@ -1,53 +1,29 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import {
   createNoStoreHeaders,
   createPublicPageCacheHeaders,
 } from '@/lib/http-cache'
 import { parsePnrrSearch, type PnrrSearchState } from '@/schemas/pnrr'
 import { DEFAULT_LOCALE, normalizeLocale, translatorFor } from '@/lib/i18n'
-import type { PnrrLiveRouteLoaderData } from '@/features/pnrr/lib/pnrr-live-route-loader'
-import { normalizePnrrCui } from '@/features/pnrr/lib/pnrr-route-validation'
+import type { PnrrDashboardRouteLoaderData } from '@/features/pnrr/lib/pnrr-dashboard-route-loader'
+import { normalizePnrrSeoSnapshotSearch } from '@/features/pnrr/seo/pnrr-seo'
 import { buildPnrrLiveRouteHead } from '@/features/pnrr/seo/pnrr-live-seo'
 
-export type PnrrRouteLoaderData = PnrrLiveRouteLoaderData
+export type PnrrRouteLoaderData = PnrrDashboardRouteLoaderData
 
-/**
- * The live projects filters an old dashboard link can carry over. Only the
- * beneficiary CUI is the same identifier on both sides; legacy counties are
- * names, and component and measure values are not defined by the API
- * contract, so those are dropped rather than guessed.
- */
-export function mapLegacyPnrrProjectsSearch(
-  search: Partial<PnrrSearchState>,
-): { readonly beneficiaryCui?: string } {
-  const beneficiaryCui = search.beneficiaryCui
-    ? normalizePnrrCui(search.beneficiaryCui)
-    : null
-  return beneficiaryCui ? { beneficiaryCui } : {}
+type PnrrRouteLoaderDeps = {
+  readonly overviewSearch: Partial<PnrrSearchState>
+  readonly includeOverview: boolean
 }
 
 /**
- * The PNRR dashboard reads the active API release (overview and metadata) for
- * both the server render and the browser. The legacy search schema is kept
- * so old links still parse; legacy tabs that now have their own live page are
- * redirected there, and the remaining legacy views land on the overview.
+ * The PNRR dashboard. Its tabs, filters, panels and pages live in this route's
+ * search params, as before; every figure comes from the active API release,
+ * built on the web server (see `PnrrDashboard`).
  */
 export const Route = createFileRoute('/pnrr')({
   ssr: true,
   validateSearch: parsePnrrSearch,
-  beforeLoad: ({ search }) => {
-    const legacySearch = search as Partial<PnrrSearchState>
-    if (legacySearch.view === 'projects') {
-      throw redirect({
-        to: '/pnrr/proiecte',
-        search: mapLegacyPnrrProjectsSearch(legacySearch),
-        replace: true,
-      })
-    }
-    if (legacySearch.view === 'map') {
-      throw redirect({ to: '/pnrr/judete', replace: true })
-    }
-  },
   headers: ({ loaderData }) => {
     const data = loaderData as PnrrRouteLoaderData | undefined
 
@@ -63,6 +39,16 @@ export const Route = createFileRoute('/pnrr')({
       vary: ['Accept-Encoding', 'Cookie'],
     })
   },
+  // Only what the overview depends on: changing a page, sort or panel does not
+  // rerun the loader.
+  loaderDeps: ({ search }): PnrrRouteLoaderDeps => {
+    const pageSearch = search as Partial<PnrrSearchState>
+    return {
+      overviewSearch: normalizePnrrSeoSnapshotSearch(pageSearch),
+      includeOverview:
+        pageSearch.view === undefined || pageSearch.view === 'overview',
+    }
+  },
   // In the request's own language, from the PNRR catalog.
   head: ({ match }) => {
     const loaderData = match.loaderData as PnrrRouteLoaderData | undefined
@@ -74,10 +60,15 @@ export const Route = createFileRoute('/pnrr')({
       translator: translatorFor(locale, '/pnrr'),
     })
   },
-  loader: async ({ context }): Promise<PnrrRouteLoaderData> => {
-    const { loadPnrrLiveOverviewRoute } = await import(
-      '@/features/pnrr/lib/pnrr-live-route-loader'
+  loader: async ({ context, deps }): Promise<PnrrRouteLoaderData> => {
+    const { overviewSearch, includeOverview } = deps as PnrrRouteLoaderDeps
+    const { loadPnrrDashboardRoute } = await import(
+      '@/features/pnrr/lib/pnrr-dashboard-route-loader'
     )
-    return loadPnrrLiveOverviewRoute({ queryClient: context.queryClient })
+    return loadPnrrDashboardRoute({
+      queryClient: context.queryClient,
+      search: overviewSearch,
+      includeOverview,
+    })
   },
 })

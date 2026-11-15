@@ -19,6 +19,7 @@ import {
   type PnrrSearchState,
   PNRR_TEXT_SEARCH_MAX_LENGTH,
 } from '@/schemas/pnrr'
+import type { PnrrDashboardObservation } from '@/schemas/pnrr-live'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
   getPnrrBeneficiaryDirectoryType,
@@ -525,6 +526,84 @@ export function normalizePnrrProjectRecord(
   raw: RawPnrrProject,
 ): PnrrProjectRecord {
   const normalized = normalizeRawProject(raw)
+  return buildPnrrProjectRecord(normalized, {
+    id: generatePnrrHash(
+      `${normalized.engagementId ?? ''}|${normalized.rowSignature}`,
+    ),
+    sourceUrl: PNRR_MIPE_SOURCE_URL,
+  })
+}
+
+/**
+ * One observation of the API release's dashboard snapshot, read like an
+ * official MIPE row: the listed EU funding is `euContributionRon`, progress
+ * ratios become percentages (a missing ratio stays missing, falling back to
+ * the reported stage as for the files), dates keep their typed ISO value, and
+ * the location goes through the same resolution as the files. The record's id
+ * and project identity come from the server keys, never from beneficiary
+ * fields, which the release may mask.
+ */
+export function normalizePnrrApiObservation(
+  observation: PnrrDashboardObservation,
+): PnrrProjectRecord {
+  const listedFundingRon = toNumber(observation.euContributionRon)
+
+  return buildPnrrProjectRecord(
+    {
+      engagementId: nullableStringValue(observation.commitmentBusinessId),
+      title: stringValue(observation.contractTitle),
+      beneficiary: stringValue(observation.beneficiaryName),
+      cui: nullableStringValue(observation.beneficiaryCui),
+      county: stringValue(observation.countyName),
+      locality: stringValue(observation.localityName),
+      fundingSource: normalizeFundingSource(observation.financingSource),
+      listedFundingRon: listedFundingRon ?? 0,
+      sourceValueRon: listedFundingRon,
+      sourceValueEur: null,
+      totalValueRon: toNumber(observation.totalValueRon),
+      nationalContributionRon: toNumber(observation.nationalPublicValueRon),
+      vatValueRon: toNumber(observation.vatRon),
+      ineligibleValueRon: toNumber(observation.ineligibleValueRon),
+      contractNumber: nullableStringValue(observation.contractNumber),
+      commitmentDate: isoDateValue(observation.commitmentDate),
+      startDate: isoDateValue(observation.startDate),
+      endDate: isoDateValue(observation.endDate),
+      sourceBeneficiaryType: nullableStringValue(observation.beneficiaryType),
+      impact: nullableStringValue(observation.impact),
+      criName: nullableStringValue(observation.responsibleInstitutionName),
+      techProgressInput: officialProgressInput(
+        observation.physicalProgressRatio,
+        observation.status,
+      ),
+      finProgressInput: officialProgressInput(
+        observation.financialProgressRatio,
+      ),
+      componentCode: stringValue(observation.componentCode),
+      measureCode: stringValue(observation.measureCode),
+      cri: stringValue(observation.responsibleInstitutionCode),
+      rowSignature: '',
+    },
+    {
+      id: `${observation.snapshotId}:${observation.sourceObservationId}`,
+      projectKey: observation.projectKey,
+      sourceUrl: observation.sourceUrl || PNRR_MIPE_SOURCE_URL,
+    },
+  )
+}
+
+function isoDateValue(value: string | null): string | null {
+  const match = value?.match(/^(\d{4}-\d{2}-\d{2})/)
+  return match?.[1] ?? null
+}
+
+function buildPnrrProjectRecord(
+  normalized: NormalizedRawProject,
+  identity: {
+    readonly id: string
+    readonly sourceUrl: string
+    readonly projectKey?: string
+  },
+): PnrrProjectRecord {
   const techRaw = parseProgress(normalized.techProgressInput)
   const finRaw = parseProgress(normalized.finProgressInput)
 
@@ -549,9 +628,8 @@ export function normalizePnrrProjectRecord(
   )
 
   const projectBase = {
-    id: generatePnrrHash(
-      `${normalized.engagementId ?? ''}|${normalized.rowSignature}`,
-    ),
+    id: identity.id,
+    ...(identity.projectKey ? { projectKey: identity.projectKey } : {}),
     engagementId: normalized.engagementId,
     title: normalized.title,
     beneficiary: normalized.beneficiary,
@@ -573,7 +651,7 @@ export function normalizePnrrProjectRecord(
     sourceBeneficiaryType: normalized.sourceBeneficiaryType,
     impact: normalized.impact,
     criName: normalized.criName,
-    sourceUrl: PNRR_MIPE_SOURCE_URL,
+    sourceUrl: identity.sourceUrl,
     techProgress: techRaw,
     finProgress: finRaw,
     status: classifyStatus(techRaw),
@@ -925,8 +1003,14 @@ export function deduplicateProjects(
 }
 
 export function getProjectIdentity(
-  project: Pick<PnrrProjectRecord, 'engagementId' | 'title' | 'cui'>,
+  project: Pick<
+    PnrrProjectRecord,
+    'projectKey' | 'engagementId' | 'title' | 'cui'
+  >,
 ): string {
+  // The API's key wins: it groups the release's records (noncanonical ones
+  // included) and keeps the same id when a filter regroups a subset.
+  if (project.projectKey) return `key:${project.projectKey}`
   if (project.engagementId) return `engagement:${project.engagementId}`
   return `fallback:${normalizeTitle(project.title)}|${project.cui ?? ''}`
 }
@@ -936,7 +1020,10 @@ export function countUniqueProjects(projects: readonly PnrrProject[]): number {
 }
 
 export function getProjectRecordIdentity(
-  record: Pick<PnrrProjectRecord, 'engagementId' | 'title' | 'cui'>,
+  record: Pick<
+    PnrrProjectRecord,
+    'projectKey' | 'engagementId' | 'title' | 'cui'
+  >,
 ): string {
   return getProjectIdentity(record)
 }
@@ -1407,6 +1494,29 @@ export function processPnrrData(rawProjects: readonly unknown[]): {
     meta: {
       projectCount: projects.length,
       projectRecordCount: recordsWithDuplicates.length,
+    },
+  }
+}
+
+/**
+ * The same pipeline over the API release's observations: every record keeps
+ * its server `projectKey`, so the existing grouping joins them by that key.
+ * The legacy duplicate-conflict signal is not derived here: it compared
+ * fallback identities built from titles and CUIs, which the release keys
+ * replace.
+ */
+export function processPnrrApiObservations(
+  observations: readonly PnrrDashboardObservation[],
+): ReturnType<typeof processPnrrData> {
+  const projectRecords = observations.map(normalizePnrrApiObservation)
+  const projects = groupPnrrProjects(projectRecords)
+
+  return {
+    projects,
+    projectRecords,
+    meta: {
+      projectCount: projects.length,
+      projectRecordCount: projectRecords.length,
     },
   }
 }

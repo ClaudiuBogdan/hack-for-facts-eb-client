@@ -452,6 +452,61 @@ export const pnrrVerificationSchema = z.object({
   missingProgressLinkCount: z.number(),
 });
 
+/** Most observations one dashboard snapshot may carry: a bound on server input. */
+export const PNRR_DASHBOARD_SNAPSHOT_MAX_OBSERVATIONS = 250_000;
+
+/**
+ * The release's dashboard snapshot, read by the web server only (never sent
+ * to the browser): every privacy-fenced MIPE observation of the release,
+ * noncanonical records included, and the publisher-reported program totals.
+ * It carries no ORDS fact.
+ */
+export const pnrrDashboardObservationSchema = pnrrProjectSchema.pick({
+  projectKey: true,
+  sourceObservationId: true,
+  snapshotId: true,
+  snapshotDate: true,
+  commitmentBusinessId: true,
+  contractTitle: true,
+  beneficiaryName: true,
+  beneficiaryCui: true,
+  countyName: true,
+  localityName: true,
+  financingSource: true,
+  euContributionRon: true,
+  totalValueRon: true,
+  nationalPublicValueRon: true,
+  vatRon: true,
+  ineligibleValueRon: true,
+  contractNumber: true,
+  commitmentDate: true,
+  startDate: true,
+  endDate: true,
+  beneficiaryType: true,
+  impact: true,
+  responsibleInstitutionName: true,
+  physicalProgressRatio: true,
+  financialProgressRatio: true,
+  status: true,
+  componentCode: true,
+  measureCode: true,
+  responsibleInstitutionCode: true,
+  sourceUrl: true,
+});
+
+export const pnrrDashboardSnapshotSchema = z.object({
+  release: pnrrReleaseSchema,
+  program: pnrrOverviewSchema.shape.program,
+  observations: z
+    .array(pnrrDashboardObservationSchema)
+    .max(PNRR_DASHBOARD_SNAPSHOT_MAX_OBSERVATIONS),
+});
+
+export const pnrrDashboardSnapshotEnvelopeSchema = z.object({
+  ok: z.literal(true),
+  data: pnrrDashboardSnapshotSchema,
+});
+
 export type PnrrLiveRelease = z.infer<typeof pnrrReleaseSchema>;
 export type PnrrLiveCapability = z.infer<typeof pnrrCapabilitySchema>;
 export type PnrrLiveOverview = z.infer<typeof pnrrOverviewSchema>;
@@ -475,3 +530,6 @@ export type PnrrLiveEntityProfile = z.infer<typeof pnrrEntityProfileSchema>;
 export type PnrrLivePlaceProfile = z.infer<typeof pnrrPlaceProfileSchema>;
 export type PnrrLivePlaceSummary = z.infer<typeof pnrrPlaceSummarySchema>;
 export type PnrrLiveVerification = z.infer<typeof pnrrVerificationSchema>;
+export type PnrrDashboardObservation = z.infer<typeof pnrrDashboardObservationSchema>;
+export type PnrrDashboardSnapshot = z.infer<typeof pnrrDashboardSnapshotSchema>;
+export type PnrrLiveProgram = PnrrDashboardSnapshot["program"];

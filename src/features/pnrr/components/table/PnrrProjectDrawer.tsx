@@ -41,7 +41,8 @@ import {
 import { cn, formatNumber, getUserLocale } from "@/lib/utils";
 import { PnrrEntityShortcutLinks } from "../PnrrEntityShortcutLinks";
 import { formatCurrency } from "@/lib/utils";
-import { PNRR_FILESET_ID, PNRR_MIPE_SOURCE_URL } from "../../lib/snapshot";
+import { PNRR_MIPE_SOURCE_URL } from "../../lib/snapshot";
+import { usePnrrDashboardReleaseId } from "../../lib/pnrr-release-context";
 
 export function PnrrProjectDrawer({
   project,
@@ -51,6 +52,8 @@ export function PnrrProjectDrawer({
   readonly onClose: () => void;
 }) {
   const currency = usePnrrCurrency();
+  // The API release the record comes from, named as in the catalog message.
+  const PNRR_FILESET_ID = usePnrrDashboardReleaseId() ?? "—";
 
   if (!project) return null;
   const comp = PNRR_COMPONENTS[project.componentCode];

@@ -1,73 +1,86 @@
 import { describe, expect, it } from 'vitest'
 
-import { PnrrLiveOverviewPage } from '@/features/pnrr/components/live/PnrrLivePages'
-import { mapLegacyPnrrProjectsSearch, Route as PnrrRoute } from './pnrr'
+import { Route as PnrrRoute } from './pnrr'
 import { Route as PnrrLazyRoute } from './pnrr.lazy'
 import { Route as PnrrCountiesRoute } from './pnrr_.judete'
 import { Route as PnrrCountyRoute } from './pnrr_.judete_.$countySiruta'
 import { pnrrOrganizationsSearchSchema } from './pnrr_.organizatii'
 import { Route as PnrrProjectsRoute, pnrrProjectsSearchSchema } from './pnrr_.proiecte'
 
-type BeforeLoad = (input: { readonly search: Record<string, unknown> }) => unknown
+type RouteHook = (input: {
+  readonly search?: Record<string, unknown>
+  readonly params?: Record<string, string>
+}) => unknown
 
-function runBeforeLoad(search: Record<string, unknown>): unknown {
-  const beforeLoad = PnrrRoute.options.beforeLoad as unknown as BeforeLoad
+function runBeforeLoad(
+  hook: unknown,
+  input: Parameters<RouteHook>[0] = {},
+): unknown {
   try {
-    beforeLoad({ search })
+    ;(hook as RouteHook)(input)
     return null
   } catch (thrown) {
     return thrown
   }
 }
 
-describe('PNRR live routing', () => {
-  it('renders the release-aware live overview at /pnrr', () => {
-    expect(PnrrLazyRoute.options.component).toBe(PnrrLiveOverviewPage)
+describe('PNRR dashboard routing', () => {
+  it('renders the original dashboard at /pnrr, server-rendered', () => {
+    const component = PnrrLazyRoute.options.component as { readonly name?: string }
+    expect(component.name).toBe('PnrrRoutePage')
     expect(PnrrRoute.options.ssr).toBe(true)
   })
 
-  it('sends legacy tab links to their live pages', () => {
-    expect(runBeforeLoad({ view: 'projects' })).toMatchObject({
-      options: { to: '/pnrr/proiecte', replace: true },
-    })
-    expect(runBeforeLoad({ view: 'map' })).toMatchObject({
-      options: { to: '/pnrr/judete', replace: true },
+  it('keeps every dashboard tab on /pnrr: its links are search params, not redirects', () => {
+    expect(PnrrRoute.options.beforeLoad).toBeUndefined()
+  })
+
+  it('reruns the loader only for what the overview depends on', () => {
+    const loaderDeps = PnrrRoute.options.loaderDeps as unknown as (input: {
+      readonly search: Record<string, unknown>
+    }) => unknown
+
+    expect(
+      loaderDeps({ search: { view: 'projects', page: 3, counties: ['Cluj'] } }),
+    ).toEqual({ overviewSearch: { counties: ['Cluj'] }, includeOverview: false })
+    expect(loaderDeps({ search: {} })).toEqual({
+      overviewSearch: {},
+      includeOverview: true,
     })
   })
 
-  it('carries the beneficiary CUI, the one equivalent filter, to the live projects page', () => {
+  it('sends the projects and county pages back to their dashboard tabs', () => {
     expect(
-      runBeforeLoad({
-        view: 'projects',
-        beneficiaryCui: 'RO11054529',
-        counties: ['Cluj'],
-        components: ['C7'],
+      runBeforeLoad(PnrrProjectsRoute.options.beforeLoad, {
+        search: { beneficiaryCui: 'RO11054529' },
       }),
     ).toMatchObject({
-      options: { to: '/pnrr/proiecte', search: { beneficiaryCui: '11054529' } },
+      options: {
+        to: '/pnrr',
+        search: { view: 'projects', beneficiaryCui: '11054529' },
+        replace: true,
+      },
     })
-    expect(mapLegacyPnrrProjectsSearch({ beneficiaryCui: 'not-a-cui' })).toEqual({})
-    expect(mapLegacyPnrrProjectsSearch({ counties: ['Cluj'], components: ['C7'] })).toEqual({})
-    // The carried value satisfies the live page's own search schema.
     expect(
-      pnrrProjectsSearchSchema.parse(mapLegacyPnrrProjectsSearch({ beneficiaryCui: 'ro4499621' })),
-    ).toEqual({ beneficiaryCui: '4499621' })
+      runBeforeLoad(PnrrProjectsRoute.options.beforeLoad, { search: {} }),
+    ).toMatchObject({ options: { to: '/pnrr', search: { view: 'projects' } } })
+    expect(runBeforeLoad(PnrrCountiesRoute.options.beforeLoad)).toMatchObject({
+      options: { to: '/pnrr', search: { view: 'map' }, replace: true },
+    })
+    expect(
+      runBeforeLoad(PnrrCountyRoute.options.beforeLoad, {
+        params: { countySiruta: '40' },
+      }),
+    ).toMatchObject({ options: { to: '/pnrr', search: { view: 'map' } } })
   })
 
-  it('keeps the overview and legacy views without a live page on /pnrr', () => {
-    expect(runBeforeLoad({})).toBeNull()
-    expect(runBeforeLoad({ view: 'overview' })).toBeNull()
-    expect(runBeforeLoad({ view: 'beneficiaries' })).toBeNull()
-    expect(runBeforeLoad({ view: 'anomalies' })).toBeNull()
-  })
+  it('still answers not found for a malformed county', () => {
+    const thrown = runBeforeLoad(PnrrCountyRoute.options.beforeLoad, {
+      params: { countySiruta: 'not-a-siruta' },
+    }) as { readonly options?: unknown; readonly isNotFound?: boolean }
 
-  it('no longer bounces the live projects and county pages back to /pnrr', () => {
-    expect(PnrrProjectsRoute.options.beforeLoad).toBeUndefined()
-    expect(PnrrCountiesRoute.options.beforeLoad).toBeUndefined()
-    const countyBeforeLoad = PnrrCountyRoute.options.beforeLoad as unknown as (input: {
-      readonly params: { readonly countySiruta: string }
-    }) => unknown
-    expect(() => countyBeforeLoad({ params: { countySiruta: '40' } })).not.toThrow()
+    expect(thrown).not.toBeNull()
+    expect(thrown.options).toBeUndefined()
   })
 
   it('accepts digit-only identifiers produced by the URL parser', () => {
