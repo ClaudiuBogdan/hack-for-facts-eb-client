@@ -36,10 +36,11 @@ import type {
   PnrrOrganizationListFilters,
   PnrrProjectListFilters,
 } from "../../api/pnrr-api";
-import type {
-  PnrrLiveCapability,
-  PnrrLiveProject,
-  PnrrLiveRelease,
+import {
+  PNRR_RELEASE_LANES,
+  type PnrrLiveCapability,
+  type PnrrLiveProject,
+  type PnrrLiveRelease,
 } from "@/schemas/pnrr-live";
 import { getUserLocale } from "@/lib/utils";
 import {
@@ -87,6 +88,24 @@ function formatInteger(value: number): string {
   return new Intl.NumberFormat(getUserLocale(), {
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+/**
+ * Commitment counts a release may withhold. All three must be present before
+ * any of them is shown: a partial set would read as a served zero.
+ */
+function availableCommitmentCounts(counts: {
+  readonly total: number | null;
+  readonly additive: number | null;
+  readonly unresolved: number | null;
+}): {
+  readonly total: number;
+  readonly additive: number;
+  readonly unresolved: number;
+} | null {
+  const { total, additive, unresolved } = counts;
+  if (total === null || additive === null || unresolved === null) return null;
+  return { total, additive, unresolved };
 }
 
 function progressPercent(value: number | null): number | null {
@@ -293,12 +312,6 @@ function QueryState({
       >
         <p className="font-black">
           <Trans>PNRR details are temporarily unavailable.</Trans>
-        </p>
-        <p className="mt-2 text-sm">
-          <Trans>
-            Please try again in a moment. The established MIPE dashboard remains
-            available from the link above.
-          </Trans>
         </p>
       </div>
     );
@@ -511,10 +524,10 @@ export function PnrrReleaseSourceDates({
   readonly release: PnrrLiveRelease;
 }) {
   const mipe = release.lanes.find(
-    (lane) => lane.lane === "progress_observations",
+    (lane) => lane.lane === PNRR_RELEASE_LANES.mipeProjects,
   );
   const ords = release.lanes.find(
-    (lane) => lane.lane === "ords_payments_capture",
+    (lane) => lane.lane === PNRR_RELEASE_LANES.ordsPaymentsCapture,
   );
 
   return (
@@ -542,8 +555,20 @@ export function PnrrLiveOverviewPage() {
   const paymentCapability = status.data?.pnrrCapabilities.find(
     (capability) => capability.id === "payments",
   );
+  const paymentCount = overview.data?.beneficiaryPayments.count ?? null;
+  // A withheld count or amount is unavailable, never a served zero.
   const hasPublishedPayments =
-    paymentCapability !== undefined && paymentCapability.state !== "abstained";
+    paymentCapability !== undefined &&
+    paymentCapability.state !== "abstained" &&
+    paymentCount !== null &&
+    overview.data?.beneficiaryPayments.netRon.amount !== null;
+  const commitmentCounts = overview.data
+    ? availableCommitmentCounts({
+        total: overview.data.commitments.count,
+        additive: overview.data.commitments.additiveCount,
+        unresolved: overview.data.commitments.unresolvedCount,
+      })
+    : null;
 
   return (
     <PnrrLiveShell release={status.data?.pnrrCurrentRelease}>
@@ -595,14 +620,14 @@ export function PnrrLiveOverviewPage() {
                     )}
                     note={t`MIPE-reported national aggregate; distinct from accepted ORDS beneficiary payments`}
                   />
-                  {hasPublishedPayments ? (
+                  {hasPublishedPayments && paymentCount !== null ? (
                     <MetricCard
                       label={t`Beneficiary payment net`}
                       value={formatExactMoney(
                         overview.data.beneficiaryPayments.netRon.amount,
                         "RON",
                       )}
-                      note={t`${formatInteger(overview.data.beneficiaryPayments.count)} source-native payment rows`}
+                      note={t`${formatInteger(paymentCount)} source-native payment rows`}
                     />
                   ) : (
                     <MetricCard
@@ -611,14 +636,22 @@ export function PnrrLiveOverviewPage() {
                       note={t`Payment totals are unavailable for this release.`}
                     />
                   )}
-                  <MetricCard
-                    label={t`Commitment envelopes`}
-                    value={formatExactMoney(
-                      overview.data.commitments.additiveRon.amount,
-                      "RON",
-                    )}
-                    note={t`${formatInteger(overview.data.commitments.additiveCount)}/${formatInteger(overview.data.commitments.count)} envelopes additive; ${formatInteger(overview.data.commitments.unresolvedCount)} unresolved`}
-                  />
+                  {commitmentCounts ? (
+                    <MetricCard
+                      label={t`Commitment envelopes`}
+                      value={formatExactMoney(
+                        overview.data.commitments.additiveRon.amount,
+                        "RON",
+                      )}
+                      note={t`${formatInteger(commitmentCounts.additive)}/${formatInteger(commitmentCounts.total)} envelopes additive; ${formatInteger(commitmentCounts.unresolved)} unresolved`}
+                    />
+                  ) : (
+                    <MetricCard
+                      label={t`Commitment envelopes`}
+                      value="—"
+                      note={t`Data unavailable for this release`}
+                    />
+                  )}
                   <MetricCard
                     label={t`Delivery observations`}
                     value={formatInteger(overview.data.delivery.observedCount)}
@@ -2132,11 +2165,7 @@ export function PnrrLiveOrganizationPage({ cui }: { readonly cui: string }) {
     : [];
 
   return (
-    <PnrrLiveShell
-      release={status.data?.pnrrCurrentRelease}
-      returnView="beneficiaries"
-      returnLabel={<Trans>Back to PNRR beneficiaries</Trans>}
-    >
+    <PnrrLiveShell release={status.data?.pnrrCurrentRelease}>
       <QueryState
         isLoading={status.isLoading || organization.isLoading}
         error={(status.error ?? organization.error) as Error | null}
@@ -2390,6 +2419,14 @@ export function PnrrLiveCountyPage({
 }) {
   const status = usePnrrLiveStatus();
   const place = usePnrrLivePlace(countySiruta);
+  const placePaymentCount = place.data?.paymentCount ?? null;
+  const placeCommitmentCounts = place.data
+    ? availableCommitmentCounts({
+        total: place.data.commitmentCount,
+        additive: place.data.additiveCommitmentCount,
+        unresolved: place.data.unresolvedCommitmentCount,
+      })
+    : null;
 
   return (
     <PnrrLiveShell release={status.data?.pnrrCurrentRelease}>
@@ -2420,16 +2457,29 @@ export function PnrrLiveCountyPage({
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               <MetricCard
                 label={t`Reported-county payments`}
-                value={formatExactMoney(place.data.paymentNetRon, "RON")}
-                note={t`${formatInteger(place.data.paymentCount)} payment rows`}
+                value={
+                  placePaymentCount === null
+                    ? "—"
+                    : formatExactMoney(place.data.paymentNetRon, "RON")
+                }
+                note={
+                  placePaymentCount === null
+                    ? t`Data unavailable for this release`
+                    : t`${formatInteger(placePaymentCount)} payment rows`
+                }
               />
               <MetricCard
                 label={t`Implementation commitments`}
-                value={formatExactMoney(
-                  place.data.additiveCommitmentRon,
-                  "RON",
-                )}
-                note={t`${formatInteger(place.data.additiveCommitmentCount)}/${formatInteger(place.data.commitmentCount)} additive`}
+                value={
+                  placeCommitmentCounts === null
+                    ? "—"
+                    : formatExactMoney(place.data.additiveCommitmentRon, "RON")
+                }
+                note={
+                  placeCommitmentCounts === null
+                    ? t`Data unavailable for this release`
+                    : t`${formatInteger(placeCommitmentCounts.additive)}/${formatInteger(placeCommitmentCounts.total)} additive`
+                }
               />
               <MetricCard
                 label={t`MIPE project observations`}
@@ -2456,6 +2506,17 @@ export function PnrrLiveCountyPage({
     </PnrrLiveShell>
   );
 }
+
+const placeCommitmentCounts = (place: {
+  readonly commitmentCount: number | null;
+  readonly additiveCommitmentCount: number | null;
+  readonly unresolvedCommitmentCount: number | null;
+}) =>
+  availableCommitmentCounts({
+    total: place.commitmentCount,
+    additive: place.additiveCommitmentCount,
+    unresolved: place.unresolvedCommitmentCount,
+  });
 
 export function PnrrLivePlacesPage() {
   const status = usePnrrLiveStatus();
@@ -2487,7 +2548,9 @@ export function PnrrLivePlacesPage() {
               </Trans>
             </p>
             <div className="mt-6 grid gap-3 md:hidden">
-              {places.data.map((place) => (
+              {places.data.map((place) => {
+                const commitments = placeCommitmentCounts(place);
+                return (
                 <article
                   key={place.countySiruta}
                   className="border-2 border-[var(--pnrr-border)] p-4"
@@ -2505,11 +2568,19 @@ export function PnrrLivePlacesPage() {
                   <dl className="mt-4 grid gap-3 text-sm">
                     <Detail
                       label={t`Reported-county payments`}
-                      value={t`${formatExactMoney(place.paymentNetRon, "RON")} · ${formatInteger(place.paymentCount)} rows`}
+                      value={
+                        place.paymentCount === null
+                          ? t`Data unavailable for this release`
+                          : t`${formatExactMoney(place.paymentNetRon, "RON")} · ${formatInteger(place.paymentCount)} rows`
+                      }
                     />
                     <Detail
                       label={t`Implementation commitments`}
-                      value={t`${formatExactMoney(place.additiveCommitmentRon, "RON")} · ${formatInteger(place.additiveCommitmentCount)}/${formatInteger(place.commitmentCount)} additive · ${formatInteger(place.unresolvedCommitmentCount)} unresolved`}
+                      value={
+                        commitments === null
+                          ? t`Data unavailable for this release`
+                          : t`${formatExactMoney(place.additiveCommitmentRon, "RON")} · ${formatInteger(commitments.additive)}/${formatInteger(commitments.total)} additive · ${formatInteger(commitments.unresolved)} unresolved`
+                      }
                     />
                     <Detail
                       label={t`MIPE project observations`}
@@ -2521,7 +2592,8 @@ export function PnrrLivePlacesPage() {
                     />
                   </dl>
                 </article>
-              ))}
+                );
+              })}
             </div>
             <div className="mt-6 hidden overflow-x-auto border-2 border-[var(--pnrr-border)] md:block">
               <table className="w-full min-w-[900px] text-left text-sm">
@@ -2550,7 +2622,9 @@ export function PnrrLivePlacesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {places.data.map((place) => (
+                  {places.data.map((place) => {
+                    const commitments = placeCommitmentCounts(place);
+                    return (
                     <tr
                       key={place.countySiruta}
                       className="border-t border-[var(--pnrr-border)] align-top"
@@ -2568,26 +2642,45 @@ export function PnrrLivePlacesPage() {
                         </p>
                       </td>
                       <td className="p-3">
-                        <p>{formatExactMoney(place.paymentNetRon, "RON")}</p>
-                        <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                          <Trans>
-                            {formatInteger(place.paymentCount)} reported-county
-                            rows
-                          </Trans>
-                        </p>
+                        {place.paymentCount === null ? (
+                          <p className="text-[var(--pnrr-muted)]">
+                            — <Trans>Data unavailable for this release</Trans>
+                          </p>
+                        ) : (
+                          <>
+                            <p>{formatExactMoney(place.paymentNetRon, "RON")}</p>
+                            <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
+                              <Trans>
+                                {formatInteger(place.paymentCount)}{" "}
+                                reported-county rows
+                              </Trans>
+                            </p>
+                          </>
+                        )}
                       </td>
                       <td className="p-3">
-                        <p>
-                          {formatExactMoney(place.additiveCommitmentRon, "RON")}
-                        </p>
-                        <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                          <Trans>
-                            {formatInteger(place.additiveCommitmentCount)}/
-                            {formatInteger(place.commitmentCount)} additive ·{" "}
-                            {formatInteger(place.unresolvedCommitmentCount)}{" "}
-                            unresolved
-                          </Trans>
-                        </p>
+                        {commitments === null ? (
+                          <p className="text-[var(--pnrr-muted)]">
+                            — <Trans>Data unavailable for this release</Trans>
+                          </p>
+                        ) : (
+                          <>
+                            <p>
+                              {formatExactMoney(
+                                place.additiveCommitmentRon,
+                                "RON",
+                              )}
+                            </p>
+                            <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
+                              <Trans>
+                                {formatInteger(commitments.additive)}/
+                                {formatInteger(commitments.total)} additive ·{" "}
+                                {formatInteger(commitments.unresolved)}{" "}
+                                unresolved
+                              </Trans>
+                            </p>
+                          </>
+                        )}
                       </td>
                       <td className="p-3">
                         {formatInteger(place.projectObservationCount)}
@@ -2599,7 +2692,8 @@ export function PnrrLivePlacesPage() {
                         </p>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

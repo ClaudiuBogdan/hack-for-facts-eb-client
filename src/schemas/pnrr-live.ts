@@ -7,6 +7,20 @@ export const pnrrAnswerStateSchema = z.enum([
   "legacy_unversioned",
 ]);
 
+/**
+ * Freshness lanes of a scoped MIPE release. Each lane keeps its own date: the
+ * MIPE project snapshot, the MIPE national indicators, and the latest accepted
+ * ORDS capture (whose payment facts a MIPE-scoped release may withhold).
+ */
+export const PNRR_RELEASE_LANES = {
+  mipeProjects: "mipe_projects",
+  mipeIndicators: "mipe_indicators",
+  ordsPaymentsCapture: "ords_payments_capture",
+} as const;
+
+/** Counts the API sends as explicit `null` when the release withholds them. */
+const withheldCountSchema = z.number().nullable();
+
 export const pnrrReleaseSchema = z.object({
   releaseId: z.string(),
   releaseKind: z.string(),
@@ -68,7 +82,7 @@ export const pnrrOverviewSchema = z.object({
     paidEur: pnrrMoneyFactSchema,
   }),
   beneficiaryPayments: z.object({
-    count: z.number(),
+    count: withheldCountSchema,
     netRon: pnrrMoneyFactSchema,
     grossRon: pnrrMoneyFactSchema,
     reversalRon: pnrrMoneyFactSchema,
@@ -76,9 +90,9 @@ export const pnrrOverviewSchema = z.object({
     lastDate: z.string().nullable(),
   }),
   commitments: z.object({
-    count: z.number(),
-    additiveCount: z.number(),
-    unresolvedCount: z.number(),
+    count: withheldCountSchema,
+    additiveCount: withheldCountSchema,
+    unresolvedCount: withheldCountSchema,
     additiveRon: pnrrMoneyFactSchema,
   }),
   delivery: z.object({
@@ -402,11 +416,11 @@ export const pnrrPlaceProfileSchema = z.object({
   meta: pnrrAnswerMetaSchema,
   countySiruta: z.string(),
   countyName: z.string().nullable(),
-  paymentCount: z.number(),
+  paymentCount: withheldCountSchema,
   paymentNetRon: z.string().nullable(),
-  commitmentCount: z.number(),
-  additiveCommitmentCount: z.number(),
-  unresolvedCommitmentCount: z.number(),
+  commitmentCount: withheldCountSchema,
+  additiveCommitmentCount: withheldCountSchema,
+  unresolvedCommitmentCount: withheldCountSchema,
   additiveCommitmentRon: z.string().nullable(),
   projectObservationCount: z.number(),
   sourceLocalityLabelCount: z.number(),
@@ -416,11 +430,11 @@ export const pnrrPlaceProfileSchema = z.object({
 export const pnrrPlaceSummarySchema = z.object({
   countySiruta: z.string(),
   countyName: z.string(),
-  paymentCount: z.number(),
+  paymentCount: withheldCountSchema,
   paymentNetRon: z.string().nullable(),
-  commitmentCount: z.number(),
-  additiveCommitmentCount: z.number(),
-  unresolvedCommitmentCount: z.number(),
+  commitmentCount: withheldCountSchema,
+  additiveCommitmentCount: withheldCountSchema,
+  unresolvedCommitmentCount: withheldCountSchema,
   additiveCommitmentRon: z.string().nullable(),
   projectObservationCount: z.number(),
   sourceLocalityLabelCount: z.number(),

@@ -1,82 +1,83 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { i18n } from '@lingui/core'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
   createNoStoreHeaders,
   createPublicPageCacheHeaders,
 } from '@/lib/http-cache'
 import { parsePnrrSearch, type PnrrSearchState } from '@/schemas/pnrr'
-import {
-  buildPnrrRouteHead,
-  buildPnrrSeoSnapshotSearchKey,
-  normalizePnrrSeoSnapshotSearch,
-} from '@/features/pnrr/seo/pnrr-seo'
-import {
-  loadPnrrSeoData,
-  type PnrrSeoLoaderData,
-} from '@/features/pnrr/seo/pnrr-seo-loader'
-import { pnrrOverviewQueryKey } from '@/features/pnrr/lib/pnrr-overview-request'
-import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/i18n'
+import { DEFAULT_LOCALE, normalizeLocale, translatorFor } from '@/lib/i18n'
+import type { PnrrLiveRouteLoaderData } from '@/features/pnrr/lib/pnrr-live-route-loader'
+import { normalizePnrrCui } from '@/features/pnrr/lib/pnrr-route-validation'
+import { buildPnrrLiveRouteHead } from '@/features/pnrr/seo/pnrr-live-seo'
 
-export type PnrrRouteLoaderData = PnrrSeoLoaderData
+export type PnrrRouteLoaderData = PnrrLiveRouteLoaderData
 
+/**
+ * The live projects filters an old dashboard link can carry over. Only the
+ * beneficiary CUI is the same identifier on both sides; legacy counties are
+ * names, and component and measure values are not defined by the API
+ * contract, so those are dropped rather than guessed.
+ */
+export function mapLegacyPnrrProjectsSearch(
+  search: Partial<PnrrSearchState>,
+): { readonly beneficiaryCui?: string } {
+  const beneficiaryCui = search.beneficiaryCui
+    ? normalizePnrrCui(search.beneficiaryCui)
+    : null
+  return beneficiaryCui ? { beneficiaryCui } : {}
+}
+
+/**
+ * The PNRR dashboard reads the active API release (overview and metadata) for
+ * both the server render and the browser. The legacy search schema is kept
+ * so old links still parse; legacy tabs that now have their own live page are
+ * redirected there, and the remaining legacy views land on the overview.
+ */
 export const Route = createFileRoute('/pnrr')({
   ssr: true,
   validateSearch: parsePnrrSearch,
+  beforeLoad: ({ search }) => {
+    const legacySearch = search as Partial<PnrrSearchState>
+    if (legacySearch.view === 'projects') {
+      throw redirect({
+        to: '/pnrr/proiecte',
+        search: mapLegacyPnrrProjectsSearch(legacySearch),
+        replace: true,
+      })
+    }
+    if (legacySearch.view === 'map') {
+      throw redirect({ to: '/pnrr/judete', replace: true })
+    }
+  },
   headers: ({ loaderData }) => {
     const data = loaderData as PnrrRouteLoaderData | undefined
 
-    if (!data?.seoSnapshot) {
+    if (!data?.seeded) {
       return createNoStoreHeaders()
     }
 
+    // Short shared caching: the browser re-reads the active release on entry.
     return createPublicPageCacheHeaders({
       browserMaxAgeSeconds: 0,
-      sharedMaxAgeSeconds: 300,
-      staleWhileRevalidateSeconds: 3600,
+      sharedMaxAgeSeconds: 60,
+      staleWhileRevalidateSeconds: 300,
       vary: ['Accept-Encoding', 'Cookie'],
     })
   },
-  loaderDeps: ({ search }) => {
-    const seoSnapshotSearch = normalizePnrrSeoSnapshotSearch(
-      search as Partial<PnrrSearchState>,
-    )
-
-    return {
-      seoSnapshotSearch,
-      seoSnapshotSearchKey: buildPnrrSeoSnapshotSearchKey(seoSnapshotSearch),
-    }
-  },
+  // In the request's own language, from the PNRR catalog.
   head: ({ match }) => {
     const loaderData = match.loaderData as PnrrRouteLoaderData | undefined
+    const locale = normalizeLocale(match.context.locale) ?? DEFAULT_LOCALE
 
-    return buildPnrrRouteHead({
-      snapshot: loaderData?.seoSnapshot,
-      search: match.search as Partial<PnrrSearchState> | undefined,
-      siteUrl: loaderData?.requestSiteUrl,
-      locale: normalizeLocale(i18n.locale) ?? DEFAULT_LOCALE,
+    return buildPnrrLiveRouteHead({
+      facts: loaderData?.head ?? null,
+      locale,
+      translator: translatorFor(locale, '/pnrr'),
     })
   },
-  loader: async ({ deps, context, location }): Promise<PnrrRouteLoaderData> => {
-    const loaderDeps = deps as {
-      readonly seoSnapshotSearch: Partial<PnrrSearchState>
-      readonly seoSnapshotSearchKey: string
-    }
-    const view = (location.search as Partial<PnrrSearchState>).view
-
-    const { overview, ...loaderData } = await loadPnrrSeoData({
-      search: loaderDeps.seoSnapshotSearch,
-      searchKey: loaderDeps.seoSnapshotSearchKey,
-      // Another tab opens on the raw dataset; only the overview tab uses it.
-      includeOverview: view === undefined || view === 'overview',
-    })
-    // The server-built overview travels with the page in the query cache.
-    if (overview) {
-      context.queryClient.setQueryData(
-        pnrrOverviewQueryKey(loaderDeps.seoSnapshotSearchKey),
-        overview,
-      )
-    }
-
-    return loaderData
+  loader: async ({ context }): Promise<PnrrRouteLoaderData> => {
+    const { loadPnrrLiveOverviewRoute } = await import(
+      '@/features/pnrr/lib/pnrr-live-route-loader'
+    )
+    return loadPnrrLiveOverviewRoute({ queryClient: context.queryClient })
   },
 })

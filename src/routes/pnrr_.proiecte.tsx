@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { isIsoCalendarDate } from "@/features/pnrr/lib/pnrr-route-validation";
@@ -37,13 +37,6 @@ export const pnrrProjectsSearchSchema = z
 export const Route = createFileRoute("/pnrr_/proiecte")({
   ssr: false,
   validateSearch: pnrrProjectsSearchSchema,
-  beforeLoad: () => {
-    throw redirect({
-      to: "/pnrr",
-      search: { view: "projects" },
-      replace: true,
-    });
-  },
   errorComponent: () => (
     <main className="mx-auto max-w-3xl px-4 py-16">
       <h1 className="text-3xl font-black">Invalid PNRR project filters</h1>

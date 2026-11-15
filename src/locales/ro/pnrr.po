@@ -13,6 +13,26 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. js-lingui-explicit-id
+#: src/features/pnrr/components/PnrrHeader.tsx:192
+msgid "pnrr.header.title.resilience"
+msgstr "și Reziliență"
+
+#. js-lingui-explicit-id
+#: src/features/pnrr/components/PnrrHeader.tsx:182
+msgid "pnrr.header.title.national"
+msgstr "Național de"
+
+#. js-lingui-explicit-id
+#: src/features/pnrr/components/PnrrHeader.tsx:179
+msgid "pnrr.header.title.plan"
+msgstr "Planul"
+
+#. js-lingui-explicit-id
+#: src/features/pnrr/components/PnrrHeader.tsx:189
+msgid "pnrr.header.title.recovery"
+msgstr "Redresare"
+
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:371
 msgid " · additional records are available"
 msgstr " · sunt disponibile și alte înregistrări"
@@ -178,6 +198,10 @@ msgstr "{activeCount} filtre active"
 msgid "{explanation} · {0} · review state unavailable"
 msgstr "{explanation} · {0} · stadiul verificării este indisponibil"
 
+#: src/features/pnrr/seo/pnrr-live-seo.ts:85
+msgid "{reportedProjectCount} projects as reported by MIPE in the active release."
+msgstr "{reportedProjectCount} proiecte raportate de MIPE în versiunea curentă."
+
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:369
 msgid "{shownCount} loaded records"
 msgstr "{shownCount} înregistrări încărcate"
@@ -261,11 +285,6 @@ msgstr "Sume primite și plăți"
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:2381
 msgid "ANAF registry"
 msgstr "Registrul ANAF"
-
-#. js-lingui-explicit-id
-#: src/features/pnrr/components/PnrrHeader.tsx:192
-msgid "pnrr.header.title.resilience"
-msgstr "și Reziliență"
 
 #: src/features/pnrr/components/PnrrAnomalyRibbon.tsx:114
 msgid "Anomalii de date"
@@ -1526,11 +1545,6 @@ msgstr "Restrânge lista de proiecte"
 msgid "National"
 msgstr "Național"
 
-#. js-lingui-explicit-id
-#: src/features/pnrr/components/PnrrHeader.tsx:182
-msgid "pnrr.header.title.national"
-msgstr "Național de"
-
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:383
 msgid "National contribution (RON)"
 msgstr "Contribuție națională (RON)"
@@ -1834,11 +1848,6 @@ msgstr "Fizic"
 msgid "Physical progress"
 msgstr "Progres fizic"
 
-#. js-lingui-explicit-id
-#: src/features/pnrr/components/PnrrHeader.tsx:179
-msgid "pnrr.header.title.plan"
-msgstr "Planul"
-
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:575
 msgid "Plan allocation"
 msgstr "Alocarea planului"
@@ -1858,6 +1867,10 @@ msgstr "Încearcă din nou peste puțin timp. Tabloul de bord MIPE consacrat ră
 #: src/features/pnrr/components/PnrrHeader.tsx:126
 msgid "PNRR"
 msgstr "PNRR"
+
+#: src/features/pnrr/seo/pnrr-live-seo.ts:50
+msgid "PNRR - National Recovery and Resilience Plan | Transparenta.eu"
+msgstr "PNRR - Planul Național de Redresare și Reziliență | Transparenta.eu"
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:2160
 msgid "PNRR beneficiary"
@@ -1974,6 +1987,10 @@ msgstr "Progres peste 100%"
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1736
 msgid "Progress ratio reported by MIPE"
 msgstr "Procent de progres raportat de MIPE"
+
+#: src/features/pnrr/seo/pnrr-live-seo.ts:53
+msgid "Progress, national totals and county distribution for PNRR projects reported by MIPE. The MIPE snapshot and ORDS capture dates appear separately."
+msgstr "Progresul proiectelor PNRR, totalurile naționale publicate de MIPE și distribuția pe județe. Pagina afișează separat data situației MIPE și data capturii ORDS."
 
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:313
 msgid "Proiecte"
@@ -2174,11 +2191,6 @@ msgstr "Înregistrări"
 msgid "records with complete data"
 msgstr "înregistrări cu date complete"
 
-#. js-lingui-explicit-id
-#: src/features/pnrr/components/PnrrHeader.tsx:189
-msgid "pnrr.header.title.recovery"
-msgstr "Redresare"
-
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:96
 msgid "Reform"
 msgstr "Reformă"
@@ -2367,6 +2379,10 @@ msgstr "Semnale de risc, nu verdict"
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:113
 msgid "risks"
 msgstr "riscuri"
+
+#: src/features/pnrr/seo/pnrr-live-seo.ts:67
+msgid "Romania PNRR projects reported by MIPE"
+msgstr "Proiectele PNRR din România raportate de MIPE"
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1830
 msgid "RON and EUR values stay separate and are never converted or added together."
@@ -2857,6 +2873,10 @@ msgstr "Alocat total PNRR"
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:371
 msgid "Total value (RON)"
 msgstr "Valoare totală (RON)"
+
+#: src/features/pnrr/seo/pnrr-live-seo.ts:56
+msgid "Transparenta.eu preview for Romania PNRR projects"
+msgstr "Previzualizare Transparenta.eu pentru proiectele PNRR din România"
 
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:395
 msgid "Try changing the filters or searching for something else."
