@@ -28,6 +28,7 @@
     "typecheck": "tsgo -b --noEmit",
     "learning:generate": "tsx scripts/generate-learning-paths.ts",
     "ins:uat-map": "node --import tsx --import ./scripts/lib/lingui-macro-stubs.mjs scripts/generate-ins-uat-map.ts",
+    "map:label-points": "node --import tsx --import ./scripts/lib/lingui-macro-stubs.mjs scripts/generate-map-label-points.ts",
     "learning:validate": "tsx scripts/validate-learning-content.ts",
     "discourse:sync-topics": "node --import tsx scripts/sync-discourse-topics.ts",
     "challenge:validate": "tsx scripts/validate-challenge-content.ts",

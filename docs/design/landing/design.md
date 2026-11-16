@@ -106,6 +106,61 @@ is browser-dependent: 2px overlap was confirmed in macOS Chrome; the final 1px
 setting was requested afterward. The rendering explanation remains a hypothesis;
 see [the research note](../../research/footer-native-overscroll-2026-09-26.md).
 
+## Budget map — 16 November 2026
+
+The landing ends with a full-width map of every primărie's budget. Prototype:
+`/development/landing/budget-map` (`src/development/prototypes/landing/budget-map.*`),
+variants `svg`, `canvas` and `maplibre`.
+
+**Renderer: MapLibre** (owner's pick). Measured on a 4× throttled phone in
+headless Chromium: SVG and canvas over the INS hub's pre-projected shapes
+(~230 KB gz with data) against MapLibre over the raw GeoJSON (~670–800 KB gz).
+Redrawing 3,181 shapes per frame stuttered in both SVG (~2 s of raster per
+pinch) and canvas (~200 ms a frame); moving the drawing as a GPU picture during
+a gesture fixed both, and canvas still froze 130–220 ms at rest. Headless WebGL
+is software-emulated, so MapLibre's slower pinch there is not what a phone
+sees; its real cost is bytes. Those are paid in the background: the section
+prefetches the code, shapes, label points and figures at low priority once the
+page is idle (not on Save-Data or 2G), and creates the map within a screen of
+the view.
+
+Decisions taken in the prototype:
+
+1. **What it shows.** One year (2025), the primărie's own budget (ordonator
+   principal, territorial executives), from the grouped-series endpoint (one
+   request, ~0.1 s, 45 KB). A picker of maps: *Sold bugetar* (income − expenses,
+   % of income), *Venituri totale*, *Cheltuieli totale*; grouped once there are
+   several groups.
+2. **Colours.** The balance diverges on ColorBrewer RdBu (deficit red, surplus
+   blue, ±3% neutral). Income and expenses use RdBu's blue and red arms, five
+   classes cut at percentiles 50/75/90/97 — half the primării share one light
+   tint, the top 3% the arm's deep end, so the tops read at a glance. Seven
+   equal classes were too dark (a third of the map at the dark end) or, softened,
+   too washed out.
+3. **Labels by zoom.** Counties (their code where the name does not fit), then
+   UAT names, then names with the figure and unit — switched by the country's
+   width on screen (1,400 and 3,600 px), so a phone and a desktop name the same
+   things at the same size. Label points are poles of inaccessibility computed
+   offline (`yarn map:label-points`, `public/geojson/label-points-<date>.json`).
+4. **Under the pointer.** Desktop: tooltip at the pointer, click opens the
+   primărie. Touch: a popover at the tapped point with a 44 px link. Touch
+   gestures: one finger scrolls the page on the whole country, two move the map;
+   zoomed in, one finger pans. MapLibre's gesture hint is restyled from a 40%
+   black wash to a small centred pill, in Romanian.
+5. **Legend** in the INS map's form: unit in the title, classes named by exactly
+   the values they hold (decision log 2026-10-02), the ends of the balance named,
+   the UAT under the pointer marked on the bar, a two-column list on a phone, the
+   no-data count, one source line with coverage.
+6. **Picker.** The trigger names the map at 18 px with a strip of its colours;
+   each option carries a one-line description and its strip. shadcn Select under
+   a mouse; a bottom sheet of radio rows under a finger (the phone's native
+   picker cannot show either, and nothing here types, so Radix's
+   keyboard-resize problem does not arise).
+
+The SVG zoom engine the prototype produced is shared as
+`src/components/maps/svg-zoom/` (`useSvgMapZoom`), off unless enabled; the INS
+hub's UAT map opts in with `smoothZoom`.
+
 ## Follow-ups
 
 - A real `/despre` page, and the band link back once it exists.
