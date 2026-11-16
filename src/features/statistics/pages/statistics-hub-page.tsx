@@ -297,7 +297,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
         </RuledFrame>
       </section>
 
-      <UatMapSection />
+      <UatMapSection smoothZoom />
 
       <section className="border-b" aria-labelledby="hub-change-title">
         <RuledFrame className="py-14 sm:py-20">

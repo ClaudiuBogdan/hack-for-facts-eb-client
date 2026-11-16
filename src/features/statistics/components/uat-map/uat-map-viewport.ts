@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react'
 import type { PointerEvent, RefObject } from 'react'
-import { clampBox, ease, interpolateBox, zoomAbout, type ViewBox } from './uat-map-view-box'
+import { clampBox, ease, interpolateBox, zoomAbout, type ViewBox } from '@/components/maps/svg-zoom/view-box'
 
 /** The closest the map goes: a sixteenth of the country's width. */
 const MIN_WIDTH_SHARE = 1 / 16
@@ -35,6 +35,7 @@ export function useMapViewport({
   initial = full,
   onWholeCountry,
   onGesture,
+  enabled = true,
 }: {
   readonly svgRef: RefObject<SVGSVGElement | null>
   readonly full: ViewBox
@@ -44,6 +45,8 @@ export function useMapViewport({
   readonly onWholeCountry: () => void
   /** Called as a drag, a pinch or the wheel moves the map: what was under the pointer no longer is. */
   readonly onGesture: () => void
+  /** False: the map is moved by another engine (`useSvgMapZoom`); this one attaches nothing. */
+  readonly enabled?: boolean
 }) {
   const minWidth = full[2] * MIN_WIDTH_SHARE
   const isFull = (box: ViewBox) => box[2] >= full[2] * 0.98
@@ -160,11 +163,11 @@ export function useMapViewport({
 
   useEffect(() => {
     const svg = svgRef.current
-    if (!svg) return
+    if (!enabled || !svg) return
     const listener = (event: WheelEvent) => onWheel(event)
     svg.addEventListener('wheel', listener, { passive: false })
     return () => svg.removeEventListener('wheel', listener)
-  }, [svgRef])
+  }, [enabled, svgRef])
 
   useEffect(
     () => () => {

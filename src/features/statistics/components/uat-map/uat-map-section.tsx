@@ -17,7 +17,7 @@ const UatMapBand = lazy(() => quietImport(() => import('./uat-map-band')).then((
  * The two start together — the figures do not wait for the code that reads
  * them. Until then, and on the server, the band is its head and its place.
  */
-export function UatMapSection() {
+export function UatMapSection({ smoothZoom = false }: { readonly smoothZoom?: boolean } = {}) {
   // A screen ahead of the reader, either way: the ~230 KB are in by the time they arrive.
   const { ref, inView: near } = useInView({ triggerOnce: true, rootMargin: '100% 0px' })
   const queryClient = useQueryClient()
@@ -34,7 +34,7 @@ export function UatMapSection() {
           // The code that failed to load stays failed in this document: a retry is a fresh one.
           <ErrorBoundary fallback={() => <UatMapFailed onRetry={() => void reloadForFreshCode()} />}>
             <Suspense fallback={<UatMapPending />}>
-              <UatMapBand view={view} />
+              <UatMapBand view={view} smoothZoom={smoothZoom} />
             </Suspense>
           </ErrorBoundary>
         ) : (

@@ -25,8 +25,9 @@ import { formatTotal, seriesMeta } from './uat-map-series'
 import { UatMapSvg } from './uat-map-svg'
 import { UatTooltip, type UatStanding } from './uat-map-tooltip'
 import { useTooltipAnchor } from './uat-map-tooltip-anchor'
-import { fitBox, type ViewBox } from './uat-map-view-box'
+import { fitBox, type ViewBox } from '@/components/maps/svg-zoom/view-box'
 import { useMapViewport, useRenderedWidth } from './uat-map-viewport'
+import { useSvgMapZoom } from '@/components/maps/svg-zoom/use-svg-map-zoom'
 
 /**
  * The UAT map band: six series, each UAT coloured by its total for the latest
@@ -36,9 +37,9 @@ import { useMapViewport, useRenderedWidth } from './uat-map-viewport'
  */
 
 /** The band once its code is in: the map when the figures are, their place until then. */
-export function UatMapBand({ view }: { readonly view: MapView }) {
+export function UatMapBand({ view, smoothZoom = false }: { readonly view: MapView; readonly smoothZoom?: boolean }) {
   const query = useUatMapSnapshot()
-  if (query.data) return <UatMapReady data={query.data} view={view} />
+  if (query.data) return <UatMapReady data={query.data} view={view} smoothZoom={smoothZoom} />
   // A chunk that failed stays failed in this document: a retry is a fresh one, or — offline, or
   // already tried — the same read again.
   if (query.isError) {
@@ -53,7 +54,7 @@ export function UatMapBand({ view }: { readonly view: MapView }) {
   return <UatMapPending />
 }
 
-function UatMapReady({ data, view }: { readonly data: UatMapSnapshot; readonly view: MapView }) {
+function UatMapReady({ data, view, smoothZoom }: { readonly data: UatMapSnapshot; readonly view: MapView; readonly smoothZoom: boolean }) {
   const { geometry } = data
   // Every row, name and held UAT here opens a territory page: have its code before the tap.
   useWarmRouteCode('/ins/teritorii/$siruta')
@@ -88,15 +89,21 @@ function UatMapReady({ data, view }: { readonly data: UatMapSnapshot; readonly v
   const frameRef = useRef<HTMLDivElement>(null)
   /** The map with its controls and legend: a tap inside keeps a held UAT. */
   const figureRef = useRef<HTMLDivElement>(null)
-  const viewport = useMapViewport({
-    svgRef,
+  /** The untransformed box the SVG fills: the smooth engine listens and measures on it. */
+  const zoomFrameRef = useRef<HTMLDivElement>(null)
+  const viewportOptions = {
     full,
     initial: county ? fitBox(geometry.counties[county]!, full) : full,
     onWholeCountry: () => {
       if (county) view.showCounty(undefined)
     },
     onGesture: () => setHovered(null),
-  })
+  }
+  // Two engines while the shared one is on trial here (`smoothZoom`): only the one in use listens.
+  // Once it is the default, `useMapViewport` and this switch go.
+  const classicViewport = useMapViewport({ svgRef, ...viewportOptions, enabled: !smoothZoom })
+  const smoothViewport = useSvgMapZoom({ frameRef: zoomFrameRef, surfaceRef: svgRef, ...viewportOptions, enabled: smoothZoom })
+  const viewport = smoothZoom ? smoothViewport : classicViewport
   const { box } = viewport
   const width = useRenderedWidth(svgRef)
   const pxPerUnit = (width ?? 700) / box[2]
@@ -118,11 +125,12 @@ function UatMapReady({ data, view }: { readonly data: UatMapSnapshot; readonly v
   // ── the reading: a series' totals → every mark, once per switch ──────
   const reading = useMemo(() => readingOf({ geometry, series, meta }), [geometry, series, meta])
   const labels = useMemo(() => {
-    if (moving || width === null) return []
+    // The smooth engine moves the names with the picture; dropping them would redraw it in a gesture's first frame.
+    if ((moving && !smoothZoom) || width === null) return []
     if (county) return visibleLabels(geometry, box, pxPerUnit, { only: (i) => geometry.county[i] === county })
     if (box[2] < full[2] / 2.5) return visibleLabels(geometry, box, pxPerUnit, { max: 250 })
     return []
-  }, [moving, width, county, geometry, box, pxPerUnit, full])
+  }, [moving, smoothZoom, width, county, geometry, box, pxPerUnit, full])
   const countyOptions = useMemo<readonly CountyOption[]>(
     () =>
       Object.keys(geometry.counties)
@@ -234,24 +242,28 @@ function UatMapReady({ data, view }: { readonly data: UatMapSnapshot; readonly v
             </div>
           </div>
           <div ref={frameRef} className="relative">
-            <UatMapSvg
-              geometry={geometry}
-              label={reading.legendTitle}
-              viewport={{ svgRef, box, pxPerUnit, zoomed }}
-              layers={reading.layers}
-              highlight={active}
-              focusCounty={county}
-              labels={labels}
-              className={cn(zoomed ? 'touch-none cursor-grab active:cursor-grabbing' : 'touch-manipulation', hovered !== null && 'cursor-pointer')}
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={viewport.pointer.onPointerEnd}
-              onPointerCancel={viewport.pointer.onPointerEnd}
-              onPointerLeave={(event) => {
-                if (event.pointerType !== 'touch') setHovered(null)
-              }}
-              onClick={onClick}
-            />
+            {/* The smooth engine moves the SVG as a picture mid-gesture: this box clips it and is what it measures. */}
+            <div ref={zoomFrameRef} className={cn(smoothZoom && 'overflow-hidden')} {...(smoothZoom ? smoothViewport.frameProps : {})}>
+              <UatMapSvg
+                geometry={geometry}
+                label={reading.legendTitle}
+                viewport={{ svgRef, box, pxPerUnit, zoomed }}
+                layers={reading.layers}
+                highlight={active}
+                focusCounty={county}
+                labels={labels}
+                className={cn(zoomed ? 'touch-none cursor-grab active:cursor-grabbing' : 'touch-manipulation', hovered !== null && 'cursor-pointer')}
+                style={smoothZoom ? smoothViewport.surfaceStyle : undefined}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={viewport.pointer.onPointerEnd}
+                onPointerCancel={viewport.pointer.onPointerEnd}
+                onPointerLeave={(event) => {
+                  if (event.pointerType !== 'touch') setHovered(null)
+                }}
+                onClick={onClick}
+              />
+            </div>
             {active !== null && !moving ? (
               <UatTooltip
                 tooltipRef={tooltip.tooltipRef}

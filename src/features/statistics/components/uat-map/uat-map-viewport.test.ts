@@ -2,7 +2,7 @@ import type { PointerEvent } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useMapViewport } from './uat-map-viewport'
-import type { ViewBox } from './uat-map-view-box'
+import type { ViewBox } from '@/components/maps/svg-zoom/view-box'
 
 const FULL: ViewBox = [0, 0, 4000, 2827]
 const ZOOMED: ViewBox = [1000, 700, 1000, 707]

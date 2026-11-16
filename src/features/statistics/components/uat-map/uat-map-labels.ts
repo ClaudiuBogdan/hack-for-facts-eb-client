@@ -1,5 +1,5 @@
 import type { UatMapGeometry } from '../../lib/uat-map-snapshot'
-import type { ViewBox } from './uat-map-view-box'
+import type { ViewBox } from '@/components/maps/svg-zoom/view-box'
 
 /** A UAT's name where it is drawn, zoomed in. */
 export interface UatLabel {

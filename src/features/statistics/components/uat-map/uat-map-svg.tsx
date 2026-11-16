@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import type { UatMapGeometry } from '../../lib/uat-map-snapshot'
 import { LABEL_PX, type UatLabel } from './uat-map-labels'
 import type { MapLayer } from './uat-map-scales'
-import type { ViewBox } from './uat-map-view-box'
+import type { ViewBox } from '@/components/maps/svg-zoom/view-box'
 
 /**
  * The UAT map as one SVG: the fills a path per class (`classLayers`), and

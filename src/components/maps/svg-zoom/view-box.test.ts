@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clampBox, ease, fitBox, interpolateBox, zoomAbout, type ViewBox } from './uat-map-view-box'
+import { boxKeeping, clampBox, ease, fitBox, gridPointAt, interpolateBox, zoomAbout, type ViewBox } from './view-box'
 
 const FULL: ViewBox = [0, 0, 4000, 2000]
 
@@ -42,5 +42,40 @@ describe('interpolateBox and ease', () => {
   it('starts, passes the middle and ends where it should', () => {
     expect([ease(0), ease(0.5), ease(1)]).toEqual([0, 0.5, 1])
     expect(interpolateBox([0, 0, 100, 50], [100, 50, 300, 150], 0.5)).toEqual([50, 25, 200, 100])
+  })
+})
+
+describe('boxKeeping', () => {
+  const rect = { left: 100, top: 50, width: 400, height: 200 }
+  const min = 4000 / 24
+
+  it('keeps the grid point under the screen point at the new width', () => {
+    const from: ViewBox = [1000, 500, 2000, 1000]
+    const at = { x: 220, y: 90 }
+    const anchor = gridPointAt(from, rect, at)
+    const next = boxKeeping(anchor, at, 1000, rect, FULL, min)
+    expect(next[2]).toBe(1000)
+    const after = gridPointAt(next, rect, at)
+    expect(after.x).toBeCloseTo(anchor.x)
+    expect(after.y).toBeCloseTo(anchor.y)
+  })
+
+  it('follows the fingers when they move as well as spread', () => {
+    const from: ViewBox = [1000, 500, 2000, 1000]
+    const anchor = gridPointAt(from, rect, { x: 300, y: 150 })
+    const moved = { x: 340, y: 170 }
+    const next = boxKeeping(anchor, moved, 800, rect, FULL, min)
+    const after = gridPointAt(next, rect, moved)
+    expect(after.x).toBeCloseTo(anchor.x)
+    expect(after.y).toBeCloseTo(anchor.y)
+  })
+
+  it('holds the width between the closest zoom and the whole map, and the view inside the map', () => {
+    const anchor = { x: 10, y: 10 }
+    expect(boxKeeping(anchor, { x: 300, y: 150 }, 1, rect, FULL, min)[2]).toBe(min)
+    expect(boxKeeping(anchor, { x: 300, y: 150 }, 1e9, rect, FULL, min)).toEqual(FULL)
+    const [x, y] = boxKeeping(anchor, { x: 300, y: 150 }, 1000, rect, FULL, min)
+    expect(x).toBeGreaterThanOrEqual(0)
+    expect(y).toBeGreaterThanOrEqual(0)
   })
 })
