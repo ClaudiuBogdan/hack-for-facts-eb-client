@@ -8,18 +8,30 @@ import {
   type PnrrLiveRelease,
 } from "@/schemas/pnrr-live";
 import {
+  usePnrrLiveOrganization,
+  usePnrrLiveOrganizationProfile,
+  usePnrrLiveOrganizationProjects,
   usePnrrLiveOverview,
   usePnrrLivePlaces,
   usePnrrLiveStatus,
 } from "../../hooks/use-pnrr-live-data";
-import { PnrrLiveOverviewPage, PnrrLivePlacesPage } from "./PnrrLivePages";
+import {
+  PnrrLiveOrganizationPage,
+  PnrrLiveOverviewPage,
+  PnrrLivePlacesPage,
+} from "./PnrrLivePages";
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children }: { readonly children: ReactNode }) => <a>{children}</a>,
+  Link: ({ children, to }: { readonly children: ReactNode; readonly to: string }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 
 vi.mock("../../hooks/use-pnrr-live-data", () => ({
   usePnrrLiveStatus: vi.fn(),
+  usePnrrLiveOrganization: vi.fn(),
+  usePnrrLiveOrganizationProfile: vi.fn(),
+  usePnrrLiveOrganizationProjects: vi.fn(),
   usePnrrLiveOverview: vi.fn(),
   usePnrrLivePlaces: vi.fn(),
 }));
@@ -163,5 +175,75 @@ describe("PNRR withheld ORDS facts", () => {
     expect(screen.queryByText(/reported-county rows/)).toBeNull();
     expect(screen.queryByText(/\b0 rows\b/)).toBeNull();
     expect(screen.getAllByText("812").length).toBeGreaterThan(0);
+  });
+});
+
+describe("PNRR organization projects with a withheld organization profile", () => {
+  const cui = "11054529";
+  const project = {
+    cursor: "project-cursor",
+    node: {
+      projectKey: "project-1",
+      contractTitle: "Railway infrastructure renewal",
+      beneficiaryCui: cui,
+      beneficiaryName: "Railway Infrastructure Company",
+      componentCode: "C4",
+      snapshotDate: "2026-10-15",
+      totalValueRon: "3000000",
+    },
+  };
+
+  beforeEach(() => {
+    vi.mocked(usePnrrLiveStatus).mockReturnValue(
+      settled({
+        pnrrCurrentRelease: release,
+        pnrrCapabilities: [
+          {
+            id: "organizations",
+            releaseId: release.releaseId,
+            state: "abstained",
+            reasonCodes: ["capability_not_declared_for_release"],
+            limitation: null,
+          },
+        ],
+      }) as never,
+    );
+    vi.mocked(usePnrrLiveOrganization).mockReturnValue(
+      settled(undefined) as never,
+    );
+    vi.mocked(usePnrrLiveOrganizationProfile).mockReturnValue(
+      settled(undefined) as never,
+    );
+  });
+
+  it("shows the public project portfolio without requesting the withheld profile", () => {
+    vi.mocked(usePnrrLiveOrganizationProjects).mockReturnValue({
+      ...settled({ pages: [{ edges: [project] }] }),
+      isSuccess: true,
+    } as never);
+
+    render(<PnrrLiveOrganizationPage cui={cui} />);
+
+    expect(
+      screen.getByRole("heading", { name: "Railway Infrastructure Company" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Railway infrastructure renewal/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Other PNRR activity")).not.toBeInTheDocument();
+    expect(usePnrrLiveOrganization).toHaveBeenCalledWith(cui, false);
+    expect(usePnrrLiveOrganizationProfile).toHaveBeenCalledWith(cui, false);
+  });
+
+  it("shows an empty result when the release has no public projects for the CUI", () => {
+    vi.mocked(usePnrrLiveOrganizationProjects).mockReturnValue({
+      ...settled({ pages: [{ edges: [] }] }),
+      isSuccess: true,
+    } as never);
+
+    render(<PnrrLiveOrganizationPage cui={cui} />);
+
+    expect(screen.getByText("Organization not found")).toBeInTheDocument();
+    expect(screen.queryByText("Other PNRR activity")).not.toBeInTheDocument();
   });
 });

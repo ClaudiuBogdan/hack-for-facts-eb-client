@@ -2115,12 +2115,23 @@ function Detail({
 
 export function PnrrLiveOrganizationPage({ cui }: { readonly cui: string }) {
   const status = usePnrrLiveStatus();
-  const organization = usePnrrLiveOrganization(cui);
-  const organizationProfile = usePnrrLiveOrganizationProfile(cui);
+  const projectsOnly =
+    status.data?.pnrrCapabilities.some(
+      ({ id, state }) => id === "organizations" && state === "abstained",
+    ) ?? false;
+  const organization = usePnrrLiveOrganization(cui, !projectsOnly);
+  const organizationProfile = usePnrrLiveOrganizationProfile(cui, !projectsOnly);
   const projects = usePnrrLiveOrganizationProjects(cui);
-  const identity = organization.data;
+  const identity = projectsOnly ? undefined : organization.data;
   const profile = organizationProfile.data;
   const projectEdges = projects.data?.pages.flatMap((page) => page.edges) ?? [];
+  const projectBeneficiary = projectsOnly
+    ? projectEdges.find(({ node }) => node.beneficiaryCui === cui)?.node
+    : undefined;
+  const organizationStatus = projectsOnly ? projects : organization;
+  const notFound = projectsOnly
+    ? projects.isSuccess && !projectBeneficiary
+    : identity === null;
   const activeRoles = identity
     ? Object.entries(identity.roles)
         .filter(([role, active]) => active && role !== "beneficiary")
@@ -2130,10 +2141,12 @@ export function PnrrLiveOrganizationPage({ cui }: { readonly cui: string }) {
   return (
     <PnrrLiveShell release={status.data?.pnrrCurrentRelease}>
       <QueryState
-        isLoading={status.isLoading || organization.isLoading}
-        error={(status.error ?? organization.error) as Error | null}
+        isLoading={status.isLoading || organizationStatus.isLoading}
+        error={
+          (status.error ?? (projectBeneficiary ? null : organizationStatus.error)) as Error | null
+        }
       >
-        {identity === null && (
+        {notFound && (
           <div className="border-2 border-[var(--pnrr-border)] p-6">
             <p className="font-black">
               <Trans>Organization not found</Trans>
@@ -2145,18 +2158,18 @@ export function PnrrLiveOrganizationPage({ cui }: { readonly cui: string }) {
             </p>
           </div>
         )}
-        {identity && (
+        {(identity || projectBeneficiary) && (
           <>
             <header className="border-b-2 border-[var(--pnrr-border)] pb-6">
               <p className="text-xs font-black uppercase tracking-widest text-[var(--pnrr-blue)]">
                 <Trans>PNRR beneficiary</Trans>
               </p>
               <h2 className="mt-2 max-w-4xl text-3xl font-black leading-tight sm:text-4xl">
-                {identity.name ?? cui}
+                {identity?.name ?? projectBeneficiary?.beneficiaryName ?? cui}
               </h2>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
                 <span className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-1.5 font-mono font-black">
-                  CUI {identity.cui}
+                  CUI {identity?.cui ?? cui}
                 </span>
                 {activeRoles.map((role) => (
                   <span
@@ -2242,116 +2255,118 @@ export function PnrrLiveOrganizationPage({ cui }: { readonly cui: string }) {
               </div>
             </section>
 
-            <section className="mt-8 grid gap-5 lg:grid-cols-2">
-              <div className="border-2 border-[var(--pnrr-border)] p-5">
-                <h3 className="text-xl font-black">
-                  <Trans>Organization details</Trans>
-                </h3>
-                <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-                  <Detail
-                    label={t`Registry evidence`}
-                    value={
-                      identity.hubs.map(registryHubLabel).join(" · ") || null
-                    }
-                  />
-                  <Detail label={t`CAEN code`} value={identity.caenCode} />
-                  <Detail
-                    label={t`Organization status`}
-                    value={
-                      identity.isActive === null
-                        ? null
-                        : identity.isActive
-                          ? t`Active`
-                          : t`Inactive`
-                    }
-                  />
-                  <Detail
-                    label={t`VAT status`}
-                    value={
-                      identity.isVatPayer === null
-                        ? null
-                        : identity.isVatPayer
-                          ? t`VAT registered`
-                          : t`Not VAT registered`
-                    }
-                  />
-                  <Detail
-                    label={t`Name source`}
-                    value={
-                      identity.nameSource
-                        ? registryHubLabel(identity.nameSource)
-                        : null
-                    }
-                  />
-                  <Detail
-                    label={t`First observed source`}
-                    value={
-                      identity.firstSeenSource
-                        ? registryHubLabel(identity.firstSeenSource)
-                        : null
-                    }
-                  />
-                </dl>
-              </div>
-
-              <details className="group border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 [&::-webkit-details-marker]:hidden">
-                  <span>
-                    <span className="block text-xl font-black">
-                      <Trans>Other PNRR activity</Trans>
-                    </span>
-                    <span className="mt-2 block text-sm leading-relaxed text-[var(--pnrr-muted)]">
-                      <Trans>
-                        Organization-level payments and procurement context.
-                        These records are not attributed to a specific project.
-                      </Trans>
-                    </span>
-                  </span>
-                  <ChevronDown className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="border-t border-[var(--pnrr-border)] p-5">
-                  <SectionState
-                    isLoading={organizationProfile.isLoading}
-                    error={organizationProfile.error as Error | null}
-                  >
-                    {profile && (
-                      <dl className="grid gap-5 sm:grid-cols-2">
-                        <Detail
-                          label={t`Payment observations`}
-                          value={formatInteger(profile.payments.count)}
-                        />
-                        <Detail
-                          label={t`Net payments reported for the beneficiary`}
-                          value={formatExactMoney(
-                            profile.payments.totalLei,
-                            "RON",
-                          )}
-                        />
-                        <Detail
-                          label={t`Procurement participant relationships`}
-                          value={formatInteger(
-                            profile.procurement.participantRelationCount,
-                          )}
-                        />
-                        <Detail
-                          label={t`Unresolved commitment envelopes`}
-                          value={formatInteger(
-                            profile.commitments.unresolvedCount,
-                          )}
-                        />
-                      </dl>
-                    )}
-                    <p className="mt-5 text-sm leading-relaxed text-[var(--pnrr-muted)]">
-                      <Trans>
-                        Payment totals remain subject to duplicate review.
-                        Procurement is shown as relationship counts only because
-                        participant-level money is not available.
-                      </Trans>
-                    </p>
-                  </SectionState>
+            {identity && (
+              <section className="mt-8 grid gap-5 lg:grid-cols-2">
+                <div className="border-2 border-[var(--pnrr-border)] p-5">
+                  <h3 className="text-xl font-black">
+                    <Trans>Organization details</Trans>
+                  </h3>
+                  <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+                    <Detail
+                      label={t`Registry evidence`}
+                      value={
+                        identity.hubs.map(registryHubLabel).join(" · ") || null
+                      }
+                    />
+                    <Detail label={t`CAEN code`} value={identity.caenCode} />
+                    <Detail
+                      label={t`Organization status`}
+                      value={
+                        identity.isActive === null
+                          ? null
+                          : identity.isActive
+                            ? t`Active`
+                            : t`Inactive`
+                      }
+                    />
+                    <Detail
+                      label={t`VAT status`}
+                      value={
+                        identity.isVatPayer === null
+                          ? null
+                          : identity.isVatPayer
+                            ? t`VAT registered`
+                            : t`Not VAT registered`
+                      }
+                    />
+                    <Detail
+                      label={t`Name source`}
+                      value={
+                        identity.nameSource
+                          ? registryHubLabel(identity.nameSource)
+                          : null
+                      }
+                    />
+                    <Detail
+                      label={t`First observed source`}
+                      value={
+                        identity.firstSeenSource
+                          ? registryHubLabel(identity.firstSeenSource)
+                          : null
+                      }
+                    />
+                  </dl>
                 </div>
-              </details>
-            </section>
+
+                <details className="group border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 [&::-webkit-details-marker]:hidden">
+                    <span>
+                      <span className="block text-xl font-black">
+                        <Trans>Other PNRR activity</Trans>
+                      </span>
+                      <span className="mt-2 block text-sm leading-relaxed text-[var(--pnrr-muted)]">
+                        <Trans>
+                          Organization-level payments and procurement context.
+                          These records are not attributed to a specific project.
+                        </Trans>
+                      </span>
+                    </span>
+                    <ChevronDown className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="border-t border-[var(--pnrr-border)] p-5">
+                    <SectionState
+                      isLoading={organizationProfile.isLoading}
+                      error={organizationProfile.error as Error | null}
+                    >
+                      {profile && (
+                        <dl className="grid gap-5 sm:grid-cols-2">
+                          <Detail
+                            label={t`Payment observations`}
+                            value={formatInteger(profile.payments.count)}
+                          />
+                          <Detail
+                            label={t`Net payments reported for the beneficiary`}
+                            value={formatExactMoney(
+                              profile.payments.totalLei,
+                              "RON",
+                            )}
+                          />
+                          <Detail
+                            label={t`Procurement participant relationships`}
+                            value={formatInteger(
+                              profile.procurement.participantRelationCount,
+                            )}
+                          />
+                          <Detail
+                            label={t`Unresolved commitment envelopes`}
+                            value={formatInteger(
+                              profile.commitments.unresolvedCount,
+                            )}
+                          />
+                        </dl>
+                      )}
+                      <p className="mt-5 text-sm leading-relaxed text-[var(--pnrr-muted)]">
+                        <Trans>
+                          Payment totals remain subject to duplicate review.
+                          Procurement is shown as relationship counts only because
+                          participant-level money is not available.
+                        </Trans>
+                      </p>
+                    </SectionState>
+                  </div>
+                </details>
+              </section>
+            )}
           </>
         )}
       </QueryState>

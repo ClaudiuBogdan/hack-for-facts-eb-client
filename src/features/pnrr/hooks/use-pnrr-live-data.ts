@@ -272,7 +272,7 @@ export const usePnrrLiveDocumentReferences = () =>
     pnrrApi.documentReferences(input, signal),
   );
 
-export function usePnrrLiveOrganization(cui: string) {
+export function usePnrrLiveOrganization(cui: string, enabled = true) {
   const assertReleaseId = usePnrrFactReleaseId();
   const run = useReleaseMismatchRecovery();
   return useQuery({
@@ -284,11 +284,11 @@ export function usePnrrLiveOrganization(cui: string) {
     ],
     queryFn: ({ signal }) =>
       run(() => pnrrApi.organizationIdentity(cui, assertReleaseId, signal)),
-    enabled: cui.length > 0 && Boolean(assertReleaseId),
+    enabled: enabled && cui.length > 0 && Boolean(assertReleaseId),
   });
 }
 
-export function usePnrrLiveOrganizationProfile(cui: string) {
+export function usePnrrLiveOrganizationProfile(cui: string, enabled = true) {
   const assertReleaseId = usePnrrFactReleaseId();
   const run = useReleaseMismatchRecovery();
   return useQuery({
@@ -300,7 +300,7 @@ export function usePnrrLiveOrganizationProfile(cui: string) {
     ],
     queryFn: ({ signal }) =>
       run(() => pnrrApi.organizationProfile(cui, assertReleaseId, signal)),
-    enabled: cui.length > 0 && Boolean(assertReleaseId),
+    enabled: enabled && cui.length > 0 && Boolean(assertReleaseId),
   });
 }
 
