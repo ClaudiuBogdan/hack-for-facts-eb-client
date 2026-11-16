@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { measureFromSearch, searchForMeasure } from '@/features/landing/lib/budget-map-measures'
 
 /**
  * The landing. Server-rendered and publicly cacheable: nothing on it is
@@ -9,6 +10,9 @@ import { createPublicPageCacheHeaders } from '@/lib/http-cache'
  */
 export const Route = createFileRoute('/')({
   ssr: true,
+  // The budget map's picked map (`?harta=venituri`): every key returned, an unreadable one as undefined,
+  // so the root's passthrough search cannot keep a raw value under it.
+  validateSearch: (search: Record<string, unknown>): { harta?: string } => ({ harta: searchForMeasure(measureFromSearch(search.harta) ?? 'balance') }),
   headers: () =>
     createPublicPageCacheHeaders({
       browserMaxAgeSeconds: 3600,

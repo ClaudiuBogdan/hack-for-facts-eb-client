@@ -157,6 +157,43 @@ Decisions taken in the prototype:
    picker cannot show either, and nothing here types, so Radix's
    keyboard-resize problem does not arise).
 
+**Promoted the same day** (variant `maplibre`) as the landing's last band,
+`04 / Harta`, after the people band and the promo cards:
+
+| Prototype | Promoted to |
+|---|---|
+| `budget-map.data.ts` (figures, measures, formats) | `src/features/landing/api/budget-map.ts`, `lib/budget-map-measures.ts`, `lib/budget-map-format.ts` |
+| `budget-map.maplibre-style.ts` | `lib/budget-map-style.ts` |
+| `budget-map.maplibre-resources.ts` | `hooks/use-budget-map-data.ts` |
+| `budget-map.maplibre-section.tsx`, `.maplibre.tsx`, `.picker.tsx`, `.legend.tsx`, `.uat-info.tsx` | `components/budget-map/` |
+
+What changed on the way: every word is Lingui (`msg` descriptors for the
+measures, resolved at render); numbers follow the active locale — `mii`/`mil.`/
+`mld.` in Romanian, `K`/`M`/`B` in English (en-US suffixes, en-GB's are „k",
+„m", „bn") — and the class labels read „sub 5 mil." / „under 5M". The band's
+title and the picker are server-rendered; the picker works before the map
+arrives and the map takes the picked measure as a prop. The prototype stays.
+
+Review outcomes at promotion (Opus and Codex, 16 November 2026):
+
+- The figures request had a fresh `createdAt` per call, so every visitor missed
+  the server's grouped-series cache (~0.55 s of aggregation instead of ~0.1 s);
+  the series now carry a fixed stamp.
+- Figures are classified as printed (balance to one decimal, amounts to their
+  short form): a primărie printed „−3%" or „14 mil. lei" is never coloured in
+  the class its label excludes (decision log, 2026-10-02).
+- The capital's own budget has no shape (the map draws its sectors); the
+  server reports it (`BUDGET_MAP_COVERAGE`) and the source line says so. The
+  coverage line counts the primării on the map.
+- Without WebGL 2 the map is not built and says so, without a retry that would
+  fail again; a renderer error is logged; a failed read offers a retry; the
+  theme and a resize are followed; the picked map is in the address
+  (`?harta=venituri|cheltuieli`).
+- Open for the owner: the balance counts financing flows (prior-year surplus
+  carried over, functional 40/41; loan repayments, economic 81) as income and
+  spending — as the entity pages' `budget_balance` does; and individual
+  primării are reachable by pointer only.
+
 The SVG zoom engine the prototype produced is shared as
 `src/components/maps/svg-zoom/` (`useSvgMapZoom`), off unless enabled; the INS
 hub's UAT map opts in with `smoothZoom`.

@@ -33,6 +33,7 @@ import { SectionLight, SectionLightStyles, useSectionLight } from './section-lig
 import { ShardDefs } from './shards'
 import { StartHerePanel } from './start-here-panel'
 import { SurfaceIndex } from './surface-index'
+import { BudgetMapSection } from './budget-map/budget-map-section'
 
 /**
  * The landing page.
@@ -360,7 +361,7 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
         </RuledFrame>
       </section>
 
-      <section>
+      <section className="border-b">
         <RuledFrame className="py-12">
           <div className="space-y-4">
             <CampaignLandingShareCard className="w-full" />
@@ -368,6 +369,10 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
           </div>
         </RuledFrame>
       </section>
+
+      {/* The map — the page's last band, full width: every primărie's budget,
+          loaded in the background once the page is idle. */}
+      <BudgetMapSection />
     </div>
   )
 }

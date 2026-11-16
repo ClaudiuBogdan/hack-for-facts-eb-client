@@ -86,7 +86,9 @@ describe('LandingPage', () => {
     render(<LandingPage />, { queryClient: createTestQueryClient() })
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/decizii informate/)
-    expect(screen.getByRole('combobox')).toBeInTheDocument()
+    // Two comboboxes: the search field, and the budget map's picker at the foot of the page.
+    expect(screen.getAllByRole('combobox').filter((element) => element.tagName === 'INPUT')).toHaveLength(1)
+    expect(screen.getByRole('combobox', { name: /Harta afișată/ })).toBeInTheDocument()
 
     const shortcuts = screen.getByRole('navigation', { name: 'Scurtături' })
     expect(within(shortcuts).getAllByRole('link')).toHaveLength(3)
