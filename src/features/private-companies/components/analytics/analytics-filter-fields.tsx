@@ -39,7 +39,7 @@ import { activitySelectorOf, activityToken, caenToken, ONRC_KEY_PATTERNS } from 
 import { legalFormName } from '../../lib/company-legal-forms'
 import { CompanyRegistryScopeNotice } from '../registry/company-registry-notices'
 import { CompanyRegistryScopeProvider } from '../registry/company-registry-scope-provider'
-import { ChoiceSelect } from './analytics-choices'
+import { ChoiceSelect } from '@/components/ui/choice-select'
 
 /**
  * The filters panel's fields. Each writes the scope at once (the address is

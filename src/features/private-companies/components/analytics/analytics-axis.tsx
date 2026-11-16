@@ -21,7 +21,7 @@ import { withScope } from '../../lib/company-analytics-url'
 import { breakdownRows, CONSENSUS_DIMENSIONS, groupLabel, isUnclassifiedActivity, labelSourcesOf } from '../../lib/company-analytics-view'
 import { ActivityDescription } from '../activity-description'
 import { CaenDescription } from '../caen-description'
-import { ChoiceSelect } from './analytics-choices'
+import { ChoiceSelect } from '@/components/ui/choice-select'
 
 /**
  * One axis of the question, ranked: each group a row with its bar (its share
