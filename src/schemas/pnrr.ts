@@ -159,6 +159,12 @@ export type PnrrGranularity = 'national' | 'county' | 'uat'
 
 export type PnrrProjectRecord = {
   readonly id: string
+  /**
+   * The API release's project key. When present it is the project identity:
+   * records group by it and nothing is derived from (possibly masked) source
+   * identifiers. Absent on rows read from the legacy file set.
+   */
+  readonly projectKey?: string | null
   readonly engagementId: string | null
   readonly title: string
   readonly beneficiary: string
@@ -416,6 +422,7 @@ const optionalEntityTypesSearchParam = z.preprocess(
 )
 
 export const PnrrSearchSchema = z.object({
+  lang: z.enum(['ro', 'en']).optional().catch(undefined),
   view: PnrrViewSchema.default(PNRR_SEARCH_DEFAULTS.view),
   search: boundedTextSearchParam,
   beneficiarySearch: boundedTextSearchParam,
@@ -648,6 +655,7 @@ export function parsePnrrSearch(search: unknown): Partial<PnrrSearchState> {
 
 const arraySearchKeySet = new Set<string>(arraySearchKeys)
 const textSearchKeySet = new Set<string>([
+  'lang',
   'view',
   'search',
   'beneficiarySearch',

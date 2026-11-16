@@ -6,10 +6,12 @@ import {
   groupPnrrProjects,
   PNRR_FILESET_ID,
   PNRR_MIPE_SOURCE_URL,
+  processPnrrApiObservations,
   processPnrrBeneficiaryPayments,
   processPnrrData,
   processPnrrOfficialIndicators,
 } from '../lib/data-transform'
+import type { PnrrLiveProgram, PnrrDashboardObservation } from '@/schemas/pnrr-live'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
   EMBLEMATIC_PROJECTS,
@@ -123,6 +125,7 @@ export function assemblePnrrWorkerModel({
   projectRecordCount,
   beneficiaryPayments,
   indicators,
+  baseReasonCodes = ['legacy_unversioned_fileset'],
 }: {
   readonly projects: readonly PnrrProject[]
   readonly projectRecords: readonly PnrrProjectRecord[]
@@ -136,8 +139,9 @@ export function assemblePnrrWorkerModel({
     readonly available: boolean
     readonly data: PnrrOfficialIndicators | null
   }
+  readonly baseReasonCodes?: readonly string[]
 }): PnrrWorkerModel {
-  const reasonCodes: string[] = ['legacy_unversioned_fileset']
+  const reasonCodes: string[] = [...baseReasonCodes]
   if (!beneficiaryPayments.available) {
     reasonCodes.push('beneficiary_payments_unavailable')
   }
@@ -192,6 +196,53 @@ export function buildPnrrWorkerModelFromRawFiles({
       available: indicators.status === 'fulfilled',
       data: processPnrrOfficialIndicators(rawIndicators),
     },
+  })
+}
+
+function moneyAmount(value: string | null): number | null {
+  if (value === null) return null
+  const amount = Number(value)
+  return Number.isFinite(amount) ? amount : null
+}
+
+/**
+ * The model of one API release, built on the web server from its dashboard
+ * snapshot. The national indicators are the publisher-reported program
+ * totals; a missing amount stays missing. The snapshot carries no ORDS fact,
+ * so the beneficiary-payment source is unavailable (the dashboard says so)
+ * and the beneficiary ranking falls back to listed MIPE project values.
+ */
+export function buildPnrrWorkerModelFromApiSnapshot({
+  observations,
+  program,
+}: {
+  readonly observations: readonly PnrrDashboardObservation[]
+  readonly program: PnrrLiveProgram
+}): PnrrWorkerModel {
+  const processed = processPnrrApiObservations(observations)
+
+  return assemblePnrrWorkerModel({
+    projects: processed.projects,
+    projectRecords: processed.projectRecords,
+    projectCount: processed.meta.projectCount,
+    projectRecordCount: processed.meta.projectRecordCount,
+    beneficiaryPayments: { available: false, data: [] },
+    indicators: {
+      available: true,
+      data: {
+        allocatedTotalEur: moneyAmount(program.allocationEur.amount),
+        paidTotalEur: moneyAmount(program.paidEur.amount),
+        receivedFromEuEur: moneyAmount(program.receivedEur.amount),
+        prefinancingEur: null,
+        suspendedEur: null,
+        revokedEur: null,
+        contractedBeneficiaryCount: null,
+        paidBeneficiaryCount: null,
+        projectCount: program.projectCount,
+        nationalImpactProjectCount: null,
+      },
+    },
+    baseReasonCodes: ['ords_facts_not_in_dashboard_snapshot'],
   })
 }
 
@@ -344,7 +395,11 @@ function normalizeBeneficiaryName(value: string): string {
 function getBeneficiaryKey(project: PnrrProjectRecord): string {
   const normalizedCui = normalizeBeneficiaryCui(project.cui)
   if (normalizedCui) return `cui:${normalizedCui}`
-  return `name:${normalizeBeneficiaryName(project.beneficiary)}`
+  const normalizedName = normalizeBeneficiaryName(project.beneficiary)
+  if (normalizedName) return `name:${normalizedName}`
+  // No CUI and no name (a withheld or masked beneficiary): it stays apart per
+  // project instead of merging every unnamed beneficiary into one row.
+  return `project:${getProjectIdentity(project)}`
 }
 
 function chooseBeneficiaryName(
@@ -1394,6 +1449,8 @@ function formatProgressForCsv(
 export function buildCsv(
   projects: readonly PnrrProject[],
   search: Partial<PnrrSearchState> = {},
+  /** The file set or API release the rows come from. */
+  sourceId: string = PNRR_FILESET_ID,
 ): string {
   const headers = [
     'source_fileset_id',
@@ -1432,7 +1489,7 @@ export function buildCsv(
     search.sortBy ?? 'value',
     search.sortOrder ?? 'desc',
   ).map((project) => [
-    PNRR_FILESET_ID,
+    sourceId,
     project.sourceUrl ?? PNRR_MIPE_SOURCE_URL,
     'Grouped project; listed EU funding includes only MIPE record slices matching the active filters',
     project.engagementId ?? '',

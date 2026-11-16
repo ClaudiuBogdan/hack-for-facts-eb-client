@@ -1,4 +1,5 @@
 import {
+  queryOptions,
   useInfiniteQuery,
   useQuery,
   useQueryClient,
@@ -14,11 +15,85 @@ import type { PnrrLiveRelease } from "@/schemas/pnrr-live";
 
 const PNRR_LIVE_QUERY_KEY = ["pnrr-live"] as const;
 
-const isReleaseMismatch = (error: unknown): boolean =>
-  error instanceof GraphQLRequestError &&
-  error.graphQLErrors.some(
-    (entry) => entry.extensions?.["code"] === "RELEASE_MISMATCH",
+/**
+ * The active release is re-read on entry (once the cached copy is older than
+ * this) and while the page stays open and visible. A new release id changes
+ * every fact query key, so all PNRR reads move to the new release together.
+ */
+export const PNRR_LIVE_STATUS_STALE_MS = 30_000;
+export const PNRR_LIVE_STATUS_REFETCH_INTERVAL_MS = 5 * 60_000;
+const PNRR_LIVE_STATUS_RETRY_COUNT = 2;
+
+export const pnrrLiveQueryKeys = {
+  status: () => [...PNRR_LIVE_QUERY_KEY, "status"] as const,
+  overview: (releaseId: string | null) =>
+    [...PNRR_LIVE_QUERY_KEY, "overview", releaseId] as const,
+};
+
+/**
+ * A fact answer that names a different release than the one the client
+ * asserted. The server normally refuses with RELEASE_MISMATCH; this guards the
+ * same invariant on the client so two snapshots are never shown side by side.
+ */
+export class PnrrReleaseDivergenceError extends Error {
+  constructor(
+    readonly expectedReleaseId: string | undefined,
+    readonly receivedReleaseId: string,
+  ) {
+    super("PNRR answer belongs to a different release than the one asserted");
+    this.name = "PnrrReleaseDivergenceError";
+  }
+}
+
+export function assertPnrrAnswerRelease<
+  T extends { readonly meta: { readonly release: PnrrLiveRelease } },
+>(answer: T, assertReleaseId: string | undefined): T {
+  if (answer.meta.release.releaseId !== assertReleaseId) {
+    throw new PnrrReleaseDivergenceError(
+      assertReleaseId,
+      answer.meta.release.releaseId,
+    );
+  }
+  return answer;
+}
+
+export const isPnrrReleaseMismatch = (error: unknown): boolean =>
+  error instanceof PnrrReleaseDivergenceError ||
+  (error instanceof GraphQLRequestError &&
+    error.graphQLErrors.some(
+      (entry) => entry.extensions?.["code"] === "RELEASE_MISMATCH",
+    ));
+
+/** One read for the overview, shared by the browser hook and the SSR loader. */
+export async function readPnrrLiveOverview(
+  assertReleaseId: string,
+  signal?: AbortSignal,
+) {
+  return assertPnrrAnswerRelease(
+    await pnrrApi.overview(assertReleaseId, signal),
+    assertReleaseId,
   );
+}
+
+export function pnrrLiveStatusQueryOptions() {
+  return queryOptions({
+    queryKey: pnrrLiveQueryKeys.status(),
+    queryFn: ({ signal }) => pnrrApi.status(signal),
+    staleTime: PNRR_LIVE_STATUS_STALE_MS,
+    refetchInterval: PNRR_LIVE_STATUS_REFETCH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    retry: PNRR_LIVE_STATUS_RETRY_COUNT,
+  });
+}
+
+export function pnrrLiveOverviewQueryOptions(releaseId: string | undefined) {
+  return queryOptions({
+    queryKey: pnrrLiveQueryKeys.overview(releaseId ?? null),
+    queryFn: ({ signal }) => readPnrrLiveOverview(releaseId ?? "", signal),
+    enabled: Boolean(releaseId),
+  });
+}
 
 function useReleaseMismatchRecovery() {
   const queryClient = useQueryClient();
@@ -26,9 +101,9 @@ function useReleaseMismatchRecovery() {
     try {
       return await operation();
     } catch (error) {
-      if (isReleaseMismatch(error)) {
+      if (isPnrrReleaseMismatch(error)) {
         await queryClient.invalidateQueries({
-          queryKey: [...PNRR_LIVE_QUERY_KEY, "status"],
+          queryKey: pnrrLiveQueryKeys.status(),
         });
       }
       throw error;
@@ -38,10 +113,7 @@ function useReleaseMismatchRecovery() {
 
 export function usePnrrLiveStatus() {
   const queryClient = useQueryClient();
-  const query = useQuery({
-    queryKey: [...PNRR_LIVE_QUERY_KEY, "status"],
-    queryFn: ({ signal }) => pnrrApi.status(signal),
-  });
+  const query = useQuery(pnrrLiveStatusQueryOptions());
   useEffect(() => {
     if (query.data?.pnrrCurrentRelease.state !== "abstained") return;
     void queryClient.cancelQueries({
@@ -68,10 +140,9 @@ export function usePnrrLiveOverview() {
   const assertReleaseId = usePnrrFactReleaseId();
   const run = useReleaseMismatchRecovery();
   return useQuery({
-    queryKey: [...PNRR_LIVE_QUERY_KEY, "overview", assertReleaseId ?? null],
+    ...pnrrLiveOverviewQueryOptions(assertReleaseId),
     queryFn: ({ signal }) =>
-      run(() => pnrrApi.overview(assertReleaseId, signal)),
-    enabled: Boolean(assertReleaseId),
+      run(() => readPnrrLiveOverview(assertReleaseId ?? "", signal)),
   });
 }
 
@@ -201,7 +272,7 @@ export const usePnrrLiveDocumentReferences = () =>
     pnrrApi.documentReferences(input, signal),
   );
 
-export function usePnrrLiveOrganization(cui: string) {
+export function usePnrrLiveOrganization(cui: string, enabled = true) {
   const assertReleaseId = usePnrrFactReleaseId();
   const run = useReleaseMismatchRecovery();
   return useQuery({
@@ -213,11 +284,11 @@ export function usePnrrLiveOrganization(cui: string) {
     ],
     queryFn: ({ signal }) =>
       run(() => pnrrApi.organizationIdentity(cui, assertReleaseId, signal)),
-    enabled: cui.length > 0 && Boolean(assertReleaseId),
+    enabled: enabled && cui.length > 0 && Boolean(assertReleaseId),
   });
 }
 
-export function usePnrrLiveOrganizationProfile(cui: string) {
+export function usePnrrLiveOrganizationProfile(cui: string, enabled = true) {
   const assertReleaseId = usePnrrFactReleaseId();
   const run = useReleaseMismatchRecovery();
   return useQuery({
@@ -229,7 +300,7 @@ export function usePnrrLiveOrganizationProfile(cui: string) {
     ],
     queryFn: ({ signal }) =>
       run(() => pnrrApi.organizationProfile(cui, assertReleaseId, signal)),
-    enabled: cui.length > 0 && Boolean(assertReleaseId),
+    enabled: enabled && cui.length > 0 && Boolean(assertReleaseId),
   });
 }
 
@@ -343,7 +414,12 @@ export function usePnrrLivePlace(countySiruta: string) {
       assertReleaseId ?? null,
     ],
     queryFn: ({ signal }) =>
-      run(() => pnrrApi.place(countySiruta, assertReleaseId, signal)),
+      run(async () => {
+        const place = await pnrrApi.place(countySiruta, assertReleaseId, signal);
+        return place === null
+          ? null
+          : assertPnrrAnswerRelease(place, assertReleaseId);
+      }),
     enabled: countySiruta.length > 0 && Boolean(assertReleaseId),
   });
 }
@@ -364,7 +440,12 @@ export function usePnrrLiveVerification() {
   return useQuery({
     queryKey: [...PNRR_LIVE_QUERY_KEY, "verification", assertReleaseId ?? null],
     queryFn: ({ signal }) =>
-      run(() => pnrrApi.verification(assertReleaseId, signal)),
+      run(async () =>
+        assertPnrrAnswerRelease(
+          await pnrrApi.verification(assertReleaseId, signal),
+          assertReleaseId,
+        ),
+      ),
     enabled: Boolean(assertReleaseId),
   });
 }

@@ -1,3 +1,4 @@
+import { formatNumber } from '@/lib/utils'
 import { Trans } from '@lingui/react/macro'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PnrrProjectTable } from '../table/PnrrProjectTable'
@@ -26,9 +27,9 @@ export function PnrrProjectsView({
               <Trans>Projects</Trans>
             </h2>
             <span className="hidden leading-none text-sm text-[var(--pnrr-muted)] sm:inline">
-              {page.totalCount.toLocaleString('ro-RO')}{' '}
+              {formatNumber(page.totalCount)}{' '}
               <Trans>projects</Trans> ·{' '}
-              {projectRecordCount.toLocaleString('ro-RO')}{' '}
+              {formatNumber(projectRecordCount)}{' '}
               <Trans>records</Trans>
             </span>
           </div>

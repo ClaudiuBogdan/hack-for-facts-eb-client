@@ -282,21 +282,16 @@ function warmServerSeoDataCache(): void {
     })
 }
 
+/**
+ * Legacy (no route uses this loader any more): the dashboard overview is now
+ * built from the active API release and seeded by
+ * `features/pnrr/lib/pnrr-dashboard-route-loader.ts`. A file-set loader must
+ * not serve it, so this one never does.
+ */
 async function loadServerOverview(
-  input: PnrrSeoLoaderInput,
+  _input: PnrrSeoLoaderInput,
 ): Promise<PnrrServerOverview | null> {
-  if (!input.includeOverview) return null
-  try {
-    const { readPnrrOverviewForSsr } = await import(
-      '@/server/handlers/pnrr-overview'
-    )
-    return readPnrrOverviewForSsr(input.search)
-  } catch (error) {
-    console.error('[pnrr-seo-loader] PNRR overview for SSR failed', {
-      error: error instanceof Error ? error.message : String(error),
-    })
-    return null
-  }
+  return null
 }
 
 export const loadPnrrSeoData = createIsomorphicFn()

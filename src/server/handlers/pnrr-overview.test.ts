@@ -1,279 +1,321 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PnrrSearchState } from '@/schemas/pnrr'
+import type { PnrrLiveRelease } from '@/schemas/pnrr-live'
 import {
-  processPnrrBeneficiaryPayments,
-  processPnrrData,
-  processPnrrOfficialIndicators,
-} from '@/features/pnrr/lib/data-transform'
-import { buildPnrrOverviewRequestPath } from '@/features/pnrr/lib/pnrr-overview-request'
+  FIXTURE_RELEASE_ID,
+  makeFixtureRelease,
+  makeFixtureSnapshot,
+  makeFixtureSnapshotEnvelope,
+  NEXT_FIXTURE_RELEASE_ID,
+} from '@/features/pnrr/lib/pnrr-api-snapshot.fixture'
+import {
+  buildPnrrOverviewRequestPath,
+  PNRR_DASHBOARD_RELEASE_HEADER,
+  type PnrrOverviewPart,
+  type PnrrOverviewPartParams,
+} from '@/features/pnrr/lib/pnrr-overview-request'
 import {
   buildPnrrQueryResult,
-  buildPnrrWorkerModelFromRawFiles,
+  buildPnrrWorkerModelFromApiSnapshot,
   createPnrrFilteredProjectsCache,
 } from '@/features/pnrr/workers/pnrr-query-model'
 import type {
   PnrrServerOverview,
-  PnrrServerOverviewMapPreview,
+  PnrrWorkerProjectPage,
 } from '@/features/pnrr/workers/pnrr-worker-types'
 import {
-  fetchPnrrBeneficiaryPayments,
-  fetchPnrrOfficialIndicators,
-  fetchPnrrProjects,
-  readCachedPnrrBeneficiaryPaymentsResult,
-  readCachedPnrrOfficialIndicatorsResult,
-  readCachedPnrrProjectsResult,
-} from './pnrr-data-proxy'
+  PNRR_DASHBOARD_SNAPSHOT_PATH,
+  resetPnrrDashboardReleaseState,
+} from './pnrr-dashboard-release'
 import {
   handlePnrrOverviewRequest,
   readPnrrOverviewForSsr,
 } from './pnrr-overview'
 
-vi.mock('./pnrr-data-proxy', () => ({
-  fetchPnrrBeneficiaryPayments: vi.fn(),
-  fetchPnrrOfficialIndicators: vi.fn(),
-  fetchPnrrProjects: vi.fn(),
-  readCachedPnrrBeneficiaryPaymentsResult: vi.fn(),
-  readCachedPnrrOfficialIndicatorsResult: vi.fn(),
-  readCachedPnrrProjectsResult: vi.fn(),
-}))
-
-function rawProject(
-  index: number,
-  overrides: Record<string, unknown> = {},
-): Record<string, unknown> {
-  return {
-    id_angajament: 1000 + index,
-    titlu_contract: `Proiect ${index}`,
-    denumire_beneficiar: `Beneficiar ${index}`,
-    cui: String(10_000 + index),
-    judet_implementare: 'Cluj',
-    localitate_implementare: 'Cluj-Napoca',
-    sursa_finantare: 'grant',
-    valoare_fe: 1_000_000 * index,
-    progres_fizic: 0.1 * index,
-    progres_financiar: 0.05 * index,
-    cod_componenta: 'C10',
-    cod_masura: 'I1',
-    cri: 'MDLPA',
-    ...overrides,
-  }
-}
-
-const RAW_PROJECTS = [
-  rawProject(1),
-  rawProject(2, { judet_implementare: 'Alba', localitate_implementare: 'Alba Iulia', cod_componenta: 'C12' }),
-  rawProject(3, { sursa_finantare: 'loan', cod_componenta: 'C12', cod_masura: 'I2' }),
-  rawProject(4, {
-    denumire_beneficiar: 'Municipiul București',
-    cui: '4267117',
-    judet_implementare: 'București',
-    localitate_implementare: 'București',
-  }),
-  rawProject(5, { judet_implementare: 'Național', localitate_implementare: '' }),
-  // A second record of project 1, with another funding source.
-  rawProject(1, { sursa_finantare: 'loan', valoare_fe: 250_000 }),
-  rawProject(6, { progres_fizic: 1, progres_financiar: 1 }),
-]
-const RAW_PAYMENTS = [
-  { 'full legal name': 'Beneficiar 2', 'tax identification number': '10002', 'received amount in lei': 900_000 },
-  { 'full legal name': 'Municipiul București', 'tax identification number': '4267117', 'received amount in lei': 2_000_000 },
-]
-const RAW_INDICATORS = {
-  items: [{ alocat_eur: 21_410_527_592.99, platit_eur: 11_174_329_150.18, nr_beneficiari_plati: 6270 }],
-}
-
-const processed = processPnrrData(RAW_PROJECTS)
-const payments = processPnrrBeneficiaryPayments(RAW_PAYMENTS)
-const indicators = processPnrrOfficialIndicators(RAW_INDICATORS)
-const workerModel = buildPnrrWorkerModelFromRawFiles({
-  rawProjects: RAW_PROJECTS,
-  payments: { status: 'fulfilled', value: RAW_PAYMENTS },
-  indicators: { status: 'fulfilled', value: RAW_INDICATORS },
+// The dashboard's read path must never reach the frozen S3 file set.
+vi.mock('./pnrr-data-proxy', () => {
+  throw new Error('the PNRR dashboard must not load the raw S3 data proxy')
+})
+vi.mock('@/features/pnrr/seo/pnrr-seo-loader', () => {
+  throw new Error('the PNRR dashboard must not load the legacy SEO loader')
 })
 
-const SEARCHES: readonly Partial<PnrrSearchState>[] = [
-  {},
-  { counties: ['Cluj'] },
-  { components: ['C12'], includeNational: false },
-  { beneficiaryCui: '4267117' },
-  { search: 'Proiect', fundingSources: ['loan'] },
-  { onlyAnomalies: true },
-]
+const snapshots = new Map([
+  [FIXTURE_RELEASE_ID, makeFixtureSnapshotEnvelope(FIXTURE_RELEASE_ID)],
+  [NEXT_FIXTURE_RELEASE_ID, makeFixtureSnapshotEnvelope(NEXT_FIXTURE_RELEASE_ID)],
+])
 
-/** What the worker posts for this search, as JSON would carry it. */
-function workerOverview(search: Partial<PnrrSearchState>) {
+let activeRelease: PnrrLiveRelease
+let now: number
+const readRelease = vi.fn(async () => activeRelease)
+const fetchSnapshot = vi.fn(async (input: RequestInfo | URL) => {
+  const url = new URL(String(input))
+  const snapshot = snapshots.get(url.searchParams.get('assertReleaseId') ?? '')
+  return snapshot
+    ? new Response(JSON.stringify(snapshot), {
+        headers: { 'content-type': 'application/json' },
+      })
+    : new Response('{}', { status: 404 })
+})
+
+function workerResult(search: Partial<PnrrSearchState>) {
+  const model = buildPnrrWorkerModelFromApiSnapshot(
+    makeFixtureSnapshot(FIXTURE_RELEASE_ID),
+  )
   const result = buildPnrrQueryResult(
-    workerModel,
+    model,
     { search },
     createPnrrFilteredProjectsCache(),
   )
   return JSON.parse(JSON.stringify(result)) as typeof result
 }
 
-async function requestJson<TBody>(path: string): Promise<{
-  readonly response: Response
-  readonly body: TBody
-}> {
-  const response = await handlePnrrOverviewRequest(
-    new Request(`https://example.test${path}`),
+async function request(
+  search: Partial<PnrrSearchState>,
+  part: PnrrOverviewPart = 'summary',
+  options: {
+    readonly releaseId?: string | null
+    readonly params?: PnrrOverviewPartParams
+  } = { releaseId: FIXTURE_RELEASE_ID },
+): Promise<Response> {
+  return handlePnrrOverviewRequest(
+    new Request(
+      `https://example.test${buildPnrrOverviewRequestPath(search, part, options)}`,
+    ),
   )
-  return { response, body: (await response.json()) as TBody }
 }
 
-function mockAvailableData() {
-  const projects = {
-    data: processed.projects,
-    source: 'cache' as const,
-    stale: false,
-    projectCount: processed.meta.projectCount,
-    projectRecordCount: processed.meta.projectRecordCount,
-  }
-  vi.mocked(fetchPnrrProjects).mockResolvedValue(projects)
-  vi.mocked(readCachedPnrrProjectsResult).mockReturnValue(projects)
-  vi.mocked(fetchPnrrBeneficiaryPayments).mockResolvedValue({
-    data: payments,
-    source: 'cache',
+beforeEach(() => {
+  now = 1_000_000
+  activeRelease = makeFixtureRelease(FIXTURE_RELEASE_ID)
+  readRelease.mockClear()
+  fetchSnapshot.mockClear()
+  resetPnrrDashboardReleaseState({
+    readRelease,
+    fetchSnapshot: fetchSnapshot as unknown as typeof fetch,
+    apiBaseUrl: () => 'https://example.test',
+    now: () => now,
   })
-  vi.mocked(readCachedPnrrBeneficiaryPaymentsResult).mockReturnValue({
-    data: payments,
-    stale: false,
-  })
-  vi.mocked(fetchPnrrOfficialIndicators).mockResolvedValue({
-    data: indicators,
-    source: 'cache',
-  })
-  vi.mocked(readCachedPnrrOfficialIndicatorsResult).mockReturnValue({
-    data: indicators,
-    source: 'cache',
-    stale: false,
-  })
-}
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() => {
+      throw new Error('no other network read is allowed')
+    }),
+  )
+})
 
-describe('the server overview', () => {
-  beforeEach(() => {
-    vi.resetAllMocks()
-    mockAvailableData()
-  })
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
-  it.each(SEARCHES)(
-    'equals the worker overview for %j',
+describe('the release-backed dashboard answers', () => {
+  it.each([
+    {},
+    { counties: ['Cluj'] },
+    { components: ['C12'], includeNational: false },
+    { beneficiaryCui: '4267117' },
+    { search: 'spital', fundingSources: ['loan'] },
+  ] satisfies Partial<PnrrSearchState>[])(
+    'serves the worker overview of the release for %j',
     async (search) => {
-      const { response, body } = await requestJson<PnrrServerOverview>(
-        buildPnrrOverviewRequestPath(search),
-      )
+      const response = await request(search)
+      const body = (await response.json()) as PnrrServerOverview
       const { mapPreview: _mapPreview, ...expectedOverview } =
-        workerOverview(search).overview
-      const expectedMeta = workerOverview(search).meta
+        workerResult(search).overview
 
       expect(response.status).toBe(200)
+      expect(response.headers.get(PNRR_DASHBOARD_RELEASE_HEADER)).toBe(
+        FIXTURE_RELEASE_ID,
+      )
+      expect(response.headers.get('cache-control')).toContain('s-maxage=3600')
+      expect(body.fileSetId).toBe(FIXTURE_RELEASE_ID)
       expect(body.overview).toEqual(expectedOverview)
-      expect(body.meta).toEqual({
-        projectCount: expectedMeta.projectCount,
-        projectRecordCount: expectedMeta.projectRecordCount,
-        beneficiaryPaymentCount: expectedMeta.beneficiaryPaymentCount,
-        officialAllocatedTotalEur: expectedMeta.officialAllocatedTotalEur,
-        officialPaidTotalEur: expectedMeta.officialPaidTotalEur,
-        paidBeneficiaryCount: expectedMeta.paidBeneficiaryCount,
-        paymentCapability: expectedMeta.paymentCapability,
-        indicatorCapability: expectedMeta.indicatorCapability,
-      })
-      expect(response.headers.get('cache-control')).toContain('max-age=60')
+      // Listed MIPE values rank beneficiaries; no ORDS payment is claimed.
+      expect(body.overview.beneficiaryRankingSource).toBe('listed-project-value')
+      expect(body.meta.paymentCapability).toBe('degraded')
+      expect(body.meta.officialAllocatedTotalEur).toBe(21_410_527_592.99)
+      expect(body.meta.officialPaidTotalEur).toBeNull()
     },
   )
 
-  it('sends the worker map preview, with the UAT the reader opened', async () => {
-    const search: Partial<PnrrSearchState> = {
-      panel: 'map-uat',
-      panelUatSiruta: '179132',
-    }
-    const { body } = await requestJson<PnrrServerOverviewMapPreview>(
-      buildPnrrOverviewRequestPath(search, 'map-preview'),
-    )
-    const expected = workerOverview(search).overview.mapPreview
+  it('serves the explorer parts as the worker would', async () => {
+    const search: Partial<PnrrSearchState> = { sortBy: 'title', sortOrder: 'asc' }
+    const worker = workerResult(search)
 
-    expect(expected.uatProjectCount).toBeGreaterThan(0)
-    expect(expected.selectedUatProjects.length).toBeGreaterThan(0)
-    expect(body.mapPreview).toEqual(expected)
+    const projects = await request(search, 'projects')
+    expect((await projects.json()) as PnrrWorkerProjectPage).toEqual(
+      worker.projectPage,
+    )
+    expect(await (await request(search, 'beneficiaries')).json()).toEqual(
+      worker.beneficiaryPage,
+    )
+    expect(await (await request(search, 'anomalies')).json()).toEqual(
+      worker.anomalyModel,
+    )
+    expect(await (await request(search, 'facets')).json()).toEqual(
+      worker.filterFacets,
+    )
+    expect(await (await request(search, 'map')).json()).toEqual({
+      mapModel: worker.mapModel,
+    })
+
+    const detail = await request({}, 'project', {
+      releaseId: FIXTURE_RELEASE_ID,
+      params: { projectId: 'key:project-1' },
+    })
+    expect(await detail.json()).toMatchObject({
+      project: { id: 'key:project-1', recordCount: 2 },
+    })
+
+    const beneficiary = await request({}, 'beneficiary', {
+      releaseId: FIXTURE_RELEASE_ID,
+      params: { detailCui: '4267117' },
+    })
+    expect(await beneficiary.json()).toMatchObject({
+      beneficiary: { cui: '4267117', count: 1 },
+    })
   })
 
-  it('names the active UAT and beneficiary filters as the worker would', async () => {
-    const search: Partial<PnrrSearchState> = {
-      beneficiaryCui: '4267117',
-      uatSiruta: '179132',
-    }
-    const { body } = await requestJson<PnrrServerOverview>(
-      buildPnrrOverviewRequestPath(search),
-    )
-    const worker = workerOverview(search)
+  it('exports the filtered projects as CSV, named and sourced by the release', async () => {
+    const response = await request({ counties: ['Cluj'] }, 'csv')
+    const csv = await response.text()
 
-    expect(body.labels.uats).toEqual(
-      worker.filterFacets.uats
-        .filter((uat) => uat.value === '179132')
-        .map((uat) => ({ siruta: uat.value, label: uat.label })),
+    expect(response.headers.get('content-type')).toContain('text/csv')
+    expect(response.headers.get('content-disposition')).toContain(
+      'pnrr-projects-pnrr-release-v1_mipe-20261015T000000Z.csv',
     )
-    expect(body.labels.beneficiaries).toEqual(
-      worker.beneficiaryPage.rows
-        .filter((row) => row.cui === '4267117')
-        .map((row) => ({ cui: row.cui, name: row.name })),
-    )
+    expect(csv.split('\r\n')).toHaveLength(3)
+    expect(csv).toContain(FIXTURE_RELEASE_ID)
+    expect(csv).not.toContain('20260619')
   })
 
-  it('serves a degraded overview uncached when the payments file fails', async () => {
-    vi.mocked(fetchPnrrBeneficiaryPayments).mockRejectedValue(
-      new Error('upstream'),
-    )
+  it('reads one snapshot per release, from the API, however many requests arrive at once', async () => {
+    await Promise.all([
+      request({}),
+      request({}, 'projects'),
+      request({ counties: ['Cluj'] }, 'map'),
+    ])
+    await request({}, 'beneficiaries')
 
-    const { response, body } = await requestJson<PnrrServerOverview>(
-      buildPnrrOverviewRequestPath({}),
+    expect(fetchSnapshot).toHaveBeenCalledTimes(1)
+    const snapshotUrl = new URL(String(fetchSnapshot.mock.calls[0]![0]))
+    expect(snapshotUrl.pathname).toBe(PNRR_DASHBOARD_SNAPSHOT_PATH)
+    expect(snapshotUrl.searchParams.get('assertReleaseId')).toBe(
+      FIXTURE_RELEASE_ID,
     )
-
-    expect(body.meta.paymentCapability).toBe('degraded')
-    expect(body.overview.beneficiaryRankingSource).toBe('listed-project-value')
-    expect(response.headers.get('cache-control')).toBe('no-store')
+    // Nothing else was fetched: no raw file, no S3 object.
+    expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 
-  it('rejects a search the page would reject', async () => {
-    const { response } = await requestJson<unknown>(
-      `/api/pnrr/overview?fundingSources=${encodeURIComponent('["gift"]')}`,
+  it('follows a declared release switch and refuses the old release', async () => {
+    await request({})
+    activeRelease = makeFixtureRelease(NEXT_FIXTURE_RELEASE_ID)
+
+    // A browser that already read the new release declares it: the server
+    // re-reads the active release at once instead of waiting out its cache.
+    const next = await request({}, 'summary', {
+      releaseId: NEXT_FIXTURE_RELEASE_ID,
+    })
+    expect(next.status).toBe(200)
+    expect(next.headers.get(PNRR_DASHBOARD_RELEASE_HEADER)).toBe(
+      NEXT_FIXTURE_RELEASE_ID,
+    )
+    expect(((await next.json()) as PnrrServerOverview).fileSetId).toBe(
+      NEXT_FIXTURE_RELEASE_ID,
     )
 
-    expect(response.status).toBe(400)
+    // A page still on the old release is told to re-read it, not served it.
+    const stale = await request({}, 'projects', {
+      releaseId: FIXTURE_RELEASE_ID,
+    })
+    expect(stale.status).toBe(409)
+    expect(stale.headers.get('cache-control')).toBe('no-store')
+    expect(await stale.json()).toEqual({
+      error: 'release_mismatch',
+      releaseId: NEXT_FIXTURE_RELEASE_ID,
+    })
+    expect(fetchSnapshot).toHaveBeenCalledTimes(2)
   })
 
-  it('answers 502 when the projects cannot be read', async () => {
-    vi.mocked(fetchPnrrProjects).mockRejectedValue(new Error('upstream'))
-    vi.spyOn(console, 'error').mockImplementation(() => undefined)
-
-    const { response } = await requestJson<unknown>(
-      buildPnrrOverviewRequestPath({}),
+  it('never serves a snapshot of another release under the asked one', async () => {
+    fetchSnapshot.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify(makeFixtureSnapshotEnvelope(NEXT_FIXTURE_RELEASE_ID)),
+      ),
     )
 
-    expect(response.status).toBe(502)
-    expect(response.headers.get('cache-control')).toBe('no-store')
+    const response = await request({})
+
+    expect(response.status).toBe(503)
+    expect(await response.json()).toEqual({ error: 'release_changing' })
+  })
+
+  it('reads nothing for an abstained release', async () => {
+    activeRelease = makeFixtureRelease(FIXTURE_RELEASE_ID, { state: 'abstained' })
+
+    const response = await request({})
+
+    expect(response.status).toBe(503)
+    expect(await response.json()).toMatchObject({ error: 'release_abstained' })
+    expect(fetchSnapshot).not.toHaveBeenCalled()
+  })
+
+  it('answers 502, uncached, when the snapshot cannot be read, and waits before trying again', async () => {
+    fetchSnapshot.mockResolvedValueOnce(new Response('{}', { status: 500 }))
+
+    const failed = await request({})
+    const retried = await request({})
+
+    expect(failed.status).toBe(502)
+    expect(failed.headers.get('cache-control')).toBe('no-store')
+    expect(retried.status).toBe(502)
+    expect(fetchSnapshot).toHaveBeenCalledTimes(1)
+
+    now += 31_000
+    expect((await request({})).status).toBe(200)
+    expect(fetchSnapshot).toHaveBeenCalledTimes(2)
+  })
+
+  it('refuses invalid or oversized input before any read', async () => {
+    const send = (query: string) =>
+      handlePnrrOverviewRequest(
+        new Request(`https://example.test/api/pnrr/overview?${query}`),
+      )
+
+    expect(
+      (await send(`fundingSources=${encodeURIComponent('["gift"]')}`)).status,
+    ).toBe(400)
+    expect((await send('part=raw')).status).toBe(400)
+    expect((await send('release=..%2Fetc')).status).toBe(400)
+    expect((await send(`part=project&projectId=${'x'.repeat(600)}`)).status).toBe(
+      400,
+    )
+    expect((await send('part=project')).status).toBe(400)
+    expect((await send('part=map&series=everything')).status).toBe(400)
+    expect((await send(`search=${'a'.repeat(5000)}`)).status).toBe(414)
+    expect(readRelease).not.toHaveBeenCalled()
+    expect(fetchSnapshot).not.toHaveBeenCalled()
   })
 })
 
 describe('readPnrrOverviewForSsr', () => {
-  beforeEach(() => {
-    vi.resetAllMocks()
-    mockAvailableData()
-  })
-
-  it('renders the same overview as the API from the data in memory', async () => {
+  it('renders the same overview as the API once the release model is in memory', async () => {
     const search: Partial<PnrrSearchState> = { counties: ['Cluj'] }
-    const { body } = await requestJson<PnrrServerOverview>(
-      buildPnrrOverviewRequestPath(search),
-    )
+    const body = await (await request(search)).json()
 
     expect(
-      JSON.parse(JSON.stringify(readPnrrOverviewForSsr(search))),
+      JSON.parse(
+        JSON.stringify(readPnrrOverviewForSsr(search, FIXTURE_RELEASE_ID)),
+      ),
     ).toEqual(body)
   })
 
-  it('renders nothing and starts loading the data when it is not in memory', () => {
-    vi.mocked(readCachedPnrrBeneficiaryPaymentsResult).mockReturnValue(null)
+  it('renders nothing, and starts the snapshot load, when the model is not in memory', async () => {
+    expect(readPnrrOverviewForSsr({}, FIXTURE_RELEASE_ID)).toBeNull()
 
-    expect(readPnrrOverviewForSsr({})).toBeNull()
-    expect(fetchPnrrBeneficiaryPayments).toHaveBeenCalled()
+    await vi.waitFor(() => expect(fetchSnapshot).toHaveBeenCalledTimes(1))
+    await vi.waitFor(() =>
+      expect(readPnrrOverviewForSsr({}, FIXTURE_RELEASE_ID)).not.toBeNull(),
+    )
   })
 })

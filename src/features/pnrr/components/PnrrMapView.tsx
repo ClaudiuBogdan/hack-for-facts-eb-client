@@ -586,7 +586,7 @@ export function PnrrMapView({
                 className="h-4 w-4 text-[var(--pnrr-fg)]"
                 aria-hidden="true"
               />
-              {nationalCount.toLocaleString('ro-RO')}{' '}
+              {formatNumber(nationalCount)}{' '}
               <Trans>national projects outside the map</Trans>
               <span className="text-[var(--pnrr-fg)]">
                 · {formatPnrrCurrency(nationalValue, currency)}
@@ -602,7 +602,7 @@ export function PnrrMapView({
                 className="h-4 w-4 text-[var(--pnrr-fg)]"
                 aria-hidden="true"
               />
-              {unmappedCount.toLocaleString('ro-RO')}{' '}
+              {formatNumber(unmappedCount)}{' '}
               {mapGranularity === 'uat' ? (
                 <Trans>projects without UAT mapping</Trans>
               ) : (
@@ -619,7 +619,7 @@ export function PnrrMapView({
                 className="h-4 w-4 text-[var(--pnrr-fg)]"
                 aria-hidden="true"
               />
-              {excludedUnitCount.toLocaleString('ro-RO')}{' '}
+              {formatNumber(excludedUnitCount)}{' '}
               {renderedSeriesId === 'per-capita' ? (
                 <Trans>territories omitted because population is unavailable</Trans>
               ) : (

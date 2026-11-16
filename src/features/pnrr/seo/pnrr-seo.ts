@@ -30,29 +30,29 @@ const PNRR_SEO_COPY: Readonly<
 > = {
   ro: {
     title:
-      'PNRR - Planul National de Redresare si Rezilienta | Transparenta.eu',
+      'PNRR - Planul Național de Redresare și Reziliență | Transparenta.eu',
     description:
-      'Dashboard interactiv cu proiectele PNRR: progres raportat, finantare, semnale de risc, anomalii de date, beneficiari si distributie geografica.',
+      'Tablou de bord interactiv cu proiectele PNRR: progres raportat, finanțare, semnale de risc, anomalii de date, beneficiari și distribuție geografică.',
     imageAlt:
-      'Previzualizare Transparenta.eu pentru proiectele PNRR din Romania',
+      'Previzualizare Transparenta.eu pentru proiectele PNRR din România',
     keywords: [
       'PNRR',
-      'Planul National de Redresare si Rezilienta',
-      'Romania',
+      'Planul Național de Redresare și Reziliență',
+      'România',
       'fonduri europene',
       'proiecte publice',
-      'transparenta bugetara',
+      'transparență bugetară',
       'beneficiari PNRR',
       'semnale de risc PNRR',
     ],
-    datasetName: 'Proiecte PNRR Romania',
+    datasetName: 'Proiecte PNRR din România',
     variableMeasured: [
-      'valoare proiect listata',
+      'valoarea proiectului publicată',
       'progres tehnic raportat',
       'progres financiar raportat',
       'beneficiar',
-      'judet',
-      'componenta PNRR',
+      'județ',
+      'componentă PNRR',
     ],
     measurementTechnique: (snapshot) =>
       `${snapshot.projectCount} proiecte analizate, ${snapshot.completedCount} finalizate, ${snapshot.anomalyCount} semnale de risc.`,

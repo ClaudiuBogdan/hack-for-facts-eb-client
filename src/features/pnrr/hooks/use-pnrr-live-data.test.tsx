@@ -7,6 +7,10 @@ import { pnrrReleaseSchema } from "@/schemas/pnrr-live";
 import { pnrrApi } from "../api/pnrr-api";
 import {
   getPnrrFactReleaseId,
+  PNRR_LIVE_STATUS_REFETCH_INTERVAL_MS,
+  PnrrReleaseDivergenceError,
+  pnrrLiveQueryKeys,
+  pnrrLiveStatusQueryOptions,
   usePnrrLiveCatalogResources,
   usePnrrLiveDocumentReferences,
   usePnrrLiveFundingApplications,
@@ -222,6 +226,79 @@ describe("PNRR fact query gate", () => {
       },
       expect.any(AbortSignal),
     );
+  });
+
+  it("moves the overview to the new release id when the active release changes", async () => {
+    const releaseB = "pnrr-release-v1:pnrr-v2-20261115T060000Z-next";
+    vi.mocked(pnrrApi.status)
+      .mockResolvedValueOnce(statusPayload("degraded"))
+      .mockResolvedValue({
+        pnrrCurrentRelease: { ...release("degraded"), releaseId: releaseB },
+        pnrrCapabilities: [],
+      });
+    vi.mocked(pnrrApi.overview).mockImplementation(
+      async (assertReleaseId) =>
+        ({
+          meta: {
+            release: { ...release("degraded"), releaseId: assertReleaseId },
+          },
+        }) as never,
+    );
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    const { result } = renderHook(() => usePnrrLiveOverview(), {
+      wrapper: ({ children }: PropsWithChildren) => (
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      ),
+    });
+
+    await waitFor(() =>
+      expect(result.current.data?.meta.release.releaseId).toBe(
+        "pnrr-release-v1:pnrr-v2-20260726T150000Z-test",
+      ),
+    );
+
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: pnrrLiveQueryKeys.status() });
+    });
+
+    await waitFor(() =>
+      expect(result.current.data?.meta.release.releaseId).toBe(releaseB),
+    );
+    expect(pnrrApi.overview).toHaveBeenLastCalledWith(
+      releaseB,
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("refuses an answer from a divergent snapshot and re-reads the active release", async () => {
+    vi.mocked(pnrrApi.status).mockResolvedValue(statusPayload("degraded"));
+    vi.mocked(pnrrApi.overview).mockResolvedValue({
+      meta: {
+        release: { ...release("degraded"), releaseId: "pnrr-release-v1:other" },
+      },
+    } as never);
+
+    const { result } = renderHook(() => usePnrrLiveOverview(), {
+      wrapper: makeWrapper(),
+    });
+
+    await waitFor(() =>
+      expect(result.current.error).toBeInstanceOf(PnrrReleaseDivergenceError),
+    );
+    expect(result.current.data).toBeUndefined();
+    await waitFor(() => expect(pnrrApi.status).toHaveBeenCalledTimes(2));
+  });
+
+  it("revalidates the active release on a bounded schedule", () => {
+    const options = pnrrLiveStatusQueryOptions();
+
+    expect(options.queryKey).toEqual(pnrrLiveQueryKeys.status());
+    expect(options.refetchInterval).toBe(PNRR_LIVE_STATUS_REFETCH_INTERVAL_MS);
+    expect(options.refetchIntervalInBackground).toBe(false);
+    expect(options.retry).toBe(2);
   });
 
   it("loads organization evidence independently by stable cursor", async () => {

@@ -38,10 +38,11 @@ import {
   getAnomalyLabel,
   getDataQualitySignalLabel,
 } from "../../lib/anomaly-definitions";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber, getUserLocale } from "@/lib/utils";
 import { PnrrEntityShortcutLinks } from "../PnrrEntityShortcutLinks";
 import { formatCurrency } from "@/lib/utils";
-import { PNRR_FILESET_ID, PNRR_MIPE_SOURCE_URL } from "../../lib/snapshot";
+import { PNRR_MIPE_SOURCE_URL } from "../../lib/snapshot";
+import { usePnrrDashboardReleaseId } from "../../lib/pnrr-release-context";
 
 export function PnrrProjectDrawer({
   project,
@@ -51,6 +52,8 @@ export function PnrrProjectDrawer({
   readonly onClose: () => void;
 }) {
   const currency = usePnrrCurrency();
+  // The API release the record comes from, named as in the catalog message.
+  const PNRR_FILESET_ID = usePnrrDashboardReleaseId() ?? "—";
 
   if (!project) return null;
   const comp = PNRR_COMPONENTS[project.componentCode];
@@ -171,7 +174,7 @@ export function PnrrProjectDrawer({
               <span>{project.contractNumber ?? "—"}</span>
             </DetailRow>
             <DetailRow label={t`Records`}>
-              <span>{records.length.toLocaleString("ro-RO")}</span>
+              <span>{formatNumber(records.length)}</span>
             </DetailRow>
             <DetailRow icon={CalendarDays} label={t`Commitment date`}>
               <span>{formatSourceDate(project.commitmentDate)}</span>
@@ -408,7 +411,7 @@ function formatSourceDate(value: string | null | undefined): string {
   if (!value) return "—";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleDateString("ro-RO", {
+  return parsed.toLocaleDateString(getUserLocale(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

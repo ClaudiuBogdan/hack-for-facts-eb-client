@@ -7,6 +7,20 @@ export const pnrrAnswerStateSchema = z.enum([
   "legacy_unversioned",
 ]);
 
+/**
+ * Freshness lanes of a scoped MIPE release. Each lane keeps its own date: the
+ * MIPE project snapshot, the MIPE national indicators, and the latest accepted
+ * ORDS capture (whose payment facts a MIPE-scoped release may withhold).
+ */
+export const PNRR_RELEASE_LANES = {
+  mipeProjects: "mipe_projects",
+  mipeIndicators: "mipe_indicators",
+  ordsPaymentsCapture: "ords_payments_capture",
+} as const;
+
+/** Counts the API sends as explicit `null` when the release withholds them. */
+const withheldCountSchema = z.number().nullable();
+
 export const pnrrReleaseSchema = z.object({
   releaseId: z.string(),
   releaseKind: z.string(),
@@ -68,7 +82,7 @@ export const pnrrOverviewSchema = z.object({
     paidEur: pnrrMoneyFactSchema,
   }),
   beneficiaryPayments: z.object({
-    count: z.number(),
+    count: withheldCountSchema,
     netRon: pnrrMoneyFactSchema,
     grossRon: pnrrMoneyFactSchema,
     reversalRon: pnrrMoneyFactSchema,
@@ -76,9 +90,9 @@ export const pnrrOverviewSchema = z.object({
     lastDate: z.string().nullable(),
   }),
   commitments: z.object({
-    count: z.number(),
-    additiveCount: z.number(),
-    unresolvedCount: z.number(),
+    count: withheldCountSchema,
+    additiveCount: withheldCountSchema,
+    unresolvedCount: withheldCountSchema,
     additiveRon: pnrrMoneyFactSchema,
   }),
   delivery: z.object({
@@ -402,11 +416,11 @@ export const pnrrPlaceProfileSchema = z.object({
   meta: pnrrAnswerMetaSchema,
   countySiruta: z.string(),
   countyName: z.string().nullable(),
-  paymentCount: z.number(),
+  paymentCount: withheldCountSchema,
   paymentNetRon: z.string().nullable(),
-  commitmentCount: z.number(),
-  additiveCommitmentCount: z.number(),
-  unresolvedCommitmentCount: z.number(),
+  commitmentCount: withheldCountSchema,
+  additiveCommitmentCount: withheldCountSchema,
+  unresolvedCommitmentCount: withheldCountSchema,
   additiveCommitmentRon: z.string().nullable(),
   projectObservationCount: z.number(),
   sourceLocalityLabelCount: z.number(),
@@ -416,11 +430,11 @@ export const pnrrPlaceProfileSchema = z.object({
 export const pnrrPlaceSummarySchema = z.object({
   countySiruta: z.string(),
   countyName: z.string(),
-  paymentCount: z.number(),
+  paymentCount: withheldCountSchema,
   paymentNetRon: z.string().nullable(),
-  commitmentCount: z.number(),
-  additiveCommitmentCount: z.number(),
-  unresolvedCommitmentCount: z.number(),
+  commitmentCount: withheldCountSchema,
+  additiveCommitmentCount: withheldCountSchema,
+  unresolvedCommitmentCount: withheldCountSchema,
   additiveCommitmentRon: z.string().nullable(),
   projectObservationCount: z.number(),
   sourceLocalityLabelCount: z.number(),
@@ -436,6 +450,61 @@ export const pnrrVerificationSchema = z.object({
   endBeforeStartCount: z.number(),
   overHundredProgressCount: z.number(),
   missingProgressLinkCount: z.number(),
+});
+
+/** Most observations one dashboard snapshot may carry: a bound on server input. */
+export const PNRR_DASHBOARD_SNAPSHOT_MAX_OBSERVATIONS = 250_000;
+
+/**
+ * The release's dashboard snapshot, read by the web server only (never sent
+ * to the browser): every privacy-fenced MIPE observation of the release,
+ * noncanonical records included, and the publisher-reported program totals.
+ * It carries no ORDS fact.
+ */
+export const pnrrDashboardObservationSchema = pnrrProjectSchema.pick({
+  projectKey: true,
+  sourceObservationId: true,
+  snapshotId: true,
+  snapshotDate: true,
+  commitmentBusinessId: true,
+  contractTitle: true,
+  beneficiaryName: true,
+  beneficiaryCui: true,
+  countyName: true,
+  localityName: true,
+  financingSource: true,
+  euContributionRon: true,
+  totalValueRon: true,
+  nationalPublicValueRon: true,
+  vatRon: true,
+  ineligibleValueRon: true,
+  contractNumber: true,
+  commitmentDate: true,
+  startDate: true,
+  endDate: true,
+  beneficiaryType: true,
+  impact: true,
+  responsibleInstitutionName: true,
+  physicalProgressRatio: true,
+  financialProgressRatio: true,
+  status: true,
+  componentCode: true,
+  measureCode: true,
+  responsibleInstitutionCode: true,
+  sourceUrl: true,
+});
+
+export const pnrrDashboardSnapshotSchema = z.object({
+  release: pnrrReleaseSchema,
+  program: pnrrOverviewSchema.shape.program,
+  observations: z
+    .array(pnrrDashboardObservationSchema)
+    .max(PNRR_DASHBOARD_SNAPSHOT_MAX_OBSERVATIONS),
+});
+
+export const pnrrDashboardSnapshotEnvelopeSchema = z.object({
+  ok: z.literal(true),
+  data: pnrrDashboardSnapshotSchema,
 });
 
 export type PnrrLiveRelease = z.infer<typeof pnrrReleaseSchema>;
@@ -461,3 +530,6 @@ export type PnrrLiveEntityProfile = z.infer<typeof pnrrEntityProfileSchema>;
 export type PnrrLivePlaceProfile = z.infer<typeof pnrrPlaceProfileSchema>;
 export type PnrrLivePlaceSummary = z.infer<typeof pnrrPlaceSummarySchema>;
 export type PnrrLiveVerification = z.infer<typeof pnrrVerificationSchema>;
+export type PnrrDashboardObservation = z.infer<typeof pnrrDashboardObservationSchema>;
+export type PnrrDashboardSnapshot = z.infer<typeof pnrrDashboardSnapshotSchema>;
+export type PnrrLiveProgram = PnrrDashboardSnapshot["program"];

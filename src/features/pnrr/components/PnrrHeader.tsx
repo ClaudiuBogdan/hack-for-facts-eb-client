@@ -1,14 +1,15 @@
 import { useEffect, useState, useRef } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency, formatNumber } from '@/lib/utils'
 import type { PnrrView } from '@/schemas/pnrr'
 import type { Currency } from '@/schemas/charts'
 import { PnrrTabNav } from './PnrrTabNav'
 import { PnrrActiveFilters } from './filters/PnrrActiveFilters'
 import { PnrrProjectSearchInput } from './filters/PnrrProjectSearchInput'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
-import { getActiveFilterCount, PNRR_FILESET_ID } from '../lib/data-transform'
+import { getActiveFilterCount } from '../lib/data-transform'
+import { formatPnrrSourceDate } from '../lib/pnrr-release-context'
 import { useOptionalSidebar } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Activity } from 'lucide-react'
@@ -25,6 +26,8 @@ export function PnrrHeader({
   beneficiaryNamesByCui,
   uatLabelsBySiruta,
   isLoading = false,
+  releaseId = null,
+  snapshotDate = null,
 }: {
   readonly projectsCount: number
   readonly totalValue: number
@@ -37,6 +40,8 @@ export function PnrrHeader({
   readonly beneficiaryNamesByCui?: ReadonlyMap<string, string>
   readonly uatLabelsBySiruta?: ReadonlyMap<string, string>
   readonly isLoading?: boolean
+  readonly releaseId?: string | null
+  readonly snapshotDate?: string | null
 }) {
   const [hasMounted, setHasMounted] = useState(false)
   const [isCompactVisible, setIsCompactVisible] = useState(false)
@@ -160,6 +165,7 @@ export function PnrrHeader({
       {/* Full header */}
       <header
         ref={fullHeaderRef}
+        data-release-id={releaseId ?? undefined}
         className="relative border-b-2 border-[var(--pnrr-border)]"
         style={{ backgroundColor: 'var(--pnrr-bg)' }}
       >
@@ -167,7 +173,8 @@ export function PnrrHeader({
           {/* Badge */}
           <div className="inline-flex items-center gap-2 border-2 border-[var(--pnrr-border)] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[var(--pnrr-fg)]">
             <span className="h-2.5 w-2.5 bg-[var(--pnrr-green)]" />
-            <Trans>MIPE file set {PNRR_FILESET_ID}</Trans>
+            <Trans>MIPE project snapshot</Trans>
+            <span>{formatPnrrSourceDate(snapshotDate)}</span>
           </div>
 
           {/* Title */}
@@ -236,7 +243,7 @@ export function PnrrHeader({
                   >
                     <Activity className="h-4 w-4 text-current" />
                     <span className="text-sm font-black text-current">
-                      {projectsCount.toLocaleString('ro-RO')}
+                      {formatNumber(projectsCount)}
                     </span>
                     <span className="text-sm font-bold text-current">
                       <Trans>projects</Trans>

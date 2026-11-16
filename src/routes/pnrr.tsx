@@ -1,82 +1,74 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { i18n } from '@lingui/core'
 import {
   createNoStoreHeaders,
   createPublicPageCacheHeaders,
 } from '@/lib/http-cache'
 import { parsePnrrSearch, type PnrrSearchState } from '@/schemas/pnrr'
-import {
-  buildPnrrRouteHead,
-  buildPnrrSeoSnapshotSearchKey,
-  normalizePnrrSeoSnapshotSearch,
-} from '@/features/pnrr/seo/pnrr-seo'
-import {
-  loadPnrrSeoData,
-  type PnrrSeoLoaderData,
-} from '@/features/pnrr/seo/pnrr-seo-loader'
-import { pnrrOverviewQueryKey } from '@/features/pnrr/lib/pnrr-overview-request'
-import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/i18n'
+import { DEFAULT_LOCALE, normalizeLocale, translatorFor } from '@/lib/i18n'
+import type { PnrrDashboardRouteLoaderData } from '@/features/pnrr/lib/pnrr-dashboard-route-loader'
+import { normalizePnrrSeoSnapshotSearch } from '@/features/pnrr/seo/pnrr-seo'
+import { buildPnrrLiveRouteHead } from '@/features/pnrr/seo/pnrr-live-seo'
 
-export type PnrrRouteLoaderData = PnrrSeoLoaderData
+export type PnrrRouteLoaderData = PnrrDashboardRouteLoaderData
 
+type PnrrRouteLoaderDeps = {
+  readonly overviewSearch: Partial<PnrrSearchState>
+  readonly includeOverview: boolean
+}
+
+/**
+ * The PNRR dashboard. Its tabs, filters, panels and pages live in this route's
+ * search params, as before; every figure comes from the active API release,
+ * built on the web server (see `PnrrDashboard`).
+ */
 export const Route = createFileRoute('/pnrr')({
   ssr: true,
   validateSearch: parsePnrrSearch,
   headers: ({ loaderData }) => {
     const data = loaderData as PnrrRouteLoaderData | undefined
 
-    if (!data?.seoSnapshot) {
+    if (!data?.seeded) {
       return createNoStoreHeaders()
     }
 
+    // Short shared caching: the browser re-reads the active release on entry.
     return createPublicPageCacheHeaders({
       browserMaxAgeSeconds: 0,
-      sharedMaxAgeSeconds: 300,
-      staleWhileRevalidateSeconds: 3600,
+      sharedMaxAgeSeconds: 60,
+      staleWhileRevalidateSeconds: 300,
       vary: ['Accept-Encoding', 'Cookie'],
     })
   },
-  loaderDeps: ({ search }) => {
-    const seoSnapshotSearch = normalizePnrrSeoSnapshotSearch(
-      search as Partial<PnrrSearchState>,
-    )
-
+  // Only what the overview depends on: changing a page, sort or panel does not
+  // rerun the loader.
+  loaderDeps: ({ search }): PnrrRouteLoaderDeps => {
+    const pageSearch = search as Partial<PnrrSearchState>
     return {
-      seoSnapshotSearch,
-      seoSnapshotSearchKey: buildPnrrSeoSnapshotSearchKey(seoSnapshotSearch),
+      overviewSearch: normalizePnrrSeoSnapshotSearch(pageSearch),
+      includeOverview:
+        pageSearch.view === undefined || pageSearch.view === 'overview',
     }
   },
+  // In the request's own language, from the PNRR catalog.
   head: ({ match }) => {
     const loaderData = match.loaderData as PnrrRouteLoaderData | undefined
+    const locale = normalizeLocale(match.context.locale) ?? DEFAULT_LOCALE
 
-    return buildPnrrRouteHead({
-      snapshot: loaderData?.seoSnapshot,
-      search: match.search as Partial<PnrrSearchState> | undefined,
-      siteUrl: loaderData?.requestSiteUrl,
-      locale: normalizeLocale(i18n.locale) ?? DEFAULT_LOCALE,
+    return buildPnrrLiveRouteHead({
+      facts: loaderData?.head ?? null,
+      locale,
+      translator: translatorFor(locale, '/pnrr'),
     })
   },
-  loader: async ({ deps, context, location }): Promise<PnrrRouteLoaderData> => {
-    const loaderDeps = deps as {
-      readonly seoSnapshotSearch: Partial<PnrrSearchState>
-      readonly seoSnapshotSearchKey: string
-    }
-    const view = (location.search as Partial<PnrrSearchState>).view
-
-    const { overview, ...loaderData } = await loadPnrrSeoData({
-      search: loaderDeps.seoSnapshotSearch,
-      searchKey: loaderDeps.seoSnapshotSearchKey,
-      // Another tab opens on the raw dataset; only the overview tab uses it.
-      includeOverview: view === undefined || view === 'overview',
+  loader: async ({ context, deps }): Promise<PnrrRouteLoaderData> => {
+    const { overviewSearch, includeOverview } = deps as PnrrRouteLoaderDeps
+    const { loadPnrrDashboardRoute } = await import(
+      '@/features/pnrr/lib/pnrr-dashboard-route-loader'
+    )
+    return loadPnrrDashboardRoute({
+      queryClient: context.queryClient,
+      search: overviewSearch,
+      includeOverview,
     })
-    // The server-built overview travels with the page in the query cache.
-    if (overview) {
-      context.queryClient.setQueryData(
-        pnrrOverviewQueryKey(loaderDeps.seoSnapshotSearchKey),
-        overview,
-      )
-    }
-
-    return loaderData
   },
 })

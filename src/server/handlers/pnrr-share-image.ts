@@ -4,27 +4,41 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createElement } from 'react'
 import satori from 'satori'
-import { parsePnrrSearchString } from '@/schemas/pnrr'
+import { pnrrApi } from '@/features/pnrr/api/pnrr-api'
 import {
-  buildFallbackPnrrSeoSnapshot,
-  buildPnrrSeoSnapshotSearchKey,
-  type PnrrSeoSnapshot,
-} from '@/features/pnrr/seo/pnrr-seo'
-import { buildPnrrSeoSnapshotFromProjects } from '@/features/pnrr/seo/pnrr-seo-snapshot'
-import { PNRR_FILESET_ID } from '@/features/pnrr/lib/snapshot'
+  getPnrrFactReleaseId,
+  readPnrrLiveOverview,
+} from '@/features/pnrr/hooks/use-pnrr-live-data'
+import { createLogger } from '@/lib/logger'
+import { withDeadline } from '@/lib/ssr/deadline-signal'
 import {
-  fetchPnrrOfficialIndicators,
-  fetchPnrrProjects,
-} from './pnrr-data-proxy'
+  PNRR_RELEASE_LANES,
+  type PnrrLiveOverview,
+  type PnrrLiveRelease,
+} from '@/schemas/pnrr-live'
+
+/*
+ * The /pnrr share card, drawn from the active API release: its
+ * publisher-reported MIPE national indicators and its own source dates. It
+ * makes one release read and one overview read under a deadline, never reads
+ * project pages or the frozen file set, and renders once per release. A
+ * failed read or an abstained release draws a card with no figures, uncached.
+ * Legacy filter parameters on old share URLs are ignored: the card is national.
+ */
 
 const IMAGE_WIDTH = 1200
 const IMAGE_HEIGHT = 630
-const SHARE_IMAGE_CACHE_SECONDS = 86400
+// An hour, not a day: a URL without the release id must follow a new release.
+const SHARE_IMAGE_CACHE_SECONDS = 3600
 const SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS = 86400
 const SHARE_IMAGE_CACHE_CONTROL = `public, max-age=${SHARE_IMAGE_CACHE_SECONDS}, s-maxage=${SHARE_IMAGE_CACHE_SECONDS}, stale-while-revalidate=${SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS}`
 const SHARE_IMAGE_CDN_CACHE_CONTROL = `max-age=${SHARE_IMAGE_CACHE_SECONDS}, stale-while-revalidate=${SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS}`
-const SHARE_IMAGE_MEMORY_CACHE_MAX_ENTRIES = 128
-const SHARE_IMAGE_CACHE_VERSION = '20260619-ron5-official-total'
+const SHARE_IMAGE_MEMORY_CACHE_MAX_ENTRIES = 16
+const SHARE_IMAGE_CACHE_VERSION = '20261115-live-release'
+/** Both reads share this; a slow API must not hold a crawler's request open. */
+export const PNRR_SHARE_IMAGE_DEADLINE_MS = 2_000
+
+const logger = createLogger('pnrr-share-image')
 
 type LoadedShareFonts = {
   readonly regular: Buffer
@@ -39,26 +53,31 @@ type ResvgConstructor = new (
   render(): { asPng(): Uint8Array }
 }
 
+type ShareMetric = {
+  readonly label: string
+  readonly value: string
+  readonly color: string
+}
+
+type ShareFooterItem = {
+  readonly label: string
+  readonly value: string
+  readonly accent: string
+}
+
 export type PnrrShareImageViewModel = {
   readonly title: string
   readonly subtitle: string
   readonly badge: string
-  readonly totalValue: string
-  readonly projectCount: string
-  readonly completedCount: string
-  readonly anomalyCount: string
-  readonly topComponent: string
-  readonly topCounty: string
   readonly updatedLabel: string
+  readonly metrics: readonly ShareMetric[]
+  readonly footer: readonly ShareFooterItem[]
 }
 
-type PnrrShareImageViewModelOptions = {
-  readonly showTotalScope?: boolean
-}
-
-type ResolvedPnrrShareSnapshot = {
-  readonly snapshot: PnrrSeoSnapshot
-  readonly hasSnapshotFilters: boolean
+/** The active release and its overview, both from the same release. */
+export type PnrrShareImageFacts = {
+  readonly release: PnrrLiveRelease
+  readonly overview: PnrrLiveOverview
 }
 
 type ShareImageCacheEntry = {
@@ -164,30 +183,85 @@ function formatSourceCurrency(value: number, currency: 'RON' | 'EUR'): string {
   return `${formattedValue} ${currency === 'EUR' ? '€' : 'RON'}`
 }
 
+const UNAVAILABLE = '—'
+
+/** A source amount (exact decimal string) as a compact figure; null stays unavailable. */
+function formatSourceAmount(amount: string | null, currency: 'RON' | 'EUR'): string {
+  if (amount === null) return UNAVAILABLE
+  const value = Number(amount)
+  return Number.isFinite(value) ? formatSourceCurrency(value, currency) : UNAVAILABLE
+}
+
+/** A lane's own date as dd.mm.yyyy, read from its calendar part (no time zone shift). */
+function formatLaneDate(release: PnrrLiveRelease, lane: string): string {
+  const asOf = release.lanes.find((candidate) => candidate.lane === lane)?.asOf
+  const match = asOf?.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return match ? `${match[3]}.${match[2]}.${match[1]}` : UNAVAILABLE
+}
+
+const MAX_RELEASE_LABEL_LENGTH = 48
+
+/**
+ * The card is Romanian whatever the reader's language, like the rest of the
+ * share image: one rendered image per release, shared by every locale.
+ */
 export function buildPnrrShareImageViewModel(
-  snapshot: PnrrSeoSnapshot,
-  options: PnrrShareImageViewModelOptions = {},
+  facts: PnrrShareImageFacts | null,
 ): PnrrShareImageViewModel {
-  const usesOfficialAllocation =
-    options.showTotalScope && snapshot.officialAllocatedTotalEur != null
-  const totalValue = usesOfficialAllocation
-    ? snapshot.officialAllocatedTotalEur!
-    : snapshot.listedFundingTotalRon
-  const totalValueCurrency = usesOfficialAllocation ? 'EUR' : 'RON'
+  const base = {
+    title: 'PNRR Romania',
+    badge: 'Transparenta.eu',
+  }
+
+  if (!facts) {
+    return {
+      ...base,
+      subtitle: 'Date indisponibile momentan',
+      updatedLabel: 'Fara publicare activa',
+      metrics: [
+        { label: 'Alocare', value: UNAVAILABLE, color: '#2563eb' },
+        { label: 'Proiecte', value: UNAVAILABLE, color: '#047857' },
+      ],
+      footer: [],
+    }
+  }
+
+  const { release, overview } = facts
+  const { program, beneficiaryPayments } = overview
+  const paymentsWithheld =
+    beneficiaryPayments.count === null || beneficiaryPayments.netRon.amount === null
+  const ordsDate = formatLaneDate(release, PNRR_RELEASE_LANES.ordsPaymentsCapture)
+  const releaseLabel = `Versiune ${release.releaseId}`
 
   return {
-    title: 'PNRR Romania',
-    subtitle: 'Proiecte, progres, beneficiari si riscuri',
-    badge: 'Transparenta.eu',
-    totalValue: formatSourceCurrency(totalValue, totalValueCurrency),
-    projectCount: formatCount(snapshot.projectCount),
-    completedCount: formatCount(snapshot.completedCount),
-    anomalyCount: formatCount(snapshot.anomalyCount),
-    topComponent: snapshot.topComponents[0]?.label ?? 'Toate componentele',
-    topCounty: options.showTotalScope
-      ? 'Total'
-      : (snapshot.topCounties[0]?.label ?? 'Toata Romania'),
-    updatedLabel: `Set fisiere MIPE legacy ${PNRR_FILESET_ID}`,
+    ...base,
+    subtitle: 'Indicatori nationali raportati de MIPE',
+    updatedLabel:
+      releaseLabel.length > MAX_RELEASE_LABEL_LENGTH
+        ? `${releaseLabel.slice(0, MAX_RELEASE_LABEL_LENGTH - 1)}…`
+        : releaseLabel,
+    metrics: [
+      { label: 'Alocare', value: formatSourceAmount(program.allocationEur.amount, 'EUR'), color: '#2563eb' },
+      { label: 'Incasat UE', value: formatSourceAmount(program.receivedEur.amount, 'EUR'), color: '#7c3aed' },
+      { label: 'Platit', value: formatSourceAmount(program.paidEur.amount, 'EUR'), color: '#dc2626' },
+      {
+        label: 'Proiecte',
+        value: program.projectCount === null ? UNAVAILABLE : formatCount(program.projectCount),
+        color: '#047857',
+      },
+    ],
+    footer: [
+      {
+        label: 'Situatie proiecte MIPE',
+        value: formatLaneDate(release, PNRR_RELEASE_LANES.mipeProjects),
+        accent: '#2563eb',
+      },
+      {
+        label: 'Captura plati ORDS',
+        value: paymentsWithheld ? `${ordsDate} · plati indisponibile` : ordsDate,
+        accent: '#16a34a',
+      },
+    ],
   }
 }
 
@@ -356,13 +430,11 @@ async function renderPnrrShareCardPng(
             marginBottom: 24,
           },
         },
-        renderMetric('Valoare', viewModel.totalValue, '#2563eb', {
-          flex: 1.35,
-          valueFontSize: 38,
-        }),
-        renderMetric('Proiecte', viewModel.projectCount, '#047857'),
-        renderMetric('Finalizate', viewModel.completedCount, '#7c3aed'),
-        renderMetric('Riscuri', viewModel.anomalyCount, '#dc2626'),
+        ...viewModel.metrics.map((metric) =>
+          renderMetric(metric.label, metric.value, metric.color, {
+            valueFontSize: 38,
+          }),
+        ),
       ),
       createElement(
         'div',
@@ -373,82 +445,46 @@ async function renderPnrrShareCardPng(
             marginTop: 'auto',
           },
         },
-        createElement(
-          'div',
-          {
-            style: {
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1,
-              borderLeft: '10px solid #2563eb',
-              paddingLeft: 18,
-            },
-          },
+        ...viewModel.footer.map((item) =>
           createElement(
             'div',
             {
+              key: item.label,
               style: {
                 display: 'flex',
-                color: '#64748b',
-                fontSize: 18,
-                fontWeight: 800,
-                textTransform: 'uppercase',
+                flexDirection: 'column',
+                flex: 1,
+                borderLeft: `10px solid ${item.accent}`,
+                paddingLeft: 18,
               },
             },
-            'Componenta principala',
-          ),
-          createElement(
-            'div',
-            {
-              style: {
-                display: 'flex',
-                color: '#111827',
-                fontSize: 24,
-                fontWeight: 800,
-                lineHeight: 1.15,
-                marginTop: 8,
+            createElement(
+              'div',
+              {
+                style: {
+                  display: 'flex',
+                  color: '#64748b',
+                  fontSize: 18,
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                },
               },
-            },
-            viewModel.topComponent,
-          ),
-        ),
-        createElement(
-          'div',
-          {
-            style: {
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1,
-              borderLeft: '10px solid #16a34a',
-              paddingLeft: 18,
-            },
-          },
-          createElement(
-            'div',
-            {
-              style: {
-                display: 'flex',
-                color: '#64748b',
-                fontSize: 18,
-                fontWeight: 800,
-                textTransform: 'uppercase',
+              item.label,
+            ),
+            createElement(
+              'div',
+              {
+                style: {
+                  display: 'flex',
+                  color: '#111827',
+                  fontSize: 24,
+                  fontWeight: 800,
+                  lineHeight: 1.15,
+                  marginTop: 8,
+                },
               },
-            },
-            'Judet principal',
-          ),
-          createElement(
-            'div',
-            {
-              style: {
-                display: 'flex',
-                color: '#111827',
-                fontSize: 24,
-                fontWeight: 800,
-                lineHeight: 1.15,
-                marginTop: 8,
-              },
-            },
-            viewModel.topCounty,
+              item.value,
+            ),
           ),
         ),
       ),
@@ -515,98 +551,93 @@ export function buildPnrrShareImageResponseHeaders(params: {
   }
 }
 
-async function resolvePnrrShareSnapshot(
-  requestUrl: URL,
-): Promise<ResolvedPnrrShareSnapshot> {
-  const search = parsePnrrSearchString(requestUrl.search)
-  const [{ data }, officialIndicatorsResult] = await Promise.all([
-    fetchPnrrProjects(),
-    fetchPnrrOfficialIndicators().catch((error) => {
-      console.error('[pnrr-share-image] Indicators fetch failed', {
-        error: error instanceof Error ? error.message : String(error),
-      })
-      return { data: null }
-    }),
-  ])
-  const snapshotSearchKey = buildPnrrSeoSnapshotSearchKey(search)
-
-  return {
-    snapshot: buildPnrrSeoSnapshotFromProjects({
-      projects: data,
-      search,
-      officialIndicators: officialIndicatorsResult.data,
-    }),
-    hasSnapshotFilters: snapshotSearchKey !== '{}',
+/**
+ * The active release and its overview, or null when the release abstains or a
+ * read fails or passes the deadline. The same reads `/pnrr` server-renders
+ * with: the release (with its capabilities), then the overview asserted
+ * against that release id, which refuses an answer from another release.
+ */
+export async function readPnrrShareImageFacts(
+  deadlineMs = PNRR_SHARE_IMAGE_DEADLINE_MS,
+): Promise<PnrrShareImageFacts | null> {
+  const signal = withDeadline(undefined, deadlineMs)
+  try {
+    const { pnrrCurrentRelease: release } = await pnrrApi.status(signal)
+    const releaseId = getPnrrFactReleaseId(release)
+    if (!releaseId) return null
+    const overview = await readPnrrLiveOverview(releaseId, signal)
+    return { release, overview }
+  } catch (error) {
+    logger.warn('PNRR share image release read failed', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return null
   }
+}
+
+type ShareImageRenderer = (viewModel: PnrrShareImageViewModel) => Promise<Buffer>
+
+/** Renders in flight, per release: concurrent crawlers share one render. */
+const pendingShareImageRenders = new Map<string, Promise<Buffer>>()
+
+function renderReleaseShareImage(
+  facts: PnrrShareImageFacts,
+  render: ShareImageRenderer,
+): Promise<Buffer> {
+  const cacheKey = `${SHARE_IMAGE_CACHE_VERSION}:${facts.release.releaseId}`
+  const cachedImage = getCachedShareImage(cacheKey)
+  if (cachedImage) return Promise.resolve(Buffer.from(cachedImage))
+
+  const pending = pendingShareImageRenders.get(cacheKey)
+  if (pending) return pending
+
+  const request = render(buildPnrrShareImageViewModel(facts))
+    .then((png) => {
+      storeCachedShareImage(cacheKey, png)
+      return png
+    })
+    .finally(() => {
+      pendingShareImageRenders.delete(cacheKey)
+    })
+  pendingShareImageRenders.set(cacheKey, request)
+  return request
 }
 
 export async function handlePnrrShareImageRequest(
   request: Request,
+  options: {
+    readonly render?: ShareImageRenderer
+    readonly readFacts?: () => Promise<PnrrShareImageFacts | null>
+  } = {},
 ): Promise<Response> {
-  let requestUrl: URL
+  const render = options.render ?? renderPnrrShareCardPng
+  const facts = await (options.readFacts ?? readPnrrShareImageFacts)()
+  const requestedRelease = new URL(request.url).searchParams.get('release')
+
   try {
-    requestUrl = new URL(request.url)
-  } catch {
-    return new Response('Invalid request URL', {
-      status: 400,
+    if (facts && (requestedRelease === null || requestedRelease === facts.release.releaseId)) {
+      const png = await renderReleaseShareImage(facts, render)
+      return new Response(new Uint8Array(png), {
+        status: 200,
+        headers: buildPnrrShareImageResponseHeaders({ cacheable: true }),
+      })
+    }
+    // No matching active release: an uncached card without figures.
+    const fallbackPng = await render(buildPnrrShareImageViewModel(null))
+    return new Response(new Uint8Array(fallbackPng), {
+      status: 200,
+      headers: buildPnrrShareImageResponseHeaders({ cacheable: false }),
+    })
+  } catch (error) {
+    logger.error('PNRR share image render failed', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return new Response('Unable to generate share image', {
+      status: 503,
       headers: {
         'content-type': 'text/plain; charset=utf-8',
         'cache-control': 'no-store',
       },
     })
-  }
-
-  const cacheKey = `${SHARE_IMAGE_CACHE_VERSION}:${requestUrl.toString()}`
-  const cachedImage = getCachedShareImage(cacheKey)
-  if (cachedImage) {
-    return new Response(Buffer.from(cachedImage), {
-      status: 200,
-      headers: buildPnrrShareImageResponseHeaders({ cacheable: true }),
-    })
-  }
-
-  try {
-    const { snapshot, hasSnapshotFilters } =
-      await resolvePnrrShareSnapshot(requestUrl)
-    const png = await renderPnrrShareCardPng(
-      buildPnrrShareImageViewModel(snapshot, {
-        showTotalScope: !hasSnapshotFilters,
-      }),
-    )
-    storeCachedShareImage(cacheKey, png)
-
-    return new Response(new Uint8Array(png), {
-      status: 200,
-      headers: buildPnrrShareImageResponseHeaders({ cacheable: true }),
-    })
-  } catch (error) {
-    console.error('[pnrr-share-image] Failed to generate share image', {
-      error: error instanceof Error ? error.message : String(error),
-    })
-
-    try {
-      const fallbackPng = await renderPnrrShareCardPng(
-        buildPnrrShareImageViewModel(buildFallbackPnrrSeoSnapshot()),
-      )
-
-      return new Response(new Uint8Array(fallbackPng), {
-        status: 200,
-        headers: buildPnrrShareImageResponseHeaders({ cacheable: false }),
-      })
-    } catch (fallbackError) {
-      console.error('[pnrr-share-image] Failed to render fallback image', {
-        error: fallbackError instanceof Error
-          ? fallbackError.message
-          : String(fallbackError),
-      })
-
-      return new Response('Unable to generate share image', {
-        status: 503,
-        headers: {
-          'content-type': 'text/plain; charset=utf-8',
-          'cache-control': 'no-store',
-        },
-      })
-    }
   }
 }

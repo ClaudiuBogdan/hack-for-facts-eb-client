@@ -1,3 +1,4 @@
+import { formatNumber } from '@/lib/utils'
 import { Trans } from '@lingui/react/macro'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../lib/formatting'
@@ -39,7 +40,7 @@ export function PnrrProjectsPreview({
             <Trans>Projects</Trans>
           </h2>
           <span className="hidden text-sm text-[var(--pnrr-muted)] sm:inline">
-            {projectCount.toLocaleString('ro-RO')} <Trans>in total</Trans>
+            {formatNumber(projectCount)} <Trans>in total</Trans>
           </span>
         </div>
         <button

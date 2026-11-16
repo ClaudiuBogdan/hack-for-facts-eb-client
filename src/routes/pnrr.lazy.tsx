@@ -9,11 +9,5 @@ export const Route = createLazyFileRoute('/pnrr')({
 function PnrrRoutePage() {
   const loaderData = Route.useLoaderData() as PnrrRouteLoaderData | undefined
 
-  return (
-    <PnrrDashboard
-      initialCurrency={loaderData?.initialCurrency}
-      ssrSnapshot={loaderData?.seoSnapshot ?? null}
-      ssrSnapshotSearchKey={loaderData?.seoSnapshotSearchKey}
-    />
-  )
+  return <PnrrDashboard initialCurrency={loaderData?.initialCurrency} />
 }

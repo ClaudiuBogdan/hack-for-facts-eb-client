@@ -30,6 +30,18 @@ vi.mock('../charts/PnrrFundingBar', () => ({
   PnrrFundingBar: () => <div data-testid="pnrr-funding-bar" />,
 }))
 
+// The overview's server reads (a project detail, the map preview) are
+// release-pinned queries, tested in `usePnrrData.test.tsx`.
+vi.mock('../../hooks/usePnrrData', () => ({
+  usePnrrProjectDetail: () => ({
+    data: { project: null },
+    error: null,
+    isError: false,
+    isLoading: false,
+  }),
+  usePnrrServerOverviewMapPreview: () => ({ data: undefined, isError: false }),
+}))
+
 function makeFilterState(): ReturnType<typeof usePnrrFilterState> {
   return {
     search: {

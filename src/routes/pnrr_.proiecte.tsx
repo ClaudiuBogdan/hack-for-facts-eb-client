@@ -1,7 +1,10 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { isIsoCalendarDate } from "@/features/pnrr/lib/pnrr-route-validation";
+import {
+  isIsoCalendarDate,
+  normalizePnrrCui,
+} from "@/features/pnrr/lib/pnrr-route-validation";
 
 const isoDateSchema = z.string().refine(isIsoCalendarDate, "Invalid ISO date");
 
@@ -37,10 +40,15 @@ export const pnrrProjectsSearchSchema = z
 export const Route = createFileRoute("/pnrr_/proiecte")({
   ssr: false,
   validateSearch: pnrrProjectsSearchSchema,
-  beforeLoad: () => {
+  // The dashboard's projects tab is the projects page. The CUI is the one
+  // filter both searches share.
+  beforeLoad: ({ search }) => {
+    const beneficiaryCui = search.beneficiaryCui
+      ? normalizePnrrCui(search.beneficiaryCui)
+      : null;
     throw redirect({
       to: "/pnrr",
-      search: { view: "projects" },
+      search: { view: "projects", ...(beneficiaryCui ? { beneficiaryCui } : {}) },
       replace: true,
     });
   },

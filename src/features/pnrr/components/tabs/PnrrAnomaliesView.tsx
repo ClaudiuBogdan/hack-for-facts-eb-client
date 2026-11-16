@@ -1,3 +1,4 @@
+import { formatNumber } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
@@ -116,7 +117,7 @@ export function PnrrAnomaliesView({
                   <ShieldAlert className="h-4 w-4" />
                 </span>
                 <span>
-                  {model.riskCount.toLocaleString('ro-RO')}{' '}
+                  {formatNumber(model.riskCount)}{' '}
                 <Trans>projects with verification signals</Trans>
                 </span>
                 <span className="tabular-nums">
@@ -128,7 +129,7 @@ export function PnrrAnomaliesView({
                   <Database className="h-4 w-4" />
                 </span>
                 <span>
-                  {model.dataQualityCount.toLocaleString('ro-RO')}{' '}
+                  {formatNumber(model.dataQualityCount)}{' '}
                 <Trans>data quality issues</Trans>
                 </span>
                 <span className="tabular-nums">
@@ -209,7 +210,7 @@ export function PnrrAnomaliesView({
           </div>
 
           <span className="flex h-9 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-6 text-sm text-[var(--pnrr-fg)]">
-            {model.totalCount.toLocaleString('ro-RO')}{' '}
+            {formatNumber(model.totalCount)}{' '}
             <Trans>results</Trans>
           </span>
         </div>

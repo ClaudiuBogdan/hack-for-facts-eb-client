@@ -117,7 +117,7 @@ const BeneficiaryRow = memo(function BeneficiaryRow({
         </div>
       </TableCell>
       <TableCell className="text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
-        {b.count.toLocaleString('ro-RO')}
+        {formatNumber(b.count)}
       </TableCell>
       <TableCell className="text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
         <span
@@ -180,7 +180,7 @@ function BeneficiaryCard({
             <Trans>Projects</Trans>
           </span>
           <span className="font-black text-[var(--pnrr-fg)]">
-            {beneficiary.count.toLocaleString('ro-RO')}
+            {formatNumber(beneficiary.count)}
           </span>
         </span>
         <span className="text-right">
@@ -310,7 +310,7 @@ export function PnrrBeneficiariesView({
             <Trans>Beneficiaries</Trans>
           </h2>
           <span className="hidden text-sm text-[var(--pnrr-muted)] sm:inline">
-            {page.totalCount.toLocaleString('ro-RO')}{' '}
+            {formatNumber(page.totalCount)}{' '}
             <Trans>beneficiaries</Trans>
           </span>
         </div>
@@ -700,7 +700,7 @@ function BeneficiaryDrawer({
               <Trans>Loading the complete beneficiary workspace…</Trans>
             ) : (
               <>
-                {displayBeneficiary.count.toLocaleString('ro-RO')}{' '}
+                {formatNumber(displayBeneficiary.count)}{' '}
                 <Trans>PNRR projects</Trans>
               </>
             )}
@@ -743,7 +743,7 @@ function BeneficiaryDrawer({
               value={
                 isDetailLoading
                   ? '—'
-                  : displayBeneficiary.count.toLocaleString('ro-RO')
+                  : formatNumber(displayBeneficiary.count)
               }
             />
             <BeneficiaryMetric
@@ -762,7 +762,7 @@ function BeneficiaryDrawer({
                 <div className="flex items-center gap-3 border-2 border-[var(--pnrr-red)] bg-[var(--pnrr-red)]/10 p-3 text-[var(--pnrr-red)]">
                   <ShieldAlert className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
-                    {riskCount.toLocaleString('ro-RO')}{' '}
+                    {formatNumber(riskCount)}{' '}
                     <Trans>with risk signals</Trans>
                   </span>
                 </div>
@@ -771,7 +771,7 @@ function BeneficiaryDrawer({
                 <div className="flex items-center gap-3 border-2 border-[var(--pnrr-blue)] bg-[var(--pnrr-blue)]/10 p-3 text-[var(--pnrr-blue)]">
                   <FileWarning className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
-                    {dataQualityCount.toLocaleString('ro-RO')}{' '}
+                    {formatNumber(dataQualityCount)}{' '}
                     <Trans>with data anomalies</Trans>
                   </span>
                 </div>

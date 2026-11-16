@@ -96,6 +96,16 @@ describe("pnrr search schema", () => {
     });
   });
 
+  it("keeps a supported language when canonicalizing a dashboard link", () => {
+    expect(parsePnrrSearchString("?lang=en&view=projects&page=1")).toEqual({
+      lang: "en",
+      view: "projects",
+    });
+    expect(parsePnrrSearchString("?lang=other&view=projects")).toEqual({
+      view: "projects",
+    });
+  });
+
   it("keeps currency in canonical URL search state", () => {
     expect(parsePnrrSearchString("?currency=EUR")).toEqual({
       currency: "EUR",
