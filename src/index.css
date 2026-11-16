@@ -43,6 +43,12 @@
        overflow toggles (e.g. short vs long pages, dialogs that lock body scroll). */
     scrollbar-gutter: stable;
     overscroll-behavior: auto;
+    /* The page scrolls on the root, always: an overlay that locks scroll (Radix
+       sets `overflow: hidden` on <body>) then cannot take the viewport's
+       scrollbar away, and the page keeps its width — no jump when a dialog,
+       a sheet or a dropdown opens. Scrolling is still locked: Radix blocks the
+       wheel and touch events themselves. */
+    overflow-y: scroll;
     /* Base colors */
     --background: 0 0% 99%;
     --foreground: 0 0% 12%;
@@ -250,6 +256,15 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background-color: hsla(var(--scrollbar-thumb-hover));
+  }
+
+  /* While an overlay locks scroll, Radix (react-remove-scroll-bar) adds the
+     scrollbar's width to <body> as a right margin, to make up for a scrollbar
+     it expects to disappear. The root keeps its scrollbar (`overflow-y:
+     scroll` above), so that margin would only narrow the page. Important and
+     in a layer, which beats the library's unlayered important rule. */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
   }
 
   /* Show scrollbar for Firefox */
