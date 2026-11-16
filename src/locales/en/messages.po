@@ -45033,8 +45033,12 @@ msgid "Sursa: INS Tempo, {0}."
 msgstr "Source: INS Tempo, {0}."
 
 #: src/features/landing/components/budget-map/map-legend.tsx:126
-msgid "Sursa: Ministerul Finanțelor, execuția bugetară {year} a primăriilor (ordonator principal), în lei, valori nominale, fără transferurile dintre bugete, ca în restul platformei."
-msgstr "Source: Ministry of Finance, {year} budget execution of the city halls (principal authorising officer), in lei, nominal values, excluding transfers between budgets, as elsewhere on the platform."
+#~ msgid "Sursa: Ministerul Finanțelor, execuția bugetară {year} a primăriilor (ordonator principal), în lei, valori nominale, fără transferurile dintre bugete, ca în restul platformei."
+#~ msgstr "Source: Ministry of Finance, {year} budget execution of the city halls (principal authorising officer), in lei, nominal values, excluding transfers between budgets, as elsewhere on the platform."
+
+#: src/features/landing/components/budget-map/map-legend.tsx:126
+msgid "Sursa: Ministerul Finanțelor, execuția de casă {year} a primăriilor (ordonator principal): încasările și plățile raportate, inclusiv transferurile și finanțările, în lei, valori nominale."
+msgstr "Source: Ministry of Finance, {year} cash execution of the city halls (principal authorising officer): receipts and payments as reported, including transfers and financing, in lei, nominal values."
 
 #: src/features/ngos/hub/ngo-county-band.tsx:36
 msgid "Sursa: Registrul național ONG."

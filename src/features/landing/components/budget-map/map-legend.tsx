@@ -123,7 +123,7 @@ export function MapLegend({
       ) : null}
       <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground" data-source-line>
         {measure.note ? `${i18n._(measure.note)} ` : null}
-        {t`Sursa: Ministerul Finanțelor, execuția bugetară ${year} a primăriilor (ordonator principal), în lei, valori nominale, fără transferurile dintre bugete, ca în restul platformei.`}
+        {t`Sursa: Ministerul Finanțelor, execuția de casă ${year} a primăriilor (ordonator principal): încasările și plățile raportate, inclusiv transferurile și finanțările, în lei, valori nominale.`}
         {coverage ? ` ${t`${withData} din ${total} primării de pe hartă au date.`}` : null}
         {outsideMap > 0 ? ` ${t`Bugetul propriu al Municipiului București nu are un contur pe hartă și nu apare: harta arată cele șase sectoare.`}` : null}
       </p>

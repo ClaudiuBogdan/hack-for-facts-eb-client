@@ -130,7 +130,8 @@ Decisions taken in the prototype:
    principal, territorial executives), from the grouped-series endpoint (one
    request, ~0.1 s, 45 KB). A picker of maps: *Sold bugetar* (income − expenses,
    % of income), *Venituri totale*, *Cheltuieli totale*; grouped once there are
-   several groups.
+   several groups. The figures are the reported cash execution — see
+   *Reported balance* below.
 2. **Colours.** The balance diverges on ColorBrewer RdBu (deficit red, surplus
    blue, ±3% neutral). Income and expenses use RdBu's blue and red arms, five
    classes cut at percentiles 50/75/90/97 — half the primării share one light
@@ -189,10 +190,36 @@ Review outcomes at promotion (Opus and Codex, 16 November 2026):
   fail again; a renderer error is logged; a failed read offers a retry; the
   theme and a resize are followed; the picked map is in the address
   (`?harta=venituri|cheltuieli`).
-- Open for the owner: the balance counts financing flows (prior-year surplus
-  carried over, functional 40/41; loan repayments, economic 81) as income and
-  spending — as the entity pages' `budget_balance` does; and individual
-  primării are reachable by pointer only.
+- Open for the owner: individual primării are reachable by pointer only.
+
+**Reported balance (16 November 2026).** The promoted map asked for its
+figures with the app's analytics defaults (`withDefaultExcludes`: spending
+economic 51.01/51.02, receipts functional 36.02.05/37.02.03/37.02.04/47.02.04),
+while the primărie's entity page shows the reported execution, transfers kept.
+So the map disagreed with the page it links to. Both series now go without
+exclusions; year, report type, territorial-executive scope and normalization are
+unchanged. The map shows the cash-execution difference reported to ANAF: each
+primărie's colour is (reported receipts − reported payments) / reported
+receipts × 100, with no value where either is missing or receipts are not
+positive. Transfers and financing flows (FN 40/41, EC 81) stay in, as reported;
+the legend's source line says so.
+
+- Basis ([Law 273/2006](https://legislatie.just.ro/Public/DetaliiDocumentAfis/257231)):
+  art. 57 makes actual receipts and payments columns of the annual execution
+  account; the map shows their difference, not the year-end surplus carried
+  forward, which art. 58 sets after the closing adjustments. Art. 3
+  consolidation eliminates paired internal receipts and payments and keeps the
+  cash difference of a fixed scope; the old prefix exclusions dropped rows
+  without pairing them, so they were not that. Excluding financing was
+  considered and is not done.
+- Live parity (Chronos dev, 2025, main creditor, map request vs entity page,
+  to the ban, after the change): Cluj-Napoca balance 397,218,946.03 →
+  308,787,260.04 lei (receipts 2,656,460,197.71, payments 2,347,672,937.67);
+  Timișoara +103,080,124.48 → −28,300,755.32; Sector 4 +38,013,363.90 (+1.3%)
+  → +4,622,534.95 (+0.2%). Across the map, 185 of 3,186 primării change
+  balance class.
+- The analytics defaults, the other maps and the prototype are unchanged.
+  `api/budget-map.test.ts` fails if either series carries an `exclude`.
 
 The SVG zoom engine the prototype produced is shared as
 `src/components/maps/svg-zoom/` (`useSvgMapZoom`), off unless enabled; the INS

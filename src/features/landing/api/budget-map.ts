@@ -1,6 +1,5 @@
 import type { FeatureCollection, Geometry } from 'geojson'
 import { fetchGroupedSeriesData } from '@/lib/api/map-series'
-import { withDefaultExcludes } from '@/lib/filterUtils'
 import { SeriesConfigurationSchema, type AnalyticsFilterType, type SeriesConfiguration } from '@/schemas/charts'
 import type { BudgetFigures } from '../lib/budget-map-measures'
 import type { LabelPoints } from '../lib/budget-map-style'
@@ -42,10 +41,19 @@ export interface BudgetMapFigures {
 const STABLE_STAMP = '2026-01-01T00:00:00.000Z'
 
 /**
- * Income and expenses per SIRUTA, in RON, one year, every primărie — with the
- * app's default exclusions (`withDefaultExcludes`): transfers between budgets
- * left out, as the app's map and every entity page count them, so the figures
- * here are the ones the primărie's page shows.
+ * Reported receipts (`vn`) and payments (`ch`) per SIRUTA, in RON, one year,
+ * every primărie: the cash execution as reported to ANAF, transfers and
+ * financing flows included — the figures its entity page shows. The map shows
+ * their difference.
+ *
+ * No exclusions on purpose. The app's analytics defaults (`withDefaultExcludes`)
+ * drop rows by code prefix without pairing an internal receipt with its
+ * payment in the same scope, so they are not an art. 3 consolidation (which
+ * eliminates paired internal flows and keeps the cash difference of a fixed
+ * scope); they moved the map away from the entity page (Cluj, Timișoara,
+ * Sector 4 — `docs/design/landing/design.md` §Budget map). Law 273/2006, arts.
+ * 3, 57, 58: https://legislatie.just.ro/Public/DetaliiDocumentAfis/257231
+ * Method, legal basis and checks: `docs/budget-balance-methodology.md`.
  */
 export async function fetchBudgetFigures(year: string): Promise<BudgetMapFigures> {
   const series = (id: 'income' | 'expenses', account: 'vn' | 'ch') =>
@@ -55,7 +63,7 @@ export async function fetchBudgetFigures(year: string): Promise<BudgetMapFigures
       label: id,
       createdAt: STABLE_STAMP,
       updatedAt: STABLE_STAMP,
-      filter: withDefaultExcludes({
+      filter: {
         report_period: { type: 'YEAR', selection: { interval: { start: year, end: year } } },
         account_category: account,
         report_type: REPORT_TYPE,
@@ -64,7 +72,7 @@ export async function fetchBudgetFigures(year: string): Promise<BudgetMapFigures
         currency: 'RON',
         inflation_adjusted: false,
         show_period_growth: false,
-      } as AnalyticsFilterType),
+      } satisfies AnalyticsFilterType,
     }) as SeriesConfiguration
   const response = await fetchGroupedSeriesData({ granularity: 'UAT', series: [series('income', 'vn'), series('expenses', 'ch')] })
   const outsideMap = Math.max(
