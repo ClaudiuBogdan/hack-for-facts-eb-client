@@ -1,15 +1,22 @@
 import { z } from "zod";
 import {
-  MemberVoteChoiceSchema,
-  VoteOutcomeSchema,
-  VoteKindSchema,
-  BillTypeSchema,
-  BillCurrentLocationSchema,
+  MEMBER_VOTE_CHOICES,
+  VOTE_OUTCOMES,
+  VOTE_KINDS,
+  BILL_TYPES,
+  BILL_CURRENT_LOCATIONS,
 } from "./parliament-search";
 
 // The search params of the /parlament routes: their own module, so the
 // route files (in every page's code) do not carry these data schemas.
 export * from "./parliament-search";
+
+// The enums the data schemas below are built from, from the routes' value lists.
+export const MemberVoteChoiceSchema = z.enum(MEMBER_VOTE_CHOICES);
+export const VoteOutcomeSchema = z.enum(VOTE_OUTCOMES);
+export const VoteKindSchema = z.enum(VOTE_KINDS);
+export const BillTypeSchema = z.enum(BILL_TYPES);
+export const BillCurrentLocationSchema = z.enum(BILL_CURRENT_LOCATIONS);
 
 export const ParliamentChamberSchema = z.enum(["camera", "senat"]);
 export type ParliamentChamber = z.infer<typeof ParliamentChamberSchema>;

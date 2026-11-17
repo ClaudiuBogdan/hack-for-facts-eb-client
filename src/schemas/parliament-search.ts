@@ -1,20 +1,23 @@
 import { z } from "zod";
+import { lazySchema, type LazyOutput } from "@/lib/route-contract";
 
 /**
- * The /parlament routes' search params, and the enums they share with the
- * data schemas in `parliament.ts` (which re-exports this module). Apart from
- * those, so that the route files, which every page loads, carry only these:
- * the data schemas cost ~50 ms of evaluation on the mobile profile
- * (2026-10-27 audit, PERF-003).
+ * The /parlament routes' search params, and the value lists they share with
+ * the data schemas in `parliament.ts` (which builds its enums from them and
+ * re-exports this module). Apart from those, so that the route files, which
+ * every page loads, carry only these: the data schemas cost ~50 ms of
+ * evaluation on the mobile profile (2026-10-27 audit, PERF-003). Lazy, so
+ * nothing here is built until a /parlament route is matched
+ * (docs/route-contracts.md).
  */
 
-export const MemberVoteChoiceSchema = z.enum([
+export const MEMBER_VOTE_CHOICES = [
   "pentru",
   "impotriva",
   "abtinere",
   "nu_a_votat",
-]);
-export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>;
+] as const;
+export type MemberVoteChoice = (typeof MEMBER_VOTE_CHOICES)[number];
 
 /**
  * `adoptat` and `respins` are the SERVER's two values (prod 2026-07-29: 16,916
@@ -28,46 +31,46 @@ export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>;
  * source never asserts a postponement, and naming one invents a procedural
  * decision — `necunoscut` is what actually happened.
  */
-export const VoteOutcomeSchema = z.enum([
+export const VOTE_OUTCOMES = [
   "adoptat",
   "respins",
   "egalitate",
   "necunoscut",
-]);
-export type VoteOutcome = z.infer<typeof VoteOutcomeSchema>;
+] as const;
+export type VoteOutcome = (typeof VOTE_OUTCOMES)[number];
 
 /**
  * Ordering for the votes list. `voteDate` is the reader-meaningful axis;
  * `voteKey` exists because the server offers it as a stable tiebreak, and both
  * directions page correctly.
  */
-export const VoteSortSchema = z.enum([
+export const VOTE_SORTS = [
   "voteDate_desc",
   "voteDate_asc",
   "voteKey_desc",
   "voteKey_asc",
-]);
-export type VoteSort = z.infer<typeof VoteSortSchema>;
+] as const;
+export type VoteSort = (typeof VOTE_SORTS)[number];
 
-export const VoteKindSchema = z.enum([
+export const VOTE_KINDS = [
   "legislative",
   "amendment",
   "procedural",
   "chamber_decision",
   "attendance",
   "unclassified",
-]);
-export type VoteKind = z.infer<typeof VoteKindSchema>;
+] as const;
+export type VoteKind = (typeof VOTE_KINDS)[number];
 
-export const BillTypeSchema = z.enum([
+export const BILL_TYPES = [
   "guvern",
   "parlamentar",
   "cetateni",
   "ordonanta",
-]);
-export type BillType = z.infer<typeof BillTypeSchema>;
+] as const;
+export type BillType = (typeof BILL_TYPES)[number];
 
-export const BillCurrentLocationSchema = z.enum([
+export const BILL_CURRENT_LOCATIONS = [
   "camera",
   "senat",
   "mediere",
@@ -78,25 +81,25 @@ export const BillCurrentLocationSchema = z.enum([
   // Lapsed/terminated procedure ("clasat" / "procedură legislativă încetată") —
   // a terminal outcome distinct from rejection (parliament.bill-lifecycle.v2).
   "clasat",
-]);
-export type BillCurrentLocation = z.infer<typeof BillCurrentLocationSchema>;
+] as const;
+export type BillCurrentLocation = (typeof BILL_CURRENT_LOCATIONS)[number];
 
-export const BillSortBySchema = z.enum([
+export const BILL_SORT_BYS = [
   "title_asc",
   "title_desc",
   "updated_desc",
   "updated_asc",
-]);
-export type BillSortBy = z.infer<typeof BillSortBySchema>;
+] as const;
+export type BillSortBy = (typeof BILL_SORT_BYS)[number];
 
-export const ParliamentTabSchema = z.enum([
+export const PARLIAMENT_TABS = [
   "prezentare",
   "membri",
   "voturi",
   "grupuri",
   "proiecte",
-]);
-export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>;
+] as const;
+export type ParliamentTabId = (typeof PARLIAMENT_TABS)[number];
 
 /**
  * A calendar-REAL `YYYY-MM-DD` day, or `undefined`. The regex alone admits
@@ -106,81 +109,90 @@ export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>;
  * the lenient contract: any junk (bad shape OR impossible date) falls to
  * undefined, it never throws.
  */
-const strictIsoDateParam = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine((day) => {
-    const parsed = new Date(`${day}T00:00:00Z`);
-    return (
-      !Number.isNaN(parsed.getTime()) &&
-      parsed.toISOString().slice(0, 10) === day
-    );
-  })
-  .optional()
-  .catch(undefined);
+const strictIsoDateParam = () =>
+  z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine((day) => {
+      const parsed = new Date(`${day}T00:00:00Z`);
+      return (
+        !Number.isNaN(parsed.getTime()) &&
+        parsed.toISOString().slice(0, 10) === day
+      );
+    })
+    .optional()
+    .catch(undefined);
 
 /** Unified search params for /parlament — tab drives the active section */
-export const ParliamentSearchSchema = z.object({
-  tab: ParliamentTabSchema.optional().catch(undefined),
-  /**
-   * `comun` is a VOTES-only value (joint sittings); member surfaces treat it
-   * like `all`, because no member roster belongs to a joint sitting.
-   */
-  chamber: z
-    .enum(["camera", "senat", "comun", "all"])
-    .optional()
-    .catch(undefined),
-  judet: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .catch(undefined),
-  grup: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .catch(undefined),
-  q: z.string().optional().catch(undefined),
-  find: z
-    .union([z.literal("1"), z.literal(1)])
-    .optional()
-    .catch(undefined),
-  from: strictIsoDateParam,
-  to: strictIsoDateParam,
-  outcome: VoteOutcomeSchema.optional().catch(undefined),
-  /**
-   * Votes narrowed to one GROUP's stance — `grupVot` names the group, `alegere`
-   * the stance. Both must be present to constrain anything; either one alone is
-   * dropped by `buildVotesFilter`.
-   *
-   * Deliberately NOT the existing `grup` param, which is a MEMBERS facet on the
-   * same unified search object: reusing it would make a group selected on the
-   * members tab silently filter the votes tab when a reader switches tabs.
-   *
-   * `grupVot` is the group name AS THE VOTE DATA SPELLS IT, which is not always
-   * how the nomenclator spells it (the vote records say `neafiliat` where the
-   * group directory says `Neafiliaţi`). It is not a slug.
-   */
-  grupVot: z.string().optional().catch(undefined),
-  alegere: MemberVoteChoiceSchema.optional().catch(undefined),
-  /**
-   * Vote KIND — what the chamber was actually voting on.
-   *
-   * Only `legislative` rests on a column (`bill_key IS NOT NULL`). The other
-   * five are classified from the free-text title, so the UI must not present
-   * them as equally certain. See `VOTE_KIND_LABELS`.
-   */
-  tipVot: z
-    .union([VoteKindSchema, z.array(VoteKindSchema)])
-    .optional()
-    .catch(undefined),
-  /** Ordering. Absent = the server default, newest vote first. */
-  ordine: VoteSortSchema.optional().catch(undefined),
-  billType: BillTypeSchema.optional().catch(undefined),
-  billLocation: BillCurrentLocationSchema.optional().catch(undefined),
-  sortBy: BillSortBySchema.optional().catch(undefined),
-  page: z.coerce.number().int().min(1).optional().catch(undefined),
-  pageSize: z.coerce.number().int().min(1).max(100).optional().catch(undefined),
-});
-export type ParliamentSearch = z.infer<typeof ParliamentSearchSchema>;
+export const ParliamentSearchSchema = lazySchema(() =>
+  z.object({
+    tab: z.enum(PARLIAMENT_TABS).optional().catch(undefined),
+    /**
+     * `comun` is a VOTES-only value (joint sittings); member surfaces treat it
+     * like `all`, because no member roster belongs to a joint sitting.
+     */
+    chamber: z
+      .enum(["camera", "senat", "comun", "all"])
+      .optional()
+      .catch(undefined),
+    judet: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .catch(undefined),
+    grup: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .catch(undefined),
+    q: z.string().optional().catch(undefined),
+    find: z
+      .union([z.literal("1"), z.literal(1)])
+      .optional()
+      .catch(undefined),
+    from: strictIsoDateParam(),
+    to: strictIsoDateParam(),
+    outcome: z.enum(VOTE_OUTCOMES).optional().catch(undefined),
+    /**
+     * Votes narrowed to one GROUP's stance — `grupVot` names the group, `alegere`
+     * the stance. Both must be present to constrain anything; either one alone is
+     * dropped by `buildVotesFilter`.
+     *
+     * Deliberately NOT the existing `grup` param, which is a MEMBERS facet on the
+     * same unified search object: reusing it would make a group selected on the
+     * members tab silently filter the votes tab when a reader switches tabs.
+     *
+     * `grupVot` is the group name AS THE VOTE DATA SPELLS IT, which is not always
+     * how the nomenclator spells it (the vote records say `neafiliat` where the
+     * group directory says `Neafiliaţi`). It is not a slug.
+     */
+    grupVot: z.string().optional().catch(undefined),
+    alegere: z.enum(MEMBER_VOTE_CHOICES).optional().catch(undefined),
+    /**
+     * Vote KIND — what the chamber was actually voting on.
+     *
+     * Only `legislative` rests on a column (`bill_key IS NOT NULL`). The other
+     * five are classified from the free-text title, so the UI must not present
+     * them as equally certain. See `VOTE_KIND_LABELS`.
+     */
+    tipVot: z
+      .union([z.enum(VOTE_KINDS), z.array(z.enum(VOTE_KINDS))])
+      .optional()
+      .catch(undefined),
+    /** Ordering. Absent = the server default, newest vote first. */
+    ordine: z.enum(VOTE_SORTS).optional().catch(undefined),
+    billType: z.enum(BILL_TYPES).optional().catch(undefined),
+    billLocation: z.enum(BILL_CURRENT_LOCATIONS).optional().catch(undefined),
+    sortBy: z.enum(BILL_SORT_BYS).optional().catch(undefined),
+    page: z.coerce.number().int().min(1).optional().catch(undefined),
+    pageSize: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .optional()
+      .catch(undefined),
+  }),
+);
+export type ParliamentSearch = LazyOutput<typeof ParliamentSearchSchema>;
 
 export const ParliamentHubSearchSchema = ParliamentSearchSchema;
 export type ParliamentHubSearch = ParliamentSearch;
@@ -207,21 +219,23 @@ export type ParliamentBillsSearch = ParliamentSearch;
  *   - `session`    — proprie (member's own chamber) | comun (joint sitting).
  *   - `an`         — heatmap year (drives the vote-activity aggregate).
  */
-export const MemberVotesSearchSchema = z.object({
-  // Strict, calendar-REAL YYYY-MM-DD: a junk or impossible date (`?from=abc`,
-  // `?from=2026-99-99`) must fall to undefined here, not reach the chip/date
-  // formatters (RangeError: Invalid time value).
-  from: strictIsoDateParam,
-  to: strictIsoDateParam,
-  choice: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .catch(undefined),
-  outcome: z.enum(["adoptat", "respins"]).optional().catch(undefined),
-  session: z.enum(["proprie", "comun"]).optional().catch(undefined),
-  an: z.coerce.number().int().optional().catch(undefined),
-});
-export type MemberVotesSearch = z.infer<typeof MemberVotesSearchSchema>;
+export const MemberVotesSearchSchema = lazySchema(() =>
+  z.object({
+    // Strict, calendar-REAL YYYY-MM-DD: a junk or impossible date (`?from=abc`,
+    // `?from=2026-99-99`) must fall to undefined here, not reach the chip/date
+    // formatters (RangeError: Invalid time value).
+    from: strictIsoDateParam(),
+    to: strictIsoDateParam(),
+    choice: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .catch(undefined),
+    outcome: z.enum(["adoptat", "respins"]).optional().catch(undefined),
+    session: z.enum(["proprie", "comun"]).optional().catch(undefined),
+    an: z.coerce.number().int().optional().catch(undefined),
+  }),
+);
+export type MemberVotesSearch = LazyOutput<typeof MemberVotesSearchSchema>;
 
 /**
  * Search params for the member interventii tab (speech heatmap + filters +
@@ -232,16 +246,20 @@ export type MemberVotesSearch = z.infer<typeof MemberVotesSearchSchema>;
  *   - `q`          — free-text over title + summary + verbatim transcript.
  *   - `an`         — heatmap year (drives the speech-activity aggregate).
  */
-export const MemberSpeechesSearchSchema = z.object({
-  from: strictIsoDateParam,
-  to: strictIsoDateParam,
-  session: z.enum(["proprie", "comun"]).optional().catch(undefined),
-  // Trimmed free-text; empty/oversized junk collapses to undefined so it never
-  // reaches the query arg or the chip formatter.
-  q: z.string().trim().min(1).max(200).optional().catch(undefined),
-  an: z.coerce.number().int().optional().catch(undefined),
-});
-export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>;
+export const MemberSpeechesSearchSchema = lazySchema(() =>
+  z.object({
+    from: strictIsoDateParam(),
+    to: strictIsoDateParam(),
+    session: z.enum(["proprie", "comun"]).optional().catch(undefined),
+    // Trimmed free-text; empty/oversized junk collapses to undefined so it never
+    // reaches the query arg or the chip formatter.
+    q: z.string().trim().min(1).max(200).optional().catch(undefined),
+    an: z.coerce.number().int().optional().catch(undefined),
+  }),
+);
+export type MemberSpeechesSearch = LazyOutput<
+  typeof MemberSpeechesSearchSchema
+>;
 
 /**
  * Which of the two stenograme views is showing. SITTINGS IS THE DEFAULT and the
@@ -249,23 +267,20 @@ export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>;
  * of the surface is the sitting, not the isolated turn. `interventii` is the
  * cross-sitting search over individual contributions.
  */
-export const ParliamentStenogrameViewSchema = z.enum([
-  "sedinte",
-  "interventii",
-]);
-export type ParliamentStenogrameView = z.infer<
-  typeof ParliamentStenogrameViewSchema
->;
+export const PARLIAMENT_STENOGRAME_VIEWS = ["sedinte", "interventii"] as const;
+export type ParliamentStenogrameView =
+  (typeof PARLIAMENT_STENOGRAME_VIEWS)[number];
 
 /**
  * Availability facet on the sittings view — the SERVED-READING promise of a
  * capture, surfaced as a filter because "show me only sittings I can actually
  * read" is a real question. Values match the server enum exactly.
  */
-export const ParliamentStenogramAvailabilityParamSchema = z
-  .enum(["COMPLETE", "PARTIAL", "SOURCE_ONLY"])
-  .optional()
-  .catch(undefined);
+const stenogramAvailabilityParam = () =>
+  z.enum(["COMPLETE", "PARTIAL", "SOURCE_ONLY"]).optional().catch(undefined);
+export const ParliamentStenogramAvailabilityParamSchema = lazySchema(
+  stenogramAvailabilityParam,
+);
 
 /**
  * Search params for the global stenograme page (/parlament/stenograme).
@@ -289,17 +304,19 @@ export const ParliamentStenogramAvailabilityParamSchema = z
  *                  title/summary(+transcript) search.
  *   - `disponibilitate` — sittings-only availability facet.
  */
-export const ParliamentSpeechesSearchSchema = z.object({
-  view: ParliamentStenogrameViewSchema.optional().catch(undefined),
-  an: z.coerce.number().int().optional().catch(undefined),
-  camera: z.enum(["camera", "senat", "comun"]).optional().catch(undefined),
-  vorbitor: z.string().trim().min(1).optional().catch(undefined),
-  from: strictIsoDateParam,
-  to: strictIsoDateParam,
-  q: z.string().trim().min(1).max(200).optional().catch(undefined),
-  disponibilitate: ParliamentStenogramAvailabilityParamSchema,
-});
-export type ParliamentSpeechesSearch = z.infer<
+export const ParliamentSpeechesSearchSchema = lazySchema(() =>
+  z.object({
+    view: z.enum(PARLIAMENT_STENOGRAME_VIEWS).optional().catch(undefined),
+    an: z.coerce.number().int().optional().catch(undefined),
+    camera: z.enum(["camera", "senat", "comun"]).optional().catch(undefined),
+    vorbitor: z.string().trim().min(1).optional().catch(undefined),
+    from: strictIsoDateParam(),
+    to: strictIsoDateParam(),
+    q: z.string().trim().min(1).max(200).optional().catch(undefined),
+    disponibilitate: stenogramAvailabilityParam(),
+  }),
+);
+export type ParliamentSpeechesSearch = LazyOutput<
   typeof ParliamentSpeechesSearchSchema
 >;
 
@@ -342,10 +359,11 @@ function parseSpeakerFilterParam(value: unknown): string[] | undefined {
  * the reader (member records, speech detail, sitting cards) to pass a filter it
  * knows nothing about.
  */
-const optionalSpeakerNamesParam = z
-  .preprocess(parseSpeakerFilterParam, z.array(z.string()).optional())
-  .catch(undefined)
-  .optional();
+const optionalSpeakerNamesParam = () =>
+  z
+    .preprocess(parseSpeakerFilterParam, z.array(z.string()).optional())
+    .catch(undefined)
+    .optional();
 
 /**
  * Search params for the sitting reader
@@ -362,11 +380,13 @@ const optionalSpeakerNamesParam = z
  * over an already-loaded document, and pushing every keystroke through the
  * router would rewrite history while the reader types.
  */
-export const ParliamentStenogramReaderSearchSchema = z.object({
-  interventie: z.string().trim().min(1).optional().catch(undefined),
-  vorbitori: optionalSpeakerNamesParam,
-});
-export type ParliamentStenogramReaderSearch = z.infer<
+export const ParliamentStenogramReaderSearchSchema = lazySchema(() =>
+  z.object({
+    interventie: z.string().trim().min(1).optional().catch(undefined),
+    vorbitori: optionalSpeakerNamesParam(),
+  }),
+);
+export type ParliamentStenogramReaderSearch = LazyOutput<
   typeof ParliamentStenogramReaderSearchSchema
 >;
 

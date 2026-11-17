@@ -1,4 +1,4 @@
-import { MemberVoteChoiceSchema } from '@/schemas/parliament-search'
+import { MEMBER_VOTE_CHOICES } from '@/schemas/parliament-search'
 
 /**
  * The tabs on a division's "Voturi individuale pe grup" section.
@@ -9,7 +9,7 @@ import { MemberVoteChoiceSchema } from '@/schemas/parliament-search'
  * actually has such positions) and the whole roll.
  */
 export const VOTE_TABS = [
-  ...MemberVoteChoiceSchema.options,
+  ...MEMBER_VOTE_CHOICES,
   'conflicting_choice',
   'unknown',
   'toate',
