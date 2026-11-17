@@ -1,6 +1,10 @@
-import { parseProcurementHubSearch, procurementHubSearchSchema, type ProcurementHubState } from '@/schemas/procurement-hub'
+import { parseProcurementHubSearch, type ProcurementHubState } from '@/schemas/procurement-hub'
 import { linkSearchOf, SEARCH_KEYS, type AnalyticsSearch, type AnalyticsUrlSearch } from './analytics-model'
 import { allYears } from './home-links'
+import { EXPLORER_KEYS } from './legacy-links'
+
+// What the routes check and translate without this module (it builds the explorer's schema).
+export { EXPLORER_KEYS, categoryRedirectSearch, cpvCodeParam, isExplorerSearch, siteSearchOf } from './legacy-links'
 
 /**
  * The explorer's addresses (`/procurement/search`, the old
@@ -13,31 +17,8 @@ import { allYears } from './home-links'
  * cannot read goes on as it came, for the page to say so.
  */
 
-/** The explorer's keys, and its legacy `tab`. */
-export const EXPLORER_KEYS: ReadonlySet<string> = new Set([...Object.keys(procurementHubSearchSchema.shape), 'tab'])
 
-/**
- * The address's keys that are neither the page's nor the explorer's —
- * `lang`, the site's currency, a campaign's tags — which a change of
- * question keeps. An explorer key left in it (`page=2`) would make the next
- * address read as an explorer question once the page's own keys are all
- * defaults, and redirect it.
- */
-export function siteSearchOf<S extends Readonly<Record<string, unknown>>>(search: S): Partial<S> {
-  // Only keys are dropped: what is left is the address's own, as its type says.
-  return Object.fromEntries(Object.entries(search).filter(([key]) => !SEARCH_KEYS.includes(key) && !EXPLORER_KEYS.has(key))) as Partial<S>
-}
 
-/**
- * A link carries an explorer question: one of its keys, and none of the
- * analytics page's own (`cpv` is both pages' key, and means the same code) —
- * an analytics address with a stray key (`page=2`) is answered as it is.
- */
-export function isExplorerSearch(raw: Readonly<Record<string, unknown>>): boolean {
-  const keys = Object.keys(raw)
-  if (keys.some((key) => key !== 'cpv' && SEARCH_KEYS.includes(key))) return false
-  return keys.some((key) => EXPLORER_KEYS.has(key) && !SEARCH_KEYS.includes(key))
-}
 
 function tipOf(state: ProcurementHubState): string {
   if (state.grain === 'direct_acquisitions') return 'directe'
@@ -105,11 +86,6 @@ export function analyticsRedirectSearch(raw: Readonly<Record<string, unknown>>, 
  * 8-digit code's check digit („45000000-7") allowed and dropped; anything
  * else is no category (a 404).
  */
-export function cpvCodeParam(code: string): string | null {
-  const match = /^(\d{2,8})(?:-\d)?$/u.exec(code)
-  if (!match || (code.includes('-') && match[1]!.length !== 8)) return null
-  return match[1]!
-}
 
 /**
  * The analytics page's address for the old CPV category page
@@ -118,10 +94,6 @@ export function cpvCodeParam(code: string): string | null {
  * kept. A code the page cannot read goes on as it came, for the page to say
  * so.
  */
-export function categoryRedirectSearch(raw: Readonly<Record<string, unknown>>, code: string): AnalyticsUrlSearch {
-  // What the link carried goes as the router parsed it (the root route validates its own keys again on arrival).
-  return { ...siteSearchOf(raw), ...linkSearchOf({ cpv: code }) } as AnalyticsUrlSearch
-}
 
 /** The analytics page's address for an explorer link, normalised as the page writes it. */
 export function analyticsSearchFromExplorer(raw: Readonly<Record<string, unknown>>, now: Date = new Date()): AnalyticsUrlSearch {

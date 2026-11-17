@@ -10,7 +10,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 const { Route } = await import('./index')
 const route = Route as unknown as {
-  readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void
+  readonly beforeLoad: (input: { readonly abortController: AbortController; readonly location: { readonly search: Record<string, unknown> } }) => Promise<void>
   readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
 }
 
@@ -18,10 +18,10 @@ const route = Route as unknown as {
 const LAST_YEAR = new Date().getFullYear() - 1
 
 describe('/procurement', () => {
-  it('sends an old explorer link to /procurement/analytics, its question in the page’s words, with what else it carried, less its own choices', () => {
+  it('sends an old explorer link to /procurement/analytics, its question in the page’s words, with what else it carried, less its own choices', async () => {
     let thrown: unknown
     try {
-      route.beforeLoad({ location: { search: { view: 'list', q: 'spital', lang: 'en', cumparatori: 'contracte' } } })
+      await route.beforeLoad({ abortController: new AbortController(), location: { search: { view: 'list', q: 'spital', lang: 'en', cumparatori: 'contracte' } } })
     } catch (error) {
       thrown = error
     }
@@ -31,9 +31,9 @@ describe('/procurement', () => {
     })
   })
 
-  it('keeps a front-door link on the front door', () => {
-    expect(() => route.beforeLoad({ location: { search: {} } })).not.toThrow()
-    expect(() => route.beforeLoad({ location: { search: { cumparatori: 'contracte', lang: 'en' } } })).not.toThrow()
+  it('keeps a front-door link on the front door', async () => {
+    await expect(route.beforeLoad({ abortController: new AbortController(), location: { search: {} } })).resolves.toBeUndefined()
+    await expect(route.beforeLoad({ abortController: new AbortController(), location: { search: { cumparatori: 'contracte', lang: 'en' } } })).resolves.toBeUndefined()
   })
 
   it('never caches a render with a failed read for everyone', () => {

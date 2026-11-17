@@ -4,7 +4,6 @@ import { getSiteUrl } from '@/config/env'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import { analyticsRedirectSearch } from '@/features/procurement/lib/analytics-legacy'
 import { explorerSearchOf, parseProcurementHomeSearch, PROCUREMENT_HOME_KEYS } from '@/schemas/procurement-home'
 import type { ProcurementHomeInitialData } from '@/features/procurement/components/home/procurement-home-page'
 
@@ -26,10 +25,17 @@ import type { ProcurementHomeInitialData } from '@/features/procurement/componen
 export const Route = createFileRoute('/procurement/')({
   ssr: true,
   validateSearch: parseProcurementHomeSearch,
-  beforeLoad: ({ location }) => {
+  beforeLoad: async ({ location, abortController }) => {
     const raw = location.search as Record<string, unknown>
-    // Straight to the analytics page, not through the explorer's old address.
-    if (explorerSearchOf(raw)) throw redirect({ to: '/procurement/analytics', search: analyticsRedirectSearch(raw, PROCUREMENT_HOME_KEYS), replace: true })
+    // Straight to the analytics page, not through the explorer's old address. The
+    // translation is imported only then: it builds the old explorer's schema,
+    // which the route tree must not carry (docs/route-contracts.md).
+    if (explorerSearchOf(raw)) {
+      const { analyticsRedirectSearch } = await import('@/features/procurement/lib/analytics-legacy')
+      // The reader went elsewhere while it downloaded: this navigation is over, and must not redirect.
+      if (abortController.signal.aborted) return
+      throw redirect({ to: '/procurement/analytics', search: analyticsRedirectSearch(raw, PROCUREMENT_HOME_KEYS), replace: true })
+    }
   },
   loader: async ({ context }): Promise<ProcurementHomeInitialData> => {
     const { homeYear } = await import('@/features/procurement/lib/home-model')

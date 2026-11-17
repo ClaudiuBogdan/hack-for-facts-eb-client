@@ -5,7 +5,7 @@ import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-c
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { ProcurementAnalyticsServerRead } from '@/features/procurement/api/procurement-analytics-ssr'
-import { analyticsRedirectSearch, isExplorerSearch } from '@/features/procurement/lib/analytics-legacy'
+import { isExplorerSearch } from '@/features/procurement/lib/legacy-links'
 import { categoryLandingOf, landingDescription, landingName, landingTitle, pageTitle } from '@/features/procurement/lib/analytics-head'
 import { analyticsSearchOf, SEARCH_KEYS, type AnalyticsUrlSearch } from '@/features/procurement/lib/analytics-model'
 
@@ -43,9 +43,16 @@ function validateAnalyticsSearch(search: Record<string, unknown>): AnalyticsUrlS
 export const Route = createFileRoute('/procurement/analytics')({
   ssr: true,
   validateSearch: validateAnalyticsSearch,
-  beforeLoad: ({ location }) => {
+  beforeLoad: async ({ location, abortController }) => {
     const raw = location.search as Record<string, unknown>
-    if (isExplorerSearch(raw)) throw redirect({ to: '/procurement/analytics', search: analyticsRedirectSearch(raw), replace: true, statusCode: 301 })
+    // The translation is imported only for an old link: it builds the old
+    // explorer's schema, which the route tree must not carry (docs/route-contracts.md).
+    if (isExplorerSearch(raw)) {
+      const { analyticsRedirectSearch } = await import('@/features/procurement/lib/analytics-legacy')
+      // The reader went elsewhere while it downloaded: this navigation is over, and must not redirect.
+      if (abortController.signal.aborted) return
+      throw redirect({ to: '/procurement/analytics', search: analyticsRedirectSearch(raw), replace: true, statusCode: 301 })
+    }
   },
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ deps }): Promise<ProcurementAnalyticsServerRead> => {

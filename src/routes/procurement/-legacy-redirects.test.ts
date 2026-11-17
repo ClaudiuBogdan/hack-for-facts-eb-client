@@ -110,10 +110,12 @@ describe('legacy achizitii redirects', () => {
 
       let thrown: unknown
       try {
-        route.beforeLoad({
+        // Awaited: the explorer's own redirect imports its translation first.
+        await route.beforeLoad({
           params: params ?? {},
           search,
           location: { search },
+          abortController: new AbortController(),
         } as never)
       } catch (error) {
         thrown = error

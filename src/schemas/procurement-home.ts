@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { procurementHubSearchSchema } from './procurement-hub'
+import { lazySchema, type LazyOutput } from '@/lib/route-contract'
+import { EXPLORER_KEYS } from '@/features/procurement/lib/legacy-links'
 
 // ---------------------------------------------------------------------------
 // Front door — /procurement
@@ -34,23 +35,23 @@ export const PROCUREMENT_HOME_DEFAULTS = {
   recente: 'contracte',
 } as const satisfies Required<ProcurementHomeSearch>
 
-export const procurementHomeSearchSchema = z
-  .object({
-    cumparatori: z.enum(PROCUREMENT_HOME_BUYERS).optional().catch(undefined),
-    bani: z.enum(PROCUREMENT_HOME_MONEY).optional().catch(undefined),
-    firme: z.enum(PROCUREMENT_HOME_SELLERS).optional().catch(undefined),
-    indicator: z.enum(PROCUREMENT_HOME_MAP).optional().catch(undefined),
-    recente: z.enum(PROCUREMENT_HOME_RECENT).optional().catch(undefined),
-  })
-  .catch({})
+/** Built on first use: the front door's route, which the route tree loads on every page, validates with it. */
+export const procurementHomeSearchSchema = lazySchema(() =>
+  z
+    .object({
+      cumparatori: z.enum(PROCUREMENT_HOME_BUYERS).optional().catch(undefined),
+      bani: z.enum(PROCUREMENT_HOME_MONEY).optional().catch(undefined),
+      firme: z.enum(PROCUREMENT_HOME_SELLERS).optional().catch(undefined),
+      indicator: z.enum(PROCUREMENT_HOME_MAP).optional().catch(undefined),
+      recente: z.enum(PROCUREMENT_HOME_RECENT).optional().catch(undefined),
+    })
+    .catch({}),
+)
 
-export type ProcurementHomeSearch = z.infer<typeof procurementHomeSearchSchema>
+export type ProcurementHomeSearch = LazyOutput<typeof procurementHomeSearchSchema>
 
 /** The page's own keys: everything else an old link carries is the explorer's or the site's. */
 export const PROCUREMENT_HOME_KEYS: ReadonlySet<string> = new Set(Object.keys(PROCUREMENT_HOME_DEFAULTS))
-
-/** The explorer's keys (`/procurement/search`), and its legacy `tab`. */
-const EXPLORER_KEYS: ReadonlySet<string> = new Set([...Object.keys(procurementHubSearchSchema.shape), 'tab'])
 
 /**
  * What an old `/procurement` link carried for the explorer, when it carried

@@ -18,21 +18,22 @@ const { Route } = await import('./analytics')
 const { Route: Search } = await import('./search')
 const route = Route as unknown as {
   readonly validateSearch: (search: Record<string, unknown>) => Record<string, unknown>
-  readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void
+  readonly beforeLoad: (input: { readonly abortController: AbortController; readonly location: { readonly search: Record<string, unknown> } }) => Promise<void>
   readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
   readonly head: (input: { readonly match: { readonly context: { readonly locale: string }; readonly search: Record<string, unknown> }; readonly loaderData?: Record<string, unknown> }) => {
     readonly meta: readonly Record<string, string>[]
     readonly links: readonly Record<string, string>[]
   }
 }
-const search = Search as unknown as { readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void }
+const search = Search as unknown as { readonly beforeLoad: (input: { readonly abortController: AbortController; readonly location: { readonly search: Record<string, unknown> } }) => Promise<void> }
 
 // The explorer's own default when a link named no period: the previous calendar year.
 const LAST_YEAR = new Date().getFullYear() - 1
 
-function thrownBy(run: () => void): unknown {
+/** What a `beforeLoad` threw: it imports the old explorer's translation, so it is async. */
+async function thrownBy(run: () => Promise<void>): Promise<unknown> {
   try {
-    run()
+    await run()
   } catch (error) {
     return error
   }
@@ -54,14 +55,14 @@ describe('/procurement/analytics', () => {
     expect(head.meta).toContainEqual({ name: 'robots', content: 'noindex, follow' })
   })
 
-  it('answers its own address, a stray explorer key and all', () => {
-    expect(() => route.beforeLoad({ location: { search: { cumparator: 4305857, dupa: 'firma' } } })).not.toThrow()
-    expect(() => route.beforeLoad({ location: { search: {} } })).not.toThrow()
-    expect(() => route.beforeLoad({ location: { search: { tip: 'directe', cumparator: 4305857, dupa: 'inregistrari', page: 2 } } })).not.toThrow()
+  it('answers its own address, a stray explorer key and all', async () => {
+    await expect(route.beforeLoad({ abortController: new AbortController(), location: { search: { cumparator: 4305857, dupa: 'firma' } } })).resolves.toBeUndefined()
+    await expect(route.beforeLoad({ abortController: new AbortController(), location: { search: {} } })).resolves.toBeUndefined()
+    await expect(route.beforeLoad({ abortController: new AbortController(), location: { search: { tip: 'directe', cumparator: 4305857, dupa: 'inregistrari', page: 2 } } })).resolves.toBeUndefined()
   })
 
-  it('asks an explorer question again in its own words, permanently', () => {
-    expect(thrownBy(() => route.beforeLoad({ location: { search: { view: 'overview', mapGrain: 'county', lang: 'en' } } }))).toEqual({
+  it('asks an explorer question again in its own words, permanently', async () => {
+    expect(await thrownBy(() => route.beforeLoad({ abortController: new AbortController(), location: { search: { view: 'overview', mapGrain: 'county', lang: 'en' } } }))).toEqual({
       kind: 'redirect',
       options: { to: '/procurement/analytics', search: { lang: 'en', tip: 'contracte', perioada: LAST_YEAR }, replace: true, statusCode: 301 },
     })
@@ -108,9 +109,19 @@ describe('/procurement/analytics', () => {
   })
 })
 
+describe('an old explorer link whose navigation was abandoned', () => {
+  // The translation is imported before redirecting; a reader who went elsewhere meanwhile is not sent back.
+  it('does not redirect once its navigation is aborted', async () => {
+    const abandoned = new AbortController()
+    abandoned.abort()
+    await expect(search.beforeLoad({ abortController: abandoned, location: { search: { view: 'list', q: 'spital' } } })).resolves.toBeUndefined()
+    await expect(route.beforeLoad({ abortController: abandoned, location: { search: { view: 'overview' } } })).resolves.toBeUndefined()
+  })
+})
+
 describe('/procurement/search', () => {
-  it('sends every explorer link to the analytics page, its list as the records', () => {
-    expect(thrownBy(() => search.beforeLoad({ location: { search: { view: 'list', grain: 'direct_acquisitions', authority_cui: '4305857', sort: 'date_desc', page: 2 } } }))).toEqual({
+  it('sends every explorer link to the analytics page, its list as the records', async () => {
+    expect(await thrownBy(() => search.beforeLoad({ abortController: new AbortController(), location: { search: { view: 'list', grain: 'direct_acquisitions', authority_cui: '4305857', sort: 'date_desc', page: 2 } } }))).toEqual({
       kind: 'redirect',
       options: { to: '/procurement/analytics', search: { cumparator: 4305857, perioada: LAST_YEAR, dupa: 'inregistrari' }, replace: true, statusCode: 301 },
     })

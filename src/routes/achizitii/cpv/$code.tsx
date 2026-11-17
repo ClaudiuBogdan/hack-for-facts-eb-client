@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
-import { categoryRedirectSearch, cpvCodeParam } from '@/features/procurement/lib/analytics-legacy'
+import { categoryRedirectSearch, cpvCodeParam } from '@/features/procurement/lib/legacy-links'
 
 /** The Romanian alias of the old category page: straight to the analytics page, with the category as its filter (one hop, not two); no CPV code, no page. */
 export const Route = createFileRoute('/achizitii/cpv/$code')({
