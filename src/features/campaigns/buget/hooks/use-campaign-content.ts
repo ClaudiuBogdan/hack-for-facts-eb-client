@@ -14,29 +14,40 @@ import type {
   CampaignUatCalendarOverride,
 } from '../types'
 
-const CampaignResourceSchema = z.object({
-  id: z.string().min(1),
-  title: CampaignTranslatedStringSchema,
-  description: CampaignTranslatedStringSchema.optional(),
-  url: z.string().url(),
-  kind: z.enum(['guide', 'tutorial', 'template', 'reference']),
-})
+/**
+ * The campaign's content, parsed the first time it is asked for rather than
+ * when this module loads: the campaign routes' document heads import it, and
+ * the route tree loads those on every page (docs/route-contracts.md).
+ */
+const once = <T,>(read: () => T): (() => T) => {
+  let value: { readonly current: T } | undefined
+  return () => (value ??= { current: read() }).current
+}
 
-const CampaignResourcesFileSchema = z.object({
-  resources: z.array(CampaignResourceSchema),
-})
+const campaignResourcesFileSchema = () =>
+  z.object({
+    resources: z.array(
+      z.object({
+        id: z.string().min(1),
+        title: CampaignTranslatedStringSchema,
+        description: CampaignTranslatedStringSchema.optional(),
+        url: z.string().url(),
+        kind: z.enum(['guide', 'tutorial', 'template', 'reference']),
+      }),
+    ),
+  })
 
-const campaignDefinition = parseCampaignDefinition(campaignContent)
-const campaignTimelineDefinition = parseCampaignTimelineDefinition(timelineContent)
-const campaignUatCalendarOverridesFile = parseCampaignUatCalendarOverridesFile(uatCalendarOverridesContent)
-const campaignResources = CampaignResourcesFileSchema.parse(resourcesContent).resources
+const campaignDefinition = once(() => parseCampaignDefinition(campaignContent))
+const campaignTimelineDefinition = once(() => parseCampaignTimelineDefinition(timelineContent))
+const campaignUatCalendarOverridesFile = once(() => parseCampaignUatCalendarOverridesFile(uatCalendarOverridesContent))
+const campaignResources = once(() => campaignResourcesFileSchema().parse(resourcesContent).resources)
 
 export function getCampaignDefinition(): CampaignDefinition {
-  return campaignDefinition
+  return campaignDefinition()
 }
 
 export function getCampaignTimelineDefinition(): CampaignTimelineDefinition {
-  return campaignTimelineDefinition
+  return campaignTimelineDefinition()
 }
 
 /**
@@ -47,7 +58,7 @@ export function getCampaignUatOverrideForCui(cui: string): CampaignUatCalendarOv
   const result: Record<string, string> = {}
   let found = false
 
-  for (const [entryId, cuiMap] of Object.entries(campaignUatCalendarOverridesFile)) {
+  for (const [entryId, cuiMap] of Object.entries(campaignUatCalendarOverridesFile())) {
     const date = cuiMap[cui]
     if (date) {
       result[entryId] = date
@@ -59,7 +70,7 @@ export function getCampaignUatOverrideForCui(cui: string): CampaignUatCalendarOv
 }
 
 export function getCampaignResources(): readonly CampaignResourceDefinition[] {
-  return campaignResources
+  return campaignResources()
 }
 
 export function getCampaignText(value: CampaignTranslatedString, locale: CampaignLocale): string {

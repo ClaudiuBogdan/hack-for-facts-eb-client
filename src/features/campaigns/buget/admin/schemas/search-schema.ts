@@ -1,4 +1,7 @@
 import { z } from "zod";
+// The admin routes' search schemas are built on first use: the route tree, which
+// every page loads, imports them (docs/route-contracts.md).
+import { lazySchema, type LazyOutput } from "@/lib/route-contract";
 import {
   DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
   isCampaignAdminUserInteractionsLocalSortKey,
@@ -299,7 +302,8 @@ function createSearchSignature(search: CampaignAdminQueueSearch): string {
   return JSON.stringify(searchWithoutSidebarState);
 }
 
-export const campaignAdminUserInteractionsRouteSearchSchema = z.object({
+export const campaignAdminUserInteractionsRouteSearchSchema = lazySchema(() =>
+  z.object({
   phase: z.preprocess(
     toTrimmedOptionalString,
     z.enum(campaignAdminPhaseValues).optional(),
@@ -387,10 +391,12 @@ export const campaignAdminUserInteractionsRouteSearchSchema = z.object({
   limit: z
     .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
-});
+}),
+);
 
-export const campaignAdminUserPageRouteSearchSchema =
+export const campaignAdminUserPageRouteSearchSchema = lazySchema(() =>
   campaignAdminUserInteractionsRouteSearchSchema
+    .schema()
     .omit({
       phase: true,
       reviewStatusMode: true,
@@ -404,9 +410,11 @@ export const campaignAdminUserPageRouteSearchSchema =
         toTrimmedOptionalString,
         z.enum(["interactions", "notifications"]).optional(),
       ),
-    });
+    }),
+);
 
-export const campaignAdminUsersRouteSearchSchema = z.object({
+export const campaignAdminUsersRouteSearchSchema = lazySchema(() =>
+  z.object({
   query: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   entityCui: z.preprocess(
     toOptionalEntityCui,
@@ -428,9 +436,11 @@ export const campaignAdminUsersRouteSearchSchema = z.object({
   limit: z
     .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
-});
+}),
+);
 
-export const campaignAdminEntitiesRouteSearchSchema = z.object({
+export const campaignAdminEntitiesRouteSearchSchema = lazySchema(() =>
+  z.object({
   tab: z.preprocess(
     toTrimmedOptionalString,
     z
@@ -592,9 +602,11 @@ export const campaignAdminEntitiesRouteSearchSchema = z.object({
     toOptionalLimit,
     z.number().int().min(1).max(100).optional(),
   ),
-});
+}),
+);
 
-export const campaignAdminEntityConfigRouteSearchSchema = z.object({
+export const campaignAdminEntityConfigRouteSearchSchema = lazySchema(() =>
+  z.object({
   entityCui: z.preprocess(toOptionalEntityCui, z.string().min(1).optional()),
   budgetPublicationDate: z.preprocess(
     toTrimmedOptionalString,
@@ -645,9 +657,11 @@ export const campaignAdminEntityConfigRouteSearchSchema = z.object({
     z.string().min(1).optional(),
   ),
   createMode: z.preprocess(toOptionalBoolean, z.boolean().optional()),
-});
+}),
+);
 
-export const campaignAdminNotificationsRouteSearchSchema = z.object({
+export const campaignAdminNotificationsRouteSearchSchema = lazySchema(() =>
+  z.object({
   tab: z.preprocess(
     toOptionalCampaignAdminNotificationsTab,
     z.enum(campaignAdminNotificationsTabValues).optional(),
@@ -722,9 +736,11 @@ export const campaignAdminNotificationsRouteSearchSchema = z.object({
   limit: z
     .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
-});
+}),
+);
 
-export const campaignAdminInstitutionThreadsRouteSearchSchema = z.object({
+export const campaignAdminInstitutionThreadsRouteSearchSchema = lazySchema(() =>
+  z.object({
   stateGroup: z.preprocess(
     toTrimmedOptionalString,
     z.enum(campaignAdminInstitutionThreadStateGroupValues).optional(),
@@ -770,34 +786,21 @@ export const campaignAdminInstitutionThreadsRouteSearchSchema = z.object({
   limit: z
     .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
-});
+}),
+);
 
-export type CampaignAdminRouteSearch = z.infer<
-  typeof campaignAdminUserInteractionsRouteSearchSchema
->;
+export type CampaignAdminRouteSearch = LazyOutput<typeof campaignAdminUserInteractionsRouteSearchSchema>;
 
-export type CampaignAdminUserPageRouteSearch = z.infer<
-  typeof campaignAdminUserPageRouteSearchSchema
->;
+export type CampaignAdminUserPageRouteSearch = LazyOutput<typeof campaignAdminUserPageRouteSearchSchema>;
 
-export type CampaignAdminUsersRouteSearch = z.infer<
-  typeof campaignAdminUsersRouteSearchSchema
->;
+export type CampaignAdminUsersRouteSearch = LazyOutput<typeof campaignAdminUsersRouteSearchSchema>;
 
-export type CampaignAdminEntitiesRouteSearch = z.infer<
-  typeof campaignAdminEntitiesRouteSearchSchema
->;
-export type CampaignAdminEntityConfigRouteSearch = z.infer<
-  typeof campaignAdminEntityConfigRouteSearchSchema
->;
+export type CampaignAdminEntitiesRouteSearch = LazyOutput<typeof campaignAdminEntitiesRouteSearchSchema>;
+export type CampaignAdminEntityConfigRouteSearch = LazyOutput<typeof campaignAdminEntityConfigRouteSearchSchema>;
 
-export type CampaignAdminNotificationsRouteSearch = z.infer<
-  typeof campaignAdminNotificationsRouteSearchSchema
->;
+export type CampaignAdminNotificationsRouteSearch = LazyOutput<typeof campaignAdminNotificationsRouteSearchSchema>;
 
-export type CampaignAdminInstitutionThreadsRouteSearch = z.infer<
-  typeof campaignAdminInstitutionThreadsRouteSearchSchema
->;
+export type CampaignAdminInstitutionThreadsRouteSearch = LazyOutput<typeof campaignAdminInstitutionThreadsRouteSearchSchema>;
 
 export type CampaignAdminInstitutionThreadsSearchConflictCode =
   | "closed_started"
