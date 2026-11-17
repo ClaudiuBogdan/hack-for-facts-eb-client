@@ -4,6 +4,19 @@ import {
   parseAdvancedMapAnalyticsUrlState,
   type AdvancedMapAnalyticsUrlState,
 } from '@/schemas/advanced-map-analytics'
+import {
+  CHALLENGE_ENTITY_MAP_PREVIEW_ALIASES,
+  normalizeChallengeEntityMapPreviewKey,
+  type ChallengeEntityMapPreviewKey,
+} from './challenge-entity-map-preview-keys'
+
+// The names alone, for code that must not build the definitions (the route tree).
+export {
+  DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
+  isChallengeEntityMapPreviewKey,
+  normalizeChallengeEntityMapPreviewKey,
+} from './challenge-entity-map-preview-keys'
+export type { ChallengeEntityMapPreviewKey } from './challenge-entity-map-preview-keys'
 
 const MAP_PREVIEW_TIMESTAMP = '2026-03-06T00:00:00.000Z'
 const PRIMARY_EXECUTION_REPORT_TYPE =
@@ -32,11 +45,6 @@ export interface ChallengeEntityMapPreviewViewport {
   readonly mapZoom: number
 }
 
-export type ChallengeEntityMapPreviewKey =
-  | 'expenses'
-  | 'income'
-  | 'balance'
-  | 'local-taxes'
 
 export type ChallengeEntityMapPreviewRuntimeContext = {
   readonly selectedPeriodLabel: string
@@ -297,12 +305,7 @@ export const CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS = [
   {
     key: 'expenses',
     label: 'Cheltuieli',
-    aliases: [
-      'expenses-total-per-capita',
-      'expenses-personnel-per-capita',
-      '8JwhV2lN5OIz',
-      'Wy51tDP1HuQQ',
-    ],
+    aliases: CHALLENGE_ENTITY_MAP_PREVIEW_ALIASES.expenses,
     fallbackViewport: expensesViewport,
     buildPreviewCopy: ({
       selectedPeriodLabel,
@@ -369,7 +372,7 @@ ${buildPreviewConfigSection({
   {
     key: 'income',
     label: 'Venituri',
-    aliases: ['income-total-per-capita', 'FWlNQTf8I_DC'],
+    aliases: CHALLENGE_ENTITY_MAP_PREVIEW_ALIASES.income,
     fallbackViewport: incomeViewport,
     buildPreviewCopy: ({
       selectedPeriodLabel,
@@ -436,7 +439,7 @@ ${buildPreviewConfigSection({
   {
     key: 'balance',
     label: 'Balanță bugetară',
-    aliases: ['budget-balance', 'M7PyWc0ic4hV'],
+    aliases: CHALLENGE_ENTITY_MAP_PREVIEW_ALIASES.balance,
     fallbackViewport: balanceViewport,
     buildPreviewCopy: ({
       selectedPeriodLabel,
@@ -526,12 +529,7 @@ ${buildPreviewConfigSection({
   {
     key: 'local-taxes',
     label: 'Taxe și impozite locale',
-    aliases: [
-      'taxes-local-per-capita',
-      'taxes-local-total',
-      '9yugt1MKU-WD',
-      'gxnEfLoy3EqI',
-    ],
+    aliases: CHALLENGE_ENTITY_MAP_PREVIEW_ALIASES['local-taxes'],
     fallbackViewport: localTaxesViewport,
     buildPreviewCopy: ({
       selectedPeriodLabel,
@@ -625,9 +623,6 @@ ${buildPreviewConfigSection({
   },
 ] as const satisfies readonly ChallengeEntityMapPreviewDefinition[]
 
-export const DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY =
-  CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS[0].key
-
 const challengeEntityMapPreviewDefinitionsByKey = new Map<
   ChallengeEntityMapPreviewKey,
   ChallengeEntityMapPreviewDefinition
@@ -637,45 +632,6 @@ const challengeEntityMapPreviewDefinitionsByKey = new Map<
     entry,
   ]),
 )
-
-const challengeEntityMapPreviewKeysByAlias = new Map<
-  string,
-  ChallengeEntityMapPreviewKey
->(
-  CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS.flatMap((entry) => [
-    [entry.key, entry.key],
-    ...entry.aliases.map((alias) => [alias, entry.key] as const),
-  ]),
-)
-
-export function isChallengeEntityMapPreviewKey(
-  value: string | undefined,
-): value is ChallengeEntityMapPreviewKey {
-  if (!value) {
-    return false
-  }
-
-  return challengeEntityMapPreviewDefinitionsByKey.has(
-    value as ChallengeEntityMapPreviewKey,
-  )
-}
-
-export function normalizeChallengeEntityMapPreviewKey(
-  value: string | undefined,
-): ChallengeEntityMapPreviewKey {
-  if (value && isChallengeEntityMapPreviewKey(value)) {
-    return value
-  }
-
-  const aliasedPreviewKey = value
-    ? challengeEntityMapPreviewKeysByAlias.get(value)
-    : undefined
-  if (aliasedPreviewKey) {
-    return aliasedPreviewKey
-  }
-
-  return DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY
-}
 
 export function getChallengeEntityMapPreviewDefinition(
   value: string | undefined,

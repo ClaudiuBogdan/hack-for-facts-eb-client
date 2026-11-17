@@ -1,17 +1,9 @@
 import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
-import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { applyMapRuntimeConfig } from '@/features/advanced-map-analytics/map-runtime-config'
 import {
   ChallengeEntityAnalysisLoadingShell,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-loading-shell'
-import {
-  challengeEntitySubordinateRankingQueryOptions,
-  type ChallengeEntityInitialSettings,
-} from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
-import {
-  getChallengeEntityMapPreviewDefinition,
-} from '@/features/challenges/components/analysis/challenge-entity-public-maps'
+import type { ChallengeEntityInitialSettings } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
 import {
   ChallengeEntityAnalysisRouteSearchSchema,
   type ChallengeEntityAnalysisRouteSearch,
@@ -32,11 +24,8 @@ import {
   hasPrimarieEntityCanonicalSearchPatch,
   resolvePrimarieEntityRouteAdapter,
 } from '@/features/entities/page-core/route-adapters/primarie-entity-route-adapter'
-import { advancedMapAnalyticsSeriesDataQueryOptions } from '@/hooks/useAdvancedMapAnalyticsSeriesData'
-import { geoJsonQueryOptions } from '@/hooks/useGeoJson'
 import type { EntityDetailsData } from '@/lib/api/entities'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { toReportTypeValue } from '@/schemas/reporting'
 
 type PrimarieRouteAdapterResult = ReturnType<typeof resolvePrimarieEntityRouteAdapter>
 
@@ -53,6 +42,23 @@ type PrimarieLoaderData = {
 }
 
 const ENTITY_DETAILS_STEP_ID = 'entity-details' as const
+
+/**
+ * What only the loader needs: the map preview's definitions (built and parsed
+ * when they load), the query options it prefetches. Imported when the route
+ * loads rather than with the route tree, which every page loads
+ * (docs/route-contracts.md).
+ */
+function loadLoaderModules() {
+  return Promise.all([
+    import('@/features/advanced-map-analytics/map-runtime-config'),
+    import('@/features/challenges/components/analysis/challenge-entity-public-maps'),
+    import('@/features/challenges/components/analysis/challenge-entity-analysis-queries'),
+    import('@/hooks/useAdvancedMapAnalyticsSeriesData'),
+    import('@/hooks/useGeoJson'),
+    import('@/schemas/reporting'),
+  ])
+}
 
 function createEntityPageBootstrapPayload(
   primarieRoute: PrimarieRouteAdapterResult,
@@ -140,6 +146,10 @@ export const Route = createFileRoute('/primarie/$cui/')({
   },
   loader: async ({ context, params, location }: { context: { queryClient: import('@tanstack/react-query').QueryClient }; params: { cui: string }; location: { search: unknown } }) => {
     const queryClient = context.queryClient
+    // Started now, alongside the reads; awaited where they are needed. The
+    // INS view returns before that, so a failed download there is not reported.
+    const loaderModules = loadLoaderModules()
+    loaderModules.catch(() => undefined)
     const requestSiteUrl = await readEntityPageRequestOrigin()
     const primarieRoute = resolvePrimarieEntityRouteAdapter({
       cui: params.cui,
@@ -157,6 +167,7 @@ export const Route = createFileRoute('/primarie/$cui/')({
       baseLoaderPayload,
     )
     if (isRedesignOnlyApiDeployment() && normalizedSearch.view === 'ins') {
+      const { entityIdentityQueryOptions } = await import('@/lib/queries/entity-identity')
       await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui, normalizedSearch.year))
       return { entityPageBootstrap: initialEntityPageBootstrap, initialSettings } satisfies PrimarieLoaderData
     }
@@ -174,6 +185,14 @@ export const Route = createFileRoute('/primarie/$cui/')({
       primarieRoute,
       bootstrapResult.payload,
     )
+    const [
+      { applyMapRuntimeConfig },
+      { getChallengeEntityMapPreviewDefinition },
+      { challengeEntitySubordinateRankingQueryOptions },
+      { advancedMapAnalyticsSeriesDataQueryOptions },
+      { geoJsonQueryOptions },
+      { toReportTypeValue },
+    ] = await loaderModules
     const entity = bootstrapResult.entityDetails as EntityDetailsData | undefined
     const isCountyEntity =
       entity?.entity_type === 'admin_county_council' || entity?.cui === '4267117'

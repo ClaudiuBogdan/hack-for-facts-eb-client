@@ -1,11 +1,12 @@
 import { entityInsSourceSearchSchema } from '@/lib/ins/entity-source-search'
 import { z } from 'zod'
+import { lazySchema, type LazyOutput } from '@/lib/route-contract'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
 import {
   DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
   normalizeChallengeEntityMapPreviewKey,
   type ChallengeEntityMapPreviewKey,
-} from '@/features/challenges/components/analysis/challenge-entity-public-maps'
+} from '@/features/challenges/components/analysis/challenge-entity-map-preview-keys'
 import {
   type BudgetItemAnalyticsTarget,
 } from '@/features/challenges/components/analysis/budget-item-analytics-target'
@@ -82,15 +83,16 @@ export const CHALLENGE_ENTITY_ANALYSIS_MONTH_VALUES = [
   '12',
 ] as const satisfies readonly TMonth[]
 
-export const ChallengeEntityAnalysisReportTypeSchema = z.enum([
-  'PRINCIPAL_AGGREGATED',
-  'SECONDARY_AGGREGATED',
-  'DETAILED',
-])
+// The schemas below are built on first use: the entity page's route, which the
+// route tree loads on every page, validates with them (docs/route-contracts.md).
 
-export const ChallengeEntityAnalysisAccountCategorySchema = z.enum(['ch', 'vn'])
+export const ChallengeEntityAnalysisReportTypeSchema = lazySchema(() =>
+  z.enum(['PRINCIPAL_AGGREGATED', 'SECONDARY_AGGREGATED', 'DETAILED']),
+)
 
-export const ChallengeEntityAnalysisPrimarySchema = z.enum(['fn', 'ec'])
+export const ChallengeEntityAnalysisAccountCategorySchema = lazySchema(() => z.enum(['ch', 'vn']))
+
+export const ChallengeEntityAnalysisPrimarySchema = lazySchema(() => z.enum(['fn', 'ec']))
 
 export const CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES = [
   'chapter',
@@ -100,10 +102,7 @@ export const CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES = [
 export type ChallengeEntityAnalysisTreemapDepth =
   (typeof CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES)[number]
 
-export const ChallengeEntityAnalysisNormalizationSchema = z.enum([
-  'total',
-  'per_capita',
-])
+export const ChallengeEntityAnalysisNormalizationSchema = lazySchema(() => z.enum(['total', 'per_capita']))
 
 export const CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES = [
   'functionare',
@@ -112,81 +111,82 @@ export const CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES = [
 export type ChallengeEntityAnalysisExpenseType =
   (typeof CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES)[number]
 
-const ChallengeEntityAnalyticsPathEntrySchema = z.object({
-  type: ChallengeEntityAnalysisPrimarySchema,
-  code: z.string(),
-})
-
-const ChallengeEntityAnalyticsTargetSchema = z.object({
-  subjectLabel: z.string().optional(),
-  path: z.array(ChallengeEntityAnalyticsPathEntrySchema),
-})
-
-const ChallengeEntityAnalyticsViewSchema = z.object({
-  tab: z.enum(['execution', 'commitments']).optional(),
-  timeframe: z.enum(['selected', 'all']).optional(),
-  commitmentsMetric: CommitmentsMetricEnum.optional(),
-})
-
-const ChallengeEntityAnalyticsSearchStateSchema = z.object({
-  target: ChallengeEntityAnalyticsTargetSchema,
-  view: ChallengeEntityAnalyticsViewSchema.optional(),
-})
-
 export type ChallengeEntityAnalyticsTarget = BudgetItemAnalyticsTarget
 export type ChallengeEntityAnalyticsSearchState = BudgetItemAnalyticsSearchState
 
-const CurrencySchema = z.enum(['RON', 'EUR', 'USD'])
-const BooleanSearchParamSchema = z.union([
-  z.boolean(),
-  z.enum(['true', 'false']).transform((value) => value === 'true'),
-])
+export const ChallengeEntityAnalysisRouteSearchSchema = lazySchema(() => {
+  const ChallengeEntityAnalyticsPathEntrySchema = z.object({
+    type: ChallengeEntityAnalysisPrimarySchema.schema(),
+    code: z.string(),
+  })
 
-export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
-  lang: z.enum(['ro', 'en']).optional(),
-  period: z.string().optional(),
-  year: z.coerce
-    .number()
-    .int()
-    .min(defaultYearRange.start)
-    .max(defaultYearRange.end)
-    .optional(),
-  month: z.string().optional(),
-  quarter: z.string().optional(),
-  report_type: ChallengeEntityAnalysisReportTypeSchema.optional(),
-  main_creditor_cui: z.string().optional(),
-  normalization: ChallengeEntityAnalysisNormalizationSchema.optional(),
-  treemap_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
-  expense_type: z.string().optional(),
-  treemap_primary: z.string().optional(),
-  treemap_depth: z.string().optional(),
-  treemap_path: z.string().optional(),
-  evolution_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
-  evolution_primary: z.string().optional(),
-  public_map: z.string().optional(),
-  notificationModal: z.enum(['open']).optional(),
-  analytics: z
-    .preprocess(parseSearchParamJson, ChallengeEntityAnalyticsSearchStateSchema)
-    .optional(),
-  view: z.string().optional(),
-  commitments_from_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
-  commitments_to_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
-  commitments_period_page: z.coerce.number().int().min(1).max(10000).optional().catch(undefined),
-  commitments_grouping: z.string().optional(),
-  commitments_detail_level: z.string().optional(),
-  currency: CurrencySchema.optional(),
-  inflation_adjusted: BooleanSearchParamSchema.optional(),
-  show_period_growth: BooleanSearchParamSchema.optional(),
+  const ChallengeEntityAnalyticsTargetSchema = z.object({
+    subjectLabel: z.string().optional(),
+    path: z.array(ChallengeEntityAnalyticsPathEntrySchema),
+  })
 
-  ...entityInsSourceSearchSchema.shape,
-  insSearch: z.string().optional(),
-  insRoot: z.coerce.string().optional(),
-  insExplorer: z.string().optional(),
+  const ChallengeEntityAnalyticsViewSchema = z.object({
+    tab: z.enum(['execution', 'commitments']).optional(),
+    timeframe: z.enum(['selected', 'all']).optional(),
+    commitmentsMetric: CommitmentsMetricEnum.optional(),
+  })
+
+  const ChallengeEntityAnalyticsSearchStateSchema = z.object({
+    target: ChallengeEntityAnalyticsTargetSchema,
+    view: ChallengeEntityAnalyticsViewSchema.optional(),
+  })
+
+  const CurrencySchema = z.enum(['RON', 'EUR', 'USD'])
+  const BooleanSearchParamSchema = z.union([
+    z.boolean(),
+    z.enum(['true', 'false']).transform((value) => value === 'true'),
+  ])
+
+  return z.object({
+    lang: z.enum(['ro', 'en']).optional(),
+    period: z.string().optional(),
+    year: z.coerce
+      .number()
+      .int()
+      .min(defaultYearRange.start)
+      .max(defaultYearRange.end)
+      .optional(),
+    month: z.string().optional(),
+    quarter: z.string().optional(),
+    report_type: ChallengeEntityAnalysisReportTypeSchema.schema().optional(),
+    main_creditor_cui: z.string().optional(),
+    normalization: ChallengeEntityAnalysisNormalizationSchema.schema().optional(),
+    treemap_account: ChallengeEntityAnalysisAccountCategorySchema.schema().optional(),
+    expense_type: z.string().optional(),
+    treemap_primary: z.string().optional(),
+    treemap_depth: z.string().optional(),
+    treemap_path: z.string().optional(),
+    evolution_account: ChallengeEntityAnalysisAccountCategorySchema.schema().optional(),
+    evolution_primary: z.string().optional(),
+    public_map: z.string().optional(),
+    notificationModal: z.enum(['open']).optional(),
+    analytics: z
+      .preprocess(parseSearchParamJson, ChallengeEntityAnalyticsSearchStateSchema)
+      .optional(),
+    view: z.string().optional(),
+    commitments_from_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+    commitments_to_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+    commitments_period_page: z.coerce.number().int().min(1).max(10000).optional().catch(undefined),
+    commitments_grouping: z.string().optional(),
+    commitments_detail_level: z.string().optional(),
+    currency: CurrencySchema.optional(),
+    inflation_adjusted: BooleanSearchParamSchema.optional(),
+    show_period_growth: BooleanSearchParamSchema.optional(),
+
+    ...entityInsSourceSearchSchema.shape,
+    insSearch: z.string().optional(),
+    insRoot: z.coerce.string().optional(),
+    insExplorer: z.string().optional(),
+  })
 })
 
-export type ChallengeEntityAnalysisRouteSearch = z.infer<
-  typeof ChallengeEntityAnalysisRouteSearchSchema
->
+
+export type ChallengeEntityAnalysisRouteSearch = LazyOutput<typeof ChallengeEntityAnalysisRouteSearchSchema>
 
 export type ChallengeEntityAnalysisUrlState = {
   readonly lang?: 'ro' | 'en'
