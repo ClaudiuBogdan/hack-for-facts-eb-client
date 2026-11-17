@@ -1,10 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { t } from "@lingui/core/macro";
-import { statisticsHubQueryOptions } from "@/features/statistics/hooks/use-statistics-hub";
 import { insPageMeta } from "@/features/statistics/lib/ins-head";
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from "@/lib/http-cache";
 import { shouldBlockLoaderForSsr } from "@/lib/ssr/loader-blocking";
-import { parseStatisticsHubSearch } from "@/schemas/statistics";
+import { parseStatisticsHubSearch } from "@/schemas/statistics-search";
 import type { StatisticsHubData } from "@/schemas/statistics";
 
 export type StatisticsHubLoaderData = {
@@ -45,6 +44,8 @@ export const Route = createFileRoute("/ins/")({
   // fails like one that answered wrong, and the browser reads it again.
   loader: async ({ context }): Promise<StatisticsHubLoaderData> => {
     if (!shouldBlockLoaderForSsr()) {
+      // Imported here, not at the top: the route tree must not carry the feature's API (docs/route-contracts.md).
+      const { statisticsHubQueryOptions } = await import("@/features/statistics/hooks/use-statistics-hub");
       void context.queryClient.prefetchQuery(statisticsHubQueryOptions()).catch(() => undefined);
       return {};
     }

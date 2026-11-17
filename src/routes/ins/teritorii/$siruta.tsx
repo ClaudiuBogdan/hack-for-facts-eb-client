@@ -1,15 +1,12 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { fetchStatisticsTerritoryHub } from '@/features/statistics/api/statistics-api'
-import { prefetchStatisticsTerritoryHub } from '@/features/statistics/hooks/use-statistics'
 import { comparisonPlaceName } from '@/features/statistics/lib/comparison-format'
 import { insPageMeta } from '@/features/statistics/lib/ins-head'
-import { insLoaderSignal } from '@/features/statistics/lib/ssr-deadline'
 import { isAbortError, isGraphQLTimeout } from '@/lib/graphql/graphql-client'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { createLogger } from '@/lib/logger'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import { parseStatisticsTerritoryHubSearch } from '@/schemas/statistics'
+import { parseStatisticsTerritoryHubSearch } from '@/schemas/statistics-search'
 import type { StatisticsTerritoryHubResult } from '@/schemas/statistics'
 
 const logger = createLogger('ins-territory-route')
@@ -34,8 +31,11 @@ export const Route = createFileRoute('/ins/teritorii/$siruta')({
   loader: async ({ context, params, abortController }): Promise<StatisticsTerritoryLoaderData> => {
     const siruta = params.siruta.trim()
     if (!shouldBlockLoaderForSsr()) {
-      if (SIRUTA_SHAPE.test(siruta))
+      if (SIRUTA_SHAPE.test(siruta)) {
+        // Imported here, not at the top: the route tree must not carry the feature's API (docs/route-contracts.md).
+        const { prefetchStatisticsTerritoryHub } = await import('@/features/statistics/hooks/use-statistics')
         void prefetchStatisticsTerritoryHub(context.queryClient, siruta).catch(() => undefined)
+      }
       return { failed: false }
     }
     // A malformed code never costs a request, on either side.
@@ -44,6 +44,10 @@ export const Route = createFileRoute('/ins/teritorii/$siruta')({
     // Fetched directly, not through the query client: seeding the server
     // cache dehydrates the server's `dataUpdatedAt`, which would make every
     // CDN hit refetch on mount.
+    const [{ fetchStatisticsTerritoryHub }, { insLoaderSignal }] = await Promise.all([
+      import('@/features/statistics/api/statistics-api'),
+      import('@/features/statistics/lib/ssr-deadline'),
+    ])
     let hub: StatisticsTerritoryHubResult | null
     try {
       hub = await fetchStatisticsTerritoryHub(siruta, insLoaderSignal(abortController.signal))

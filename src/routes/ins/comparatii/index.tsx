@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { insPageMeta } from '@/features/statistics/lib/ins-head'
-import { parseStatisticsComparisonsSearch } from '@/schemas/statistics'
+import { parseStatisticsComparisonsSearch } from '@/schemas/statistics-search'
 
 export const Route = createFileRoute('/ins/comparatii/')({
   validateSearch: parseStatisticsComparisonsSearch,

@@ -1,28 +1,16 @@
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { fetchDatasetTier0 } from '@/features/statistics/api/dataset-detail-api'
 import { DetailPagePending } from '@/features/statistics/components/detail/detail-page-pending'
-import {
-  datasetTier0Reads,
-  prefetchDatasetDetail,
-} from '@/features/statistics/hooks/use-dataset-detail'
-import { detailScopeKey } from '@/features/statistics/lib/dataset-selection'
-import { getDatasetDataStatus } from '@/features/statistics/lib/dataset-status'
-import {
-  resolveDatasetSeries,
-  type ResolvedDatasetSeries,
-} from '@/features/statistics/lib/detail-series-resolution'
+import type { ResolvedDatasetSeries } from '@/features/statistics/lib/detail-series-resolution'
 import { datasetDisplayName } from '@/features/statistics/lib/dataset-names'
 import { insPageMeta } from '@/features/statistics/lib/ins-head'
 import { publishedTextExcerpt } from '@/features/statistics/lib/published-text'
-import { detailBootstrapEntity } from '@/features/statistics/lib/source-selection'
-import { insLoaderSignal } from '@/features/statistics/lib/ssr-deadline'
 import { isAbortError, isGraphQLTimeout } from '@/lib/graphql/graphql-client'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { createLogger } from '@/lib/logger'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { InsDatasetDetails } from '@/schemas/ins'
-import { parseStatisticsDatasetDetailSearch } from '@/schemas/statistics'
+import { parseStatisticsDatasetDetailSearch } from '@/schemas/statistics-search'
 import type { StatisticsDatasetTier0 } from '@/schemas/statistics'
 
 const logger = createLogger('ins-dataset-route')
@@ -94,6 +82,24 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
     deps,
     abortController,
   }): Promise<StatisticsDatasetDetailLoaderData> => {
+    // Imported here, not at the top: the route tree must not carry the feature's API (docs/route-contracts.md).
+    const [
+      { fetchDatasetTier0 },
+      { datasetTier0Reads, prefetchDatasetDetail },
+      { detailScopeKey },
+      { getDatasetDataStatus },
+      { resolveDatasetSeries },
+      { detailBootstrapEntity },
+      { insLoaderSignal },
+    ] = await Promise.all([
+      import('@/features/statistics/api/dataset-detail-api'),
+      import('@/features/statistics/hooks/use-dataset-detail'),
+      import('@/features/statistics/lib/dataset-selection'),
+      import('@/features/statistics/lib/dataset-status'),
+      import('@/features/statistics/lib/detail-series-resolution'),
+      import('@/features/statistics/lib/source-selection'),
+      import('@/features/statistics/lib/ssr-deadline'),
+    ])
     // The same canonical form as the redirect above, for a loader run it did not precede.
     const code = params.cod.trim().toUpperCase()
     const scopeKey = detailScopeKey(deps)

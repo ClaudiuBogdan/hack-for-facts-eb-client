@@ -1,14 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { fetchDatasetPage } from '@/features/statistics/api/dataset-explorer-api'
-import { datasetExplorerQueryOptions, explorerPageKey } from '@/features/statistics/hooks/use-dataset-explorer'
-import { statisticsContextTreeQueryOptions } from '@/features/statistics/hooks/use-statistics'
 import { insPageMeta } from '@/features/statistics/lib/ins-head'
-import { insLoaderSignal } from '@/features/statistics/lib/ssr-deadline'
 import { isAbortError, isGraphQLTimeout } from '@/lib/graphql/graphql-client'
 import { createLogger } from '@/lib/logger'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import { parseStatisticsDatasetExplorerSearch } from '@/schemas/statistics'
+import { parseStatisticsDatasetExplorerSearch } from '@/schemas/statistics-search'
 import type { StatisticsDatasetPage } from '@/schemas/statistics'
 
 const logger = createLogger('ins-catalog-route')
@@ -33,6 +29,13 @@ export const Route = createFileRoute('/ins/seturi/')({
   validateSearch: parseStatisticsDatasetExplorerSearch,
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps, abortController }): Promise<StatisticsDatasetExplorerLoaderData> => {
+    // Imported here, not at the top: the route tree must not carry the feature's API (docs/route-contracts.md).
+    const [{ fetchDatasetPage }, { datasetExplorerQueryOptions, explorerPageKey }, { statisticsContextTreeQueryOptions }, { insLoaderSignal }] = await Promise.all([
+      import('@/features/statistics/api/dataset-explorer-api'),
+      import('@/features/statistics/hooks/use-dataset-explorer'),
+      import('@/features/statistics/hooks/use-statistics'),
+      import('@/features/statistics/lib/ssr-deadline'),
+    ])
     void context.queryClient.prefetchQuery(statisticsContextTreeQueryOptions()).catch(() => undefined)
     const pageKey = explorerPageKey(deps)
     if (!shouldBlockLoaderForSsr()) {
