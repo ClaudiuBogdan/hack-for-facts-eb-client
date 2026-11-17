@@ -470,39 +470,12 @@ export type PrivateCompanyMoneyPayer = z.infer<
   typeof privateCompanyMoneyPayerSchema
 >
 
-/**
- * What the business band's chart shows: `toate`, turnover, net result and
- * people together (the default); the others each alone, in detail.
- */
-export const COMPANY_FINANCIAL_MEASURES = ['toate', 'cifra-de-afaceri', 'profit', 'salariati'] as const
-export type CompanyFinancialMeasure = (typeof COMPANY_FINANCIAL_MEASURES)[number]
-
-/** Which SEAP records say who pays and what for: contracts or direct purchases. */
-export const COMPANY_PAYMENT_GRAINS = ['contracte', 'achizitii-directe'] as const
-export type CompanyPaymentGrain = (typeof COMPANY_PAYMENT_GRAINS)[number]
-
-/**
- * The profile's choices, each in the URL so a view can be shared. A value the
- * page does not know is dropped rather than failing the route, so an old link
- * (`?tab=financials`) still opens the page.
- *
- * - `masura`: the business chart's measure (unset: `toate`);
- * - `plati`: contracts or direct purchases (unset: whichever the company has,
- *   contracts first).
- */
-export const privateCompanySearchSchema = z
-  .object({
-    masura: z.enum(COMPANY_FINANCIAL_MEASURES).optional().catch(undefined),
-    plati: z.enum(COMPANY_PAYMENT_GRAINS).optional().catch(undefined),
-  })
-  .catch({})
-
-export type PrivateCompanySearchState = z.infer<
-  typeof privateCompanySearchSchema
->
-
-export function parsePrivateCompanySearch(
-  search: Record<string, unknown>,
-): PrivateCompanySearchState {
-  return privateCompanySearchSchema.parse(search)
-}
+// The profile route's URL contract: `private-company-profile-search.ts`, lazy and
+// apart so the route tree does not carry this module; re-exported here.
+export {
+  COMPANY_FINANCIAL_MEASURES,
+  COMPANY_PAYMENT_GRAINS,
+  parsePrivateCompanySearch,
+  privateCompanySearchSchema,
+} from './private-company-profile-search'
+export type { CompanyFinancialMeasure, CompanyPaymentGrain, PrivateCompanySearchState } from './private-company-profile-search'

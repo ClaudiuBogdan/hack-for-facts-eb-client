@@ -2,10 +2,8 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { normalizeCompanyCui } from '@/features/private-companies/lib/normalize-company-cui'
 import { buildPrivateCompanyRouteHead } from '@/features/private-companies/seo/private-company-seo'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import {
-  parsePrivateCompanySearch,
-  type PrivateCompanyProfile,
-} from '@/schemas/private-company'
+import { parsePrivateCompanySearch } from '@/schemas/private-company-profile-search'
+import type { PrivateCompanyProfile } from '@/schemas/private-company'
 
 export type PrivateCompanyRouteLoaderData = {
   /** Absent on a client-side navigation — the page's own query supplies it. */
