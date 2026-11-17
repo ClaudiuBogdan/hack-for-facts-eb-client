@@ -12,6 +12,7 @@ import { i18n } from "@lingui/core";
 import { z } from "zod";
 import type { RouterContext } from "@/router-context";
 import appCss from "@/index.css?url";
+import interLatinFont from "@/assets/fonts/inter-latin.woff2?url";
 import { env, getRuntimeConfigBootstrapScript, getSiteUrl } from "@/config/env";
 import {
   DEFAULT_LOCALE,
@@ -146,7 +147,8 @@ function getGlobalHead() {
     ? [
         {
           rel: "preload",
-          href: "/fonts/Inter/Inter-VariableFont_opsz,wght.woff2",
+          // The Latin core every page is written in (`styles/fonts.css`); the full font loads only for other scripts.
+          href: interLatinFont,
           as: "font",
           type: "font/woff2",
           crossOrigin: ANONYMOUS_CROSS_ORIGIN,

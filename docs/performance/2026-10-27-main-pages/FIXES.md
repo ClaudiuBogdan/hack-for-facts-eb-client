@@ -352,6 +352,8 @@ These need no owner decision unless noted; they were simply not done.
     build host, so the Inter subset was not made. Add fontTools as a tool, or supply a subset made elsewhere? Until
     then, the 341 KB font preload is the main thing still competing with the stylesheet: keep it, or drop the preload
     and let the font swap in later?
+    **Done 2026-11-17** ([landing note](../2026-11-17-landing/README.md)): a 117 KB Latin-core subset is the only
+    preload; the full font serves the other characters Inter has, by `unicode-range`.
 15. **Hubs (stream F).**
     - *County map ([PERF-020](issues/PERF-020-county-map.md) step 3):* the hubs fetch the county shapes as the map
       nears the screen, which costs nothing at load on a phone. Should the hubs with static data render the map on the

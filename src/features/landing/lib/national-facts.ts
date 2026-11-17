@@ -138,10 +138,23 @@ const NUMBER_LOCALE_TAG: Readonly<Record<NumberLocale, string>> = { ro: 'ro-RO',
  * places — and the count does not change shape as it passes a thousand.
  */
 export function formatValue(value: number, digits: number, locale: NumberLocale = 'ro'): string {
-  return new Intl.NumberFormat(NUMBER_LOCALE_TAG[locale] ?? NUMBER_LOCALE_TAG.ro, {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(value)
+  return numberFormat(locale, digits).format(value)
+}
+
+/**
+ * One formatter per language and precision: the count-ups format every figure
+ * on every animation frame, and building an `Intl.NumberFormat` costs far more
+ * than using one.
+ */
+const numberFormats = new Map<string, Intl.NumberFormat>()
+function numberFormat(locale: NumberLocale, digits: number): Intl.NumberFormat {
+  const key = `${locale}:${digits}`
+  let found = numberFormats.get(key)
+  if (!found) {
+    found = new Intl.NumberFormat(NUMBER_LOCALE_TAG[locale] ?? NUMBER_LOCALE_TAG.ro, { minimumFractionDigits: digits, maximumFractionDigits: digits })
+    numberFormats.set(key, found)
+  }
+  return found
 }
 
 export function formatFact(fact: NationalFact, locale: NumberLocale = 'ro'): string {
