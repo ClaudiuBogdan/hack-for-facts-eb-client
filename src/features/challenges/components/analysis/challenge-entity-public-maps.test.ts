@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults'
 import {
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
   getChallengeEntityMapPreviewDefinition,
@@ -44,7 +43,8 @@ describe('challenge-entity-public-maps', () => {
     }
   })
 
-  it('keeps income broad, but applies the treemap transfer exclusion to expense series', () => {
+  // Reported execution, transfers included, on every series (fix(analytics): Include transfers by default, 43da0783).
+  it('keeps every series broad: no transfer exclusion on income, expenses or the balance', () => {
     const expensesDefinition = getChallengeEntityMapPreviewDefinition('expenses')
     const incomeDefinition = getChallengeEntityMapPreviewDefinition('income')
     const balanceDefinition = getChallengeEntityMapPreviewDefinition('balance')
@@ -65,9 +65,7 @@ describe('challenge-entity-public-maps', () => {
 
     expect(expensesSeries.filter.budget_sector_ids).toBeUndefined()
     expect(expensesSeries.filter.funding_source_ids).toBeUndefined()
-    expect(expensesSeries.filter.exclude).toEqual({
-      economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
-    })
+    expect(expensesSeries.filter.exclude).toBeUndefined()
 
     expect(incomeSeries.filter.budget_sector_ids).toBeUndefined()
     expect(incomeSeries.filter.funding_source_ids).toBeUndefined()
@@ -78,9 +76,7 @@ describe('challenge-entity-public-maps', () => {
     expect(balanceIncomeSeries.filter.exclude).toBeUndefined()
     expect(balanceExpensesSeries.filter.budget_sector_ids).toBeUndefined()
     expect(balanceExpensesSeries.filter.funding_source_ids).toBeUndefined()
-    expect(balanceExpensesSeries.filter.exclude).toEqual({
-      economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
-    })
+    expect(balanceExpensesSeries.filter.exclude).toBeUndefined()
     expect(balanceDefinition.mapState.valueFilters.rules).toHaveLength(0)
   })
 

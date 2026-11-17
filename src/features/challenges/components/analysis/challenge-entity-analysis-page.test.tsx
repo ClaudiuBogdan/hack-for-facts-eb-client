@@ -2738,7 +2738,6 @@ describe('ChallengeEntityAnalysisPage', () => {
         treemapDepth: 'chapter',
         treemapAccountCategory: 'ch',
         budgetTotal: 145000000,
-        excludedEconomicCodes: ['51.01', '51.02'],
         breadcrumbs: [
           { code: '51', label: 'Autorități publice și acțiuni externe', type: 'fn' },
           { code: '51.01', label: 'Autorități executive și legislative', type: 'fn' },
@@ -2759,7 +2758,8 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
-  it('filters grouped subsection line items with the same default treemap exclusions', async () => {
+  // Reported execution, transfers included, as the treemap reads it (fix(analytics): Include transfers by default, 43da0783).
+  it('keeps transfer line items in the grouped subsections, as the treemap does', async () => {
     useEntityExecutionLineItemsMock.mockReturnValue({
       data: {
         nodes: [
@@ -2799,6 +2799,9 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     expect(getLatestGroupedLineItemsProps().lineItems).toEqual([
       expect.objectContaining({
+        line_item_id: 'expense-transfer',
+      }),
+      expect.objectContaining({
         line_item_id: 'expense-visible',
       }),
     ])
@@ -2812,6 +2815,9 @@ describe('ChallengeEntityAnalysisPage', () => {
         groupBy: 'fn',
       })
       expect(getLatestGroupedLineItemsProps().lineItems).toEqual([
+        expect.objectContaining({
+          line_item_id: 'revenue-transfer',
+        }),
         expect.objectContaining({
           line_item_id: 'revenue-visible',
         }),
