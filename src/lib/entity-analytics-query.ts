@@ -15,6 +15,22 @@ export const defaultEntityAnalyticsFilter: AnalyticsFilterType = {
 
 export const entityAnalyticsFilterSchema = z.preprocess(parseSearchParamJson, AnalyticsFilterSchema)
 
+/**
+ * `/entity-analytics`'s URL state. Here rather than in the route file, which
+ * every page loads: the route imports this module when it is matched, so the
+ * chart schemas it is built from load with it (docs/route-contracts.md).
+ */
+export const entityAnalyticsSearchSchema = z.object({
+  view: z.enum(['table', 'chart', 'line-items']).default('table'),
+  sortBy: z.string().optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  page: z.coerce.number().default(1),
+  pageSize: z.coerce.number().default(25),
+  filter: entityAnalyticsFilterSchema.default(defaultEntityAnalyticsFilter),
+})
+
+export type EntityAnalyticsUrlState = z.infer<typeof entityAnalyticsSearchSchema>
+
 export function resolveEntityAnalyticsFilter(
   filter: AnalyticsFilterType,
   preferences: { currency: Currency; inflationAdjusted: boolean },

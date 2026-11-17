@@ -1,27 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
-import { z } from 'zod'
 import { getSiteUrl } from '@/config/env'
 import { translatorFor } from '@/lib/i18n'
 import { buildPageHead } from '@/lib/page-head'
-import { defaultEntityAnalyticsFilter, entityAnalyticsFilterSchema, resolveEntityAnalyticsFilter, entityAnalyticsQueryOptions } from '@/lib/entity-analytics-query'
 import { readUserCurrencyPreference, readUserInflationAdjustedPreference } from '@/lib/user-preferences'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 
-const viewEnum = z.enum(['table', 'chart', 'line-items'])
-
-
-const EntityAnalyticsSchema = z.object({
-  view: viewEnum.default('table'),
-  sortBy: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  page: z.coerce.number().default(1),
-  pageSize: z.coerce.number().default(25),
-  filter: entityAnalyticsFilterSchema.default(defaultEntityAnalyticsFilter),
-})
-
-export type EntityAnalyticsUrlState = z.infer<typeof EntityAnalyticsSchema>
+export type { EntityAnalyticsUrlState } from '@/lib/entity-analytics-query'
 
 export const Route = createFileRoute('/entity-analytics')({
   headers: () =>
@@ -32,7 +18,10 @@ export const Route = createFileRoute('/entity-analytics')({
     }),
   beforeLoad: async ({ context, search }) => {
     const { queryClient } = context
-    const parsed = EntityAnalyticsSchema.parse(search)
+    // Imported here, not at the top: the URL schema is built on the chart
+    // schemas, which the route tree must not carry (docs/route-contracts.md).
+    const { entityAnalyticsSearchSchema, entityAnalyticsQueryOptions, resolveEntityAnalyticsFilter } = await import('@/lib/entity-analytics-query')
+    const parsed = entityAnalyticsSearchSchema.parse(search)
     const [currency, inflationAdjusted] = await Promise.all([
       readUserCurrencyPreference(), readUserInflationAdjustedPreference(),
     ])
