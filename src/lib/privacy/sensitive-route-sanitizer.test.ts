@@ -154,6 +154,128 @@ describe('the /justice pages', () => {
   })
 })
 
+/**
+ * What the reviews of 17 November 2026 found the sanitizer letting through: it
+ * fails closed now, scrubbing whole what it cannot read to the end when a
+ * lenient reading shows a justice address, a litigation profile or a case key.
+ */
+describe('a way back the sanitizer cannot read to the end', () => {
+  const event = (url: string) => JSON.stringify(sanitizeJusticeEventProperties({ $current_url: `https://transparenta.eu${url}` }))
+  /** What a reader of the telemetry could recover, a malformed escape notwithstanding. */
+  const recovered = (text: string) => {
+    let current = text
+    for (let round = 0; round < 80; round += 1) current = current.replace(/%([0-9a-f]{2})/giu, (_m, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)))
+    return current
+  }
+  const cookies = (back: string) => `/cookies?redirect=${encodeURIComponent(back)}`
+
+  it('scrubs a case page behind a malformed escape', () => {
+    const url = cookies('/justice/%63ases/TribunalulCLUJ/9999999/117/2025%')
+    expect(recovered(event(url))).not.toContain('9999999')
+    expect(recovered(sanitizeJusticeUrlFragment(url))).not.toContain('9999999')
+  })
+
+  it('scrubs a case page encoded past the layers it decodes, its route letters encoded too', () => {
+    let encoded = '/%6austice/cases/TribunalulCLUJ/9999999/117/2025'
+    for (let round = 0; round < 7; round += 1) encoded = encodeURIComponent(encoded)
+    expect(recovered(event(`/cookies?redirect=${encoded}`))).not.toContain('9999999')
+    expect(recovered(sanitizeJusticeTelemetryString(`redirect=${encoded}`))).not.toContain('9999999')
+  })
+
+  it('scrubs a litigation profile nested past the depth it follows', () => {
+    let url = '/companies/14837428?tab=litigii&caseNumber=9999999/117/2025'
+    for (let round = 0; round < 7; round += 1) url = cookies(url)
+    expect(recovered(event(url))).not.toContain('9999999')
+  })
+
+  it('drops a fragment that carries a value from a justice address, and keeps a plain anchor', () => {
+    const url = cookies('/justice/cases/TribunalulCLUJ/9999999/117/2025#caseNumber=9999999/117/2025')
+    expect(recovered(event(url))).not.toContain('9999999')
+    expect(sanitizeJusticeUrlFragment('/justice/cases/TribunalulCLUJ/1/117/2025#parti')).toBe('/justice/cases/TribunalulCLUJ/:caseNumber#parti')
+    expect(sanitizeJusticeUrl('https://transparenta.eu/justice/analytics?an=2025#9999999-117-2025')).toBe('https://transparenta.eu/justice/analytics?an=2025')
+  })
+
+  it('leaves alone what only looks like a justice address: another word, a host name', () => {
+    for (const value of ['/justice-league/intro', 'https://justice.gov/about']) {
+      let encoded = value
+      for (let round = 0; round < 7; round += 1) encoded = encodeURIComponent(encoded)
+      const url = `/cookies?redirect=${encoded}`
+      expect(sanitizeJusticeUrlFragment(url)).toBe(url)
+      expect(sanitizeJusticeUrlFragment(cookies(value))).toBe(cookies(value))
+    }
+  })
+
+  it('leaves a way back it cannot read alone when it hides nothing', () => {
+    for (const url of [cookies('/procurement?q=100%'), cookies('/search?q=a%GZb')]) expect(sanitizeJusticeUrlFragment(url)).toBe(url)
+  })
+})
+
+/** The second review of 17 November 2026: what the rebuilding passes still missed, and what the output guard catches. */
+describe('the output guard', () => {
+  const event = (url: string) => JSON.stringify(sanitizeJusticeEventProperties({ $current_url: `https://transparenta.eu${url}` }))
+  const recovered = (text: string) => {
+    let current = text
+    for (let round = 0; round < 80; round += 1) current = current.replace(/%([0-9a-f]{2})/giu, (_m, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)))
+    return current
+  }
+  const cookies = (back: string) => `/cookies?redirect=${encodeURIComponent(back)}`
+  const layers = (value: string, count: number) => {
+    let current = value
+    for (let round = 0; round < count; round += 1) current = encodeURIComponent(current)
+    return current
+  }
+  const wrapped = (value: string, count: number) => {
+    let current = value
+    for (let round = 0; round < count; round += 1) current = cookies(current)
+    return current
+  }
+
+  it('scrubs a case number behind an encoded newline', () => {
+    expect(recovered(event(cookies('/justice/cases/C/9999999/117/2025%0A%')))).not.toContain('9999999')
+  })
+
+  it('scrubs a hidden case page sitting beside an address the passes read', () => {
+    const text = sanitizeJusticeTelemetryString('ok=%2Fjustice%2Fanalytics&bad=%2F%6Austice%2Fcases%2FC%2F9999999%2F117%2F2025')
+    expect(recovered(text)).not.toContain('9999999')
+  })
+
+  it('scrubs what is encoded or wrapped past every layer the passes read', () => {
+    expect(recovered(sanitizeJusticeTelemetryString(`x=${layers('/%6austice/cases/C/9999999/117/2025', 16)}`))).not.toContain('9999999')
+    const litigation = wrapped('/companies/14837428?tab=litigii&caseNumber=9999999/117/2025', 23)
+    expect(recovered(event(litigation))).not.toContain('9999999')
+    expect(recovered(sanitizeJusticeUrlFragment(litigation))).not.toContain('9999999')
+    expect(recovered(sanitizeJusticeTelemetryString(litigation))).not.toContain('9999999')
+    expect(recovered(sanitizeJusticeUrlFragment(`/cookies?redirect=${layers('/justice/cases/C/9999999/117/2025', 22)}`))).not.toContain('9999999')
+  })
+
+  it('reads `.` and `..` segments the way a browser resolves them', () => {
+    for (const path of ['/justice/%2E/cases/C/9999999/117/2025', '/justice/x/%2e%2E/cases/C/9999999/117/2025', '/justice\\cases\\C\\9999999'])
+      expect(recovered(event(cookies(path)))).not.toContain('9999999')
+  })
+
+  it('keeps what hides nothing exactly as it was', () => {
+    const safe = cookies('/companies/123?tab=litigii#results')
+    expect(sanitizeJusticeTelemetryString(safe)).toBe(safe)
+    for (const value of ['/justice%2Eleague/intro', 'https://justice%2egov/about']) {
+      const text = `/cookies?redirect=${layers(value, 7)}`
+      expect(sanitizeJusticeTelemetryString(text)).toBe(text)
+    }
+    const romanian = '/search?q=%C8%99coal%C4%83%20general%C4%83'
+    expect(sanitizeJusticeTelemetryString(romanian)).toBe(romanian)
+    // A key that only ends in a sensitive one's name is another key.
+    for (const text of ['/dashboard?showcase_id=42', 'Error: getCaseId=not-found']) expect(sanitizeJusticeTelemetryString(text)).toBe(text)
+    expect(sanitizeJusticeTelemetryString('x caseId=9999999')).toBe('x caseId=[scrubbed]')
+  })
+
+  it('reads a long string in linear time', () => {
+    for (const text of ['a'.repeat(32_000), `${'%41'.repeat(10_000)} /cookies?redirect=${'b'.repeat(20_000)}`, 'x /justice/analytics?an=2025 '.repeat(2_000)]) {
+      const started = performance.now()
+      sanitizeJusticeTelemetryString(text)
+      expect(performance.now() - started).toBeLessThan(200)
+    }
+  })
+})
+
 describe('isJusticePath', () => {
   it('matches /justitie and /justitie/... but not substring-only paths', () => {
     expect(isJusticePath('/justitie')).toBe(true)

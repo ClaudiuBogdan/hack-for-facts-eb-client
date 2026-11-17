@@ -19,6 +19,9 @@ import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
  * reported as `/justice/cases/<court>/:caseNumber`. Another page's query can
  * carry a justice address as its way back (the cookie settings' `redirect`):
  * that address is sanitized the same way, however often it was encoded.
+ * Whatever it returns passes a last guard (`guardOutput`) that scrubs any
+ * token still showing a case number or a case or party key, however it was
+ * hidden.
  */
 
 /** Safe aggregate-routing params allowed on justice URLs. */
@@ -100,6 +103,78 @@ export const SAFE_JUSTICE_VALUES: Readonly<Partial<Record<(typeof SAFE_JUSTICE_Q
   vedere: oneOf(['ani', 'hotarari']),
 }
 
+// ---------------------------------------------------------------------------
+// The output guard
+// ---------------------------------------------------------------------------
+
+/**
+ * The last word on everything this module returns. The passes below rebuild
+ * addresses as the router reads them; an encoding trick they do not foresee
+ * (a malformed escape, many layers, `.` segments, a newline) could leave a
+ * case number in what they return. The guard does not rebuild anything: it
+ * reads each whitespace-separated token as a reader of the telemetry could —
+ * every escape decoded, layer after layer; control characters dropped; `.`
+ * and `..` segments resolved — and scrubs the token whole when that reading
+ * still shows a case page with its number, a case or party key with a value,
+ * or escapes that do not finish decoding. A token that hides nothing is
+ * returned exactly as it was.
+ */
+function guardOutput(text: string): string {
+  if (text.length === 0) return text
+  let changed = false
+  const tokens = text.split(/(\s+)/u).map((token) => {
+    if (token.length === 0 || /^\s+$/u.test(token) || !tokenLeaks(token)) return token
+    changed = true
+    return REDACTED_JUSTICE_VALUE
+  })
+  return changed ? tokens.join('') : text
+}
+
+/** How many layers the guard decodes before what still decodes counts as hidden. */
+const MAX_GUARD_ROUNDS = 64
+const ESCAPE = /%([0-9a-f]{2})/giu
+
+/** Whether a token, read to the end, holds a case number or a case key's value; or cannot be read to the end. */
+function tokenLeaks(token: string): boolean {
+  let current = token
+  for (let round = 0; ; round += 1) {
+    if (!current.includes('%')) break
+    const next = current.replace(ESCAPE, (_match, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)))
+    if (next === current) break
+    // Still decoding after every round read: hidden on purpose, scrubbed.
+    if (round === MAX_GUARD_ROUNDS) return true
+    current = next
+  }
+  return leaksIn(readable(current))
+}
+
+/** Control characters dropped, `\` read as `/`, `.` and `..` segments resolved, lower case. */
+function readable(text: string): string {
+  let current = Array.from(text)
+    .filter((character) => {
+      const code = character.charCodeAt(0)
+      return code > 0x1f && code !== 0x7f
+    })
+    .join('')
+    .replace(/\\/gu, '/')
+    .toLowerCase()
+  for (let round = 0; round < 64; round += 1) {
+    const next = current.replace(/\/\.(?=\/|$|[?#&])/gu, '').replace(/\/(?!\.\.(?:\/|$|[?#&]))[^/?#&\s]+\/\.\.(?=\/|$|[?#&])/gu, '')
+    if (next === current) break
+    current = next
+  }
+  return current
+}
+
+/** A case page with a number after its court, a retired case page with its id, a case or party key with a value. */
+const CASE_PAGE_LEAK = /\/(?:justice|justitie)\/cases\/[^/?#&\s]+\/(?!:casenumber(?:$|[/?#&"'\s]))[^/?#&\s"']/u
+const RETIRED_CASE_PAGE_LEAK = /\/justitie\/dosare\/(?!:caseid(?:$|[/?#&"'\s]))[^/?#&\s"']/u
+const CASE_KEY_LEAK = /(?<![a-z0-9_-])(?:casenumber|case_number|case-number|caseid|case_id|case-id|partykey|party_key|party-key)\s*[:=]\s*(?!\[scrubbed\])[^\s&#"',;)}\]]/u
+
+function leaksIn(text: string): boolean {
+  return CASE_PAGE_LEAK.test(text) || RETIRED_CASE_PAGE_LEAK.test(text) || CASE_KEY_LEAK.test(text)
+}
+
 const SAFE_PARAM_SET = new Set<string>(SAFE_JUSTICE_QUERY_PARAMS)
 const STRIPPED_PARAM_SET = new Set<string>(STRIPPED_JUSTICE_QUERY_PARAMS)
 const JUSTICE_CASE_DETAIL_PREFIX = '/justitie/dosare/'
@@ -118,9 +193,9 @@ const JUSTICE_SOURCE_HINT_PATTERN =
 const ABSOLUTE_URL_PATTERN = /\bhttps?:\/\/[^\s"'<>]+/gi
 const RELATIVE_ROUTE_PATTERN = /\/(?:justice|justitie|companies|entities)\/[^\s"'<>]*/gi
 /** A justice address encoded into text, once or more (`%2Fjustice%2Fcases%2F…`, `%252F…`): a way back quoted in a message. */
-const ENCODED_JUSTICE_ROUTE_PATTERN = /%(?:25)*2F(?:justice|justitie)\b[^\s"'<>&#]*/gi
+const ENCODED_JUSTICE_ROUTE_PATTERN = /%(?:25)*2F(?:justice|justitie)(?=$|[\s"'<>&#]|%(?:25)*(?:2F|3F|23|26))[^\s"'<>&#]*/gi
 /** The same, tested once: a value still holding one after it was decoded was encoded past what is read, and is scrubbed whole. */
-const STILL_ENCODED_JUSTICE_ROUTE = /%(?:25)*2F(?:justice|justitie)\b/iu
+const STILL_ENCODED_JUSTICE_ROUTE = /%(?:25)*2F(?:justice|justitie)(?=$|[\s"'<>&#]|%(?:25)*(?:2F|3F|23|26))/iu
 const SENSITIVE_FIELD_ASSIGNMENT_PATTERN =
   /\b(caseNumber|case_number|case-id|caseId|partyKey|party_key|party-key)\s*[:=]\s*["']?[^"',\s&})]+["']?/gi
 
@@ -132,6 +207,12 @@ const SENSITIVE_FIELD_ASSIGNMENT_PATTERN =
 function decodedPath(pathname: string): string {
   const path = decodedValue(pathname)
   return path.split(/[?#]/u)[0] ?? path
+}
+
+/** A fragment kept on a justice or litigation address: a plain anchor (`#top`, `#parti`), never one that carries a value. */
+const PLAIN_ANCHOR = /^#[a-z][a-z-]{0,39}$/iu
+function safeHash(hash: string): string {
+  return hash.length === 0 || PLAIN_ANCHOR.test(hash) ? hash : ''
 }
 
 /** How many times a value is decoded before what is still encoded counts as hidden. */
@@ -180,7 +261,13 @@ function addressOf(value: string): string | null {
 
 /** How deep a way back may hold another before the rest is scrubbed whole. */
 const MAX_NESTED_ADDRESSES = 4
-const JUSTICE_ROUTE_ANYWHERE = /\/(?:justice|justitie)\b/iu
+/**
+ * A justice route in text: `/justice` or `/justitie` as a whole path segment
+ * (end, `/`, `?`, `#`, `&`, a quote or a space after it), not after another
+ * `/` (`//justice.gov` is a host): `/justice-league` and `justice.gov` are not
+ * justice addresses.
+ */
+const JUSTICE_ROUTE_ANYWHERE = /(?<!\/)\/(?:justice|justitie)(?=$|[/?#&\s"'<>])/iu
 
 /**
  * A query value that is itself an address — the way back another page
@@ -289,12 +376,13 @@ function shouldRedactJusticePayloadValue(
 
 export function sanitizeJusticeTelemetryString(value: string): string {
   if (value.length === 0) return value
-  let sanitized = sanitizeJusticeUrlFragment(value)
+  // The passes rebuild what they recognise; the guard reads only what they return.
+  let sanitized = sanitizeFragmentAt(value, 0)
   sanitized = sanitized.replace(ABSOLUTE_URL_PATTERN, (match) =>
-    sanitizeJusticeUrl(match),
+    sanitizeUrlAt(match, 0),
   )
   sanitized = sanitized.replace(RELATIVE_ROUTE_PATTERN, (match) =>
-    sanitizeJusticeUrlFragment(match),
+    sanitizeFragmentAt(match, 0),
   )
   sanitized = sanitized.replace(ENCODED_JUSTICE_ROUTE_PATTERN, (match) => {
     // Read one layer at a time, as a query value is; one that never reads as an address is scrubbed whole.
@@ -307,7 +395,7 @@ export function sanitizeJusticeTelemetryString(value: string): string {
     SENSITIVE_FIELD_ASSIGNMENT_PATTERN,
     (_match, key: string) => `${key}=${REDACTED_JUSTICE_VALUE}`,
   )
-  return sanitized
+  return guardOutput(sanitized)
 }
 
 export function sanitizeJusticeTelemetryValue<T>(
@@ -429,11 +517,12 @@ export function sanitizeJusticeQueryString(
 /**
  * Sanitizes a full URL string (origin + pathname + search + hash) for justice
  * routes. Non-justice URLs are returned unchanged, except a justice address
- * one of their query values carries (a way back). Hash is preserved.
+ * one of their query values carries (a way back). A justice URL keeps its
+ * hash only as a plain anchor (`#top`); one that carries a value is dropped.
  * Tolerates malformed input by returning it unchanged on parse failure.
  */
 export function sanitizeJusticeUrl(url: string): string {
-  return sanitizeUrlAt(url, 0)
+  return guardOutput(sanitizeUrlAt(url, 0))
 }
 
 function sanitizeUrlAt(url: string, depth: number): string {
@@ -458,6 +547,7 @@ function sanitizeUrlAt(url: string, depth: number): string {
   const sanitizedSearch = sanitizeJusticeQueryString(parsed.pathname, parsed.search)
   parsed.pathname = sanitizeJusticePathname(parsed.pathname)
   parsed.search = sanitizedSearch.length > 0 ? `?${sanitizedSearch}` : ''
+  parsed.hash = safeHash(parsed.hash)
   return parsed.toString()
 }
 
@@ -469,7 +559,7 @@ function sanitizeUrlAt(url: string, depth: number): string {
  * from a case page (`/cookies?redirect=%2Fjustice%2Fcases%2F…`).
  */
 export function sanitizeJusticeUrlFragment(fragment: string): string {
-  return sanitizeFragmentAt(fragment, 0)
+  return guardOutput(sanitizeFragmentAt(fragment, 0))
 }
 
 function sanitizeFragmentAt(fragment: string, depth: number): string {
@@ -494,5 +584,5 @@ function sanitizeFragmentAt(fragment: string, depth: number): string {
   const sanitized = sanitizeJusticeQueryString(pathname, queryString)
   const sanitizedPathname = sanitizeJusticePathname(pathname)
   const searchPart = sanitized.length > 0 ? `?${sanitized}` : ''
-  return `${sanitizedPathname}${searchPart}${hash}`
+  return `${sanitizedPathname}${searchPart}${safeHash(hash)}`
 }
