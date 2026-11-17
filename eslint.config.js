@@ -154,6 +154,28 @@ export default tseslint.config(
       'no-restricted-syntax': ['error', JSON_LD_CHILDREN, BUILT_AT_MODULE_SCOPE],
     },
   },
+  // Clerk loads only when a session or a Clerk widget needs it
+  // (docs/performance/2026-11-17-landing/clerk-on-demand.md). A value import
+  // anywhere else would put it back in every visitor's start-up code; types are
+  // free.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/lib/auth/clerk-runtime.tsx', '**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@clerk/*'],
+              allowTypeImports: true,
+              message: 'Clerk loads on demand: import it only in src/lib/auth/clerk-runtime.tsx, and use @/lib/auth elsewhere.',
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Relax `no-explicit-any` in test files – test utilities often need `any`
   // for mock objects, cast-through values, etc.
   {

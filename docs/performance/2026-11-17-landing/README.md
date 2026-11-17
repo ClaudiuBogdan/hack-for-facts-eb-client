@@ -71,7 +71,9 @@ here.
    about 50 ms of it building Zod schemas at module scope. This is the largest single long task. The way
    out is the audit's PERF-003 step 3 (build schemas lazily) and PERF-005 (lazy route code), i.e. how routes
    are declared: routing, SSR and search-param contracts.
-2. **Clerk loads on every page** (PERF-012, the audit's Parked 1): about 300 KB of `clerk-js` from the
+2. **Done (2026-11-17): Clerk loads on demand**, see [clerk-on-demand.md](clerk-on-demand.md). Start-up JS 1,638 →
+   1,496 KB; anonymous visitors make no Clerk request; streamed server HTML is kept. The original note:
+   **Clerk loads on every page** (PERF-012, the audit's Parked 1): about 300 KB of `clerk-js` from the
    `clerk.accounts.dev` development instance, with its own long tasks after hydration. Loading it only on
    the auth routes, or after first interaction, changes how signed-in state reaches the header and the
    reads that wait for a session (PERF-015). Infra question from the audit still open: should dev-chronos

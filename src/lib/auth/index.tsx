@@ -1,19 +1,41 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { PropsWithChildren, createContext, useContext, useMemo, type ComponentProps } from 'react'
-import {
-  ClerkProvider,
-  SignIn as ClerkSignIn,
-  SignUp as ClerkSignUp,
-  SignOutButton as ClerkSignOutButton,
-  useAuth as useClerkAuth,
-  useUser as useClerkUser,
-} from '@clerk/clerk-react'
-import { roRO } from '@clerk/localizations'
+/**
+ * Auth for the app, provider-agnostic. Clerk is loaded only when this browser
+ * holds a session or a page shows a Clerk widget; anonymous visitors never load
+ * or contact it. See docs/performance/2026-11-17-landing/clerk-on-demand.md.
+ */
+import React, {
+  PropsWithChildren,
+  Suspense,
+  createContext,
+  lazy,
+  startTransition,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ComponentProps,
+} from 'react'
+import type { SignIn as ClerkSignIn, SignUp as ClerkSignUp } from '@clerk/clerk-react'
 import type { LoadedClerk } from '@clerk/shared/types'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { env } from '@/config/env'
-import type { SupportedLocale } from '@/lib/i18n'
-import { getUserLocale } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
+import {
+  LOADING_AUTH_VALUE,
+  authStore,
+  type AuthContextValue,
+  type AuthSnapshot,
+  type AuthUser,
+  type ClerkWidgetKind,
+} from './auth-store'
+import { AUTH_SIGN_IN_PATH, AUTH_SIGN_UP_PATH } from './constants'
+import { readSessionHint } from './session-hint'
+
+export type { AuthUser } from './auth-store'
+export { AUTH_ACCOUNT_URL, AUTH_SIGN_IN_PATH, AUTH_SIGN_UP_PATH } from './constants'
 
 const logger = createLogger('auth')
 
@@ -23,27 +45,38 @@ declare global {
   }
 }
 
-// Public, provider-agnostic user shape used across the app
-export type AuthUser = {
-  readonly id: string
-  readonly firstName?: string | null
-  readonly lastName?: string | null
-  readonly email?: string | null
+/**
+ * The live value, and the value the server rendered. A component that is
+ * hydrating reads the server's, so its first render matches the server HTML
+ * even when the live value has moved on (a boundary that hydrates late).
+ */
+type AuthContextState = {
+  readonly value: AuthContextValue
+  readonly serverValue: AuthContextValue
 }
 
-type AuthContextValue = {
-  readonly isEnabled: boolean
-  readonly isLoaded: boolean
-  readonly isSignedIn: boolean
-  readonly user: AuthUser | null
-  readonly signOut: () => Promise<void>
+const AuthContext = createContext<AuthContextState | null>(null)
+
+const subscribeNever = () => () => undefined
+const NO_CONTEXT: AuthContextState = { value: LOADING_AUTH_VALUE, serverValue: LOADING_AUTH_VALUE }
+
+/**
+ * The live value, except while the calling component hydrates, when it is the
+ * server's. React re-renders a hydrated component on this read only when the
+ * two differ: never while the gate is closed (they are the same object), so
+ * auth adds no synchronous re-render that could discard a nested boundary
+ * still waiting for its code or data. A boundary hydrating after the gate has
+ * opened gets the server value first (no mismatch), then the live one.
+ */
+function useAuthContextValue(): AuthContextValue | null {
+  const ctx = useContext(AuthContext)
+  const state = ctx ?? NO_CONTEXT
+  const value = useSyncExternalStore(subscribeNever, () => state.value, () => state.serverValue)
+  return ctx ? value : null
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null)
+const ClerkRuntime = lazy(() => import('./clerk-runtime'))
 
-export const AUTH_SIGN_IN_PATH = '/sign-in'
-export const AUTH_SIGN_UP_PATH = '/sign-up'
-export const AUTH_ACCOUNT_URL = 'https://accounts.transparenta.eu/user'
 export const AUTH_CLERK_APPEARANCE = {
   layout: {
     socialButtonsVariant: 'blockButton',
@@ -57,14 +90,10 @@ export const AUTH_CLERK_APPEARANCE = {
   },
 } satisfies NonNullable<ComponentProps<typeof ClerkSignIn>['appearance']>
 
-export function resolveClerkLocalization(locale: SupportedLocale) {
-  return locale === 'ro' ? roRO : undefined
-}
-
 function createNoopAuthContextValue(isSSR = false): AuthContextValue {
   return {
     isEnabled: false,
-    // SSR: false to match Clerk's initial state, Client without key: true (auth disabled)
+    // SSR: false, as the browser hydrates with it; client without key: true (auth disabled)
     isLoaded: !isSSR,
     isSignedIn: false,
     user: null,
@@ -139,75 +168,164 @@ function prepareAuthButtonChild(
   })
 }
 
-function ClerkAuthBridge({ children }: PropsWithChildren) {
-  const { isLoaded, isSignedIn, signOut } = useClerkAuth()
-  const { user } = useClerkUser()
+/**
+ * A streamed boundary React has not revealed yet: its content still waits in a
+ * hidden `S:` segment, or its marker still reads pending (`<!--$?-->`). React
+ * 19.2 reveals completed boundaries in batches on a timer, so some are still
+ * pending after the document has finished parsing.
+ */
+export function hasPendingStreamedBoundary(root: Document = document): boolean {
+  if (root.querySelector('div[hidden][id^="S:"]')) return true
+  const walker = root.createTreeWalker(root.body ?? root, NodeFilter.SHOW_COMMENT)
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if ((node as Comment).data === '$?') return true
+  }
+  return false
+}
 
-  React.useEffect(() => {
-    if (isLoaded) {
-      markClerkReady()
-    }
-  }, [isLoaded])
+const STREAM_SETTLE_POLL_MS = 100
+export const STREAM_SETTLE_CAP_MS = 10_000
 
-  const value = useMemo<AuthContextValue>(() => {
-    const mappedUser: AuthUser | null = user
-      ? {
-        id: user.id,
-        firstName: user.firstName ?? null,
-        lastName: user.lastName ?? null,
-        email: user.primaryEmailAddress?.emailAddress ?? null,
-      }
-      : null
-    return {
-      isEnabled: true,
-      isLoaded,
-      isSignedIn: Boolean(isSignedIn),
-      user: mappedUser,
-      signOut: async () => {
-        try {
-          await signOut()
-        } catch (error) {
-          logger.error('Failed to sign out', { error: error instanceof Error ? error.message : String(error) })
-        }
-      },
-    }
-  }, [isLoaded, isSignedIn, user, signOut])
+/**
+ * Resolves once the document has finished parsing (the SSR stream has ended)
+ * and every streamed boundary has been revealed, or after 10 s at most from
+ * the call, whichever comes first; or never, once `isActive` turns false. A
+ * state change reaching a boundary that is still pending makes React render it
+ * on the client and drop its server HTML.
+ */
+async function whenStreamSettled(isActive: () => boolean): Promise<void> {
+  const deadline = Date.now() + STREAM_SETTLE_CAP_MS
+  while (Date.now() < deadline && (document.readyState === 'loading' || hasPendingStreamedBoundary())) {
+    await new Promise((resolve) => setTimeout(resolve, STREAM_SETTLE_POLL_MS))
+    if (!isActive()) return
+  }
+}
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+/** Reads the session cookie: a session loads Clerk, none shows the signed-out state. */
+async function applySessionHint(publishableKey: string): Promise<void> {
+  const hint = await readSessionHint(publishableKey)
+  if (hint === 'signed-in') {
+    authStore.requestClerk({ forSession: true })
+  } else {
+    authStore.publishAnonymous()
+  }
+}
+
+function startClerkOnDemand(publishableKey: string): () => void {
+  let active = true
+  const isActive = () => active
+
+  const checkSession = () => {
+    void applySessionHint(publishableKey).catch((error: unknown) => {
+      logger.error('Failed to read the session hint', { error: error instanceof Error ? error.message : String(error) })
+      authStore.requestClerk({ forSession: true })
+    })
+  }
+
+  // Runs after the shell's hydration commit. Clerk starts loading at once for
+  // a session (token reads wait for it); what the page shows changes only
+  // once no server boundary is pending.
+  checkSession()
+  void whenStreamSettled(isActive).then(() => {
+    if (active) authStore.openGate()
+  })
+
+  // A sign-in in another tab or window: check again when this one comes back.
+  const onReturn = () => {
+    if (active && document.visibilityState === 'visible') checkSession()
+  }
+  document.addEventListener('visibilitychange', onReturn)
+  window.addEventListener('focus', onReturn)
+
+  return () => {
+    active = false
+    document.removeEventListener('visibilitychange', onReturn)
+    window.removeEventListener('focus', onReturn)
+  }
 }
 
 /**
- * Auth placeholder for when Clerk is not configured.
- * - On SSR: isLoaded=false to match client's initial Clerk state and prevent hydration mismatch
- * - On client without auth key: isLoaded=true because auth is disabled (nothing to load)
+ * The store's state, hydrated with the server's and then updated in a
+ * transition. A transition waits for a server boundary whose hydration is
+ * still suspended (its streamed data not in the cache yet) instead of
+ * discarding its HTML, which a synchronous update such as
+ * `useSyncExternalStore`'s would do.
  */
-function NoopAuthProvider({ children, isSSR = false }: PropsWithChildren<{ isSSR?: boolean }>) {
-  const value = useMemo<AuthContextValue>(() => createNoopAuthContextValue(isSSR), [isSSR])
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+function useAuthSnapshot(): AuthSnapshot {
+  const [snapshot, setSnapshot] = useState(authStore.getServerSnapshot)
+
+  useEffect(() => {
+    const sync = () => startTransition(() => setSnapshot(authStore.getSnapshot()))
+    sync()
+    return authStore.subscribe(sync)
+  }, [])
+
+  return snapshot
+}
+
+/**
+ * Mounts Clerk as soon as it is requested, from its own synchronous
+ * subscription: never part of a page transition, which a suspending render
+ * could hold back while a token read waits for Clerk. It renders beside the
+ * page and changes no value the page reads, so mounting it is safe at any time.
+ */
+function ClerkRuntimeSlot({ publishableKey }: { readonly publishableKey: string }) {
+  const requested = useSyncExternalStore(
+    authStore.subscribe,
+    () => authStore.getSnapshot().clerkRequested,
+    () => false,
+  )
+  if (!requested) return null
+  return (
+    <Suspense fallback={null}>
+      <ClerkRuntime publishableKey={publishableKey} />
+    </Suspense>
+  )
+}
+
+const ON_DEMAND_SERVER_STATE: AuthContextState = { value: LOADING_AUTH_VALUE, serverValue: LOADING_AUTH_VALUE }
+
+function ClerkOnDemandProvider({ publishableKey, children }: PropsWithChildren<{ publishableKey: string }>) {
+  const snapshot = useAuthSnapshot()
+
+  useEffect(() => startClerkOnDemand(publishableKey), [publishableKey])
+
+  const shown = snapshot.gateOpen ? snapshot.value : LOADING_AUTH_VALUE
+  const state = useMemo<AuthContextState>(
+    () => (shown === LOADING_AUTH_VALUE ? ON_DEMAND_SERVER_STATE : { value: shown, serverValue: LOADING_AUTH_VALUE }),
+    [shown],
+  )
+
+  // Clerk mounts beside the page, never around it, so its arrival remounts nothing.
+  return (
+    <AuthContext.Provider value={state}>
+      <ClerkRuntimeSlot publishableKey={publishableKey} />
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+/**
+ * Auth when Clerk is not configured: disabled, and loaded (there is nothing to
+ * load), on the server and in the browser alike. One shared object for both
+ * snapshots, so hydration adds no re-render.
+ */
+const DISABLED_AUTH_VALUE: AuthContextValue = Object.freeze({ ...createNoopAuthContextValue(false) })
+const DISABLED_AUTH_STATE: AuthContextState = { value: DISABLED_AUTH_VALUE, serverValue: DISABLED_AUTH_VALUE }
+
+function NoopAuthProvider({ children }: PropsWithChildren) {
+  return <AuthContext.Provider value={DISABLED_AUTH_STATE}>{children}</AuthContext.Provider>
 }
 
 export function AuthProvider({ publishableKey, children }: PropsWithChildren<{ publishableKey?: string }>) {
-  if (typeof window === 'undefined') {
-    return <NoopAuthProvider isSSR>{children}</NoopAuthProvider>
-  }
   if (publishableKey) {
-    const locale = getUserLocale()
-    return (
-      <ClerkProvider
-        publishableKey={publishableKey}
-        localization={resolveClerkLocalization(locale)}
-        signInUrl={AUTH_SIGN_IN_PATH}
-        signUpUrl={AUTH_SIGN_UP_PATH}
-      >
-        <ClerkAuthBridge>{children}</ClerkAuthBridge>
-      </ClerkProvider>
-    )
+    return <ClerkOnDemandProvider publishableKey={publishableKey}>{children}</ClerkOnDemandProvider>
   }
   return <NoopAuthProvider>{children}</NoopAuthProvider>
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext)
+  const ctx = useAuthContextValue()
   if (!ctx) {
     if (typeof window === 'undefined') {
       return createNoopAuthContextValue(true)
@@ -234,8 +352,7 @@ export function useUser() {
  * provider.
  */
 export function useOptionalUser(): AuthUser | null {
-  const ctx = useContext(AuthContext)
-  return ctx?.user ?? null
+  return useAuthContextValue()?.user ?? null
 }
 
 // UI wrappers to avoid leaking Clerk primitives
@@ -275,6 +392,37 @@ type AuthSignUpButtonProps = PropsWithChildren<{
   fallbackRedirectUrl?: string
 }>
 
+/**
+ * A slot Clerk renders one of its widgets into, through a portal from the
+ * Clerk runtime. Mounting it loads Clerk.
+ */
+function ClerkWidgetSlot({ kind, props }: { readonly kind: ClerkWidgetKind; readonly props: Readonly<Record<string, unknown>> }) {
+  const id = useId()
+  const [node, setNode] = useState<HTMLDivElement | null>(null)
+  const { clerkLoaded } = useAuthSnapshot()
+
+  useEffect(() => {
+    authStore.requestClerk({ forSession: false })
+  }, [])
+
+  useEffect(() => {
+    if (node) authStore.setWidget({ id, kind, node, props })
+  })
+
+  useEffect(() => () => authStore.removeWidget(id), [id])
+
+  return (
+    <>
+      {clerkLoaded ? null : (
+        <div className="flex w-full justify-center py-10">
+          <LoadingSpinner />
+        </div>
+      )}
+      <div ref={setNode} />
+    </>
+  )
+}
+
 export function AuthSignIn({ path = AUTH_SIGN_IN_PATH, ...rest }: AuthSignInProps) {
   const { isEnabled } = useAuth()
   if (!isEnabled) {
@@ -282,11 +430,9 @@ export function AuthSignIn({ path = AUTH_SIGN_IN_PATH, ...rest }: AuthSignInProp
   }
   const safeProps = omitLegacyRedirectProps(rest as Record<string, unknown>)
   return (
-    <ClerkSignIn
-      {...(safeProps as typeof rest)}
-      routing="path"
-      path={path}
-      signUpUrl={AUTH_SIGN_UP_PATH}
+    <ClerkWidgetSlot
+      kind="sign-in"
+      props={{ ...safeProps, routing: 'path', path, signUpUrl: AUTH_SIGN_UP_PATH }}
     />
   )
 }
@@ -298,11 +444,9 @@ export function AuthSignUp({ path = AUTH_SIGN_UP_PATH, ...rest }: AuthSignUpProp
   }
   const safeProps = omitLegacyRedirectProps(rest as Record<string, unknown>)
   return (
-    <ClerkSignUp
-      {...(safeProps as typeof rest)}
-      routing="path"
-      path={path}
-      signInUrl={AUTH_SIGN_IN_PATH}
+    <ClerkWidgetSlot
+      kind="sign-up"
+      props={{ ...safeProps, routing: 'path', path, signInUrl: AUTH_SIGN_IN_PATH }}
     />
   )
 }
@@ -333,59 +477,48 @@ export function AuthSignUpButton({ children = 'Sign up', ...rest }: AuthSignUpBu
   return <>{preparedChildren}</>
 }
 
+/** Signs out as Clerk's `SignOutButton` does: the child's own click first, then `signOut` back to `/`. */
 export function AuthSignOutButton({ children = 'Sign out' }: PropsWithChildren) {
   const { isEnabled } = useAuth()
   if (!isEnabled) {
     return <span>{children}</span>
   }
-  return <ClerkSignOutButton>{children}</ClerkSignOutButton>
+  const child = React.isValidElement<{ onClick?: (event: React.MouseEvent) => unknown }>(children)
+    ? children
+    : <button type="button">{children}</button>
+  const originalOnClick = child.props.onClick
+
+  return React.cloneElement(child, {
+    onClick: async (event: React.MouseEvent) => {
+      await originalOnClick?.(event)
+      await authStore.getClerkHandle()?.signOut({ redirectUrl: '/' })
+    },
+  })
 }
 
 export const authKey = env.VITE_CLERK_PUBLISHABLE_KEY
 
-let clerkReadyPromise: Promise<void> | null = null
-let clerkReady = false
-
-export function markClerkReady() {
-  clerkReady = true
-}
-
+/**
+ * Loads Clerk if it has not been requested yet and resolves once it has
+ * loaded, or after 10 s if it never does (blocked script, no network).
+ */
 export function waitForClerk(): Promise<void> {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || !authKey || authStore.isClerkLoaded()) {
     return Promise.resolve()
   }
-  if (!authKey || clerkReady) {
-    return Promise.resolve()
-  }
-  if (clerkReadyPromise === null) {
-    clerkReadyPromise = new Promise((resolve) => {
-      if (!authKey || clerkReady || window.Clerk?.session) {
-        clerkReadyPromise = null
-        resolve()
-        return
-      }
-      const checkInterval = setInterval(() => {
-        if (!authKey || clerkReady || window.Clerk?.session) {
-          clearInterval(checkInterval)
-          clerkReadyPromise = null
-          resolve()
-        }
-      }, 50)
-      setTimeout(() => {
-        clearInterval(checkInterval)
-        clerkReadyPromise = null
-        resolve()
-      }, 10000)
-    })
-  }
-  return clerkReadyPromise
+  authStore.requestClerk({ forSession: true })
+  return authStore.whenClerkLoaded()
 }
 
 // Safe function for non-React modules to fetch a fresh auth token
 export async function getAuthToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined' || !authKey) return null
   try {
-    await waitForClerk()
+    if (!authStore.isClerkLoaded()) {
+      // No session in this browser: there is no token to wait for.
+      if ((await readSessionHint(authKey)) === 'signed-out') return null
+      await waitForClerk()
+    }
     const token = await window.Clerk?.session?.getToken()
     return token ?? null
   } catch (error) {
