@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { gazetteBrowseSearchSchema } from '@/schemas/legal'
+import { gazetteBrowseSearchSchema } from '@/schemas/legal-search'
 
 /**
  * The gazette directory — the `Monitorul Oficial` tab. Filters and the page

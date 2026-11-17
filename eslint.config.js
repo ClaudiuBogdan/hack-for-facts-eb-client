@@ -6,6 +6,37 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
+// A JSON-LD block's `children` is written into the page as raw HTML (the
+// router's `dangerouslySetInnerHTML`), and `JSON.stringify` leaves `<` as it
+// is: a `</script>` in a name would close the tag. Every block goes through
+// `serializeForInlineScript` (src/lib/inline-script-json.ts), called right
+// there, so a string prepared elsewhere cannot slip past the check. It reads
+// the object literal only: a `type` or `children` brought in by a spread, a
+// `type` held in a variable, or a JSX `<script>` is not seen.
+const JSON_LD_CHILDREN = {
+  selector:
+    "ObjectExpression:has(> Property:matches([key.name='type'], [key.value='type'])[value.value='application/ld+json']) > Property:matches([key.name='children'], [key.value='children']):not([value.type='CallExpression'][value.callee.name='serializeForInlineScript'])",
+  message:
+    'JSON-LD `children` must be `serializeForInlineScript(node)` from @/lib/inline-script-json: the router writes it into the page as raw HTML.',
+}
+
+// Route contract modules (docs/route-contracts.md) are loaded by the route tree
+// on every page, so they build nothing when they are evaluated: no call runs at
+// module scope except `lazySchema(() => …)`. One entry per
+// migrated family; `src/routes/-route-tree-weight.test.ts` lists the same
+// families' modules that the route tree must not reach.
+const ROUTE_CONTRACT_MODULES = ['src/schemas/legal-search.ts']
+const BUILT_AT_MODULE_SCOPE = {
+  // Any call evaluated when the module is (not inside a function), wherever it
+  // sits: an initializer, a wrapper (`as`, `satisfies`), an object or array
+  // literal, a bare statement. `lazySchema(...)` itself is the one exception;
+  // what it is given runs later, inside its function.
+  selector:
+    ":matches(CallExpression, NewExpression, TaggedTemplateExpression, AwaitExpression, ImportExpression):not(:function *):not(CallExpression[callee.name='lazySchema'])",
+  message:
+    'A route contract module builds nothing at module scope: wrap the schema in `lazySchema(() => …)` from @/lib/route-contract, or make it a function (docs/route-contracts.md).',
+}
+
 export default tseslint.config(
   {
     ignores: [
@@ -102,28 +133,20 @@ export default tseslint.config(
       ],
     },
   },
-  // A JSON-LD block's `children` is written into the page as raw HTML (the
-  // router's `dangerouslySetInnerHTML`), and `JSON.stringify` leaves `<` as it
-  // is: a `</script>` in a name would close the tag. Every block goes through
-  // `serializeForInlineScript` (src/lib/inline-script-json.ts), called right
-  // there, so a string prepared elsewhere cannot slip past the check. It reads
-  // the object literal only: a `type` or `children` brought in by a spread, a
-  // `type` held in a variable, or a JSX `<script>` is not seen. This is the
-  // only `no-restricted-syntax` block for src; a later one for the same files
-  // would replace this selector rather than add to it.
+  // `no-restricted-syntax` for src. A later block for the same files replaces
+  // an earlier block's selectors rather than adding to them, so a block for a
+  // subset of src repeats every selector that applies there.
   {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            "ObjectExpression:has(> Property:matches([key.name='type'], [key.value='type'])[value.value='application/ld+json']) > Property:matches([key.name='children'], [key.value='children']):not([value.type='CallExpression'][value.callee.name='serializeForInlineScript'])",
-          message:
-            'JSON-LD `children` must be `serializeForInlineScript(node)` from @/lib/inline-script-json: the router writes it into the page as raw HTML.',
-        },
-      ],
+      'no-restricted-syntax': ['error', JSON_LD_CHILDREN],
+    },
+  },
+  {
+    files: ROUTE_CONTRACT_MODULES,
+    rules: {
+      'no-restricted-syntax': ['error', JSON_LD_CHILDREN, BUILT_AT_MODULE_SCOPE],
     },
   },
   // Relax `no-explicit-any` in test files – test utilities often need `any`

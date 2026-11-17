@@ -1,5 +1,30 @@
 import { z } from 'zod'
 import { coverageMetaSchema } from './elections'
+import {
+  GAZETTE_PART_CODES,
+  LEGAL_ACT_STATUSES,
+  LEGAL_DOMAIN_SLUGS,
+  LEGAL_EVENT_KINDS,
+  LEGAL_EVENT_SOURCES,
+  legalActsBrowseFilterShape,
+} from './legal-search'
+
+// The routes' URL contract (search params), lazy and apart so the route tree
+// does not carry this module: `legal-search.ts`, re-exported here.
+export {
+  gazetteBrowseSearchSchema,
+  legalActsBrowseSearchSchema,
+  legalChangesSearchSchema,
+  legalFinderSearchSchema,
+  legalReaderSearchSchema,
+} from './legal-search'
+export type {
+  GazetteBrowseSearch,
+  LegalActsBrowseSearch,
+  LegalChangesSearch,
+  LegalFinderSearch,
+  LegalReaderSearch,
+} from './legal-search'
 
 /**
  * Legal domain — UI-boundary shapes for the `/legislation` module.
@@ -11,37 +36,12 @@ import { coverageMetaSchema } from './elections'
  * `docs/design/legal/main-page.md` §6.
  */
 
-/** `legal.acts.status` — the closed 7-value fold vocabulary. */
-export const legalActStatusSchema = z.enum([
-  'in-vigoare',
-  'modificat',
-  'abrogat',
-  'abrogat-partial',
-  'suspendat',
-  'iesit-din-vigoare',
-  'necunoscut',
-])
+/** `legal.acts.status` — the closed 7-value fold vocabulary (`LEGAL_ACT_STATUSES`). */
+export const legalActStatusSchema = z.enum(LEGAL_ACT_STATUSES)
 export type LegalActStatus = z.infer<typeof legalActStatusSchema>
 
-/** `legal.document_summaries.domains` — the controlled 16-value vocabulary. */
-export const legalDomainSlugSchema = z.enum([
-  'administratie',
-  'fiscal-si-bugetar',
-  'justitie',
-  'economie-si-comert',
-  'munca-si-protectie-sociala',
-  'proprietate-si-urbanism',
-  'sanatate',
-  'aparare-si-securitate',
-  'transport',
-  'educatie',
-  'mediu',
-  'agricultura',
-  'energie',
-  'cultura',
-  'telecomunicatii-si-digital',
-  'altele',
-])
+/** `legal.document_summaries.domains` — the controlled 16-value vocabulary (`LEGAL_DOMAIN_SLUGS`). */
+export const legalDomainSlugSchema = z.enum(LEGAL_DOMAIN_SLUGS)
 export type LegalDomainSlug = z.infer<typeof legalDomainSlugSchema>
 
 /**
@@ -422,27 +422,6 @@ export const legalActDetailSchema = z.object({
 export type LegalActDetail = z.infer<typeof legalActDetailSchema>
 
 /**
- * Act page search params (`/legislation/acts/$actId` — the text lives ON the
- * act page; the old `/text` sibling 301-redirects here).
- *  - `doc` — read a specific (non-canonical) expression instead of the act's
- *    canonical document.
- *  - `nod` — a `document_nodes` PATH deep link (never a node id: ids are
- *    recompile-scoped). A search param, not a hash, so the SSR loader can
- *    target the chunk containing it on giant documents.
- */
-export const legalReaderSearchSchema = z.object({
-  // The router JSON-parses search values: `?doc=54260` arrives as a number and
-  // `?doc=%2254260%22` as a string. Both name the same document id.
-  doc: z
-    .union([z.string().min(1), z.number().int().nonnegative()])
-    .transform((value) => String(value))
-    .optional()
-    .catch(undefined),
-  nod: z.string().min(1).optional(),
-})
-export type LegalReaderSearch = z.infer<typeof legalReaderSearchSchema>
-
-/**
  * One page of the acts directory (`legalActs` connection).
  *
  * `totalCount` is nullable on the server connection; when present it is the
@@ -457,40 +436,11 @@ export const legalActsPageSchema = z.object({
 export type LegalActsPage = z.infer<typeof legalActsPageSchema>
 
 /** Filters the directory sends to the server — verified filter families. */
-export const legalActsBrowseFilterSchema = z.object({
-  actType: z.string().optional(),
-  year: z.number().int().optional(),
-  status: legalActStatusSchema.optional(),
-  domain: legalDomainSlugSchema.optional(),
-})
+export const legalActsBrowseFilterSchema = z.object(legalActsBrowseFilterShape())
 export type LegalActsBrowseFilter = z.infer<typeof legalActsBrowseFilterSchema>
 
-/**
- * The directory's URL state. `status` additionally admits the sentinel
- * `'toate'`: an absent status DEFAULTS to `in-vigoare` (law in force is what
- * people mean by "the acts"), so "no status filter" must be a stated choice
- * in the URL, never the silent fallback.
- */
-export const legalActsBrowseSearchSchema = legalActsBrowseFilterSchema.extend({
-  status: legalActStatusSchema.or(z.literal('toate')).optional(),
-})
-export type LegalActsBrowseSearch = z.infer<typeof legalActsBrowseSearchSchema>
-
-/**
- * `MoPartCode` — the eight gazette parts the server serves. `PIM` is Partea I
- * in Hungarian, a real part code with issues from 2008 on (verified live
- * 2026-08-26: 113 issues in 2010, 22 in 2026).
- */
-export const gazettePartCodeSchema = z.enum([
-  'PI',
-  'PIM',
-  'PII',
-  'PIII',
-  'PIV',
-  'PV',
-  'PVI',
-  'PVII',
-])
+/** `MoPartCode` — the eight gazette parts the server serves (`GAZETTE_PART_CODES`). */
+export const gazettePartCodeSchema = z.enum(GAZETTE_PART_CODES)
 export type GazettePartCode = z.infer<typeof gazettePartCodeSchema>
 
 /**
@@ -567,54 +517,12 @@ export const gazetteBrowseFilterSchema = z.object({
 })
 export type GazetteBrowseFilter = z.infer<typeof gazetteBrowseFilterSchema>
 
-/**
- * URL state for `/legislation/gazette` — filters plus the server's own page
- * number, so a filtered page is a shareable link. `.catch(undefined)` drops a
- * malformed param to its default instead of erroring the route; the year's
- * corpus bounds are enforced by the component (the valid range is a measured
- * constant in `legal-coverage.ts`, which schemas do not import).
- */
-export const gazetteBrowseSearchSchema = z.object({
-  year: z.number().int().optional().catch(undefined),
-  part: gazettePartCodeSchema.optional().catch(undefined),
-  page: z.number().int().min(1).optional().catch(undefined),
-})
-export type GazetteBrowseSearch = z.infer<typeof gazetteBrowseSearchSchema>
-
-/**
- * `legal.act_status_events.event_kind` — the DB CHECK vocabulary (12 values,
- * `act_status_events_kind_check`). Closed at the database, so the FILTER param
- * may be an enum; the ROW field stays an open string (`legalRecentChangeSchema`)
- * so a 13th kind added upstream degrades to a prettified label instead of
- * breaking the page. Census 2026-08-26 (sums to the feed's 84.484):
- * modificare 29.985 · abrogare-totala 27.930 · completare 10.191 ·
- * promulgare 9.310 · abrogare-partiala 2.052 · aprobare-oug 1.799 ·
- * republicare 1.325 · aprobare-og 867 · rectificare 419 · suspendare 344 ·
- * iesire-din-vigoare 262 · incetare-suspendare 0 (in the CHECK, no rows yet).
- */
-export const legalEventKindSchema = z.enum([
-  'abrogare-totala',
-  'abrogare-partiala',
-  'modificare',
-  'completare',
-  'suspendare',
-  'incetare-suspendare',
-  'republicare',
-  'rectificare',
-  'iesire-din-vigoare',
-  'promulgare',
-  'aprobare-oug',
-  'aprobare-og',
-])
+/** `legal.act_status_events.event_kind` — the DB CHECK vocabulary (`LEGAL_EVENT_KINDS`). */
+export const legalEventKindSchema = z.enum(LEGAL_EVENT_KINDS)
 export type LegalEventKind = z.infer<typeof legalEventKindSchema>
 
-/**
- * `act_status_events.event_source` — which pipeline recorded the event. The
- * server surfaces it deliberately and never merges the two (12.790 of 84.484
- * events are `monitorul-oficial`, measured 2026-08-26); the UI shows it on
- * every row. Enum for the FILTER param only — rows carry an open string.
- */
-export const legalEventSourceSchema = z.enum(['portal', 'monitorul-oficial'])
+/** `act_status_events.event_source` — which pipeline recorded the event (`LEGAL_EVENT_SOURCES`). */
+export const legalEventSourceSchema = z.enum(LEGAL_EVENT_SOURCES)
 export type LegalEventSource = z.infer<typeof legalEventSourceSchema>
 
 /**
@@ -668,47 +576,6 @@ export const legalChangesFilterSchema = z.object({
   undated: z.boolean().optional(),
 })
 export type LegalChangesFilter = z.infer<typeof legalChangesFilterSchema>
-
-/**
- * A calendar-valid `YYYY-MM-DD`. The round-trip guards V8's lenient parse:
- * '2026-02-31' does NOT parse to NaN — it rolls over to March 3rd — and the
- * server rejects such a date as invalid input, so the URL schema must drop it
- * rather than forward it into an erroring request.
- */
-const changesFeedDateSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine((value) => {
-    const parsed = Date.parse(value)
-    return (
-      !Number.isNaN(parsed) &&
-      new Date(parsed).toISOString().slice(0, 10) === value
-    )
-  })
-
-/**
- * URL state for `/legislation/changes`. `.catch(undefined)` drops a malformed
- * param to its default instead of erroring the route (gazette pattern).
- *
- * `view` names the feed's cohorts — the effective-date dimension has real
- * populations a bare window cannot reach (measured 2026-08-26):
- *  - absent (default): already-in-force events, `until = today` (63.210);
- *  - `viitoare`: future-dated events, `since = tomorrow` (8);
- *  - `toate`: the feed exactly as served — future first, undated trailing;
- *  - `nedatate`: the 21.266 events with NO effective date (`undatedOnly`),
- *    which every since/until window excludes.
- * An explicit `since`/`until` is the custom-window mode; when a hand-edited
- * URL carries BOTH a `view` and a window, the component lets `view` win and
- * never sends the rejected `undatedOnly`+window combination to the server.
- */
-export const legalChangesSearchSchema = z.object({
-  view: z.enum(['viitoare', 'toate', 'nedatate']).optional().catch(undefined),
-  since: changesFeedDateSchema.optional().catch(undefined),
-  until: changesFeedDateSchema.optional().catch(undefined),
-  kind: legalEventKindSchema.optional().catch(undefined),
-  source: legalEventSourceSchema.optional().catch(undefined),
-})
-export type LegalChangesSearch = z.infer<typeof legalChangesSearchSchema>
 
 /**
  * One `legalResolve` hit. `value` is the filter value the hit resolves to —
@@ -794,32 +661,6 @@ export const legalSearchResultSchema = z.object({
   unhydratedHits: z.number().int(),
 })
 export type LegalSearchResultData = z.infer<typeof legalSearchResultSchema>
-
-/**
- * URL state for `/legislation/search` — the Caută tab, so a search is a
- * shareable link. TanStack Router JSON-parses search params, so a
- * numeric-looking `q` (`?q=227`) arrives as a NUMBER — coerce it back to text
- * rather than dropping a legitimate query, but treat `null`/booleans as junk
- * (`z.coerce.string()` alone would turn `?q=null` into the literal text
- * "null" and search for it); the same trap and cure as `entity-search.ts`'s
- * `optionalSearchString`.
- *
- * `historical: true` widens the search to abrogated / out-of-force acts (the
- * server's `includeHistorical`, default false — which silently zeroes even an
- * exact-citation lookup of a repealed law). Only `true` is a stored value:
- * the default is URL-absence, so `?historical=false` and junk both drop.
- */
-export const legalFinderSearchSchema = z.object({
-  q: z
-    .preprocess(
-      (value) =>
-        value === null || typeof value === 'boolean' ? undefined : value,
-      z.coerce.string().min(1).max(400).optional(),
-    )
-    .catch(undefined),
-  historical: z.literal(true).optional().catch(undefined),
-})
-export type LegalFinderSearch = z.infer<typeof legalFinderSearchSchema>
 
 /**
  * The composed payload behind the `/legislation` overview tab. The headline

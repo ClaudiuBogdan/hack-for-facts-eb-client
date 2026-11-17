@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { legalReaderSearchSchema } from '@/schemas/legal'
+import { legalReaderSearchSchema } from '@/schemas/legal-search'
 
 /**
  * The old standalone reader route. The text now lives ON the act page

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { legalActsBrowseSearchSchema } from '@/schemas/legal'
+import { legalActsBrowseSearchSchema } from '@/schemas/legal-search'
 
 /**
  * The acts directory — the `Acte` tab. Filters live in the URL

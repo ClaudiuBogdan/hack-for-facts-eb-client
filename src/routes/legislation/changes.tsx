@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { legalChangesSearchSchema } from '@/schemas/legal'
+import { legalChangesSearchSchema } from '@/schemas/legal-search'
 
 /**
  * The global change feed — the `Modificări` tab. The cohort view, a custom

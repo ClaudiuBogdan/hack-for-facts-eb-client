@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { fetchLegalActDetail } from '@/features/legal/api/legal-act-api'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { legalReaderSearchSchema } from '@/schemas/legal'
+import { legalReaderSearchSchema } from '@/schemas/legal-search'
 import type { LegalActDetail } from '@/schemas/legal'
 
 export type LegalActRouteLoaderData = {
@@ -18,6 +17,9 @@ export type LegalActRouteLoaderData = {
 export const Route = createFileRoute('/legislation/acts/$actId')({
   validateSearch: legalReaderSearchSchema,
   loader: async ({ params, abortController }) => {
+    // Imported here, not at the top: the API module brings the live adapter, the
+    // data schemas and the mock fixtures, which the route tree must not carry.
+    const { fetchLegalActDetail } = await import('@/features/legal/api/legal-act-api')
     const act = await fetchLegalActDetail(params.actId, abortController.signal)
     return { act } satisfies LegalActRouteLoaderData
   },

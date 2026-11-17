@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { legalFinderSearchSchema } from '@/schemas/legal'
+import { legalFinderSearchSchema } from '@/schemas/legal-search'
 
 /**
  * The act finder — the `Caută` tab. The query and the historical widening
