@@ -45,7 +45,14 @@ construction about half of it ([landing note](performance/2026-11-17-landing/REA
   bundler drops or defers: type-only imports and re-exports, `import()`, lazy globs, and `?url`/`?raw` and
   asset imports. It resolves the `@/` alias, root-relative `/src/…`, relative, extensionless, `/index` and
   `.js`-for-`.ts` paths, and it fails rather than skips when it meets a local import it cannot resolve, or a
-  compiled format it cannot read (MDX). For each migrated family it fails if the family's data schemas, API
+  compiled format it cannot read (MDX). In a route file it follows only what Start's code splitting keeps in the
+  route tree: the split options (`component`, `errorComponent`, `notFoundComponent`) and whatever only they use
+  go to their own chunk, with every declaration only they use; `loader`, `pendingComponent`, `head`,
+  `beforeLoad`, a component written as a method, exports, top-level statements that are not declarations, and
+  the declarations those use stay. The root route is not split: its component is the app shell. The test fails
+  if the Vite config customises the split groupings, whose default it models. Checked against a production build on
+  2026-11-17: the graph holds every source module the build loads at start-up (468 of 468), plus 17 the client
+  build drops (server routes, re-exports), which can only make the test stricter. For each migrated family it fails if the family's data schemas, API
   adapters or mocks are reachable, and it prints the import chain that reached them.
 - **Lint** (`eslint.config.js`, `ROUTE_CONTRACT_MODULES`). In a migrated family's contract module, no call runs
   outside a function except `lazySchema(...)`: not in an initializer, a wrapper (`as`, `satisfies`), an object
@@ -83,10 +90,14 @@ construction about half of it ([landing note](performance/2026-11-17-landing/REA
    route file moves into the loader as `await import(...)`.
 4. Add the family to `KEPT_OUT` in `-route-tree-weight.test.ts` and its contract module to
    `ROUTE_CONTRACT_MODULES` in `eslint.config.js`.
-5. Prove parity. The old and new schemas must give identical `safeParse` and `~standard.validate` results over a
+5. A loader that imports its module on demand starts its request after that module arrives. The router's
+   intent preload usually has it already, but a route whose request must start at the click (the public map,
+   `maps/public/$mapId`, a measured 1.25 s dead click) keeps its import static and is left for a split of its
+   own module instead.
+6. Prove parity. The old and new schemas must give identical `safeParse` and `~standard.validate` results over a
    battery of inputs (a temporary test against the previous version of the file), and the existing tests must
    pass unchanged. Check in the browser that every route of the family still parses, drops and redirects as before.
-6. Measure, and record the result below.
+7. Measure, and record the result below.
 
 ## Measurements
 
@@ -98,6 +109,7 @@ of three passes. These are not browser numbers, but they rank modules consistent
 |---|---|---|---|---|
 | Before (79ea80f4) | 185 | 1,872 KB | 183 ms | legislation 17.8 ms (first) |
 | Legislation migrated | 181 | 1,846 KB | 159 ms | legislation 0.8 ms |
+| Batch 1 (below) | 164 | 1,638 KB | | |
 
 Families by start-up evaluation before the migration (ms, the same harness): legislation 17.5, the statistics
 hub hooks 13.5, campaigns 12.9, certificates 10.3, advanced map analytics 10.0, companies 8.6, the primărie
@@ -113,3 +125,20 @@ and `lib/` (11.1) are not route families: they are looked at last.
   and typed links stay strict. Helper `src/lib/route-contract.ts`, guardrails as above. Reviewed by Codex
   `gpt-6-astra` xhigh twice: no application regression; its guardrail findings were fixed, except a getter read
   at module scope (lint) and class instance fields (a lint false positive), which contract modules do not use.
+- **2026-11-17, batch 1.** Seven families, one commit each; start-up graph 181 → 164 chunks, 1,846 → 1,638 KB.
+  - **Statistics** (`/ins`): `schemas/statistics-search.ts`, lazy; loaders import the API and hooks on demand.
+  - **Entity analytics:** the URL schema moved into `lib/entity-analytics-query.ts`, imported in `beforeLoad`.
+  - **Campaigns:** the content is parsed on first use (`use-campaign-content.ts`); the admin routes' seven
+    search schemas are lazy in place (that module keeps cheap module-level `Set`s, so it is not on the lint list).
+  - **Entity page map previews:** their names live in `challenge-entity-map-preview-keys.ts` (a test keeps them
+    equal to the definitions); the definitions and the map runtime load with the primărie loader; the challenge
+    search schema is lazy.
+  - **Parliament:** the contract keeps value lists; `parliament.ts` builds the enums its data schemas use.
+  - **Procurement:** the old explorer's keys and the checks made before a redirect live in
+    `features/procurement/lib/legacy-links.ts` (a test keeps the keys equal to the explorer schema's); the
+    translation of an old explorer link is imported only when one is redirected (`beforeLoad` became async).
+  - **Company profile:** `schemas/private-company-profile-search.ts`.
+  - Still at start-up and left for later: `schemas/charts.ts` (the entity page's core imports it — supervised),
+    `schemas/advanced-map-analytics.ts` (through the public map route, whose request must start at the click),
+    `schemas/private-company.ts` (now only through the NGO page's head).
+

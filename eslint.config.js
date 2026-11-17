@@ -25,7 +25,12 @@ const JSON_LD_CHILDREN = {
 // module scope except `lazySchema(() => …)`. One entry per
 // migrated family; `src/routes/-route-tree-weight.test.ts` lists the same
 // families' modules that the route tree must not reach.
-const ROUTE_CONTRACT_MODULES = ['src/schemas/legal-search.ts']
+const ROUTE_CONTRACT_MODULES = [
+  'src/schemas/legal-search.ts',
+  'src/schemas/statistics-search.ts',
+  'src/schemas/parliament-search.ts',
+  'src/schemas/private-company-profile-search.ts',
+]
 const BUILT_AT_MODULE_SCOPE = {
   // Any call evaluated when the module is (not inside a function), wherever it
   // sits: an initializer, a wrapper (`as`, `satisfies`), an object or array
