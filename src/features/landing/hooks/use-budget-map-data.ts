@@ -55,11 +55,12 @@ function constrainedConnection(): boolean {
 let prefetched = false
 
 /**
- * Everything the map needs, fetched while the browser is idle after the page
- * has loaded — so the map is ready by the time the reader scrolls to it,
- * without competing with the page. The renderer's code comes too, as the
- * largest piece. The map itself is still created only near the view. Skipped
- * on Save-Data and 2G. Returns the cancel for an unmount before it ran.
+ * Everything the map needs, fetched once the reader is heading for it (the
+ * section calls this a few screens ahead) and the browser is idle after the
+ * page has loaded — so the map is ready by the time they reach it, without
+ * competing with the page. The renderer's code comes too, as the largest piece.
+ * The map itself is still created only near the view. Skipped on Save-Data and
+ * 2G. Returns the cancel for an unmount before it ran.
  */
 export function prefetchBudgetMap(queryClient: QueryClient, loadRenderer: () => Promise<unknown>): () => void {
   if (prefetched || typeof window === 'undefined' || constrainedConnection()) return () => {}

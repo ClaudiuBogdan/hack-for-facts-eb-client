@@ -1,6 +1,7 @@
 import type { AllPaintProperties, ExpressionSpecification, LayerSpecification, Map as MapLibreMap } from 'maplibre-gl'
 import type { FeatureCollection, Point } from 'geojson'
 import { MAP_LABEL_FONTSTACK } from '@/components/maps/map-glyphs'
+import { escapeHtml } from '@/lib/html'
 import { NO_DATA_COLOR, type MeasureScale } from './budget-map-measures'
 
 /**
@@ -33,14 +34,43 @@ export const VALUE_LABEL_ZOOM = zoomForWidth(VALUE_FROM_PX)
 export const COUNTY_NAME_ZOOM = zoomForWidth(700)
 
 /** MapLibre's own words — the gesture help and its region's name — in the page's language (its own are English). */
-export function gestureLocale(text: { readonly windows: string; readonly mac: string; readonly mobile: string; readonly title: string }): Record<string, string> {
+export function mapLocale(text: MapWords): Record<string, string> {
   return {
     // The name MapLibre gives its own canvas region („Map"), in the page's language.
     'Map.Title': text.title,
     'CooperativeGesturesHandler.WindowsHelpText': text.windows,
     'CooperativeGesturesHandler.MacHelpText': text.mac,
     'CooperativeGesturesHandler.MobileHelpText': text.mobile,
+    'AttributionControl.ToggleAttribution': text.attributionToggle,
   }
+}
+
+/** The words MapLibre shows on the map, in the page's language. */
+export interface MapWords {
+  readonly windows: string
+  readonly mac: string
+  readonly mobile: string
+  readonly title: string
+  readonly attributionToggle: string
+  /** Who drew the boundaries, before the source's link: „Limite UAT: ANCPI, prin". */
+  readonly boundaries: string
+}
+
+const MAPLIBRE_URL = 'https://maplibre.org/'
+/** The UAT and county boundaries: ANCPI's, as geo-spatial.org distributes them (`public/geojson/`). */
+const BOUNDARIES_URL = 'https://geo-spatial.org/vechi/download/romania-seturi-vectoriale'
+/** Their licence: the Romanian Open Government Licence v1.0, which asks for the source and its address. */
+const BOUNDARIES_LICENCE_URL = 'https://data.gov.ro/base/images/logoinst/OGL-ROU-1.0.pdf'
+
+// `nowrap`: a name never breaks across lines on a narrow map („OGL-" / „ROU 1.0").
+const link = (href: string, text: string) => `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" style="white-space:nowrap">${escapeHtml(text)}</a>`
+
+/**
+ * The map's credits, in MapLibre's attribution control: the renderer, and the
+ * boundaries with their source and licence. One entry, so MapLibre keeps the order.
+ */
+export function mapAttribution(words: Pick<MapWords, 'boundaries'>): string {
+  return `${link(MAPLIBRE_URL, 'MapLibre')} | ${escapeHtml(words.boundaries)} ${link(BOUNDARIES_URL, 'geo-spatial.org')}, ${link(BOUNDARIES_LICENCE_URL, 'OGL-ROU 1.0')}`
 }
 
 /** Theme colours as MapLibre takes them (it parses `rgb()`, not every CSS syntax). */

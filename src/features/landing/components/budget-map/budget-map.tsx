@@ -15,7 +15,7 @@ import { createLogger } from '@/lib/logger'
 import { cn, getUserLocale } from '@/lib/utils'
 import { useBudgetMapData } from '../../hooks/use-budget-map-data'
 import { coverageOf, measureById, measureValues, type BudgetFigures, type Measure, type MeasureId } from '../../lib/budget-map-measures'
-import { ROMANIA_BOUNDS, SOURCE, applyTheme, countyLabelPoints, fillColorExpression, gestureLocale, mapLayers, readTheme, uatLabelPoints } from '../../lib/budget-map-style'
+import { ROMANIA_BOUNDS, SOURCE, applyTheme, countyLabelPoints, fillColorExpression, mapLocale, mapAttribution, mapLayers, readTheme, uatLabelPoints, type MapWords } from '../../lib/budget-map-style'
 import type { NumberLocale } from '../../lib/national-facts'
 import { MapLegend } from './map-legend'
 import { UatPopover, UatTooltip, type UatInfo, type UatKind } from './uat-info'
@@ -39,6 +39,8 @@ const logger = createLogger('landing-budget-map')
 
 /** Never taller than most of the viewport: the width follows from the height. */
 const FRAME_STYLE = { maxWidth: 'calc(82vh * 1.4150)' }
+/** The page's ruled column, the map inside its 1px rules (they stay visible beside it). */
+const MAP_BAND = 'px-px sm:px-px'
 const MAP_STYLE = { aspectRatio: '1.415' }
 /** Zoomed in past the whole country by this much, one finger pans on a touch screen. */
 const ONE_FINGER_FROM = 0.3
@@ -55,6 +57,16 @@ const GESTURE_HINT = cn(
   '[&_.maplibregl-cooperative-gesture-screen]:text-sm! [&_.maplibregl-cooperative-gesture-screen]:leading-snug! [&_.maplibregl-cooperative-gesture-screen]:text-foreground!',
   '[&_.maplibregl-cooperative-gesture-screen>div]:rounded-full [&_.maplibregl-cooperative-gesture-screen>div]:border [&_.maplibregl-cooperative-gesture-screen>div]:bg-background/95',
   '[&_.maplibregl-cooperative-gesture-screen>div]:px-4 [&_.maplibregl-cooperative-gesture-screen>div]:py-1.5 [&_.maplibregl-cooperative-gesture-screen>div]:text-center [&_.maplibregl-cooperative-gesture-screen>div]:shadow-sm',
+)
+
+/**
+ * MapLibre's credits in the page's colours, small: its own are black on a 50%
+ * white strip, which a dark theme shows as a bright bar. `!` as above.
+ */
+const ATTRIBUTION = cn(
+  '[&_.maplibregl-ctrl-attrib]:bg-background/80! [&_.maplibregl-ctrl-attrib]:text-[10px]! [&_.maplibregl-ctrl-attrib]:text-muted-foreground!',
+  '[&_.maplibregl-ctrl-attrib_a]:text-muted-foreground! [&_.maplibregl-ctrl-attrib_a:hover]:text-foreground!',
+  'dark:[&_.maplibregl-ctrl-attrib-button]:invert',
 )
 
 const transformRequest: maplibregl.RequestTransformFunction = (url, resourceType) => {
@@ -82,11 +94,13 @@ export default function BudgetMap({ measureId }: { readonly measureId: MeasureId
   // ── the map ───────────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
-  const words = {
+  const words: MapWords = {
     windows: t`Folosește Ctrl + scroll pentru zoom pe hartă`,
     mac: t`Folosește ⌘ + scroll pentru zoom pe hartă`,
     mobile: t`Folosește două degete pentru a muta harta`,
     title: t`Harta primăriilor`,
+    attributionToggle: t`Arată sursele hărții`,
+    boundaries: t`Limite UAT: ANCPI, prin`,
   }
   const { map, zoomed, status } = useMapInstance(containerRef, words)
 
@@ -127,22 +141,23 @@ export default function BudgetMap({ measureId }: { readonly measureId: MeasureId
 
   return (
     <>
-      <div className="relative w-full">
+      <RuledFrame className={MAP_BAND}>
         <div ref={frameRef} className="relative mx-auto w-full" style={FRAME_STYLE}>
           {/* MapLibre names its own canvas region (`Map.Title`, in the page's language). */}
-          <div ref={containerRef} className={cn('w-full', GESTURE_HINT)} style={MAP_STYLE} />
+          <div ref={containerRef} className={cn('w-full', GESTURE_HINT, ATTRIBUTION)} style={MAP_STYLE} />
           {tooltip && tooltipInfo ? <UatTooltip info={tooltipInfo} locale={locale} x={tooltip.x} y={tooltip.y} frame={tooltip.frame} /> : null}
-        </div>
-        <div className="absolute top-3 right-3 flex flex-col gap-1.5">
-          <ZoomButton label={t`Apropie`} onClick={() => map?.zoomIn()}>
-            <Plus className="size-4" />
-          </ZoomButton>
-          <ZoomButton label={t`Depărtează`} onClick={() => map?.zoomOut()} disabled={!zoomed}>
-            <Minus className="size-4" />
-          </ZoomButton>
-          <ZoomButton label={t`Toată țara`} onClick={() => map?.fitBounds(ROMANIA_BOUNDS, { duration: 320 })} disabled={!zoomed}>
-            <RotateCcw className="size-4" />
-          </ZoomButton>
+          {/* On the map's own corner, inside the page's rules at any width. */}
+          <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+            <ZoomButton label={t`Apropie`} onClick={() => map?.zoomIn()}>
+              <Plus className="size-4" />
+            </ZoomButton>
+            <ZoomButton label={t`Depărtează`} onClick={() => map?.zoomOut()} disabled={!zoomed}>
+              <Minus className="size-4" />
+            </ZoomButton>
+            <ZoomButton label={t`Toată țara`} onClick={() => map?.fitBounds(ROMANIA_BOUNDS, { duration: 320 })} disabled={!zoomed}>
+              <RotateCcw className="size-4" />
+            </ZoomButton>
+          </div>
         </div>
         {notice ? (
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
@@ -157,7 +172,7 @@ export default function BudgetMap({ measureId }: { readonly measureId: MeasureId
             </p>
           </div>
         ) : null}
-      </div>
+      </RuledFrame>
       {popover && popoverInfo ? <UatPopover info={popoverInfo} locale={locale} at={popover.at} onClose={closePopover} /> : null}
       <RuledFrame className="pt-4 pb-14">
         <MapLegend
@@ -237,13 +252,14 @@ type RenderStatus = 'pending' | 'ready' | 'unsupported' | 'failed'
  * - On a touch screen, `zoomed` decides whether one finger pans the map or
  *   scrolls the page.
  */
-function useMapInstance(containerRef: React.RefObject<HTMLDivElement | null>, words: Parameters<typeof gestureLocale>[0]) {
+function useMapInstance(containerRef: React.RefObject<HTMLDivElement | null>, words: MapWords) {
   const [map, setMap] = useState<maplibregl.Map | null>(null)
   const [zoomed, setZoomed] = useState(false)
   const [unsupported] = useState(() => !supportsWebGl2())
   const [status, setStatus] = useState<RenderStatus>('pending')
   // The words at creation: MapLibre reads its locale once.
-  const locale = useRef(gestureLocale(words))
+  const locale = useRef(mapLocale(words))
+  const attribution = useRef(mapAttribution(words))
   useEffect(() => {
     const container = containerRef.current
     if (!container || unsupported) return
@@ -264,7 +280,8 @@ function useMapInstance(containerRef: React.RefObject<HTMLDivElement | null>, wo
         pitchWithRotate: false,
         touchPitch: false,
         cooperativeGestures: true,
-        attributionControl: false,
+        // The credits, bottom right; folded behind an „i" on a narrow map (MapLibre's default).
+        attributionControl: { customAttribution: attribution.current },
         renderWorldCopies: false,
         locale: locale.current,
         transformRequest,

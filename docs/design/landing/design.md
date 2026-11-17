@@ -108,7 +108,7 @@ see [the research note](../../research/footer-native-overscroll-2026-09-26.md).
 
 ## Budget map — 16 November 2026
 
-The landing ends with a full-width map of every primărie's budget. Prototype:
+The landing ends with a map of every primărie's budget, inside the page's ruled column (72rem, the 1px rules kept visible beside it) and never taller than 82% of the viewport; the zoom buttons sit on its top-right corner. Prototype:
 `/development/landing/budget-map` (`src/development/prototypes/landing/budget-map.*`),
 variants `svg`, `canvas` and `maplibre`.
 
@@ -120,9 +120,12 @@ pinch) and canvas (~200 ms a frame); moving the drawing as a GPU picture during
 a gesture fixed both, and canvas still froze 130–220 ms at rest. Headless WebGL
 is software-emulated, so MapLibre's slower pinch there is not what a phone
 sees; its real cost is bytes. Those are paid in the background: the section
-prefetches the code, shapes, label points and figures at low priority once the
-page is idle (not on Save-Data or 2G), and creates the map within a screen of
-the view.
+prefetches the code, shapes, label points and figures once the reader is within
+about three screens of it and the page is idle (not on Save-Data or 2G), and
+creates the map within a screen of the view. The prefetch first ran on page
+load; Lighthouse on a production build (17 November 2026, mobile, median of 5)
+put it at ~0.8 MB and +170 ms of blocking time (TBT 711 → 878 ms, score 63 →
+59), so it waits for the reader now.
 
 Decisions taken in the prototype:
 
@@ -220,6 +223,13 @@ the legend's source line says so.
   balance class.
 - The analytics defaults, the other maps and the prototype are unchanged.
   `api/budget-map.test.ts` fails if either series carries an `exclude`.
+
+**Credits (16 November 2026).** MapLibre's attribution control, bottom right
+(folded behind an „i" on a narrow map), credits MapLibre and the boundaries:
+„Limite UAT: ANCPI, prin geo-spatial.org, OGL-ROU 1.0", each a link. The UAT
+and county shapes in `public/geojson/` are ANCPI's, distributed by
+geo-spatial.org under the Romanian Open Government Licence v1.0, which asks
+for the source and where it was published.
 
 The SVG zoom engine the prototype produced is shared as
 `src/components/maps/svg-zoom/` (`useSvgMapZoom`), off unless enabled; the INS

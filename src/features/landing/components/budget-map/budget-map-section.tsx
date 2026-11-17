@@ -21,10 +21,11 @@ import { MapPicker } from './map-picker'
  * here, on the server too; the map itself (`budget-map.tsx`) is loaded
  * separately.
  *
- * - After the page has loaded and the browser is idle, everything the map
- *   needs is fetched at low priority (`prefetchBudgetMap`): its code, the
- *   shapes, the label points and the figures — so it is ready by the time the
- *   reader scrolls to it, without competing with the page.
+ * - When the reader scrolls to within about three screens of the band,
+ *   everything the map needs is fetched (`prefetchBudgetMap`): its code, the
+ *   shapes, the label points and the figures — so it is ready by the time they
+ *   reach it. Never during the page's own load: the ~0.8 MB and their parsing
+ *   cost a phone ~170 ms of blocking time (Lighthouse, 17 November 2026).
  * - The map — the WebGL context, the tiling — is created only when the band
  *   comes within about a screen of the view.
  *
@@ -39,7 +40,9 @@ const BudgetMap = lazy(loadMap)
 function MapPlace() {
   return (
     <div className="w-full">
-      <div className="mx-auto w-full bg-muted/30" style={{ maxWidth: 'calc(82vh * 1.4150)', aspectRatio: '1.415' }} />
+      <RuledFrame className="px-px sm:px-px">
+        <div className="mx-auto w-full bg-muted/30" style={{ maxWidth: 'calc(82vh * 1.4150)', aspectRatio: '1.415' }} />
+      </RuledFrame>
       <RuledFrame className="pt-4 pb-14">
         <div className="h-36 sm:h-28" />
       </RuledFrame>
@@ -71,9 +74,14 @@ function MapFailed({ error }: { readonly error: Error }) {
 
 export function BudgetMapSection() {
   const queryClient = useQueryClient()
-  useEffect(() => prefetchBudgetMap(queryClient, loadMap), [queryClient])
-  // About a screen ahead of the reader: everything is in by the time they arrive.
-  const { ref, inView: near } = useInView({ rootMargin: '800px 0px', triggerOnce: true })
+  // Three screens ahead the files start; one screen ahead the map is built.
+  const { ref: approachRef, inView: approaching } = useInView({ rootMargin: '2400px 0px', triggerOnce: true })
+  useEffect(() => (approaching ? prefetchBudgetMap(queryClient, loadMap) : undefined), [approaching, queryClient])
+  const { ref: nearRef, inView: near } = useInView({ rootMargin: '800px 0px', triggerOnce: true })
+  const ref = (node: HTMLElement | null) => {
+    approachRef(node)
+    nearRef(node)
+  }
   // The picked map lives in the address (`?harta=`), so a link reopens it.
   const search = useSearch({ strict: false }) as { readonly harta?: string }
   const measureId: MeasureId = measureFromSearch(search.harta) ?? 'balance'

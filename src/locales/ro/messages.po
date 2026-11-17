@@ -7862,7 +7862,7 @@ msgstr "aprobat"
 msgid "Aprobat în lege"
 msgstr "Aprobat în lege"
 
-#: src/features/landing/components/budget-map/budget-map.tsx:137
+#: src/features/landing/components/budget-map/budget-map.tsx:149
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:233
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:233
 msgid "Apropie"
@@ -7973,6 +7973,10 @@ msgstr "Arată primele {0}"
 #: src/features/parliament/components/parliament-stenogram-filter-notice.tsx:82
 msgid "Arată stenograma integrală"
 msgstr ""
+
+#: src/features/landing/components/budget-map/budget-map.tsx:100
+msgid "Arată sursele hărții"
+msgstr "Arată sursele hărții"
 
 #: src/features/ngos/registry/components/registry-answer.tsx:520
 msgid "Arată toate ({rowCount})"
@@ -17015,7 +17019,7 @@ msgstr "Denumirile stărilor sunt din nomenclatorul aplicației, nu etichete pub
 msgid "Deocamdată căutarea funcționează după numărul actului (de exemplu „Legea 53/2003”) și după denumirea lui (de exemplu „Codul muncii”). Căutarea după expresii din textul legilor — cum ar fi „concediu de odihnă” — nu este încă disponibilă, așa că lipsa rezultatelor nu spune nimic despre existența prevederii."
 msgstr "Deocamdată căutarea funcționează după numărul actului (de exemplu „Legea 53/2003”) și după denumirea lui (de exemplu „Codul muncii”). Căutarea după expresii din textul legilor — cum ar fi „concediu de odihnă” — nu este încă disponibilă, așa că lipsa rezultatelor nu spune nimic despre existența prevederii."
 
-#: src/features/landing/components/budget-map/budget-map.tsx:140
+#: src/features/landing/components/budget-map/budget-map.tsx:152
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:236
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:236
 msgid "Depărtează"
@@ -22836,7 +22840,7 @@ msgstr "Focalizează selectorul de an în detaliile entității"
 msgid "Follow the money"
 msgstr "Urmărește banii"
 
-#: src/features/landing/components/budget-map/budget-map.tsx:87
+#: src/features/landing/components/budget-map/budget-map.tsx:97
 msgid "Folosește ⌘ + scroll pentru zoom pe hartă"
 msgstr "Folosește ⌘ + scroll pentru zoom pe hartă"
 
@@ -22844,11 +22848,11 @@ msgstr "Folosește ⌘ + scroll pentru zoom pe hartă"
 #~ msgid "Folosește acest exemplu"
 #~ msgstr "Folosește acest exemplu"
 
-#: src/features/landing/components/budget-map/budget-map.tsx:86
+#: src/features/landing/components/budget-map/budget-map.tsx:96
 msgid "Folosește Ctrl + scroll pentru zoom pe hartă"
 msgstr "Folosește Ctrl + scroll pentru zoom pe hartă"
 
-#: src/features/landing/components/budget-map/budget-map.tsx:88
+#: src/features/landing/components/budget-map/budget-map.tsx:98
 msgid "Folosește două degete pentru a muta harta"
 msgstr "Folosește două degete pentru a muta harta"
 
@@ -23705,16 +23709,16 @@ msgid "Hartă investiții"
 msgstr ""
 
 #: src/features/landing/components/budget-map/budget-map-section.tsx:61
-#: src/features/landing/components/budget-map/budget-map.tsx:119
+#: src/features/landing/components/budget-map/budget-map.tsx:131
 msgid "Harta nu poate fi afișată în acest browser."
 msgstr "Harta nu poate fi afișată în acest browser."
 
 #: src/features/landing/components/budget-map/budget-map-section.tsx:61
-#: src/features/landing/components/budget-map/budget-map.tsx:119
+#: src/features/landing/components/budget-map/budget-map.tsx:131
 msgid "Harta nu s-a putut încărca."
 msgstr "Harta nu s-a putut încărca."
 
-#: src/features/landing/components/budget-map/budget-map.tsx:89
+#: src/features/landing/components/budget-map/budget-map.tsx:99
 msgid "Harta primăriilor"
 msgstr "Harta primăriilor"
 
@@ -25258,7 +25262,7 @@ msgstr "Încasările bugetului general consolidat (toate bugetele publice, făr�
 #: src/features/justice/components/company-litigation.tsx:131
 #: src/features/justice/components/court/justice-court-cases.tsx:64
 #: src/features/landing/components/budget-map/budget-map-section.tsx:64
-#: src/features/landing/components/budget-map/budget-map.tsx:154
+#: src/features/landing/components/budget-map/budget-map.tsx:166
 #: src/features/landing/components/search/deferred-landing-search.tsx:291
 #: src/features/legal/components/legislation-act-finder.tsx:317
 #: src/features/legal/components/legislation-acts-directory.tsx:377
@@ -28146,6 +28150,10 @@ msgstr "Luminos"
 #: src/features/ngos/components/ngo-landing-page.tsx:395
 #~ msgid "Limite cunoscute"
 #~ msgstr ""
+
+#: src/features/landing/components/budget-map/budget-map.tsx:101
+msgid "Limite UAT: ANCPI, prin"
+msgstr "Limite UAT: ANCPI, prin"
 
 #: src/features/legal/components/act-provenance-notes.tsx:159
 msgid "Limitele acestor date, spuse pe față."
@@ -41428,7 +41436,7 @@ msgstr "Se încarcă cuprinsul…"
 msgid "Se încarcă edițiile Monitorului Oficial"
 msgstr "Se încarcă edițiile Monitorului Oficial"
 
-#: src/features/landing/components/budget-map/budget-map.tsx:119
+#: src/features/landing/components/budget-map/budget-map.tsx:131
 msgid "Se încarcă harta…"
 msgstr "Se încarcă harta…"
 
@@ -46475,7 +46483,7 @@ msgstr "De Plată"
 #~ msgid "Toată lista"
 #~ msgstr "Toată lista"
 
-#: src/features/landing/components/budget-map/budget-map.tsx:143
+#: src/features/landing/components/budget-map/budget-map.tsx:155
 msgid "Toată țara"
 msgstr "Toată țara"
 
