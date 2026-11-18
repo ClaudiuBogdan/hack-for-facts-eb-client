@@ -52,6 +52,17 @@ export function daSuppliersUnavailableText(): string {
   return t`Firmele achizițiilor directe nu sunt disponibile acum: platforma le arată din nou odată cu datele noi ale achizițiilor directe.`
 }
 
+/**
+ * A direct-purchase supplier bucket as the page may keep it: a company's as
+ * served; any other's key replaced before it is cached or rendered — the
+ * group keeps its reserved key, one unclassified supplier gets a neutral one
+ * (`unnamed-3`), never its CUI.
+ */
+export function scrubDaSupplierBucket<B extends { readonly key: string | null; readonly displayKind?: string | null }>(bucket: B, index: number): B {
+  if (bucket.key === null || isNamedDaSupplierBucket(bucket) || isNaturalPersonKey(bucket.key)) return bucket
+  return { ...bucket, key: `unnamed-${index}` }
+}
+
 /** A direct-acquisition supplier bucket the page does not name: the group, or one supplier the API did not serve as a company. */
 export function unnamedSupplierLabel(key: string | null): string {
   return isNaturalPersonKey(key) ? naturalPersonsLabel() : t`Furnizor nenumit`

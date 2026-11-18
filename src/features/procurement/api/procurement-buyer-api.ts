@@ -35,7 +35,7 @@ import { FRAMEWORKS_SCOPE } from '../lib/analytics-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, homeYear, truncatePartYear, type YearPoint } from '../lib/home-model'
 import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
-import { isNamedDaSupplierBucket } from '../lib/withheld-party'
+import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
  * One buyer's page, read as:
@@ -284,7 +284,11 @@ export function mapBuyerProfile(
     partYear: directYears.some((point) => point.year === part) || awardYears.some((point) => point.year === part) ? part : null,
     cutoff: partThrough ? { direct: partThrough, contract: partThrough } : cutoff,
     directMonths: monthFigures(series('directMonthsValue'), series('directMonthsCount'), period.months),
-    directSuppliers: raw.directSuppliers === undefined ? null : supplierRanking(breakdown('directSuppliers')),
+    // D6: an unclassified supplier's CUI never enters the profile the page keeps and serialises.
+    directSuppliers:
+      raw.directSuppliers === undefined
+        ? null
+        : supplierRanking(breakdown('directSuppliers').map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null }))),
     awardSuppliers: supplierRanking(breakdown('awardSuppliers')),
     categories: { direct: tree('direct'), contract: tree('awards') },
     supplierCounties: counties,

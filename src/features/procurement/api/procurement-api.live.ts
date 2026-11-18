@@ -10,7 +10,7 @@
  * mappers (`crossDomain: null`, `perLotWinners`/`ted` only when the server
  * sends them) — documented gaps, never fabrication.
  */
-import { isNaturalPersonKey } from '../lib/withheld-party'
+import { isNamedDaSupplierBucket, isNaturalPersonKey } from '../lib/withheld-party'
 import type {
   AuthorityProcurementSlice,
   ProcurementRecordSummary,
@@ -177,8 +177,9 @@ async function loadPartyNames(
   ] as const) {
     for (const block of blocks) {
       for (const bucket of block.buckets ?? []) {
-        // D6: the withheld group of suppliers has no name to look up.
+        // D6: a direct-purchase supplier has a name to look up only when the API serves it as a company.
         if (bucket.key === null || isNaturalPersonKey(bucket.key)) continue
+        if (dimension === 'supplier' && block.grain === 'direct_acquisition' && !isNamedDaSupplierBucket(bucket)) continue
         const cacheKey = `${dimension}:${bucket.key}`
         const kept = cachedPartyName(cacheKey, now)
         if (kept === undefined) {

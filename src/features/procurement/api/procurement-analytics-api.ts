@@ -17,7 +17,7 @@ import {
   type ResolvedPeriod,
 } from '../lib/analytics-model'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { isNamedDaSupplier, isNamedDaSupplierBucket, isNaturalPersonKey } from '../lib/withheld-party'
+import { isNamedDaSupplier, isNamedDaSupplierBucket, isNaturalPersonKey, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
  * The analytics page's reads. A query compiles to independent reads, each
@@ -258,7 +258,10 @@ export async function readRanking(scope: Scope, dimension: Dimension, topN: numb
     { operationName: 'AnalyticsRanking', signal },
   )
   const block = breakdownSchema.parse(raw.r)[0]
-  return { dimension, rankedBy: block?.rankedBy === 'value' ? 'value' : 'count', buckets: block ? bucketsOf(block) : [], withheld: block?.valueWithheldAssociationSum ?? null }
+  // D6: an unclassified direct-purchase supplier's CUI never enters the ranking the page keeps and serialises.
+  const scrub = scope.grain === 'direct_acquisition' && dimension === 'supplier'
+  const buckets = block ? bucketsOf(block) : []
+  return { dimension, rankedBy: block?.rankedBy === 'value' ? 'value' : 'count', buckets: scrub ? buckets.map(scrubDaSupplierBucket) : buckets, withheld: block?.valueWithheldAssociationSum ?? null }
 }
 
 const seriesSchema = z.array(z.object({ points: z.array(z.object({ bucket: z.string(), value: decimal })).nullable() }))

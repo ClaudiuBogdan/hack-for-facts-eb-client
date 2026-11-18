@@ -12,7 +12,7 @@
 import { daSupplierFiguresOpen } from './procurement-da-release-status'
 import { readLargestDirect } from './procurement-direct-records'
 import { partyOf } from '../lib/home-party'
-import { isNamedDaSupplierBucket } from '../lib/withheld-party'
+import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 import type { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -199,7 +199,8 @@ export function mapProcurementHomeNational(raw: RawProcurementHomeNational, year
       suppliers: raw.directSellerCount ? seriesValue(raw.directSellerCount, bucket) : null,
     },
     buyers: { contract: ranking(raw.awardsBuyers, party('authority')), direct: ranking(raw.directBuyers, party('authority')) },
-    directSellers: raw.directSellers ? ranking(raw.directSellers, party('supplier')) : null,
+    // D6: an unclassified supplier's CUI never enters the read the page keeps and serialises.
+    directSellers: raw.directSellers ? ranking(raw.directSellers.map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null })), party('supplier')) : null,
     procedures: ranking(raw.procedures, (key) => key),
     counties: { contract: counties(raw.awardsCounties), direct: counties(raw.directCounties) },
     directYears: truncatePartYear(years(raw.directYearValue, raw.directYearCount), directMonths, year + 1, directCutoff),

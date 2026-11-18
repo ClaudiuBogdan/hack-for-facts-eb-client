@@ -180,3 +180,24 @@ describe('D6 enforced while the release is off', () => {
     }
   })
 })
+
+describe('D6: an unclassified supplier never enters the kept ranking', () => {
+  it('its CUI is replaced before the ranking is cached; a company’s and the group’s stand', async () => {
+    graphql.query.mockResolvedValueOnce({
+      r: [
+        {
+          rankedBy: 'value',
+          valueWithheldAssociationSum: null,
+          buckets: [
+            { key: '14837428', kind: 'top', displayKind: 'company', recordCount: '3', withValueCount: '3', valueSum: '300', shareOfScope: '0.3' },
+            { key: '1234567890123', kind: 'top', displayKind: null, recordCount: '2', withValueCount: '2', valueSum: '200', shareOfScope: '0.2' },
+            { key: 'natural_person', kind: 'top', displayKind: 'natural_person', recordCount: '9', withValueCount: '9', valueSum: '900', shareOfScope: '0.5' },
+          ],
+        },
+      ],
+    })
+    const ranking = await readRanking({ grain: 'direct_acquisition', from: '2025-01', to: '2025-12' }, 'supplier', 25, 'value', null, new AbortController().signal)
+    expect(ranking.buckets.map((bucket) => bucket.key)).toEqual(['14837428', 'unnamed-1', 'natural_person'])
+    expect(JSON.stringify(ranking)).not.toContain('1234567890123')
+  })
+})
