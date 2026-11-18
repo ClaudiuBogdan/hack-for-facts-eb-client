@@ -1,10 +1,12 @@
 import { entityInsSourceSearchSchema } from "@/lib/ins/entity-source-search";
 import { z } from "zod";
-import { AnalyticsFilterSchema, Currency, defaultYearRange, Normalization } from "@/schemas/charts";
+import { analyticsFilterSchema, currencySchema, normalizationSchema } from "@/schemas/analytics-filter-search";
+import { defaultYearRange } from "@/schemas/chart-defaults";
+import { lazySchema, type LazyOutput } from "@/lib/route-contract";
 import { GqlReportTypeEnum } from "@/schemas/reporting";
 
 
-export const entitySearchSchema = z.object({
+export const entitySearchSchema = lazySchema(() => z.object({
     lang: z
         .enum(['ro', 'en'])
         .optional()
@@ -57,17 +59,17 @@ export const entitySearchSchema = z.object({
         .enum(['income', 'expense'])
         .optional()
         .describe('Quick analytics data type.'),
-    mapFilters: AnalyticsFilterSchema
+    mapFilters: analyticsFilterSchema.schema()
         .optional()
         .describe('Advanced heatmap filters for the Map view (see AnalyticsFilterSchema).'),
     analytics: z
         .unknown()
         .optional()
         .describe('Challenge-style budget item analytics modal state.'),
-    normalization: Normalization
+    normalization: normalizationSchema.schema()
         .optional()
         .describe('Value normalization. total, per_capita, percent_gdp. total_euro and per_capita_euro are legacy (prefer currency=EUR).'),
-    currency: Currency
+    currency: currencySchema.schema()
         .optional()
         .describe('Output currency (RON, EUR, USD). Ignored for percent_gdp.'),
     inflation_adjusted: z
@@ -176,6 +178,6 @@ export const entitySearchSchema = z.object({
     insSearch: z.string().optional(),
     insRoot: z.coerce.string().optional(),
     insExplorer: z.string().optional(),
-});
+}));
 
-export type EntitySearchSchema = z.infer<typeof entitySearchSchema>;
+export type EntitySearchSchema = LazyOutput<typeof entitySearchSchema>;

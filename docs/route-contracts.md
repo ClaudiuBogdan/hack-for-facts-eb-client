@@ -110,6 +110,7 @@ of three passes. These are not browser numbers, but they rank modules consistent
 | Before (79ea80f4) | 185 | 1,872 KB | 183 ms | legislation 17.8 ms (first) |
 | Legislation migrated | 181 | 1,846 KB | 159 ms | legislation 0.8 ms |
 | Batch 1 (below) | 164 | 1,638 KB | | |
+| Batch 2 through charts and company analytics | 156 | 1,441 KB | | 0 Zod instances from the chart, filter and company-scope contracts at module evaluation |
 
 Families by start-up evaluation before the migration (ms, the same harness): legislation 17.5, the statistics
 hub hooks 13.5, campaigns 12.9, certificates 10.3, advanced map analytics 10.0, companies 8.6, the primărie
@@ -138,7 +139,22 @@ and `lib/` (11.1) are not route families: they are looked at last.
     `features/procurement/lib/legacy-links.ts` (a test keeps the keys equal to the explorer schema's); the
     translation of an old explorer link is imported only when one is redirected (`beforeLoad` became async).
   - **Company profile:** `schemas/private-company-profile-search.ts`.
-  - Still at start-up and left for later: `schemas/charts.ts` (the entity page's core imports it — supervised),
-    `schemas/advanced-map-analytics.ts` (through the public map route, whose request must start at the click),
-    `schemas/private-company.ts` (now only through the NGO page's head).
+  - At the end of batch 1, charts, the public map's decoder and the private-company profile schemas were still eager.
+- **2026-11-18, batch 2.** Following the NGO registry, company profile head, justice and elections migrations,
+  **charts and company analytics** left the static graph. A chart URL contains the whole editable document,
+  including recursive calculations and company scopes. The router builds its validator synchronously on first
+  use. Data and storage callers still receive concrete Zod schemas from `schemas/charts.ts`. Entity, alert and
+  heatmap filters share the first-use filter contract. Default years and company link keys have independent imports.
+  - The shell fetches the entity search input on idle or dialog open. A failed load can be retried in the dialog.
+  - The public map keeps its static transport. It starts the HTTP request and imports the response decoder in
+    parallel. The advanced map schemas left the static graph along with the chart schemas.
+  - All three validation interfaces matched across 131,985 schema/input pairs (66 validators). The router's
+    inferred search input and output types matched for all seven checked contracts.
+  - The production client entry and its static imports totaled 1,441,107 bytes across 156 chunks. In an
+    isolated evaluation of those chunks before hydration, Zod constructed 1,129 schema instances. The source
+    guard's direct module-scope `z.method(...)` call sites fell from 1,293 to 498 against `650ab0de2`.
+    Only the client and SSR compilation stages completed in the isolated measurement build.
+- **Still at start-up.** PNRR (309 schema instances), the redesign entity API (143) and public investments
+  (130) are the largest remaining builders in that evaluation. The public map still carries its small API
+  envelope and its request code. The chart document's synchronous validation code still ships in the static graph.
 

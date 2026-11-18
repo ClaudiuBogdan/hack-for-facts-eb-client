@@ -2,7 +2,7 @@ import type { AnnualPopulation } from './annual-population';
 import { graphqlRequest } from "./graphql";
 import { createLogger } from "../logger";
 import { EntitySearchResult, EntitySearchNode } from "@/schemas/entities";
-import { AnalyticsSeries } from "@/schemas/charts";
+import type { AnalyticsSeries } from "@/schemas/charts";
 import { GqlReportType, ReportPeriodInput } from "@/schemas/reporting";
 import type { NormalizationOptions } from "@/lib/normalization";
 import {

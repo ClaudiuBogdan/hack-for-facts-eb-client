@@ -5,7 +5,7 @@ import {
   PRIVATE_COMPANY_DIRECTORY_SEARCH_KEYS,
   type PrivateCompanyDirectorySearchState,
 } from '@/schemas/private-company-search'
-import { urlSearchOfText, type CompanyAnalyticsSearch, type CompanyAnalyticsUrlSearch } from './company-analytics-url'
+import { urlSearchOfText, type CompanyAnalyticsSearch, type CompanyAnalyticsUrlSearch } from './company-analytics-search'
 import { foldCountyName } from './county-names'
 
 /**

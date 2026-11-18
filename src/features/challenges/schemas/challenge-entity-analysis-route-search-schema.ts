@@ -1,7 +1,7 @@
 import { entityInsSourceSearchSchema } from '@/lib/ins/entity-source-search'
 import { z } from 'zod'
 import { lazySchema, type LazyOutput } from '@/lib/route-contract'
-import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
+import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/chart-defaults'
 import {
   DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
   normalizeChallengeEntityMapPreviewKey,
@@ -15,7 +15,7 @@ import {
   type BudgetItemAnalyticsSearchStateInput,
   type BudgetItemAnalyticsSearchState,
 } from '@/features/challenges/components/analysis/budget-item-analytics-search-state'
-import { CommitmentsMetricEnum } from '@/schemas/charts'
+import { commitmentsMetricSchema } from '@/schemas/analytics-filter-search'
 import { parseSearchParamJson } from '@/lib/router-search'
 import type { ReportPeriodType, TMonth, TQuarter } from '@/schemas/reporting'
 
@@ -128,7 +128,7 @@ export const ChallengeEntityAnalysisRouteSearchSchema = lazySchema(() => {
   const ChallengeEntityAnalyticsViewSchema = z.object({
     tab: z.enum(['execution', 'commitments']).optional(),
     timeframe: z.enum(['selected', 'all']).optional(),
-    commitmentsMetric: CommitmentsMetricEnum.optional(),
+    commitmentsMetric: commitmentsMetricSchema.schema().optional(),
   })
 
   const ChallengeEntityAnalyticsSearchStateSchema = z.object({
@@ -216,27 +216,7 @@ export type ChallengeEntityAnalysisUrlState = {
 }
 
 const TREEMAP_PATH_CODE_PATTERN = /^\d+(?:\.\d+)*$/
-const CHALLENGE_ENTITY_VIEW_SET = new Set(CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES)
-const CHALLENGE_ENTITY_COMMITMENTS_GROUPING_SET = new Set(
-  CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_GROUPING_VALUES,
-)
-const CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET = new Set(
-  CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_DETAIL_LEVEL_VALUES,
-)
-const CHALLENGE_ENTITY_PERIOD_SET = new Set(
-  CHALLENGE_ENTITY_ANALYSIS_PERIOD_VALUES,
-)
-const CHALLENGE_ENTITY_TREEMAP_DEPTH_SET = new Set(
-  CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES,
-)
-const CHALLENGE_ENTITY_PRIMARY_SET = new Set(['fn', 'ec'] as const)
-const CHALLENGE_ENTITY_EXPENSE_TYPE_SET = new Set(
-  CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
-)
-const CHALLENGE_ENTITY_MONTH_SET = new Set(CHALLENGE_ENTITY_ANALYSIS_MONTH_VALUES)
-const CHALLENGE_ENTITY_QUARTER_SET = new Set(
-  CHALLENGE_ENTITY_ANALYSIS_QUARTER_VALUES,
-)
+const CHALLENGE_ENTITY_PRIMARY_VALUES = ['fn', 'ec'] as const
 
 function normalizePathCode(code: string): string {
   return code.trim()
@@ -272,7 +252,7 @@ function isValidPathCode(code: string): boolean {
 function normalizeChallengeEntityAnalysisView(
   view: string | undefined,
 ): ChallengeEntityAnalysisView {
-  if (view && CHALLENGE_ENTITY_VIEW_SET.has(view as ChallengeEntityAnalysisView)) {
+  if (view && CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES.includes(view as ChallengeEntityAnalysisView)) {
     return view as ChallengeEntityAnalysisView
   }
 
@@ -282,7 +262,7 @@ function normalizeChallengeEntityAnalysisView(
 function normalizePeriod(
   period: string | undefined,
 ): ReportPeriodType {
-  if (period && CHALLENGE_ENTITY_PERIOD_SET.has(period as ReportPeriodType)) {
+  if (period && CHALLENGE_ENTITY_ANALYSIS_PERIOD_VALUES.includes(period as ReportPeriodType)) {
     return period as ReportPeriodType
   }
 
@@ -292,7 +272,7 @@ function normalizePeriod(
 function normalizeMonth(
   month: string | undefined,
 ): TMonth {
-  if (month && CHALLENGE_ENTITY_MONTH_SET.has(month as TMonth)) {
+  if (month && CHALLENGE_ENTITY_ANALYSIS_MONTH_VALUES.includes(month as TMonth)) {
     return month as TMonth
   }
 
@@ -302,7 +282,7 @@ function normalizeMonth(
 function normalizeQuarter(
   quarter: string | undefined,
 ): TQuarter {
-  if (quarter && CHALLENGE_ENTITY_QUARTER_SET.has(quarter as TQuarter)) {
+  if (quarter && CHALLENGE_ENTITY_ANALYSIS_QUARTER_VALUES.includes(quarter as TQuarter)) {
     return quarter as TQuarter
   }
 
@@ -321,7 +301,7 @@ function normalizeCommitmentsGrouping(
 ): ChallengeEntityAnalysisCommitmentsGrouping | undefined {
   if (
     grouping &&
-    CHALLENGE_ENTITY_COMMITMENTS_GROUPING_SET.has(
+    CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_GROUPING_VALUES.includes(
       grouping as ChallengeEntityAnalysisCommitmentsGrouping,
     )
   ) {
@@ -336,7 +316,7 @@ function normalizeCommitmentsDetailLevel(
 ): ChallengeEntityAnalysisCommitmentsDetailLevel | undefined {
   if (
     detailLevel &&
-    CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET.has(
+    CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_DETAIL_LEVEL_VALUES.includes(
       detailLevel as ChallengeEntityAnalysisCommitmentsDetailLevel,
     )
   ) {
@@ -351,7 +331,7 @@ function normalizeTreemapDepth(
 ): ChallengeEntityAnalysisTreemapDepth {
   if (
     depth &&
-    CHALLENGE_ENTITY_TREEMAP_DEPTH_SET.has(
+    CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES.includes(
       depth as ChallengeEntityAnalysisTreemapDepth,
     )
   ) {
@@ -362,7 +342,7 @@ function normalizeTreemapDepth(
 }
 
 function normalizePrimary(primary: string | undefined): 'fn' | 'ec' {
-  if (primary && CHALLENGE_ENTITY_PRIMARY_SET.has(primary as 'fn' | 'ec')) {
+  if (primary && CHALLENGE_ENTITY_PRIMARY_VALUES.includes(primary as 'fn' | 'ec')) {
     return primary as 'fn' | 'ec'
   }
 
@@ -374,7 +354,7 @@ function normalizeExpenseType(
 ): ChallengeEntityAnalysisExpenseType | undefined {
   if (
     expenseType &&
-    CHALLENGE_ENTITY_EXPENSE_TYPE_SET.has(
+    CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES.includes(
       expenseType as ChallengeEntityAnalysisExpenseType,
     )
   ) {

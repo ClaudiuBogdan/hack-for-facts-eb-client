@@ -3,8 +3,7 @@ import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails'
 import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import { isCancelledError } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { z } from 'zod'
-import { entitySearchSchema } from '@/components/entities/validation'
+import { entitySearchSchema, type EntitySearchSchema } from '@/components/entities/validation'
 import {
   abandonServerQuery,
   buildEntityPageLoaderPayload,
@@ -32,7 +31,7 @@ import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-c
 import { readClientCurrencyPreference, readClientInflationAdjustedPreference } from '@/lib/user-preferences'
 import { toExecutionReportType } from '@/schemas/reporting'
 
-export type EntitySearchSchema = z.infer<typeof entitySearchSchema>
+export type { EntitySearchSchema } from '@/components/entities/validation'
 
 type EntityPageBootstrapPayload = {
   readonly executionContext: EntityPageExecutionContext

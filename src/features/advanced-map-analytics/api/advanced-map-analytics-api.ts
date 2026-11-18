@@ -2,17 +2,13 @@ import { getAuthToken } from '@/lib/auth';
 import { getApiBaseUrl } from '@/config/env';
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
-import {
-  parseEnvelope,
-  normalizeMapDetail,
-  normalizeMapList,
-  normalizeSnapshot,
-  normalizeSnapshotsList,
-  type AdvancedMapAnalyticsMapDetail,
-  type AdvancedMapAnalyticsMapSummary,
-  type AdvancedMapAnalyticsSnapshot,
-  type AdvancedMapAnalyticsSnapshotsList,
-  type AdvancedMapAnalyticsVisibility,
+import { parseEnvelope } from './envelope';
+import type {
+  AdvancedMapAnalyticsMapDetail,
+  AdvancedMapAnalyticsMapSummary,
+  AdvancedMapAnalyticsSnapshot,
+  AdvancedMapAnalyticsSnapshotsList,
+  AdvancedMapAnalyticsVisibility,
 } from './schemas';
 
 const OWNER_BASE_ENDPOINT = '/api/v1/advanced-map-analytics';
@@ -235,6 +231,7 @@ export async function createAdvancedMapAnalyticsMap(
     }),
   });
 
+  const { normalizeMapDetail } = await import('./schemas');
   return normalizeMapDetail(unwrapData(payload));
 }
 
@@ -243,6 +240,7 @@ export async function listAdvancedMapAnalyticsMaps(): Promise<AdvancedMapAnalyti
     method: 'GET',
   });
 
+  const { normalizeMapList } = await import('./schemas');
   return normalizeMapList(unwrapData(payload));
 }
 
@@ -251,6 +249,7 @@ export async function getAdvancedMapAnalyticsMap(mapId: string): Promise<Advance
     method: 'GET',
   });
 
+  const { normalizeMapDetail } = await import('./schemas');
   return ensureBundledGroupedSeriesData(normalizeMapDetail(unwrapData(payload)), 'owner');
 }
 
@@ -270,6 +269,7 @@ export async function updateAdvancedMapAnalyticsMap(
     }),
   });
 
+  const { normalizeMapDetail } = await import('./schemas');
   return normalizeMapDetail(unwrapData(payload));
 }
 
@@ -309,6 +309,7 @@ export async function createAdvancedMapAnalyticsSnapshot(
 
   const unwrapped = unwrapData(payload);
   const record = asRecord(unwrapped);
+  const { normalizeSnapshot } = await import('./schemas');
   return normalizeSnapshot(record.snapshot ?? unwrapped);
 }
 
@@ -332,6 +333,7 @@ export async function listAdvancedMapAnalyticsSnapshots(
     method: 'GET',
   });
 
+  const { normalizeSnapshotsList } = await import('./schemas');
   const list = normalizeSnapshotsList(unwrapData(payload));
 
   const hydratedSnapshots = await Promise.all(
@@ -368,6 +370,7 @@ export async function getAdvancedMapAnalyticsSnapshot(
     }
   );
 
+  const { normalizeSnapshot } = await import('./schemas');
   return normalizeSnapshot(unwrapData(payload));
 }
 
@@ -382,7 +385,11 @@ export async function deleteAdvancedMapAnalyticsMap(mapId: string): Promise<void
 
 export async function getPublicAdvancedMapAnalyticsMap(publicId: string): Promise<AdvancedMapAnalyticsMapDetail> {
   try {
-    const payload = await publicRequest(`/${encodeURIComponent(publicId)}`);
+    // Keep the request at the click. Fetch its decoder alongside the response.
+    const [payload, { normalizeMapDetail }] = await Promise.all([
+      publicRequest(`/${encodeURIComponent(publicId)}`),
+      import('./schemas'),
+    ]);
     return ensureBundledGroupedSeriesData(normalizeMapDetail(unwrapData(payload)), 'public');
   } catch (error) {
     if (

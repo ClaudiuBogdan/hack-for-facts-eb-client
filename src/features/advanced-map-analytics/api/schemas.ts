@@ -13,15 +13,6 @@ export type AdvancedMapAnalyticsVisibility = z.infer<typeof AdvancedMapAnalytics
 
 const IsoDateStringSchema = z.string().min(1);
 
-const EnvelopeSchema = z.object({
-  ok: z.boolean(),
-  data: z.unknown().optional(),
-  error: z.string().optional(),
-  message: z.string().optional(),
-  code: z.string().optional(),
-  details: z.unknown().optional(),
-});
-
 const ListPaginationSchema = z.object({
   page: z.number().int().optional(),
   pageSize: z.number().int().optional(),
@@ -65,9 +56,7 @@ export interface AdvancedMapAnalyticsSnapshotsList {
   hasNextPage: boolean;
 }
 
-export function parseEnvelope(payload: unknown): z.infer<typeof EnvelopeSchema> {
-  return EnvelopeSchema.parse(payload);
-}
+export { parseEnvelope } from './envelope';
 
 function readRecord(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null) {

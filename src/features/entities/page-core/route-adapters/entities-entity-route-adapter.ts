@@ -5,7 +5,7 @@ import {
   type ForcedOverrides,
   type NormalizationInput,
 } from '@/lib/globalSettings/params'
-import { DEFAULT_SELECTED_YEAR } from '@/schemas/charts'
+import { DEFAULT_SELECTED_YEAR } from '@/schemas/chart-defaults'
 import {
   type ExecutionGqlReportType,
   toExecutionReportType,

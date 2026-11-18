@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Analytics } from '@/lib/analytics'
-import { DEFAULT_CHART_CONFIG } from '@/schemas/constants'
+import { DEFAULT_CHART_CONFIG } from '@/schemas/chart-defaults'
 import type { Chart } from '@/schemas/charts'
 
 export const Route = createFileRoute('/charts/new')({

@@ -1,4 +1,4 @@
-import { defaultYearRange } from '@/schemas/charts'
+import { defaultYearRange } from '@/schemas/chart-defaults'
 import { getInitialFilterState, makeTrendPeriod, toExecutionReportType } from '@/schemas/reporting'
 import type { EntityPageExactQueryInputs, EntityPageExecutionContext } from '../types'
 

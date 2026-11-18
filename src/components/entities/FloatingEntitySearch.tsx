@@ -1,14 +1,94 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore, type ComponentProps } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { EntitySearchInput } from './EntitySearch';
+import type { EntitySearchInput } from './EntitySearch';
+import { reloadForFreshCode } from '@/lib/chunk-recovery';
+import { quietImport } from '@/lib/quiet-chunk-load';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { t } from '@lingui/core/macro';
 import { useNavigate } from '@tanstack/react-router';
-import { EntitySearchNode } from '@/schemas/entities';
+import type { EntitySearchNode } from '@/schemas/entities';
+
+type Input = typeof EntitySearchInput;
+type LoadState = 'idle' | 'loading' | 'failed' | Input;
+
+let state: LoadState = 'idle';
+const listeners = new Set<() => void>();
+
+function publish(next: LoadState) {
+    state = next;
+    for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void) {
+    listeners.add(listener);
+    return () => { listeners.delete(listener); };
+}
+
+/**
+ * The reader's „try again": a fresh page, as the landing search does, since the
+ * browser keeps a failed import failed for this document; offline, the fetch
+ * once more in place.
+ */
+function retryInput() {
+    if (reloadForFreshCode()) return;
+    loadInput(true);
+}
+
+function loadInput(retry = false) {
+    if (state !== 'idle' && !(retry && state === 'failed')) return;
+    publish('loading');
+    void quietImport(() => import('./EntitySearch')).then(
+        ({ EntitySearchInput }) => publish(EntitySearchInput),
+        () => publish('failed'),
+    );
+}
+
+const snapshot = () => state;
+const serverSnapshot = () => 'idle' as const;
+
+function usePrefetchEntitySearchInput() {
+    useEffect(() => {
+        if (state !== 'idle') return;
+        const prefetch = () => loadInput();
+        if (typeof window.requestIdleCallback === 'function') {
+            const id = window.requestIdleCallback(prefetch, { timeout: 3000 });
+            return () => window.cancelIdleCallback(id);
+        }
+        const id = window.setTimeout(prefetch, 1000);
+        return () => window.clearTimeout(id);
+    }, []);
+}
+
+/** The dialog mounts its contents only when opened. Opening wins over an idle prefetch. */
+function DeferredEntitySearchInput(props: ComponentProps<Input>) {
+    const Input = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
+    const [focusOnLoad, setFocusOnLoad] = useState<boolean>();
+
+    useEffect(() => { loadInput(); }, []);
+
+    if (typeof Input === 'function') return <Input {...props} autoFocus={focusOnLoad ?? props.autoFocus} />;
+
+    const failed = Input === 'failed';
+    return (
+        <div className="mx-auto w-full max-w-3xl pt-8">
+            <button
+                type="button"
+                aria-disabled={!failed}
+                onClick={failed ? retryInput : undefined}
+                onFocus={() => setFocusOnLoad(true)}
+                onBlur={() => setFocusOnLoad(false)}
+                className="min-h-14 w-full rounded-3xl border bg-background px-6 text-start shadow-sm"
+            >
+                <span role="status">{failed ? t`Căutarea nu a răspuns.` : t`Loading...`}</span>
+                {failed && <span className="ml-2 underline">{t`Încearcă din nou`}</span>}
+            </button>
+        </div>
+    );
+}
 
 interface FloatingEntitySearchProps {
     className?: string;
@@ -23,6 +103,7 @@ export function FloatingEntitySearch({ className, externalOpen, showButton, onOp
     const [hasMounted, setHasMounted] = useState(false);
     const isMobile = useIsMobile();
     const navigate = useNavigate();
+    usePrefetchEntitySearchInput();
 
     useEffect(() => {
         setHasMounted(true);
@@ -87,7 +168,7 @@ export function FloatingEntitySearch({ className, externalOpen, showButton, onOp
                     <DialogDescription className="sr-only">
                         {t`Search and select an entity to navigate to its page.`}
                     </DialogDescription>
-                    <EntitySearchInput
+                    <DeferredEntitySearchInput
                         onSelect={handleSelect}
                         autoFocus={hasMounted && !isMobile}
                         scrollToTopOnFocus={true}

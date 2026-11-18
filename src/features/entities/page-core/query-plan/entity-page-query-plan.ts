@@ -1,5 +1,5 @@
 import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails'
-import { defaultYearRange } from '@/schemas/charts'
+import { defaultYearRange } from '@/schemas/chart-defaults'
 import {
   getInitialFilterState,
   makeTrendPeriod,

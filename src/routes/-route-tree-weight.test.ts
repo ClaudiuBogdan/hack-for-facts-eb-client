@@ -26,8 +26,7 @@ const KEPT_OUT: readonly { readonly family: string; readonly modules: readonly R
     family: 'procurement',
     modules: [/^src\/schemas\/procurement-hub\.ts$/, /^src\/features\/procurement\/lib\/analytics-legacy\.ts$/],
   },
-  // The map previews' definitions, which build and parse four map states when they load. The map
-  // schemas themselves still load with `/maps/public/$mapId`, whose request must start at the click.
+  // The map previews' definitions build and parse four map states when they load.
   { family: 'entity page map previews', modules: [/^src\/features\/challenges\/components\/analysis\/challenge-entity-public-maps\.ts$/] },
   { family: 'NGO registry', modules: [/^src\/features\/ngos\/registry\/api\.ts$/] },
   // Reached by the NGO pages' and procurement analytics' heads only for a company's display name.
@@ -37,6 +36,15 @@ const KEPT_OUT: readonly { readonly family: string; readonly modules: readonly R
   },
   { family: 'justice', modules: [/^src\/schemas\/judicial\.ts$/] },
   { family: 'elections', modules: [/^src\/schemas\/elections-catalog\.ts$/] },
+  {
+    family: 'charts and company analytics',
+    modules: [
+      /^src\/schemas\/(charts|company-analytics|advanced-map-analytics|alerts)\.ts$/,
+      /^src\/components\/charts\/chartsStore\.ts$/,
+      /^src\/components\/entities\/EntitySearch\/index\.tsx$/,
+      /^src\/features\/private-companies\/lib\/company-analytics-url\.ts$/,
+    ],
+  },
 ]
 
 /**

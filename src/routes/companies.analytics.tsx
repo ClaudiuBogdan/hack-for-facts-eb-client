@@ -5,23 +5,7 @@ import { createNoStoreHeaders } from '@/lib/http-cache'
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { CompanyAnalyticsServerRead } from '@/features/private-companies/api/company-analytics-ssr'
-import { SEARCH_KEYS, type CompanyAnalyticsUrlSearch } from '@/features/private-companies/lib/company-analytics-url'
-
-/**
- * The keys the page reads, each a string or the number a digits-only value
- * travels as; the rest of an address (`lang`) is left to the site. A page key
- * the router parsed as something else stays as text, for the page to say it
- * could not read it.
- */
-function validateCompanyAnalyticsSearch(search: Record<string, unknown>): CompanyAnalyticsUrlSearch {
-  const valid: Record<string, string | number> = {}
-  for (const key of SEARCH_KEYS) {
-    const value = search[key]
-    if (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))) valid[key] = value
-    else if (value !== undefined && value !== null) valid[key] = typeof value === 'object' ? JSON.stringify(value) : String(value)
-  }
-  return valid
-}
+import { SEARCH_KEYS, validateCompanyAnalyticsSearch } from '@/features/private-companies/lib/company-analytics-search'
 
 /**
  * `/companies/analytics`: one question about companies' annual statements,

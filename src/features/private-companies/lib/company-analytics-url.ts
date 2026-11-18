@@ -26,6 +26,9 @@ import {
   type CompanyAnalysisScope,
   type CompanyAnalysisSizeBand,
 } from '@/schemas/company-analytics'
+import { SEARCH_KEYS, UNANSWERED_KEYS, urlSearchOfText, type CompanyAnalyticsSearch, type CompanyAnalyticsUrlSearch, type SearchKey } from './company-analytics-search'
+
+export { SEARCH_KEYS, UNANSWERED_KEYS, urlSearchOfText, type CompanyAnalyticsSearch, type CompanyAnalyticsUrlSearch, type SearchKey } from './company-analytics-search'
 
 /**
  * `/companies/analytics` — the question its address holds. Every choice on
@@ -167,64 +170,6 @@ const METRIC_BY_WORD = new Map(COMPANY_ANALYSIS_METRICS.map((metric) => [metricW
  * suggests them.
  */
 export const ANALYSIS_LEGAL_FORMS: readonly string[] = ['SRL', 'SA', 'SNC', 'SCS', 'SCA', 'RA', 'SC', 'SCE', 'SE', 'GIE', 'GEIE', 'INCD']
-
-/**
- * Keys the page reads only to say it does not answer them: a typed name
- * (`nume`) and an ONRC recorded-date range (`inregistrare`, `from~to`), which
- * an old directory link carried (`company-directory-redirect.ts`). The page
- * has no such filter; naming them keeps a wider answer from passing for the
- * question the link meant.
- */
-export const UNANSWERED_KEYS = ['nume', 'inregistrare'] as const
-
-/** Every key the page reads: the rest of an address (`lang`, the site's own) is left as it came. */
-export const SEARCH_KEYS = [
-  'an',
-  'indicator',
-  'mod',
-  'vedere',
-  'dupa',
-  'clasare',
-  'ordine',
-  'sens',
-  'cohorta',
-  'editie',
-  'cui',
-  'judet',
-  'uat',
-  'forma',
-  'stare',
-  'tva',
-  'inactiv',
-  'caen',
-  'caen_baza',
-  // The derived activity selection (v3): exact `onrc:rev2:6201` / `anaf:6201`, and its basis.
-  'activitate',
-  'activitate_baza',
-  // The ANAF-assumed main activity (v4): its exact ONRC key `rev3:4711`, and its status.
-  'activitate_principala',
-  'activitate_principala_stare',
-  'depunere',
-  'interval',
-  'marime',
-  // ONRC observations on one identifier (`scope.onrc`), apart from the consensus keys above.
-  'onrc_stare',
-  'onrc_judet',
-  'onrc_caen',
-  'onrc_caen_exact',
-  'onrc_fara_stare',
-  'onrc_fara_caen',
-  'onrc_fara_judet',
-  'onrc_fara_forma',
-  // Never answered (no such filter here): a name and a recorded-date range the retired directory's links carried.
-  ...UNANSWERED_KEYS,
-] as const
-export type SearchKey = (typeof SEARCH_KEYS)[number]
-
-/** The address's values as text: the router hands a digits-only value over as a number. */
-export type CompanyAnalyticsSearch = Readonly<Partial<Record<SearchKey, string>>>
-/** The address the router writes: strings, and the numbers digits-only values travel as. */
-export type CompanyAnalyticsUrlSearch = Readonly<Partial<Record<SearchKey, string | number>>>
 
 export function analyticsSearchOf(search: Readonly<Record<string, unknown>>): CompanyAnalyticsSearch {
   const strings: Partial<Record<SearchKey, string>> = {}
@@ -565,11 +510,6 @@ export function searchOf(state: CompanyAnalyticsState): CompanyAnalyticsSearch {
  */
 export function urlSearchOf(state: CompanyAnalyticsState): CompanyAnalyticsUrlSearch {
   return urlSearchOfText(searchOf(state))
-}
-
-/** An address in the page's words, as the router writes it: a digits-only value as a number. */
-export function urlSearchOfText(search: CompanyAnalyticsSearch): CompanyAnalyticsUrlSearch {
-  return Object.fromEntries(Object.entries(search).map(([key, value]) => [key, /^[1-9]\d{0,14}$/u.test(value) ? Number(value) : value])) as CompanyAnalyticsUrlSearch
 }
 
 // ──────────────────────────────────────────────────────────── changes ──

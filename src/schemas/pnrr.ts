@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Currency } from './charts'
+import { currencySchema } from './analytics-filter-search'
 
 export const RawPnrrProjectSchema = z
   .object({
@@ -464,7 +464,9 @@ export const PnrrSearchSchema = z.object({
     .default(PNRR_SEARCH_DEFAULTS.granularity),
   entityTypes: optionalEntityTypesSearchParam,
   beneficiaryTypes: z.array(z.enum(PNRR_BENEFICIARY_TYPE_VALUES)).optional(),
-  currency: Currency.optional(),
+  get currency() {
+    return currencySchema.schema().optional()
+  },
   includeNational: z
     .boolean()
     .optional()

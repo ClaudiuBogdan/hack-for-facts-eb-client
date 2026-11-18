@@ -1,7 +1,8 @@
 import entityCategoriesEn from "@/assets/entity-categories-en.json";
 import entityCategoriesRo from "@/assets/entity-categories-ro.json";
 import { getSiteUrl } from "@/config/env";
-import { DEFAULT_SELECTED_YEAR, type Currency, type Normalization } from "@/schemas/charts";
+import { DEFAULT_SELECTED_YEAR } from "@/schemas/chart-defaults";
+import type { Currency, Normalization } from "@/schemas/charts";
 import {
   resolveEntityPageRouteHeadContract,
   resolveEntityPageRoutePolicy,

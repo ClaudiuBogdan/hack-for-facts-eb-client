@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { AnalyticsFilterSchema, AnalyticsFilterType, createDefaultExecutionYearReportPeriod } from '@/schemas/charts';
+import { analyticsFilterSchema } from './analytics-filter-search';
+import { createDefaultExecutionYearReportPeriod } from './chart-defaults';
+import type { AnalyticsFilterType } from './charts';
 
 const MapViewEnum = z.enum(["map", "table", "chart"]);
 const MapViewTypeEnum = z.enum(["UAT", "County"]);
@@ -23,7 +25,9 @@ export const defaultMapFilters: AnalyticsFilterType = {
  */
 export const MapStateSchema = z.object({
   preset: z.enum(["expenses", "income", "balance", "local-taxes"]).optional().catch(undefined),
-  filters: AnalyticsFilterSchema.default(defaultMapFilters).catch(defaultMapFilters),
+  get filters() {
+    return analyticsFilterSchema.schema().default(defaultMapFilters).catch(defaultMapFilters);
+  },
   activeView: MapViewEnum.default("map").catch("map"),
   mapViewType: MapViewTypeEnum.default("UAT").catch("UAT"),
   // Persist and restore map view state via URL

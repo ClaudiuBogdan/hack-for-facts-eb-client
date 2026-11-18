@@ -1,4 +1,37 @@
 import { z } from 'zod'
+import {
+  COMPANY_ANALYSIS_METRICS,
+  COMPANY_ANALYSIS_SIZE_BANDS,
+  COMPANY_ANALYSIS_CAEN_BASES,
+  COMPANY_ANALYSIS_FLAG_VALUES,
+  COMPANY_ANALYSIS_COHORT_MODES,
+  COMPANY_ANALYSIS_ACTIVITY_BASES,
+  COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES,
+  COMPANY_ANALYSIS_RELEASE_ID_RE,
+  COMPANY_ANALYSIS_FILING,
+  COMPANY_ANALYSIS_ACTIVITY_SOURCES,
+  companyAnalysisOnrcSchema,
+  companyAnalysisRangeSchema,
+  companyAnalysisScopeSchema,
+  type CompanyAnalysisScope,
+} from './company-analysis-scope-route-contract'
+
+export {
+  COMPANY_ANALYSIS_METRICS,
+  COMPANY_ANALYSIS_SIZE_BANDS,
+  COMPANY_ANALYSIS_CAEN_BASES,
+  COMPANY_ANALYSIS_FLAG_VALUES,
+  COMPANY_ANALYSIS_COHORT_MODES,
+  COMPANY_ANALYSIS_ACTIVITY_BASES,
+  COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES,
+  COMPANY_ANALYSIS_RELEASE_ID_RE,
+  type CompanyAnalysisKeyFilterInput,
+  type CompanyAnalysisOnrcExcludeInput,
+  type CompanyAnalysisOnrcInput,
+  type CompanyAnalysisRangeInput,
+  type CompanyAnalysisScope,
+  type CompanyAnalysisScopeInput,
+} from './company-analysis-scope-route-contract'
 
 /**
  * Companies analytics — the API's vocabulary and answers, as the client reads
@@ -30,29 +63,6 @@ export const COMPANY_ANALYSIS_SCHEMA_VERSION_V4 = 'companies-analytics-ch-v4'
 export const COMPANY_ANALYSIS_SCHEMA_VERSIONS = [COMPANY_ANALYSIS_SCHEMA_VERSION, COMPANY_ANALYSIS_SCHEMA_VERSION_V3, COMPANY_ANALYSIS_SCHEMA_VERSION_V4] as const
 export const COMPANY_ANALYSIS_POPULATION_POLICY_VERSION = 'public-onrc-edition-legal-person-v2'
 
-export const COMPANY_ANALYSIS_METRICS = [
-  'TURNOVER',
-  'NET_PROFIT',
-  'NET_LOSS',
-  'EMPLOYEES',
-  'TOTAL_REVENUE',
-  'TOTAL_EXPENSES',
-  'GROSS_PROFIT',
-  'GROSS_LOSS',
-  'RECEIVABLES',
-  'CURRENT_ASSETS',
-  'FIXED_ASSETS',
-  'CASH_AND_BANK',
-  'PREPAID_EXPENSES',
-  'DEFERRED_INCOME',
-  'SUBSCRIBED_CAPITAL',
-  'INVENTORIES',
-  'DEBTS',
-  'PROVISIONS',
-  'TOTAL_EQUITY',
-  'PATRIMONY_REGIE',
-  'NET_RESULT',
-] as const
 export const CompanyAnalysisMetricZ = z.enum(COMPANY_ANALYSIS_METRICS)
 export type CompanyAnalysisMetric = z.infer<typeof CompanyAnalysisMetricZ>
 
@@ -79,20 +89,16 @@ export const COMPANY_ANALYSIS_STATUSES = ['REPORTED', 'MISSING', 'NOT_ADMITTED',
 export const CompanyAnalysisStatusZ = z.enum(COMPANY_ANALYSIS_STATUSES)
 export type CompanyAnalysisStatus = z.infer<typeof CompanyAnalysisStatusZ>
 
-export const COMPANY_ANALYSIS_SIZE_BANDS = ['UNAVAILABLE', 'NEGATIVE', 'ZERO', 'FROM_1_TO_9', 'FROM_10_TO_49', 'FROM_50_TO_249', 'FROM_250'] as const
 export const CompanyAnalysisSizeBandZ = z.enum(COMPANY_ANALYSIS_SIZE_BANDS)
 export type CompanyAnalysisSizeBand = z.infer<typeof CompanyAnalysisSizeBandZ>
 
-export const COMPANY_ANALYSIS_CAEN_BASES = ['REVISION_KNOWN', 'REVISION_UNKNOWN', 'MISSING'] as const
 export const CompanyAnalysisCaenBasisZ = z.enum(COMPANY_ANALYSIS_CAEN_BASES)
 export type CompanyAnalysisCaenBasis = z.infer<typeof CompanyAnalysisCaenBasisZ>
 
-/** An ANAF observation; UNKNOWN is a missing observation, never NO. */
-export const COMPANY_ANALYSIS_FLAG_VALUES = ['YES', 'NO', 'UNKNOWN'] as const
 export const CompanyAnalysisFlagValueZ = z.enum(COMPANY_ANALYSIS_FLAG_VALUES)
 export type CompanyAnalysisFlagValue = z.infer<typeof CompanyAnalysisFlagValueZ>
 
-export const CompanyAnalysisFilingZ = z.enum(['FILED', 'NOT_FILED'])
+export const CompanyAnalysisFilingZ = z.enum(COMPANY_ANALYSIS_FILING)
 export type CompanyAnalysisFiling = z.infer<typeof CompanyAnalysisFilingZ>
 
 /**
@@ -108,8 +114,6 @@ export const COMPANY_ANALYSIS_RANKINGS = ['METRIC_SUM', 'COMPANIES', 'FILERS', '
 export const CompanyAnalysisRankByZ = z.enum(COMPANY_ANALYSIS_RANKINGS)
 export type CompanyAnalysisRankBy = z.infer<typeof CompanyAnalysisRankByZ>
 
-/** EACH_YEAR re-applies the selected-year filters to every year; REFERENCE_YEAR follows the cohort selected in the scope's fiscal year. */
-export const COMPANY_ANALYSIS_COHORT_MODES = ['REFERENCE_YEAR', 'EACH_YEAR'] as const
 export const CompanyAnalysisCohortModeZ = z.enum(COMPANY_ANALYSIS_COHORT_MODES)
 export type CompanyAnalysisCohortMode = z.infer<typeof CompanyAnalysisCohortModeZ>
 
@@ -124,32 +128,13 @@ export type CompanyAnalysisGapReason = z.infer<typeof CompanyAnalysisGapReasonZ>
 
 // ──────────────────────────────────────────── derived activity (v3) ──
 
-/**
- * How a company's ONE activity was selected (v3). Every basis is a DERIVED
- * selection, never a principal activity a source published: the only
- * classified ONRC observation of the edition (not an exclusive
- * authorisation); one of several ONRC classes, chosen because ANAF's fiscal
- * code has the same digits; ANAF's fiscal code (its revision unpublished)
- * when the edition holds no class. The last three select nothing that may be
- * ranked as a sector: several classes without a unique match, an ANAF code
- * no catalog names (a source observation), and no qualified selection —
- * which is not "no activity".
- */
-export const COMPANY_ANALYSIS_ACTIVITY_BASES = [
-  'ONRC_SINGLE_CLASS',
-  'ONRC_CLASS_ANAF_NUMERIC_MATCH',
-  'ONRC_MULTIPLE_CLASSES',
-  'ANAF_FISCAL_CODE',
-  'ANAF_FISCAL_UNCATALOGUED',
-  'NO_QUALIFIED_SELECTION',
-] as const
 export const CompanyAnalysisActivityBasisZ = z.enum(COMPANY_ANALYSIS_ACTIVITY_BASES)
 export type CompanyAnalysisActivityBasis = z.infer<typeof CompanyAnalysisActivityBasisZ>
 
 /** The bases that select a named activity (a sector); the others are never ranked. */
 export const COMPANY_ANALYSIS_SELECTING_BASES: ReadonlySet<CompanyAnalysisActivityBasis> = new Set(['ONRC_SINGLE_CLASS', 'ONRC_CLASS_ANAF_NUMERIC_MATCH', 'ANAF_FISCAL_CODE'])
 
-export const CompanyAnalysisActivitySourceZ = z.enum(['ONRC', 'ANAF'])
+export const CompanyAnalysisActivitySourceZ = z.enum(COMPANY_ANALYSIS_ACTIVITY_SOURCES)
 export type CompanyAnalysisActivitySource = z.infer<typeof CompanyAnalysisActivitySourceZ>
 
 /** Whether a release offers the derived activity selection (its grouping and its filters). */
@@ -159,26 +144,6 @@ export function releaseOffersActivity(release: { readonly dimensions: readonly {
 
 // ─────────────────────────────────────── ANAF-assumed main activity (v4) ──
 
-/**
- * A company's ANAF-assumed main activity in a v4 release: ANAF's fiscal CAEN
- * token ASSUMED to be its main activity, matched to one exact ONRC class key
- * (`revision`, `code`; the revision is ONRC's, ANAF publishes none) — never a
- * principal activity ONRC published. The statuses are the profile's; only the
- * selecting ones name a key, the others are unclassified buckets
- * (`(<status>)`), never ranked.
- */
-export const COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES = [
-  'RESOLVED',
-  'RESOLVED_LATEST_REVISION',
-  'NO_ONRC_MATCH',
-  'UNRESOLVED_TOKEN_FORM',
-  'TOKEN_PLACEHOLDER',
-  'TOKEN_INVALID',
-  'SOURCE_MISSING',
-  'SOURCE_UNBOUND',
-  'CORRECTED',
-  'CORRECTION_WITHHELD',
-] as const
 export const CompanyAnalysisMainActivityStatusZ = z.enum(COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES)
 export type CompanyAnalysisMainActivityStatus = z.infer<typeof CompanyAnalysisMainActivityStatusZ>
 
@@ -189,9 +154,6 @@ export const COMPANY_ANALYSIS_MAIN_SELECTING_STATUSES: ReadonlySet<CompanyAnalys
 export function releaseOffersMainActivity(release: { readonly dimensions: readonly { readonly dimension: CompanyAnalysisDimension }[] }): boolean {
   return release.dimensions.some((entry) => entry.dimension === 'MAIN_ACTIVITY')
 }
-
-/** A release id: a positive integer as text (the API's `BigInt`, which it only accepts as a string). */
-export const COMPANY_ANALYSIS_RELEASE_ID_RE = /^[1-9]\d{0,15}$/u
 
 // ──────────────────────────────────────────────────────── ONRC edition ──
 
@@ -262,102 +224,9 @@ export type CompanyAnalysisSource = z.infer<typeof CompanyAnalysisSourceZ>
 
 // ─────────────────────────────────────────────────────────────── scope ──
 
-/**
- * A CONSENSUS bucket selector (county, UAT, observed status) of the pinned
- * edition: a value key, or a basis key `(multiple_values)` — exactly the
- * breakdown bucket of that key. `includeUnknown` selects every basis bucket
- * (no consensus value), never an absence.
- */
-const keyFilterZ = z.object({
-  in: z.array(z.string()).optional(),
-  includeUnknown: z.boolean().optional(),
-})
-export type CompanyAnalysisKeyFilterInput = z.infer<typeof keyFilterZ>
-
-/**
- * The supported ONRC exclusions. Each needs complete evidence: a company with
- * partial or unresolved evidence abstains (is not selected), never counted as
- * an absence. An exact `rev<N>:<code>` exclusion does not exist (a code of
- * unknown revision may carry the same digits): a scope holding one is refused
- * here rather than read without it.
- */
-const onrcExcludeZ = z.strictObject({
-  /** No identifier carries these status codes (status coverage complete). */
-  status: z.array(z.string()).optional(),
-  /**
-   * CAEN coverage complete (an unparsed or unknown-revision row makes it
-   * partial) and no matching observation: v3 releases test qualified classes
-   * only, so a short token or unlabeled key does not block it; v2 every code.
-   */
-  caenCode: z.array(z.string()).optional(),
-  /** A known county consensus outside these codes. */
-  county: z.array(z.string()).optional(),
-  /** A known legal form outside these. */
-  legalForm: z.array(z.string()).optional(),
-})
-export type CompanyAnalysisOnrcExcludeInput = z.infer<typeof onrcExcludeZ>
-
-/**
- * OBSERVATION filters over the edition's public resolved identifiers, all on
- * the SAME identifier: OR within a field, AND across fields. A public 1048
- * matches also next to a conflicting status; `caenCode` (4 digits) matches,
- * in a v3 release, a qualified class observation of any known revision (a v2
- * release matched every observation, unknown revision included); `onrcCaen`
- * (`rev2:6201`) is exact, and a code of unknown revision never matches it.
- */
-export const CompanyAnalysisOnrcZ = z.strictObject({
-  status: z.array(z.string()).optional(),
-  county: z.array(z.string()).optional(),
-  caenCode: z.array(z.string()).optional(),
-  onrcCaen: z.array(z.string()).optional(),
-  exclude: onrcExcludeZ.optional(),
-})
-export type CompanyAnalysisOnrcInput = z.infer<typeof CompanyAnalysisOnrcZ>
-
-export const CompanyAnalysisRangeZ = z.object({
-  metric: CompanyAnalysisMetricZ,
-  /** Inclusive bounds: decimal strings (lei, at most two decimals) or integer strings (employees). */
-  min: z.string().optional(),
-  max: z.string().optional(),
-})
-export type CompanyAnalysisRangeInput = z.infer<typeof CompanyAnalysisRangeZ>
-
-/**
- * The question, in the API's input shape (`CompanyAnalysisScopeInput`): OR
- * within a field, AND across fields. Company keys (where, what, fiscal flags,
- * the ONRC observations) describe the release snapshot and its pinned
- * edition; filing, ranges and size bands act on the fiscal year's statement.
- * Without `fiscalYear` (as a chart persists it, beside its reference year).
- */
-export const CompanyAnalysisScopeZ = z.object({
-  cuis: z.array(z.string()).optional(),
-  county: keyFilterZ.optional(),
-  uat: keyFilterZ.optional(),
-  legalForms: z.array(z.string()).optional(),
-  observedStatus: keyFilterZ.optional(),
-  onrc: CompanyAnalysisOnrcZ.optional(),
-  vatPayer: z.array(CompanyAnalysisFlagValueZ).optional(),
-  fiscallyInactive: z.array(CompanyAnalysisFlagValueZ).optional(),
-  mainCaen: z.array(z.object({ code: z.string(), revision: z.string().optional() })).optional(),
-  mainCaenBasis: z.array(CompanyAnalysisCaenBasisZ).optional(),
-  /**
-   * v3: the exact selected activity — ONRC with its revision (`rev0`…`rev3`),
-   * ANAF without one (ANAF publishes none). An ANAF selector never matches an
-   * ONRC selection, nor the reverse.
-   */
-  activity: z.array(z.object({ source: CompanyAnalysisActivitySourceZ, code: z.string(), revision: z.string().optional() })).optional(),
-  /** v3: the selection's basis. */
-  activityBasis: z.array(CompanyAnalysisActivityBasisZ).optional(),
-  /** v4: the exact ONRC key of the ANAF-assumed main activity (`rev3` + `4711`); never a code without its revision. */
-  mainActivity: z.array(z.object({ revision: z.enum(['rev0', 'rev1', 'rev2', 'rev3']), code: z.string().regex(/^\d{4}$/u) })).optional(),
-  /** v4: the main activity's status (the unresolved buckets). */
-  mainActivityStatus: z.array(CompanyAnalysisMainActivityStatusZ).optional(),
-  filing: CompanyAnalysisFilingZ.optional(),
-  financialRanges: z.array(CompanyAnalysisRangeZ).optional(),
-  employeeSizeBands: z.array(CompanyAnalysisSizeBandZ).optional(),
-})
-export type CompanyAnalysisScope = z.infer<typeof CompanyAnalysisScopeZ>
-export type CompanyAnalysisScopeInput = CompanyAnalysisScope & { readonly fiscalYear?: number }
+export const CompanyAnalysisOnrcZ = companyAnalysisOnrcSchema.schema()
+export const CompanyAnalysisRangeZ = companyAnalysisRangeSchema.schema()
+export const CompanyAnalysisScopeZ = companyAnalysisScopeSchema.schema()
 
 /** True when the scope constrains the selected year's statement (the server's `requiresStatement`). */
 export function scopeNeedsStatement(scope: CompanyAnalysisScope): boolean {
@@ -707,4 +576,3 @@ export function metricOfferedIn(release: CompanyAnalysisRelease, fiscalYear: num
 export function offeredMetricsIn(release: CompanyAnalysisRelease, fiscalYear: number): readonly CompanyAnalysisMetric[] {
   return COMPANY_ANALYSIS_METRICS.filter((metric) => metricOfferedIn(release, fiscalYear, metric))
 }
-

@@ -8,12 +8,12 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { HUB_SHORTCUT_LINK_CLASS } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import { DEFAULT_STATE, urlSearchOf } from '../../lib/company-analytics-url'
+import { urlSearchOfText } from '../../lib/company-analytics-search'
 import { STATUS_ACTIVE } from '../../lib/company-status-codes'
 import { LEADER_ROW_CLASS } from './company-hub-sections'
 
 /** The companies in business in the analysis, on its own year: the loading state's, drawn before the snapshot is read. */
-const IN_BUSINESS = urlSearchOf({ ...DEFAULT_STATE, scope: { observedStatus: { in: [STATUS_ACTIVE] } } })
+const IN_BUSINESS = urlSearchOfText({ stare: STATUS_ACTIVE })
 
 /**
  * The hub's head without its data. The title, the lede, the search's place,
