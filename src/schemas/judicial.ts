@@ -169,32 +169,12 @@ export const judicialCaseDetailSchema = z.object({
 })
 export type JudicialCaseDetail = z.infer<typeof judicialCaseDetailSchema>
 
-/** The court page's search: the year it describes (unset: the default year). Any calendar year parses; the route keeps only a year the capture holds a case in. */
-export const justiceCourtSearchSchema = z
-  .object({
-    an: z.coerce.number().int().min(1000).max(2100).optional().catch(undefined),
-  })
-  .catch({})
-export type JusticeCourtSearch = z.infer<typeof justiceCourtSearchSchema>
-
-export function parseJusticeCourtSearch(search: Record<string, unknown>): JusticeCourtSearch {
-  return justiceCourtSearchSchema.parse(search)
-}
-
-/** The front door's choices: the hero's level, the matters' courts and the courts band's level (unset: their defaults). */
-export const JUSTICE_HUB_DEFAULTS = { instante: 'judecatorie', materii: 'toate', nivel: 'tribunal' } as const
-
-const mainLevelSchema = z.enum(['judecatorie', 'tribunal', 'curte_de_apel'])
-
-export const justiceHubSearchSchema = z
-  .object({
-    instante: mainLevelSchema.optional().catch(undefined),
-    materii: z.enum(['toate', 'judecatorie', 'tribunal', 'curte_de_apel']).optional().catch(undefined),
-    nivel: mainLevelSchema.optional().catch(undefined),
-  })
-  .catch({})
-export type JusticeHubSearch = z.infer<typeof justiceHubSearchSchema>
-
-export function parseJusticeHubSearch(search: Record<string, unknown>): JusticeHubSearch {
-  return justiceHubSearchSchema.parse(search)
-}
+export {
+  JUSTICE_HUB_DEFAULTS,
+  justiceCourtSearchSchema,
+  justiceHubSearchSchema,
+  parseJusticeCourtSearch,
+  parseJusticeHubSearch,
+  type JusticeCourtSearch,
+  type JusticeHubSearch,
+} from './justice-search'

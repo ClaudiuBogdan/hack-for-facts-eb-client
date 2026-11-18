@@ -3,7 +3,7 @@ import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { translatorFor } from '@/lib/i18n'
-import { parseJusticeHubSearch } from '@/schemas/judicial'
+import { parseJusticeHubSearch } from '@/schemas/justice-search'
 import { buildJusticeHubTitle } from '@/features/justice/lib/justice-page-titles'
 
 /**
