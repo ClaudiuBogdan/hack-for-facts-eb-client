@@ -34,6 +34,7 @@ import { FRAMEWORKS_SCOPE } from '../lib/analytics-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
 import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
+import { nameableKeys } from '../lib/withheld-party'
 
 /**
  * One buyer's page, read as:
@@ -306,8 +307,9 @@ export function buyerExtrasFields(cui: string, period: Period, latest: number, s
 /** What the follow-up needs from the keys and the identity: the firms to name, the top sellers' CUIs, the buyer's county. */
 export function buyerKeysOf(raw: RawBuyerProfile): { readonly cuis: readonly string[]; readonly spanSuppliers: readonly string[]; readonly county: string | null } {
   const breakdown = (alias: string) => buyerBreakdownSchema.parse(raw[alias])
-  const spanSuppliers = topBuckets(breakdown('spanSuppliers')).map((bucket) => bucket.key)
-  const listed = [...topBuckets(breakdown('directSuppliers')), ...topBuckets(breakdown('awardSuppliers'))].map((bucket) => bucket.key)
+  // D6: the withheld group of suppliers has no name to look up and no years of its own to read.
+  const spanSuppliers = nameableKeys(topBuckets(breakdown('spanSuppliers')).map((bucket) => bucket.key))
+  const listed = nameableKeys([...topBuckets(breakdown('directSuppliers')), ...topBuckets(breakdown('awardSuppliers'))].map((bucket) => bucket.key))
   const territory = buyerEntitySchema.parse(raw.entity ?? null)?.territory ?? null
   return {
     cuis: [...new Set([...listed, ...spanSuppliers])],

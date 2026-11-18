@@ -1,3 +1,4 @@
+import { naturalPersonsLabel } from '../lib/withheld-party'
 import { useState } from 'react'
 import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
@@ -52,6 +53,7 @@ function rankingLabel(row: TopPartyRow, kind: PartyKind): string {
   if (row.bucketKind === 'unknown') {
     return kind === 'authority' ? t`Unknown authority` : t`Unknown supplier`
   }
+  if (row.bucketKind === 'natural_person') return naturalPersonsLabel()
   return partyLabel(kind === 'authority' ? row.authority : row.supplier)
 }
 

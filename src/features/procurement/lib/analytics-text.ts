@@ -7,6 +7,7 @@ import { procedureLabel, tidyName } from './home-model'
 import { cpvKey, cpvPrefix, POPULATIONS, type AxisId, type GroupBy, type Measure, type PopulationId, type Query, type ResolvedPeriod } from './analytics-model'
 import { bucharestWholeLabel } from './analytics-places'
 import type { Names } from '../api/procurement-analytics-api'
+import { isNaturalPersonKey, naturalPersonsLabel } from './withheld-party'
 
 /**
  * The page's words: the headline the query reads as (generated, never
@@ -50,6 +51,8 @@ export function keyLabel(axis: AxisId, level: string, key: string, namer: Namer)
     return name ? tidyName(name) : t`Instituția cu CUI ${key}`
   }
   if (axis === 'furnizor') {
+    // D6: the withheld group is never named.
+    if (isNaturalPersonKey(key)) return naturalPersonsLabel()
     const name = namer.names?.orgs.get(key)
     return name ? displayCompanyName(name) : t`Firma cu CUI ${key}`
   }

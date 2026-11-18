@@ -388,7 +388,8 @@ export const topPartyRowSchema = z.object({
   authority: partySchema.nullable(),
   supplier: partySchema.nullable(),
   grain: procurementAnalysisGrainSchema,
-  bucketKind: z.enum(['top', 'other', 'unknown']),
+  /** `natural_person`: decision D6's one group of suppliers the platform does not name (no party, no link). */
+  bucketKind: z.enum(['top', 'other', 'unknown', 'natural_person']),
   flowCount: bigintStringSchema,
   amountRonSum: decimalStringSchema.nullable(),
   amountPresentCount: bigintStringSchema,

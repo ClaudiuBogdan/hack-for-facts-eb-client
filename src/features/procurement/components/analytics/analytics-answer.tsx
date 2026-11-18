@@ -15,6 +15,7 @@ import { MethodBody } from './analytics-controls'
 import { countText, listTotalText, moneyText, percentText, periodGloss, populationGloss, recordsCount, type Namer } from '../../lib/analytics-text'
 import { sourceDisclosureNotes } from '../../lib/caveat-text'
 import { bucketLabel, clippedText, profileLink, readoutNotes, rowsOf, shareUrl, type Row } from './analytics-view'
+import { isNaturalPersonKey } from '../../lib/withheld-party'
 
 /**
  * The answer, with the words cut: the table of every measure (or the chart in
@@ -241,16 +242,18 @@ export function AnswerTable({
           {rows.map((row, index) => {
             const bucket = bucketOf(row)
             const top = row.kind === 'top' && row.key !== null
-            const link = top ? profileLink(group.axis, row.key!) : null
+            // D6: the group of suppliers the platform does not name ranks like any row, but opens nothing.
+            const drillable = top && !isNaturalPersonKey(row.key)
+            const link = drillable ? profileLink(group.axis, row.key!) : null
             const count = bucket?.count ?? null
             const lei = row.kind === 'withheld' ? row.figure : (bucket?.money ?? null)
             const residents = perResident && row.key ? (COUNTY_POPULATION.get(row.key) ?? null) : null
             return (
-              <TableRow key={`${row.kind}-${row.key ?? index}`} className={cn(!top && 'text-muted-foreground', top && 'cursor-pointer')} onClick={top ? () => onChange(drilled(query, group, row.key!)) : undefined}>
+              <TableRow key={`${row.kind}-${row.key ?? index}`} className={cn(!top && 'text-muted-foreground', drillable && 'cursor-pointer')} onClick={drillable ? () => onChange(drilled(query, group, row.key!)) : undefined}>
                 <TableCell className="text-right font-mono text-xs tabular-nums text-muted-foreground">{top ? index + 1 : ''}</TableCell>
                 <TableCell className="max-w-[12rem] sm:max-w-md">
                   <span className="flex items-center gap-1.5">
-                    {top ? (
+                    {drillable ? (
                       // The drill a click on the row makes, reachable by keyboard: the row itself takes no focus.
                       <button
                         type="button"

@@ -16,6 +16,7 @@ import {
   type ResolvedPeriod,
 } from '../lib/analytics-model'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
+import { isNaturalPersonKey } from '../lib/withheld-party'
 
 /**
  * The analytics page's reads. A query compiles to independent reads, each
@@ -458,7 +459,8 @@ export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[
     if (!ranking) continue
     for (const bucket of ranking.buckets) {
       if (!bucket.key || bucket.kind !== 'top') continue
-      if (ranking.dimension === 'authority' || ranking.dimension === 'supplier') orgs.push(bucket.key)
+      // D6: the withheld group of suppliers has no name to look up.
+      if ((ranking.dimension === 'authority' || ranking.dimension === 'supplier') && !isNaturalPersonKey(bucket.key)) orgs.push(bucket.key)
       if (ranking.dimension.startsWith('cpv')) cpv.push(bucket.key)
     }
   }

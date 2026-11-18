@@ -8,6 +8,7 @@ import type { CategoryFigure } from '../../lib/home-categories'
 import { countText, dayText, firmsCount, moneyText, percentText, unitCount } from '../../lib/home-format'
 import type { HomeGrain, RankedRow, Ranking, RecentRecord } from '../../lib/home-model'
 import { Bone } from './home-chrome'
+import { isNaturalPersonKey, naturalPersonsLabel } from '../../lib/withheld-party'
 
 /**
  * The front door's rows. A row keeps its name on the left with what it
@@ -63,12 +64,15 @@ export function PartyRows({
   return (
     <ol className={cn(LIST, className)}>
       {rows.map((row, index) => {
+        // D6: the group of suppliers the platform does not name — said as one, never linked.
+        const withheld = kind === 'supplier' && isNaturalPersonKey(row.key)
+        const label = withheld ? naturalPersonsLabel() : row.label
         const body = (
           <>
             <span className="grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
               <MonoLabel className="pt-0.5 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
               <span className="min-w-0">
-                <span className="block truncate text-sm text-foreground">{row.label}</span>
+                <span className="block truncate text-sm text-foreground">{label}</span>
                 <Bar fraction={fractionOf(measure(row), top)} />
                 <MonoLabel className="mt-1 block truncate tabular-nums text-muted-foreground">
                   {ranking.rankedBy === 'value' ? unitCount(grain, row.count) : row.share !== null ? percentText(row.share) : ''}
@@ -83,7 +87,9 @@ export function PartyRows({
         const className = cn(ROW, ROW_LINK, dense ? 'py-2' : 'py-2.5')
         return (
           <li key={row.key}>
-            {kind === 'authority' ? (
+            {withheld ? (
+              <div className={cn(ROW, dense ? 'py-2' : 'py-2.5')}>{body}</div>
+            ) : kind === 'authority' ? (
               <Link to="/procurement/institutions/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} className={className}>
                 {body}
               </Link>

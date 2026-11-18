@@ -1,3 +1,4 @@
+import { isNaturalPersonKey } from '../../lib/withheld-party'
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { monthText } from '../../lib/home-format'
@@ -159,7 +160,7 @@ export function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly
     .filter((bucket) => bucket.kind === 'top' || bucket.count > 0)
     .map((bucket) => {
       const label = bucket.kind === 'other' ? t`Restul` : bucket.kind === 'unknown' ? unknownLabel(group.axis) : keyLabel(group.axis, group.level, bucket.key ?? '', namer)
-      const sub = bucket.kind !== 'top' || !bucket.key ? null : group.axis === 'cumparator' || group.axis === 'furnizor' ? `CUI ${bucket.key}` : group.axis === 'cpv' ? `CPV ${cpvPrefix(bucket.key, group.level)}` : null
+      const sub = bucket.kind !== 'top' || !bucket.key || isNaturalPersonKey(bucket.key) ? null : group.axis === 'cumparator' || group.axis === 'furnizor' ? `CUI ${bucket.key}` : group.axis === 'cpv' ? `CPV ${cpvPrefix(bucket.key, group.level)}` : null
       if (perResident && !bucket.key) {
         // No county, so no residents: the total, said as a total, never beside the rates.
         const total = population.money === 'clean' ? bucket.money : bucket.count

@@ -9,6 +9,7 @@
  * - the year's largest contract awards, grouped by contract;
  * - the newest complete month's largest contract awards, or direct purchases.
  */
+import { nameableKeys } from '../lib/withheld-party'
 import type { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -221,7 +222,8 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
   )
   const names = await loadPartyNames(
     [...topKeys(raw.awardsBuyers), ...topKeys(raw.directBuyers)],
-    topKeys(raw.directSellers),
+    // D6: the withheld group has no name to look up.
+    nameableKeys(topKeys(raw.directSellers)),
     signal,
   )
   return mapProcurementHomeNational(raw, year, names)

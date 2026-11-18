@@ -10,6 +10,7 @@
  * mappers (`crossDomain: null`, `perLotWinners`/`ted` only when the server
  * sends them) — documented gaps, never fabrication.
  */
+import { isNaturalPersonKey } from '../lib/withheld-party'
 import type {
   AuthorityProcurementSlice,
   ProcurementRecordSummary,
@@ -176,7 +177,8 @@ async function loadPartyNames(
   ] as const) {
     for (const block of blocks) {
       for (const bucket of block.buckets ?? []) {
-        if (bucket.key === null) continue
+        // D6: the withheld group of suppliers has no name to look up.
+        if (bucket.key === null || isNaturalPersonKey(bucket.key)) continue
         const cacheKey = `${dimension}:${bucket.key}`
         const kept = cachedPartyName(cacheKey, now)
         if (kept === undefined) {
