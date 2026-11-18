@@ -110,7 +110,7 @@ of three passes. These are not browser numbers, but they rank modules consistent
 | Before (79ea80f4) | 185 | 1,872 KB | 183 ms | legislation 17.8 ms (first) |
 | Legislation migrated | 181 | 1,846 KB | 159 ms | legislation 0.8 ms |
 | Batch 1 (below) | 164 | 1,638 KB | | |
-| Batch 2 (below; from e8fdd9be: 166 chunks, 1,497 KB) | 156 | 1,408 KB | browser, landing, 4× CPU: 475 → 368 ms | Zod chunk's share 243 → 131 ms |
+| Batch 2 (below; from e8fdd9be: 166 chunks, 1,497 KB) | 154 | 1,399 KB | browser, landing, 4× CPU: ≈530 → ≈346 ms | Zod chunk's share ≈279 → ≈122 ms |
 
 Families by start-up evaluation before the migration (ms, the same harness): legislation 17.5, the statistics
 hub hooks 13.5, campaigns 12.9, certificates 10.3, advanced map analytics 10.0, companies 8.6, the primărie
@@ -177,10 +177,10 @@ and `lib/` (11.1) are not route families: they are looked at last.
     before entry. The public map starts its request at the click and loads its decoder alongside it.
     Parity: 66 validators, 131,985 schema/input pairs, `parse`, `safeParse` and `~standard.validate` with
     issues compared in full; the router's inferred search types matched for seven contracts.
-  - Results (local production builds, e8fdd9be against this batch): start-up graph 166 → 156 chunks and
-    1,497 → 1,408 KB. Browser CPU profile of the landing at 4× slowdown, three alternating rounds of two
-    loads: time under the chunks' top-level evaluation, median 475 → 368 ms, of it in the Zod chunk
-    243 → 131 ms. Every page family the batch touched renders as before (status, content, no page or
+  - Results (local production builds, e8fdd9be against the final batch): start-up graph 166 → 154 chunks
+    and 1,497 → 1,399 KB. Browser CPU profile of the landing at 4× slowdown, three alternating rounds of
+    two loads: time under the chunks' top-level evaluation, median ≈530 → ≈346 ms, of it in the Zod chunk
+    ≈279 → ≈122 ms (a busier host than an earlier run, 475 → 368 ms; the gap held in every round). Every page family the batch touched renders as before (status, content, no page or
     hydration error), and the search input's chunk now arrives on idle (≈1.1 s) instead of at start-up.
   - Review (Codex `gpt-6.2-astra`, max, four rounds): the public map's response decoder was first loaded on
     its own with `import()`. Every guard on that extra chunk left a timing gap on a stale deployment where
