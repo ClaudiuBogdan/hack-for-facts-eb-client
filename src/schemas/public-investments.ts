@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { lazySchema, type LazyOutput } from '@/lib/route-contract'
 
 /**
  * Public Investments (Investiții Publice) — URL search-state schemas.
@@ -113,46 +114,48 @@ export const PUBLIC_INVESTMENTS_DEFAULTS = {
 // Shared permissive preprocessors
 // ---------------------------------------------------------------------------
 
-const optionalTextSearchParam = z.preprocess(
-  (value) => {
-    if (value === undefined || value === null) return undefined
-    if (typeof value === 'string') return value
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return String(value)
-    }
-    return undefined
-  },
-  z.string().optional(),
-)
-
-const optionalIdentifierSearchParam = z.preprocess(
-  (value) => {
-    if (value === undefined || value === null) return undefined
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return String(value)
-    }
-    if (typeof value !== 'string') return undefined
-
-    const trimmed = value.trim()
-    if (!trimmed) return undefined
-
-    try {
-      const parsed = JSON.parse(trimmed)
-      if (
-        typeof parsed === 'string' ||
-        typeof parsed === 'number' ||
-        typeof parsed === 'boolean'
-      ) {
-        return String(parsed)
+const optionalTextSearchParam = () =>
+  z.preprocess(
+    (value) => {
+      if (value === undefined || value === null) return undefined
+      if (typeof value === 'string') return value
+      if (typeof value === 'number' || typeof value === 'boolean') {
+        return String(value)
       }
-    } catch {
-      // Not a JSON-encoded primitive — keep the trimmed raw value.
-    }
+      return undefined
+    },
+    z.string().optional(),
+  )
 
-    return trimmed
-  },
-  z.string().optional(),
-)
+const optionalIdentifierSearchParam = () =>
+  z.preprocess(
+    (value) => {
+      if (value === undefined || value === null) return undefined
+      if (typeof value === 'number' || typeof value === 'boolean') {
+        return String(value)
+      }
+      if (typeof value !== 'string') return undefined
+
+      const trimmed = value.trim()
+      if (!trimmed) return undefined
+
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (
+          typeof parsed === 'string' ||
+          typeof parsed === 'number' ||
+          typeof parsed === 'boolean'
+        ) {
+          return String(parsed)
+        }
+      } catch {
+        // Not a JSON-encoded primitive — keep the trimmed raw value.
+      }
+
+      return trimmed
+    },
+    z.string().optional(),
+  )
 
 function asSearchObject(search: unknown): Record<string, unknown> {
   if (!search || typeof search !== 'object' || Array.isArray(search)) {
@@ -272,36 +275,42 @@ function isStageBucket(value: string): value is StageBucket {
   return (STAGE_BUCKET_VALUES as readonly string[]).includes(value)
 }
 
-const optionalProgramsParam = z.preprocess(
-  (value) => parseEnumArrayParam(value, PROGRAM_CODE_VALUES),
-  z.array(z.enum(PROGRAM_CODE_VALUES)).optional(),
-)
+const optionalProgramsParam = () =>
+  z.preprocess(
+    (value) => parseEnumArrayParam(value, PROGRAM_CODE_VALUES),
+    z.array(z.enum(PROGRAM_CODE_VALUES)).optional(),
+  )
 
-const optionalStagesParam = z.preprocess(
-  (value) => parseEnumArrayParam(value, STAGE_BUCKET_VALUES),
-  z.array(z.enum(STAGE_BUCKET_VALUES)).optional(),
-)
+const optionalStagesParam = () =>
+  z.preprocess(
+    (value) => parseEnumArrayParam(value, STAGE_BUCKET_VALUES),
+    z.array(z.enum(STAGE_BUCKET_VALUES)).optional(),
+  )
 
-const optionalDomainsParam = z.preprocess(
-  (value) => parseArraySearchParam(value),
-  z.array(z.string()).optional(),
-)
+const optionalDomainsParam = () =>
+  z.preprocess(
+    (value) => parseArraySearchParam(value),
+    z.array(z.string()).optional(),
+  )
 
-const optionalCountiesParam = z.preprocess(
-  (value) =>
-    parseArraySearchParam(value, (item) => item.length > 0 && item.length <= 4),
-  z.array(z.string()).optional(),
-)
+const optionalCountiesParam = () =>
+  z.preprocess(
+    (value) =>
+      parseArraySearchParam(value, (item) => item.length > 0 && item.length <= 4),
+    z.array(z.string()).optional(),
+  )
 
-const optionalIdentityParam = z.preprocess(
-  (value) => parseEnumArrayParam(value, IDENTITY_CONFIDENCE_VALUES),
-  z.array(z.enum(IDENTITY_CONFIDENCE_VALUES)).optional(),
-)
+const optionalIdentityParam = () =>
+  z.preprocess(
+    (value) => parseEnumArrayParam(value, IDENTITY_CONFIDENCE_VALUES),
+    z.array(z.enum(IDENTITY_CONFIDENCE_VALUES)).optional(),
+  )
 
-const optionalDataQualityParam = z.preprocess(
-  (value) => parseEnumArrayParam(value, DATA_QUALITY_VALUES),
-  z.array(z.enum(DATA_QUALITY_VALUES)).optional(),
-)
+const optionalDataQualityParam = () =>
+  z.preprocess(
+    (value) => parseEnumArrayParam(value, DATA_QUALITY_VALUES),
+    z.array(z.enum(DATA_QUALITY_VALUES)).optional(),
+  )
 
 function parseBooleanish(value: unknown): boolean | undefined {
   if (value === undefined || value === null) return undefined
@@ -316,10 +325,11 @@ function parseBooleanish(value: unknown): boolean | undefined {
   return undefined
 }
 
-const optionalBooleanParam = z.preprocess(
-  parseBooleanish,
-  z.boolean().optional(),
-)
+const optionalBooleanParam = () =>
+  z.preprocess(
+    parseBooleanish,
+    z.boolean().optional(),
+  )
 
 function parseOptionalNumber(value: unknown): number | undefined {
   if (value === undefined || value === null) return undefined
@@ -334,23 +344,25 @@ function parseOptionalNumber(value: unknown): number | undefined {
   return undefined
 }
 
-const optionalAmountParam = z.preprocess(
-  (value) => {
-    const parsed = parseOptionalNumber(value)
-    if (parsed === undefined || parsed < 0) return undefined
-    return parsed
-  },
-  z.number().min(0).optional(),
-)
+const optionalAmountParam = () =>
+  z.preprocess(
+    (value) => {
+      const parsed = parseOptionalNumber(value)
+      if (parsed === undefined || parsed < 0) return undefined
+      return parsed
+    },
+    z.number().min(0).optional(),
+  )
 
-const optionalAbsParam = z.preprocess(
-  (value) => {
-    const parsed = parseOptionalNumber(value)
-    if (parsed === undefined) return undefined
-    return Math.min(100, Math.max(0, parsed))
-  },
-  z.number().min(0).max(100).optional(),
-)
+const optionalAbsParam = () =>
+  z.preprocess(
+    (value) => {
+      const parsed = parseOptionalNumber(value)
+      if (parsed === undefined) return undefined
+      return Math.min(100, Math.max(0, parsed))
+    },
+    z.number().min(0).max(100).optional(),
+  )
 
 const positiveIntParam = (defaultValue: number) =>
   z.preprocess(
@@ -367,17 +379,17 @@ const positiveIntParam = (defaultValue: number) =>
 // Layout search state (shared `dovada` deep-link + optional backtrack context)
 // ---------------------------------------------------------------------------
 
-export const PublicInvestmentsLayoutSearchSchema = z.object({
-  dovada: optionalIdentifierSearchParam,
-  objectiveId: optionalIdentifierSearchParam,
-  from: optionalTextSearchParam,
-  county: optionalIdentifierSearchParam,
-  siruta: optionalIdentifierSearchParam,
-})
+export const PublicInvestmentsLayoutSearchSchema = lazySchema(() =>
+  z.object({
+    dovada: optionalIdentifierSearchParam(),
+    objectiveId: optionalIdentifierSearchParam(),
+    from: optionalTextSearchParam(),
+    county: optionalIdentifierSearchParam(),
+    siruta: optionalIdentifierSearchParam(),
+  }),
+)
 
-export type PublicInvestmentsLayoutSearchState = z.infer<
-  typeof PublicInvestmentsLayoutSearchSchema
->
+export type PublicInvestmentsLayoutSearchState = LazyOutput<typeof PublicInvestmentsLayoutSearchSchema>
 
 export function cleanLayoutSearch(
   search: Partial<PublicInvestmentsLayoutSearchState>,
@@ -413,38 +425,38 @@ export function parseLayoutSearch(
 // Landing search state
 // ---------------------------------------------------------------------------
 
-export const PublicInvestmentsLandingSearchSchema = z.object({
-  view: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.mapView
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.mapView
-        }
-        const normalized = value.trim().toLowerCase()
-        return (MAP_VIEW_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as MapView)
-          : PUBLIC_INVESTMENTS_DEFAULTS.mapView
-      },
-      z.enum(MAP_VIEW_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.mapView),
-  program: z.preprocess((value) => {
-    if (value === undefined || value === null) return undefined
-    if (typeof value !== 'string') return undefined
-    const normalized = value.trim().toUpperCase()
-    return isProgramCode(normalized) ? normalized : undefined
-  }, z.enum(PROGRAM_CODE_VALUES).optional()),
-  mapLat: z.preprocess(parseOptionalNumber, z.number().optional()),
-  mapLng: z.preprocess(parseOptionalNumber, z.number().optional()),
-  mapZoom: z.preprocess(parseOptionalNumber, z.number().optional()),
-})
+export const PublicInvestmentsLandingSearchSchema = lazySchema(() =>
+  z.object({
+    view: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.mapView
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.mapView
+          }
+          const normalized = value.trim().toLowerCase()
+          return (MAP_VIEW_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as MapView)
+            : PUBLIC_INVESTMENTS_DEFAULTS.mapView
+        },
+        z.enum(MAP_VIEW_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.mapView),
+    program: z.preprocess((value) => {
+      if (value === undefined || value === null) return undefined
+      if (typeof value !== 'string') return undefined
+      const normalized = value.trim().toUpperCase()
+      return isProgramCode(normalized) ? normalized : undefined
+    }, z.enum(PROGRAM_CODE_VALUES).optional()),
+    mapLat: z.preprocess(parseOptionalNumber, z.number().optional()),
+    mapLng: z.preprocess(parseOptionalNumber, z.number().optional()),
+    mapZoom: z.preprocess(parseOptionalNumber, z.number().optional()),
+  }),
+)
 
-export type PublicInvestmentsLandingSearchState = z.infer<
-  typeof PublicInvestmentsLandingSearchSchema
->
+export type PublicInvestmentsLandingSearchState = LazyOutput<typeof PublicInvestmentsLandingSearchSchema>
 
 export function cleanLandingSearch(
   search: Partial<PublicInvestmentsLandingSearchState>,
@@ -491,98 +503,98 @@ export function parseLandingSearch(
 // Search (cautare) search state
 // ---------------------------------------------------------------------------
 
-export const PublicInvestmentsSearchSchema = z.object({
-  q: optionalTextSearchParam,
-  programs: optionalProgramsParam,
-  domains: optionalDomainsParam,
-  counties: optionalCountiesParam,
-  siruta: optionalIdentifierSearchParam,
-  stages: optionalStagesParam,
-  amountField: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.amountField
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.amountField
-        }
-        const normalized = value.trim().toLowerCase()
-        return (AMOUNT_FIELD_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as AmountField)
-          : PUBLIC_INVESTMENTS_DEFAULTS.amountField
-      },
-      z.enum(AMOUNT_FIELD_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.amountField),
-  amountMin: optionalAmountParam,
-  amountMax: optionalAmountParam,
-  absMin: optionalAbsParam,
-  absMax: optionalAbsParam,
-  dataQuality: optionalDataQualityParam,
-  hasContractorCui: optionalBooleanParam,
-  hasDesignerCui: optionalBooleanParam,
-  hasSiruta: optionalBooleanParam,
-  identity: optionalIdentityParam,
-  view: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.view
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.view
-        }
-        const normalized = value.trim().toLowerCase()
-        return (LAYOUT_VIEW_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as LayoutView)
-          : PUBLIC_INVESTMENTS_DEFAULTS.view
-      },
-      z.enum(LAYOUT_VIEW_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.view),
-  sort: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.sort
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.sort
-        }
-        const normalized = value.trim().toLowerCase()
-        return (OBJECTIVE_SORT_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as ObjectiveSort)
-          : PUBLIC_INVESTMENTS_DEFAULTS.sort
-      },
-      z.enum(OBJECTIVE_SORT_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.sort),
-  order: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.order
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.order
-        }
-        const normalized = value.trim().toLowerCase()
-        return (ORDER_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as SortOrder)
-          : PUBLIC_INVESTMENTS_DEFAULTS.order
-      },
-      z.enum(ORDER_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.order),
-  page: positiveIntParam(PUBLIC_INVESTMENTS_DEFAULTS.page),
-  pageSize: positiveIntParam(PUBLIC_INVESTMENTS_DEFAULTS.pageSize),
-  selected: optionalIdentifierSearchParam,
-})
+export const PublicInvestmentsSearchSchema = lazySchema(() =>
+  z.object({
+    q: optionalTextSearchParam(),
+    programs: optionalProgramsParam(),
+    domains: optionalDomainsParam(),
+    counties: optionalCountiesParam(),
+    siruta: optionalIdentifierSearchParam(),
+    stages: optionalStagesParam(),
+    amountField: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.amountField
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.amountField
+          }
+          const normalized = value.trim().toLowerCase()
+          return (AMOUNT_FIELD_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as AmountField)
+            : PUBLIC_INVESTMENTS_DEFAULTS.amountField
+        },
+        z.enum(AMOUNT_FIELD_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.amountField),
+    amountMin: optionalAmountParam(),
+    amountMax: optionalAmountParam(),
+    absMin: optionalAbsParam(),
+    absMax: optionalAbsParam(),
+    dataQuality: optionalDataQualityParam(),
+    hasContractorCui: optionalBooleanParam(),
+    hasDesignerCui: optionalBooleanParam(),
+    hasSiruta: optionalBooleanParam(),
+    identity: optionalIdentityParam(),
+    view: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.view
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.view
+          }
+          const normalized = value.trim().toLowerCase()
+          return (LAYOUT_VIEW_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as LayoutView)
+            : PUBLIC_INVESTMENTS_DEFAULTS.view
+        },
+        z.enum(LAYOUT_VIEW_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.view),
+    sort: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.sort
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.sort
+          }
+          const normalized = value.trim().toLowerCase()
+          return (OBJECTIVE_SORT_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as ObjectiveSort)
+            : PUBLIC_INVESTMENTS_DEFAULTS.sort
+        },
+        z.enum(OBJECTIVE_SORT_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.sort),
+    order: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.order
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.order
+          }
+          const normalized = value.trim().toLowerCase()
+          return (ORDER_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as SortOrder)
+            : PUBLIC_INVESTMENTS_DEFAULTS.order
+        },
+        z.enum(ORDER_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.order),
+    page: positiveIntParam(PUBLIC_INVESTMENTS_DEFAULTS.page),
+    pageSize: positiveIntParam(PUBLIC_INVESTMENTS_DEFAULTS.pageSize),
+    selected: optionalIdentifierSearchParam(),
+  }),
+)
 
-export type PublicInvestmentsSearchState = z.infer<
-  typeof PublicInvestmentsSearchSchema
->
+export type PublicInvestmentsSearchState = LazyOutput<typeof PublicInvestmentsSearchSchema>
 
 export const PUBLIC_INVESTMENTS_SEARCH_ARRAY_KEYS = [
   'programs',
@@ -673,67 +685,67 @@ export function parseSearchState(
 // Objective detail search state
 // ---------------------------------------------------------------------------
 
-export const PublicInvestmentsObjectiveSearchSchema = z.object({
-  tab: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.tab
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.tab
-        }
-        const normalized = value.trim().toLowerCase()
-        return (OBJECTIVE_TAB_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as ObjectiveTab)
-          : PUBLIC_INVESTMENTS_DEFAULTS.tab
-      },
-      z.enum(OBJECTIVE_TAB_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.tab),
-  stage: optionalIdentifierSearchParam,
-  from: optionalTextSearchParam,
-  county: optionalIdentifierSearchParam,
-  siruta: optionalIdentifierSearchParam,
-  paySort: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.paymentSort
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.paymentSort
-        }
-        const normalized = value.trim().toLowerCase()
-        return (PAYMENT_SORT_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as PaymentSort)
-          : PUBLIC_INVESTMENTS_DEFAULTS.paymentSort
-      },
-      z.enum(PAYMENT_SORT_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.paymentSort),
-  payOrder: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder
-        }
-        const normalized = value.trim().toLowerCase()
-        return (ORDER_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as SortOrder)
-          : PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder
-      },
-      z.enum(ORDER_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder),
-})
+export const PublicInvestmentsObjectiveSearchSchema = lazySchema(() =>
+  z.object({
+    tab: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.tab
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.tab
+          }
+          const normalized = value.trim().toLowerCase()
+          return (OBJECTIVE_TAB_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as ObjectiveTab)
+            : PUBLIC_INVESTMENTS_DEFAULTS.tab
+        },
+        z.enum(OBJECTIVE_TAB_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.tab),
+    stage: optionalIdentifierSearchParam(),
+    from: optionalTextSearchParam(),
+    county: optionalIdentifierSearchParam(),
+    siruta: optionalIdentifierSearchParam(),
+    paySort: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.paymentSort
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.paymentSort
+          }
+          const normalized = value.trim().toLowerCase()
+          return (PAYMENT_SORT_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as PaymentSort)
+            : PUBLIC_INVESTMENTS_DEFAULTS.paymentSort
+        },
+        z.enum(PAYMENT_SORT_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.paymentSort),
+    payOrder: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder
+          }
+          const normalized = value.trim().toLowerCase()
+          return (ORDER_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as SortOrder)
+            : PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder
+        },
+        z.enum(ORDER_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.paymentOrder),
+  }),
+)
 
-export type PublicInvestmentsObjectiveSearchState = z.infer<
-  typeof PublicInvestmentsObjectiveSearchSchema
->
+export type PublicInvestmentsObjectiveSearchState = LazyOutput<typeof PublicInvestmentsObjectiveSearchSchema>
 
 export function cleanObjectiveSearch(
   search: Partial<PublicInvestmentsObjectiveSearchState>,
@@ -801,67 +813,67 @@ export function parseObjectiveSearch(
 // Territory (locality / county) search state
 // ---------------------------------------------------------------------------
 
-export const PublicInvestmentsTerritorySearchSchema = z.object({
-  programs: optionalProgramsParam,
-  domains: optionalDomainsParam,
-  stages: optionalStagesParam,
-  sort: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.sort
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.sort
-        }
-        const normalized = value.trim().toLowerCase()
-        return (OBJECTIVE_SORT_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as ObjectiveSort)
-          : PUBLIC_INVESTMENTS_DEFAULTS.sort
-      },
-      z.enum(OBJECTIVE_SORT_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.sort),
-  order: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.order
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.order
-        }
-        const normalized = value.trim().toLowerCase()
-        return (ORDER_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as SortOrder)
-          : PUBLIC_INVESTMENTS_DEFAULTS.order
-      },
-      z.enum(ORDER_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.order),
-  view: z
-    .preprocess(
-      (value) => {
-        if (value === undefined || value === null) {
-          return PUBLIC_INVESTMENTS_DEFAULTS.view
-        }
-        if (typeof value !== 'string') {
-          return PUBLIC_INVESTMENTS_DEFAULTS.view
-        }
-        const normalized = value.trim().toLowerCase()
-        return (LAYOUT_VIEW_VALUES as readonly string[]).includes(normalized)
-          ? (normalized as LayoutView)
-          : PUBLIC_INVESTMENTS_DEFAULTS.view
-      },
-      z.enum(LAYOUT_VIEW_VALUES),
-    )
-    .default(PUBLIC_INVESTMENTS_DEFAULTS.view),
-  selected: optionalIdentifierSearchParam,
-})
+export const PublicInvestmentsTerritorySearchSchema = lazySchema(() =>
+  z.object({
+    programs: optionalProgramsParam(),
+    domains: optionalDomainsParam(),
+    stages: optionalStagesParam(),
+    sort: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.sort
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.sort
+          }
+          const normalized = value.trim().toLowerCase()
+          return (OBJECTIVE_SORT_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as ObjectiveSort)
+            : PUBLIC_INVESTMENTS_DEFAULTS.sort
+        },
+        z.enum(OBJECTIVE_SORT_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.sort),
+    order: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.order
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.order
+          }
+          const normalized = value.trim().toLowerCase()
+          return (ORDER_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as SortOrder)
+            : PUBLIC_INVESTMENTS_DEFAULTS.order
+        },
+        z.enum(ORDER_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.order),
+    view: z
+      .preprocess(
+        (value) => {
+          if (value === undefined || value === null) {
+            return PUBLIC_INVESTMENTS_DEFAULTS.view
+          }
+          if (typeof value !== 'string') {
+            return PUBLIC_INVESTMENTS_DEFAULTS.view
+          }
+          const normalized = value.trim().toLowerCase()
+          return (LAYOUT_VIEW_VALUES as readonly string[]).includes(normalized)
+            ? (normalized as LayoutView)
+            : PUBLIC_INVESTMENTS_DEFAULTS.view
+        },
+        z.enum(LAYOUT_VIEW_VALUES),
+      )
+      .default(PUBLIC_INVESTMENTS_DEFAULTS.view),
+    selected: optionalIdentifierSearchParam(),
+  }),
+)
 
-export type PublicInvestmentsTerritorySearchState = z.infer<
-  typeof PublicInvestmentsTerritorySearchSchema
->
+export type PublicInvestmentsTerritorySearchState = LazyOutput<typeof PublicInvestmentsTerritorySearchSchema>
 
 export const PUBLIC_INVESTMENTS_TERRITORY_ARRAY_KEYS = [
   'programs',
