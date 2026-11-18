@@ -113,7 +113,9 @@ describe('who sells', () => {
 
   it('says nothing about value shares when the server ranked by count', () => {
     const profile = buyerProfile()
-    expect(sellersLede(buyerProfile({ directSuppliers: { ...profile.directSuppliers, rankedBy: 'count' } }))).toBeNull()
+    expect(sellersLede(buyerProfile({ directSuppliers: { ...profile.directSuppliers!, rankedBy: 'count' } }))).toBeNull()
+    // No ranking read at all (D6 enforced, the release off): no sentence about one.
+    expect(sellersLede(buyerProfile({ directSuppliers: null }))).toBeNull()
   })
 
   it('names one steady seller, and counts them when they are many', () => {

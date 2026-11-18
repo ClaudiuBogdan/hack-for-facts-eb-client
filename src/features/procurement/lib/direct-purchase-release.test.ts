@@ -145,6 +145,13 @@ describe('mapReleasePurchase — free text withheld until its privacy review', (
     expect(purchase.detail?.items[0]?.nameWithheld).toBeUndefined()
   })
 
+  it('a withheld unit is never kept, and the lines are said to be withheld', () => {
+    const purchase = mapReleasePurchase(rawReleaseDetail(SERVED_TEXT, [rawReleaseItem({ ...servedItemText('Coroană'), unit: 'saci Ion Popescu', unitWithheld: 'privacy' })]), NO_NAMES)
+    expect(purchase.detail?.items[0]?.unit).toBeNull()
+    expect(purchase.withheldText.lines).toBe(true)
+    expect(JSON.stringify(purchase)).not.toContain('Popescu')
+  })
+
   it('no title and no category: no name invented', () => {
     expect(mapReleasePurchase(rawReleaseDetail({ categoryCode: null, categoryLabel: null }), NO_NAMES).title).toBeNull()
   })

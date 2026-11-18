@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+// The switches: direct purchases' supplier figures readable unless a test says otherwise.
+const supplierFigures = vi.hoisted(() => ({ open: true }))
+vi.mock('./procurement-da-release-status', () => ({ daSupplierFiguresOpen: () => Promise.resolve(supplierFigures.open) }))
 
 const graphqlQuery = vi.fn()
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
@@ -62,7 +65,7 @@ describe('fetchProcurementHomeNational', () => {
     expect(read.frameworks).toBe(88_105)
     expect(read.buyers.direct.rows[0]).toMatchObject({ label: 'Regia Nationala a Padurilor Romsilva RA', count: 7_293, value: 93_900_000 })
     // A placeholder label is no name: the row shows its CUI.
-    expect(read.directSellers.rows[0]?.label).toBe('11805367')
+    expect(read.directSellers?.rows[0]?.label).toBe('11805367')
     expect(read.buyers.contract.rankedBy).toBe('count')
     // The consortia's money over all the awards' money: firms + the rest + consortia.
     expect(read.consortium?.withheld).toBeCloseTo(54_297_167_559)
@@ -71,6 +74,20 @@ describe('fetchProcurementHomeNational', () => {
     expect(read.cutoff).toEqual({ contract: '2026-01', direct: '2026-02' })
     expect(read.directYears.map((point) => point.year)).toEqual([2019, 2025])
     // The year in progress would only count through its cutoff month; the series here has none of 2026.
+  })
+
+  it('with D6 enforced and the release off, reads no direct supplier ranking or count, and says so', async () => {
+    supplierFigures.open = false
+    try {
+      const { directSellers: _sellers, directSellerCount: _count, ...withoutSuppliers } = nationalResponse()
+      graphqlQuery.mockResolvedValueOnce(withoutSuppliers).mockResolvedValueOnce({ authorities: [], suppliers: [] })
+      const read = await fetchProcurementHomeNational(2025)
+      expect(graphqlQuery.mock.calls[0]?.[1]).toMatchObject({ withDirectSuppliers: false })
+      expect(read.directSellers).toBeNull()
+      expect(read.direct.suppliers).toBeNull()
+    } finally {
+      supplierFigures.open = true
+    }
   })
 
   it('keeps an unknown count unknown', async () => {

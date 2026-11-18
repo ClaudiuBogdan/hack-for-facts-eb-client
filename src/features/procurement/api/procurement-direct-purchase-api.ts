@@ -1,3 +1,4 @@
+import { daSupplierReads } from './procurement-da-release-status'
 import { fetchReleaseAround } from './procurement-da-release-around'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { buyerName, tidyAddress } from '../lib/buyer-model'
@@ -270,7 +271,9 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
 
   // The year's reads: a complete year's at once, the year in progress's once its cutoff is known.
   const periodRead = year > latest ? cutoffRead.then((outcome) => contextPeriodOf(input.yearDay, latest, outcome.cutoff.direct)) : Promise.resolve(contextPeriodOf(input.yearDay, latest, null))
-  const yearRead = periodRead.then((period) => {
+  // The firm's place among the institution's suppliers is a supplier ranking: not read while D6 is enforced and the release is off.
+  const supplierReadsRead = daSupplierReads()
+  const yearRead = Promise.all([periodRead, supplierReadsRead]).then(([period, supplierReads]) => {
     const within = { from: period.from, to: period.to }
     const buyerRead = soft(
       analysisRead(
@@ -278,7 +281,9 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
         [
           { alias: 'pairYear', kind: 'stats', scope: { ...pair, ...within } },
           { alias: 'buyerYear', kind: 'stats', scope: { authorityCui: input.authorityCui, grain, ...within } },
-          { alias: 'buyerSellers', kind: 'breakdown', scope: { authorityCui: input.authorityCui, grain, ...within }, args: `dimension: supplier, topN: ${RANKED}, rankBy: value` },
+          ...(supplierReads.figures
+            ? [{ alias: 'buyerSellers', kind: 'breakdown' as const, scope: { authorityCui: input.authorityCui, grain, ...within }, args: `dimension: supplier, topN: ${RANKED}, rankBy: value` }]
+            : []),
         ],
         signal,
       ),
@@ -329,7 +334,8 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
   const buyer: DpContext['buyer'] = buyerRaw.ok
     ? (() => {
         const stats = statsOf(buyerRaw.value.buyerYear)
-        const place = rankIn(buyerBreakdownSchema.parse(buyerRaw.value.buyerSellers), input.supplierCui)
+        // Not read (D6 enforced, the release off): no place, and the sentence that says one is left out.
+        const place = buyerRaw.value.buyerSellers === undefined ? { rank: null, of: 0, more: false } : rankIn(buyerBreakdownSchema.parse(buyerRaw.value.buyerSellers), input.supplierCui)
         return { count: stats.count, value: stats.value, sellers: place.of, more: place.more, rank: place.rank }
       })()
     : null

@@ -1,3 +1,4 @@
+import { daSupplierReads } from './procurement-da-release-status'
 import { readLargestDirect } from './procurement-direct-records'
 import { fetchPrivateCompanyProfile } from '@/features/private-companies/api/private-company-api'
 import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
@@ -215,10 +216,15 @@ function spanFields(cui: string, latest: number, clients: readonly string[]): Bu
   }))
 }
 
-function weightFields(period: Period, clients: readonly string[]): BuyerField[] {
+/**
+ * Each client's year, and whether the firm was its largest direct supplier —
+ * a supplier ranking, so not read while D6 is enforced and the release is off
+ * (the API refuses it): the page then says only the firm's share.
+ */
+function weightFields(period: Period, clients: readonly string[], rankSuppliers: boolean): BuyerField[] {
   return clients.flatMap((client, index): BuyerField[] => [
     { alias: `w${index}`, kind: 'stats', scope: { authorityCui: client, ...period.scope, ...DIRECT } },
-    { alias: `f${index}`, kind: 'breakdown', scope: { authorityCui: client, ...period.scope, ...DIRECT }, args: 'dimension: supplier, topN: 1, rankBy: value' },
+    ...(rankSuppliers ? [{ alias: `f${index}`, kind: 'breakdown' as const, scope: { authorityCui: client, ...period.scope, ...DIRECT }, args: 'dimension: supplier, topN: 1, rankBy: value' }] : []),
   ])
 }
 
@@ -340,7 +346,7 @@ export function mapSupplierProfile(cui: string, period: Period, latest: number, 
   if (weightRaw) {
     reads.weights.clients.forEach((client, index) => {
       const total = buyerStatsSchema.parse(weightRaw[`w${index}`]).blocks[0]?.valueAwardedSum ?? null
-      const first = topBuckets(buyerBreakdownSchema.parse(weightRaw[`f${index}`]))[0]?.key === cui
+      const first = weightRaw[`f${index}`] !== undefined && topBuckets(buyerBreakdownSchema.parse(weightRaw[`f${index}`]))[0]?.key === cui
       const own = directClients.rows.find((row) => row.cui === client)?.value ?? null
       weights.set(client, { share: total && own !== null ? own / total : null, first })
     })
@@ -427,7 +433,8 @@ export async function fetchProcurementSupplier(cui: string, choice: PeriodChoice
 
   const weightsRead = keysRead.then(async (keys) => {
     const clients = ranking(buyerBreakdownSchema.parse(keys.directClients)).rows.slice(0, WEIGHED_CLIENTS).map((row) => row.cui)
-    const raw = clients.length > 0 ? await settle(() => analysis('ProcurementSupplierWeights', weightFields(period, clients), signal), signal) : {}
+    const rankSuppliers = (await daSupplierReads()).figures
+    const raw = clients.length > 0 ? await settle(() => analysis('ProcurementSupplierWeights', weightFields(period, clients, rankSuppliers), signal), signal) : {}
     return { clients, raw }
   })
   const spanClients = figuresRead.then((figuresRaw) => topBuckets(buyerBreakdownSchema.parse(figuresRaw.spanClients)).map((bucket) => bucket.key))

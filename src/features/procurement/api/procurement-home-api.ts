@@ -9,6 +9,7 @@
  * - the year's largest contract awards, grouped by contract;
  * - the newest complete month's largest contract awards, or direct purchases.
  */
+import { daSupplierFiguresOpen } from './procurement-da-release-status'
 import { readLargestDirect } from './procurement-direct-records'
 import { partyOf } from '../lib/home-party'
 import { isNamedDaSupplierBucket } from '../lib/withheld-party'
@@ -195,10 +196,10 @@ export function mapProcurementHomeNational(raw: RawProcurementHomeNational, year
       valued: direct?.withValueCount ?? null,
       value: direct?.valueAwardedSum ?? null,
       buyers: seriesValue(raw.directBuyerCount, bucket),
-      suppliers: seriesValue(raw.directSellerCount, bucket),
+      suppliers: raw.directSellerCount ? seriesValue(raw.directSellerCount, bucket) : null,
     },
     buyers: { contract: ranking(raw.awardsBuyers, party('authority')), direct: ranking(raw.directBuyers, party('authority')) },
-    directSellers: ranking(raw.directSellers, party('supplier')),
+    directSellers: raw.directSellers ? ranking(raw.directSellers, party('supplier')) : null,
     procedures: ranking(raw.procedures, (key) => key),
     counties: { contract: counties(raw.awardsCounties), direct: counties(raw.directCounties) },
     directYears: truncatePartYear(years(raw.directYearValue, raw.directYearCount), directMonths, year + 1, directCutoff),
@@ -221,6 +222,7 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
         directYears: { ...DIRECT, from: `${DIRECT_COMPARABLE_FROM}-01`, to: `${year + 1}-12` },
         awardsMonths: { ...AWARDS, from: `${year}-01`, to: `${year + 1}-12` },
         directMonths: { ...DIRECT, from: `${year}-01`, to: `${year + 1}-12` },
+        withDirectSuppliers: await daSupplierFiguresOpen(),
       },
       { operationName: 'ProcurementHomeNational', signal },
     ),
@@ -228,7 +230,7 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
   const names = await loadPartyNames(
     [...topKeys(raw.awardsBuyers), ...topKeys(raw.directBuyers)],
     // D6: only a supplier the API serves as a company has a name to look up.
-    namedSupplierKeys(raw.directSellers),
+    raw.directSellers ? namedSupplierKeys(raw.directSellers) : [],
     signal,
   )
   return mapProcurementHomeNational(raw, year, names)

@@ -1,3 +1,4 @@
+import { daSuppliersUnavailableText } from '../../lib/withheld-party'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { plural, t } from '@lingui/core/macro'
@@ -190,7 +191,11 @@ export function HomeSellersBand({
           </div>
           {sellers === 'directe' ? (
             read ? (
-              <PartyRows className="mt-5" ranking={read.directSellers} grain="direct" kind="supplier" year={year} />
+              read.directSellers ? (
+                <PartyRows className="mt-5" ranking={read.directSellers} grain="direct" kind="supplier" year={year} />
+              ) : (
+                <p className="mt-5 border-y py-4 text-sm text-muted-foreground">{daSuppliersUnavailableText()}</p>
+              )
             ) : national.isError ? (
               <div className="mt-5">
                 <HubLoadError onRetry={national.retry} />
@@ -209,7 +214,7 @@ export function HomeSellersBand({
           )}
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
             {sellers === 'directe' ? (
-              read?.directSellers.rankedBy === 'count' ? (
+              read?.directSellers?.rankedBy === 'count' ? (
                 <Trans>Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, fără licitație.</Trans>
               ) : (
                 <Trans>Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, fără licitație.</Trans>

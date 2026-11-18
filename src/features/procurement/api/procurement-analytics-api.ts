@@ -1,3 +1,4 @@
+import { daSupplierReads } from './procurement-da-release-status'
 import { z } from 'zod'
 import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
@@ -174,6 +175,8 @@ export interface Concentration {
 }
 
 export async function readConcentration(scope: Scope, basis: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Concentration | null> {
+  // Direct purchases' supplier concentration is refused while D6 is enforced and the release is off: none, not a failure.
+  if (scope.grain === 'direct_acquisition' && !(await daSupplierReads()).figures) return null
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsConcentration($s: ProcurementAnalysisScopeInput, $build: String) { c: procurementConcentration(scope: $s, basis: ${basis}, build: $build) { supplierCount top1Share top5Share } }`,
     { s: scope, build },
@@ -210,6 +213,8 @@ export interface Ranking {
   readonly buckets: readonly Bucket[]
   /** Contract money SEAP publishes per consortium, which no one member holds (supplier rankings only). */
   readonly withheld: number | null
+  /** D6 enforced while the release is off: direct purchases' supplier ranking is not served (said, never blank). */
+  readonly unavailable?: true
 }
 
 function bucketsOf(raw: z.infer<typeof breakdownSchema>[number]): Bucket[] {
@@ -225,6 +230,10 @@ function bucketsOf(raw: z.infer<typeof breakdownSchema>[number]): Bucket[] {
 }
 
 export async function readRanking(scope: Scope, dimension: Dimension, topN: number, rankBy: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Ranking> {
+  // Direct purchases' supplier ranking is refused while D6 is enforced and the release is off: said as unavailable.
+  if (scope.grain === 'direct_acquisition' && dimension === 'supplier' && !(await daSupplierReads()).figures) {
+    return { dimension, rankedBy: rankBy, buckets: [], withheld: null, unavailable: true }
+  }
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope } } }`,
     { s: scope, build },

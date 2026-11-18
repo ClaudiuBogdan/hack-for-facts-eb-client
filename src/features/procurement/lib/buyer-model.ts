@@ -111,7 +111,8 @@ export interface BuyerProfile {
   /** The newest month SEAP is complete enough to read, nationally, per population. */
   readonly cutoff: { readonly direct: string | null; readonly contract: string | null }
   readonly directMonths: readonly MonthFigure[]
-  readonly directSuppliers: SupplierRanking
+  /** Null while D6 is enforced and the release is off: the API refuses direct purchases' supplier rankings (said, never blank). */
+  readonly directSuppliers: SupplierRanking | null
   readonly awardSuppliers: SupplierRanking
   readonly categories: { readonly direct: readonly CategoryFigure[]; readonly contract: readonly CategoryFigure[] }
   /** Direct purchases by the supplier's county. */

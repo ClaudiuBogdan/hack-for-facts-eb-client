@@ -2,9 +2,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import { queryOf } from '../lib/analytics-model'
-import { isStaleBuild, planAnswer, planRecords, readFigures, readNames, readRecords, scopeOf, type AnalyticsCutoff } from './procurement-analytics-api'
+import { isStaleBuild, planAnswer, planRecords, readConcentration, readFigures, readNames, readRanking, readRecords, scopeOf, type AnalyticsCutoff } from './procurement-analytics-api'
 
 const graphql = vi.hoisted(() => ({ query: vi.fn() }))
+// The switches: direct purchases' supplier figures readable unless a test says otherwise.
+const supplierReads = vi.hoisted(() => ({ figures: true }))
+vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: supplierReads.figures, places: false }) }))
 vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()), graphqlQuery: graphql.query }))
 
 const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13' }
@@ -155,5 +158,20 @@ describe('D6 on direct purchases, whatever the release flag', () => {
     const [query, variables] = graphql.query.mock.calls[graphql.query.mock.calls.length - 1] as [string, Record<string, unknown>]
     expect(query).not.toContain('organizationLabels(cuis: $cuis) @include(if: true)')
     expect(variables).toMatchObject({ withOrgs: false, da0: '14837428', da1: '9446547', da2: '1234' })
+  })
+})
+
+describe('D6 enforced while the release is off', () => {
+  it('a direct-purchase supplier ranking is said unavailable, and no concentration is read — nothing asked of the API', async () => {
+    supplierReads.figures = false
+    graphql.query.mockClear()
+    try {
+      const scope = { grain: 'direct_acquisition', from: '2025-01', to: '2025-12' }
+      await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal)).resolves.toMatchObject({ unavailable: true, buckets: [] })
+      await expect(readConcentration(scope, 'value', null, new AbortController().signal)).resolves.toBeNull()
+      expect(graphql.query).not.toHaveBeenCalled()
+    } finally {
+      supplierReads.figures = true
+    }
   })
 })

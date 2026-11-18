@@ -300,7 +300,7 @@ describe('direct acquisitions release 1 — free text', () => {
   it('withheld: the category as the title, the text said to wait for its review, the lines unnamed', () => {
     const page = html(mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES), null)
     expect(page).toContain('Finalizată Aranjamente florale')
-    expect(page).toContain('Textul scris de instituție (titlul, descrierea și denumirile produselor) nu e afișat încă: așteaptă verificarea datelor personale.')
+    expect(page).toContain('Textul scris de instituție (titlul, descrierea și denumirile sau unitățile produselor) nu e afișat încă: așteaptă verificarea datelor personale.')
     expect(page).toContain('Produs (denumire neafișată)')
     expect(page).not.toContain('Instituția a descris achiziția așa:')
   })

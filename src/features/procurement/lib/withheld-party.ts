@@ -44,6 +44,14 @@ export function isNamedDaSupplierBucket(bucket: { readonly key: string | null; r
   return bucket.key !== null && !isNaturalPersonKey(bucket.key) && bucket.displayKind === 'company'
 }
 
+/**
+ * Where a page would rank direct purchases' suppliers while D6 is enforced
+ * and the release is off: the API refuses them, and the page says so.
+ */
+export function daSuppliersUnavailableText(): string {
+  return t`Firmele achizițiilor directe nu sunt disponibile acum: platforma le arată din nou odată cu datele noi ale achizițiilor directe.`
+}
+
 /** A direct-acquisition supplier bucket the page does not name: the group, or one supplier the API did not serve as a company. */
 export function unnamedSupplierLabel(key: string | null): string {
   return isNaturalPersonKey(key) ? naturalPersonsLabel() : t`Furnizor nenumit`

@@ -1,3 +1,4 @@
+import { daSuppliersUnavailableText } from '@/features/procurement/lib/withheld-party'
 import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { ChevronDown } from 'lucide-react'
@@ -120,10 +121,13 @@ function Buying({ cui, profile }: { readonly cui: string; readonly profile: Buye
     ) : null
   }
   const categories = profile.categories.direct.slice(0, SHOWN)
-  const suppliers = {
-    rankedBy: profile.directSuppliers.rankedBy,
-    rows: profile.directSuppliers.rows.map((row) => ({ key: row.cui, label: supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share })),
-  }
+  // D6: each row carries its kind, so PartyRows names only a supplier the API serves as a company; none read while D6 refuses the ranking.
+  const suppliers = profile.directSuppliers
+    ? {
+        rankedBy: profile.directSuppliers.rankedBy,
+        rows: profile.directSuppliers.rows.map((row) => ({ key: row.cui, label: supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
+      }
+    : null
   const period = periodText(profile.period)
   return (
     <>
@@ -135,7 +139,9 @@ function Buying({ cui, profile }: { readonly cui: string; readonly profile: Buye
         </div>
         <div className="min-w-0">
           <MonoLabel className="block text-muted-foreground">{t`De la cine cumpără direct, ${period}`}</MonoLabel>
-          {suppliers.rows.length > 0 ? (
+          {suppliers === null ? (
+            <p className="mt-3 border-y py-4 text-sm text-muted-foreground">{daSuppliersUnavailableText()}</p>
+          ) : suppliers.rows.length > 0 ? (
             <PartyRows className="mt-3" ranking={suppliers} grain="direct" kind="supplier" year={periodYear(profile.period)} limit={SHOWN} />
           ) : (
             <p className="mt-3 border-y py-4 text-sm text-muted-foreground">{t`Firmele de la care a cumpărat nu s-au putut citi acum.`}</p>

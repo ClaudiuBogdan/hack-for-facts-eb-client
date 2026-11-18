@@ -393,7 +393,7 @@ msgid "{0, plural, few {la # instanțe} other {la # de instanțe}}"
 msgstr "{0, plural, few {la # instanțe} other {la # de instanțe}}"
 
 #. placeholder {0}: rows.length
-#: src/features/procurement/components/home/home-money-bands.tsx:100
+#: src/features/procurement/components/home/home-money-bands.tsx:101
 msgid "{0, plural, few {Toate cele # categorii} other {Toate cele # de categorii}}"
 msgstr "{0, plural, few {Toate cele # categorii} other {Toate cele # de categorii}}"
 
@@ -1122,7 +1122,7 @@ msgstr "{0} de dosare în total, cu arhiva ÎCCJ"
 
 #. placeholder {0}: countText(residents)
 #: src/features/justice/components/analysis/analysis-table.tsx:181
-#: src/features/procurement/components/analytics/analytics-answer.tsx:283
+#: src/features/procurement/components/analytics/analytics-answer.tsx:284
 msgid "{0} de locuitori"
 msgstr "{0} de locuitori"
 
@@ -1159,7 +1159,7 @@ msgid "{0} din bugetul de stat"
 msgstr "{0} din bugetul de stat"
 
 #. placeholder {0}: formatHubNumber(unpublished)
-#: src/features/procurement/lib/buyer-text.ts:287
+#: src/features/procurement/lib/buyer-text.ts:289
 msgid "{0} din cele {all} atribuite în {year} au fost negociate fără anunț prealabil."
 msgstr "{0} din cele {all} atribuite în {year} au fost negociate fără anunț prealabil."
 
@@ -1191,7 +1191,7 @@ msgid "{0} dintre dosarele din {1} sunt judecate în fond la judecătorii. Apelu
 msgstr "{0} dintre dosarele din {1} sunt judecate în fond la judecătorii. Apelurile ajung mai ales la tribunale, recursurile la curțile de apel și la Înalta Curte."
 
 #. placeholder {0}: steady.length
-#: src/features/procurement/lib/buyer-text.ts:206
+#: src/features/procurement/lib/buyer-text.ts:208
 msgid "{0} dintre firmele de mai jos i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "{0} dintre firmele de mai jos i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 
@@ -1312,7 +1312,7 @@ msgid "{0} group items configured"
 msgstr "{0} elemente de grup configurate"
 
 #. placeholder {0}: supplierName(profile, one.cui)
-#: src/features/procurement/lib/buyer-text.ts:201
+#: src/features/procurement/lib/buyer-text.ts:203
 msgid "{0} i-a vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "{0} i-a vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 
@@ -1718,7 +1718,7 @@ msgstr "{0} și {1}"
 
 #. placeholder {0}: supplierName(profile, one.cui)
 #. placeholder {1}: supplierName(profile, two.cui)
-#: src/features/procurement/lib/buyer-text.ts:203
+#: src/features/procurement/lib/buyer-text.ts:205
 msgid "{0} și {1} i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "{0} și {1} i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 
@@ -2662,7 +2662,7 @@ msgstr "{first} și {second} au cumpărat direct de la firmă în aproape fiecar
 
 #. placeholder {0}: first + rows.length - 1
 #. placeholder {1}: countText(total ?? 0)
-#: src/features/procurement/components/analytics/analytics-answer.tsx:415
+#: src/features/procurement/components/analytics/analytics-answer.tsx:416
 msgid "{first}–{0} din {1}"
 msgstr "{first}–{0} din {1}"
 
@@ -4675,17 +4675,17 @@ msgstr "achiziții directe"
 
 #: src/features/private-companies/lib/company-profile-text.ts:396
 #: src/features/private-companies/lib/company-profile-text.ts:432
-#: src/features/procurement/components/buyer/buyer-bands.tsx:59
+#: src/features/procurement/components/buyer/buyer-bands.tsx:60
 #: src/features/procurement/components/home/home-context-bands.tsx:505
-#: src/features/procurement/components/home/home-money-bands.tsx:80
-#: src/features/procurement/components/home/home-money-bands.tsx:185
+#: src/features/procurement/components/home/home-money-bands.tsx:81
+#: src/features/procurement/components/home/home-money-bands.tsx:186
 #: src/features/procurement/components/procurement-authority-slice.tsx:189
 #: src/features/procurement/components/supplier/supplier-bands.tsx:50
 #: src/features/procurement/lib/analytics-text.ts:106
 msgid "Achiziții directe"
 msgstr "Achiziții directe"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:171
+#: src/features/procurement/components/buyer/buyer-bands.tsx:176
 msgid "Achiziții directe de la fiecare firmă, pe ani, lei"
 msgstr "Achiziții directe de la fiecare firmă, pe ani, lei"
 
@@ -4724,7 +4724,7 @@ msgid "Achiziții directe, {year}"
 msgstr "Achiziții directe, {year}"
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:146
+#: src/features/procurement/components/buyer/buyer-bands.tsx:147
 #: src/features/procurement/components/supplier/supplier-bands.tsx:73
 msgid "Achiziții directe, după valoare, {0}"
 msgstr "Achiziții directe, după valoare, {0}"
@@ -4783,7 +4783,7 @@ msgstr "Achizițiile directe au crescut de la {from} în {fromYear} la {to} în 
 msgid "Achizițiile directe cu cea mai mare valoare finalizate în {0}, cea mai nouă lună completă din SEAP, fără TVA."
 msgstr "Achizițiile directe cu cea mai mare valoare finalizate în {0}, cea mai nouă lună completă din SEAP, fără TVA."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:316
+#: src/features/procurement/components/buyer/buyer-bands.tsx:321
 #: src/features/procurement/components/supplier/supplier-bands.tsx:360
 msgid "Achizițiile directe cu cea mai mare valoare, fără TVA."
 msgstr "Achizițiile directe cu cea mai mare valoare, fără TVA."
@@ -4793,7 +4793,7 @@ msgid "Achizițiile directe din {period} nu s-au putut citi acum."
 msgstr "Achizițiile directe din {period} nu s-au putut citi acum."
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:200
+#: src/features/procurement/components/buyer/buyer-bands.tsx:205
 msgid "Achizițiile directe, după județul firmei, {0}"
 msgstr "Achizițiile directe, după județul firmei, {0}"
 
@@ -4819,8 +4819,8 @@ msgstr "Achizițiile publice ale instituției {name}: ce cumpără, de la ce fir
 msgid "Achizițiile publice ale unei instituții: ce cumpără, de la ce firme și din ce județe, când și cum, din SEAP."
 msgstr "Achizițiile publice ale unei instituții: ce cumpără, de la ce firme și din ce județe, când și cum, din SEAP."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:103
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:112
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:104
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:113
 msgid "Achizițiile, pe pagina de achiziții"
 msgstr "Achizițiile, pe pagina de achiziții"
 
@@ -4963,7 +4963,7 @@ msgstr "acorduri-cadru"
 msgid "Acorduri-cadru"
 msgstr "Acorduri-cadru"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:247
+#: src/features/procurement/components/buyer/buyer-bands.tsx:252
 msgid "Acorduri-cadru semnate"
 msgstr "Acorduri-cadru semnate"
 
@@ -6769,7 +6769,7 @@ msgid "AMEPIP {year}: {status}"
 msgstr "AMEPIP {year}: {status}"
 
 #. placeholder {0}: yearRanges(tables.withheldFormYears)
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:211
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:217
 msgid "AMEPIP are pentru ea doar trei valori din formular, pe {0} (dividende, investiții, cercetare); nu sunt arătate: un 0 de acolo poate fi o căsuță goală."
 msgstr "AMEPIP are pentru ea doar trei valori din formular, pe {0} (dividende, investiții, cercetare); nu sunt arătate: un 0 de acolo poate fi o căsuță goală."
 
@@ -6777,7 +6777,7 @@ msgstr "AMEPIP are pentru ea doar trei valori din formular, pe {0} (dividende, i
 msgid "AMEPIP notează „%” și fracții (0,0113), și procente (50). Cinci rate calculate din bilanț (marja netă, ROE, ROA, creșterea cifrei de afaceri și a profitului, aceasta verificată pe anii cu profit) sunt fracții: comparate cu bilanțurile a 40 de întreprinderi, 809 din 818 valori se potrivesc, așa că sunt arătate ca procente. Restul, cu „%” în galben, rămân cum sunt scrise: scara lor nu e spusă."
 msgstr "AMEPIP notează „%” și fracții (0,0113), și procente (50). Cinci rate calculate din bilanț (marja netă, ROE, ROA, creșterea cifrei de afaceri și a profitului, aceasta verificată pe anii cu profit) sunt fracții: comparate cu bilanțurile a 40 de întreprinderi, 809 din 818 valori se potrivesc, așa că sunt arătate ca procente. Restul, cu „%” în galben, rămân cum sunt scrise: scara lor nu e spusă."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:212
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:218
 msgid "AMEPIP nu are indicatori pentru această întreprindere."
 msgstr "AMEPIP nu are indicatori pentru această întreprindere."
 
@@ -6870,7 +6870,7 @@ msgid "An cu an"
 msgstr "An cu an"
 
 #: src/features/private-companies/components/hub/company-hub-sections.ts:11
-#: src/features/procurement/components/buyer/buyer-bands.tsx:160
+#: src/features/procurement/components/buyer/buyer-bands.tsx:165
 #: src/features/procurement/components/supplier/supplier-bands.tsx:95
 msgid "An de an"
 msgstr "An de an"
@@ -7281,7 +7281,7 @@ msgstr "Anii cu bilanț"
 msgid "Anii dinainte de {JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele portalului modificate mai târziu (preluarea a mers după data modificării): o parte necunoscută, nu volumul instanțelor."
 msgstr "Anii dinainte de {JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele portalului modificate mai târziu (preluarea a mers după data modificării): o parte necunoscută, nu volumul instanțelor."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:118
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:119
 msgid "Anii dinainte, pe pagina de achiziții"
 msgstr "Anii dinainte, pe pagina de achiziții"
 
@@ -7750,7 +7750,7 @@ msgstr "Apărare"
 msgid "Apărare și securitate"
 msgstr "Apărare și securitate"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:87
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:88
 msgid "Apare în contracte și plăți publice fără valoare publicată."
 msgstr "Apare în contracte și plăți publice fără valoare publicată."
 
@@ -7926,8 +7926,8 @@ msgstr "ar fi socotiți de două ori: o dată la bugetul care dă, o dată la ce
 #: src/features/parliament/components/member-interventii-tab.tsx:226
 #: src/features/private-companies/components/analytics/analytics-filter-sheet.tsx:152
 #: src/features/procurement/components/analytics/analytics-filters.tsx:529
-#: src/features/procurement/components/buyer/buyer-bands.tsx:57
-#: src/features/procurement/components/home/home-money-bands.tsx:182
+#: src/features/procurement/components/buyer/buyer-bands.tsx:58
+#: src/features/procurement/components/home/home-money-bands.tsx:183
 #: src/features/procurement/components/supplier/supplier-bands.tsx:48
 msgid "Arată"
 msgstr "Arată"
@@ -8005,8 +8005,8 @@ msgstr "Arată mai puțin"
 #: src/features/ngos/registry/components/registry-answer.tsx:520
 #: src/features/ngos/registry/components/registry-filters.tsx:103
 #: src/features/procurement/components/analytics/analytics-filters.tsx:84
-#: src/features/procurement/components/buyer/buyer-bands.tsx:119
-#: src/features/procurement/components/home/home-money-bands.tsx:100
+#: src/features/procurement/components/buyer/buyer-bands.tsx:120
+#: src/features/procurement/components/home/home-money-bands.tsx:101
 #: src/features/procurement/components/home/procurement-home-page.tsx:306
 #: src/features/procurement/components/supplier/supplier-bands.tsx:176
 #: src/features/public-enterprises/components/hub/hub-parts.tsx:112
@@ -8170,7 +8170,7 @@ msgstr "Ascunde impactul fiscal"
 msgid "Ascunde istoricul"
 msgstr "Ascunde istoricul"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:230
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:236
 msgid "Ascunde valorile, pe ani"
 msgstr "Ascunde valorile, pe ani"
 
@@ -8718,7 +8718,7 @@ msgid "Banii"
 msgstr "Banii"
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:198
+#: src/features/procurement/components/buyer/buyer-bands.tsx:203
 msgid "Banii achizițiilor directe, după județul firmei, {0}"
 msgstr "Banii achizițiilor directe, după județul firmei, {0}"
 
@@ -8727,7 +8727,7 @@ msgstr "Banii achizițiilor directe, după județul firmei, {0}"
 msgid "Banii achizițiilor directe, după județul instituției, {0}"
 msgstr "Banii achizițiilor directe, după județul instituției, {0}"
 
-#: src/features/procurement/components/home/home-money-bands.tsx:77
+#: src/features/procurement/components/home/home-money-bands.tsx:78
 msgid "Banii din"
 msgstr "Banii din"
 
@@ -8736,7 +8736,7 @@ msgid "Banii drumurilor merg mai ales la asocieri: de aceea numărăm, nu adună
 msgstr "Banii drumurilor merg mai ales la asocieri: de aceea numărăm, nu adunăm lei."
 
 #: src/features/landing/lib/landing-groups.ts:60
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:178
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:184
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:358
 msgid "Banii publici"
 msgstr "Banii publici"
@@ -9811,7 +9811,7 @@ msgstr "Când"
 msgid "Când ceva se strică, primim contextul ca să reparăm. Fără el, doar un semnal anonim că s-a stricat."
 msgstr "Când ceva se strică, primim contextul ca să reparăm. Fără el, doar un semnal anonim că s-a stricat."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:227
+#: src/features/procurement/components/buyer/buyer-bands.tsx:232
 msgid "Când cumpără"
 msgstr "Când cumpără"
 
@@ -10280,17 +10280,17 @@ msgstr ""
 #~ msgid "Categorii și stadii"
 #~ msgstr ""
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:134
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:138
 msgid "Categoriile achizițiilor nu s-au putut citi acum."
 msgstr "Categoriile achizițiilor nu s-au putut citi acum."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:124
+#: src/features/procurement/components/buyer/buyer-bands.tsx:125
 #: src/features/procurement/components/supplier/supplier-bands.tsx:181
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:146
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:152
 msgid "Categoriile adună codurile CPV ale achizițiilor; valorile sunt fără TVA."
 msgstr "Categoriile adună codurile CPV ale achizițiilor; valorile sunt fără TVA."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:127
+#: src/features/procurement/components/buyer/buyer-bands.tsx:128
 msgid "Categoriile adună codurile CPV ale contractelor atribuite; valoarea e a întregului contract."
 msgstr "Categoriile adună codurile CPV ale contractelor atribuite; valoarea e a întregului contract."
 
@@ -10302,7 +10302,7 @@ msgstr "Categoriile adună codurile CPV ale contractelor; valoarea e a întregul
 msgid "Categoriile adună codurile CPV ale tuturor contractelor, și ale celor câștigate în asociere; valoarea e a întregului contract."
 msgstr "Categoriile adună codurile CPV ale tuturor contractelor, și ale celor câștigate în asociere; valoarea e a întregului contract."
 
-#: src/features/procurement/components/home/home-money-bands.tsx:118
+#: src/features/procurement/components/home/home-money-bands.tsx:119
 msgid "Categoriile grupează codurile CPV ale achizițiilor."
 msgstr "Categoriile grupează codurile CPV ale achizițiilor."
 
@@ -10800,7 +10800,7 @@ msgstr "Ce a observat ANAF"
 msgid "Ce a prevăzut fiecare lege pentru fiecare an, din 2016."
 msgstr "Ce a prevăzut fiecare lege pentru fiecare an, din 2016."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:91
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:92
 msgid "Ce a primit de la stat"
 msgstr "Ce a primit de la stat"
 
@@ -10850,12 +10850,12 @@ msgid "Ce conține modulul de legislație și de unde vin datele."
 msgstr "Ce conține modulul de legislație și de unde vin datele."
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:466
-#: src/features/procurement/components/buyer/buyer-bands.tsx:92
+#: src/features/procurement/components/buyer/buyer-bands.tsx:93
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:252
 msgid "Ce cumpără"
 msgstr "Ce cumpără"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:132
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:136
 msgid "Ce cumpără direct, {period}"
 msgstr "Ce cumpără direct, {period}"
 
@@ -11021,7 +11021,7 @@ msgstr "Ce pagini se deschid și ce funcții se folosesc, ca să știm ce merit�
 msgid "Ce poți căuta"
 msgstr "Ce poți căuta"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:224
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:230
 msgid "Ce raportează la AMEPIP"
 msgstr "Ce raportează la AMEPIP"
 
@@ -11088,7 +11088,7 @@ msgid "Ce spun listele oficiale, în edițiile încărcate. O licență sau un c
 msgstr "Ce spun listele oficiale, în edițiile încărcate. O licență sau un certificat din listă nu dovedește că e valabil azi; locul e al serviciului, nu sediul organizației."
 
 #: src/features/public-enterprises/components/authority/authority-hero.tsx:43
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:269
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:275
 msgid "Ce spune fiecare sursă"
 msgstr "Ce spune fiecare sursă"
 
@@ -11142,7 +11142,7 @@ msgstr "Cea mai mare cifră de afaceri în {year}: {0}, {1}."
 
 #. placeholder {0}: percentText(first.share, 0)
 #. placeholder {1}: supplierName(profile, first.cui)
-#: src/features/procurement/lib/buyer-text.ts:192
+#: src/features/procurement/lib/buyer-text.ts:194
 msgid "Cea mai mare parte, {0}, e a firmei {1}."
 msgstr "Cea mai mare parte, {0}, e a firmei {1}."
 
@@ -11341,7 +11341,7 @@ msgstr "Cele mai mari"
 msgid "Cele mai mari 6 orașe"
 msgstr "Cele mai mari 6 orașe"
 
-#: src/features/procurement/components/home/home-money-bands.tsx:184
+#: src/features/procurement/components/home/home-money-bands.tsx:185
 msgid "Cele mai mari contracte"
 msgstr "Cele mai mari contracte"
 
@@ -11351,7 +11351,7 @@ msgstr "Cele mai mari contracte"
 
 #. placeholder {0}: monthText(month)
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:311
+#: src/features/procurement/components/buyer/buyer-bands.tsx:316
 #: src/features/procurement/components/home/home-context-bands.tsx:485
 #: src/features/procurement/components/supplier/supplier-bands.tsx:355
 msgid "Cele mai mari din {0}"
@@ -11426,7 +11426,7 @@ msgstr "Cele mai multe sunt în grupa {group}: {0}, {share} dintre ele."
 msgid "Cele mai multe sunt în grupa {group}: {0}."
 msgstr "Cele mai multe sunt în grupa {group}: {0}."
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:383
+#: src/features/procurement/components/analytics/analytics-answer.tsx:384
 #: src/features/procurement/components/home/home-context-bands.tsx:485
 #: src/features/procurement/components/home/procurement-home-page.tsx:113
 msgid "Cele mai noi"
@@ -11518,7 +11518,7 @@ msgstr "Cere set"
 msgid "Cere setul {0}"
 msgstr "Cere setul {0}"
 
-#: src/features/procurement/lib/home-model.ts:228
+#: src/features/procurement/lib/home-model.ts:229
 msgid "Cerere de ofertă"
 msgstr "Cerere de ofertă"
 
@@ -12169,7 +12169,7 @@ msgstr "Cifrele, graficele și comparațiile folosesc doar valorile admise de po
 #. placeholder {0}: percentText(top5, 0)
 #. placeholder {1}: periodText(profile.period)
 #. placeholder {2}: firmsCount(firms)
-#: src/features/procurement/lib/buyer-text.ts:191
+#: src/features/procurement/lib/buyer-text.ts:193
 msgid "Cinci firme însumează {0} din valoarea achizițiilor directe din {1}; au vândut {2} în total."
 msgstr "Cinci firme însumează {0} din valoarea achizițiilor directe din {1}; au vândut {2} în total."
 
@@ -12238,7 +12238,7 @@ msgstr "Cine le <0/>controlează"
 msgid "Cine le controlează"
 msgstr "Cine le controlează"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:52
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:53
 msgid "Cine o controlează"
 msgstr "Cine o controlează"
 
@@ -13521,7 +13521,7 @@ msgstr "Îngrijorător"
 msgid "Concret: dacă o lege a fost modificată după publicare, textul de aici rămâne cel inițial, iar modificările apar ca evenimente în istoricul actului — nu topite în text. Pentru forma în vigoare și pentru orice decizie cu miză, mergi la sursa oficială:"
 msgstr "Concret: dacă o lege a fost modificată după publicare, textul de aici rămâne cel inițial, iar modificările apar ca evenimente în istoricul actului — nu topite în text. Pentru forma în vigoare și pentru orice decizie cu miză, mergi la sursa oficială:"
 
-#: src/features/procurement/lib/home-model.ts:231
+#: src/features/procurement/lib/home-model.ts:232
 msgid "Concurs de soluții"
 msgstr "Concurs de soluții"
 
@@ -13988,10 +13988,10 @@ msgstr "contracte"
 
 #: src/features/private-companies/lib/company-profile-text.ts:432
 #: src/features/procurement/components/analytics/analytics-view.ts:51
-#: src/features/procurement/components/buyer/buyer-bands.tsx:60
+#: src/features/procurement/components/buyer/buyer-bands.tsx:61
 #: src/features/procurement/components/home/home-context-bands.tsx:129
 #: src/features/procurement/components/home/home-context-bands.tsx:504
-#: src/features/procurement/components/home/home-money-bands.tsx:79
+#: src/features/procurement/components/home/home-money-bands.tsx:80
 #: src/features/procurement/components/home/procurement-home-page.tsx:290
 #: src/features/procurement/components/procurement-authority-slice.tsx:189
 #: src/features/procurement/components/supplier/supplier-bands.tsx:51
@@ -14010,7 +14010,7 @@ msgid "Contracte atribuite"
 msgstr "Contracte atribuite"
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:268
+#: src/features/procurement/components/buyer/buyer-bands.tsx:273
 msgid "Contracte atribuite în {0}, după procedură"
 msgstr "Contracte atribuite în {0}, după procedură"
 
@@ -14029,7 +14029,7 @@ msgid "Contracte atribuite, {year}"
 msgstr "Contracte atribuite, {year}"
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:152
+#: src/features/procurement/components/buyer/buyer-bands.tsx:157
 msgid "Contracte atribuite, după număr, {0}"
 msgstr "Contracte atribuite, după număr, {0}"
 
@@ -14084,12 +14084,12 @@ msgstr "contracte și contracte subsecvente"
 #~ msgstr "Contracte și plăți publice"
 
 #. placeholder {0}: companyMoneyText(money.received)
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:85
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:86
 msgid "Contracte și plăți publice de {0}, {period}."
 msgstr "Contracte și plăți publice de {0}, {period}."
 
 #. placeholder {0}: companyMoneyText(money.received)
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:86
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:87
 msgid "Contracte și plăți publice de {0}."
 msgstr "Contracte și plăți publice de {0}."
 
@@ -14125,7 +14125,7 @@ msgstr "Contractele"
 msgid "Contractele atribuite"
 msgstr "Contractele atribuite"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:314
+#: src/features/procurement/components/buyer/buyer-bands.tsx:319
 msgid "Contractele atribuite cu cea mai mare valoare, fiecare cu toate firmele câștigătoare."
 msgstr "Contractele atribuite cu cea mai mare valoare, fiecare cu toate firmele câștigătoare."
 
@@ -14142,7 +14142,7 @@ msgstr "Contractele atribuite în {year}"
 msgid "Contractele atribuite în {year}, după procedură"
 msgstr "Contractele atribuite în {year}, după procedură"
 
-#: src/features/procurement/components/home/home-money-bands.tsx:219
+#: src/features/procurement/components/home/home-money-bands.tsx:224
 msgid "Contractele atribuite în {year}, după valoare, cu toate firmele câștigătoare; valoarea e a întregului contract."
 msgstr "Contractele atribuite în {year}, după valoare, cu toate firmele câștigătoare; valoarea e a întregului contract."
 
@@ -14559,7 +14559,7 @@ msgstr "Coșul"
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:315
 #: src/features/national-budget/analytics/components/analytics-law.tsx:303
 #: src/features/national-budget/analytics/components/analytics-law.tsx:586
-#: src/features/procurement/components/analytics/analytics-answer.tsx:238
+#: src/features/procurement/components/analytics/analytics-answer.tsx:239
 msgid "Cota"
 msgstr "Cota"
 
@@ -15391,7 +15391,7 @@ msgstr "Cum a fost selectată"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:1110
 #: src/features/private-companies/components/analytics/analytics-source.tsx:91
-#: src/features/procurement/components/analytics/analytics-answer.tsx:449
+#: src/features/procurement/components/analytics/analytics-answer.tsx:450
 msgid "Cum am calculat"
 msgstr "Cum am calculat"
 
@@ -15428,7 +15428,7 @@ msgstr ""
 msgid "Cum citești statutul unui act"
 msgstr "Cum citești statutul unui act"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:254
+#: src/features/procurement/components/buyer/buyer-bands.tsx:259
 msgid "Cum cumpără"
 msgstr "Cum cumpără"
 
@@ -15503,7 +15503,7 @@ msgid "Cumpără local instituțiile din județul Cluj?"
 msgstr "Cumpără local instituțiile din județul Cluj?"
 
 #. placeholder {0}: directPurchasesCount(ratio)
-#: src/features/procurement/lib/buyer-text.ts:305
+#: src/features/procurement/lib/buyer-text.ts:307
 msgid "Cumpără mai ales direct: la fiecare contract atribuit, {0}."
 msgstr "Cumpără mai ales direct: la fiecare contract atribuit, {0}."
 
@@ -15693,7 +15693,7 @@ msgctxt "a table column: the day a judgment was given"
 msgid "Data"
 msgstr "Data"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:388
+#: src/features/procurement/components/analytics/analytics-answer.tsx:389
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:241
 msgctxt "day"
 msgid "Data"
@@ -16270,7 +16270,7 @@ msgstr "Datele Institutului Național de Statistică, pentru țară, județe și
 #~ msgstr ""
 
 #. placeholder {0}: monthText(cutoff)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:374
+#: src/features/procurement/components/buyer/buyer-bands.tsx:379
 msgid "Datele merg până în {0}."
 msgstr "Datele merg până în {0}."
 
@@ -16548,11 +16548,11 @@ msgstr "De la cerere la hotărâre"
 msgid "De la cine"
 msgstr "De la cine"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:142
+#: src/features/procurement/components/buyer/buyer-bands.tsx:143
 msgid "De la cine cumpără"
 msgstr "De la cine cumpără"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:137
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:141
 msgid "De la cine cumpără direct, {period}"
 msgstr "De la cine cumpără direct, {period}"
 
@@ -16622,7 +16622,7 @@ msgstr "De unde"
 msgid "De unde au venit banii publici în {when}?"
 msgstr "De unde au venit banii publici în {when}?"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:193
+#: src/features/procurement/components/buyer/buyer-bands.tsx:198
 msgid "De unde sunt firmele"
 msgstr "De unde sunt firmele"
 
@@ -16735,12 +16735,12 @@ msgstr "Decembrie"
 #~ msgstr "decembrie"
 
 #. placeholder {0}: percentText(share, 0)
-#: src/features/procurement/lib/buyer-text.ts:264
+#: src/features/procurement/lib/buyer-text.ts:266
 msgid "Decembrie a adus {0} din banii achizițiilor directe ale anului, de {times} ori cât o lună obișnuită."
 msgstr "Decembrie a adus {0} din banii achizițiilor directe ale anului, de {times} ori cât o lună obișnuită."
 
 #. placeholder {0}: percentText(share, 0)
-#: src/features/procurement/lib/buyer-text.ts:263
+#: src/features/procurement/lib/buyer-text.ts:265
 msgid "Decembrie a adus {0} din banii achizițiilor directe ale ultimelor 12 luni, de {times} ori cât o lună obișnuită."
 msgstr "Decembrie a adus {0} din banii achizițiilor directe ale ultimelor 12 luni, de {times} ori cât o lună obișnuită."
 
@@ -17100,8 +17100,12 @@ msgstr "Denumirile firmelor sunt cele publice actuale din directorul platformei,
 #~ msgstr "Denumirile firmelor sunt cele publice actuale din registru, nu cele de la data ediției."
 
 #: src/features/procurement/lib/direct-purchase-value-text.ts:110
-msgid "denumirile produselor"
-msgstr "denumirile produselor"
+#~ msgid "denumirile produselor"
+#~ msgstr "denumirile produselor"
+
+#: src/features/procurement/lib/direct-purchase-value-text.ts:110
+msgid "denumirile sau unitățile produselor"
+msgstr "denumirile sau unitățile produselor"
 
 #: src/features/private-companies/components/profile/company-registry-evidence.tsx:46
 msgid "Denumirile stărilor sunt din nomenclatorul aplicației, nu etichete publicate de ONRC."
@@ -17488,7 +17492,7 @@ msgstr "Dezvoltare durabilă — Orizont 2020"
 msgid "Dezvoltare durabilă — Ținte 2030"
 msgstr "Dezvoltare durabilă — Ținte 2030"
 
-#: src/features/procurement/lib/home-model.ts:229
+#: src/features/procurement/lib/home-model.ts:230
 msgid "Dialog competitiv"
 msgstr "Dialog competitiv"
 
@@ -21143,7 +21147,7 @@ msgstr "Fără fișă de firmă"
 msgid "Fără fișă de firmă: nicio situație financiară."
 msgstr "Fără fișă de firmă: nicio situație financiară."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:75
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:76
 msgid "Fără fișă de firmă: nu se știe ce a vândut instituțiilor."
 msgstr "Fără fișă de firmă: nu se știe ce a vândut instituțiilor."
 
@@ -21498,7 +21502,7 @@ msgstr "Fără tip în sursă"
 msgid "fără titlu"
 msgstr "fără titlu"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:398
+#: src/features/procurement/components/analytics/analytics-answer.tsx:399
 #: src/features/procurement/components/contract/contract-context.tsx:113
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:187
 msgid "Fără titlu în SEAP"
@@ -22602,7 +22606,11 @@ msgstr "firmei {name}"
 msgid "Firmele"
 msgstr "Firmele"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:163
+#: src/features/procurement/lib/withheld-party.ts:52
+msgid "Firmele achizițiilor directe nu sunt disponibile acum: platforma le arată din nou odată cu datele noi ale achizițiilor directe."
+msgstr "Firmele achizițiilor directe nu sunt disponibile acum: platforma le arată din nou odată cu datele noi ale achizițiilor directe."
+
+#: src/features/procurement/components/buyer/buyer-bands.tsx:168
 msgid "Firmele care i-au vândut cel mai mult direct din {DIRECT_COMPARABLE_FROM} încoace, pe ani."
 msgstr "Firmele care i-au vândut cel mai mult direct din {DIRECT_COMPARABLE_FROM} încoace, pe ani."
 
@@ -22610,7 +22618,7 @@ msgstr "Firmele care i-au vândut cel mai mult direct din {DIRECT_COMPARABLE_FRO
 msgid "Firmele care îndeplinesc filtrele în fiecare an"
 msgstr "Firmele care îndeplinesc filtrele în fiecare an"
 
-#: src/features/procurement/components/home/home-money-bands.tsx:161
+#: src/features/procurement/components/home/home-money-bands.tsx:162
 msgid "Firmele care<0/>vând statului"
 msgstr "Firmele care<0/>vând statului"
 
@@ -22655,7 +22663,7 @@ msgstr "Firmele cu pierderi, pe județe"
 #~ msgid "Firmele cu situație financiară pe {year}, după județul comun al firmei în ediția ONRC"
 #~ msgstr "Firmele cu situație financiară pe {year}, după județul comun al firmei în ediția ONRC"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:141
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:147
 msgid "Firmele de la care a cumpărat nu s-au putut citi acum."
 msgstr "Firmele de la care a cumpărat nu s-au putut citi acum."
 
@@ -22669,11 +22677,11 @@ msgid "firmele din {label}, în analiza bilanțurilor"
 msgstr "firmele din {label}, în analiza bilanțurilor"
 
 #. placeholder {0}: percentText(homeShare, 0)
-#: src/features/procurement/lib/buyer-text.ts:223
+#: src/features/procurement/lib/buyer-text.ts:225
 msgid "Firmele din {name}, județul instituției, însumează {0} din valoarea achizițiilor directe."
 msgstr "Firmele din {name}, județul instituției, însumează {0} din valoarea achizițiilor directe."
 
-#: src/features/procurement/lib/buyer-text.ts:226
+#: src/features/procurement/lib/buyer-text.ts:228
 msgid "Firmele din {name}, județul instituției, nu însumează aproape nimic din valoarea achizițiilor directe."
 msgstr "Firmele din {name}, județul instituției, nu însumează aproape nimic din valoarea achizițiilor directe."
 
@@ -22686,16 +22694,16 @@ msgid "Firmele din asociere"
 msgstr "Firmele din asociere"
 
 #. placeholder {0}: percentText(capital.share, 0)
-#: src/features/procurement/lib/buyer-text.ts:228
+#: src/features/procurement/lib/buyer-text.ts:230
 msgid "Firmele din București, {0}."
 msgstr "Firmele din București, {0}."
 
-#: src/features/procurement/lib/buyer-text.ts:225
+#: src/features/procurement/lib/buyer-text.ts:227
 msgid "Firmele din București, unde e instituția, nu însumează aproape nimic din valoarea achizițiilor directe."
 msgstr "Firmele din București, unde e instituția, nu însumează aproape nimic din valoarea achizițiilor directe."
 
 #. placeholder {0}: percentText(homeShare, 0)
-#: src/features/procurement/lib/buyer-text.ts:222
+#: src/features/procurement/lib/buyer-text.ts:224
 msgid "Firmele din București, unde e și instituția, însumează {0} din valoarea achizițiilor directe."
 msgstr "Firmele din București, unde e și instituția, însumează {0} din valoarea achizițiilor directe."
 
@@ -22755,7 +22763,7 @@ msgstr "Firmele sunt persoanele juridice din registrul comerțului (SRL, SA…),
 #~ msgid "Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, din catalogul SEAP."
 #~ msgstr "Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, din catalogul SEAP."
 
-#: src/features/procurement/components/home/home-money-bands.tsx:213
+#: src/features/procurement/components/home/home-money-bands.tsx:218
 msgid "Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, fără licitație."
 msgstr "Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, fără licitație."
 
@@ -22763,7 +22771,7 @@ msgstr "Firmele, după numărul vânzărilor directe din {year}: cumpărături m
 #~ msgid "Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, din catalogul SEAP."
 #~ msgstr "Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, din catalogul SEAP."
 
-#: src/features/procurement/components/home/home-money-bands.tsx:215
+#: src/features/procurement/components/home/home-money-bands.tsx:220
 msgid "Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, fără licitație."
 msgstr "Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, fără licitație."
 
@@ -22847,7 +22855,7 @@ msgstr "Ani fiscali"
 #~ msgid "Fișele autorităților nu s-au putut citi acum: fără tipul lor și fără celelalte întreprinderi pe care le au."
 #~ msgstr "Fișele autorităților nu s-au putut citi acum: fără tipul lor și fără celelalte întreprinderi pe care le au."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:62
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:63
 msgid "Fișele autorităților nu s-au putut citi acum: tipul lor și celelalte întreprinderi pe care le au lipsesc de aici."
 msgstr "Fișele autorităților nu s-au putut citi acum: tipul lor și celelalte întreprinderi pe care le au lipsesc de aici."
 
@@ -23106,7 +23114,7 @@ msgstr "Formula:"
 msgid "Formularul AMEPIP e raportat de întreprindere și nu e verificat; unele valori ies din unitatea lor; „%” în galben e scris cum îl dă sursa."
 msgstr "Formularul AMEPIP e raportat de întreprindere și nu e verificat; unele valori ies din unitatea lor; „%” în galben e scris cum îl dă sursa."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:241
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:247
 msgid "Formularul AMEPIP, pe ani"
 msgstr "Formularul AMEPIP, pe ani"
 
@@ -23115,11 +23123,11 @@ msgid "formularul bilanțului nu e verificat"
 msgstr "formularul bilanțului nu e verificat"
 
 #. placeholder {0}: panel.year
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:214
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:220
 msgid "Formularul pe {0}, cum l-a raportat întreprinderea: consiliul de administrație, oamenii, dividendele."
 msgstr "Formularul pe {0}, cum l-a raportat întreprinderea: consiliul de administrație, oamenii, dividendele."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:241
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:247
 msgid "Formularul raportat de întreprindere"
 msgstr "Formularul raportat de întreprindere"
 
@@ -23301,7 +23309,7 @@ msgstr "Furnizor CUI {cui}"
 msgid "Furnizor neindicat în SEAP"
 msgstr "Furnizor neindicat în SEAP"
 
-#: src/features/procurement/lib/withheld-party.ts:49
+#: src/features/procurement/lib/withheld-party.ts:57
 msgid "Furnizor nenumit"
 msgstr "Furnizor nenumit"
 
@@ -24470,7 +24478,7 @@ msgstr "În {0}"
 #~ msgstr "În {0} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit."
 
 #. placeholder {0}: periodText(period)
-#: src/features/procurement/lib/buyer-text.ts:302
+#: src/features/procurement/lib/buyer-text.ts:304
 msgid "În {0} a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat cu un contract atribuit."
 msgstr "În {0} a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat cu un contract atribuit."
 
@@ -24839,7 +24847,7 @@ msgstr "în comparație"
 msgid "în contestație"
 msgstr "în contestație"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:398
+#: src/features/procurement/components/buyer/buyer-bands.tsx:403
 msgid "În context"
 msgstr "În context"
 
@@ -24924,7 +24932,7 @@ msgid "în fond"
 msgstr "în fond"
 
 #. placeholder {0}: tables.form.years[tables.form.years.length - 1] ?? ''
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:220
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:226
 msgid "În formularul pe {0}, rândurile despre consiliu, oameni și dividende sunt goale."
 msgstr "În formularul pe {0}, rândurile despre consiliu, oameni și dividende sunt goale."
 
@@ -25423,7 +25431,7 @@ msgstr "Încasările bugetului general consolidat (toate bugetele publice, făr�
 #: src/features/private-companies/components/analytics/analytics-records.tsx:130
 #: src/features/private-companies/components/hub/company-county-map.tsx:117
 #: src/features/private-companies/components/profile/company-profile-states.tsx:159
-#: src/features/procurement/components/analytics/analytics-answer.tsx:346
+#: src/features/procurement/components/analytics/analytics-answer.tsx:347
 #: src/features/statistics/components/county-map/county-map.tsx:125
 #: src/features/statistics/components/hub/hub-chrome.tsx:62
 #: src/features/statistics/components/hub/hub-county-band.tsx:360
@@ -25672,7 +25680,7 @@ msgstr "Indicator fără teritorii"
 #~ msgid "Indicatori AMEPIP pe ani"
 #~ msgstr ""
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:236
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:242
 msgid "Indicatori calculați din bilanț"
 msgstr "Indicatori calculați din bilanț"
 
@@ -25688,7 +25696,7 @@ msgstr "Indicatori raportați la populație"
 #~ msgid "Indicatorii afișează valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă."
 #~ msgstr ""
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:206
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:212
 msgid "Indicatorii AMEPIP nu s-au putut citi acum."
 msgstr "Indicatorii AMEPIP nu s-au putut citi acum."
 
@@ -25696,18 +25704,18 @@ msgstr "Indicatorii AMEPIP nu s-au putut citi acum."
 #~ msgid "Indicatorii AMEPIP sunt afișați fără scalare în client și nu înlocuiesc bilanțurile ONRC/ANAF."
 #~ msgstr ""
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:236
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:242
 msgid "Indicatorii calculați de AMEPIP, pe ani"
 msgstr "Indicatorii calculați de AMEPIP, pe ani"
 
 #. placeholder {0}: panel.year
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:218
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:224
 msgid "Indicatorii calculați din bilanț pe {0}; AMEPIP nu are formular pentru ea."
 msgstr "Indicatorii calculați din bilanț pe {0}; AMEPIP nu are formular pentru ea."
 
 #. placeholder {0}: panel.year
 #. placeholder {1}: tables.form.years[tables.form.years.length - 1] ?? panel.year
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:216
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:222
 msgid "Indicatorii calculați din bilanț pe {0}; în formularul pe {1}, rândurile despre consiliu, oameni și dividende sunt goale."
 msgstr "Indicatorii calculați din bilanț pe {0}; în formularul pe {1}, rândurile despre consiliu, oameni și dividende sunt goale."
 
@@ -25962,7 +25970,7 @@ msgstr ""
 #~ msgid "Înregistrare și publicare originale (JSON)"
 #~ msgstr "Înregistrare și publicare originale (JSON)"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:374
+#: src/features/procurement/components/analytics/analytics-answer.tsx:375
 msgid "Înregistrarea"
 msgstr "Înregistrarea"
 
@@ -25986,7 +25994,7 @@ msgstr "înregistrări"
 #: src/features/ngos/registry/components/registry-answer.tsx:196
 #: src/features/ngos/registry/components/registry-answer.tsx:462
 #: src/features/ngos/registry/counts.ts:330
-#: src/features/procurement/components/analytics/analytics-answer.tsx:234
+#: src/features/procurement/components/analytics/analytics-answer.tsx:235
 #: src/features/procurement/components/analytics/analytics-filters.tsx:445
 msgid "Înregistrări"
 msgstr "Înregistrări"
@@ -26418,7 +26426,7 @@ msgstr "Instituția a explicat așa:"
 #. placeholder {0}: percentText(share.share, 1)
 #. placeholder {1}: inCounty(share.county)
 #. placeholder {2}: periodText(profile.period)
-#: src/features/procurement/lib/buyer-text.ts:314
+#: src/features/procurement/lib/buyer-text.ts:316
 msgid "Instituția a făcut {0} din achizițiile directe ale tuturor cumpărătorilor publici din {1} în {2}, după valoare."
 msgstr "Instituția a făcut {0} din achizițiile directe ale tuturor cumpărătorilor publici din {1} în {2}, după valoare."
 
@@ -26756,11 +26764,11 @@ msgstr "între {0} și {1}"
 msgid "între {from} și {to}"
 msgstr "între {from} și {to}"
 
-#: src/features/procurement/lib/buyer-text.ts:249
+#: src/features/procurement/lib/buyer-text.ts:251
 msgid "Între {since} și {until}, achizițiile directe au crescut de la {from} la {to} pe an, în lei ai fiecărui an."
 msgstr "Între {since} și {until}, achizițiile directe au crescut de la {from} la {to} pe an, în lei ai fiecărui an."
 
-#: src/features/procurement/lib/buyer-text.ts:250
+#: src/features/procurement/lib/buyer-text.ts:252
 msgid "Între {since} și {until}, achizițiile directe au scăzut de la {from} la {to} pe an, în lei ai fiecărui an."
 msgstr "Între {since} și {until}, achizițiile directe au scăzut de la {from} la {to} pe an, în lei ai fiecărui an."
 
@@ -27400,7 +27408,7 @@ msgstr "Județul {countyName}"
 msgid "județul firmei"
 msgstr "județul firmei"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:208
+#: src/features/procurement/components/buyer/buyer-bands.tsx:213
 msgid "județul instituției"
 msgstr "județul instituției"
 
@@ -27617,7 +27625,7 @@ msgstr "la 100.000 de locuitori"
 msgid "La 100.000 de locuitori"
 msgstr "La 100.000 de locuitori"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:236
+#: src/features/procurement/components/analytics/analytics-answer.tsx:237
 msgid "La 100.000 loc."
 msgstr "La 100.000 loc."
 
@@ -28193,7 +28201,7 @@ msgstr "lei"
 msgid "Lei"
 msgstr "Lei"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:236
+#: src/features/procurement/components/analytics/analytics-answer.tsx:237
 msgid "Lei / locuitor"
 msgstr "Lei / locuitor"
 
@@ -28284,19 +28292,19 @@ msgstr "licența {number} din {licensed}"
 msgid "licențiat la {licensed}"
 msgstr "licențiat la {licensed}"
 
-#: src/features/procurement/lib/home-model.ts:218
+#: src/features/procurement/lib/home-model.ts:219
 msgid "Licitație deschisă"
 msgstr "Licitație deschisă"
 
-#: src/features/procurement/lib/home-model.ts:219
+#: src/features/procurement/lib/home-model.ts:220
 msgid "Licitație deschisă accelerată"
 msgstr "Licitație deschisă accelerată"
 
-#: src/features/procurement/lib/home-model.ts:220
+#: src/features/procurement/lib/home-model.ts:221
 msgid "Licitație restrânsă"
 msgstr "Licitație restrânsă"
 
-#: src/features/procurement/lib/home-model.ts:221
+#: src/features/procurement/lib/home-model.ts:222
 msgid "Licitație restrânsă accelerată"
 msgstr "Licitație restrânsă accelerată"
 
@@ -28623,7 +28631,7 @@ msgstr "Lista nu era încărcată la citire"
 msgid "Lista nu este completă: actul are mai multe evenimente decât s-au putut încărca."
 msgstr "Lista nu este completă: actul are mai multe evenimente decât s-au putut încărca."
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:344
+#: src/features/procurement/components/analytics/analytics-answer.tsx:345
 msgid "Lista nu s-a putut citi acum."
 msgstr "Lista nu s-a putut citi acum."
 
@@ -28639,7 +28647,7 @@ msgstr "Lista nu s-a putut citi acum. "
 msgid "Lista nu s-a putut citi."
 msgstr "Lista nu s-a putut citi."
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:351
+#: src/features/procurement/components/analytics/analytics-answer.tsx:352
 msgid "Lista nu se arată: cifrele acestei selecții nu pot fi date (vezi „Cum am calculat\")."
 msgstr "Lista nu se arată: cifrele acestei selecții nu pot fi date (vezi „Cum am calculat\")."
 
@@ -30211,7 +30219,7 @@ msgstr "medicamente, utilități, întreținere, servicii"
 msgid "medie"
 msgstr "medie"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:237
+#: src/features/procurement/components/analytics/analytics-answer.tsx:238
 msgid "Medie"
 msgstr "Medie"
 
@@ -30289,7 +30297,7 @@ msgid "Mergi la pagina"
 msgstr "Mergi la pagina"
 
 #: src/features/elections/catalog/catalog-parts.tsx:245
-#: src/features/procurement/components/analytics/analytics-answer.tsx:361
+#: src/features/procurement/components/analytics/analytics-answer.tsx:362
 msgid "Mergi la prima pagină"
 msgstr "Mergi la prima pagină"
 
@@ -31383,7 +31391,7 @@ msgstr "nefinalizată"
 msgid "Nefinalizată"
 msgstr "Nefinalizată"
 
-#: src/features/procurement/lib/home-model.ts:225
+#: src/features/procurement/lib/home-model.ts:226
 msgid "Negociere cu anunț prealabil"
 msgstr "Negociere cu anunț prealabil"
 
@@ -31391,7 +31399,7 @@ msgstr "Negociere cu anunț prealabil"
 msgid "negociere fără anunț prealabil"
 msgstr "negociere fără anunț prealabil"
 
-#: src/features/procurement/lib/home-model.ts:224
+#: src/features/procurement/lib/home-model.ts:225
 msgid "Negociere fără anunț prealabil"
 msgstr "Negociere fără anunț prealabil"
 
@@ -31612,14 +31620,14 @@ msgid "Nicio achiziție directă cu valoare publicată în {0}."
 msgstr "Nicio achiziție directă cu valoare publicată în {0}."
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:332
+#: src/features/procurement/components/buyer/buyer-bands.tsx:337
 msgid "Nicio achiziție directă în {0} cu valoare publicată."
 msgstr "Nicio achiziție directă în {0} cu valoare publicată."
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:107
-#: src/features/procurement/components/buyer/buyer-bands.tsx:210
-#: src/features/procurement/components/buyer/buyer-bands.tsx:234
+#: src/features/procurement/components/buyer/buyer-bands.tsx:108
+#: src/features/procurement/components/buyer/buyer-bands.tsx:215
+#: src/features/procurement/components/buyer/buyer-bands.tsx:239
 #: src/features/procurement/components/buyer/buyer-rows.tsx:31
 #: src/features/procurement/components/supplier/supplier-bands.tsx:164
 msgid "Nicio achiziție directă în {0}."
@@ -31730,7 +31738,7 @@ msgstr "nicio firmă nu a raportat o valoare"
 msgid "Nicio grupă nu are valori raportate: sunt ordonate după numărul de firme."
 msgstr "Nicio grupă nu are valori raportate: sunt ordonate după numărul de firme."
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:365
+#: src/features/procurement/components/analytics/analytics-answer.tsx:366
 msgid "Nicio înregistrare în această selecție."
 msgstr "Nicio înregistrare în această selecție."
 
@@ -32050,13 +32058,13 @@ msgid "Niciun concurs nu corespunde filtrelor"
 msgstr ""
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:330
+#: src/features/procurement/components/buyer/buyer-bands.tsx:335
 msgid "Niciun contract atribuit în {0} cu valoare publicată."
 msgstr "Niciun contract atribuit în {0} cu valoare publicată."
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:107
-#: src/features/procurement/components/buyer/buyer-bands.tsx:274
+#: src/features/procurement/components/buyer/buyer-bands.tsx:108
+#: src/features/procurement/components/buyer/buyer-bands.tsx:279
 #: src/features/procurement/components/buyer/buyer-rows.tsx:31
 msgid "Niciun contract atribuit în {0}."
 msgstr "Niciun contract atribuit în {0}."
@@ -32994,7 +33002,7 @@ msgstr "Normă"
 msgid "Normalization"
 msgstr "Normalizare"
 
-#: src/features/procurement/lib/home-model.ts:227
+#: src/features/procurement/lib/home-model.ts:228
 msgid "Norme proprii (servicii din anexa 2)"
 msgstr "Norme proprii (servicii din anexa 2)"
 
@@ -33536,7 +33544,7 @@ msgstr "Nu apare ca cumpărător în SEAP din {DIRECT_COMPARABLE_FROM} încoace.
 msgid "Nu apare ca furnizor în achizițiile publice (SEAP) din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "Nu apare ca furnizor în achizițiile publice (SEAP) din {DIRECT_COMPARABLE_FROM} încoace."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:77
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:78
 msgid "Nu apare ca furnizor plătit din bani publici."
 msgstr "Nu apare ca furnizor plătit din bani publici."
 
@@ -34217,11 +34225,11 @@ msgstr "Numele conține „{typed}”"
 #~ msgid "Numele diviziunilor vin din nomenclatorul CAEN Rev.2; cifrele grupează codurile din toate revizuirile."
 #~ msgstr "Numele diviziunilor vin din nomenclatorul CAEN Rev.2; cifrele grupează codurile din toate revizuirile."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:147
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:153
 msgid "Numele firmelor nu s-au putut citi acum: firmele apar cu codul fiscal."
 msgstr "Numele firmelor nu s-au putut citi acum: firmele apar cu codul fiscal."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:177
+#: src/features/procurement/components/buyer/buyer-bands.tsx:182
 msgid "Numele firmelor și anii lor nu s-au putut citi acum: firmele apar cu codul fiscal."
 msgstr "Numele firmelor și anii lor nu s-au putut citi acum: firmele apar cu codul fiscal."
 
@@ -34302,7 +34310,7 @@ msgstr "Numerele sunt ale întregii ediții, nu ale firmelor filtrate."
 msgid "O achiziție directă din SEAP: ce s-a cumpărat, de la cine, cu cât și cum s-a făcut."
 msgstr "O achiziție directă din SEAP: ce s-a cumpărat, de la cine, cu cât și cum s-a făcut."
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:416
+#: src/features/procurement/components/analytics/analytics-answer.tsx:417
 msgid "o asociere apare o dată pentru fiecare membru, cu valoarea o singură dată"
 msgstr "o asociere apare o dată pentru fiecare membru, cu valoarea o singură dată"
 
@@ -34364,7 +34372,7 @@ msgstr ""
 msgid "O firmă ca furnizor al statului: ce instituții cumpără de la ea, ce vinde, unde, cum câștigă și cu cine, din SEAP."
 msgstr "O firmă ca furnizor al statului: ce instituții cumpără de la ea, ce vinde, unde, cum câștigă și cu cine, din SEAP."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:179
+#: src/features/procurement/components/buyer/buyer-bands.tsx:184
 msgid "O firmă înregistrată cu două coduri fiscale apare de două ori, așa că partea celor mai mari poate fi mai mare decât arată lista."
 msgstr "O firmă înregistrată cu două coduri fiscale apare de două ori, așa că partea celor mai mari poate fi mai mare decât arată lista."
 
@@ -34409,7 +34417,7 @@ msgstr "O parte a textului nu s-a încărcat"
 msgid "O parte din aceste cifre nu s-a putut citi acum; reîncarcă pagina pentru restul."
 msgstr "O parte din aceste cifre nu s-a putut citi acum; reîncarcă pagina pentru restul."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:88
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:89
 msgid "O parte nu are valoare publicată: suma e o limită de jos."
 msgstr "O parte nu are valoare publicată: suma e o limită de jos."
 
@@ -35490,7 +35498,7 @@ msgstr "pagina {0}"
 #. placeholder {0}: row.label
 #: src/components/ui/pagination.tsx:128
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:177
-#: src/features/procurement/components/analytics/analytics-answer.tsx:275
+#: src/features/procurement/components/analytics/analytics-answer.tsx:276
 msgid "Pagina {0}"
 msgstr "Pagina {0}"
 
@@ -35504,7 +35512,7 @@ msgstr "pagina {0} din {1}"
 msgid "Pagina {page} din {totalPages}"
 msgstr "Pagina {page} din {totalPages}"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:359
+#: src/features/procurement/components/analytics/analytics-answer.tsx:360
 msgid "Pagina {page} e după sfârșitul listei."
 msgstr "Pagina {page} e după sfârșitul listei."
 
@@ -35546,7 +35554,7 @@ msgstr "pagina achiziției pe e-licitatie.ro"
 #: src/features/ngos/registry/components/registry-answer.tsx:386
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:173
 #: src/features/private-companies/components/analytics/analytics-records.tsx:238
-#: src/features/procurement/components/analytics/analytics-answer.tsx:420
+#: src/features/procurement/components/analytics/analytics-answer.tsx:421
 msgid "Pagina anterioară"
 msgstr "Pagina anterioară"
 
@@ -35592,7 +35600,7 @@ msgstr "Pagina unui ONG există când registrul național ONG are o intrare cure
 #: src/features/ngos/registry/components/registry-answer.tsx:395
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:209
 #: src/features/private-companies/components/analytics/analytics-records.tsx:241
-#: src/features/procurement/components/analytics/analytics-answer.tsx:423
+#: src/features/procurement/components/analytics/analytics-answer.tsx:424
 msgid "Pagina următoare"
 msgstr "Pagina următoare"
 
@@ -35654,7 +35662,7 @@ msgstr "până în {0}"
 #~ msgstr "Până în {0} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit."
 
 #. placeholder {0}: monthText(period.through)
-#: src/features/procurement/lib/buyer-text.ts:301
+#: src/features/procurement/lib/buyer-text.ts:303
 msgid "Până în {0} a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat încă cu un contract atribuit."
 msgstr "Până în {0} a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat încă cu un contract atribuit."
 
@@ -35772,7 +35780,7 @@ msgstr "Partea de firme a căutării nu este la zi, așa că lipsa rezultatelor 
 msgid "Partea de firme a căutării nu este la zi."
 msgstr "Partea de firme a căutării nu este la zi."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:384
+#: src/features/procurement/components/buyer/buyer-bands.tsx:389
 msgid "Partea din județ: achizițiile directe ale instituției împărțite la cele ale tuturor cumpărătorilor publici din județ, calculat de Transparenta.eu."
 msgstr "Partea din județ: achizițiile directe ale instituției împărțite la cele ale tuturor cumpărătorilor publici din județ, calculat de Transparenta.eu."
 
@@ -35792,7 +35800,7 @@ msgstr "Partea I (maghiară)"
 msgid "partea nerambursabilă a PNRR"
 msgstr "partea nerambursabilă a PNRR"
 
-#: src/features/procurement/lib/home-model.ts:230
+#: src/features/procurement/lib/home-model.ts:231
 msgid "Parteneriat pentru inovare"
 msgstr "Parteneriat pentru inovare"
 
@@ -36139,7 +36147,7 @@ msgstr "Pe ce se duc banii achizițiilor directe?"
 msgid "Pe ce se duc banii publici"
 msgstr "Pe ce se duc banii publici"
 
-#: src/features/procurement/components/home/home-money-bands.tsx:65
+#: src/features/procurement/components/home/home-money-bands.tsx:66
 msgid "Pe ce se duc<0/>banii publici"
 msgstr "Pe ce se duc<0/>banii publici"
 
@@ -36274,7 +36282,7 @@ msgstr "pe locuitor"
 msgid "Pe locuitor"
 msgstr "Pe locuitor"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:378
+#: src/features/procurement/components/buyer/buyer-bands.tsx:383
 msgid "Pe locuitor: achizițiile directe împărțite la populația unității administrativ-teritoriale (INS), calculat de Transparenta.eu."
 msgstr "Pe locuitor: achizițiile directe împărțite la populația unității administrativ-teritoriale (INS), calculat de Transparenta.eu."
 
@@ -36752,7 +36760,7 @@ msgstr "pers."
 msgid "persoană"
 msgstr "persoană"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:401
+#: src/features/procurement/components/analytics/analytics-answer.tsx:402
 #: src/features/procurement/components/home/home-rows.tsx:244
 #: src/features/procurement/lib/direct-purchase-value-text.ts:102
 #: src/features/procurement/lib/party-links.ts:28
@@ -37266,7 +37274,7 @@ msgstr "Populația rezidentă la 1 ianuarie {0}"
 #~ msgstr "Populația rezidentă la 1 ianuarie {year}"
 
 #. placeholder {0}: countyPopulationNote()
-#: src/features/procurement/components/analytics/analytics-answer.tsx:301
+#: src/features/procurement/components/analytics/analytics-answer.tsx:302
 msgid "Populația: {0}"
 msgstr "Populația: {0}"
 
@@ -37992,7 +38000,7 @@ msgstr "primele {GAZETTE_CONTENTS_FIRST} publicări din cuprins — lista comple
 msgid "Primele {TOP_EXPANDED}"
 msgstr "Primele {TOP_EXPANDED}"
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:304
+#: src/features/procurement/components/analytics/analytics-answer.tsx:305
 msgid "Primele 100"
 msgstr "Primele 100"
 
@@ -38118,7 +38126,7 @@ msgstr "Procedura are {total}, toate atribuite."
 msgid "Procedura are {total}; {cancelledText}."
 msgstr "Procedura are {total}; {cancelledText}."
 
-#: src/features/procurement/lib/home-model.ts:226
+#: src/features/procurement/lib/home-model.ts:227
 msgid "Procedură competitivă cu negociere"
 msgstr "Procedură competitivă cu negociere"
 
@@ -38134,11 +38142,11 @@ msgstr "Procedura e suspendată."
 msgid "Procedura nu a fost găsită"
 msgstr "Procedura nu a fost găsită"
 
-#: src/features/procurement/lib/home-model.ts:222
+#: src/features/procurement/lib/home-model.ts:223
 msgid "Procedură simplificată"
 msgstr "Procedură simplificată"
 
-#: src/features/procurement/lib/home-model.ts:223
+#: src/features/procurement/lib/home-model.ts:224
 msgid "Procedură simplificată proprie"
 msgstr "Procedură simplificată proprie"
 
@@ -39722,7 +39730,7 @@ msgstr "Registrul AMEPIP"
 msgid "registrul AMEPIP din {amepipDate}"
 msgstr "registrul AMEPIP din {amepipDate}"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:209
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:215
 msgid "Registrul AMEPIP nu e încărcat acum."
 msgstr "Registrul AMEPIP nu e încărcat acum."
 
@@ -42034,7 +42042,7 @@ msgstr "SEAP nu spune cine a oprit-o."
 msgid "SEAP nu spune cum s-a încheiat."
 msgstr "SEAP nu spune cum s-a încheiat."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:278
+#: src/features/procurement/components/buyer/buyer-bands.tsx:283
 msgid "SEAP numără un contract câștigat de o asociere de firme o dată pentru fiecare firmă."
 msgstr "SEAP numără un contract câștigat de o asociere de firme o dată pentru fiecare firmă."
 
@@ -42479,7 +42487,7 @@ msgstr "Sediu, după înscrieri"
 msgid "Sediul firmei nu e locul lucrării."
 msgstr "Sediul firmei nu e locul lucrării."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:401
+#: src/features/procurement/components/buyer/buyer-bands.tsx:406
 msgid "Sediul:"
 msgstr "Sediul:"
 
@@ -43654,11 +43662,11 @@ msgstr "Singura activitate clasificată observată în ediția ONRC. Selecție d
 msgid "singura activitate clasificată ONRC"
 msgstr "singura activitate clasificată ONRC"
 
-#: src/features/procurement/lib/buyer-text.ts:283
+#: src/features/procurement/lib/buyer-text.ts:285
 msgid "Singurul contract atribuit în {year} a avut un anunț public."
 msgstr "Singurul contract atribuit în {year} a avut un anunț public."
 
-#: src/features/procurement/lib/buyer-text.ts:285
+#: src/features/procurement/lib/buyer-text.ts:287
 msgid "Singurul contract atribuit în {year} a fost negociat fără anunț prealabil."
 msgstr "Singurul contract atribuit în {year} a fost negociat fără anunț prealabil."
 
@@ -45188,7 +45196,7 @@ msgstr "Sursa ANAF reținută pentru verificarea integrității · ediția ONRC 
 msgid "Sursă blocată"
 msgstr ""
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:391
+#: src/features/procurement/components/buyer/buyer-bands.tsx:396
 #: src/features/procurement/components/supplier/supplier-bands.tsx:423
 msgid "Sursa datelor"
 msgstr "Sursa datelor"
@@ -45348,7 +45356,7 @@ msgstr "Sursa: Ministerul Finanțelor, execuția de casă {year} a primăriilor 
 msgid "Sursa: Registrul național ONG."
 msgstr "Sursa: Registrul național ONG."
 
-#: src/features/procurement/components/analytics/analytics-answer.tsx:446
+#: src/features/procurement/components/analytics/analytics-answer.tsx:447
 msgid "Sursa: SEAP"
 msgstr "Sursa: SEAP"
 
@@ -45356,7 +45364,7 @@ msgstr "Sursa: SEAP"
 msgid "Sursa: SEAP și e-licitatie.ro; registrul firmelor (ONRC, ANAF). Achizițiile directe sunt fără TVA și se compară între ani din {DIRECT_COMPARABLE_FROM}; valorile contractelor sunt atribuite, nu plăți."
 msgstr "Sursa: SEAP și e-licitatie.ro; registrul firmelor (ONRC, ANAF). Achizițiile directe sunt fără TVA și se compară între ani din {DIRECT_COMPARABLE_FROM}; valorile contractelor sunt atribuite, nu plăți."
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:370
+#: src/features/procurement/components/buyer/buyer-bands.tsx:375
 msgid "Sursa: SEAP și e-licitatie.ro. Achizițiile directe sunt fără TVA și se compară între ani din {DIRECT_COMPARABLE_FROM}; valorile contractelor sunt atribuite, nu plăți."
 msgstr "Sursa: SEAP și e-licitatie.ro. Achizițiile directe sunt fără TVA și se compară între ani din {DIRECT_COMPARABLE_FROM}; valorile contractelor sunt atribuite, nu plăți."
 
@@ -45366,7 +45374,7 @@ msgstr "Sursa: SEAP și e-licitatie.ro. Achizițiile directe sunt fără TVA și
 #~ msgstr "Sursa: SEAP, complet până în {0}"
 
 #. placeholder {0}: monthText(cutoff)
-#: src/features/procurement/components/analytics/analytics-answer.tsx:446
+#: src/features/procurement/components/analytics/analytics-answer.tsx:447
 msgid "Sursa: SEAP, date disponibile până în {0}"
 msgstr "Sursa: SEAP, date disponibile până în {0}"
 
@@ -46850,7 +46858,7 @@ msgid "Toate achizițiile directe"
 msgstr "Toate achizițiile directe"
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:352
+#: src/features/procurement/components/buyer/buyer-bands.tsx:357
 #: src/features/procurement/components/supplier/supplier-bands.tsx:392
 msgid "Toate achizițiile directe din {0}"
 msgstr "Toate achizițiile directe din {0}"
@@ -46859,7 +46867,7 @@ msgstr "Toate achizițiile directe din {0}"
 msgid "Toate achizițiile directe din {year} au venit de la {topName}."
 msgstr "Toate achizițiile directe din {year} au venit de la {topName}."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:150
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:156
 msgid "Toate achizițiile, pe pagina de achiziții"
 msgstr "Toate achizițiile, pe pagina de achiziții"
 
@@ -46916,7 +46924,7 @@ msgstr "Toate cele {0}"
 #~ msgstr "Toate cele {0} diviziuni"
 
 #. placeholder {0}: steady.length
-#: src/features/procurement/lib/buyer-text.ts:205
+#: src/features/procurement/lib/buyer-text.ts:207
 msgid "Toate cele {0} firme de mai jos i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "Toate cele {0} firme de mai jos i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 
@@ -46932,7 +46940,7 @@ msgstr "Toate cele {0} firme de mai jos i-au vândut aproape în fiecare an din 
 msgid "Toate cele {all}"
 msgstr "Toate cele {all}"
 
-#: src/features/procurement/lib/buyer-text.ts:283
+#: src/features/procurement/lib/buyer-text.ts:285
 msgid "Toate cele {all} atribuite în {year} au avut un anunț public."
 msgstr "Toate cele {all} atribuite în {year} au avut un anunț public."
 
@@ -46963,7 +46971,7 @@ msgid "Toate contractele"
 msgstr "Toate contractele"
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/buyer-bands.tsx:352
+#: src/features/procurement/components/buyer/buyer-bands.tsx:357
 #: src/features/procurement/components/supplier/supplier-bands.tsx:392
 msgid "Toate contractele din {0}"
 msgstr "Toate contractele din {0}"
@@ -47148,7 +47156,7 @@ msgstr ""
 msgid "toate valorile admise"
 msgstr "toate valorile admise"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:230
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:236
 msgid "Toate valorile AMEPIP, pe ani"
 msgstr "Toate valorile AMEPIP, pe ani"
 
@@ -48099,7 +48107,7 @@ msgstr "Un cod substitut (precum 0000 sau 9999) nu indică o activitate: nicio a
 msgid "Un contract de achiziție publică din SEAP: ce s-a atribuit, cui, cu cât și ce s-a schimbat după."
 msgstr "Un contract de achiziție publică din SEAP: ce s-a atribuit, cui, cu cât și ce s-a schimbat după."
 
-#: src/features/procurement/lib/buyer-text.ts:286
+#: src/features/procurement/lib/buyer-text.ts:288
 msgid "Un contract din cele {all} atribuite în {year} a fost negociat fără anunț prealabil."
 msgstr "Un contract din cele {all} atribuite în {year} a fost negociat fără anunț prealabil."
 
@@ -48957,7 +48965,7 @@ msgid "Validation issues"
 msgstr "Probleme de validare"
 
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:49
-#: src/features/procurement/components/analytics/analytics-answer.tsx:389
+#: src/features/procurement/components/analytics/analytics-answer.tsx:390
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:286
 #: src/features/statistics/components/detail/detail-observations-table.tsx:169
 msgid "Valoare"
@@ -49102,7 +49110,7 @@ msgstr ""
 msgid "Valoarea"
 msgstr "Valoarea"
 
-#: src/features/procurement/components/home/home-money-bands.tsx:116
+#: src/features/procurement/components/home/home-money-bands.tsx:117
 msgid "Valoarea achizițiilor directe din {year}, fără TVA."
 msgstr "Valoarea achizițiilor directe din {year}, fără TVA."
 
@@ -49126,7 +49134,7 @@ msgstr ""
 msgid "Valoarea atribuită"
 msgstr "Valoarea atribuită"
 
-#: src/features/procurement/components/home/home-money-bands.tsx:113
+#: src/features/procurement/components/home/home-money-bands.tsx:114
 msgid "Valoarea atribuită a contractelor din {year}."
 msgstr "Valoarea atribuită a contractelor din {year}."
 
@@ -49166,7 +49174,7 @@ msgstr "Valoarea din anunțul de atribuire: contractele pe care SEAP le leagă d
 msgid "Valoarea din SEAP, fără TVA"
 msgstr "Valoarea din SEAP, fără TVA"
 
-#: src/features/procurement/components/buyer/buyer-bands.tsx:342
+#: src/features/procurement/components/buyer/buyer-bands.tsx:347
 msgid "Valoarea e a întregului contract; la o asociere de firme, SEAP nu publică partea fiecăreia."
 msgstr "Valoarea e a întregului contract; la o asociere de firme, SEAP nu publică partea fiecăreia."
 
@@ -50083,7 +50091,7 @@ msgstr "Vizualizare:"
 msgid "viitoare"
 msgstr "viitoare"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:185
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:191
 msgid "Vinde instituțiilor"
 msgstr "Vinde instituțiilor"
 

@@ -15,7 +15,7 @@ import { MethodBody } from './analytics-controls'
 import { countText, listTotalText, moneyText, percentText, periodGloss, populationGloss, recordsCount, type Namer } from '../../lib/analytics-text'
 import { sourceDisclosureNotes } from '../../lib/caveat-text'
 import { bucketLabel, clippedText, profileLink, readoutNotes, rowsOf, shareUrl, type Row } from './analytics-view'
-import { isNaturalPersonKey } from '../../lib/withheld-party'
+import { daSuppliersUnavailableText, isNaturalPersonKey } from '../../lib/withheld-party'
 
 /**
  * The answer, with the words cut: the table of every measure (or the chart in
@@ -216,6 +216,7 @@ export function AnswerTable({
     )
   const ranking: Ranking | undefined = answer.ranking.data
   if (!ranking) return <Pending rows={12} className={className} />
+  if (ranking.unavailable) return <p className={cn('border-y py-4 text-sm text-muted-foreground', className)}>{daSuppliersUnavailableText()}</p>
   const group = query.dupa
   const { rows } = rowsOf(query, ranking, namer)
   const perResident = query.masura === 'locuitor'

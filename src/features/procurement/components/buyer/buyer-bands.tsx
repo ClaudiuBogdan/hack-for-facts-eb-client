@@ -1,3 +1,4 @@
+import { daSuppliersUnavailableText } from '../../lib/withheld-party'
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -145,7 +146,11 @@ export function BuyerWhoBand({ profile, index }: { readonly profile: BuyerProfil
           <MonoLabel className="block text-muted-foreground">
             <Trans>Achiziții directe, după valoare, {periodText(profile.period)}</Trans>
           </MonoLabel>
-          <SupplierRows className="mt-3" profile={profile} ranking={profile.directSuppliers} grain="direct" />
+          {profile.directSuppliers ? (
+            <SupplierRows className="mt-3" profile={profile} ranking={profile.directSuppliers} grain="direct" />
+          ) : (
+            <p className="mt-3 border-y py-4 text-sm text-muted-foreground">{daSuppliersUnavailableText()}</p>
+          )}
         </div>
         <div className="min-w-0">
           <MonoLabel className="block text-muted-foreground">

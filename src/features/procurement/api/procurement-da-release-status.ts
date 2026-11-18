@@ -75,3 +75,33 @@ export async function underDisclosure<T>(memo: (key: string, read: () => Promise
   const version = await disclosureVersion()
   return version === null ? read() : memo(`${version}|${key}`, read)
 }
+
+/**
+ * Whether direct purchases' supplier figures can be read: D6 enforced while
+ * the release is off (before the switch, or after a rollback) refuses the
+ * supplier rankings, places, concentration and distinct-supplier counts, and
+ * a page shows them as unavailable instead (root's ruling). A failed read of
+ * the switch reads them as ever — a refusal then fails that read alone.
+ */
+export function daSupplierFiguresOpen(): Promise<boolean> {
+  return readDaRelease().then(
+    (status) => !(status.privacyEnforced && !status.enabled),
+    () => true,
+  )
+}
+
+/** What a page may ask of direct purchases' suppliers in the current switch state. */
+export interface DaSupplierReads {
+  /** Rankings, concentration and distinct counts: refused while D6 is enforced and the release is off. */
+  readonly figures: boolean
+  /** Places (region, county, locality): served only by the legacy analysis with D6 off. */
+  readonly places: boolean
+}
+
+/** The switch state as reads: a failed read of it reads as ever (legacy), and a refusal then fails that read alone. */
+export function daSupplierReads(): Promise<DaSupplierReads> {
+  return readDaRelease().then(
+    (status) => ({ figures: !(status.privacyEnforced && !status.enabled), places: !status.enabled && !status.privacyEnforced }),
+    () => ({ figures: true, places: true }),
+  )
+}

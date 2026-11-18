@@ -2,9 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { periodOf, type Cutoff } from '../lib/profile-period'
 
 const graphqlQuery = vi.fn()
-// Direct acquisitions release 1 off unless a test turns it on.
-const release = vi.hoisted(() => ({ on: false }))
-vi.mock('./procurement-da-release-status', () => ({ isDaReleaseOn: () => Promise.resolve(release.on) }))
+// The switches as reads: legacy (release off, D6 off) unless a test says otherwise.
+const release = vi.hoisted(() => ({ on: false, d6: false }))
+vi.mock('./procurement-da-release-status', () => ({
+  daSupplierReads: () => Promise.resolve({ figures: !(release.d6 && !release.on), places: !release.on && !release.d6 }),
+}))
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
 // SEAP's cutoff is the shared read (tested beside it): here each test says what it is.
 const cutoffRead = vi.fn<() => Promise<Cutoff>>()
@@ -125,6 +127,21 @@ describe('fetchProcurementBuyer', () => {
     }
   })
 
+  it('with D6 enforced and the release off, reads no supplier ranking, count or years, and says the ranking is unavailable', async () => {
+    release.d6 = true
+    try {
+      answer(otopeni(), () => Promise.resolve(extras()))
+      const profile = await fetchProcurementBuyer('4364446', 2025)
+      const asked = [...Object.keys(callOf('ProcurementBuyerKeys')?.[1] ?? {}), ...Object.keys(callOf('ProcurementBuyerFigures')?.[1] ?? {})]
+      for (const alias of ['directSuppliers', 'directSellers', 'spanSuppliers', 'directCounties']) expect(asked).not.toContain(alias)
+      expect(profile.directSuppliers).toBeNull()
+      expect(profile.direct.suppliers).toBeNull()
+      expect(profile.supplierPlaces).toBe(false)
+    } finally {
+      release.d6 = false
+    }
+  })
+
   it('with the release off, reads where the firms are', async () => {
     answer(otopeni(), () => Promise.resolve(extras()))
     const profile = await fetchProcurementBuyer('4364446', 2025)
@@ -172,7 +189,7 @@ describe('fetchProcurementBuyer', () => {
     expect(profile.directYears.find((point) => point.year === 2026)).toEqual({ year: 2026, value: 2_000_000, count: 40 })
     expect(profile.partYear).toBe(2026)
     // „other" is not a firm; a firm the spine cannot name keeps its CUI.
-    expect(profile.directSuppliers.rows.map((row) => row.cui)).toEqual(['30153499', '00041200627'])
+    expect(profile.directSuppliers?.rows.map((row) => row.cui)).toEqual(['30153499', '00041200627'])
     expect(profile.names.get('30153499')).toBe('Upper Level SRL')
     expect(profile.names.has('00041200627')).toBe(false)
     expect(profile.supplierYears[0]).toMatchObject({ cui: '9813902', total: 10_960_000 })

@@ -53,6 +53,7 @@ export const PROCUREMENT_HOME_NATIONAL_QUERY = /* GraphQL */ `
     $directYears: ProcurementAnalysisScopeInput!
     $awardsMonths: ProcurementAnalysisScopeInput!
     $directMonths: ProcurementAnalysisScopeInput!
+    $withDirectSuppliers: Boolean!
   ) {
     awards: procurementStats(scope: $awards) { blocks { ${STATS} } }
     frameworks: procurementStats(scope: $frameworks) { blocks { ${STATS} } }
@@ -60,7 +61,7 @@ export const PROCUREMENT_HOME_NATIONAL_QUERY = /* GraphQL */ `
     awardsBuyerCount: procurementSeries(scope: $awards, bucket: year, measure: distinctAuthorities) { ${SERIES} }
     directBuyerCount: procurementSeries(scope: $direct, bucket: year, measure: distinctAuthorities) { ${SERIES} }
     awardsSellerCount: procurementSeries(scope: $awards, bucket: year, measure: distinctSuppliers) { ${SERIES} }
-    directSellerCount: procurementSeries(scope: $direct, bucket: year, measure: distinctSuppliers) { ${SERIES} }
+    directSellerCount: procurementSeries(scope: $direct, bucket: year, measure: distinctSuppliers) @include(if: $withDirectSuppliers) { ${SERIES} }
     directYearValue: procurementSeries(scope: $directYears, bucket: year, measure: valueAwardedSum) { ${SERIES} }
     directYearCount: procurementSeries(scope: $directYears, bucket: year, measure: recordCount) { ${SERIES} }
     awardsMonthCount: procurementSeries(scope: $awardsMonths, bucket: month, measure: recordCount) { ${SERIES} }
@@ -69,7 +70,7 @@ export const PROCUREMENT_HOME_NATIONAL_QUERY = /* GraphQL */ `
     awardsBuyers: procurementBreakdown(scope: $awards, dimension: authority, topN: 10, rankBy: count) { ${BREAKDOWN} }
     directBuyers: procurementBreakdown(scope: $direct, dimension: authority, topN: 10, rankBy: value) { ${BREAKDOWN} }
     awardsSellers: procurementBreakdown(scope: $awards, dimension: supplier, topN: 1, rankBy: value) { ${BREAKDOWN} }
-    directSellers: procurementBreakdown(scope: $direct, dimension: supplier, topN: 10, rankBy: value) { ${BREAKDOWN} }
+    directSellers: procurementBreakdown(scope: $direct, dimension: supplier, topN: 10, rankBy: value) @include(if: $withDirectSuppliers) { ${BREAKDOWN} }
     procedures: procurementBreakdown(scope: $awards, dimension: procedureType, topN: 12, rankBy: count) { ${BREAKDOWN} }
     awardsCounties: procurementBreakdown(scope: $awards, dimension: buyerCounty, topN: 50, rankBy: count) { ${BREAKDOWN} }
     directCounties: procurementBreakdown(scope: $direct, dimension: buyerCounty, topN: 50, rankBy: value) { ${BREAKDOWN} }
@@ -87,7 +88,8 @@ export const procurementHomeNationalResponseSchema = z.object({
   awardsBuyerCount: series,
   directBuyerCount: series,
   awardsSellerCount: series,
-  directSellerCount: series,
+  /** Not read while D6 is enforced and the release is off: the API refuses direct purchases' supplier figures. */
+  directSellerCount: series.optional(),
   directYearValue: series,
   directYearCount: series,
   awardsMonthCount: series,
@@ -96,7 +98,7 @@ export const procurementHomeNationalResponseSchema = z.object({
   awardsBuyers: breakdown,
   directBuyers: breakdown,
   awardsSellers: breakdown,
-  directSellers: breakdown,
+  directSellers: breakdown.optional(),
   procedures: breakdown,
   awardsCounties: breakdown,
   directCounties: breakdown,

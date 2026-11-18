@@ -81,7 +81,8 @@ export interface NationalRead {
   readonly direct: PopulationFigures
   readonly buyers: Readonly<Record<HomeGrain, Ranking>>
   /** Direct-acquisition sellers by value (contract money of a firm leaves out its consortia). */
-  readonly directSellers: Ranking
+  /** Null while D6 is enforced and the release is off: the API refuses direct purchases' supplier rankings (said, never blank). */
+  readonly directSellers: Ranking | null
   /** Contract awards by procedure type, by number. */
   readonly procedures: Ranking
   readonly counties: Readonly<Record<HomeGrain, readonly CountyFigure[]>>

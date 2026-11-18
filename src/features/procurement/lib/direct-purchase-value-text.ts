@@ -107,7 +107,7 @@ export function supplierNameText(supplier: DpSupplierName): string {
  * withheld, named — and that the rest is public; null when none is withheld.
  */
 export function withheldTextNotice(withheld: DpWithheldText): string | null {
-  const fields = [withheld.title ? t`titlul` : null, withheld.description ? t`descrierea` : null, withheld.lines ? t`denumirile produselor` : null].filter(
+  const fields = [withheld.title ? t`titlul` : null, withheld.description ? t`descrierea` : null, withheld.lines ? t`denumirile sau unitățile produselor` : null].filter(
     (field): field is string => field !== null,
   )
   if (fields.length === 0) return null

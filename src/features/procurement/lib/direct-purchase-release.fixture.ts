@@ -88,6 +88,7 @@ export function rawReleaseItem(fields: Partial<RawDaPurchaseItem> = {}): RawDaPu
     itemIndex: 0,
     name: null,
     nameWithheld: 'privacy',
+    unitWithheld: null,
     unit: 'bucata',
     quantity: '25',
     requestedQuantity: '25',

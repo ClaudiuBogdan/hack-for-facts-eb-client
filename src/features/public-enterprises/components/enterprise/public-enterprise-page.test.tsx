@@ -33,7 +33,7 @@ const BUYER = buyerProfile({
   identity: { ...buyerProfile().identity, cui: '789401', name: 'Tursib SA' },
   period: recentPeriod('2026-05'),
   categories: { direct: SEVEN.map((rank, index) => ({ category: READER_CATEGORIES[index]!, value: rank * 100_000, count: rank, share: rank / 28 })), contract: [] },
-  directSuppliers: { rankedBy: 'value', rows: SEVEN.map((rank) => ({ cui: `100${rank}`, count: rank, value: rank * 10_000, share: rank / 28 })) },
+  directSuppliers: { rankedBy: 'value', rows: SEVEN.map((rank) => ({ cui: `100${rank}`, count: rank, value: rank * 10_000, share: rank / 28, displayKind: 'company' })) },
   names: new Map(SEVEN.map((rank) => [`100${rank}`, `Firma ${rank} SRL`])),
 })
 const ready = <T,>(value: T) => ({ status: 'ready', value }) as const

@@ -92,7 +92,8 @@ function itemOf(raw: RawDaPurchaseItem): DpItem {
     name: name ?? (raw.nameWithheld ? '' : '—'),
     ...(raw.nameWithheld ? { nameWithheld: true } : {}),
     description: null,
-    unit: raw.unit,
+    // A withheld unit is never shown, whatever came with its marker.
+    unit: raw.unitWithheld ? null : raw.unit,
     cpvLabel: null,
     quantity: numberOf(raw.quantity),
     unitPrice,
@@ -175,6 +176,6 @@ export function mapReleasePurchase(raw: RawDaPurchaseDetail, names: DpNames): Di
     money,
     listedNow: purchase.listedNow,
     dataAsOf: raw.dataAsOf,
-    withheldText: { title: titleWithheld, description: Boolean(purchase.descriptionWithheld), lines: raw.items.some((item) => Boolean(item.nameWithheld)) },
+    withheldText: { title: titleWithheld, description: Boolean(purchase.descriptionWithheld), lines: raw.items.some((item) => Boolean(item.nameWithheld) || Boolean(item.unitWithheld)) },
   }
 }

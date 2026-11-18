@@ -182,6 +182,8 @@ export function whatLede(rows: readonly CategoryFigure[], grain: HomeGrain, year
 
 /** „Cinci firme însumează 44% din valoarea achizițiilor directe din 2025; au vândut 72 de firme în total." — awarded values, never said as received. */
 export function sellersLede(profile: BuyerProfile): string | null {
+  // No ranking read (D6 enforced, the release off): no sentence about one.
+  if (!profile.directSuppliers) return null
   const { rows } = profile.directSuppliers
   const firms = profile.direct.suppliers
   if (profile.directSuppliers.rankedBy !== 'value' || rows.length < 5 || firms === null || firms <= 5) return null

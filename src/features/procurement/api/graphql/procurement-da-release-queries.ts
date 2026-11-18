@@ -103,7 +103,9 @@ export const rawDaPurchaseItemSchema = z.object({
   itemIndex: z.number(),
   name: z.string().nullable(),
   nameWithheld: z.string().nullable(),
+  /** Free text like the name: null, with `unitWithheld` = "privacy", until its review. */
   unit: z.string().nullable(),
+  unitWithheld: z.string().nullable(),
   quantity: decimalText.nullable(),
   requestedQuantity: decimalText.nullable(),
   unitPrice: decimalText.nullable(),
@@ -119,7 +121,7 @@ export const PROCUREMENT_DA_PURCHASE_QUERY = /* GraphQL */ `
     procurementDaPurchase(purchaseId: $purchaseId) {
       purchase { ${PURCHASE_FIELDS} }
       items {
-        itemIndex name nameWithheld unit quantity requestedQuantity unitPrice cataloguePrice
+        itemIndex name nameWithheld unit unitWithheld quantity requestedQuantity unitPrice cataloguePrice
         reportedLineValue supplierRejected quantityCorrection
       }
       dataAsOf
