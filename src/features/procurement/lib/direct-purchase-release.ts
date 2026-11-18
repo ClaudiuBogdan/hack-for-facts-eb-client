@@ -41,7 +41,7 @@ export function releaseOutcomeOf(outcome: string): DpOutcome {
 }
 
 /** The money as the contract defines it, from the API's decimal text and served sentences. */
-export function releaseValueOf(raw: RawDaPurchase): DpValue {
+export function releaseValueOf(raw: Pick<RawDaPurchase, 'reportedValue' | 'counted' | 'countedValue' | 'notCountedReason' | 'valueCorrected' | 'reviewRule' | 'symbolicPrice'>): DpValue {
   const rule = raw.reviewRule
   return valueOf({
     reportedValue: numberOf(raw.reportedValue),
@@ -123,7 +123,7 @@ function detailOf(raw: RawDaPurchaseDetail): DpDetail {
 }
 
 /** The category's label as written, its revision tag dropped. */
-function cpvWritten(raw: RawDaPurchase): string | null {
+export function cpvWritten(raw: Pick<RawDaPurchase, 'categoryLabel'>): string | null {
   return raw.categoryLabel?.replace(/\s*\(Rev\.\s*2\)\s*$/iu, '').trim() || null
 }
 
@@ -135,6 +135,11 @@ function cpvOf(raw: RawDaPurchase, names: DpNames): DirectPurchase['cpv'] {
   const division = code.slice(0, 2)
   const label: DpLabel = names.cpv.get(code) ?? (written ? { ro: written, en: null } : { ro: cpvDivisionLabelRo(division), en: cpvDivisionLabelEn(division) })
   return { code, label }
+}
+
+/** A purchase's title as the page names it: the institution's when served, else its category's label. */
+export function releaseTitleOf(raw: Pick<RawDaPurchase, 'title' | 'titleWithheld' | 'categoryLabel'>): string | null {
+  return raw.titleWithheld ? cpvWritten(raw) : (tidyTitle(raw.title) ?? cpvWritten(raw))
 }
 
 /** The release's purchase as the page's sheet. `names`: the buyer's and the category's labels only — never the supplier's (D6). */

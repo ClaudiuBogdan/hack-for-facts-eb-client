@@ -200,6 +200,30 @@ describe('the context', () => {
     expect(variablesOf('ProcurementDirectPurchasePair')?.pairYearsCount).toMatchObject({ from: '2019-01', to: `${PART}-12` })
   })
 
+  it('a release purchase reads its neighbours from the release, never the legacy list', async () => {
+    const { mapReleasePurchase } = await import('../lib/direct-purchase-release')
+    const { NO_NAMES } = await import('../lib/direct-purchase-model')
+    const { RELEASE_CASES } = await import('../lib/direct-purchase-release.fixture')
+    const release = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
+    const neighbour = { ...RELEASE_CASES.noLongerListed().purchase, purchaseId: 'b'.repeat(64) }
+    answer({
+      ...handlers,
+      ProcurementDirectPurchaseAround: () => {
+        throw new Error('the legacy list is not read for a release purchase')
+      },
+      ProcurementDaAround: () => ({
+        all: { total: 5, totalCapped: false, dataAsOf: 't1' },
+        newer: { dataAsOf: 't1', items: [neighbour] },
+        older: { dataAsOf: 't1', items: [] },
+      }),
+    })
+    const context = await fetchDirectPurchaseContext({ ...input, id: release.id, yearDay: '2025-06-02' }, release)
+    expect(context.records).toEqual({ count: 5, estimated: false })
+    expect(context.others.map((other) => other.id)).toEqual(['b'.repeat(64), release.id])
+    expect(context.partial).toBe(false)
+    expect(variablesOf('ProcurementDaAround')?.newer).toMatchObject({ finalizationFrom: '2025-06-02' })
+  })
+
   it('reads a complete year whole, and the purchases the explorer lists', async () => {
     answer(handlers)
     await fetchDirectPurchaseContext(input, complete)

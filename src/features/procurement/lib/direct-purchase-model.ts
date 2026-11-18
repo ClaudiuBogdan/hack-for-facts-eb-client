@@ -525,16 +525,16 @@ export interface DpContextInput {
  * date at all, or a date before 2019 (the legacy rows cannot tell a purchase
  * from a refused offer). Null when it has one.
  */
-export type DpContextGap = 'withheld' | 'release' | 'no-cui' | 'no-date' | 'before-comparable'
+export type DpContextGap = 'withheld' | 'no-cui' | 'no-date' | 'before-comparable'
 
 /**
- * Release 1 adds two: a supplier D6 does not name (`withheld`: its purchases
- * are never gathered), and a release purchase, whose context the legacy reads
- * would contradict (`release`, until the band reads the release).
+ * Release 1 adds one: a supplier D6 does not name (`withheld`: its purchases
+ * are never gathered). A release purchase's context is read from the
+ * analysis, which serves the release when the API does, and its neighbours
+ * from the release itself.
  */
 export function contextGapOf(purchase: DirectPurchase): DpContextGap | null {
   if (purchase.supplier.withheld) return 'withheld'
-  if (purchase.money) return 'release'
   if (!purchase.authority.cui || !purchase.supplier.cui) return 'no-cui'
   const yearDay = dayOf(purchase)
   if (!yearDay) return 'no-date'

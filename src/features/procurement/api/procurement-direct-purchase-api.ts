@@ -1,3 +1,4 @@
+import { fetchReleaseAround } from './procurement-da-release-around'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { buyerName, tidyAddress } from '../lib/buyer-model'
 import {
@@ -249,7 +250,11 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
     signal,
   )
   const both = { authorityCui: { eq: input.authorityCui }, supplierCui: { eq: input.supplierCui } }
-  const aroundRead = soft(
+  // A release purchase's neighbours come from the release, dated by finalization as it dates them.
+  const releaseAroundRead = purchase.money
+    ? soft(fetchReleaseAround({ authorityCui: input.authorityCui, supplierCui: input.supplierCui, day: input.yearDay }, AROUND_PER_SIDE, signal), signal)
+    : null
+  const legacyAroundRead = releaseAroundRead ? null : soft(
     graphqlQuery<unknown>(
       DIRECT_PURCHASE_AROUND_QUERY,
       {
@@ -293,7 +298,27 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
     return Promise.all([period, buyerRead, sellerRead] as const)
   })
   // All awaited together: a reader who leaves fails them all at once, none left unheard.
-  const [historyRaw, [period, buyerRaw, sellerRaw], around, cutoff] = await Promise.all([historyRead, yearRead, aroundRead, cutoffRead])
+  const [historyRaw, [period, buyerRaw, sellerRaw], legacyAround, releaseAround, cutoff] = await Promise.all([
+    historyRead,
+    yearRead,
+    legacyAroundRead ?? Promise.resolve({ ok: false } as const),
+    releaseAroundRead ?? Promise.resolve({ ok: false } as const),
+    cutoffRead,
+  ])
+  const around: Settled<{ readonly records: DpContext['records']; readonly newer: readonly DpOther[]; readonly older: readonly DpOther[] }> = releaseAroundRead
+    ? releaseAround.ok
+      ? { ok: true, value: releaseAround.value }
+      : { ok: false }
+    : legacyAround.ok
+      ? {
+          ok: true,
+          value: {
+            records: legacyAround.value.all.total !== null ? { count: legacyAround.value.all.total, estimated: legacyAround.value.all.totalEstimated } : null,
+            newer: legacyAround.value.newer.items.map(otherOf),
+            older: legacyAround.value.older.items.map(otherOf),
+          },
+        }
+      : { ok: false }
 
   // The year in progress runs through its cutoff — or through the purchase's month, when the purchase is in it and later.
   const partThrough = year === part ? period.through : cutoff.cutoff.direct
@@ -321,11 +346,11 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
     through: period.through,
     years,
     last,
-    records: around.ok && around.value.all.total !== null ? { count: around.value.all.total, estimated: around.value.all.totalEstimated } : null,
+    records: around.ok ? around.value.records : null,
     pair: buyerRaw.ok ? statsOf(buyerRaw.value.pairYear) : null,
     buyer,
     seller,
-    others: around.ok ? aroundOf(purchase, around.value.newer.items.map(otherOf), around.value.older.items.map(otherOf), AROUND_SHOWN) : [],
+    others: around.ok ? aroundOf(purchase, around.value.newer, around.value.older, AROUND_SHOWN) : [],
     partial: !historyRaw.ok || !buyerRaw.ok || !sellerRaw.ok || !around.ok || cutoff.failed,
   }
 }

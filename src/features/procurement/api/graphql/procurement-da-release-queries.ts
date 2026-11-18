@@ -172,6 +172,51 @@ export const procurementDaLookupSchema = z.object({
   procurementDaPurchases: z.object({ items: z.array(z.object({ purchaseId: z.string() })), total: z.number() }),
 })
 
+/** List order (`purchaseId` breaks ties); `countedValueDesc` puts uncounted purchases last. */
+export type DaListSort = 'finalizationDesc' | 'finalizationAsc' | 'countedValueDesc'
+
+const AROUND_FIELDS = 'purchaseId code outcome publicationDay finalizationDay reportedValue counted countedValue notCountedReason { code labelEn labelRo } valueCorrected correctedValue reviewRule { rule effect descriptionEn descriptionRo } symbolicPrice title titleWithheld categoryLabel'
+
+/**
+ * The purchases between one buyer and one supplier around a day, from the
+ * release: how many since a day (`all`), and a few either side. Each field
+ * is its own snapshot: the reader compares their `dataAsOf`.
+ */
+export const PROCUREMENT_DA_AROUND_QUERY = /* GraphQL */ `
+  query ProcurementDaAround($all: ProcurementDaPurchaseFilter!, $newer: ProcurementDaPurchaseFilter!, $older: ProcurementDaPurchaseFilter!, $perSide: Int!) {
+    all: procurementDaPurchases(filter: $all, pageSize: 1) { total totalCapped dataAsOf items { purchaseId } }
+    newer: procurementDaPurchases(filter: $newer, sort: finalizationAsc, pageSize: $perSide) { dataAsOf items { ${AROUND_FIELDS} } }
+    older: procurementDaPurchases(filter: $older, sort: finalizationDesc, pageSize: $perSide) { dataAsOf items { ${AROUND_FIELDS} } }
+  }
+`
+
+export const rawDaAroundItemSchema = rawDaPurchaseSchema.pick({
+  purchaseId: true,
+  code: true,
+  outcome: true,
+  publicationDay: true,
+  finalizationDay: true,
+  reportedValue: true,
+  counted: true,
+  countedValue: true,
+  notCountedReason: true,
+  valueCorrected: true,
+  correctedValue: true,
+  reviewRule: true,
+  symbolicPrice: true,
+  title: true,
+  titleWithheld: true,
+  categoryLabel: true,
+})
+export type RawDaAroundItem = z.infer<typeof rawDaAroundItemSchema>
+
+export const procurementDaAroundSchema = z.object({
+  all: z.object({ total: z.number(), totalCapped: z.boolean(), dataAsOf: z.string() }),
+  newer: z.object({ dataAsOf: z.string(), items: z.array(rawDaAroundItemSchema) }),
+  older: z.object({ dataAsOf: z.string(), items: z.array(rawDaAroundItemSchema) }),
+})
+export type RawDaAround = z.infer<typeof procurementDaAroundSchema>
+
 // ─────────────────────────────────────────────────────────────── totals ──
 
 export type DaTotalsGroupBy = 'buyer' | 'supplier' | 'cpvDivision' | 'month' | 'year'

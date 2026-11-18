@@ -287,10 +287,10 @@ describe('direct acquisitions release 1', () => {
     expect(page).not.toContain('Livrarea și plata')
   })
 
-  it('no legacy context on a release page', () => {
-    const page = release(RELEASE_CASES.countedAsReported())
-    expect(page).toContain('Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină.')
-    expect(page).not.toContain('Din 2019 încoace, au fost')
+  it('a release page between two named parties has its context, read as it is read for any page', () => {
+    const page = html(mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES), dpContext())
+    expect(page).toContain('Context Alte achiziții între ele')
+    expect(page).toContain('Din 2019 încoace, au fost 17 achiziții directe între ele')
   })
 })
 

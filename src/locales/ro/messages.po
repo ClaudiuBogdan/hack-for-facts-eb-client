@@ -4621,7 +4621,7 @@ msgstr ""
 msgid "Achiziția a fost făcută în afara catalogului electronic, iar instituția a notificat-o în SEAP. O notificare are doar furnizorul, obiectul, codul CPV și valoarea: fără listă de produse, fără condiții de livrare sau plată."
 msgstr "Achiziția a fost făcută în afara catalogului electronic, iar instituția a notificat-o în SEAP. O notificare are doar furnizorul, obiectul, codul CPV și valoarea: fără listă de produse, fără condiții de livrare sau plată."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:367
+#: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:365
 msgid "Achiziția e dinainte de 2019, iar datele SEAP de atunci nu despart achizițiile făcute de ofertele refuzate, așa că pagina nu le adună."
 msgstr "Achiziția e dinainte de 2019, iar datele SEAP de atunci nu despart achizițiile făcute de ofertele refuzate, așa că pagina nu le adună."
 
@@ -11439,8 +11439,8 @@ msgid "Cele modificate cel mai recent pe portal. Fiecare se deschide cu ședinț
 msgstr "Cele modificate cel mai recent pe portal. Fiecare se deschide cu ședințele, căile de atac și părțile lui, fără nume."
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:361
-msgid "Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină."
-msgstr "Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină."
+#~ msgid "Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină."
+#~ msgstr "Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină."
 
 #: src/features/procurement/components/contract/contract-block.tsx:435
 msgid "Celelalte acorduri-cadru din anunț"
@@ -41943,7 +41943,7 @@ msgstr "SEAP nu are un contract cu identificatorul {id} în datele publicate."
 msgid "SEAP nu dă acestui anunț un titlu."
 msgstr "SEAP nu dă acestui anunț un titlu."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:363
+#: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:361
 msgid "SEAP nu dă codul fiscal al uneia dintre părți, așa că celelalte achiziții dintre ele nu se pot aduna."
 msgstr "SEAP nu dă codul fiscal al uneia dintre părți, așa că celelalte achiziții dintre ele nu se pot aduna."
 
@@ -41967,7 +41967,7 @@ msgstr "SEAP nu leagă încă de anunț niciun contract."
 #~ msgid "SEAP nu publică ce s-a întâmplat cu ea."
 #~ msgstr "SEAP nu publică ce s-a întâmplat cu ea."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:365
+#: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:363
 msgid "SEAP nu publică data acestei achiziții, așa că pagina nu o poate așeza printre celelalte dintre ele."
 msgstr "SEAP nu publică data acestei achiziții, așa că pagina nu o poate așeza printre celelalte dintre ele."
 

@@ -96,8 +96,8 @@ describe('mapReleasePurchase — D6', () => {
     expect(known.authority).toMatchObject({ name: 'Banca Națională a României', hasBudget: true })
   })
 
-  it('a release purchase has no legacy context, even between two named parties', () => {
-    expect(contextGapOf(mapReleasePurchase(rawReleaseDetail({ supplier: COMPANY }), NO_NAMES))).toBe('release')
+  it('a release purchase between two named parties has a context to read', () => {
+    expect(contextGapOf(mapReleasePurchase(rawReleaseDetail({ supplier: COMPANY }), NO_NAMES))).toBeNull()
   })
 })
 

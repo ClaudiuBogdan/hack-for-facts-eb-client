@@ -357,8 +357,6 @@ function ContextGap({ purchase }: { readonly purchase: DirectPurchase }) {
         ) : (
           <Trans>Furnizorul este o persoană fizică: Transparenta nu îi arată numele și nu îi adună achizițiile.</Trans>
         )
-      ) : gap === 'release' ? (
-        <Trans>Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină.</Trans>
       ) : gap === 'no-cui' ? (
         <Trans>SEAP nu dă codul fiscal al uneia dintre părți, așa că celelalte achiziții dintre ele nu se pot aduna.</Trans>
       ) : gap === 'no-date' ? (
