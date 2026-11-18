@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { lazySchema, type LazyOutput } from '@/lib/route-contract'
 
 /**
  * Seam types for the global entity-search page (`/experimental/search`).
@@ -182,35 +183,38 @@ export interface EntitySearchInput {
  * `z.coerce.string()` would turn `?q=null` into the literal text `"null"` and
  * search for it.
  */
-const optionalSearchString = z
-  .preprocess(
-    (value) => (value === null || typeof value === 'boolean' ? undefined : value),
-    z.coerce.string().optional(),
-  )
-  .catch(undefined)
+const optionalSearchString = () =>
+  z
+    .preprocess(
+      (value) => (value === null || typeof value === 'boolean' ? undefined : value),
+      z.coerce.string().optional(),
+    )
+    .catch(undefined)
 
-export const entitySearchParamsSchema = z.object({
-  q: optionalSearchString,
-  types: z
-    .union([z.array(z.string()), z.string()])
-    .transform((value) => (Array.isArray(value) ? value : [value]))
-    .optional()
-    .catch(undefined),
-  tags: z.union([z.array(z.string()).max(100), z.string()])
-    .transform(value => Array.isArray(value) ? value : [value]).optional(),
-  excludeTags: z.union([z.array(z.string()).max(100), z.string()])
-    .transform(value => Array.isArray(value) ? value : [value]).optional(),
-  isUat: z.union([z.boolean(), z.enum(['true', 'false'])])
-    .transform(value => value === true || value === 'true').optional(),
-  county: optionalSearchString,
-  active: z
-    .union([z.boolean(), z.enum(['true', 'false'])])
-    .transform((value) => value === true || value === 'true')
-    .optional()
-    .catch(undefined),
-})
+export const entitySearchParamsSchema = lazySchema(() =>
+  z.object({
+    q: optionalSearchString(),
+    types: z
+      .union([z.array(z.string()), z.string()])
+      .transform((value) => (Array.isArray(value) ? value : [value]))
+      .optional()
+      .catch(undefined),
+    tags: z.union([z.array(z.string()).max(100), z.string()])
+      .transform(value => Array.isArray(value) ? value : [value]).optional(),
+    excludeTags: z.union([z.array(z.string()).max(100), z.string()])
+      .transform(value => Array.isArray(value) ? value : [value]).optional(),
+    isUat: z.union([z.boolean(), z.enum(['true', 'false'])])
+      .transform(value => value === true || value === 'true').optional(),
+    county: optionalSearchString(),
+    active: z
+      .union([z.boolean(), z.enum(['true', 'false'])])
+      .transform((value) => value === true || value === 'true')
+      .optional()
+      .catch(undefined),
+  }),
+)
 
-export type EntitySearchParams = z.infer<typeof entitySearchParamsSchema>
+export type EntitySearchParams = LazyOutput<typeof entitySearchParamsSchema>
 
 export function parseEntitySearchParams(
   search: Record<string, unknown>,
