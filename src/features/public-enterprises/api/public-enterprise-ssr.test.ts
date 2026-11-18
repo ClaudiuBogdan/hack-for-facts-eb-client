@@ -8,6 +8,8 @@ const { fetchPublicEnterprise, fetchPrivateCompanyProfile, fetchProcurementBuyer
 vi.mock('./public-enterprise-api', () => ({ fetchPublicEnterprise }))
 vi.mock('@/features/private-companies/api/private-company-api', () => ({ fetchPrivateCompanyProfile }))
 vi.mock('@/features/procurement/api/procurement-buyer-api', () => ({ fetchProcurementBuyer }))
+const disclosure = vi.hoisted(() => ({ version: 'v1' as string | null }))
+vi.mock('@/features/procurement/api/procurement-da-release-status', () => ({ disclosureVersion: () => Promise.resolve(disclosure.version) }))
 
 import { enterpriseReadFixture } from '../lib/test/enterprise-fixture'
 import { isCompleteServerRead, readPublicEnterpriseForSsr } from './public-enterprise-ssr'
@@ -18,7 +20,7 @@ describe('the enterprise page’s server reads', () => {
     fetchPrivateCompanyProfile.mockResolvedValueOnce(null)
     fetchProcurementBuyer.mockResolvedValueOnce({ partial: false })
     const read = await readPublicEnterpriseForSsr('789401')
-    expect(read).toEqual({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false } })
+    expect(read).toEqual({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false }, disclosureKnown: true })
     expect(fetchProcurementBuyer).toHaveBeenCalledWith('789401', 'recent', expect.any(AbortSignal))
     expect(isCompleteServerRead(read)).toBe(true)
   })
@@ -31,6 +33,11 @@ describe('the enterprise page’s server reads', () => {
     expect(read.company).toBeUndefined()
     expect(read.enterprise?.cui).toBe('13267213')
     expect(isCompleteServerRead(read)).toBe(false)
+  })
+
+  it('keeps no render, and no buyer profile, whose disclosure publication cannot be read (D6)', () => {
+    expect(isCompleteServerRead({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false } as never, disclosureKnown: false })).toBe(false)
+    expect(isCompleteServerRead({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false } as never, disclosureKnown: true })).toBe(true)
   })
 
   it('does not cache a render from a partial read', () => {

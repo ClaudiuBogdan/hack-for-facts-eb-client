@@ -1,3 +1,4 @@
+import { DisclosureWatch } from "@/features/procurement/hooks/use-disclosure-watch";
 import { useEffect } from "react";
 import { Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
@@ -102,6 +103,7 @@ export function AppShell({
               <HotkeysProvider>
                 <SidebarProvider>
                   <NavigationProgress />
+                  <DisclosureWatch />
                   <div className="flex min-h-screen min-w-full">
                     <AppSidebar
                       initialCurrency={ssrCurrency}

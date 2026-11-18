@@ -3,7 +3,8 @@ import { homeYear } from '../lib/home-model'
 import { forgetProcurementCutoff } from './procurement-cutoff'
 import { readProcurementAnalyticsForSsr } from './procurement-analytics-ssr'
 // The disclosure publication direct purchases are kept under (D6), alongside the build.
-vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true }), disclosureVersion: () => Promise.resolve('v1'), underDisclosure: (_memo: unknown, _key: string, read: () => Promise<unknown>) => read() }))
+const release = vi.hoisted(() => ({ disclosure: 'v1' as string | null }))
+vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true }), disclosureVersion: () => Promise.resolve(release.disclosure), underDisclosure: (_memo: unknown, _key: string, read: () => Promise<unknown>) => read() }))
 
 /**
  * The server render's generation guard: without a cutoff's build it reads no
@@ -54,6 +55,7 @@ beforeEach(() => {
   api.cutoffBuild = '13'
   api.cutoffFails = false
   api.calls = []
+  release.disclosure = 'v1'
   forgetProcurementCutoff(homeYear())
 })
 
@@ -75,6 +77,16 @@ describe('readProcurementAnalyticsForSsr', () => {
     // Direct purchases under '13|v1'; the other tabs' counts (contracts, frameworks) under the contract build alone.
     expect(keys.every((key) => key[3] === '13|v1' || key[3] === '13')).toBe(true)
     expect(keys.filter((key) => key[3] === '13|v1').length).toBeGreaterThan(0)
+  })
+
+  it('keeps no render whose disclosure publication cannot be read: not in the memo, not by the CDN (D6)', async () => {
+    release.disclosure = null
+    const first = await readProcurementAnalyticsForSsr({ tip: 'directe', judet: 'VS' })
+    expect(first.complete).toBe(false)
+    const before = analysis().length
+    await readProcurementAnalyticsForSsr({ tip: 'directe', judet: 'VS' })
+    // Read again, not served from the memo.
+    expect(analysis().length).toBeGreaterThan(before)
   })
 
   it('reads the records’ page and order the address holds, each page kept apart', async () => {

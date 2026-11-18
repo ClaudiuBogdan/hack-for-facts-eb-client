@@ -109,3 +109,17 @@ export function daSupplierReads(): Promise<DaSupplierReads> {
     () => ({ figures: true, places: true }),
   )
 }
+
+/**
+ * The publication as a watcher compares it: like `disclosureVersion`, but a
+ * failed read fails (the watcher backs off, and purges nothing on it), and
+ * D6 on with its supplier-privacy publication unreadable is a state of its
+ * own — everyone withheld — which a page must not keep names across.
+ */
+export function readDisclosureNow(): Promise<string> {
+  return readDaRelease().then((status) =>
+    status.privacyEnforced && status.privacyAsOf === null
+      ? 'd6-unavailable'
+      : `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}:${status.privacyEnforced ? 'd6' : 'nod6'}:${status.privacyAsOf ?? '-'}`,
+  )
+}

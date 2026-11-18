@@ -58,7 +58,7 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
   }
 }
 
-const COMPLETE = { enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false } }
+const COMPLETE = { enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false }, disclosureKnown: true }
 
 describe('/public-enterprises/$cui', () => {
   beforeEach(() => {
@@ -123,6 +123,8 @@ describe('/public-enterprises/$cui', () => {
     vi.unstubAllEnvs()
     expect(whole['Cache-Control'] ?? '').toContain('s-maxage=600')
     expect(whole.Vary ?? '').toContain('Cookie')
+    // D6: its buyer band ranks direct purchases' suppliers — no stale copy outlives a publish.
+    expect(whole['Cache-Control'] ?? '').not.toMatch(/stale-while-revalidate=[1-9]/)
     expect(partial['Cache-Control']).toContain('no-store')
     expect(partial['CDN-Cache-Control']).toBe('no-store')
   })

@@ -1,3 +1,4 @@
+import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import type { PublicEnterpriseServerRead } from '@/features/public-enterprises/api/public-enterprise-ssr'
 import { PublicEnterprisePending } from '@/features/public-enterprises/components/enterprise/enterprise-pending'
@@ -63,7 +64,8 @@ export const Route = createFileRoute('/public-enterprises/$cui')({
   // never cached for everyone. The document follows the locale and theme cookies.
   headers: ({ loaderData }) =>
     loaderData?.complete
-      ? createPublicPageCacheHeaders({ sharedMaxAgeSeconds: 600, staleWhileRevalidateSeconds: 3600, vary: ['Accept-Encoding', 'Cookie'] })
+      ? // D6: its buyer band ranks direct purchases' suppliers — within one publish (`disclosure-cache.ts`).
+        createPublicPageCacheHeaders({ ...DA_DISCLOSURE_CACHE, vary: ['Accept-Encoding', 'Cookie'] })
       : // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' },
   // Without the enterprise read (a client navigation, or a server read that failed and goes out `no-store`), a neutral title

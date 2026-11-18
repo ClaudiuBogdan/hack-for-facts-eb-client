@@ -1,3 +1,4 @@
+import { disclosureVersion } from '@/features/procurement/api/procurement-da-release-status'
 import { fetchPrivateCompanyProfile } from '@/features/private-companies/api/private-company-api'
 import { fetchProcurementBuyer } from '@/features/procurement/api/procurement-buyer-api'
 import type { BuyerProfile } from '@/features/procurement/lib/buyer-model'
@@ -35,16 +36,22 @@ export interface PublicEnterpriseServerRead {
   /** `null`: no company record; absent: the read failed. */
   readonly company?: PrivateCompanyProfile | null
   readonly buyer?: BuyerProfile
+  /** The direct-purchase disclosure publication was read: without it nothing is kept, the render included (D6). Absent: not read. */
+  readonly disclosureKnown?: boolean
 }
 
 /** The three reads side by side; a failed one is left out, and the others stand. */
 export async function readPublicEnterpriseForSsr(cui: string): Promise<PublicEnterpriseServerRead> {
+  // D6: the buyer profile ranks direct purchases' suppliers, so it is kept under the publication it was read under.
+  const disclosure = await disclosureVersion()
+  const readBuyer = () => fetchProcurementBuyer(cui, RECENT, deadline())
   const [enterprise, company, buyer] = await Promise.allSettled([
     enterprises(cui, () => fetchPublicEnterprise(cui, { signal: deadline() })),
     companies(cui, () => fetchPrivateCompanyProfile(cui, deadline())),
-    buyers(cui, () => fetchProcurementBuyer(cui, RECENT, deadline())),
+    disclosure === null ? readBuyer() : buyers(`${disclosure}|${cui}`, readBuyer),
   ])
   return {
+    disclosureKnown: disclosure !== null,
     ...(enterprise.status === 'fulfilled' ? { enterprise: enterprise.value } : {}),
     ...(company.status === 'fulfilled' ? { company: company.value } : {}),
     ...(buyer.status === 'fulfilled' ? { buyer: buyer.value } : {}),
@@ -53,5 +60,5 @@ export async function readPublicEnterpriseForSsr(cui: string): Promise<PublicEnt
 
 /** Whether a render may be cached for everyone: every read answered in full. */
 export function isCompleteServerRead(read: PublicEnterpriseServerRead): boolean {
-  return read.enterprise !== undefined && !read.enterprise.partial && read.company !== undefined && read.buyer !== undefined && !read.buyer.partial
+  return read.disclosureKnown === true && read.enterprise !== undefined && !read.enterprise.partial && read.company !== undefined && read.buyer !== undefined && !read.buyer.partial
 }
