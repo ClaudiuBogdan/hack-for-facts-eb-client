@@ -1,5 +1,7 @@
 import { useOptionalUser } from '@/lib/auth';
 import { queryOptions, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { warmAdvancedAnalyticsMapResources } from '@/features/advanced-map-analytics/analytics-map-warmup';
+import { publicMapPayloadQueryOptions } from './public-map-payload-query';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import {
   createAdvancedMapAnalyticsMap,
@@ -7,6 +9,7 @@ import {
   deleteAdvancedMapAnalyticsMap,
   getAdvancedMapAnalyticsMap,
   getAdvancedMapAnalyticsSnapshot,
+  decodePublicMapPayload,
   getPublicAdvancedMapAnalyticsMap,
   listAdvancedMapAnalyticsMaps,
   listAdvancedMapAnalyticsSnapshots,
@@ -146,10 +149,29 @@ export function useAdvancedMapAnalyticsSnapshotsQuery(
   });
 }
 
+/** County boundaries are a separate, large GeoJSON payload: worth warming only for a map that draws them. */
+export function warmCountyBoundariesIfUsed(queryClient: QueryClient, publicMap: AdvancedMapAnalyticsMapDetail | undefined): void {
+  if (publicMap?.lastSnapshot.config.mapLayers.countyBoundaries) {
+    void warmAdvancedAnalyticsMapResources({
+      queryClient,
+      includeCountyGeoJson: true,
+      preloadInteractiveMap: false,
+    });
+  }
+}
+
 export function advancedMapAnalyticsPublicMapQueryOptions(publicId: string) {
   return queryOptions<AdvancedMapAnalyticsMapDetail, AdvancedMapAnalyticsApiError>({
     queryKey: advancedMapAnalyticsKeys.public(publicId),
-    queryFn: async () => getPublicAdvancedMapAnalyticsMap(publicId),
+    queryFn: async ({ client }) => {
+      // The server reads and decodes in one go; its render is hydrated as is.
+      if (import.meta.env.SSR) return getPublicAdvancedMapAnalyticsMap(publicId);
+      // In the browser the route started this read at the click (its payload
+      // query): decoding joins it, so there is one request.
+      const publicMap = decodePublicMapPayload(await client.fetchQuery(publicMapPayloadQueryOptions(publicId)));
+      warmCountyBoundariesIfUsed(client, publicMap);
+      return publicMap;
+    },
     staleTime: 60_000,
   });
 }

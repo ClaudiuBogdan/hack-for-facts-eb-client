@@ -5,9 +5,6 @@ import { MapAnalyticsPublicView } from '@/features/advanced-map-analytics/compon
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import { usePublicMapRuntimeState } from '@/features/advanced-map-analytics/hooks/use-public-map-runtime-state';
 import { t } from '@lingui/core/macro';
-import { useEffect } from 'react';
-import { attemptChunkRecovery } from '@/lib/chunk-recovery';
-import { isUpdateAvailableError } from '@/lib/errors-utils';
 
 interface MapAnalyticsPublicPageProps {
   publicId: string;
@@ -43,14 +40,6 @@ export function MapAnalyticsPublicPage({
   } = usePublicMapRuntimeState({
     publicId,
   });
-
-  // The read fetches its decoder quietly (it may be a hover's); the reader is on
-  // the map now, so a decoder this document can no longer load is recovered here,
-  // with the app's bounded fresh-page reload.
-  const readError = publicMapQuery.error;
-  useEffect(() => {
-    if (readError && isUpdateAvailableError(readError)) attemptChunkRecovery(readError);
-  }, [readError]);
 
   if (publicMapQuery.isLoading || (!publicMapQuery.error && !isRuntimeStateReady)) {
     return <PublicMapLoadingState />;

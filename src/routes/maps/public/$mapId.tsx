@@ -1,33 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { warmAdvancedAnalyticsMapResources } from '@/features/advanced-map-analytics/analytics-map-warmup';
-import { prefetchMapDecoders } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
-import { advancedMapAnalyticsPublicMapQueryOptions } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
+import { publicMapPayloadQueryOptions } from '@/features/advanced-map-analytics/hooks/public-map-payload-query';
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking';
-import type { QueryClient } from '@tanstack/react-query';
-
-type PublicMap = Awaited<
-  ReturnType<
-    NonNullable<ReturnType<typeof advancedMapAnalyticsPublicMapQueryOptions>['queryFn']>
-  >
->;
-
-/**
- * County boundaries are a separate, large GeoJSON payload, so it is only worth
- * warming for maps that actually draw them — which we cannot know until the
- * map's config has loaded.
- */
-function warmCountyBoundariesIfUsed(
-  queryClient: QueryClient,
-  publicMap: PublicMap,
-): void {
-  if (publicMap?.lastSnapshot.config.mapLayers.countyBoundaries) {
-    void warmAdvancedAnalyticsMapResources({
-      queryClient,
-      includeCountyGeoJson: true,
-      preloadInteractiveMap: false,
-    });
-  }
-}
 
 export const Route = createFileRoute('/maps/public/$mapId')({
   // The awaited fetch here fed nothing but the warm-up decision below — the
@@ -42,28 +16,26 @@ export const Route = createFileRoute('/maps/public/$mapId')({
 
     const warming = warmAdvancedAnalyticsMapResources({ queryClient });
 
-    const publicMapPromise = queryClient.ensureQueryData(
-      advancedMapAnalyticsPublicMapQueryOptions(publicId)
-    );
-
     if (!shouldBlockLoaderForSsr()) {
-      // Same request, same cache entry the page reads — just not awaited.
+      // The read starts at the click, not awaited: its payload only. The page
+      // decodes it with code that arrives with the page itself (the map's
+      // schemas stay out of the route tree, which every page evaluates), and
+      // warms the county boundaries once it knows the map draws them.
       // Rejections surface through the page's own error state.
-      void publicMapPromise
-        .then((publicMap) => warmCountyBoundariesIfUsed(queryClient, publicMap))
-        .catch(() => {});
+      void queryClient.ensureQueryData(publicMapPayloadQueryOptions(publicId)).catch(() => {});
       // A hover's preload waits for the map's code: it then arrives inside
       // the router's quiet preload (src/lib/route-code-warmup.ts), where a
       // failed fetch leaves the page being read alone and makes the click a
-      // page load. A visit does not wait. The response decoder is fetched
-      // ahead too, quietly and apart, so a click never waits for it.
-      if (preload) {
-        prefetchMapDecoders();
-        await warming;
-      }
+      // page load. A visit does not wait.
+      if (preload) await warming;
       return;
     }
 
-    warmCountyBoundariesIfUsed(queryClient, await publicMapPromise);
+    // The server reads and decodes the map before rendering it (its code is
+    // the server's own, never a chunk the browser fetches).
+    const { advancedMapAnalyticsPublicMapQueryOptions, warmCountyBoundariesIfUsed } = await import(
+      '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics'
+    );
+    warmCountyBoundariesIfUsed(queryClient, await queryClient.ensureQueryData(advancedMapAnalyticsPublicMapQueryOptions(publicId)));
   },
 });

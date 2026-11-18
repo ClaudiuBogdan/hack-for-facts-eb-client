@@ -182,27 +182,27 @@ and `lib/` (11.1) are not route families: they are looked at last.
     loads: time under the chunks' top-level evaluation, median 475 → 368 ms, of it in the Zod chunk
     243 → 131 ms. Every page family the batch touched renders as before (status, content, no page or
     hydration error), and the search input's chunk now arrives on idle (≈1.1 s) instead of at start-up.
-  - Review (Codex `gpt-6.2-astra`, max): two P1s in the public map's deferred decoder, fixed — owner
-    mutations now load the decoder before sending (a failed import after a create used to leave a map the
-    reader could not see, and a retry made a second), and a hover's preload awaits the decoder inside the
-    quiet preload (a failed decoder fetch used to reload the page being read); the public read reports its
-    HTTP failure before a decoder failure. A second review moved the decoder out of the preload: a hover
-    and the public read fetch it quietly (`prefetchMapDecoders`, so a failure never reloads the page and a
-    click never waits for it), and a failed import is forgotten so a later call asks again. A third review
-    split the callers by who is waiting: the public read imports the decoder quietly, once per read (it
-    may be a hover's), and the map page, once mounted, recovers a failed decoder with the app's bounded
-    fresh-page reload; owner calls and the new-map page (`decodersForReader`) recover the same way when
-    their load fails, even after joining a quiet prefetch; the new-map route loads the decoder before
-    its page claims an editable copy's one-time handoff. The floating search's placeholder is now a field whose text and
-    focus carry over to the input (keystrokes typed during a cold open used to be lost). The chart store loads
+  - Review (Codex `gpt-6.2-astra`, max, four rounds): the public map's response decoder was first loaded on
+    its own with `import()`. Every guard on that extra chunk left a timing gap on a stale deployment where
+    a failed load reloaded a page the reader had not asked for, so the owner chose a redesign: no chunk of
+    its own. `api/advanced-map-analytics-transport.ts` holds the requests, errors and envelope; the route
+    starts the map's payload read at the click (`hooks/public-map-payload-query.ts`, under the decoded
+    query's key) and imports nothing else; the page's query (`advancedMapAnalyticsPublicMapQueryOptions`)
+    joins that read and decodes it with `advanced-map-analytics-api.ts`, which arrives with the page's own
+    code and its tested failure handling, then warms the county boundaries the map draws. The server reads
+    and decodes in one go, as before. Owner calls import their decoders statically, as on `dev`.
+    Other findings fixed: the floating search's placeholder is a field whose text and focus carry over to
+    the input (keystrokes typed during a cold open were lost), its status describes the field, and its
+    results open only once the input has focus; a failed retry asks for a fresh page. The chart store loads
     in the route's loader, alongside the editor's chunk, once per document. Also made lazy: the map API
-    envelope and the heatmap's `MapStateSchema`. Left as noted: the old exports of `judicial.ts`,
+    envelope and the heatmap's `MapStateSchema`; the guard and lint list cover more of the migrated
+    families. Left as noted: the old exports of `judicial.ts`,
     `elections-catalog.ts` and `page-schema.ts` are now lazy schemas, without `.unwrap()`/`.shape` (no caller
     uses them); `LazySchema`'s `~standard` type mentions Zod's JSON-schema helpers it does not forward; the
     graph walker misses eager globs written with the `@/` alias or a quoted `eager` key (older than this
     batch). Found on `dev` as well and left for later: a duplicated or directly opened chart is not saved
-    locally on entry (the router calls `onStay`, not `onEnter`), and `mod+k` cannot close the map's
-    search dialog.
+    locally on entry (the router calls `onStay`, not `onEnter`), `mod+k` cannot close the map's search
+    dialog, and an editable map copy's one-time handoff is spent before a signed-out reader signs in.
   - Left at start-up on purpose: the entity page's identity and details queries (its loader starts them at
     the click, rule 5 of "Migrating a family"). Largest builders left: PNRR's search contract (its schema
     module mixes it with the data schemas) and the redesign entity API behind the entity page.

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const routeStub = vi.fn((options: Record<string, unknown>) => options);
 const warmAdvancedAnalyticsMapResourcesMock = vi.fn();
 const advancedMapAnalyticsPublicMapQueryOptionsMock = vi.fn();
+const publicMapPayloadQueryOptionsMock = vi.fn();
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
@@ -12,13 +13,18 @@ vi.mock('@/features/advanced-map-analytics/analytics-map-warmup', () => ({
   warmAdvancedAnalyticsMapResources: warmAdvancedAnalyticsMapResourcesMock,
 }));
 
-const prefetchMapDecodersMock = vi.fn();
-vi.mock('@/features/advanced-map-analytics/api/advanced-map-analytics-api', () => ({
-  prefetchMapDecoders: prefetchMapDecodersMock,
+vi.mock('@/features/advanced-map-analytics/hooks/public-map-payload-query', () => ({
+  publicMapPayloadQueryOptions: publicMapPayloadQueryOptionsMock,
 }));
 
+// The server's path only: the browser's loader never imports the decoding hooks.
 vi.mock('@/features/advanced-map-analytics/hooks/use-advanced-map-analytics', () => ({
   advancedMapAnalyticsPublicMapQueryOptions: advancedMapAnalyticsPublicMapQueryOptionsMock,
+  warmCountyBoundariesIfUsed: (queryClient: unknown, publicMap: { lastSnapshot?: { config?: { mapLayers?: { countyBoundaries?: boolean } } } } | undefined) => {
+    if (publicMap?.lastSnapshot?.config?.mapLayers?.countyBoundaries) {
+      void warmAdvancedAnalyticsMapResourcesMock({ queryClient, includeCountyGeoJson: true, preloadInteractiveMap: false });
+    }
+  },
 }));
 
 describe('maps public route loader', () => {
@@ -28,13 +34,16 @@ describe('maps public route loader', () => {
     warmAdvancedAnalyticsMapResourcesMock.mockReset();
     advancedMapAnalyticsPublicMapQueryOptionsMock.mockReset();
     warmAdvancedAnalyticsMapResourcesMock.mockResolvedValue(undefined);
-    prefetchMapDecodersMock.mockReset();
     advancedMapAnalyticsPublicMapQueryOptionsMock.mockImplementation((publicId: string) => ({
       queryKey: ['advanced-map-analytics', 'public', publicId],
     }));
+    publicMapPayloadQueryOptionsMock.mockReset();
+    publicMapPayloadQueryOptionsMock.mockImplementation((publicId: string) => ({
+      queryKey: ['advanced-map-analytics', 'public', publicId, 'payload'],
+    }));
   });
 
-  it('hydrates public map detail and starts base warmup', async () => {
+  it('starts the map\'s payload read and the base warm-up in the browser, leaving the decoding to the page', async () => {
     const queryClient = {
       ensureQueryData: vi.fn().mockResolvedValue({
         lastSnapshot: {
@@ -59,9 +68,10 @@ describe('maps public route loader', () => {
       params: { mapId: 'public-map-1' },
     });
 
-    expect(advancedMapAnalyticsPublicMapQueryOptionsMock).toHaveBeenCalledWith('public-map-1');
+    expect(publicMapPayloadQueryOptionsMock).toHaveBeenCalledWith('public-map-1');
+    expect(advancedMapAnalyticsPublicMapQueryOptionsMock).not.toHaveBeenCalled();
     expect(queryClient.ensureQueryData).toHaveBeenCalledWith({
-      queryKey: ['advanced-map-analytics', 'public', 'public-map-1'],
+      queryKey: ['advanced-map-analytics', 'public', 'public-map-1', 'payload'],
     });
     expect(warmAdvancedAnalyticsMapResourcesMock).toHaveBeenCalledTimes(1);
     expect(warmAdvancedAnalyticsMapResourcesMock).toHaveBeenCalledWith({
@@ -103,41 +113,6 @@ describe('maps public route loader', () => {
     settle();
     await preloading;
     expect(preloaded).toBe(true);
-  });
-
-  it('warms county boundaries when the public map enables them', async () => {
-    const queryClient = {
-      ensureQueryData: vi.fn().mockResolvedValue({
-        lastSnapshot: {
-          config: {
-            mapLayers: {
-              countyBoundaries: true,
-            },
-          },
-        },
-      }),
-    };
-
-    const { Route } = await import('./$mapId');
-    const routeWithLoader = Route as unknown as {
-      loader: (input: Record<string, unknown>) => Promise<void>;
-    };
-
-    await routeWithLoader.loader({
-      context: {
-        queryClient,
-      },
-      params: { mapId: 'public-map-2' },
-    });
-
-    expect(warmAdvancedAnalyticsMapResourcesMock).toHaveBeenNthCalledWith(1, {
-      queryClient,
-    });
-    expect(warmAdvancedAnalyticsMapResourcesMock).toHaveBeenNthCalledWith(2, {
-      queryClient,
-      includeCountyGeoJson: true,
-      preloadInteractiveMap: false,
-    });
   });
 
   /**
@@ -202,7 +177,8 @@ describe('maps public route loader', () => {
       finished = true;
     });
 
-    await Promise.resolve();
+    // The server imports the decoding hooks, then reads the decoded map.
+    await vi.waitFor(() => expect(queryClient.ensureQueryData).toHaveBeenCalledWith({ queryKey: ['advanced-map-analytics', 'public', 'public-map-4'] }));
     expect(finished).toBe(false);
 
     settle({ lastSnapshot: { config: { mapLayers: { countyBoundaries: true } } } });
@@ -226,16 +202,5 @@ describe('maps public route loader', () => {
     await expect(
       loader({ context: { queryClient }, params: { mapId: 'public-map-5' } }),
     ).resolves.toBeUndefined();
-  });
-
-  it('fetches the response decoders ahead on a hover preload, quietly and without waiting for them', async () => {
-    const queryClient = { ensureQueryData: vi.fn().mockReturnValue(new Promise(() => {})) };
-    const { Route } = await import('./$mapId');
-    const loader = (Route as unknown as { loader: (input: Record<string, unknown>) => Promise<void> }).loader;
-
-    await loader({ context: { queryClient }, params: { mapId: 'm' }, preload: false });
-    expect(prefetchMapDecodersMock).not.toHaveBeenCalled();
-    await loader({ context: { queryClient }, params: { mapId: 'm' }, preload: true });
-    expect(prefetchMapDecodersMock).toHaveBeenCalledTimes(1);
   });
 });
