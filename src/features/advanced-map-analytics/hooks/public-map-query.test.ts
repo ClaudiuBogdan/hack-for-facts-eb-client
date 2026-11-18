@@ -153,3 +153,18 @@ it('aborts a read a newer one replaces', () => {
   dropPublicMapReads(['m11']);
   expect(first.aborted).toBe(true);
 });
+
+it('aborts an expired read when a newer one for the same map replaces it, and hands over the newer one', () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  const queryClient = client();
+  fetchPayload.mockImplementation(() => new Promise(() => {}));
+
+  startPublicMapRead(queryClient, 'm12');
+  const first = fetchPayload.mock.calls[0]![1] as AbortSignal;
+  vi.setSystemTime(Date.now() + 15_001);
+  startPublicMapRead(queryClient, 'm12');
+
+  expect(first.aborted).toBe(true);
+  expect(fetchPayload).toHaveBeenCalledTimes(2);
+  expect(takePublicMapRead('m12')).toBeDefined();
+});

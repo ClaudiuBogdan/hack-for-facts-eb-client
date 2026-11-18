@@ -227,14 +227,16 @@ export function useUpdateAdvancedMapAnalyticsMapMutation() {
       // Refetch authenticated detail; mutation responses are not shared account cache seeds.
       const publicIdsToInvalidate = uniquePublicIds(cachedPublicId, updatedMap.publicId);
 
+      // The public map first, not after the owner's refetches: a public read in
+      // flight is cancelled at once, before it can land as fresh.
       await Promise.all([
+        invalidatePublicQueries(queryClient, publicIdsToInvalidate),
         queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.maps }),
         queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.map(updatedMap.id) }),
         queryClient.invalidateQueries({
           queryKey: ['advanced-map-analytics', 'snapshots', updatedMap.id],
         }),
       ]);
-      await invalidatePublicQueries(queryClient, publicIdsToInvalidate);
     },
   });
 }
@@ -255,14 +257,15 @@ export function useSaveAdvancedMapAnalyticsSnapshotMutation() {
     onSuccess: async (_savedSnapshot, input) => {
       const publicIdsToInvalidate = uniquePublicIds(resolveCachedMapPublicId(queryClient, input.mapId));
 
+      // The public map first, as in the map update.
       await Promise.all([
+        invalidatePublicQueries(queryClient, publicIdsToInvalidate),
         queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.map(input.mapId) }),
         queryClient.invalidateQueries({
           queryKey: ['advanced-map-analytics', 'snapshots', input.mapId],
         }),
         queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.maps }),
       ]);
-      await invalidatePublicQueries(queryClient, publicIdsToInvalidate);
     },
   });
 }

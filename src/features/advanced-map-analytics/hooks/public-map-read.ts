@@ -12,9 +12,9 @@ import { fetchPublicMapPayload } from '@/features/advanced-map-analytics/api/adv
  * refetch, a read after a save) asks the network itself. So the query keeps
  * its own retries, freshness and invalidation, with one request for a visit.
  * A read nobody takes is aborted and forgotten after `HANDOFF_MS`, so an
- * abandoned hover holds neither a connection nor a payload. Freshness counts
- * from the take, so a handed-over map can stay fresh up to `HANDOFF_MS` longer
- * than its response's age.
+ * abandoned hover holds neither a connection nor a payload. The window decides
+ * whether a read can be taken; the map's freshness starts when decoding
+ * succeeds, so it can stay fresh up to `HANDOFF_MS` longer than its response.
  */
 const HANDOFF_MS = 15_000;
 

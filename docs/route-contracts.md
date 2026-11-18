@@ -182,7 +182,7 @@ and `lib/` (11.1) are not route families: they are looked at last.
     two loads: time under the chunks' top-level evaluation, median ≈530 → ≈346 ms, of it in the Zod chunk
     ≈279 → ≈122 ms (a busier host than an earlier run, 475 → 368 ms; the gap held in every round). Every page family the batch touched renders as before (status, content, no page or
     hydration error), and the search input's chunk now arrives on idle (≈1.1 s) instead of at start-up.
-  - Review (Codex `gpt-6.2-astra`, max, six rounds): the public map's response decoder was first loaded on
+  - Review (Codex `gpt-6.2-astra`, max, seven rounds): the public map's response decoder was first loaded on
     its own with `import()`. Every guard on that extra chunk left a timing gap on a stale deployment where
     a failed load reloaded a page the reader had not asked for, so the owner chose a redesign: no chunk of
     its own. `api/advanced-map-analytics-transport.ts` holds the requests, errors and envelope. The route
@@ -194,10 +194,12 @@ and `lib/` (11.1) are not route families: they are looked at last.
     failure handling; it then warms the county boundaries the map draws (on `dev` a hover could warm them,
     now the page does once decoded). The handoff is not a cache: any other fetch of the query (a retry, a
     refetch, a read after a save, which drops started reads) asks the network, so retries and invalidation
-    are the query's own, as on `dev`; freshness counts from the take, so a handed-over map can stay fresh
-    up to 15 s longer than its response's age. No read starts while the query is already fetching or the
+    are the query's own, as on `dev`; the 15 s window decides whether a read can be taken, and the map's
+    60 s freshness starts when decoding succeeds, so a handed-over map can stay fresh up to 15 s longer
+    than its response's age. No read starts while the query is already fetching or the
     browser is offline, a read nobody takes is aborted and forgotten after 15 s, and a save cancels public
-    map reads in flight before invalidating them (a pre-save response used to land as fresh, on `dev` too).
+    map reads in flight before invalidating them, together with the owner's queries rather than after
+    them (a pre-save response used to land as fresh, on `dev` too).
     The server reads
     and decodes in one go, as before. Owner calls import their decoders statically, as on `dev`.
     Other findings fixed: the floating search's placeholder is a field whose text and focus carry over to
@@ -217,7 +219,10 @@ and `lib/` (11.1) are not route families: they are looked at last.
     report-type enum), and the decoded map query's error type, which does not cover a network or envelope
     failure. New and accepted: a cancelled page read whose response still arrives can start the county
     boundaries' download (the warm-up runs in the query function; reading its `signal` would change the
-    query's cancellation).
+    query's cancellation); a save that cancels a page read already taken leaves that download running
+    beside its replacement; a mouse-drag selection still in progress when the search input arrives is
+    not carried over (React reports it only on release); the editor's „Saving…" waits for the owner's
+    refetches, as on `dev`.
   - Left at start-up on purpose: the entity page's identity and details queries (its loader starts them at
     the click, rule 5 of "Migrating a family"). Largest builders left: PNRR's search contract (its schema
     module mixes it with the data schemas) and the redesign entity API behind the entity page.
