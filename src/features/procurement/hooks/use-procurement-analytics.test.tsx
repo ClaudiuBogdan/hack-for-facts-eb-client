@@ -6,7 +6,9 @@ import { forgetProcurementCutoff } from '../api/procurement-cutoff'
 import { queryOf } from '../lib/analytics-model'
 import { homeYear } from '../lib/home-model'
 import { resetRecoveredBuilds, useAnswer } from './use-procurement-analytics'
-vi.mock('../api/procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true, known: true }), disclosureVersion: () => Promise.resolve('v1') }))
+vi.mock('../api/procurement-da-release-status', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../api/procurement-da-release-status')>()),
+  daSupplierReads: () => Promise.resolve({ figures: true, places: true, known: true }), disclosureVersion: () => Promise.resolve('v1') }))
 
 /**
  * The page's generation guard against a fake API that serves one build at a
@@ -43,7 +45,7 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
       }
       const block = { recordCount: api.served, withValueCount: '0', valueAwardedSum: null, avgValueAwarded: null, meta: null }
       if (op === 'AnalyticsFigures') return Promise.resolve({ now: { blocks: [block] }, before: { blocks: [block] } })
-      if (op === 'AnalyticsRanking') return Promise.resolve({ r: [{ rankedBy: 'count', valueWithheldAssociationSum: null, buckets: [{ key: api.served, kind: 'top', recordCount: '1', withValueCount: '0', valueSum: null, shareOfScope: null }] }] })
+      if (op === 'AnalyticsRanking') return Promise.resolve({ r: [{ rankedBy: 'count', valueWithheldAssociationSum: null, buckets: [{ key: api.served, kind: 'top', recordCount: '1', withValueCount: '0', valueSum: null, shareOfScope: null }], meta: { disclosureKey: 'off' } }] })
       if (op === 'AnalyticsConcentration') return Promise.resolve({ c: [] })
       return Promise.resolve({ n: [{ points: [] }], v: [{ points: [] }] })
     },

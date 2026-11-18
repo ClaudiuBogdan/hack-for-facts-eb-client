@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { assertServedUnder, disclosureVersion } from './procurement-da-release-status'
 import { tidyTitle, type RecentRecord } from '../lib/home-model'
 import { daSupplierOf, partyOf } from '../lib/home-party'
 
@@ -28,6 +29,7 @@ const recordsSchema = z.object({
         valueRon: z.string().nullable(),
       }),
     ),
+    meta: z.object({ disclosureKey: z.string().nullable().optional() }).nullable().optional(),
   }),
 })
 
@@ -41,12 +43,16 @@ export async function readLargestDirect(
   signal?: AbortSignal,
 ): Promise<readonly RecentRecord[]> {
   const rows = Math.max(1, Math.min(MAX_ROWS, limit))
+  // The publication first: the list is kept only when it was served under it (D6).
+  const disclosure = await disclosureVersion()
   const raw = await graphqlQuery<unknown>(
-    `query ${operationName}($s: ProcurementAnalysisScopeInput!) { l: procurementRecords(scope: $s, sort: value_desc, page: 1, pageSize: ${rows}) { items { id date title cpvLabel authority { cui name displayName displayKind } supplier { cui name displayName displayKind } valueRon } } }`,
+    `query ${operationName}($s: ProcurementAnalysisScopeInput!) { l: procurementRecords(scope: $s, sort: value_desc, page: 1, pageSize: ${rows}) { items { id date title cpvLabel authority { cui name displayName displayKind } supplier { cui name displayName displayKind } valueRon } meta { disclosureKey } } }`,
     { s: { ...scope, grain: 'direct_acquisition' } },
     { operationName, signal },
   )
-  return recordsSchema.parse(raw).l.items.flatMap((item): RecentRecord[] => {
+  const list = recordsSchema.parse(raw).l
+  assertServedUnder(disclosure, list.meta?.disclosureKey)
+  return list.items.flatMap((item): RecentRecord[] => {
     const value = item.valueRon === null ? null : Number(item.valueRon)
     // A purchase with no value the figures count is no row of the largest: it is not counted.
     if (value === null || !Number.isFinite(value)) return []

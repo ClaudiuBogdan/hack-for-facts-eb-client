@@ -1,4 +1,4 @@
-import { daSupplierReads, disclosureVersion } from './procurement-da-release-status'
+import { assertServedUnder, daSupplierReads, disclosureVersion } from './procurement-da-release-status'
 import { z } from 'zod'
 import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
@@ -213,6 +213,7 @@ const breakdownSchema = z.array(
     rankedBy: z.string().nullable(),
     valueWithheldAssociationSum: decimal,
     buckets: z.array(z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal, valueSum: decimal, shareOfScope: decimal })).nullable(),
+    meta: z.object({ disclosureKey: z.string().nullable().optional() }).nullable().optional(),
   }),
 )
 
@@ -249,17 +250,27 @@ function bucketsOf(raw: z.infer<typeof breakdownSchema>[number]): Bucket[] {
   }))
 }
 
-export async function readRanking(scope: Scope, dimension: Dimension, topN: number, rankBy: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Ranking> {
+export async function readRanking(
+  scope: Scope,
+  dimension: Dimension,
+  topN: number,
+  rankBy: 'count' | 'value',
+  build: string | null,
+  signal: AbortSignal,
+  disclosure: string | null = null,
+): Promise<Ranking> {
   // Direct purchases' supplier ranking is refused while D6 is enforced and the release is off: said as unavailable.
   if (scope.grain === 'direct_acquisition' && dimension === 'supplier' && !(await daSupplierReads()).figures) {
     return { dimension, rankedBy: rankBy, buckets: [], withheld: null, unavailable: true }
   }
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope } } }`,
+    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope } meta { disclosureKey } } }`,
     { s: scope, build },
     { operationName: 'AnalyticsRanking', signal },
   )
   const block = breakdownSchema.parse(raw.r)[0]
+  // D6: a direct-purchase answer is kept only under the state it was served under.
+  if (scope.grain === 'direct_acquisition') assertServedUnder(disclosure, block?.meta?.disclosureKey)
   // D6: an unclassified direct-purchase supplier's CUI never enters the ranking the page keeps and serialises.
   const scrub = scope.grain === 'direct_acquisition' && dimension === 'supplier'
   const buckets = block ? bucketsOf(block) : []
@@ -388,7 +399,7 @@ const recordsSchema = z.object({
       valueRon: z.string().nullable(),
     }),
   ),
-  meta: z.object({ answerability: z.string() }),
+  meta: z.object({ answerability: z.string(), disclosureKey: z.string().nullable().optional() }),
 })
 
 export interface Records {
@@ -412,16 +423,18 @@ export const RECORDS_WINDOW = 10_000
 export { defaultRecordsSort, type RecordsSort } from '../lib/analytics-model'
 
 /** A page of the records the figures count: the same scope, the same build, the rows one by one. */
-export async function readRecords(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal): Promise<Records> {
+export async function readRecords(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal, disclosure: string | null = null): Promise<Records> {
   const direct = scope.grain === 'direct_acquisition'
   // Its own deadline: a list the API cannot answer in time fails here, as a read, with the reason said.
   const deadline = withDeadline(signal, 9_000)
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsRecords($s: ProcurementAnalysisScopeInput!, $build: String) { l: procurementRecords(scope: $s, build: $build, sort: ${sort}, page: ${page}, pageSize: ${RECORDS_PAGE}) { total items { id date title displayTitle { text } cpvLabel authority { cui name displayName displayKind } supplier { cui name displayName displayKind } valueRon } meta { answerability } } }`,
+    `query AnalyticsRecords($s: ProcurementAnalysisScopeInput!, $build: String) { l: procurementRecords(scope: $s, build: $build, sort: ${sort}, page: ${page}, pageSize: ${RECORDS_PAGE}) { total items { id date title displayTitle { text } cpvLabel authority { cui name displayName displayKind } supplier { cui name displayName displayKind } valueRon } meta { answerability disclosureKey } } }`,
     { s: scope, build },
     { operationName: 'AnalyticsRecords', signal: deadline },
   )
   const list = recordsSchema.parse(raw.l)
+  // D6: a direct-purchase page is kept only under the state it was served under.
+  if (direct) assertServedUnder(disclosure, list.meta.disclosureKey)
   return {
     total: list.total === null ? null : Number(list.total),
     abstained: list.meta.answerability === 'abstained',
@@ -492,7 +505,7 @@ export function planAnswer(query: Query, cutoffs: AnalyticsCutoff | null, option
     dimension,
     figures: { key: procurementAnalyticsKeys.figures(now!, before, kept), enabled: now !== null, read: (signal) => readFigures(now!, before, build, signal) },
     concentration: { key: procurementAnalyticsKeys.concentration(now!, rankBy, kept), enabled: now !== null && !supplierFixed, read: (signal) => readConcentration(now!, rankBy, build, signal) },
-    ranking: { key: procurementAnalyticsKeys.ranking(now!, dimension, topN, rankBy, kept), enabled: now !== null && dimension !== null, read: (signal) => readRanking(now!, dimension!, topN, rankBy, build, signal) },
+    ranking: { key: procurementAnalyticsKeys.ranking(now!, dimension, topN, rankBy, kept), enabled: now !== null && dimension !== null, read: (signal) => readRanking(now!, dimension!, topN, rankBy, build, signal, cutoffs?.disclosure ?? null) },
     series: { key: procurementAnalyticsKeys.series(now!, bucket, moneyAllowed, kept), enabled: now !== null && bucket !== null, read: (signal) => readSeries(now!, bucket ?? 'month', moneyAllowed, build, signal) },
     years: { key: procurementAnalyticsKeys.years(yearsScope, moneyAllowed, kept), enabled: yearsScope !== null && options.years, read: (signal) => readSeries(yearsScope!, 'year', moneyAllowed, build, signal) },
   }
@@ -507,7 +520,7 @@ export function planRecords(query: Query, cutoffs: AnalyticsCutoff | null, sort:
   return {
     key: procurementAnalyticsKeys.records(scope, keptUnder(cutoffs, POPULATIONS[query.tip]), sort, page),
     enabled: scope !== null,
-    read: (signal) => readRecords(scope!, build, sort, page, signal),
+    read: (signal) => readRecords(scope!, build, sort, page, signal, cutoffs?.disclosure ?? null),
   }
 }
 

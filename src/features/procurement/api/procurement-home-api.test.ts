@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 // The switches: direct purchases' supplier figures readable unless a test says otherwise.
 const supplierFigures = vi.hoisted(() => ({ open: true }))
-vi.mock('./procurement-da-release-status', () => ({ daSupplierFiguresOpen: () => Promise.resolve(supplierFigures.open) }))
+vi.mock('./procurement-da-release-status', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./procurement-da-release-status')>()),
+  disclosureVersion: () => Promise.resolve('off:-:nod6:-'),
+  daSupplierReads: () => Promise.resolve({ figures: supplierFigures.open, places: false, known: true }),
+}))
 
 const graphqlQuery = vi.fn()
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
@@ -189,6 +193,7 @@ describe('fetchProcurementHomeRecentDirect', () => {
     })
     graphqlQuery.mockResolvedValueOnce({
       l: {
+        meta: { disclosureKey: 'off' },
         items: [
           item('a'.repeat(64), '270000'),
           item('b', '1000', { title: null, cpvLabel: 'Servicii de arhitectură', supplier: { cui: null, name: null, displayName: null, displayKind: 'natural_person' } }),

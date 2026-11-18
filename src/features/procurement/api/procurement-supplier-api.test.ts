@@ -6,6 +6,11 @@ import type { SupplierDay, SupplierRow } from './graphql/procurement-supplier-qu
 
 const graphqlQuery = vi.fn()
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
+vi.mock('./procurement-da-release-status', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./procurement-da-release-status')>()),
+  disclosureVersion: () => Promise.resolve('off:-:nod6:-'),
+  daSupplierReads: () => Promise.resolve({ figures: true, places: true, known: true }),
+}))
 const fetchPrivateCompanyProfile = vi.fn()
 vi.mock('@/features/private-companies/api/private-company-api', () => ({ fetchPrivateCompanyProfile: (...args: unknown[]) => fetchPrivateCompanyProfile(...args) }))
 
@@ -399,6 +404,7 @@ describe('fetchProcurementSupplierDirect', () => {
     const party = (cui: string, name: string, displayKind: string) => ({ cui, name, displayName: null, displayKind })
     graphqlQuery.mockResolvedValue({
       l: {
+        meta: { disclosureKey: 'off' },
         items: [
           { id: 'd1', date: '2025-12-16', title: 'STATIE POMPARE APE PLUVIALE', cpvLabel: null, authority: party('4364446', 'ORASUL OTOPENI', 'authority'), supplier: party('9813902', 'COSTALEX', 'company'), valueRon: '899122.00' },
           { id: 'd2', date: '2025-12-17', title: null, cpvLabel: null, authority: party('4364446', 'ORASUL OTOPENI', 'authority'), supplier: party('9813902', 'COSTALEX', 'company'), valueRon: null },

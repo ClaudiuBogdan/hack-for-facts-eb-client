@@ -80,20 +80,6 @@ export async function underDisclosure<T>(memo: (key: string, read: () => Promise
   return version === null ? read() : memo(`${version}|${key}`, read)
 }
 
-/**
- * Whether direct purchases' supplier figures can be read: D6 enforced while
- * the release is off (before the switch, or after a rollback) refuses the
- * supplier rankings, places, concentration and distinct-supplier counts, and
- * a page shows them as unavailable instead (root's ruling). A failed read of
- * the switch reads them as ever — a refusal then fails that read alone.
- */
-export function daSupplierFiguresOpen(): Promise<boolean> {
-  return readDaRelease().then(
-    (status) => !(status.privacyEnforced && !status.enabled),
-    () => true,
-  )
-}
-
 /** What a page may ask of direct purchases' suppliers in the current switch state. */
 export interface DaSupplierReads {
   /** Rankings, concentration and distinct counts: refused while D6 is enforced and the release is off. */
@@ -136,4 +122,45 @@ export function readDisclosureNow(): Promise<string> {
 export async function seededUnder<T extends object>(read: () => Promise<T>): Promise<T & { readonly disclosure: string | null }> {
   const disclosure = await disclosureVersion()
   return { ...(await read()), disclosure }
+}
+
+/** A direct-purchase answer served under another D6 state than the one its cache key was planned under. */
+export class DisclosureMismatchError extends Error {
+  constructor(readonly expected: string | null, readonly served: string | null) {
+    super(`direct-purchase answer served under ${served ?? 'nothing'}, planned under ${expected ?? 'an unknown publication'}`)
+    this.name = 'DisclosureMismatchError'
+  }
+}
+
+/** The D6 state a publication's answers are served under, as the API's `meta.disclosureKey` says it: `off`, `unavailable`, or the supplier-privacy publication. */
+function servedKeyOf(version: string | null): string | null {
+  if (version === null) return 'unavailable'
+  // `on|off:<dataAsOf>:d6|nod6:<privacyAsOf>` — the timestamps hold colons, so the D6 part is read from the end.
+  const d6Part = /:(nod6|d6):([^]*)$/u.exec(version)
+  const d6 = d6Part?.[1]
+  const privacyAsOf = d6Part?.[2]
+  if (d6 !== 'd6') return 'off'
+  return privacyAsOf && privacyAsOf !== '-' ? privacyAsOf : 'unavailable'
+}
+
+function sameInstant(a: string, b: string): boolean {
+  if (a === b) return true
+  const left = Date.parse(a)
+  const right = Date.parse(b)
+  return Number.isFinite(left) && left === right
+}
+
+/**
+ * A name-bearing direct-purchase answer (a ranking, a records page) is kept
+ * only under the D6 state it was served under (API contract: key DA caches
+ * by build and disclosure key). Planned under an unknown publication, only an
+ * answer that names no supplier (`unavailable`) is kept; any other mismatch
+ * fails the read, nothing is kept, and the release is read again.
+ */
+export function assertServedUnder(expected: string | null, served: string | null | undefined): void {
+  const want = servedKeyOf(expected)
+  const got = served ?? null
+  if (got !== null && want !== null && (got === want || (want !== 'off' && want !== 'unavailable' && sameInstant(got, want)))) return
+  cached = null
+  throw new DisclosureMismatchError(expected, got)
 }

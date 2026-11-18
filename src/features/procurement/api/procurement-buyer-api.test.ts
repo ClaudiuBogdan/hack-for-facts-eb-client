@@ -4,7 +4,9 @@ import { periodOf, type Cutoff } from '../lib/profile-period'
 const graphqlQuery = vi.fn()
 // The switches as reads: legacy (release off, D6 off) unless a test says otherwise.
 const release = vi.hoisted(() => ({ on: false, d6: false }))
-vi.mock('./procurement-da-release-status', () => ({
+vi.mock('./procurement-da-release-status', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./procurement-da-release-status')>()),
+  disclosureVersion: () => Promise.resolve('off:-:nod6:-'),
   daSupplierReads: () => Promise.resolve({ figures: !(release.d6 && !release.on), places: !release.on && !release.d6, known: true }),
 }))
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
@@ -358,7 +360,7 @@ describe('fetchProcurementBuyerRecords', () => {
   })
 
   it('reads the year in progress through the cutoff’s last day, and fails without the cutoff rather than run past it', async () => {
-    graphqlQuery.mockResolvedValue({ procurementContracts: { items: [] }, l: { items: [] } })
+    graphqlQuery.mockResolvedValue({ procurementContracts: { items: [] }, l: { meta: { disclosureKey: 'off' }, items: [] } })
     cutoffRead.mockResolvedValue({ direct: '2026-06', contract: '2026-05' })
     await fetchProcurementBuyerRecords('4364446', 2026, 8)
     const filters = graphqlQuery.mock.calls.map(([, variables]) => (variables as { filter: Record<string, unknown> }).filter)
@@ -391,6 +393,7 @@ describe('fetchProcurementBuyerRecords', () => {
             }
           : {
               l: {
+                meta: { disclosureKey: 'off' },
                 items: [
                   { id: 'd1', date: '2025-06-02', title: 'LUCRARI DE AMENAJARE PARC', cpvLabel: null, authority: party('4364446', 'ORASUL OTOPENI'), supplier: { ...party('30153499', 'UPPER LEVEL SRL'), displayKind: 'company' }, valueRon: '899000' },
                 ],

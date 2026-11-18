@@ -9,7 +9,7 @@
  * - the year's largest contract awards, grouped by contract;
  * - the newest complete month's largest contract awards, or direct purchases.
  */
-import { daSupplierFiguresOpen } from './procurement-da-release-status'
+import { daSupplierReads } from './procurement-da-release-status'
 import { readLargestDirect } from './procurement-direct-records'
 import { partyOf } from '../lib/home-party'
 import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
@@ -223,7 +223,8 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
         directYears: { ...DIRECT, from: `${DIRECT_COMPARABLE_FROM}-01`, to: `${year + 1}-12` },
         awardsMonths: { ...AWARDS, from: `${year}-01`, to: `${year + 1}-12` },
         directMonths: { ...DIRECT, from: `${year}-01`, to: `${year + 1}-12` },
-        withDirectSuppliers: await daSupplierFiguresOpen(),
+        // Fail-closed: unread switches ask nothing the D6 window refuses (a refused field fails the whole request).
+        withDirectSuppliers: (await daSupplierReads()).figures,
       },
       { operationName: 'ProcurementHomeNational', signal },
     ),
