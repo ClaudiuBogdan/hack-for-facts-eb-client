@@ -17,6 +17,8 @@ import {
   outcomeLabel,
   reasonText,
 } from '../../lib/direct-purchase-text'
+import type { DpValue } from '../../lib/direct-purchase-value'
+import { correctionText, inTotalsText, notCountedText, notListedText, ruleText, symbolicText, valueFigure, valueFigureLabel } from '../../lib/direct-purchase-value-text'
 import { statusLook } from './direct-purchase-style'
 import { Clamp, DirectPurchaseReceipt } from './direct-purchase-receipt'
 import { RecordParties } from './record-parties'
@@ -86,7 +88,43 @@ function PurchaseDescription({ purchase, className }: { readonly purchase: Direc
  */
 const figureFit = (figure: string) => ({ '--figure-fit': `${(100 / (figure.length * 0.55)).toFixed(2)}cqw` }) as CSSProperties
 
+/**
+ * Release 1's value (the serving contract): the counted value, or — out of
+ * totals — the value the portal reports; whether it counts and, when not,
+ * why; a correction's two values and its rule's sentence; a symbolic price.
+ * The reasons and the rules' sentences are the API's.
+ */
+function ReleaseValue({ purchase, money }: { readonly purchase: DirectPurchase; readonly money: DpValue }) {
+  const attempt = isAttempt(purchase.outcome)
+  const figure = valueFigure(money)
+  const reason = money.kind === 'not-counted' ? notCountedText(money.reason) : null
+  const rule = money.kind === 'counted' ? null : money.rule ? ruleText(money.rule) : null
+  return (
+    <div className="@container min-w-0">
+      <MonoLabel className="block text-muted-foreground">{attempt ? t`Oferta raportată în SEAP` : valueFigureLabel(money)}</MonoLabel>
+      <p
+        className={cn(
+          'mt-3 text-4xl font-semibold tabular-nums tracking-tight text-foreground sm:text-5xl md:text-[length:min(3rem,var(--figure-fit))]',
+          (attempt || money.kind === 'not-counted') && 'text-muted-foreground',
+          attempt && 'line-through decoration-2',
+        )}
+        style={figureFit(figure)}
+      >
+        {figure}
+      </p>
+      <div className="mt-3 max-w-[44ch] space-y-1.5 text-sm leading-relaxed">
+        <p className="font-medium text-foreground">{inTotalsText(money)}</p>
+        {money.kind === 'corrected' ? <p className="text-muted-foreground">{correctionText(money)}</p> : null}
+        {reason ? <p className="text-muted-foreground">{reason}</p> : null}
+        {rule ? <p className="text-muted-foreground">{rule}</p> : null}
+        {money.kind === 'counted' && money.symbolic ? <p className="text-muted-foreground">{symbolicText()}</p> : null}
+      </div>
+    </div>
+  )
+}
+
 function PurchaseValue({ purchase }: { readonly purchase: DirectPurchase }) {
+  if (purchase.money) return <ReleaseValue purchase={purchase} money={purchase.money} />
   const done = isPurchase(purchase.outcome)
   const attempt = isAttempt(purchase.outcome)
   const unverified = purchase.unverifiedValue !== null ? leiExact(purchase.unverifiedValue) : null
@@ -249,7 +287,8 @@ function stepsOf(purchase: DirectPurchase): readonly Step[] {
   if (!detail) return []
   const { outcome } = purchase
   const start: Step = { key: 'start', who: t`Instituția`, what: t`a pornit achiziția din catalogul firmei`, at: purchase.published, state: 'done', reason: null }
-  if (outcome.kind === 'stopped' || outcome.kind === 'unknown') {
+  // Release 1 says that a purchase was refused or lapsed, not by whom: each side only answered, or did not.
+  if (outcome.kind === 'stopped' || outcome.kind === 'unknown' || outcome.kind === 'refused' || outcome.kind === 'expired') {
     const answered = (key: string, at: string | null): Step => ({
       key,
       who: key === 'firm' ? t`Firma` : t`Instituția`,
@@ -386,8 +425,20 @@ function SourceLine({ purchase, className }: { readonly purchase: DirectPurchase
         </>
       )}{' '}
       {also ? <>{also} </> : null}
-      <Trans>Valorile sunt fără TVA.</Trans>
+      {purchase.money ? <ReleaseNotes purchase={purchase} /> : <Trans>Valorile sunt fără TVA.</Trans>}
     </p>
+  )
+}
+
+/** Release 1, after the source: the counted value's basis, whether the portal still lists the purchase, and when the data was published. */
+function ReleaseNotes({ purchase }: { readonly purchase: DirectPurchase }) {
+  const asOf = purchase.dataAsOf ? dayLong(purchase.dataAsOf.slice(0, 10)) : null
+  return (
+    <>
+      <Trans>Valoarea numărată e fără TVA.</Trans>
+      {purchase.listedNow === false ? <> {notListedText()}</> : null}
+      {asOf ? <> {t`Date publicate de Transparenta pe ${asOf}.`}</> : null}
+    </>
   )
 }
 

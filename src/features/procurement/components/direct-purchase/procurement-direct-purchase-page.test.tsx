@@ -4,7 +4,10 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import { daRecord, directPurchase, dpContext } from '../../lib/direct-purchase.fixture'
-import type { DirectPurchase, DpContext } from '../../lib/direct-purchase-model'
+import { NO_NAMES, type DirectPurchase, type DpContext } from '../../lib/direct-purchase-model'
+import { mapReleasePurchase } from '../../lib/direct-purchase-release'
+import { RELEASE_CASES, rawReleaseDetail, rawReleaseItem } from '../../lib/direct-purchase-release.fixture'
+import type { RawDaPurchaseDetail } from '../../api/graphql/procurement-da-release-queries'
 import { ProcurementDirectPurchasePage } from './procurement-direct-purchase-page'
 
 /**
@@ -26,6 +29,7 @@ vi.mock('@tanstack/react-router', () => ({
     )
   },
   useRouter: () => ({ routesById: {}, state: { matches: [] } }),
+  useNavigate: () => () => Promise.resolve(),
 }))
 
 // The page's reads never land here: what it shows is what the loader seeded.
@@ -212,5 +216,103 @@ describe('the other kinds of record', () => {
     const page = html(directPurchase({ value: { ...daRecord().value!, valueAccepted: false, valueRonComparable: null } }))
     expect(page).toContain('SEAP publică 98.448 lei, dar valoarea nu a trecut verificările platformei.')
     expect(page).toContain('cu o valoare neverificată')
+  })
+})
+
+describe('direct acquisitions release 1', () => {
+  const release = (detail: RawDaPurchaseDetail) => html(mapReleasePurchase(detail, NO_NAMES), null)
+
+  it('counted as reported: the value, in totals, and the counted value’s basis', () => {
+    const page = release(RELEASE_CASES.countedAsReported())
+    expect(page).toContain('a cumpărat direct de la Floraria Iris SRL , cu 12.500 lei fără TVA , pe 2 iunie 2025.')
+    expect(page).toContain('Valoarea, fără TVA 12.500 lei Intră în totaluri.')
+    expect(page).toContain('Valoarea numărată e fără TVA.')
+    expect(page).toContain('Date publicate de Transparenta pe 18 noiembrie 2026.')
+    expect(page).toContain('CUI 14837428')
+  })
+
+  it('corrected: the corrected value, both values, the rule’s sentence; the lines and their total as reported', () => {
+    const page = release(RELEASE_CASES.corrected())
+    expect(page).toContain('cu 3.150 lei fără TVA')
+    expect(page).toContain('Valoarea corectată, fără TVA 3.150 lei Intră în totaluri cu valoarea corectată.')
+    expect(page).toContain('SEAP raportează 3.150.000 lei; numărăm 3.150 lei.')
+    expect(page).toContain('Folosim cantitatea declarată a achiziției când totalul raportat a fost calculat cu unitatea sau scara greșită.')
+    expect(page).toContain('Totalul raportat în SEAP 3.150.000 lei')
+    expect(page).not.toContain('Total, fără TVA')
+  })
+
+  it('excluded after review: the reported value, out of totals, the reason and the rule', () => {
+    const page = release(RELEASE_CASES.excludedApproximate())
+    expect(page).toContain('cu 1.680.000 lei raportați în SEAP')
+    expect(page).toContain('Valoarea raportată în SEAP 1.680.000 lei Nu intră în totaluri. Exclusă după verificare: vezi regula.')
+    expect(page).toContain('Lăsăm achiziția în afara totalurilor când valoarea raportată nu e de încredere')
+    expect(page).not.toContain('Valoarea, fără TVA')
+  })
+
+  it('an open review case shows its current state, with no review label', () => {
+    const page = release(RELEASE_CASES.openCaseKept())
+    expect(page).toContain('Intră în totaluri.')
+    expect(page).not.toContain('verificare')
+  })
+
+  it('refused: struck as an offer, not counted, who refused not claimed', () => {
+    const page = release(RELEASE_CASES.refused())
+    expect(page).toContain('Refuzată Aranjamente florale')
+    expect(page).toContain('Achiziția nu s-a făcut: una dintre părți a refuzat-o.')
+    expect(page).toContain('Oferta raportată în SEAP 40.000 lei Nu intră în totaluri. Respinsă sau expirată: achiziția nu s-a realizat.')
+    expect(page).not.toContain('Refuzată de firmă')
+    expect(page).not.toContain('Refuzată de instituție')
+  })
+
+  it('before 2025: served, not counted, why', () => {
+    expect(release(RELEASE_CASES.before2025())).toContain('Moneda și baza TVA ale valorii nu sunt încă confirmate pentru această perioadă (înainte de 2025).')
+  })
+
+  it('no longer listed, and a symbolic price', () => {
+    expect(release(RELEASE_CASES.noLongerListed())).toContain('Portalul nu mai listează această achiziție.')
+    expect(release(RELEASE_CASES.symbolicPrice())).toContain('Valoare simbolică: o numărăm, dar o semnalăm.')
+  })
+
+  it('the lines are never summed into shares of the basket', () => {
+    const page = release(rawReleaseDetail({}, [rawReleaseItem(), rawReleaseItem({ itemIndex: 1, name: 'Coroana', reportedLineValue: '100.00' })]))
+    expect(page).not.toContain('din bani')
+  })
+
+  it('what the release does not serve is not shown', () => {
+    const page = release(RELEASE_CASES.countedAsReported())
+    expect(page).not.toContain('Estimarea instituției')
+    expect(page).not.toContain('Livrarea și plata')
+  })
+
+  it('no legacy context on a release page', () => {
+    const page = release(RELEASE_CASES.countedAsReported())
+    expect(page).toContain('Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină.')
+    expect(page).not.toContain('Din 2019 încoace, au fost')
+  })
+})
+
+describe('direct acquisitions release 1 — D6', () => {
+  it('a natural person: said as one, never named, no code, no link, no context', () => {
+    const page = html(mapReleasePurchase(RELEASE_CASES.naturalPerson(), NO_NAMES), null)
+    expect(page).toContain('a cumpărat direct de la Persoană fizică , cu 900 lei fără TVA')
+    expect(page).toContain('Furnizorul Persoană fizică')
+    expect(page).toContain('Furnizorul este o persoană fizică: Transparenta nu îi arată numele și nu îi adună achizițiile.')
+    expect(page).not.toContain('fără CUI în SEAP')
+    expect(page).not.toContain('Floraria')
+    expect(page).not.toContain('/procurement/suppliers/')
+    expect(page).not.toContain('/companies/')
+  })
+
+  it('a name or code served beside the natural-person kind never reaches the page, nor does a label read for the code', () => {
+    const detail = rawReleaseDetail({ supplier: { displayKind: 'natural_person', partyId: 'x', name: 'Ion Popescu', fiscalCode: '1234567890123' } })
+    const page = html(mapReleasePurchase(detail, { ...NO_NAMES, labels: new Map([['1234567890123', 'POPESCU ION PFA']]) }), null)
+    expect(page).not.toMatch(/Popescu|POPESCU|1234567890123/u)
+    expect(page).toContain('Persoană fizică')
+  })
+
+  it('no supplier at all', () => {
+    const page = html(mapReleasePurchase(rawReleaseDetail({ supplier: null }), NO_NAMES), null)
+    expect(page).toContain('Furnizor neindicat în SEAP')
+    expect(page).toContain('SEAP nu indică furnizorul acestei achiziții')
   })
 })

@@ -68,10 +68,13 @@ function Party({
       </dt>
       <dd className="mt-2 text-sm leading-snug text-foreground [overflow-wrap:anywhere]">
         <PartyName party={party} role={role} year={year} />
-        <span className="mt-1 block font-mono text-xs tabular-nums text-muted-foreground">
-          {party.cui ? `CUI ${party.cui}` : t`fără CUI în SEAP`}
-          {tag ? ` · ${tag}` : ''}
-        </span>
+        {/* D6: a withheld supplier has no code to show, and no absence of one to note. */}
+        {party.withheld ? null : (
+          <span className="mt-1 block font-mono text-xs tabular-nums text-muted-foreground">
+            {party.cui ? `CUI ${party.cui}` : t`fără CUI în SEAP`}
+            {tag ? ` · ${tag}` : ''}
+          </span>
+        )}
         {children}
       </dd>
     </div>

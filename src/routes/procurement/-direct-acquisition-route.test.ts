@@ -7,10 +7,15 @@ const notFoundError = new Error('not-found')
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
   notFound: () => notFoundError,
+  redirect: (options: unknown) => ({ redirect: options }),
 }))
 
 const readForSsr = vi.fn()
-vi.mock('@/features/procurement/api/procurement-direct-purchase-ssr', () => ({ readProcurementDirectPurchaseForSsr: (...args: unknown[]) => readForSsr(...args) }))
+const resolveForSsr = vi.fn()
+vi.mock('@/features/procurement/api/procurement-direct-purchase-ssr', () => ({
+  readProcurementDirectPurchaseForSsr: (...args: unknown[]) => readForSsr(...args),
+  resolveReleaseIdForSsr: (...args: unknown[]) => resolveForSsr(...args),
+}))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 // The head speaks the request's language through a translator; the real one needs the app's i18n set up.
 // Every description reads `descriere`; the title's own words translate, so a page in English is named in English.
@@ -55,6 +60,7 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
 
 beforeEach(() => {
   readForSsr.mockReset()
+  resolveForSsr.mockReset().mockResolvedValue(null)
 })
 
 describe('/procurement/direct-acquisitions/$id', () => {
@@ -64,6 +70,21 @@ describe('/procurement/direct-acquisitions/$id', () => {
     const data = await asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: '10120196' } }))
     expect(data).toBe(read)
     expect(readForSsr).toHaveBeenCalledWith('10120196')
+  })
+
+  it('redirects a legacy link to the release’s purchase on the server, with a 302', async () => {
+    const id = 'a'.repeat(64)
+    resolveForSsr.mockResolvedValue(id)
+    await expect(asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: '10120196' } }))).rejects.toEqual({
+      redirect: { to: '/procurement/direct-acquisitions/$id', params: { id }, replace: true, statusCode: 302 },
+    })
+    expect(readForSsr).not.toHaveBeenCalled()
+  })
+
+  it('names a withheld supplier as a natural person in the description, never by a name', () => {
+    const purchase = { ...directPurchase(), supplier: { cui: null, name: '', identity: null, hasBudget: false, withheld: 'natural-person' as const } }
+    const head = route.head({ params: { id: 'x' }, loaderData: { purchase }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
+    expect(JSON.stringify(head)).not.toContain('Floraria')
   })
 
   it('answers a record SEAP does not have with a 404 on the server', async () => {

@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
@@ -16,6 +16,13 @@ import { buildDirectPurchaseDocumentTitle } from '@/features/procurement/lib/pro
  * client-side navigation the loader starts the purchase's read and returns at
  * once, so the page frame paints and fills in. A record SEAP does not have is
  * a 404 on the server, and the page's own verdict in the browser.
+ *
+ * Once the API serves direct acquisitions release 1, a legacy link leads to
+ * the release's id for the same purchase (found by its portal code): on the
+ * server a 302 (the release can be switched off again); in the browser the
+ * purchase's read follows it and the page replaces the URL, so a navigation
+ * is never held. Off, or with no such purchase in the release, the legacy
+ * page stands.
  */
 export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
   ssr: true,
@@ -28,7 +35,9 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
     // Read directly, not through the query client: a query created on the
     // server is dehydrated with the server's clock, so a copy served from a
     // shared cache would look stale on mount and read again.
-    const { readProcurementDirectPurchaseForSsr } = await import('@/features/procurement/api/procurement-direct-purchase-ssr')
+    const { readProcurementDirectPurchaseForSsr, resolveReleaseIdForSsr } = await import('@/features/procurement/api/procurement-direct-purchase-ssr')
+    const target = await resolveReleaseIdForSsr(params.id)
+    if (target) throw redirect({ to: '/procurement/direct-acquisitions/$id', params: { id: target }, replace: true, statusCode: 302 })
     const read = await readProcurementDirectPurchaseForSsr(params.id)
     if (read.purchase === null) throw notFound()
     return read
@@ -52,7 +61,8 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
     const title = buildDirectPurchaseDocumentTitle(translator, { id: params.id, title: purchase?.title, authorityName: purchase?.authority.name })
     const what = purchase?.title
     const buyer = purchase?.authority.name
-    const seller = purchase?.supplier.name
+    // D6: a supplier the release does not name is described as what it is, never by a name.
+    const seller = purchase?.supplier.withheld === 'natural-person' ? translator._(msg`o persoană fizică`) : purchase?.supplier.withheld ? null : purchase?.supplier.name
     const description =
       what && buyer && seller
         ? translator._(msg`${what}: achiziția directă a instituției ${buyer} de la ${seller}, din SEAP — ce s-a cumpărat, cu cât și cum s-a făcut.`)

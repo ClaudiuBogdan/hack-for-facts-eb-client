@@ -1,7 +1,8 @@
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import { contextInputOf, type DirectPurchase, type DpContext } from '../lib/direct-purchase-model'
-import { fetchDirectPurchase, fetchDirectPurchaseContext } from './procurement-direct-purchase-api'
+import { fetchPurchaseForPage, isReleaseId, resolveReleaseId } from './procurement-da-release-api'
+import { fetchDirectPurchaseContext } from './procurement-direct-purchase-api'
 
 /**
  * A direct purchase page's server reads, for the route loader only.
@@ -33,11 +34,23 @@ export interface ProcurementDirectPurchaseServerRead {
   readonly context?: DpContext | null
 }
 
+/**
+ * The release id a legacy link leads to, when direct acquisitions release 1
+ * is served and has the purchase; kept like the purchase (a miss too: the
+ * legacy page then stands).
+ */
+const releaseIds = createServerMemo<string | null>(KEEP_MS, { maxEntries: MAX_PURCHASES })
+
+export function resolveReleaseIdForSsr(id: string): Promise<string | null> {
+  if (isReleaseId(id)) return Promise.resolve(null)
+  return releaseIds(id, () => resolveReleaseId(id, deadline())).catch(() => null)
+}
+
 /** The purchase, then its context; a failed context is left out and the purchase stands. */
 export async function readProcurementDirectPurchaseForSsr(id: string): Promise<ProcurementDirectPurchaseServerRead> {
   let purchase: DirectPurchase | null
   try {
-    purchase = await purchases(id, () => fetchDirectPurchase(id, deadline()))
+    purchase = await purchases(id, () => fetchPurchaseForPage(id, deadline()))
   } catch {
     return { id }
   }

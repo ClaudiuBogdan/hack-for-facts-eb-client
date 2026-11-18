@@ -152,10 +152,18 @@ export function DirectPurchaseReceipt({ purchase, year }: { readonly purchase: D
           />
         ))}
       </ol>
-      <div className="flex items-baseline justify-between gap-4 border-t-2 border-foreground/80 pt-3">
-        <span className="text-sm font-semibold text-foreground">{isAttempt(purchase.outcome) ? t`Oferta, fără TVA` : t`Total, fără TVA`}</span>
-        <span className="text-lg font-semibold tabular-nums text-foreground">{purchase.value !== null ? leiExact(purchase.value) : '—'}</span>
-      </div>
+      {purchase.money ? (
+        // Release 1: the lines as reported, under the total SEAP reports — the value the page counts is beside the facts.
+        <div className="flex items-baseline justify-between gap-4 border-t-2 border-foreground/80 pt-3">
+          <span className="text-sm font-semibold text-foreground">{t`Totalul raportat în SEAP`}</span>
+          <span className="text-lg font-semibold tabular-nums text-foreground">{purchase.money.reported !== null ? leiExact(purchase.money.reported) : '—'}</span>
+        </div>
+      ) : (
+        <div className="flex items-baseline justify-between gap-4 border-t-2 border-foreground/80 pt-3">
+          <span className="text-sm font-semibold text-foreground">{isAttempt(purchase.outcome) ? t`Oferta, fără TVA` : t`Total, fără TVA`}</span>
+          <span className="text-lg font-semibold tabular-nums text-foreground">{purchase.value !== null ? leiExact(purchase.value) : '—'}</span>
+        </div>
+      )}
       {gap ? <p className="mt-3 max-w-[70ch] text-sm leading-relaxed text-amber-800 dark:text-amber-300">{gap}</p> : null}
     </div>
   )

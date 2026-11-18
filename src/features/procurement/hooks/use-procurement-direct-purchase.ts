@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { fetchDirectPurchase, fetchDirectPurchaseContext } from '../api/procurement-direct-purchase-api'
+import { fetchPurchaseForPage } from '../api/procurement-da-release-api'
+import { fetchDirectPurchaseContext } from '../api/procurement-direct-purchase-api'
 import { contextInputOf, type DirectPurchase, type DpContext } from '../lib/direct-purchase-model'
 import { procurementDirectPurchaseKeys } from '../lib/direct-purchase-keys'
 
@@ -24,7 +25,8 @@ export { procurementDirectPurchaseKeys }
 export function procurementDirectPurchaseQueryOptions(id: string, initialData?: DirectPurchase | null) {
   return queryOptions({
     queryKey: procurementDirectPurchaseKeys.purchase(id),
-    queryFn: ({ signal }) => fetchDirectPurchase(id, signal),
+    // A release id reads direct acquisitions release 1; any other id the legacy surface.
+    queryFn: ({ signal }) => fetchPurchaseForPage(id, signal),
     // A partial purchase (names or the detail unread) is soon stale: the next visit reads it again.
     staleTime: (query) => (query.state.data?.partial ? PARTIAL_STALE_TIME : STALE_TIME),
     ...(initialData !== undefined && (initialData === null || initialData.id === id) ? { initialData } : {}),

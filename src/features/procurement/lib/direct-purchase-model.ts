@@ -3,6 +3,7 @@ import type { DaDetail, DaDetailAvailability, DirectAcquisitionRecord, Party } f
 import { buyerName, type BuyerIdentity } from './buyer-model'
 import { DIRECT_COMPARABLE_FROM, homeYear, tidyName, tidyTitle } from './home-model'
 import { cpvDivisionLabelEn, cpvDivisionLabelRo } from './cpv-labels'
+import type { DpValue } from './direct-purchase-value'
 
 /**
  * One direct purchase's page (`/procurement/direct-acquisitions/$id`): the
@@ -37,6 +38,9 @@ export type DpOutcome =
   | { readonly kind: 'institution-refused'; readonly reason: string | null }
   | { readonly kind: 'institution-late' }
   | { readonly kind: 'stopped' }
+  /** Direct acquisitions release 1: refused, or let lapse, by a side the release does not name. */
+  | { readonly kind: 'refused' }
+  | { readonly kind: 'expired' }
   | { readonly kind: 'unknown' }
 
 /** A label the API gives in both languages; the page picks one as it renders. */
@@ -52,6 +56,12 @@ export interface DpParty {
   /** The budget platform's record of an institution it knows — what it is and where, said as the page renders („Spital, județul Mureș"). */
   readonly identity: BuyerIdentity | null
   readonly hasBudget: boolean
+  /**
+   * Direct acquisitions release 1, decision D6: a supplier the API does not
+   * name — a natural person (no name, no code), or none at all. Its `name` is
+   * empty and the page names it only as this says, never from another read.
+   */
+  readonly withheld?: 'natural-person' | 'none'
 }
 
 /**
@@ -142,6 +152,16 @@ export interface DirectPurchase {
   readonly availability: DaDetailAvailability
   /** A read failed (names, or the detail just now): served, never kept or cached. */
   readonly partial: boolean
+  /**
+   * Direct acquisitions release 1: the reported value, whether it counts in
+   * totals and why not, an approved correction and its rule. Null on a record
+   * read from the legacy surface, which says `value` and `unverifiedValue`.
+   */
+  readonly money: DpValue | null
+  /** Release 1: false when the portal no longer lists the purchase; null when not known (or legacy). */
+  readonly listedNow: boolean | null
+  /** Release 1: when the served data was published; null on a legacy record. */
+  readonly dataAsOf: string | null
 }
 
 // ─────────────────────────────────────────────────────────── the context ──
@@ -419,6 +439,9 @@ export function mapDirectPurchase(
     detail: availability === 'AVAILABLE' && detail ? detailOf(detail, names.cpv) : null,
     availability,
     partial: names.failed || availability === 'TEMPORARILY_UNAVAILABLE',
+    money: null,
+    listedNow: null,
+    dataAsOf: null,
   }
 }
 
@@ -487,9 +510,16 @@ export interface DpContextInput {
  * date at all, or a date before 2019 (the legacy rows cannot tell a purchase
  * from a refused offer). Null when it has one.
  */
-export type DpContextGap = 'no-cui' | 'no-date' | 'before-comparable'
+export type DpContextGap = 'withheld' | 'release' | 'no-cui' | 'no-date' | 'before-comparable'
 
+/**
+ * Release 1 adds two: a supplier D6 does not name (`withheld`: its purchases
+ * are never gathered), and a release purchase, whose context the legacy reads
+ * would contradict (`release`, until the band reads the release).
+ */
 export function contextGapOf(purchase: DirectPurchase): DpContextGap | null {
+  if (purchase.supplier.withheld) return 'withheld'
+  if (purchase.money) return 'release'
   if (!purchase.authority.cui || !purchase.supplier.cui) return 'no-cui'
   const yearDay = dayOf(purchase)
   if (!yearDay) return 'no-date'

@@ -10,6 +10,7 @@ import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { linkYearOf, shownDayOf, type DirectPurchase, type DpOther, type DpOutcome, type DpParty } from '../../lib/direct-purchase-model'
 import { afterText, daysBetween, leiExact, outcomeLabel, refusalText, titleOf, titleRestText, whenText } from '../../lib/direct-purchase-text'
+import { supplierNameText } from '../../lib/direct-purchase-value-text'
 import { statusLook } from './direct-purchase-style'
 
 /**
@@ -34,6 +35,8 @@ const NAME_LINK = 'font-medium text-foreground underline decoration-border under
 
 /** A party's name as a link to its procurement page; plain text when SEAP gave no CUI. */
 export function PartyName({ party, role, year, className }: { readonly party: DpParty; readonly role: 'authority' | 'supplier'; readonly year: number | undefined; readonly className?: string }) {
+  // D6: a supplier the release does not name is said as what it is, never by a name from anywhere else.
+  if (party.withheld) return <span className={className}>{supplierNameText({ kind: party.withheld })}</span>
   if (!party.cui) return <span className={className}>{party.name}</span>
   const search = year === undefined ? {} : { year }
   return role === 'authority' ? (
@@ -100,6 +103,17 @@ function Kicker({ purchase }: { readonly purchase: DirectPurchase | null }) {
 
 /** The money in the head's sentence: the value, or why there is none to show — SEAP's did not pass the checks, or SEAP published none. */
 function moneyText(purchase: DirectPurchase): string {
+  const money = purchase.money
+  // Release 1: the counted value; out of totals, the value SEAP reports, said as reported.
+  if (money) {
+    if (money.kind !== 'not-counted') {
+      const amount = leiExact(money.value)
+      return t`${amount} fără TVA`
+    }
+    if (money.reported === null) return t`o valoare nepublicată`
+    const reported = leiExact(money.reported)
+    return t`${reported} raportați în SEAP`
+  }
   if (purchase.value !== null) {
     const amount = leiExact(purchase.value)
     return t`${amount} fără TVA`

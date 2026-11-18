@@ -229,6 +229,10 @@ export function outcomeLabel(outcome: DpOutcome): string {
       return t`Neacceptată la timp`
     case 'stopped':
       return t`Nefinalizată`
+    case 'refused':
+      return t`Refuzată`
+    case 'expired':
+      return t`Expirată`
     case 'unknown':
       return t`Stare necunoscută`
   }
@@ -259,6 +263,10 @@ export function refusalText(outcome: DpOutcome): string | null {
       return t`instituția nu a acceptat oferta la timp.`
     case 'stopped':
       return t`SEAP o arată anulată.`
+    case 'refused':
+      return t`una dintre părți a refuzat-o.`
+    case 'expired':
+      return t`a expirat înainte să fie acceptată de ambele părți.`
     default:
       return null
   }
@@ -287,6 +295,8 @@ export function outcomeDetailText(outcome: DpOutcome, family: 'catalog' | 'expor
 
 /** Each counted line's share of the basket's money; null when a line's money is unknown — the shares would be of a part. */
 export function lineShares(purchase: DirectPurchase): ReadonlyMap<DpItem, number> | null {
+  // Release 1: the lines are as reported and never summed.
+  if (purchase.money) return null
   const excluded = excludedLine(purchase)
   const items = (purchase.detail?.items ?? []).filter((item) => item !== excluded)
   if (items.length < 2 || items.some((item) => item.line === null)) return null

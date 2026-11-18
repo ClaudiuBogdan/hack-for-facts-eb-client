@@ -3222,3 +3222,54 @@ fixes, and what they decide:
    the record says 2025-09-12, `procurementRecords` (build 13) 2025-12-09,
    which moves 3,516,088.80 lei from September to December. 16778884 (Q2
    workbook) agrees in both.
+
+## 24. Direct acquisitions, release 1 (18 November 2026)
+
+The direct-purchase page (§16) reads the API's release-1 surface
+(`procurementDa*`) when the API serves it, chosen by the API's capability
+(`procurementDaRelease.enabled`), never a client flag. Field meanings come
+from the data platform's serving contract
+(`docs/domains/public-contracts/reference/DIRECT_ACQUISITION_SERVING_CONTRACT.md`);
+the API surface is the server's `docs/server-redesign/10-public-contracts-da-release-1.md`.
+
+- **What the owner asked to serve for each purchase:**
+  - the reported value, as the portal publishes it;
+  - whether it is in totals, and when not, why;
+  - the corrected value with the correction rule's public sentence;
+  - supplier names under D6.
+- **The value beside the facts:**
+  - **Counted:** the counted value, excluding VAT, and „Intră în totaluri."
+  - **Corrected:** the corrected value, both values in one line („SEAP
+    raportează …; numărăm …"), and the rule's sentence.
+  - **Out of totals:** the reported value, labelled as reported (its VAT
+    basis is not claimed before 2025), muted. The reason and, after a review,
+    the rule's sentence follow; an attempt is struck as an offer.
+  - **Symbolic price:** counted, said. A purchase the portal no longer lists:
+    said, after the source.
+  - The reasons and the rules' sentences are the API's, in the page's
+    language; the client keeps no copy.
+- **The lines** are as reported, under „Totalul raportat în SEAP". They are
+  never summed, so a basket shows no shares by line.
+- **Open review cases (PROC-KDE8)** show their current state. Release 1 has no
+  under-review label.
+- **D6:**
+  - A supplier is named only when the API marks it a company and serves a
+    name.
+  - Anyone else reads „Persoană fizică", with no code, no link and no
+    gathered purchases. A purchase with no supplier reads „Furnizor neindicat
+    în SEAP".
+  - The page never fills a withheld name from another read: the
+    `organizationLabels` read on a release page asks for the buyer only, and
+    the meta description says „o persoană fizică".
+  - Buyers keep their names.
+- **What the release does not serve** is not shown, never filled from the
+  legacy surface: the estimate, delivery and payment, refusal reasons and who
+  refused, documents, EU funding, line descriptions and categories.
+- **Context band:** a release page does not read the legacy context, whose
+  totals would contradict its value. Until the band reads the release's
+  totals, it says that the other purchases will be gathered there.
+- **Legacy links:** with the release on, a legacy link leads to the release's
+  id, found by the portal code. On the server this is a 302, since the release
+  can be switched off again. In the browser the purchase's read follows the
+  link and the page replaces the URL, so a navigation is never held. Off, or
+  with no single match, the legacy page stands.

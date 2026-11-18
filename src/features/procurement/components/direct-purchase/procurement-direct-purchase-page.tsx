@@ -1,3 +1,6 @@
+import { useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
@@ -8,6 +11,7 @@ import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { useProcurementDirectPurchase, useProcurementDirectPurchaseContext } from '../../hooks/use-procurement-direct-purchase'
 import { dayOf, redoOf, type DirectPurchase, type DpContext } from '../../lib/direct-purchase-model'
+import { procurementDirectPurchaseKeys } from '../../lib/direct-purchase-keys'
 import { buildDirectPurchaseDocumentTitle } from '../../lib/procurement-page-titles'
 import { DirectPurchaseBlock } from './direct-purchase-block'
 import { DirectPurchaseContextBand } from './direct-purchase-context'
@@ -38,6 +42,7 @@ export function ProcurementDirectPurchasePage({ id, initialData }: { readonly id
   // Where a purchase mostly leads: the institution's page, the firm's.
   useWarmRouteCode('/procurement/institutions/$cui')
   useWarmRouteCode('/procurement/suppliers/$cui')
+  useReleaseUrl(id, purchase)
 
   if (purchase) return <DirectPurchaseSheet purchase={purchase} initialContext={initialData?.id === id ? (initialData.context ?? undefined) : undefined} />
   if (purchase === null) return <DirectPurchaseMissing id={id} />
@@ -72,6 +77,22 @@ function DirectPurchaseSheet({ purchase, initialContext }: { readonly purchase: 
       <DirectPurchaseContextBand purchase={purchase} context={{ data: contextQuery.data, isError: contextQuery.isError, retry: () => void contextQuery.refetch() }} />
     </div>
   )
+}
+
+/**
+ * A legacy link whose read led to the release's purchase (direct acquisitions
+ * release 1): the URL becomes the release's, the purchase already read kept
+ * under it, the history entry replaced.
+ */
+function useReleaseUrl(id: string, purchase: DirectPurchase | null | undefined) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const target = purchase && purchase.money && purchase.id !== id ? purchase : null
+  useEffect(() => {
+    if (!target) return
+    queryClient.setQueryData(procurementDirectPurchaseKeys.purchase(target.id), target)
+    void navigate({ to: '/procurement/direct-acquisitions/$id', params: { id: target.id }, replace: true })
+  }, [target, navigate, queryClient])
 }
 
 /** The API answered and has no such record — distinct from a failed read, which says nothing about the record. */

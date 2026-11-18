@@ -253,7 +253,7 @@ function PartyBlock({ purchase, context, role }: { readonly purchase: DirectPurc
   const search = year === undefined ? {} : { year }
   return (
     <div className="border-t pt-4">
-      <MonoLabel className="block text-muted-foreground">{role === 'authority' ? t`Instituția` : t`Firma`}</MonoLabel>
+      <MonoLabel className="block text-muted-foreground">{role === 'authority' ? t`Instituția` : party.withheld ? t`Furnizorul` : t`Firma`}</MonoLabel>
       <p className="mt-3 text-base font-semibold leading-snug">
         <PartyName party={party} role={role} year={year} />
       </p>
@@ -304,11 +304,13 @@ function ContextIntro({ purchase }: { readonly purchase: DirectPurchase }) {
       <h2 id="direct-purchase-context" className="mt-3 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
         <Trans>Alte achiziții între ele</Trans>
       </h2>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        <Trans>
-          Ce a mai cumpărat {authority} de la {supplier}, din 2019 încoace.
-        </Trans>
-      </p>
+      {purchase.supplier.withheld ? null : (
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <Trans>
+            Ce a mai cumpărat {authority} de la {supplier}, din 2019 încoace.
+          </Trans>
+        </p>
+      )}
     </div>
   )
 }
@@ -349,7 +351,15 @@ function ContextGap({ purchase }: { readonly purchase: DirectPurchase }) {
   if (!gap) return null
   return (
     <p className="mt-6 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">
-      {gap === 'no-cui' ? (
+      {gap === 'withheld' ? (
+        purchase.supplier.withheld === 'none' ? (
+          <Trans>SEAP nu indică furnizorul acestei achiziții, așa că nu are cu cine să fie comparată.</Trans>
+        ) : (
+          <Trans>Furnizorul este o persoană fizică: Transparenta nu îi arată numele și nu îi adună achizițiile.</Trans>
+        )
+      ) : gap === 'release' ? (
+        <Trans>Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină.</Trans>
+      ) : gap === 'no-cui' ? (
         <Trans>SEAP nu dă codul fiscal al uneia dintre părți, așa că celelalte achiziții dintre ele nu se pot aduna.</Trans>
       ) : gap === 'no-date' ? (
         <Trans>SEAP nu publică data acestei achiziții, așa că pagina nu o poate așeza printre celelalte dintre ele.</Trans>

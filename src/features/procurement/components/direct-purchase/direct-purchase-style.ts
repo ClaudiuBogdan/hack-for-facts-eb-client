@@ -24,6 +24,7 @@ export function statusLook(outcome: DpOutcome): { readonly Icon: typeof CircleCh
       return { Icon: CircleHelp, tone: 'text-muted-foreground' }
     case 'firm-late':
     case 'institution-late':
+    case 'expired':
       return { Icon: Clock, tone: STOPPED_TONE }
     default:
       return { Icon: CircleX, tone: STOPPED_TONE }
