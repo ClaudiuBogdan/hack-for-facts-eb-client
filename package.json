@@ -18,6 +18,7 @@
     "build": "tsgo -b && vite build && yarn i18n:compile",
     "build:app": "tsgo -b && vite build && yarn i18n:compile",
     "build:validate": "node scripts/validate-build-output.mjs",
+    "build:validate:test": "node --test scripts/validate-build-output.test.mjs",
     "sentry:prepare-artifacts": "node scripts/prepare-sentry-artifacts.mjs",
     "sentry:validate-debug-ids": "node scripts/validate-sentry-debug-ids.mjs /tmp/sentry-artifacts/assets",
     "start": "node .output/server/index.mjs",

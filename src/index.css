@@ -1,6 +1,9 @@
 @import './styles/fonts.css' layer(base);
 @import 'tailwindcss';
 @config '../tailwind.config.js';
+/* The prototyping guide's example class has a placeholder, relative URL. The landing inlines this
+   sheet, where a relative URL would resolve against the page (scripts/validate-build-output.mjs). */
+@source not inline('bg-[url(…)]');
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,

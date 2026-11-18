@@ -150,5 +150,49 @@ if (developmentFailures.length > 0) {
   );
 }
 
+// The landing inlines the global stylesheet: the server bundle carries it as a
+// string (`src/index.css?inline`, see `AppHeadContent`), compiled apart from the
+// linked file (`?url`) every other page loads. The two must stay the same
+// sheet, and the string must never reach the browser's JavaScript. Rolldown
+// writes the string as a double-quoted literal; if it ever writes it another
+// way, this check fails rather than passing without having compared anything.
+const inlineStylesheetLiteral = /"\/\*! tailwindcss v(?:[^"\\\n]|\\.)*"/g;
+const serverDir = join(outputDir, "server");
+const publicDir = join(outputDir, "public");
+const serverJavaScriptFiles = outputJavaScriptFiles.filter((file) => file.startsWith(`${serverDir}${sep}`));
+const inlineStylesheets = serverJavaScriptFiles.flatMap((file) =>
+  [...readFileSync(file, "utf8").matchAll(inlineStylesheetLiteral)].map((match) => ({ file, css: JSON.parse(match[0]) })),
+);
+if (inlineStylesheets.length === 0) {
+  fail("The server bundle holds no inlined Tailwind stylesheet (src/index.css?inline in AppHeadContent).");
+}
+const linkedStylesheets = assetFiles.filter((file) => file.endsWith(".css")).map((file) => readFileSync(file, "utf8").trimEnd());
+for (const { file, css } of inlineStylesheets) {
+  if (!linkedStylesheets.includes(css.trimEnd())) {
+    fail(`${file}: the inlined landing stylesheet differs from every emitted stylesheet; the ?inline and ?url builds of src/index.css have drifted apart.`);
+  }
+  // Inline, a relative address resolves against the page, not /assets/.
+  const relativeUrls = [...css.matchAll(/url\(\s*["']?([^"')\s]*)/g)]
+    .map((match) => match[1])
+    .filter((url) => !/^(?:\/|data:|https?:|#)/.test(url));
+  if (relativeUrls.length > 0) {
+    fail(`${file}: the inlined landing stylesheet has relative addresses, which resolve against the page once inlined: ${relativeUrls.slice(0, 5).join(", ")}`);
+  }
+}
+// Every inlined sheet, in any JavaScript the browser can fetch.
+const publicJavaScript = outputJavaScriptFiles
+  .filter((file) => file.startsWith(`${publicDir}${sep}`))
+  .map((file) => ({ file, contents: readFileSync(file, "utf8") }));
+for (const { css } of inlineStylesheets) {
+  const probe = css.slice(0, 200);
+  const escapedProbe = JSON.stringify(probe).slice(1, -1);
+  for (const { file, contents } of publicJavaScript) {
+    if (contents.includes(probe) || contents.includes(escapedProbe)) {
+      fail(`${file}: browser JavaScript carries the inlined stylesheet, which only the server may hold.`);
+    }
+  }
+}
+
 console.log(`Validated ${outputJavaScriptFiles.length} JavaScript files in ${outputDir}`);
+console.log(`Checked ${inlineStylesheets.length} inlined stylesheet(s) against the emitted CSS`);
 console.log(`Checked ${scannedFiles.length} files for /development leakage`);

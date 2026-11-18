@@ -78,7 +78,9 @@ here.
    the auth routes, or after first interaction, changes how signed-in state reaches the header and the
    reads that wait for a session (PERF-015). Infra question from the audit still open: should dev-chronos
    use a production Clerk instance?
-3. **The 70 KB stylesheet blocks first paint** (Lighthouse estimates 450 ms on mobile). Critical CSS or a
+3. **Done (2026-11-18): the landing inlines its stylesheet**, see [inline-landing-css.md](inline-landing-css.md).
+   Heading paint on the applied mobile profile 2.73 → 1.41 s; other pages unchanged. The original note:
+   **The 70 KB stylesheet blocks first paint** (Lighthouse estimates 450 ms on mobile). Critical CSS or a
    split stylesheet is the audit's PERF-002 step 4 (Parked 9): build pipeline.
 4. **The 241 KB message catalog** is fetched on every page before hydration (PERF-004's per-route catalogs).
    i18n infrastructure.
