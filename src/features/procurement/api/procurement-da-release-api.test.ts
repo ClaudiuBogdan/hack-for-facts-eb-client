@@ -12,7 +12,7 @@ vi.mock('./procurement-direct-purchase-api', () => legacy)
 
 const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
 const { NO_NAMES } = await import('../lib/direct-purchase-model')
-const { fetchPurchaseForPage, isReleaseId, readDaRelease, resetDaReleaseForTests, resolveReleaseId } = await import('./procurement-da-release-api')
+const { fetchPurchaseForPage, isReleaseId, readDaRelease, resetDaReleaseForTests, resolveLegacyLink, resolveReleaseId } = await import('./procurement-da-release-api')
 
 /**
  * The page's choice of surface: the API's capability decides, a release id
@@ -72,6 +72,17 @@ describe('fetchPurchaseForPage', () => {
       ProcurementDaPurchase: () => ({ procurementDaPurchase: RELEASE_CASES.countedAsReported() }),
     })
     await expect(fetchPurchaseForPage('12345')).resolves.toMatchObject({ id: RELEASE_ID, money: { kind: 'counted' } })
+    expect(legacy.fetchDirectPurchase).not.toHaveBeenCalled()
+  })
+
+  it('a legacy link it cannot resolve fails the read — never a legacy page the next read would replace', async () => {
+    answer({
+      ProcurementDaRelease: release(true),
+      ProcurementDirectAcquisitionRecord: () => {
+        throw new Error('down')
+      },
+    })
+    await expect(fetchPurchaseForPage('12345')).rejects.toThrow('Could not tell')
     expect(legacy.fetchDirectPurchase).not.toHaveBeenCalled()
   })
 
@@ -197,5 +208,24 @@ describe('resolveReleaseId', () => {
       },
     })
     await expect(resolveReleaseId('12345')).resolves.toBeNull()
+  })
+})
+
+describe('resolveLegacyLink', () => {
+  it('tells release, legacy and failed apart', async () => {
+    const { grain: _grain, stateId: _stateId, ...record } = daRecord()
+    const legacyRecord = { procurementDirectAcquisition: { directAcquisition: { ...record, sourceSystem: 'elicitatie_da', uniqueCode: 'DA37709621' } } }
+    answer({ ProcurementDaRelease: release(true), ProcurementDirectAcquisitionRecord: () => legacyRecord, ProcurementDaLookup: () => ({ procurementDaPurchases: { items: [{ purchaseId: RELEASE_ID }], total: 1 } }) })
+    await expect(resolveLegacyLink('12345')).resolves.toEqual({ kind: 'release', id: RELEASE_ID })
+    answer({ ProcurementDaRelease: release(true), ProcurementDirectAcquisitionRecord: () => legacyRecord, ProcurementDaLookup: () => ({ procurementDaPurchases: { items: [], total: 0 } }) })
+    await expect(resolveLegacyLink('12345')).resolves.toEqual({ kind: 'legacy' })
+    answer({
+      ProcurementDaRelease: release(true),
+      ProcurementDirectAcquisitionRecord: () => legacyRecord,
+      ProcurementDaLookup: () => {
+        throw new Error('timeout')
+      },
+    })
+    await expect(resolveLegacyLink('12345')).resolves.toEqual({ kind: 'failed' })
   })
 })

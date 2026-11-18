@@ -1,3 +1,4 @@
+import { DA_DISCLOSURE_STALE_MS } from '../lib/disclosure-cache'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { fetchPurchaseForPage } from '../api/procurement-da-release-api'
 import { fetchDirectPurchaseContext } from '../api/procurement-direct-purchase-api'
@@ -11,8 +12,8 @@ import { procurementDirectPurchaseKeys } from '../lib/direct-purchase-keys'
  * and seeds them here.
  */
 
-/** SEAP loads daily at most; an hour keeps a return visit from reading again. */
-const STALE_TIME = 60 * 60 * 1000
+/** No longer than the shared cache keeps the page: a supplier withheld by a publish is not kept past it (D6). */
+const STALE_TIME = DA_DISCLOSURE_STALE_MS
 /**
  * A partial read is read again by the next visit, but not by every return to
  * the tab: some failures (the detail's, until the server links it) last, and

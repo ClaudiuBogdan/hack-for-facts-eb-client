@@ -50,3 +50,23 @@ export function isDaReleaseOn(): Promise<boolean> {
     () => false,
   )
 }
+
+/**
+ * The publication a cached direct-acquisition answer belongs to: whether the
+ * release is on and the data's as-of time. Every server memo of a page that
+ * shows direct-purchase money or suppliers is keyed by it, so a supplier
+ * withheld by a publish is never served from a memo past it (owner via root,
+ * D6). Null when it cannot be read: the caller reads fresh and keeps nothing.
+ */
+export function disclosureVersion(): Promise<string | null> {
+  return readDaRelease().then(
+    (status) => `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}`,
+    () => null,
+  )
+}
+
+/** A memoised read under the publication it belongs to; unknown publication, a fresh read kept nowhere. */
+export async function underDisclosure<T>(memo: (key: string, read: () => Promise<T>) => Promise<T>, key: string, read: () => Promise<T>): Promise<T> {
+  const version = await disclosureVersion()
+  return version === null ? read() : memo(`${version}|${key}`, read)
+}

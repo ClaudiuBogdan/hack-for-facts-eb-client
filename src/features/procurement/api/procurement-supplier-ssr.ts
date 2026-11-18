@@ -1,3 +1,4 @@
+import { underDisclosure } from './procurement-da-release-status'
 import type { PeriodChoice } from '../lib/profile-period'
 import { isGraphQLInvalidInput } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
@@ -38,8 +39,8 @@ export interface ProcurementSupplierServerRead {
 export async function readProcurementSupplierForSsr(cui: string, choice: PeriodChoice): Promise<ProcurementSupplierServerRead> {
   const key = `${cui}:${choice}`
   const [profileRead, directRead] = await Promise.allSettled([
-    profiles(key, () => fetchProcurementSupplier(cui, choice, deadline())),
-    directs(key, () => fetchProcurementSupplierDirect(cui, choice, SUPPLIER_LARGEST_RECORDS, deadline())),
+    underDisclosure(profiles, key, () => fetchProcurementSupplier(cui, choice, deadline())),
+    underDisclosure(directs, key, () => fetchProcurementSupplierDirect(cui, choice, SUPPLIER_LARGEST_RECORDS, deadline())),
   ])
   if (profileRead.status === 'rejected' && isGraphQLInvalidInput(profileRead.reason)) return { choice, notFound: true }
   return {

@@ -10,7 +10,7 @@ import { HubLoadError, HubPending } from '@/features/statistics/components/hub/h
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { useProcurementDirectPurchase, useProcurementDirectPurchaseContext } from '../../hooks/use-procurement-direct-purchase'
-import { dayOf, redoOf, type DirectPurchase, type DpContext } from '../../lib/direct-purchase-model'
+import { contextInputOf, dayOf, redoOf, type DirectPurchase, type DpContext } from '../../lib/direct-purchase-model'
 import { procurementDirectPurchaseKeys } from '../../lib/direct-purchase-keys'
 import { buildDirectPurchaseDocumentTitle } from '../../lib/procurement-page-titles'
 import { DirectPurchaseBlock } from './direct-purchase-block'
@@ -66,7 +66,9 @@ export function ProcurementDirectPurchasePage({ id, initialData }: { readonly id
 
 function DirectPurchaseSheet({ purchase, initialContext }: { readonly purchase: DirectPurchase; readonly initialContext?: DpContext }) {
   const contextQuery = useProcurementDirectPurchaseContext(purchase, initialContext)
-  const context = contextQuery.data ?? null
+  // Only while the purchase still has a context to read: a supplier withheld since must not keep its sales from a cached read (D6).
+  const readable = contextInputOf(purchase) !== null
+  const context = readable ? (contextQuery.data ?? null) : null
   const day = dayOf(purchase)
   return (
     <div className="bg-background">
@@ -74,7 +76,7 @@ function DirectPurchaseSheet({ purchase, initialContext }: { readonly purchase: 
       <RuledFrame className="py-10 sm:py-14">
         <DirectPurchaseBlock purchase={purchase} year={context?.year ?? (day ? Number(day.slice(0, 4)) : null)} />
       </RuledFrame>
-      <DirectPurchaseContextBand purchase={purchase} context={{ data: contextQuery.data, isError: contextQuery.isError, retry: () => void contextQuery.refetch() }} />
+      <DirectPurchaseContextBand purchase={purchase} context={{ data: readable ? contextQuery.data : null, isError: readable && contextQuery.isError, retry: () => void contextQuery.refetch() }} />
     </div>
   )
 }
@@ -91,8 +93,11 @@ function useReleaseUrl(id: string, purchase: DirectPurchase | null | undefined) 
   useEffect(() => {
     if (!target) return
     queryClient.setQueryData(procurementDirectPurchaseKeys.purchase(target.id), target)
-    void navigate({ to: '/procurement/direct-acquisitions/$id', params: { id: target.id }, replace: true })
-  }, [target, navigate, queryClient])
+    void navigate({ to: '/procurement/direct-acquisitions/$id', params: { id: target.id }, replace: true }).then(() =>
+      // The release purchase lives under its own id only: the legacy key never holds it.
+      queryClient.removeQueries({ queryKey: procurementDirectPurchaseKeys.purchase(id), exact: true }),
+    )
+  }, [target, id, navigate, queryClient])
 }
 
 /** The API answered and has no such record — distinct from a failed read, which says nothing about the record. */

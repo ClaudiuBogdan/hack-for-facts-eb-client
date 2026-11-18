@@ -1,3 +1,4 @@
+import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
@@ -66,8 +67,8 @@ export const Route = createFileRoute('/procurement/analytics')({
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({
-          sharedMaxAgeSeconds: 600,
-          staleWhileRevalidateSeconds: 3600,
+          // D6: within one publish (`disclosure-cache.ts`).
+          ...DA_DISCLOSURE_CACHE,
           vary: ['Accept-Encoding', 'Cookie'],
         }),
   // In the request's own language: the shared Lingui instance may hold another request's by the time a head that waited on its loader runs.

@@ -1,3 +1,4 @@
+import { underDisclosure } from './procurement-da-release-status'
 import type { PeriodChoice } from '../lib/profile-period'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
@@ -39,8 +40,8 @@ export interface ProcurementBuyerServerRead {
 export async function readProcurementBuyerForSsr(cui: string, choice: PeriodChoice): Promise<ProcurementBuyerServerRead> {
   const key = `${cui}:${choice}`
   const [profileRead, recordsRead] = await Promise.allSettled([
-    profiles(key, () => fetchProcurementBuyer(cui, choice, deadline())),
-    records(key, () => fetchProcurementBuyerRecords(cui, choice, BUYER_LARGEST_RECORDS, deadline())),
+    underDisclosure(profiles, key, () => fetchProcurementBuyer(cui, choice, deadline())),
+    underDisclosure(records, key, () => fetchProcurementBuyerRecords(cui, choice, BUYER_LARGEST_RECORDS, deadline())),
   ])
   return {
     choice,

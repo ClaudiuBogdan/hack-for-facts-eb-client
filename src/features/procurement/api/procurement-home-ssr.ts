@@ -1,3 +1,4 @@
+import { underDisclosure } from './procurement-da-release-status'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import { HOME_BIG_CONTRACTS } from '../hooks/use-procurement-home'
@@ -44,9 +45,9 @@ export interface ProcurementHomeServerRead {
 export async function readProcurementHomeForSsr(year: number): Promise<ProcurementHomeServerRead> {
   const key = String(year)
   const [nationalRead, categoriesRead, bigContractsRead] = await Promise.allSettled([
-    national(key, () => fetchProcurementHomeNational(year, deadline())),
-    categories(key, () => fetchProcurementHomeCategories(year, deadline())),
-    bigContracts(key, () => fetchProcurementHomeBigContracts(year, HOME_BIG_CONTRACTS, deadline())),
+    underDisclosure(national, key, () => fetchProcurementHomeNational(year, deadline())),
+    underDisclosure(categories, key, () => fetchProcurementHomeCategories(year, deadline())),
+    underDisclosure(bigContracts, key, () => fetchProcurementHomeBigContracts(year, HOME_BIG_CONTRACTS, deadline())),
   ])
   return {
     year,

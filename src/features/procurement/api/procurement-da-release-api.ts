@@ -51,28 +51,37 @@ export async function fetchReleasePurchase(id: string, signal?: AbortSignal): Pr
 }
 
 /**
- * The release id a legacy link leads to: the legacy record's portal code,
- * looked up in the release. Null when the release is off, the record is not
- * a portal purchase with a code, or the release has no single purchase with
- * that code — the legacy page then stands.
+ * Where a legacy link leads, said as one of three: the release's purchase
+ * (its id), the legacy page (the release is off, the record is no portal
+ * purchase with a code, or the release has no single purchase with it), or
+ * a failed read — never taken for either, so it is neither kept nor turned
+ * into a page that the next read would contradict.
  */
-export async function resolveReleaseId(legacyId: string, signal?: AbortSignal): Promise<string | null> {
-  if (isReleaseId(legacyId)) return null
+export type LegacyLink = { readonly kind: 'release'; readonly id: string } | { readonly kind: 'legacy' } | { readonly kind: 'failed' }
+
+export async function resolveLegacyLink(legacyId: string, signal?: AbortSignal): Promise<LegacyLink> {
+  if (isReleaseId(legacyId)) return { kind: 'legacy' }
   try {
     const release = await readDaRelease()
-    if (!release.enabled) return null
+    if (!release.enabled) return { kind: 'legacy' }
     const legacy = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id: legacyId }, { operationName: 'ProcurementDirectAcquisitionRecord', signal })
     const record = procurementDaRecordResponseSchema.parse(legacy).procurementDirectAcquisition?.directAcquisition
     const code = record?.sourceSystem === 'elicitatie_da' ? record.uniqueCode?.trim() : null
-    if (!code) return null
+    if (!code) return { kind: 'legacy' }
     const raw = await graphqlQuery<unknown>(PROCUREMENT_DA_LOOKUP_QUERY, { code }, { operationName: 'ProcurementDaLookup', signal })
     const found = procurementDaLookupSchema.parse(raw).procurementDaPurchases
-    return found.total === 1 && found.items.length === 1 ? (found.items[0]?.purchaseId ?? null) : null
+    const id = found.total === 1 && found.items.length === 1 ? found.items[0]?.purchaseId : undefined
+    return id ? { kind: 'release', id } : { kind: 'legacy' }
   } catch (error) {
     if (signal?.aborted) throw error
-    // A failed lookup leaves the legacy page standing.
-    return null
+    return { kind: 'failed' }
   }
+}
+
+/** The release id a legacy link leads to, or null — a failed read included (callers that must tell them apart use `resolveLegacyLink`). */
+export async function resolveReleaseId(legacyId: string, signal?: AbortSignal): Promise<string | null> {
+  const link = await resolveLegacyLink(legacyId, signal)
+  return link.kind === 'release' ? link.id : null
 }
 
 /**
@@ -83,8 +92,10 @@ export async function resolveReleaseId(legacyId: string, signal?: AbortSignal): 
  */
 export async function fetchPurchaseForPage(id: string, signal?: AbortSignal): Promise<DirectPurchase | null> {
   if (!isReleaseId(id)) {
-    const target = await resolveReleaseId(id, signal)
-    const found = target ? await fetchReleasePurchase(target, signal) : null
+    const link = await resolveLegacyLink(id, signal)
+    // Unresolved is a failed read — retried — never a legacy page the next read would replace.
+    if (link.kind === 'failed') throw new Error('Could not tell where this direct-purchase link leads.')
+    const found = link.kind === 'release' ? await fetchReleasePurchase(link.id, signal) : null
     return found ?? fetchDirectPurchase(id, signal)
   }
   const release = await readDaRelease()

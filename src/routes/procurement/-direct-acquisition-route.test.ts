@@ -14,7 +14,7 @@ const readForSsr = vi.fn()
 const resolveForSsr = vi.fn()
 vi.mock('@/features/procurement/api/procurement-direct-purchase-ssr', () => ({
   readProcurementDirectPurchaseForSsr: (...args: unknown[]) => readForSsr(...args),
-  resolveReleaseIdForSsr: (...args: unknown[]) => resolveForSsr(...args),
+  resolveLegacyLinkForSsr: (...args: unknown[]) => resolveForSsr(...args),
 }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 // The head speaks the request's language through a translator; the real one needs the app's i18n set up.
@@ -60,7 +60,7 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
 
 beforeEach(() => {
   readForSsr.mockReset()
-  resolveForSsr.mockReset().mockResolvedValue(null)
+  resolveForSsr.mockReset().mockResolvedValue({ kind: 'legacy' })
 })
 
 describe('/procurement/direct-acquisitions/$id', () => {
@@ -74,11 +74,19 @@ describe('/procurement/direct-acquisitions/$id', () => {
 
   it('redirects a legacy link to the release’s purchase on the server, with a 302', async () => {
     const id = 'a'.repeat(64)
-    resolveForSsr.mockResolvedValue(id)
+    resolveForSsr.mockResolvedValue({ kind: 'release', id })
     await expect(asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: '10120196' } }))).rejects.toEqual({
       redirect: { to: '/procurement/direct-acquisitions/$id', params: { id }, replace: true, statusCode: 302 },
     })
     expect(readForSsr).not.toHaveBeenCalled()
+  })
+
+  it('a link it could not resolve serves nothing the next read could contradict: no read, no kept render', async () => {
+    resolveForSsr.mockResolvedValue({ kind: 'failed' })
+    const data = await asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: '10120196' } }))
+    expect(data).toEqual({ id: '10120196' })
+    expect(readForSsr).not.toHaveBeenCalled()
+    expect(route.headers({ loaderData: data })).toMatchObject({ 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' })
   })
 
   it('names a withheld supplier as a natural person in the description, never by a name', () => {

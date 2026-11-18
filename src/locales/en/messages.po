@@ -3055,7 +3055,7 @@ msgstr "{name} · code {0} in the law (not a CUI)"
 msgid "{name} a fost întreprindere publică; nu mai apare în listele întreprinderilor publice."
 msgstr "{name} was a public enterprise; it no longer appears on the lists of public enterprises."
 
-#: src/routes/procurement/suppliers/$cui.tsx:91
+#: src/routes/procurement/suppliers/$cui.tsx:92
 msgid "{name} ca furnizor al statului: ce instituții cumpără de la firmă, ce vinde, unde, cum câștigă și cu cine, din SEAP."
 msgstr "{name} as a supplier to the state: which institutions buy from the firm, what it sells, where, how it wins and with whom, from SEAP."
 
@@ -3665,7 +3665,7 @@ msgstr "{warningCount} warning"
 msgid "{warningCount} warnings"
 msgstr "{warningCount} warnings"
 
-#: src/routes/procurement/direct-acquisitions/$id.tsx:68
+#: src/routes/procurement/direct-acquisitions/$id.tsx:71
 msgid "{what}: achiziția directă a instituției {buyer} de la {seller}, din SEAP — ce s-a cumpărat, cu cât și cum s-a făcut."
 msgstr "{what}: {buyer}'s direct purchase from {seller}, from SEAP — what was bought, for how much and how it was done."
 
@@ -4625,7 +4625,7 @@ msgstr "The purchase was made outside the electronic catalogue, and the institut
 msgid "Achiziția e dinainte de 2019, iar datele SEAP de atunci nu despart achizițiile făcute de ofertele refuzate, așa că pagina nu le adună."
 msgstr "The purchase predates 2019, and SEAP's data from then does not tell purchases apart from refused offers, so the page does not add them up."
 
-#: src/features/procurement/components/direct-purchase/procurement-direct-purchase-page.tsx:106
+#: src/features/procurement/components/direct-purchase/procurement-direct-purchase-page.tsx:111
 msgid "Achiziția nu a fost găsită"
 msgstr "Purchase not found"
 
@@ -4744,7 +4744,7 @@ msgstr "Achiziții în timp"
 #: src/features/procurement/components/procedure/procedure-head.tsx:234
 #: src/features/procurement/components/supplier/supplier-head.tsx:47
 #: src/features/procurement/lib/procurement-page-titles.ts:18
-#: src/routes/procurement/index.tsx:74
+#: src/routes/procurement/index.tsx:75
 msgid "Achiziții publice"
 msgstr "Public procurement"
 
@@ -4801,11 +4801,11 @@ msgstr "Direct purchases,<0/>year by year"
 msgid "Achizițiile instituției"
 msgstr "The institution's purchases"
 
-#: src/routes/procurement/institutions/$cui.tsx:91
+#: src/routes/procurement/institutions/$cui.tsx:92
 msgid "Achizițiile publice ale instituției {name}: ce cumpără, de la ce firme și din ce județe, când și cum, din SEAP."
 msgstr "The public procurement of {name}: what it buys, from which firms and counties, when and how, from SEAP."
 
-#: src/routes/procurement/institutions/$cui.tsx:92
+#: src/routes/procurement/institutions/$cui.tsx:93
 msgid "Achizițiile publice ale unei instituții: ce cumpără, de la ce firme și din ce județe, când și cum, din SEAP."
 msgstr "The public procurement of an institution: what it buys, from which firms and counties, when and how, from SEAP."
 
@@ -10172,7 +10172,7 @@ msgstr "The INS Tempo catalog, by domain, frequency and territorial coverage. Ea
 msgid "Catalogul SEAP listează fișiere de export pentru {family} până în {year}. Aceasta este ce listează catalogul, nu ce au încărcat aceste date."
 msgstr "The SEAP catalogue lists {family} export files up to {year}. This is what the catalogue lists, not what this data has loaded."
 
-#: src/routes/procurement/analytics.tsx:88
+#: src/routes/procurement/analytics.tsx:89
 msgid "Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019."
 msgstr "How many direct purchases, contracts and framework agreements, for how many lei, at which institutions, companies, categories and places: ask and compare, from SEAP, since 2019."
 
@@ -10845,7 +10845,7 @@ msgstr "What it buys"
 msgid "Ce cumpără direct, {period}"
 msgstr "What it buys directly, {period}"
 
-#: src/routes/procurement/index.tsx:76
+#: src/routes/procurement/index.tsx:77
 msgid "Ce cumpără statul și de la cine: contractele și achizițiile directe ale instituțiilor publice, pe categorii, firme, județe și ani, din SEAP."
 msgstr "What the state buys and from whom: public institutions’ contracts and direct purchases, by category, company, county and year, from SEAP."
 
@@ -34276,7 +34276,7 @@ msgstr "Cash and bank accounts"
 msgid "Numerele sunt ale întregii ediții, nu ale firmelor filtrate."
 msgstr "The counts are the whole edition's, not the filtered companies'."
 
-#: src/routes/procurement/direct-acquisitions/$id.tsx:69
+#: src/routes/procurement/direct-acquisitions/$id.tsx:72
 msgid "O achiziție directă din SEAP: ce s-a cumpărat, de la cine, cu cât și cum s-a făcut."
 msgstr "A direct purchase from SEAP: what was bought, from whom, for how much and how it was done."
 
@@ -34338,7 +34338,7 @@ msgstr "O eroare de citire nu înseamnă că acest parlamentar nu a votat. Reîn
 msgid "O eroare de citire nu înseamnă că nu există proiecte de lege în lucru. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă."
 msgstr "O eroare de citire nu înseamnă că nu există proiecte de lege în lucru. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă."
 
-#: src/routes/procurement/suppliers/$cui.tsx:92
+#: src/routes/procurement/suppliers/$cui.tsx:93
 msgid "O firmă ca furnizor al statului: ce instituții cumpără de la ea, ce vinde, unde, cum câștigă și cu cine, din SEAP."
 msgstr "A firm as a supplier to the state: which institutions buy from it, what it sells, where, how it wins and with whom, from SEAP."
 
@@ -34391,7 +34391,7 @@ msgstr "Some of these figures could not be read just now; reload the page for th
 msgid "O parte nu are valoare publicată: suma e o limită de jos."
 msgstr "Some have no published value: the sum is a lower bound."
 
-#: src/routes/procurement/direct-acquisitions/$id.tsx:65
+#: src/routes/procurement/direct-acquisitions/$id.tsx:68
 msgid "o persoană fizică"
 msgstr "a natural person"
 
@@ -41936,7 +41936,7 @@ msgstr "SEAP has no records with a value for this month yet."
 msgid "SEAP nu are încă o lună completă pentru acestea."
 msgstr "SEAP has no complete month for these yet."
 
-#: src/features/procurement/components/direct-purchase/procurement-direct-purchase-page.tsx:108
+#: src/features/procurement/components/direct-purchase/procurement-direct-purchase-page.tsx:113
 msgid "SEAP nu are o achiziție directă cu identificatorul {id} în datele publicate."
 msgstr "SEAP has no direct purchase with the identifier {id} in its published data."
 

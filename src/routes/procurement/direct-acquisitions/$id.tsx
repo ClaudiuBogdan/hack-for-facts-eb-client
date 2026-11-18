@@ -1,3 +1,4 @@
+import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
@@ -35,9 +36,11 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
     // Read directly, not through the query client: a query created on the
     // server is dehydrated with the server's clock, so a copy served from a
     // shared cache would look stale on mount and read again.
-    const { readProcurementDirectPurchaseForSsr, resolveReleaseIdForSsr } = await import('@/features/procurement/api/procurement-direct-purchase-ssr')
-    const target = await resolveReleaseIdForSsr(params.id)
-    if (target) throw redirect({ to: '/procurement/direct-acquisitions/$id', params: { id: target }, replace: true, statusCode: 302 })
+    const { readProcurementDirectPurchaseForSsr, resolveLegacyLinkForSsr } = await import('@/features/procurement/api/procurement-direct-purchase-ssr')
+    const link = await resolveLegacyLinkForSsr(params.id)
+    if (link.kind === 'release') throw redirect({ to: '/procurement/direct-acquisitions/$id', params: { id: link.id }, replace: true, statusCode: 302 })
+    // Unresolved: nothing is served that the next read could contradict — the browser reads it, and the render is not kept.
+    if (link.kind === 'failed') return { id: params.id }
     const read = await readProcurementDirectPurchaseForSsr(params.id)
     if (read.purchase === null) throw notFound()
     return read
@@ -48,8 +51,8 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({
-          sharedMaxAgeSeconds: 600,
-          staleWhileRevalidateSeconds: 3600,
+          // D6: within one publish (`disclosure-cache.ts`).
+          ...DA_DISCLOSURE_CACHE,
           vary: ['Accept-Encoding', 'Cookie'],
         }),
   // In the request's own language: the shared Lingui instance may hold another request's by the time a head that waited on its loader runs.

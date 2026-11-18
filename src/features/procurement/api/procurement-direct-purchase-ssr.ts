@@ -1,8 +1,9 @@
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import { contextInputOf, type DirectPurchase, type DpContext } from '../lib/direct-purchase-model'
-import { fetchPurchaseForPage, isReleaseId, resolveReleaseId } from './procurement-da-release-api'
-import { fetchDirectPurchaseContext } from './procurement-direct-purchase-api'
+import { fetchPurchaseForPage, isReleaseId, resolveLegacyLink, type LegacyLink } from './procurement-da-release-api'
+import { underDisclosure } from './procurement-da-release-status'
+import { fetchDirectPurchase, fetchDirectPurchaseContext } from './procurement-direct-purchase-api'
 
 /**
  * A direct purchase page's server reads, for the route loader only.
@@ -34,23 +35,27 @@ export interface ProcurementDirectPurchaseServerRead {
   readonly context?: DpContext | null
 }
 
-/**
- * The release id a legacy link leads to, when direct acquisitions release 1
- * is served and has the purchase; kept like the purchase (a miss too: the
- * legacy page then stands).
- */
-const releaseIds = createServerMemo<string | null>(KEEP_MS, { maxEntries: MAX_PURCHASES })
+/** How long a resolved legacy link is kept: as long as the release's own answer, so a switch is followed within it. */
+const LINK_KEEP_MS = 60 * 1000
 
-export function resolveReleaseIdForSsr(id: string): Promise<string | null> {
-  if (isReleaseId(id)) return Promise.resolve(null)
-  return releaseIds(id, () => resolveReleaseId(id, deadline())).catch(() => null)
+/** Where a legacy link leads, kept per publication; a failed read is never kept. */
+const legacyLinks = createServerMemo<LegacyLink>(LINK_KEEP_MS, { maxEntries: MAX_PURCHASES, keep: (link) => link.kind !== 'failed' })
+
+export function resolveLegacyLinkForSsr(id: string): Promise<LegacyLink> {
+  if (isReleaseId(id)) return Promise.resolve({ kind: 'legacy' })
+  return underDisclosure(legacyLinks, id, () => resolveLegacyLink(id, deadline())).catch((): LegacyLink => ({ kind: 'failed' }))
 }
 
-/** The purchase, then its context; a failed context is left out and the purchase stands. */
+/**
+ * The purchase, then its context; a failed context is left out and the
+ * purchase stands. A legacy id is read here only once its link resolved to
+ * the legacy page (the route redirects a release one, and reads nothing for a
+ * failed one): it is not resolved again. Every memo is kept per publication.
+ */
 export async function readProcurementDirectPurchaseForSsr(id: string): Promise<ProcurementDirectPurchaseServerRead> {
   let purchase: DirectPurchase | null
   try {
-    purchase = await purchases(id, () => fetchPurchaseForPage(id, deadline()))
+    purchase = await underDisclosure(purchases, id, () => (isReleaseId(id) ? fetchPurchaseForPage(id, deadline()) : fetchDirectPurchase(id, deadline())))
   } catch {
     return { id }
   }
@@ -59,7 +64,7 @@ export async function readProcurementDirectPurchaseForSsr(id: string): Promise<P
   if (!input) return { id, purchase, context: null }
   const found = purchase
   try {
-    const context = await contexts(id, () => fetchDirectPurchaseContext(input, found, deadline()))
+    const context = await underDisclosure(contexts, id, () => fetchDirectPurchaseContext(input, found, deadline()))
     return { id, purchase, context }
   } catch {
     return { id, purchase }
