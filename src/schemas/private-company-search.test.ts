@@ -1,8 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
   cleanPrivateCompanyDirectorySearch,
+  COMPANY_HUB_SEARCH_KEYS,
+  companyHubSearchSchema,
   parsePrivateCompanyDirectorySearch,
+  PRIVATE_COMPANY_DIRECTORY_SEARCH_KEYS,
+  privateCompanyDirectorySearchSchema,
 } from './private-company-search'
+
+describe('the search keys', () => {
+  // The routes tell their own keys by these lists without building the schemas.
+  it('are the schemas\' own', () => {
+    expect([...PRIVATE_COMPANY_DIRECTORY_SEARCH_KEYS].sort()).toEqual(Object.keys(privateCompanyDirectorySearchSchema.schema().shape).sort())
+    expect([...COMPANY_HUB_SEARCH_KEYS].sort()).toEqual(Object.keys(companyHubSearchSchema.schema().unwrap().shape).sort())
+  })
+})
 
 describe('parsePrivateCompanyDirectorySearch', () => {
   it('coerces a numeric ?q= (TanStack Router JSON-parses it) back to a string', () => {

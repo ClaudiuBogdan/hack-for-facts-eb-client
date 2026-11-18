@@ -33,6 +33,7 @@ const ROUTE_CONTRACT_MODULES = [
   'src/features/ngos/registry/registry-search.ts',
   'src/schemas/justice-search.ts',
   'src/schemas/elections-search.ts',
+  'src/schemas/private-company-search.ts',
 ]
 const BUILT_AT_MODULE_SCOPE = {
   // Any call evaluated when the module is (not inside a function), wherever it

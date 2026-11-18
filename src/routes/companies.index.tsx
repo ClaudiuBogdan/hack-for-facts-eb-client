@@ -3,10 +3,10 @@ import { CompanyHubPending } from '@/features/private-companies/components/hub/c
 import { buildCompanyHubHead, companyHubSeoFigures } from '@/features/private-companies/seo/private-company-hub-seo'
 import { companyDirectoryRedirect, hasDirectorySearch } from '@/features/private-companies/lib/company-directory-redirect'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { companyHubSearchSchema, parseCompanyHubSearch } from '@/schemas/private-company-search'
+import { COMPANY_HUB_SEARCH_KEYS, parseCompanyHubSearch } from '@/schemas/private-company-search'
 
 /** The hub's own search keys; everything else an old link carries is the directory's or the site's. */
-const HUB_KEYS = new Set(Object.keys(companyHubSearchSchema.unwrap().shape))
+const HUB_KEYS = new Set<string>(COMPANY_HUB_SEARCH_KEYS)
 
 /**
  * `/companies` is the hub. Before it, `/companies` was the company directory,

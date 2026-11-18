@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { lazySchema, type LazyOutput } from '@/lib/route-contract'
 import { parseArraySearchParam } from './public-investments'
 import type { CompanyRegistryEnvelope } from './private-company-registry'
 
@@ -14,40 +15,44 @@ import type { CompanyRegistryEnvelope } from './private-company-registry'
  * onrcCaen, legal form, recorded date) from ONE pinned ONRC edition, on the
  * SAME resolved identifier; the fiscal switches were ANAF's.
  */
-const stringArrayParam = z
-  .preprocess((value) => parseArraySearchParam(value), z.array(z.string()).optional())
-  .catch(undefined)
+const stringArrayParam = () =>
+  z
+    .preprocess((value) => parseArraySearchParam(value), z.array(z.string()).optional())
+    .catch(undefined)
 
 /**
  * Exact CAEN selectors (`rev2:6201`), normalised to lower case. A value that
  * is not one stays as given: the page names it invalid instead of dropping it.
  */
-const caenSelectorParam = z
-  .preprocess(
-    (value) => parseArraySearchParam(value),
-    z
-      .array(z.string())
-      .transform((values) => values.map((value) => (/^rev[0-3]:\d{4}$/iu.test(value.trim()) ? value.trim().toLowerCase() : value.trim())))
-      .optional(),
-  )
-  .catch(undefined)
+const caenSelectorParam = () =>
+  z
+    .preprocess(
+      (value) => parseArraySearchParam(value),
+      z
+        .array(z.string())
+        .transform((values) => values.map((value) => (/^rev[0-3]:\d{4}$/iu.test(value.trim()) ? value.trim().toLowerCase() : value.trim())))
+        .optional(),
+    )
+    .catch(undefined)
 
 /** `?vat=true` arrives as a boolean; the raw string form must parse too. */
-const booleanParam = z
-  .preprocess((value) => {
-    if (typeof value === 'boolean') return value
-    if (value === 'true') return true
-    if (value === 'false') return false
-    return undefined
-  }, z.boolean().optional())
-  .catch(undefined)
+const booleanParam = () =>
+  z
+    .preprocess((value) => {
+      if (typeof value === 'boolean') return value
+      if (value === 'true') return true
+      if (value === 'false') return false
+      return undefined
+    }, z.boolean().optional())
+    .catch(undefined)
 
 /** ISO `YYYY-MM-DD`; anything else is dropped rather than thrown. */
-const isoDateParam = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .optional()
-  .catch(undefined)
+const isoDateParam = () =>
+  z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .catch(undefined)
 
 export const PRIVATE_COMPANY_SORT_VALUES = [
   'name',
@@ -57,25 +62,28 @@ export const PRIVATE_COMPANY_SORT_VALUES = [
 
 export type PrivateCompanySortValue = (typeof PRIVATE_COMPANY_SORT_VALUES)[number]
 
-export const privateCompanyDirectorySearchSchema = z.object({
-  q: z.coerce.string().optional().catch(undefined),
-  county: stringArrayParam,
-  status: stringArrayParam,
-  /** Broad: the digits in ANY known revision among the current edition's qualified class observations (a prefix below 4 digits); short tokens, unknown revisions and unlabeled keys never match. */
-  caen: z.coerce.string().optional().catch(undefined),
-  /** Exact: one code in one revision, `rev0`…`rev3`. */
-  onrcCaen: caenSelectorParam,
-  legalForm: stringArrayParam,
-  regFrom: isoDateParam,
-  regTo: isoDateParam,
-  vat: booleanParam,
-  inactive: booleanParam,
-  sort: z.enum(PRIVATE_COMPANY_SORT_VALUES).optional().catch(undefined),
-})
+/** The directory's search keys: `companyDirectoryRedirect` tells its links by them. `private-company-search.test.ts` keeps them the schema's. */
+export const PRIVATE_COMPANY_DIRECTORY_SEARCH_KEYS = ['q', 'county', 'status', 'caen', 'onrcCaen', 'legalForm', 'regFrom', 'regTo', 'vat', 'inactive', 'sort'] as const
 
-export type PrivateCompanyDirectorySearchState = z.infer<
-  typeof privateCompanyDirectorySearchSchema
->
+export const privateCompanyDirectorySearchSchema = lazySchema(() =>
+  z.object({
+    q: z.coerce.string().optional().catch(undefined),
+    county: stringArrayParam(),
+    status: stringArrayParam(),
+    /** Broad: the digits in ANY known revision among the current edition's qualified class observations (a prefix below 4 digits); short tokens, unknown revisions and unlabeled keys never match. */
+    caen: z.coerce.string().optional().catch(undefined),
+    /** Exact: one code in one revision, `rev0`…`rev3`. */
+    onrcCaen: caenSelectorParam(),
+    legalForm: stringArrayParam(),
+    regFrom: isoDateParam(),
+    regTo: isoDateParam(),
+    vat: booleanParam(),
+    inactive: booleanParam(),
+    sort: z.enum(PRIVATE_COMPANY_SORT_VALUES).optional().catch(undefined),
+  }),
+)
+
+export type PrivateCompanyDirectorySearchState = LazyOutput<typeof privateCompanyDirectorySearchSchema>
 
 export function parsePrivateCompanyDirectorySearch(
   search: Record<string, unknown>,
@@ -216,6 +224,9 @@ export type CompanyHubRanking = (typeof COMPANY_HUB_RANKINGS)[number]
 export const COMPANY_HUB_YEAR_MEASURES = ['cifra-de-afaceri', 'rezultat-net', 'salariati'] as const
 export type CompanyHubYearMeasure = (typeof COMPANY_HUB_YEAR_MEASURES)[number]
 
+/** The hub's search keys: `/companies` keeps only these. `private-company-search.test.ts` keeps them the schema's. */
+export const COMPANY_HUB_SEARCH_KEYS = ['indicator', 'domenii', 'clasament', 'evolutie'] as const
+
 /**
  * The hub's choices (map layer, activity measure, ranking, the years' measure), each in the
  * URL so a view can be shared. Never a key of the retired directory's (`q`, `county`,
@@ -224,16 +235,18 @@ export type CompanyHubYearMeasure = (typeof COMPANY_HUB_YEAR_MEASURES)[number]
  * an old shared link opens the hub on its defaults instead of failing, and
  * the default is never written.
  */
-export const companyHubSearchSchema = z
-  .object({
-    indicator: z.enum(COMPANY_HUB_MAP_INDICATORS).optional().catch(undefined),
-    domenii: z.enum(COMPANY_HUB_SECTOR_METRICS).optional().catch(undefined),
-    clasament: z.enum(COMPANY_HUB_RANKINGS).optional().catch(undefined),
-    evolutie: z.enum(COMPANY_HUB_YEAR_MEASURES).optional().catch(undefined),
-  })
-  .catch({})
+export const companyHubSearchSchema = lazySchema(() =>
+  z
+    .object({
+      indicator: z.enum(COMPANY_HUB_MAP_INDICATORS).optional().catch(undefined),
+      domenii: z.enum(COMPANY_HUB_SECTOR_METRICS).optional().catch(undefined),
+      clasament: z.enum(COMPANY_HUB_RANKINGS).optional().catch(undefined),
+      evolutie: z.enum(COMPANY_HUB_YEAR_MEASURES).optional().catch(undefined),
+    })
+    .catch({}),
+)
 
-export type CompanyHubSearch = z.infer<typeof companyHubSearchSchema>
+export type CompanyHubSearch = LazyOutput<typeof companyHubSearchSchema>
 
 export function parseCompanyHubSearch(search: Record<string, unknown>): CompanyHubSearch {
   return companyHubSearchSchema.parse(search)

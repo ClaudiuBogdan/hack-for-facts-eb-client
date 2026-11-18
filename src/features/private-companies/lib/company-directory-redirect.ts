@@ -2,7 +2,7 @@ import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import {
   cleanPrivateCompanyDirectorySearch,
   parsePrivateCompanyDirectorySearch,
-  privateCompanyDirectorySearchSchema,
+  PRIVATE_COMPANY_DIRECTORY_SEARCH_KEYS,
   type PrivateCompanyDirectorySearchState,
 } from '@/schemas/private-company-search'
 import { urlSearchOfText, type CompanyAnalyticsSearch, type CompanyAnalyticsUrlSearch } from './company-analytics-url'
@@ -40,7 +40,7 @@ export type CompanyDirectoryRedirect =
   | { readonly to: '/companies'; readonly search: Record<string, unknown> }
 
 /** The directory's own keys; the rest of an address is the site's. */
-const DIRECTORY_KEYS = new Set(Object.keys(privateCompanyDirectorySearchSchema.shape))
+const DIRECTORY_KEYS = new Set<string>(PRIVATE_COMPANY_DIRECTORY_SEARCH_KEYS)
 
 /** A canonical CUI, `RO` prefix allowed: 2–10 digits, no leading zero (the analysis's company filter takes the same). */
 const CUI_RE = /^[1-9]\d{1,9}$/u
