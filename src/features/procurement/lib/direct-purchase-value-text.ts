@@ -2,6 +2,7 @@ import { t } from '@lingui/core/macro'
 import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { labelText } from './direct-purchase-text'
+import type { DpWithheldText } from './direct-purchase-model'
 import type { DpNotCounted, DpSupplierName, DpValue, DpValueRule } from './direct-purchase-value'
 
 /**
@@ -99,4 +100,21 @@ export function notListedText(): string {
 export function supplierNameText(supplier: DpSupplierName): string {
   if (supplier.kind === 'company') return displayCompanyName(supplier.name)
   return supplier.kind === 'natural-person' ? t`Persoană fizică` : t`Furnizor neindicat în SEAP`
+}
+
+/**
+ * Which of the institution's words wait for their privacy review — only those
+ * withheld, named — and that the rest is public; null when none is withheld.
+ */
+export function withheldTextNotice(withheld: DpWithheldText): string | null {
+  const fields = [withheld.title ? t`titlul` : null, withheld.description ? t`descrierea` : null, withheld.lines ? t`denumirile produselor` : null].filter(
+    (field): field is string => field !== null,
+  )
+  if (fields.length === 0) return null
+  const last = fields[fields.length - 1]!
+  const and = t`și`
+  const list = fields.length === 1 ? last : `${fields.slice(0, -1).join(', ')} ${and} ${last}`
+  const lead = t`Textul scris de instituție (${list}) nu e afișat încă: așteaptă verificarea datelor personale.`
+  const title = withheld.title ? t`Titlul de mai sus e categoria achiziției.` : null
+  return [lead, title, t`Cantitățile, prețurile și valorile sunt publice.`].filter(Boolean).join(' ')
 }

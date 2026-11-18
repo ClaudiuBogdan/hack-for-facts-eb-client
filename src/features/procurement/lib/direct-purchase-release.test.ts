@@ -125,7 +125,7 @@ describe('mapReleasePurchase — free text withheld until its privacy review', (
   it('withheld: the title is the category’s label, no description, the lines unnamed, said', () => {
     const purchase = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
     expect(purchase.title).toBe('Aranjamente florale')
-    expect(purchase.textWithheld).toBe(true)
+    expect(purchase.withheldText).toEqual({ title: true, description: true, lines: true })
     expect(purchase.detail?.description).toBeNull()
     expect(purchase.detail?.items[0]).toMatchObject({ name: '', nameWithheld: true })
   })
@@ -140,7 +140,7 @@ describe('mapReleasePurchase — free text withheld until its privacy review', (
 
   it('served after review: the institution’s title, description and line names', () => {
     const purchase = mapReleasePurchase(rawReleaseDetail(SERVED_TEXT, [rawReleaseItem(servedItemText('Aranjament floral mic'))]), NO_NAMES)
-    expect(purchase).toMatchObject({ title: 'Aranjamente florale pentru eveniment', textWithheld: false, detail: { description: 'Diverse aranjamente florale' } })
+    expect(purchase).toMatchObject({ title: 'Aranjamente florale pentru eveniment', withheldText: { title: false, description: false, lines: false }, detail: { description: 'Diverse aranjamente florale' } })
     expect(purchase.detail?.items[0]).toMatchObject({ name: 'Aranjament floral mic' })
     expect(purchase.detail?.items[0]?.nameWithheld).toBeUndefined()
   })

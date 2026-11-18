@@ -21,6 +21,7 @@ import { reportedApartOf, type DpValue } from '../../lib/direct-purchase-value'
 import {
   correctionRuleText,
   correctionText,
+  withheldTextNotice,
   inTotalsText,
   notCountedText,
   notListedText,
@@ -67,24 +68,31 @@ function OutLink({ href, children }: { readonly href: string; readonly children:
 function PurchaseDescription({ purchase, className }: { readonly purchase: DirectPurchase; readonly className?: string }) {
   const detail = purchase.detail
   if (!detail) return null
-  // Release 1: the institution's words wait for their privacy review.
-  if (purchase.textWithheld) {
-    return (
-      <p className={cn('max-w-[60ch] text-sm leading-relaxed text-muted-foreground', className)}>
-        <Trans>
-          Textul scris de instituție (titlul, descrierea și denumirile produselor) nu e afișat încă: așteaptă verificarea datelor personale. Titlul de mai sus e categoria
-          achiziției; cantitățile, prețurile și valorile sunt publice.
-        </Trans>
-      </p>
-    )
-  }
-  if (detail.redacted) {
-    return (
+  // The institution's words that wait for their privacy review, named field by field; what is public stands beside them.
+  const notice = withheldTextNotice(purchase.withheldText)
+  if (purchase.withheldText.description || (!notice && detail.redacted)) {
+    return notice ? (
+      <p className={cn('max-w-[60ch] text-sm leading-relaxed text-muted-foreground', className)}>{notice}</p>
+    ) : (
       <p className={cn('max-w-[60ch] text-sm leading-relaxed text-muted-foreground', className)}>
         <Trans>Textul scris de instituție (descrierea, livrarea și plata) nu e afișat: conține datele de contact ale unei persoane. Produsele și prețurile sunt publice.</Trans>
       </p>
     )
   }
+  const said = <DescriptionQuote purchase={purchase} className={className} />
+  if (!notice) return said
+  return (
+    <div className={className}>
+      <p className="max-w-[60ch] text-sm leading-relaxed text-muted-foreground">{notice}</p>
+      <DescriptionQuote purchase={purchase} className="mt-4" />
+    </div>
+  )
+}
+
+/** The institution's own description, when public and saying more than the title. */
+function DescriptionQuote({ purchase, className }: { readonly purchase: DirectPurchase; readonly className?: string }) {
+  const detail = purchase.detail
+  if (!detail) return null
   const description = detail.description
   if (!description || description.toLocaleLowerCase('ro-RO') === (purchase.title ?? '').toLocaleLowerCase('ro-RO')) return null
   return (

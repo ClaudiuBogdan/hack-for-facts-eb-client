@@ -361,3 +361,20 @@ describe('a legacy record, D6 and withheld free text (flag on)', () => {
     expect(page).toContain('nu e afișat încă: așteaptă verificarea datelor personale')
   })
 })
+
+describe('withheld free text, field by field', () => {
+  it('a public title with a withheld description: the title stands, only the description is said to wait', () => {
+    const page = html(mapReleasePurchase(rawReleaseDetail({ title: 'Aranjamente pentru gală', titleWithheld: null, description: null, descriptionWithheld: 'privacy' }, [rawReleaseItem(servedItemText('Coroană'))]), NO_NAMES), null)
+    expect(page).toContain('Finalizată Aranjamente pentru gală')
+    expect(page).toContain('Textul scris de instituție (descrierea) nu e afișat încă')
+    expect(page).not.toContain('Titlul de mai sus e categoria achiziției')
+    expect(page).toContain('Coroană')
+  })
+
+  it('a withheld title with a public description: the category heads it, and the description is quoted', () => {
+    const page = html(mapReleasePurchase(rawReleaseDetail({ description: 'Coroane și aranjamente', descriptionWithheld: null }, [rawReleaseItem(servedItemText('Coroană'))]), NO_NAMES), null)
+    expect(page).toContain('Textul scris de instituție (titlul) nu e afișat încă')
+    expect(page).toContain('Titlul de mai sus e categoria achiziției.')
+    expect(page).toContain('Instituția a descris achiziția așa: „Coroane și aranjamente”')
+  })
+})

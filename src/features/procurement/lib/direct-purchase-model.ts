@@ -166,11 +166,20 @@ export interface DirectPurchase {
   /** Release 1: when the served data was published; null on a legacy record. */
   readonly dataAsOf: string | null
   /**
-   * Release 1: the institution's free text (title, description) is withheld
-   * until its privacy review; the title shown is then the category's label.
+   * The institution's free text withheld until its privacy review, field by
+   * field: the title (the one shown is then the category's label), the
+   * description, the lines' names. The page names only those withheld.
    */
-  readonly textWithheld: boolean
+  readonly withheldText: DpWithheldText
 }
+
+export interface DpWithheldText {
+  readonly title: boolean
+  readonly description: boolean
+  readonly lines: boolean
+}
+
+export const NO_WITHHELD_TEXT: DpWithheldText = { title: false, description: false, lines: false }
 
 // ─────────────────────────────────────────────────────────── the context ──
 
@@ -456,7 +465,8 @@ export function mapDirectPurchase(
     money: null,
     listedNow: null,
     dataAsOf: null,
-    textWithheld: titleWithheld,
+    // The legacy surface withholds the title, and with it the detail's free text and the lines' names (said by `textRedacted`).
+    withheldText: titleWithheld ? { title: true, description: availability === 'AVAILABLE' && (detail?.textRedacted ?? false), lines: true } : NO_WITHHELD_TEXT,
   }
 }
 

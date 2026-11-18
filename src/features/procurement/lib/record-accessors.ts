@@ -15,8 +15,10 @@ import type {
 export function recordTitle(record: ProcurementRecordSummary): string | null {
   switch (record.grain) {
     case 'procedure':
-    case 'direct_acquisition':
       return record.title
+    case 'direct_acquisition':
+      // A title withheld until its review: the CPV label names the purchase.
+      return record.titleWithheld ? (record.cpvLabel ?? null) : record.title
     case 'contract':
       return record.displayTitle?.text ?? null
     case 'modification':

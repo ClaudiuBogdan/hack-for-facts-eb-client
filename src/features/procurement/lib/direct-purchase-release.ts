@@ -175,6 +175,6 @@ export function mapReleasePurchase(raw: RawDaPurchaseDetail, names: DpNames): Di
     money,
     listedNow: purchase.listedNow,
     dataAsOf: raw.dataAsOf,
-    textWithheld: titleWithheld || Boolean(purchase.descriptionWithheld),
+    withheldText: { title: titleWithheld, description: Boolean(purchase.descriptionWithheld), lines: raw.items.some((item) => Boolean(item.nameWithheld)) },
   }
 }
