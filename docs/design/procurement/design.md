@@ -3271,11 +3271,59 @@ the API surface is the server's `docs/server-redesign/10-public-contracts-da-rel
 - **What the release does not serve** is not shown, never filled from the
   legacy surface: the estimate, delivery and payment, refusal reasons and who
   refused, documents, EU funding, line descriptions and categories.
-- **Context band:** a release page does not read the legacy context, whose
-  totals would contradict its value. Until the band reads the release's
-  totals, it says that the other purchases will be gathered there.
+- **Context band:** with the release on, the analysis API serves the
+  direct-acquisition grain from the release. A release page therefore reads
+  its context as any page does. The purchases around it come from the
+  release list, dated by finalization, in one snapshot.
 - **Legacy links:** with the release on, a legacy link leads to the release's
   id, found by the portal code. On the server this is a 302, since the release
   can be switched off again. In the browser the purchase's read follows the
   link and the page replaces the URL, so a navigation is never held. Off, or
   with no single match, the legacy page stands.
+
+### 24.1 Site-wide D6, caches and the switches (after the review, 18 November 2026)
+
+Owner and root rulings, and the independent review's findings:
+
+- **D6 does not depend on the release flag.** The API enforces it behind its
+  own switch, which stays on through any rollback.
+  - The client fails closed everywhere: on the detail page, in rankings
+    (front door, buyer, enterprise, analytics, entity and company slices),
+    in records lists and in search rows.
+  - A direct-purchase supplier is named, linked, drilled into or looked up
+    only when the API serves it with `displayKind = company`. The group of
+    withheld suppliers reads „Persoane fizice"; any other unnamed supplier
+    reads „Furnizor nenumit".
+  - A supplier the analytics address names is named only from its own
+    direct purchases, never from the registry.
+- **D6 on, release off:** the API refuses direct purchases' supplier
+  rankings, places, concentration and distinct-supplier counts. The pages
+  do not ask for them and say „Firmele achizițiilor directe nu sunt
+  disponibile acum…". Supplier places are not offered for direct purchases
+  at all.
+- **Caches:** a withheld name disappears within one publish.
+  - Every server memo of a page showing direct-purchase money or suppliers
+    is keyed by the publication: the release switch, `dataAsOf`, the D6
+    switch and `privacyAsOf`. Nothing is kept when that can't be read.
+  - Those pages are cached ten minutes by the CDN, with no
+    stale-while-revalidate. The browser reads a purchase again after ten
+    minutes.
+  - Context read before a supplier became withheld is dropped.
+- **Legacy links** resolve three ways: to the release, to the legacy page,
+  or to a failed read. A failed read is never kept and never served as a
+  legacy page.
+- **Builds per population:** with the release on, direct purchases publish
+  on their own clock. The cutoff keeps one build per population.
+- **Amounts:**
+  - Only counted values are said in lei. A value out of totals, and its
+    lines, are written as the source wrote them, with their currency and VAT
+    basis said to be unconfirmed.
+  - Decimals are kept as written.
+  - A correction always shows both values; a missing rule sentence is said.
+  - Money that isn't plain decimal text fails the read.
+- **Withheld free text is named field by field:** title, description, and
+  line names or units.
+- **Lists:** the largest direct purchases (front door month, buyer, firm)
+  come from the analysis records, ranked by the value its figures count.
+- **Per family:** the entity slice shows contract and direct-purchase money
+  apart, never summed.
