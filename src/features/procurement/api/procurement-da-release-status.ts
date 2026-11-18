@@ -11,6 +11,10 @@ import { PROCUREMENT_DA_RELEASE_QUERY, procurementDaReleaseSchema } from './grap
 export interface DaReleaseStatus {
   readonly enabled: boolean
   readonly dataAsOf: string | null
+  /** D6 is enforced: its own switch, independent of `enabled`. */
+  readonly privacyEnforced: boolean
+  /** The supplier-privacy publication D6 reads; null when it is off or unreadable (everyone withheld). */
+  readonly privacyAsOf: string | null
 }
 
 /** How long one answer about the release holds: the flag flips with a deploy, not per request. */
@@ -53,14 +57,15 @@ export function isDaReleaseOn(): Promise<boolean> {
 
 /**
  * The publication a cached direct-acquisition answer belongs to: whether the
- * release is on and the data's as-of time. Every server memo of a page that
+ * release is on, the data's as-of time, whether D6 is enforced and the
+ * supplier-privacy publication it reads. Every server memo of a page that
  * shows direct-purchase money or suppliers is keyed by it, so a supplier
  * withheld by a publish is never served from a memo past it (owner via root,
  * D6). Null when it cannot be read: the caller reads fresh and keeps nothing.
  */
 export function disclosureVersion(): Promise<string | null> {
   return readDaRelease().then(
-    (status) => `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}`,
+    (status) => `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}:${status.privacyEnforced ? 'd6' : 'nod6'}:${status.privacyAsOf ?? '-'}`,
     () => null,
   )
 }

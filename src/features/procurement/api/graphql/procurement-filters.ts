@@ -450,7 +450,8 @@ export function buildDirectAcquisitionsFilter(
   const supplierCui = trimmedOrUndefined(search.supplier_cui)
   if (supplierCui) filter.supplierCui = { eq: supplierCui }
   applyCpv(filter, search)
-  applyGeography(filter, search, { supplier: true })
+  // No supplier place for direct purchases (release 1, D6): the API refuses it.
+  applyGeography(filter, search, { supplier: false })
   const sourceSystem = buildSourceSystems(search, 'direct_acquisitions')
   if (sourceSystem) filter.sourceSystem = { in: sourceSystem }
   const status = buildStatuses(search, 'direct_acquisitions')

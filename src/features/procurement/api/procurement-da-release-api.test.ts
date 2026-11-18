@@ -34,7 +34,7 @@ function answer(handlers: Readonly<Record<string, Handler>>) {
   })
 }
 
-const release = (enabled: boolean) => () => ({ procurementDaRelease: { enabled, dataAsOf: enabled ? '2026-11-18T04:00:00Z' : null } })
+const release = (enabled: boolean) => () => ({ procurementDaRelease: { enabled, dataAsOf: enabled ? '2026-11-18T04:00:00Z' : null, privacyEnforced: enabled, privacyAsOf: enabled ? '2026-11-18T02:00:00Z' : null } })
 const unavailable = (code: string) => new GraphQLRequestError('no', { graphQLErrors: [{ message: 'no', extensions: { code } }] })
 
 beforeEach(() => {
@@ -154,7 +154,7 @@ describe('readDaRelease', () => {
       },
     })
     await expect(readDaRelease()).rejects.toThrow('down')
-    await expect(readDaRelease()).resolves.toEqual({ enabled: true, dataAsOf: '2026-11-18T04:00:00Z' })
+    await expect(readDaRelease()).resolves.toEqual({ enabled: true, dataAsOf: '2026-11-18T04:00:00Z', privacyEnforced: true, privacyAsOf: '2026-11-18T02:00:00Z' })
   })
 })
 

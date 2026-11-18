@@ -275,7 +275,8 @@ type SearchPageResult = {
 const SEARCH_FACETS_BY_GRAIN: Readonly<Record<string, readonly string[]>> = {
   procedures: ['buyerCounty', 'status', 'valueState'],
   contracts: ['buyerCounty', 'supplierCounty', 'status', 'valueState'],
-  direct_acquisitions: ['buyerCounty', 'supplierCounty', 'status', 'valueState'],
+  // No supplier place for direct purchases: release 1 serves none (D6 — a place can name a person) and refuses the facet.
+  direct_acquisitions: ['buyerCounty', 'status', 'valueState'],
 }
 
 async function fetchSearchRecords(

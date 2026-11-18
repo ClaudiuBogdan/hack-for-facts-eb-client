@@ -17,12 +17,18 @@ import { z } from 'zod'
 
 export const PROCUREMENT_DA_RELEASE_QUERY = /* GraphQL */ `
   query ProcurementDaRelease {
-    procurementDaRelease { enabled dataAsOf }
+    procurementDaRelease { enabled dataAsOf privacyEnforced privacyAsOf }
   }
 `
 
 export const procurementDaReleaseSchema = z.object({
-  procurementDaRelease: z.object({ enabled: z.boolean(), dataAsOf: z.string().nullable() }),
+  procurementDaRelease: z.object({
+    enabled: z.boolean(),
+    dataAsOf: z.string().nullable(),
+    /** D6 enforced (its own switch, whatever `enabled` says), and the supplier-privacy publication it reads. */
+    privacyEnforced: z.boolean(),
+    privacyAsOf: z.string().nullable(),
+  }),
 })
 
 // ───────────────────────────────────────────────────────────── purchase ──
