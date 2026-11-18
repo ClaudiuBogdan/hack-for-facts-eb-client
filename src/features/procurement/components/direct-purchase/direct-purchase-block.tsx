@@ -55,6 +55,17 @@ function OutLink({ href, children }: { readonly href: string; readonly children:
 function PurchaseDescription({ purchase, className }: { readonly purchase: DirectPurchase; readonly className?: string }) {
   const detail = purchase.detail
   if (!detail) return null
+  // Release 1: the institution's words wait for their privacy review.
+  if (purchase.textWithheld) {
+    return (
+      <p className={cn('max-w-[60ch] text-sm leading-relaxed text-muted-foreground', className)}>
+        <Trans>
+          Textul scris de instituție (titlul, descrierea și denumirile produselor) nu e afișat încă: așteaptă verificarea datelor personale. Titlul de mai sus e categoria
+          achiziției; cantitățile, prețurile și valorile sunt publice.
+        </Trans>
+      </p>
+    )
+  }
   if (detail.redacted) {
     return (
       <p className={cn('max-w-[60ch] text-sm leading-relaxed text-muted-foreground', className)}>

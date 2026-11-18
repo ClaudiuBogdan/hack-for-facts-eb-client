@@ -4,6 +4,10 @@ import type { RawDaParty, RawDaPurchase, RawDaPurchaseDetail, RawDaPurchaseItem 
  * Release-1 purchases as the API answers them (`procurementDaPurchase`),
  * one per example row of the data platform's direct-acquisition serving
  * contract (synthetic). Test backing data only.
+ *
+ * As in release 1, the free text (title, description, a line's name) is
+ * withheld by default; `SERVED_TEXT` / `servedItemText` serve it, as after a
+ * field's review.
  */
 
 export const RELEASE_ID = 'a'.repeat(64)
@@ -54,8 +58,8 @@ export function rawReleasePurchase(fields: Partial<RawDaPurchase> = {}): RawDaPu
     stateLabel: 'Finalizata',
     publicationDay: '2025-06-01',
     finalizationDay: '2025-06-02',
-    buyerDecisionAt: '2025-06-02T09:00:00Z',
-    supplierDecisionAt: '2025-06-01T15:00:00Z',
+    buyerDecisionAt: '2025-06-02T09:00:00.123456Z',
+    supplierDecisionAt: '2025-06-01T15:00:00.654321Z',
     reportedValue: '12500.00',
     counted: true,
     countedValue: '12500.00',
@@ -65,8 +69,10 @@ export function rawReleasePurchase(fields: Partial<RawDaPurchase> = {}): RawDaPu
     reviewRule: null,
     symbolicPrice: false,
     listedNow: true,
-    title: 'Aranjamente florale',
-    description: 'Diverse aranjamente florale',
+    title: null,
+    titleWithheld: 'privacy',
+    description: null,
+    descriptionWithheld: 'privacy',
     categoryCode: '03121210-0',
     categoryLabel: 'Aranjamente florale (Rev.2)',
     cpvDivision: '03',
@@ -80,7 +86,8 @@ export function rawReleasePurchase(fields: Partial<RawDaPurchase> = {}): RawDaPu
 export function rawReleaseItem(fields: Partial<RawDaPurchaseItem> = {}): RawDaPurchaseItem {
   return {
     itemIndex: 0,
-    name: 'Aranjament floral mic',
+    name: null,
+    nameWithheld: 'privacy',
     unit: 'bucata',
     quantity: '25',
     requestedQuantity: '25',
@@ -94,7 +101,15 @@ export function rawReleaseItem(fields: Partial<RawDaPurchaseItem> = {}): RawDaPu
 }
 
 export function rawReleaseDetail(fields: Partial<RawDaPurchase> = {}, items: readonly RawDaPurchaseItem[] = [rawReleaseItem()]): RawDaPurchaseDetail {
-  return { purchase: rawReleasePurchase(fields), items: [...items], dataAsOf: '2026-11-18T04:00:00Z', valueBasis: 'RON excluding VAT' }
+  return { purchase: rawReleasePurchase(fields), items: [...items], dataAsOf: '2026-11-18T03:10:00.123456Z', countedValueBasis: 'RON excluding VAT' }
+}
+
+/** The purchase's free text served, as after its review. */
+export const SERVED_TEXT = { title: 'Aranjamente florale pentru eveniment', titleWithheld: null, description: 'Diverse aranjamente florale', descriptionWithheld: null } as const
+
+/** A line's name served. */
+export function servedItemText(name: string): Partial<RawDaPurchaseItem> {
+  return { name, nameWithheld: null }
 }
 
 /** The contract's example rows, by case. */
@@ -109,9 +124,9 @@ export const RELEASE_CASES = {
         valueCorrected: true,
         correctedValue: '3150.00',
         reviewRule: RULES.quantity_unit_mix,
-        title: 'Beton refractar',
+        categoryLabel: 'Beton refractar (Rev.2)',
       },
-      [rawReleaseItem({ name: 'Beton refractar', unit: 't', quantity: '375', unitPrice: '8400.00', cataloguePrice: '8.40', reportedLineValue: '3150000.00' })],
+      [rawReleaseItem({ unit: 't', quantity: '375', unitPrice: '8400.00', cataloguePrice: '8.40', reportedLineValue: '3150000.00' })],
     ),
   excludedApproximate: () =>
     rawReleaseDetail({ finalizationDay: '2025-09-10', reportedValue: '1680000.00', counted: false, countedValue: null, notCountedReason: REASONS.reviewed_entry_error, reviewRule: RULES.approximate_only }),

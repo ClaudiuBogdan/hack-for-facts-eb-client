@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { contextGapOf, NO_NAMES, type DpNames } from './direct-purchase-model'
 import { mapReleasePurchase, releaseOutcomeOf } from './direct-purchase-release'
-import { COMPANY, RELEASE_CASES, RELEASE_ID, rawReleaseDetail, rawReleaseItem } from './direct-purchase-release.fixture'
+import { COMPANY, RELEASE_CASES, RELEASE_ID, SERVED_TEXT, rawReleaseDetail, rawReleaseItem, servedItemText } from './direct-purchase-release.fixture'
 
 /**
  * A release-1 purchase as the page's sheet: its money as the serving contract
@@ -15,7 +15,7 @@ describe('mapReleasePurchase — the contract example rows', () => {
     const purchase = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
     expect(purchase).toMatchObject({ id: RELEASE_ID, code: 'DA37709621', family: 'catalog', outcome: { kind: 'accepted' }, value: 12500, unverifiedValue: null, estimate: null })
     expect(purchase.money).toEqual({ kind: 'counted', value: 12500, reported: 12500, symbolic: false })
-    expect(purchase.dataAsOf).toBe('2026-11-18T04:00:00Z')
+    expect(purchase.dataAsOf).toBe('2026-11-18T03:10:00.123456Z')
     expect(purchase.listedNow).toBe(true)
   })
 
@@ -117,7 +117,36 @@ describe('mapReleasePurchase — what the release does not serve', () => {
   })
 
   it('decisions dated from the release', () => {
-    expect(mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES).detail).toMatchObject({ firm: { at: '2025-06-01T15:00:00Z' }, institution: { at: '2025-06-02T09:00:00Z' } })
+    expect(mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES).detail).toMatchObject({ firm: { at: '2025-06-01T15:00:00.654321Z' }, institution: { at: '2025-06-02T09:00:00.123456Z' } })
+  })
+})
+
+describe('mapReleasePurchase — free text withheld until its privacy review', () => {
+  it('withheld: the title is the category’s label, no description, the lines unnamed, said', () => {
+    const purchase = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
+    expect(purchase.title).toBe('Aranjamente florale')
+    expect(purchase.textWithheld).toBe(true)
+    expect(purchase.detail?.description).toBeNull()
+    expect(purchase.detail?.items[0]).toMatchObject({ name: '', nameWithheld: true })
+  })
+
+  it('a value served beside its withheld marker is never shown', () => {
+    const purchase = mapReleasePurchase(
+      rawReleaseDetail({ title: 'Ion Popescu, tel. 0722', titleWithheld: 'privacy', description: 'contact: ion@x.ro', descriptionWithheld: 'privacy' }, [rawReleaseItem({ name: 'Popescu', nameWithheld: 'privacy' })]),
+      NO_NAMES,
+    )
+    expect(JSON.stringify(purchase)).not.toMatch(/Popescu|0722|ion@x/u)
+  })
+
+  it('served after review: the institution’s title, description and line names', () => {
+    const purchase = mapReleasePurchase(rawReleaseDetail(SERVED_TEXT, [rawReleaseItem(servedItemText('Aranjament floral mic'))]), NO_NAMES)
+    expect(purchase).toMatchObject({ title: 'Aranjamente florale pentru eveniment', textWithheld: false, detail: { description: 'Diverse aranjamente florale' } })
+    expect(purchase.detail?.items[0]).toMatchObject({ name: 'Aranjament floral mic' })
+    expect(purchase.detail?.items[0]?.nameWithheld).toBeUndefined()
+  })
+
+  it('no title and no category: no name invented', () => {
+    expect(mapReleasePurchase(rawReleaseDetail({ categoryCode: null, categoryLabel: null }), NO_NAMES).title).toBeNull()
   })
 })
 

@@ -92,7 +92,11 @@ function ItemRow({
     <li className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-start gap-x-3 py-4 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto]">
       <MonoLabel className="pt-1 tabular-nums text-muted-foreground">{String(item.index + 1).padStart(2, '0')}</MonoLabel>
       <span className="min-w-0">
-        <span className="block text-sm font-medium leading-snug text-foreground sm:text-base">{item.name}</span>
+        {item.nameWithheld ? (
+          <span className="block text-sm font-medium leading-snug text-muted-foreground sm:text-base">{t`Produs (denumire neafișată)`}</span>
+        ) : (
+          <span className="block text-sm font-medium leading-snug text-foreground sm:text-base">{item.name}</span>
+        )}
         <QuantityLine item={item} cpvLabel={cpvLabel} />
         {share !== null ? (
           <span className="mt-2 block h-1 max-w-xs bg-muted" aria-hidden="true">

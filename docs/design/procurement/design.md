@@ -3262,6 +3262,12 @@ the API surface is the server's `docs/server-redesign/10-public-contracts-da-rel
     `organizationLabels` read on a release page asks for the buyer only, and
     the meta description says „o persoană fizică".
   - Buyers keep their names.
+- **Free text** (the title, the description, a line's name) is withheld
+  until its privacy review (decision of 10 November; release 1 withholds all
+  three). The heading is then the category's label. Under „Ce s-a cumpărat"
+  the page says the institution's text waits for its review, and a line reads
+  „Produs (denumire neafișată)". A value served beside its withheld marker is
+  dropped.
 - **What the release does not serve** is not shown, never filled from the
   legacy surface: the estimate, delivery and payment, refusal reasons and who
   refused, documents, EU funding, line descriptions and categories.

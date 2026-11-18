@@ -14,6 +14,10 @@ import { countedValueOf, supplierNameOf, valueOf, type DpValue } from './direct-
  * payment, refusal reasons, documents, EU funding, line descriptions and
  * categories — is absent, never filled from the legacy surface. The lines'
  * values are as reported and never summed.
+ *
+ * Free text (the title, the description, a line's name) is withheld until its
+ * privacy review: the API serves it null with a marker, the title shown is
+ * the category's label, and the page says the text is withheld.
  */
 
 function numberOf(value: string | null | undefined): number | null {
@@ -81,10 +85,12 @@ function contractTypeOf(text: string | null): DpContractType | null {
 function itemOf(raw: RawDaPurchaseItem): DpItem {
   const unitPrice = numberOf(raw.unitPrice)
   const catalogPrice = numberOf(raw.cataloguePrice)
+  const name = raw.nameWithheld ? null : tidyTitle(raw.name)
   return {
     index: raw.itemIndex,
     code: null,
-    name: tidyTitle(raw.name) ?? '—',
+    name: name ?? (raw.nameWithheld ? '' : '—'),
+    ...(raw.nameWithheld ? { nameWithheld: true } : {}),
     description: null,
     unit: raw.unit,
     cpvLabel: null,
@@ -101,7 +107,7 @@ function itemOf(raw: RawDaPurchaseItem): DpItem {
 function detailOf(raw: RawDaPurchaseDetail): DpDetail {
   const purchase = raw.purchase
   return {
-    description: purchase.description?.trim() || null,
+    description: purchase.descriptionWithheld ? null : purchase.description?.trim() || null,
     delivery: null,
     payment: null,
     contractType: contractTypeOf(purchase.acquisitionTypeLabel),
@@ -116,11 +122,16 @@ function detailOf(raw: RawDaPurchaseDetail): DpDetail {
   }
 }
 
+/** The category's label as written, its revision tag dropped. */
+function cpvWritten(raw: RawDaPurchase): string | null {
+  return raw.categoryLabel?.replace(/\s*\(Rev\.\s*2\)\s*$/iu, '').trim() || null
+}
+
 /** The category: the API's label as written, else its division's. */
 function cpvOf(raw: RawDaPurchase, names: DpNames): DirectPurchase['cpv'] {
   const code = cpvKey(raw.categoryCode)
   if (!code) return null
-  const written = raw.categoryLabel?.replace(/\s*\(Rev\.\s*2\)\s*$/iu, '').trim() || null
+  const written = cpvWritten(raw)
   const division = code.slice(0, 2)
   const label: DpLabel = names.cpv.get(code) ?? (written ? { ro: written, en: null } : { ro: cpvDivisionLabelRo(division), en: cpvDivisionLabelEn(division) })
   return { code, label }
@@ -132,10 +143,14 @@ export function mapReleasePurchase(raw: RawDaPurchaseDetail, names: DpNames): Di
   const outcome = releaseOutcomeOf(purchase.outcome)
   const money = releaseValueOf(purchase)
   const sourceUrl = purchase.sourceUrl?.trim()
+  const cpv = cpvOf(purchase, names)
+  const titleWithheld = Boolean(purchase.titleWithheld)
+  // A withheld title: the category's label, as written, is the purchase's name.
+  const title = titleWithheld ? (cpvWritten(purchase) ?? null) : tidyTitle(purchase.title)
   return {
     id: purchase.purchaseId,
     code: purchase.code,
-    title: tidyTitle(purchase.title),
+    title,
     family: 'catalog',
     outcome,
     // A purchase's counted value; an attempt's reported offer. The page reads `money` for the rest.
@@ -144,7 +159,7 @@ export function mapReleasePurchase(raw: RawDaPurchaseDetail, names: DpNames): Di
     estimate: null,
     published: purchase.publicationDay,
     finalized: purchase.finalizationDay,
-    cpv: cpvOf(purchase, names),
+    cpv,
     authority: releaseBuyerOf(purchase.buyer, names),
     supplier: releaseSupplierOf(purchase.supplier),
     source: sourceUrl ? { kind: 'page', url: sourceUrl } : { kind: 'none' },
@@ -155,5 +170,6 @@ export function mapReleasePurchase(raw: RawDaPurchaseDetail, names: DpNames): Di
     money,
     listedNow: purchase.listedNow,
     dataAsOf: raw.dataAsOf,
+    textWithheld: titleWithheld || Boolean(purchase.descriptionWithheld),
   }
 }

@@ -92,6 +92,8 @@ export interface DpItem {
   readonly catalogPrice: number | null
   /** Quantity × price, computed by the database. */
   readonly line: number | null
+  /** Release 1: the line's name is withheld until its privacy review; `name` is empty and the page says so. */
+  readonly nameWithheld?: boolean
   readonly peers: DpPeers | null
   /** How many other times the institution bought the same product from the firm in the year; null when not read. */
   readonly repeats: number | null
@@ -162,6 +164,11 @@ export interface DirectPurchase {
   readonly listedNow: boolean | null
   /** Release 1: when the served data was published; null on a legacy record. */
   readonly dataAsOf: string | null
+  /**
+   * Release 1: the institution's free text (title, description) is withheld
+   * until its privacy review; the title shown is then the category's label.
+   */
+  readonly textWithheld: boolean
 }
 
 // ─────────────────────────────────────────────────────────── the context ──
@@ -442,6 +449,7 @@ export function mapDirectPurchase(
     money: null,
     listedNow: null,
     dataAsOf: null,
+    textWithheld: false,
   }
 }
 

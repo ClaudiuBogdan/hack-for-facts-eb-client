@@ -6,8 +6,10 @@
  * the data platform's direct-acquisition serving contract).
  *
  * The capability (`procurementDaRelease.enabled`) chooses the path; with it
- * off, every data query answers `SERVICE_UNAVAILABLE`. Money is decimal text
- * in lei excluding VAT; counts in totals are integers as text.
+ * off, every data query answers `SERVICE_UNAVAILABLE`. Money is decimal text:
+ * the counted value in lei excluding VAT (`countedValueBasis`), the reported
+ * value as published; counts in totals are integers as text. Each top-level
+ * field is its own snapshot, with its own `dataAsOf`.
  */
 import { z } from 'zod'
 
@@ -43,7 +45,7 @@ const PURCHASE_FIELDS = /* GraphQL */ `
   valueCorrected correctedValue
   reviewRule { rule effect descriptionEn descriptionRo }
   symbolicPrice listedNow
-  title description categoryCode categoryLabel cpvDivision acquisitionTypeLabel
+  title titleWithheld description descriptionWithheld categoryCode categoryLabel cpvDivision acquisitionTypeLabel
   buyer { ${PARTY_FIELDS} }
   supplier { ${PARTY_FIELDS} }
 `
@@ -68,8 +70,11 @@ export const rawDaPurchaseSchema = z.object({
   reviewRule: z.object({ rule: z.string(), effect: z.string(), descriptionEn: z.string().nullable(), descriptionRo: z.string().nullable() }).nullable(),
   symbolicPrice: z.boolean(),
   listedNow: z.boolean().nullable(),
+  /** Free text is withheld until its privacy review: null, with `titleWithheld` / `descriptionWithheld` = "privacy". */
   title: z.string().nullable(),
+  titleWithheld: z.string().nullable(),
   description: z.string().nullable(),
+  descriptionWithheld: z.string().nullable(),
   categoryCode: z.string().nullable(),
   categoryLabel: z.string().nullable(),
   cpvDivision: z.string().nullable(),
@@ -82,6 +87,7 @@ export type RawDaPurchase = z.infer<typeof rawDaPurchaseSchema>
 export const rawDaPurchaseItemSchema = z.object({
   itemIndex: z.number(),
   name: z.string().nullable(),
+  nameWithheld: z.string().nullable(),
   unit: z.string().nullable(),
   quantity: z.string().nullable(),
   requestedQuantity: z.string().nullable(),
@@ -98,11 +104,11 @@ export const PROCUREMENT_DA_PURCHASE_QUERY = /* GraphQL */ `
     procurementDaPurchase(purchaseId: $purchaseId) {
       purchase { ${PURCHASE_FIELDS} }
       items {
-        itemIndex name unit quantity requestedQuantity unitPrice cataloguePrice
+        itemIndex name nameWithheld unit quantity requestedQuantity unitPrice cataloguePrice
         reportedLineValue supplierRejected quantityCorrection
       }
       dataAsOf
-      valueBasis
+      countedValueBasis
     }
   }
 `
@@ -112,7 +118,7 @@ export const procurementDaPurchaseSchema = z.object({
     purchase: rawDaPurchaseSchema,
     items: z.array(rawDaPurchaseItemSchema),
     dataAsOf: z.string(),
-    valueBasis: z.string(),
+    countedValueBasis: z.string(),
   }),
 })
 export type RawDaPurchaseDetail = z.infer<typeof procurementDaPurchaseSchema>['procurementDaPurchase']
@@ -136,7 +142,7 @@ export const PROCUREMENT_DA_PURCHASES_QUERY = /* GraphQL */ `
   query ProcurementDaPurchases($filter: ProcurementDaPurchaseFilter, $page: Int, $pageSize: Int) {
     procurementDaPurchases(filter: $filter, page: $page, pageSize: $pageSize) {
       items { ${PURCHASE_FIELDS} }
-      page pageSize total totalCapped hasMore dataAsOf valueBasis
+      page pageSize total totalCapped hasMore dataAsOf countedValueBasis
     }
   }
 `
@@ -150,7 +156,7 @@ export const procurementDaPurchasesSchema = z.object({
     totalCapped: z.boolean(),
     hasMore: z.boolean(),
     dataAsOf: z.string(),
-    valueBasis: z.string(),
+    countedValueBasis: z.string(),
   }),
 })
 export type RawDaPurchasePage = z.infer<typeof procurementDaPurchasesSchema>['procurementDaPurchases']
@@ -178,7 +184,7 @@ export const PROCUREMENT_DA_TOTALS_QUERY = /* GraphQL */ `
       groupBy
       overall { ${TOTALS_FIELDS} }
       groups { key party { ${PARTY_FIELDS} } noSupplier ${TOTALS_FIELDS} }
-      page pageSize groupCount hasMore dataAsOf valueBasis
+      page pageSize groupCount hasMore dataAsOf countedValueBasis
     }
   }
 `
@@ -200,7 +206,7 @@ export const procurementDaTotalsSchema = z.object({
     groupCount: z.number(),
     hasMore: z.boolean(),
     dataAsOf: z.string(),
-    valueBasis: z.string(),
+    countedValueBasis: z.string(),
   }),
 })
 export type RawDaTotalsAnswer = z.infer<typeof procurementDaTotalsSchema>['procurementDaTotals']

@@ -6,7 +6,7 @@ import { createTestQueryClient } from '@/test/test-utils'
 import { daRecord, directPurchase, dpContext } from '../../lib/direct-purchase.fixture'
 import { NO_NAMES, type DirectPurchase, type DpContext } from '../../lib/direct-purchase-model'
 import { mapReleasePurchase } from '../../lib/direct-purchase-release'
-import { RELEASE_CASES, rawReleaseDetail, rawReleaseItem } from '../../lib/direct-purchase-release.fixture'
+import { RELEASE_CASES, SERVED_TEXT, rawReleaseDetail, rawReleaseItem, servedItemText } from '../../lib/direct-purchase-release.fixture'
 import type { RawDaPurchaseDetail } from '../../api/graphql/procurement-da-release-queries'
 import { ProcurementDirectPurchasePage } from './procurement-direct-purchase-page'
 
@@ -228,6 +228,8 @@ describe('direct acquisitions release 1', () => {
     expect(page).toContain('Valoarea, fără TVA 12.500 lei Intră în totaluri.')
     expect(page).toContain('Valoarea numărată e fără TVA.')
     expect(page).toContain('Date publicate de Transparenta pe 18 noiembrie 2026.')
+    // Decision times carry microseconds; the steps date them by day.
+    expect(page).toContain('02 · 1 iunie 2025 Firma a acceptat condițiile')
     expect(page).toContain('CUI 14837428')
   })
 
@@ -251,8 +253,9 @@ describe('direct acquisitions release 1', () => {
 
   it('an open review case shows its current state, with no review label', () => {
     const page = release(RELEASE_CASES.openCaseKept())
-    expect(page).toContain('Intră în totaluri.')
-    expect(page).not.toContain('verificare')
+    // The value block says only that it counts: no review label beside it.
+    expect(page).toContain('Valoarea, fără TVA 188.800.000 lei Intră în totaluri. Starea')
+    expect(page).not.toMatch(/în curs de verificare|sub verificare|în revizuire/u)
   })
 
   it('refused: struck as an offer, not counted, who refused not claimed', () => {
@@ -288,6 +291,24 @@ describe('direct acquisitions release 1', () => {
     const page = release(RELEASE_CASES.countedAsReported())
     expect(page).toContain('Celelalte achiziții dintre ele vor fi adunate aici din aceleași date ca această pagină.')
     expect(page).not.toContain('Din 2019 încoace, au fost')
+  })
+})
+
+describe('direct acquisitions release 1 — free text', () => {
+  it('withheld: the category as the title, the text said to wait for its review, the lines unnamed', () => {
+    const page = html(mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES), null)
+    expect(page).toContain('Finalizată Aranjamente florale')
+    expect(page).toContain('Textul scris de instituție (titlul, descrierea și denumirile produselor) nu e afișat încă: așteaptă verificarea datelor personale.')
+    expect(page).toContain('Produs (denumire neafișată)')
+    expect(page).not.toContain('Instituția a descris achiziția așa:')
+  })
+
+  it('served after review: the institution’s words and the lines’ names', () => {
+    const page = html(mapReleasePurchase(rawReleaseDetail(SERVED_TEXT, [rawReleaseItem(servedItemText('Aranjament floral mic'))]), NO_NAMES), null)
+    expect(page).toContain('Aranjamente florale pentru eveniment')
+    expect(page).toContain('Instituția a descris achiziția așa: „Diverse aranjamente florale”')
+    expect(page).toContain('Aranjament floral mic')
+    expect(page).not.toContain('nu e afișat încă')
   })
 })
 
