@@ -397,8 +397,12 @@ export const topPartyRowSchema = z.object({
   authority: partySchema.nullable(),
   supplier: partySchema.nullable(),
   grain: procurementAnalysisGrainSchema,
-  /** `natural_person`: decision D6's one group of suppliers the platform does not name (no party, no link). */
-  bucketKind: z.enum(['top', 'other', 'unknown', 'natural_person']),
+  /**
+   * D6, direct purchases: `natural_person` is the one group of suppliers the
+   * platform does not name; `unnamed_supplier` one supplier the API did not
+   * serve as a company. Neither has a party or a link.
+   */
+  bucketKind: z.enum(['top', 'other', 'unknown', 'natural_person', 'unnamed_supplier']),
   flowCount: bigintStringSchema,
   amountRonSum: decimalStringSchema.nullable(),
   amountPresentCount: bigintStringSchema,

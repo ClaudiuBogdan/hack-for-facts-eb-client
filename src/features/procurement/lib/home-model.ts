@@ -42,6 +42,8 @@ export interface RankedRow {
   readonly value: number | null
   /** Share of the scope on the basis the server ranked by. */
   readonly share: number | null
+  /** D6 on a supplier row (`company` names it); absent elsewhere. */
+  readonly displayKind?: string | null
 }
 
 export interface Ranking {

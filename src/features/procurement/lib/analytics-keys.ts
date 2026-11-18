@@ -17,7 +17,7 @@ export const procurementAnalyticsKeys = {
   series: (now: Scope, bucket: 'year' | 'quarter' | 'month' | null, withMoney: boolean, build: string | null) =>
     [...procurementAnalyticsKeys.all, 'series', build, now, bucket, withMoney] as const,
   years: (scope: Scope | null, withMoney: boolean, build: string | null) => [...procurementAnalyticsKeys.all, 'years', build, scope, withMoney] as const,
-  names: (orgs: readonly string[], cpv: readonly string[]) => [...procurementAnalyticsKeys.all, 'names', orgs, cpv] as const,
+  names: (orgs: readonly string[], cpv: readonly string[], daSuppliers: readonly string[] = []) => [...procurementAnalyticsKeys.all, 'names', orgs, cpv, daSuppliers] as const,
   cpvDivisions: () => [...procurementAnalyticsKeys.all, 'cpv-divisions'] as const,
   counties: () => [...procurementAnalyticsKeys.all, 'counties'] as const,
   cpvSearch: (term: string) => [...procurementAnalyticsKeys.all, 'cpv-search', term] as const,

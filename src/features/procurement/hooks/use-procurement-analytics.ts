@@ -11,6 +11,7 @@ import {
   nameKeys,
   planAnswer,
   planNames,
+  type NameKeys,
   planRecords,
   readAnalyticsCutoff,
   readCpvDivisions,
@@ -201,7 +202,7 @@ export function useNamer(query: Query, answer: Pick<Answer, 'ranking'>, extra: r
 }
 
 /** The names of what the page shows — the answer's keys, plus the filters' own values. */
-export function useNames(keys: { readonly orgs: readonly string[]; readonly cpv: readonly string[] }) {
+export function useNames(keys: NameKeys) {
   const seeded = useSeeded()
   const plan = planNames(keys)
   return useQuery({

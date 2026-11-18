@@ -289,7 +289,7 @@ msgstr "({0} - deductions) × 10%"
 
 #. placeholder {0}: month(clipped.from)
 #. placeholder {1}: month(clipped.to)
-#: src/features/procurement/components/analytics/analytics-view.ts:218
+#: src/features/procurement/components/analytics/analytics-view.ts:222
 msgid "({0}–{1})"
 msgstr "({0}–{1})"
 
@@ -306,7 +306,7 @@ msgstr "(Deaths / Population) × 1,000"
 #~ msgstr "(default)"
 
 #. placeholder {0}: month(clipped.from)
-#: src/features/procurement/components/analytics/analytics-view.ts:219
+#: src/features/procurement/components/analytics/analytics-view.ts:223
 msgid "(din {0})"
 msgstr "(from {0})"
 
@@ -335,7 +335,7 @@ msgid "(numele din directorul platformei, nu din ediția ONRC)"
 msgstr "(the name in the platform’s directory, not from the ONRC edition)"
 
 #. placeholder {0}: month(clipped.to!)
-#: src/features/procurement/components/analytics/analytics-view.ts:220
+#: src/features/procurement/components/analytics/analytics-view.ts:224
 msgid "(până în {0})"
 msgstr "(through {0})"
 
@@ -1341,8 +1341,8 @@ msgstr "{0} in the captured data, {1} with a numbered document. What was decided
 
 #. placeholder {0}: countText(total)
 #. placeholder {0}: moneyText(total)
-#: src/features/procurement/components/analytics/analytics-view.ts:167
-#: src/features/procurement/components/analytics/analytics-view.ts:167
+#: src/features/procurement/components/analytics/analytics-view.ts:170
+#: src/features/procurement/components/analytics/analytics-view.ts:170
 msgid "{0} în total"
 msgstr "{0} in total"
 
@@ -11504,7 +11504,7 @@ msgstr "Request dataset"
 msgid "Cere setul {0}"
 msgstr "Request dataset {0}"
 
-#: src/features/procurement/lib/home-model.ts:226
+#: src/features/procurement/lib/home-model.ts:228
 msgid "Cerere de ofertă"
 msgstr "Request for quotation"
 
@@ -13507,7 +13507,7 @@ msgstr "Concerning"
 msgid "Concret: dacă o lege a fost modificată după publicare, textul de aici rămâne cel inițial, iar modificările apar ca evenimente în istoricul actului — nu topite în text. Pentru forma în vigoare și pentru orice decizie cu miză, mergi la sursa oficială:"
 msgstr "In practice: if a law was amended after publication, the text here stays the original one, and the amendments appear as events in the act’s history — not merged into the text. For the form in force, and for any decision with stakes, go to the official source:"
 
-#: src/features/procurement/lib/home-model.ts:229
+#: src/features/procurement/lib/home-model.ts:231
 msgid "Concurs de soluții"
 msgstr "Design contest"
 
@@ -17466,7 +17466,7 @@ msgstr "Sustainable development — Horizon 2020"
 msgid "Dezvoltare durabilă — Ținte 2030"
 msgstr "Sustainable development — 2030 targets"
 
-#: src/features/procurement/lib/home-model.ts:227
+#: src/features/procurement/lib/home-model.ts:229
 msgid "Dialog competitiv"
 msgstr "Competitive dialogue"
 
@@ -23279,6 +23279,10 @@ msgstr "Supplier CUI {cui}"
 msgid "Furnizor neindicat în SEAP"
 msgstr "Supplier not given in SEAP"
 
+#: src/features/procurement/lib/withheld-party.ts:49
+msgid "Furnizor nenumit"
+msgstr "Unnamed supplier"
+
 #: src/components/provenance/source-provenance.tsx:434
 #~ msgid "Furnizor servicii sociale"
 #~ msgstr "Furnizor servicii sociale"
@@ -24768,7 +24772,7 @@ msgstr "Its archive holds {0} dated {1}, most in the matter “{2}” ({3})."
 msgid "În arhiva ei are {0} cu data din {1}."
 msgstr "Its archive holds {0} dated {1}."
 
-#: src/features/procurement/components/analytics/analytics-view.ts:199
+#: src/features/procurement/components/analytics/analytics-view.ts:203
 msgid "În asociere — neîmpărțit pe firme"
 msgstr "In a consortium — not split by company"
 
@@ -26119,7 +26123,7 @@ msgstr "INS does not publish this series for the territory in the address."
 msgid "INS nu publică zerourile acestui tabel: anii fără valoare sunt socotiți zero."
 msgstr "INS does not publish this table's zeros: years without a value are counted as zero."
 
-#: src/features/procurement/hooks/use-procurement-analytics.ts:319
+#: src/features/procurement/hooks/use-procurement-analytics.ts:320
 msgid "INS POP105A, 1 ianuarie 2025"
 msgstr "INS POP105A, 1 January 2025"
 
@@ -27360,7 +27364,7 @@ msgid "Județul {0}"
 msgstr "{0} County"
 
 #: src/features/landing/components/budget-map/uat-info.tsx:41
-#: src/features/procurement/hooks/use-procurement-analytics.ts:248
+#: src/features/procurement/hooks/use-procurement-analytics.ts:249
 msgid "Județul {county}"
 msgstr "{county} county"
 
@@ -28262,19 +28266,19 @@ msgstr "licence {number} of {licensed}"
 msgid "licențiat la {licensed}"
 msgstr "licensed on {licensed}"
 
-#: src/features/procurement/lib/home-model.ts:216
+#: src/features/procurement/lib/home-model.ts:218
 msgid "Licitație deschisă"
 msgstr "Open tender"
 
-#: src/features/procurement/lib/home-model.ts:217
+#: src/features/procurement/lib/home-model.ts:219
 msgid "Licitație deschisă accelerată"
 msgstr "Accelerated open tender"
 
-#: src/features/procurement/lib/home-model.ts:218
+#: src/features/procurement/lib/home-model.ts:220
 msgid "Licitație restrânsă"
 msgstr "Restricted tender"
 
-#: src/features/procurement/lib/home-model.ts:219
+#: src/features/procurement/lib/home-model.ts:221
 msgid "Licitație restrânsă accelerată"
 msgstr "Accelerated restricted tender"
 
@@ -31357,7 +31361,7 @@ msgstr "not completed"
 msgid "Nefinalizată"
 msgstr "Not completed"
 
-#: src/features/procurement/lib/home-model.ts:223
+#: src/features/procurement/lib/home-model.ts:225
 msgid "Negociere cu anunț prealabil"
 msgstr "Negotiation with prior notice"
 
@@ -31365,7 +31369,7 @@ msgstr "Negotiation with prior notice"
 msgid "negociere fără anunț prealabil"
 msgstr "negotiation without prior notice"
 
-#: src/features/procurement/lib/home-model.ts:222
+#: src/features/procurement/lib/home-model.ts:224
 msgid "Negociere fără anunț prealabil"
 msgstr "Negotiation without prior notice"
 
@@ -32968,7 +32972,7 @@ msgstr "Norm"
 msgid "Normalization"
 msgstr "Normalization"
 
-#: src/features/procurement/lib/home-model.ts:225
+#: src/features/procurement/lib/home-model.ts:227
 msgid "Norme proprii (servicii din anexa 2)"
 msgstr "Own rules (Annex 2 services)"
 
@@ -35762,7 +35766,7 @@ msgstr "Part I (Hungarian)"
 msgid "partea nerambursabilă a PNRR"
 msgstr "the non-repayable part of PNRR"
 
-#: src/features/procurement/lib/home-model.ts:228
+#: src/features/procurement/lib/home-model.ts:230
 msgid "Parteneriat pentru inovare"
 msgstr "Innovation partnership"
 
@@ -38088,7 +38092,7 @@ msgstr "The procedure has {total}, all awarded."
 msgid "Procedura are {total}; {cancelledText}."
 msgstr "The procedure has {total}; {cancelledText}."
 
-#: src/features/procurement/lib/home-model.ts:224
+#: src/features/procurement/lib/home-model.ts:226
 msgid "Procedură competitivă cu negociere"
 msgstr "Competitive procedure with negotiation"
 
@@ -38104,11 +38108,11 @@ msgstr "The procedure is suspended."
 msgid "Procedura nu a fost găsită"
 msgstr "Procedure not found"
 
-#: src/features/procurement/lib/home-model.ts:220
+#: src/features/procurement/lib/home-model.ts:222
 msgid "Procedură simplificată"
 msgstr "Simplified procedure"
 
-#: src/features/procurement/lib/home-model.ts:221
+#: src/features/procurement/lib/home-model.ts:223
 msgid "Procedură simplificată proprie"
 msgstr "Own simplified procedure"
 
@@ -40409,7 +40413,7 @@ msgid "Restrânge toate grupele"
 msgstr "Collapse all groups"
 
 #: src/features/justice/lib/analysis-text.ts:64
-#: src/features/procurement/components/analytics/analytics-view.ts:162
+#: src/features/procurement/components/analytics/analytics-view.ts:165
 msgid "Restul"
 msgstr "The rest"
 
@@ -42056,7 +42060,7 @@ msgstr "SEAP also publishes this purchase's list of products, steps and terms, b
 msgid "SEAP publică valoarea doar în valută."
 msgstr "SEAP publishes the value only in a foreign currency."
 
-#: src/features/procurement/components/analytics/analytics-view.ts:199
+#: src/features/procurement/components/analytics/analytics-view.ts:203
 msgid "SEAP publică valoarea întregii asocieri, nu partea fiecărei firme"
 msgstr "SEAP publishes the whole consortium's value, not each company's share"
 

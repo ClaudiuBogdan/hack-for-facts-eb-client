@@ -34,7 +34,7 @@ export function SupplierRows({
   }
   const named: Ranking = {
     rankedBy: ranking.rankedBy,
-    rows: ranking.rows.map((row) => ({ key: row.cui, label: supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share })),
+    rows: ranking.rows.map((row) => ({ key: row.cui, label: supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
   }
   return <PartyRows className={className} ranking={named} grain={grain} kind="supplier" year={periodYear(profile.period)} limit={8} />
 }

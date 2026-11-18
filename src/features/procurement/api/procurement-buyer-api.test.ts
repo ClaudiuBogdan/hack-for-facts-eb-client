@@ -38,7 +38,8 @@ function emptyProfile(cui: string, year: number, latest: number): Record<string,
 }
 
 const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })), meta: { buildId: '13' } }]
-const top = (key: string, recordCount: string, valueSum: string | null, shareOfScope: string | null = null) => ({ key, kind: 'top', recordCount, valueSum, shareOfScope })
+/** A top bucket; a supplier's carries the API's D6 kind (`company` names it). */
+const top = (key: string, recordCount: string, valueSum: string | null, shareOfScope: string | null = null) => ({ key, kind: 'top', displayKind: 'company', recordCount, valueSum, shareOfScope })
 
 function otopeni(): Record<string, unknown> {
   return {

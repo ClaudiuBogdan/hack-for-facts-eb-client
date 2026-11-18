@@ -7,7 +7,7 @@ const { fetchProcurementHomeBigContracts, fetchProcurementHomeNational, fetchPro
 const { procurementHomeCategoriesResponseSchema } = await import('./graphql/procurement-home-queries')
 
 const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })) }]
-const breakdown = (rankedBy: string, buckets: readonly { key: string | null; kind?: string; recordCount?: string; valueSum?: string | null; shareOfScope?: string | null }[], withheld?: string | null) => [
+const breakdown = (rankedBy: string, buckets: readonly { key: string | null; kind?: string; displayKind?: string | null; recordCount?: string; valueSum?: string | null; shareOfScope?: string | null }[], withheld?: string | null) => [
   {
     rankedBy,
     buckets: buckets.map((bucket) => ({ kind: 'top', recordCount: '0', valueSum: null, shareOfScope: null, ...bucket })),
@@ -33,7 +33,7 @@ function nationalResponse() {
     awardsBuyers: breakdown('count', [{ key: '1590120', recordCount: '1985', valueSum: '119300000', shareOfScope: '0.05' }]),
     directBuyers: breakdown('value', [{ key: '1590120', recordCount: '7293', valueSum: '93900000', shareOfScope: '0.005' }]),
     awardsSellers: breakdown('value', [{ key: '520042185', recordCount: '1', valueSum: '10330000000' }, { key: null, kind: 'other', recordCount: '38000', valueSum: '38967459325.40' }], '54297167559.00'),
-    directSellers: breakdown('value', [{ key: '11805367', recordCount: '44181', valueSum: '68800000', shareOfScope: '0.004' }]),
+    directSellers: breakdown('value', [{ key: '11805367', displayKind: 'company', recordCount: '44181', valueSum: '68800000', shareOfScope: '0.004' }]),
     procedures: breakdown('count', [{ key: 'Licitatie deschisa', recordCount: '17524', valueSum: '72791764938.30', shareOfScope: '0.443' }]),
     awardsCounties: breakdown('count', [{ key: 'B', recordCount: '10729', valueSum: '60260000000' }, { key: null, kind: 'unknown', recordCount: '985' }]),
     directCounties: breakdown('value', [{ key: 'CJ', recordCount: '108940', valueSum: '783700000' }]),

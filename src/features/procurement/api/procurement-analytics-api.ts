@@ -1,4 +1,3 @@
-import { isDaReleaseOn } from './procurement-da-release-status'
 import { z } from 'zod'
 import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
@@ -17,7 +16,7 @@ import {
   type ResolvedPeriod,
 } from '../lib/analytics-model'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { isNamedDaSupplier, isNaturalPersonKey } from '../lib/withheld-party'
+import { isNamedDaSupplier, isNamedDaSupplierBucket, isNaturalPersonKey } from '../lib/withheld-party'
 
 /**
  * The analytics page's reads. A query compiles to independent reads, each
@@ -190,13 +189,15 @@ const breakdownSchema = z.array(
   z.object({
     rankedBy: z.string().nullable(),
     valueWithheldAssociationSum: decimal,
-    buckets: z.array(z.object({ key: z.string().nullable(), kind: z.string(), recordCount: decimal, withValueCount: decimal, valueSum: decimal, shareOfScope: decimal })).nullable(),
+    buckets: z.array(z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal, valueSum: decimal, shareOfScope: decimal })).nullable(),
   }),
 )
 
 export interface Bucket {
   readonly key: string | null
   readonly kind: 'top' | 'other' | 'unknown'
+  /** D6 on a supplier bucket (`authority | company | natural_person`); absent elsewhere. */
+  readonly displayKind?: string | null
   readonly count: number
   readonly valued: number | null
   readonly money: number | null
@@ -215,6 +216,7 @@ function bucketsOf(raw: z.infer<typeof breakdownSchema>[number]): Bucket[] {
   return (raw.buckets ?? []).map((bucket) => ({
     key: bucket.key,
     kind: bucket.kind === 'top' ? 'top' : bucket.kind === 'other' ? 'other' : 'unknown',
+    displayKind: bucket.displayKind ?? null,
     count: bucket.recordCount ?? 0,
     valued: bucket.withValueCount,
     money: bucket.valueSum,
@@ -224,7 +226,7 @@ function bucketsOf(raw: z.infer<typeof breakdownSchema>[number]): Bucket[] {
 
 export async function readRanking(scope: Scope, dimension: Dimension, topN: number, rankBy: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Ranking> {
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind recordCount withValueCount valueSum shareOfScope } } }`,
+    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope } } }`,
     { s: scope, build },
     { operationName: 'AnalyticsRanking', signal },
   )
@@ -258,6 +260,8 @@ export async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'mon
 
 // ───────────────────────────────────────────────────────────────── names ──
 
+const daSupplierNameSchema = z.object({ items: z.array(z.object({ supplier: z.object({ cui: z.string().nullable(), name: z.string().nullable(), displayName: z.string().nullable(), displayKind: z.string().nullable().optional() }) })) })
+
 const namesSchema = z.object({
   labels: z.array(z.object({ cui: z.string().nullable(), canonicalName: z.string().nullable(), status: z.string() })).optional(),
   cpv: z.array(z.object({ cpvCode: z.string(), labelRo: z.string().nullable(), labelEn: z.string().nullable() })).optional(),
@@ -268,18 +272,35 @@ export interface Names {
   readonly cpv: ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>
 }
 
-export async function readNames(cuis: readonly string[], codes: readonly string[], signal: AbortSignal): Promise<Names> {
-  const raw = await graphqlQuery<unknown>(
-    `query AnalyticsNames($cuis: [String!]!, $codes: [String!]!, $withOrgs: Boolean!, $withCpv: Boolean!) {
+/** At most this many direct-purchase suppliers named by their own records (a filter holds one). */
+const DA_SUPPLIER_NAMES = 4
+
+/**
+ * The names a page shows: institutions' and companies' from the registry
+ * spine, CPV codes' labels — and a direct-purchase supplier given by the
+ * address (`daSuppliers`) only from its own direct purchases, and only when
+ * the API serves it there as a company (D6): the registry would name a
+ * person the direct purchases withhold.
+ */
+export async function readNames(cuis: readonly string[], codes: readonly string[], signal: AbortSignal, daSuppliers: readonly string[] = []): Promise<Names> {
+  const asked = daSuppliers.slice(0, DA_SUPPLIER_NAMES)
+  const raw = await graphqlQuery<Record<string, unknown>>(
+    `query AnalyticsNames($cuis: [String!]!, $codes: [String!]!, $withOrgs: Boolean!, $withCpv: Boolean!${asked.map((_, index) => `, $da${index}: String!`).join('')}) {
       labels: organizationLabels(cuis: $cuis) @include(if: $withOrgs) { cui canonicalName status }
       cpv: procurementCpvCodes(codes: $codes) @include(if: $withCpv) { cpvCode labelRo labelEn }
+      ${asked.map((_, index) => `da${index}: procurementDirectAcquisitions(filter: { supplierCui: { eq: $da${index} } }, page: 1, pageSize: 1) { items { supplier { cui name displayName displayKind } } }`).join('\n      ')}
     }`,
-    { cuis: cuis.slice(0, 250), codes: codes.slice(0, 200), withOrgs: cuis.length > 0, withCpv: codes.length > 0 },
+    { cuis: cuis.slice(0, 250), codes: codes.slice(0, 200), withOrgs: cuis.length > 0, withCpv: codes.length > 0, ...Object.fromEntries(asked.map((cui, index) => [`da${index}`, cui])) },
     { operationName: 'AnalyticsNames', signal },
   )
   const parsed = namesSchema.parse(raw)
   const orgs = new Map<string, string>()
   for (const label of parsed.labels ?? []) if (label.cui && label.canonicalName && label.status === 'named') orgs.set(label.cui, label.canonicalName)
+  asked.forEach((cui, index) => {
+    const supplier = daSupplierNameSchema.parse(raw[`da${index}`] ?? { items: [] }).items[0]?.supplier
+    const name = supplier && isNamedDaSupplier(supplier) && supplier.cui === cui ? (supplier.displayName ?? supplier.name) : null
+    if (name) orgs.set(cui, name)
+  })
   const cpv = new Map<string, { ro: string | null; en: string | null }>()
   for (const code of parsed.cpv ?? []) cpv.set(code.cpvCode, { ro: code.labelRo, en: code.labelEn })
   return { orgs, cpv }
@@ -358,9 +379,6 @@ export { defaultRecordsSort, type RecordsSort } from '../lib/analytics-model'
 /** A page of the records the figures count: the same scope, the same build, the rows one by one. */
 export async function readRecords(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal): Promise<Records> {
   const direct = scope.grain === 'direct_acquisition'
-  // D6 with direct acquisitions release 1: a supplier is named only when the API serves it as a company. Off, the
-  // analysis serves the legacy rows, whose suppliers carry no kind — the legacy names stand.
-  const release = direct && (await isDaReleaseOn())
   // Its own deadline: a list the API cannot answer in time fails here, as a read, with the reason said.
   const deadline = withDeadline(signal, 9_000)
   const raw = await graphqlQuery<Record<string, unknown>>(
@@ -377,7 +395,8 @@ export async function readRecords(scope: Scope, build: string | null, sort: Reco
       href: direct ? `/procurement/direct-acquisitions/${item.id}` : `/procurement/contracts/${item.id}`,
       title: textOf(item.title) ?? textOf(item.displayTitle?.text) ?? textOf(item.cpvLabel) ?? null,
       authority: { cui: item.authority.cui, name: item.authority.displayName ?? item.authority.name },
-      supplier: release && !isNamedDaSupplier(item.supplier) ? { cui: null, name: null, withheld: true } : { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name },
+      // D6, whatever the release flag says: a direct-purchase supplier is named only when the API serves it as a company.
+      supplier: direct && !isNamedDaSupplier(item.supplier) ? { cui: null, name: null, withheld: true } : { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name },
       value: item.valueRon === null ? null : Number(item.valueRon),
       date: item.date,
     })),
@@ -457,26 +476,41 @@ export function planRecords(query: Query, cutoffs: AnalyticsCutoff | null, sort:
 }
 
 /** The CUIs and CPV codes whose names the page shows: the filters' values and the ranked keys, sorted, each once. */
-export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[]): { readonly orgs: readonly string[]; readonly cpv: readonly string[] } {
+export interface NameKeys {
+  readonly orgs: readonly string[]
+  readonly cpv: readonly string[]
+  /** Direct-purchase suppliers named only by their own direct purchases (D6). */
+  readonly daSuppliers?: readonly string[]
+}
+
+export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[]): NameKeys {
+  const direct = POPULATIONS[query.tip].grain === 'direct_acquisition'
   const orgs: string[] = []
   const cpv: string[] = []
+  const daSuppliers: string[] = []
   if (query.filters.cumparator) orgs.push(...query.filters.cumparator.values)
-  if (query.filters.furnizor) orgs.push(...query.filters.furnizor.values)
+  // D6: a supplier the address names is named, for direct purchases, only by its own direct purchases.
+  if (query.filters.furnizor) (direct ? daSuppliers : orgs).push(...query.filters.furnizor.values)
   // The category and each step of its path, which the head shows over the headline.
   if (query.filters.cpv) cpv.push(...query.filters.cpv.values.flatMap((value) => cpvPath(value).map((step) => step.padEnd(8, '0'))))
   for (const ranking of rankings) {
     if (!ranking) continue
     for (const bucket of ranking.buckets) {
       if (!bucket.key || bucket.kind !== 'top') continue
-      // D6: the withheld group of suppliers has no name to look up.
-      if ((ranking.dimension === 'authority' || ranking.dimension === 'supplier') && !isNaturalPersonKey(bucket.key)) orgs.push(bucket.key)
+      // D6: a direct-purchase supplier has a name to look up only when the API serves it as a company.
+      if (ranking.dimension === 'authority' || (ranking.dimension === 'supplier' && (!direct || isNamedDaSupplierBucket(bucket)) && !isNaturalPersonKey(bucket.key))) orgs.push(bucket.key)
       if (ranking.dimension.startsWith('cpv')) cpv.push(bucket.key)
     }
   }
-  return { orgs: [...new Set(orgs)].sort(), cpv: [...new Set(cpv)].sort() }
+  return { orgs: [...new Set(orgs)].sort(), cpv: [...new Set(cpv)].sort(), daSuppliers: [...new Set(daSuppliers)].sort() }
 }
 
 /** The names read, planned: nothing to name reads nothing. */
-export function planNames(keys: { readonly orgs: readonly string[]; readonly cpv: readonly string[] }): PlannedRead<Names> {
-  return { key: procurementAnalyticsKeys.names(keys.orgs, keys.cpv), enabled: keys.orgs.length > 0 || keys.cpv.length > 0, read: (signal) => readNames(keys.orgs, keys.cpv, signal) }
+export function planNames(keys: NameKeys): PlannedRead<Names> {
+  const daSuppliers = keys.daSuppliers ?? []
+  return {
+    key: procurementAnalyticsKeys.names(keys.orgs, keys.cpv, daSuppliers),
+    enabled: keys.orgs.length > 0 || keys.cpv.length > 0 || daSuppliers.length > 0,
+    read: (signal) => readNames(keys.orgs, keys.cpv, signal, daSuppliers),
+  }
 }

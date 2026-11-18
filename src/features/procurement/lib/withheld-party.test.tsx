@@ -26,9 +26,10 @@ vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typ
  * named, linked, drilled into or looked up.
  */
 
-const ranking = (keys: readonly string[]): Ranking => ({
+/** A ranking whose rows carry the API's D6 kind: `company` for a CUI, the group's for its key, unless a test says otherwise. */
+const ranking = (keys: readonly string[], kinds: Readonly<Record<string, string | null>> = {}): Ranking => ({
   rankedBy: 'value',
-  rows: keys.map((key, index) => ({ key, label: `Firma cu CUI ${key}`, count: 3, value: 1000 - index, share: null })),
+  rows: keys.map((key, index) => ({ key, label: `Firma cu CUI ${key}`, count: 3, value: 1000 - index, share: null, displayKind: key in kinds ? kinds[key] : key === 'natural_person' ? 'natural_person' : 'company' })),
 })
 
 const html = (node: ReactNode) => renderToStaticMarkup(<>{node}</>).replace(/<!-- -->/g, '')
@@ -54,6 +55,17 @@ describe('PartyRows (front door, buyer page)', () => {
     expect(page.match(/href=/gu)).toHaveLength(1)
   })
 
+  it('a direct-purchase supplier with no kind, or another kind, is not named or linked (fail closed)', () => {
+    const page = html(<PartyRows ranking={ranking(['14837428', '9446547'], { '14837428': null, '9446547': 'sole_trader' })} grain="direct" kind="supplier" year={2025} />)
+    expect(page.match(/Furnizor nenumit/gu)).toHaveLength(2)
+    expect(page).not.toContain('href=')
+    expect(page).not.toMatch(/14837428|9446547/u)
+  })
+
+  it('a contract supplier ranking is untouched by D6', () => {
+    expect(html(<PartyRows ranking={ranking(['14837428'], { '14837428': null })} grain="contract" kind="supplier" year={2025} />)).toContain('href="/procurement/suppliers/14837428"')
+  })
+
   it('an authority ranking is untouched', () => {
     expect(html(<PartyRows ranking={ranking(['361684'])} grain="direct" kind="authority" year={2025} />)).toContain('href="/procurement/institutions/361684"')
   })
@@ -66,22 +78,44 @@ describe('analytics', () => {
     expect(keyLabel('furnizor', 'cui', 'natural_person', namer)).toBe('Persoane fizice')
   })
 
-  it('the names read never asks for the group', () => {
-    const keys = nameKeys({ filters: {} } as never, [
-      { dimension: 'supplier', buckets: [{ key: 'natural_person', kind: 'top' }, { key: '14837428', kind: 'top' }] } as never,
+  it('the names read asks only for companies the API names, never the group or an unclassified supplier', () => {
+    const keys = nameKeys({ tip: 'directe', filters: {} } as never, [
+      {
+        dimension: 'supplier',
+        buckets: [
+          { key: 'natural_person', kind: 'top', displayKind: 'natural_person' },
+          { key: '14837428', kind: 'top', displayKind: 'company' },
+          { key: '9446547', kind: 'top', displayKind: null },
+        ],
+      } as never,
     ])
     expect(keys.orgs).toEqual(['14837428'])
+  })
+
+  it('a direct-purchase supplier filter is named only by its own direct purchases', () => {
+    const keys = nameKeys({ tip: 'directe', filters: { furnizor: { level: 'cui', values: ['9446547'] } } } as never, [])
+    expect(keys.orgs).toEqual([])
+    expect(keys.daSuppliers).toEqual(['9446547'])
+    // Contracts are not D6's: their supplier is named from the registry as before.
+    expect(nameKeys({ tip: 'contracte', filters: { furnizor: { level: 'cui', values: ['9446547'] } } } as never, []).orgs).toEqual(['9446547'])
   })
 })
 
 describe('mapPartyBucket (entity and company slices)', () => {
-  const bucket = (key: string | null) => ({ key, kind: 'top', recordCount: '4', withValueCount: '4', valueSum: '1000', shareOfScope: '0.5' })
+  const bucket = (key: string | null, displayKind: string | null = 'company') => ({ key, kind: 'top', displayKind, recordCount: '4', withValueCount: '4', valueSum: '1000', shareOfScope: '0.5' })
 
   it('the group has no party, no CUI and its own kind', () => {
     const row = mapPartyBucket(bucket('natural_person') as never, 'direct_acquisition', 'supplier', new Map([['supplier:natural_person', 'SHOULD NOT SHOW']]))
     expect(row.bucketKind).toBe('natural_person')
     expect(row.supplier).toBeNull()
     expect(JSON.stringify(row)).not.toContain('SHOULD NOT SHOW')
+  })
+
+  it('a direct-purchase supplier with no kind has no party (fail closed); a contract supplier keeps its own', () => {
+    const unnamed = mapPartyBucket(bucket('14837428', null) as never, 'direct_acquisition', 'supplier', new Map([['supplier:14837428', 'SHOULD NOT SHOW']]))
+    expect(unnamed.bucketKind).toBe('unnamed_supplier')
+    expect(unnamed.supplier).toBeNull()
+    expect(mapPartyBucket(bucket('14837428', null) as never, 'contract', 'supplier').supplier).toMatchObject({ cui: '14837428' })
   })
 
   it('a company keeps its CUI and name', () => {

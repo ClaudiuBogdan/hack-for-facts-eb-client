@@ -299,6 +299,8 @@ const STATS_BLOCK_FIELDS = /* GraphQL */ `
 export const rawBreakdownBucketSchema = z.object({
   key: z.string().nullable(),
   kind: z.string(),
+  /** D6 on a supplier bucket: `company` names it; anything else does not. */
+  displayKind: z.string().nullable().optional(),
   recordCount: z.string().nullable(),
   withValueCount: z.string().nullable(),
   valueAwardedSum: z.string().nullable(),
@@ -330,7 +332,7 @@ export type RawProcurementBreakdownBlock = z.infer<
 
 const BREAKDOWN_BLOCK_FIELDS = /* GraphQL */ `
   grain dimension rankedBy
-  buckets { key kind recordCount withValueCount valueAwardedSum valueSum shareOfScope }
+  buckets { key kind displayKind recordCount withValueCount valueAwardedSum valueSum shareOfScope }
   valueWithheldAssociationSum
   meta { ${ANSWER_META_FIELDS} }
 `

@@ -29,7 +29,7 @@ export const buyerBreakdownSchema = z.array(
     rankedBy: z.string().nullable(),
     buckets: z
       .array(
-        z.object({ key: z.string().nullable(), kind: z.string(), recordCount: decimal, withValueCount: decimal.optional(), valueSum: decimal, shareOfScope: decimal }),
+        z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal.optional(), valueSum: decimal, shareOfScope: decimal }),
       )
       .nullable(),
   }),
@@ -59,7 +59,7 @@ export type RawBuyerBreakdown = z.infer<typeof buyerBreakdownSchema>
 
 const STATS = 'blocks { recordCount withValueCount valueAwardedSum }'
 const SERIES = 'points { bucket value }'
-const BREAKDOWN = 'rankedBy buckets { key kind recordCount withValueCount valueSum shareOfScope }'
+const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope }'
 
 /**
  * Which of the profile's requests a read goes in. The API resolves one

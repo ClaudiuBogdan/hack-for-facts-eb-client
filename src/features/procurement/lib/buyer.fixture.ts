@@ -59,11 +59,11 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
     directSuppliers: {
       rankedBy: 'value',
       rows: [
-        { cui: '30153499', count: 14, value: 4_590_000, share: 0.126 },
-        { cui: '17046193', count: 8, value: 3_900_000, share: 0.107 },
-        { cui: '9813902', count: 6, value: 2_960_000, share: 0.081 },
-        { cui: '15712457', count: 4, value: 2_430_000, share: 0.067 },
-        { cui: '35873865', count: 3, value: 2_030_000, share: 0.056 },
+        { cui: '30153499', count: 14, value: 4_590_000, share: 0.126, displayKind: 'company' },
+        { cui: '17046193', count: 8, value: 3_900_000, share: 0.107, displayKind: 'company' },
+        { cui: '9813902', count: 6, value: 2_960_000, share: 0.081, displayKind: 'company' },
+        { cui: '15712457', count: 4, value: 2_430_000, share: 0.067, displayKind: 'company' },
+        { cui: '35873865', count: 3, value: 2_030_000, share: 0.056, displayKind: 'company' },
       ],
     },
     awardSuppliers: {

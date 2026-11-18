@@ -10,7 +10,7 @@
  * source systems fail loud at the Zod boundary rather than becoming a wrong
  * record.
  */
-import { isNamedDaSupplier, isNaturalPersonKey } from '../../lib/withheld-party'
+import { isNamedDaSupplier, isNamedDaSupplierBucket, isNaturalPersonKey } from '../../lib/withheld-party'
 import {
   categoryRowSchema,
   contractDisplayTitleSchema,
@@ -320,8 +320,10 @@ export function mapPartyBucket(
     bucket.withValueCount,
     `${dimension}.withValueCount`,
   )
-  // D6: the group of suppliers the platform does not name has no CUI, no name and no link.
-  const withheld = dimension === 'supplier' && isNaturalPersonKey(bucket.key)
+  // D6: a direct-purchase supplier the API does not serve as a company — the group, or one — has no CUI, no name and no link.
+  const naturalPersons = dimension === 'supplier' && isNaturalPersonKey(bucket.key)
+  const unnamed = !naturalPersons && dimension === 'supplier' && grain === 'direct_acquisition' && bucket.kind === 'top' && !isNamedDaSupplierBucket(bucket)
+  const withheld = naturalPersons || unnamed
   const party =
     bucket.key && !withheld
       ? {
@@ -334,7 +336,7 @@ export function mapPartyBucket(
     authority: dimension === 'authority' ? party : null,
     supplier: dimension === 'supplier' ? party : null,
     grain,
-    bucketKind: withheld ? 'natural_person' : bucket.kind,
+    bucketKind: naturalPersons ? 'natural_person' : unnamed ? 'unnamed_supplier' : bucket.kind,
     flowCount,
     // The grain's ANCHOR money (valueSum) — identical to valueAwardedSum on
     // core grains; the call-off value on the calloff population.

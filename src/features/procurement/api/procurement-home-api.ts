@@ -9,7 +9,7 @@
  * - the year's largest contract awards, grouped by contract;
  * - the newest complete month's largest contract awards, or direct purchases.
  */
-import { isNamedDaSupplier, nameableKeys } from '../lib/withheld-party'
+import { isNamedDaSupplier, isNamedDaSupplierBucket } from '../lib/withheld-party'
 import type { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -76,6 +76,11 @@ function seriesValue(blocks: readonly RawSeries[], bucket: string): number | nul
   return first(blocks)?.points?.find((point) => point.bucket === bucket)?.value ?? null
 }
 
+/** A direct-acquisition supplier ranking's keys the page may name (D6, fail closed). */
+function namedSupplierKeys(blocks: readonly RawBreakdown[]): readonly string[] {
+  return (first(blocks)?.buckets ?? []).flatMap((bucket) => (bucket.kind === 'top' && bucket.key && isNamedDaSupplierBucket(bucket) ? [bucket.key] : []))
+}
+
 function topKeys(blocks: readonly RawBreakdown[]): readonly string[] {
   return (first(blocks)?.buckets ?? []).flatMap((bucket) => (bucket.kind === 'top' && bucket.key ? [bucket.key] : []))
 }
@@ -132,6 +137,7 @@ function ranking(blocks: readonly RawBreakdown[], label: (key: string) => string
         count: bucket.recordCount ?? 0,
         value: bucket.valueSum,
         share: bucket.shareOfScope,
+        displayKind: bucket.displayKind ?? null,
       })),
   }
 }
@@ -222,8 +228,8 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
   )
   const names = await loadPartyNames(
     [...topKeys(raw.awardsBuyers), ...topKeys(raw.directBuyers)],
-    // D6: the withheld group has no name to look up.
-    nameableKeys(topKeys(raw.directSellers)),
+    // D6: only a supplier the API serves as a company has a name to look up.
+    namedSupplierKeys(raw.directSellers),
     signal,
   )
   return mapProcurementHomeNational(raw, year, names)

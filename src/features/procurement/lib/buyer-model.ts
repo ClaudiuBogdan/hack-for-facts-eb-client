@@ -46,6 +46,8 @@ export interface SupplierFigure {
   readonly value: number | null
   /** Share of the scope on the basis the server ranked by. */
   readonly share: number | null
+  /** D6 on a direct-purchase supplier (`company` names it). */
+  readonly displayKind?: string | null
 }
 
 export interface SupplierRanking {

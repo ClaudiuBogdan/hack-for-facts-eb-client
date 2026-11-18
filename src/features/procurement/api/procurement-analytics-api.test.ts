@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import { queryOf } from '../lib/analytics-model'
-import { isStaleBuild, planAnswer, planRecords, readFigures, scopeOf, type AnalyticsCutoff } from './procurement-analytics-api'
+import { isStaleBuild, planAnswer, planRecords, readFigures, readNames, readRecords, scopeOf, type AnalyticsCutoff } from './procurement-analytics-api'
 
 const graphql = vi.hoisted(() => ({ query: vi.fn() }))
 vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()), graphqlQuery: graphql.query }))
@@ -117,5 +117,43 @@ describe('the build pin', () => {
     expect(isStaleBuild(refusal({ code: 'INVALID_INPUT', field: 'build' }))).toBe(true)
     expect(isStaleBuild(refusal({ code: 'INVALID_INPUT', field: 'grain' }))).toBe(false)
     expect(isStaleBuild(new Error('network'))).toBe(false)
+  })
+})
+
+describe('D6 on direct purchases, whatever the release flag', () => {
+  const party = (cui: string | null, name: string | null, displayKind: string | null) => ({ cui, name, displayName: null, displayKind })
+  const record = (supplier: ReturnType<typeof party>) => ({ id: 'r1', date: '2025-06-02', title: null, displayTitle: null, cpvLabel: 'Aranjamente florale', authority: party('361684', 'BNR', 'authority'), supplier, valueRon: '100.00' })
+
+  it('a record’s supplier is named only when the API serves it as a company', async () => {
+    graphql.query.mockResolvedValueOnce({
+      l: { total: '3', items: [record(party('14837428', 'FLORARIA IRIS', 'company')), record(party('9446547', 'POPESCU ION', null)), record(party(null, null, 'natural_person'))], meta: { answerability: 'answered' } },
+    })
+    const records = await readRecords({ grain: 'direct_acquisition', from: '2025-01', to: '2025-12' }, '13', 'value_desc', 1, new AbortController().signal)
+    expect(records.rows.map((row) => row.supplier)).toEqual([
+      { cui: '14837428', name: 'FLORARIA IRIS' },
+      { cui: null, name: null, withheld: true },
+      { cui: null, name: null, withheld: true },
+    ])
+    // A withheld title: the category names the record.
+    expect(records.rows[0]?.title).toBe('Aranjamente florale')
+  })
+
+  it('a contract record’s supplier is not D6’s', async () => {
+    graphql.query.mockResolvedValueOnce({ l: { total: '1', items: [record(party('9446547', 'POPESCU ION', null))], meta: { answerability: 'answered' } } })
+    const records = await readRecords({ grain: 'contract', from: '2025-01', to: '2025-12' }, '13', 'value_desc', 1, new AbortController().signal)
+    expect(records.rows[0]?.supplier).toEqual({ cui: '9446547', name: 'POPESCU ION' })
+  })
+
+  it('a supplier the address names is named by its own direct purchases, only as a company', async () => {
+    graphql.query.mockResolvedValueOnce({
+      da0: { items: [{ supplier: party('14837428', 'FLORARIA IRIS', 'company') }] },
+      da1: { items: [{ supplier: party(null, null, 'natural_person') }] },
+      da2: { items: [] },
+    })
+    const names = await readNames([], [], new AbortController().signal, ['14837428', '9446547', '1234'])
+    expect([...names.orgs.entries()]).toEqual([['14837428', 'FLORARIA IRIS']])
+    const [query, variables] = graphql.query.mock.calls[graphql.query.mock.calls.length - 1] as [string, Record<string, unknown>]
+    expect(query).not.toContain('organizationLabels(cuis: $cuis) @include(if: true)')
+    expect(variables).toMatchObject({ withOrgs: false, da0: '14837428', da1: '9446547', da2: '1234' })
   })
 })

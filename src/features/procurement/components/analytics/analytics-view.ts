@@ -1,4 +1,4 @@
-import { isNaturalPersonKey } from '../../lib/withheld-party'
+import { isNamedDaSupplierBucket, isNaturalPersonKey, unnamedSupplierLabel } from '../../lib/withheld-party'
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { monthText } from '../../lib/home-format'
@@ -138,6 +138,8 @@ export function readoutNotes(query: Query, answer: Answer, search: AnalyticsSear
 export interface Row {
   readonly key: string | null
   readonly kind: 'top' | 'other' | 'unknown' | 'withheld'
+  /** D6: a direct-purchase supplier the API does not serve as a company — never named, linked or drilled into. */
+  readonly unnamed?: boolean
   readonly label: string
   readonly sub: string | null
   /** What the row is ranked and drawn by. */
@@ -159,8 +161,9 @@ export function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly
     // An empty „Restul" or unknown bucket is no row: nothing is left out.
     .filter((bucket) => bucket.kind === 'top' || bucket.count > 0)
     .map((bucket) => {
-      const label = bucket.kind === 'other' ? t`Restul` : bucket.kind === 'unknown' ? unknownLabel(group.axis) : keyLabel(group.axis, group.level, bucket.key ?? '', namer)
-      const sub = bucket.kind !== 'top' || !bucket.key || isNaturalPersonKey(bucket.key) ? null : group.axis === 'cumparator' || group.axis === 'furnizor' ? `CUI ${bucket.key}` : group.axis === 'cpv' ? `CPV ${cpvPrefix(bucket.key, group.level)}` : null
+      const unnamed = bucket.kind === 'top' && group.axis === 'furnizor' && population.grain === 'direct_acquisition' && !isNamedDaSupplierBucket(bucket)
+      const label = bucket.kind === 'other' ? t`Restul` : bucket.kind === 'unknown' ? unknownLabel(group.axis) : unnamed ? unnamedSupplierLabel(bucket.key) : keyLabel(group.axis, group.level, bucket.key ?? '', namer)
+      const sub = bucket.kind !== 'top' || !bucket.key || unnamed || isNaturalPersonKey(bucket.key) ? null : group.axis === 'cumparator' || group.axis === 'furnizor' ? `CUI ${bucket.key}` : group.axis === 'cpv' ? `CPV ${cpvPrefix(bucket.key, group.level)}` : null
       if (perResident && !bucket.key) {
         // No county, so no residents: the total, said as a total, never beside the rates.
         const total = population.money === 'clean' ? bucket.money : bucket.count
@@ -185,6 +188,7 @@ export function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly
       return {
         key: bucket.key,
         kind: bucket.kind,
+        ...(unnamed ? { unnamed: true } : {}),
         label,
         sub,
         figure,

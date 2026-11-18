@@ -22,6 +22,8 @@ export const homeStatsBlockSchema = z.object({
 export const homeBucketSchema = z.object({
   key: z.string().nullable(),
   kind: z.string(),
+  /** D6 on a supplier bucket: `company` names it; anything else does not. */
+  displayKind: z.string().nullable().optional(),
   recordCount: decimal,
   valueSum: decimal,
   shareOfScope: decimal,
@@ -38,7 +40,7 @@ export const homeSeriesBlockSchema = z.object({
 })
 
 const STATS = 'recordCount withValueCount valueAwardedSum'
-const BREAKDOWN = 'rankedBy buckets { key kind recordCount valueSum shareOfScope } valueWithheldAssociationSum'
+const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount valueSum shareOfScope } valueWithheldAssociationSum'
 const SERIES = 'points { bucket value }'
 
 // ───────────────────────────────────────────────── the national picture ──
