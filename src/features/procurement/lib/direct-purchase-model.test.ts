@@ -198,6 +198,9 @@ describe('the context', () => {
     expect(redoOf(refused, dpContext({ others: [redo] }))?.id).toBe('d')
     expect(redoOf(refused, dpContext({ others: [{ ...redo, date: '2026-04-30' }] }))).toBeNull()
     expect(redoOf(directPurchase(), dpContext({ others: [redo] }))).toBeNull()
+    // A category's label standing in for a withheld title identifies nothing: no redo is claimed on it (D6).
+    expect(redoOf({ ...refused, withheldText: { ...refused.withheldText, title: true } }, dpContext({ others: [redo] }))).toBeNull()
+    expect(redoOf(refused, dpContext({ others: [{ ...redo, titlePublic: false }] }))).toBeNull()
     // A weekly order: the others come newest first; the redo is the nearest, and next week's order is not one.
     const weekly = [
       { ...redo, id: 'week', date: '2026-03-12' },

@@ -197,6 +197,10 @@ export interface DpOther {
   readonly value: number | null
   readonly date: string | null
   readonly done: boolean
+  /** False for a release attempt's reported offer: its currency and VAT basis are unconfirmed, so no „lei". Absent: lei (legacy). */
+  readonly inLei?: boolean
+  /** False when the title shown is the category's, standing in for a withheld or missing one: it identifies nothing. Absent: the title's own. */
+  readonly titlePublic?: boolean
 }
 
 /**
@@ -589,10 +593,12 @@ const REDO_DAYS = 6
 export function redoOf(purchase: DirectPurchase, context: DpContext | null): DpOther | null {
   const day = dayOf(purchase)
   const title = purchase.title
+  // Only a title the institution wrote identifies a purchase: a category's label (D6 withheld text) would match any purchase of the kind.
+  if (purchase.withheldText.title) return null
   if (!isAttempt(purchase.outcome) || !day || !title || !context) return null
   let nearest: { readonly other: DpOther; readonly after: number } | null = null
   for (const other of context.others) {
-    if (!other.done || other.id === purchase.id || !other.date || !other.title || !sameText(other.title, title)) continue
+    if (!other.done || other.id === purchase.id || !other.date || !other.title || other.titlePublic === false || !sameText(other.title, title)) continue
     const after = (Date.parse(`${other.date.slice(0, 10)}T00:00:00Z`) - Date.parse(`${day.slice(0, 10)}T00:00:00Z`)) / 86_400_000
     if (after >= 0 && after <= REDO_DAYS && (nearest === null || after < nearest.after)) nearest = { other, after }
   }

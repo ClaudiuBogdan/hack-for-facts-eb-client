@@ -181,7 +181,9 @@ function otherOf(item: RawAroundItem): DpOther {
   return {
     id: item.id,
     code: item.uniqueCode,
-    title: tidyTitle(item.title),
+    // D6: a withheld title is never shown; the category's label stands in, and identifies nothing.
+    title: item.titleWithheld ? (item.cpvLabel?.trim() || null) : (tidyTitle(item.title) ?? (item.cpvLabel?.trim() || null)),
+    titlePublic: !item.titleWithheld && tidyTitle(item.title) !== null,
     // A purchase's checked value; anything else's offer, struck on the page.
     value: done ? (item.value?.valueAccepted ? decimal(item.value.valueRonComparable) : null) : decimal(item.valueRon),
     // A purchase dated by its end, anything else by its request — as its own page dates it.

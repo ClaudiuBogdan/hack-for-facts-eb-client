@@ -1,3 +1,4 @@
+import { tidyTitle } from '../lib/home-model'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { DIRECT_COMPARABLE_FROM } from '../lib/home-model'
 import { isPurchase, type DpOther } from '../lib/direct-purchase-model'
@@ -29,7 +30,10 @@ export function releaseOtherOf(item: RawDaAroundItem): DpOther {
     id: item.purchaseId,
     code: item.code,
     title: releaseTitleOf(item),
+    titlePublic: !item.titleWithheld && tidyTitle(item.title) !== null,
     value: done ? countedValueOf(money) : money.reported,
+    // An attempt's offer is the portal's, as reported: never said in lei.
+    inLei: done,
     date: done ? (item.finalizationDay ?? item.publicationDay) : (item.publicationDay ?? item.finalizationDay),
     done,
   }

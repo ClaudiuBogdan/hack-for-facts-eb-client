@@ -1,3 +1,4 @@
+import { amountText } from '../../lib/direct-purchase-value-text'
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -195,7 +196,7 @@ function RecordsAround({ purchase, context, className }: { readonly purchase: Di
                 {note ? <MonoLabel className="mt-1 block text-muted-foreground">{note}</MonoLabel> : null}
               </span>
               <span className={cn('whitespace-nowrap text-right text-sm tabular-nums', other.done ? 'font-semibold text-foreground' : 'text-muted-foreground line-through')}>
-                {other.value !== null ? leiExact(other.value) : '—'}
+                {other.value !== null ? (other.inLei === false ? amountText(other.value, false) : leiExact(other.value)) : '—'}
               </span>
             </>
           )

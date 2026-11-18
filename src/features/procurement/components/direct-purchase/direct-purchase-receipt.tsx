@@ -91,7 +91,7 @@ function ItemRow({
   readonly excluded: boolean
   readonly amount: AmountText
 }) {
-  const catalog = catalogText(item)
+  const catalog = catalogText(item, amount)
   const repeats = year !== null ? repeatsText(item, year) : null
   const peers = item.peers && year !== null ? item.peers : null
   return (

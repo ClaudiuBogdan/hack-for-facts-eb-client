@@ -358,10 +358,11 @@ export function peersText(item: DpItem, peers: DpPeers, year: number): string {
   return t`${Institutions} l-au cumpărat de la firmă în ${year} cu ${range}; ${where}.`
 }
 
-export function catalogText(item: DpItem): string | null {
+/** The comparison with the firm's catalogue price, its amount written as the purchase's amounts are (in lei only when they count). */
+export function catalogText(item: DpItem, amount: (value: number) => string = leiExact): string | null {
   if (item.catalogPrice === null || item.unitPrice === null || item.catalogPrice === item.unitPrice) return null
   const change = item.unitPrice / item.catalogPrice - 1
-  const catalog = leiExact(item.catalogPrice)
+  const catalog = amount(item.catalogPrice)
   const part = percentText(Math.abs(change), 0)
   return change < 0 ? t`Cu ${part} sub prețul din catalogul firmei (${catalog}).` : t`Cu ${part} peste prețul din catalogul firmei (${catalog}).`
 }

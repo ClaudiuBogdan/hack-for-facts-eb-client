@@ -35,7 +35,7 @@ export type RawDirectPurchaseNames = z.infer<typeof directPurchaseNamesSchema>
 
 // ────────────────────────────────────────────────────── records around ──
 
-const AROUND_FIELDS = 'id uniqueCode title valueRon status sourceSystem publicationDate finalizationDate value { valueAccepted valueRonComparable }'
+const AROUND_FIELDS = 'id uniqueCode title titleWithheld cpvLabel valueRon status sourceSystem publicationDate finalizationDate value { valueAccepted valueRonComparable }'
 
 /**
  * The records between the same two, newer and older than this one's day
@@ -53,6 +53,9 @@ const aroundItemSchema = z.object({
   id: z.string(),
   uniqueCode: z.string().nullable(),
   title: z.string().nullable(),
+  /** D6: the title withheld until reviewed; the category's label stands in. */
+  titleWithheld: z.string().nullable().optional(),
+  cpvLabel: z.string().nullable().optional(),
   valueRon: z.string().nullable(),
   status: z.string(),
   sourceSystem: z.string(),

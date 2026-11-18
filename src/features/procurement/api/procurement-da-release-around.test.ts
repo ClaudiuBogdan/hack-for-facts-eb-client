@@ -22,7 +22,7 @@ beforeEach(() => graphqlQuery.mockReset())
 
 describe('releaseOtherOf', () => {
   it('a counted purchase: its counted value, its category as its name, its finalization day', () => {
-    expect(releaseOtherOf(item(RELEASE_CASES.corrected()))).toEqual({ id: 'a'.repeat(64), code: 'DA37709621', title: 'Beton refractar', value: 3150, date: '2025-03-04', done: true })
+    expect(releaseOtherOf(item(RELEASE_CASES.corrected()))).toEqual({ id: 'a'.repeat(64), code: 'DA37709621', title: 'Beton refractar', value: 3150, date: '2025-03-04', done: true, inLei: true, titlePublic: false })
   })
 
   it('a purchase out of totals has no value to list', () => {
@@ -30,7 +30,7 @@ describe('releaseOtherOf', () => {
   })
 
   it('a refused attempt: its reported offer, dated by its request', () => {
-    expect(releaseOtherOf(item(RELEASE_CASES.refused()))).toMatchObject({ value: 40000, date: '2025-06-01', done: false })
+    expect(releaseOtherOf(item(RELEASE_CASES.refused()))).toMatchObject({ value: 40000, date: '2025-06-01', done: false, inLei: false })
   })
 })
 
