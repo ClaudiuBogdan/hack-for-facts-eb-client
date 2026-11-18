@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
+// The publication a server render was read under (D6): known unless a test says otherwise.
+vi.mock('@/features/procurement/api/procurement-da-release-status', () => ({ seededUnder: async (read: () => Promise<object>) => ({ ...(await read()), disclosure: 'v1' }) }))
 
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const redirectMock = vi.fn((options: Record<string, unknown>) => ({ kind: 'redirect', options }))
@@ -43,7 +45,9 @@ describe('/procurement', () => {
       expect(failed['Cache-Control']).toBe('no-store')
       expect(failed['CDN-Cache-Control']).toBe('no-store')
       expect(route.headers({})['CDN-Cache-Control']).toBe('no-store')
-      const whole = route.headers({ loaderData: { national: {}, categories: {}, bigContracts: [] } })
+      const whole = route.headers({ loaderData: { national: {}, categories: {}, bigContracts: [], disclosure: 'v1' } })
+      // D6: a render whose publication is unknown is kept nowhere.
+      expect(route.headers({ loaderData: { national: {}, categories: {}, bigContracts: [], disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
       expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
       expect(whole.Vary).toBe('Accept-Encoding, Cookie')
     } finally {

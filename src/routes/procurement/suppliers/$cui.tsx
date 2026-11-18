@@ -55,7 +55,8 @@ export const Route = createFileRoute('/procurement/suppliers/$cui')({
     // server is dehydrated with the server's clock, so a copy served from a
     // shared cache would look stale on mount and read again.
     const { readProcurementSupplierForSsr } = await import('@/features/procurement/api/procurement-supplier-ssr')
-    const read = await readProcurementSupplierForSsr(params.cui, choice)
+    const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
+    const read = await seededUnder(() => readProcurementSupplierForSsr(params.cui, choice))
     // An identifier the API refuses as an organisation's (a foreign or malformed key in a ranking) has no page.
     if (read.notFound) throw notFound()
     return read
@@ -63,7 +64,8 @@ export const Route = createFileRoute('/procurement/suppliers/$cui')({
   // A render with a failed or partial read is served once and read again, never
   // cached for everyone. The document follows the locale and theme cookies.
   headers: ({ loaderData }) =>
-    !loaderData?.profile || loaderData.profile.partial || !loaderData.direct
+    // D6: a render whose publication is unknown is kept nowhere.
+    !loaderData?.profile || loaderData.profile.partial || !loaderData.direct || !loaderData.disclosure
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({

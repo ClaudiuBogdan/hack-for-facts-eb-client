@@ -31,6 +31,8 @@ const buyers = createServerMemo<BuyerProfile>(KEEP_MS, { maxEntries: MAX_ENTERPR
 const deadline = () => withDeadline(undefined, SSR_DEADLINE_MS)
 
 export interface PublicEnterpriseServerRead {
+  /** The disclosure publication a server render was read under (D6); null: unknown, kept nowhere. Absent: not a server render. */
+  readonly disclosure?: string | null
   /** Absent when the read failed: the browser reads it. */
   readonly enterprise?: PublicEnterpriseRead
   /** `null`: no company record; absent: the read failed. */
@@ -52,6 +54,7 @@ export async function readPublicEnterpriseForSsr(cui: string): Promise<PublicEnt
   ])
   return {
     disclosureKnown: disclosure !== null,
+    disclosure,
     ...(enterprise.status === 'fulfilled' ? { enterprise: enterprise.value } : {}),
     ...(company.status === 'fulfilled' ? { company: company.value } : {}),
     ...(buyer.status === 'fulfilled' ? { buyer: buyer.value } : {}),

@@ -27,6 +27,8 @@ import { DirectPurchaseHead, DirectPurchaseHeadPending, DirectPurchaseHeadShell 
  */
 
 export interface ProcurementDirectPurchaseInitialData {
+  /** The disclosure publication a server render was read under (D6); null: unknown, kept nowhere. Absent: not a server render. */
+  readonly disclosure?: string | null
   readonly id: string
   /** `null`: SEAP has no such record. Absent: not read on the server (a client-side navigation, or a failed read). */
   readonly purchase?: DirectPurchase | null

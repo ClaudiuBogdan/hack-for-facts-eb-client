@@ -41,13 +41,15 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
     if (link.kind === 'release') throw redirect({ to: '/procurement/direct-acquisitions/$id', params: { id: link.id }, replace: true, statusCode: 302 })
     // Unresolved: nothing is served that the next read could contradict — the browser reads it, and the render is not kept.
     if (link.kind === 'failed') return { id: params.id }
-    const read = await readProcurementDirectPurchaseForSsr(params.id)
+    const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
+    const read = await seededUnder(() => readProcurementDirectPurchaseForSsr(params.id))
     if (read.purchase === null) throw notFound()
     return read
   },
   // A render with a failed or partial read is served once and read again, never cached for everyone; a purchase with no context to read (`null`) is whole without one.
   headers: ({ loaderData }) =>
-    !loaderData?.purchase || loaderData.purchase.partial || loaderData.context === undefined || loaderData.context?.partial
+    // D6: a render whose publication is unknown is kept nowhere.
+    !loaderData?.purchase || loaderData.purchase.partial || loaderData.context === undefined || loaderData.context?.partial || !loaderData.disclosure
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({
@@ -64,11 +66,10 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
     const title = buildDirectPurchaseDocumentTitle(translator, { id: params.id, title: purchase?.title, authorityName: purchase?.authority.name })
     const what = purchase?.title
     const buyer = purchase?.authority.name
-    // D6: a supplier the release does not name is described as what it is, never by a name.
-    const seller = purchase?.supplier.withheld === 'natural-person' ? translator._(msg`o persoană fizică`) : purchase?.supplier.withheld ? null : purchase?.supplier.name
+    // D6: the head never names the supplier — it outlives the body (a refresh, a new publication), and is shared beyond the page.
     const description =
-      what && buyer && seller
-        ? translator._(msg`${what}: achiziția directă a instituției ${buyer} de la ${seller}, din SEAP — ce s-a cumpărat, cu cât și cum s-a făcut.`)
+      what && buyer
+        ? translator._(msg`${what}: achiziția directă a instituției ${buyer}, din SEAP — ce s-a cumpărat, de la cine, cu cât și cum s-a făcut.`)
         : translator._(msg`O achiziție directă din SEAP: ce s-a cumpărat, de la cine, cu cât și cum s-a făcut.`)
     return {
       meta: [

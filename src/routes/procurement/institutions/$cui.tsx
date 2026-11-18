@@ -56,12 +56,14 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
     // server is dehydrated with the server's clock, so a copy served from a
     // shared cache would look stale on mount and read again.
     const { readProcurementBuyerForSsr } = await import('@/features/procurement/api/procurement-buyer-ssr')
-    return readProcurementBuyerForSsr(params.cui, choice)
+    const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
+    return seededUnder(() => readProcurementBuyerForSsr(params.cui, choice))
   },
   // A render with a failed or partial read is served once and read again, never
   // cached for everyone. The document follows the locale and theme cookies.
   headers: ({ loaderData }) =>
-    !loaderData?.profile || loaderData.profile.partial || !loaderData.records
+    // D6: a render whose publication is unknown is kept nowhere.
+    !loaderData?.profile || loaderData.profile.partial || !loaderData.records || !loaderData.disclosure
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({

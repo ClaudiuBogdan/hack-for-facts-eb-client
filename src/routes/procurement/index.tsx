@@ -53,13 +53,15 @@ export const Route = createFileRoute('/procurement/')({
     // shared cache would look stale on mount and read again. The loader's
     // data seeds the page's queries with the browser's clock.
     const { readProcurementHomeForSsr } = await import('@/features/procurement/api/procurement-home-ssr')
-    return readProcurementHomeForSsr(year)
+    const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
+    return seededUnder(() => readProcurementHomeForSsr(year))
   },
   // A render with a failed read is not worth caching for everyone: it is
   // served once and the next request reads again. The document follows the
   // locale and theme cookies, so a shared cache keys on them.
   headers: ({ loaderData }) =>
-    !loaderData?.national || !loaderData.categories || !loaderData.bigContracts
+    // D6: a render whose publication is unknown is kept nowhere.
+    !loaderData?.national || !loaderData.categories || !loaderData.bigContracts || !loaderData.disclosure
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({

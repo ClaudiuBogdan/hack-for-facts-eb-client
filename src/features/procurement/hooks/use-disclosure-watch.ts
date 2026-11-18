@@ -1,5 +1,7 @@
+import { markVerifiedPublication } from '../lib/disclosure-seed'
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { useQuery, useQueryClient, type Query, type QueryClient } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import { readDisclosureNow } from '../api/procurement-da-release-status'
 
 /**
@@ -7,8 +9,9 @@ import { readDisclosureNow } from '../api/procurement-da-release-status'
  * publish disappears within one publish, also from a tab left open on a page
  * read before it. While the cache holds procurement answers, the release's
  * publication is read once a minute (backing off on failures, so an idle tab
- * never loads the API); when it changes, every procurement answer is reset —
- * dropped at once, and the ones on screen read afresh.
+ * never loads the API); when it changes, or the page was served from another
+ * publication than the one read, every procurement answer is dropped — never
+ * reset to a server seed — and the page's loaders run again.
  */
 
 /** The cache roots whose answers can carry a direct-purchase supplier or its money. */
@@ -37,8 +40,29 @@ function useHoldsWatched(client: QueryClient): boolean {
   )
 }
 
+/** The publications the current page's server render was read under (`disclosure` on its loaders' data). */
+export function seedVersionsOf(matches: readonly { readonly loaderData?: unknown }[]): readonly (string | null)[] {
+  return matches.flatMap((match) => {
+    const data = match.loaderData
+    return data && typeof data === 'object' && 'disclosure' in data ? [(data as { readonly disclosure?: string | null }).disclosure ?? null] : []
+  })
+}
+
+/**
+ * Drop every answer of the old publication: stop their reads (a follow-up
+ * would carry an old supplier's code), remove them — a reset would bring back
+ * a server seed — and run the page's loaders again, which in the browser seed
+ * nothing, so every read starts from the new publication.
+ */
+export async function purgePublication(client: QueryClient, invalidate: () => Promise<unknown>): Promise<void> {
+  await client.cancelQueries({ predicate: isWatchedQuery })
+  client.removeQueries({ predicate: isWatchedQuery })
+  await invalidate()
+}
+
 export function useDisclosureWatch(): void {
   const client = useQueryClient()
+  const router = useRouter()
   const holds = useHoldsWatched(client)
   const watch = useQuery({
     queryKey: WATCH_KEY,
@@ -56,9 +80,12 @@ export function useDisclosureWatch(): void {
     if (version === null) return
     const before = seen.current
     seen.current = version
-    // A new publication: no answer of the old one stays, on screen or in the cache.
-    if (before !== null && before !== version) void client.resetQueries({ predicate: isWatchedQuery })
-  }, [client, version])
+    // First: no render from here on uses a seed of another publication, whatever loader data it still holds.
+    markVerifiedPublication(version)
+    // A new publication since the last reading, or a page served (a CDN copy) from another one than the one read now.
+    const changed = before !== null ? before !== version : seedVersionsOf(router.state.matches).some((seed) => seed !== version)
+    if (changed) void purgePublication(client, () => router.invalidate())
+  }, [client, router, version])
 }
 
 /** Mounted once in the app shell: renders nothing. */

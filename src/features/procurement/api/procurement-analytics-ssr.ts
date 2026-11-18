@@ -50,6 +50,8 @@ const KEEP_REFERENCE_MS = 6 * 60 * 60 * 1000
 const MAX_QUESTIONS = 300
 
 export interface ProcurementAnalyticsServerRead {
+  /** The disclosure publication a server render was read under (D6); null: unknown, kept nowhere. Absent: not a server render. */
+  readonly disclosure?: string | null
   /** Each read the server made, by the key the page's query has. */
   readonly seed: AnalyticsSeed
   /** Every read the question needs, the records aside, was read: the render may be kept by a shared cache. */
@@ -78,7 +80,8 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
   const keep = disclosureUnknown
     ? (_key: string, render: () => Promise<ProcurementAnalyticsServerRead>) => render().then((read) => ({ ...read, complete: false }))
     : questions
-  return keep(hashKey([urlSearchOf(query), query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : null, pinned?.build ?? null, pinned?.disclosure ?? null]), async () => {
+  // The publication the seeds were read under, read with the cutoff before them: the browser drops seeds of another (D6).
+  const read = await keep(hashKey([urlSearchOf(query), query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : null, pinned?.build ?? null, pinned?.disclosure ?? null]), async () => {
     const budget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
     const seeded = async <T>(read: PlannedRead<T>) => ({ key: read.key, data: await read.read(budget) })
     const cutoffKey = procurementAnalyticsKeys.cutoff(latest)
@@ -139,4 +142,5 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     if (refused) forgetProcurementCutoff(latest)
     return { seed, complete: complete && !refused, latest, ...(landingName ? { landingName } : {}) }
   })
+  return { ...read, disclosure: pinned?.disclosure ?? null }
 }

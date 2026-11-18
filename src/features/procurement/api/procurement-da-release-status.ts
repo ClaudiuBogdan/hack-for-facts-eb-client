@@ -125,3 +125,15 @@ export function readDisclosureNow(): Promise<string> {
       : `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}:${status.privacyEnforced ? 'd6' : 'nod6'}:${status.privacyAsOf ?? '-'}`,
   )
 }
+
+/**
+ * A server render's reads under the publication they were read in, read
+ * first: data read after it can only be newer, which the browser's first poll
+ * then purges — never older under a newer label. The page's headers keep no
+ * render whose publication is unknown, and the browser drops a seed whose
+ * publication is not the one it reads (`use-disclosure-watch`).
+ */
+export async function seededUnder<T extends object>(read: () => Promise<T>): Promise<T & { readonly disclosure: string | null }> {
+  const disclosure = await disclosureVersion()
+  return { ...(await read()), disclosure }
+}

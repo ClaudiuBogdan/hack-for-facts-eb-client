@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { directPurchase, dpContext } from '@/features/procurement/lib/direct-purchase.fixture'
 import { procurementDirectPurchaseKeys } from '@/features/procurement/lib/direct-purchase-keys'
+// The publication a server render was read under (D6): known unless a test says otherwise.
+vi.mock('@/features/procurement/api/procurement-da-release-status', () => ({ seededUnder: async (read: () => Promise<object>) => ({ ...(await read()), disclosure: 'v1' }) }))
 
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const notFoundError = new Error('not-found')
@@ -69,7 +71,7 @@ describe('/procurement/direct-acquisitions/$id', () => {
     const read = { id: '10120196', purchase: directPurchase(), context: dpContext() }
     readForSsr.mockResolvedValue(read)
     const data = await asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: '10120196' } }))
-    expect(data).toBe(read)
+    expect(data).toEqual({ ...read, disclosure: 'v1' })
     expect(readForSsr).toHaveBeenCalledWith('10120196')
   })
 
@@ -90,13 +92,13 @@ describe('/procurement/direct-acquisitions/$id', () => {
     expect(route.headers({ loaderData: data })).toMatchObject({ 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' })
   })
 
-  it('names a withheld supplier as a natural person in the description, never by a name — even one left on the record', () => {
+  it('never names a supplier in the head — a withheld one least of all, even one left on the record', () => {
     // A distinctive name on the withheld party: the head must not carry it from any field.
     const purchase = { ...directPurchase(), supplier: { cui: null, name: 'ION POPESCU-FORBIDDEN', identity: null, hasBudget: false, withheld: 'natural-person' as const } }
     const head = route.head({ params: { id: 'x' }, loaderData: { purchase }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
     expect(JSON.stringify(head)).not.toMatch(/FORBIDDEN|Floraria/u)
-    const description = head.meta.find((entry) => entry.name === 'description')?.content
-    expect(description).toContain('de la o persoană fizică')
+    // The head never names a supplier, withheld or not: it outlives the body.
+    expect(head.meta.find((entry) => entry.name === 'description')?.content).toContain('achiziția directă a instituției')
   })
 
   it('answers a record SEAP does not have with a 404 on the server', async () => {
@@ -114,7 +116,9 @@ describe('/procurement/direct-acquisitions/$id', () => {
   it('caches only a whole render: purchase and context read', () => {
     vi.stubEnv('DEV', false)
     try {
-      const whole = route.headers({ loaderData: { id: '1', purchase: directPurchase(), context: dpContext() } })
+      const whole = route.headers({ loaderData: { id: '1', purchase: directPurchase(), context: dpContext(), disclosure: 'v1' } })
+      // D6: a render whose publication is unknown is kept nowhere.
+      expect(route.headers({ loaderData: { id: '1', purchase: directPurchase(), context: dpContext(), disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
       expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
       // D6: never served stale across a publish.
       expect(whole['CDN-Cache-Control']).toContain('stale-while-revalidate=0')
@@ -128,7 +132,7 @@ describe('/procurement/direct-acquisitions/$id', () => {
       }
       // With no context to read (no CUI for a side, no date, before 2019) the server says so — `null` — and the purchase alone is whole.
       const noContext = { ...directPurchase(), authority: { ...directPurchase().authority, cui: null } }
-      expect(route.headers({ loaderData: { id: '1', purchase: noContext, context: null } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(route.headers({ loaderData: { id: '1', purchase: noContext, context: null, disclosure: 'v1' } })['CDN-Cache-Control']).toContain('s-maxage=600')
     } finally {
       vi.unstubAllEnvs()
     }
@@ -142,7 +146,8 @@ describe('/procurement/direct-acquisitions/$id', () => {
     })
     const meta = Object.fromEntries(head.meta.map((entry) => [entry.name ?? entry.property ?? 'title', entry.content ?? entry.title]))
     expect(meta.title).toBe('Aranjamente florale — Banca Nationala a Romaniei — Achiziții publice — Transparenta.eu')
-    expect(meta.description).toBe('Aranjamente florale: achiziția directă a instituției Banca Nationala a Romaniei de la Floraria Iris SRL, din SEAP — ce s-a cumpărat, cu cât și cum s-a făcut.')
+    // D6: never the supplier, even a company — the head outlives the body and is shared beyond the page.
+    expect(meta.description).toBe('Aranjamente florale: achiziția directă a instituției Banca Nationala a Romaniei, din SEAP — ce s-a cumpărat, de la cine, cu cât și cum s-a făcut.')
     expect(meta['og:url']).toBe('http://localhost:3000/procurement/direct-acquisitions/10120196')
   })
 })

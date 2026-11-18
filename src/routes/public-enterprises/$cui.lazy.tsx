@@ -1,3 +1,4 @@
+import { isSeedCurrent } from '@/features/procurement/lib/disclosure-seed'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import type { PublicEnterpriseRouteLoaderData } from './$cui'
@@ -22,7 +23,9 @@ function stateOf<T>(query: { readonly data: T | undefined; readonly isError: boo
 
 function PublicEnterpriseRoutePage() {
   const { cui } = Route.useParams()
-  const loaderData = Route.useLoaderData() as PublicEnterpriseRouteLoaderData | undefined
+  const served = Route.useLoaderData() as PublicEnterpriseRouteLoaderData | undefined
+  // D6: a seed of another publication than the one the browser read is never used (`disclosure-seed.ts`).
+  const loaderData = isSeedCurrent(served) ? served : undefined
   const enterprise = usePublicEnterprise(cui, loaderData?.enterprise)
   const company = useEnterpriseCompany(cui, loaderData?.company)
   const buyer = useEnterpriseBuyer(cui, loaderData?.buyer)

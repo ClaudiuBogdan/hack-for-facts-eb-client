@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+// The publication a server render was read under (D6): known unless a test says otherwise.
+vi.mock('@/features/procurement/api/procurement-da-release-status', () => ({ seededUnder: async (read: () => Promise<object>) => ({ ...(await read()), disclosure: 'v1' }) }))
 
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const notFoundMock = vi.fn(() => new Error('not-found'))
@@ -140,7 +142,9 @@ describe('/procurement/institutions/$cui', () => {
     const route = await importRoute()
     vi.stubEnv('DEV', false)
     try {
-      const whole = route.headers({ loaderData: { choice: 2025, profile: PROFILE, records: { contracts: [], direct: [] } } })
+      const whole = route.headers({ loaderData: { choice: 2025, profile: PROFILE, records: { contracts: [], direct: [] }, disclosure: 'v1' } })
+      // D6: a render whose publication is unknown is kept nowhere.
+      expect(route.headers({ loaderData: { choice: 2025, profile: PROFILE, records: { contracts: [], direct: [] }, disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
       expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
       expect(whole.Vary).toBe('Accept-Encoding, Cookie')
       for (const loaderData of [

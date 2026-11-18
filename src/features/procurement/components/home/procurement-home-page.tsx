@@ -63,6 +63,8 @@ import { PartyRows, PendingRows } from './home-rows'
  */
 
 export interface ProcurementHomeInitialData {
+  /** The disclosure publication a server render was read under (D6); null: unknown, kept nowhere. Absent: not a server render. */
+  readonly disclosure?: string | null
   /** The year the page describes, as the loader chose it: the server's reads, or the browser's, go by it. */
   readonly year: number
   readonly national?: NationalRead

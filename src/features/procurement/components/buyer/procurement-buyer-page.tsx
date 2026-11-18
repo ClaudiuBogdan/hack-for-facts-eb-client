@@ -44,6 +44,8 @@ import { BuyerHead, BuyerHeadPending } from './buyer-head'
  */
 
 export interface ProcurementBuyerInitialData {
+  /** The disclosure publication a server render was read under (D6); null: unknown, kept nowhere. Absent: not a server render. */
+  readonly disclosure?: string | null
   /** What the page describes — the last twelve months, or a year: the loader's, so the server and the browser agree. */
   readonly choice: PeriodChoice
   readonly profile?: BuyerProfile
