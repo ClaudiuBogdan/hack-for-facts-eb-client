@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore, type ComponentProps } from 'react';
+import { useEffect, useId, useState, useSyncExternalStore, type ComponentProps } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input as TextInput } from '@/components/ui/input';
@@ -74,6 +74,7 @@ function DeferredEntitySearchInput(props: ComponentProps<Input>) {
     const Input = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
     const [term, setTerm] = useState('');
     const [focused, setFocused] = useState<boolean>();
+    const statusId = useId();
 
     useEffect(() => { loadInput(); }, []);
 
@@ -95,11 +96,12 @@ function DeferredEntitySearchInput(props: ComponentProps<Input>) {
                     placeholder={placeholder}
                     aria-label={placeholder}
                     aria-busy={!failed}
+                    aria-describedby={statusId}
                     // The input's own box (EntitySearch/index.tsx), so nothing moves when it arrives.
                     className="w-full py-7 pl-14 pr-4 text-base bg-white dark:bg-slate-800 rounded-3xl placeholder:text-slate-400 shadow-sm hover:shadow-md focus:shadow-lg transition-shadow duration-300 border-slate-300 dark:border-slate-700 focus:border-slate-400 dark:focus:border-slate-600 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-600 sm:px-20 md:text-xl"
                 />
             </div>
-            <p role="status" className="mt-2 rounded-md bg-white/95 px-4 py-2 text-sm text-slate-600 dark:bg-slate-900/95 dark:text-slate-300">
+            <p id={statusId} role="status" className="mt-2 rounded-md bg-white/95 px-4 py-2 text-sm text-slate-600 dark:bg-slate-900/95 dark:text-slate-300">
                 {failed ? t`Căutarea nu a răspuns.` : t`Loading...`}
                 {failed && (
                     <>

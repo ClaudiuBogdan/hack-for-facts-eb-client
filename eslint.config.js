@@ -47,6 +47,7 @@ const ROUTE_CONTRACT_MODULES = [
   'src/features/campaigns/buget/schemas/campaign-route-search-schema.ts',
   'src/features/advanced-map-analytics/api/envelope.ts',
   'src/schemas/chart-defaults.ts',
+  'src/schemas/map-filters.ts',
 ]
 const BUILT_AT_MODULE_SCOPE = {
   // Any call evaluated when the module is (not inside a function), wherever it

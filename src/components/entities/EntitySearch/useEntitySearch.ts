@@ -34,7 +34,7 @@ export function useEntitySearch({
     const navigate = useNavigate();
     const currentSearch = useSearch({ strict: false }) as Record<string, unknown>;
     const [searchTerm, setSearchTerm] = useState(initialTerm);
-    const [isDropdownOpen, setDropdownOpen] = useState(initialTerm !== "");
+    const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
 
     const debouncedSearchTerm = useDebouncedValue(searchTerm, debounceMs);

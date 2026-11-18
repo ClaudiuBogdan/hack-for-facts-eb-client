@@ -12,9 +12,9 @@ vi.mock('@/features/advanced-map-analytics/analytics-map-warmup', () => ({
   warmAdvancedAnalyticsMapResources: warmAdvancedAnalyticsMapResourcesMock,
 }));
 
-const loadMapDecodersMock = vi.fn();
+const prefetchMapDecodersMock = vi.fn();
 vi.mock('@/features/advanced-map-analytics/api/advanced-map-analytics-api', () => ({
-  loadMapDecoders: loadMapDecodersMock,
+  prefetchMapDecoders: prefetchMapDecodersMock,
 }));
 
 vi.mock('@/features/advanced-map-analytics/hooks/use-advanced-map-analytics', () => ({
@@ -28,7 +28,7 @@ describe('maps public route loader', () => {
     warmAdvancedAnalyticsMapResourcesMock.mockReset();
     advancedMapAnalyticsPublicMapQueryOptionsMock.mockReset();
     warmAdvancedAnalyticsMapResourcesMock.mockResolvedValue(undefined);
-    loadMapDecodersMock.mockReset().mockResolvedValue({});
+    prefetchMapDecodersMock.mockReset();
     advancedMapAnalyticsPublicMapQueryOptionsMock.mockImplementation((publicId: string) => ({
       queryKey: ['advanced-map-analytics', 'public', publicId],
     }));
@@ -228,26 +228,14 @@ describe('maps public route loader', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('waits on a hover preload for the response decoders too, so a failed decoder fetch stays inside the quiet preload', async () => {
-    let settle: () => void = () => undefined;
-    loadMapDecodersMock.mockReturnValue(
-      new Promise<void>((resolve) => {
-        settle = resolve;
-      }),
-    );
+  it('fetches the response decoders ahead on a hover preload, quietly and without waiting for them', async () => {
     const queryClient = { ensureQueryData: vi.fn().mockReturnValue(new Promise(() => {})) };
     const { Route } = await import('./$mapId');
     const loader = (Route as unknown as { loader: (input: Record<string, unknown>) => Promise<void> }).loader;
 
-    let preloaded = false;
-    const preloading = loader({ context: { queryClient }, params: { mapId: 'm' }, preload: true }).then(() => {
-      preloaded = true;
-    });
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(preloaded).toBe(false);
-    settle();
-    await preloading;
-    expect(preloaded).toBe(true);
+    await loader({ context: { queryClient }, params: { mapId: 'm' }, preload: false });
+    expect(prefetchMapDecodersMock).not.toHaveBeenCalled();
+    await loader({ context: { queryClient }, params: { mapId: 'm' }, preload: true });
+    expect(prefetchMapDecodersMock).toHaveBeenCalledTimes(1);
   });
 });

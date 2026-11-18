@@ -186,14 +186,19 @@ and `lib/` (11.1) are not route families: they are looked at last.
     mutations now load the decoder before sending (a failed import after a create used to leave a map the
     reader could not see, and a retry made a second), and a hover's preload awaits the decoder inside the
     quiet preload (a failed decoder fetch used to reload the page being read); the public read reports its
-    HTTP failure before a decoder failure. The floating search's placeholder is now a field whose text and
+    HTTP failure before a decoder failure. A second review moved the decoder out of the preload: a hover
+    and the public read fetch it quietly (`prefetchMapDecoders`, so a failure never reloads the page and a
+    click never waits for it), the call that needs it imports it then, and a failed import is forgotten so
+    a later call asks again. The floating search's placeholder is now a field whose text and
     focus carry over to the input (keystrokes typed during a cold open used to be lost). The chart store loads
     in the route's loader, alongside the editor's chunk, once per document. Also made lazy: the map API
     envelope and the heatmap's `MapStateSchema`. Left as noted: the old exports of `judicial.ts`,
     `elections-catalog.ts` and `page-schema.ts` are now lazy schemas, without `.unwrap()`/`.shape` (no caller
     uses them); `LazySchema`'s `~standard` type mentions Zod's JSON-schema helpers it does not forward; the
     graph walker misses eager globs written with the `@/` alias or a quoted `eager` key (older than this
-    batch).
+    batch). Found on `dev` as well and left for later: a duplicated or directly opened chart is not saved
+    locally on entry (the router calls `onStay`, not `onEnter`), and `mod+k` cannot close the map's
+    search dialog.
   - Left at start-up on purpose: the entity page's identity and details queries (its loader starts them at
     the click, rule 5 of "Migrating a family"). Largest builders left: PNRR's search contract (its schema
     module mixes it with the data schemas) and the redesign entity API behind the entity page.

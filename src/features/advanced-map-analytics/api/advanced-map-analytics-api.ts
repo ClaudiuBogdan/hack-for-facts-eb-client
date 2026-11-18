@@ -2,6 +2,7 @@ import { getAuthToken } from '@/lib/auth';
 import { getApiBaseUrl } from '@/config/env';
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
+import { quietChunkLoad } from '@/lib/quiet-chunk-load';
 import { parseEnvelope } from './envelope';
 import type {
   AdvancedMapAnalyticsMapDetail,
@@ -16,14 +17,32 @@ const OWNER_BASE_ENDPOINT = '/api/v1/advanced-map-analytics';
 let decoders: Promise<typeof import('./schemas')> | null = null;
 
 /**
- * The response decoders (the map schemas, which build the chart schemas), once
- * per document: off the start-up graph, since every page evaluates the public
- * map route. A hover's preload awaits this inside the router's quiet preload,
- * so a failed fetch there never reloads the page being read.
+ * The response decoders (the map schemas, which build the chart schemas):
+ * imported when a response needs them, off the start-up graph, since every
+ * page evaluates the public map route. A failed import is forgotten, so the
+ * next call asks again; a failure the reader is waiting on goes to the app's
+ * chunk recovery, as any page's code does.
  */
 export function loadMapDecoders(): Promise<typeof import('./schemas')> {
-  return (decoders ??= import('./schemas'));
+  if (!decoders) {
+    const loading = import('./schemas');
+    decoders = loading;
+    loading.catch(() => {
+      if (decoders === loading) decoders = null;
+    });
+  }
+  return decoders;
 }
+
+/**
+ * The decoders fetched ahead of need (a hover, the public read's own request
+ * in flight), quietly: a failure here never reloads the page being read
+ * (`quietChunkLoad`), and the call that needs them asks again.
+ */
+export function prefetchMapDecoders(): void {
+  void quietChunkLoad(loadMapDecoders);
+}
+
 const PUBLIC_BASE_ENDPOINT = '/api/v1/advanced-map-analytics/public';
 
 export class AdvancedMapAnalyticsApiError extends Error {
@@ -403,10 +422,10 @@ export async function deleteAdvancedMapAnalyticsMap(mapId: string): Promise<void
 }
 
 export async function getPublicAdvancedMapAnalyticsMap(publicId: string): Promise<AdvancedMapAnalyticsMapDetail> {
-  // The request starts at the click; its decoder loads alongside it. The
-  // response's own failure (a 404, the envelope) comes first, then the decoder's.
-  const decoders = loadMapDecoders();
-  decoders.catch(() => {});
+  // The request starts at the click; its decoder is fetched alongside it,
+  // quietly. The response's own failure (a 404, the envelope) comes first; only
+  // then is the decoder needed, and a failure then is the page's to recover.
+  prefetchMapDecoders();
   let data: unknown;
   try {
     data = unwrapData(await publicRequest(`/${encodeURIComponent(publicId)}`));
@@ -426,6 +445,6 @@ export async function getPublicAdvancedMapAnalyticsMap(publicId: string): Promis
 
     throw error;
   }
-  const { normalizeMapDetail } = await decoders;
+  const { normalizeMapDetail } = await loadMapDecoders();
   return ensureBundledGroupedSeriesData(normalizeMapDetail(data), 'public');
 }

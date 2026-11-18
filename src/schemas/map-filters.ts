@@ -6,6 +6,8 @@ import type { AnalyticsFilterType } from './charts';
 
 export const defaultMapFilters: AnalyticsFilterType = {
   account_category: 'ch',
+  // A plain value (no schema), the one call this contract module runs as it loads.
+  // eslint-disable-next-line no-restricted-syntax
   report_period: createDefaultExecutionYearReportPeriod(),
   normalization: 'total',
   is_territorial_executive: true,
