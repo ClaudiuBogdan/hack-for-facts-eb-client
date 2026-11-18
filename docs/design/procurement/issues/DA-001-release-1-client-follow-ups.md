@@ -40,6 +40,12 @@ client shipped. Each is described with where it lives and a suggested fix.
   purchases' firms are unavailable, so the page is not blank.
 - **Fix:** carry an explicit `unavailable` state to each, as the analytics tiles do („indisponibil").
 
+## Third review (18 November 2026)
+
+The third review's non-leak findings match items 1–3 above. Its point that the purchase's own row among the
+neighbours took „lei" when uncounted is fixed: the row carries its value's basis, as the neighbours' do. Items 1–3
+remain open as written.
+
 ## Release note (visible change, not a defect)
 
 Analytics no longer offers title search or a firm's place for direct purchases: „Achizițiile directe nu mai pot fi

@@ -3364,3 +3364,28 @@ leak blocks):
 - exact line amounts read through `Number` (more than six decimals);
 - the front door's supplier-count tile and the context's firm place, which
   are left out (not said) in the D6 window — the band beside each says it.
+
+### 24.3 After the third review (18 November 2026)
+
+- **No answer goes back to a server seed.**
+  - When the publication changes, the open-tab watch cancels and removes
+    procurement answers. It doesn't reset them, which would restore the
+    server's seed. Then it runs the page's loaders again.
+  - Every server render of a direct-purchase page records the publication
+    it was read under, read before the data. Once the browser has read a
+    publication, it never uses a seed of another one, including on its
+    first reading of a CDN copy.
+  - A render whose publication is unknown is not cached.
+- **The purchase's head never names its supplier,** whether withheld or
+  not: the head outlives the body.
+- **Disclosure key checks:**
+  - Analytics rankings, records and the largest-purchase lists compare the
+    API's `meta.disclosureKey` with the publication their cache key was
+    planned under. A mismatch fails the read and nothing is kept.
+  - An answer that names no supplier (`unavailable`) stands.
+- **Analytics pickers:**
+  - Analytics offers no firm by its registry name as a direct purchase's
+    supplier; a typed CUI is taken as typed.
+  - A buyer given the supplier's own code isn't named from the registry.
+- **Names from direct-purchase supplier buckets** are looked up fresh each
+  time and never kept in the shared six-hour name memo.
