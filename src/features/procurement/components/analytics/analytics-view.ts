@@ -55,7 +55,11 @@ export function figuresOf(query: Query, answer: Answer): readonly Figure[] | nul
   ]
   if (population.money === 'clean') figures.push({ key: 'money', label: t`Lei, fără TVA`, value: now.money !== null ? moneyText(now.money) : '—', change: changeText(now.money, before?.money ?? null) })
   if (population.money === 'provisional') figures.push({ key: 'money', label: t`Lei, provizoriu`, value: now.money !== null ? moneyText(now.money) : '—', change: null, muted: true })
-  if (!query.filters.furnizor) {
+  if (!query.filters.furnizor && concentration?.unavailable) {
+    // D6 enforced, the release off: the API serves no supplier figure for direct purchases — said, never left pending.
+    figures.push({ key: 'firms', label: t`Firme`, value: t`indisponibil`, change: null, muted: true })
+    figures.push({ key: 'top5', label: byValue ? t`Top 5 firme, din lei` : t`Top 5 firme`, value: t`indisponibil`, change: null, muted: true })
+  } else if (!query.filters.furnizor) {
     figures.push({ key: 'firms', label: t`Firme`, value: concentration?.firms != null ? countText(concentration.firms) : '…', change: null })
     figures.push({ key: 'top5', label: byValue ? t`Top 5 firme, din lei` : t`Top 5 firme`, value: concentration?.top5 != null ? percentText(concentration.top5, 0) : '…', change: null })
   }

@@ -100,13 +100,15 @@ export interface DaSupplierReads {
   readonly figures: boolean
   /** Places (region, county, locality): served only by the legacy analysis with D6 off. */
   readonly places: boolean
+  /** The switch state was read; unread, neither is asked (a refused field would fail its whole request) and the page is partial. */
+  readonly known: boolean
 }
 
-/** The switch state as reads: a failed read of it reads as ever (legacy), and a refusal then fails that read alone. */
+/** The switch state as reads: unread, nothing the D6 window refuses is asked — the page says it unavailable, and is not kept. */
 export function daSupplierReads(): Promise<DaSupplierReads> {
   return readDaRelease().then(
-    (status) => ({ figures: !(status.privacyEnforced && !status.enabled), places: !status.enabled && !status.privacyEnforced }),
-    () => ({ figures: true, places: true }),
+    (status) => ({ figures: !(status.privacyEnforced && !status.enabled), places: !status.enabled && !status.privacyEnforced, known: true }),
+    () => ({ figures: false, places: false, known: false }),
   )
 }
 

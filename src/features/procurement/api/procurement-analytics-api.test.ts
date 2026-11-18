@@ -7,7 +7,7 @@ import { isStaleBuild, planAnswer, planRecords, readConcentration, readFigures, 
 const graphql = vi.hoisted(() => ({ query: vi.fn() }))
 // The switches: direct purchases' supplier figures readable unless a test says otherwise.
 const supplierReads = vi.hoisted(() => ({ figures: true }))
-vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: supplierReads.figures, places: false }), disclosureVersion: () => Promise.resolve('v1') }))
+vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: supplierReads.figures, places: false, known: true }), disclosureVersion: () => Promise.resolve('v1') }))
 vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()), graphqlQuery: graphql.query }))
 
 const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13' }
@@ -175,7 +175,7 @@ describe('D6 enforced while the release is off', () => {
     try {
       const scope = { grain: 'direct_acquisition', from: '2025-01', to: '2025-12' }
       await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal)).resolves.toMatchObject({ unavailable: true, buckets: [] })
-      await expect(readConcentration(scope, 'value', null, new AbortController().signal)).resolves.toBeNull()
+      await expect(readConcentration(scope, 'value', null, new AbortController().signal)).resolves.toMatchObject({ unavailable: true, firms: null })
       expect(graphql.query).not.toHaveBeenCalled()
     } finally {
       supplierReads.figures = true

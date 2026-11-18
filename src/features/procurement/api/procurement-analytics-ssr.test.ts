@@ -4,7 +4,7 @@ import { forgetProcurementCutoff } from './procurement-cutoff'
 import { readProcurementAnalyticsForSsr } from './procurement-analytics-ssr'
 // The disclosure publication direct purchases are kept under (D6), alongside the build.
 const release = vi.hoisted(() => ({ disclosure: 'v1' as string | null }))
-vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true }), disclosureVersion: () => Promise.resolve(release.disclosure), underDisclosure: (_memo: unknown, _key: string, read: () => Promise<unknown>) => read() }))
+vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true, known: true }), disclosureVersion: () => Promise.resolve(release.disclosure), underDisclosure: (_memo: unknown, _key: string, read: () => Promise<unknown>) => read() }))
 
 /**
  * The server render's generation guard: without a cutoff's build it reads no

@@ -6,7 +6,7 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({
   graphqlQuery: (...args: unknown[]) => graphqlQuery(...args),
 }))
 
-const { disclosureVersion, resetDaReleaseForTests, underDisclosure } = await import('./procurement-da-release-status')
+const { daSupplierReads, disclosureVersion, resetDaReleaseForTests, underDisclosure } = await import('./procurement-da-release-status')
 
 /**
  * D6 (owner via root): a withheld supplier disappears within one publish, so
@@ -68,5 +68,17 @@ describe('underDisclosure', () => {
     graphqlQuery.mockRejectedValue(new Error('down'))
     await expect(underDisclosure(memo, '123', () => Promise.resolve('fresh'))).resolves.toBe('fresh')
     expect(memo).not.toHaveBeenCalled()
+  })
+})
+
+describe('daSupplierReads', () => {
+  it('unread, asks nothing the D6 window refuses, and says the state unknown', async () => {
+    graphqlQuery.mockRejectedValue(new Error('down'))
+    await expect(daSupplierReads()).resolves.toEqual({ figures: false, places: false, known: false })
+  })
+
+  it('D6 on, release off: no supplier figures, no places', async () => {
+    graphqlQuery.mockResolvedValue(status(false, null, 'p1'))
+    await expect(daSupplierReads()).resolves.toEqual({ figures: false, places: false, known: true })
   })
 })

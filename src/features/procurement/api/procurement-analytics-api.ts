@@ -190,11 +190,13 @@ export interface Concentration {
   readonly firms: number | null
   readonly top1: number | null
   readonly top5: number | null
+  /** D6 enforced while the release is off: direct purchases' supplier concentration is not served (said, never pending). */
+  readonly unavailable?: true
 }
 
 export async function readConcentration(scope: Scope, basis: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Concentration | null> {
   // Direct purchases' supplier concentration is refused while D6 is enforced and the release is off: none, not a failure.
-  if (scope.grain === 'direct_acquisition' && !(await daSupplierReads()).figures) return null
+  if (scope.grain === 'direct_acquisition' && !(await daSupplierReads()).figures) return { firms: null, top1: null, top5: null, unavailable: true }
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsConcentration($s: ProcurementAnalysisScopeInput, $build: String) { c: procurementConcentration(scope: $s, basis: ${basis}, build: $build) { supplierCount top1Share top5Share } }`,
     { s: scope, build },

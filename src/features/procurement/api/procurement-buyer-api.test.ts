@@ -5,7 +5,7 @@ const graphqlQuery = vi.fn()
 // The switches as reads: legacy (release off, D6 off) unless a test says otherwise.
 const release = vi.hoisted(() => ({ on: false, d6: false }))
 vi.mock('./procurement-da-release-status', () => ({
-  daSupplierReads: () => Promise.resolve({ figures: !(release.d6 && !release.on), places: !release.on && !release.d6 }),
+  daSupplierReads: () => Promise.resolve({ figures: !(release.d6 && !release.on), places: !release.on && !release.d6, known: true }),
 }))
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
 // SEAP's cutoff is the shared read (tested beside it): here each test says what it is.

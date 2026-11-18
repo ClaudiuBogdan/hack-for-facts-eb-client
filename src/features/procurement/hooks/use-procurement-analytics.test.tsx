@@ -6,7 +6,7 @@ import { forgetProcurementCutoff } from '../api/procurement-cutoff'
 import { queryOf } from '../lib/analytics-model'
 import { homeYear } from '../lib/home-model'
 import { resetRecoveredBuilds, useAnswer } from './use-procurement-analytics'
-vi.mock('../api/procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true }), disclosureVersion: () => Promise.resolve('v1') }))
+vi.mock('../api/procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true, known: true }), disclosureVersion: () => Promise.resolve('v1') }))
 
 /**
  * The page's generation guard against a fake API that serves one build at a

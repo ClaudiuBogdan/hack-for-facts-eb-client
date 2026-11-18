@@ -148,7 +148,7 @@ export type RawBuyerProfile = Readonly<Record<string, unknown>>
  * the year in progress through its cutoff month.
  */
 /** Every supplier read allowed: the legacy analysis with D6 off. */
-const ALL_SUPPLIER_READS: DaSupplierReads = { figures: true, places: true }
+const ALL_SUPPLIER_READS: DaSupplierReads = { figures: true, places: true, known: true }
 
 export function buyerProfileFields(cui: string, period: Period, latest: number, reads: DaSupplierReads = ALL_SUPPLIER_READS): BuyerField[] {
   const part = latest + 1
@@ -467,7 +467,8 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
         ? { county: profile.county, share: profile.direct.value / countyValue }
         : null,
     // The chart's year in progress and the data's date hang on the cutoff, whichever period the page shows.
-    partial: identity.failed || cutoff.failed || fellBack,
+    // The switch state unread too: what it gates is said unavailable, and the profile is never kept that way.
+    partial: identity.failed || cutoff.failed || fellBack || !reads.known,
     namesUnread: false,
   }
 }
