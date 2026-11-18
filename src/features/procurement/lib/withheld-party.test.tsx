@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
-import { mapPartyBucket } from '../api/graphql/procurement-mappers'
+import { mapDaSupplier, mapDirectAcquisition, mapPartyBucket } from '../api/graphql/procurement-mappers'
+import { daSupplierOf } from '../api/procurement-home-api'
+import { daRecord } from './direct-purchase.fixture'
+import { partyLabel } from './party-links'
 import { nameKeys } from '../api/procurement-analytics-api'
 import { PartyRows } from '../components/home/home-rows'
 import { keyLabel } from './analytics-text'
@@ -87,5 +90,38 @@ describe('mapPartyBucket (entity and company slices)', () => {
       name: 'FLORARIA IRIS SRL',
       displayName: null,
     })
+  })
+})
+
+describe('legacy direct-acquisition rows (fail closed on displayKind)', () => {
+  it.each([
+    ['natural_person with a name served beside it', { cui: '1234567890123', name: 'Ion Popescu', displayName: 'Ion Popescu', displayKind: 'natural_person' }],
+    ['no kind', { cui: '14837428', name: 'FLORARIA IRIS', displayName: null, displayKind: null }],
+    ['an unknown kind', { cui: '14837428', name: 'POPESCU PFA', displayName: null, displayKind: 'sole_trader' }],
+    ['the buyer kind on a supplier', { cui: '361684', name: 'BNR', displayName: null, displayKind: 'authority' }],
+  ])('%s: no name, no code', (_case, raw) => {
+    expect(mapDaSupplier(raw)).toEqual({ cui: null, name: null, displayName: null, displayKind: 'natural_person' })
+    expect(daSupplierOf(raw)).toEqual({ cui: null, name: '', withheld: true })
+  })
+
+  it('a company keeps its name and code', () => {
+    const raw = { cui: '14837428', name: 'FLORARIA IRIS', displayName: 'FLORARIA IRIS', displayKind: 'company' }
+    expect(mapDaSupplier(raw)).toEqual(raw)
+    const named = daSupplierOf(raw)
+    expect(named.cui).toBe('14837428')
+    expect(named.name.toLowerCase()).toBe('floraria iris')
+    expect(named.withheld).toBeUndefined()
+  })
+
+  it('a withheld party is said as one', () => {
+    expect(partyLabel({ cui: null, name: null, displayName: null, displayKind: 'natural_person' })).toBe('Persoană fizică')
+    expect(partyLabel({ cui: '14837428', name: 'FLORARIA IRIS', displayName: null, displayKind: 'company' })).toBe('FLORARIA IRIS')
+  })
+
+  it('a withheld title is never kept, whatever came with its marker', () => {
+    const { grain: _grain, stateId: _stateId, ...record } = daRecord()
+    const mapped = mapDirectAcquisition({ ...record, title: 'Ion Popescu, tel. 0722', titleWithheld: 'privacy', cpvLabel: 'Aranjamente florale', sourceUrl: null } as never)
+    expect(mapped.title).toBeNull()
+    expect(mapped.cpvLabel).toBe('Aranjamente florale')
   })
 })

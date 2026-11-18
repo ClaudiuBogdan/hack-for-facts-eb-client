@@ -141,7 +141,7 @@ export function RecordList({
   return (
     <ol className={cn(LIST, className)}>
       {records.map((record) => {
-        const partners = record.winners.filter((winner) => winner.cui !== cui).map((winner) => winner.name)
+        const partners = record.winners.filter((winner) => winner.cui !== cui && !winner.withheld).map((winner) => winner.name)
         const title = record.title ?? fallbackTitle(record) ?? t`Fără titlu publicat`
         const body = (
           <>

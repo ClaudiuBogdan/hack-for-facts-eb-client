@@ -9,7 +9,7 @@
  * - the year's largest contract awards, grouped by contract;
  * - the newest complete month's largest contract awards, or direct purchases.
  */
-import { nameableKeys } from '../lib/withheld-party'
+import { isNamedDaSupplier, nameableKeys } from '../lib/withheld-party'
 import type { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -285,6 +285,11 @@ export function partyOf(raw: { readonly cui: string | null; readonly name: strin
   return { cui, name: tidyName(raw.displayName ?? raw.name ?? cui ?? '—') }
 }
 
+/** A direct acquisition's supplier, D6 fail closed: named only when the API serves it as a company. */
+export function daSupplierOf(raw: { readonly cui: string | null; readonly name: string | null; readonly displayName: string | null; readonly displayKind?: string | null }): HomeParty {
+  return isNamedDaSupplier(raw) ? partyOf(raw) : { cui: null, name: '', withheld: true }
+}
+
 export function acceptedValue(value: { readonly valueAccepted: boolean; readonly valueRonComparable: string | null }): number | null {
   if (!value.valueAccepted || value.valueRonComparable === null) return null
   const parsed = Number(value.valueRonComparable)
@@ -398,7 +403,7 @@ export async function fetchProcurementHomeRecentDirect(month: string, limit: num
             title: tidyTitle(item.title),
             cpvCode: item.cpvCode,
             buyer: partyOf(item.authority),
-            winners: [partyOf(item.supplier)],
+            winners: [daSupplierOf(item.supplier)],
             value,
           },
         ]

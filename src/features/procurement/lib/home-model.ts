@@ -98,6 +98,8 @@ export interface NationalRead {
 export interface HomeParty {
   readonly cui: string | null
   readonly name: string
+  /** D6: a direct acquisition's supplier the API does not name — no CUI, no name; the page says „Persoană fizică". */
+  readonly withheld?: true
 }
 
 export interface RecentRecord {

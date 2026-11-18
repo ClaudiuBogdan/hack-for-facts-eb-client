@@ -22,7 +22,7 @@ import {
   type SupplierDay,
 } from './graphql/procurement-supplier-queries'
 import { readCutoffOutcome, readProcurementCutoff, untilAborted } from './procurement-cutoff'
-import { ACCEPTED_VALUE_STATES, acceptedValue, partyOf } from './procurement-home-api'
+import { ACCEPTED_VALUE_STATES, acceptedValue, daSupplierOf, partyOf } from './procurement-home-api'
 import {
   SUPPLIER_LARGEST_RECORDS,
   SUPPLIER_ROWS_READ,
@@ -505,6 +505,6 @@ export async function fetchProcurementSupplierDirect(cui: string, choice: Period
     const value = acceptedValue(item.value)
     return value === null
       ? []
-      : [{ id: item.id, grain: 'direct', date: item.finalizationDate, title: tidyTitle(item.title), cpvCode: item.cpvCode, buyer: partyOf(item.authority), winners: [partyOf(item.supplier)], value }]
+      : [{ id: item.id, grain: 'direct', date: item.finalizationDate, title: tidyTitle(item.title), cpvCode: item.cpvCode, buyer: partyOf(item.authority), winners: [daSupplierOf(item.supplier)], value }]
   })
 }

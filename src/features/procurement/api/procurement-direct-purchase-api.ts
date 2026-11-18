@@ -149,6 +149,7 @@ export async function fetchDirectPurchase(id: string, signal?: AbortSignal): Pro
   if (found === null) return null
   const record = mapDirectAcquisition(found.directAcquisition)
   const detail = found.detailAvailability === 'AVAILABLE' ? found.detail : null
+  // D6: a withheld supplier has no CUI to look a name up by (`mapDaSupplier`), so only a company's is asked for.
   const cuis = [record.authority.cui, record.supplier.cui].filter((cui): cui is string => Boolean(cui))
   const codes = [...new Set([record.cpvCode, ...(detail?.items ?? []).map((item) => item.cpvCode)].map(cpvKey).filter((code): code is string => code !== null))]
   const names = await readNames(cuis, codes, record.authority.cui, signal)

@@ -43,6 +43,12 @@ export const partySchema = z.object({
   cui: z.string().nullable(),
   name: z.string().nullable(),
   displayName: z.string().nullable(),
+  /**
+   * `authority | company | natural_person` where the API classifies the party
+   * (direct acquisitions, D6); null or absent elsewhere. A `natural_person`
+   * has no CUI and no name, and is never named.
+   */
+  displayKind: z.string().nullable().optional(),
 })
 
 export type Party = z.infer<typeof partySchema>
@@ -238,6 +244,9 @@ export const directAcquisitionRecordSchema = moneyFieldsSchema.extend({
   grain: z.literal('direct_acquisition'),
   uniqueCode: z.string().nullable(),
   title: z.string().nullable(),
+  /** `privacy` when the title is withheld until its review; `cpvLabel` then names the purchase. */
+  titleWithheld: z.string().nullable().optional(),
+  cpvLabel: z.string().nullable().optional(),
   authority: partySchema,
   supplier: partySchema,
   cpvCode: z.string().nullable(),

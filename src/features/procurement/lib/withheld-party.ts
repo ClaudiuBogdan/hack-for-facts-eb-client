@@ -20,6 +20,15 @@ export function nameableKeys(keys: readonly string[]): readonly string[] {
   return keys.filter((key) => !isNaturalPersonKey(key))
 }
 
+/**
+ * A direct acquisition's supplier is named only when the API serves it as a
+ * company (`displayKind`); anything else — a natural person, no kind at all —
+ * is withheld, whatever name or code came with it.
+ */
+export function isNamedDaSupplier(party: { readonly displayKind?: string | null } | null | undefined): boolean {
+  return party?.displayKind === 'company'
+}
+
 /** The withheld group, as a ranking row names it: every supplier the platform does not name, together. */
 export function naturalPersonsLabel(): string {
   return t`Persoane fizice`

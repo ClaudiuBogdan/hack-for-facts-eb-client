@@ -11504,7 +11504,7 @@ msgstr "Request dataset"
 msgid "Cere setul {0}"
 msgstr "Request dataset {0}"
 
-#: src/features/procurement/lib/home-model.ts:224
+#: src/features/procurement/lib/home-model.ts:226
 msgid "Cerere de ofertă"
 msgstr "Request for quotation"
 
@@ -13507,7 +13507,7 @@ msgstr "Concerning"
 msgid "Concret: dacă o lege a fost modificată după publicare, textul de aici rămâne cel inițial, iar modificările apar ca evenimente în istoricul actului — nu topite în text. Pentru forma în vigoare și pentru orice decizie cu miză, mergi la sursa oficială:"
 msgstr "In practice: if a law was amended after publication, the text here stays the original one, and the amendments appear as events in the act’s history — not merged into the text. For the form in force, and for any decision with stakes, go to the official source:"
 
-#: src/features/procurement/lib/home-model.ts:227
+#: src/features/procurement/lib/home-model.ts:229
 msgid "Concurs de soluții"
 msgstr "Design contest"
 
@@ -15505,7 +15505,7 @@ msgstr "Buy through SEAP"
 msgid "Cumpărător public"
 msgstr "Public buyer"
 
-#: src/features/procurement/components/home/home-rows.tsx:257
+#: src/features/procurement/components/home/home-rows.tsx:258
 #: src/features/procurement/components/supplier/supplier-rows.tsx:151
 msgid "Cumpărător:"
 msgstr "Buyer:"
@@ -17466,7 +17466,7 @@ msgstr "Sustainable development — Horizon 2020"
 msgid "Dezvoltare durabilă — Ținte 2030"
 msgstr "Sustainable development — 2030 targets"
 
-#: src/features/procurement/lib/home-model.ts:225
+#: src/features/procurement/lib/home-model.ts:227
 msgid "Dialog competitiv"
 msgstr "Competitive dialogue"
 
@@ -21483,7 +21483,7 @@ msgid "Fără titlu în SEAP"
 msgstr "No title in SEAP"
 
 #: src/features/private-companies/components/profile/company-money-band.tsx:468
-#: src/features/procurement/components/home/home-rows.tsx:244
+#: src/features/procurement/components/home/home-rows.tsx:245
 #: src/features/procurement/components/supplier/supplier-rows.tsx:145
 msgid "Fără titlu publicat"
 msgstr "No published title"
@@ -28262,19 +28262,19 @@ msgstr "licence {number} of {licensed}"
 msgid "licențiat la {licensed}"
 msgstr "licensed on {licensed}"
 
-#: src/features/procurement/lib/home-model.ts:214
+#: src/features/procurement/lib/home-model.ts:216
 msgid "Licitație deschisă"
 msgstr "Open tender"
 
-#: src/features/procurement/lib/home-model.ts:215
+#: src/features/procurement/lib/home-model.ts:217
 msgid "Licitație deschisă accelerată"
 msgstr "Accelerated open tender"
 
-#: src/features/procurement/lib/home-model.ts:216
+#: src/features/procurement/lib/home-model.ts:218
 msgid "Licitație restrânsă"
 msgstr "Restricted tender"
 
-#: src/features/procurement/lib/home-model.ts:217
+#: src/features/procurement/lib/home-model.ts:219
 msgid "Licitație restrânsă accelerată"
 msgstr "Accelerated restricted tender"
 
@@ -31357,7 +31357,7 @@ msgstr "not completed"
 msgid "Nefinalizată"
 msgstr "Not completed"
 
-#: src/features/procurement/lib/home-model.ts:221
+#: src/features/procurement/lib/home-model.ts:223
 msgid "Negociere cu anunț prealabil"
 msgstr "Negotiation with prior notice"
 
@@ -31365,7 +31365,7 @@ msgstr "Negotiation with prior notice"
 msgid "negociere fără anunț prealabil"
 msgstr "negotiation without prior notice"
 
-#: src/features/procurement/lib/home-model.ts:220
+#: src/features/procurement/lib/home-model.ts:222
 msgid "Negociere fără anunț prealabil"
 msgstr "Negotiation without prior notice"
 
@@ -32968,7 +32968,7 @@ msgstr "Norm"
 msgid "Normalization"
 msgstr "Normalization"
 
-#: src/features/procurement/lib/home-model.ts:223
+#: src/features/procurement/lib/home-model.ts:225
 msgid "Norme proprii (servicii din anexa 2)"
 msgstr "Own rules (Annex 2 services)"
 
@@ -35762,7 +35762,7 @@ msgstr "Part I (Hungarian)"
 msgid "partea nerambursabilă a PNRR"
 msgstr "the non-repayable part of PNRR"
 
-#: src/features/procurement/lib/home-model.ts:226
+#: src/features/procurement/lib/home-model.ts:228
 msgid "Parteneriat pentru inovare"
 msgstr "Innovation partnership"
 
@@ -36722,7 +36722,9 @@ msgstr "pers."
 msgid "persoană"
 msgstr "person"
 
+#: src/features/procurement/components/home/home-rows.tsx:244
 #: src/features/procurement/lib/direct-purchase-value-text.ts:61
+#: src/features/procurement/lib/party-links.ts:28
 msgid "Persoană fizică"
 msgstr "Natural person"
 
@@ -36740,7 +36742,7 @@ msgstr "Foreign legal person"
 msgid "persoane"
 msgstr "persons"
 
-#: src/features/procurement/lib/withheld-party.ts:25
+#: src/features/procurement/lib/withheld-party.ts:34
 msgid "Persoane fizice"
 msgstr "Natural persons"
 
@@ -38085,7 +38087,7 @@ msgstr "The procedure has {total}, all awarded."
 msgid "Procedura are {total}; {cancelledText}."
 msgstr "The procedure has {total}; {cancelledText}."
 
-#: src/features/procurement/lib/home-model.ts:222
+#: src/features/procurement/lib/home-model.ts:224
 msgid "Procedură competitivă cu negociere"
 msgstr "Competitive procedure with negotiation"
 
@@ -38101,11 +38103,11 @@ msgstr "The procedure is suspended."
 msgid "Procedura nu a fost găsită"
 msgstr "Procedure not found"
 
-#: src/features/procurement/lib/home-model.ts:218
+#: src/features/procurement/lib/home-model.ts:220
 msgid "Procedură simplificată"
 msgstr "Simplified procedure"
 
-#: src/features/procurement/lib/home-model.ts:219
+#: src/features/procurement/lib/home-model.ts:221
 msgid "Procedură simplificată proprie"
 msgstr "Own simplified procedure"
 
@@ -48454,7 +48456,7 @@ msgstr "Unknown error"
 msgid "Unknown format"
 msgstr "Unknown format"
 
-#: src/features/procurement/lib/party-links.ts:28
+#: src/features/procurement/lib/party-links.ts:30
 msgid "Unknown party"
 msgstr "Unknown party"
 

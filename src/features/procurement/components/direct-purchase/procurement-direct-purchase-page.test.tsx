@@ -337,3 +337,25 @@ describe('direct acquisitions release 1 — D6', () => {
     expect(page).toContain('SEAP nu indică furnizorul acestei achiziții')
   })
 })
+
+describe('a legacy record, D6 and withheld free text (flag on)', () => {
+  it('a supplier not served as a company is a natural person: never named, no code, no link, no context', () => {
+    const purchase = directPurchase({ supplier: { cui: null, name: null, displayName: null, displayKind: 'natural_person' } })
+    const page = html(purchase, null)
+    expect(page).toContain('a cumpărat direct de la Persoană fizică')
+    expect(page).toContain('Furnizorul este o persoană fizică')
+    expect(page).not.toMatch(/Floraria|FLORARIA|9446547/u)
+    expect(page).not.toContain('/procurement/suppliers/')
+  })
+
+  it('a supplier with a name but no company kind is withheld too', () => {
+    const page = html(directPurchase({ supplier: { cui: '9446547', name: 'FLORARIA IRIS', displayName: 'FLORARIA IRIS', displayKind: null } }), null)
+    expect(page).not.toMatch(/Floraria|FLORARIA|9446547/u)
+  })
+
+  it('a withheld title: the CPV label names the purchase, and the page says the text waits for its review', () => {
+    const page = html(directPurchase({ title: null, titleWithheld: 'privacy', cpvLabel: 'Aranjamente florale' }), null)
+    expect(page).toContain('Finalizată Aranjamente florale')
+    expect(page).toContain('nu e afișat încă: așteaptă verificarea datelor personale')
+  })
+})

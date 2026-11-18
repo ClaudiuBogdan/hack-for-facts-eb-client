@@ -87,9 +87,9 @@ describe('the purchase as the page reads it', () => {
     const cuiOnly = directPurchase({ authority: { cui: '25097708', name: 'ASOCIATIA DE DEZVOLTARE INTERCOMUNITARA IPATELE-DRAGUSENI', displayName: '25097708' } }, {}, NO_NAMES)
     expect(cuiOnly.authority.name).toBe('Asociatia de Dezvoltare Intercomunitara Ipatele-Draguseni')
     // A number that is not the party's CUI is its name's.
-    const numbered = directPurchase({ supplier: { cui: '15520188', name: '2004 IMPEX SRL', displayName: '2004 IMPEX SRL' } }, {}, NO_NAMES)
+    const numbered = directPurchase({ supplier: { cui: '15520188', name: '2004 IMPEX SRL', displayName: '2004 IMPEX SRL', displayKind: 'company' } }, {}, NO_NAMES)
     expect(numbered.supplier.name).toBe('2004 Impex SRL')
-    const ownCui = directPurchase({ supplier: { cui: 'RO15520188', name: 'RO 15520188 IMPEX SRL', displayName: 'RO 15520188 IMPEX SRL' } }, {}, NO_NAMES)
+    const ownCui = directPurchase({ supplier: { cui: 'RO15520188', name: 'RO 15520188 IMPEX SRL', displayName: 'RO 15520188 IMPEX SRL', displayKind: 'company' } }, {}, NO_NAMES)
     expect(ownCui.supplier.name).toBe('Impex SRL')
   })
 

@@ -24,6 +24,8 @@ export type PartyPairSearchLink = {
 }
 
 export function partyLabel(party: Party | null): string {
+  // D6: a supplier the API does not name is said as what it is.
+  if (party?.displayKind === 'natural_person') return t`Persoană fizică`
   return (
     party?.displayName ?? party?.name ?? party?.cui ?? t`Unknown party`
   )

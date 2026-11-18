@@ -18,11 +18,13 @@ export const rawPartySchema = z.object({
   cui: z.string().nullable(),
   name: z.string().nullable(),
   displayName: z.string().nullable(),
+  /** D6: `authority | company | natural_person` on direct acquisitions; null where no rule classifies the party. */
+  displayKind: z.string().nullable().optional(),
 })
 export type RawProcurementParty = z.infer<typeof rawPartySchema>
 
 /** GraphQL selection for a party block (reused across queries). */
-const PARTY_FIELDS = /* GraphQL */ `cui name displayName`
+const PARTY_FIELDS = /* GraphQL */ `cui name displayName displayKind`
 
 /** GraphQL selection for the data-layer value resolution block. */
 const VALUE_RESOLUTION = /* GraphQL */ `value {
@@ -158,6 +160,8 @@ export const rawDirectAcquisitionSchema = z.object({
   id: z.string(),
   uniqueCode: z.string().nullable(),
   title: z.string().nullable(),
+  titleWithheld: z.string().nullable().optional(),
+  cpvLabel: z.string().nullable().optional(),
   authority: rawPartySchema,
   supplier: rawPartySchema,
   cpvCode: z.string().nullable(),
@@ -177,7 +181,7 @@ export type RawProcurementDirectAcquisition = z.infer<
 >
 
 const DIRECT_ACQUISITION_FIELDS = /* GraphQL */ `
-  id uniqueCode title
+  id uniqueCode title titleWithheld cpvLabel
   authority { ${PARTY_FIELDS} }
   supplier { ${PARTY_FIELDS} }
   cpvCode cpvDivisionCode

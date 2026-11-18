@@ -240,7 +240,8 @@ export function RecordRows({
   return (
     <ol className={cn(LIST, className)}>
       {records.map((record) => {
-        const winners = record.winners.map((winner) => winner.name).join(' · ')
+        // D6: a supplier the API does not name is said as what it is.
+        const winners = record.winners.map((winner) => (winner.withheld ? t`Persoană fizică` : winner.name)).join(' · ')
         const title = record.title ?? fallbackTitle?.(record) ?? t`Fără titlu publicat`
         return (
           <li key={`${record.grain}:${record.id}`}>

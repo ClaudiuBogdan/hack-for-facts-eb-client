@@ -10,7 +10,7 @@
  * source systems fail loud at the Zod boundary rather than becoming a wrong
  * record.
  */
-import { isNaturalPersonKey } from '../../lib/withheld-party'
+import { isNamedDaSupplier, isNaturalPersonKey } from '../../lib/withheld-party'
 import {
   categoryRowSchema,
   contractDisplayTitleSchema,
@@ -95,7 +95,14 @@ export function mapParty(raw: RawProcurementParty | null): Party {
     cui: raw?.cui ?? null,
     name: raw?.name ?? null,
     displayName: raw?.displayName ?? null,
+    displayKind: raw?.displayKind ?? null,
   }
+}
+
+/** D6, fail closed: a direct acquisition's supplier keeps its name and code only when the API serves it as a company. */
+export function mapDaSupplier(raw: RawProcurementParty | null): Party {
+  const party = mapParty(raw)
+  return isNamedDaSupplier(party) ? party : { cui: null, name: null, displayName: null, displayKind: 'natural_person' }
 }
 
 // ---------------------------------------------------------------------------
@@ -185,9 +192,12 @@ export function mapDirectAcquisition(
     id: raw.id,
     grain: 'direct_acquisition',
     uniqueCode: raw.uniqueCode,
-    title: raw.title,
+    // A withheld title is never shown, whatever came with its marker.
+    title: raw.titleWithheld ? null : raw.title,
+    titleWithheld: raw.titleWithheld,
+    cpvLabel: raw.cpvLabel,
     authority: mapParty(raw.authority),
-    supplier: mapParty(raw.supplier),
+    supplier: mapDaSupplier(raw.supplier),
     cpvCode: raw.cpvCode,
     cpvDivisionCode: raw.cpvDivisionCode,
     valueRon: raw.valueRon,

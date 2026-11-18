@@ -17,7 +17,7 @@ import {
 } from './graphql/procurement-buyer-queries'
 import { PROCUREMENT_HOME_DIRECT_QUERY, procurementHomeDirectResponseSchema } from './graphql/procurement-home-queries'
 import { readCutoffOutcome, readProcurementCutoff, untilAborted } from './procurement-cutoff'
-import { ACCEPTED_VALUE_STATES, acceptedValue, fetchGroupedContracts, partyOf } from './procurement-home-api'
+import { ACCEPTED_VALUE_STATES, acceptedValue, daSupplierOf, fetchGroupedContracts, partyOf } from './procurement-home-api'
 import {
   buyerName,
   tidyAddress,
@@ -484,7 +484,7 @@ export async function fetchProcurementBuyerRecords(cui: string, choice: PeriodCh
             title: tidyTitle(item.title),
             cpvCode: item.cpvCode,
             buyer: partyOf(item.authority),
-            winners: [partyOf(item.supplier)],
+            winners: [daSupplierOf(item.supplier)],
             value,
           },
         ]

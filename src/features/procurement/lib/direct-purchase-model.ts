@@ -1,3 +1,4 @@
+import { isNamedDaSupplier } from './withheld-party'
 import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
 import type { DaDetail, DaDetailAvailability, DirectAcquisitionRecord, Party } from '@/schemas/procurement'
 import { buyerName, type BuyerIdentity } from './buyer-model'
@@ -416,10 +417,14 @@ export function mapDirectPurchase(
   const estimate = numberOf(record.estimatedValueRon)
   const cpvCode = cpvKey(record.cpvCode)
   const authorityCui = record.authority.cui
+  // Free text withheld until its review: the CPV label names the purchase, and the page says so.
+  const titleWithheld = Boolean(record.titleWithheld)
+  // D6, fail closed: a supplier the API does not serve as a company is never named, from any read.
+  const supplierNamed = isNamedDaSupplier(record.supplier)
   return {
     id: record.id,
     code: record.uniqueCode,
-    title: tidyTitle(record.title),
+    title: titleWithheld ? (record.cpvLabel?.trim() || null) : tidyTitle(record.title),
     family,
     outcome,
     value,
@@ -434,13 +439,15 @@ export function mapDirectPurchase(
       identity: names.authority?.identity ?? null,
       hasBudget: names.authority?.hasBudget ?? false,
     },
-    supplier: {
-      cui: record.supplier.cui,
-      // As the firm's own page names it: short words (legal forms, initials) kept in capitals.
-      name: displayCompanyName(rawPartyName(record.supplier, names.labels)),
-      identity: null,
-      hasBudget: false,
-    },
+    supplier: supplierNamed
+      ? {
+          cui: record.supplier.cui,
+          // As the firm's own page names it: short words (legal forms, initials) kept in capitals.
+          name: displayCompanyName(rawPartyName(record.supplier, names.labels)),
+          identity: null,
+          hasBudget: false,
+        }
+      : { cui: null, name: '', identity: null, hasBudget: false, withheld: 'natural-person' },
     source: sourceOf(record.sourceUrl, family),
     alsoIn: alsoInOf(family, duplicates),
     detail: availability === 'AVAILABLE' && detail ? detailOf(detail, names.cpv) : null,
@@ -449,7 +456,7 @@ export function mapDirectPurchase(
     money: null,
     listedNow: null,
     dataAsOf: null,
-    textWithheld: false,
+    textWithheld: titleWithheld,
   }
 }
 
