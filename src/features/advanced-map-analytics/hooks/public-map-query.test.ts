@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query';
+import { onlineManager, QueryClient } from '@tanstack/react-query';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 const fetchPayload = vi.hoisted(() => vi.fn());
@@ -10,7 +10,7 @@ vi.mock('@/features/advanced-map-analytics/analytics-map-warmup', () => ({ warmA
 vi.mock('@/lib/auth', () => ({ useOptionalUser: () => null }));
 
 import { advancedMapAnalyticsPublicMapQueryOptions } from './use-advanced-map-analytics';
-import { dropPublicMapReads, startPublicMapRead } from './public-map-read';
+import { dropPublicMapReads, startPublicMapRead, takePublicMapRead } from './public-map-read';
 
 const mapWith = (countyBoundaries: boolean, title = 'map') => ({ title, lastSnapshot: { config: { mapLayers: { countyBoundaries } } } });
 // The app's policy: one retry.
@@ -22,7 +22,10 @@ beforeEach(() => {
   warm.mockReset();
   dropPublicMapReads();
 });
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+  vi.useRealTimers();
+  onlineManager.setOnline(true);
+});
 
 it('makes one request for a visit: the page takes the read the route started', async () => {
   const queryClient = client();
@@ -105,4 +108,48 @@ it('warms the county boundaries for a map that draws them', async () => {
   await queryClient.fetchQuery(advancedMapAnalyticsPublicMapQueryOptions('m7'));
 
   expect(warm).toHaveBeenCalledWith({ queryClient, includeCountyGeoJson: true, preloadInteractiveMap: false });
+});
+
+it('aborts and forgets a read nobody takes, so an abandoned hover holds no connection or payload', () => {
+  vi.useFakeTimers();
+  const queryClient = client();
+  fetchPayload.mockImplementation(() => new Promise(() => {}));
+
+  startPublicMapRead(queryClient, 'm8');
+  const signal = fetchPayload.mock.calls[0]![1] as AbortSignal;
+  expect(signal.aborted).toBe(false);
+  vi.advanceTimersByTime(15_001);
+
+  expect(signal.aborted).toBe(true);
+  expect(takePublicMapRead('m8')).toBeUndefined();
+});
+
+it('starts no read while the page\'s query is already fetching, so a later retry cannot take a failure from before it', async () => {
+  const queryClient = client();
+  fetchPayload.mockImplementation(() => new Promise(() => {}));
+  void queryClient.fetchQuery(advancedMapAnalyticsPublicMapQueryOptions('m9')).catch(() => {});
+  await Promise.resolve();
+  fetchPayload.mockClear();
+
+  startPublicMapRead(queryClient, 'm9');
+  expect(fetchPayload).not.toHaveBeenCalled();
+});
+
+it('starts no read offline: the query\'s own pause and retries govern then', () => {
+  const queryClient = client();
+  onlineManager.setOnline(false);
+
+  startPublicMapRead(queryClient, 'm10');
+  expect(fetchPayload).not.toHaveBeenCalled();
+});
+
+it('aborts a read a newer one replaces', () => {
+  vi.useFakeTimers();
+  const queryClient = client();
+  fetchPayload.mockImplementation(() => new Promise(() => {}));
+
+  startPublicMapRead(queryClient, 'm11');
+  const first = fetchPayload.mock.calls[0]![1] as AbortSignal;
+  dropPublicMapReads(['m11']);
+  expect(first.aborted).toBe(true);
 });

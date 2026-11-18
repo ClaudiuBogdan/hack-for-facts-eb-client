@@ -90,10 +90,14 @@ function uniquePublicIds(...values: Array<string | null | undefined>): string[] 
 
 async function invalidatePublicQueries(queryClient: QueryClient, publicIds: string[]): Promise<void> {
   dropPublicMapReads(publicIds);
+  // A read still in flight (an inactive refetch, a first load) would otherwise
+  // land after the save with the old snapshot and count as fresh.
   if (publicIds.length === 0) {
+    await queryClient.cancelQueries({ queryKey: advancedMapAnalyticsPublicPrefixKey });
     await queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsPublicPrefixKey });
     return;
   }
+  await Promise.all(publicIds.map((publicId) => queryClient.cancelQueries({ queryKey: advancedMapAnalyticsKeys.public(publicId) })));
 
   await Promise.all(
     publicIds.map((publicId) =>

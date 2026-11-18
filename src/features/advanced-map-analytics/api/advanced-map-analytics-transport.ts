@@ -131,10 +131,11 @@ export async function ownerRequest(pathname: string, init: RequestInit = {}): Pr
   return payload;
 }
 
-async function publicRequest(pathname: string): Promise<unknown> {
+async function publicRequest(pathname: string, signal?: AbortSignal): Promise<unknown> {
   const response = await fetch(getPublicEndpoint(pathname), {
     method: 'GET',
     referrerPolicy: API_FETCH_REFERRER_POLICY,
+    ...(signal ? { signal } : {}),
   });
 
   const rawText = await response.text();
@@ -175,9 +176,9 @@ function isInternalMapId(value: string): boolean {
  * A public map's response, unwrapped from its envelope and not yet decoded. A
  * 404 for what looks like an internal map ID says which ID to use instead.
  */
-export async function fetchPublicMapPayload(publicId: string): Promise<unknown> {
+export async function fetchPublicMapPayload(publicId: string, signal?: AbortSignal): Promise<unknown> {
   try {
-    return unwrapData(await publicRequest(`/${encodeURIComponent(publicId)}`));
+    return unwrapData(await publicRequest(`/${encodeURIComponent(publicId)}`, signal));
   } catch (error) {
     if (
       error instanceof AdvancedMapAnalyticsApiError &&

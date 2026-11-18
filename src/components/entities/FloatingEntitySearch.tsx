@@ -113,7 +113,11 @@ function DeferredEntitySearchInput(props: ComponentProps<Input>) {
                         rememberSelection(event);
                     }}
                     onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
+                    onBlur={() => {
+                        setFocused(false);
+                        // Some WebKit versions end a dead-key composition on blur without `compositionend`.
+                        setComposing(false);
+                    }}
                     autoFocus={props.autoFocus}
                     placeholder={placeholder}
                     aria-label={placeholder}

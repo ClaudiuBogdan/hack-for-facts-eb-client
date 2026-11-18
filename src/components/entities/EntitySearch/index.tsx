@@ -69,19 +69,18 @@ export function EntitySearchInput({
     const showDropdown = isDropdownOpen && debouncedSearchTerm.trim().length > 2;
     const activeDescendantId = activeIndex > -1 ? `${searchId}-result-${activeIndex}` : undefined;
 
+    // Text carried over from the deferred dialog's field: the reader's caret or
+    // selection (else its end), restored once, whether or not focus comes here.
+    const restoredSelection = useRef(false);
     useEffect(() => {
-        if (!autoFocus) {
-            return;
-        }
-
         const input = inputRef.current;
-        input?.focus();
-        // Text carried over from the deferred dialog's field: the reader's caret or selection, else its end.
-        if (input && initialTerm) {
-            const { start, end, direction } = initialSelection ?? { start: input.value.length, end: input.value.length, direction: 'none' as const };
-            input.setSelectionRange(start, end, direction);
-        }
-        // Only on mount: later renders must not move the reader's caret.
+        if (!input) return;
+        if (autoFocus) input.focus();
+        if (restoredSelection.current || !initialTerm) return;
+        restoredSelection.current = true;
+        const { start, end, direction } = initialSelection ?? { start: input.value.length, end: input.value.length, direction: 'none' as const };
+        input.setSelectionRange(start, end, direction);
+        // The carried selection applies on mount only; `autoFocus` may change later.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [autoFocus]);
 
