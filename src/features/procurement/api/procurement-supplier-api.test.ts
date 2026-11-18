@@ -395,17 +395,18 @@ describe('fetchProcurementSupplier', () => {
 })
 
 describe('fetchProcurementSupplierDirect', () => {
-  it('reads the year’s largest direct purchases by the firm, valued ones only', async () => {
+  it('reads the year’s largest direct purchases by the firm from the analysis records, counted ones only', async () => {
+    const party = (cui: string, name: string, displayKind: string) => ({ cui, name, displayName: null, displayKind })
     graphqlQuery.mockResolvedValue({
-      procurementDirectAcquisitions: {
+      l: {
         items: [
-          { id: 'd1', publicationDate: null, finalizationDate: '2025-12-16', title: 'STATIE POMPARE APE PLUVIALE', cpvCode: '45232150', authority: { cui: '4364446', name: 'ORASUL OTOPENI', displayName: null }, supplier: { cui: '9813902', name: 'COSTALEX', displayName: null }, value: { valueAccepted: true, valueRonComparable: '899122.00' } },
-          { id: 'd2', publicationDate: null, finalizationDate: '2025-12-17', title: null, cpvCode: null, authority: { cui: '4364446', name: 'ORASUL OTOPENI', displayName: null }, supplier: { cui: '9813902', name: 'COSTALEX', displayName: null }, value: { valueAccepted: false, valueRonComparable: null } },
+          { id: 'd1', date: '2025-12-16', title: 'STATIE POMPARE APE PLUVIALE', cpvLabel: null, authority: party('4364446', 'ORASUL OTOPENI', 'authority'), supplier: party('9813902', 'COSTALEX', 'company'), valueRon: '899122.00' },
+          { id: 'd2', date: '2025-12-17', title: null, cpvLabel: null, authority: party('4364446', 'ORASUL OTOPENI', 'authority'), supplier: party('9813902', 'COSTALEX', 'company'), valueRon: null },
         ],
       },
     })
     const records = await fetchProcurementSupplierDirect('9813902', LATEST, 8)
     expect(records.map((record) => [record.id, record.value, record.title])).toEqual([['d1', 899_122, 'Statie pompare ape pluviale']])
-    expect(graphqlQuery.mock.calls[0]?.[1]).toMatchObject({ filter: { supplierCui: { eq: '9813902' }, publicationDate: { gte: `${LATEST}-01-01`, lte: `${LATEST}-12-31` } }, rows: 8 })
+    expect(graphqlQuery.mock.calls[0]?.[1]).toEqual({ s: { supplierCui: '9813902', year: LATEST, grain: 'direct_acquisition' } })
   })
 })

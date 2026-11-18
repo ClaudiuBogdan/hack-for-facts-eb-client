@@ -9,7 +9,9 @@
  * - the year's largest contract awards, grouped by contract;
  * - the newest complete month's largest contract awards, or direct purchases.
  */
-import { isNamedDaSupplier, isNamedDaSupplierBucket } from '../lib/withheld-party'
+import { readLargestDirect } from './procurement-direct-records'
+import { partyOf } from '../lib/home-party'
+import { isNamedDaSupplierBucket } from '../lib/withheld-party'
 import type { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -18,12 +20,10 @@ import {
 } from './graphql/procurement-queries'
 import {
   PROCUREMENT_HOME_CONTRACTS_QUERY,
-  PROCUREMENT_HOME_DIRECT_QUERY,
   PROCUREMENT_HOME_NATIONAL_QUERY,
   procurementHomeCategoriesQuery,
   procurementHomeCategoriesResponseSchema,
   procurementHomeContractsResponseSchema,
-  procurementHomeDirectResponseSchema,
   procurementHomeNationalResponseSchema,
   type homeBreakdownBlockSchema,
   type homeContractItemSchema,
@@ -50,7 +50,6 @@ import {
   tidyTitle,
   truncatePartYear,
   type CountyFigure,
-  type HomeParty,
   type MonthPoint,
   type NationalRead,
   type Ranking,
@@ -286,15 +285,7 @@ export async function fetchProcurementHomeCategories(year: number, signal?: Abor
 
 // ─────────────────────────────────────────────────────────── records ──
 
-export function partyOf(raw: { readonly cui: string | null; readonly name: string | null; readonly displayName: string | null }): HomeParty {
-  const cui = raw.cui?.trim() || null
-  return { cui, name: tidyName(raw.displayName ?? raw.name ?? cui ?? '—') }
-}
-
-/** A direct acquisition's supplier, D6 fail closed: named only when the API serves it as a company. */
-export function daSupplierOf(raw: { readonly cui: string | null; readonly name: string | null; readonly displayName: string | null; readonly displayKind?: string | null }): HomeParty {
-  return isNamedDaSupplier(raw) ? partyOf(raw) : { cui: null, name: '', withheld: true }
-}
+export { daSupplierOf, partyOf } from '../lib/home-party'
 
 export function acceptedValue(value: { readonly valueAccepted: boolean; readonly valueRonComparable: string | null }): number | null {
   if (!value.valueAccepted || value.valueRonComparable === null) return null
@@ -384,34 +375,11 @@ export async function fetchProcurementHomeRecentContracts(month: string, limit: 
 }
 
 /**
- * The largest direct purchases finalized in one month. The server binds the
- * direct-purchase filter's `publicationDate` to the finalization date (the
- * publication date is empty at the source), so a row is selected and dated by
- * its finalization.
+ * The largest direct purchases finalized in one month, from the analysis's
+ * own records (`procurement-direct-records.ts`): ranked by the value its
+ * figures sum, and dated by finalization, as the analysis dates them.
  */
 export async function fetchProcurementHomeRecentDirect(month: string, limit: number, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
-  const raw = procurementHomeDirectResponseSchema.parse(
-    await graphqlQuery<unknown>(
-      PROCUREMENT_HOME_DIRECT_QUERY,
-      { filter: { publicationDate: monthBounds(month), valueState: { in: ACCEPTED_VALUE_STATES } }, rows: limit },
-      { operationName: 'ProcurementHomeRecentDirect', signal },
-    ),
-  )
-  return raw.procurementDirectAcquisitions.items.flatMap((item): RecentRecord[] => {
-    const value = acceptedValue(item.value)
-    return value === null
-      ? []
-      : [
-          {
-            id: item.id,
-            grain: 'direct',
-            date: item.finalizationDate,
-            title: tidyTitle(item.title),
-            cpvCode: item.cpvCode,
-            buyer: partyOf(item.authority),
-            winners: [daSupplierOf(item.supplier)],
-            value,
-          },
-        ]
-  })
+  // The analysis's records of the month, by the value its figures sum (with release 1, the counted value).
+  return readLargestDirect({ from: month, to: month }, limit, 'ProcurementHomeRecentDirect', signal)
 }

@@ -159,21 +159,34 @@ describe('fetchProcurementHomeBigContracts', () => {
 describe('fetchProcurementHomeRecentDirect', () => {
   beforeEach(() => graphqlQuery.mockReset())
 
-  it('dates each purchase by its finalization, the date the month filter selects on', async () => {
-    const item = (id: string, publicationDate: string | null, finalizationDate: string) => ({
+  it('reads the month’s records from the analysis, by the value its figures sum; counted ones only; a withheld title named by its category', async () => {
+    const item = (id: string, valueRon: string | null, fields: Record<string, unknown> = {}) => ({
       id,
-      publicationDate,
-      finalizationDate,
+      date: '2026-05-03',
       title: 'Servicii de proiectare',
-      cpvCode: '71320000',
-      authority: { cui: '1', name: 'PRIMARIA', displayName: null },
-      supplier: { cui: '2', name: 'FIRMA', displayName: null },
-      value: { valueAccepted: true, valueRonComparable: '270000' },
+      cpvLabel: null,
+      authority: { cui: '1', name: 'PRIMARIA', displayName: null, displayKind: 'authority' },
+      supplier: { cui: '2', name: 'FIRMA', displayName: null, displayKind: 'company' },
+      valueRon,
+      ...fields,
     })
-    graphqlQuery.mockResolvedValueOnce({ procurementDirectAcquisitions: { items: [item('1', '2026-04-28', '2026-05-03'), item('2', null, '2026-05-20')] } })
+    graphqlQuery.mockResolvedValueOnce({
+      l: {
+        items: [
+          item('a'.repeat(64), '270000'),
+          item('b', '1000', { title: null, cpvLabel: 'Servicii de arhitectură', supplier: { cui: null, name: null, displayName: null, displayKind: 'natural_person' } }),
+          item('c', null),
+        ],
+      },
+    })
     const records = await fetchProcurementHomeRecentDirect('2026-05', 8)
-    const [, variables] = graphqlQuery.mock.calls[0] as [string, { filter: Record<string, unknown> }]
-    expect(variables.filter).toMatchObject({ publicationDate: { gte: '2026-05-01', lte: '2026-05-31' } })
-    expect(records.map((record) => record.date)).toEqual(['2026-05-03', '2026-05-20'])
+    const [query, variables] = graphqlQuery.mock.calls[0] as [string, { s: Record<string, unknown> }]
+    expect(query).toContain('procurementRecords(scope: $s, sort: value_desc, page: 1, pageSize: 8)')
+    expect(variables.s).toEqual({ from: '2026-05', to: '2026-05', grain: 'direct_acquisition' })
+    expect(records.map((record) => [record.id, record.value, record.title])).toEqual([
+      ['a'.repeat(64), 270_000, 'Servicii de proiectare'],
+      ['b', 1000, 'Servicii de arhitectură'],
+    ])
+    expect(records[1]?.winners).toEqual([{ cui: null, name: '', withheld: true }])
   })
 })

@@ -337,12 +337,13 @@ describe('fetchProcurementBuyerRecords', () => {
   })
 
   it('reads the year in progress through the cutoff’s last day, and fails without the cutoff rather than run past it', async () => {
-    graphqlQuery.mockResolvedValue({ procurementContracts: { items: [] }, procurementDirectAcquisitions: { items: [] } })
+    graphqlQuery.mockResolvedValue({ procurementContracts: { items: [] }, l: { items: [] } })
     cutoffRead.mockResolvedValue({ direct: '2026-06', contract: '2026-05' })
     await fetchProcurementBuyerRecords('4364446', 2026, 8)
     const filters = graphqlQuery.mock.calls.map(([, variables]) => (variables as { filter: Record<string, unknown> }).filter)
     expect(filters).toContainEqual(expect.objectContaining({ contractDate: { gte: '2026-01-01', lte: '2026-05-31' } }))
-    expect(filters).toContainEqual(expect.objectContaining({ publicationDate: { gte: '2026-01-01', lte: '2026-05-31' } }))
+    const scopes = graphqlQuery.mock.calls.map(([, variables]) => (variables as { s?: Record<string, unknown> }).s).filter(Boolean)
+    expect(scopes).toContainEqual({ authorityCui: '4364446', from: '2026-01', to: '2026-05', grain: 'direct_acquisition' })
     cutoffRead.mockRejectedValue(new Error('down'))
     await expect(fetchProcurementBuyerRecords('4364446', 2026, 8)).rejects.toThrow('down')
     // A complete year needs no cutoff.
@@ -368,9 +369,9 @@ describe('fetchProcurementBuyerRecords', () => {
               },
             }
           : {
-              procurementDirectAcquisitions: {
+              l: {
                 items: [
-                  { id: 'd1', publicationDate: null, finalizationDate: '2025-06-02', title: 'LUCRARI DE AMENAJARE PARC', cpvCode: '45112711', authority: party('4364446', 'ORASUL OTOPENI'), supplier: party('30153499', 'UPPER LEVEL SRL'), value: { valueAccepted: true, valueRonComparable: '899000' } },
+                  { id: 'd1', date: '2025-06-02', title: 'LUCRARI DE AMENAJARE PARC', cpvLabel: null, authority: party('4364446', 'ORASUL OTOPENI'), supplier: { ...party('30153499', 'UPPER LEVEL SRL'), displayKind: 'company' }, valueRon: '899000' },
                 ],
               },
             },
@@ -379,7 +380,7 @@ describe('fetchProcurementBuyerRecords', () => {
     const records = await fetchProcurementBuyerRecords('4364446', 2025, 8)
     const filters = graphqlQuery.mock.calls.map(([, variables]) => (variables as { filter: Record<string, unknown> }).filter)
     expect(filters).toContainEqual(expect.objectContaining({ authorityCui: { eq: '4364446' }, contractDate: { gte: '2025-01-01', lte: '2025-12-31' }, recordKind: { in: ['contract_award'] } }))
-    expect(filters).toContainEqual(expect.objectContaining({ authorityCui: { eq: '4364446' }, publicationDate: { gte: '2025-01-01', lte: '2025-12-31' } }))
+    expect(graphqlQuery.mock.calls.map(([, variables]) => (variables as { s?: unknown }).s)).toContainEqual({ authorityCui: '4364446', year: 2025, grain: 'direct_acquisition' })
     expect(records.contracts[0]).toMatchObject({ id: 'c1', value: 9_610_000, winners: [{ cui: '16634489', name: 'Construct & Acting SRL' }] })
     expect(records.direct[0]).toMatchObject({ id: 'd1', date: '2025-06-02', title: 'Lucrari de amenajare parc', value: 899_000 })
   })

@@ -1,3 +1,4 @@
+import { readLargestDirect } from './procurement-direct-records'
 import { isDaReleaseOn } from './procurement-da-release-status'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -16,9 +17,8 @@ import {
   type RawBuyerSeries,
   type RawBuyerStats,
 } from './graphql/procurement-buyer-queries'
-import { PROCUREMENT_HOME_DIRECT_QUERY, procurementHomeDirectResponseSchema } from './graphql/procurement-home-queries'
 import { readCutoffOutcome, readProcurementCutoff, untilAborted } from './procurement-cutoff'
-import { ACCEPTED_VALUE_STATES, acceptedValue, daSupplierOf, fetchGroupedContracts, partyOf } from './procurement-home-api'
+import { ACCEPTED_VALUE_STATES, fetchGroupedContracts } from './procurement-home-api'
 import {
   buyerName,
   tidyAddress,
@@ -33,7 +33,7 @@ import {
 } from '../lib/buyer-model'
 import { FRAMEWORKS_SCOPE } from '../lib/analytics-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
-import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
+import { DIRECT_COMPARABLE_FROM, homeYear, truncatePartYear, type YearPoint } from '../lib/home-model'
 import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
 import { isNamedDaSupplierBucket } from '../lib/withheld-party'
 
@@ -465,37 +465,17 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
  */
 export async function fetchProcurementBuyerRecords(cui: string, choice: PeriodChoice, limit: number, signal?: AbortSignal): Promise<BuyerRecords> {
   const latest = homeYear()
-  const { range } = periodOf(choice, latest, needsCutoff(choice, latest) ? await untilAborted(readProcurementCutoff(latest), signal) : null)
-  const [contracts, directRaw] = await Promise.all([
+  const period = periodOf(choice, latest, needsCutoff(choice, latest) ? await untilAborted(readProcurementCutoff(latest), signal) : null)
+  const { range } = period
+  const [contracts, direct] = await Promise.all([
     fetchGroupedContracts(
       { authorityCui: { eq: cui }, contractDate: range, recordKind: { in: ['contract_award'] }, valueState: { in: ACCEPTED_VALUE_STATES } },
       limit,
       'ProcurementBuyerContracts',
       signal,
     ),
-    graphqlQuery<unknown>(
-      PROCUREMENT_HOME_DIRECT_QUERY,
-      // The direct-purchase filter's `publicationDate` binds to the finalization date on the server.
-      { filter: { authorityCui: { eq: cui }, publicationDate: range, valueState: { in: ACCEPTED_VALUE_STATES } }, rows: limit },
-      { operationName: 'ProcurementBuyerDirect', signal },
-    ),
+    // The analysis's own records of the period, by the value its figures sum (with release 1, the counted value).
+    readLargestDirect({ authorityCui: cui, ...period.scope }, limit, 'ProcurementBuyerDirect', signal),
   ])
-  const direct = procurementHomeDirectResponseSchema.parse(directRaw).procurementDirectAcquisitions.items.flatMap((item): RecentRecord[] => {
-    const value = acceptedValue(item.value)
-    return value === null
-      ? []
-      : [
-          {
-            id: item.id,
-            grain: 'direct',
-            date: item.finalizationDate,
-            title: tidyTitle(item.title),
-            cpvCode: item.cpvCode,
-            buyer: partyOf(item.authority),
-            winners: [daSupplierOf(item.supplier)],
-            value,
-          },
-        ]
-  })
   return { contracts, direct }
 }

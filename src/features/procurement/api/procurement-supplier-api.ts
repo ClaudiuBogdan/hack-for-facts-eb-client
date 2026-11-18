@@ -1,3 +1,4 @@
+import { readLargestDirect } from './procurement-direct-records'
 import { fetchPrivateCompanyProfile } from '@/features/private-companies/api/private-company-api'
 import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
@@ -13,7 +14,6 @@ import {
   type RawBuyerSeries,
   type RawBuyerStats,
 } from './graphql/procurement-buyer-queries'
-import { PROCUREMENT_HOME_DIRECT_QUERY, procurementHomeDirectResponseSchema } from './graphql/procurement-home-queries'
 import {
   SUPPLIER_DAYS_PER_REQUEST,
   SUPPLIER_NAMES_QUERY,
@@ -22,7 +22,7 @@ import {
   type SupplierDay,
 } from './graphql/procurement-supplier-queries'
 import { readCutoffOutcome, readProcurementCutoff, untilAborted } from './procurement-cutoff'
-import { ACCEPTED_VALUE_STATES, acceptedValue, daSupplierOf, partyOf } from './procurement-home-api'
+import { partyOf } from './procurement-home-api'
 import {
   SUPPLIER_LARGEST_RECORDS,
   SUPPLIER_ROWS_READ,
@@ -35,7 +35,7 @@ import {
 } from './procurement-supplier-contracts'
 import { buyerName } from '../lib/buyer-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
-import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
+import { DIRECT_COMPARABLE_FROM, homeYear, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
 import type { CountyFigureRow, PartyYears } from '../lib/profile-model'
 import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
 import type { ClientRanking, ClientWeight, GrainFigures, SupplierProfile } from '../lib/supplier-model'
@@ -495,16 +495,6 @@ export async function fetchProcurementSupplier(cui: string, choice: PeriodChoice
 export async function fetchProcurementSupplierDirect(cui: string, choice: PeriodChoice, limit: number, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
   const latest = homeYear()
   const period = periodOf(choice, latest, needsCutoff(choice, latest) ? await untilAborted(readProcurementCutoff(latest), signal) : null)
-  const raw = await graphqlQuery<unknown>(
-    PROCUREMENT_HOME_DIRECT_QUERY,
-    // The direct-purchase filter's `publicationDate` binds to the finalization date on the server.
-    { filter: { supplierCui: { eq: cui }, publicationDate: period.range, valueState: { in: ACCEPTED_VALUE_STATES } }, rows: limit },
-    { operationName: 'ProcurementSupplierDirect', signal },
-  )
-  return procurementHomeDirectResponseSchema.parse(raw).procurementDirectAcquisitions.items.flatMap((item): RecentRecord[] => {
-    const value = acceptedValue(item.value)
-    return value === null
-      ? []
-      : [{ id: item.id, grain: 'direct', date: item.finalizationDate, title: tidyTitle(item.title), cpvCode: item.cpvCode, buyer: partyOf(item.authority), winners: [daSupplierOf(item.supplier)], value }]
-  })
+  // The analysis's own records of the period, by the value its figures sum (with release 1, the counted value).
+  return readLargestDirect({ supplierCui: cui, ...period.scope }, limit, 'ProcurementSupplierDirect', signal)
 }
