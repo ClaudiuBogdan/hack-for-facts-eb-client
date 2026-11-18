@@ -210,6 +210,39 @@ describe('live procurement reference caches', () => {
     expect(callsOf('ProcurementCpvDivisions')).toHaveLength(2)
   })
 
+  it('never keeps a direct-purchase supplier’s name in the shared memo: it is read again with each page (D6)', async () => {
+    const withDaCompany = () => {
+      const response = aggregateResponse()
+      return {
+        ...response,
+        suppliers: response.suppliers.map((block) =>
+          block.grain === 'direct_acquisition'
+            ? { ...block, buckets: [{ key: '333', kind: 'top', displayKind: 'company', recordCount: '1', withValueCount: '1', valueAwardedSum: '5.00', valueSum: '5.00', shareOfScope: '1.0000' }] }
+            : block,
+        ),
+      }
+    }
+    graphqlQueryMock.mockImplementation(async (_query, variables, options) => {
+      const operation = (options as { operationName?: string } | undefined)?.operationName
+      if (operation === 'ProcurementAggregates') return withDaCompany()
+      if (operation === 'ProcurementPartyNames') {
+        const supplierCuis = (variables as { supplierCuis?: readonly string[] }).supplierCuis ?? []
+        return { authorities: [], suppliers: supplierCuis.map((cui) => ({ cui, canonicalName: `NUME ${cui}`, status: 'named' })) }
+      }
+      if (operation === 'ProcurementCpvDivisions') return { procurementCpvDivisions: [] }
+      if (operation === 'ProcurementContracts') return { procurementContracts: { total: 0, totalEstimated: false, items: [] } }
+      if (operation === 'ProcurementSupplierRecords') return { procurementSupplierRecords: { total: 0, edges: [], pageInfo: { hasNextPage: false, endCursor: null } } }
+      throw new Error('unexpected read')
+    })
+    const asked = () => callsOf('ProcurementPartyNames').flatMap((call) => (call[1] as { supplierCuis?: readonly string[] }).supplierCuis ?? [])
+    await fetchAuthorityProcurementSliceLive('111')
+    expect(asked().filter((cui) => cui === '333')).toHaveLength(1)
+    await fetchAuthorityProcurementSliceLive('111')
+    expect(asked().filter((cui) => cui === '333')).toHaveLength(2)
+    // A contract supplier's name is kept as before.
+    expect(asked().filter((cui) => cui === '222')).toHaveLength(1)
+  })
+
   it('holds at most 5 000 parties’ names: past it, the oldest go', async () => {
     answerByOperation()
     const namesAskedFor = (cui: string) =>

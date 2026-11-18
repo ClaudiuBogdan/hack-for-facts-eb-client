@@ -1,4 +1,4 @@
-import { supplierFilterLabel } from './analytics-text'
+import { buyerFilterLabel, supplierFilterLabel } from './analytics-text'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
@@ -169,5 +169,15 @@ describe('the supplier the analytics address gives, under D6', () => {
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map())).toUpperCase()).not.toContain('REGISTRY')
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', 'FIRMA DA SRL']])))).toContain('Firma DA')
     expect(supplierFilterLabel({ tip: 'contracte' }, '14837428', namer(new Map())).toUpperCase()).toContain('REGISTRY')
+  })
+})
+
+describe('a buyer the analytics address gives the supplier’s code, under D6', () => {
+  const namer = { names: { orgs: new Map([['14837428', 'REGISTRY NAME SRL']]), cpv: new Map(), daSuppliers: new Map() }, divisions: new Map(), counties: new Map(), localities: null } as const
+
+  it('is not named from the registry for direct purchases: that name would be the supplier’s', () => {
+    const filters = { furnizor: { level: 'cui', values: ['14837428'] } } as never
+    expect(buyerFilterLabel({ tip: 'directe', filters }, '14837428', namer).toUpperCase()).not.toContain('REGISTRY')
+    expect(buyerFilterLabel({ tip: 'directe', filters: {} }, '14837428', namer).toUpperCase()).toContain('REGISTRY')
   })
 })

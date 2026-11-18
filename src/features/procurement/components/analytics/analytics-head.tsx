@@ -18,7 +18,7 @@ import type { Answer, PopulationCounts } from '../../hooks/use-procurement-analy
 import { AddFilter, PeriodMenu, QuestionsMenu } from './analytics-controls'
 import { NotesMarker, ShareIcon } from './analytics-answer'
 import { FiltersButton } from './analytics-filters'
-import { cpvLabel, headline, headlineParts, kindSplitNote, moneyText, monthsText, populationLabel, supplierFilterLabel, type HeadlinePart, type Namer } from '../../lib/analytics-text'
+import { cpvLabel, headline, headlineParts, kindSplitNote, moneyText, monthsText, buyerFilterLabel, populationLabel, supplierFilterLabel, type HeadlinePart, type Namer } from '../../lib/analytics-text'
 import { figuresOf, filterChipLabel, type Figure } from './analytics-view'
 
 /**
@@ -41,6 +41,7 @@ function chipLabel(query: Query, key: AxisId | 'titlu' | 'valoare', namer: Namer
   const filter = query.filters[key]!
   // D6: for direct purchases the supplier the address gives is named from its own direct purchases only.
   if (key === 'furnizor') return supplierFilterLabel(query, filter.values[0]!, namer)
+  if (key === 'cumparator') return buyerFilterLabel(query, filter.values[0]!, namer)
   return filterChipLabel(key, filter.level, filter.values[0]!, namer)
 }
 

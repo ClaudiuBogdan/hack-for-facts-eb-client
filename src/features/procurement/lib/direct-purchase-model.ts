@@ -611,7 +611,17 @@ export function redoOf(purchase: DirectPurchase, context: DpContext | null): DpO
  * when the lists missed it.
  */
 export function aroundOf(purchase: DirectPurchase, newer: readonly DpOther[], older: readonly DpOther[], perSide = 3): readonly DpOther[] {
-  const self: DpOther = { id: purchase.id, code: purchase.code, title: purchase.title, value: purchase.value, date: shownDayOf(purchase), done: isPurchase(purchase.outcome) }
+  const self: DpOther = {
+    id: purchase.id,
+    code: purchase.code,
+    title: purchase.title,
+    value: purchase.value,
+    date: shownDayOf(purchase),
+    done: isPurchase(purchase.outcome),
+    // A release purchase's value is in lei only when it counts; legacy rows are lei, as their neighbours' are.
+    ...(purchase.money ? { inLei: purchase.money.kind !== 'not-counted' } : {}),
+    titlePublic: !purchase.withheldText.title,
+  }
   const byId = new Map<string, DpOther>()
   for (const other of [...newer, ...older]) byId.set(other.id, other)
   byId.set(self.id, self)

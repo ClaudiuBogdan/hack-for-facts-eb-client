@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Answer } from '../../hooks/use-procurement-analytics'
 import { queryOf, type Query } from '../../lib/analytics-model'
@@ -192,6 +192,19 @@ describe('FilterPanel', () => {
     fireEvent.keyDown(field, { key: 'ArrowDown' })
     fireEvent.submit(field.closest('form')!)
     expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it('offers no firm by its registry name as a direct purchase’s supplier, only the CUI typed (D6); contracts still do', () => {
+    search.status = { kind: 'results' }
+    search.results = [{ id: '1', title: 'FLORARIA IRIS SRL', href: '/companies/14837428', isExternal: false }]
+    search.isCurrent = true
+    panel(queryOf({}))
+    fireEvent.change(screen.getByRole('combobox', { name: 'Firma' }), { target: { value: 'floraria' } })
+    expect(screen.queryByRole('option', { name: /FLORARIA/u })).toBeNull()
+    cleanup()
+    panel(queryOf({ tip: 'contracte' }))
+    fireEvent.change(screen.getByRole('combobox', { name: 'Firma' }), { target: { value: 'floraria' } })
+    expect(screen.getByRole('option', { name: /FLORARIA/u })).toBeTruthy()
   })
 
   it('applies a title as the focus leaves, at once and on the question as it is; its chip waits for the focus to land', () => {

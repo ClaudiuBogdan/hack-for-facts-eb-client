@@ -50,6 +50,16 @@ export function cpvLabel(prefix: string, namer: Namer): string {
  * company (`names.daSuppliers`), never from the registry's names — which a
  * buyer of the same CUI, or a contracts read kept as a placeholder, could carry.
  */
+/**
+ * The buyer the address gives, as its chip and headline name it. For direct
+ * purchases, a buyer given the same code as the supplier is not named from
+ * the registry: that name would be the supplier's (D6).
+ */
+export function buyerFilterLabel(query: Pick<Query, 'tip' | 'filters'>, key: string, namer: Namer): string {
+  if (query.tip === 'directe' && query.filters.furnizor?.values.includes(key)) return t`Instituția cu CUI ${key}`
+  return keyLabel('cumparator', 'cui', key, namer)
+}
+
 export function supplierFilterLabel(query: Pick<Query, 'tip'>, key: string, namer: Namer): string {
   if (query.tip !== 'directe') return keyLabel('furnizor', 'cui', key, namer)
   if (isNaturalPersonKey(key)) return naturalPersonsLabel()
@@ -197,7 +207,7 @@ function buyerPhrase(query: Query, namer: Namer): string | null {
   const org = filters.cumparator?.values[0]
   const place = filters.loc
   if (org) {
-    const name = keyLabel('cumparator', 'cui', org, namer)
+    const name = buyerFilterLabel(query, org, namer)
     return tip === 'directe' ? t`ale instituției ${name}` : tip === 'contracte' ? t`de ${name}` : t`încheiate de ${name}`
   }
   if (!place) return null

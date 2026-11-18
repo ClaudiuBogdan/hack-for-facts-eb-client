@@ -166,6 +166,8 @@ export function AddFilter({
                   const cui = href?.split('/').pop()
                   if (!href || !cui) return null
                   const supplier = href.includes('/suppliers/')
+                  // D6: no firm is offered by name as a direct purchase's supplier — the registry names it, not its direct purchases.
+                  if (supplier && query.tip === 'directe') return null
                   return (
                     <CommandItem key={hit.id} value={`org-${hit.id}`} onSelect={() => pick(withFilter(query, supplier ? 'furnizor' : 'cumparator', 'cui', cui))}>
                       <span className="min-w-0 flex-1 truncate">{hit.title}</span>

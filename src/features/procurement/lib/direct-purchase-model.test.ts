@@ -190,6 +190,11 @@ describe('the context', () => {
     // An attempt is dated by its request, as its head dates it — not by its cancellation.
     const refused = directPurchase({ status: 'cancelled', publicationDate: '2026-03-04', finalizationDate: '2026-03-05' }, { supplierRejectionReason: 'pret incorect' })
     expect(aroundOf(refused, [], []).map((item) => [item.date, item.done])).toEqual([['2026-03-04', false]])
+
+    // A release purchase out of totals is its own row without „lei", as its neighbours' offers are.
+    const uncounted = { ...refused, money: { kind: 'not-counted' as const, reported: 40000, reason: 'refused' as never, rule: null } }
+    expect(aroundOf(uncounted, [], [])[0]?.inLei).toBe(false)
+    expect(aroundOf(refused, [], [])[0]?.inLei).toBeUndefined()
   })
 
   it('finds a refused offer’s redo: the nearest done record with the same title, within the week after', () => {

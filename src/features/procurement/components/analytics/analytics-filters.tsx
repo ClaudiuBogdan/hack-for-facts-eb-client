@@ -13,7 +13,7 @@ import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
 import { AXES, cpvKey, cpvPath, FIRST_MONTH, POPULATIONS, withCategory, repaired, withFilter, withoutFilter, withTitle, type PopulationId, type Query } from '../../lib/analytics-model'
 import { CPV_SEARCH_MIN, useCpvSearch, useNames, type Answer } from '../../hooks/use-procurement-analytics'
-import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, supplierFilterLabel, type Namer } from '../../lib/analytics-text'
+import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, buyerFilterLabel, supplierFilterLabel, type Namer } from '../../lib/analytics-text'
 import { SHOW_MORE_CLASS } from '../home/home-chrome'
 import { MonthField } from './analytics-month-field'
 import { PlaceField } from './analytics-place-field'
@@ -116,6 +116,8 @@ function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cum
       const cui = href?.split('/').pop()
       return href && cui && href.includes(wanted) ? [{ id: hit.id, title: hit.title, cui }] : []
     })
+    // D6: no firm is offered by name as a direct purchase's supplier — the registry names it, not its direct purchases. A CUI typed is picked as typed.
+    .filter(() => !(axis === 'furnizor' && query.tip === 'directe'))
     .slice(0, 6)
   const typed = /^(ro)?\s*\d{2,12}$/iu.test(term) ? term.replace(/^ro\s*/iu, '') : null
   const pick = (cui: string) => {
@@ -135,7 +137,7 @@ function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cum
     <Row label={label}>
       {filter ? (
         <Chip
-          label={axis === 'furnizor' ? supplierFilterLabel(query, filter.values[0]!, namer) : keyLabel(axis, 'cui', filter.values[0]!, namer)}
+          label={axis === 'furnizor' ? supplierFilterLabel(query, filter.values[0]!, namer) : buyerFilterLabel(query, filter.values[0]!, namer)}
           onClear={() => onChange(withoutFilter(query, axis))}
         />
       ) : (
