@@ -1,4 +1,4 @@
-import { ELECTIONS_PAGE_SIZE, type ElectionContestsSearch, type ElectionsCatalogSearch } from '@/schemas/elections-catalog'
+import { ELECTIONS_PAGE_SIZE, type ElectionContestsSearch, type ElectionsCatalogSearch } from '@/schemas/elections-search'
 
 /**
  * The elections pages' query keys, in a module of their own: the routes'

@@ -6,7 +6,8 @@ import { electionsCatalogKeys } from '@/features/elections/lib/elections-catalog
 import { electionsNoStoreHeaders, electionsPageHead } from '@/features/elections/lib/elections-head'
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import { isElectionRecordKey, type ElectionContest, type ElectionEvent, type ElectionResult } from '@/schemas/elections-catalog'
+import type { ElectionContest, ElectionEvent, ElectionResult } from '@/schemas/elections-catalog'
+import { isElectionRecordKey } from '@/schemas/elections-search'
 
 export interface ElectionContestLoaderData {
   readonly contestKey: string

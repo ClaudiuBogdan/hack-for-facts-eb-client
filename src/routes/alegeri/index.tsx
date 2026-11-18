@@ -6,7 +6,8 @@ import { electionsCatalogKeys, seedKeyOf } from '@/features/elections/lib/electi
 import { electionsNoStoreHeaders, electionsPageHead } from '@/features/elections/lib/elections-head'
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import { parseElectionsCatalogSearch, type ElectionEventPage } from '@/schemas/elections-catalog'
+import type { ElectionEventPage } from '@/schemas/elections-catalog'
+import { parseElectionsCatalogSearch } from '@/schemas/elections-search'
 
 export interface ElectionsCatalogLoaderData {
   /** The query the server read was for: it seeds the page only under the same key. */

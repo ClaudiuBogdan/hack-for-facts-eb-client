@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   ELECTIONS_MAX_PAGE,
+  ELECTIONS_PAGE_SIZE,
   electionContestSchema,
   electionEventPageSchema,
   electionResultSchema,
@@ -110,6 +111,10 @@ describe('the keys and offices', () => {
 })
 
 describe('the addresses', () => {
+  it('bounds the page by GraphQL Int, the tighter of its two bounds', () => {
+    expect(ELECTIONS_MAX_PAGE).toBe(Math.min(2_147_483_647, Math.floor(Number.MAX_SAFE_INTEGER / ELECTIONS_PAGE_SIZE)))
+  })
+
   it('/alegeri keeps only a valid page', () => {
     expect(parseElectionsCatalogSearch(undefined)).toEqual({})
     expect(parseElectionsCatalogSearch({ pagina: 2, an: 2024, tip: 'local' })).toEqual({ pagina: 2 })

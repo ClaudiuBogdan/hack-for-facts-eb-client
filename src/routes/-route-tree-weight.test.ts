@@ -36,6 +36,7 @@ const KEPT_OUT: readonly { readonly family: string; readonly modules: readonly R
     modules: [/^src\/schemas\/private-company(-registry|-main-activity)?\.ts$/, /^src\/features\/private-companies\/lib\/company-profile-model\.ts$/],
   },
   { family: 'justice', modules: [/^src\/schemas\/judicial\.ts$/] },
+  { family: 'elections', modules: [/^src\/schemas\/elections-catalog\.ts$/] },
 ]
 
 /**

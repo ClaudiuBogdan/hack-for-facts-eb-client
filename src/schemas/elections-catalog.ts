@@ -1,4 +1,20 @@
 import { z } from 'zod'
+import { ELECTION_PLACE_TYPES, ISO_DATE } from './elections-search'
+
+export {
+  ELECTION_PLACE_TYPES,
+  ELECTIONS_MAX_PAGE,
+  ELECTIONS_PAGE_SIZE,
+  electionContestsSearchSchema,
+  electionsCatalogSearchSchema,
+  isElectionOffice,
+  isElectionRecordKey,
+  parseElectionContestsSearch,
+  parseElectionsCatalogSearch,
+  type ElectionContestsSearch,
+  type ElectionPlaceType,
+  type ElectionsCatalogSearch,
+} from './elections-search'
 
 /**
  * The elections pages' reads as the API serves them since 2026-10-21 (server
@@ -16,17 +32,7 @@ import { z } from 'zod'
  * need none, and people are never joined across sources.
  */
 
-/** The page size every list reads with: the API's own default, within its bound of 100. */
-export const ELECTIONS_PAGE_SIZE = 20
 
-/** GraphQL's `Int`, which carries the page: a signed 32-bit integer. A larger page fails the request before the API reads it. */
-const GRAPHQL_MAX_INT = 2_147_483_647
-
-/** The last page these reads can ask for: GraphQL's largest `Int`, within the API's own bound that `(page - 1) × pageSize` stay a safe integer. */
-export const ELECTIONS_MAX_PAGE = Math.min(GRAPHQL_MAX_INT, Math.floor(Number.MAX_SAFE_INTEGER / ELECTIONS_PAGE_SIZE))
-
-/** The API's bound for an event or contest key. */
-const MAX_KEY_LENGTH = 512
 
 export const ELECTION_FAMILIES = ['local', 'parliamentary', 'presidential', 'european', 'referendum'] as const
 export type ElectionFamily = (typeof ELECTION_FAMILIES)[number]
@@ -41,9 +47,6 @@ export type ElectionOccurrenceKind = (typeof ELECTION_OCCURRENCE_KINDS)[number]
 export const ELECTION_STATUSES = ['held', 'annulled'] as const
 export type ElectionStatus = (typeof ELECTION_STATUSES)[number]
 
-/** The type of place an office covers: a UAT (by SIRUTA), a county, the diaspora, or the country. */
-export const ELECTION_PLACE_TYPES = ['uat', 'county', 'national', 'diaspora'] as const
-export type ElectionPlaceType = (typeof ELECTION_PLACE_TYPES)[number]
 
 export const ELECTION_COMPETITOR_KINDS = ['party', 'minority_org', 'list', 'independent', 'independents_bucket'] as const
 export type ElectionCompetitorKind = (typeof ELECTION_COMPETITOR_KINDS)[number]
@@ -62,28 +65,7 @@ const COMPLETENESS = ['complete', 'partial'] as const
 const COUNTED_POPULATIONS = ['all', 'linked_only'] as const
 const COVERAGE_STATES = ['usable', 'absent', 'links_missing', 'links_wrong'] as const
 
-/** The API's office grammar (`mayor`, `county_council`, a qualified `office:part`), within its length bound. */
-const OFFICE = /^[a-z][a-z0-9_]*(?::[a-z0-9_]+)?$/u
-const MAX_OFFICE_LENGTH = 64
-/** A county code as the API filters by it (`CJ`, `B`). */
-const COUNTY_CODE = /^[A-Z]{1,2}$/u
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/u
 
-/** The API's rule for an opaque value: non-empty, bounded, no control characters. Nothing else is checked or changed. */
-function isOpaqueText(value: string, maxLength: number): boolean {
-  // eslint-disable-next-line no-control-regex -- Rejecting control characters is the point.
-  return value.length > 0 && value.length <= maxLength && !/[\u0000-\u001f\u007f]/u.test(value)
-}
-
-/** An event or contest key the API can look up. Any other key names no record: the page answers 404 without asking. */
-export function isElectionRecordKey(value: string): boolean {
-  return isOpaqueText(value, MAX_KEY_LENGTH)
-}
-
-/** An office the API's filter accepts. */
-export function isElectionOffice(value: string): boolean {
-  return value.length <= MAX_OFFICE_LENGTH && OFFICE.test(value)
-}
 
 // ── Responses ──
 
@@ -237,36 +219,3 @@ export type ElectionEventPage = z.infer<typeof electionEventPageSchema>
 
 export const electionContestPageSchema = pageSchemaOf(electionContestSchema)
 export type ElectionContestPage = z.infer<typeof electionContestPageSchema>
-
-// ── Search params ──
-
-const pageParam = z.number().int().min(1).max(ELECTIONS_MAX_PAGE).optional().catch(undefined)
-
-/** `/alegeri`: the page. The API filters events by nothing else. */
-export const electionsCatalogSearchSchema = z.object({ pagina: pageParam }).catch({})
-export type ElectionsCatalogSearch = z.infer<typeof electionsCatalogSearchSchema>
-
-export function parseElectionsCatalogSearch(search: unknown): ElectionsCatalogSearch {
-  return electionsCatalogSearchSchema.parse(search ?? {})
-}
-
-/**
- * `/alegeri/$electionKey`: the ballot day by its date (its identity within
- * the event; none is the event's first day), then that day's contests by
- * office, place type and county, each one exact value the API accepts, and
- * the page.
- */
-export const electionContestsSearchSchema = z
-  .object({
-    data: z.string().regex(ISO_DATE).optional().catch(undefined),
-    functie: z.string().refine(isElectionOffice).optional().catch(undefined),
-    arie: z.enum(ELECTION_PLACE_TYPES).optional().catch(undefined),
-    judet: z.string().regex(COUNTY_CODE).optional().catch(undefined),
-    pagina: pageParam,
-  })
-  .catch({})
-export type ElectionContestsSearch = z.infer<typeof electionContestsSearchSchema>
-
-export function parseElectionContestsSearch(search: unknown): ElectionContestsSearch {
-  return electionContestsSearchSchema.parse(search ?? {})
-}
