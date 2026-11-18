@@ -18,11 +18,12 @@ vi.mock('@/features/procurement/api/procurement-direct-purchase-ssr', () => ({
 }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 // The head speaks the request's language through a translator; the real one needs the app's i18n set up.
-// Every description reads `descriere`; the title's own words translate, so a page in English is named in English.
+// A description is the message as interpolated (the test setup's `msg` is the message itself), so a name it carries shows;
+// the title's own words translate, so a page in English is named in English.
 vi.mock('@/lib/i18n', () => ({
   translatorFor: (locale: string) => ({
     // The test setup's `msg` is the message itself.
-    _: (message: unknown) => (message === 'Achiziții publice' ? (locale === 'en' ? 'Public procurement' : 'Achiziții publice') : 'descriere'),
+    _: (message: unknown) => (message === 'Achiziții publice' ? (locale === 'en' ? 'Public procurement' : 'Achiziții publice') : String(message)),
   }),
 }))
 
@@ -89,10 +90,13 @@ describe('/procurement/direct-acquisitions/$id', () => {
     expect(route.headers({ loaderData: data })).toMatchObject({ 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' })
   })
 
-  it('names a withheld supplier as a natural person in the description, never by a name', () => {
-    const purchase = { ...directPurchase(), supplier: { cui: null, name: '', identity: null, hasBudget: false, withheld: 'natural-person' as const } }
+  it('names a withheld supplier as a natural person in the description, never by a name — even one left on the record', () => {
+    // A distinctive name on the withheld party: the head must not carry it from any field.
+    const purchase = { ...directPurchase(), supplier: { cui: null, name: 'ION POPESCU-FORBIDDEN', identity: null, hasBudget: false, withheld: 'natural-person' as const } }
     const head = route.head({ params: { id: 'x' }, loaderData: { purchase }, match: { context: { locale: 'ro', queryClient: queryClient() } } })
-    expect(JSON.stringify(head)).not.toContain('Floraria')
+    expect(JSON.stringify(head)).not.toMatch(/FORBIDDEN|Floraria/u)
+    const description = head.meta.find((entry) => entry.name === 'description')?.content
+    expect(description).toContain('de la o persoană fizică')
   })
 
   it('answers a record SEAP does not have with a 404 on the server', async () => {
@@ -112,6 +116,8 @@ describe('/procurement/direct-acquisitions/$id', () => {
     try {
       const whole = route.headers({ loaderData: { id: '1', purchase: directPurchase(), context: dpContext() } })
       expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
+      // D6: never served stale across a publish.
+      expect(whole['CDN-Cache-Control']).toContain('stale-while-revalidate=0')
       for (const loaderData of [
         { id: '1' },
         { id: '1', purchase: { ...directPurchase(), partial: true }, context: dpContext() },
@@ -136,7 +142,7 @@ describe('/procurement/direct-acquisitions/$id', () => {
     })
     const meta = Object.fromEntries(head.meta.map((entry) => [entry.name ?? entry.property ?? 'title', entry.content ?? entry.title]))
     expect(meta.title).toBe('Aranjamente florale — Banca Nationala a Romaniei — Achiziții publice — Transparenta.eu')
-    expect(meta.description).toBe('descriere')
+    expect(meta.description).toBe('Aranjamente florale: achiziția directă a instituției Banca Nationala a Romaniei de la Floraria Iris SRL, din SEAP — ce s-a cumpărat, cu cât și cum s-a făcut.')
     expect(meta['og:url']).toBe('http://localhost:3000/procurement/direct-acquisitions/10120196')
   })
 })
