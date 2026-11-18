@@ -10,7 +10,7 @@ import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { linkYearOf, shownDayOf, type DirectPurchase, type DpOther, type DpOutcome, type DpParty } from '../../lib/direct-purchase-model'
 import { afterText, daysBetween, leiExact, outcomeLabel, refusalText, titleOf, titleRestText, whenText } from '../../lib/direct-purchase-text'
-import { supplierNameText } from '../../lib/direct-purchase-value-text'
+import { amountText, supplierNameText } from '../../lib/direct-purchase-value-text'
 import { statusLook } from './direct-purchase-style'
 
 /**
@@ -107,12 +107,13 @@ function moneyText(purchase: DirectPurchase): string {
   // Release 1: the counted value; out of totals, the value SEAP reports, said as reported.
   if (money) {
     if (money.kind !== 'not-counted') {
-      const amount = leiExact(money.value)
+      const amount = amountText(money.value, true)
       return t`${amount} fără TVA`
     }
     if (money.reported === null) return t`o valoare nepublicată`
-    const reported = leiExact(money.reported)
-    return t`${reported} raportați în SEAP`
+    // Its currency and VAT basis are not confirmed: the figure as written, no unit.
+    const reported = amountText(money.reported, false)
+    return t`o valoare raportată de ${reported}`
   }
   if (purchase.value !== null) {
     const amount = leiExact(purchase.value)

@@ -54,8 +54,8 @@ export interface DpValueRule {
 export type DpValue =
   /** Counted as reported. */
   | { readonly kind: 'counted'; readonly value: number; readonly reported: number | null; readonly symbolic: boolean }
-  /** Counted at an approved exact correction: both values and the rule's sentence. */
-  | { readonly kind: 'corrected'; readonly value: number; readonly reported: number | null; readonly rule: DpValueRule }
+  /** Counted at an approved exact correction: both values, and the rule (its sentence may not be published yet: then said). */
+  | { readonly kind: 'corrected'; readonly value: number; readonly reported: number | null; readonly rule: DpValueRule | null }
   /** Left out of totals: the reported value (if any) is shown, never summed, with the reason and, after a review, the rule. */
   | { readonly kind: 'not-counted'; readonly reported: number | null; readonly reason: DpNotCounted; readonly rule: DpValueRule | null }
 
@@ -74,12 +74,8 @@ const RULE_EFFECTS: ReadonlySet<string> = new Set<DpRuleEffect>(['correct', 'exc
 const CODES: ReadonlySet<string> = new Set<string>(NOT_COUNTED_CODES)
 
 function ruleOf(raw: DpValueFields['rule']): DpValueRule | null {
-  if (!raw || !hasText(raw.sentence)) return null
+  if (!raw) return null
   return { code: raw.code, effect: raw.effect !== null && RULE_EFFECTS.has(raw.effect) ? (raw.effect as DpRuleEffect) : null, sentence: raw.sentence }
-}
-
-function hasText(label: DpLabel): boolean {
-  return Boolean(label.ro?.trim() || label.en?.trim())
 }
 
 /**
@@ -90,14 +86,14 @@ const UNSTATED: DpNotCounted = { code: 'other', label: { ro: null, en: null } }
 
 /**
  * The money as the page shows it. A purchase counts only when the API says so
- * and gives the counted value; a correction stands only on a counted purchase
- * with its rule's sentence — otherwise it is shown as counted at that value,
- * since the API counts it there, but no correction is claimed.
+ * and gives the counted value; a correction stands only on a counted
+ * purchase, and always shows both values — with its rule's sentence, or said
+ * to have none published yet, never passed off as counted as reported.
  */
 export function valueOf(fields: DpValueFields): DpValue {
   const rule = ruleOf(fields.rule)
   if (fields.counted && fields.countedValue !== null) {
-    if (fields.valueCorrected && rule !== null) return { kind: 'corrected', value: fields.countedValue, reported: fields.reportedValue, rule }
+    if (fields.valueCorrected) return { kind: 'corrected', value: fields.countedValue, reported: fields.reportedValue, rule }
     return { kind: 'counted', value: fields.countedValue, reported: fields.reportedValue, symbolic: fields.symbolicPrice }
   }
   const raw = fields.notCountedReason

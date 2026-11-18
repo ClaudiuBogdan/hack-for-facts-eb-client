@@ -13,6 +13,15 @@
  */
 import { z } from 'zod'
 
+/**
+ * Money as the API writes it: plain decimal text. Anything else (`0x10`,
+ * `1e3`, a blank) fails the read — `Number()` would read it as a figure the
+ * source never wrote.
+ */
+const decimalText = z.string().regex(/^-?\d+(\.\d+)?$/u, 'not decimal text')
+/** A count as the API writes it: whole-number text. */
+const countText = z.string().regex(/^\d+$/u, 'not a whole number')
+
 // ─────────────────────────────────────────────────────────── capability ──
 
 export const PROCUREMENT_DA_RELEASE_QUERY = /* GraphQL */ `
@@ -67,12 +76,12 @@ export const rawDaPurchaseSchema = z.object({
   finalizationDay: z.string().nullable(),
   buyerDecisionAt: z.string().nullable(),
   supplierDecisionAt: z.string().nullable(),
-  reportedValue: z.string().nullable(),
+  reportedValue: decimalText.nullable(),
   counted: z.boolean(),
-  countedValue: z.string().nullable(),
+  countedValue: decimalText.nullable(),
   notCountedReason: z.object({ code: z.string(), labelEn: z.string(), labelRo: z.string() }).nullable(),
   valueCorrected: z.boolean(),
-  correctedValue: z.string().nullable(),
+  correctedValue: decimalText.nullable(),
   reviewRule: z.object({ rule: z.string(), effect: z.string(), descriptionEn: z.string().nullable(), descriptionRo: z.string().nullable() }).nullable(),
   symbolicPrice: z.boolean(),
   listedNow: z.boolean().nullable(),
@@ -95,11 +104,11 @@ export const rawDaPurchaseItemSchema = z.object({
   name: z.string().nullable(),
   nameWithheld: z.string().nullable(),
   unit: z.string().nullable(),
-  quantity: z.string().nullable(),
-  requestedQuantity: z.string().nullable(),
-  unitPrice: z.string().nullable(),
-  cataloguePrice: z.string().nullable(),
-  reportedLineValue: z.string().nullable(),
+  quantity: decimalText.nullable(),
+  requestedQuantity: decimalText.nullable(),
+  unitPrice: decimalText.nullable(),
+  cataloguePrice: decimalText.nullable(),
+  reportedLineValue: decimalText.nullable(),
   supplierRejected: z.boolean().nullable(),
   quantityCorrection: z.boolean().nullable(),
 })
@@ -241,10 +250,10 @@ export const PROCUREMENT_DA_TOTALS_QUERY = /* GraphQL */ `
 `
 
 const rawDaTotalsFields = {
-  countedValue: z.string().nullable(),
-  countedCount: z.string(),
-  symbolicPriceCount: z.string(),
-  purchaseCount: z.string(),
+  countedValue: decimalText.nullable(),
+  countedCount: countText,
+  symbolicPriceCount: countText,
+  purchaseCount: countText,
 }
 
 export const procurementDaTotalsSchema = z.object({

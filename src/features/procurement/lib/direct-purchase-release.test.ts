@@ -161,3 +161,15 @@ describe('releaseOutcomeOf', () => {
     expect(releaseOutcomeOf(raw).kind).toBe(kind)
   })
 })
+
+describe('the transport refuses money that is not decimal text', () => {
+  it.each(['0x10', '1e3', '', ' 12', '12,5'])('%j fails the read, never a figure the source did not write', async (text) => {
+    const { procurementDaPurchaseSchema } = await import('../api/graphql/procurement-da-release-queries')
+    expect(procurementDaPurchaseSchema.safeParse({ procurementDaPurchase: rawReleaseDetail({ reportedValue: text }) }).success).toBe(false)
+  })
+
+  it('plain decimal text parses', async () => {
+    const { procurementDaPurchaseSchema } = await import('../api/graphql/procurement-da-release-queries')
+    expect(procurementDaPurchaseSchema.safeParse({ procurementDaPurchase: rawReleaseDetail({ reportedValue: '-12.50' }) }).success).toBe(true)
+  })
+})

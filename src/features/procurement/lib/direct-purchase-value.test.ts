@@ -75,10 +75,11 @@ describe('valueOf — combinations the contract does not allow', () => {
     expect(countedValueOf(value)).toBeNull()
   })
 
-  it('a correction without its rule sentence is counted at the value, with no correction claimed', () => {
+  it('a correction without its rule sentence is still a correction: both values shown', () => {
     const value = valueOf(fields({ reportedValue: 3150000, countedValue: 3150, valueCorrected: true, rule: { code: 'quantity_unit_mix', effect: 'correct', sentence: { ro: ' ', en: null } } }))
-    expect(value).toEqual({ kind: 'counted', value: 3150, reported: 3150000, symbolic: false })
+    expect(value).toMatchObject({ kind: 'corrected', value: 3150, reported: 3150000, rule: { code: 'quantity_unit_mix' } })
     expect(reportedApartOf(value)).toBe(3150000)
+    expect(valueOf(fields({ reportedValue: 3150000, countedValue: 3150, valueCorrected: true, rule: null }))).toMatchObject({ kind: 'corrected', rule: null })
   })
 
   it('a correction flag on a purchase not counted claims no corrected value', () => {

@@ -237,7 +237,7 @@ describe('direct acquisitions release 1', () => {
     const page = release(RELEASE_CASES.corrected())
     expect(page).toContain('cu 3.150 lei fără TVA')
     expect(page).toContain('Valoarea corectată, fără TVA 3.150 lei Intră în totaluri cu valoarea corectată.')
-    expect(page).toContain('SEAP raportează 3.150.000 lei; numărăm 3.150 lei.')
+    expect(page).toContain('SEAP raportează 3.150.000; numărăm 3.150 lei.')
     expect(page).toContain('Folosim cantitatea declarată a achiziției când totalul raportat a fost calculat cu unitatea sau scara greșită.')
     expect(page).toContain('Totalul raportat în SEAP 3.150.000 lei')
     expect(page).not.toContain('Total, fără TVA')
@@ -245,8 +245,10 @@ describe('direct acquisitions release 1', () => {
 
   it('excluded after review: the reported value, out of totals, the reason and the rule', () => {
     const page = release(RELEASE_CASES.excludedApproximate())
-    expect(page).toContain('cu 1.680.000 lei raportați în SEAP')
-    expect(page).toContain('Valoarea raportată în SEAP 1.680.000 lei Nu intră în totaluri. Exclusă după verificare: vezi regula.')
+    expect(page).toContain('cu o valoare raportată de 1.680.000 ,')
+    expect(page).toContain('Valoarea raportată în SEAP 1.680.000 Nu intră în totaluri. Exclusă după verificare: vezi regula. Moneda și TVA-ul acestei valori nu sunt confirmate.')
+    // Out of totals, no figure claims lei: its currency is unconfirmed.
+    expect(page).not.toMatch(/1\.680\.000 lei|12\.500 lei/u)
     expect(page).toContain('Lăsăm achiziția în afara totalurilor când valoarea raportată nu e de încredere')
     expect(page).not.toContain('Valoarea, fără TVA')
   })
@@ -262,7 +264,7 @@ describe('direct acquisitions release 1', () => {
     const page = release(RELEASE_CASES.refused())
     expect(page).toContain('Refuzată Aranjamente florale')
     expect(page).toContain('Achiziția nu s-a făcut: una dintre părți a refuzat-o.')
-    expect(page).toContain('Oferta raportată în SEAP 40.000 lei Nu intră în totaluri. Respinsă sau expirată: achiziția nu s-a realizat.')
+    expect(page).toContain('Oferta raportată în SEAP 40.000 Nu intră în totaluri. Respinsă sau expirată: achiziția nu s-a realizat.')
     expect(page).not.toContain('Refuzată de firmă')
     expect(page).not.toContain('Refuzată de instituție')
   })

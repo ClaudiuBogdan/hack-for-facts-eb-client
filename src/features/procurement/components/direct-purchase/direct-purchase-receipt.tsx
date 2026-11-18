@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { byMoney, excludedLine, isAttempt, type DirectPurchase, type DpItem, type DpPeers } from '../../lib/direct-purchase-model'
 import { catalogText, labelText, leiExact, lineShares, peersText, quantityText, receiptLede, reconciliationText, repeatsText, unitText } from '../../lib/direct-purchase-text'
 import { percentText } from '../../lib/home-format'
+import { amountText } from '../../lib/direct-purchase-value-text'
 import { CONTEXT_TINT } from './direct-purchase-style'
 
 /**
@@ -59,14 +60,17 @@ function LineContext({ children }: { readonly children: ReactNode }) {
   )
 }
 
-function QuantityLine({ item, cpvLabel }: { readonly item: DpItem; readonly cpvLabel: string | null }) {
+/** How an amount is written: in lei, or — release 1, out of totals — as the source wrote it, its currency unconfirmed. */
+type AmountText = (value: number) => string
+
+function QuantityLine({ item, cpvLabel, amount }: { readonly item: DpItem; readonly cpvLabel: string | null; readonly amount: AmountText }) {
   const unit = unitText(item.unit)
   // A unit with spaces („cutie x 20") reads as one thing in parentheses.
   const unitPart = unit ? (/\s/u.test(unit) ? ` (${unit})` : ` ${unit}`) : ''
   const label = labelText(item.cpvLabel)
   return (
     <span className="mt-1 block font-mono text-xs tabular-nums text-muted-foreground">
-      {item.quantity !== null ? `${quantityText(item.quantity)}${unitPart}` : '—'} × {item.unitPrice !== null ? leiExact(item.unitPrice) : '—'}
+      {item.quantity !== null ? `${quantityText(item.quantity)}${unitPart}` : '—'} × {item.unitPrice !== null ? amount(item.unitPrice) : '—'}
       {label && label !== cpvLabel ? <span className="font-sans"> · {label}</span> : null}
     </span>
   )
@@ -78,12 +82,14 @@ function ItemRow({
   year,
   cpvLabel,
   excluded,
+  amount,
 }: {
   readonly item: DpItem
   readonly share: number | null
   readonly year: number | null
   readonly cpvLabel: string | null
   readonly excluded: boolean
+  readonly amount: AmountText
 }) {
   const catalog = catalogText(item)
   const repeats = year !== null ? repeatsText(item, year) : null
@@ -97,7 +103,7 @@ function ItemRow({
         ) : (
           <span className="block text-sm font-medium leading-snug text-foreground sm:text-base">{item.name}</span>
         )}
-        <QuantityLine item={item} cpvLabel={cpvLabel} />
+        <QuantityLine item={item} cpvLabel={cpvLabel} amount={amount} />
         {share !== null ? (
           <span className="mt-2 block h-1 max-w-xs bg-muted" aria-hidden="true">
             <span className="block h-1 bg-primary/70" style={{ width: `${Math.min(Math.max(share * 100, 0.8), 100).toFixed(1)}%` }} />
@@ -120,7 +126,7 @@ function ItemRow({
       </span>
       <span className="text-right">
         <span className={cn('block whitespace-nowrap text-sm font-semibold tabular-nums sm:text-base', excluded ? 'text-muted-foreground line-through' : 'text-foreground')}>
-          {item.line !== null ? leiExact(item.line) : '—'}
+          {item.line !== null ? amount(item.line) : '—'}
         </span>
         {share !== null ? <MonoLabel className="mt-1 block tabular-nums text-muted-foreground">{percentText(share, 0)}</MonoLabel> : null}
       </span>
@@ -137,6 +143,9 @@ export function DirectPurchaseReceipt({ purchase, year }: { readonly purchase: D
   const shares = lineShares(purchase)
   const lede = receiptLede(purchase)
   const gap = reconciliationText(purchase)
+  // Release 1: the lines as the source wrote them; in lei only when the purchase counts (its currency then confirmed).
+  const money = purchase.money
+  const amount: AmountText = money ? (value) => amountText(value, money.kind !== 'not-counted') : leiExact
   return (
     <div>
       {lede ? <p className="max-w-[60ch] text-base leading-relaxed text-muted-foreground">{lede}</p> : null}
@@ -153,6 +162,7 @@ export function DirectPurchaseReceipt({ purchase, year }: { readonly purchase: D
             cpvLabel={labelText(purchase.cpv?.label ?? null)}
             excluded={item === excluded}
             share={shares?.get(item) ?? null}
+            amount={amount}
           />
         ))}
       </ol>
@@ -160,7 +170,7 @@ export function DirectPurchaseReceipt({ purchase, year }: { readonly purchase: D
         // Release 1: the lines as reported, under the total SEAP reports — the value the page counts is beside the facts.
         <div className="flex items-baseline justify-between gap-4 border-t-2 border-foreground/80 pt-3">
           <span className="text-sm font-semibold text-foreground">{t`Totalul raportat în SEAP`}</span>
-          <span className="text-lg font-semibold tabular-nums text-foreground">{purchase.money.reported !== null ? leiExact(purchase.money.reported) : '—'}</span>
+          <span className="text-lg font-semibold tabular-nums text-foreground">{purchase.money.reported !== null ? amount(purchase.money.reported) : '—'}</span>
         </div>
       ) : (
         <div className="flex items-baseline justify-between gap-4 border-t-2 border-foreground/80 pt-3">

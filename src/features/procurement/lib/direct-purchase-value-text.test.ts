@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { valueOf, type DpValueFields } from './direct-purchase-value'
-import { correctionText, inTotalsText, notCountedText, ruleText, supplierNameText, valueFigure, valueFigureLabel } from './direct-purchase-value-text'
+import { amountText, correctionRuleText, correctionText, inTotalsText, notCountedText, ruleText, supplierNameText, valueFigure, valueFigureLabel } from './direct-purchase-value-text'
 
 const locale = vi.hoisted(() => ({ current: 'ro' }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => locale.current }))
@@ -52,12 +52,13 @@ describe('the value figure', () => {
     expect(valueFigure(corrected)).toBe(`3.150${NBSP}lei`)
     expect(inTotalsText(corrected)).toBe('Intră în totaluri cu valoarea corectată.')
     if (corrected.kind !== 'corrected') throw new Error('expected a correction')
-    expect(correctionText(corrected)).toBe(`SEAP raportează 3.150.000${NBSP}lei; numărăm 3.150${NBSP}lei.`)
+    // The reported figure as written: its currency is confirmed only for the counted value.
+    expect(correctionText(corrected)).toBe(`SEAP raportează 3.150.000; numărăm 3.150${NBSP}lei.`)
   })
 
   it('not counted: the reported value, labelled as reported, with no VAT claim', () => {
     expect(valueFigureLabel(excluded)).toBe('Valoarea raportată în SEAP')
-    expect(valueFigure(excluded)).toBe(`1.680.000${NBSP}lei`)
+    expect(valueFigure(excluded)).toBe('1.680.000')
     expect(inTotalsText(excluded)).toBe('Nu intră în totaluri.')
   })
 
@@ -85,6 +86,20 @@ describe("the API's sentences, in the page's language", () => {
 
   it('a reason with no sentence says nothing', () => {
     expect(notCountedText({ code: 'other', label: { ro: null, en: null } })).toBeNull()
+  })
+})
+
+describe('amounts as the source wrote them', () => {
+  it('keeps the decimals written, at least two when there are any', () => {
+    expect(amountText(1.845, true)).toBe(`1,845${NBSP}lei`)
+    expect(amountText(12500, true)).toBe(`12.500${NBSP}lei`)
+    expect(amountText(0.5, false)).toBe('0,50')
+  })
+
+  it('a correction with no published rule sentence says so', () => {
+    const bare = valueOf(fields({ reportedValue: 3150000, countedValue: 3150, valueCorrected: true, rule: null }))
+    if (bare.kind !== 'corrected') throw new Error('fixture')
+    expect(correctionRuleText(bare)).toBe('Regula după care am corectat valoarea nu are încă o descriere publică.')
   })
 })
 

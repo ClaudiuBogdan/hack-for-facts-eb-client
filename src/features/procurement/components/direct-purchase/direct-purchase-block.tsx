@@ -17,8 +17,20 @@ import {
   outcomeLabel,
   reasonText,
 } from '../../lib/direct-purchase-text'
-import type { DpValue } from '../../lib/direct-purchase-value'
-import { correctionText, inTotalsText, notCountedText, notListedText, ruleText, symbolicText, valueFigure, valueFigureLabel } from '../../lib/direct-purchase-value-text'
+import { reportedApartOf, type DpValue } from '../../lib/direct-purchase-value'
+import {
+  correctionRuleText,
+  correctionText,
+  inTotalsText,
+  notCountedText,
+  notListedText,
+  reportedApartText,
+  ruleText,
+  symbolicText,
+  unconfirmedBasisText,
+  valueFigure,
+  valueFigureLabel,
+} from '../../lib/direct-purchase-value-text'
 import { statusLook } from './direct-purchase-style'
 import { Clamp, DirectPurchaseReceipt } from './direct-purchase-receipt'
 import { RecordParties } from './record-parties'
@@ -109,7 +121,9 @@ function ReleaseValue({ purchase, money }: { readonly purchase: DirectPurchase; 
   const attempt = isAttempt(purchase.outcome)
   const figure = valueFigure(money)
   const reason = money.kind === 'not-counted' ? notCountedText(money.reason) : null
-  const rule = money.kind === 'counted' ? null : money.rule ? ruleText(money.rule) : null
+  const rule = money.kind === 'corrected' ? correctionRuleText(money) : money.kind === 'not-counted' ? ruleText(money.rule) : null
+  // Counted as reported, yet SEAP reports another figure: both are shown, never one in place of the other.
+  const apart = money.kind === 'counted' ? reportedApartOf(money) : null
   return (
     <div className="@container min-w-0">
       <MonoLabel className="block text-muted-foreground">{attempt ? t`Oferta raportată în SEAP` : valueFigureLabel(money)}</MonoLabel>
@@ -126,7 +140,9 @@ function ReleaseValue({ purchase, money }: { readonly purchase: DirectPurchase; 
       <div className="mt-3 max-w-[44ch] space-y-1.5 text-sm leading-relaxed">
         <p className="font-medium text-foreground">{inTotalsText(money)}</p>
         {money.kind === 'corrected' ? <p className="text-muted-foreground">{correctionText(money)}</p> : null}
+        {apart !== null ? <p className="text-muted-foreground">{reportedApartText(apart)}</p> : null}
         {reason ? <p className="text-muted-foreground">{reason}</p> : null}
+        {money.kind === 'not-counted' && money.reported !== null ? <p className="text-muted-foreground">{unconfirmedBasisText()}</p> : null}
         {rule ? <p className="text-muted-foreground">{rule}</p> : null}
         {money.kind === 'counted' && money.symbolic ? <p className="text-muted-foreground">{symbolicText()}</p> : null}
       </div>

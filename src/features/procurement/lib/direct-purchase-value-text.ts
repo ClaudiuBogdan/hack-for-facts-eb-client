@@ -1,13 +1,37 @@
 import { t } from '@lingui/core/macro'
 import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
-import { labelText, leiExact } from './direct-purchase-text'
+import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
+import { labelText } from './direct-purchase-text'
 import type { DpNotCounted, DpSupplierName, DpValue, DpValueRule } from './direct-purchase-value'
 
 /**
  * What the page says about a direct purchase's money and its supplier under
  * the serving contract (release 1). The reasons and the rules' sentences are
  * the API's, in the page's language; the client only frames them.
+ *
+ * Amounts keep the decimals the source wrote (a line of 1,845 is not 1,85).
+ * Only a counted value is said in lei: the release confirms a reported
+ * value's currency and VAT basis only when it counts it.
  */
+
+const NBSP = '\u00a0'
+
+/** The decimals an amount was written with, to six: none, or at least two, as money is read. */
+function digitsOf(value: number): number {
+  const written = (String(value).split('.')[1] ?? '').length
+  return written === 0 ? 0 : Math.min(6, Math.max(2, written))
+}
+
+/** An amount as the source wrote it, in lei when its currency is confirmed: „3.150 lei", „1.680.000". */
+export function amountText(value: number, inLei: boolean): string {
+  const figure = formatHubNumber(value, { digits: digitsOf(value) })
+  return inLei ? `${figure}${NBSP}lei` : figure
+}
+
+/** A counted amount: confirmed lei, excluding VAT. */
+function lei(value: number): string {
+  return amountText(value, true)
+}
 
 /** The label over the page's figure: the counted value is lei excluding VAT; a value out of totals is the portal's, as reported. */
 export function valueFigureLabel(value: DpValue): string {
@@ -15,10 +39,21 @@ export function valueFigureLabel(value: DpValue): string {
   return value.kind === 'counted' ? t`Valoarea, fără TVA` : t`Valoarea raportată în SEAP`
 }
 
-/** The figure itself: the counted value, else the reported one, else a dash. */
+/** The figure itself: the counted value in lei, else the reported one as written (its currency unconfirmed), else a dash. */
 export function valueFigure(value: DpValue): string {
-  if (value.kind !== 'not-counted') return leiExact(value.value)
-  return value.reported !== null ? leiExact(value.reported) : '—'
+  if (value.kind !== 'not-counted') return lei(value.value)
+  return value.reported !== null ? amountText(value.reported, false) : '—'
+}
+
+/** Under a value out of totals: its currency and VAT basis are not confirmed. */
+export function unconfirmedBasisText(): string {
+  return t`Moneda și TVA-ul acestei valori nu sunt confirmate.`
+}
+
+/** A value SEAP reports apart from the counted one, as written: „SEAP raportează 3.150.000." */
+export function reportedApartText(reported: number): string {
+  const figure = amountText(reported, false)
+  return t`SEAP raportează ${figure}.`
 }
 
 /** In totals or not, in one short line. */
@@ -33,15 +68,20 @@ export function notCountedText(reason: DpNotCounted): string | null {
 }
 
 /** The rule's public sentence in the page's language. */
-export function ruleText(rule: DpValueRule): string | null {
-  return labelText(rule.sentence)?.trim() || null
+export function ruleText(rule: DpValueRule | null): string | null {
+  return rule ? labelText(rule.sentence)?.trim() || null : null
 }
 
-/** A corrected purchase's two values: what SEAP reports and what is counted. */
+/** A correction's rule sentence, or — none published yet — that it has none, never silence. */
+export function correctionRuleText(value: Extract<DpValue, { kind: 'corrected' }>): string {
+  return ruleText(value.rule) ?? t`Regula după care am corectat valoarea nu are încă o descriere publică.`
+}
+
+/** A corrected purchase's two values: what SEAP reports, as written, and what is counted, in lei. */
 export function correctionText(value: Extract<DpValue, { kind: 'corrected' }>): string {
-  const counted = leiExact(value.value)
+  const counted = lei(value.value)
   if (value.reported === null) return t`Numărăm ${counted}.`
-  const reported = leiExact(value.reported)
+  const reported = amountText(value.reported, false)
   return t`SEAP raportează ${reported}; numărăm ${counted}.`
 }
 
