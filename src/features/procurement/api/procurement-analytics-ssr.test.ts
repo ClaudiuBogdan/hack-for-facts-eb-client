@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { homeYear } from '../lib/home-model'
 import { forgetProcurementCutoff } from './procurement-cutoff'
 import { readProcurementAnalyticsForSsr } from './procurement-analytics-ssr'
+// The disclosure publication direct purchases are kept under (D6), alongside the build.
+vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: true, places: true }), disclosureVersion: () => Promise.resolve('v1'), underDisclosure: (_memo: unknown, _key: string, read: () => Promise<unknown>) => read() }))
 
 /**
  * The server render's generation guard: without a cutoff's build it reads no
@@ -67,10 +69,12 @@ describe('readProcurementAnalyticsForSsr', () => {
     const read = await readProcurementAnalyticsForSsr({ tip: 'directe', judet: 'BV', dupa: 'inregistrari' })
     expect(analysis().map((call) => call.op)).toContain('AnalyticsRecords')
     expect(analysis().every((call) => call.build === '13')).toBe(true)
-    // Every seeded analysis key carries the build.
+    // Every seeded direct-purchase key carries the build and the disclosure publication (D6: a publish can withhold a supplier without a new build).
     const keys = read.seed.map((entry) => entry.key).filter((key) => ['figures', 'records'].includes(String(key[2])))
     expect(keys.length).toBeGreaterThan(0)
-    expect(keys.every((key) => key[3] === '13')).toBe(true)
+    // Direct purchases under '13|v1'; the other tabs' counts (contracts, frameworks) under the contract build alone.
+    expect(keys.every((key) => key[3] === '13|v1' || key[3] === '13')).toBe(true)
+    expect(keys.filter((key) => key[3] === '13|v1').length).toBeGreaterThan(0)
   })
 
   it('reads the records’ page and order the address holds, each page kept apart', async () => {
@@ -93,6 +97,6 @@ describe('readProcurementAnalyticsForSsr', () => {
     api.cutoffBuild = '14'
     const next = await readProcurementAnalyticsForSsr({ tip: 'directe', judet: 'SB' })
     expect(cutoffReads()).toBe(2)
-    expect(next.seed.find((entry) => entry.key[2] === 'figures')?.key[3]).toBe('14')
+    expect(next.seed.find((entry) => entry.key[2] === 'figures')?.key[3]).toBe('14|v1')
   })
 })

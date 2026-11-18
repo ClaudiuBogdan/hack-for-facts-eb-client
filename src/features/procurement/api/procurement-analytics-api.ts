@@ -1,4 +1,4 @@
-import { daSupplierReads } from './procurement-da-release-status'
+import { daSupplierReads, disclosureVersion } from './procurement-da-release-status'
 import { z } from 'zod'
 import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
@@ -81,6 +81,13 @@ export interface AnalyticsCutoff {
   readonly builds: { readonly direct: string; readonly contract: string }
   /** The pair, as one key: a new build of either starts the page over. */
   readonly build: string
+  /**
+   * The direct-purchase disclosure publication (release switch, data, D6 and
+   * supplier privacy): a nightly publish can withhold a supplier without
+   * moving the analysis build, so every direct-purchase answer is kept under
+   * both. Null when it cannot be read.
+   */
+  readonly disclosure?: string | null
 }
 
 /**
@@ -90,9 +97,20 @@ export interface AnalyticsCutoff {
  * figures and a list that could come from two generations.
  */
 export async function readAnalyticsCutoff(latest: number): Promise<AnalyticsCutoff> {
-  const cutoff = await readProcurementCutoff(latest)
+  const [cutoff, disclosure] = await Promise.all([readProcurementCutoff(latest), disclosureVersion()])
   // A month the national counts cannot date yet: the last complete year's end, never a month the source has not filled.
-  return { direct: cutoff.direct ?? `${latest}-12`, contract: cutoff.contract ?? `${latest}-12`, builds: cutoff.builds, build: cutoff.build }
+  return { direct: cutoff.direct ?? `${latest}-12`, contract: cutoff.contract ?? `${latest}-12`, builds: cutoff.builds, build: cutoff.build, disclosure }
+}
+
+/**
+ * The key a population's answers are kept under: its build, and for direct
+ * purchases the disclosure publication too (D6 — a withheld supplier
+ * disappears within one publish, which the build alone does not follow).
+ */
+function keptUnder(cutoffs: AnalyticsCutoff | null, population: { readonly cutoff: 'direct' | 'contract' }): string | null {
+  const build = cutoffs?.builds[population.cutoff] ?? null
+  if (build === null || population.cutoff !== 'direct') return build
+  return `${build}|${cutoffs?.disclosure ?? 'unknown'}`
 }
 
 /** The API refused a pinned read: its build is no longer the one it serves (a publication since the page read its cutoff). */
@@ -444,6 +462,7 @@ export function planAnswer(query: Query, cutoffs: AnalyticsCutoff | null, option
   const cutoff = cutoffs ? cutoffs[population.cutoff] : null
   const period = cutoff ? resolvePeriod(query.period, cutoff) : null
   const build = cutoffs?.builds[population.cutoff] ?? null
+  const kept = keptUnder(cutoffs, population)
   const now = period ? scopeOf(query, period) : null
   // The window before is compared only where the population compares: direct purchases, never before 2019.
   const comparable = period !== null && population.changes && period.previous.from >= `${population.comparableFrom}-01`
@@ -463,11 +482,11 @@ export function planAnswer(query: Query, cutoffs: AnalyticsCutoff | null, option
     scopes: { now, before, years: yearsScope },
     supplierFixed,
     dimension,
-    figures: { key: procurementAnalyticsKeys.figures(now!, before, build), enabled: now !== null, read: (signal) => readFigures(now!, before, build, signal) },
-    concentration: { key: procurementAnalyticsKeys.concentration(now!, rankBy, build), enabled: now !== null && !supplierFixed, read: (signal) => readConcentration(now!, rankBy, build, signal) },
-    ranking: { key: procurementAnalyticsKeys.ranking(now!, dimension, topN, rankBy, build), enabled: now !== null && dimension !== null, read: (signal) => readRanking(now!, dimension!, topN, rankBy, build, signal) },
-    series: { key: procurementAnalyticsKeys.series(now!, bucket, moneyAllowed, build), enabled: now !== null && bucket !== null, read: (signal) => readSeries(now!, bucket ?? 'month', moneyAllowed, build, signal) },
-    years: { key: procurementAnalyticsKeys.years(yearsScope, moneyAllowed, build), enabled: yearsScope !== null && options.years, read: (signal) => readSeries(yearsScope!, 'year', moneyAllowed, build, signal) },
+    figures: { key: procurementAnalyticsKeys.figures(now!, before, kept), enabled: now !== null, read: (signal) => readFigures(now!, before, build, signal) },
+    concentration: { key: procurementAnalyticsKeys.concentration(now!, rankBy, kept), enabled: now !== null && !supplierFixed, read: (signal) => readConcentration(now!, rankBy, build, signal) },
+    ranking: { key: procurementAnalyticsKeys.ranking(now!, dimension, topN, rankBy, kept), enabled: now !== null && dimension !== null, read: (signal) => readRanking(now!, dimension!, topN, rankBy, build, signal) },
+    series: { key: procurementAnalyticsKeys.series(now!, bucket, moneyAllowed, kept), enabled: now !== null && bucket !== null, read: (signal) => readSeries(now!, bucket ?? 'month', moneyAllowed, build, signal) },
+    years: { key: procurementAnalyticsKeys.years(yearsScope, moneyAllowed, kept), enabled: yearsScope !== null && options.years, read: (signal) => readSeries(yearsScope!, 'year', moneyAllowed, build, signal) },
   }
 }
 
@@ -478,7 +497,7 @@ export function planRecords(query: Query, cutoffs: AnalyticsCutoff | null, sort:
   const scope = period ? scopeOf(query, period) : null
   const build = cutoffs?.builds[POPULATIONS[query.tip].cutoff] ?? null
   return {
-    key: procurementAnalyticsKeys.records(scope, build, sort, page),
+    key: procurementAnalyticsKeys.records(scope, keptUnder(cutoffs, POPULATIONS[query.tip]), sort, page),
     enabled: scope !== null,
     read: (signal) => readRecords(scope!, build, sort, page, signal),
   }

@@ -73,7 +73,7 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
   // The shared cutoff read keeps itself (`procurement-cutoff.ts`): its build keys the question. Within the render's budget.
   const cutoffBudget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
   const pinned = await untilAborted(readAnalyticsCutoff(latest), cutoffBudget).catch(() => null)
-  return questions(hashKey([urlSearchOf(query), query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : null, pinned?.build ?? null]), async () => {
+  return questions(hashKey([urlSearchOf(query), query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : null, pinned?.build ?? null, pinned ? (pinned.disclosure ?? 'unknown') : null]), async () => {
     const budget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
     const seeded = async <T>(read: PlannedRead<T>) => ({ key: read.key, data: await read.read(budget) })
     const cutoffKey = procurementAnalyticsKeys.cutoff(latest)

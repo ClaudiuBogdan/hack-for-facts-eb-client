@@ -7,7 +7,7 @@ import { isStaleBuild, planAnswer, planRecords, readConcentration, readFigures, 
 const graphql = vi.hoisted(() => ({ query: vi.fn() }))
 // The switches: direct purchases' supplier figures readable unless a test says otherwise.
 const supplierReads = vi.hoisted(() => ({ figures: true }))
-vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: supplierReads.figures, places: false }) }))
+vi.mock('./procurement-da-release-status', () => ({ daSupplierReads: () => Promise.resolve({ figures: supplierReads.figures, places: false }), disclosureVersion: () => Promise.resolve('v1') }))
 vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()), graphqlQuery: graphql.query }))
 
 const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13' }
@@ -41,11 +41,16 @@ describe('scopeOf', () => {
 
 describe('builds per population', () => {
   // Direct acquisitions release 1 publishes direct purchases on their own clock: each population pins its own build.
-  const split: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '1795000000000000', contract: '13' }, build: '1795000000000000|13' }
+  const split: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '1795000000000000', contract: '13' }, build: '1795000000000000|13', disclosure: 'on:t1:d6:p1' }
 
-  it('a direct-purchase list reads the direct build, a contract list the contract build', () => {
-    expect(planRecords(queryOf({ tip: 'directe', perioada: '2025' }), split, 'value_desc', 1).key).toContain('1795000000000000')
+  it('a direct-purchase list is kept under the direct build and the disclosure publication, a contract list under the contract build', () => {
+    expect(planRecords(queryOf({ tip: 'directe', perioada: '2025' }), split, 'value_desc', 1).key).toContain('1795000000000000|on:t1:d6:p1')
     expect(planRecords(queryOf({ tip: 'contracte', perioada: '2025' }), split, 'value_desc', 1).key).toContain('13')
+  })
+
+  it('a new supplier-privacy publication keeps direct-purchase answers apart, though the build did not move', () => {
+    const next = { ...split, disclosure: 'on:t1:d6:p2' }
+    expect(planRecords(queryOf({ tip: 'directe', perioada: '2025' }), next, 'value_desc', 1).key).not.toEqual(planRecords(queryOf({ tip: 'directe', perioada: '2025' }), split, 'value_desc', 1).key)
   })
 })
 
