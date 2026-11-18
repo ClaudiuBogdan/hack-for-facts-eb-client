@@ -159,7 +159,9 @@ describe('D6 on direct purchases, whatever the release flag', () => {
       da2: { items: [] },
     })
     const names = await readNames([], [], new AbortController().signal, ['14837428', '9446547', '1234'])
-    expect([...names.orgs.entries()]).toEqual([['14837428', 'FLORARIA IRIS']])
+    expect([...names.daSuppliers.entries()]).toEqual([['14837428', 'FLORARIA IRIS']])
+    // Kept apart from the registry's names: a buyer of the same CUI never names the supplier.
+    expect(names.orgs.size).toBe(0)
     const [query, variables] = graphql.query.mock.calls[graphql.query.mock.calls.length - 1] as [string, Record<string, unknown>]
     expect(query).not.toContain('organizationLabels(cuis: $cuis) @include(if: true)')
     expect(variables).toMatchObject({ withOrgs: false, da0: '14837428', da1: '9446547', da2: '1234' })

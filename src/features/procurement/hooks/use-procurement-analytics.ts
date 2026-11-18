@@ -11,6 +11,7 @@ import {
   nameKeys,
   planAnswer,
   planNames,
+  type Names,
   type NameKeys,
   planRecords,
   readAnalyticsCutoff,
@@ -178,11 +179,19 @@ export function resetRecoveredBuilds(): void {
   recoveredBuilds.clear()
 }
 
+/** Two ranking keys of one population and one build (with, for direct purchases, one disclosure publication). */
+function samePublication(previous: readonly unknown[] | undefined, next: readonly unknown[]): boolean {
+  if (!previous) return false
+  const grainOf = (key: readonly unknown[]) => (key[4] as { readonly grain?: unknown } | null | undefined)?.grain
+  return previous[3] === next[3] && grainOf(previous) === grainOf(next)
+}
+
 // ───────────────────────────────────────────────────────────────── names ──
 
 /** Names for everything on screen: the filters' values, the answer's keys. */
 export function useNamer(query: Query, answer: Pick<Answer, 'ranking'>, extra: readonly Ranking[] = []): Namer {
-  const names = useNames(nameKeys(query, [answer.ranking.data, ...extra]))
+  const disclosure = useCutoff().data?.disclosure ?? null
+  const names = useNames(nameKeys(query, [answer.ranking.data, ...extra], disclosure))
   const counties = useCounties()
   const divisions = useCpvDivisions()
   const needLocalities =
@@ -210,7 +219,8 @@ export function useNames(keys: NameKeys) {
     queryFn: ({ signal }) => plan.read(signal),
     enabled: plan.enabled,
     staleTime: 60 * 60 * 1000,
-    placeholderData: (previous) => previous,
+    // While the next names load: the registry's and the categories' stay; no direct-purchase supplier's name outlives its read (D6).
+    placeholderData: (previous: Names | undefined) => (previous ? { ...previous, daSuppliers: new Map<string, string>() } : undefined),
     ...seeded(plan),
   })
 }
@@ -382,7 +392,9 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
         queryFn: ({ signal }: { signal: AbortSignal }) => plan.ranking.read(signal),
         enabled: plan.ranking.enabled,
         staleTime: STALE,
-        placeholderData: (previous: Ranking | undefined) => (previous && previous.dimension === dimension ? previous : undefined),
+        // Kept while the next one loads only within one population and publication: never a contracts ranking, or an older publication's, under direct purchases (D6).
+        placeholderData: (previous: Ranking | undefined, previousQuery?: { readonly queryKey: readonly unknown[] }) =>
+          previous && previous.dimension === dimension && samePublication(previousQuery?.queryKey, plan.ranking.key) ? previous : undefined,
         ...seeded(plan.ranking),
       },
       { queryKey: plan.series.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.series.read(signal), enabled: plan.series.enabled, staleTime: STALE, ...seeded(plan.series) },

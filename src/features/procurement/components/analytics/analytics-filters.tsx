@@ -13,7 +13,7 @@ import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
 import { AXES, cpvKey, cpvPath, FIRST_MONTH, POPULATIONS, withCategory, repaired, withFilter, withoutFilter, withTitle, type PopulationId, type Query } from '../../lib/analytics-model'
 import { CPV_SEARCH_MIN, useCpvSearch, useNames, type Answer } from '../../hooks/use-procurement-analytics'
-import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, type Namer } from '../../lib/analytics-text'
+import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, supplierFilterLabel, type Namer } from '../../lib/analytics-text'
 import { SHOW_MORE_CLASS } from '../home/home-chrome'
 import { MonthField } from './analytics-month-field'
 import { PlaceField } from './analytics-place-field'
@@ -134,7 +134,10 @@ function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cum
   return (
     <Row label={label}>
       {filter ? (
-        <Chip label={keyLabel(axis, 'cui', filter.values[0]!, namer)} onClear={() => onChange(withoutFilter(query, axis))} />
+        <Chip
+          label={axis === 'furnizor' ? supplierFilterLabel(query, filter.values[0]!, namer) : keyLabel(axis, 'cui', filter.values[0]!, namer)}
+          onClear={() => onChange(withoutFilter(query, axis))}
+        />
       ) : (
         <form
           onSubmit={(event) => {

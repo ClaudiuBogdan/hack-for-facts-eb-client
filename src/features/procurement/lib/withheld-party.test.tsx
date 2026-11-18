@@ -1,3 +1,4 @@
+import { supplierFilterLabel } from './analytics-text'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
@@ -157,5 +158,16 @@ describe('legacy direct-acquisition rows (fail closed on displayKind)', () => {
     const mapped = mapDirectAcquisition({ ...record, title: 'Ion Popescu, tel. 0722', titleWithheld: 'privacy', cpvLabel: 'Aranjamente florale', sourceUrl: null } as never)
     expect(mapped.title).toBeNull()
     expect(mapped.cpvLabel).toBe('Aranjamente florale')
+  })
+})
+
+describe('the supplier the analytics address gives, under D6', () => {
+  const namer = (daSuppliers: ReadonlyMap<string, string>) =>
+    ({ names: { orgs: new Map([['14837428', 'REGISTRY NAME SRL']]), cpv: new Map(), daSuppliers }, divisions: new Map(), counties: new Map(), localities: null }) as const
+
+  it('for direct purchases is named only by its own direct purchases, never by the registry (a buyer of the same CUI, a contracts placeholder)', () => {
+    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map())).toUpperCase()).not.toContain('REGISTRY')
+    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', 'FIRMA DA SRL']])))).toContain('Firma DA')
+    expect(supplierFilterLabel({ tip: 'contracte' }, '14837428', namer(new Map())).toUpperCase()).toContain('REGISTRY')
   })
 })

@@ -300,6 +300,8 @@ const namesSchema = z.object({
 export interface Names {
   readonly orgs: ReadonlyMap<string, string>
   readonly cpv: ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>
+  /** Direct-purchase suppliers named by their own direct purchases as companies (D6) — never mixed with the registry's names. */
+  readonly daSuppliers: ReadonlyMap<string, string>
 }
 
 /** At most this many direct-purchase suppliers named by their own records (a filter holds one). */
@@ -326,14 +328,15 @@ export async function readNames(cuis: readonly string[], codes: readonly string[
   const parsed = namesSchema.parse(raw)
   const orgs = new Map<string, string>()
   for (const label of parsed.labels ?? []) if (label.cui && label.canonicalName && label.status === 'named') orgs.set(label.cui, label.canonicalName)
+  const daSuppliersNamed = new Map<string, string>()
   asked.forEach((cui, index) => {
     const supplier = daSupplierNameSchema.parse(raw[`da${index}`] ?? { items: [] }).items[0]?.supplier
     const name = supplier && isNamedDaSupplier(supplier) && supplier.cui === cui ? (supplier.displayName ?? supplier.name) : null
-    if (name) orgs.set(cui, name)
+    if (name) daSuppliersNamed.set(cui, name)
   })
   const cpv = new Map<string, { ro: string | null; en: string | null }>()
   for (const code of parsed.cpv ?? []) cpv.set(code.cpvCode, { ro: code.labelRo, en: code.labelEn })
-  return { orgs, cpv }
+  return { orgs, cpv, daSuppliers: daSuppliersNamed }
 }
 
 const divisionsSchema = z.object({ procurementCpvDivisions: z.array(z.object({ divisionCode: z.string(), labelRo: z.string().nullable(), labelEn: z.string() })) })
@@ -512,9 +515,11 @@ export interface NameKeys {
   readonly cpv: readonly string[]
   /** Direct-purchase suppliers named only by their own direct purchases (D6). */
   readonly daSuppliers?: readonly string[]
+  /** The disclosure publication those names were read under: a new one reads them afresh (D6). */
+  readonly disclosure?: string | null
 }
 
-export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[]): NameKeys {
+export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[], disclosure: string | null = null): NameKeys {
   const direct = POPULATIONS[query.tip].grain === 'direct_acquisition'
   const orgs: string[] = []
   const cpv: string[] = []
@@ -533,14 +538,15 @@ export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[
       if (ranking.dimension.startsWith('cpv')) cpv.push(bucket.key)
     }
   }
-  return { orgs: [...new Set(orgs)].sort(), cpv: [...new Set(cpv)].sort(), daSuppliers: [...new Set(daSuppliers)].sort() }
+  return { orgs: [...new Set(orgs)].sort(), cpv: [...new Set(cpv)].sort(), daSuppliers: [...new Set(daSuppliers)].sort(), disclosure }
 }
 
 /** The names read, planned: nothing to name reads nothing. */
 export function planNames(keys: NameKeys): PlannedRead<Names> {
   const daSuppliers = keys.daSuppliers ?? []
   return {
-    key: procurementAnalyticsKeys.names(keys.orgs, keys.cpv, daSuppliers),
+    // Direct-purchase names belong to the disclosure publication they were read under (D6).
+    key: procurementAnalyticsKeys.names(keys.orgs, keys.cpv, daSuppliers, daSuppliers.length > 0 ? (keys.disclosure ?? 'unknown') : null),
     enabled: keys.orgs.length > 0 || keys.cpv.length > 0 || daSuppliers.length > 0,
     read: (signal) => readNames(keys.orgs, keys.cpv, signal, daSuppliers),
   }

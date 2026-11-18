@@ -44,6 +44,19 @@ export function cpvLabel(prefix: string, namer: Namer): string {
   return inLocale(namer.names?.cpv.get(cpvKey(prefix))) ?? t`Cod CPV ${prefix}`
 }
 
+/**
+ * The supplier the address gives, as its chip and headline name it. For
+ * direct purchases (D6) only from its own direct purchases served as a
+ * company (`names.daSuppliers`), never from the registry's names — which a
+ * buyer of the same CUI, or a contracts read kept as a placeholder, could carry.
+ */
+export function supplierFilterLabel(query: Pick<Query, 'tip'>, key: string, namer: Namer): string {
+  if (query.tip !== 'directe') return keyLabel('furnizor', 'cui', key, namer)
+  if (isNaturalPersonKey(key)) return naturalPersonsLabel()
+  const name = namer.names?.daSuppliers.get(key)
+  return name ? displayCompanyName(name) : t`Firma cu CUI ${key}`
+}
+
 /** What a key stands for, as a reader names it. */
 export function keyLabel(axis: AxisId, level: string, key: string, namer: Namer): string {
   if (axis === 'cumparator') {
@@ -51,7 +64,7 @@ export function keyLabel(axis: AxisId, level: string, key: string, namer: Namer)
     return name ? tidyName(name) : t`Instituția cu CUI ${key}`
   }
   if (axis === 'furnizor') {
-    // D6: the withheld group is never named.
+    // D6: the withheld group is never named. (A ranking's row is named only when its bucket is a company's — `analytics-view`.)
     if (isNaturalPersonKey(key)) return naturalPersonsLabel()
     const name = namer.names?.orgs.get(key)
     return name ? displayCompanyName(name) : t`Firma cu CUI ${key}`
@@ -197,7 +210,7 @@ function sellerPhrase(query: Query, namer: Namer): string | null {
   const org = filters.furnizor?.values[0]
   const place = filters.loc_firma
   if (org) {
-    const name = keyLabel('furnizor', 'cui', org, namer)
+    const name = supplierFilterLabel(query, org, namer)
     return tip === 'directe' ? t`de la ${name}` : tip === 'contracte' ? t`firmei ${name}` : t`cu ${name}`
   }
   if (!place) return null

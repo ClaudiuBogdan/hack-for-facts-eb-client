@@ -111,7 +111,7 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     const rankingIndex = answer.indexOf(plan.ranking)
     const rankingRead = rankingIndex >= 0 ? settled[rankingIndex] : undefined
     const ranking = rankingRead?.status === 'fulfilled' ? (rankingRead.value.data as Ranking) : undefined
-    const names = planNames(nameKeys(query, [ranking]))
+    const names = planNames(nameKeys(query, [ranking], pinned?.disclosure ?? null))
     // The category's name, whatever address asked: the memo keeps one read per question, and the
     // landing's own address shares it with addresses that are not landings (`?cpv=X&dupa=<its default>`).
     const category = query.filters.cpv?.values[0] ?? null

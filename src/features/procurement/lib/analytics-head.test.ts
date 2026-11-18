@@ -42,7 +42,7 @@ describe('landingName and landingTitle', () => {
 describe('documentTitleOf', () => {
   const i18n = testI18n as unknown as I18n
   const namer = (cpv: ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>): Namer => ({
-    names: { orgs: new Map(), cpv },
+    names: { orgs: new Map(), cpv, daSuppliers: new Map() },
     divisions: new Map(),
     counties: new Map(),
     localities: null,
