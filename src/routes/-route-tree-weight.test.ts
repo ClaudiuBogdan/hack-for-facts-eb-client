@@ -30,6 +30,11 @@ const KEPT_OUT: readonly { readonly family: string; readonly modules: readonly R
   // schemas themselves still load with `/maps/public/$mapId`, whose request must start at the click.
   { family: 'entity page map previews', modules: [/^src\/features\/challenges\/components\/analysis\/challenge-entity-public-maps\.ts$/] },
   { family: 'NGO registry', modules: [/^src\/features\/ngos\/registry\/api\.ts$/] },
+  // Reached by the NGO pages' and procurement analytics' heads only for a company's display name.
+  {
+    family: 'private-company profile',
+    modules: [/^src\/schemas\/private-company(-registry|-main-activity)?\.ts$/, /^src\/features\/private-companies\/lib\/company-profile-model\.ts$/],
+  },
 ]
 
 /**

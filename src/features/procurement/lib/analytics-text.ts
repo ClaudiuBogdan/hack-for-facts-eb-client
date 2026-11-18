@@ -1,6 +1,6 @@
 import { plural, t } from '@lingui/core/macro'
 import { i18n } from '@lingui/core'
-import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
+import { displayCompanyName } from '@/features/private-companies/lib/company-name-display'
 import { cpvDivisionLabelEn, cpvDivisionLabelRo } from './cpv-labels'
 import { bigCountText, countText, lowerFirst, moneyText, monthText, percentText } from './home-format'
 import { procedureLabel, tidyName } from './home-model'

@@ -1,4 +1,4 @@
-import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
+import { displayCompanyName } from '@/features/private-companies/lib/company-name-display'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type { NgoIdentityMethod, NgoOrganization, NgoStatement } from './api'
 
