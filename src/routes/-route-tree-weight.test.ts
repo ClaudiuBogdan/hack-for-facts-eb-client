@@ -34,8 +34,8 @@ const KEPT_OUT: readonly { readonly family: string; readonly modules: readonly R
     family: 'private-company profile',
     modules: [/^src\/schemas\/private-company(-registry|-main-activity)?\.ts$/, /^src\/features\/private-companies\/lib\/company-profile-model\.ts$/],
   },
-  { family: 'justice', modules: [/^src\/schemas\/judicial\.ts$/] },
-  { family: 'elections', modules: [/^src\/schemas\/elections-catalog\.ts$/] },
+  { family: 'justice', modules: [/^src\/schemas\/judicial\.ts$/, /^src\/features\/justice\/(api|fixtures)\//] },
+  { family: 'elections', modules: [/^src\/schemas\/elections-catalog\.ts$/, /^src\/features\/elections\/(api|mocks)\//] },
   {
     family: 'charts and company analytics',
     modules: [

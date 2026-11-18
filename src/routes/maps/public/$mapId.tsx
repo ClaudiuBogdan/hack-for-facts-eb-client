@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { warmAdvancedAnalyticsMapResources } from '@/features/advanced-map-analytics/analytics-map-warmup';
+import { loadMapDecoders } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
 import { advancedMapAnalyticsPublicMapQueryOptions } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking';
 import type { QueryClient } from '@tanstack/react-query';
@@ -51,11 +52,11 @@ export const Route = createFileRoute('/maps/public/$mapId')({
       void publicMapPromise
         .then((publicMap) => warmCountyBoundariesIfUsed(queryClient, publicMap))
         .catch(() => {});
-      // A hover's preload waits for the map's code: it then arrives inside
-      // the router's quiet preload (src/lib/route-code-warmup.ts), where a
-      // failed fetch leaves the page being read alone and makes the click a
-      // page load. A visit does not wait.
-      if (preload) await warming;
+      // A hover's preload waits for the map's code and its response decoder:
+      // they then arrive inside the router's quiet preload
+      // (src/lib/route-code-warmup.ts), where a failed fetch leaves the page
+      // being read alone and makes the click a page load. A visit does not wait.
+      if (preload) await Promise.all([warming, loadMapDecoders()]);
       return;
     }
 

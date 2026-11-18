@@ -15,6 +15,8 @@ interface UseEntitySearchProps {
     onSelect?: (entity: EntitySearchNode) => void;
     openNotificationModal?: boolean;
     selectionBehavior?: EntitySelectionBehavior;
+    /** What the reader typed before the input arrived (the deferred dialog's placeholder field). */
+    initialTerm?: string;
     entitySearchFilter?: {
         isUat?: boolean;
         excludeCounty?: boolean;
@@ -27,11 +29,12 @@ export function useEntitySearch({
     openNotificationModal = false,
     selectionBehavior = 'navigate-to-entity',
     entitySearchFilter,
+    initialTerm = "",
 }: UseEntitySearchProps = {}) {
     const navigate = useNavigate();
     const currentSearch = useSearch({ strict: false }) as Record<string, unknown>;
-    const [searchTerm, setSearchTerm] = useState("");
-    const [isDropdownOpen, setDropdownOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState(initialTerm);
+    const [isDropdownOpen, setDropdownOpen] = useState(initialTerm !== "");
     const [activeIndex, setActiveIndex] = useState(-1);
 
     const debouncedSearchTerm = useDebouncedValue(searchTerm, debounceMs);

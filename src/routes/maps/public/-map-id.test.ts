@@ -12,6 +12,11 @@ vi.mock('@/features/advanced-map-analytics/analytics-map-warmup', () => ({
   warmAdvancedAnalyticsMapResources: warmAdvancedAnalyticsMapResourcesMock,
 }));
 
+const loadMapDecodersMock = vi.fn();
+vi.mock('@/features/advanced-map-analytics/api/advanced-map-analytics-api', () => ({
+  loadMapDecoders: loadMapDecodersMock,
+}));
+
 vi.mock('@/features/advanced-map-analytics/hooks/use-advanced-map-analytics', () => ({
   advancedMapAnalyticsPublicMapQueryOptions: advancedMapAnalyticsPublicMapQueryOptionsMock,
 }));
@@ -23,6 +28,7 @@ describe('maps public route loader', () => {
     warmAdvancedAnalyticsMapResourcesMock.mockReset();
     advancedMapAnalyticsPublicMapQueryOptionsMock.mockReset();
     warmAdvancedAnalyticsMapResourcesMock.mockResolvedValue(undefined);
+    loadMapDecodersMock.mockReset().mockResolvedValue({});
     advancedMapAnalyticsPublicMapQueryOptionsMock.mockImplementation((publicId: string) => ({
       queryKey: ['advanced-map-analytics', 'public', publicId],
     }));
@@ -220,5 +226,28 @@ describe('maps public route loader', () => {
     await expect(
       loader({ context: { queryClient }, params: { mapId: 'public-map-5' } }),
     ).resolves.toBeUndefined();
+  });
+
+  it('waits on a hover preload for the response decoders too, so a failed decoder fetch stays inside the quiet preload', async () => {
+    let settle: () => void = () => undefined;
+    loadMapDecodersMock.mockReturnValue(
+      new Promise<void>((resolve) => {
+        settle = resolve;
+      }),
+    );
+    const queryClient = { ensureQueryData: vi.fn().mockReturnValue(new Promise(() => {})) };
+    const { Route } = await import('./$mapId');
+    const loader = (Route as unknown as { loader: (input: Record<string, unknown>) => Promise<void> }).loader;
+
+    let preloaded = false;
+    const preloading = loader({ context: { queryClient }, params: { mapId: 'm' }, preload: true }).then(() => {
+      preloaded = true;
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(preloaded).toBe(false);
+    settle();
+    await preloading;
+    expect(preloaded).toBe(true);
   });
 });

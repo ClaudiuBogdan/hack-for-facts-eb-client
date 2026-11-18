@@ -12,6 +12,18 @@ import type {
 } from './schemas';
 
 const OWNER_BASE_ENDPOINT = '/api/v1/advanced-map-analytics';
+
+let decoders: Promise<typeof import('./schemas')> | null = null;
+
+/**
+ * The response decoders (the map schemas, which build the chart schemas), once
+ * per document: off the start-up graph, since every page evaluates the public
+ * map route. A hover's preload awaits this inside the router's quiet preload,
+ * so a failed fetch there never reloads the page being read.
+ */
+export function loadMapDecoders(): Promise<typeof import('./schemas')> {
+  return (decoders ??= import('./schemas'));
+}
 const PUBLIC_BASE_ENDPOINT = '/api/v1/advanced-map-analytics/public';
 
 export class AdvancedMapAnalyticsApiError extends Error {
@@ -217,6 +229,8 @@ function ensureBundledGroupedSeriesData(
 export async function createAdvancedMapAnalyticsMap(
   input: CreateMapInput
 ): Promise<AdvancedMapAnalyticsMapDetail> {
+  // The decoder first: a request the server acted on must never end in a failed import.
+  const { normalizeMapDetail } = await loadMapDecoders();
   const payload = await ownerRequest('/maps', {
     method: 'POST',
     headers: {
@@ -231,25 +245,26 @@ export async function createAdvancedMapAnalyticsMap(
     }),
   });
 
-  const { normalizeMapDetail } = await import('./schemas');
   return normalizeMapDetail(unwrapData(payload));
 }
 
 export async function listAdvancedMapAnalyticsMaps(): Promise<AdvancedMapAnalyticsMapSummary[]> {
+  // The decoder first: a request the server acted on must never end in a failed import.
+  const { normalizeMapList } = await loadMapDecoders();
   const payload = await ownerRequest('/maps', {
     method: 'GET',
   });
 
-  const { normalizeMapList } = await import('./schemas');
   return normalizeMapList(unwrapData(payload));
 }
 
 export async function getAdvancedMapAnalyticsMap(mapId: string): Promise<AdvancedMapAnalyticsMapDetail> {
+  // The decoder first: a request the server acted on must never end in a failed import.
+  const { normalizeMapDetail } = await loadMapDecoders();
   const payload = await ownerRequest(`/maps/${encodeURIComponent(mapId)}`, {
     method: 'GET',
   });
 
-  const { normalizeMapDetail } = await import('./schemas');
   return ensureBundledGroupedSeriesData(normalizeMapDetail(unwrapData(payload)), 'owner');
 }
 
@@ -257,6 +272,8 @@ export async function updateAdvancedMapAnalyticsMap(
   mapId: string,
   input: UpdateMapInput
 ): Promise<AdvancedMapAnalyticsMapDetail> {
+  // The decoder first: a request the server acted on must never end in a failed import.
+  const { normalizeMapDetail } = await loadMapDecoders();
   const payload = await ownerRequest(`/maps/${encodeURIComponent(mapId)}`, {
     method: 'PATCH',
     headers: {
@@ -269,7 +286,6 @@ export async function updateAdvancedMapAnalyticsMap(
     }),
   });
 
-  const { normalizeMapDetail } = await import('./schemas');
   return normalizeMapDetail(unwrapData(payload));
 }
 
@@ -277,6 +293,8 @@ export async function createAdvancedMapAnalyticsSnapshot(
   mapId: string,
   input: CreateSnapshotInput
 ): Promise<AdvancedMapAnalyticsSnapshot> {
+  // The decoder first: a request the server acted on must never end in a failed import.
+  const { normalizeSnapshot } = await loadMapDecoders();
   const mapPatch: Record<string, unknown> = {};
   if (input.title !== undefined) {
     mapPatch.title = input.title;
@@ -309,7 +327,6 @@ export async function createAdvancedMapAnalyticsSnapshot(
 
   const unwrapped = unwrapData(payload);
   const record = asRecord(unwrapped);
-  const { normalizeSnapshot } = await import('./schemas');
   return normalizeSnapshot(record.snapshot ?? unwrapped);
 }
 
@@ -317,6 +334,8 @@ export async function listAdvancedMapAnalyticsSnapshots(
   mapId: string,
   params: { page?: number; pageSize?: number } = {}
 ): Promise<AdvancedMapAnalyticsSnapshotsList> {
+  // The decoder first: a request the server acted on must never end in a failed import.
+  const { normalizeSnapshotsList } = await loadMapDecoders();
   const queryParams = new URLSearchParams();
   if (typeof params.page === 'number' && Number.isFinite(params.page)) {
     queryParams.set('page', String(Math.max(1, Math.trunc(params.page))));
@@ -333,7 +352,6 @@ export async function listAdvancedMapAnalyticsSnapshots(
     method: 'GET',
   });
 
-  const { normalizeSnapshotsList } = await import('./schemas');
   const list = normalizeSnapshotsList(unwrapData(payload));
 
   const hydratedSnapshots = await Promise.all(
@@ -363,6 +381,8 @@ export async function getAdvancedMapAnalyticsSnapshot(
   mapId: string,
   snapshotId: string
 ): Promise<AdvancedMapAnalyticsSnapshot> {
+  // The decoder first: a request the server acted on must never end in a failed import.
+  const { normalizeSnapshot } = await loadMapDecoders();
   const payload = await ownerRequest(
     `/maps/${encodeURIComponent(mapId)}/snapshots/${encodeURIComponent(snapshotId)}`,
     {
@@ -370,7 +390,6 @@ export async function getAdvancedMapAnalyticsSnapshot(
     }
   );
 
-  const { normalizeSnapshot } = await import('./schemas');
   return normalizeSnapshot(unwrapData(payload));
 }
 
@@ -384,13 +403,13 @@ export async function deleteAdvancedMapAnalyticsMap(mapId: string): Promise<void
 }
 
 export async function getPublicAdvancedMapAnalyticsMap(publicId: string): Promise<AdvancedMapAnalyticsMapDetail> {
+  // The request starts at the click; its decoder loads alongside it. The
+  // response's own failure (a 404, the envelope) comes first, then the decoder's.
+  const decoders = loadMapDecoders();
+  decoders.catch(() => {});
+  let data: unknown;
   try {
-    // Keep the request at the click. Fetch its decoder alongside the response.
-    const [payload, { normalizeMapDetail }] = await Promise.all([
-      publicRequest(`/${encodeURIComponent(publicId)}`),
-      import('./schemas'),
-    ]);
-    return ensureBundledGroupedSeriesData(normalizeMapDetail(unwrapData(payload)), 'public');
+    data = unwrapData(await publicRequest(`/${encodeURIComponent(publicId)}`));
   } catch (error) {
     if (
       error instanceof AdvancedMapAnalyticsApiError &&
@@ -407,4 +426,6 @@ export async function getPublicAdvancedMapAnalyticsMap(publicId: string): Promis
 
     throw error;
   }
+  const { normalizeMapDetail } = await decoders;
+  return ensureBundledGroupedSeriesData(normalizeMapDetail(data), 'public');
 }

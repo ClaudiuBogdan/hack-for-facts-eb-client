@@ -42,6 +42,11 @@ const ROUTE_CONTRACT_MODULES = [
   'src/components/entities/validation.ts',
   'src/features/private-companies/lib/company-analytics-search.ts',
   'src/features/challenges/schemas/challenge-entity-analysis-route-search-schema.ts',
+  'src/features/campaigns/buget/schemas/campaign-schema.ts',
+  'src/features/campaigns/buget/schemas/timeline-schema.ts',
+  'src/features/campaigns/buget/schemas/campaign-route-search-schema.ts',
+  'src/features/advanced-map-analytics/api/envelope.ts',
+  'src/schemas/chart-defaults.ts',
 ]
 const BUILT_AT_MODULE_SCOPE = {
   // Any call evaluated when the module is (not inside a function), wherever it

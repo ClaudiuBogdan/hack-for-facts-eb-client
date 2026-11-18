@@ -17,8 +17,8 @@ const reload = vi.hoisted(() => vi.fn<() => boolean>());
 vi.mock('@/lib/chunk-recovery', () => ({ reloadForFreshCode: reload }));
 vi.mock('@tanstack/react-router', () => ({ useNavigate: () => vi.fn() }));
 vi.mock('./EntitySearch', () => ({
-    EntitySearchInput: ({ autoFocus }: { readonly autoFocus: boolean }) =>
-        <input aria-label="Entity" autoFocus={autoFocus} />,
+    EntitySearchInput: ({ autoFocus, initialTerm }: { readonly autoFocus: boolean; readonly initialTerm?: string }) =>
+        <input aria-label="Entity" autoFocus={autoFocus} defaultValue={initialTerm} />,
 }));
 
 beforeEach(() => {
@@ -42,11 +42,16 @@ it('leaves the server dialog closed and shares an idle fetch with a reader openi
     expect(load).not.toHaveBeenCalled();
     act(() => idle.mock.calls[0]![0]({ didTimeout: false, timeRemaining: () => 10 }));
     fireEvent.click(screen.getByRole('button', { name: 'Search for another entity' }));
-    const placeholder = screen.getByRole('button', { name: 'Loading...' });
-    act(() => placeholder.focus());
+    // The dialog focuses the plain field, and the reader types before the input arrives.
+    const field = screen.getByRole('textbox', { name: 'Search entities by name or CUI...' });
+    expect(field).toHaveFocus();
+    fireEvent.change(field, { target: { value: 'Buc' } });
+    expect(screen.getByRole('status')).toHaveTextContent('Loading...');
     expect(load).toHaveBeenCalledTimes(1);
     await act(async () => pending.resolve());
-    expect(screen.getByRole('textbox')).toHaveFocus();
+    const input = screen.getByRole('textbox', { name: 'Entity' });
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue('Buc');
 });
 
 it('shows a failed prefetch on open and retries in the dialog without taking focus from another action', async () => {

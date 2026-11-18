@@ -23,6 +23,8 @@ interface EntitySearchInputProps {
     /** When true, scroll the input into view (top) on focus. Useful for mobile UX. */
     scrollToTopOnFocus?: boolean;
     renderResultTrailing?: (entity: EntitySearchNode) => ReactNode;
+    /** What the reader typed before this input arrived; the caret goes to its end. */
+    initialTerm?: string;
 }
 
 export function EntitySearchInput({
@@ -34,6 +36,7 @@ export function EntitySearchInput({
     autoFocus,
     scrollToTopOnFocus,
     renderResultTrailing,
+    initialTerm,
 }: EntitySearchInputProps) {
     const {
         searchTerm,
@@ -50,7 +53,7 @@ export function EntitySearchInput({
         handleKeyDown,
         debouncedSearchTerm,
         id: searchId,
-    } = useEntitySearch({ onSelect, selectionBehavior, entitySearchFilter });
+    } = useEntitySearch({ onSelect, selectionBehavior, entitySearchFilter, initialTerm });
 
     const { containerRef, onBlur } = useGuardedBlur<HTMLDivElement>(closeDropdown);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -68,8 +71,11 @@ export function EntitySearchInput({
             return;
         }
 
-        inputRef.current?.focus();
-    }, [autoFocus]);
+        const input = inputRef.current;
+        input?.focus();
+        // Text carried over from the deferred dialog's field: keep typing at its end.
+        if (input && initialTerm) input.setSelectionRange(input.value.length, input.value.length);
+    }, [autoFocus, initialTerm]);
 
     return (
         <div

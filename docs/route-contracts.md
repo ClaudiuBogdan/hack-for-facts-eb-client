@@ -149,7 +149,8 @@ and `lib/` (11.1) are not route families: they are looked at last.
     module, which held the registry's Zod schemas and the GraphQL client.
   - **Private-company profile:** the NGO pages' and procurement analytics' heads needed only a company's
     display name; it moved to `features/private-companies/lib/company-name-display.ts`, so the profile model
-    and `schemas/private-company*.ts` left the start-up graph.
+    and the data schemas `private-company.ts`, `private-company-registry.ts` and
+    `private-company-main-activity.ts` left the start-up graph (the companies' URL contracts stay, as intended).
   - **Justice:** `schemas/justice-search.ts`, lazy; `judicial.ts` re-exports it.
   - **Elections:** `schemas/elections-search.ts`, lazy, with the keys, offices and page bounds the routes
     check; `elections-catalog.ts` builds its schemas from its lists and re-exports it. `ELECTIONS_MAX_PAGE`
@@ -181,6 +182,18 @@ and `lib/` (11.1) are not route families: they are looked at last.
     loads: time under the chunks' top-level evaluation, median 475 → 368 ms, of it in the Zod chunk
     243 → 131 ms. Every page family the batch touched renders as before (status, content, no page or
     hydration error), and the search input's chunk now arrives on idle (≈1.1 s) instead of at start-up.
+  - Review (Codex `gpt-6.2-astra`, max): two P1s in the public map's deferred decoder, fixed — owner
+    mutations now load the decoder before sending (a failed import after a create used to leave a map the
+    reader could not see, and a retry made a second), and a hover's preload awaits the decoder inside the
+    quiet preload (a failed decoder fetch used to reload the page being read); the public read reports its
+    HTTP failure before a decoder failure. The floating search's placeholder is now a field whose text and
+    focus carry over to the input (keystrokes typed during a cold open used to be lost). The chart store loads
+    in the route's loader, alongside the editor's chunk, once per document. Also made lazy: the map API
+    envelope and the heatmap's `MapStateSchema`. Left as noted: the old exports of `judicial.ts`,
+    `elections-catalog.ts` and `page-schema.ts` are now lazy schemas, without `.unwrap()`/`.shape` (no caller
+    uses them); `LazySchema`'s `~standard` type mentions Zod's JSON-schema helpers it does not forward; the
+    graph walker misses eager globs written with the `@/` alias or a quoted `eager` key (older than this
+    batch).
   - Left at start-up on purpose: the entity page's identity and details queries (its loader starts them at
     the click, rule 5 of "Migrating a family"). Largest builders left: PNRR's search contract (its schema
     module mixes it with the data schemas) and the redesign entity API behind the entity page.

@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore, type ComponentProps } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input as TextInput } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import type { EntitySearchInput } from './EntitySearch';
 import { reloadForFreshCode } from '@/lib/chunk-recovery';
@@ -63,29 +64,52 @@ function usePrefetchEntitySearchInput() {
     }, []);
 }
 
-/** The dialog mounts its contents only when opened. Opening wins over an idle prefetch. */
+/**
+ * The dialog mounts its contents only when opened; opening wins over an idle
+ * prefetch. Until the input arrives the dialog holds a plain field in its box,
+ * which the dialog focuses as it would the input: what the reader types there,
+ * and whether they were in it, carry over to the input when it mounts.
+ */
 function DeferredEntitySearchInput(props: ComponentProps<Input>) {
     const Input = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
-    const [focusOnLoad, setFocusOnLoad] = useState<boolean>();
+    const [term, setTerm] = useState('');
+    const [focused, setFocused] = useState<boolean>();
 
     useEffect(() => { loadInput(); }, []);
 
-    if (typeof Input === 'function') return <Input {...props} autoFocus={focusOnLoad ?? props.autoFocus} />;
+    if (typeof Input === 'function') return <Input {...props} initialTerm={term} autoFocus={focused ?? props.autoFocus} />;
 
     const failed = Input === 'failed';
+    const placeholder = props.placeholder ?? t`Search entities by name or CUI...`;
     return (
-        <div className="mx-auto w-full max-w-3xl pt-8">
-            <button
-                type="button"
-                aria-disabled={!failed}
-                onClick={failed ? retryInput : undefined}
-                onFocus={() => setFocusOnLoad(true)}
-                onBlur={() => setFocusOnLoad(false)}
-                className="min-h-14 w-full rounded-3xl border bg-background px-6 text-start shadow-sm"
-            >
-                <span role="status">{failed ? t`Căutarea nu a răspuns.` : t`Loading...`}</span>
-                {failed && <span className="ml-2 underline">{t`Încearcă din nou`}</span>}
-            </button>
+        <div className="relative mx-auto w-full max-w-3xl pt-8">
+            <div className="relative">
+                <Search aria-hidden="true" className="pointer-events-none absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-slate-400 sm:left-7 sm:h-8 sm:w-8" />
+                <TextInput
+                    type="text"
+                    value={term}
+                    onChange={(event) => setTerm(event.target.value)}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    autoFocus={props.autoFocus}
+                    placeholder={placeholder}
+                    aria-label={placeholder}
+                    aria-busy={!failed}
+                    // The input's own box (EntitySearch/index.tsx), so nothing moves when it arrives.
+                    className="w-full py-7 pl-14 pr-4 text-base bg-white dark:bg-slate-800 rounded-3xl placeholder:text-slate-400 shadow-sm hover:shadow-md focus:shadow-lg transition-shadow duration-300 border-slate-300 dark:border-slate-700 focus:border-slate-400 dark:focus:border-slate-600 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-600 sm:px-20 md:text-xl"
+                />
+            </div>
+            <p role="status" className="mt-2 rounded-md bg-white/95 px-4 py-2 text-sm text-slate-600 dark:bg-slate-900/95 dark:text-slate-300">
+                {failed ? t`Căutarea nu a răspuns.` : t`Loading...`}
+                {failed && (
+                    <>
+                        {' '}
+                        <button type="button" onClick={retryInput} className="font-medium underline underline-offset-4">
+                            {t`Încearcă din nou`}
+                        </button>
+                    </>
+                )}
+            </p>
         </div>
     );
 }
