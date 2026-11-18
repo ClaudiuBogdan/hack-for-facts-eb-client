@@ -182,18 +182,24 @@ and `lib/` (11.1) are not route families: they are looked at last.
     two loads: time under the chunks' top-level evaluation, median ≈530 → ≈346 ms, of it in the Zod chunk
     ≈279 → ≈122 ms (a busier host than an earlier run, 475 → 368 ms; the gap held in every round). Every page family the batch touched renders as before (status, content, no page or
     hydration error), and the search input's chunk now arrives on idle (≈1.1 s) instead of at start-up.
-  - Review (Codex `gpt-6.2-astra`, max, four rounds): the public map's response decoder was first loaded on
+  - Review (Codex `gpt-6.2-astra`, max, five rounds): the public map's response decoder was first loaded on
     its own with `import()`. Every guard on that extra chunk left a timing gap on a stale deployment where
     a failed load reloaded a page the reader had not asked for, so the owner chose a redesign: no chunk of
-    its own. `api/advanced-map-analytics-transport.ts` holds the requests, errors and envelope; the route
-    starts the map's payload read at the click (`hooks/public-map-payload-query.ts`, under the decoded
-    query's key) and imports nothing else; the page's query (`advancedMapAnalyticsPublicMapQueryOptions`)
-    joins that read and decodes it with `advanced-map-analytics-api.ts`, which arrives with the page's own
-    code and its tested failure handling, then warms the county boundaries the map draws. The server reads
+    its own. `api/advanced-map-analytics-transport.ts` holds the requests, errors and envelope. The route
+    starts the map's read at the click, unless the page already has the map fresh
+    (`hooks/public-map-read.ts`), and imports no decoder; it still starts the base map warm-up (UAT
+    GeoJSON and the interactive renderer), which a hover's preload awaits, as on `dev`. The page's query
+    (`advancedMapAnalyticsPublicMapQueryOptions`) takes that read once, while it is under 15 s old, and
+    decodes it with `advanced-map-analytics-api.ts`, which arrives with the page's own code and its tested
+    failure handling; it then warms the county boundaries the map draws (on `dev` a hover could warm them,
+    now the page does once decoded). The handoff is not a cache: any other fetch of the query (a retry, a
+    refetch, a read after a save, which drops started reads) asks the network, so retries, freshness and
+    invalidation are the query's own, as on `dev`. The server reads
     and decodes in one go, as before. Owner calls import their decoders statically, as on `dev`.
     Other findings fixed: the floating search's placeholder is a field whose text and focus carry over to
-    the input (keystrokes typed during a cold open were lost), its status describes the field, and its
-    results open only once the input has focus; a failed retry asks for a fresh page. The chart store loads
+    the input (keystrokes typed during a cold open were lost, as were a selection and an IME composition
+    in progress), its status describes the field, and its results open only once the input has focus; a
+    failed retry asks for a fresh page. The chart store loads
     in the route's loader, alongside the editor's chunk, once per document. Also made lazy: the map API
     envelope and the heatmap's `MapStateSchema`; the guard and lint list cover more of the migrated
     families. Left as noted: the old exports of `judicial.ts`,
@@ -202,7 +208,10 @@ and `lib/` (11.1) are not route families: they are looked at last.
     graph walker misses eager globs written with the `@/` alias or a quoted `eager` key (older than this
     batch). Found on `dev` as well and left for later: a duplicated or directly opened chart is not saved
     locally on entry (the router calls `onStay`, not `onEnter`), `mod+k` cannot close the map's search
-    dialog, and an editable map copy's one-time handoff is spent before a signed-out reader signs in.
+    dialog, an editable map copy's one-time handoff is spent before a signed-out reader signs in, a few
+    small schemas still built at start-up (the campaign calendar's language, the INS source search, the
+    report-type enum), and the decoded map query's error type, which does not cover a network or envelope
+    failure.
   - Left at start-up on purpose: the entity page's identity and details queries (its loader starts them at
     the click, rule 5 of "Migrating a family"). Largest builders left: PNRR's search contract (its schema
     module mixes it with the data schemas) and the redesign entity API behind the entity page.

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { warmAdvancedAnalyticsMapResources } from '@/features/advanced-map-analytics/analytics-map-warmup';
-import { publicMapPayloadQueryOptions } from '@/features/advanced-map-analytics/hooks/public-map-payload-query';
+import { startPublicMapRead } from '@/features/advanced-map-analytics/hooks/public-map-read';
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking';
 
 export const Route = createFileRoute('/maps/public/$mapId')({
@@ -17,12 +17,13 @@ export const Route = createFileRoute('/maps/public/$mapId')({
     const warming = warmAdvancedAnalyticsMapResources({ queryClient });
 
     if (!shouldBlockLoaderForSsr()) {
-      // The read starts at the click, not awaited: its payload only. The page
-      // decodes it with code that arrives with the page itself (the map's
-      // schemas stay out of the route tree, which every page evaluates), and
-      // warms the county boundaries once it knows the map draws them.
-      // Rejections surface through the page's own error state.
-      void queryClient.ensureQueryData(publicMapPayloadQueryOptions(publicId)).catch(() => {});
+      // The read starts at the click, not awaited, unless the page already has
+      // the map fresh: the response only. The page's query takes it and decodes
+      // it with code that arrives with the page itself (the map's schemas stay
+      // out of the route tree, which every page evaluates), then warms the
+      // county boundaries once it knows the map draws them. Rejections surface
+      // through the page's own error state.
+      startPublicMapRead(queryClient, publicId);
       // A hover's preload waits for the map's code: it then arrives inside
       // the router's quiet preload (src/lib/route-code-warmup.ts), where a
       // failed fetch leaves the page being read alone and makes the click a

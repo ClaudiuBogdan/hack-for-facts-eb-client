@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const routeStub = vi.fn((options: Record<string, unknown>) => options);
 const warmAdvancedAnalyticsMapResourcesMock = vi.fn();
 const advancedMapAnalyticsPublicMapQueryOptionsMock = vi.fn();
-const publicMapPayloadQueryOptionsMock = vi.fn();
+const startPublicMapReadMock = vi.fn();
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
@@ -13,8 +13,8 @@ vi.mock('@/features/advanced-map-analytics/analytics-map-warmup', () => ({
   warmAdvancedAnalyticsMapResources: warmAdvancedAnalyticsMapResourcesMock,
 }));
 
-vi.mock('@/features/advanced-map-analytics/hooks/public-map-payload-query', () => ({
-  publicMapPayloadQueryOptions: publicMapPayloadQueryOptionsMock,
+vi.mock('@/features/advanced-map-analytics/hooks/public-map-read', () => ({
+  startPublicMapRead: startPublicMapReadMock,
 }));
 
 // The server's path only: the browser's loader never imports the decoding hooks.
@@ -37,10 +37,7 @@ describe('maps public route loader', () => {
     advancedMapAnalyticsPublicMapQueryOptionsMock.mockImplementation((publicId: string) => ({
       queryKey: ['advanced-map-analytics', 'public', publicId],
     }));
-    publicMapPayloadQueryOptionsMock.mockReset();
-    publicMapPayloadQueryOptionsMock.mockImplementation((publicId: string) => ({
-      queryKey: ['advanced-map-analytics', 'public', publicId, 'payload'],
-    }));
+    startPublicMapReadMock.mockReset();
   });
 
   it('starts the map\'s payload read and the base warm-up in the browser, leaving the decoding to the page', async () => {
@@ -68,11 +65,9 @@ describe('maps public route loader', () => {
       params: { mapId: 'public-map-1' },
     });
 
-    expect(publicMapPayloadQueryOptionsMock).toHaveBeenCalledWith('public-map-1');
+    expect(startPublicMapReadMock).toHaveBeenCalledWith(queryClient, 'public-map-1');
     expect(advancedMapAnalyticsPublicMapQueryOptionsMock).not.toHaveBeenCalled();
-    expect(queryClient.ensureQueryData).toHaveBeenCalledWith({
-      queryKey: ['advanced-map-analytics', 'public', 'public-map-1', 'payload'],
-    });
+    expect(queryClient.ensureQueryData).not.toHaveBeenCalled();
     expect(warmAdvancedAnalyticsMapResourcesMock).toHaveBeenCalledTimes(1);
     expect(warmAdvancedAnalyticsMapResourcesMock).toHaveBeenCalledWith({
       queryClient,
@@ -153,7 +148,7 @@ describe('maps public route loader', () => {
       loader({ context: { queryClient }, params: { mapId: 'public-map-3' } }),
     ).resolves.toBeUndefined();
     // The request still starts at click time — it just isn't awaited.
-    expect(queryClient.ensureQueryData).toHaveBeenCalledTimes(1);
+    expect(startPublicMapReadMock).toHaveBeenCalledTimes(1);
     expect(warmAdvancedAnalyticsMapResourcesMock).toHaveBeenCalledWith({
       queryClient,
     });

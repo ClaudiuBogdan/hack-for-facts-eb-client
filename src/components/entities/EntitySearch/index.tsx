@@ -23,8 +23,10 @@ interface EntitySearchInputProps {
     /** When true, scroll the input into view (top) on focus. Useful for mobile UX. */
     scrollToTopOnFocus?: boolean;
     renderResultTrailing?: (entity: EntitySearchNode) => ReactNode;
-    /** What the reader typed before this input arrived; the caret goes to its end. */
+    /** What the reader typed before this input arrived. */
     initialTerm?: string;
+    /** Where the reader's caret or selection was in it (the end of it if unknown). */
+    initialSelection?: { readonly start: number; readonly end: number; readonly direction: 'forward' | 'backward' | 'none' };
 }
 
 export function EntitySearchInput({
@@ -37,6 +39,7 @@ export function EntitySearchInput({
     scrollToTopOnFocus,
     renderResultTrailing,
     initialTerm,
+    initialSelection,
 }: EntitySearchInputProps) {
     const {
         searchTerm,
@@ -73,9 +76,14 @@ export function EntitySearchInput({
 
         const input = inputRef.current;
         input?.focus();
-        // Text carried over from the deferred dialog's field: keep typing at its end.
-        if (input && initialTerm) input.setSelectionRange(input.value.length, input.value.length);
-    }, [autoFocus, initialTerm]);
+        // Text carried over from the deferred dialog's field: the reader's caret or selection, else its end.
+        if (input && initialTerm) {
+            const { start, end, direction } = initialSelection ?? { start: input.value.length, end: input.value.length, direction: 'none' as const };
+            input.setSelectionRange(start, end, direction);
+        }
+        // Only on mount: later renders must not move the reader's caret.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoFocus]);
 
     return (
         <div

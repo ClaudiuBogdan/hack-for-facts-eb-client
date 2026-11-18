@@ -36,6 +36,8 @@ const KEPT_OUT: readonly { readonly family: string; readonly modules: readonly R
   },
   { family: 'justice', modules: [/^src\/schemas\/judicial\.ts$/, /^src\/features\/justice\/(api|fixtures)\//] },
   { family: 'elections', modules: [/^src\/schemas\/elections-catalog\.ts$/, /^src\/features\/elections\/(api|mocks)\//] },
+  { family: 'public investments', modules: [/^src\/features\/public-investments\/(api|mocks)\//] },
+  { family: 'entity search', modules: [/^src\/features\/entity-search\/api\//] },
   {
     family: 'charts and company analytics',
     modules: [

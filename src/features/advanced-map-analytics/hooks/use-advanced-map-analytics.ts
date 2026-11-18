@@ -1,7 +1,8 @@
 import { useOptionalUser } from '@/lib/auth';
 import { queryOptions, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { warmAdvancedAnalyticsMapResources } from '@/features/advanced-map-analytics/analytics-map-warmup';
-import { publicMapPayloadQueryOptions } from './public-map-payload-query';
+import { dropPublicMapReads, PUBLIC_MAP_STALE_MS, publicMapQueryKey, takePublicMapRead } from './public-map-read';
+import { fetchPublicMapPayload } from '@/features/advanced-map-analytics/api/advanced-map-analytics-transport';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import {
   createAdvancedMapAnalyticsMap,
@@ -29,7 +30,7 @@ export const advancedMapAnalyticsKeys = {
   map: (mapId: string) => ['advanced-map-analytics', 'map', mapId] as const,
   snapshots: (mapId: string, page: number, pageSize: number) =>
     ['advanced-map-analytics', 'snapshots', mapId, page, pageSize] as const,
-  public: (publicId: string) => ['advanced-map-analytics', 'public', publicId] as const,
+  public: publicMapQueryKey,
 };
 const advancedMapAnalyticsPublicPrefixKey = ['advanced-map-analytics', 'public'] as const;
 
@@ -88,6 +89,7 @@ function uniquePublicIds(...values: Array<string | null | undefined>): string[] 
 }
 
 async function invalidatePublicQueries(queryClient: QueryClient, publicIds: string[]): Promise<void> {
+  dropPublicMapReads(publicIds);
   if (publicIds.length === 0) {
     await queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsPublicPrefixKey });
     return;
@@ -101,6 +103,7 @@ async function invalidatePublicQueries(queryClient: QueryClient, publicIds: stri
 }
 
 function removePublicQueries(queryClient: QueryClient, publicIds: string[]): void {
+  dropPublicMapReads(publicIds);
   if (publicIds.length === 0) {
     queryClient.removeQueries({ queryKey: advancedMapAnalyticsPublicPrefixKey });
     return;
@@ -166,13 +169,14 @@ export function advancedMapAnalyticsPublicMapQueryOptions(publicId: string) {
     queryFn: async ({ client }) => {
       // The server reads and decodes in one go; its render is hydrated as is.
       if (import.meta.env.SSR) return getPublicAdvancedMapAnalyticsMap(publicId);
-      // In the browser the route started this read at the click (its payload
-      // query): decoding joins it, so there is one request.
-      const publicMap = decodePublicMapPayload(await client.fetchQuery(publicMapPayloadQueryOptions(publicId)));
+      // In the browser the route started this read at the click: the first
+      // fetch takes it, so a visit makes one request; a retry or a refetch
+      // asks the network again, as any query does.
+      const publicMap = decodePublicMapPayload(await (takePublicMapRead(publicId) ?? fetchPublicMapPayload(publicId)));
       warmCountyBoundariesIfUsed(client, publicMap);
       return publicMap;
     },
-    staleTime: 60_000,
+    staleTime: PUBLIC_MAP_STALE_MS,
   });
 }
 

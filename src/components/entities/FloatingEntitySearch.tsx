@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, useSyncExternalStore, type ComponentProps } from 'react';
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ComponentProps, type SyntheticEvent } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input as TextInput } from '@/components/ui/input';
@@ -74,11 +74,23 @@ function DeferredEntitySearchInput(props: ComponentProps<Input>) {
     const Input = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
     const [term, setTerm] = useState('');
     const [focused, setFocused] = useState<boolean>();
+    const [composing, setComposing] = useState(false);
+    const selection = useRef<{ start: number; end: number; direction: 'forward' | 'backward' | 'none' } | undefined>(undefined);
     const statusId = useId();
 
     useEffect(() => { loadInput(); }, []);
 
-    if (typeof Input === 'function') return <Input {...props} initialTerm={term} autoFocus={focused ?? props.autoFocus} />;
+    // A composition in progress (an IME, a dead key) finishes in this field first.
+    if (typeof Input === 'function' && !composing) {
+        return <Input {...props} initialTerm={term} initialSelection={selection.current} autoFocus={focused ?? props.autoFocus} />;
+    }
+
+    const rememberSelection = (event: SyntheticEvent<HTMLInputElement>) => {
+        const { selectionStart, selectionEnd, selectionDirection } = event.currentTarget;
+        if (selectionStart !== null && selectionEnd !== null) {
+            selection.current = { start: selectionStart, end: selectionEnd, direction: selectionDirection ?? 'none' };
+        }
+    };
 
     const failed = Input === 'failed';
     const placeholder = props.placeholder ?? t`Search entities by name or CUI...`;
@@ -89,7 +101,17 @@ function DeferredEntitySearchInput(props: ComponentProps<Input>) {
                 <TextInput
                     type="text"
                     value={term}
-                    onChange={(event) => setTerm(event.target.value)}
+                    onChange={(event) => {
+                        setTerm(event.target.value);
+                        rememberSelection(event);
+                    }}
+                    onSelect={rememberSelection}
+                    onCompositionStart={() => setComposing(true)}
+                    onCompositionEnd={(event) => {
+                        setComposing(false);
+                        setTerm(event.currentTarget.value);
+                        rememberSelection(event);
+                    }}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                     autoFocus={props.autoFocus}

@@ -17,8 +17,8 @@ const reload = vi.hoisted(() => vi.fn<() => boolean>());
 vi.mock('@/lib/chunk-recovery', () => ({ reloadForFreshCode: reload }));
 vi.mock('@tanstack/react-router', () => ({ useNavigate: () => vi.fn() }));
 vi.mock('./EntitySearch', () => ({
-    EntitySearchInput: ({ autoFocus, initialTerm }: { readonly autoFocus: boolean; readonly initialTerm?: string }) =>
-        <input aria-label="Entity" autoFocus={autoFocus} defaultValue={initialTerm} />,
+    EntitySearchInput: ({ autoFocus, initialTerm, initialSelection }: { readonly autoFocus: boolean; readonly initialTerm?: string; readonly initialSelection?: { start: number; end: number } }) =>
+        <input aria-label="Entity" autoFocus={autoFocus} defaultValue={initialTerm} data-selection={initialSelection ? `${initialSelection.start}-${initialSelection.end}` : ''} />,
 }));
 
 beforeEach(() => {
@@ -92,4 +92,29 @@ it('asks for a fresh page to retry when online, since the browser keeps a failed
     fireEvent.click(screen.getByRole('button', { name: /Încearcă din nou/ }));
     expect(reload).toHaveBeenCalledTimes(1);
     expect(load).toHaveBeenCalledTimes(1);
+});
+
+it('hands over a selection, and waits for a composition to finish before handing over', async () => {
+    const idle = vi.fn<typeof window.requestIdleCallback>(() => 1);
+    vi.stubGlobal('requestIdleCallback', idle);
+    vi.stubGlobal('cancelIdleCallback', vi.fn());
+    const pending = createDeferredPromise<void>();
+    load.mockReturnValue(pending.promise);
+    const { FloatingEntitySearch } = await import('./FloatingEntitySearch');
+
+    render(<FloatingEntitySearch showButton />);
+    fireEvent.click(screen.getByRole('button', { name: 'Search for another entity' }));
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Search entities by name or CUI...' });
+    fireEvent.change(field, { target: { value: 'Bucuresti' } });
+    field.setSelectionRange(6, 7);
+    fireEvent.select(field);
+    fireEvent.compositionStart(field);
+    await act(async () => pending.resolve());
+
+    // Still composing: the plain field stays.
+    expect(screen.queryByRole('textbox', { name: 'Entity' })).toBeNull();
+    fireEvent.compositionEnd(field);
+    const input = screen.getByRole('textbox', { name: 'Entity' });
+    expect(input).toHaveValue('Bucuresti');
+    expect(input).toHaveAttribute('data-selection', '6-7');
 });
