@@ -110,7 +110,7 @@ of three passes. These are not browser numbers, but they rank modules consistent
 | Before (79ea80f4) | 185 | 1,872 KB | 183 ms | legislation 17.8 ms (first) |
 | Legislation migrated | 181 | 1,846 KB | 159 ms | legislation 0.8 ms |
 | Batch 1 (below) | 164 | 1,638 KB | | |
-| Batch 2 through charts and company analytics | 156 | 1,441 KB | | 0 Zod instances from the chart, filter and company-scope contracts at module evaluation |
+| Batch 2 (below; from e8fdd9be: 166 chunks, 1,497 KB) | 156 | 1,408 KB | browser, landing, 4× CPU: 475 → 368 ms | Zod chunk's share 243 → 131 ms |
 
 Families by start-up evaluation before the migration (ms, the same harness): legislation 17.5, the statistics
 hub hooks 13.5, campaigns 12.9, certificates 10.3, advanced map analytics 10.0, companies 8.6, the primărie
@@ -140,21 +140,47 @@ and `lib/` (11.1) are not route families: they are looked at last.
     translation of an old explorer link is imported only when one is redirected (`beforeLoad` became async).
   - **Company profile:** `schemas/private-company-profile-search.ts`.
   - At the end of batch 1, charts, the public map's decoder and the private-company profile schemas were still eager.
-- **2026-11-18, batch 2.** Following the NGO registry, company profile head, justice and elections migrations,
-  **charts and company analytics** left the static graph. A chart URL contains the whole editable document,
-  including recursive calculations and company scopes. The router builds its validator synchronously on first
-  use. Data and storage callers still receive concrete Zod schemas from `schemas/charts.ts`. Entity, alert and
-  heatmap filters share the first-use filter contract. Default years and company link keys have independent imports.
-  - The shell fetches the entity search input on idle or dialog open. A failed load can be retried in the dialog.
-  - The public map keeps its static transport. It starts the HTTP request and imports the response decoder in
-    parallel. The advanced map schemas left the static graph along with the chart schemas.
-  - All three validation interfaces matched across 131,985 schema/input pairs (66 validators). The router's
-    inferred search input and output types matched for all seven checked contracts.
-  - The production client entry and its static imports totaled 1,441,107 bytes across 156 chunks. In an
-    isolated evaluation of those chunks before hydration, Zod constructed 1,129 schema instances. The source
-    guard's direct module-scope `z.method(...)` call sites fell from 1,293 to 498 against `650ab0de2`.
-    Only the client and SSR compilation stages completed in the isolated measurement build.
-- **Still at start-up.** PNRR (309 schema instances), the redesign entity API (143) and public investments
-  (130) are the largest remaining builders in that evaluation. The public map still carries its small API
-  envelope and its request code. The chart document's synchronous validation code still ships in the static graph.
-
+- **2026-11-18, batch 2.** Measured first: each start-up module timed alone in Vitest with its dependencies
+  loaded before it, charged to the route files that reach it, and the browser's evaluation task profiled
+  (landing, 4× CPU) before and after. Asset and JSON imports cost Vitest far more than they cost the
+  browser (the footer scene's images, the campaign JSON), so Zod constructions in start-up modules and the
+  browser profile ranked the families, not the Vitest times alone. One commit each:
+  - **NGO registry:** its URL contract (`features/ngos/registry/registry-search.ts`) moved out of its API
+    module, which held the registry's Zod schemas and the GraphQL client.
+  - **Private-company profile:** the NGO pages' and procurement analytics' heads needed only a company's
+    display name; it moved to `features/private-companies/lib/company-name-display.ts`, so the profile model
+    and `schemas/private-company*.ts` left the start-up graph.
+  - **Justice:** `schemas/justice-search.ts`, lazy; `judicial.ts` re-exports it.
+  - **Elections:** `schemas/elections-search.ts`, lazy, with the keys, offices and page bounds the routes
+    check; `elections-catalog.ts` builds its schemas from its lists and re-exports it. `ELECTIONS_MAX_PAGE`
+    is written as GraphQL's `Int` bound, the tighter one (a test keeps it equal to the old formula).
+  - **Public investments:** its search schemas are lazy in place, with the shared preprocessors made
+    builders (the module keeps cheap module-level `Set`s, so it is not on the lint list).
+  - **Company directory and hub search:** lazy in place; `/companies` and the directory redirect read
+    explicit key lists, which a test keeps equal to the schemas' shapes.
+  - **Entity search** (`/experimental/search`): lazy in place.
+  - **Campaign content and route search:** the content schemas and the campaign routes' search schema are
+    lazy; nested schemas are taken with `.schema()` inside builders.
+  - Parity: for each family, old and new `parse`, `safeParse` and `~standard.validate` over a battery of
+    inputs (545 to over 10,000 comparisons per family; thrown errors compared where a schema has no
+    `.catch`), with strict equality, against a copy of the previous file.
+  - **Charts and company analytics** (with Codex `gpt-6.2-astra`): every page built `schemas/charts.ts` and
+    `schemas/company-analytics.ts`, through the shell's floating entity search, the entity page, the alert,
+    heatmap, PNRR and chart routes and the companies routes. Their URL contracts moved to first-use modules
+    (`analytics-filter-search.ts`, `chart-search.ts`, `company-analysis-scope-route-contract.ts`,
+    `alerts-search.ts`, `features/private-companies/lib/company-analytics-search.ts`) and plain defaults to
+    `chart-defaults.ts`; `charts.ts` and `company-analytics.ts` re-export them, so data callers still get
+    concrete Zod schemas. A chart URL carries the whole editable document, so its validator is the largest
+    contract left; it is built on first use. The shell's search input loads on idle or when the dialog opens
+    (a failed load asks for a fresh page, as the landing search does). The chart route loads its store
+    before entry. The public map starts its request at the click and loads its decoder alongside it.
+    Parity: 66 validators, 131,985 schema/input pairs, `parse`, `safeParse` and `~standard.validate` with
+    issues compared in full; the router's inferred search types matched for seven contracts.
+  - Results (local production builds, e8fdd9be against this batch): start-up graph 166 → 156 chunks and
+    1,497 → 1,408 KB. Browser CPU profile of the landing at 4× slowdown, three alternating rounds of two
+    loads: time under the chunks' top-level evaluation, median 475 → 368 ms, of it in the Zod chunk
+    243 → 131 ms. Every page family the batch touched renders as before (status, content, no page or
+    hydration error), and the search input's chunk now arrives on idle (≈1.1 s) instead of at start-up.
+  - Left at start-up on purpose: the entity page's identity and details queries (its loader starts them at
+    the click, rule 5 of "Migrating a family"). Largest builders left: PNRR's search contract (its schema
+    module mixes it with the data schemas) and the redesign entity API behind the entity page.
