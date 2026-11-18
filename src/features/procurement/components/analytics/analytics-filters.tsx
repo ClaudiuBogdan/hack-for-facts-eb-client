@@ -11,7 +11,7 @@ import { MIN_QUERY_CHARS, useSearchResults } from '@/features/landing/hooks/use-
 import { procurementHrefOf } from '@/features/procurement/lib/home-links'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
-import { cpvKey, cpvPath, FIRST_MONTH, POPULATIONS, withCategory, repaired, withFilter, withoutFilter, withTitle, type PopulationId, type Query } from '../../lib/analytics-model'
+import { AXES, cpvKey, cpvPath, FIRST_MONTH, POPULATIONS, withCategory, repaired, withFilter, withoutFilter, withTitle, type PopulationId, type Query } from '../../lib/analytics-model'
 import { CPV_SEARCH_MIN, useCpvSearch, useNames, type Answer } from '../../hooks/use-procurement-analytics'
 import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, type Namer } from '../../lib/analytics-text'
 import { SHOW_MORE_CLASS } from '../home/home-chrome'
@@ -461,12 +461,14 @@ export function FilterPanel({
       </Group>
       <Group title={t`Cine vinde`}>
         <OrgField axis="furnizor" label={t`Firma`} query={query} namer={namer} onChange={onChange} />
-        <PlaceField axis="loc_firma" query={query} onChange={onChange} />
+        {/* No firm's place for direct purchases (D6: a place can name a person). */}
+        {AXES.loc_firma.populations.includes(query.tip) ? <PlaceField axis="loc_firma" query={query} onChange={onChange} /> : null}
       </Group>
       <Group title={t`Ce cumpără`}>
         <CpvField query={query} namer={namer} onChange={onChange} />
         {contract ? <ProcedureField query={query} namer={namer} onChange={onChange} /> : null}
-        <TitleField query={query} onChange={onChange} />
+        {/* No title search for direct purchases: their titles are withheld until reviewed (D6). */}
+        {query.tip !== 'directe' ? <TitleField query={query} onChange={onChange} /> : null}
         <ValueField query={query} namer={namer} onChange={onChange} />
       </Group>
     </div>

@@ -65,7 +65,11 @@ export function isDaReleaseOn(): Promise<boolean> {
  */
 export function disclosureVersion(): Promise<string | null> {
   return readDaRelease().then(
-    (status) => `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}:${status.privacyEnforced ? 'd6' : 'nod6'}:${status.privacyAsOf ?? '-'}`,
+    (status) =>
+      // D6 on with its supplier-privacy publication unreadable (everyone withheld for now): never kept, so nothing outlives it (API contract d534ebd0).
+      status.privacyEnforced && status.privacyAsOf === null
+        ? null
+        : `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}:${status.privacyEnforced ? 'd6' : 'nod6'}:${status.privacyAsOf ?? '-'}`,
     () => null,
   )
 }

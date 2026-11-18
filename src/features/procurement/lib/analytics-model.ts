@@ -331,7 +331,8 @@ export function queryOf(search: AnalyticsSearch): Query {
       }
     }
   }
-  const titlu = search.titlu && search.titlu.trim().length >= 3 ? search.titlu.trim().slice(0, 100) : null
+  // No title search for direct purchases: their titles are withheld until reviewed (D6) and the API refuses one; the address's is said unread.
+  const titlu = tip !== 'directe' && search.titlu && search.titlu.trim().length >= 3 ? search.titlu.trim().slice(0, 100) : null
   const [min, max] = (search.valoare ?? '').split('..').map((part) => (part.trim() === '' ? null : Number(part)))
   const valoare = min != null || max != null ? { min: Number.isFinite(min) ? (min ?? null) : null, max: Number.isFinite(max) ? (max ?? null) : null } : null
   const measure = (['numar', 'lei', 'locuitor'] as const).find((item) => item === search.masura) ?? POPULATIONS[tip].defaultMeasure
@@ -561,7 +562,9 @@ export function repaired(query: Query): Query {
   let masura = query.masura
   if (masura === 'lei' && population.money === 'none') masura = 'numar'
   if (masura === 'locuitor' && !perResidentAllowed(dupa)) masura = population.money === 'clean' ? 'lei' : 'numar'
-  return { ...query, filters, dupa, masura }
+  // No title search for direct purchases (their titles are withheld, D6): a move to them drops it.
+  const titlu = query.tip === 'directe' ? null : query.titlu
+  return { ...query, filters, titlu, dupa, masura }
 }
 
 /** A row's drill: its filter added, the group-by moved to the next natural axis. */

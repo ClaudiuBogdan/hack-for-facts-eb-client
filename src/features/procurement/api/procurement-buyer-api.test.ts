@@ -103,7 +103,11 @@ describe('fetchProcurementBuyer', () => {
   function answer(raw: Record<string, unknown>, ...followUps: (() => Promise<unknown>)[]) {
     graphqlQuery.mockImplementation((_query: string, _variables: unknown, options: { readonly operationName: string }) => {
       if (options.operationName === 'ProcurementBuyerIdentity') return Promise.resolve({ entity: raw.entity ?? null })
-      if (options.operationName !== 'ProcurementBuyerExtras') return Promise.resolve(raw)
+      // As the API answers: only the aliases the request asked for — a field the query left out never comes back.
+      if (options.operationName !== 'ProcurementBuyerExtras') {
+        const asked = Object.keys((_variables ?? {}) as Record<string, unknown>)
+        return Promise.resolve(Object.fromEntries(asked.filter((alias) => alias in raw).map((alias) => [alias, raw[alias]])))
+      }
       const next = followUps.shift()
       return next ? next() : Promise.reject(new Error('no follow-up left'))
     })

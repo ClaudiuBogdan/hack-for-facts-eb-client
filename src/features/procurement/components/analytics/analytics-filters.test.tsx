@@ -147,7 +147,7 @@ describe('FilterPanel', () => {
   })
 
   it('picks nothing on Enter with nothing typed: the regions on offer are no answer', () => {
-    const onChange = panel()
+    const onChange = panel(queryOf({ tip: 'contracte' }))
     const field = screen.getByRole('combobox', { name: 'Locul firmei' })
     fireEvent.focus(field)
     fireEvent.submit(field.closest('form')!)
@@ -197,7 +197,7 @@ describe('FilterPanel', () => {
   it('applies a title as the focus leaves, at once and on the question as it is; its chip waits for the focus to land', () => {
     vi.useFakeTimers()
     try {
-      const query = queryOf({ cumparator: '4305857' })
+      const query = queryOf({ tip: 'contracte', cumparator: '4305857' })
       const onChange = panel(query)
       const field = screen.getByRole('textbox', { name: 'Titlul conține' })
       fireEvent.change(field, { target: { value: 'laptop' } })
@@ -217,7 +217,7 @@ describe('FilterPanel', () => {
   })
 
   it('keeps the options, and the box that scrolls them, out of the Tab order', () => {
-    panel()
+    panel(queryOf({ tip: 'contracte' }))
     const field = screen.getByRole('combobox', { name: 'Locul firmei' })
     fireEvent.focus(field)
     for (const option of screen.getAllByRole('option')) expect(option).toHaveAttribute('tabindex', '-1')
@@ -226,8 +226,14 @@ describe('FilterPanel', () => {
     expect(screen.getByRole('listbox', { name: 'Locuri' }).parentElement).toHaveAttribute('tabindex', '-1')
   })
 
+  it('has no firm’s place and no title search for direct purchases (D6)', () => {
+    panel(queryOf({}))
+    expect(screen.queryByRole('combobox', { name: 'Locul firmei' })).toBeNull()
+    expect(screen.queryByRole('textbox', { name: 'Titlul conține' })).toBeNull()
+  })
+
   it('offers the regions before a word is typed', () => {
-    panel()
+    panel(queryOf({ tip: 'contracte' }))
     fireEvent.focus(screen.getByRole('combobox', { name: 'Locul firmei' }))
     expect(within(screen.getByRole('listbox', { name: 'Regiuni' })).getAllByRole('option').map((option) => option.textContent)).toEqual(['Centru', 'Nord-Vest'])
   })

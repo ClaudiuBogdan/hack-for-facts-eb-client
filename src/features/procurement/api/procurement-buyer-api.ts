@@ -320,7 +320,8 @@ export function buyerExtrasFields(cui: string, period: Period, latest: number, s
 
 /** What the follow-up needs from the keys and the identity: the firms to name, the top sellers' CUIs, the buyer's county. */
 export function buyerKeysOf(raw: RawBuyerProfile): { readonly cuis: readonly string[]; readonly spanSuppliers: readonly string[]; readonly county: string | null } {
-  const breakdown = (alias: string) => buyerBreakdownSchema.parse(raw[alias])
+  // A read the switch state left out (D6 enforced, the release off) is absent, not malformed; one asked for parses strictly.
+  const breakdown = (alias: string) => (raw[alias] === undefined ? [] : buyerBreakdownSchema.parse(raw[alias]))
   // D6: only a direct-purchase supplier the API serves as a company has a name to look up and years of its own to read.
   const spanSuppliers = topBuckets(breakdown('spanSuppliers')).filter(isNamedDaSupplierBucket).map((bucket) => bucket.key)
   const listed = [...topBuckets(breakdown('directSuppliers')).filter(isNamedDaSupplierBucket), ...topBuckets(breakdown('awardSuppliers'))].map((bucket) => bucket.key)

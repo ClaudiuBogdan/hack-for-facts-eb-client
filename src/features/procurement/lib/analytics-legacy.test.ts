@@ -76,7 +76,11 @@ describe('the explorer’s question, in the analytics page’s words', () => {
         { view: 'list', grain: 'direct_acquisitions', supplier_cui: 'RO14399840', cpv_division: '45000000', buyerCounty: 'CJ', supplierRegion: 'Centru', q: 'laptop', valueMin: 1000, valueMax: 5000 },
         NOW,
       ),
-    ).toEqual({ furnizor: 14399840, cpv: 45, judet: 'CJ', regiune_firma: 'Centru', perioada: 2025, titlu: 'laptop', valoare: '1000..5000' })
+      // Carried over as written: the analytics page reads what it can and says the rest unread (for direct purchases, the firm's place and the title, D6).
+    ).toEqual({ furnizor: 14399840, cpv: 45, judet: 'CJ', regiune_firma: 'Centru', perioada: 2025, titlu: 'laptop', valoare: '1000..5000', dupa: 'inregistrari' })
+    expect(
+      analyticsSearchFromExplorer({ view: 'list', grain: 'contracts', supplierRegion: 'Centru', q: 'laptop' }, NOW),
+    ).toMatchObject({ regiune_firma: 'Centru', titlu: 'laptop' })
     expect(analyticsSearchFromExplorer({ grain: 'direct_acquisitions', cpv_group: '45200000' }, NOW)).toMatchObject({ cpv: 452 })
     expect(analyticsSearchFromExplorer({ grain: 'direct_acquisitions', cpv: '03000000-1' }, NOW)).toMatchObject({ cpv: '03000000' })
   })

@@ -27,6 +27,11 @@ describe('disclosureVersion', () => {
     await expect(disclosureVersion()).resolves.toBe('on:2026-11-18T03:10:00.123456Z:nod6:-')
   })
 
+  it('keeps nothing while D6 is on and its supplier-privacy publication cannot be read', async () => {
+    graphqlQuery.mockResolvedValue({ procurementDaRelease: { enabled: false, dataAsOf: null, privacyEnforced: true, privacyAsOf: null } })
+    await expect(disclosureVersion()).resolves.toBeNull()
+  })
+
   it('is unknown when the release cannot be read', async () => {
     graphqlQuery.mockRejectedValue(new Error('down'))
     await expect(disclosureVersion()).resolves.toBeNull()

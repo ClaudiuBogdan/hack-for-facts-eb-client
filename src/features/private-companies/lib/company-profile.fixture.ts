@@ -305,7 +305,8 @@ export function supplierSlice(fields: {
     supplierName: null,
     summary: {
       window: { from: fields.window?.from ?? null, to: fields.window?.to ?? null },
-      totalPublicRevenueRon: null,
+      contractValueRon: null,
+      directAcquisitionValueRon: null,
       buyersCount: null,
       contractsCount: fields.contract?.stats.recordCount ?? '0',
       directAcquisitionsCount: fields.directAcquisition?.stats.recordCount ?? '0',

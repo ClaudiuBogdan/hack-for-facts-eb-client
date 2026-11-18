@@ -11,6 +11,7 @@ import { humanizeProcurementCaveat, isSourceDisclosure } from '../../lib/caveat-
 import { procurementHrefOf } from '../../lib/home-links'
 import { cn } from '@/lib/utils'
 import {
+  AXES,
   groupProblem,
   perResidentAllowed,
   POPULATIONS,
@@ -196,11 +197,14 @@ export function AddFilter({
                     {t`Instituții din ${name}`}
                   </CommandItem>
                 ))}
-                {counties.map(([code, name]) => (
-                  <CommandItem key={`firm-${code}`} value={`firm-${code}`} onSelect={() => pick(withFilter(query, 'loc_firma', 'judet', code))}>
-                    {t`Firme din ${name}`}
-                  </CommandItem>
-                ))}
+                {/* No firm's place for direct purchases (D6). */}
+                {AXES.loc_firma.populations.includes(query.tip)
+                  ? counties.map(([code, name]) => (
+                      <CommandItem key={`firm-${code}`} value={`firm-${code}`} onSelect={() => pick(withFilter(query, 'loc_firma', 'judet', code))}>
+                        {t`Firme din ${name}`}
+                      </CommandItem>
+                    ))
+                  : null}
               </CommandGroup>
             ) : null}
             {procedures.length > 0 ? (
@@ -214,10 +218,13 @@ export function AddFilter({
             ) : null}
             {term.length >= 3 ? (
               <CommandGroup heading={t`Altfel`}>
-                <CommandItem value="title" onSelect={() => pick(withTitle(query, search.term.trim()))}>
-                  <Search className="size-3.5" aria-hidden="true" />
-                  {t`Titlul conține „${search.term.trim()}"`}
-                </CommandItem>
+                {/* No title search for direct purchases: their titles are withheld until reviewed (D6). */}
+                {query.tip !== 'directe' ? (
+                  <CommandItem value="title" onSelect={() => pick(withTitle(query, search.term.trim()))}>
+                    <Search className="size-3.5" aria-hidden="true" />
+                    {t`Titlul conține „${search.term.trim()}"`}
+                  </CommandItem>
+                ) : null}
                 {Number.isFinite(number) && number > 0 ? (
                   <>
                     <CommandItem value="min" onSelect={() => pick({ ...query, valoare: { min: number, max: query.valoare?.max ?? null } })}>

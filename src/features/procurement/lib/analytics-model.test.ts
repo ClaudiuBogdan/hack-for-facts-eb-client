@@ -20,8 +20,7 @@ import {
   withTitle,
   type GroupBy,
   type PopulationId,
-  type Query,
-} from './analytics-model'
+  type Query, repaired } from './analytics-model'
 
 const SAMPLE_KEYS: Record<string, string> = { cumparator: '4305857', furnizor: '14399840', cpv: '45000000', loc: 'CJ', loc_firma: 'B', procedura: 'Licitatie deschisa' }
 
@@ -125,14 +124,19 @@ describe('analytics records', () => {
     expect(roundTrip(query)).toEqual(query)
   })
   it('opens a title search on its records', () => {
-    expect(queryOf({ titlu: 'laptop' }).dupa).toEqual({ axis: 'inregistrari' })
-    expect(searchOf(queryOf({ titlu: 'laptop' })).dupa).toBeUndefined()
+    expect(queryOf({ tip: 'contracte', titlu: 'laptop' }).dupa).toEqual({ axis: 'inregistrari' })
+    expect(searchOf(queryOf({ tip: 'contracte', titlu: 'laptop' })).dupa).toBeUndefined()
+  })
+  it('has no title search for direct purchases: their titles are withheld (D6), the address’s is said unread', () => {
+    expect(queryOf({ titlu: 'laptop' }).titlu).toBeNull()
+    expect(unreadParams({ titlu: 'laptop' }).map((item) => item.param)).toContain('titlu')
+    expect(repaired({ ...queryOf({ tip: 'contracte', titlu: 'laptop' }), tip: 'directe' }).titlu).toBeNull()
   })
   it('lets an unchosen group-by follow the title, and keeps a chosen one', () => {
-    const fresh = queryOf({})
+    const fresh = queryOf({ tip: 'contracte' })
     expect(withTitle(fresh, 'laptop').dupa).toEqual({ axis: 'inregistrari' })
     expect(withTitle(withTitle(fresh, 'laptop'), null).dupa).toEqual(fresh.dupa)
-    const chosen = queryOf({ dupa: 'firma' })
+    const chosen = queryOf({ tip: 'contracte', dupa: 'firma' })
     expect(withTitle(chosen, 'laptop').dupa).toEqual({ axis: 'furnizor', level: 'cui' })
   })
   it('holds the list’s order and page in the address, defaults left out', () => {
