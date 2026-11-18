@@ -3327,3 +3327,40 @@ Owner and root rulings, and the independent review's findings:
   come from the analysis records, ranked by the value its figures count.
 - **Per family:** the entity slice shows contract and direct-purchase money
   apart, never summed.
+
+### 24.2 After the second review (18 November 2026)
+
+- **Open tabs:** the app shell watches the release's publication once a
+  minute while the cache holds procurement or public-enterprise answers. It
+  backs off on failures to a quarter of an hour and polls idle tabs too. When
+  the publication changes, every such answer is reset.
+- **No render under an unknown publication is kept,** by the memo or by the
+  CDN. That includes D6 on with no supplier-privacy publication (API
+  contract d534ebd0). The enterprise page is cached as the other
+  direct-purchase pages are.
+- **Unclassified suppliers:** a supplier bucket the API doesn't serve as a
+  company gets a neutral key (`unnamed-n`) before any ranking is cached or
+  serialised. Prose names only a company.
+- **Analytics:**
+  - A supplier the address gives is named for direct purchases only from its
+    own direct purchases, kept apart from the registry's names and under the
+    publication.
+  - Placeholders never cross a population or publication.
+  - Direct purchases have no title search (a visible change in release
+    notes: their titles are withheld, and the API refuses one once D6 is on)
+    and no firm's place.
+- **Unread switches:** when the release's switches cannot be read, no page
+  asks for what the D6 window refuses. Those figures are said unavailable
+  („indisponibil" on analytics' tiles), and the page is partial.
+- **Amounts and titles:**
+  - An uncounted offer or catalogue comparison carries no „lei".
+  - A redo is matched only on a title the institution wrote, never on a
+    category's label.
+
+Left for a follow-up issue (root's round cap: after the third review only a
+leak blocks):
+
+- the purchase kept under its legacy key until the page mounts;
+- exact line amounts read through `Number` (more than six decimals);
+- the front door's supplier-count tile and the context's firm place, which
+  are left out (not said) in the D6 window — the band beside each says it.
