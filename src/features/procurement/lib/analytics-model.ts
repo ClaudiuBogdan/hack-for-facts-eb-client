@@ -165,7 +165,9 @@ export const AXES: Readonly<Record<AxisId, Axis>> = {
     ],
     names: 'place',
     maxValues: 1,
-    populations: ['directe', 'contracte', 'acorduri'],
+    // Not for direct purchases: direct acquisitions release 1 serves no supplier place (D6 — a place can name a
+    // person), and the population keeps one set of axes whichever side of the switch it is read on.
+    populations: ['contracte', 'acorduri'],
   },
   procedura: {
     id: 'procedura',

@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { periodOf, type Cutoff } from '../lib/profile-period'
 
 const graphqlQuery = vi.fn()
+// Direct acquisitions release 1 off unless a test turns it on.
+const release = vi.hoisted(() => ({ on: false }))
+vi.mock('./procurement-da-release-status', () => ({ isDaReleaseOn: () => Promise.resolve(release.on) }))
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
 // SEAP's cutoff is the shared read (tested beside it): here each test says what it is.
 const cutoffRead = vi.fn<() => Promise<Cutoff>>()
@@ -107,6 +110,26 @@ describe('fetchProcurementBuyer', () => {
     graphqlQuery.mock.calls.find((call) => (call[2] as { readonly operationName: string }).operationName === operationName) as
       | [string, Record<string, unknown>, { readonly operationName: string }]
       | undefined
+
+  it('with direct acquisitions release 1 on, reads no firm’s place and leaves the band out', async () => {
+    release.on = true
+    try {
+      answer(otopeni(), () => Promise.resolve(extras()))
+      const profile = await fetchProcurementBuyer('4364446', 2025)
+      expect(callOf('ProcurementBuyerFigures')?.[1]).not.toHaveProperty('directCounties')
+      expect(profile.supplierPlaces).toBe(false)
+      expect(profile.supplierCounties).toEqual([])
+    } finally {
+      release.on = false
+    }
+  })
+
+  it('with the release off, reads where the firms are', async () => {
+    answer(otopeni(), () => Promise.resolve(extras()))
+    const profile = await fetchProcurementBuyer('4364446', 2025)
+    expect(callOf('ProcurementBuyerFigures')?.[1]).toHaveProperty('directCounties')
+    expect(profile.supplierPlaces).toBe(true)
+  })
 
   it('reads the profile as three requests side by side and the identity in its own, each with only its own fields', async () => {
     answer(otopeni(), () => Promise.resolve(extras()))

@@ -1,3 +1,4 @@
+import { isDaReleaseOn } from './procurement-da-release-status'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
   buyerBreakdownSchema,
@@ -146,7 +147,7 @@ export type RawBuyerProfile = Readonly<Record<string, unknown>>
  * variables at once. The year's reads are the period's: a complete year, or
  * the year in progress through its cutoff month.
  */
-export function buyerProfileFields(cui: string, period: Period, latest: number): BuyerField[] {
+export function buyerProfileFields(cui: string, period: Period, latest: number, { supplierPlaces = true }: { readonly supplierPlaces?: boolean } = {}): BuyerField[] {
   const part = latest + 1
   const own = { authorityCui: cui }
   const inPeriod = { ...own, ...period.scope }
@@ -170,7 +171,8 @@ export function buyerProfileFields(cui: string, period: Period, latest: number):
     { alias: 'directMonthsCount', kind: 'series', scope: { ...inPeriod, ...DIRECT }, args: 'bucket: month, measure: recordCount' },
     { alias: 'directSuppliers', kind: 'breakdown', scope: { ...inPeriod, ...DIRECT }, args: 'dimension: supplier, topN: 10, rankBy: value' },
     { alias: 'awardSuppliers', kind: 'breakdown', scope: { ...inPeriod, ...AWARDS }, args: 'dimension: supplier, topN: 10, rankBy: count' },
-    { alias: 'directCounties', kind: 'breakdown', scope: { ...inPeriod, ...DIRECT }, args: 'dimension: supplierCounty, topN: 42, rankBy: value' },
+    // Where the firms are — not with direct acquisitions release 1, which serves no supplier place (D6: a place can name a person).
+    ...(supplierPlaces ? [{ alias: 'directCounties', kind: 'breakdown' as const, scope: { ...inPeriod, ...DIRECT }, args: 'dimension: supplierCounty, topN: 42, rankBy: value' }] : []),
     { alias: 'procedures', kind: 'breakdown', scope: { ...inPeriod, ...AWARDS }, args: 'dimension: procedureType, topN: 8, rankBy: count' },
     { alias: 'buyerCounty', kind: 'breakdown', scope: { ...own, ...DIRECT }, args: 'dimension: buyerCounty, topN: 1, rankBy: count' },
     {
@@ -250,7 +252,9 @@ export function mapBuyerProfile(
     address: tidyAddress(reference?.address ?? null),
     hasBudget: entity?.budget?.presence ?? false,
   }
-  const counties: CountyShare[] = topBuckets(breakdown('directCounties')).map((bucket) => ({
+  // Not read with direct acquisitions release 1 (no supplier place): no rows, and the band is left out.
+  const supplierPlaces = raw.directCounties === undefined ? [] : breakdown('directCounties')
+  const counties: CountyShare[] = topBuckets(supplierPlaces).map((bucket) => ({
     code: bucket.key,
     count: bucket.recordCount ?? 0,
     value: bucket.valueSum,
@@ -275,7 +279,8 @@ export function mapBuyerProfile(
     awardSuppliers: supplierRanking(breakdown('awardSuppliers')),
     categories: { direct: tree('direct'), contract: tree('awards') },
     supplierCounties: counties,
-    supplierCountiesRankedBy: breakdown('directCounties')[0]?.rankedBy === 'count' ? 'count' : 'value',
+    supplierPlaces: raw.directCounties !== undefined,
+    supplierCountiesRankedBy: supplierPlaces[0]?.rankedBy === 'count' ? 'count' : 'value',
     procedures: topBuckets(breakdown('procedures')).map((bucket) => ({ key: bucket.key, count: bucket.recordCount ?? 0 })),
     proceduresUnlisted: (breakdown('procedures')[0]?.buckets ?? [])
       .filter((bucket) => bucket.kind !== 'top' || bucket.key === null)
@@ -397,7 +402,8 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
   const period = periodOf(choice, latest, needsCutoff(choice, latest) ? (await cutoffRead).cutoff : null)
   // The last twelve months could not be told (no cutoff): the page describes the last complete year, served once and read again.
   const fellBack = choice === RECENT && period.kind !== 'recent'
-  const fields = buyerProfileFields(cui, period, latest)
+  const supplierPlaces = !(await isDaReleaseOn())
+  const fields = buyerProfileFields(cui, period, latest, { supplierPlaces })
   const [keysRead, figuresRead, categoriesRead] = PROFILE_REQUESTS.map(({ group, operationName }) => {
     const own = fields.filter((field) => field.group === group)
     const variables: Record<string, unknown> = Object.fromEntries(own.map((field) => [field.alias, field.scope]))
@@ -428,7 +434,9 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
   })
 
   const [keysRaw, figuresRaw, categoriesRaw, identity, extras, cutoff] = await Promise.all([keysRead, figuresRead, categoriesRead, identityRead, extrasRead, cutoffRead])
-  const profile = mapBuyerProfile({ ...keysRaw, ...figuresRaw, ...categoriesRaw, ...identity.raw }, cui, period, latest, cutoff.cutoff)
+  const mapped = mapBuyerProfile({ ...keysRaw, ...figuresRaw, ...categoriesRaw, ...identity.raw }, cui, period, latest, cutoff.cutoff)
+  // Places asked for, or not: the band follows the reads made, never an answer's stray field.
+  const profile = supplierPlaces ? mapped : { ...mapped, supplierCounties: [], supplierPlaces: false }
   if (!extras) return { ...profile, names: new Map(), supplierYears: [], countyShare: null, partial: true, namesUnread: true }
   // No budget record: the identity spine's label names the buyer, and only then its CUI.
   const label = profile.identity.name === cui ? extras.names.get(cui) : undefined

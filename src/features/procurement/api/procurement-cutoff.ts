@@ -19,8 +19,15 @@ const CUTOFF_TIMEOUT_MS = 5_000
 const DIRECT = { grain: 'direct_acquisition' } as const
 const AWARDS = { grain: 'contract', recordKind: 'contract_award' } as const
 
-/** A cutoff and the analysis build it was read from: a page that pins its reads to that build reads one generation. */
+/**
+ * A cutoff and the analysis builds it was read from, one per population: a
+ * page that pins its reads to its population's build reads one generation.
+ * Direct acquisitions release 1 publishes direct purchases on their own
+ * clock, so the two builds differ once it is on. `build` names the pair, for
+ * a page that keeps one key for both.
+ */
 export interface BuildCutoff extends Cutoff {
+  readonly builds: { readonly direct: string; readonly contract: string }
   readonly build: string
 }
 
@@ -54,10 +61,14 @@ export function readProcurementCutoff(latest: number, now: number = Date.now()):
     signal: AbortSignal.timeout(CUTOFF_TIMEOUT_MS),
   }).then((raw): BuildCutoff => {
     const months = (alias: string) => (buyerSeriesSchema.parse(raw[alias])[0]?.points ?? []).map((point) => ({ month: point.bucket, count: point.value ?? 0 }))
-    // Both series from one build, or the read is no read: a publication between them would mix two.
-    const builds = new Set(['nationalDirectMonths', 'nationalAwardMonths'].map((alias) => buildSchema.parse(raw[alias])[0]!.meta.buildId))
-    if (builds.size !== 1) throw new Error('procurement cutoff read straddled two analysis builds')
-    return { direct: cutoffMonth(months('nationalDirectMonths'), latest), contract: cutoffMonth(months('nationalAwardMonths'), latest), build: [...builds][0]! }
+    // Each population's build, read with its months: the pages pin each population's reads to its own.
+    const builds = { direct: buildSchema.parse(raw.nationalDirectMonths)[0]!.meta.buildId, contract: buildSchema.parse(raw.nationalAwardMonths)[0]!.meta.buildId }
+    return {
+      direct: cutoffMonth(months('nationalDirectMonths'), latest),
+      contract: cutoffMonth(months('nationalAwardMonths'), latest),
+      builds,
+      build: builds.direct === builds.contract ? builds.direct : `${builds.direct}|${builds.contract}`,
+    }
   })
   read.catch(() => {
     if (cutoffReads.get(latest)?.read === read) cutoffReads.delete(latest)
@@ -69,7 +80,7 @@ export function readProcurementCutoff(latest: number, now: number = Date.now()):
 /** The shared cutoff as a result rather than a failure: a failed read is no cutoff (and no build), said. */
 export function readCutoffOutcome(latest: number): Promise<{ readonly cutoff: Cutoff; readonly build: string | null; readonly failed: boolean }> {
   return readProcurementCutoff(latest).then(
-    ({ build, ...cutoff }) => ({ cutoff, build, failed: false }),
+    ({ build, builds: _builds, ...cutoff }) => ({ cutoff, build, failed: false }),
     () => ({ cutoff: NO_CUTOFF, build: null, failed: true }),
   )
 }

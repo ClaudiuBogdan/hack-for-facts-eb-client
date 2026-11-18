@@ -1,3 +1,4 @@
+import { isDaReleaseOn } from './procurement-da-release-status'
 import { z } from 'zod'
 import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
@@ -16,7 +17,7 @@ import {
   type ResolvedPeriod,
 } from '../lib/analytics-model'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { isNaturalPersonKey } from '../lib/withheld-party'
+import { isNamedDaSupplier, isNaturalPersonKey } from '../lib/withheld-party'
 
 /**
  * The analytics page's reads. A query compiles to independent reads, each
@@ -76,7 +77,9 @@ export function scopeOf(query: Query, months: { readonly from: string; readonly 
 export interface AnalyticsCutoff {
   readonly direct: string
   readonly contract: string
-  /** The analysis build the cutoff was read from: every read of the page is pinned to it. */
+  /** The analysis builds the cutoff was read from, per population: each read is pinned to its population's. */
+  readonly builds: { readonly direct: string; readonly contract: string }
+  /** The pair, as one key: a new build of either starts the page over. */
   readonly build: string
 }
 
@@ -89,7 +92,7 @@ export interface AnalyticsCutoff {
 export async function readAnalyticsCutoff(latest: number): Promise<AnalyticsCutoff> {
   const cutoff = await readProcurementCutoff(latest)
   // A month the national counts cannot date yet: the last complete year's end, never a month the source has not filled.
-  return { direct: cutoff.direct ?? `${latest}-12`, contract: cutoff.contract ?? `${latest}-12`, build: cutoff.build }
+  return { direct: cutoff.direct ?? `${latest}-12`, contract: cutoff.contract ?? `${latest}-12`, builds: cutoff.builds, build: cutoff.build }
 }
 
 /** The API refused a pinned read: its build is no longer the one it serves (a publication since the page read its cutoff). */
@@ -306,13 +309,14 @@ export interface RecordRow {
   /** The record's title, or its display title (a contract's, from the production database); null when neither is published. */
   readonly title: string | null
   readonly authority: { readonly cui: string | null; readonly name: string | null }
-  readonly supplier: { readonly cui: string | null; readonly name: string | null }
+  /** `withheld`: D6 — a direct acquisition's supplier the API does not serve as a company (release 1): no name, no code. */
+  readonly supplier: { readonly cui: string | null; readonly name: string | null; readonly withheld?: true }
   /** The money the figures count for this record; null when it adds none (no checked value, or a consortium's other members). */
   readonly value: number | null
   readonly date: string | null
 }
 
-const partySchema = z.object({ cui: z.string().nullable(), name: z.string().nullable(), displayName: z.string().nullable() })
+const partySchema = z.object({ cui: z.string().nullable(), name: z.string().nullable(), displayName: z.string().nullable(), displayKind: z.string().nullable().optional() })
 const recordsSchema = z.object({
   total: z.string().nullable(),
   items: z.array(
@@ -321,6 +325,8 @@ const recordsSchema = z.object({
       date: z.string().nullable(),
       title: z.string().nullable(),
       displayTitle: z.object({ text: z.string() }).nullable(),
+      /** A direct acquisition's name while its title is withheld (release 1); null otherwise. */
+      cpvLabel: z.string().nullable().optional(),
       authority: partySchema,
       supplier: partySchema,
       valueRon: z.string().nullable(),
@@ -352,10 +358,13 @@ export { defaultRecordsSort, type RecordsSort } from '../lib/analytics-model'
 /** A page of the records the figures count: the same scope, the same build, the rows one by one. */
 export async function readRecords(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal): Promise<Records> {
   const direct = scope.grain === 'direct_acquisition'
+  // D6 with direct acquisitions release 1: a supplier is named only when the API serves it as a company. Off, the
+  // analysis serves the legacy rows, whose suppliers carry no kind — the legacy names stand.
+  const release = direct && (await isDaReleaseOn())
   // Its own deadline: a list the API cannot answer in time fails here, as a read, with the reason said.
   const deadline = withDeadline(signal, 9_000)
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsRecords($s: ProcurementAnalysisScopeInput!, $build: String) { l: procurementRecords(scope: $s, build: $build, sort: ${sort}, page: ${page}, pageSize: ${RECORDS_PAGE}) { total items { id date title displayTitle { text } authority { cui name displayName } supplier { cui name displayName } valueRon } meta { answerability } } }`,
+    `query AnalyticsRecords($s: ProcurementAnalysisScopeInput!, $build: String) { l: procurementRecords(scope: $s, build: $build, sort: ${sort}, page: ${page}, pageSize: ${RECORDS_PAGE}) { total items { id date title displayTitle { text } cpvLabel authority { cui name displayName displayKind } supplier { cui name displayName displayKind } valueRon } meta { answerability } } }`,
     { s: scope, build },
     { operationName: 'AnalyticsRecords', signal: deadline },
   )
@@ -366,9 +375,9 @@ export async function readRecords(scope: Scope, build: string | null, sort: Reco
     rows: list.items.map((item) => ({
       id: item.id,
       href: direct ? `/procurement/direct-acquisitions/${item.id}` : `/procurement/contracts/${item.id}`,
-      title: textOf(item.title) ?? textOf(item.displayTitle?.text) ?? null,
+      title: textOf(item.title) ?? textOf(item.displayTitle?.text) ?? textOf(item.cpvLabel) ?? null,
       authority: { cui: item.authority.cui, name: item.authority.displayName ?? item.authority.name },
-      supplier: { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name },
+      supplier: release && !isNamedDaSupplier(item.supplier) ? { cui: null, name: null, withheld: true } : { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name },
       value: item.valueRon === null ? null : Number(item.valueRon),
       date: item.date,
     })),
@@ -406,7 +415,7 @@ export function planAnswer(query: Query, cutoffs: AnalyticsCutoff | null, option
   const population = POPULATIONS[query.tip]
   const cutoff = cutoffs ? cutoffs[population.cutoff] : null
   const period = cutoff ? resolvePeriod(query.period, cutoff) : null
-  const build = cutoffs?.build ?? null
+  const build = cutoffs?.builds[population.cutoff] ?? null
   const now = period ? scopeOf(query, period) : null
   // The window before is compared only where the population compares: direct purchases, never before 2019.
   const comparable = period !== null && population.changes && period.previous.from >= `${population.comparableFrom}-01`
@@ -439,7 +448,7 @@ export function planRecords(query: Query, cutoffs: AnalyticsCutoff | null, sort:
   const cutoff = cutoffs ? cutoffs[POPULATIONS[query.tip].cutoff] : null
   const period = cutoff ? resolvePeriod(query.period, cutoff) : null
   const scope = period ? scopeOf(query, period) : null
-  const build = cutoffs?.build ?? null
+  const build = cutoffs?.builds[POPULATIONS[query.tip].cutoff] ?? null
   return {
     key: procurementAnalyticsKeys.records(scope, build, sort, page),
     enabled: scope !== null,

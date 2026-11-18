@@ -80,6 +80,7 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
       { code: 'PH', count: 18, value: 1_830_000, share: 0.05 },
     ],
     supplierCountiesRankedBy: 'value',
+    supplierPlaces: true,
     procedures: [{ key: 'Procedura simplificata', count: 12 }],
     proceduresUnlisted: 0,
     names: new Map([

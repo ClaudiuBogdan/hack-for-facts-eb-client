@@ -19,7 +19,7 @@ const REPORTED_RO =
 const CATALOGUE_UNKNOWN_RO =
   'Nu se știe ce conțineau cataloagele surselor când au fost încărcate aceste date.'
 
-const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', build: '13' }
+const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13' }
 
 /** The answer the page holds: the figures' envelope carries the server caveats. */
 const answerWith = (caveats: readonly string[]) =>

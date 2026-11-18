@@ -398,7 +398,7 @@ export function AnswerRecords({
                   {row.title ?? t`Fără titlu în SEAP`}
                 </a>
                 <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                  {row.authority.name ?? '—'} → {row.supplier.name ?? '—'}
+                  {row.authority.name ?? '—'} → {row.supplier.withheld ? t`Persoană fizică` : (row.supplier.name ?? '—')}
                   <span className="sm:hidden">{row.date ? ` · ${dayText(row.date)} ${row.date.slice(0, 4)}` : ''}</span>
                 </span>
               </TableCell>

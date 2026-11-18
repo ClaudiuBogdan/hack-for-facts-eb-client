@@ -24,7 +24,7 @@ beforeEach(() => {
 describe('readProcurementCutoff', () => {
   it('dates each population by its last full month, past the trickle after it', async () => {
     graphqlQuery.mockResolvedValue(national(1980, 5))
-    expect(await readProcurementCutoff(1980, 0)).toEqual({ direct: '1981-05', contract: '1981-05', build: '13' })
+    expect(await readProcurementCutoff(1980, 0)).toEqual({ direct: '1981-05', contract: '1981-05', builds: { direct: '13', contract: '13' }, build: '13' })
     expect(graphqlQuery.mock.calls[0]?.[2]).toMatchObject({ operationName: 'ProcurementCutoff' })
     // The build the months come from rides with them: a page pins its reads to it.
     expect(graphqlQuery.mock.calls[0]?.[0]).toContain('meta { buildId }')
@@ -40,12 +40,12 @@ describe('readProcurementCutoff', () => {
     graphqlQuery.mockRejectedValue(new Error('down'))
     await expect(readProcurementCutoff(1991, 0)).rejects.toThrow('down')
     graphqlQuery.mockResolvedValue(national(1991, 3))
-    await expect(readProcurementCutoff(1991, 1)).resolves.toEqual({ direct: '1992-03', contract: '1992-03', build: '13' })
+    await expect(readProcurementCutoff(1991, 1)).resolves.toEqual({ direct: '1992-03', contract: '1992-03', builds: { direct: '13', contract: '13' }, build: '13' })
   })
 
-  it('refuses months read from two builds, and reads again once forgotten', async () => {
-    graphqlQuery.mockResolvedValue(national(1970, 6, ['12', '13']))
-    await expect(readProcurementCutoff(1970, 0)).rejects.toThrow('two analysis builds')
+  it('keeps each population’s build — direct acquisitions release 1 publishes on its own clock — and reads again once forgotten', async () => {
+    graphqlQuery.mockResolvedValue(national(1970, 6, ['1795000000000000', '13']))
+    await expect(readProcurementCutoff(1970, 0)).resolves.toMatchObject({ builds: { direct: '1795000000000000', contract: '13' }, build: '1795000000000000|13' })
     graphqlQuery.mockResolvedValue(national(1971, 6, ['13', '13']))
     await readProcurementCutoff(1971, 0)
     forgetProcurementCutoff(1971)

@@ -37,7 +37,7 @@ function Records({ query, answer: read = answer, initial }: { readonly query: Qu
 /** The read the list made last (the target library has no `Array.at`). */
 const last = () => records.calls[records.calls.length - 1]
 
-const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', build: '13' }
+const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13' }
 const answer = { cutoff: CUTOFF, cutoffFailed: false, retryCutoff: vi.fn() } as unknown as Answer
 
 const row = (id: string, supplier: string, value: number | null) => ({

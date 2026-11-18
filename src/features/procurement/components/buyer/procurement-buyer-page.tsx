@@ -251,7 +251,8 @@ function BuyerBody({
     : [
         { id: 'ce', label: t`Ce cumpără` },
         { id: 'de-la-cine', label: t`De la cine` },
-        { id: 'de-unde', label: t`De unde` },
+        // Where the firms are: none to say with direct acquisitions release 1, which serves no supplier place.
+        ...(profile.supplierPlaces ? [{ id: 'de-unde', label: t`De unde` }] : []),
         { id: 'cand', label: t`Când` },
         { id: 'cum', label: t`Cum` },
         { id: 'cele-mai-mari', label: t`Cele mai mari` },
@@ -295,7 +296,7 @@ function BuyerBody({
           <>
             <BuyerWhatBand profile={profile} index={index('ce')} choice={what} onChoice={(choice) => choose({ ce: choice === whatDefault ? undefined : choice })} />
             <BuyerWhoBand profile={profile} index={index('de-la-cine')} />
-            <BuyerWhereBand profile={profile} index={index('de-unde')} />
+            {profile.supplierPlaces ? <BuyerWhereBand profile={profile} index={index('de-unde')} /> : null}
             <BuyerWhenBand profile={profile} index={index('cand')} />
             <BuyerHowBand profile={profile} index={index('cum')} />
             <BuyerLargestBand

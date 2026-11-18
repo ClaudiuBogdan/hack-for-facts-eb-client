@@ -1,17 +1,17 @@
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
-import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { cpvKey, type DirectPurchase } from '../lib/direct-purchase-model'
 import { mapReleasePurchase } from '../lib/direct-purchase-release'
 import {
   PROCUREMENT_DA_LOOKUP_QUERY,
   PROCUREMENT_DA_PURCHASE_QUERY,
-  PROCUREMENT_DA_RELEASE_QUERY,
   procurementDaLookupSchema,
   procurementDaPurchaseSchema,
-  procurementDaReleaseSchema,
 } from './graphql/procurement-da-release-queries'
 import { PROCUREMENT_DA_RECORD_QUERY, procurementDaRecordResponseSchema } from './graphql/procurement-queries'
 import { fetchDirectPurchase, readNames } from './procurement-direct-purchase-api'
+import { readDaRelease } from './procurement-da-release-status'
+
+export { readDaRelease, resetDaReleaseForTests, type DaReleaseStatus } from './procurement-da-release-status'
 
 /**
  * Direct acquisitions release 1 on the purchase page: whether the API serves
@@ -28,40 +28,6 @@ const RELEASE_ID = /^[0-9a-f]{64}$/u
 
 export function isReleaseId(id: string): boolean {
   return RELEASE_ID.test(id)
-}
-
-export interface DaReleaseStatus {
-  readonly enabled: boolean
-  readonly dataAsOf: string | null
-}
-
-/** How long one answer about the release holds: the flag flips with a deploy, not per request. */
-const RELEASE_TTL_MS = 60 * 1000
-/** The shared read's own deadline: it serves many readers, none of whose signals it takes. */
-const RELEASE_DEADLINE_MS = 3_000
-
-let cached: { readonly at: number; readonly status: Promise<DaReleaseStatus> } | null = null
-
-/**
- * Whether the API serves release 1, read once a minute and shared across
- * readers — so no one reader's signal cuts it short. A failed read is not
- * kept and fails: a release id then shows a failed read, never „not found",
- * and a legacy link stays on its legacy page.
- */
-export function readDaRelease(): Promise<DaReleaseStatus> {
-  const now = Date.now()
-  if (cached && now - cached.at < RELEASE_TTL_MS) return cached.status
-  const status = graphqlQuery<unknown>(PROCUREMENT_DA_RELEASE_QUERY, {}, { operationName: 'ProcurementDaRelease', signal: withDeadline(undefined, RELEASE_DEADLINE_MS) }).then((raw) => procurementDaReleaseSchema.parse(raw).procurementDaRelease)
-  status.catch(() => {
-    if (cached?.status === status) cached = null
-  })
-  cached = { at: now, status }
-  return status
-}
-
-/** Tests only: forget the release's answer. */
-export function resetDaReleaseForTests(): void {
-  cached = null
 }
 
 const hasCode = (error: unknown, code: string): boolean =>

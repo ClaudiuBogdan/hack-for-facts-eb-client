@@ -6157,7 +6157,7 @@ msgstr "alege"
 msgid "Alege această serie"
 msgstr "Alege această serie"
 
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:339
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:340
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:378
 msgid "Alege alt an din meniul de sus."
 msgstr "Alege alt an din meniul de sus."
@@ -9792,7 +9792,7 @@ msgstr "Anulat"
 msgid "Cancelled or refused — the purchase did not go ahead, so no spending is counted."
 msgstr "Anulat sau refuzat — achiziția nu a mai avut loc, deci nu este contabilizată nicio cheltuială."
 
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:255
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:256
 #: src/features/procurement/lib/analytics-questions.ts:37
 msgid "Când"
 msgstr "Când"
@@ -11317,7 +11317,7 @@ msgstr "Cele mai încărcate instanțe, {0}"
 #: src/features/private-companies/components/analytics/analytics-head.tsx:233
 #: src/features/private-companies/components/analytics/analytics-head.tsx:234
 #: src/features/private-companies/components/analytics/analytics-head.tsx:235
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:257
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:258
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:289
 #: src/features/statistics/components/uat-map/uat-map-lists.tsx:96
 msgid "Cele mai mari"
@@ -12031,7 +12031,7 @@ msgstr "Cifre publicate pe platformă"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:245
 #: src/features/private-companies/components/profile/company-profile-page.tsx:166
 #: src/features/procurement/components/analytics/analytics-head.tsx:337
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:286
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:287
 #: src/features/procurement/components/home/procurement-home-page.tsx:187
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:325
 #: src/features/public-enterprises/components/authority/authority-portfolio-page.tsx:95
@@ -13814,7 +13814,7 @@ msgstr "Element contestat"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1591
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:249
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:258
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:259
 #: src/features/procurement/components/contract/contract-context.tsx:272
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:303
 #: src/features/procurement/components/direct-purchase/direct-purchase-receipt.tsx:56
@@ -13990,7 +13990,7 @@ msgstr "Contracte"
 msgid "contracte atribuite"
 msgstr "contracte atribuite"
 
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:276
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:277
 #: src/features/procurement/lib/analytics-text.ts:107
 msgid "Contracte atribuite"
 msgstr "Contracte atribuite"
@@ -15351,7 +15351,7 @@ msgid "Cultură, sport, culte"
 msgstr "Cultură, sport, culte"
 
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:64
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:256
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:257
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:287
 #: src/features/procurement/lib/analytics-questions.ts:38
 msgid "Cum"
@@ -16600,7 +16600,7 @@ msgid "De știut despre aceste cifre: {0}"
 msgstr "De știut despre aceste cifre: {0}"
 
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:39
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:254
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:255
 msgid "De unde"
 msgstr "De unde"
 
@@ -31596,11 +31596,11 @@ msgid "Nicio achiziție directă în {0}."
 msgstr "Nicio achiziție directă în {0}."
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:323
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:324
 msgid "Nicio achiziție în {0}"
 msgstr "Nicio achiziție în {0}"
 
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:323
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:324
 msgid "Nicio achiziție publicată"
 msgstr "Nicio achiziție publicată"
 
@@ -36718,6 +36718,7 @@ msgstr "pers."
 msgid "persoană"
 msgstr "persoană"
 
+#: src/features/procurement/components/analytics/analytics-answer.tsx:401
 #: src/features/procurement/components/home/home-rows.tsx:244
 #: src/features/procurement/lib/direct-purchase-value-text.ts:61
 #: src/features/procurement/lib/party-links.ts:28
@@ -41897,7 +41898,7 @@ msgstr "SEAP nu are achiziții directe sau contracte ale firmei în {0}."
 #~ msgstr "SEAP nu are achiziții directe sau contracte ale firmei în {0}. Alege alt an din meniul de sus."
 
 #. placeholder {0}: periodText(profile.period)
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:328
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:329
 msgid "SEAP nu are achiziții directe sau contracte ale instituției în {0}."
 msgstr "SEAP nu are achiziții directe sau contracte ale instituției în {0}."
 
@@ -41911,7 +41912,7 @@ msgstr "SEAP nu are achiziții directe sau contracte ale instituției în {0}."
 #~ msgid "SEAP nu are achiziții directe sau contracte ale instituției în {0}. Alege alt an din meniul de sus."
 #~ msgstr "SEAP nu are achiziții directe sau contracte ale instituției în {0}. Alege alt an din meniul de sus."
 
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:344
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:345
 msgid "SEAP nu are achiziții directe sau contracte cu acest cod fiscal drept cumpărător din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "SEAP nu are achiziții directe sau contracte cu acest cod fiscal drept cumpărător din {DIRECT_COMPARABLE_FROM} încoace."
 
@@ -47922,7 +47923,7 @@ msgstr "ultimele 12 luni"
 #: src/features/parliament/components/parliament-speech-activity-panel.tsx:218
 #: src/features/procurement/components/analytics/analytics-controls.tsx:75
 #: src/features/procurement/components/analytics/analytics-filters.tsx:71
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:277
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:278
 #: src/features/procurement/components/profile/profile-year-select.tsx:73
 #: src/features/procurement/components/profile/profile-year-select.tsx:76
 #: src/features/procurement/components/profile/profile-year-select.tsx:79
@@ -49800,7 +49801,7 @@ msgstr "Versiunile textului"
 msgid "Vezi {0}"
 msgstr "Vezi {0}"
 
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:336
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:337
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:375
 msgid "Vezi {other}"
 msgstr "Vezi {other}"
@@ -49925,7 +49926,7 @@ msgstr ""
 msgid "Vezi-l ca cumpărător"
 msgstr "Vezi-l ca cumpărător"
 
-#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:346
+#: src/features/procurement/components/buyer/procurement-buyer-page.tsx:347
 msgid "Vezi-l ca furnizor"
 msgstr "Vezi-l ca furnizor"
 

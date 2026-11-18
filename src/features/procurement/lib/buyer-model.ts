@@ -114,6 +114,8 @@ export interface BuyerProfile {
   readonly categories: { readonly direct: readonly CategoryFigure[]; readonly contract: readonly CategoryFigure[] }
   /** Direct purchases by the supplier's county. */
   readonly supplierCounties: readonly CountyShare[]
+  /** Whether the firms' places were read: not with direct acquisitions release 1, which serves none (the band is then left out). */
+  readonly supplierPlaces: boolean
   /** What the county shares are of: money, or records where no valued purchase carries a supplier county. */
   readonly supplierCountiesRankedBy: 'value' | 'count'
   /** Contract awards by procedure type, by number. */

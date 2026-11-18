@@ -7,7 +7,7 @@ import { isStaleBuild, planAnswer, planRecords, readFigures, scopeOf, type Analy
 const graphql = vi.hoisted(() => ({ query: vi.fn() }))
 vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()), graphqlQuery: graphql.query }))
 
-const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', build: '13' }
+const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13' }
 const PERIOD = { from: '2025-01', to: '2025-12' }
 
 const party = (cui: string | null, name: string) => ({ cui, name, displayName: name })
@@ -26,9 +26,23 @@ describe('scopeOf', () => {
   })
 
   it('carries the institution’s place and the firm’s place together', () => {
-    const scope = scopeOf(queryOf({ tip: 'directe', judet: 'SB', regiune_firma: 'Bucuresti-Ilfov' }), PERIOD)
+    const scope = scopeOf(queryOf({ tip: 'contracte', judet: 'SB', regiune_firma: 'Bucuresti-Ilfov' }), PERIOD)
     expect(scope).toMatchObject({ buyerCounty: 'SB', supplierRegion: 'Bucuresti-Ilfov' })
+    // Direct purchases have no firm's place (release 1, D6): the institution's stands, the firm's is not read.
+    const direct = scopeOf(queryOf({ tip: 'directe', judet: 'SB', regiune_firma: 'Bucuresti-Ilfov' }), PERIOD)
+    expect(direct).toMatchObject({ buyerCounty: 'SB' })
+    expect(direct).not.toHaveProperty('supplierRegion')
     expect(scopeOf(queryOf({ tip: 'contracte', localitate: '179132', localitate_firma: '179141' }), PERIOD)).toMatchObject({ buyerSiruta: '179132', supplierSiruta: '179141' })
+  })
+})
+
+describe('builds per population', () => {
+  // Direct acquisitions release 1 publishes direct purchases on their own clock: each population pins its own build.
+  const split: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '1795000000000000', contract: '13' }, build: '1795000000000000|13' }
+
+  it('a direct-purchase list reads the direct build, a contract list the contract build', () => {
+    expect(planRecords(queryOf({ tip: 'directe', perioada: '2025' }), split, 'value_desc', 1).key).toContain('1795000000000000')
+    expect(planRecords(queryOf({ tip: 'contracte', perioada: '2025' }), split, 'value_desc', 1).key).toContain('13')
   })
 })
 
