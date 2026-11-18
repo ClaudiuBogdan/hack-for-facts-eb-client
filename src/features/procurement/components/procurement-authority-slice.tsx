@@ -233,26 +233,22 @@ function SliceContent({
     <div className={cn('space-y-5', className)}>
       <section
         className={cn(
-          'grid grid-cols-2 gap-3 md:grid-cols-4',
+          'grid grid-cols-2 gap-3 md:grid-cols-3',
           showSummaryTiles ? '' : 'hidden',
         )}
         aria-label={t`Authority procurement indicators`}
       >
-        <ProcurementStatTile
-          label={t`Spend (RON)`}
-          value={
-            slice.summary.totalSpendRon !== null
-              ? formatRon(slice.summary.totalSpendRon, 'compact')
-              : '—'
-          }
-          hint={t`partial sum, values are not payments`}
-        />
         <ProcurementStatTile
           label={t`Contracts`}
           value={
             slice.summary.contractsCount === null
               ? '—'
               : formatFlowCount(slice.summary.contractsCount)
+          }
+          hint={
+            slice.summary.contractValueRon !== null
+              ? t`${formatRon(slice.summary.contractValueRon, 'compact')} awarded value, not payments`
+              : undefined
           }
         />
         <ProcurementStatTile
@@ -261,6 +257,11 @@ function SliceContent({
             slice.summary.directAcquisitionsCount === null
               ? '—'
               : formatFlowCount(slice.summary.directAcquisitionsCount)
+          }
+          hint={
+            slice.summary.directAcquisitionValueRon !== null
+              ? t`${formatRon(slice.summary.directAcquisitionValueRon, 'compact')} direct-acquisition value, excluding VAT`
+              : undefined
           }
         />
         <ProcurementStatTile

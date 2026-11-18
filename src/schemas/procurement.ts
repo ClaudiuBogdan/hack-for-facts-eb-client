@@ -706,8 +706,13 @@ export const authorityProcurementSliceSchema = z.object({
       from: z.string().nullable(),
       to: z.string().nullable(),
     }),
-    /** RON sum decimal string, or null when not summable. */
-    totalSpendRon: decimalStringSchema.nullable(),
+    /**
+     * Each family's own money, never added together (per-family totals,
+     * owner, 11 Nov 2026): contracts' awarded value, direct purchases'
+     * counted value. RON decimal strings, or null when not summable.
+     */
+    contractValueRon: decimalStringSchema.nullable(),
+    directAcquisitionValueRon: decimalStringSchema.nullable(),
     suppliersCount: bigintStringSchema.nullable(),
     contractsCount: bigintStringSchema.nullable(),
     directAcquisitionsCount: bigintStringSchema.nullable(),

@@ -571,10 +571,9 @@ export function mapAuthoritySlice(parts: {
         from: minMonths[0] ?? null,
         to: maxMonths[maxMonths.length - 1] ?? null,
       },
-      totalSpendRon: addDecimalStrings(
-        contract.stats.valueAwardedSum,
-        directAcquisition.stats.valueAwardedSum,
-      ),
+      // Per family, never added together: no combined total exists until the overlap is measured (owner, 11 Nov 2026).
+      contractValueRon: contract.stats.valueAwardedSum,
+      directAcquisitionValueRon: directAcquisition.stats.valueAwardedSum,
       suppliersCount: null,
       contractsCount: contract.stats.recordCount,
       directAcquisitionsCount: directAcquisition.stats.recordCount,

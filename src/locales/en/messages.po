@@ -1035,6 +1035,11 @@ msgstr "{0} bought directly from the firm in almost every year of {span}, among 
 #~ msgid "{0} au mers la firme din București."
 #~ msgstr "{0} went to firms in Bucharest."
 
+#. placeholder {0}: formatRon(slice.summary.contractValueRon, 'compact')
+#: src/features/procurement/components/procurement-authority-slice.tsx:250
+msgid "{0} awarded value, not payments"
+msgstr "{0} awarded value, not payments"
+
 #. placeholder {0}: bins.length
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:483
 msgid "{0} bins"
@@ -1189,6 +1194,11 @@ msgstr "{0} of the cases of {1} are tried at first instance in the local courts.
 #: src/features/procurement/lib/buyer-text.ts:206
 msgid "{0} dintre firmele de mai jos i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "{0} of the firms below sold to it in almost every year since {DIRECT_COMPARABLE_FROM}."
+
+#. placeholder {0}: formatRon(slice.summary.directAcquisitionValueRon, 'compact')
+#: src/features/procurement/components/procurement-authority-slice.tsx:263
+msgid "{0} direct-acquisition value, excluding VAT"
+msgstr "{0} direct-acquisition value, excluding VAT"
 
 #. placeholder {0}: question.year
 #: src/features/justice/lib/analysis-notes.ts:41
@@ -4728,7 +4738,7 @@ msgstr "Direct purchases, lei"
 msgid "achiziții directe, până în {0}"
 msgstr "direct purchases, through {0}"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:371
+#: src/features/procurement/components/procurement-authority-slice.tsx:372
 msgid "Achiziții în timp"
 msgstr "Achiziții în timp"
 
@@ -7069,7 +7079,7 @@ msgstr "Financial statements analysis"
 msgid "Analiza bilanțurilor, ediția {0}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}."
 msgstr "The companies analysis, release {0}: the legal persons of the ONRC edition of {onrcDay}, with the values admitted after checking. The Ministry of Finance until {lastMfYear}, ANAF from {ANAF_FIRST_YEAR}."
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:286
+#: src/features/procurement/components/procurement-authority-slice.tsx:287
 msgid "Analiză detaliată · {analysisLabel}"
 msgstr "Analiză detaliată · {analysisLabel}"
 
@@ -10258,7 +10268,7 @@ msgstr "categories"
 msgid "Categorii"
 msgstr "Categories"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:332
+#: src/features/procurement/components/procurement-authority-slice.tsx:333
 msgid "Categorii cumpărate"
 msgstr "Categorii cumpărate"
 
@@ -12408,7 +12418,7 @@ msgstr "Clasamentul este ordonat după numărul de înregistrări, pentru că va
 msgid "Clasamentul este ordonat după numărul de înregistrări: nicio înregistrare din această selecție nu are o valoare acceptată pe baza de calcul folosită, așa că o ordonare după valoare ar fi o egalitate de zerouri."
 msgstr "Clasamentul este ordonat după numărul de înregistrări: nicio înregistrare din această selecție nu are o valoare acceptată pe baza de calcul folosită, așa că o ordonare după valoare ar fi o egalitate de zerouri."
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:341
+#: src/features/procurement/components/procurement-authority-slice.tsx:342
 msgid "Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări."
 msgstr "Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări."
 
@@ -14193,7 +14203,7 @@ msgid "contracts"
 msgstr "contracts"
 
 #: src/features/procurement/components/procurement-analysis-grain-toggle.tsx:31
-#: src/features/procurement/components/procurement-authority-slice.tsx:251
+#: src/features/procurement/components/procurement-authority-slice.tsx:242
 msgid "Contracts"
 msgstr "Contracts"
 
@@ -18017,7 +18027,7 @@ msgstr "direct acquisitions"
 
 #: src/features/private-companies/lib/public-money-display.ts:62
 #: src/features/procurement/components/procurement-analysis-grain-toggle.tsx:22
-#: src/features/procurement/components/procurement-authority-slice.tsx:259
+#: src/features/procurement/components/procurement-authority-slice.tsx:255
 msgid "Direct acquisitions"
 msgstr "Direct acquisitions"
 
@@ -18964,8 +18974,8 @@ msgstr "after the last bulletin loaded"
 msgid "După valoarea achizițiilor directe, fără TVA."
 msgstr "By the value of direct purchases, excluding VAT."
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:319
-#: src/features/procurement/components/procurement-authority-slice.tsx:340
+#: src/features/procurement/components/procurement-authority-slice.tsx:320
+#: src/features/procurement/components/procurement-authority-slice.tsx:341
 msgid "După valoarea atribuită."
 msgstr "După valoarea atribuită."
 
@@ -23319,7 +23329,7 @@ msgstr "Accredited employment-service providers, ANOFM"
 msgid "Furnizorii acreditați de servicii sociale, Ministerul Muncii"
 msgstr "Accredited social-service providers, Ministry of Labour"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:290
+#: src/features/procurement/components/procurement-authority-slice.tsx:291
 msgid "Furnizorii, categoriile și evoluția lunară se calculează doar pentru contracte și achiziții directe — nu și pentru {unservedLabel}."
 msgstr "Furnizorii, categoriile și evoluția lunară se calculează doar pentru contracte și achiziții directe — nu și pentru {unservedLabel}."
 
@@ -26002,12 +26012,12 @@ msgstr "Entries by year; the arrow keys change the year"
 msgid "Înregistrări pe județe"
 msgstr "Entries by county"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:376
+#: src/features/procurement/components/procurement-authority-slice.tsx:377
 msgid "Înregistrări pe lună — seria pe valoare nu este disponibilă pentru această selecție."
 msgstr "Înregistrări pe lună — seria pe valoare nu este disponibilă pentru această selecție."
 
 #. placeholder {0}: analysis.recordLabel
-#: src/features/procurement/components/procurement-authority-slice.tsx:384
+#: src/features/procurement/components/procurement-authority-slice.tsx:385
 msgid "Înregistrări recente · {0}"
 msgstr "Înregistrări recente · {0}"
 
@@ -34984,7 +34994,7 @@ msgid "Open floating entity search"
 msgstr "Open floating entity search"
 
 #: src/components/entities/views/ContractsView.tsx:46
-#: src/features/procurement/components/procurement-authority-slice.tsx:407
+#: src/features/procurement/components/procurement-authority-slice.tsx:408
 msgid "Open full procurement profile"
 msgstr "Open full procurement profile"
 
@@ -35822,8 +35832,8 @@ msgid "Partial history"
 msgstr "Partial history"
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:248
-msgid "partial sum, values are not payments"
-msgstr "partial sum, values are not payments"
+#~ msgid "partial sum, values are not payments"
+#~ msgstr "partial sum, values are not payments"
 
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:40
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:70
@@ -38152,7 +38162,7 @@ msgstr "Procedure suspended."
 #~ msgid "Procedure type"
 #~ msgstr "Procedure type"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:267
+#: src/features/procurement/components/procurement-authority-slice.tsx:268
 msgid "Procedures"
 msgstr "Procedures"
 
@@ -39380,7 +39390,7 @@ msgstr "Receive updates about this entity in the local budget campaign"
 #~ msgid "Received from public institutions"
 #~ msgstr "Received from public institutions"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:386
+#: src/features/procurement/components/procurement-authority-slice.tsx:387
 msgid "Recent contracts"
 msgstr "Recent contracts"
 
@@ -42119,7 +42129,7 @@ msgstr "Search"
 #~ msgstr "Search a county"
 
 #: src/components/entities/views/ContractsView.tsx:59
-#: src/features/procurement/components/procurement-authority-slice.tsx:399
+#: src/features/procurement/components/procurement-authority-slice.tsx:400
 msgid "Search all records for this institution"
 msgstr "Search all records for this institution"
 
@@ -44168,8 +44178,8 @@ msgstr "Green space"
 #~ msgstr "Special registry number"
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:242
-msgid "Spend (RON)"
-msgstr "Spend (RON)"
+#~ msgid "Spend (RON)"
+#~ msgstr "Spend (RON)"
 
 #: src/features/learning/components/interactive/DeficitVisual.tsx:17
 #: src/features/learning/components/interactive/EUComparisonChart.tsx:81
@@ -47263,7 +47273,7 @@ msgstr "Top 5 courts, share of cases"
 #~ msgid "Top CPV groups"
 #~ msgstr "Top CPV groups"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:311
+#: src/features/procurement/components/procurement-authority-slice.tsx:312
 msgid "Top furnizori"
 msgstr "Top furnizori"
 
@@ -48977,7 +48987,7 @@ msgstr "Valoare atipică — sursă coruptă sau în afara limitelor."
 msgid "valoare atribuită"
 msgstr "valoare atribuită"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:375
+#: src/features/procurement/components/procurement-authority-slice.tsx:376
 msgid "Valoare atribuită pe lună pentru acest cumpărător public."
 msgstr "Valoare atribuită pe lună pentru acest cumpărător public."
 
@@ -49217,7 +49227,7 @@ msgstr "The counted value excludes VAT."
 msgid "Valoarea până la, lei"
 msgstr "Value to, lei"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:323
+#: src/features/procurement/components/procurement-authority-slice.tsx:324
 msgid "Valoarea pe furnizor nu este disponibilă pentru această selecție, așa că ordinea este dată de numărul de înregistrări."
 msgstr "Valoarea pe furnizor nu este disponibilă pentru această selecție, așa că ordinea este dată de numărul de înregistrări."
 

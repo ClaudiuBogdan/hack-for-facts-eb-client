@@ -78,14 +78,15 @@ const slice = (input: RawProcurementAggregates, partyNames?: ReadonlyMap<string,
   mapAuthoritySlice({ authorityCui: '9', aggregates: input, divisions: [], recentRecords: [], partyNames })
 
 describe('unified procurement mapper honesty', () => {
-  it('adds decimal strings exactly and excludes procedure estimated value', () => {
+  it('keeps each family’s money apart — never a contracts + direct purchases sum — and excludes procedure estimated value', () => {
     const { summary } = slice(aggregates('0.10', '0.20'))
-    expect(summary.totalSpendRon).toBe('0.30')
+    expect(summary).toMatchObject({ contractValueRon: '0.10', directAcquisitionValueRon: '0.20' })
+    expect(summary).not.toHaveProperty('totalSpendRon')
     expect(summary.proceduresCount).toBe('7')
   })
 
-  it('keeps the total null if either awarded-value block abstains', () => {
-    expect(slice(aggregates(null, '5.00')).summary.totalSpendRon).toBeNull()
+  it('a family that abstains is null on its own; the other stands', () => {
+    expect(slice(aggregates(null, '5.00')).summary).toMatchObject({ contractValueRon: null, directAcquisitionValueRon: '5.00' })
     expect(addDecimalStrings(null, '5.00')).toBeNull()
   })
 
