@@ -20,7 +20,7 @@ describe('the enterprise page’s server reads', () => {
     fetchPrivateCompanyProfile.mockResolvedValueOnce(null)
     fetchProcurementBuyer.mockResolvedValueOnce({ partial: false })
     const read = await readPublicEnterpriseForSsr('789401')
-    expect(read).toEqual({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false }, disclosureKnown: true })
+    expect(read).toEqual({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false }, disclosureKnown: true, disclosure: 'v1' })
     expect(fetchProcurementBuyer).toHaveBeenCalledWith('789401', 'recent', expect.any(AbortSignal))
     expect(isCompleteServerRead(read)).toBe(true)
   })
