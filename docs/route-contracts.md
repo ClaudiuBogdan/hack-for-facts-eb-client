@@ -188,8 +188,12 @@ and `lib/` (11.1) are not route families: they are looked at last.
     quiet preload (a failed decoder fetch used to reload the page being read); the public read reports its
     HTTP failure before a decoder failure. A second review moved the decoder out of the preload: a hover
     and the public read fetch it quietly (`prefetchMapDecoders`, so a failure never reloads the page and a
-    click never waits for it), the call that needs it imports it then, and a failed import is forgotten so
-    a later call asks again. The floating search's placeholder is now a field whose text and
+    click never waits for it), and a failed import is forgotten so a later call asks again. A third review
+    split the callers by who is waiting: the public read imports the decoder quietly, once per read (it
+    may be a hover's), and the map page, once mounted, recovers a failed decoder with the app's bounded
+    fresh-page reload; owner calls and the new-map page (`decodersForReader`) recover the same way when
+    their load fails, even after joining a quiet prefetch; the new-map route loads the decoder before
+    its page claims an editable copy's one-time handoff. The floating search's placeholder is now a field whose text and
     focus carry over to the input (keystrokes typed during a cold open used to be lost). The chart store loads
     in the route's loader, alongside the editor's chunk, once per document. Also made lazy: the map API
     envelope and the heatmap's `MapStateSchema`. Left as noted: the old exports of `judicial.ts`,
