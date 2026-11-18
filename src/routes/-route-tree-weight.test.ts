@@ -29,6 +29,7 @@ const KEPT_OUT: readonly { readonly family: string; readonly modules: readonly R
   // The map previews' definitions, which build and parse four map states when they load. The map
   // schemas themselves still load with `/maps/public/$mapId`, whose request must start at the click.
   { family: 'entity page map previews', modules: [/^src\/features\/challenges\/components\/analysis\/challenge-entity-public-maps\.ts$/] },
+  { family: 'NGO registry', modules: [/^src\/features\/ngos\/registry\/api\.ts$/] },
 ]
 
 /**

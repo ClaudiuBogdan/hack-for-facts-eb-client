@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { NgoRegistryListPage } from '@/features/ngos/registry/components/registry-list-page'
-import { siteKeys, withView } from '@/features/ngos/registry/api'
+import { siteKeys, withView } from '@/features/ngos/registry/registry-search'
 import { searchOf } from '@/features/ngos/registry/model'
 
 export const Route = createLazyFileRoute('/ngos/registry/')({
