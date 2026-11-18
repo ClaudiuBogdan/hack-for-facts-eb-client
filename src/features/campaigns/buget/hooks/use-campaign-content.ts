@@ -29,8 +29,8 @@ const campaignResourcesFileSchema = () =>
     resources: z.array(
       z.object({
         id: z.string().min(1),
-        title: CampaignTranslatedStringSchema,
-        description: CampaignTranslatedStringSchema.optional(),
+        title: CampaignTranslatedStringSchema.schema(),
+        description: CampaignTranslatedStringSchema.schema().optional(),
         url: z.string().url(),
         kind: z.enum(['guide', 'tutorial', 'template', 'reference']),
       }),
