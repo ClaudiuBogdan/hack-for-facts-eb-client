@@ -22,6 +22,13 @@ explicitly disabled; no Clerk or application runtime Secret is mounted.
 requests for auxiliary entity panels that have not moved off the legacy API;
 other environments retain their existing behavior by default.
 
+Crawler switches (dev only, `src/server/crawl-guard/`): `ROBOTS_DISALLOW_ALL`
+answers `/robots.txt` with disallow-all ahead of `public/` and adds `X-Robots-Tag: noindex,
+nofollow` to every response; `REQUEST_UA_LOG` logs one line per response with
+the user agent and no IP, query or cookies (temporary, see
+`docs/issues/DEV-CRAWL-001-dev-crawler-load.md`). The ConfigMap has no hash
+suffix, so sync it before the Deployment; pods read it only at start.
+
 Deploy the server before the client. Before syncing a client revision that uses
 the redesign entity ranking, verify both Phoenix and Chronos accept
 `BudgetRankingFilter.frequency` and

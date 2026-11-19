@@ -233,6 +233,9 @@ export default defineConfig(({ mode }) => {
       tanstackStart(),
       nitro({
         preset: "node_server",
+        // Runtime crawler switches for non-production deployments: see
+        // src/server/crawl-guard/crawl-guard.ts. Off unless the env sets them.
+        plugins: [path.resolve(__dirname, "src/server/crawl-guard/nitro-plugin.ts")],
         // Start handles these routes before Vite's proxy. Opt in using the
         // existing dev proxy setting; Nitro never includes devProxy in builds.
         devProxy: env.VITE_API_PROXY_TARGET ? {
