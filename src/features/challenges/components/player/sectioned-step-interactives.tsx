@@ -87,7 +87,7 @@ export function ChallengeSectionedQuiz({
                 className={cn(
                   'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black',
                   !isSelected && !showAsCorrect && !showAsIncorrect && 'bg-muted text-foreground',
-                  isSelected && !isAnswered && 'bg-primary-foreground/20 text-primary-foreground',
+                  isSelected && !isAnswered && 'bg-transparent text-primary-foreground',
                   showAsCorrect && 'bg-background/20 text-background',
                   showAsIncorrect && 'bg-background/20 text-background',
                 )}

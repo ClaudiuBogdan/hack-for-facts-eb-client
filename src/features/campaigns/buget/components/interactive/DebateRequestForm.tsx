@@ -257,9 +257,16 @@ function DebateRequestDisabledNotice({
 }) {
   const copy = getAvailabilityNoticeCopy(availabilityState)
   const availability = availabilityState.availability
+  const isLookupFailure = availabilityState.state === 'unavailable'
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-status-partial-fg/30 bg-card p-6 shadow-sm md:p-8">
+    <div
+      data-testid="debate-availability-notice"
+      className={cn(
+        'relative overflow-hidden rounded-[28px] border bg-card p-6 shadow-sm md:p-8',
+        isLookupFailure ? 'border-status-blocked-fg/30' : 'border-status-partial-fg/30',
+      )}
+    >
       <Send className="absolute right-4 top-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" aria-hidden="true" />
       <div className="space-y-5">
         <div className="space-y-1.5">
@@ -267,7 +274,13 @@ function DebateRequestDisabledNotice({
             <Trans>Debate request</Trans>
           </p>
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-status-partial-bg text-status-partial-fg">
+            <span
+              data-testid="debate-availability-icon"
+              className={cn(
+                'mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full',
+                isLookupFailure ? 'bg-status-blocked-bg text-status-blocked-fg' : 'bg-status-partial-bg text-status-partial-fg',
+              )}
+            >
               {availabilityState.state === 'loading'
                 ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 : availabilityState.state === 'ready'
@@ -276,7 +289,7 @@ function DebateRequestDisabledNotice({
             </span>
             <div className="space-y-1.5">
               <h3 className="text-lg font-black tracking-tight text-foreground">{copy.title}</h3>
-              <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+              <p className={cn('text-sm font-medium leading-relaxed', isLookupFailure ? 'text-status-blocked-fg' : 'text-muted-foreground')}>
                 {copy.description}
               </p>
             </div>
