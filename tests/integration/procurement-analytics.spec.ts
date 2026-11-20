@@ -82,8 +82,9 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   })
 
+  // Direct purchases, the page's default, have no title search and no firm's place (D6): these ask about contracts.
   test('a filter’s ✕ in the headline drops it from the address', async ({ page }) => {
-    await page.goto(`${ROUTE}?titlu=laptop`)
+    await page.goto(`${ROUTE}?tip=contracte&titlu=laptop`)
     await waitForPageReady(page)
 
     // From `sm` the ✕ shows, and takes a click, once its phrase is under the pointer — the way a reader reaches it.
@@ -114,7 +115,7 @@ test.describe('Procurement analytics — addresses and controls', () => {
   })
 
   test('the filters sheet’s place search takes the keys', async ({ page }) => {
-    await page.goto(ROUTE)
+    await page.goto(`${ROUTE}?tip=contracte`)
     await waitForPageReady(page)
 
     await page.getByRole('button', { name: /^Filtre/ }).first().click()
@@ -139,7 +140,7 @@ test.describe('Procurement analytics — addresses and controls', () => {
   })
 
   test('the filters sheet lets the focus move on from a field its leaving changes', async ({ page }) => {
-    await page.goto(ROUTE)
+    await page.goto(`${ROUTE}?tip=contracte`)
     await waitForPageReady(page)
 
     await page.getByRole('button', { name: /^Filtre/ }).first().click()
@@ -161,15 +162,15 @@ test.describe('Procurement analytics — addresses and controls', () => {
   })
 
   test('the filters sheet applies what was typed and what was clicked next, neither undoing the other', async ({ page }) => {
-    await page.goto(`${ROUTE}?judet=SB`)
+    await page.goto(`${ROUTE}?tip=contracte&judet=SB`)
     await waitForPageReady(page)
 
     await page.getByRole('button', { name: /^Filtre/ }).first().click()
     const sheet = page.getByRole('dialog')
     // The click's blur applies the title; the click's own change comes after it and stands.
     await sheet.getByRole('textbox', { name: 'Titlul conține' }).fill('laptop')
-    await sheet.getByRole('radio', { name: 'Contracte' }).click()
-    await expect.poll(() => params(page).tip).toBe('contracte')
+    await sheet.getByRole('radio', { name: 'Acorduri-cadru' }).click()
+    await expect.poll(() => params(page).tip).toBe('acorduri')
     expect(params(page)).toMatchObject({ judet: 'SB', titlu: 'laptop' })
 
     // A value typed, then „Șterge tot": everything goes, nothing comes back.
