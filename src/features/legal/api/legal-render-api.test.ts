@@ -227,6 +227,9 @@ describe('legal_v2 render payloads', () => {
     expect(data.tldf.accounting.excluded_by_reason).toEqual({})
     expect(data.tldf.defects).toBeUndefined()
     expect(data.tldf.blocks.length).toBeGreaterThan(0)
+    // A resolved Portal link keeps the act target the reader links by.
+    const actLink = data.tldf.marks.find((mark) => mark.link?.kind === 'act')?.link
+    expect(typeof actLink?.target_act_id).toBe('number')
   })
 
   it.each(['not_loaded', 'composition_not_served'])(

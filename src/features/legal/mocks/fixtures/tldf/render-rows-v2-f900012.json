@@ -35,6 +35,7 @@
           ],
           "link": {
             "kind": "act",
+            "target_act_id": 91464,
             "target_fragment": "A127",
             "href": "https://legislatie.just.ro/Public/DetaliiDocumentAfis/1464#A127"
           }
