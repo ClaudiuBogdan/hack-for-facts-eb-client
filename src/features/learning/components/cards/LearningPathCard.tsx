@@ -160,8 +160,8 @@ export function LearningPathCard({
           {/* Streak - only for active variant */}
           {isActive && streak && (
             <div className="flex items-center gap-3 group cursor-default" data-testid="streak-stat">
-              <div className="h-10 w-10 rounded-2xl bg-muted/50 flex items-center justify-center group-hover:bg-status-partial-bg transition-colors">
-                <Sparkles className="h-4 w-4 text-muted-foreground group-hover:text-status-partial-fg transition-colors" />
+              <div className="h-10 w-10 rounded-2xl bg-muted/50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                <Sparkles className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
@@ -223,8 +223,8 @@ export type LearningPathCardProps = {
 
 function getCardStyles(isActive: boolean): string {
   return isActive
-    ? 'shadow-2xl shadow-primary/5 bg-card group hover:shadow-primary/10'
-    : 'shadow-xl shadow-primary/5 bg-card hover:shadow-primary/10'
+    ? 'shadow-2xl bg-card group'
+    : 'shadow-xl bg-card hover:shadow-2xl'
 }
 
 function getVariantStyles(isActive: boolean) {

@@ -19,6 +19,7 @@ export const LESSON_ARTICLE_PROSE_CLASS_NAME = cn(
   '[&_blockquote]:rounded-r-2xl [&_blockquote]:rounded-l-none',
   '[&_blockquote]:border [&_blockquote]:border-l-0 [&_blockquote]:border-status-partial-fg/30',
   '[&_blockquote]:bg-status-partial-bg [&_blockquote]:text-status-partial-fg [&_blockquote_li]:text-status-partial-fg',
+  '[&_blockquote_a]:text-status-partial-fg [&_blockquote_a]:underline [&_blockquote_li]:marker:text-status-partial-fg',
   '[&_blockquote]:pl-6 [&_blockquote]:pr-6 [&_blockquote]:py-5 [&_blockquote]:md:pl-8 [&_blockquote]:md:pr-8 [&_blockquote]:md:py-6',
   '[&_blockquote]:shadow-sm',
   '[&_blockquote]:before:absolute [&_blockquote]:before:left-0 [&_blockquote]:before:top-0 [&_blockquote]:before:bottom-0',

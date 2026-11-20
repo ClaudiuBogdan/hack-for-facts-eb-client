@@ -92,7 +92,7 @@ export function MarkComplete({ label, contentId }: MarkCompleteProps) {
               <Button
                 onClick={handleMarkComplete}
                 disabled={isMarking}
-                className="mt-3 sm:mt-4 rounded-2xl bg-primary text-primary-foreground hover:bg-primary hover:shadow-xl font-black h-12 sm:h-14 px-8 sm:px-10 text-sm sm:text-base shadow-lg transition-all hover:scale-[1.05] active:scale-[0.95] w-full sm:w-auto"
+                className="disabled:opacity-100 mt-3 sm:mt-4 rounded-2xl bg-primary text-primary-foreground hover:bg-primary hover:shadow-xl font-black h-12 sm:h-14 px-8 sm:px-10 text-sm sm:text-base shadow-lg transition-all hover:scale-[1.05] active:scale-[0.95] w-full sm:w-auto"
               >
                 {isMarking ? (
                   <>

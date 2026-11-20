@@ -176,7 +176,7 @@ export function LessonDiscussion({
                     )}
 
                     {hasEmbedError && !isLoading && (
-                      <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+                      <div className="flex items-center justify-center h-[200px] text-status-blocked-fg">
                         <span className="text-sm">{copy.errorLabel}</span>
                       </div>
                     )}

@@ -67,8 +67,8 @@ function DocumentCard({ doc }: DocumentCardProps) {
               rel="noopener noreferrer"
               className={cn(
                 'inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium',
-                'bg-muted text-foreground',
-                'hover:bg-border transition-colors'
+                'bg-muted text-primary',
+                'hover:underline transition-colors'
               )}
             >
               {link.label}

@@ -51,10 +51,14 @@ type ModuleNavProps = {
 
 function LessonStatusIcon({ isCompleted, isActive }: { readonly isCompleted: boolean; readonly isActive: boolean }) {
   if (isCompleted) {
-    return <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5px] text-status-live-fg" />
+    return (
+      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-status-live-bg">
+        <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5px] text-status-live-fg" />
+      </span>
+    )
   }
   if (isActive) {
-    return <div className="h-2.5 w-2.5 rounded-full bg-background" />
+    return <div className="h-2.5 w-2.5 rounded-full bg-primary-foreground" />
   }
   return <Circle className="h-3.5 w-3.5 text-muted-foreground/25 group-hover:text-muted-foreground/40 stroke-[2px]" />
 }
@@ -98,7 +102,7 @@ function ModuleNav({ module, pathId, locale, currentLessonId, lessonProgress, ac
               className={cn(
                 'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-all duration-200 min-w-0 overflow-hidden',
                 isActive
-                  ? 'bg-foreground text-background font-medium'
+                  ? 'bg-primary text-primary-foreground font-medium'
                   : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
               )}
             >
@@ -209,7 +213,7 @@ function LearningSidebar({ pathname }: { readonly pathname: string }) {
 
                 return (
                   <DropdownMenuItem key={p.id} asChild className={cn(
-                    isActive && "bg-foreground text-background focus:bg-foreground focus:text-background data-highlighted:bg-foreground data-highlighted:text-background"
+                    isActive && "bg-primary text-primary-foreground focus:bg-primary focus:text-primary-foreground data-highlighted:bg-primary data-highlighted:text-primary-foreground"
                   )}>
                     <Link
                       to="/$lang/learning/$pathId"
@@ -221,10 +225,7 @@ function LearningSidebar({ pathname }: { readonly pathname: string }) {
                         <span className="font-medium text-sm">{getTranslatedText(p.title, locale)}</span>
                         {isActive && <CheckCircle2 className="h-3 w-3 ml-auto" />}
                       </div>
-                      <span className={cn(
-                        "text-xs line-clamp-1",
-                        !isActive && "text-muted-foreground"
-                      )}>
+                      <span className="text-xs line-clamp-1">
                         {getTranslatedText(p.description, locale)}
                       </span>
                     </Link>
