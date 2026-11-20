@@ -141,7 +141,7 @@ function ChallengeSection({
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-status-partial-fg mb-1">
             {t`Challenge Question`}
           </div>
-          <p className="font-bold text-foreground">
+          <p className="font-bold text-status-partial-fg">
             {challenge.question}
           </p>
         </div>
@@ -213,7 +213,15 @@ function ChallengeSection({
                 </>
               )}
             </div>
-            <Button variant="ghost" size="sm" onClick={onReset} className="gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onReset}
+              className={cn(
+                'gap-2 hover:bg-transparent hover:ring-2 hover:ring-current',
+                isCorrect ? 'text-status-live-fg hover:text-status-live-fg' : 'text-status-blocked-fg hover:text-status-blocked-fg'
+              )}
+            >
               <RotateCcw className="w-4 h-4" />
               {t`Try again`}
             </Button>

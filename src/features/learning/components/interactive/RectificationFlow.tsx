@@ -103,7 +103,7 @@ function BudgetRow({ stage, maxAmount, index, inView, isLast }: BudgetRowProps) 
         </div>
 
         {/* Bar */}
-        <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+        <div className={cn('h-3 w-full rounded-full overflow-hidden', hasChange ? (stage.changeType === 'increase' ? 'bg-status-live-bg' : 'bg-status-blocked-bg') : 'bg-muted')}>
           <motion.div
             className={cn(
               'h-full rounded-full',

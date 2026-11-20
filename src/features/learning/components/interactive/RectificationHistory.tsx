@@ -37,10 +37,11 @@ type RectificationHistoryProps = {
 // Deficit Bar Component
 // ═══════════════════════════════════════════════════════════════════════════
 
-function DeficitBar({ percent, status }: { percent: number; status: StatusLevel }) {
+function DeficitBar({ percent }: { percent: number }) {
   const maxPercent = 10
   const widthPercent = Math.min((percent / maxPercent) * 100, 100)
-  const colors = STATUS_COLORS[status]
+  // The deficit is always drawn as a deficit (blocked pair); the year's own level is the icon and word beside it.
+  const colors = STATUS_COLORS.red
 
   return (
     <div className="flex flex-col gap-1 w-full">
@@ -50,7 +51,7 @@ function DeficitBar({ percent, status }: { percent: number; status: StatusLevel 
         </span>
         <span className={cn('text-xs font-bold tabular-nums', colors.text)}>{percent.toFixed(1)}%</span>
       </div>
-      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-status-blocked-bg rounded-full overflow-hidden">
         <motion.div
           className={cn('h-full rounded-full', colors.dot)}
           initial={{ width: 0 }}
@@ -108,8 +109,8 @@ function YearRow({ data, isExpanded, onToggle, index, inView }: YearRowProps) {
     <motion.div
       className={cn(
         'group rounded-xl overflow-hidden border transition-all duration-200',
-        isExpanded 
-          ? 'bg-card border-primary/30 shadow-sm ring-1 ring-primary/40' 
+        isExpanded
+          ? 'bg-card border-primary/30 shadow-sm ring-1 ring-primary/40'
           : 'bg-card border-transparent hover:border-border'
       )}
       initial={{ opacity: 0, y: 10 }}
@@ -154,7 +155,7 @@ function YearRow({ data, isExpanded, onToggle, index, inView }: YearRowProps) {
 
         {/* Deficit */}
         <div className="w-full sm:w-32 mt-2 sm:mt-0">
-          <DeficitBar percent={data.deficitPercent} status={data.status} />
+          <DeficitBar percent={data.deficitPercent} />
         </div>
 
         {/* Desktop Expand Icon */}

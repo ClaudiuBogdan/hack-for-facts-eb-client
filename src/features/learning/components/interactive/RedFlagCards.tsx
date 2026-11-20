@@ -94,12 +94,12 @@ function FlagItem({ flag, index, inView }: FlagItemProps) {
           </span>
 
           {/* Title */}
-          <h4 className="font-semibold text-foreground text-sm leading-tight mb-1">
+          <h4 className={cn('font-semibold text-sm leading-tight mb-1', colors.text)}>
             {flag.title}
           </h4>
 
           {/* Description */}
-          <p className="text-sm text-foreground leading-relaxed">
+          <p className={cn('text-sm leading-relaxed', colors.text)}>
             {flag.description}
           </p>
 

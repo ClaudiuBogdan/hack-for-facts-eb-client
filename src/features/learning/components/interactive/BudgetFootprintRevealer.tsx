@@ -268,6 +268,9 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
     [activity.hiddenServices]
   )
 
+  // Revealed cards sit on the live tint, so their text takes the matching foreground.
+  const ink = isRevealed ? 'text-status-live-fg' : 'text-foreground'
+
   const handleClick = () => {
     if (isRevealed) {
       onToggle()
@@ -309,17 +312,17 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-foreground">{activity.time}</span>
+                <span className={cn('text-xs font-bold uppercase tracking-wider', ink)}>{activity.time}</span>
                 {isRevealed && <Check className="h-4 w-4 text-status-live-fg stroke-3" />}
               </div>
               {isRevealed && (
                 <div className="flex items-center gap-1.5">
                   <span className="text-lg font-black text-status-live-fg">+{totalCost.toFixed(1)}</span>
-                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">RON</span>
+                  <span className={cn('text-xs font-bold uppercase tracking-wider', ink)}>RON</span>
                   {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-foreground" />
+                    <ChevronUp className={cn('h-5 w-5', ink)} />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-foreground" />
+                    <ChevronDown className={cn('h-5 w-5', ink)} />
                   )}
                 </div>
               )}
@@ -329,7 +332,7 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
                 </span>
               )}
             </div>
-            <p className="text-lg font-bold text-foreground">{activity.label}</p>
+            <p className={cn('text-lg font-bold', ink)}>{activity.label}</p>
           </div>
         </div>
 
@@ -337,7 +340,7 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
         {isRevealed && isExpanded && (
           <div className="mt-6 animate-in fade-in slide-in-from-top-2 space-y-5 border-t border-border pt-6 duration-300">
             <div className="space-y-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
+              <p className={cn('text-[10px] font-black uppercase tracking-[0.2em]', ink)}>
                 {t`Hidden infrastructure you used`}
               </p>
               {activity.hiddenServices.map((service, index) => (
@@ -348,7 +351,7 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xl group-hover:scale-110 transition-transform">{service.icon}</span>
-                    <span className="text-sm font-medium text-foreground">{service.name}</span>
+                    <span className={cn('text-sm font-medium', ink)}>{service.name}</span>
                   </div>
                   <span className="text-sm font-bold text-status-live-fg tabular-nums">
                     +{service.dailyCostRon.toFixed(1)} RON
@@ -358,7 +361,7 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-foreground">{t`Budget category`}</span>
+              <span className={cn('font-medium', ink)}>{t`Budget category`}</span>
               <span className="rounded-full bg-card px-3 py-1 font-bold text-foreground text-[10px] uppercase tracking-wide">
                 {activity.budgetCategory}
               </span>
@@ -466,7 +469,7 @@ function TotalDisplay({ totalCost, onReset, locale }: TotalDisplayProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-2 top-2 h-8 w-8 text-foreground hover:ring-2 hover:ring-primary/40"
+          className="absolute right-2 top-2 h-8 w-8 text-status-live-fg hover:ring-2 hover:ring-primary/40"
           onClick={onReset}
           title={t`Start over`}
         >
@@ -474,7 +477,7 @@ function TotalDisplay({ totalCost, onReset, locale }: TotalDisplayProps) {
         </Button>
 
         <div className="text-center">
-          <p className="mb-2 text-sm font-medium text-foreground">
+          <p className="mb-2 text-sm font-medium text-status-live-fg">
             {t`Your daily budget footprint`}
           </p>
           <div className="flex items-baseline justify-center gap-2">
@@ -486,7 +489,7 @@ function TotalDisplay({ totalCost, onReset, locale }: TotalDisplayProps) {
             </span>
           </div>
         </div>
-        <p className="mt-4 text-center text-xs text-foreground leading-relaxed">
+        <p className="mt-4 text-center text-xs text-status-live-fg leading-relaxed">
           {DISCLAIMER_TEXT[locale]}
         </p>
       </CardContent>
