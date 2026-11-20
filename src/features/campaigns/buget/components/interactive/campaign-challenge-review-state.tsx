@@ -100,27 +100,27 @@ function getReviewTone(submittedVariant: SubmittedVariant): ReviewTone {
   switch (submittedVariant) {
     case 'pending_review':
       return {
-        containerClassName: 'border-amber-200/60 bg-gradient-to-br from-amber-50/40 via-background to-amber-50/20 dark:border-amber-800/30 dark:from-amber-950/15 dark:via-background dark:to-amber-950/8',
-        badgeClassName: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
-        accentClassName: 'text-amber-500 dark:text-amber-400',
-        summaryClassName: 'border-amber-200/50 bg-amber-50/30 dark:border-amber-900/30 dark:bg-amber-950/10',
-        feedbackClassName: 'border-red-200/60 bg-red-50/50 text-red-900 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-200',
+        containerClassName: 'border-status-partial-fg/30 bg-card',
+        badgeClassName: 'bg-status-partial-bg text-status-partial-fg',
+        accentClassName: 'text-status-partial-fg',
+        summaryClassName: 'border-status-partial-fg/30 bg-background',
+        feedbackClassName: 'border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg',
       }
     case 'rejected':
       return {
-        containerClassName: 'border-red-200/60 bg-gradient-to-br from-red-50/40 via-background to-red-50/20 dark:border-red-800/30 dark:from-red-950/15 dark:via-background dark:to-red-950/8',
-        badgeClassName: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
-        accentClassName: 'text-red-500 dark:text-red-400',
-        summaryClassName: 'border-red-200/50 bg-red-50/20 dark:border-red-900/30 dark:bg-red-950/10',
-        feedbackClassName: 'border-red-200/60 bg-red-50/50 text-red-900 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-200',
+        containerClassName: 'border-status-blocked-fg/30 bg-card',
+        badgeClassName: 'bg-status-blocked-bg text-status-blocked-fg',
+        accentClassName: 'text-status-blocked-fg',
+        summaryClassName: 'border-status-blocked-fg/30 bg-background',
+        feedbackClassName: 'border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg',
       }
     case 'completed':
       return {
-        containerClassName: 'border-emerald-200/60 bg-gradient-to-br from-emerald-50/40 via-background to-emerald-50/20 dark:border-emerald-800/30 dark:from-emerald-950/15 dark:via-background dark:to-emerald-950/8',
-        badgeClassName: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
-        accentClassName: 'text-emerald-500 dark:text-emerald-400',
-        summaryClassName: 'border-emerald-200/50 bg-emerald-50/20 dark:border-emerald-900/30 dark:bg-emerald-950/10',
-        feedbackClassName: 'border-red-200/60 bg-red-50/50 text-red-900 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-200',
+        containerClassName: 'border-status-live-fg/30 bg-card',
+        badgeClassName: 'bg-status-live-bg text-status-live-fg',
+        accentClassName: 'text-status-live-fg',
+        summaryClassName: 'border-status-live-fg/30 bg-background',
+        feedbackClassName: 'border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg',
       }
   }
 }
@@ -206,7 +206,7 @@ export function CampaignChallengeReviewState({
 
         {/* Status note (only if description is also present, to avoid duplication) */}
         {description && (
-          <p role="status" aria-live="polite" className="text-[13px] leading-relaxed text-muted-foreground/80">
+          <p role="status" aria-live="polite" className="text-[13px] leading-relaxed text-muted-foreground">
             {statusText}
           </p>
         )}

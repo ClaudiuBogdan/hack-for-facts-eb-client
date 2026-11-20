@@ -76,20 +76,20 @@ export function ChallengeSectionedQuiz({
                   !isAnswered &&
                   'border-foreground bg-foreground text-background shadow-lg',
                 showAsCorrect &&
-                  'border-emerald-300 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20',
+                  'border-status-live-fg bg-status-live-fg text-background shadow-lg',
                 showAsIncorrect &&
-                  'border-rose-300 bg-rose-500 text-white shadow-lg shadow-rose-500/20',
-                isDimmed && 'opacity-40',
+                  'border-status-blocked-fg bg-status-blocked-fg text-background shadow-lg',
+                isDimmed && 'text-muted-foreground',
                 isPending && 'cursor-wait opacity-70',
               )}
             >
               <div
                 className={cn(
                   'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black',
-                  !isAnswered && !isSelected && 'bg-muted text-muted-foreground',
+                  !isSelected && !showAsCorrect && !showAsIncorrect && 'bg-muted text-foreground',
                   isSelected && !isAnswered && 'bg-background/10 text-background',
-                  showAsCorrect && 'bg-white/20 text-white',
-                  showAsIncorrect && 'bg-white/20 text-white',
+                  showAsCorrect && 'bg-background/20 text-background',
+                  showAsIncorrect && 'bg-background/20 text-background',
                 )}
               >
                 {showAsCorrect ? (

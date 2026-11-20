@@ -124,7 +124,7 @@ function CopyFieldButton({ text }: { readonly text: string }) {
       aria-label={t`Copy`}
     >
       {copied
-        ? <Check className="h-3.5 w-3.5 text-green-500" strokeWidth={2.5} />
+        ? <Check className="h-3.5 w-3.5 text-status-live-fg" strokeWidth={2.5} />
         : <Copy className="h-3.5 w-3.5" />}
     </button>
   )
@@ -259,7 +259,7 @@ function DebateRequestDisabledNotice({
   const availability = availabilityState.availability
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-amber-200/70 bg-gradient-to-br from-amber-50/60 via-background to-background p-6 shadow-sm dark:border-amber-900/40 dark:from-amber-950/20 md:p-8">
+    <div className="relative overflow-hidden rounded-[28px] border border-status-partial-fg/30 bg-card p-6 shadow-sm md:p-8">
       <Send className="absolute right-4 top-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" aria-hidden="true" />
       <div className="space-y-5">
         <div className="space-y-1.5">
@@ -267,7 +267,7 @@ function DebateRequestDisabledNotice({
             <Trans>Debate request</Trans>
           </p>
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
+            <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-status-partial-bg text-status-partial-fg">
               {availabilityState.state === 'loading'
                 ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 : availabilityState.state === 'ready'
@@ -404,7 +404,7 @@ function EmailPreviewPanel({
         {/* Body */}
         <div className="group/body rounded-xl border border-border/30 bg-background p-4">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">{t`Message`}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t`Message`}</span>
             <div className="opacity-0 group-hover/body:opacity-100 transition-opacity">
               <CopyFieldButton text={fullEmailText} />
             </div>
@@ -997,17 +997,17 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                   <Trans>Opens your email client with the completed request. Recommended when you represent a legally established association.</Trans>
                 </p>
                 {!draft.isNgo && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  <p className="text-xs text-status-partial-fg mt-2">
                     <Trans>Available for legally established associations.</Trans>
                   </p>
                 )}
                 {draft.isNgo && !hasOrganizationName && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  <p className="text-xs text-status-partial-fg mt-2">
                     <Trans>Add the association name to use this option.</Trans>
                   </p>
                 )}
                 {draft.isNgo && hasOrganizationName && !hasRequiredNgoDetails && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  <p className="text-xs text-status-partial-fg mt-2">
                     <Trans>Complete all NGO legal details to generate the request template.</Trans>
                   </p>
                 )}

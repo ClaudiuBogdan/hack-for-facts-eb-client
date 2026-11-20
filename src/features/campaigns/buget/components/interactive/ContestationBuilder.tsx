@@ -60,7 +60,7 @@ function CharCounter({ current, max }: CharCounterProps) {
         isOverLimit
           ? 'text-destructive'
           : isNearLimit
-            ? 'text-amber-600 dark:text-amber-400'
+            ? 'text-status-partial-fg'
             : 'text-muted-foreground'
       }`}
     >

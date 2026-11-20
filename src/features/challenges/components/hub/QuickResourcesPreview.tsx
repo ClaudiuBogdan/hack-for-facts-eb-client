@@ -90,7 +90,7 @@ export function QuickResourcesPreview({
           className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0">
-            <Building2 className="h-4 w-4 text-slate-100 dark:text-slate-900" aria-hidden="true" />
+            <Building2 className="h-4 w-4 text-background" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
@@ -130,7 +130,7 @@ export function QuickResourcesPreview({
             className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
           >
             <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-              <Send className="h-4 w-4 text-[#3565c4]" aria-hidden="true" />
+              <Send className="h-4 w-4 text-primary" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium text-foreground/80">
@@ -151,7 +151,7 @@ export function QuickResourcesPreview({
           className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-            <MessageSquare className="h-4 w-4 text-red-500" aria-hidden="true" />
+            <MessageSquare className="h-4 w-4 text-status-blocked-fg" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
@@ -194,9 +194,9 @@ export function QuickResourcesPreview({
         >
           <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
             {showDisabledNotification ? (
-              <BellOff className="h-4 w-4 text-red-500" aria-hidden="true" />
+              <BellOff className="h-4 w-4 text-status-blocked-fg" aria-hidden="true" />
             ) : (
-              <Bell className="h-4 w-4 text-amber-500" aria-hidden="true" />
+              <Bell className="h-4 w-4 text-status-partial-fg" aria-hidden="true" />
             )}
           </div>
           <div className="min-w-0 flex-1">

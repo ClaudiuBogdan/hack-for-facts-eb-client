@@ -87,7 +87,7 @@ function ActionButton({
       <Button
         variant="outline"
         size="lg"
-        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-green-500/20 bg-green-500/[0.05] text-green-600 hover:bg-green-500/10 transition-all`}
+        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-status-live-fg/30 bg-status-live-bg text-status-live-fg hover:bg-status-live-bg hover:border-status-live-fg transition-all`}
       >
         <Trophy className="mr-2 lg:mr-3 h-5 w-5" aria-hidden="true" />
         {t`Completed`}

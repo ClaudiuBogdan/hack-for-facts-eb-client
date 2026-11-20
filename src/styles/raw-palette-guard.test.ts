@@ -73,19 +73,7 @@ const PENDING: readonly string[] = [
   'src/features/campaigns/buget/components/hub/buget-entity-selector-gate.tsx',
   'src/features/campaigns/buget/components/hub/campaign-participants-map.tsx',
   'src/features/campaigns/buget/components/hub/recent-uat-badges.tsx',
-  'src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx',
-  'src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx',
-  'src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx',
   'src/features/campaigns/buget/components/layout/campaign-page-frame.tsx',
-  'src/features/challenges/components/cards/ChallengeModuleCard.tsx',
-  'src/features/challenges/components/hub/QuickResourcesPreview.tsx',
-  'src/features/challenges/components/interactive/challenge-lesson-widgets.tsx',
-  'src/features/challenges/components/layout/ChallengesLayout.tsx',
-  'src/features/challenges/components/player/challenge-step-player.utils.ts',
-  'src/features/challenges/components/player/sectioned-step-footer.test.tsx',
-  'src/features/challenges/components/player/sectioned-step-footer.tsx',
-  'src/features/challenges/components/player/sectioned-step-header.tsx',
-  'src/features/challenges/components/player/sectioned-step-interactives.tsx',
 ]
 
 /** Repository-relative paths, always with `/`, so the list compares the same on every platform. */
