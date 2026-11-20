@@ -192,7 +192,7 @@ function StepCard({
         {isCurrent && !isCompleted && (
           <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
             {isFirstStep ? (
-              <Button onClick={handleOpenExplorer} className="gap-2">
+              <Button onClick={handleOpenExplorer} className="gap-2 hover:bg-primary hover:ring-4 hover:ring-primary/30">
                 <ExternalLink className="h-4 w-4" />
                 {t`Open Budget Explorer`}
               </Button>
@@ -229,10 +229,10 @@ function Celebration({ onReset }: CelebrationProps) {
         <h3 className="text-lg font-bold text-status-live-fg">
           {t`Tour Complete!`}
         </h3>
-        <p className="mt-2 text-sm text-foreground">
+        <p className="mt-2 text-sm text-status-live-fg">
           {t`You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own.`}
         </p>
-        <Button variant="ghost" size="sm" onClick={onReset} className="mt-4 gap-2">
+        <Button variant="ghost" size="sm" onClick={onReset} className="mt-4 gap-2 text-status-live-fg hover:bg-status-live-fg/10 hover:text-status-live-fg">
           <RotateCcw className="h-4 w-4" />
           {t`Start over`}
         </Button>

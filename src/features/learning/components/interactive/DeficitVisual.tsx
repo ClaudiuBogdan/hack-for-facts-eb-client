@@ -15,14 +15,14 @@ export function DeficitVisual() {
 
                <div className="space-y-3 flex-1 min-w-0 max-w-48">
                   <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground truncate">{t`Spending`}</div>
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-black text-status-blocked-fg tracking-tighter shrink-0">43.5%</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground tracking-tighter shrink-0">43.5%</div>
                </div>
 
                <div className="text-3xl font-black text-muted-foreground select-none hidden lg:block shrink-0 mt-4">=</div>
 
                <div className="space-y-3 flex-1 min-w-0 max-w-60">
                   <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground truncate">{t`The Deficit`}</div>
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground tracking-tighter shrink-0">−9.3%</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-black text-status-blocked-fg tracking-tighter shrink-0">−9.3%</div>
                </div>
             </div>
          </Card>

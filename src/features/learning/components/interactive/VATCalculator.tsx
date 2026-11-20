@@ -139,7 +139,7 @@ export function VATCalculator() {
                     <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${totalSpending > 0 ? (results.totalNet / totalSpending) * 100 : 0}%` }}
-                        className="h-full bg-primary"
+                        className="h-full bg-chart-1"
                     />
                     <motion.div 
                         initial={{ width: 0 }}

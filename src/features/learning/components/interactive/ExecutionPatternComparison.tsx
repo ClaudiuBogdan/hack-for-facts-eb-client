@@ -142,7 +142,7 @@ function ExecutionRow({ item, inView, index }: ExecutionRowProps) {
         <div className={cn('p-1 rounded-full', config.iconBg)}>
           <Icon className={cn('w-3.5 h-3.5', config.textColor)} />
         </div>
-        <span className={cn('text-xs font-bold uppercase tracking-wide hidden sm:block', config.textColor)}>
+        <span className={cn('text-xs font-bold uppercase tracking-wide sr-only sm:not-sr-only', config.textColor)}>
           {item.statusLabel}
         </span>
       </div>

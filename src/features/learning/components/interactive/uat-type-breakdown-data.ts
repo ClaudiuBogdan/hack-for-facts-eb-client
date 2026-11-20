@@ -62,7 +62,7 @@ const UAT_STYLE = {
   border: 'border-border',
   selectedBorder: 'border-primary',
   panelBorder: 'border-primary/30',
-  text: 'text-primary',
+  text: 'text-foreground',
   accent: 'bg-muted',
   ring: 'ring-primary/40',
   bar: 'bg-primary',

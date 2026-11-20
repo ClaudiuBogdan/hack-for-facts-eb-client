@@ -313,7 +313,7 @@ function DetailPanel({
             <Badge
               key={i}
               variant="secondary"
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-card border-none"
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-card hover:bg-card border-none"
             >
               <span>{example.name}</span>
               {example.population && (

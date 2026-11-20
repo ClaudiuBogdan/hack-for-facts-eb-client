@@ -65,7 +65,7 @@ function ExecutionBar({ rate, type, label, inView }: ExecutionBarProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
+      <div className={cn("flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em]", colors.textMuted)}>
         <span>{label}</span>
         <span className={cn('font-black tabular-nums text-lg', colors.text)}>
           {rate}%
