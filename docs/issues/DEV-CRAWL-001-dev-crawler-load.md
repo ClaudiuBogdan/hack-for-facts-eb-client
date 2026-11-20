@@ -45,7 +45,28 @@ Robots rules only bind polite crawlers. If the load hasn't dropped within an hou
 4 h cache has expired, the UA log names the caller. The Cloudflare cache is not purged from here; that is an
 owner/account action.
 
+## After rollout (2026-11-20)
+
+Both switches went live with image `e25d5f0d` (pin `54f30fcd`); the pods started at 11:49–11:50Z. `/robots.txt`
+then answered `Disallow: /`. The eleven pages smoke-checked after the rollout each carried
+`X-Robots-Tag: noindex, nofollow`.
+
+From the pods' start to 11:56Z, one user agent made 83% of the requests (2051 of 2464; root counted about 87% over
+the first ten minutes):
+`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36`.
+
+- **What was logged under it:** 175 page requests (138 distinct paths) and 1876 asset requests, as a browser
+  rendering pages would make. The pages were `/procurement` 88, `/entities` 27, `/cookies` 21, `/primarie` 18 and
+  `/companies` 18. No request for `/robots.txt` was logged under it in the sample.
+- **Who it is:** not known. The string is not the one the Playwright runs send (`HeadlessChrome/151`) nor the
+  smoke checks' (`transparenta-smoke`). It reads as an ordinary desktop Chrome on Linux, and any client can send
+  it: a person, a browser another session drives, or a crawler. Before proposing a block, check that no session of ours runs Chrome 155 on Linux against
+  dev.
+
 ## Follow-ups
 
+- [ ] Measure again on 2026-11-21 around 12:00Z, well past `robots.txt`'s 4 h Cloudflare cache. If this agent
+      still makes most of the requests and has not asked for `/robots.txt`, propose a block to the owner (a
+      Cloudflare rule is an owner/account action).
 - [ ] Name the caller from the UA log, then remove `REQUEST_UA_LOG` from the chronos-dev ConfigMap and record the
       removal here.
