@@ -3364,7 +3364,10 @@ leak blocks):
 - exact line amounts read through `Number`, more than six decimals (DA-004);
 - the front door's supplier-count tile and the context's firm place, which
   are left out (not said) in the D6 window — the band beside each says it
-  (DA-005).
+  (DA-005);
+- a read the API refuses as busy (`SERVICE_UNAVAILABLE`) is retried without
+  waiting `retryAfterSeconds`, or not at all for the records (DA-007, filed
+  20 November 2026).
 
 ### 24.3 After the third review (18 November 2026)
 
@@ -3484,7 +3487,11 @@ figures above).
   The transport refuses to send them, after any wait for a token, if a newer publication has been seen since. The
   browser's analytics names lookup and the legacy detail's registry names carry no such key.
 
-**Seeds.** `isSeedCurrent` refuses a server render's seed:
+**Seeds.** On the server, `isSeedCurrent` refuses a render's seed only when its privacy publication is older than the
+newest key the process has seen. The seed is this request's own fresh read, kept nowhere, and the transport checks each
+response's key. The open tab's other checks are skipped there: their clock is never renewed on the server, so before
+20 November 2026 a process older than the bound rendered every page's loading shell under public cache headers. In an
+open tab, `isSeedCurrent` refuses a server render's seed:
 
 - while the tab is unreadable, or past the bound by the clock now (a suspended tab whose timer has not run);
 - when the seed's privacy publication is older than the newest key;
