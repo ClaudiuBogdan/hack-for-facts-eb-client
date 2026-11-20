@@ -138,8 +138,8 @@ export function SectionedStepHeader({
                       <span
                         className={[
                           'block h-2 w-full rounded-full transition-colors',
-                          index < currentSectionIndex ? 'bg-status-live-fg' : '',
-                          index === currentSectionIndex ? 'bg-foreground' : '',
+                          index < currentSectionIndex ? 'bg-primary/40' : '',
+                          index === currentSectionIndex ? 'bg-primary' : '',
                           index > currentSectionIndex
                             ? 'bg-muted group-hover:bg-muted-foreground/45'
                             : '',

@@ -30,9 +30,9 @@ export function ChallengeSectionedQuiz({
 
   if (!Array.isArray(options) || options.length === 0) {
     return (
-      <Card className="not-prose my-8 border-destructive/20 bg-destructive/5 shadow-none">
+      <Card className="not-prose my-8 border-status-blocked-fg/30 bg-status-blocked-bg shadow-none">
         <CardContent className="p-6 text-center">
-          <p className="text-sm font-medium text-destructive">{t`Quiz configuration error`}</p>
+          <p className="text-sm font-medium text-status-blocked-fg">{t`Quiz configuration error`}</p>
         </CardContent>
       </Card>
     )
@@ -70,24 +70,24 @@ export function ChallengeSectionedQuiz({
               disabled={isAnswered || isPending}
               className={cn(
                 'flex w-full items-center gap-4 rounded-3xl border-2 p-4 text-left transition-[color,background-color,border-color,opacity,box-shadow] md:p-5',
-                !isAnswered &&
+                !isAnswered && !isSelected &&
                   'border-border/60 bg-card hover:border-foreground/20 hover:bg-muted/30',
                 isSelected &&
                   !isAnswered &&
-                  'border-foreground bg-foreground text-background shadow-lg',
+                  'border-primary bg-primary text-primary-foreground shadow-lg hover:bg-primary hover:text-primary-foreground',
                 showAsCorrect &&
                   'border-status-live-fg bg-status-live-fg text-background shadow-lg',
                 showAsIncorrect &&
                   'border-status-blocked-fg bg-status-blocked-fg text-background shadow-lg',
                 isDimmed && 'text-muted-foreground',
-                isPending && 'cursor-wait opacity-70',
+                isPending && 'cursor-wait',
               )}
             >
               <div
                 className={cn(
                   'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black',
                   !isSelected && !showAsCorrect && !showAsIncorrect && 'bg-muted text-foreground',
-                  isSelected && !isAnswered && 'bg-background/10 text-background',
+                  isSelected && !isAnswered && 'bg-primary-foreground/20 text-primary-foreground',
                   showAsCorrect && 'bg-background/20 text-background',
                   showAsIncorrect && 'bg-background/20 text-background',
                 )}

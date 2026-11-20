@@ -803,7 +803,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 onChange={(e) => handleFieldChange('primariaEmail', e.target.value)}
               />
               {draft.primariaEmail && !isValidEmail(draft.primariaEmail) && (
-                <p className="text-xs text-destructive" role="alert">
+                <p className="text-xs text-status-blocked-fg" role="alert">
                   <Trans>The email address is not valid.</Trans>
                 </p>
               )}
@@ -988,8 +988,8 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Card A - Send yourself */}
               <div className={cn(
-                'flex flex-col rounded-[24px] border-2 border-border/40 p-6 text-center transition-opacity',
-                !draft.isNgo && 'opacity-50 cursor-not-allowed'
+                'flex flex-col rounded-[24px] border-2 border-border/40 p-6 text-center',
+                !draft.isNgo && 'cursor-not-allowed'
               )}>
                 <Mail className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Send it yourself`}</p>
@@ -1031,7 +1031,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                       <Trans>Use the association email address from which you will actually send the request.</Trans>
                     </p>
                     {draft.ngoSenderEmail && !hasValidNgoSenderEmail && (
-                      <p className="text-xs text-destructive" role="alert">
+                      <p className="text-xs text-status-blocked-fg" role="alert">
                         <Trans>The association email address is not valid.</Trans>
                       </p>
                     )}
@@ -1067,7 +1067,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
             )}
 
             {submitError && (
-              <p className="text-sm text-destructive font-medium" role="alert">
+              <p className="text-sm text-status-blocked-fg font-medium" role="alert">
                 {submitError}
               </p>
             )}

@@ -83,7 +83,11 @@ function StepStatusIcon({
   readonly isActive: boolean
 }) {
   if (isCompleted) {
-    return <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5px] text-status-live-fg" />
+    return (
+      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-status-live-bg" role="img" aria-label={t`Completed`}>
+        <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5px] text-status-live-fg" aria-hidden="true" />
+      </span>
+    )
   }
 
   if (isActive) {
@@ -140,15 +144,15 @@ function ChallengeNav({
             isOpen && 'rotate-90',
           )}
         />
-        <span className="text-xs font-medium text-muted-foreground flex-1 min-w-0 truncate leading-snug">
+        <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground flex-1 min-w-0 truncate leading-snug">
           {getTranslatedText(challenge.title, locale)}
         </span>
         {isChallengeComplete ? (
-          <div className="h-4 w-4 rounded-full bg-status-live-bg flex items-center justify-center shrink-0">
+          <div role="img" aria-label={t`Completed`} className="h-4 w-4 rounded-full bg-status-live-bg flex items-center justify-center shrink-0">
             <CheckCircle2 className="h-2.5 w-2.5 text-status-live-fg" aria-hidden="true" />
           </div>
         ) : (
-          <span className="text-[10px] font-medium text-muted-foreground tabular-nums shrink-0">
+          <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground tabular-nums shrink-0">
             {completedSteps}/{challenge.steps.length}
           </span>
         )}
@@ -353,7 +357,7 @@ function ChallengesSidebar({
                         <span
                           className={cn(
                             'text-xs line-clamp-1',
-                            isActive ? 'opacity-70' : 'text-muted-foreground',
+                            !isActive && 'text-muted-foreground',
                           )}
                         >
                           {getTranslatedText(module.description, locale)}

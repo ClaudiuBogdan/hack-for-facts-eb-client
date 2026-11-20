@@ -58,7 +58,7 @@ function CharCounter({ current, max }: CharCounterProps) {
     <span
       className={`text-xs tabular-nums ${
         isOverLimit
-          ? 'text-destructive'
+          ? 'text-status-blocked-fg'
           : isNearLimit
             ? 'text-status-partial-fg'
             : 'text-muted-foreground'

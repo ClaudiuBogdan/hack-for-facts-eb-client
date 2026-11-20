@@ -32,7 +32,7 @@ export function SectionedStepFooter({
                 'bg-status-live-bg text-status-live-fg',
                 footerState.tone === 'error' &&
                 'bg-status-blocked-bg text-status-blocked-fg',
-                footerState.tone === 'neutral' && 'bg-muted text-muted-foreground',
+                footerState.tone === 'neutral' && 'bg-muted text-foreground',
               )}
             >
               {footerState.message}

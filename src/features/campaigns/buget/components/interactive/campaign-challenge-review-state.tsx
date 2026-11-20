@@ -248,7 +248,7 @@ export function CampaignChallengeReviewState({
             {showTryAgain && (
               <Button
                 onClick={onTryAgain}
-                className="h-12 w-full rounded-[22px] font-black shadow-lg shadow-primary/15 transition-transform hover:scale-[1.02] active:scale-95 sm:w-auto sm:min-w-40"
+                className="h-12 w-full rounded-[22px] font-black shadow-lg shadow-primary/15 transition-transform hover:bg-primary hover:shadow-xl hover:scale-[1.02] active:scale-95 sm:w-auto sm:min-w-40"
               >
                 {t`Try again`}
               </Button>
