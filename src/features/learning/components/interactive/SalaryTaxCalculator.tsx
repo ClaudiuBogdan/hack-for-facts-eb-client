@@ -75,7 +75,7 @@ function AnimatedNumber({ value, size }: { value: number; size?: keyof typeof NU
 }
 
 const ROW_TONE_CLASSES = {
-  base: { chip: 'bg-muted', icon: 'text-muted-foreground', bar: 'bg-muted-foreground/40' },
+  base: { chip: 'bg-muted', icon: 'text-foreground', bar: 'bg-muted-foreground/40' },
   'chart-1': { chip: 'bg-chart-1', icon: 'text-background', bar: 'bg-chart-1' },
   'chart-2': { chip: 'bg-chart-2', icon: 'text-background', bar: 'bg-chart-2' },
   'chart-3': { chip: 'bg-chart-3', icon: 'text-background', bar: 'bg-chart-3' },

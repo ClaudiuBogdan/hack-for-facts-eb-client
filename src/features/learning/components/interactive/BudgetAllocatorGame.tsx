@@ -848,7 +848,7 @@ export function BudgetAllocatorGame({
                   <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground mt-6 leading-[0.95]">
                     {text.hookTitle}
                   </h2>
-                  <p className="text-xl text-muted-foreground font-medium leading-relaxed">
+                  <p className="text-xl text-foreground font-medium leading-relaxed">
                     {text.hookSubtitle}
                   </p>
                 </div>

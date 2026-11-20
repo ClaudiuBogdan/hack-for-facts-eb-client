@@ -301,21 +301,21 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
           aria-pressed={isSelected}
-          aria-label={`${label.name}: ${label.timing}`}
+          aria-label={`${label.name}: ${label.timing}, ${getOpportunityLabel(phase.opportunity)}`}
           onClick={onClick}
           onKeyDown={handleKeyDown}
         >
           <div className={cn(
-            "p-1 rounded-lg bg-white/20 backdrop-blur-sm",
+            "p-1 rounded-lg bg-white/20 backdrop-blur-sm shrink-0",
             isSelected && "bg-white/30"
           )}>
             <Icon className="w-4 h-4 text-background" />
           </div>
 
-          {isHighOpportunity ? <Star className="w-3.5 h-3.5 text-background fill-current animate-pulse" /> : <OpportunityMark opportunity={phase.opportunity} className="w-3.5 h-3.5 text-background" />}
+          {isHighOpportunity ? <Star className="w-3.5 h-3.5 shrink-0 text-background fill-current animate-pulse" /> : <OpportunityMark opportunity={phase.opportunity} className="w-3.5 h-3.5 shrink-0 text-background" />}
 
           <span className={cn(
-            "text-xs font-bold text-background tracking-tight",
+            "text-xs font-bold text-background tracking-tight min-w-0 truncate",
             !isFullYear && "hidden lg:inline",
             isFullYear && "inline"
           )}>
@@ -328,6 +328,12 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
 }
 
 /** Medium and low opportunity carry a symbol too (high already has the star), so the level never rides on colour alone. */
+function getOpportunityLabel(opportunity: 'low' | 'medium' | 'high'): string {
+  if (opportunity === 'high') return t`High opportunity`
+  if (opportunity === 'medium') return t`Medium opportunity`
+  return t`Low opportunity`
+}
+
 function OpportunityMark({ opportunity, className }: Readonly<{ opportunity: 'low' | 'medium' | 'high'; className?: string }>) {
   if (opportunity === 'high') return <Star className={cn(className, 'fill-current')} aria-hidden="true" />
   if (opportunity === 'medium') return <Equal className={className} aria-hidden="true" />
@@ -374,6 +380,7 @@ function MobilePhaseCard({ phase, label, isSelected, isCurrent, onClick }: Mobil
         <div className="flex items-center gap-2">
           <span className="font-bold text-foreground truncate">{label.name}</span>
           <OpportunityMark opportunity={phase.opportunity} className={cn('w-3.5 h-3.5 shrink-0', isHighOpportunity ? 'text-status-partial-fg' : 'text-muted-foreground')} />
+          <span className="sr-only">{getOpportunityLabel(phase.opportunity)}</span>
           {isCurrent && (
             <span className="text-[10px] font-bold uppercase tracking-wider text-status-blocked-fg shrink-0">
               <Trans>Now</Trans>
