@@ -1,0 +1,196 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { describe, expect, it } from 'vitest'
+
+/**
+ * Keeps raw Tailwind palette colours out of the folders that moved onto the
+ * design tokens (docs/design/learning-design-tokens.md). Colour there comes from
+ * the tokens — `primary`, the neutrals, `status-*`, `chart-1…4` — so a lesson,
+ * a challenge or a campaign page looks like the rest of the app in both themes,
+ * and the global stylesheet does not carry a shade, an opacity and a `dark:`
+ * variant of every hue for them.
+ *
+ * It reads source text, so it cannot see a class name built at runtime
+ * (`bg-${hue}-500`); the design forbids building them, and Tailwind could not
+ * generate one either.
+ */
+
+const ROOT = resolve(__dirname, '../..')
+const GUARDED = ['src/features/learning', 'src/features/campaigns', 'src/features/challenges', 'src/content/learning']
+
+/** The palette families of the installed Tailwind, read from its own theme, so a new family is caught too. */
+const FAMILIES = [...new Set([...readFileSync(join(ROOT, 'node_modules/tailwindcss/theme.css'), 'utf8').matchAll(/--color-([a-z]+)-50:/g)].map((m) => m[1]))]
+
+/**
+ * A palette colour as a class (`bg-red-500`, `dark:hover:border-t-rose-600/40`,
+ * `ring-offset-zinc-950`, `!text-sky-700`) or as a theme variable
+ * (`var(--color-zinc-200)`). The class must start a token, after whitespace, a
+ * quote, a variant's colon, `!`, `[`, `(`, `,` or `{`, so an identifier that
+ * merely contains one (`icon-bg-red-500-label`) is not a class.
+ */
+const PALETTE = new RegExp(
+  String.raw`(?<=^|[\s'"\x60:!\[(,{])[a-z][a-z-]*?-(?:${FAMILIES.join('|')})-\d{2,3}(?:\/\d+|\/\[[^\]]+\])?(?![\w-])|--color-(?:${FAMILIES.join('|')})-\d{2,3}\b`,
+  'gm',
+)
+
+/**
+ * A hex colour in code: in a string, an arbitrary value (`bg-[#1e40af]`) or a
+ * style. Not a fragment link (`href="#abc"`). Checked in learning only: the
+ * campaign and challenge maps paint MapLibre layers and canvases, which take
+ * colour strings, not classes, and are outside this pass.
+ */
+const HEX = /(?<!(?:href|to|hash)\s*[:=]\s*['"\x60])(?<=['"\x60(\s:[,])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g
+const HEX_GUARDED = 'src/features/learning/'
+
+/**
+ * Files not converted yet. Each conversion batch removes its files; the second
+ * test fails if a listed file is already clean, so a converted file must leave.
+ * That the list only shrinks is otherwise a review rule: an addition shows in
+ * the diff.
+ */
+const PENDING: readonly string[] = [
+  'src/content/learning/modules/local-national-budgets/02-local-government-structure/index.en.mdx',
+  'src/content/learning/modules/local-national-budgets/02-local-government-structure/index.ro.mdx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsTable.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx',
+  'src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx',
+  'src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx',
+  'src/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles.ts',
+  'src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts',
+  'src/features/campaigns/buget/components/CampaignAccessShareCard.tsx',
+  'src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx',
+  'src/features/campaigns/buget/components/hub/buget-entity-map-selector-map.tsx',
+  'src/features/campaigns/buget/components/hub/buget-entity-map-selector-page.tsx',
+  'src/features/campaigns/buget/components/hub/buget-entity-selector-gate.tsx',
+  'src/features/campaigns/buget/components/hub/campaign-participants-map.tsx',
+  'src/features/campaigns/buget/components/hub/recent-uat-badges.tsx',
+  'src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx',
+  'src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx',
+  'src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx',
+  'src/features/campaigns/buget/components/layout/campaign-page-frame.tsx',
+  'src/features/challenges/components/cards/ChallengeModuleCard.tsx',
+  'src/features/challenges/components/hub/QuickResourcesPreview.tsx',
+  'src/features/challenges/components/interactive/challenge-lesson-widgets.tsx',
+  'src/features/challenges/components/layout/ChallengesLayout.tsx',
+  'src/features/challenges/components/player/challenge-step-player.utils.ts',
+  'src/features/challenges/components/player/sectioned-step-footer.test.tsx',
+  'src/features/challenges/components/player/sectioned-step-footer.tsx',
+  'src/features/challenges/components/player/sectioned-step-header.tsx',
+  'src/features/challenges/components/player/sectioned-step-interactives.tsx',
+  'src/features/learning/components/assessment/Quiz.tsx',
+  'src/features/learning/components/cards/LearningPathCard.tsx',
+  'src/features/learning/components/interactive/BudgetAllocatorGame.tsx',
+  'src/features/learning/components/interactive/BudgetCycleTimeline.tsx',
+  'src/features/learning/components/interactive/BudgetFootprintRevealer.tsx',
+  'src/features/learning/components/interactive/BudgetHierarchyVisualizer.tsx',
+  'src/features/learning/components/interactive/ClassificationExplorer.tsx',
+  'src/features/learning/components/interactive/DeficitVisual.tsx',
+  'src/features/learning/components/interactive/DocumentLibrary.tsx',
+  'src/features/learning/components/interactive/EUComparisonChart.tsx',
+  'src/features/learning/components/interactive/EconomicCodeReference.tsx',
+  'src/features/learning/components/interactive/ExecutionPatternComparison.tsx',
+  'src/features/learning/components/interactive/ExecutionRateChart.tsx',
+  'src/features/learning/components/interactive/ExpandableHint.tsx',
+  'src/features/learning/components/interactive/FlashCardDeck.tsx',
+  'src/features/learning/components/interactive/GuidedPlatformTour.tsx',
+  'src/features/learning/components/interactive/HandsOnExplorer.tsx',
+  'src/features/learning/components/interactive/MoneyFlowDiagram.tsx',
+  'src/features/learning/components/interactive/PhaseCards.tsx',
+  'src/features/learning/components/interactive/PlatformMission.tsx',
+  'src/features/learning/components/interactive/PromiseTracker.tsx',
+  'src/features/learning/components/interactive/QuickLinks.tsx',
+  'src/features/learning/components/interactive/RectificationFlow.tsx',
+  'src/features/learning/components/interactive/RectificationHistory.tsx',
+  'src/features/learning/components/interactive/RedFlagCards.tsx',
+  'src/features/learning/components/interactive/RevenueDistributionGame.tsx',
+  'src/features/learning/components/interactive/SalaryTaxCalculator.tsx',
+  'src/features/learning/components/interactive/Sources.tsx',
+  'src/features/learning/components/interactive/ThreeLensesExplorer.tsx',
+  'src/features/learning/components/interactive/UATFinder.tsx',
+  'src/features/learning/components/interactive/UATTypeBreakdown.tsx',
+  'src/features/learning/components/interactive/VATCalculator.tsx',
+  'src/features/learning/components/interactive/VATReformCard.tsx',
+  'src/features/learning/components/interactive/budget-allocator-data.ts',
+  'src/features/learning/components/interactive/budget-cycle-data.ts',
+  'src/features/learning/components/interactive/classification-explorer-data.ts',
+  'src/features/learning/components/interactive/economic-code-reference-data.ts',
+  'src/features/learning/components/interactive/functional-classification-accordion-data.ts',
+  'src/features/learning/components/interactive/lesson-discussion.tsx',
+  'src/features/learning/components/interactive/money-flow-diagram-data.ts',
+  'src/features/learning/components/interactive/rectification-data.ts',
+  'src/features/learning/components/interactive/three-lenses-data.ts',
+  'src/features/learning/components/interactive/uat-finder-data.ts',
+  'src/features/learning/components/interactive/uat-type-breakdown-data.ts',
+  'src/features/learning/components/layout/LearningLayout.tsx',
+  'src/features/learning/components/layout/LoginBanner.tsx',
+  'src/features/learning/components/player/MarkComplete.tsx',
+  'src/features/learning/components/player/lesson-player-shell.tsx',
+]
+
+/** Repository-relative paths, always with `/`, so the list compares the same on every platform. */
+function sourceFiles(dir: string): string[] {
+  return readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((entry) => {
+    const path = `${dir}/${entry.name}`
+    if (entry.isDirectory()) return sourceFiles(path)
+    return /\.(tsx?|mdx?)$/.test(entry.name) ? [path] : []
+  })
+}
+
+/** The raw colours in one piece of source text, as the guard sees them in `file`. */
+function rawColours(file: string, text: string): string[] {
+  const found = [...text.matchAll(PALETTE)].map((m) => m[0])
+  if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) found.push(...[...text.matchAll(HEX)].map((m) => m[0]))
+  return found
+}
+
+const files = GUARDED.flatMap(sourceFiles)
+const coloursIn = (file: string) => rawColours(file, readFileSync(join(ROOT, file), 'utf8'))
+
+describe('raw palette colours', () => {
+  it('appear in no guarded file outside PENDING', () => {
+    const offenders = files
+      .filter((file) => !PENDING.includes(file))
+      .map((file) => ({ file, colours: [...new Set(coloursIn(file))] }))
+      .filter(({ colours }) => colours.length > 0)
+      .map(({ file, colours }) => `${file}: ${colours.slice(0, 6).join(' ')}${colours.length > 6 ? ' …' : ''}`)
+    expect(offenders).toEqual([])
+  })
+
+  it('leave PENDING once a file is converted', () => {
+    const clean = PENDING.filter((file) => !files.includes(file) || coloursIn(file).length === 0)
+    expect(clean).toEqual([])
+  })
+
+  it.each([
+    ['a plain class', 'className="bg-red-500"', ['bg-red-500']],
+    ['variants, a side border and an opacity', "cn('dark:hover:border-t-rose-600/40')", ['border-t-rose-600/40']],
+    ['a ring offset', 'dark:ring-offset-zinc-950', ['ring-offset-zinc-950']],
+    ['an important class', 'className="!text-sky-700"', ['text-sky-700']],
+    ['an arbitrary opacity', 'bg-emerald-500/[0.35]', ['bg-emerald-500/[0.35]']],
+    ['a newer family', 'bg-mist-300', ['bg-mist-300']],
+    ['a theme variable', "style={{ color: 'var(--color-zinc-200)' }}", ['--color-zinc-200']],
+    ['nothing in an identifier that only contains one', 'const icon-bg-red-500-label = 1', []],
+    ['nothing in token classes', 'bg-status-live-bg text-primary border-chart-2', []],
+  ])('finds %s', (_, text, expected) => {
+    expect(rawColours('src/features/campaigns/x.tsx', text)).toEqual(expected)
+  })
+
+  it.each([
+    ['an arbitrary-value colour', 'bg-[#1e40af] hover:bg-[#1e3a8a]', ['#1e40af', '#1e3a8a']],
+    ['a quoted colour', "fill: '#3B82F6'", ['#3B82F6']],
+    ['nothing in a fragment link', 'href="#abc"', []],
+  ])('finds hex in learning: %s', (_, text, expected) => {
+    expect(rawColours('src/features/learning/x.tsx', text)).toEqual(expected)
+  })
+})
