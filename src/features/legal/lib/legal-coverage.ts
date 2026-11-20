@@ -11,13 +11,6 @@
  */
 
 /**
- * The analytics tab's "date până la" caption — kept ONLY for the analytics
- * page, which is out of scope until the owner reviews its legal_v2 design.
- * Do not use it on another surface.
- */
-export const LEGAL_CORPUS_MEASURED_AT = '2026-06-29'
-
-/**
  * The first year with gazette issues in the corpus: MO nr. 1/1989 of 22
  * December 1989. A historical bound (the gazette directory's earliest year
  * option), not a count that can drift; `moIssues` cannot list years.

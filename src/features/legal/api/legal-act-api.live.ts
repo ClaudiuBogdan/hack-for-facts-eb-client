@@ -374,9 +374,9 @@ function mapReferenceGroup(
 
 /**
  * Anchors arrive as a Relay connection with a REAL `totalCount` (SDL: "never
- * the page size"), so no saturation dance — but a malformed count still must
- * not render "0 trimiteri" above a non-empty list, so it falls back to the
- * page length.
+ * the page size"), so no saturation dance. A count below the rows that came
+ * back, or a missing one, is UNKNOWN (null) — never the page length and never
+ * a zero.
  */
 function mapIncomingAnchors(value: unknown) {
   const raw = asRecord(value)
@@ -393,7 +393,7 @@ function mapIncomingAnchors(value: unknown) {
   })
   const reported = asNullableInt(raw.totalCount)
   return {
-    totalCount: reported !== null && reported >= items.length ? reported : items.length,
+    totalCount: reported !== null && reported >= items.length ? reported : null,
     items,
   }
 }
@@ -477,9 +477,10 @@ function mapAct(raw: RawAct): LegalActDetail {
         relatedActId: item.relatedActId ? String(item.relatedActId) : null,
       }
     }),
-    // The query requires a server with I-20 (timelineComplete, server c5af08d3);
-    // a lane that omits the value (mocks) reads as complete.
-    timelineComplete: raw.timelineComplete !== false,
+    // I-20 (server c5af08d3). A missing value is UNKNOWN, not complete: on
+    // legal_v2 an act the previous corpus does not hold has no history to
+    // vouch for, and an empty list must not read as a complete one.
+    timelineComplete: asBoolean(raw.timelineComplete),
     gazettePublications: (Array.isArray(raw.gazettePublications)
       ? raw.gazettePublications
       : []

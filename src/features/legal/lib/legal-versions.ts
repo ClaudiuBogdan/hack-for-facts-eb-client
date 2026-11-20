@@ -78,16 +78,6 @@ export function orderVersionsNewestFirst(
   })
 }
 
-/**
- * The Portal page id at the end of a Portal URL
- * (`…/DetaliiDocumentAfis/171282` → `171282`), or null.
- */
-export function portalPageIdOf(url: string | null): string | null {
-  if (url === null) return null
-  const match = /\/(\d+)\/?(?:[?#].*)?$/.exec(url)
-  return match?.[1] ?? null
-}
-
 /** An old numeric Portal page id, as shipped `?doc=` links carry. */
 export function isPortalPageId(documentId: string): boolean {
   return /^[1-9]\d*$/.test(documentId)
@@ -96,11 +86,10 @@ export function isPortalPageId(documentId: string): boolean {
 /**
  * How a `?doc=` value resolves against this act's versions:
  *
- *  - `own` — one of `act.documents` (or, on legal_v2, an old page id whose
- *    Portal page a form of this act shows — mapped to that form);
- *  - `probe` — an old page id on legal_v2 that no form's page matches: the
- *    server resolves it on the render route, and the reader accepts the
- *    answer only if the form it names belongs to this act;
+ *  - `own` — one of `act.documents`;
+ *  - `probe` — an old page id on legal_v2: the server resolves it on the
+ *    render route, and the reader accepts the answer only if the form it
+ *    names belongs to this act;
  *  - `foreign` — not this act's; refused (I-17).
  */
 export type DocOverrideResolution =
@@ -118,8 +107,10 @@ export function resolveDocOverride(
   if (act.dataSource !== 'legal_v2' || !isPortalPageId(docOverride)) {
     return { kind: 'foreign' }
   }
-  const byPage = act.documents.find((doc) => portalPageIdOf(doc.sourceUrl) === docOverride)
-  if (byPage !== undefined) return { kind: 'own', documentId: byPage.documentId }
+  // The SERVER resolves an old page id (its route preference and binding
+  // status decide which form a page shows — a client guess from the forms'
+  // `sourceUrl` can pick another version). The answer is kept only when the
+  // form it names is this act's.
   return { kind: 'probe', documentId: docOverride }
 }
 

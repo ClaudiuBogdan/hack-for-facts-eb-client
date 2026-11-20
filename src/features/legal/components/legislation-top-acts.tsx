@@ -42,10 +42,10 @@ export function LegislationTopActs({ acts }: Props) {
       description={t`Ordonate după câte alte acte le citează — cel mai direct semn că un act contează.`}
       bodyClassName="p-0"
       footnote={
+        // No measured resolution rate: no query serves it (live or nothing).
         <Trans>
           „Citări primite” numără trimiterile din alte acte către acesta.
-          Graful de citări rezolvă 56,9% dintre trimiteri la un act intern;
-          restul rămân potriviri posibile.
+          Trimiterile care nu se rezolvă la un act rămân potriviri posibile.
         </Trans>
       }
     >

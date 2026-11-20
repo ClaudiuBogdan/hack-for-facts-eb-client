@@ -7,7 +7,6 @@ import {
   isConsolidationVersion,
   isSelectableVersion,
   portalConsolidationNote,
-  portalPageIdOf,
   resolveDocOverride,
 } from './legal-versions'
 
@@ -25,10 +24,12 @@ describe('resolveDocOverride', () => {
     })
   })
 
-  it("maps an old page id on legal_v2 to the form whose Portal page it is", () => {
+  it('leaves every old page id on legal_v2 to the server, even one a form\'s sourceUrl names', () => {
+    // The server's route preference and binding status decide which form a
+    // page shows; a client guess from sourceUrl could pick another version.
     expect(resolveDocOverride(legalActDetailV2Fixture, '900012')).toEqual({
-      kind: 'own',
-      documentId: 'f900012',
+      kind: 'probe',
+      documentId: '900012',
     })
   })
 
@@ -40,17 +41,6 @@ describe('resolveDocOverride', () => {
     expect(resolveDocOverride(legalActDetailRichFixture, '54260')).toEqual({ kind: 'foreign' })
     // Not a page id: refused on either source.
     expect(resolveDocOverride(legalActDetailV2Fixture, 'f1')).toEqual({ kind: 'foreign' })
-  })
-})
-
-describe('portalPageIdOf', () => {
-  it('reads the page id at the end of a Portal URL', () => {
-    expect(portalPageIdOf('https://legislatie.just.ro/Public/DetaliiDocumentAfis/171282')).toBe(
-      '171282',
-    )
-    expect(portalPageIdOf('https://legislatie.just.ro/Public/DetaliiDocument/8851/')).toBe('8851')
-    expect(portalPageIdOf(null)).toBeNull()
-    expect(portalPageIdOf('https://legislatie.just.ro/Public/Cautare')).toBeNull()
   })
 })
 

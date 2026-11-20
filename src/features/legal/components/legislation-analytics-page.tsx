@@ -4,7 +4,7 @@ import {
   useLegislationOverview,
   useLegislationStatusCounts,
 } from '../hooks/use-legislation'
-import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
+import { useLegislationFrontier } from '../hooks/use-legislation-frontier'
 import { LegislationAnalyticsSkeleton } from './legislation-analytics-skeleton'
 import { LegislationHonestyNotes } from './legislation-honesty-notes'
 import { LegislationKpiStrip } from './legislation-kpi-strip'
@@ -37,12 +37,14 @@ export function LegislationAnalyticsPage({ initialOverview }: Props) {
   // `?? {}` keeps the chip row's space reserved while the counts are on the
   // wire, so their arrival does not shift the tab nav.
   const { data: statusCounts } = useLegislationStatusCounts()
+  // "date până la" is the staler live frontier — live or nothing.
+  const { measuredAt } = useLegislationFrontier('corpus')
 
   return (
     <LegislationShell
       activeTab="analiza"
       counts={statusCounts ?? {}}
-      measuredAt={LEGAL_CORPUS_MEASURED_AT}
+      measuredAt={measuredAt}
       dataStatus={data?.coverage.dataStatus}
     >
       {isLoading ? (

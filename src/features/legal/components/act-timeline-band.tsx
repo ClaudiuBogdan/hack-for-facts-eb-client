@@ -9,8 +9,16 @@ import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly timeline: readonly LegalTimelineEntry[]
-  /** False when the server cut the timeline at its bound (I-20). */
-  readonly complete?: boolean
+  /**
+   * False when the server cut the timeline at its bound (I-20); null when it
+   * did not say — unknown, so an empty list is never shown as complete.
+   */
+  readonly complete?: boolean | null
+  /**
+   * False when the history is not available for this act (legal_v2 bridges
+   * it from the previous corpus, which may not hold the act).
+   */
+  readonly available?: boolean
 }
 
 const PAGE = 12
@@ -28,9 +36,24 @@ const PAGE = 12
  * `monitorul-oficial` events are gazette-grounded, `portal` events are the
  * Portal's own bookkeeping.
  */
-export function ActTimelineBand({ timeline, complete = true }: Props) {
+export function ActTimelineBand({ timeline, complete = true, available = true }: Props) {
   const { i18n } = useLingui()
   const [expanded, setExpanded] = useState(false)
+
+  // No history to vouch for: say so, rather than show an empty, complete one.
+  if (!available || (timeline.length === 0 && complete === null)) {
+    return (
+      <ActAccordionItem
+        id="act-timeline-heading"
+        title={t`Ce s-a întâmplat cu acest act`}
+        description={t`Modificări, completări, abrogări și alte evenimente de statut.`}
+      >
+        <p className="px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+          <Trans>Istoricul nu este disponibil pentru acest act.</Trans>
+        </p>
+      </ActAccordionItem>
+    )
+  }
 
   if (timeline.length === 0) return null
 
@@ -62,7 +85,14 @@ export function ActTimelineBand({ timeline, complete = true }: Props) {
         </Trans>
       }
     >
-      {complete ? null : (
+      {complete === true ? null : complete === null ? (
+        <p
+          role="status"
+          className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6"
+        >
+          <Trans>Nu știm dacă lista este completă.</Trans>
+        </p>
+      ) : (
         <p
           role="status"
           className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6"

@@ -378,10 +378,11 @@ export type LegalIncomingAnchor = z.infer<typeof legalIncomingAnchorSchema>
 /**
  * A page of incoming anchors. Unlike `legalReferenceGroupSchema`, the server's
  * `LegalIncomingAnchorConnection.totalCount` is a REAL count (SDL: "never the
- * page size"), so it is non-nullable here.
+ * page size") when served. Null means unknown — never coerced to the page
+ * length or to zero (a missing bridge on legal_v2 is not "no anchors").
  */
 export const legalIncomingAnchorGroupSchema = z.object({
-  totalCount: z.number().int(),
+  totalCount: z.number().int().nullable(),
   items: z.array(legalIncomingAnchorSchema),
 })
 export type LegalIncomingAnchorGroup = z.infer<
@@ -462,8 +463,11 @@ export const legalActDetailSchema = z.object({
   canonical: legalDocumentSchema.nullable(),
   summary: legalActSummarySchema.nullable(),
   timeline: z.array(legalTimelineEntrySchema),
-  /** False when the server's timeline bound cut the list (I-20). */
-  timelineComplete: z.boolean(),
+  /**
+   * False when the server's timeline bound cut the list (I-20); null when the
+   * server did not say — unknown, never read as a complete history.
+   */
+  timelineComplete: z.boolean().nullable(),
   gazettePublications: z.array(legalGazettePublicationSchema),
   outLinks: legalReferenceGroupSchema,
   inLinks: legalReferenceGroupSchema,

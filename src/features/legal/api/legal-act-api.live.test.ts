@@ -204,9 +204,11 @@ describe('fetchLegalActDetailLive', () => {
     respond({ timelineComplete: true })
     expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBe(true)
 
-    // A mock lane without the field reads as complete.
+    // A server that does not say is UNKNOWN — never a complete history.
     respond({ timelineComplete: undefined })
-    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBe(true)
+    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBeNull()
+    respond({ timelineComplete: null })
+    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBeNull()
   })
 
   it('maps document versions with their render availability', async () => {
@@ -271,8 +273,13 @@ describe('fetchLegalActDetailLive', () => {
       },
     })
     const inconsistent = await fetchLegalActDetailLive('1')
-    // A count below the rows it came with is not a count.
-    expect(inconsistent?.incomingAnchors.totalCount).toBe(1)
+    // A count below the rows it came with is not a count: unknown, not the
+    // page length.
+    expect(inconsistent?.incomingAnchors.totalCount).toBeNull()
+
+    respond({ incomingAnchors: { totalCount: null, edges: [] } })
+    // A missing count is unknown — never a confident zero.
+    expect((await fetchLegalActDetailLive('1'))?.incomingAnchors.totalCount).toBeNull()
   })
 
   it('returns null for an act the server does not have', async () => {

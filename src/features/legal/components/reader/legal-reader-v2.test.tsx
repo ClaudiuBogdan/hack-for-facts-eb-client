@@ -60,6 +60,7 @@ const envelopeFor = (formId: string): LegalRenderData =>
 
 /** Old page id → the form the server resolves it to (`page_targets`). */
 const PAGE_TO_FORM: Record<string, string> = {
+  '900012': 'f900012', // the page of this act's default consolidation
   '777': 'f900011', // a page of THIS act's original
   '54260': 'f555', // a page of some other act's form (I-17)
 }
@@ -125,12 +126,12 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(screen.getByLabelText(/Versiunea textului/)).toHaveValue('f900011')
   })
 
-  it("lands an old page id on this act's form by its Portal page, with no probe", async () => {
+  it('asks the server to resolve an old page id, even one a form\'s sourceUrl names', async () => {
     render(
       <ActReadingLayout act={legalActDetailV2Fixture} docOverride="900012" lead={null} fisa={null} />,
     )
     await screen.findByText(/Formă consolidată neoficială, cu caracter informativ\./)
-    expect(requestedIds()).toEqual(['f900012'])
+    expect(requestedIds()).toEqual(['900012'])
     expect(screen.queryByText(/nu aparține acestui act/)).not.toBeInTheDocument()
   })
 

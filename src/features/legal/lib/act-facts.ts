@@ -36,3 +36,17 @@ export function hasSummaryContent(summary: LegalActSummaryData): boolean {
     cleanSummaryText(summary.description) !== null
   )
 }
+
+/**
+ * Whether this act's value of a BRIDGED field can be trusted as served. On
+ * the legacy source every field is the act's own. On legal_v2 status, links,
+ * anchors, timeline and summary are read from the previous corpus, and
+ * `bridgedFields` names the ones it actually holds for this act — anything
+ * else is UNKNOWN, and an empty list of it must not read as "none".
+ */
+export function bridgeCovers(
+  act: Pick<LegalActDetail, 'dataSource' | 'bridgedFields'>,
+  field: 'links' | 'incomingAnchors' | 'timeline',
+): boolean {
+  return act.dataSource !== 'legal_v2' || act.bridgedFields.includes(field)
+}
