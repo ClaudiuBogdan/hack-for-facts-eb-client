@@ -23,6 +23,7 @@ import {
   smoothstep,
   timeScaleFor,
 } from '@/features/landing/lib/field-motion'
+import { marginFieldQuery } from '@/features/landing/lib/margin-field'
 
 /**
  * The same margin field, drawn into a canvas instead of into SVG rectangles.
@@ -266,7 +267,28 @@ type Target = {
   readonly packed: PackedField
 }
 
+/** A canvas is in here only once its field is built, which is only where the field is shown. */
 const registry = new WeakMap<HTMLCanvasElement, PackedField>()
+
+/**
+ * The built fields inside the host, ready to animate.
+ *
+ * Each is checked against the module the caller animates, not just taken. The
+ * canvases register in their own layout effect, which runs before the motion
+ * hook's effect on mount and on update, so a mismatch means the two have gone
+ * out of step — and animating a field that is not the one on screen ends with
+ * the wrong field left painted when the loop draws its last frame.
+ */
+function collectTargets(host: HTMLElement, cell: FieldCell): Target[] {
+  const targets: Target[] = []
+  for (const canvas of host.querySelectorAll<HTMLCanvasElement>('canvas[data-field-canvas]')) {
+    const packed = registry.get(canvas)
+    if (!packed || packed.cell !== cell) continue
+    const ctx = canvas.getContext('2d')
+    if (ctx) targets.push({ ctx, packed })
+  }
+  return targets
+}
 
 /**
  * Size the backing store to the device's pixels while keeping the CSS box at
@@ -383,16 +405,20 @@ export function PixelFieldCanvas({
   useLayoutEffect(() => {
     const canvas = ref.current
     if (!canvas) return
-    const packed = getPacked(edge, cell)
-    registry.set(canvas, packed)
 
+    const field = marginFieldQuery()
     let sized = false
     const paint = () => {
-      // No box means this viewport does not show the field at all — the
-      // wrapper is display:none below 1800px. Sizing anyway would allocate a
-      // backing store of width x height x dpr^2 x 4 bytes for something that
-      // is never composited: about 7MB per side at DPR 2, on every phone.
-      if (canvas.getClientRects().length === 0) return
+      // Where the field is hidden (`lib/margin-field.ts`) nothing is built,
+      // sized or drawn: building the field costs tens of milliseconds on a
+      // phone, and a backing store of width x height x dpr^2 x 4 bytes would be
+      // about 7MB per side at DPR 2 for something never composited. A media
+      // query answers without reading a box, so no layout is forced here.
+      if (!field.matches) return
+      // Registered only once built: the motion hook animates what is in the
+      // registry, and a canvas in it always has a field to draw.
+      const packed = getPacked(edge, cell)
+      registry.set(canvas, packed)
       const ctx = sizeCanvas(canvas, packed)
       if (!ctx) return
       drawFrame({ ctx, packed }, null)
@@ -400,12 +426,11 @@ export function PixelFieldCanvas({
     }
     paint()
 
-    // The only way this canvas ever gains a box is the wrapper ceasing to be
-    // display:none, which is a resize of exactly this element.
-    const observer = new ResizeObserver(() => {
+    // The field appears when the window grows past the breakpoint.
+    const onBreakpoint = () => {
       if (!sized) paint()
-    })
-    observer.observe(canvas)
+    }
+    field.addEventListener('change', onBreakpoint)
 
     // A window dragged to a display of a different density needs the backing
     // store rebuilt; nothing else about the field depends on the viewport.
@@ -419,7 +444,7 @@ export function PixelFieldCanvas({
     window.addEventListener('resize', onResize)
 
     return () => {
-      observer.disconnect()
+      field.removeEventListener('change', onBreakpoint)
       window.removeEventListener('resize', onResize)
       registry.delete(canvas)
     }
@@ -455,60 +480,63 @@ export function useCanvasFieldMotion(
     const host = hostRef.current
     if (!host || !enabled) return
 
-    const targets: Target[] = []
-    for (const canvas of host.querySelectorAll<HTMLCanvasElement>('canvas[data-field-canvas]')) {
-      const packed = registry.get(canvas)
-      const ctx = canvas.getContext('2d')
-      // Checked against the module this effect was set up for, not just taken.
-      // The canvases register in their own layout effect, which runs before
-      // this one on mount and on update, so a mismatch means the two have gone
-      // out of step — and animating a field that is not the one on screen ends
-      // with the wrong field left painted when the loop draws its last frame.
-      if (packed && ctx && packed.cell === cell) targets.push({ ctx, packed })
-    }
-    if (targets.length === 0) return
-
-    // The resting field is drawn by each canvas as it gains a box, which is
-    // also the only point at which it has a backing store to draw into. Under
+    // The resting field is drawn by each canvas as it is built, which is also
+    // the only point at which it has a backing store to draw into. Under
     // reduced motion that is the whole of what this renderer does — the
     // counterpart of the stylesheet resolving every cell to opacity: var(--o).
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    /**
-     * Whether the field is rendered at all right now.
-     *
-     * Below 1800px the wrapper is display:none. A CSS animation is terminated
-     * outright by that, which is what the stylesheet used to rely on without
-     * anyone having to say so; a requestAnimationFrame loop knows nothing about
-     * it and will happily spend two seconds drawing several thousand rectangles
-     * into a canvas that is never composited. Measured before this guard: 590
-     * drawFrame samples at 1600px against 456 at 1920px — more work where none
-     * of it can be seen.
-     */
-    const onScreen = () => targets.some((t) => t.ctx.canvas.getClientRects().length > 0)
+    // The fields built at load. A canvas is built only where the field is
+    // shown, so an empty list means a viewport below the breakpoint; a field
+    // built later, by a window widened past it, joins on the first click.
+    let targets = collectTargets(host, cell)
+
+    // A requestAnimationFrame loop knows nothing about display:none and will
+    // happily spend two seconds drawing several thousand rectangles into a
+    // canvas that is never composited (measured before the first such guard:
+    // 590 drawFrame samples at 1600px against 456 at 1920px). So nothing starts
+    // while the field is hidden, and a running animation stops when it hides.
+    const field = marginFieldQuery()
 
     let frame = 0
     let mode: 'intro' | 'ripple' = 'intro'
-    let startAt = performance.now() + INTRO_DELAY_MS
-    let endAt = startAt + Math.max(...targets.map((t) => t.packed.introEndMs))
+    let startAt = 0
+    let endAt = 0
+    const run = (next: 'intro' | 'ripple', from: number, until: number) => {
+      mode = next
+      startAt = from
+      endAt = until
+      if (frame === 0) frame = requestAnimationFrame(tick)
+    }
 
     const tick = (now: number) => {
-      const elapsed = now - startAt
-      if (elapsed >= 0) for (const target of targets) drawFrame(target, { mode, elapsed })
-      if (now >= endAt) {
+      // Ended, or hidden mid-flight: settle on the resting field, so a window
+      // widened again shows the field at rest rather than a stranded frame.
+      if (now >= endAt || !field.matches) {
         for (const target of targets) drawFrame(target, null)
         frame = 0
         return
       }
+      const elapsed = now - startAt
+      if (elapsed >= 0) for (const target of targets) drawFrame(target, { mode, elapsed })
       frame = requestAnimationFrame(tick)
     }
-    if (onScreen()) frame = requestAnimationFrame(tick)
+
+    // The intro is a load-time event: it plays for the fields built at load
+    // and never for one that appears later. The query is asked again because
+    // the window can narrow between the canvases' layout effects and this one.
+    if (targets.length > 0 && field.matches) {
+      const introStart = performance.now() + INTRO_DELAY_MS
+      run('intro', introStart, introStart + Math.max(...targets.map((t) => t.packed.introEndMs)))
+    }
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0) return
       const target = event.target
       if (target instanceof Element && target.closest(CONTENT_FRAME)) return
-      if (!onScreen()) return
+      if (!field.matches) return
+      if (targets.length === 0) targets = collectTargets(host, cell)
+      if (targets.length === 0) return
 
       // Read per click rather than once when the listener is attached. The
       // span this scales by is the margin beside the frame, which changes with
@@ -537,10 +565,8 @@ export function useCanvasFieldMotion(
         }
       }
 
-      mode = 'ripple'
-      startAt = performance.now()
-      endAt = startAt + latest
-      if (frame === 0) frame = requestAnimationFrame(tick)
+      const now = performance.now()
+      run('ripple', now, now + latest)
     }
 
     host.addEventListener('pointerdown', onPointerDown)

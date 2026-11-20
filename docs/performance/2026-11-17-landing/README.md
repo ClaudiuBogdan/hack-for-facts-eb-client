@@ -84,7 +84,8 @@ here.
    split stylesheet is the audit's PERF-002 step 4 (Parked 9): build pipeline.
 4. **The 241 KB message catalog** is fetched on every page before hydration (PERF-004's per-route catalogs).
    i18n infrastructure.
-5. **Hydration itself** (≈80 ms of React work unthrottled on the landing, plus the layout reads above). The
+5. **In progress (2026-11-20): see [landing-hydration.md](landing-hydration.md)**; step 1 (the margin field does
+   nothing below 1800 px) is done. The original note: **Hydration itself** (≈80 ms of React work unthrottled on the landing, plus the layout reads above). The
    landing hydrates every band at once; deferring the bands below the fold is a landing-page design call.
 
 ## Reproduce

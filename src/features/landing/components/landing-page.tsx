@@ -194,14 +194,9 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
             module the minor lattice is drawn on, so it reads as one system
             rather than a texture laid over one.
 
-            Shown only from 1800px up. The threshold is about the margin beside
-            the 1152px frame, not about "desktop": at 1506 that margin is 148px,
-            which is too narrow to hold the field without crowding the headline,
-            and narrow enough that the particle tail — which starts 240px in —
-            is clipped away entirely, leaving the square band alone and the
-            animation compressed into a fraction of its schedule. By 1800 the
-            margin is around 290px and both the tail and the timing have room.
-            Below it the hero simply keeps the plain lattice. */}
+            Shown only from 1800px up; why 1800, and how script asks the same
+            question without measuring, is in `lib/margin-field.ts`. Change the
+            class and that module together (a test holds them equal). */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 hidden min-[1800px]:block"

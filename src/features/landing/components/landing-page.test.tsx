@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, within } from '@/test/test-utils'
 import { LANDING_GROUPS, visibleGroups } from '@/features/landing/lib/landing-groups'
 import { NATIONAL_FACTS, formatFact, formatValue } from '@/features/landing/lib/national-facts'
+import { MARGIN_FIELD_MIN_WIDTH_PX } from '@/features/landing/lib/margin-field'
 import { ANGELS, FOUNDER } from '@/features/landing/lib/people'
 import { getUserLocale } from '@/lib/utils'
 import { LandingPage } from './landing-page'
@@ -102,6 +103,14 @@ describe('LandingPage', () => {
     // The areas switched off in this build (`src/config/feature-flags.ts`) are not linked; the ones on are.
     expect(document.querySelector('a[href="/investitii-publice"]')).toBeNull()
     expect(document.querySelector('a[href="/alegeri"]')).not.toBeNull()
+  })
+
+  it('shows the margin field only from the breakpoint the field module names', () => {
+    render(<LandingPage />, { queryClient: createTestQueryClient() })
+
+    // The class is what hides the field; the module is what script asks. They must agree.
+    const wrapper = document.querySelector('canvas[data-field-canvas]')?.closest('.hidden')
+    expect(wrapper?.classList).toContain(`min-[${MARGIN_FIELD_MIN_WIDTH_PX}px]:block`)
   })
 
   it('omits the institution count until it is served', async () => {
