@@ -3360,10 +3360,11 @@ Owner and root rulings, and the independent review's findings:
 Left for a follow-up issue (root's round cap: after the third review only a
 leak blocks):
 
-- the purchase kept under its legacy key until the page mounts;
-- exact line amounts read through `Number` (more than six decimals);
+- the purchase kept under its legacy key until the page mounts (DA-003);
+- exact line amounts read through `Number`, more than six decimals (DA-004);
 - the front door's supplier-count tile and the context's firm place, which
-  are left out (not said) in the D6 window — the band beside each says it.
+  are left out (not said) in the D6 window — the band beside each says it
+  (DA-005).
 
 ### 24.3 After the third review (18 November 2026)
 
@@ -3382,10 +3383,194 @@ leak blocks):
   - Analytics rankings, records and the largest-purchase lists compare the
     API's `meta.disclosureKey` with the publication their cache key was
     planned under. A mismatch fails the read and nothing is kept.
-  - An answer that names no supplier (`unavailable`) stands.
+  - An answer that names no supplier (`unavailable`) stands. Superseded in
+    §24.4: such an answer is never kept.
 - **Analytics pickers:**
   - Analytics offers no firm by its registry name as a direct purchase's
     supplier; a typed CUI is taken as typed.
   - A buyer given the supplier's own code isn't named from the registry.
 - **Names from direct-purchase supplier buckets** are looked up fresh each
   time and never kept in the shared six-hour name memo.
+
+### 24.4 The D6 client path after reviews 4–12 (19 November 2026)
+
+This section states what the client does. Root's rulings are cited where they set a bound.
+
+**The structure** (root, 19 November 2026). The API is the one enforcer of D6. The client keeps no direct-purchase
+answer past its page, except as noted, so the windows are the CDN's and the open-tab bound below. A page that is
+shown keeps what it shows (a mounted query, a placeholder) until a purge or the cutoff removes it.
+
+- **Server process:** no memo holds a direct-purchase read. Home figures and categories, buyer and supplier
+  profiles and records, a purchase and its context, a contract's context (the pair's direct purchases), an
+  enterprise's buyer profile and its company profile (`Company.publicMoney` carries the company's incoming direct
+  purchases), and every analytics question are read on each render. Memos remain only for data outside D6:
+  contract sheets, the home's big contracts, enterprise records, reference lists, and the procurement cutoff.
+- **Browser queries:**
+  - every direct-purchase read is dated (`DA_QUERY_CACHE`) and never fresh past its read: a page mounted again
+    reads again, except a query holding only an accepted server seed (the seed rule below). It is dropped 30 s after
+    no page shows it.
+  - Since API doc 10 (live on Chronos dev 19 November 2026), the release purchase and its lists, lookup and totals,
+    the legacy detail and lists, and the supplier-records connection carry `meta.disclosureKey` too. Every one of
+    those reads selects it (`procurement-da-dated-queries.test.ts`). A DA supplier's name is kept only from an
+    answer served under the plan's publication.
+  - A legacy link that leads to a release purchase writes no cache entry for it: the release page reads its own.
+  - a direct-purchase question's names (a DA ranking's firms included) follow these rules, under a key of their
+    own; so does a company profile (`Company.publicMoney` carries its incoming direct purchases), wherever it is
+    read, whose root (`private-company`) the watch also covers.
+- **Router:** a direct-purchase route (`DA_ROUTE_CACHE`) keeps no loader data once its page is left, nor an unused
+  preload's, from the router's next cache cleanup.
+
+**Measured load**, against Chronos dev, one page of each kind, GraphQL calls. One sample each, from a local production
+build: SSR counted by a fetch counter ("cold" is the first request for that URL in the process, so reads shared
+with an earlier page may already be warm), browser loads by headless Chromium in a fresh context. They show the
+change's direction, not a ceiling, and no CDN hit was measured:
+
+| Page | SSR cold, before → after | SSR warm, before → after | Browser load: old stale / staleTime 0 / with the seed rule |
+|---|---|---|---|
+| home | 4 → 4 | 2 → 2 | 6 / 6 / 6 |
+| institution | 7 → 7 | 4 → 6 | 13 / 14 / 14 |
+| supplier | 8 → 9 | 8 → 8 | 15 / 15 / 15 |
+| direct purchase | 2 → 2 | 0 → 2 | 1 / 2 / 1 |
+| contract | 8 → 8 | 5 → 5 | 1 / 7 / 1 |
+| public enterprise | 9 → 9 | 4 → 4 | 12 / 13 / 12 |
+| DA analytics | 9 → 9 | 0 → 7 | 1 / 11 / 3 |
+
+"Warm" is a second render of the same page within the old memo's ten minutes. The CDN limits SSR load to about one
+render per cached variant per 600 s; `no-store` responses (publication unknown, a partial read) and concurrent
+misses are rendered each time. Browser reads happen on every view, CDN copies included.
+
+**The seed rule** (root, 19 November 2026): a query holding only its server seed is not read again on mount
+(`refetchOnMount`, in both cache settings). A seed reaches a query only through `isSeedCurrent`: the newest
+publication, read by the server within the bound. So it is already inside the ruled window. Once the query has read
+for itself, a mount reads again. Without the rule, staleTime 0 cost up to ten more requests a view (the middle
+figures above).
+
+**One newest key.**
+
+- `src/lib/disclosure-key.ts` keeps the newest supplier-privacy publication the process has seen, compared as an
+  instant to the microsecond. On the server it is shared by every request in the process. It holds that one public
+  timestamp and nothing of a user or a request.
+- **Its sources:**
+  - the release status's `privacyAsOf`;
+  - every `meta.disclosureKey` in a successful (HTTP 2xx) `graphqlQuery` payload, a partial one too before its
+    errors are raised, scanned to a depth of 12 by field name (the client's own documents, which use no aliases
+    there);
+  - on hydration, the publication of the seeds the tab was served, so a newer key learnt later is an advance.
+- **A response is refused** before anything keeps it when it carries a key older than the newest, or a DA block
+  keyed `unavailable`. That state can carry names read while access was briefly restored; pages fail closed
+  during that incident (root).
+- **The same-origin proxy** checks a body's keys and refuses an older or `unavailable` one, but never notes them:
+  it forwards any caller's document, and a caller's aliases must not move the process's key. A production build
+  still registers the route, but its pages call the API directly: the client uses the proxy only under `vite dev`,
+  and prod's runtime config has no `VITE_API_USE_PROXY`.
+- **Every analysis block selects `meta { disclosureKey }`** (stats, series, breakdowns, concentration), as records
+  pages do.
+- **The release status:** an older one is read once more, then fails; a kept one is checked on every cache hit.
+- **Plan checks** (`assertServedUnder`) apply to the analytics reads (figures, series, concentration, ranking,
+  records) and the largest-purchase lists. Such an answer is kept only under its plan's publication.
+  - Refused: another publication, an older one, `unavailable`, and a DA block without a key or no block.
+  - A newer key served is remembered even when the answer is refused.
+- **Analytics re-plans in the browser** by asking for the cutoff again, once per newest key: when the key moves,
+  when a read is refused for its publication, or when the cutoff's own publication is older than the newest key.
+  Until the new plan lands, the old plan's queries stand, and a failed re-plan uses that key's one attempt. A
+  server render plans once and does not re-plan.
+- **Follow-up lookups** that send codes another read served carry the newest key as it was when those codes were
+  read:
+  - the home's names and a buyer's extras, taken when the ranking arrives;
+  - a purchase's context, taken when each attempt starts (not when the purchase was read), covering its year
+    branch's wait for the cutoff;
+  - the analytics server render's names, taken when its ranking arrives.
+
+  The transport refuses to send them, after any wait for a token, if a newer publication has been seen since. The
+  browser's analytics names lookup and the legacy detail's registry names carry no such key.
+
+**Seeds.** `isSeedCurrent` refuses a server render's seed:
+
+- while the tab is unreadable, or past the bound by the clock now (a suspended tab whose timer has not run);
+- when the seed's privacy publication is older than the newest key;
+- before any reading, when it was read longer ago than the bound (`disclosureReadAt`: when the render asked for
+  the status, whose answer can itself be up to 60 s old, inside the bound);
+- after one, when it is under another publication than the one read.
+
+A seed whose publication was unknown (`disclosure: null`) is served `no-store` and, before any reading, is held to the
+same age rule. One stamp dates the render's first status read, not each of its reads. A refused seed is not used by
+the page. The HTML the server sent still carries it, which is the CDN's window.
+
+**Open tabs.**
+
+- **Polling:** the tab reads the status fresh once a minute (`WATCH_INTERVAL_MS`), plus once at each key advance,
+  backing off on failures up to `WATCH_MAX_BACKOFF_MS` (15 min). It polls while it holds watched answers, or while
+  it is unreadable.
+- **D6 on with its publication unreadable** (`d6-unavailable`): no publication is verified. Entering that state
+  purges; its answers never renew the clock nor restore an unreadable tab, and no purchase is read while it lasts.
+- **When the newest key moves** (the first key a tab sees is no advance):
+  - the tab purges at once: it cancels and removes the watched answers, mounts the page afresh if one was shown,
+    clears the router cache and runs the loaders again;
+  - the watch then reads, without cancelling a poll in flight.
+- **When a poll reads a new publication,** the same purge runs. Whenever the router settles, cached pages seeded
+  under another publication are dropped.
+- **Privacy fails closed:**
+  - The clock runs from the last successful poll, by the poll's own time. Before any poll, it runs from the oldest
+    time a server render the tab was served read its publication, or the tab's start if that is earlier. A CDN
+    copy's age therefore counts, by the server's clock. Module state holds the clock, so a remount doesn't restart
+    it, and it runs whatever the caches hold.
+  - Past `UNREADABLE_AFTER_MS` (660 s) the tab is unreadable. It clears the router cache, purges if it holds
+    watched answers or seeded pages, refuses every watched read before its request (the roots' query-default
+    `persister`), and shows a notice. The gate and the seed check also test elapsed time themselves, so a tab
+    whose timer has not run yet takes no new seed and starts no watched read past the bound. What it already shows
+    stays until the timer runs and purges (a suspended tab, on resuming).
+  - A reading whose completion time is after the tab went unreadable restores it, and the page is read afresh.
+  - A tab that holds nothing watched only changes state, and costs one status read about every 11 minutes.
+- **In-flight reads:** a read in flight at a purge or the cutoff is cancelled, and its result is never kept. Its
+  requests are aborted only where the query passes its signal down; the supplier and institution slices stop
+  before their names lookup and pass their signal to it. The entry gate cannot stop work already inside a query.
+
+**The bound** (root, 19 November 2026). A supplier withheld by a publish can still show for at most
+`DA_DISCLOSURE_CHANGE_BOUND_SECONDS` (660 s) plus a server render's own time:
+
+- the CDN keeps a page `DA_DISCLOSURE_CACHE.sharedMaxAgeSeconds` (600 s) with no stale-while-revalidate, after a
+  render whose status was up to `DA_RELEASE_STATUS_TTL_MS` (60 s) old;
+- an open tab is held to the same 660 s whether or not its polls succeed.
+
+Withdrawing a single name sooner takes a CDN purge, the owner's account action. The milliseconds between a client's
+check and a request it then sends are gated by the API's own fresh final check.
+
+**Residuals** (root, 19 November 2026; accepted, not fixed):
+
+- **Render time.** A server render that read under one publication and finishes after the next is published is
+  served with it, and the CDN may keep it 600 s from then. The bound is therefore 660 s plus render time. Each server
+  read is capped at 6 s; a legacy purchase link reads up to four in sequence (status, record, portal code, then
+  detail and context). The worst render measured on Chronos dev was 3.2 s (the procurement home; the seven DA
+  pages above, three times each).
+- **Clock skew.** The open-tab clock compares the server's stamp with the browser's clock. A browser running slow
+  can extend that tab's bound by as much as it lags: 600 s slow gives an old CDN copy a fresh 660 s while the status
+  is unreachable. The CDN bound doesn't depend on the browser, and the API enforces every read.
+
+**Pages.**
+
+- **Renders:** direct-purchase pages and the contract page are seeded under the publication read first, stamped with
+  its read time. They are served `no-store` when the publication is unknown; otherwise they get the DA CDN headers.
+- **The company page** is a DA surface (root, scope B): its public money carries the company's incoming direct
+  purchases. Its render is read under the publication read first and stamped; the page shows the server's profile
+  only while `isSeedCurrent` accepts it; the route keeps no loader data (`DA_ROUTE_CACHE`). The document goes out
+  `no-store` (the layout's headers), stricter than the DA CDN headers.
+- **The contract page's context** (`pairDirect`, `pairDirectValue`) is a DA surface (root, scope B). The contract's
+  own supplier isn't under D6: the owner decided on 2026-11-20 that D6 stays on direct-purchase surfaces, and
+  contracts and organisation labels are a documented gap (DA-002).
+- **Analytics names:**
+  - A DA supplier's name is asked only under a known publication. It is kept only if the publication, asked afresh
+    after the read, is still the planned one.
+  - A buyer given the supplier's code isn't named from the registry; codes compare by the API's rule
+    (`lib/fiscal-code.ts`).
+  - The DA supplier field and the quick picker search no firms.
+- **A supplier the address names** (root, fails closed): for direct purchases, one the API does not name as a
+  company is shown as „Furnizor"; a buyer given the same code as „Instituție".
+  - Neither code appears in a chip, headline, tab title, the unread-filters notice or the method panel's scope.
+  - A link the page makes carries the supplier only when the page's own names read names it, and drops a buyer of
+    the same code with it. The names it trusts are the ones shown, so during a purge's window they may be the
+    retired publication's.
+  - No procurement party's code reaches PostHog or Sentry (root; `docs/issues/TEL-001-party-codes-in-telemetry.md`,
+    a change of its own): addresses, titles, breadcrumbs and every event are scrubbed, session replay is off
+    site-wide, and tracing is off on procurement and company pages.
+  - The reader's own address still holds the code, and lookups may still send it: the API enforces. The page's
+    HTML reflects that address back (router match ids, query keys), only to whoever requested it.
