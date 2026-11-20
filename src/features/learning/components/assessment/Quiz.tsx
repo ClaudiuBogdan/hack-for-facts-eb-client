@@ -118,7 +118,7 @@ export function Quiz({
                     // Error State
                     showAsIncorrect && 'bg-status-blocked-bg border-status-blocked-fg text-status-blocked-fg shadow-md !opacity-100',
                     // Dimmed state for unselected options
-                    isDimmed && 'bg-transparent border-border/50 grayscale-[0.5]',
+                    isDimmed && 'bg-card border-border/50 grayscale-[0.5]',
                     isSaving && 'cursor-wait opacity-70'
                   )}
                 >
@@ -173,7 +173,7 @@ export function Quiz({
                     </span>
                   </div>
 
-                  <p className="text-foreground font-bold leading-relaxed text-base">
+                  <p className={cn("font-bold leading-relaxed text-base", isCorrect ? "text-status-live-fg" : "text-status-blocked-fg")}>
                     {explanation}
                   </p>
 

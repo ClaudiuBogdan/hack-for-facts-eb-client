@@ -154,7 +154,7 @@ export function ClassificationExplorer({
                       {text.hookTitleHighlight}
                     </span>
                   </h2>
-                  <p className="text-xl text-muted-foreground font-medium leading-relaxed">
+                  <p className="text-xl text-foreground font-medium leading-relaxed">
                     {text.hookSubtitle}
                   </p>
                 </div>
@@ -178,10 +178,10 @@ export function ClassificationExplorer({
                       <div className={cn('font-black text-lg', CLASSIFICATION_COLORS.fn.text)}>
                         {text.fnPreview.title}
                       </div>
-                      <div className="text-sm font-medium text-muted-foreground">
+                      <div className="text-sm font-medium text-foreground">
                         {text.fnPreview.subtitle}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">
+                      <div className="text-xs text-foreground mt-1">
                         {text.fnPreview.examples}
                       </div>
                     </div>
@@ -204,10 +204,10 @@ export function ClassificationExplorer({
                       <div className={cn('font-black text-lg', CLASSIFICATION_COLORS.ec.text)}>
                         {text.ecPreview.title}
                       </div>
-                      <div className="text-sm font-medium text-muted-foreground">
+                      <div className="text-sm font-medium text-foreground">
                         {text.ecPreview.subtitle}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">
+                      <div className="text-xs text-foreground mt-1">
                         {text.ecPreview.examples}
                       </div>
                     </div>
@@ -218,7 +218,7 @@ export function ClassificationExplorer({
                 <div className="w-full max-w-md">
                   <Button
                     onClick={() => setStep('EXPLORE')}
-                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-primary text-primary-foreground hover:shadow-2xl hover:ring-4 hover:ring-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                   >
                     {text.hookButton} <ArrowRight className="ml-2 w-7 h-7" />
                   </Button>
@@ -358,7 +358,7 @@ export function ClassificationExplorer({
                           href={dynamicSourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-status-partial-fg hover:underline mt-2 transition-colors"
+                          className="inline-flex items-center gap-1.5 text-xs font-medium !text-status-partial-fg hover:underline mt-2 transition-colors"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           {text.sourceLabel} ({budgetInfo.year}, {budgetInfo.totalBillions}B {budgetInfo.currency})

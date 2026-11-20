@@ -34,19 +34,19 @@ interface CategoryData {
 const COLOR_VARIANTS = {
   indigo: {
     bg: 'bg-chart-1',
-    text: 'text-primary',
+    text: 'text-foreground',
     border: 'border-t-chart-1',
     bgLight: 'bg-chart-1/10'
   },
   emerald: {
     bg: 'bg-chart-2',
-    text: 'text-primary',
+    text: 'text-foreground',
     border: 'border-t-chart-2',
     bgLight: 'bg-chart-2/10'
   },
   amber: {
     bg: 'bg-chart-3',
-    text: 'text-primary',
+    text: 'text-foreground',
     border: 'border-t-chart-3',
     bgLight: 'bg-chart-3/10'
   }
@@ -139,7 +139,7 @@ export function RevenueDistributionGame() {
                   <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground mt-6 leading-[0.95]">
                     <Trans>Who fuels the <span className="text-primary italic">budget</span>?</Trans>
                   </h2>
-                  <p className="text-xl text-muted-foreground font-medium leading-relaxed">
+                  <p className="text-xl text-foreground font-medium leading-relaxed">
                     <Trans>Most people think they know, but the reality often surprises. Ready to test your intuition?</Trans>
                   </p>
                 </div>
@@ -147,7 +147,7 @@ export function RevenueDistributionGame() {
                 <div className="w-full max-w-md">
                   <Button
                     onClick={() => setStep('GUESS')}
-                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-primary text-primary-foreground hover:shadow-2xl hover:ring-4 hover:ring-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                   >
                     {t`Let's find out`} <ArrowRight className="ml-2 w-7 h-7" />
                   </Button>
@@ -213,14 +213,13 @@ export function RevenueDistributionGame() {
 
                   <Button
                     onClick={() => setStep('REVEAL')}
-                    className="w-full h-24 rounded-[2rem] text-2xl font-black bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.97] transition-all shadow-xl group"
+                    className="w-full h-24 rounded-[2rem] text-2xl font-black bg-primary text-primary-foreground hover:shadow-2xl hover:ring-4 hover:ring-primary/30 hover:scale-[1.03] active:scale-[0.97] transition-all shadow-xl group"
                   >
                     {t`Reveal Truth`} <Check className="ml-3 w-8 h-8 group-hover:scale-110 transition-transform" />
                   </Button>
                 </div>
               </div>
 
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(16,185,129,0.08),transparent)] pointer-events-none" />
             </Card>
           </motion.div>
         )}
@@ -268,7 +267,7 @@ export function RevenueDistributionGame() {
                                 </div>
                                 <div>
                                   <div className="font-black tracking-tight text-xl leading-none mb-1.5 text-foreground">{cat.label}</div>
-                                  <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">{cat.subLabel}</div>
+                                  <div className="text-[10px] uppercase font-bold text-foreground tracking-widest">{cat.subLabel}</div>
                                 </div>
                             </div>
                            <div className={cn("text-4xl font-black", variants.text)}>{cat.actualPercentage}%</div>
@@ -308,7 +307,7 @@ export function RevenueDistributionGame() {
                                     className="absolute left-0 top-full mt-2 flex flex-col-reverse items-center"
                                     style={{ transform: 'translateX(-50%)' }}
                                 >
-                                    <div className="text-[10px] font-black uppercase tracking-tight mt-1 text-foreground whitespace-nowrap px-2 py-0.5 rounded-full bg-card shadow-sm border border-border">{t`You`}</div>
+                                    <div className="text-[10px] font-black uppercase tracking-tight mt-1 text-foreground whitespace-nowrap px-2 py-0.5 rounded-full bg-muted">{t`You`}</div>
                                     <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-border" />
                                 </motion.div>
                             </div>
@@ -316,13 +315,11 @@ export function RevenueDistributionGame() {
 
                         {/* Insight Text */}
                         <div className="pt-6 border-t border-border/50 relative z-10">
-                           <p className="text-muted-foreground text-sm leading-relaxed font-medium">
+                           <p className="text-foreground text-sm leading-relaxed font-medium">
                             {cat.description}
                            </p>
                         </div>
 
-                        {/* Background Glow */}
-                        <div className={cn("absolute -right-10 -bottom-10 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none", variants.bg)} />
                       </motion.div>
                     )
                   })}

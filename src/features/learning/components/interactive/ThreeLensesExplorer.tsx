@@ -117,7 +117,7 @@ function LensCard({
         'relative flex flex-col items-center p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-[2.5rem] border-2 transition-all cursor-pointer overflow-hidden group',
         colors.border,
         isFocused 
-          ? cn(colors.bgLighter, 'ring-4 ring-offset-4 ring-offset-background', type === 'organizational' ? 'ring-chart-1/20' : type === 'functional' ? 'ring-chart-2/20' : 'ring-chart-3/20')
+          ? cn(colors.bgLighter, 'border-primary ring-4 ring-offset-4 ring-offset-background ring-primary/40')
           : 'bg-card hover:bg-muted/50',
         isDeemphasized && 'grayscale scale-[0.98]'
       )}
@@ -151,7 +151,7 @@ function LensCard({
       </Badge>
 
       {/* Label */}
-      <h4 className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-muted-foreground mb-1 md:mb-3">
+      <h4 className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-foreground mb-1 md:mb-3">
         {label}
       </h4>
 
@@ -165,7 +165,7 @@ function LensCard({
 
       {/* Subvalue */}
       {subvalue && (
-        <div className="text-[11px] md:text-sm font-medium text-muted-foreground text-center mb-2 md:mb-4 leading-snug px-2 md:px-4">
+        <div className="text-[11px] md:text-sm font-medium text-foreground text-center mb-2 md:mb-4 leading-snug px-2 md:px-4">
           {subvalue}
         </div>
       )}
@@ -184,7 +184,7 @@ function LensCard({
         )}
 
         {!showCode && (
-          <div className="text-[7px] md:text-[8px] font-bold text-muted-foreground italic uppercase tracking-wider md:tracking-widest text-center max-w-[100px] md:max-w-[120px] leading-tight">
+          <div className="text-[7px] md:text-[8px] font-bold text-foreground italic uppercase tracking-wider md:tracking-widest text-center max-w-[100px] md:max-w-[120px] leading-tight">
             {noCodeLabel}
           </div>
         )}
@@ -239,9 +239,9 @@ function LensInsightPanel({ lens, insight, onClose, closeLabel }: LensInsightPan
     <div 
       className={cn(
         'relative rounded-[2.5rem] border p-8 backdrop-blur-xs',
-        lens === 'organizational' && 'bg-chart-1/10 border-chart-1/40',
-        lens === 'functional' && 'bg-chart-2/10 border-chart-2/40',
-        lens === 'economic' && 'bg-chart-3/10 border-chart-3/40'
+        lens === 'organizational' && 'bg-chart-1/10 border-border',
+        lens === 'functional' && 'bg-chart-2/10 border-border',
+        lens === 'economic' && 'bg-chart-3/10 border-border'
       )}
       role="region"
       aria-label={insight.title}

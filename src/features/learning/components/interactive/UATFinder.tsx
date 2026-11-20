@@ -129,7 +129,7 @@ export function UATFinder({ locale, text, onSelect, finderId }: UATFinderProps) 
               <h3 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.95]">
                 {text.title}
               </h3>
-              <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-xl mx-auto leading-relaxed">
+              <p className="text-lg md:text-xl text-foreground font-medium max-w-xl mx-auto leading-relaxed">
                 {text.subtitle}
               </p>
             </div>
@@ -338,11 +338,11 @@ const SearchResultItem = memo(function SearchResultItem({
         <div className="font-bold text-lg text-foreground truncate">
           {result.name}
         </div>
-        <div className="text-xs font-medium text-muted-foreground flex items-center gap-2 uppercase tracking-wider">
+        <div className="text-xs font-medium text-foreground flex items-center gap-2 uppercase tracking-wider">
           <span className={config.color}>{typeLabel}</span>
           {result.countyName && (
             <>
-              <span className="text-muted-foreground">•</span>
+              <span className="text-foreground">•</span>
               <span>{result.countyName}</span>
             </>
           )}
@@ -390,9 +390,9 @@ function SearchErrorMessage({ message }: { readonly message: string }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: ANIMATION.duration.fast }}
-      className="absolute z-30 mt-4 w-full bg-card border-2 border-border shadow-xl rounded-[2rem] p-8 text-center"
+      className="absolute z-30 mt-4 w-full bg-status-blocked-bg border-2 border-status-blocked-fg/30 shadow-xl rounded-[2rem] p-8 text-center"
     >
-      <p className="text-muted-foreground font-medium">{message}</p>
+      <p className="text-status-blocked-fg font-medium">{message}</p>
     </motion.div>
   )
 }
@@ -504,7 +504,7 @@ function UATDetailCard({ uat, locale, text, isLoading, dataYear, onClose }: UATD
                 {typeLabel}
               </span>
               {uat.countyName && (
-                <span className="text-muted-foreground">
+                <span className="text-foreground">
                   {uat.countyName}
                 </span>
               )}
@@ -515,7 +515,7 @@ function UATDetailCard({ uat, locale, text, isLoading, dataYear, onClose }: UATD
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
-              <p className="text-muted-foreground font-medium animate-pulse">{text.loadingMessage}</p>
+              <p className="text-foreground font-medium animate-pulse">{text.loadingMessage}</p>
             </div>
           ) : (
             <div className="space-y-8">
@@ -530,21 +530,21 @@ function UATDetailCard({ uat, locale, text, isLoading, dataYear, onClose }: UATD
                   icon={Users}
                   label={text.populationLabel}
                   value={formatPopulation(uat.population, locale)}
-                  colorClass="text-primary"
+                  colorClass="text-foreground"
                   bgClass="bg-chart-1/10"
                 />
                 <MetricCard
                   icon={Wallet}
                   label={text.totalBudgetLabel}
                   value={formatBudget(uat.totalBudget, locale)}
-                  colorClass="text-primary"
+                  colorClass="text-foreground"
                   bgClass="bg-chart-2/10"
                 />
                 <MetricCard
                   icon={BarChart3}
                   label={text.perCapitaLabel}
                   value={formatPerCapita(uat.perCapita, locale)}
-                  colorClass="text-primary"
+                  colorClass="text-foreground"
                   bgClass="bg-chart-3/10"
                 />
               </div>
@@ -587,7 +587,7 @@ function UATDetailCard({ uat, locale, text, isLoading, dataYear, onClose }: UATD
               <div className="text-center pt-2">
                 <button
                   onClick={onClose}
-                  className="text-xs font-bold text-muted-foreground hover:text-foreground uppercase tracking-widest flex items-center justify-center gap-2 mx-auto transition-colors"
+                  className="text-xs font-bold text-foreground hover:underline uppercase tracking-widest flex items-center justify-center gap-2 mx-auto transition-colors"
                 >
                   <RefreshCcw className="w-3 h-3" /> {text.clearLabel}
                 </button>
@@ -616,7 +616,7 @@ const MetricCard = memo(function MetricCard({ icon: Icon, label, value, colorCla
   return (
     <div className={cn("rounded-[2rem] p-6 text-center transition-transform hover:scale-[1.02]", bgClass)}>
       <Icon className={cn("w-6 h-6 mx-auto mb-3 opacity-80", colorClass)} />
-      <div className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">{label}</div>
+      <div className="text-xs font-black uppercase tracking-widest text-foreground mb-1">{label}</div>
       <div className={cn("text-xl md:text-2xl font-black tracking-tight", colorClass)}>{value}</div>
     </div>
   )

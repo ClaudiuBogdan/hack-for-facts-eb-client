@@ -160,7 +160,7 @@ export function MoneyFlowDiagram({ data, text, locale }: MoneyFlowDiagramProps) 
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ delay: ANIMATION_DELAY.hint }}
-                className="text-center text-xs text-muted-foreground mt-4"
+                className="text-center text-xs text-foreground mt-4"
               >
                 {text.clickToLearnMore}
               </motion.p>
@@ -325,7 +325,7 @@ const SectionLabel = memo(function SectionLabel({ label }: SectionLabelProps) {
   return (
     <div className="flex items-center gap-3 mb-4">
       <div className="h-px flex-1 bg-border" />
-      <span className="text-xs font-black uppercase tracking-widest text-muted-foreground px-2">
+      <span className="text-xs font-black uppercase tracking-widest text-foreground px-2">
         {label}
       </span>
       <div className="h-px flex-1 bg-border" />
@@ -383,7 +383,7 @@ const TransferCard = memo(function TransferCard({
         'relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all h-full',
         colors.border,
         isSelected
-          ? cn(colors.bg, 'ring-4 ring-offset-2 ring-offset-background', colors.ring)
+          ? cn(colors.bg, 'border-primary ring-4 ring-offset-2 ring-offset-background', colors.ring)
           : 'bg-card hover:bg-muted/50',
         isDeemphasized && 'grayscale scale-[0.98]'
       )}
@@ -396,7 +396,7 @@ const TransferCard = memo(function TransferCard({
         <Icon className={cn('w-5 h-5', colors.text)} />
       </div>
 
-      <h4 className="text-xs font-black uppercase tracking-wide text-muted-foreground mb-2">
+      <h4 className="text-xs font-black uppercase tracking-wide text-foreground mb-2">
         {name}
       </h4>
 
@@ -480,11 +480,11 @@ function DetailPanel({ transfer, locale, detailsLabel, closeLabel, onClose }: De
         <div className="flex flex-col md:flex-row md:items-start gap-6">
           <div className="md:w-1/3">
             <h4 className={cn('text-xl font-black', colors.text)}>{name}</h4>
-            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            <p className="text-sm text-foreground mt-1">{description}</p>
           </div>
 
           <div className="md:w-2/3">
-            <h5 className="text-xs font-black uppercase tracking-wider text-muted-foreground mb-3">
+            <h5 className="text-xs font-black uppercase tracking-wider text-foreground mb-3">
               {detailsLabel}
             </h5>
             <ul className="space-y-2">
@@ -544,12 +544,12 @@ const BudgetSummaryBar = memo(function BudgetSummaryBar({
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-chart-1" aria-hidden="true" />
-          <span className="font-bold text-muted-foreground">{fromCenterLabel}</span>
+          <span className="font-bold text-foreground">{fromCenterLabel}</span>
           <span className="font-black text-foreground">{centralPercentage}%</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-chart-2" aria-hidden="true" />
-          <span className="font-bold text-muted-foreground">{ownLabel}</span>
+          <span className="font-bold text-foreground">{ownLabel}</span>
           <span className="font-black text-foreground">{ownPercentage}%</span>
         </div>
       </div>
