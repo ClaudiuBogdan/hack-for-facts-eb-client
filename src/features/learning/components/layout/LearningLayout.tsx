@@ -51,7 +51,7 @@ type ModuleNavProps = {
 
 function LessonStatusIcon({ isCompleted, isActive }: { readonly isCompleted: boolean; readonly isActive: boolean }) {
   if (isCompleted) {
-    return <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5px] text-green-500" />
+    return <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5px] text-status-live-fg" />
   }
   if (isActive) {
     return <div className="h-2.5 w-2.5 rounded-full bg-background" />
@@ -69,15 +69,15 @@ function ModuleNav({ module, pathId, locale, currentLessonId, lessonProgress, ac
   return (
     <div className="space-y-2 overflow-hidden">
       <div className="px-2 pr-1 flex items-center gap-2">
-        <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider leading-tight flex-1 min-w-0">
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider leading-tight flex-1 min-w-0">
           {getTranslatedText(module.title, locale)}
         </span>
         {isModuleComplete ? (
-          <div className="h-4 w-4 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="h-2.5 w-2.5 text-green-500" />
+          <div className="h-4 w-4 rounded-full bg-status-live-bg flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-2.5 w-2.5 text-status-live-fg" />
           </div>
         ) : (
-          <span className="text-[10px] font-medium text-muted-foreground/40 tabular-nums shrink-0">
+          <span className="text-[10px] font-medium text-muted-foreground tabular-nums shrink-0">
             {completedLessons}/{module.lessons.length}
           </span>
         )}
@@ -120,7 +120,7 @@ function PathProgress({ percent }: { readonly percent: number }) {
   return (
     <div className="px-4 py-4 border-b border-border/30">
       <div className="space-y-2.5">
-        <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           <span className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-primary" />
             {t`Course Progress`}
@@ -166,13 +166,13 @@ function LearningSidebar({ pathname }: { readonly pathname: string }) {
     <div className="flex h-full flex-col bg-background border-r border-border/50">
       <div className="shrink-0">
         {/* Hero Area - Light & Clean */}
-        <div className="relative overflow-hidden bg-linear-to-b from-blue-50/50 to-transparent dark:from-blue-950/20 py-4 px-4">
+        <div className="relative overflow-hidden py-4 px-4">
           <Link to={`/${locale}/learning` as '/'} className="relative group flex items-center gap-3">
-            <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-600/20 transition-all duration-200 group-hover:scale-105 group-hover:bg-blue-700">
+            <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-all duration-200 group-hover:scale-105">
               <Compass className="h-5 w-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-sm tracking-tight leading-none text-foreground truncate group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+              <span className="font-bold text-sm tracking-tight leading-none text-foreground truncate group-hover:text-primary transition-colors">
                 {t`Budgetary Academy`}
               </span>
               <span className="text-[10px] text-muted-foreground mt-1 font-medium tracking-wide uppercase truncate">
@@ -223,7 +223,7 @@ function LearningSidebar({ pathname }: { readonly pathname: string }) {
                       </div>
                       <span className={cn(
                         "text-xs line-clamp-1",
-                        isActive ? "opacity-70" : "text-muted-foreground"
+                        !isActive && "text-muted-foreground"
                       )}>
                         {getTranslatedText(p.description, locale)}
                       </span>

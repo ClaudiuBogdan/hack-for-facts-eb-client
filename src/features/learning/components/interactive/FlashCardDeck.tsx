@@ -182,25 +182,20 @@ export function FlashCard({ id, icon, title, frontText, backText }: FlashCardPro
             WebkitBackfaceVisibility: 'hidden',
           }}
         >
-          <Card className="h-full border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 overflow-hidden ring-1 ring-slate-900/5 dark:ring-white/10">
-            {/* Modern glassmorphism decorative elements */}
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
-            <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl" />
-
+          <Card className="h-full border-0 shadow-lg bg-card overflow-hidden ring-1 ring-border">
             <CardContent className="h-full flex flex-col items-center justify-top px-2 py-16 text-center relative z-10">
-              {/* Icon with modern glow */}
+              {/* Icon */}
               <div className="relative mb-6 group-hover:scale-110 transition-transform duration-300">
-                <div className="absolute inset-0 blur-xl bg-gradient-to-tr from-blue-400/20 to-purple-400/20 rounded-full" />
                 <span className={cn('relative drop-shadow-sm', iconSizeClass)}>{icon}</span>
               </div>
 
               {/* Title */}
-              <h3 className={cn('font-bold text-slate-800 dark:text-slate-100 mb-4', titleSizeClass)}>
+              <h3 className={cn('font-bold text-foreground mb-4', titleSizeClass)}>
                 {title}
               </h3>
 
               {/* Front text */}
-              <p className={cn('text-slate-600 dark:text-slate-300 leading-relaxed max-w-[95%]', textSizeClass)}>
+              <p className={cn('text-muted-foreground leading-relaxed max-w-[95%]', textSizeClass)}>
                 {frontText}
               </p>
             </CardContent>
@@ -216,11 +211,11 @@ export function FlashCard({ id, icon, title, frontText, backText }: FlashCardPro
             transform: 'rotateY(180deg)',
           }}
         >
-          <Card className="h-full border-0 shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 dark:from-black dark:to-slate-900 overflow-hidden ring-1 ring-white/10">
+          <Card className="h-full border-0 shadow-lg bg-primary overflow-hidden ring-1 ring-border">
             <CardContent className="h-full flex flex-col items-center justify-center  px-2 py-16 text-center relative z-10">
               {/* Back text - Centered and larger for readability */}
               <div className="max-w-[95%]">
-                <p className={cn('text-white leading-relaxed font-medium', backTextSizeClass)}>
+                <p className={cn('text-primary-foreground leading-relaxed font-medium', backTextSizeClass)}>
                   {backText}
                 </p>
               </div>
@@ -248,13 +243,13 @@ function ProgressIndicator({ current, total }: ProgressIndicatorProps) {
   return (
     <div className="space-y-2">
       {/* Progress bar */}
-      <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+      <div className={cn('h-1.5 rounded-full overflow-hidden', isComplete ? 'bg-status-live-bg' : 'bg-muted')}>
         <div
           className={cn(
             'h-full rounded-full transition-all duration-500 ease-out',
             isComplete
-              ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
-              : 'bg-gradient-to-r from-blue-500 to-purple-500'
+              ? 'bg-status-live-fg'
+              : 'bg-primary'
           )}
           style={{ width: `${percentage}%` }}
         />
@@ -262,11 +257,11 @@ function ProgressIndicator({ current, total }: ProgressIndicatorProps) {
 
       {/* Text */}
       <div className="flex items-center justify-between text-xs font-medium">
-        <span className="text-slate-500 dark:text-slate-400">
+        <span className="text-muted-foreground">
           {current}/{total} {t`explored`}
         </span>
         {isComplete && (
-          <span className="text-emerald-600 dark:text-emerald-400 animate-in fade-in slide-in-from-right-2">
+          <span className="text-status-live-fg animate-in fade-in slide-in-from-right-2">
             ✓ {t`Complete!`}
           </span>
         )}
@@ -347,7 +342,7 @@ export function FlashCardDeck({
         {(title) && (
           <div className="flex items-center justify-between">
             {title && (
-              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              <h3 className="text-xl font-bold text-foreground tracking-tight">
                 {title}
               </h3>
             )}
@@ -357,7 +352,7 @@ export function FlashCardDeck({
                 aria-label={t`Start over`}
                 size="sm"
                 onClick={handleReset}
-                className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
@@ -373,9 +368,9 @@ export function FlashCardDeck({
 
         {/* Completion message */}
         {showProgress && isComplete && completionMessage && (
-          <Card className="border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <Card className="border-status-live-fg/30 bg-status-live-bg animate-in fade-in slide-in-from-bottom-4 duration-500">
             <CardContent className="p-4 text-center">
-              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+              <p className="text-sm font-medium text-status-live-fg">
                 🎉 {completionMessage}
               </p>
             </CardContent>

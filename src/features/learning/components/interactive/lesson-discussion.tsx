@@ -127,34 +127,31 @@ export function LessonDiscussion({
         onValueChange={(value) => setIsOpen(value === 'discussion')}
       >
         <AccordionItem value="discussion" className="border-none">
-          <div className="relative overflow-hidden rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-gradient-to-r from-blue-50/80 to-white dark:from-blue-950/30 dark:to-zinc-950/30 shadow-sm">
-            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl" />
-            <div className="absolute -left-8 -bottom-8 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl" />
-
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div className="relative z-10">
-              <AccordionTrigger className="px-5 md:px-6 py-5 hover:no-underline hover:bg-blue-100/50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors [&[data-state=open]>div>div:last-child>svg]:rotate-180 [&>svg]:hidden">
+              <AccordionTrigger className="px-5 md:px-6 py-5 hover:no-underline hover:bg-primary/10 rounded-2xl transition-colors [&[data-state=open]>div>div:last-child>svg]:rotate-180 [&>svg]:hidden">
                 <div className="flex items-center gap-4 w-full">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 shrink-0">
+                  <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-md shrink-0">
                     <Users className="h-5 w-5" />
                   </div>
 
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base font-semibold text-foreground">
                       {copy.heading}
                     </h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
+                    <p className="text-sm text-foreground mt-0.5">
                       {copy.description}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/20 text-primary">
                     <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-200" />
                   </div>
                 </div>
               </AccordionTrigger>
 
               <AccordionContent className="px-5 md:px-6 pb-5">
-                <div className="pt-4 border-t border-blue-100/50 dark:border-blue-900/30">
+                <div className="pt-4 border-t border-border">
                   <div id="discourse-comments" className="relative min-h-[200px]">
                     {isOpen ? (
                       <iframe
@@ -170,29 +167,29 @@ export function LessonDiscussion({
                     ) : null}
 
                     {isLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center h-[200px] text-zinc-500 dark:text-zinc-400">
+                      <div className="absolute inset-0 flex items-center justify-center h-[200px] text-muted-foreground">
                         <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                           <span className="text-sm">{copy.loadingLabel}</span>
                         </div>
                       </div>
                     )}
 
                     {hasEmbedError && !isLoading && (
-                      <div className="flex items-center justify-center h-[200px] text-zinc-500 dark:text-zinc-400">
+                      <div className="flex items-center justify-center h-[200px] text-muted-foreground">
                         <span className="text-sm">{copy.errorLabel}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between pt-4 border-t border-blue-100/50 dark:border-blue-900/30">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <div className="mt-4 flex items-center justify-between pt-4 border-t border-border">
+                    <p className="text-sm text-muted-foreground">
                       {copy.promptLabel}
                     </p>
                     <Button
                       asChild
                       size="sm"
-                      className="rounded-xl font-semibold shadow-lg shadow-blue-600/20 bg-blue-600 hover:bg-blue-700 text-white border-none"
+                      className="rounded-xl font-semibold shadow-md hover:bg-primary hover:shadow-lg border-none"
                     >
                       <a
                         href={discussionUrl}
