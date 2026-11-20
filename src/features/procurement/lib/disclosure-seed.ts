@@ -63,10 +63,13 @@ export function forgetVerifiedPublicationForTests(): void {
 /** Whether a loader's data may seed the page: not a server render's, or one read under the publication the browser read last (none read yet: the page as served), and never while the publication cannot be read. */
 export function isSeedCurrent(data: unknown): boolean {
   if (!data || typeof data !== 'object' || !('disclosure' in data)) return true
-  if (unreadable || isPastBound()) return false
   const disclosure = (data as { readonly disclosure?: string | null }).disclosure ?? null
-  // Read under an older supplier-privacy publication than one this tab has seen (by any read, before its watch has polled).
+  // Read under an older supplier-privacy publication than one this tab (on the server, this process) has seen, by any read.
   if (isOlderThanNewest(privacyPartOf(disclosure))) return false
+  // On the server the loader's data is this render's own read, kept nowhere: the checks below are an open tab's. Its clock
+  // never gets a reading there, so it would run out with the process's age and drop every render's seed.
+  if (typeof window === 'undefined') return true
+  if (unreadable || isPastBound()) return false
   if (verified === null) {
     // Nothing verified yet: a seed read longer ago than the bound (an old CDN copy, a remount past the deadline) is not used.
     const at = readAtOf(data)

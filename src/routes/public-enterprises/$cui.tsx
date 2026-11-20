@@ -21,7 +21,7 @@ export type PublicEnterpriseRouteLoaderData = PublicEnterpriseServerRead & {
  * enterprise, its company record and its last twelve months as a buyer side
  * by side (`public-enterprise-ssr.ts`, each kept ten minutes, each under a
  * deadline) and seeds the page's queries with them, so the document is whole
- * and the browser reads nothing on mount. A CUI no list holds is a 404. On a
+ * and the browser reads no data on mount (only the D6 watch's status check). A CUI no list holds is a 404. On a
  * client navigation the loader starts the reads and returns at once; the
  * page's own queries fill it in and set the tab's title.
  */

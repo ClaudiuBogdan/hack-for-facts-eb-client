@@ -2,12 +2,12 @@
  * Integration tests for one public enterprise's page
  * (`/public-enterprises/$cui`). The server reads the enterprise, its company
  * record and its last twelve months as a buyer from `VITE_API_URL` and renders
- * the page whole; the browser reads nothing on mount (in CI it could not: the
- * dev API answers no CORS preflight). So these tests hold the page to its
- * structure and its address on live data — the head, the bands in the pinned
- * bar's order, the links that leave it, a CUI no list holds — never to a figure
- * the next source load changes. Tursib (789401) is controlled by Consiliul
- * Local Sibiu in ANAF's list.
+ * the page whole; the browser reads no data on mount, only the D6 status check
+ * (in CI it could not read: the dev API answers no CORS preflight). So these
+ * tests hold the page to its structure and its address on live data — the
+ * head, the bands in the pinned bar's order, the links that leave it, a CUI no
+ * list holds — never to a figure the next source load changes. Tursib
+ * (789401) is controlled by Consiliul Local Sibiu in ANAF's list.
  */
 
 import { test, expect } from '../utils/integration-base'
@@ -35,6 +35,14 @@ test.beforeAll(async () => {
   const missing = response.status === 404 || (body?.errors ?? []).some((error) => error.message?.includes('Cannot query field "publicEnterpriseSources"'))
   test.skip(missing, `${api} does not serve the public-enterprise API`)
 })
+
+/** The D6 watch's status check (`procurementDaRelease`), with no variables; any other GraphQL read is named by its operation, or `anonymous`. */
+const DISCLOSURE_STATUS = 'ProcurementDaRelease'
+const readName = (body: { readonly query?: unknown; readonly variables?: unknown; readonly operationName?: unknown } | null): string => {
+  const named = typeof body?.operationName === 'string' ? body.operationName : typeof body?.query === 'string' ? /^\s*query\s+(\w+)/u.exec(body.query)?.[1] : undefined
+  if (named === DISCLOSURE_STATUS) return JSON.stringify(body?.variables ?? {}) === '{}' ? DISCLOSURE_STATUS : `${DISCLOSURE_STATUS} with variables`
+  return named ?? 'anonymous'
+}
 
 /** Only a whole render is cached publicly: a partial one (a live read past its deadline) leaves its part to the browser. */
 const isWhole = (cacheControl: string | undefined) => /s-maxage=/u.test(cacheControl ?? '')
@@ -77,17 +85,23 @@ test.describe('Public enterprise page — the server render', () => {
         if (caught.length >= 2) observer.disconnect()
       }).observe(document, { childList: true, subtree: true })
     })
-    // A whole server render seeds every query: the browser reads nothing on mount (in CI it could not).
+    // A whole server render seeds every query: the browser reads no data on mount (in CI it could not). It only asks the
+    // D6 watch's status check, which verifies the publication a (possibly CDN-kept) render was read under (design §24.4).
     const reads: string[] = []
     page.on('request', (request) => {
-      if (request.method() === 'POST' && /\/graphql(?:[?#]|$)/u.test(request.url())) reads.push(request.postDataJSON()?.operationName ?? 'anonymous')
+      if (request.method() === 'POST' && /\/graphql(?:[?#]|$)/u.test(request.url())) reads.push(readName(request.postDataJSON()))
     })
     const response = await page.goto(ROUTE)
     await waitForPageReady(page)
     await page.waitForTimeout(1000)
     // Only a whole render is cached publicly; a partial one (a live read past its deadline) is read again in the browser, as it should be.
-    if (isWhole(response?.headers()['cache-control'])) expect(reads).toEqual([])
-    else test.info().annotations.push({ type: 'note', description: `partial server read: the browser read ${reads.join(', ') || 'nothing'}` })
+    if (isWhole(response?.headers()['cache-control'])) {
+      // No data read; the status check once, or twice when its first answer is older than the key the page was served under.
+      // Accepted flake (root, 20 November 2026): for up to a minute after a publish the server can still render under the
+      // status it keeps (60 s), the browser's fresh check rightly purges and reads again, and every attempt then fails.
+      expect(reads.filter((read) => read !== DISCLOSURE_STATUS)).toEqual([])
+      expect([1, 2]).toContain(reads.length)
+    } else test.info().annotations.push({ type: 'note', description: `partial server read: the browser read ${reads.join(', ') || 'nothing'}` })
     const kept = await page.evaluate(() => {
       const caught = (window as unknown as { __serverNodes: Element[] }).__serverNodes
       return { caught: caught.length, kept: caught.filter((node) => document.contains(node)).length }
