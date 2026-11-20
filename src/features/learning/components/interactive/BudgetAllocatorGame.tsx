@@ -371,45 +371,45 @@ function BudgetBalanceIndicator({
     switch (sev) {
       case 'mild':
         return {
-          bg: 'bg-amber-50 dark:bg-amber-950/30',
-          border: 'border-amber-200 dark:border-amber-800',
-          text: 'text-amber-600 dark:text-amber-400',
-          icon: 'text-amber-600 dark:text-amber-400',
+          bg: 'bg-status-partial-bg',
+          border: 'border-status-partial-fg/30',
+          text: 'text-status-partial-fg',
+          icon: 'text-status-partial-fg',
         }
       case 'moderate':
         return {
-          bg: 'bg-orange-50 dark:bg-orange-950/30',
-          border: 'border-orange-200 dark:border-orange-800',
-          text: 'text-orange-600 dark:text-orange-400',
-          icon: 'text-orange-600 dark:text-orange-400',
+          bg: 'bg-status-partial-bg',
+          border: 'border-status-partial-fg/30',
+          text: 'text-status-partial-fg',
+          icon: 'text-status-partial-fg',
         }
       case 'severe':
         return {
-          bg: 'bg-red-50 dark:bg-red-950/30',
-          border: 'border-red-200 dark:border-red-800',
-          text: 'text-red-600 dark:text-red-400',
-          icon: 'text-red-600 dark:text-red-400',
+          bg: 'bg-status-blocked-bg',
+          border: 'border-status-blocked-fg/30',
+          text: 'text-status-blocked-fg',
+          icon: 'text-status-blocked-fg',
         }
       case 'critical':
         return {
-          bg: 'bg-red-100 dark:bg-red-950/50',
-          border: 'border-red-300 dark:border-red-700',
-          text: 'text-red-700 dark:text-red-300',
-          icon: 'text-red-700 dark:text-red-300',
+          bg: 'bg-status-blocked-bg',
+          border: 'border-status-blocked-fg/30',
+          text: 'text-status-blocked-fg',
+          icon: 'text-status-blocked-fg',
         }
       case 'catastrophic':
         return {
-          bg: 'bg-red-200 dark:bg-red-900/60',
-          border: 'border-red-400 dark:border-red-600',
-          text: 'text-red-800 dark:text-red-200',
-          icon: 'text-red-800 dark:text-red-200',
+          bg: 'bg-status-blocked-bg',
+          border: 'border-status-blocked-fg/30',
+          text: 'text-status-blocked-fg',
+          icon: 'text-status-blocked-fg',
         }
       default:
         return {
-          bg: 'bg-red-50 dark:bg-red-950/30',
-          border: 'border-red-200 dark:border-red-800',
-          text: 'text-red-600 dark:text-red-400',
-          icon: 'text-red-600 dark:text-red-400',
+          bg: 'bg-status-blocked-bg',
+          border: 'border-status-blocked-fg/30',
+          text: 'text-status-blocked-fg',
+          icon: 'text-status-blocked-fg',
         }
     }
   }
@@ -424,26 +424,26 @@ function BudgetBalanceIndicator({
       className={cn(
         'rounded-2xl p-4 border-2 transition-colors duration-300',
         isBalanced &&
-        'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800',
+        'bg-status-live-bg border-status-live-fg/30',
         isDeficit && deficitClasses && `${deficitClasses.bg} ${deficitClasses.border}`,
         !isBalanced &&
         !isDeficit &&
-        'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+        'bg-status-partial-bg border-status-partial-fg/30'
       )}
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {isBalanced ? (
-            <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <Check className="w-5 h-5 text-status-live-fg" />
           ) : isDeficit ? (
             <AlertTriangle className={cn('w-5 h-5', deficitClasses?.icon)} />
           ) : (
-            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <AlertTriangle className="w-5 h-5 text-status-partial-fg" />
           )}
           <div>
             <div className="font-bold text-lg">Total: {total}%</div>
             {!isBalanced && consequence && (
-              <div className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md">
+              <div className="text-sm text-muted-foreground max-w-md">
                 {consequence}
               </div>
             )}
@@ -452,9 +452,9 @@ function BudgetBalanceIndicator({
         <div
           className={cn(
             'text-2xl font-black tabular-nums',
-            isBalanced && 'text-emerald-600 dark:text-emerald-400',
+            isBalanced && 'text-status-live-fg',
             isDeficit && deficitClasses?.text,
-            !isBalanced && !isDeficit && 'text-amber-600 dark:text-amber-400'
+            !isBalanced && !isDeficit && 'text-status-partial-fg'
           )}
         >
           {isBalanced
@@ -493,17 +493,17 @@ function StakeholderBar({
           className={cn(
             'flex flex-col items-center gap-1 p-3 rounded-xl border min-w-[80px] transition-colors',
             reaction === 'happy' &&
-            'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800',
+            'bg-status-live-bg border-status-live-fg/30',
             reaction === 'angry' &&
-            'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
+            'bg-status-blocked-bg border-status-blocked-fg/30',
             reaction === 'neutral' &&
-            'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800'
+            'bg-muted border-border'
           )}
           title={message}
         >
           <span className="text-2xl">{stakeholder.emoji}</span>
           <ReactionEmoji reaction={reaction} />
-          <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">
+          <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
             {stakeholder.label}
           </span>
         </motion.div>
@@ -540,46 +540,46 @@ function InlineConsequence({
             className={cn(
               'mt-2 rounded-xl border p-3 cursor-pointer transition-colors',
               severity === 'positive' &&
-              'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20',
+              'border-status-live-fg/30 bg-status-live-bg/50',
               severity === 'negative' &&
-              'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20',
+              'border-status-blocked-fg/30 bg-status-blocked-bg/50',
               severity === 'neutral' &&
-              'border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/20'
+              'border-border bg-muted/50'
             )}
             onClick={onToggle}
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2 text-xs font-semibold">
                 {severity === 'positive' && (
-                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                  <TrendingUp className="w-3.5 h-3.5 text-status-live-fg" />
                 )}
                 {severity === 'negative' && (
-                  <TrendingDown className="w-3.5 h-3.5 text-red-500" />
+                  <TrendingDown className="w-3.5 h-3.5 text-status-blocked-fg" />
                 )}
                 {severity === 'neutral' && (
-                  <Minus className="w-3.5 h-3.5 text-zinc-400" />
+                  <Minus className="w-3.5 h-3.5 text-muted-foreground" />
                 )}
                 <span
                   className={cn(
-                    severity === 'positive' && 'text-emerald-700 dark:text-emerald-400',
-                    severity === 'negative' && 'text-red-700 dark:text-red-400',
-                    severity === 'neutral' && 'text-zinc-600 dark:text-zinc-400'
+                    severity === 'positive' && 'text-status-live-fg',
+                    severity === 'negative' && 'text-status-blocked-fg',
+                    severity === 'neutral' && 'text-muted-foreground'
                   )}
                 >
                   {diff > 0 ? '+' : ''}
                   {diff}% vs reality
                 </span>
               </div>
-              <ChevronUp className="w-4 h-4 text-zinc-400" />
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
             </div>
             {impacts.length > 0 && (
               <ul className="space-y-1">
                 {impacts.slice(0, 3).map((impact, i) => (
                   <li
                     key={i}
-                    className="text-xs text-zinc-600 dark:text-zinc-400 flex items-start gap-1.5"
+                    className="text-xs text-muted-foreground flex items-start gap-1.5"
                   >
-                    <span className="text-zinc-400 mt-0.5">•</span>
+                    <span className="text-muted-foreground mt-0.5">•</span>
                     <span>{impact}</span>
                   </li>
                 ))}
@@ -618,16 +618,16 @@ function ImpactSection({
       className={cn(
         'rounded-2xl border p-5',
         isNegative
-          ? 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20'
-          : 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20'
+          ? 'border-status-blocked-fg/30 bg-status-blocked-bg/50'
+          : 'border-status-live-fg/30 bg-status-live-bg/50'
       )}
     >
       <h3
         className={cn(
           'font-bold flex items-center gap-2 mb-4',
           isNegative
-            ? 'text-red-700 dark:text-red-400'
-            : 'text-emerald-700 dark:text-emerald-400'
+            ? 'text-status-blocked-fg'
+            : 'text-status-live-fg'
         )}
       >
         <Icon className="w-5 h-5" />
@@ -650,8 +650,8 @@ function ImpactSection({
                   className={cn(
                     'text-xs font-bold px-2 py-0.5 rounded-full',
                     isNegative
-                      ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
-                      : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300'
+                      ? 'bg-status-blocked-bg text-status-blocked-fg'
+                      : 'bg-status-live-bg text-status-live-fg'
                   )}
                 >
                   {diff > 0 ? '+' : ''}
@@ -662,9 +662,9 @@ function ImpactSection({
                 {categoryImpacts.slice(0, 3).map((impact, i) => (
                   <li
                     key={i}
-                    className="text-sm text-zinc-600 dark:text-zinc-400 flex items-start gap-1.5"
+                    className="text-sm text-muted-foreground flex items-start gap-1.5"
                   >
-                    <span className="text-zinc-400 mt-0.5">•</span>
+                    <span className="text-muted-foreground mt-0.5">•</span>
                     <span>{impact}</span>
                   </li>
                 ))}
@@ -697,7 +697,7 @@ function StakeholderReactionsList({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5"
+      className="rounded-2xl border border-border p-5"
     >
       <h3 className="font-bold flex items-center gap-2 mb-4">
         <span className="text-lg">👥</span>
@@ -710,11 +710,11 @@ function StakeholderReactionsList({
             className={cn(
               'p-3 rounded-xl border transition-colors',
               reaction === 'happy' &&
-              'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800',
+              'bg-status-live-bg border-status-live-fg/30',
               reaction === 'angry' &&
-              'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
+              'bg-status-blocked-bg border-status-blocked-fg/30',
               reaction === 'neutral' &&
-              'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800'
+              'bg-muted border-border'
             )}
           >
             <div className="flex items-center gap-2 mb-1">
@@ -722,7 +722,7 @@ function StakeholderReactionsList({
               <ReactionEmoji reaction={reaction} />
               <span className="text-xs font-semibold">{stakeholder.label}</span>
             </div>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">
+            <p className="text-xs text-muted-foreground line-clamp-2">
               &ldquo;{message}&rdquo;
             </p>
           </div>
@@ -874,21 +874,21 @@ export function BudgetAllocatorGame({
             animate="visible"
             exit="exit"
           >
-            <Card className="p-10 md:p-16 rounded-[3rem] bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-lg overflow-hidden relative border-none">
+            <Card className="p-10 md:p-16 rounded-[3rem] bg-card border-border shadow-lg overflow-hidden relative border-none">
               <div className="relative z-10 flex flex-col items-center text-center space-y-12">
                 <div className="space-y-6 max-w-xl">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 mb-2 shadow-inner"
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-status-blocked-bg text-status-blocked-fg mb-2 shadow-inner"
                   >
                     <Briefcase className="w-10 h-10" />
                   </motion.div>
-                  <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-zinc-900 dark:text-white mt-6 leading-[0.95]">
+                  <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground mt-6 leading-[0.95]">
                     {text.hookTitle}
                   </h2>
-                  <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                  <p className="text-xl text-muted-foreground font-medium leading-relaxed">
                     {text.hookSubtitle}
                   </p>
                 </div>
@@ -897,10 +897,10 @@ export function BudgetAllocatorGame({
                   {stakeholders.slice(0, 4).map((stakeholder) => (
                     <div
                       key={stakeholder.id}
-                      className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900"
+                      className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-muted"
                     >
                       <span className="text-3xl">{stakeholder.emoji}</span>
-                      <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                      <span className="text-sm font-medium text-muted-foreground">
                         {stakeholder.label}
                       </span>
                     </div>
@@ -910,7 +910,7 @@ export function BudgetAllocatorGame({
                 <div className="w-full max-w-md">
                   <Button
                     onClick={() => setStep('ALLOCATE')}
-                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                   >
                     {text.hookButton} <ArrowRight className="ml-2 w-7 h-7" />
                   </Button>
@@ -918,8 +918,8 @@ export function BudgetAllocatorGame({
               </div>
 
               {/* Decorative artifacts */}
-              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-rose-100/30 dark:bg-rose-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-amber-100/20 dark:bg-amber-500/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-status-blocked-bg/30 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-status-partial-bg/20 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
             </Card>
           </motion.div>
         )}
@@ -933,17 +933,17 @@ export function BudgetAllocatorGame({
             animate="visible"
             exit="exit"
           >
-            <Card className="rounded-[3rem] bg-white dark:bg-zinc-950 border-none shadow-lg overflow-hidden">
+            <Card className="rounded-[3rem] bg-card border-none shadow-lg overflow-hidden">
               <div className="p-6 md:p-10 max-w-3xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                  <div className="text-zinc-400 dark:text-zinc-500 text-sm font-black uppercase tracking-[0.3em] mb-2">
+                  <div className="text-muted-foreground text-sm font-black uppercase tracking-[0.3em] mb-2">
                     Budget Allocation
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-zinc-900 dark:text-white">
+                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
                     {text.allocateTitle}
                   </h2>
-                  <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+                  <p className="text-muted-foreground mt-2">
                     {text.allocateSubtitle}
                   </p>
                 </div>
@@ -985,10 +985,10 @@ export function BudgetAllocatorGame({
                                 <div className="font-bold text-sm flex items-center gap-2">
                                   {cat.label}
                                   {!isExpanded && (
-                                    <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                                   )}
                                 </div>
-                                <div className="text-xs text-zinc-400">
+                                <div className="text-xs text-muted-foreground">
                                   {cat.subLabel}
                                 </div>
                               </div>
@@ -1035,7 +1035,7 @@ export function BudgetAllocatorGame({
                   />
 
                   {/* Stakeholder Reactions - Horizontal Bar */}
-                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4">
+                  <div className="rounded-2xl border border-border p-4">
                     <h3 className="font-bold text-sm mb-4 flex items-center justify-center gap-2">
                       <span className="text-lg">👥</span>
                       {text.stakeholdersTitle}
@@ -1050,7 +1050,7 @@ export function BudgetAllocatorGame({
                   {/* Compare Button */}
                   <Button
                     onClick={handleCompare}
-                    className="w-full h-16 rounded-2xl text-xl font-black bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg group"
+                    className="w-full h-16 rounded-2xl text-xl font-black bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg group"
                   >
                     {text.compareButton}{' '}
                     <Check className="ml-2 w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -1070,17 +1070,17 @@ export function BudgetAllocatorGame({
             animate="visible"
             exit="exit"
           >
-            <Card className="rounded-[3rem] overflow-hidden border-none shadow-lg bg-white dark:bg-zinc-950">
+            <Card className="rounded-[3rem] overflow-hidden border-none shadow-lg bg-card">
               <div className="p-8 md:p-12 max-w-3xl mx-auto space-y-10">
                 {/* Header */}
                 <div className="text-center space-y-4">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 text-xs font-black text-zinc-500 uppercase tracking-[0.2em]">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
                     Reality Check
                   </div>
-                  <h2 className="text-4xl md:text-5xl font-black text-zinc-950 dark:text-white tracking-tight">
+                  <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tight">
                     {text.compareTitle}
                   </h2>
-                  <p className="text-zinc-500 dark:text-zinc-400">
+                  <p className="text-muted-foreground">
                     {text.compareSubtitle}
                   </p>
                 </div>
@@ -1127,19 +1127,19 @@ export function BudgetAllocatorGame({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1 }}
-                    className="rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-6"
+                    className="rounded-2xl bg-status-partial-bg border border-status-partial-fg/30 p-6"
                   >
                     <h3 className="font-bold flex items-center gap-2 mb-4">
-                      <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                      <Lightbulb className="w-5 h-5 text-status-partial-fg" />
                       {text.insightsTitle}
                     </h3>
                     <ul className="space-y-2">
                       {insights.map((insight, i) => (
                         <li
                           key={i}
-                          className="text-sm text-zinc-700 dark:text-zinc-300 flex items-start gap-2"
+                          className="text-sm text-foreground flex items-start gap-2"
                         >
-                          <span className="text-amber-500">•</span>
+                          <span className="text-status-partial-fg">•</span>
                           {insight}
                         </li>
                       ))}
@@ -1160,8 +1160,8 @@ export function BudgetAllocatorGame({
               </div>
 
               {/* Atmospheric Glows */}
-              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-rose-500/5 dark:bg-rose-500/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-emerald-500/5 dark:bg-emerald-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-status-blocked-fg/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-status-live-fg/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
             </Card>
           </motion.div>
         )}

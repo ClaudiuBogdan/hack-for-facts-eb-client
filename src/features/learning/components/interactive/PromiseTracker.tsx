@@ -75,22 +75,22 @@ function getRateColorClasses(rate: number) {
 
     if (isLow) {
         return {
-            bar: "bg-rose-500/50",
-            icon: "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400",
-            text: "text-rose-600 dark:text-rose-400"
+            bar: "bg-status-blocked-fg/50",
+            icon: "bg-status-blocked-bg text-status-blocked-fg",
+            text: "text-status-blocked-fg"
         }
     }
     if (isHigh) {
         return {
-            bar: "bg-emerald-500/50",
-            icon: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-            text: "text-emerald-600 dark:text-emerald-400"
+            bar: "bg-status-live-fg/50",
+            icon: "bg-status-live-bg text-status-live-fg",
+            text: "text-status-live-fg"
         }
     }
     return {
-        bar: "bg-amber-500/50",
-        icon: "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
-        text: "text-amber-600 dark:text-amber-400"
+        bar: "bg-status-partial-fg/50",
+        icon: "bg-status-partial-bg text-status-partial-fg",
+        text: "text-status-partial-fg"
     }
 }
 
@@ -205,7 +205,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                         animate="visible"
                         exit="exit"
                     >
-                        <Card className="p-10 md:p-16 rounded-[3rem] bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-lg overflow-hidden relative border-none">
+                        <Card className="p-10 md:p-16 rounded-[3rem] bg-card border-border shadow-lg overflow-hidden relative border-none">
                             <div className="relative z-10 flex flex-col items-center text-center space-y-10">
                                 {/* Year Selector */}
                                 <div className="w-full flex justify-center">
@@ -214,12 +214,12 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                         onValueChange={handleYearChange}
                                         className="w-auto"
                                     >
-                                        <TabsList className="grid grid-cols-3 w-[280px] h-12 bg-zinc-100 dark:bg-zinc-900 rounded-full p-1.5 gap-1">
+                                        <TabsList className="grid grid-cols-3 w-[280px] h-12 bg-muted rounded-full p-1.5 gap-1">
                                             {[2022, 2023, 2024].map((year) => (
                                                 <TabsTrigger
                                                     key={year}
                                                     value={year.toString()}
-                                                    className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-sm transition-all text-sm font-bold text-zinc-500 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100"
+                                                    className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-sm font-bold text-muted-foreground data-[state=active]:text-foreground"
                                                 >
                                                     {year}
                                                 </TabsTrigger>
@@ -233,14 +233,14 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                         initial={{ opacity: 0, scale: 0.5 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                                        className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 mb-2 shadow-inner"
+                                        className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-primary/10 text-primary mb-2 shadow-inner"
                                     >
                                         <Building2 className="w-10 h-10" />
                                     </motion.div>
-                                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-zinc-900 dark:text-white mt-6 leading-[0.95]">
-                                        <Trans>How much was <span className="text-blue-600 dark:text-blue-400 italic">built</span>?</Trans>
+                                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground mt-6 leading-[0.95]">
+                                        <Trans>How much was <span className="text-primary italic">built</span>?</Trans>
                                     </h2>
-                                    <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                                    <p className="text-xl text-muted-foreground font-medium leading-relaxed">
                                         <Trans>The government planned to spend <strong>{formatBillions(investmentData.planned)}</strong> on Infrastructure in {selectedYear}.</Trans>
                                         <br className="hidden md:block" />
                                         <Trans>What percentage was actually used?</Trans>
@@ -250,10 +250,10 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                 <div className="w-full max-w-lg space-y-10">
                                     <div className="space-y-6">
                                         <div className="flex flex-col items-center">
-                                            <span className="text-7xl md:text-8xl font-black tracking-tighter text-blue-600 dark:text-blue-400 transition-all">
+                                            <span className="text-7xl md:text-8xl font-black tracking-tighter text-primary transition-all">
                                                 {guess}%
                                             </span>
-                                            <div className="mt-2 text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-600 block">{t`YOUR PREDICTION`}</div>
+                                            <div className="mt-2 text-xs font-black uppercase tracking-widest text-muted-foreground block">{t`YOUR PREDICTION`}</div>
                                         </div>
 
                                         <div className="px-4">
@@ -264,7 +264,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                 step={1}
                                                 className="py-6 scale-110 md:scale-125"
                                             />
-                                            <div className="flex justify-between mt-2 text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-widest px-2">
+                                            <div className="flex justify-between mt-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">
                                                 <span>0%</span>
                                                 <span>100%</span>
                                             </div>
@@ -274,7 +274,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                     <Button
                                         onClick={() => void handleSubmitGuess()}
                                         disabled={isRevealing}
-                                        className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl group"
+                                        className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-foreground text-background hover:bg-foreground/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl group"
                                     >
                                         {t`Reveal Reality`} <ArrowRight className="ml-2 w-7 h-7 group-hover:translate-x-1 transition-transform" />
                                     </Button>
@@ -282,8 +282,8 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                             </div>
 
                             {/* Decorative artifacts */}
-                            <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-blue-100/30 dark:bg-blue-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-indigo-100/20 dark:bg-indigo-500/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-primary/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
                         </Card>
                     </motion.div>
                 ) : (
@@ -294,23 +294,23 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                         animate="visible"
                         exit="exit"
                     >
-                        <Card className="rounded-[4rem] overflow-hidden border-none shadow-3xl bg-white dark:bg-zinc-950 transition-colors duration-500">
+                        <Card className="rounded-[4rem] overflow-hidden border-none shadow-3xl bg-card transition-colors duration-500">
                             <div className="p-8 md:p-12 max-w-2xl mx-auto space-y-12">
 
                                 {/* Header Section */}
                                 <div className="text-center space-y-6">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em]">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
                                         {selectedYear} {t`Reality Check`}
                                     </div>
 
                                     <div className="relative">
-                                        <h2 className="text-[6rem] md:text-[8rem] font-[1000] text-zinc-950 dark:text-white tracking-[-0.04em] leading-none drop-shadow-sm">
+                                        <h2 className="text-[6rem] md:text-[8rem] font-[1000] text-foreground tracking-[-0.04em] leading-none drop-shadow-sm">
                                             {actualRate}%
                                         </h2>
                                         <div className="absolute -right-4 top-0 rotate-12">
                                             <div className={cn(
-                                                "px-4 py-2 rounded-xl text-sm font-black text-white shadow-lg transform hover:scale-110 transition-transform",
-                                                Math.abs(guess - actualRate) < 15 ? "bg-emerald-500" : "bg-rose-500"
+                                                "px-4 py-2 rounded-xl text-sm font-black text-background shadow-lg transform hover:scale-110 transition-transform",
+                                                Math.abs(guess - actualRate) < 15 ? "bg-status-live-fg" : "bg-status-blocked-fg"
                                             )}>
                                                 {Math.abs(guess - actualRate) < 15 ? t`Close!` : t`Way off!`}
                                             </div>
@@ -318,10 +318,10 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                     </div>
 
                                     <div className="flex justify-center gap-3">
-                                        <InsightPill className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700">
+                                        <InsightPill className="bg-muted text-muted-foreground border-border">
                                             {t`Your guess`}: {guess}%
                                         </InsightPill>
-                                        <InsightPill className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20">
+                                        <InsightPill className="bg-primary/10 text-primary border-primary/20">
                                             <Building2 className="w-3 h-3" /> {t`Infrastructure`}
                                         </InsightPill>
                                     </div>
@@ -335,10 +335,10 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                         className="space-y-6"
                                     >
                                         <div className="text-center">
-                                            <h3 className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em]">{t`Where did the money go?`}</h3>
+                                            <h3 className="text-sm font-black text-muted-foreground uppercase tracking-[0.2em]">{t`Where did the money go?`}</h3>
                                         </div>
 
-                                        <div className="rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800/60 overflow-hidden bg-zinc-50/30 dark:bg-zinc-950/30 divide-y divide-zinc-100 dark:divide-zinc-800/40">
+                                        <div className="rounded-[2.5rem] border border-border overflow-hidden bg-muted/30 divide-y divide-border">
                                             {(Object.entries(currentData.breakdown) as [BudgetCategory, { planned: number; executed: number }][]).map(([key, data], idx) => {
                                                 const rate = Math.round((data.executed / data.planned) * 100)
                                                 const colorClasses = getRateColorClasses(rate)
@@ -350,10 +350,10 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         transition={{ delay: idx * 0.1 }}
-                                                        className="p-6 flex items-center justify-between group hover:bg-white/50 dark:hover:bg-zinc-900/50 transition-colors relative overflow-hidden"
+                                                        className="p-6 flex items-center justify-between group hover:bg-muted/50 transition-colors relative overflow-hidden"
                                                     >
                                                         {/* Subtle Progress Bar Background */}
-                                                        <div className="absolute bottom-0 left-0 h-1 bg-zinc-100 dark:bg-zinc-800 w-full" />
+                                                        <div className="absolute bottom-0 left-0 h-1 bg-muted w-full" />
                                                         <motion.div
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${rate}%` }}
@@ -366,8 +366,8 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                                 <Icon className="w-5 h-5" />
                                                             </div>
                                                             <div>
-                                                                <div className="text-sm font-black text-zinc-900 dark:text-zinc-100">{CATEGORY_LABELS[key]}</div>
-                                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                                <div className="text-sm font-black text-foreground">{CATEGORY_LABELS[key]}</div>
+                                                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                                                     {t`Planned`}: {formatBillions(data.planned)}
                                                                 </div>
                                                             </div>
@@ -376,7 +376,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                             <div className={cn("text-xl font-black tabular-nums", colorClasses.text)}>
                                                                 {rate}%
                                                             </div>
-                                                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                                                 {t`Executed`}
                                                             </div>
                                                         </div>
@@ -392,18 +392,18 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.4 }}
-                                    className="bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-[2rem] p-8 relative overflow-hidden"
+                                    className="bg-status-partial-bg border border-status-partial-fg/30 rounded-[2rem] p-8 relative overflow-hidden"
                                 >
                                     <div className="relative z-10 space-y-4">
-                                        <div className="flex items-center gap-3 text-amber-700 dark:text-amber-400">
+                                        <div className="flex items-center gap-3 text-status-partial-fg">
                                             <AlertCircle className="w-5 h-5" />
                                             <h4 className="font-black text-sm uppercase tracking-widest">{t`The Pattern`}</h4>
                                         </div>
-                                        <p className="text-lg font-medium text-amber-900 dark:text-amber-200 leading-relaxed">
+                                        <p className="text-lg font-medium text-status-partial-fg leading-relaxed">
                                             {t`Money gets redirected: salaries and social transfers often exceed initial plans (100%+), while infrastructure lags at 55-60% and EU projects at just 30-35%.`}
                                         </p>
                                     </div>
-                                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+                                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-status-partial-fg/10 rounded-full blur-3xl pointer-events-none" />
                                 </motion.div>
 
                                 {/* Reset Button */}
@@ -411,7 +411,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                     <Button
                                         variant="ghost"
                                         onClick={() => void handleReset()}
-                                        className="h-12 px-6 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all font-bold uppercase tracking-widest text-xs"
+                                        className="h-12 px-6 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all font-bold uppercase tracking-widest text-xs"
                                     >
                                         <RotateCcw className="w-4 h-4 mr-2" />
                                         {t`Try Another Year`}

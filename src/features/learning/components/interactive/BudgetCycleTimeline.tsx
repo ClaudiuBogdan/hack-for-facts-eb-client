@@ -121,7 +121,7 @@ function Countdown({ days, label, deadlinePassedLabel }: CountdownProps) {
 
   if (isPassed) {
     return (
-      <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+      <div className="flex items-center gap-2 text-status-live-fg bg-status-live-bg px-4 py-2 rounded-2xl border border-status-live-fg/30">
         <span className="text-sm font-bold">
           {deadlinePassedLabel ?? t`Budget submitted for ${defaultYearRange.end}`}
         </span>
@@ -135,22 +135,22 @@ function Countdown({ days, label, deadlinePassedLabel }: CountdownProps) {
         'relative group overflow-hidden',
         'flex flex-col justify-center px-6 py-3 rounded-2xl transition-all min-w-[140px] text-center',
         isUrgent
-          ? 'bg-amber-50 dark:bg-amber-950/30 ring-1 ring-amber-200 dark:ring-amber-800 shadow-lg shadow-amber-500/10'
-          : 'bg-zinc-100 dark:bg-zinc-800/50 ring-1 ring-zinc-200 dark:ring-zinc-700 shadow-sm'
+          ? 'bg-status-partial-bg ring-1 ring-status-partial-fg/30 shadow-lg'
+          : 'bg-muted ring-1 ring-border shadow-sm'
       )}
     >
       <div className={cn(
         "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
         isUrgent
-          ? "bg-linear-to-r from-amber-500/0 via-amber-500/5 to-amber-500/0"
-          : "bg-linear-to-r from-zinc-500/0 via-zinc-500/5 to-zinc-500/0"
+          ? "bg-status-partial-fg/10"
+          : "bg-muted-foreground/10"
       )} />
 
       <div className="flex items-baseline justify-center gap-1.5 relative z-10">
         <motion.span
           className={cn(
             'text-4xl font-black tabular-nums tracking-tighter leading-none',
-            isUrgent ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-900 dark:text-zinc-100'
+            isUrgent ? 'text-status-partial-fg' : 'text-foreground'
           )}
         >
           {displayValue}
@@ -158,7 +158,7 @@ function Countdown({ days, label, deadlinePassedLabel }: CountdownProps) {
         <span
           className={cn(
             'text-xs font-bold uppercase tracking-wider mb-1',
-            isUrgent ? 'text-amber-600/80 dark:text-amber-400/80' : 'text-zinc-500 dark:text-zinc-400'
+            isUrgent ? 'text-status-partial-fg' : 'text-muted-foreground'
           )}
         >
           {label ? label.split(' ')[0] : t`days`}
@@ -166,7 +166,7 @@ function Countdown({ days, label, deadlinePassedLabel }: CountdownProps) {
       </div>
       <span className={cn(
         "text-[10px] font-bold uppercase tracking-widest relative z-10",
-        isUrgent ? "text-amber-600/60 dark:text-amber-400/60" : "text-zinc-400 dark:text-zinc-500"
+        isUrgent ? "text-status-partial-fg" : "text-muted-foreground"
       )}>
         {t`Until Nov 15`}
       </span>
@@ -201,8 +201,8 @@ function CurrentDateIndicator({ date }: CurrentDateIndicatorProps) {
       className="absolute top-0 bottom-0 z-20 pointer-events-none"
       style={{ left: `${leftPercent}%` }}
     >
-      <div className="absolute left-0 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-red-500 dark:bg-red-400" />
-      <div className="absolute left-0 -translate-x-1/2 -top-5 px-1.5 py-0.5 rounded bg-red-500 dark:bg-red-400 text-[10px] font-bold uppercase text-white">
+      <div className="absolute left-0 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-status-blocked-fg" />
+      <div className="absolute left-0 -translate-x-1/2 -top-5 px-1.5 py-0.5 rounded bg-status-blocked-fg text-[10px] font-bold uppercase text-background">
         Now
       </div>
     </div>
@@ -262,11 +262,11 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
       <div className="absolute right-full pr-2 flex flex-col items-start justify-center h-full">
         <span className={cn(
           "text-sm font-bold transition-colors duration-200",
-          isSelected ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200"
+          isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
         )}>
           {label.name}
         </span>
-        <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wide hidden md:inline">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide hidden md:inline">
           {label.timing}
         </span>
       </div>
@@ -280,13 +280,12 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
             'flex items-center justify-center gap-2 px-3 shadow-sm',
             colors.bgSolid,
             isSelected
-              ? 'ring-4 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950 shadow-md scale-[1.02]'
+              ? 'ring-4 ring-offset-2 ring-offset-background shadow-md scale-[1.02]'
               : 'hover:scale-[1.01] hover:shadow-md opacity-90 hover:opacity-100',
-            isSelected && (isHighOpportunity ? 'ring-amber-200 dark:ring-amber-800' : 'ring-blue-200 dark:ring-blue-800'),
-            isHighOpportunity && !isSelected && 'shadow-amber-500/20',
-            isCurrent && !isSelected && 'ring-2 ring-red-400/30',
+            isSelected && (isHighOpportunity ? 'ring-status-partial-fg/30' : 'ring-primary/40'),
+            isCurrent && !isSelected && 'ring-2 ring-status-blocked-fg/30',
             // Special styling for full-year execution bar to make it less monolithic
-            isFullYear && 'bg-linear-to-r from-blue-500 via-blue-400 to-blue-500 bg-size-[200%_100%] animate-[shimmer_8s_infinite_linear]'
+            isFullYear && 'bg-primary'
           )}
           style={{
             left: `${startPercent}%`,
@@ -305,13 +304,13 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
             "p-1 rounded-lg bg-white/20 backdrop-blur-sm",
             isSelected && "bg-white/30"
           )}>
-            <Icon className="w-4 h-4 text-white" />
+            <Icon className="w-4 h-4 text-background" />
           </div>
 
-          {isHighOpportunity && <Star className="w-3.5 h-3.5 text-amber-200 fill-current animate-pulse" />}
+          {isHighOpportunity && <Star className="w-3.5 h-3.5 text-background fill-current animate-pulse" />}
 
           <span className={cn(
-            "text-xs font-bold text-white tracking-tight",
+            "text-xs font-bold text-background tracking-tight",
             !isFullYear && "hidden lg:inline",
             isFullYear && "inline"
           )}>
@@ -345,10 +344,10 @@ function MobilePhaseCard({ phase, label, isSelected, isCurrent, onClick }: Mobil
       onClick={onClick}
       className={cn(
         'w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left',
-        'border border-zinc-200 dark:border-zinc-800',
+        'border border-border',
         isSelected && 'ring-2',
-        isSelected && (isHighOpportunity ? 'ring-amber-400 bg-amber-50/50 dark:bg-amber-950/20' : 'ring-blue-400 bg-blue-50/50 dark:bg-blue-950/20'),
-        isCurrent && !isSelected && 'border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-950/20'
+        isSelected && (isHighOpportunity ? 'ring-status-partial-fg/30 bg-status-partial-bg/50' : 'ring-primary/40 bg-primary/10'),
+        isCurrent && !isSelected && 'border-status-blocked-fg/30 bg-status-blocked-bg/30'
       )}
     >
       <div
@@ -357,21 +356,21 @@ function MobilePhaseCard({ phase, label, isSelected, isCurrent, onClick }: Mobil
           colors.bgSolid
         )}
       >
-        <Icon className="w-4 h-4 text-white" />
+        <Icon className="w-4 h-4 text-background" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">{label.name}</span>
-          {isHighOpportunity && <Star className="w-3.5 h-3.5 text-amber-500 fill-current shrink-0" />}
+          <span className="font-bold text-foreground truncate">{label.name}</span>
+          {isHighOpportunity && <Star className="w-3.5 h-3.5 text-status-partial-fg fill-current shrink-0" />}
           {isCurrent && (
-            <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 dark:text-red-400 shrink-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-status-blocked-fg shrink-0">
               <Trans>Now</Trans>
             </span>
           )}
         </div>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">{label.timing}</span>
+        <span className="text-xs text-muted-foreground">{label.timing}</span>
       </div>
-      <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
+      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
     </button>
   )
 }
@@ -406,14 +405,14 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
         className={cn(
           'p-6 md:p-8 rounded-3xl border mt-4 relative overflow-hidden',
           isHighOpportunity
-            ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/50'
-            : 'bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800'
+            ? 'bg-status-partial-bg/50 border-status-partial-fg/30'
+            : 'bg-muted/50 border-border'
         )}
       >
         {/* Background blobs for depth */}
         <div className={cn(
           "absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none opacity-50",
-          isHighOpportunity ? "bg-amber-500/10" : "bg-blue-500/5"
+          isHighOpportunity ? "bg-status-partial-fg/10" : "bg-primary/10"
         )} />
 
         {/* Header */}
@@ -423,24 +422,24 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
               className={cn(
                 'shrink-0 p-2.5 rounded-2xl shadow-sm',
                 colors.bgSolid,
-                isHighOpportunity && 'ring-4 ring-amber-100 dark:ring-amber-900/30'
+                isHighOpportunity && 'ring-4 ring-status-partial-fg/30'
               )}
             >
-              <Icon className="w-6 h-6 text-white" />
+              <Icon className="w-6 h-6 text-background" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="font-black text-xl md:text-2xl text-zinc-900 dark:text-zinc-50 tracking-tight">
+                <h4 className="font-black text-xl md:text-2xl text-foreground tracking-tight">
                   {label.name}
                 </h4>
                 {isHighOpportunity && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-800/50">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-status-partial-bg text-status-partial-fg ring-1 ring-status-partial-fg/30">
                     <Star className="w-2.5 h-2.5 fill-current" />
                     <Trans>High Impact</Trans>
                   </span>
                 )}
               </div>
-              <p className="text-base text-zinc-500 mt-0 dark:text-zinc-400 font-medium">{label.timing}</p>
+              <p className="text-base text-muted-foreground mt-0 font-medium">{label.timing}</p>
             </div>
           </div>
           <Button
@@ -454,7 +453,7 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
         </div>
 
         {/* Description */}
-        <p className="text-base md:text-lg text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed max-w-3xl relative z-10">
+        <p className="text-base md:text-lg text-foreground mb-6 leading-relaxed max-w-3xl relative z-10">
           {content.description}
         </p>
 
@@ -462,17 +461,17 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
         <div className="grid gap-6 md:grid-cols-3 relative z-10">
           {/* Key Activities */}
           <div className="space-y-3">
-            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               {text?.activitiesLabel ?? t`Key Activities`}
             </h5>
             <ul className="space-y-2.5">
               {content.keyActivities.map((activity, i) => (
                 <li
                   key={i}
-                  className="text-sm font-medium text-zinc-600 dark:text-zinc-300 flex items-start gap-2.5 leading-snug"
+                  className="text-sm font-medium text-muted-foreground flex items-start gap-2.5 leading-snug"
                 >
-                  <span className="shrink-0 w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600 mt-2" />
+                  <span className="shrink-0 w-1 h-1 rounded-full bg-border mt-2" />
                   {activity}
                 </li>
               ))}
@@ -481,8 +480,8 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
 
           {/* Citizen Opportunities */}
           <div className="space-y-3">
-            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-              <div className={cn("w-1.5 h-1.5 rounded-full", isHighOpportunity ? "bg-amber-500" : "bg-zinc-400")} />
+            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
+              <div className={cn("w-1.5 h-1.5 rounded-full", isHighOpportunity ? "bg-status-partial-fg" : "bg-muted-foreground")} />
               {text?.opportunitiesLabel ?? t`Your Opportunity`}
             </h5>
             <ul className="space-y-2.5">
@@ -492,13 +491,13 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
                   className={cn(
                     'text-sm font-medium flex items-start gap-2.5 leading-snug',
                     isHighOpportunity
-                      ? 'text-amber-800 dark:text-amber-200'
-                      : 'text-zinc-600 dark:text-zinc-300'
+                      ? 'text-status-partial-fg'
+                      : 'text-muted-foreground'
                   )}
                 >
                   <CheckCircle2 className={cn(
                     "shrink-0 w-4 h-4 mt-0.5",
-                    isHighOpportunity ? "text-amber-500" : "text-zinc-400"
+                    isHighOpportunity ? "text-status-partial-fg" : "text-muted-foreground"
                   )} />
                   {opportunity}
                 </li>
@@ -508,8 +507,8 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
 
           {/* Key Deadlines */}
           <div className="space-y-3">
-            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-status-blocked-fg" />
               {text?.deadlinesLabel ?? t`Key Deadlines`}
             </h5>
             <ul className="space-y-2.5">
@@ -519,13 +518,13 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
                     className={cn(
                       'shrink-0 px-2 py-0.5 rounded-md font-mono font-bold text-xs',
                       isHighOpportunity
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/60 transition-colors'
-                        : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors'
+                        ? 'bg-status-partial-bg text-status-partial-fg transition-colors'
+                        : 'bg-muted text-muted-foreground transition-colors'
                     )}
                   >
                     {deadline.date}
                   </span>
-                  <span className="text-zinc-600 dark:text-zinc-400 font-medium pt-0.5">{deadline.description}</span>
+                  <span className="text-muted-foreground font-medium pt-0.5">{deadline.description}</span>
                 </li>
               ))}
             </ul>
@@ -597,36 +596,36 @@ export function BudgetCycleTimeline({
       ref={ref}
       className={cn(
         'my-8 p-6 md:p-8 rounded-[2.5rem] overflow-hidden relative border-0 shadow-xl',
-        'bg-white dark:bg-zinc-950',
-        inBudgetSeason && 'ring-4 ring-amber-300/30 dark:ring-amber-500/20'
+        'bg-card',
+        inBudgetSeason && 'ring-4 ring-status-partial-fg/30'
       )}
     >
       {/* Decorative background */}
-      <div className="absolute inset-0 bg-grid-zinc-100/50 dark:bg-grid-zinc-900/50 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 dark:bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
 
       <div className="relative z-10 space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-500" />
+            <h3 className="text-xl font-bold text-foreground tracking-tight flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
               {text?.title ?? t`Budget Cycle Timeline`}
             </h3>
             {selectedPhase && content ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-1.5">
+              <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                 <ChevronDown className="w-3.5 h-3.5" />
                 {text?.viewingPhaseLabel ?? t`Viewing:`}{' '}
-                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="font-medium text-foreground">
                   {phaseLabels[selectedPhase].name}
                 </span>
               </p>
             ) : text?.subtitle ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{text.subtitle}</p>
+              <p className="text-sm text-muted-foreground mt-1">{text.subtitle}</p>
             ) : content ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {text?.clickToExploreLabel ?? t`Click a phase to explore details`}
               </p>
             ) : null}
@@ -644,10 +643,10 @@ export function BudgetCycleTimeline({
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-status-partial-bg border border-status-partial-fg/30"
           >
-            <Star className="w-4 h-4 text-amber-600 dark:text-amber-400 fill-current" />
-            <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+            <Star className="w-4 h-4 text-status-partial-fg fill-current" />
+            <span className="text-sm font-medium text-status-partial-fg">
               {text?.budgetSeasonLabel ?? t`It's budget season! November-December is the best time for citizen engagement.`}
             </span>
           </motion.div>
@@ -663,8 +662,8 @@ export function BudgetCycleTimeline({
                 className={cn(
                   'flex-1 text-xs font-medium pl-2', // Align to start of column (grid line)
                   i + 1 === currentMonth
-                    ? 'text-red-500 dark:text-red-400 font-bold'
-                    : 'text-zinc-400 dark:text-zinc-500'
+                    ? 'text-status-blocked-fg font-bold'
+                    : 'text-muted-foreground'
                 )}
               >
                 {label}
@@ -679,10 +678,10 @@ export function BudgetCycleTimeline({
               {MONTH_LABELS.map((_, i) => (
                 <div
                   key={i}
-                  className="flex-1 border-l border-zinc-100 dark:border-zinc-800"
+                  className="flex-1 border-l border-border"
                 />
               ))}
-              <div className="border-l border-zinc-100 dark:border-zinc-800" />
+              <div className="border-l border-border" />
             </div>
 
             {/* Current date indicator */}
@@ -734,21 +733,21 @@ export function BudgetCycleTimeline({
         </AnimatePresence>
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
+        <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="w-3 h-3 rounded-full bg-status-blocked-fg" />
             <span>{text?.currentPhaseLabel ?? t`Current date`}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="w-3 h-3 rounded-full bg-status-partial-fg" />
             <span><Trans>High opportunity</Trans></span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="w-3 h-3 rounded-full bg-primary" />
             <span><Trans>Medium opportunity</Trans></span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="w-3 h-3 rounded-full bg-zinc-400" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="w-3 h-3 rounded-full bg-muted-foreground" />
             <span><Trans>Low opportunity</Trans></span>
           </div>
         </div>
