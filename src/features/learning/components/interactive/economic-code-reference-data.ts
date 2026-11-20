@@ -74,11 +74,11 @@ export const CATEGORY_COLORS = {
     codeBg: 'bg-card',
   },
   capital: {
-    bg: 'bg-status-blocked-bg',
+    bg: 'bg-card',
     bgHover: 'hover:bg-status-blocked-bg',
     border: 'border-status-blocked-fg/30',
     bar: 'bg-status-blocked-fg',
-    barBg: 'bg-status-blocked-fg/20',
+    barBg: 'bg-status-blocked-bg',
     text: 'text-status-blocked-fg',
     textMuted: 'text-status-blocked-fg',
     badge: 'bg-status-blocked-bg text-status-blocked-fg border-status-blocked-fg/30',
