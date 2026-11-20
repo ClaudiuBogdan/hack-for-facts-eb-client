@@ -8,7 +8,7 @@ import { legislationAlertShellClassName } from '../lib/legislation-theme'
 
 type Variant = 'banner' | 'row'
 
-/** The expression kinds that are the act's text as published. */
+/** The expression kinds that are the act's text as published (not republished, not consolidated). */
 const PUBLISHED_FORM_KINDS: ReadonlySet<string> = new Set(['original', 'corp', 'stub-header'])
 
 type Props = {
@@ -102,12 +102,17 @@ export function ActWarnings({ act, variant = 'banner' }: Props) {
 
   const versionKind = act.canonical?.versionKind ?? ''
   const publishedForm = PUBLISHED_FORM_KINDS.has(versionKind)
+  const isConsolidation = versionKind === 'consolidare'
   const publishedOn =
     act.canonical?.versionDate ?? act.canonical?.firstPublicationDate ?? null
   const republishedOn =
     versionKind === 'republicare' ? (act.canonical?.versionDate ?? null) : null
-  const isStale = act.amendedAfterPublication > 0
-  const isContradicted = act.statusEvidence.contradictedAbrogations > 0
+  // Null counts (bridged on legal_v2, absent from the previous corpus) are
+  // unknown: no warning is raised on them, and none is denied either.
+  const amendmentCount = act.amendedAfterPublication ?? 0
+  const contradictedCount = act.statusEvidence?.contradictedAbrogations ?? 0
+  const isStale = amendmentCount > 0
+  const isContradicted = contradictedCount > 0
 
   if (!isStale && !isContradicted) return null
 
@@ -127,42 +132,59 @@ export function ActWarnings({ act, variant = 'banner' }: Props) {
             // republications) have earlier-dated ones. So no "since
             // publication".
             <Plural
-              value={act.amendedAfterPublication}
+              // An expression, not a bare identifier: it keeps the catalog's
+              // `{0}` placeholder, so the translated message stays live.
+              value={act.amendedAfterPublication ?? 0}
               one="O referință de modificare sau completare înregistrată pentru act."
               few="# referințe de modificare sau completare înregistrate pentru act."
               other="# de referințe de modificare sau completare înregistrate pentru act."
             />
           }
         >
-          {!publishedForm ? (
+          {/* Every branch is true on both sources: the legacy corpus serves
+              published forms only, legal_v2 also serves Portal consolidations
+              — which are unofficial and never "the text in force at a date"
+              (LEG-X3AV). No branch claims what the summary describes: on
+              legal_v2 it is bridged from the previous corpus. */}
+          {isConsolidation ? (
+            <Trans>
+              Textul afișat implicit este o formă consolidată neoficială, cu
+              caracter informativ. Referințele sunt numărate pentru întregul
+              act, deci pot fi anterioare sau ulterioare acestei forme. Pentru
+              dispozițiile aplicabile la o dată, consultă în Monitorul Oficial
+              actul și actele modificatoare.
+            </Trans>
+          ) : !publishedForm ? (
             republishedOn ? (
               <Trans>
-                Rezumatul și structura de mai jos descriu actul așa cum a fost
-                republicat la {formatLegalDate(republishedOn, i18n.locale)}.
-                Referințele sunt numărate pentru întregul act, deci pot fi și
-                anterioare republicării. Nu deținem textul consolidat la zi —
-                pentru versiunea în vigoare, consultă textul oficial.
+                Textul afișat implicit este actul așa cum a fost republicat la{' '}
+                {formatLegalDate(republishedOn, i18n.locale)}. Referințele sunt
+                numărate pentru întregul act, deci pot fi și anterioare
+                republicării. Textul nu include modificările ulterioare —
+                pentru dispozițiile aplicabile, consultă în Monitorul Oficial
+                actele modificatoare.
               </Trans>
             ) : (
               <Trans>
                 Referințele sunt numărate pentru întregul act, nu față de
-                versiunea de mai jos, deci pot fi și anterioare ei. Nu deținem
-                textul consolidat la zi — pentru versiunea în vigoare, consultă
-                textul oficial.
+                versiunea afișată, deci pot fi și anterioare ei. Pentru
+                dispozițiile aplicabile la o dată, consultă în Monitorul
+                Oficial actul și actele modificatoare.
               </Trans>
             )
           ) : publishedOn ? (
             <Trans>
-              Rezumatul și structura de mai jos descriu actul așa cum a fost
-              publicat la {formatLegalDate(publishedOn, i18n.locale)}. Nu
-              deținem textul consolidat la zi — pentru versiunea în vigoare,
-              consultă textul oficial.
+              Textul afișat implicit este actul așa cum a fost publicat la{' '}
+              {formatLegalDate(publishedOn, i18n.locale)}. Nu include
+              modificările ulterioare — pentru dispozițiile aplicabile,
+              consultă în Monitorul Oficial actele modificatoare.
             </Trans>
           ) : (
             <Trans>
-              Rezumatul și structura de mai jos descriu actul așa cum a fost
-              publicat inițial. Nu deținem textul consolidat la zi — pentru
-              versiunea în vigoare, consultă textul oficial.
+              Textul afișat implicit este actul așa cum a fost publicat
+              inițial. Nu include modificările ulterioare — pentru
+              dispozițiile aplicabile, consultă în Monitorul Oficial actele
+              modificatoare.
             </Trans>
           )}
         </CollapsedWarning>
@@ -174,7 +196,7 @@ export function ActWarnings({ act, variant = 'banner' }: Props) {
           headline={<Trans>Sursele nu sunt de acord despre ce s-a abrogat.</Trans>}
         >
           <Trans>
-            Am găsit {number(act.statusEvidence.contradictedAbrogations)}{' '}
+            Am găsit {number(contradictedCount)}{' '}
             semnale de abrogare care se contrazic între ele. Statutul afișat
             este cea mai bună interpretare a noastră, nu o certitudine.
           </Trans>

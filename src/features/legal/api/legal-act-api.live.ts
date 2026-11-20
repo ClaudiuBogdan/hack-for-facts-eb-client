@@ -16,6 +16,20 @@ import {
  * `charStart`/`charEnd` locators only (server SDL §3.4). See
  * `docs/design/legal/act-detail.md` §1.
  */
+/**
+ * The legal_v2 form fields (null on the legacy source; the SDL serves both).
+ * Mirrored in the server's `legal-client-contract.test.ts`.
+ */
+const FORM_FIELDS = /* GraphQL */ `
+        readable
+        caveat
+        portalLabelRaw
+        portalLabelDate
+        held
+        formKey
+        sourceUrl
+`
+
 const ACT_DETAIL_QUERY = /* GraphQL */ `
   query LegalActDetail(
     $actId: BigInt
@@ -38,6 +52,10 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
       aliases
       amendedAfterPublication
       canonicalDocumentId
+      dataSource
+      bridgedFields
+      newerNotAvailable
+      defaultBasis
       canonical {
         documentId
         versionKind
@@ -49,6 +67,7 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
         firstPublicationDate
         extractionStatus
         compatibilityTier
+        ${FORM_FIELDS}
       }
       summary {
         description
@@ -148,6 +167,7 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
         isCanonical
         title
         firstPublicationDate
+        ${FORM_FIELDS}
         render {
           renderStatus
           chunkCount
@@ -193,11 +213,11 @@ function asString(value: unknown): string | null {
   return typeof value === 'string' && value.length > 0 ? value : null
 }
 
-function asInt(value: unknown): number {
-  return typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : 0
+function asBoolean(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null
 }
 
-/** Like `asInt`, but a missing number stays missing instead of becoming a zero. */
+/** A number, or null when missing — never a confident zero. */
 function asNullableInt(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value)
     ? Math.trunc(value)
@@ -223,9 +243,45 @@ function asStringArray(value: unknown): string[] {
     : []
 }
 
-function mapStatus(value: unknown): LegalActStatus {
-  const key = typeof value === 'string' ? value : ''
-  return STATUS_BY_ENUM[key] ?? 'necunoscut'
+/**
+ * A served status maps to the UI vocabulary; a null one (legal_v2, act absent
+ * from the previous corpus) stays null. An unrecognised enum value reads as
+ * `necunoscut` — the server asserted a status we cannot name.
+ */
+function mapStatus(value: unknown): LegalActStatus | null {
+  if (typeof value !== 'string') return null
+  return STATUS_BY_ENUM[value] ?? 'necunoscut'
+}
+
+/** The legal_v2 form fields of a document expression (null on legacy). */
+function mapFormFields(item: Record<string, unknown>) {
+  return {
+    readable: asBoolean(item.readable),
+    caveat: asString(item.caveat),
+    portalLabelRaw: asString(item.portalLabelRaw),
+    portalLabelDate: asString(item.portalLabelDate),
+    held: asBoolean(item.held),
+    formKey: asString(item.formKey),
+    sourceUrl: asString(item.sourceUrl),
+  }
+}
+
+/** Old numeric Portal page id — the only id a Portal URL can be built from. */
+const PORTAL_PAGE_ID = /^[1-9]\d*$/
+
+/**
+ * The canonical text's Portal page. legal_v2 serves it (`sourceUrl`); the
+ * legacy source's page id IS the document id. A legal_v2 `f<form_id>` is not
+ * a Portal page, so it never becomes a URL.
+ */
+function officialTextUrlOf(
+  dataSource: 'legal' | 'legal_v2',
+  canonicalDocumentId: string | null,
+  canonicalSourceUrl: string | null,
+): string | null {
+  if (dataSource === 'legal_v2') return canonicalSourceUrl
+  if (canonicalDocumentId === null || !PORTAL_PAGE_ID.test(canonicalDocumentId)) return null
+  return `https://legislatie.just.ro/Public/DetaliiDocument/${canonicalDocumentId}`
 }
 
 function mapListItem(value: unknown) {
@@ -239,7 +295,7 @@ function mapListItem(value: unknown) {
     actYear: typeof raw.actYear === 'number' ? raw.actYear : null,
     issuerSlug: asString(raw.issuerSlug),
     status: mapStatus(raw.status),
-    inDegree: asInt(raw.inDegree),
+    inDegree: asNullableInt(raw.inDegree),
   }
 }
 
@@ -342,11 +398,25 @@ function mapIncomingAnchors(value: unknown) {
   }
 }
 
+/** Status evidence counts; a missing blob (bridged and null) stays null. */
+function mapStatusEvidence(value: unknown) {
+  if (value === null || typeof value !== 'object') return null
+  const evidence = asRecord(value)
+  const count = (field: unknown) =>
+    typeof field === 'number' && Number.isFinite(field) ? Math.trunc(field) : 0
+  return {
+    modifiedByCount: count(evidence.modified_by_count),
+    contradictedAbrogations: count(evidence.contradicted_abrogations),
+    abrogatedByCount: Array.isArray(evidence.abrogated_by) ? evidence.abrogated_by.length : 0,
+    futureEventCount: Array.isArray(evidence.future_events) ? evidence.future_events.length : 0,
+  }
+}
+
 function mapAct(raw: RawAct): LegalActDetail {
-  const evidence = asRecord(raw.statusEvidence)
   const canonical = raw.canonical ? asRecord(raw.canonical) : null
   const summary = raw.summary ? asRecord(raw.summary) : null
   const canonicalDocumentId = asString(raw.canonicalDocumentId)
+  const dataSource = raw.dataSource === 'legal_v2' ? 'legal_v2' : 'legal'
 
   return legalActDetailSchema.parse({
     actId: String(raw.actId),
@@ -356,20 +426,15 @@ function mapAct(raw: RawAct): LegalActDetail {
     actYear: typeof raw.actYear === 'number' ? raw.actYear : null,
     issuerSlug: asString(raw.issuerSlug),
     status: mapStatus(raw.status),
-    statusEvidence: {
-      modifiedByCount: asInt(evidence.modified_by_count),
-      contradictedAbrogations: asInt(evidence.contradicted_abrogations),
-      abrogatedByCount: Array.isArray(evidence.abrogated_by)
-        ? evidence.abrogated_by.length
-        : 0,
-      futureEventCount: Array.isArray(evidence.future_events)
-        ? evidence.future_events.length
-        : 0,
-    },
+    statusEvidence: mapStatusEvidence(raw.statusEvidence),
     entryIntoForce: asString(raw.entryIntoForce),
-    inDegree: asInt(raw.inDegree),
+    inDegree: asNullableInt(raw.inDegree),
     aliases: asStringArray(raw.aliases),
-    amendedAfterPublication: asInt(raw.amendedAfterPublication),
+    amendedAfterPublication: asNullableInt(raw.amendedAfterPublication),
+    dataSource,
+    bridgedFields: asStringArray(raw.bridgedFields),
+    newerNotAvailable: asNullableInt(raw.newerNotAvailable),
+    defaultBasis: asString(raw.defaultBasis),
     canonical: canonical
       ? {
           documentId: String(canonical.documentId ?? ''),
@@ -382,6 +447,7 @@ function mapAct(raw: RawAct): LegalActDetail {
           firstPublicationDate: asString(canonical.firstPublicationDate),
           extractionStatus: asString(canonical.extractionStatus),
           compatibilityTier: asString(canonical.compatibilityTier),
+          ...mapFormFields(canonical),
         }
       : null,
     summary: summary
@@ -452,6 +518,7 @@ function mapAct(raw: RawAct): LegalActDetail {
         isCanonical: item.isCanonical === true,
         title: asString(item.title),
         firstPublicationDate: asString(item.firstPublicationDate),
+        ...mapFormFields(item),
         render: render
           ? {
               renderStatus: asString(render.renderStatus) ?? 'content_unavailable',
@@ -460,10 +527,11 @@ function mapAct(raw: RawAct): LegalActDetail {
           : null,
       }
     }),
-    officialTextUrl:
-      canonicalDocumentId === null
-        ? null
-        : `https://legislatie.just.ro/Public/DetaliiDocument/${canonicalDocumentId}`,
+    officialTextUrl: officialTextUrlOf(
+      dataSource,
+      canonicalDocumentId,
+      canonical ? asString(canonical.sourceUrl) : null,
+    ),
   })
 }
 

@@ -55,9 +55,17 @@ export const legalActListItemSchema = z.object({
   actNumber: z.string().nullable(),
   actYear: z.number().int().nullable(),
   issuerSlug: z.string().nullable(),
-  status: legalActStatusSchema,
-  /** Incoming citation count — the server's default sort key. */
-  inDegree: z.number().int(),
+  /**
+   * Null when the server does not know it: on the legal_v2 source status is
+   * BRIDGED from the previous corpus, and an act that corpus does not hold has
+   * none. Render no badge — never a guessed `necunoscut`.
+   */
+  status: legalActStatusSchema.nullable(),
+  /**
+   * Incoming citation count — the server's default sort key. Null when
+   * unknown (bridged on legal_v2, like `status`): render nothing, never 0.
+   */
+  inDegree: z.number().int().nullable(),
 })
 export type LegalActListItem = z.infer<typeof legalActListItemSchema>
 
@@ -172,11 +180,41 @@ export const legalActSummarySchema = z.object({
 export type LegalActSummaryData = z.infer<typeof legalActSummarySchema>
 
 /**
+ * The legal_v2 form fields a document expression carries (all null on the
+ * legacy `legal` source):
+ *
+ *  - `readable` — the form's text is published and servable;
+ *  - `caveat` — `unofficial_consolidation` on every consolidation (LEG-X3AV):
+ *    wherever its text is shown, the reader shows the consolidation banner;
+ *  - `portalLabelRaw` / `portalLabelDate` — the Portal's own consolidation
+ *    note as written, and its date, where filled;
+ *  - `held` — a Portal capture claiming this form is held, conflicting or
+ *    unresolved;
+ *  - `formKey` — the form's key within its act (`cons:2024-01-01`);
+ *  - `sourceUrl` — the form's Portal page (its newest bound capture).
+ */
+function legalFormFieldsShape() {
+  return {
+    readable: z.boolean().nullable(),
+    caveat: z.string().nullable(),
+    portalLabelRaw: z.string().nullable(),
+    portalLabelDate: z.string().nullable(),
+    held: z.boolean().nullable(),
+    formKey: z.string().nullable(),
+    sourceUrl: z.string().nullable(),
+  }
+}
+
+/** The caveat every legal_v2 consolidation carries (LEG-X3AV). */
+export const LEGAL_UNOFFICIAL_CONSOLIDATION_CAVEAT = 'unofficial_consolidation'
+
+/**
  * The canonical document expression.
  *
- * `versionKind` is all but always `original` (221.873 of 226.332 rows); only
- * **3 acts** corpus-wide have two `corp` bodies, which is why there is no
- * version selector — see `docs/design/legal/act-detail.md` §8.
+ * On the legacy source `versionKind` is all but always `original`. On
+ * legal_v2 the canonical is the act's DEFAULT FORM (the latest readable
+ * consolidation dated up to today, else the original) and `documentId` is
+ * `f<form_id>` — an opaque string either way.
  */
 export const legalDocumentSchema = z.object({
   documentId: z.string(),
@@ -189,6 +227,8 @@ export const legalDocumentSchema = z.object({
   firstPublicationDate: z.string().nullable(),
   extractionStatus: z.string().nullable(),
   compatibilityTier: z.string().nullable(),
+  /** legal_v2 only (null on the legacy source) — see `legalFormFieldsShape`. */
+  ...legalFormFieldsShape(),
 })
 export type LegalDocument = z.infer<typeof legalDocumentSchema>
 
@@ -280,8 +320,10 @@ export type LegalGazettePublication = z.infer<
 /**
  * TLDF render availability for one document expression.
  *
- * `renderStatus` is `served` | `content_unavailable` | `superseded_pending`;
- * only `served` documents answer on the REST render route. `chunkCount` is
+ * `renderStatus` is `served` | `content_unavailable` | `superseded_pending`,
+ * and on legal_v2 also `not_loaded` (no published text) |
+ * `composition_not_served` (a header plus a body, not served yet); only
+ * `served` documents answer on the REST render route. `chunkCount` is
  * null when a generation exists but render rows are missing (the route
  * answers 409 there).
  */
@@ -309,6 +351,7 @@ export const legalActDocumentVersionSchema = z.object({
   title: z.string().nullable(),
   firstPublicationDate: z.string().nullable(),
   render: legalRenderAvailabilitySchema.nullable(),
+  ...legalFormFieldsShape(),
 })
 export type LegalActDocumentVersion = z.infer<
   typeof legalActDocumentVersionSchema
@@ -386,18 +429,36 @@ export const legalActDetailSchema = z.object({
   actNumber: z.string().nullable(),
   actYear: z.number().int().nullable(),
   issuerSlug: z.string().nullable(),
-  status: legalActStatusSchema,
-  statusEvidence: legalStatusEvidenceSchema,
+  /** Null when unknown — bridged on legal_v2 (see `bridgedFields`). */
+  status: legalActStatusSchema.nullable(),
+  /** Null when unknown — bridged and nullable like `status`. */
+  statusEvidence: legalStatusEvidenceSchema.nullable(),
   entryIntoForce: z.string().nullable(),
-  inDegree: z.number().int(),
+  /** Null when unknown — bridged and nullable like `status`. */
+  inDegree: z.number().int().nullable(),
   aliases: z.array(z.string()),
   /**
    * Incoming `modifica`/`completeaza` references on the act, of any date: not
    * dated against the canonical text, so some may predate it (I-22). Non-zero
    * shows the staleness warning: the summary and the document we hold may
-   * describe a superseded text.
+   * describe a superseded text. Null when unknown (bridged on legal_v2).
    */
-  amendedAfterPublication: z.number().int(),
+  amendedAfterPublication: z.number().int().nullable(),
+  /** Which source served the act: `legal` (previous corpus) or `legal_v2`. */
+  dataSource: z.enum(['legal', 'legal_v2']),
+  /**
+   * legal_v2 only: the fields read from the previous corpus by act_id
+   * (status, links, timeline, summary, …). Empty on the legacy source, and
+   * on legal_v2 when the previous corpus does not hold the act.
+   */
+  bridgedFields: z.array(z.string()),
+  /**
+   * legal_v2 only: consolidations dated up to today that exist on the Portal
+   * but cannot be shown (no text, not accepted, held). Null on legacy.
+   */
+  newerNotAvailable: z.number().int().nonnegative().nullable(),
+  /** legal_v2 only: `latest_consolidation` | `original` — why the canonical is the default. */
+  defaultBasis: z.string().nullable(),
   canonical: legalDocumentSchema.nullable(),
   summary: legalActSummarySchema.nullable(),
   timeline: z.array(legalTimelineEntrySchema),
@@ -411,11 +472,12 @@ export const legalActDetailSchema = z.object({
   /** Every document expression of the act, canonical flag included. */
   documents: z.array(legalActDocumentVersionSchema),
   /**
-   * Derived, not served: `legal.acts.source_url` equals
+   * The canonical text's Portal page. On legal_v2 it is the canonical form's
+   * served `sourceUrl` (null when none is bound). On the legacy source it is
+   * derived: `legal.acts.source_url` equals
    * `https://legislatie.just.ro/Public/DetaliiDocument/{canonicalDocumentId}`
-   * for **all 224.540 acts** (verified 2026-08-01), and the GraphQL surface does
-   * not expose the column. Recheck that identity before trusting this if the
-   * Portal ever changes its URL scheme.
+   * for **all 224.540 acts** (verified 2026-08-01). Never derived from a
+   * legal_v2 `f<form_id>` id, which is not a Portal page.
    */
   officialTextUrl: z.string().nullable(),
 })
@@ -620,12 +682,12 @@ export const LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT = 'semantic search unavailable'
 /**
  * Byte-exact copy of the server's `LEGAL_ORIGINAL_TEXT_CAVEAT`
  * (`hack-for-facts-eb-server/src/modules/legal/core/provenance.ts`) — the
- * caveat the server itself attaches to served texts: what we hold is the
- * PUBLISHED version of an act, not a consolidated current form. A surface
- * that states this without a server response in hand (the guide) renders this
- * constant rather than paraphrasing, so the module never speaks two versions
- * of its most important disclaimer. Deliberately NOT run through Lingui: it
- * mirrors server bytes, not UI copy.
+ * caveat the LEGACY source attaches to served texts: what it holds is the
+ * PUBLISHED version of an act. Not true on legal_v2, which serves Portal
+ * consolidations too and attaches its own consolidation caveat instead — so
+ * no surface renders this constant on its own any more (the guide stopped,
+ * 2026-11-20); it remains for the search mock lane, which mirrors the legacy
+ * server. Deliberately NOT run through Lingui: it mirrors server bytes.
  */
 export const LEGAL_ORIGINAL_TEXT_CAVEAT =
   'Textele și rezumatele servite sunt versiunile publicate ale actelor și nu garantează forma consolidată curentă — verificați forma în vigoare pe legislatie.just.ro.'
@@ -661,6 +723,26 @@ export const legalSearchResultSchema = z.object({
   unhydratedHits: z.number().int(),
 })
 export type LegalSearchResultData = z.infer<typeof legalSearchResultSchema>
+
+/**
+ * The corpus' live frontiers and the one count the module's caveats cite,
+ * read in ONE request (`legal-freshness-api.ts`) in place of the measured
+ * constants they replaced. Each field is null when the server could not
+ * prove it: a surface then drops the figure or date, never prints a stale
+ * one.
+ *
+ *  - `latestIssueDate` — the newest Monitorul Oficial issue in the corpus;
+ *  - `latestEffectiveChangeDate` — the newest change already in force
+ *    (`legalRecentChanges(until: today)`);
+ *  - `ccrDecisionCount` — Constitutional Court decisions held as acts
+ *    (`decizie` × `curtea-constitutionala`, a complete STATUS partition).
+ */
+export const legislationFreshnessSchema = z.object({
+  latestIssueDate: z.string().nullable(),
+  latestEffectiveChangeDate: z.string().nullable(),
+  ccrDecisionCount: z.number().int().nonnegative().nullable(),
+})
+export type LegislationFreshness = z.infer<typeof legislationFreshnessSchema>
 
 /**
  * The composed payload behind the `/legislation` overview tab. The headline

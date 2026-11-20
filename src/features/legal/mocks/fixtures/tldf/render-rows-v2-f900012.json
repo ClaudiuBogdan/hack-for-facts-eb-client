@@ -1,0 +1,688 @@
+[
+  {
+    "chunk_index": 0,
+    "chunk_count": 1,
+    "block_id": null,
+    "tldf": {
+      "format": "tldf",
+      "format_version": "1.1",
+      "compiler_version": "unit-compiler-v1",
+      "document_id": "f900012",
+      "generation": {
+        "run_id": 4021,
+        "body_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "structure_parser_version": "fixture-build",
+        "content_parser_version": "fixture"
+      },
+      "text_sha256": "eb951a5ff3739e11eec82375de9a042a5c13060815a5fa736af595ac51eeb0b4",
+      "offset_unit": "utf16_code_unit",
+      "contains_non_bmp": false,
+      "privacy_class": "public",
+      "source_url": "https://legislatie.just.ro/Public/DetaliiDocumentAfis/8851",
+      "shape": "standard_articles",
+      "accounting": {
+        "emitted_chars": 1060,
+        "separator_chars": 32,
+        "excluded_by_reason": {}
+      },
+      "marks": [
+        {
+          "ordinal": 0,
+          "kind": "reference",
+          "span": [
+            193,
+            240
+          ],
+          "link": {
+            "kind": "act",
+            "target_fragment": "A127",
+            "href": "https://legislatie.just.ro/Public/DetaliiDocumentAfis/1464#A127"
+          }
+        },
+        {
+          "ordinal": 1,
+          "kind": "legal_ref",
+          "span": [
+            350,
+            355
+          ]
+        }
+      ],
+      "blocks": [
+        {
+          "id": "0.1.1.1",
+          "kind": "titlu_act",
+          "type": "DEN",
+          "span": [
+            0,
+            35
+          ],
+          "content": [
+            {
+              "text": "HOTĂRÂRE nr. 206 din 27 martie 1996",
+              "span": [
+                0,
+                35
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.2",
+          "kind": "subtitlu_act",
+          "type": "HDR",
+          "span": [
+            36,
+            108
+          ],
+          "content": [
+            {
+              "text": "privind aprobarea renunțării la cetățenia română de către unele persoane",
+              "span": [
+                36,
+                108
+              ],
+              "sep": "\n"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.3",
+          "kind": "emitent",
+          "type": "EMT",
+          "label": "EMITENT",
+          "span": [
+            109,
+            125
+          ],
+          "content": [
+            {
+              "text": "EMITENT",
+              "span": [
+                109,
+                116
+              ],
+              "role": "ttl",
+              "sep": "\n"
+            },
+            {
+              "text": "GUVERNUL",
+              "span": [
+                117,
+                125
+              ],
+              "role": "bdy",
+              "sep": "\n"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.4",
+          "kind": "publicare",
+          "type": "PUB",
+          "label": "Publicat în",
+          "span": [
+            126,
+            181
+          ],
+          "content": [
+            {
+              "text": "Publicat în",
+              "span": [
+                126,
+                137
+              ],
+              "role": "ttl",
+              "sep": "\n"
+            },
+            {
+              "text": "MONITORUL OFICIAL nr. 67 din 3 aprilie 1996",
+              "span": [
+                138,
+                181
+              ],
+              "role": "bdy",
+              "sep": "\n"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.6",
+          "kind": "paragraf",
+          "type": "PAR",
+          "source_element_id": "id_parA10",
+          "span": [
+            182,
+            241
+          ],
+          "changed_since_base_form": false,
+          "content": [
+            {
+              "text": "În temeiul",
+              "span": [
+                182,
+                192
+              ],
+              "sep": "\n"
+            },
+            {
+              "text": "art. 27 din Legea cetățeniei române nr. 21/1991",
+              "span": [
+                193,
+                240
+              ],
+              "sep": " "
+            },
+            {
+              "text": ",",
+              "span": [
+                240,
+                241
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.7",
+          "kind": "paragraf",
+          "type": "PAR",
+          "source_element_id": "id_parA11",
+          "span": [
+            242,
+            270
+          ],
+          "changed_since_base_form": false,
+          "content": [
+            {
+              "text": "Guvernul României hotărăște:",
+              "span": [
+                242,
+                270
+              ],
+              "sep": "\n"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.8",
+          "kind": "articol",
+          "type": "ART",
+          "source_element_id": "id_artA12",
+          "label": "ARTICOL UNIC",
+          "number": {
+            "key": "UNIC",
+            "system": "unic"
+          },
+          "span": [
+            271,
+            405
+          ],
+          "changed_since_base_form": false,
+          "content": [
+            {
+              "text": "ARTICOL UNIC",
+              "span": [
+                271,
+                283
+              ],
+              "role": "ttl",
+              "sep": "\n"
+            }
+          ],
+          "children": [
+            {
+              "id": "0.1.1.8.3.0",
+              "kind": "paragraf",
+              "type": "PAR",
+              "source_element_id": "id_parA13",
+              "span": [
+                284,
+                405
+              ],
+              "changed_since_base_form": false,
+              "content": [
+                {
+                  "text": "Se aprobă renunțarea la cetățenia română persoanelor prevăzute în",
+                  "span": [
+                    284,
+                    349
+                  ],
+                  "sep": "\n"
+                },
+                {
+                  "text": "anexa",
+                  "span": [
+                    350,
+                    355
+                  ],
+                  "sep": " "
+                },
+                {
+                  "text": "care face parte integrantă din prezenta hotărâre.",
+                  "span": [
+                    356,
+                    405
+                  ],
+                  "sep": " "
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.9",
+          "kind": "semnatura",
+          "type": "SMN",
+          "span": [
+            406,
+            627
+          ],
+          "content": [],
+          "children": [
+            {
+              "id": "0.1.1.9.1",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                406,
+                419
+              ],
+              "content": [
+                {
+                  "text": "PRIM-MINISTRU",
+                  "span": [
+                    406,
+                    419
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.3",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                420,
+                436
+              ],
+              "content": [
+                {
+                  "text": "NICOLAE VĂCĂROIU",
+                  "span": [
+                    420,
+                    436
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.5",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                437,
+                452
+              ],
+              "content": [
+                {
+                  "text": "Contrasemnează:",
+                  "span": [
+                    437,
+                    452
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.7",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                453,
+                476
+              ],
+              "content": [
+                {
+                  "text": "p. Ministrul justiției,",
+                  "span": [
+                    453,
+                    476
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.9",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                477,
+                489
+              ],
+              "content": [
+                {
+                  "text": "Adrian Duță,",
+                  "span": [
+                    477,
+                    489
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.11",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                490,
+                506
+              ],
+              "content": [
+                {
+                  "text": "secretar de stat",
+                  "span": [
+                    490,
+                    506
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.13",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                507,
+                527
+              ],
+              "content": [
+                {
+                  "text": "p. Ministru de stat,",
+                  "span": [
+                    507,
+                    527
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.15",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                528,
+                557
+              ],
+              "content": [
+                {
+                  "text": "ministrul afacerilor externe,",
+                  "span": [
+                    528,
+                    557
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.17",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                558,
+                570
+              ],
+              "content": [
+                {
+                  "text": "Marcel Dinu,",
+                  "span": [
+                    558,
+                    570
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.19",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                571,
+                587
+              ],
+              "content": [
+                {
+                  "text": "secretar de stat",
+                  "span": [
+                    571,
+                    587
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.21",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                588,
+                608
+              ],
+              "content": [
+                {
+                  "text": "Ministru de interne,",
+                  "span": [
+                    588,
+                    608
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.9.23",
+              "kind": "semnatura",
+              "type": "SMN",
+              "span": [
+                609,
+                627
+              ],
+              "content": [
+                {
+                  "text": "Doru Ioan Tărăcilă",
+                  "span": [
+                    609,
+                    627
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.10",
+          "kind": "paragraf",
+          "type": "PAR",
+          "source_element_id": "id_parA27",
+          "span": [
+            628,
+            654
+          ],
+          "changed_since_base_form": false,
+          "content": [
+            {
+              "text": "București, 27 martie 1996.",
+              "span": [
+                628,
+                654
+              ],
+              "sep": "\n"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.11",
+          "kind": "paragraf",
+          "type": "PAR",
+          "source_element_id": "id_parA28",
+          "span": [
+            655,
+            663
+          ],
+          "changed_since_base_form": false,
+          "content": [
+            {
+              "text": "Nr. 206.",
+              "span": [
+                655,
+                663
+              ],
+              "sep": "\n"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.12",
+          "kind": "anexa",
+          "type": "ANX",
+          "source_element_id": "id_anxA29",
+          "label": "ANEXĂ",
+          "span": [
+            664,
+            1086
+          ],
+          "changed_since_base_form": false,
+          "content": [
+            {
+              "text": "ANEXĂ",
+              "span": [
+                664,
+                669
+              ],
+              "role": "ttl",
+              "sep": "\n"
+            }
+          ],
+          "children": [
+            {
+              "id": "0.1.1.12.3.0.1",
+              "kind": "paragraf",
+              "type": "PAR",
+              "span": [
+                670,
+                675
+              ],
+              "changed_since_base_form": false,
+              "content": [
+                {
+                  "text": "LISTA",
+                  "span": [
+                    670,
+                    675
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.12.3.0.3",
+              "kind": "paragraf",
+              "type": "PAR",
+              "span": [
+                676,
+                742
+              ],
+              "changed_since_base_form": false,
+              "content": [
+                {
+                  "text": "persoanelor pentru care s-a aprobat renunțarea la cetățenia română",
+                  "span": [
+                    676,
+                    742
+                  ],
+                  "sep": "\n"
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.12.3.1",
+              "kind": "nota",
+              "type": "NTA",
+              "source_element_id": "id_ntaA550",
+              "label": "Notă",
+              "span": [
+                743,
+                1086
+              ],
+              "changed_since_base_form": false,
+              "content": [
+                {
+                  "text": "Notă",
+                  "span": [
+                    743,
+                    747
+                  ],
+                  "role": "ttl",
+                  "sep": "\n"
+                }
+              ],
+              "children": [
+                {
+                  "id": "0.1.1.12.3.1.2.1",
+                  "kind": "nota",
+                  "type": "NTA",
+                  "span": [
+                    748,
+                    1086
+                  ],
+                  "changed_since_base_form": false,
+                  "content": [
+                    {
+                      "text": "Din cauza conținutului mare de date cu caracter personal din cadrul acestui act, fapt care depășește scopul prezentei aplicații legislative în contextul legislației aplicabile, acesta nu este prezent în baza de date legislativă disponibilă aici. Pentru a accesa acest conținut vă puteți adresa Monitorului Oficial sau emitentului actului.",
+                      "span": [
+                        748,
+                        1086
+                      ],
+                      "sep": "\n"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.13",
+          "kind": "paragraf",
+          "type": "PAR",
+          "source_element_id": "id_parA554",
+          "span": [
+            1087,
+            1092
+          ],
+          "changed_since_base_form": false,
+          "content": [
+            {
+              "text": "-----",
+              "span": [
+                1087,
+                1092
+              ],
+              "sep": "\n"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

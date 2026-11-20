@@ -14,7 +14,10 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { createTestQueryClient, render } from '@/test/test-utils'
 import { fetchLegalRenderMock } from '../../api/legal-render-api.mock'
-import { legalActDetailFixture } from '../../mocks/fixtures/legal-act-detail'
+import {
+  LEGACY_FORM_FIELDS,
+  legalActDetailFixture,
+} from '../../mocks/fixtures/legal-act-detail'
 import { ActReadingLayout } from './legal-reader-page'
 
 import type { TldfChunkPayload } from '../../lib/tldf/types'
@@ -108,6 +111,7 @@ const owning = (...documentIds: string[]): typeof legalActDetailFixture => ({
       title: null,
       firstPublicationDate: null,
       render: null,
+      ...LEGACY_FORM_FIELDS,
     })),
   ],
 })

@@ -3,21 +3,8 @@ import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { AlertTriangle, Info } from 'lucide-react'
-import {
-  CCR_DECISION_COUNT,
-  GAZETTE_MATCH_RATE,
-  GAZETTE_PUBLICATION_COUNT,
-  LEGAL_ARTICLE_STRUCTURE_GAP_RATE,
-  LEGAL_CORPUS_MEASURED_AT,
-  LEGAL_DOCS_WITHOUT_ARTICLE_STRUCTURE,
-  LEGAL_REFERENCE_EDGE_COUNT,
-  LEGAL_REFERENCE_UNRESOLVED_COUNT,
-} from '../lib/legal-coverage'
-import {
-  formatLegalDate,
-  formatLegalNumber,
-  formatLegalPercent,
-} from '../lib/legal-format'
+import { formatLegalNumber } from '../lib/legal-format'
+import { useLegislationFreshness } from '../hooks/use-legislation'
 import { LegislationSection } from './legislation-section'
 
 /**
@@ -29,14 +16,17 @@ import { LegislationSection } from './legislation-section'
  * provision was struck down still renders its Portal status. Everything else
  * here is an under-claim; that one is an over-claim, so it goes first and gets
  * the warning treatment.
+ *
+ * No measured figure appears here any more (2026-11-20): the CCR decision
+ * count is read live (`useLegislationFreshness`) and dropped from the
+ * sentence while unknown; the reference, gazette-match and structure shares
+ * had no query and were measurements of the previous corpus, so the notes
+ * state the limit without a number.
  */
 export function LegislationHonestyNotes() {
   const { i18n } = useLingui()
-  const number = (value: number) => formatLegalNumber(value, i18n.locale)
-  const percent = (value: number) => formatLegalPercent(value, i18n.locale)
-
-  const unresolvedShare =
-    LEGAL_REFERENCE_UNRESOLVED_COUNT / LEGAL_REFERENCE_EDGE_COUNT
+  const { data: freshness } = useLegislationFreshness()
+  const ccrCount = freshness?.ccrDecisionCount ?? null
 
   const notes: ReadonlyArray<{
     key: string
@@ -46,24 +36,31 @@ export function LegislationHonestyNotes() {
     {
       key: 'ccr',
       tone: 'warning',
-      body: (
-        <Trans>
-          Cele {number(CCR_DECISION_COUNT)} de decizii ale Curții
-          Constituționale există ca acte, dar nu modifică statutul actelor pe
-          care le vizează. Un articol declarat neconstituțional poate apărea în
-          continuare „în vigoare”. Verifică întotdeauna deciziile Curții separat.
-        </Trans>
-      ),
+      body:
+        ccrCount !== null ? (
+          <Trans>
+            Cele {formatLegalNumber(ccrCount, i18n.locale)} de decizii ale Curții
+            Constituționale există ca acte, dar nu modifică statutul actelor pe
+            care le vizează. Un articol declarat neconstituțional poate apărea
+            în continuare „în vigoare”. Verifică întotdeauna deciziile Curții
+            separat.
+          </Trans>
+        ) : (
+          <Trans>
+            Deciziile Curții Constituționale există ca acte, dar nu modifică
+            statutul actelor pe care le vizează. Un articol declarat
+            neconstituțional poate apărea în continuare „în vigoare”. Verifică
+            întotdeauna deciziile Curții separat.
+          </Trans>
+        ),
     },
     {
       key: 'references',
       tone: 'info',
       body: (
         <Trans>
-          Din {number(LEGAL_REFERENCE_EDGE_COUNT)} de trimiteri între acte,{' '}
-          {number(LEGAL_REFERENCE_UNRESOLVED_COUNT)} ({percent(unresolvedShare)})
-          nu se rezolvă la un act anume. Acestea apar ca „potrivire posibilă”,
-          niciodată ca legătură fermă.
+          O parte dintre trimiterile între acte nu se rezolvă la un act anume.
+          Acestea apar ca „potrivire posibilă”, niciodată ca legătură fermă.
         </Trans>
       ),
     },
@@ -72,8 +69,7 @@ export function LegislationHonestyNotes() {
       tone: 'info',
       body: (
         <Trans>
-          Din {number(GAZETTE_PUBLICATION_COUNT)} de publicări în Monitorul
-          Oficial, doar {percent(GAZETTE_MATCH_RATE)} se leagă cu certitudine de
+          Nu toate publicările din Monitorul Oficial se leagă cu certitudine de
           un act din Portal Legislativ. Restul rămân publicații de sine
           stătătoare.
         </Trans>
@@ -84,10 +80,8 @@ export function LegislationHonestyNotes() {
       tone: 'info',
       body: (
         <Trans>
-          Structura pe articole lipsește pentru{' '}
-          {number(LEGAL_DOCS_WITHOUT_ARTICLE_STRUCTURE)} de documente (circa{' '}
-          {percent(LEGAL_ARTICLE_STRUCTURE_GAP_RATE)} din corpus), deci
-          navigarea pe articol nu le acoperă.
+          Unele documente nu au structură pe articole, deci navigarea pe
+          articol nu le acoperă.
         </Trans>
       ),
     },
@@ -109,12 +103,6 @@ export function LegislationHonestyNotes() {
       id="legislation-honesty-heading"
       title={t`Ce nu vă putem spune încă`}
       description={t`Limitele acestor date, spuse pe față. Citiți-le înainte să vă bazați pe o concluzie.`}
-      footnote={
-        <Trans>
-          Cifrele de mai sus sunt măsurate pe baza de date de producție la{' '}
-          {formatLegalDate(LEGAL_CORPUS_MEASURED_AT, i18n.locale)}.
-        </Trans>
-      }
     >
       <ul className="flex flex-col gap-4">
         {notes.map((note) => (

@@ -29,7 +29,11 @@ export type LegalRenderFailureKind =
 
 export interface LegalRenderFailure {
   readonly kind: LegalRenderFailureKind
-  /** On `unavailable`: 'content_unavailable' | 'superseded_pending'. */
+  /**
+   * On `unavailable`: 'content_unavailable' | 'superseded_pending', and on
+   * legal_v2 'not_loaded' | 'composition_not_served' (see
+   * `isTextNotYetAvailable`).
+   */
   readonly renderStatus?: string
   readonly documentId?: string
   readonly status?: number
@@ -88,4 +92,24 @@ export function classifyRenderFailure(
   // Anything else — 5xx, an unknown code, a proxy page — is transport: the
   // document's existence is an open question and must never read as absence.
   return { kind: 'transport', documentId, status, message, retryable: true }
+}
+
+/**
+ * The legal_v2 render states that mean "the text is not available YET": a
+ * form with no published text (`not_loaded`) or one whose text is several
+ * units this version does not serve together (`composition_not_served`).
+ * Both arrive as 409 RENDER_UNAVAILABLE and are terminal for this request —
+ * a retry will not grow a text.
+ */
+export const LEGAL_RENDER_NOT_YET_STATUSES: ReadonlySet<string> = new Set([
+  'not_loaded',
+  'composition_not_served',
+])
+
+export function isTextNotYetAvailable(failure: LegalRenderFailure): boolean {
+  return (
+    failure.kind === 'unavailable' &&
+    failure.renderStatus !== undefined &&
+    LEGAL_RENDER_NOT_YET_STATUSES.has(failure.renderStatus)
+  )
 }

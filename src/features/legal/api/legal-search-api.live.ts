@@ -109,13 +109,15 @@ export async function fetchLegalSearchLive(
         actNumber: str(act.actNumber),
         actYear: typeof act.actYear === 'number' ? act.actYear : null,
         issuerSlug: str(act.issuerSlug),
+        // Bridged on legal_v2: a null status or in-degree stays null (unknown).
         status:
-          STATUS_BY_ENUM[typeof act.status === 'string' ? act.status : ''] ??
-          'necunoscut',
+          typeof act.status === 'string'
+            ? (STATUS_BY_ENUM[act.status] ?? 'necunoscut')
+            : null,
         inDegree:
           typeof act.inDegree === 'number' && Number.isFinite(act.inDegree)
             ? Math.trunc(act.inDegree)
-            : 0,
+            : null,
       },
       description: str(summary.description),
     }

@@ -83,10 +83,12 @@ export function ActProvenanceNotes({ act, mastheadInHeader = false }: Props) {
             key: 'no-publication',
             tone: 'info' as const,
             body: (
+              // No corpus-wide match rate here: no query serves it, and a
+              // dated measurement would outlive the corpus it measured.
               <Trans>
                 Nu am putut lega acest act de un număr din Monitorul Oficial.
-                Doar 46,4% dintre publicări se potrivesc cu certitudine unui act
-                din Portal Legislativ.
+                Legătura dintre publicările din Monitor și actele din Portal
+                Legislativ nu este sigură pentru toate actele.
               </Trans>
             ),
           },
@@ -119,7 +121,7 @@ export function ActProvenanceNotes({ act, mastheadInHeader = false }: Props) {
                 Liniile de antet ale actului nu sunt repetate în corpul
                 textului de mai sus acolo unde capul paginii afișează deja
                 aceleași informații. Restul textului este reprodus întocmai
-                din sursa oficială.
+                din Portalul Legislativ.
               </Trans>
             ),
           },

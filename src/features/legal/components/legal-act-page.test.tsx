@@ -65,7 +65,7 @@ describe('LegalActPage', () => {
     // reachable without opening anything.
     expect(
       screen
-        .getByRole('link', { name: /Textul oficial/ })
+        .getByRole('link', { name: /Textul, pe legislatie/ })
         .getAttribute('href'),
     ).toContain('legislatie.just.ro')
   })

@@ -281,3 +281,151 @@ describe('fetchLegalActDetailLive', () => {
     expect(await fetchLegalActDetailLive('999999999')).toBeNull()
   })
 })
+
+/**
+ * The legal_v2 source (server LEGAL_SOURCE=v2): documents are forms with an
+ * opaque `f<form_id>` id and the form fields; status, its evidence, in-degree
+ * and the amendment count are BRIDGED and null when the previous corpus does
+ * not hold the act. Shapes from the server's typedefs and contract test
+ * (branch feat/legal-v2-dev).
+ */
+describe('fetchLegalActDetailLive on legal_v2', () => {
+  beforeEach(() => {
+    graphqlQueryMock.mockReset()
+  })
+
+  const consolidation = {
+    documentId: 'f900012',
+    versionKind: 'consolidare',
+    versionDate: '2024-03-12',
+    isCanonical: true,
+    title: null,
+    firstPublicationDate: null,
+    readable: true,
+    caveat: 'unofficial_consolidation',
+    portalLabelRaw: null,
+    portalLabelDate: '2024-03-12',
+    held: false,
+    formKey: 'cons:2024-03-12',
+    sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
+    render: { renderStatus: 'served', chunkCount: 1 },
+  }
+  const notLoaded = {
+    ...consolidation,
+    documentId: 'f900013',
+    versionDate: '2025-06-01',
+    isCanonical: false,
+    readable: false,
+    portalLabelDate: '2025-06-01',
+    formKey: 'cons:2025-06-01',
+    sourceUrl: null,
+    render: { renderStatus: 'not_loaded', chunkCount: null },
+  }
+  const { render: _render, ...canonicalForm } = consolidation
+  void _render
+
+  it('requests the act-level and form-level legal_v2 fields', async () => {
+    respond()
+    await fetchLegalActDetailLive('1')
+    const [query] = graphqlQueryMock.mock.calls[0] as unknown as [string]
+    for (const field of [
+      'dataSource',
+      'bridgedFields',
+      'newerNotAvailable',
+      'defaultBasis',
+      'readable',
+      'caveat',
+      'portalLabelRaw',
+      'portalLabelDate',
+      'held',
+      'formKey',
+      'sourceUrl',
+    ]) {
+      expect(query).toContain(field)
+    }
+  })
+
+  it('maps forms with their opaque ids and form fields, and the act-level facts', async () => {
+    respond({
+      dataSource: 'legal_v2',
+      bridgedFields: ['status', 'inDegree', 'summary'],
+      newerNotAvailable: 1,
+      defaultBasis: 'latest_consolidation',
+      canonicalDocumentId: 'f900012',
+      canonical: { ...canonicalForm, den: null, issuerRaw: null, publicationRaw: null, extractionStatus: null, compatibilityTier: null },
+      documents: [consolidation, notLoaded],
+    })
+
+    const act = await fetchLegalActDetailLive('1')
+
+    expect(act?.dataSource).toBe('legal_v2')
+    expect(act?.bridgedFields).toEqual(['status', 'inDegree', 'summary'])
+    expect(act?.newerNotAvailable).toBe(1)
+    expect(act?.defaultBasis).toBe('latest_consolidation')
+    expect(act?.canonical?.documentId).toBe('f900012')
+    expect(act?.canonical?.caveat).toBe('unofficial_consolidation')
+    expect(act?.documents.map((doc) => doc.documentId)).toEqual(['f900012', 'f900013'])
+    expect(act?.documents[0]).toMatchObject({
+      readable: true,
+      caveat: 'unofficial_consolidation',
+      portalLabelDate: '2024-03-12',
+      held: false,
+      formKey: 'cons:2024-03-12',
+    })
+    expect(act?.documents[1]?.render?.renderStatus).toBe('not_loaded')
+    expect(act?.documents[1]?.readable).toBe(false)
+  })
+
+  it("links the Portal through the canonical form's own page, never an f<id>", async () => {
+    respond({
+      dataSource: 'legal_v2',
+      canonicalDocumentId: 'f900012',
+      canonical: { ...canonicalForm, den: null, issuerRaw: null, publicationRaw: null, extractionStatus: null, compatibilityTier: null },
+    })
+    expect((await fetchLegalActDetailLive('1'))?.officialTextUrl).toBe(
+      'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
+    )
+
+    respond({
+      dataSource: 'legal_v2',
+      canonicalDocumentId: 'f900012',
+      canonical: { ...canonicalForm, sourceUrl: null, den: null, issuerRaw: null, publicationRaw: null, extractionStatus: null, compatibilityTier: null },
+    })
+    expect((await fetchLegalActDetailLive('1'))?.officialTextUrl).toBeNull()
+
+    // Not even the legacy derivation turns an f<id> into a Portal URL.
+    respond({ canonicalDocumentId: 'f900012' })
+    expect((await fetchLegalActDetailLive('1'))?.officialTextUrl).toBeNull()
+  })
+
+  it('keeps null bridged facts null — never a guessed status or a confident zero', async () => {
+    respond({
+      dataSource: 'legal_v2',
+      bridgedFields: [],
+      status: null,
+      statusEvidence: null,
+      inDegree: null,
+      amendedAfterPublication: null,
+      inLinks: { totalCount: 0, edges: [] },
+    })
+
+    const act = await fetchLegalActDetailLive('1')
+
+    expect(act?.status).toBeNull()
+    expect(act?.statusEvidence).toBeNull()
+    expect(act?.inDegree).toBeNull()
+    expect(act?.amendedAfterPublication).toBeNull()
+    // With no authoritative in-degree the incoming total is not asserted
+    // from it either.
+    expect(act?.inLinks.totalCount).toBe(0)
+  })
+
+  it('keeps a linked act with a null status or in-degree null', async () => {
+    const target = { ...edge('7').targetAct, status: null, inDegree: null }
+    respond({
+      outLinks: { totalCount: 1, edges: [{ ...edge('7'), targetAct: target }] },
+    })
+    const act = await fetchLegalActDetailLive('1')
+    expect(act?.outLinks.items[0]?.act).toMatchObject({ status: null, inDegree: null })
+  })
+})

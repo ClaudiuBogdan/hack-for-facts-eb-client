@@ -1,88 +1,74 @@
 /**
- * Corpus facts measured on `transparenta_prod` by the scrapper's legal
- * finish-wave. Sources: `prod-db/LEGAL_CURRENT_STATE.md`,
- * `prod-db/LEGAL_DATA_BRIEF.md`, `prod-db/LEGAL_SCHEMA_DESIGN.md`.
+ * The legislation module's coverage facts.
  *
- * These are **measurements with a date**, not live counts, and every surface
- * that prints one shows `MEASURED_AT` next to it. They exist as constants
- * because the server has no aggregate that can answer them — see
- * `docs/design/legal/main-page.md` §6.2. Delete each one as soon as a query can
- * answer it; never let one drift silently into looking live.
+ * The corpus figures that used to live here as dated measurements (act and
+ * document counts, citation-edge counts, the gazette match rate, the
+ * article-structure gap, the CCR decision count, the gazette and changes
+ * frontiers) are gone (2026-11-20, legal_v2 on dev): each one either has a
+ * live query now (`legal-freshness-api.ts`, the STATUS aggregate) or was
+ * removed from the copy, because a measurement of one corpus must not print
+ * under another. What remains is not a measurement of the corpus' size.
  */
 
-/** The date the figures below were measured. */
+/**
+ * The analytics tab's "date până la" caption — kept ONLY for the analytics
+ * page, which is out of scope until the owner reviews its legal_v2 design.
+ * Do not use it on another surface.
+ */
 export const LEGAL_CORPUS_MEASURED_AT = '2026-06-29'
 
 /**
- * Acts in `legal.acts`, measured live 2026-08-26 (the STATUS aggregate's
- * bucket sum = `legalActs.totalCount`). This one IS live-answerable — the
- * analytics tab serves it live — but the guide's editorial prose keeps the
- * dated measurement deliberately: a sentence must not have a loading or
- * failure state, and printing a measurement WITH its date is the honest form.
- */
-export const LEGAL_ACT_COUNT = 224_539
-
-/** The date `LEGAL_ACT_COUNT` and `LEGAL_PARSED_DOCUMENT_COUNT` were measured. */
-export const LEGAL_CORPUS_SIZE_MEASURED_AT = '2026-08-26'
-
-/**
- * Parsed documents in `legal.documents`, measured 2026-08-26. Slightly more
- * than the act count — the two are different grains; do not present one as
- * the other. No server aggregate answers this one.
- */
-export const LEGAL_PARSED_DOCUMENT_COUNT = 227_278
-
-/** Total resolved citation edges in `legal.act_references`. */
-export const LEGAL_REFERENCE_EDGE_COUNT = 1_103_595
-
-/** Edges resolving to no target at all — rendered as "possible match", never a link. */
-export const LEGAL_REFERENCE_UNRESOLVED_COUNT = 400_368
-
-/** Gazette publication events in `legal.mo_act_publications`. */
-export const GAZETTE_PUBLICATION_COUNT = 212_221
-
-/** Share of publication events confidently matched to a Portal act (`resolution = unique`). */
-export const GAZETTE_MATCH_RATE = 0.464
-
-/** Documents with zero rows in `legal.document_nodes` — no article-level structure. */
-export const LEGAL_DOCS_WITHOUT_ARTICLE_STRUCTURE = 69_254
-
-/** Share of the corpus that lacks article-level structure. */
-export const LEGAL_ARTICLE_STRUCTURE_GAP_RATE = 0.31
-
-/**
- * Constitutional Court decisions present as `legal.acts`
- * (`decizie:*:curtea-constitutionala`). `act_status_events(event_source='ccr')`
- * is 0 — the status projection is deferred by product decision, so a provision
- * struck down as unconstitutional still folds to its Portal status.
- */
-export const CCR_DECISION_COUNT = 23_378
-
-/**
- * The first year with gazette issues in the corpus. Measured live 2026-08-26:
- * `moIssues(filter: {year})` is 0 for every probed year up to 1988 and 9 for
- * 1989 — the corpus opens with MO nr. 1/1989 of 22 December 1989, the day of
- * the Revolution. Re-validate if pre-1989 numbers are ever backfilled.
+ * The first year with gazette issues in the corpus: MO nr. 1/1989 of 22
+ * December 1989. A historical bound (the gazette directory's earliest year
+ * option), not a count that can drift; `moIssues` cannot list years.
  */
 export const GAZETTE_FIRST_ISSUE_YEAR = 1989
 
 /**
- * The newest issue date in the corpus. Upstream issue discovery has been
- * FROZEN since this date, so the gazette surface must say "date până la" this
- * day rather than let a reader believe they are seeing today's Monitor.
- * Measured live 2026-08-26 (issues 565–566/2026, both 2026-07-09); update it
- * when discovery resumes — the gazette tab's default year derives from it.
+ * How old the newest gazette issue may be before the gazette tab says its
+ * data is stale. Chosen, not measured: Monitorul Oficial publishes on most
+ * working days, so a week without an issue in the corpus means discovery
+ * has stopped, not a quiet week.
  */
-export const GAZETTE_LATEST_ISSUE_DATE = '2026-07-09'
+export const GAZETTE_STALE_AFTER_DAYS = 7
 
 /**
- * The newest ALREADY-in-force event in the global change feed — the top of
- * `legalRecentChanges(until: today)`. Measured live 2026-08-26 (a `completare`
- * on OUG nr. 92/2021, effective 2026-07-11); nothing newer has taken effect in
- * the corpus although six weeks had passed, so the changes tab captions itself
- * "date până la" this day and carries a staleness note. The feed ALSO holds
- * future-dated events beyond it (8 rows out to 2027-01-05, announced by acts
- * already published) — those are ahead of this frontier by design, not a
- * contradiction of it. Update when event capture moves again.
+ * How old the newest already-in-force change may be before the changes tab
+ * says its data is stale. Chosen, not measured: amendments take effect most
+ * weeks, so a month without one means event capture is behind.
  */
-export const CHANGES_LATEST_EFFECTIVE_DATE = '2026-07-11'
+export const CHANGES_STALE_AFTER_DAYS = 30
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Whether a frontier date is older than `afterDays` before `today` (both
+ * `YYYY-MM-DD`). Null when the frontier is unknown — no claim either way.
+ */
+export function isFrontierStale(
+  frontier: string | null,
+  afterDays: number,
+  today: string,
+): boolean | null {
+  if (frontier === null) return null
+  const age = Date.parse(`${today}T00:00:00Z`) - Date.parse(`${frontier.slice(0, 10)}T00:00:00Z`)
+  if (!Number.isFinite(age)) return null
+  return age > afterDays * DAY_MS
+}
+
+/** The older of two frontier dates — the honest "date până la" of both. */
+export function olderFrontier(a: string | null, b: string | null): string | null {
+  if (a === null) return b
+  if (b === null) return a
+  return a <= b ? a : b
+}
+
+/** `YYYY-MM-DD` of `now` in Bucharest — the day "already in force" means. */
+export function bucharestToday(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Bucharest',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now)
+}

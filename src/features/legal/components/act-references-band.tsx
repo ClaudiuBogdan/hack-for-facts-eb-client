@@ -67,8 +67,8 @@ export function ActReferencesBand({ group, direction }: Props) {
         <Trans>
           Relații deduse automat din textul actelor — nu afirmate de portal
           (acelea apar la „Trimiteri afirmate de portal”). Doar potrivirile
-          sigure sunt legături. Din 1.103.595 de trimiteri între acte, 400.368
-          (36,3%) nu se rezolvă la un act anume și rămân text citat.
+          sigure sunt legături. O trimitere care nu se rezolvă la un act
+          anume rămâne text citat.
         </Trans>
       }
     >

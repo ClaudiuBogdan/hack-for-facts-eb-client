@@ -1,49 +1,44 @@
 import { Link } from '@tanstack/react-router'
+import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Plural, Trans } from '@lingui/react/macro'
 import type { LegalActDetail, LegalActDocumentVersion } from '@/schemas/legal'
+import { formatLegalDate } from '../lib/legal-format'
+import {
+  isConsolidationVersion,
+  isReadableVersion,
+  orderVersionsNewestFirst,
+  portalConsolidationNote,
+  versionDateOf,
+  versionKindLabel,
+} from '../lib/legal-versions'
 import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly act: LegalActDetail
 }
 
-const VERSION_KIND_LABEL: Record<string, string> = {
-  original: 'forma publicată',
-  corp: 'corpul actului',
-  republicare: 'republicare',
-  'stub-header': 'antetul actului',
-  consolidare: 'reper de consolidare',
-}
-
-function versionKindLabel(kind: string): string {
-  return VERSION_KIND_LABEL[kind] ?? kind
-}
-
 /**
  * Rung 5 — the version timeline (`LegalAct.documents`), honesty-first.
  *
- * Two worlds render identically here: today the corpus holds published-form
- * expressions only (original/corp/republicare/stub-header), and when the
- * consolidation-timeline lane loads its dated anchors, `consolidare` rows
- * arrive as DATES WITHOUT BODIES. A row links into the reader only when its
- * render is actually served; everything else says "text indisponibil încă"
- * with the portal as the escape hatch — the UI never implies we hold a text
- * we do not.
+ * On the legacy source the corpus holds published-form expressions
+ * (original/corp/republicare/stub-header) and `consolidare` rows arrive as
+ * dates without bodies. On legal_v2 every row is a FORM — original,
+ * republication or consolidation — and a consolidation may carry its text.
+ * Either way a row links into the reader only when its text is readable
+ * here; everything else says the text is not available yet, never implying
+ * we hold a text we do not. A consolidation is always named as unofficial
+ * (LEG-X3AV), and `newerNotAvailable` says how many newer Portal
+ * consolidations exist without a text we can show.
  */
 export function ActVersionsBand({ act }: Props) {
+  const { i18n } = useLingui()
   const documents = act.documents
   if (documents.length === 0) return null
 
-  // Newest first; undated rows sink to the end rather than faking an epoch.
-  const ordered = [...documents].sort((a, b) => {
-    const aDate = a.versionDate ?? a.firstPublicationDate
-    const bDate = b.versionDate ?? b.firstPublicationDate
-    if (aDate === null && bDate === null) return 0
-    if (aDate === null) return 1
-    if (bDate === null) return -1
-    return bDate.localeCompare(aDate)
-  })
+  const ordered = orderVersionsNewestFirst(documents)
+  const newerNotAvailable = act.newerNotAvailable ?? 0
+  const formatDate = (value: string) => formatLegalDate(value, i18n.locale)
 
   return (
     <ActAccordionItem
@@ -65,9 +60,24 @@ export function ActVersionsBand({ act }: Props) {
         </Trans>
       }
     >
+      {newerNotAvailable > 0 && (
+        <p className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+          <Plural
+            value={newerNotAvailable}
+            one="Portalul Legislativ mai listează o formă consolidată mai nouă, al cărei text nu este încă disponibil aici."
+            few="Portalul Legislativ mai listează # forme consolidate mai noi, al căror text nu este încă disponibil aici."
+            other="Portalul Legislativ mai listează # de forme consolidate mai noi, al căror text nu este încă disponibil aici."
+          />
+        </p>
+      )}
       <ul className="flex flex-col">
         {ordered.map((doc) => (
-          <VersionRow key={doc.documentId} doc={doc} actId={act.actId} />
+          <VersionRow
+            key={doc.documentId}
+            doc={doc}
+            actId={act.actId}
+            formatDate={formatDate}
+          />
         ))}
       </ul>
     </ActAccordionItem>
@@ -77,12 +87,15 @@ export function ActVersionsBand({ act }: Props) {
 function VersionRow({
   doc,
   actId,
+  formatDate,
 }: {
   readonly doc: LegalActDocumentVersion
   readonly actId: string
+  readonly formatDate: (value: string) => string
 }) {
-  const served = doc.render?.renderStatus === 'served'
-  const date = doc.versionDate ?? doc.firstPublicationDate
+  const readable = isReadableVersion(doc)
+  const date = versionDateOf(doc)
+  const note = isConsolidationVersion(doc) ? portalConsolidationNote(doc, formatDate) : null
 
   return (
     <li className="flex flex-col gap-1 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:px-6">
@@ -92,19 +105,34 @@ function VersionRow({
         </span>
         {doc.isCanonical && (
           <span className="rounded border border-[var(--pnrr-subtle)] px-1.5 py-0.5 text-xs text-[var(--pnrr-muted)]">
-            <Trans>forma afișată</Trans>
+            <Trans>forma afișată implicit</Trans>
           </span>
         )}
       </span>
 
       <span className="flex flex-wrap items-center gap-2 text-base">
         <span className="text-[var(--pnrr-fg)]">
-          {date ?? <Trans>fără dată</Trans>}
+          {date !== null ? formatDate(date) : <Trans>fără dată</Trans>}
           {doc.title !== null ? ` — ${doc.title}` : null}
         </span>
       </span>
 
-      {served ? (
+      {note !== null && (
+        <span className="text-sm text-[var(--pnrr-muted)]">
+          <Trans>Portalul Legislativ indică „{note}”.</Trans>
+        </span>
+      )}
+
+      {doc.held === true && (
+        <span className="text-sm text-[var(--pnrr-muted)]">
+          <Trans>
+            O pagină a Portalului atribuită acestei forme este încă în
+            verificare.
+          </Trans>
+        </span>
+      )}
+
+      {readable ? (
         <Link
           to="/legislation/acts/$actId"
           params={{ actId }}
@@ -119,13 +147,7 @@ function VersionRow({
         </Link>
       ) : (
         <span className="text-sm text-[var(--pnrr-muted)]">
-          {doc.versionKind === 'consolidare' ? (
-            <Trans>
-              text indisponibil încă — reper de consolidare, fără corp de text
-            </Trans>
-          ) : (
-            <Trans>text indisponibil pentru această expresie</Trans>
-          )}
+          <Trans>textul nu este încă disponibil</Trans>
         </span>
       )}
     </li>

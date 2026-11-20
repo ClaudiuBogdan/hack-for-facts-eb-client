@@ -27,13 +27,16 @@ vi.mock('../hooks/use-legislation', () => ({
   useLegislationFrontDoor: vi.fn(),
   useLegislationDomainCounts: vi.fn(),
   useLegislationStatusCounts: vi.fn(),
+  useLegislationFreshness: vi.fn(),
 }))
 
 import {
   useLegislationDomainCounts,
   useLegislationFrontDoor,
+  useLegislationFreshness,
   useLegislationStatusCounts,
 } from '../hooks/use-legislation'
+import { legislationFreshnessFixture } from '../mocks/fixtures/legislation-freshness'
 import { legislationStatusCountsFixture } from '../mocks/fixtures/legislation-status-counts'
 
 function mockOverviewReady() {
@@ -50,6 +53,10 @@ function mockOverviewReady() {
     data: legislationStatusCountsFixture,
     isError: false,
   } as unknown as ReturnType<typeof useLegislationStatusCounts>)
+  vi.mocked(useLegislationFreshness).mockReturnValue({
+    data: legislationFreshnessFixture,
+    isError: false,
+  } as unknown as ReturnType<typeof useLegislationFreshness>)
 }
 
 describe('LegislationPage', () => {

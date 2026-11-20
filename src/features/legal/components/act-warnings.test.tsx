@@ -24,7 +24,12 @@ const withCanonical = (
   return {
     ...legalActDetailRichFixture,
     amendedAfterPublication,
-    statusEvidence: { ...legalActDetailRichFixture.statusEvidence, contradictedAbrogations: 0 },
+    statusEvidence: {
+      modifiedByCount: 216,
+      abrogatedByCount: 10,
+      futureEventCount: 0,
+      contradictedAbrogations: 0,
+    },
     canonical: { ...canonical, versionKind, versionDate },
   }
 }
@@ -57,19 +62,31 @@ describe('ActWarnings — the time basis of the reference count (I-22)', () => {
     expect(screen.queryByText(/așa cum a fost publicat/)).not.toBeInTheDocument()
   })
 
-  it('a republication without a date, or another kind, makes no date claim', () => {
-    for (const [kind, date] of [
-      ['republicare', null],
-      ['consolidare', '2024-01-01'],
-    ] as const) {
-      const { unmount } = render(<ActWarnings act={withCanonical(kind, date, 2)} />)
-      expect(
-        screen.getByText('2 referințe de modificare sau completare înregistrate pentru act.'),
-      ).toBeInTheDocument()
-      expect(screen.getByText(/nu față de versiunea de mai jos/)).toBeInTheDocument()
-      expect(screen.queryByText(/publicat/)).not.toBeInTheDocument()
-      unmount()
-    }
+  it('a republication without a date makes no date claim', () => {
+    render(<ActWarnings act={withCanonical('republicare', null, 2)} />)
+    expect(
+      screen.getByText('2 referințe de modificare sau completare înregistrate pentru act.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/nu față de\s+versiunea afișată/)).toBeInTheDocument()
+    expect(screen.queryByText(/publicat/)).not.toBeInTheDocument()
+  })
+
+  it('a consolidation is named unofficial and never "the text in force" (LEG-X3AV)', () => {
+    render(<ActWarnings act={withCanonical('consolidare', '2024-01-01', 2)} />)
+    const body = screen.getByText(/formă consolidată neoficială/)
+    expect(body).toHaveTextContent('cu caracter informativ')
+    expect(body).toHaveTextContent('anterioare sau ulterioare acestei forme')
+    expect(body).not.toHaveTextContent(/în vigoare la/)
+    expect(screen.queryByText(/Nu deținem textul consolidat/)).not.toBeInTheDocument()
+  })
+
+  it('raises no warning on null counts (an act the previous corpus does not hold)', () => {
+    const { container } = render(
+      <ActWarnings
+        act={{ ...withCanonical('original', null), amendedAfterPublication: null, statusEvidence: null }}
+      />,
+    )
+    expect(container).toBeEmptyDOMElement()
   })
 
   it('has the act-scoped headline in both catalogs, English translated, and no live "since publication" one', () => {
@@ -92,8 +109,8 @@ describe('ActWarnings — the time basis of the reference count (I-22)', () => {
       ).toEqual([])
       // Both new bodies are live entries too.
       for (const body of [
-        /^msgid "Rezumatul și structura de mai jos descriu actul așa cum a fost republicat la \{0\}\. Referințele sunt numărate pentru întregul act, deci pot fi și anterioare republicării\./m,
-        /^msgid "Referințele sunt numărate pentru întregul act, nu față de versiunea de mai jos, deci pot fi și anterioare ei\./m,
+        /^msgid "Textul afișat implicit este actul așa cum a fost republicat la \{0\}\. Referințele sunt numărate pentru întregul act, deci pot fi și anterioare republicării\./m,
+        /^msgid "Referințele sunt numărate pentru întregul act, nu față de versiunea afișată, deci pot fi și anterioare ei\./m,
       ]) {
         expect(blocks(locale).filter((block) => body.test(block)), `${locale} ${String(body)}`).toHaveLength(1)
       }

@@ -2,6 +2,7 @@ import { queryOptions, useQuery } from '@tanstack/react-query'
 import type { LegislationOverview } from '@/schemas/legal'
 import { fetchLegislationFrontDoor, fetchLegislationOverview } from '../api/legal-api'
 import { fetchDomainActCounts } from '../api/legal-domain-counts-api'
+import { fetchLegislationFreshness } from '../api/legal-freshness-api'
 import { fetchStatusActCounts } from '../api/legal-status-counts-api'
 
 export function legislationOverviewQueryKey() {
@@ -73,6 +74,24 @@ export function useLegislationStatusCounts() {
   return useQuery({
     queryKey: legislationStatusCountsQueryKey(),
     queryFn: ({ signal }) => fetchStatusActCounts({ signal }),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function legislationFreshnessQueryKey() {
+  return ['legal', 'freshness'] as const
+}
+
+/**
+ * The corpus frontiers (newest gazette issue, newest in-force change) and the
+ * CCR decision count — live, in place of the retired measured constants.
+ * Same contract as the counts: its own request, no `initialData`, and a
+ * surface drops a figure it does not have rather than print a stale one.
+ */
+export function useLegislationFreshness() {
+  return useQuery({
+    queryKey: legislationFreshnessQueryKey(),
+    queryFn: ({ signal }) => fetchLegislationFreshness({ signal }),
     staleTime: 5 * 60 * 1000,
   })
 }

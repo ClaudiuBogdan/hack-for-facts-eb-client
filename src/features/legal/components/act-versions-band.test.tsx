@@ -1,7 +1,10 @@
 import { render, screen, fireEvent } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
-import { legalActDetailRichFixture } from '../mocks/fixtures/legal-act-detail'
+import {
+  legalActDetailRichFixture,
+  legalActDetailV2Fixture,
+} from '../mocks/fixtures/legal-act-detail'
 import { ActVersionsBand } from './act-versions-band'
 
 vi.mock('@tanstack/react-router', () => ({
@@ -42,21 +45,66 @@ describe('ActVersionsBand', () => {
     expect(readLinks[0]).toHaveAttribute('href', '/legislation/acts/66150')
   })
 
-  it('says text indisponibil for consolidation placeholders, never implying a body', () => {
+  it('says the text is not yet available for consolidation placeholders, never implying a body', () => {
     render(<ActVersionsBand act={legalActDetailRichFixture} />)
     open()
 
-    expect(
-      screen.getByText(/reper de consolidare, fără corp de text/),
-    ).toBeInTheDocument()
+    // The legacy consolidation row and the header stub: neither has a text.
+    expect(screen.getAllByText('textul nu este încă disponibil')).toHaveLength(2)
+    expect(screen.getByText('formă consolidată neoficială')).toBeInTheDocument()
     // The unofficial-consolidation caveat is part of the band.
     expect(screen.getByText(/reproduceri neoficiale/)).toBeInTheDocument()
   })
 
-  it('marks the displayed (canonical) form', () => {
+  it('marks the default (canonical) form', () => {
     render(<ActVersionsBand act={legalActDetailRichFixture} />)
     open()
-    expect(screen.getByText(/forma afișată/)).toBeInTheDocument()
+    expect(screen.getByText(/forma afișată implicit/)).toBeInTheDocument()
+  })
+
+  describe('on legal_v2 forms', () => {
+    it('links every readable form by its opaque f<id>, and the not-loaded one says so', () => {
+      render(<ActVersionsBand act={legalActDetailV2Fixture} />)
+      open()
+
+      const readLinks = screen.getAllByRole('link', { name: /Citește această versiune/ })
+      // The default consolidation (no ?doc=) and the original (?doc=f900011).
+      expect(readLinks.map((link) => link.getAttribute('href'))).toEqual([
+        '/legislation/acts/900001',
+        '/legislation/acts/900001?doc=f900011',
+      ])
+      // The newer consolidation is listed, never linked.
+      expect(screen.getAllByText('textul nu este încă disponibil')).toHaveLength(1)
+    })
+
+    it("quotes the Portal's own consolidation note on each consolidation row", () => {
+      render(<ActVersionsBand act={legalActDetailV2Fixture} />)
+      open()
+      expect(screen.getAllByText(/Portalul Legislativ indică „consolidarea din/)).toHaveLength(2)
+    })
+
+    it('counts the newer consolidations whose text is not available', () => {
+      render(<ActVersionsBand act={legalActDetailV2Fixture} />)
+      open()
+      expect(
+        screen.getByText(/mai listează o formă consolidată mai nouă/),
+      ).toBeInTheDocument()
+    })
+
+    it('marks a form whose Portal capture is held', () => {
+      render(
+        <ActVersionsBand
+          act={{
+            ...legalActDetailV2Fixture,
+            documents: legalActDetailV2Fixture.documents.map((doc) =>
+              doc.documentId === 'f900011' ? { ...doc, held: true } : doc,
+            ),
+          }}
+        />,
+      )
+      open()
+      expect(screen.getByText(/încă în\s+verificare/)).toBeInTheDocument()
+    })
   })
 
   it('renders nothing when the act has no document expressions', () => {

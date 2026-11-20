@@ -5,7 +5,6 @@ import {
   type LegislationFrontDoor,
   type LegislationOverview,
 } from '@/schemas/legal'
-import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
 
 /**
  * Live overview adapter — ONE round-trip for the overview's bands:
@@ -22,9 +21,9 @@ import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
  * chips, and its failure degrades those surfaces instead of failing this
  * loader-run query.
  *
- * Coverage stays a MEASURED block (constants + date), not live counts — the
- * server has no aggregate for the gap figures, and printing measurements as
- * if they were live is exactly what `legal-coverage.ts` forbids.
+ * Coverage carries no measured figure (2026-11-20): the percentage gaps it
+ * listed were measurements of the previous corpus with no query behind them,
+ * so they are gone; the frontiers are read live (`legal-freshness-api.ts`).
  *
  * The front door asks for the gazette band alone (`LegislationFrontDoor`):
  * the ranking is the analytics tab's, and the `IN_DEGREE` sort is the slow
@@ -91,8 +90,8 @@ const rec = (value: unknown): Raw =>
 const str = (value: unknown): string | null =>
   typeof value === 'string' && value.length > 0 ? value : null
 
-const int = (value: unknown): number =>
-  typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : 0
+const nullableInt = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : null
 
 function nodes(connection: unknown): Raw[] {
   const edges = rec(connection).edges
@@ -107,8 +106,9 @@ function mapActNode(node: Raw) {
     actNumber: str(node.actNumber),
     actYear: typeof node.actYear === 'number' ? node.actYear : null,
     issuerSlug: str(node.issuerSlug),
-    status: STATUS_BY_ENUM[str(node.status) ?? ''] ?? 'necunoscut',
-    inDegree: int(node.inDegree),
+    // Bridged on legal_v2: a null status or in-degree stays null (unknown).
+    status: typeof node.status === 'string' ? (STATUS_BY_ENUM[node.status] ?? 'necunoscut') : null,
+    inDegree: nullableInt(node.inDegree),
   }
 }
 
@@ -170,18 +170,16 @@ export async function fetchLegislationFrontDoorLive(
   })
 }
 
-/** The measured coverage block both payloads carry (see the note at the top). */
+/** The coverage block both payloads carry (see the note at the top). */
 function liveCoverage(currentYear: number) {
   return {
     authorities: ['Portal Legislativ', 'Monitorul Oficial'],
     yearsRange: [1990, currentYear],
-    retrievedAt: LEGAL_CORPUS_MEASURED_AT,
+    retrievedAt: null,
     publishedAt: null,
     knownGaps: [
       'Deciziile Curții Constituționale nu modifică statutul actelor vizate.',
-      'Structura pe articole lipsește pentru ~31% dintre documente.',
-      '36,3% dintre trimiterile între acte nu se rezolvă la un act.',
-      'Doar 46,4% dintre publicările din Monitor se leagă sigur de un act.',
+      'Formele consolidate ale Portalului sunt neoficiale, cu caracter informativ.',
       'Monitorul Oficial: fără strat de text înainte de 2012.',
     ],
     inaccessibleCount: 0,
