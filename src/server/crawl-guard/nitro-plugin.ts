@@ -1,5 +1,6 @@
+import { ServerResponse } from 'node:http'
 import { definePlugin } from 'nitro'
-import { currentCrawlGuard, guardedFetch, isGuardOn } from './crawl-guard'
+import { currentCrawlGuard, guardedFetch, isGuardOn, noindexNodeResponses } from './crawl-guard'
 
 /**
  * Puts the crawl guard in front of the app's fetch handler. The Nitro node
@@ -10,7 +11,18 @@ import { currentCrawlGuard, guardedFetch, isGuardOn } from './crawl-guard'
 export default definePlugin((nitroApp) => {
   const guard = currentCrawlGuard()
   if (!isGuardOn(guard)) return
-  nitroApp.fetch = guardedFetch(guard, nitroApp.fetch, (line) => {
-    process.stdout.write(line + '\n')
-  })
+  if (guard.disallowAll) noindexNodeResponses(ServerResponse.prototype as never)
+  nitroApp.fetch = guardedFetch(
+    guard,
+    nitroApp.fetch,
+    (line) => {
+      process.stdout.write(line + '\n')
+    },
+    undefined,
+    (error) => {
+      // This build has no Nitro error hook: the details go to stderr as well.
+      process.stderr.write(`crawl-guard: unanswered rejection: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`)
+      nitroApp.captureError?.(error as Error, { tags: ['crawl-guard'] })
+    },
+  )
 })

@@ -19,10 +19,18 @@ set only in `k8s/overlays/chronos-dev/configmap-patch.yaml`. With either switch 
 fetch handler, so it sees every request, `public/` files included:
 
 - `ROBOTS_DISALLOW_ALL="true"`:
-  - GET/HEAD `/robots.txt` is answered before `public/` with `User-agent: *` / `Disallow: /` and no sitemap;
-  - every response carries `X-Robots-Tag: noindex, nofollow`.
-- `REQUEST_UA_LOG="true"`: one JSON stdout line per response (method, path, status, ms, user agent). No IP, query
-  string or cookies.
+  - GET/HEAD `/robots.txt` is answered before `public/` with `User-agent: *` / `Disallow: /` and no sitemap, as are
+    the aliases Nitro's static handler would resolve to the file (`/robots.txt/`, `/%72obots.txt`);
+  - every response carries `X-Robots-Tag: noindex, nofollow`. This includes responses Node or the adapter writes
+    outside the app's handler (Node's 417, a failed stream's 500), through a `ServerResponse.writeHead` wrapper
+    that is installed only with this switch on. A rejection that escapes H3 is reported and answered with a tagged
+    500. Not covered: the 400 Node's HTTP parser writes straight to the socket for a malformed request, and
+    HTTP/2, which this server does not speak.
+- `REQUEST_UA_LOG="true"`: one JSON stdout line per request the app's handler answers (method, path, status, ms,
+  user agent). Node's own 417 and 400 are not logged. There is no
+  IP, query string or cookies. Paths are read decoded, as the router reads them. `/unsubscribe/…` and
+  `/share/…` paths, and any segment that could be a token (20+ characters with a digit, or 40+), are redacted.
+  The status is the app's response status; a stream that fails after the headers are sent is not reflected.
 
 When both switches are unset (prod and Phoenix dev), the plugin replaces nothing:
 
