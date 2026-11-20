@@ -91,6 +91,25 @@ a field built later on the first click, and settles on the resting field if the 
 541 KB stylesheet), not any one reader, so splitting hydration cannot remove it; step 2 can only cut React's own
 render (≈350–450 ms) into shorter tasks.
 
+## Step 2 result (2026-11-20): reverted
+
+Each of the seven bands below the hero was wrapped in its own `<Suspense fallback={null}>` and measured against
+step 1 (808cf9207), both built the same way, ten Lighthouse mobile runs each, back to back:
+
+| | Score (median) | TBT median | TBT mean | Longest task, range |
+|---|---|---|---|---|
+| Step 1 | 81.5 | 325 ms | 333 ms | 171–259 ms |
+| Step 1 + boundaries | 81.5 | 335 ms | 359 ms | 167–270 ms |
+
+No difference: the longest tasks are the same size, so React did not hand the browser a turn in a way that
+shortened them. As the design required, the change was reverted, not forced. A first five-run comparison had
+suggested a gain (TBT 285 against 438 ms); the ten-run A/B shows that was run-to-run spread, which on this page is
+about ±100 ms of TBT. Comparisons of a single change need ten runs each from builds made the same way.
+
+What is left of the landing's start-up cost is the main chunk's evaluation, React's render of the whole page, and
+the style and layout work that follows it; the last scales with the stylesheet (item 3 of the landing note made it
+inline, not smaller).
+
 ## Left to the builder
 
 Boundary placement within the bands, the test shapes, and the browser pass (phone 390 px, 1440 px, 1920 px;
