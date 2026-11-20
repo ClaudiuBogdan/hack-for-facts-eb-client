@@ -56,6 +56,13 @@ export default {
           // comparison's first territory (DESIGN.md, decision log 2026-09-24).
           sky: "hsl(var(--chart-sky))",
         },
+        // DESIGN.md's data-trust palette: `bg-status-live-bg` with `text-status-live-fg`.
+        status: {
+          live: { bg: "hsl(var(--status-live-bg))", fg: "hsl(var(--status-live-fg))" },
+          mock: { bg: "hsl(var(--status-mock-bg))", fg: "hsl(var(--status-mock-fg))" },
+          partial: { bg: "hsl(var(--status-partial-bg))", fg: "hsl(var(--status-partial-fg))" },
+          blocked: { bg: "hsl(var(--status-blocked-bg))", fg: "hsl(var(--status-blocked-fg))" },
+        },
         choropleth: {
           1: "hsl(var(--choropleth-1))",
           2: "hsl(var(--choropleth-2))",

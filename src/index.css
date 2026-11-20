@@ -107,6 +107,18 @@
     --choropleth-4: 218 56% 49%;
     --choropleth-5: 221 70% 35%;
 
+    /* Status - DESIGN.md's data-trust palette: a tinted container (-bg) and a
+       label (-fg) that reads at AA on it and on the page (design-tokens.test.ts).
+       A solid status mark (a bar, a dot) fills with the -fg colour. */
+    --status-live-bg: 142 60% 94%;
+    --status-live-fg: 142 70% 25%;
+    --status-mock-bg: 0 0% 95%;
+    --status-mock-fg: 0 0% 25%;
+    --status-partial-bg: 35 90% 93%;
+    --status-partial-fg: 28 90% 28%;
+    --status-blocked-bg: 0 80% 96%;
+    --status-blocked-fg: 0 72% 38%;
+
     /* Scrollbar colors */
     --scrollbar-track: 0 0% 95% / 0.1;
     --scrollbar-thumb: 0 0% 80% / 0.4;
@@ -201,6 +213,16 @@
     --choropleth-3: 217 47% 48%;
     --choropleth-4: 214 70% 62%;
     --choropleth-5: 212 91% 76%;
+
+    /* Status - the same hues at inverted lightness */
+    --status-live-bg: 142 40% 14%;
+    --status-live-fg: 142 60% 68%;
+    --status-mock-bg: 0 0% 16%;
+    --status-mock-fg: 0 0% 78%;
+    --status-partial-bg: 35 60% 15%;
+    --status-partial-fg: 28 90% 68%;
+    --status-blocked-bg: 0 50% 17%;
+    --status-blocked-fg: 0 85% 75%;
 
     /* PNRR Brutalist Design Tokens */
     --pnrr-bg: #111412;
