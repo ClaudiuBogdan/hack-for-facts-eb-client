@@ -321,7 +321,7 @@ export type LegalGazettePublication = z.infer<
  * TLDF render availability for one document expression.
  *
  * `renderStatus` is `served` | `content_unavailable` | `superseded_pending`,
- * and on legal_v2 also `not_loaded` (no published text) |
+ * and on legal_v2 also `not_loaded` (no published text) | `label_missing` | `source_not_bound` |
  * `composition_not_served` (a header plus a body, not served yet); only
  * `served` documents answer on the REST render route. `chunkCount` is
  * null when a generation exists but render rows are missing (the route
@@ -462,17 +462,25 @@ export const legalActDetailSchema = z.object({
   defaultBasis: z.string().nullable(),
   canonical: legalDocumentSchema.nullable(),
   summary: legalActSummarySchema.nullable(),
-  timeline: z.array(legalTimelineEntrySchema),
+  /**
+   * Null when not available for this act (legal_v2 bridges it from the
+   * previous corpus) — never an empty, complete history.
+   */
+  timeline: z.array(legalTimelineEntrySchema).nullable(),
   /**
    * False when the server's timeline bound cut the list (I-20); null when the
    * server did not say — unknown, never read as a complete history.
    */
   timelineComplete: z.boolean().nullable(),
   gazettePublications: z.array(legalGazettePublicationSchema),
-  outLinks: legalReferenceGroupSchema,
-  inLinks: legalReferenceGroupSchema,
-  /** Portal-asserted incoming anchors — provenance-distinct from `inLinks`. */
-  incomingAnchors: legalIncomingAnchorGroupSchema,
+  /** Null when not available for this act (bridged on legal_v2) — never "no links". */
+  outLinks: legalReferenceGroupSchema.nullable(),
+  inLinks: legalReferenceGroupSchema.nullable(),
+  /**
+   * Portal-asserted incoming anchors — provenance-distinct from `inLinks`.
+   * Null when not available for this act (bridged on legal_v2).
+   */
+  incomingAnchors: legalIncomingAnchorGroupSchema.nullable(),
   /** Every document expression of the act, canonical flag included. */
   documents: z.array(legalActDocumentVersionSchema),
   /**
@@ -659,6 +667,42 @@ export const legalResolveHitSchema = z.object({
 export type LegalResolveHit = z.infer<typeof legalResolveHitSchema>
 
 /**
+ * legal_v2 only: the form a text was served from or verified against — the
+ * render's REST `meta.servedForm` and a search hit's `servedForm`
+ * (`LegalVersionProvenance` on GraphQL): document id, kind, date, caveat, the
+ * Portal's label and date, source URL. Wherever its text is shown, a
+ * consolidation carries its label (LEG-X3AV). Every field is optional: a
+ * partial value only fills what it carries.
+ */
+export const legalServedFormSchema = z.object({
+  documentId: z.string().nullable().optional(),
+  versionKind: z.string().nullable().optional(),
+  versionDate: z.string().nullable().optional(),
+  caveat: z.string().nullable().optional(),
+  portalLabelRaw: z.string().nullable().optional(),
+  portalLabelDate: z.string().nullable().optional(),
+  sourceUrl: z.string().nullable().optional(),
+})
+export type LegalServedForm = z.infer<typeof legalServedFormSchema>
+
+/**
+ * One provision hit of `legalSearch` (`LegalSectionHit`), served only from
+ * the OpenSearch engine, where sections are content matches (the Postgres
+ * path's sections echo the act's name, so the adapter drops them). On
+ * legal_v2 every hit was verified against `servedForm` before its text was
+ * served. `snippet` is the engine's highlight fragment (`<em>` marks the
+ * matched words) — rendered as text, never as HTML.
+ */
+export const legalSearchSectionHitSchema = z.object({
+  actId: z.string(),
+  documentId: z.string(),
+  nodeLabel: z.string().nullable(),
+  snippet: z.string().nullable(),
+  servedForm: legalServedFormSchema.nullable(),
+})
+export type LegalSearchSectionHit = z.infer<typeof legalSearchSectionHitSchema>
+
+/**
  * One act hit of `legalSearch` — the server's `LegalDocHit`, whose act is
  * NESTED (`{ score, act, summary }`), never a flat act row. `description` is
  * `summary.description` flattened by the adapter: the result card quotes one
@@ -718,6 +762,8 @@ export const LEGAL_ORIGINAL_TEXT_CAVEAT =
  */
 export const legalSearchResultSchema = z.object({
   acts: z.array(legalSearchActHitSchema),
+  /** Provision hits — opensearch only (see `legalSearchSectionHitSchema`). */
+  sections: z.array(legalSearchSectionHitSchema),
   caveats: z.array(z.string()),
   engine: z.string(),
   actsTotal: z.number().int().nullable(),

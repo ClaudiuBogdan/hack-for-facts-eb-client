@@ -147,7 +147,7 @@ describe('LegalActPage', () => {
       outLinks: {
         totalCount: null,
         hasMore: true,
-        items: legalActDetailRichFixture.outLinks.items,
+        items: legalActDetailRichFixture.outLinks?.items ?? [],
       },
     })
     render(<LegalActPage actId="66150" />)

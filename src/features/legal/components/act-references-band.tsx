@@ -9,7 +9,8 @@ import { LegalStatusBadge } from './legal-status-badge'
 import { ActAccordionItem } from './act-accordion'
 
 type Props = {
-  readonly group: LegalReferenceGroup
+  /** Null when the links are not available for this act (bridged on legal_v2). */
+  readonly group: LegalReferenceGroup | null
   readonly direction: 'out' | 'in'
   /**
    * False when the links are not available for this act (legal_v2 bridges
@@ -38,7 +39,11 @@ export function ActReferencesBand({ group, direction, available = true }: Props)
 
   // Unavailable, or an unknown total with nothing to show: say so — an
   // empty band would read as "no references".
-  if (!available || (group.items.length === 0 && group.totalCount === null)) {
+  if (
+    !available ||
+    group === null ||
+    (group.items.length === 0 && group.totalCount === null)
+  ) {
     return (
       <ActAccordionItem
         id={`act-references-${direction}-heading`}

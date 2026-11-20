@@ -216,10 +216,27 @@ describe('legal_v2 render payloads', () => {
         compilerVersion: 'unit-compiler',
         compiledAt: '2026-11-20T00:00:00Z',
         renderSource: 'legal_v2:tldf-unit/1',
+        servedForm: {
+          documentId: 'f900012',
+          versionKind: 'consolidare',
+          versionDate: '2024-03-12',
+          caveat: 'unofficial_consolidation',
+          portalLabelRaw: null,
+          portalLabelDate: '2024-03-12',
+          sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/8851',
+        },
+        renderHead: { version: 1 },
+        fidelityFlags: [],
       },
     })
 
     const data = await fetchLegalRenderLive('f900012')
+    // The served form rides along for the reader's banner.
+    expect(data.servedForm).toMatchObject({
+      documentId: 'f900012',
+      caveat: 'unofficial_consolidation',
+      portalLabelDate: '2024-03-12',
+    })
 
     expect(data.kind).toBe('envelope')
     expect(data.documentId).toBe('f900012')
@@ -232,7 +249,7 @@ describe('legal_v2 render payloads', () => {
     expect(typeof actLink?.target_act_id).toBe('number')
   })
 
-  it.each(['not_loaded', 'composition_not_served'])(
+  it.each(['not_loaded', 'composition_not_served', 'label_missing', 'source_not_bound'])(
     '409 RENDER_UNAVAILABLE %s → unavailable, terminal, "text not yet available"',
     async (renderStatus) => {
       stubFetch(409, {

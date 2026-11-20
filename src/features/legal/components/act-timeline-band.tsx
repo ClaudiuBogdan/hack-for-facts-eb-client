@@ -8,7 +8,8 @@ import { legislationLinkClassName } from '../lib/legislation-theme'
 import { ActAccordionItem } from './act-accordion'
 
 type Props = {
-  readonly timeline: readonly LegalTimelineEntry[]
+  /** Null when the history is not available for this act (bridged on legal_v2). */
+  readonly timeline: readonly LegalTimelineEntry[] | null
   /**
    * False when the server cut the timeline at its bound (I-20); null when it
    * did not say — unknown, so an empty list is never shown as complete.
@@ -41,7 +42,7 @@ export function ActTimelineBand({ timeline, complete = true, available = true }:
   const [expanded, setExpanded] = useState(false)
 
   // No history to vouch for: say so, rather than show an empty, complete one.
-  if (!available || (timeline.length === 0 && complete === null)) {
+  if (!available || timeline === null || (timeline.length === 0 && complete === null)) {
     return (
       <ActAccordionItem
         id="act-timeline-heading"

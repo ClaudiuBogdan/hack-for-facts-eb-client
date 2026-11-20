@@ -467,7 +467,10 @@ function mapAct(raw: RawAct): LegalActDetail {
           confidence: asUnitInterval(summary.confidence),
         }
       : null,
-    timeline: (Array.isArray(raw.timeline) ? raw.timeline : []).map((entry) => {
+    // links, incomingAnchors and timeline are nullable on the server: null
+    // means "not available for this act" (legal_v2, an act the previous
+    // corpus does not hold) and stays null.
+    timeline: !Array.isArray(raw.timeline) ? null : raw.timeline.map((entry) => {
       const item = asRecord(entry)
       return {
         kind: asString(item.kind) ?? 'status_event',
@@ -498,17 +501,17 @@ function mapAct(raw: RawAct): LegalActDetail {
         matchedVia: asString(item.matchedVia),
       }
     }),
-    outLinks: mapReferenceGroup(raw.outLinks, 'targetAct', OUT_PAGE_SIZE),
+    outLinks:
+      raw.outLinks == null ? null : mapReferenceGroup(raw.outLinks, 'targetAct', OUT_PAGE_SIZE),
     // `inDegree` is stored on the act row and is the real incoming total, so it
     // overrides the connection's saturating count — but a missing one stays
     // missing rather than collapsing to an authoritative zero.
-    inLinks: mapReferenceGroup(
-      raw.inLinks,
-      'sourceAct',
-      IN_PAGE_SIZE,
-      asNullableInt(raw.inDegree),
-    ),
-    incomingAnchors: mapIncomingAnchors(raw.incomingAnchors),
+    inLinks:
+      raw.inLinks == null
+        ? null
+        : mapReferenceGroup(raw.inLinks, 'sourceAct', IN_PAGE_SIZE, asNullableInt(raw.inDegree)),
+    incomingAnchors:
+      raw.incomingAnchors == null ? null : mapIncomingAnchors(raw.incomingAnchors),
     documents: (Array.isArray(raw.documents) ? raw.documents : []).map((entry) => {
       const item = asRecord(entry)
       const render = item.render ? asRecord(item.render) : null

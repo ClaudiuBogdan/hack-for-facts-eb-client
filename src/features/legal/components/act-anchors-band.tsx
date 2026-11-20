@@ -8,7 +8,8 @@ import { LegalStatusBadge } from './legal-status-badge'
 import { ActAccordionItem } from './act-accordion'
 
 type Props = {
-  readonly group: LegalIncomingAnchorGroup
+  /** Null when the anchors are not available for this act (bridged on legal_v2). */
+  readonly group: LegalIncomingAnchorGroup | null
   /**
    * False when the anchors are not available for this act (legal_v2 bridges
    * them from the previous corpus, which may not hold the act).
@@ -32,7 +33,11 @@ export function ActAnchorsBand({ group, available = true }: Props) {
 
   // Unavailable, or an unknown total with nothing to show: say so — an
   // empty band would read as "no anchors".
-  if (!available || (group.items.length === 0 && group.totalCount === null)) {
+  if (
+    !available ||
+    group === null ||
+    (group.items.length === 0 && group.totalCount === null)
+  ) {
     return (
       <ActAccordionItem id="act-anchors-heading" title={t`Trimiteri afirmate de portal`}>
         <p className="px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">

@@ -5,9 +5,9 @@
  * this act's form (and never on another act's), the version selector, and
  * "text not yet available" for a form with no text.
  *
- * The render transport is mocked here so the test controls which form the
- * server says a page id resolves to; the body is the server converter's own
- * output for a real unit.
+ * The render transport and the act-scoped `resolveDocument` lookup are
+ * mocked here, so the test controls which form the server says a page id
+ * resolves to; the body is the server converter's own output for a real unit.
  */
 
 import { readFileSync } from 'node:fs'
@@ -58,12 +58,22 @@ const envelopeFor = (formId: string): LegalRenderData =>
     tldf: { ...rows[0]?.tldf, document_id: formId },
   }) as unknown as LegalRenderData
 
-/** Old page id → the form the server resolves it to (`page_targets`). */
-const PAGE_TO_FORM: Record<string, string> = {
+/** Old page id → what `LegalAct.resolveDocument` answers for this act. */
+const PAGE_TO_FORM: Record<string, string | null> = {
   '900012': 'f900012', // the page of this act's default consolidation
   '777': 'f900011', // a page of THIS act's original
-  '54260': 'f555', // a page of some other act's form (I-17)
+  '54260': 'f555', // an answer naming no version of this act (I-17)
+  '31337': null, // a page that names no form of this act
 }
+
+vi.mock('../../api/legal-resolve-document-api', () => ({
+  resolveLegalDocument: vi.fn(async (_actId: string, documentId: string) =>
+    PAGE_TO_FORM[documentId] ?? null,
+  ),
+}))
+
+/** The servedForm a test lays on the next render answer (REST meta). */
+let nextServedForm: LegalRenderData['servedForm'] = undefined
 
 vi.mock('../../api/legal-render-api', () => ({
   fetchLegalRender: vi.fn(async (documentId: string) => {
@@ -76,11 +86,13 @@ vi.mock('../../api/legal-render-api', () => ({
         retryable: false,
       })
     }
-    return envelopeFor(PAGE_TO_FORM[documentId] ?? documentId)
+    const data = envelopeFor(documentId)
+    return nextServedForm === undefined ? data : { ...data, servedForm: nextServedForm }
   }),
 }))
 
 import { fetchLegalRender } from '../../api/legal-render-api'
+import { resolveLegalDocument } from '../../api/legal-resolve-document-api'
 
 const render = (ui: Parameters<typeof renderShared>[0]) =>
   renderShared(ui, { queryClient: createTestQueryClient() })
@@ -93,7 +105,9 @@ const requestedIds = () => vi.mocked(fetchLegalRender).mock.calls.map(([id]) => 
 describe('ActReadingLayout on legal_v2', () => {
   beforeEach(() => {
     vi.mocked(fetchLegalRender).mockClear()
+    vi.mocked(resolveLegalDocument).mockClear()
     navigateMock.mockClear()
+    nextServedForm = undefined
   })
 
   it('labels the default consolidation with the LEG-X3AV banner, outside the text', async () => {
@@ -126,34 +140,61 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(screen.getByLabelText(/Versiunea textului/)).toHaveValue('f900011')
   })
 
-  it('asks the server to resolve an old page id, even one a form\'s sourceUrl names', async () => {
+  it("asks the server's act-scoped lookup for an old page id, even one a form's sourceUrl names", async () => {
     render(
       <ActReadingLayout act={legalActDetailV2Fixture} docOverride="900012" lead={null} fisa={null} />,
     )
     await screen.findByText(/Formă consolidată neoficială, cu caracter informativ\./)
-    expect(requestedIds()).toEqual(['900012'])
+    expect(vi.mocked(resolveLegalDocument)).toHaveBeenCalledWith('900001', '900012', expect.anything())
+    // The text is read by the form id the lookup answered — no render probe.
+    expect(requestedIds()).toEqual(['f900012'])
     expect(screen.queryByText(/nu aparține acestui act/)).not.toBeInTheDocument()
   })
 
-  it("keeps a probed page id when the server resolves it to one of this act's forms", async () => {
+  it("reads the form the lookup names when it is one of this act's versions", async () => {
     const { container } = render(
       <ActReadingLayout act={legalActDetailV2Fixture} docOverride="777" lead={null} fisa={null} />,
     )
     await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
-    expect(requestedIds()).toEqual(['777'])
+    expect(requestedIds()).toEqual(['f900011'])
     expect(screen.queryByText(/nu aparține acestui act/)).not.toBeInTheDocument()
     // The answer names the original: no consolidation banner, selector on it.
     expect(screen.queryByText(/Formă consolidată neoficială/)).not.toBeInTheDocument()
     expect(screen.getByLabelText(/Versiunea textului/)).toHaveValue('f900011')
   })
 
-  it("refuses a probed page id that resolves to another act's form, and reads the default (I-17)", async () => {
+  it.each([
+    ['names no version of this act', '54260'],
+    ['names no form at all', '31337'],
+  ])('refuses a page id whose lookup %s, and reads the default (I-17)', async (_case, page) => {
     render(
-      <ActReadingLayout act={legalActDetailV2Fixture} docOverride="54260" lead={null} fisa={null} />,
+      <ActReadingLayout act={legalActDetailV2Fixture} docOverride={page} lead={null} fisa={null} />,
     )
     expect(await screen.findByText(/nu aparține acestui act/)).toBeInTheDocument()
     await screen.findByText(/Formă consolidată neoficială, cu caracter informativ\./)
-    expect(requestedIds()).toEqual(['54260', 'f900012'])
+    // The other act's text is never fetched.
+    expect(requestedIds()).toEqual(['f900012'])
+  })
+
+  it("labels the text by the render's servedForm, the authoritative account of what was served", async () => {
+    // The version list calls f900011 the original; the server says the text
+    // it served is a consolidation — the banner follows the server.
+    nextServedForm = {
+      documentId: 'f900011',
+      versionKind: 'consolidare',
+      caveat: 'unofficial_consolidation',
+      portalLabelRaw: 'actualizat până la',
+      portalLabelDate: '2023-01-05',
+      sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/5551',
+    }
+    render(
+      <ActReadingLayout act={legalActDetailV2Fixture} docOverride="f900011" lead={null} fisa={null} />,
+    )
+    const banner = await screen.findByText(/Formă consolidată neoficială, cu caracter informativ\./)
+    expect(banner.closest('[role="note"]')).toHaveTextContent(/„actualizat până la .*2023.*”/)
+    expect(
+      screen.getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ }),
+    ).toHaveAttribute('href', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/5551')
   })
 
   it('says "text not yet available" for a form whose text is not loaded, with no retry and no banner', async () => {

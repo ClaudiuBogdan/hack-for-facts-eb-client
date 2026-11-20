@@ -56,6 +56,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { fetchLegalRender } from '../../api/legal-render-api'
 import { useLegalOutline } from '../../hooks/use-legal-outline'
 import { legalRenderQueryKey, useLegalRender } from '../../hooks/use-legal-render'
+import { useLegalResolveDocument } from '../../hooks/use-legal-resolve-document'
 import {
   isTextNotYetAvailable,
   LegalRenderFailureError,
@@ -66,6 +67,7 @@ import {
   findVersion,
   isConsolidationVersion,
   resolveDocOverride,
+  withServedForm,
 } from '../../lib/legal-versions'
 import { ActConsolidationBanner } from '../act-consolidation-banner'
 import { ActVersionSelector } from '../act-version-selector'
@@ -127,28 +129,30 @@ export function ActReadingLayout({
   // `?doc=` must name an expression OF THIS ACT. Any other document id is
   // refused, never rendered under this act's header, summary and official
   // link (I-17: `?doc=54260` put the 1886 Berne Convention under CNSU 2022).
-  // On legal_v2 an old numeric page id from a shipped link maps to the form
-  // whose Portal page it is; failing that, the server resolves it on the
-  // render route (a PROBE), and the answer is kept only when the form it
-  // names is one of this act's — otherwise the canonical text is read.
+  // On legal_v2 an old numeric page id from a shipped link is resolved by the
+  // server's act-scoped lookup (`LegalAct.resolveDocument`), and its answer
+  // is kept only when it names one of this act's versions — otherwise the
+  // default text is read, with the notice. Nothing renders while it resolves:
+  // the default text must not flash in and then be replaced.
   const canonicalId = act.canonical?.documentId ?? null
   const resolution = docOverride === undefined ? null : resolveDocOverride(act, docOverride)
-  const ownId = resolution?.kind === 'own' ? resolution.documentId : null
   const probeId = resolution?.kind === 'probe' ? resolution.documentId : null
-  const requestedId = ownId ?? probeId ?? canonicalId
-  const requested = useLegalRender(requestedId)
-  const probeAnswer = probeId !== null ? requested.data?.documentId : undefined
-  const probeRefused =
-    probeAnswer !== undefined && !act.documents.some((d) => d.documentId === probeAnswer)
-  const fallback = useLegalRender(probeRefused ? canonicalId : null)
-  const render = probeRefused ? fallback : requested
-  const documentId = probeRefused ? canonicalId : requestedId
-  const override = probeRefused ? undefined : (ownId ?? probeId ?? undefined)
+  const resolved = useLegalResolveDocument(act.actId, probeId)
+  const resolvedId = probeId !== null ? (resolved.data ?? null) : null
+  const probeOwn =
+    resolvedId !== null && act.documents.some((d) => d.documentId === resolvedId)
+  const probePending = probeId !== null && resolved.isPending
+  const probeRefused = probeId !== null && !probePending && !probeOwn
+  const ownId = resolution?.kind === 'own' ? resolution.documentId : probeOwn ? resolvedId : null
+  const documentId = probePending ? null : (ownId ?? canonicalId)
+  const render = useLegalRender(documentId)
+  const override = ownId ?? undefined
   const foreignDoc = resolution?.kind === 'foreign' || probeRefused
-  // The version on screen: the render's own answer names it (a probe's page
-  // id comes back as its form id), else the id asked for.
-  const shownId = render.data?.documentId ?? documentId
-  const shownVersion = findVersion(act, shownId)
+  // The version on screen. The render's `servedForm` (legal_v2 REST meta) is
+  // the authoritative account of the text actually served; the version list
+  // fills in what it lacks.
+  const shownId = render.data?.servedForm?.documentId ?? render.data?.documentId ?? documentId
+  const shownVersion = withServedForm(findVersion(act, shownId), render.data?.servedForm ?? null)
   const sourceUrl = shownVersion?.sourceUrl ?? act.officialTextUrl
   const showConsolidationBanner =
     render.isSuccess && shownVersion !== null && isConsolidationVersion(shownVersion)
@@ -409,7 +413,7 @@ export function ActReadingLayout({
             {showConsolidationBanner && <ActConsolidationBanner version={shownVersion} />}
 
             <div>
-              {documentId === null && (
+              {documentId === null && !probePending && (
                 <StateCard title={t`Fără expresie canonică`}>
                   <Trans>
                     Ținem metadatele acestui act, dar nu o expresie de text
@@ -423,7 +427,7 @@ export function ActReadingLayout({
                   <Trans>Nu am găsit fragmentul cerut în acest text.</Trans>
                 </p>
               )}
-              {documentId !== null && render.isLoading && (
+              {((documentId !== null && render.isLoading) || probePending) && (
                 // A skeleton at the serif's rhythm, not a bare grey line: it
                 // reserves real height, so the fișa below doesn't leap
                 // thousands of pixels when the text lands.
@@ -587,7 +591,9 @@ function RenderFailureCard({
   const body =
     failure.renderStatus === 'composition_not_served'
       ? t`Textul acestei versiuni are mai multe părți (antet și corp), pe care nu le afișăm încă împreună.`
-      : notYet
+      : failure.renderStatus === 'label_missing'
+        ? t`Nu afișăm o formă consolidată fără mențiunea Portalului Legislativ și data ei, care lipsesc încă pentru această versiune.`
+        : notYet
         ? t`Versiunea există pe Portalul Legislativ, dar textul ei nu este încă încărcat aici.`
         : {
             not_found: t`Ținem actul, dar nicio generare de text pentru această expresie.`,

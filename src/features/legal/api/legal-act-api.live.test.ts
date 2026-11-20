@@ -81,8 +81,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.outLinks.totalCount).toBe(3)
-    expect(act?.outLinks.hasMore).toBe(false)
+    expect(act?.outLinks?.totalCount).toBe(3)
+    expect(act?.outLinks?.hasMore).toBe(false)
   })
 
   it('treats a saturated totalCount as unknown rather than exact', async () => {
@@ -96,8 +96,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.outLinks.totalCount).toBeNull()
-    expect(act?.outLinks.hasMore).toBe(true)
+    expect(act?.outLinks?.totalCount).toBeNull()
+    expect(act?.outLinks?.hasMore).toBe(true)
   })
 
   it('does not turn an absent totalCount into a confident zero', async () => {
@@ -105,8 +105,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.outLinks.totalCount).toBeNull()
-    expect(act?.outLinks.hasMore).toBe(true)
+    expect(act?.outLinks?.totalCount).toBeNull()
+    expect(act?.outLinks?.hasMore).toBe(true)
   })
 
   it('prefers inDegree over the saturating incoming count', async () => {
@@ -120,8 +120,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.inLinks.totalCount).toBe(2621)
-    expect(act?.inLinks.hasMore).toBe(true)
+    expect(act?.inLinks?.totalCount).toBe(2621)
+    expect(act?.inLinks?.hasMore).toBe(true)
   })
 
   it('distrusts an inDegree that is smaller than the rows it returned', async () => {
@@ -134,8 +134,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.inLinks.totalCount).toBeNull()
-    expect(act?.inLinks.hasMore).toBe(true)
+    expect(act?.inLinks?.totalCount).toBeNull()
+    expect(act?.inLinks?.hasMore).toBe(true)
   })
 
   it('reports an exact incoming total when inDegree matches the rows', async () => {
@@ -146,8 +146,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.inLinks.totalCount).toBe(2)
-    expect(act?.inLinks.hasMore).toBe(false)
+    expect(act?.inLinks?.totalCount).toBe(2)
+    expect(act?.inLinks?.hasMore).toBe(false)
   })
 
   it('drops a confidence that is not on the 0–1 scale', async () => {
@@ -263,8 +263,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.incomingAnchors.totalCount).toBe(395)
-    expect(act?.incomingAnchors.items[0]?.targetFragment).toBe('art. 291')
+    expect(act?.incomingAnchors?.totalCount).toBe(395)
+    expect(act?.incomingAnchors?.items[0]?.targetFragment).toBe('art. 291')
 
     respond({
       incomingAnchors: {
@@ -275,11 +275,11 @@ describe('fetchLegalActDetailLive', () => {
     const inconsistent = await fetchLegalActDetailLive('1')
     // A count below the rows it came with is not a count: unknown, not the
     // page length.
-    expect(inconsistent?.incomingAnchors.totalCount).toBeNull()
+    expect(inconsistent?.incomingAnchors?.totalCount).toBeNull()
 
     respond({ incomingAnchors: { totalCount: null, edges: [] } })
     // A missing count is unknown — never a confident zero.
-    expect((await fetchLegalActDetailLive('1'))?.incomingAnchors.totalCount).toBeNull()
+    expect((await fetchLegalActDetailLive('1'))?.incomingAnchors?.totalCount).toBeNull()
   })
 
   it('returns null for an act the server does not have', async () => {
@@ -424,7 +424,25 @@ describe('fetchLegalActDetailLive on legal_v2', () => {
     expect(act?.amendedAfterPublication).toBeNull()
     // With no authoritative in-degree the incoming total is not asserted
     // from it either.
-    expect(act?.inLinks.totalCount).toBe(0)
+    expect(act?.inLinks?.totalCount).toBe(0)
+  })
+
+  it('keeps null links, anchors and timeline null — "not available", never empty and complete', async () => {
+    respond({
+      dataSource: 'legal_v2',
+      bridgedFields: [],
+      outLinks: null,
+      inLinks: null,
+      incomingAnchors: null,
+      timeline: null,
+      timelineComplete: null,
+    })
+    const act = await fetchLegalActDetailLive('1')
+    expect(act?.outLinks).toBeNull()
+    expect(act?.inLinks).toBeNull()
+    expect(act?.incomingAnchors).toBeNull()
+    expect(act?.timeline).toBeNull()
+    expect(act?.timelineComplete).toBeNull()
   })
 
   it('keeps a linked act with a null status or in-degree null', async () => {
@@ -433,6 +451,6 @@ describe('fetchLegalActDetailLive on legal_v2', () => {
       outLinks: { totalCount: 1, edges: [{ ...edge('7'), targetAct: target }] },
     })
     const act = await fetchLegalActDetailLive('1')
-    expect(act?.outLinks.items[0]?.act).toMatchObject({ status: null, inDegree: null })
+    expect(act?.outLinks?.items[0]?.act).toMatchObject({ status: null, inDegree: null })
   })
 })

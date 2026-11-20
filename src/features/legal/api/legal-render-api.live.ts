@@ -5,9 +5,10 @@
  *   GET /api/v1/legal/documents/:documentId/render/chunks/:chunkIndex
  *
  * This is the module's ONE deliberate exception to GraphQL-only transport
- * (the parliament transcript precedent): a rendered act is large, immutable
- * per generation, and wants `ETag` / `Cache-Control` semantics the browser
- * HTTP cache handles for free. The base call returns the complete envelope
+ * (the parliament transcript precedent): a rendered act is large. The legacy
+ * source serves it immutable per generation with `ETag` / `Cache-Control`;
+ * a legal_v2 render is `no-store`, with no ETag and no 304. Nothing here
+ * depends on a revalidation: a plain GET, and the query cache's staleTime. The base call returns the complete envelope
  * for a single-chunk document or the physical MANIFEST for a chunked one —
  * never a partial `blocks[]` — and chunk groups are fetched by index.
  *
@@ -99,5 +100,5 @@ export async function fetchLegalRenderLive(
       retryable: true,
     })
   }
-  return parsed.data.data
+  return { ...parsed.data.data, servedForm: parsed.data.meta.servedForm ?? null }
 }

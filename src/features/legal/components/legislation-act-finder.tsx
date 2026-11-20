@@ -30,6 +30,7 @@ import {
 } from '../lib/legislation-theme'
 import { LegalStatusBadge } from './legal-status-badge'
 import { LegislationSearchSkeleton } from './legislation-search-skeleton'
+import { LegislationSearchSnippet } from './legislation-search-snippet'
 import { LegislationSection } from './legislation-section'
 
 /** Queries the tab can actually answer today — every chip is a measured hit. */
@@ -47,6 +48,9 @@ type Props = {
   readonly search: LegalFinderSearch
 }
 
+
+/** Provision hits shown under one act (the server sends up to three). */
+const SNIPPETS_PER_ACT = 3
 /**
  * The Caută tab (`/legislation/search`) — a citation and name finder that
  * states plainly it is NOT full-text search.
@@ -426,6 +430,15 @@ export function LegislationActFinder({ search }: Props) {
                     {hit.description}
                   </p>
                 )}
+                {(result?.sections ?? [])
+                  .filter((section) => section.actId === hit.act.actId)
+                  .slice(0, SNIPPETS_PER_ACT)
+                  .map((section, index) => (
+                    <LegislationSearchSnippet
+                      key={`${section.documentId}-${index}`}
+                      hit={section}
+                    />
+                  ))}
               </div>
             </li>
           ))}

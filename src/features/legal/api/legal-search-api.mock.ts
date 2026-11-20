@@ -87,6 +87,7 @@ export async function fetchLegalSearchMock(
     if (exact !== undefined && gate(exact)) {
       return {
         acts: [toHit(exact, 1)],
+        sections: [],
         caveats: [LEGAL_ORIGINAL_TEXT_CAVEAT],
         engine: 'postgres',
         actsTotal: 1,
@@ -119,6 +120,8 @@ export async function fetchLegalSearchMock(
 
   return {
     acts: rows.map((row, index) => toHit(row, 1 - index * 0.1)),
+    // The mock mirrors the Postgres path, whose provision hits are dropped.
+    sections: [],
     caveats: [
       LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT,
       ...(rows.length > 0 ? [LEGAL_ORIGINAL_TEXT_CAVEAT] : []),

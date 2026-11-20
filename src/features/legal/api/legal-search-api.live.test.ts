@@ -11,10 +11,9 @@ const graphqlQueryMock = vi.mocked(graphqlQuery)
 
 /**
  * These tests pin what a well-meaning edit is likeliest to break:
- *  - the request stays on the docs channel (`channel: docs` in the query
- *    TEXT) and never asks for sections — measured 2026-08-26, sections are
- *    an act-NAME echo, and requesting them would dress a name lookup up as
- *    the text search that does not exist yet;
+ *  - provision hits are kept only from the OpenSearch engine — measured
+ *    2026-08-26, the Postgres path's sections are an act-NAME echo, and
+ *    serving them would dress a name lookup up as a text search;
  *  - the nested `LegalDocHit` shape (`{ score, act, summary }`) maps into
  *    the flat UI hit without flattening mistakes;
  *  - `actsTotal: null` stays null ("cannot count"), never 0;
@@ -81,16 +80,61 @@ describe('fetchLegalSearchLive', () => {
     })
   })
 
-  it('asks the docs channel and never selects sections', async () => {
+  const sectionHit = (overrides: Record<string, unknown> = {}) => ({
+    act: { actId: '900002' },
+    documentId: 'f900012',
+    nodeLabel: 'Articol unic',
+    snippet: 'Se aprobă <em>renunțarea</em>',
+    servedForm: {
+      documentId: 'f900012',
+      versionKind: 'consolidare',
+      versionDate: '2024-03-12',
+      caveat: 'unofficial_consolidation',
+      portalLabelRaw: null,
+      portalLabelDate: '2024-03-12',
+      sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
+    },
+    ...overrides,
+  })
+
+  it('asks for acts and provision hits with the form each hit was verified against', async () => {
     graphqlQueryMock.mockResolvedValue(served() as never)
 
     await fetchLegalSearchLive('codul muncii')
 
     const [query] = graphqlQueryMock.mock.calls[0]
-    // The channel is a hardcoded literal in the query text: a revert to the
-    // default `auto` would resurface the name-echo sections.
-    expect(query).toMatch(/channel:\s*docs/)
-    expect(query).not.toMatch(/sections/)
+    expect(query).toMatch(/channel:\s*auto/)
+    expect(query).toMatch(/sections \{/)
+    expect(query).toMatch(/servedForm \{[^}]*caveat[^}]*portalLabelDate/s)
+  })
+
+  it('keeps provision hits from the OpenSearch engine, with their served form', async () => {
+    graphqlQueryMock.mockResolvedValue(
+      served({ engine: 'opensearch', degraded: false, sections: [sectionHit()] }) as never,
+    )
+    const result = await fetchLegalSearchLive('renunțare')
+    expect(result.sections).toEqual([
+      {
+        actId: '900002',
+        documentId: 'f900012',
+        nodeLabel: 'Articol unic',
+        snippet: 'Se aprobă <em>renunțarea</em>',
+        servedForm: {
+          documentId: 'f900012',
+          versionKind: 'consolidare',
+          versionDate: '2024-03-12',
+          caveat: 'unofficial_consolidation',
+          portalLabelRaw: null,
+          portalLabelDate: '2024-03-12',
+          sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
+        },
+      },
+    ])
+  })
+
+  it("drops the Postgres path's provision hits — a name echo, not a text match", async () => {
+    graphqlQueryMock.mockResolvedValue(served({ sections: [sectionHit()] }) as never)
+    expect((await fetchLegalSearchLive('codul muncii')).sections).toEqual([])
   })
 
   it('maps the NESTED act shape: hit { score, act, summary } → flat UI hit', async () => {

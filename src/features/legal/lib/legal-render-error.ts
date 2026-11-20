@@ -31,7 +31,8 @@ export interface LegalRenderFailure {
   readonly kind: LegalRenderFailureKind
   /**
    * On `unavailable`: 'content_unavailable' | 'superseded_pending', and on
-   * legal_v2 'not_loaded' | 'composition_not_served' (see
+   * legal_v2 'not_loaded' | 'composition_not_served' | 'label_missing' |
+   * 'source_not_bound' (see
    * `isTextNotYetAvailable`).
    */
   readonly renderStatus?: string
@@ -95,15 +96,21 @@ export function classifyRenderFailure(
 }
 
 /**
- * The legal_v2 render states that mean "the text is not available YET": a
- * form with no published text (`not_loaded`) or one whose text is several
- * units this version does not serve together (`composition_not_served`).
- * Both arrive as 409 RENDER_UNAVAILABLE and are terminal for this request —
- * a retry will not grow a text.
+ * The legal_v2 render states that mean "the text is not available YET", all
+ * 409 RENDER_UNAVAILABLE and terminal for this request (a retry will not grow
+ * a text):
+ *  - `not_loaded` — no published text;
+ *  - `composition_not_served` — several units this version does not serve
+ *    together (a header plus a body);
+ *  - `label_missing` — a consolidation with neither the Portal's label nor
+ *    its date: its text is never shown without the label (LEG-X3AV);
+ *  - `source_not_bound` — the unit's capture is not bound to the form.
  */
 export const LEGAL_RENDER_NOT_YET_STATUSES: ReadonlySet<string> = new Set([
   'not_loaded',
   'composition_not_served',
+  'label_missing',
+  'source_not_bound',
 ])
 
 export function isTextNotYetAvailable(failure: LegalRenderFailure): boolean {

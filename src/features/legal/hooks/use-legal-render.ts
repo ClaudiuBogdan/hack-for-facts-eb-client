@@ -7,9 +7,11 @@ export function legalRenderQueryKey(documentId: string, chunkIndex?: number) {
 
 /**
  * The base render read: the complete envelope (single-chunk document) or the
- * physical manifest (chunked one). A generation is immutable — recompiles
- * mint a new one — so a long staleTime is correct; the browser HTTP cache
- * handles revalidation underneath via the route's ETag.
+ * physical manifest (chunked one). The long staleTime is the ONLY cache the
+ * reader relies on: the legacy route adds an ETag the browser may revalidate
+ * against, but a legal_v2 render is `no-store` with no ETag or 304, so every
+ * refetch is a full read — and a chunk fetched across a change is caught by
+ * the chunked reader's generation pin, not by HTTP caching.
  *
  * `retry: false` — failures arrive PRE-CLASSIFIED (`LegalRenderFailureError`)
  * and three of the five kinds are terminal facts; blind retries would just

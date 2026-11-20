@@ -235,8 +235,12 @@ describe('LegislationActFinder', () => {
 
   describe('on the legal-v2 OpenSearch engine', () => {
     /** The v2 engine's answer shape (server core/v2/search.ts). */
-    const v2Answer = (acts: LegalSearchResultData['acts']): LegalSearchResultData => ({
+    const v2Answer = (
+      acts: LegalSearchResultData['acts'],
+      sections: LegalSearchResultData['sections'] = [],
+    ): LegalSearchResultData => ({
       acts,
+      sections,
       caveats: [
         'semantic search unavailable',
         'Formele consolidate sunt neoficiale, cu caracter informativ; textul unui act nu este „textul în vigoare la o dată”.',
@@ -282,6 +286,47 @@ describe('LegislationActFinder', () => {
       // A null status shows no badge, a null in-degree no "citat de".
       expect(screen.queryByText('Necunoscut')).not.toBeInTheDocument()
       expect(screen.queryByText(/citat de/)).not.toBeInTheDocument()
+    })
+
+    it('quotes a verified provision hit and labels one from a consolidation (LEG-X3AV)', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(
+        v2Answer(
+          [hit],
+          [
+            {
+              actId: '900002',
+              documentId: 'f900012',
+              nodeLabel: 'Articol unic',
+              snippet: 'Se aprobă <em>renunțarea</em> la <b>cetățenia</b> română',
+              servedForm: {
+                documentId: 'f900012',
+                versionKind: 'consolidare',
+                caveat: 'unofficial_consolidation',
+                portalLabelRaw: null,
+                portalLabelDate: '2024-03-12',
+              },
+            },
+            {
+              actId: '900002',
+              documentId: 'f900011',
+              nodeLabel: null,
+              snippet: 'renunțarea din forma publicată',
+              servedForm: { documentId: 'f900011', versionKind: 'original', caveat: null },
+            },
+          ],
+        ),
+      )
+      render(<LegislationActFinder search={{ q: 'renunțare cetățenie' }} />)
+
+      await screen.findByRole('link', { name: 'Hotărârea nr. 206/1996' })
+      // The matched word is marked; any other tag is text, never HTML.
+      expect(screen.getByText('renunțarea').tagName).toBe('MARK')
+      expect(screen.getByText(/<b>cetățenia<\/b>/)).toBeInTheDocument()
+      // Exactly one hit — the consolidation's — carries the label.
+      const labels = screen.getAllByText(/Dintr-o formă consolidată neoficială/)
+      expect(labels).toHaveLength(1)
+      expect(labels[0]).toHaveTextContent(/Portalul Legislativ indică „consolidarea din .*2024/)
     })
 
     it('does not deny text search when a words query finds nothing', async () => {

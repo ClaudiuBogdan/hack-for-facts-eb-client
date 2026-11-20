@@ -4,6 +4,7 @@ import {
   type LegalActDocumentVersion,
   type LegalDocument,
 } from '@/schemas/legal'
+import type { LegalServedForm } from './tldf/schemas'
 
 /**
  * Version facts shared by the versions band, the version selector and the
@@ -87,9 +88,9 @@ export function isPortalPageId(documentId: string): boolean {
  * How a `?doc=` value resolves against this act's versions:
  *
  *  - `own` — one of `act.documents`;
- *  - `probe` — an old page id on legal_v2: the server resolves it on the
- *    render route, and the reader accepts the answer only if the form it
- *    names belongs to this act;
+ *  - `probe` — an old page id on legal_v2: the server resolves it
+ *    (`LegalAct.resolveDocument`, act-scoped), and the reader accepts the
+ *    answer only if the form it names is one of this act's versions;
  *  - `foreign` — not this act's; refused (I-17).
  */
 export type DocOverrideResolution =
@@ -156,4 +157,32 @@ export function portalConsolidationNote(
     return `${raw} ${formatDate(date)}`
   }
   return date === null ? null : `consolidarea din ${formatDate(date)}`
+}
+
+/**
+ * The shown version with the render's `servedForm` laid over it: the REST
+ * meta names the form whose text was actually served (legal_v2), so its
+ * kind, caveat, label and source win; the version list fills the rest. With
+ * no `servedForm` (legacy, mock) the listed version stands as it is.
+ */
+export function withServedForm(
+  listed: ShownVersion | null,
+  served: LegalServedForm | null,
+): ShownVersion | null {
+  if (served === null) return listed
+  const documentId = served.documentId ?? listed?.documentId
+  if (documentId === undefined) return listed
+  return {
+    documentId,
+    versionKind: served.versionKind ?? listed?.versionKind ?? '',
+    versionDate: served.versionDate ?? listed?.versionDate ?? null,
+    caveat: served.caveat !== undefined ? served.caveat : (listed?.caveat ?? null),
+    portalLabelRaw:
+      served.portalLabelRaw !== undefined ? served.portalLabelRaw : (listed?.portalLabelRaw ?? null),
+    portalLabelDate:
+      served.portalLabelDate !== undefined
+        ? served.portalLabelDate
+        : (listed?.portalLabelDate ?? null),
+    sourceUrl: served.sourceUrl ?? listed?.sourceUrl ?? null,
+  }
 }
