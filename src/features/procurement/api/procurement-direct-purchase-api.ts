@@ -1,4 +1,5 @@
 import { daSupplierReads } from './procurement-da-release-status'
+import { newestKey } from '@/lib/disclosure-key'
 import { fetchReleaseAround } from './procurement-da-release-around'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { buyerName, tidyAddress } from '../lib/buyer-model'
@@ -204,9 +205,9 @@ async function soft<T>(read: Promise<T>, signal?: AbortSignal): Promise<Settled<
   }
 }
 
-function analysisRead(operationName: string, fields: readonly BuyerField[], signal?: AbortSignal): Promise<Readonly<Record<string, unknown>>> {
+function analysisRead(operationName: string, fields: readonly BuyerField[], signal?: AbortSignal, disclosureSeen?: string | null): Promise<Readonly<Record<string, unknown>>> {
   const variables = Object.fromEntries(fields.map((field) => [field.alias, field.scope]))
-  return graphqlQuery<Readonly<Record<string, unknown>>>(procurementBuyerQuery(operationName, fields, false), variables, { operationName, signal })
+  return graphqlQuery<Readonly<Record<string, unknown>>>(procurementBuyerQuery(operationName, fields, false), variables, { operationName, signal, disclosureSeen })
 }
 
 /** The pair's years: 2019 to the year in progress, that year cut at `through` (the last complete year's end when its cutoff is not known). */
@@ -230,6 +231,9 @@ function yearsOf(raw: Readonly<Record<string, unknown>>, part: number, through: 
  * purchase in the year in progress wait for the cutoff.
  */
 export async function fetchDirectPurchaseContext(input: DpContextInput, purchase: DirectPurchase, signal?: AbortSignal): Promise<DpContext> {
+  // D6: every lookup here sends the purchase's supplier code. If a newer publication is seen before one is sent — the
+  // year branch waits on the cutoff first — that code may be withheld now, and nothing more is sent.
+  const seen = newestKey()
   const latest = homeYear()
   const part = latest + 1
   const year = Number(input.yearDay.slice(0, 4))
@@ -249,13 +253,14 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
         { alias: 'pairPartValue', kind: 'series', scope: { ...pair, year: part }, args: 'bucket: month, measure: valueAwardedSum' },
       ],
       signal,
+      seen,
     ),
     signal,
   )
   const both = { authorityCui: { eq: input.authorityCui }, supplierCui: { eq: input.supplierCui } }
   // A release purchase's neighbours come from the release, dated by finalization as it dates them.
   const releaseAroundRead = purchase.money
-    ? soft(fetchReleaseAround({ authorityCui: input.authorityCui, supplierCui: input.supplierCui, day: input.yearDay }, AROUND_PER_SIDE, signal), signal)
+    ? soft(fetchReleaseAround({ authorityCui: input.authorityCui, supplierCui: input.supplierCui, day: input.yearDay }, AROUND_PER_SIDE, signal, seen), signal)
     : null
   const legacyAroundRead = releaseAroundRead ? null : soft(
     graphqlQuery<unknown>(
@@ -266,7 +271,7 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
         older: { ...both, publicationDate: { lte: input.day } },
         perSide: AROUND_PER_SIDE,
       },
-      { operationName: 'ProcurementDirectPurchaseAround', signal },
+      { operationName: 'ProcurementDirectPurchaseAround', signal, disclosureSeen: seen },
     ).then((raw) => directPurchaseAroundSchema.parse(raw)),
     signal,
   )
@@ -288,6 +293,7 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
             : []),
         ],
         signal,
+        seen,
       ),
       signal,
     )
@@ -299,6 +305,7 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
           { alias: 'sellerClients', kind: 'breakdown', scope: { supplierCui: input.supplierCui, grain, ...within }, args: `dimension: authority, topN: ${RANKED}, rankBy: value` },
         ],
         signal,
+        seen,
       ),
       signal,
     )

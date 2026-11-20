@@ -25,14 +25,14 @@ const MAX_ENTERPRISES = 500
 
 // A partial read is served once and read again, never kept.
 const enterprises = createServerMemo<PublicEnterpriseRead>(KEEP_MS, { maxEntries: MAX_ENTERPRISES, keep: (read) => !read.partial })
-const companies = createServerMemo<PrivateCompanyProfile | null>(KEEP_MS, { maxEntries: MAX_ENTERPRISES })
-const buyers = createServerMemo<BuyerProfile>(KEEP_MS, { maxEntries: MAX_ENTERPRISES, keep: (profile) => !profile.partial })
 
 const deadline = () => withDeadline(undefined, SSR_DEADLINE_MS)
 
 export interface PublicEnterpriseServerRead {
   /** The disclosure publication a server render was read under (D6); null: unknown, kept nowhere. Absent: not a server render. */
   readonly disclosure?: string | null
+  /** When the server read it (epoch ms): the open tab's fail-closed clock starts from it. */
+  readonly disclosureReadAt?: number
   /** Absent when the read failed: the browser reads it. */
   readonly enterprise?: PublicEnterpriseRead
   /** `null`: no company record; absent: the read failed. */
@@ -44,17 +44,20 @@ export interface PublicEnterpriseServerRead {
 
 /** The three reads side by side; a failed one is left out, and the others stand. */
 export async function readPublicEnterpriseForSsr(cui: string): Promise<PublicEnterpriseServerRead> {
-  // D6: the buyer profile ranks direct purchases' suppliers, so it is kept under the publication it was read under.
+  // The publication the render is read under, read first: the browser drops a seed of another (D6). Its time starts an open tab's fail-closed clock.
+  const disclosureReadAt = Date.now()
   const disclosure = await disclosureVersion()
-  const readBuyer = () => fetchProcurementBuyer(cui, RECENT, deadline())
   const [enterprise, company, buyer] = await Promise.allSettled([
     enterprises(cui, () => fetchPublicEnterprise(cui, { signal: deadline() })),
-    companies(cui, () => fetchPrivateCompanyProfile(cui, deadline())),
-    disclosure === null ? readBuyer() : buyers(`${disclosure}|${cui}`, readBuyer),
+    // D6: the company's public money carries its incoming direct purchases (the API withholds a supplier's), so it is read on every render, never kept.
+    fetchPrivateCompanyProfile(cui, deadline()),
+    // D6: the buyer profile ranks direct purchases' suppliers, so it is read on every render, never kept (root, 19 November 2026; design §24.4).
+    fetchProcurementBuyer(cui, RECENT, deadline()),
   ])
   return {
     disclosureKnown: disclosure !== null,
     disclosure,
+    disclosureReadAt,
     ...(enterprise.status === 'fulfilled' ? { enterprise: enterprise.value } : {}),
     ...(company.status === 'fulfilled' ? { company: company.value } : {}),
     ...(buyer.status === 'fulfilled' ? { buyer: buyer.value } : {}),

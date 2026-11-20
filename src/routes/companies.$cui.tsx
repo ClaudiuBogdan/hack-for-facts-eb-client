@@ -1,4 +1,5 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
+import { DA_ROUTE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { normalizeCompanyCui } from '@/features/private-companies/lib/normalize-company-cui'
 import { buildPrivateCompanyRouteHead } from '@/features/private-companies/seo/private-company-seo'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
@@ -9,10 +10,16 @@ export type PrivateCompanyRouteLoaderData = {
   /** Absent on a client-side navigation — the page's own query supplies it. */
   readonly profile?: PrivateCompanyProfile
   readonly cui: string
+  /** D6 (root, scope B): the publication the server read under, and when — its public money carries direct purchases. */
+  readonly disclosure?: string | null
+  readonly disclosureReadAt?: number
 }
 
 export const Route = createFileRoute('/companies/$cui')({
   validateSearch: parsePrivateCompanySearch,
+  // D6: its public money carries direct purchases — no loader data kept once the page is left. The document itself
+  // goes out `no-store` (the layout's headers; this route sets none), stricter than the DA CDN headers.
+  ...DA_ROUTE_CACHE,
   // Awaited on the SSR path only, so crawlers still get a full document with
   // the company's name in the head. In the browser the same await cost a dead
   // click of ~0.3–0.6s on the previous page; `PrivateCompanyRoutePage` already
@@ -49,11 +56,13 @@ export const Route = createFileRoute('/companies/$cui')({
     // institution loader: seeding the server cache dehydrates the server's
     // `dataUpdatedAt`, which would make every CDN hit refetch on mount.
     const { fetchPrivateCompanyProfile } = await import('@/features/private-companies/api/private-company-api')
-    const profile = await fetchPrivateCompanyProfile(cui)
+    // Read under the publication read first, and stamped: the page drops a seed the open tab no longer accepts (D6).
+    const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
+    const { profile, disclosure, disclosureReadAt } = await seededUnder(async () => ({ profile: await fetchPrivateCompanyProfile(cui) }))
     if (!profile) {
       throw notFound()
     }
-    return { profile, cui } satisfies PrivateCompanyRouteLoaderData
+    return { profile, cui, disclosure, disclosureReadAt } satisfies PrivateCompanyRouteLoaderData
   },
   head: ({ params, loaderData }) => {
     const data = loaderData as PrivateCompanyRouteLoaderData | undefined

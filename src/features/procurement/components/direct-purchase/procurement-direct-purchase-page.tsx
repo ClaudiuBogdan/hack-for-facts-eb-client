@@ -85,8 +85,10 @@ function DirectPurchaseSheet({ purchase, initialContext }: { readonly purchase: 
 
 /**
  * A legacy link whose read led to the release's purchase (direct acquisitions
- * release 1): the URL becomes the release's, the purchase already read kept
- * under it, the history entry replaced.
+ * release 1): the URL becomes the release's, the history entry replaced. The
+ * purchase is not carried over: the release's page reads its own (D6, root
+ * 19 November 2026 — a cache entry written here would outlive the page, kept
+ * with the default lifetime the release's query cannot shorten).
  */
 function useReleaseUrl(id: string, purchase: DirectPurchase | null | undefined) {
   const navigate = useNavigate()
@@ -94,7 +96,6 @@ function useReleaseUrl(id: string, purchase: DirectPurchase | null | undefined) 
   const target = purchase && purchase.money && purchase.id !== id ? purchase : null
   useEffect(() => {
     if (!target) return
-    queryClient.setQueryData(procurementDirectPurchaseKeys.purchase(target.id), target)
     void navigate({ to: '/procurement/direct-acquisitions/$id', params: { id: target.id }, replace: true }).then(() =>
       // The release purchase lives under its own id only: the legacy key never holds it.
       queryClient.removeQueries({ queryKey: procurementDirectPurchaseKeys.purchase(id), exact: true }),

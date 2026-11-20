@@ -197,4 +197,40 @@ describe('graphqlQuery', () => {
     expect(isGraphQLInvalidInput(new GraphQLRequestError('other', { graphQLErrors: [{ message: 'boom' }] }))).toBe(false)
     expect(isGraphQLInvalidInput(new Error('boom'))).toBe(false)
   })
+
+})
+
+describe('graphqlQuery and the disclosure key (D6, API doc 10)', () => {
+  const fetchMock = vi.fn()
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    vi.stubGlobal('fetch', fetchMock)
+    vi.mocked(getAuthToken).mockResolvedValue(null)
+    const { resetNewestKeyForTests } = await import('@/lib/disclosure-key')
+    resetNewestKeyForTests()
+  })
+
+  it('refuses a response under an older publication than one already seen, before anyone keeps it', async () => {
+    const { StaleDisclosureError } = await import('@/lib/disclosure-key')
+    const P1 = '2026-11-18T03:10:00.123456Z'
+    const P2 = '2026-11-19T03:10:00.123456Z'
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { r: [{ meta: { disclosureKey: P2 } }] } }))
+    await expect(graphqlQuery('{ r }')).resolves.toEqual({ r: [{ meta: { disclosureKey: P2 } }] })
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { r: [{ meta: { disclosureKey: P1 } }] } }))
+    await expect(graphqlQuery('{ r }')).rejects.toBeInstanceOf(StaleDisclosureError)
+  })
+
+  it('sends no follow-up by codes read under a publication older than one seen since, checked after the token wait', async () => {
+    const { noteKey, StaleDisclosureError } = await import('@/lib/disclosure-key')
+    noteKey('2026-11-18T03:10:00.123456Z')
+    let releaseToken: (token: string | null) => void = () => {}
+    vi.mocked(getAuthToken).mockImplementationOnce(() => new Promise((resolve) => (releaseToken = resolve)))
+    const followUp = graphqlQuery('{ names }', { cuis: ['14837428'] }, { disclosureSeen: '2026-11-18T03:10:00.123456Z' })
+    // A newer publication is seen while the request waits for its token.
+    noteKey('2026-11-19T03:10:00.123456Z')
+    releaseToken(null)
+    await expect(followUp).rejects.toBeInstanceOf(StaleDisclosureError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })

@@ -210,7 +210,7 @@ export function AnalyticsHead({
           />
           <FiltersButton query={query} onClick={onFilters} className="min-h-11 border-0 px-0 font-normal text-muted-foreground hover:bg-transparent hover:text-foreground sm:min-h-0" />
           <QuestionsMenu onChange={onChange} triggerClassName={LINK} />
-          <ShareIcon query={query} answer={answer} className={cn(LINK, 'size-11 justify-center sm:size-auto')} />
+          <ShareIcon query={query} answer={answer} namer={namer} className={cn(LINK, 'size-11 justify-center sm:size-auto')} />
           <NotesMarker query={query} answer={answer} />
         </div>
         {/* The crux on the head's bottom rule, where the bar begins; above the bar, which would cover its top half. */}

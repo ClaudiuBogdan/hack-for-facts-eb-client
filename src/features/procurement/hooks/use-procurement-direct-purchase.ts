@@ -1,4 +1,4 @@
-import { DA_DISCLOSURE_STALE_MS } from '../lib/disclosure-cache'
+import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { fetchPurchaseForPage } from '../api/procurement-da-release-api'
 import { fetchDirectPurchaseContext } from '../api/procurement-direct-purchase-api'
@@ -12,14 +12,6 @@ import { procurementDirectPurchaseKeys } from '../lib/direct-purchase-keys'
  * and seeds them here.
  */
 
-/** No longer than the shared cache keeps the page: a supplier withheld by a publish is not kept past it (D6). */
-const STALE_TIME = DA_DISCLOSURE_STALE_MS
-/**
- * A partial read is read again by the next visit, but not by every return to
- * the tab: some failures (the detail's, until the server links it) last, and
- * each read would fail and log again.
- */
-const PARTIAL_STALE_TIME = 60 * 1000
 
 export { procurementDirectPurchaseKeys }
 
@@ -28,8 +20,8 @@ export function procurementDirectPurchaseQueryOptions(id: string, initialData?: 
     queryKey: procurementDirectPurchaseKeys.purchase(id),
     // A release id reads direct acquisitions release 1; any other id the legacy surface.
     queryFn: ({ signal }) => fetchPurchaseForPage(id, signal),
-    // A partial purchase (names or the detail unread) is soon stale: the next visit reads it again.
-    staleTime: (query) => (query.state.data?.partial ? PARTIAL_STALE_TIME : STALE_TIME),
+    // D6: the purchase's API type carries no publication yet, so it is kept only while the page shows it.
+    ...DA_QUERY_CACHE,
     ...(initialData !== undefined && (initialData === null || initialData.id === id) ? { initialData } : {}),
   })
 }
@@ -39,7 +31,8 @@ export function procurementDirectPurchaseContextQueryOptions(purchase: DirectPur
   return queryOptions({
     queryKey: procurementDirectPurchaseKeys.context(purchase.id),
     queryFn: ({ signal }) => (input ? fetchDirectPurchaseContext(input, purchase, signal) : Promise.resolve(null)),
-    staleTime: (query) => (query.state.data?.partial ? PARTIAL_STALE_TIME : STALE_TIME),
+    // D6: the neighbours come from undated lists too (the release's around, the legacy list).
+    ...DA_QUERY_CACHE,
     enabled: input !== null,
     ...(initialData ? { initialData } : {}),
   })

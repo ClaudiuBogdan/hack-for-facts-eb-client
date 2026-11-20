@@ -1,4 +1,8 @@
 import { createContext, useContext, useEffect, useMemo } from 'react'
+import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
+import { isOlderThanNewest, newestKey, StaleDisclosureError, subscribeNewestKey } from '@/lib/disclosure-key'
+import { DisclosureMismatchError } from '../api/procurement-da-release-status'
+import { privacyPartOf } from '../lib/disclosure-seed'
 import { hashKey, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -127,6 +131,13 @@ export function useCutoff() {
 
 /** The builds the page has already started over from, once each: a recovery that lands on the same build stops, said. */
 const recoveredBuilds = new Set<string>()
+/** The newest disclosure publications the page has re-planned for, once each (D6): a refusal under the same one stops, said. */
+const recoveredKeys = new Set<string>()
+
+/** A read refused for its D6 publication: served under another than its plan's, or older than one already seen. */
+function isDisclosureRefusal(error: unknown): boolean {
+  return error instanceof DisclosureMismatchError || error instanceof StaleDisclosureError
+}
 
 /** A pinned read, as the page's recovery sees it. */
 interface PinnedRead {
@@ -150,6 +161,7 @@ function usePinGuard(reads: readonly PinnedRead[]) {
   const cutoff = useCutoff()
   const build = cutoff.data?.build
   const stale = reads.some((read) => isStaleBuild(read.error))
+  const refused = reads.some((read) => isDisclosureRefusal(read.error))
   const restart = () => {
     forgetProcurementCutoff(latest)
     return client.invalidateQueries({ queryKey: procurementAnalyticsKeys.cutoff(latest) })
@@ -160,6 +172,22 @@ function usePinGuard(reads: readonly PinnedRead[]) {
     forgetProcurementCutoff(latest)
     void client.invalidateQueries({ queryKey: procurementAnalyticsKeys.cutoff(latest) })
   }, [stale, build, latest, client])
+  // D6: the plan follows the newest publication. Re-planned once per newest key — when it moves, when a read is refused
+  // for its publication, or when the cutoff's own publication is already older than one seen (cached before) — so a
+  // refusal under the same key stops, said, and two reads advancing the key cannot loop.
+  const planned = cutoff.data?.disclosure ?? null
+  const behind = isOlderThanNewest(privacyPartOf(planned))
+  useEffect(() => {
+    const replan = () => {
+      const key = newestKey() ?? 'none'
+      if (recoveredKeys.has(key)) return
+      recoveredKeys.add(key)
+      forgetProcurementCutoff(latest)
+      void client.invalidateQueries({ queryKey: procurementAnalyticsKeys.cutoff(latest) })
+    }
+    if (refused || behind) replan()
+    return subscribeNewestKey(replan)
+  }, [refused, behind, latest, client])
   return {
     cutoff,
     /** The cutoff could not be read: no read runs, and the page says so with a retry. */
@@ -168,7 +196,7 @@ function usePinGuard(reads: readonly PinnedRead[]) {
     retry: (read?: PinnedRead) => {
       if (cutoff.isError) return void cutoff.refetch()
       if (read === undefined) return
-      if (isStaleBuild(read.error)) return void restart().then(() => read.refetch())
+      if (isStaleBuild(read.error) || isDisclosureRefusal(read.error)) return void restart().then(() => read.refetch())
       void read.refetch()
     },
   }
@@ -177,6 +205,7 @@ function usePinGuard(reads: readonly PinnedRead[]) {
 /** For tests: a page load starts with no build recovered. */
 export function resetRecoveredBuilds(): void {
   recoveredBuilds.clear()
+  recoveredKeys.clear()
 }
 
 /** Two ranking keys of one population and one build (with, for direct purchases, one disclosure publication). */
@@ -218,7 +247,9 @@ export function useNames(keys: NameKeys) {
     queryKey: plan.key,
     queryFn: ({ signal }) => plan.read(signal),
     enabled: plan.enabled,
-    staleTime: 60 * 60 * 1000,
+    // D6: a direct-purchase supplier's name is kept only while shown, never past its read. The registry's and the categories' keep the hour.
+    // A direct-purchase question's names (a DA ranking's firms, a DA supplier's own answers, dated: API doc 10) follow the direct-purchase rules.
+    ...((keys.daSuppliers?.length ?? 0) > 0 || keys.direct ? DA_QUERY_CACHE : { staleTime: 60 * 60 * 1000 }),
     // While the next names load: the registry's and the categories' stay; no direct-purchase supplier's name outlives its read (D6).
     placeholderData: (previous: Names | undefined) => (previous ? { ...previous, daSuppliers: new Map<string, string>() } : undefined),
     ...seeded(plan),
@@ -385,20 +416,20 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
   const dimension = plan.dimension
   const [figures, concentration, ranking, series, years] = useQueries({
     queries: [
-      { queryKey: plan.figures.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.figures.read(signal), enabled: plan.figures.enabled, staleTime: STALE, ...seeded(plan.figures) },
-      { queryKey: plan.concentration.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.concentration.read(signal), enabled: plan.concentration.enabled, staleTime: STALE, ...seeded(plan.concentration) },
+      { queryKey: plan.figures.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.figures.read(signal), enabled: plan.figures.enabled, ...DA_QUERY_CACHE, ...seeded(plan.figures) },
+      { queryKey: plan.concentration.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.concentration.read(signal), enabled: plan.concentration.enabled, ...DA_QUERY_CACHE, ...seeded(plan.concentration) },
       {
         queryKey: plan.ranking.key,
         queryFn: ({ signal }: { signal: AbortSignal }) => plan.ranking.read(signal),
         enabled: plan.ranking.enabled,
-        staleTime: STALE,
+        ...DA_QUERY_CACHE,
         // Kept while the next one loads only within one population and publication: never a contracts ranking, or an older publication's, under direct purchases (D6).
         placeholderData: (previous: Ranking | undefined, previousQuery?: { readonly queryKey: readonly unknown[] }) =>
           previous && previous.dimension === dimension && samePublication(previousQuery?.queryKey, plan.ranking.key) ? previous : undefined,
         ...seeded(plan.ranking),
       },
-      { queryKey: plan.series.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.series.read(signal), enabled: plan.series.enabled, staleTime: STALE, ...seeded(plan.series) },
-      { queryKey: plan.years.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.years.read(signal), enabled: plan.years.enabled, staleTime: STALE, ...seeded(plan.years) },
+      { queryKey: plan.series.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.series.read(signal), enabled: plan.series.enabled, ...DA_QUERY_CACHE, ...seeded(plan.series) },
+      { queryKey: plan.years.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.years.read(signal), enabled: plan.years.enabled, ...DA_QUERY_CACHE, ...seeded(plan.years) },
     ],
   })
   const guard = usePinGuard([figures, concentration, ranking, series, years])
@@ -458,7 +489,7 @@ export function usePopulationCounts(query: Query): PopulationCounts {
     return { period: plan.period, figures: plan.figures, drops: dropsFilters(query, tip) }
   })
   const reads = useQueries({
-    queries: plans.map(({ figures, drops }) => ({ queryKey: figures.key, queryFn: ({ signal }: { signal: AbortSignal }) => figures.read(signal), enabled: figures.enabled && !drops, staleTime: STALE, ...seeded(figures) })),
+    queries: plans.map(({ figures, drops }) => ({ queryKey: figures.key, queryFn: ({ signal }: { signal: AbortSignal }) => figures.read(signal), enabled: figures.enabled && !drops, ...DA_QUERY_CACHE, ...seeded(figures) })),
   })
   usePinGuard(reads)
   const countOf = (index: number): PopulationCount => {
@@ -478,7 +509,7 @@ export function useRecords(query: Query, cutoff: AnalyticsCutoff | null, sort: R
     queryKey: plan.key,
     queryFn: ({ signal }) => plan.read(signal),
     enabled: plan.enabled,
-    staleTime: STALE,
+    ...DA_QUERY_CACHE,
     retry: false,
     ...seeded(plan),
   })

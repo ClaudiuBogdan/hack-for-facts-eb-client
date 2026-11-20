@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import { fetchContract, fetchContractContext } from '../api/procurement-contract-api'
 import { contractContextInputOf, type ContractSheet, type CtContext } from '../lib/contract-model'
 import { procurementContractKeys } from '../lib/contract-keys'
@@ -31,7 +32,8 @@ export function procurementContractContextQueryOptions(sheet: ContractSheet, ini
   return queryOptions({
     queryKey: procurementContractKeys.context(sheet.id),
     queryFn: ({ signal }) => (input ? fetchContractContext(input, sheet, signal) : Promise.resolve(null)),
-    staleTime: (query) => (query.state.data?.partial ? PARTIAL_STALE_TIME : STALE_TIME),
+    // D6: the context carries the pair's direct purchases; never kept past its read.
+    ...DA_QUERY_CACHE,
     enabled: input !== null,
     ...(initialData ? { initialData } : {}),
   })

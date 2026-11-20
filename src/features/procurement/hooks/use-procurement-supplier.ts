@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import { SUPPLIER_LARGEST_RECORDS, fetchProcurementSupplier, fetchProcurementSupplierDirect } from '../api/procurement-supplier-api'
 import type { RecentRecord } from '../lib/home-model'
 import { answersChoice, type PeriodChoice } from '../lib/profile-period'
@@ -12,17 +13,14 @@ import type { SupplierProfile } from '../lib/supplier-model'
  * profile shown until the new one arrives, instead of blanking the page.
  */
 
-/** SEAP loads daily at most; an hour keeps a return visit from reading again. */
-const STALE_TIME = 60 * 60 * 1000
-
 export { procurementSupplierKeys }
 
 export function procurementSupplierQueryOptions(cui: string, choice: PeriodChoice, initialData?: SupplierProfile) {
   return queryOptions({
     queryKey: procurementSupplierKeys.profile(cui, choice),
     queryFn: ({ signal }) => fetchProcurementSupplier(cui, choice, signal),
-    // A partial profile is stale at once: the next mount reads it again.
-    staleTime: (query) => (query.state.data?.partial ? 0 : STALE_TIME),
+    // D6: the firm's direct purchases; never kept past their read.
+    ...DA_QUERY_CACHE,
     ...(initialData && initialData.cui === cui && answersChoice(initialData.period, choice) ? { initialData } : {}),
   })
 }
@@ -32,7 +30,7 @@ export function procurementSupplierDirectQueryOptions(cui: string, choice: Perio
   return queryOptions({
     queryKey: procurementSupplierKeys.direct(cui, choice, SUPPLIER_LARGEST_RECORDS),
     queryFn: ({ signal }) => fetchProcurementSupplierDirect(cui, choice, SUPPLIER_LARGEST_RECORDS, signal),
-    staleTime: STALE_TIME,
+    ...DA_QUERY_CACHE,
     ...(initialData ? { initialData } : {}),
   })
 }

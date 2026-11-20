@@ -48,6 +48,8 @@ export async function fetchReleaseAround(
   input: { readonly authorityCui: string; readonly supplierCui: string; readonly day: string },
   perSide: number,
   signal?: AbortSignal,
+  /** D6: the newest disclosure key when the codes sent were read (`graphqlQuery`'s `disclosureSeen`). */
+  disclosureSeen?: string | null,
 ): Promise<ReleaseAround> {
   const both = { buyerFiscalCode: input.authorityCui, supplierFiscalCode: input.supplierCui }
   const variables = {
@@ -56,7 +58,7 @@ export async function fetchReleaseAround(
     older: { ...both, finalizationTo: input.day.slice(0, 10) },
     perSide,
   }
-  const read = async () => procurementDaAroundSchema.parse(await graphqlQuery<unknown>(PROCUREMENT_DA_AROUND_QUERY, variables, { operationName: 'ProcurementDaAround', signal }))
+  const read = async () => procurementDaAroundSchema.parse(await graphqlQuery<unknown>(PROCUREMENT_DA_AROUND_QUERY, variables, { operationName: 'ProcurementDaAround', signal, disclosureSeen }))
   let raw = await read()
   // A nightly publish between the fields: read once more; two mixed reads fail, never a mixed list.
   if (!oneSnapshot(raw)) raw = await read()

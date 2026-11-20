@@ -126,6 +126,7 @@ export const PROCUREMENT_DA_PURCHASE_QUERY = /* GraphQL */ `
       }
       dataAsOf
       countedValueBasis
+      meta { disclosureKey }
     }
   }
 `
@@ -159,7 +160,7 @@ export const PROCUREMENT_DA_PURCHASES_QUERY = /* GraphQL */ `
   query ProcurementDaPurchases($filter: ProcurementDaPurchaseFilter, $page: Int, $pageSize: Int) {
     procurementDaPurchases(filter: $filter, page: $page, pageSize: $pageSize) {
       items { ${PURCHASE_FIELDS} }
-      page pageSize total totalCapped hasMore dataAsOf countedValueBasis
+      page pageSize total totalCapped hasMore dataAsOf countedValueBasis meta { disclosureKey }
     }
   }
 `
@@ -181,7 +182,7 @@ export type RawDaPurchasePage = z.infer<typeof procurementDaPurchasesSchema>['pr
 /** A legacy link's code to the release's id: the one purchase with that portal code, if any. */
 export const PROCUREMENT_DA_LOOKUP_QUERY = /* GraphQL */ `
   query ProcurementDaLookup($code: String!) {
-    procurementDaPurchases(filter: { code: $code }, pageSize: 2) { items { purchaseId } total }
+    procurementDaPurchases(filter: { code: $code }, pageSize: 2) { items { purchaseId } total meta { disclosureKey } }
   }
 `
 
@@ -201,9 +202,9 @@ const AROUND_FIELDS = 'purchaseId code outcome publicationDay finalizationDay re
  */
 export const PROCUREMENT_DA_AROUND_QUERY = /* GraphQL */ `
   query ProcurementDaAround($all: ProcurementDaPurchaseFilter!, $newer: ProcurementDaPurchaseFilter!, $older: ProcurementDaPurchaseFilter!, $perSide: Int!) {
-    all: procurementDaPurchases(filter: $all, pageSize: 1) { total totalCapped dataAsOf items { purchaseId } }
-    newer: procurementDaPurchases(filter: $newer, sort: finalizationAsc, pageSize: $perSide) { dataAsOf items { ${AROUND_FIELDS} } }
-    older: procurementDaPurchases(filter: $older, sort: finalizationDesc, pageSize: $perSide) { dataAsOf items { ${AROUND_FIELDS} } }
+    all: procurementDaPurchases(filter: $all, pageSize: 1) { total totalCapped dataAsOf meta { disclosureKey } items { purchaseId } }
+    newer: procurementDaPurchases(filter: $newer, sort: finalizationAsc, pageSize: $perSide) { dataAsOf meta { disclosureKey } items { ${AROUND_FIELDS} } }
+    older: procurementDaPurchases(filter: $older, sort: finalizationDesc, pageSize: $perSide) { dataAsOf meta { disclosureKey } items { ${AROUND_FIELDS} } }
   }
 `
 
@@ -246,7 +247,7 @@ export const PROCUREMENT_DA_TOTALS_QUERY = /* GraphQL */ `
       groupBy
       overall { ${TOTALS_FIELDS} }
       groups { key party { ${PARTY_FIELDS} } noSupplier ${TOTALS_FIELDS} }
-      page pageSize groupCount hasMore dataAsOf countedValueBasis
+      page pageSize groupCount hasMore dataAsOf countedValueBasis meta { disclosureKey }
     }
   }
 `

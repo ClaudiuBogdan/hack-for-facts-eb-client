@@ -57,9 +57,10 @@ export type RawBuyerSeries = z.infer<typeof buyerSeriesSchema>
 export type RawBuyerConcentration = z.infer<typeof buyerConcentrationSchema>
 export type RawBuyerBreakdown = z.infer<typeof buyerBreakdownSchema>
 
-const STATS = 'blocks { recordCount withValueCount valueAwardedSum }'
-const SERIES = 'points { bucket value }'
-const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope }'
+// Every block names the D6 state it was served under (`meta.disclosureKey`): the transport refuses an older one.
+const STATS = 'blocks { recordCount withValueCount valueAwardedSum meta { disclosureKey } }'
+const SERIES = 'points { bucket value } meta { disclosureKey }'
+const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope } meta { disclosureKey }'
 
 /**
  * Which of the profile's requests a read goes in. The API resolves one
@@ -86,7 +87,7 @@ export interface BuyerField {
 function fieldOf(field: BuyerField): string {
   if (field.kind === 'stats') return `${field.alias}: procurementStats(scope: $${field.alias}) { ${STATS} }`
   if (field.kind === 'series') return `${field.alias}: procurementSeries(scope: $${field.alias}, ${field.args ?? ''}) { ${SERIES}${field.withBuild ? ' meta { buildId }' : ''} }`
-  if (field.kind === 'concentration') return `${field.alias}: procurementConcentration(scope: $${field.alias}, basis: count) { supplierCount }`
+  if (field.kind === 'concentration') return `${field.alias}: procurementConcentration(scope: $${field.alias}, basis: count) { supplierCount meta { disclosureKey } }`
   return `${field.alias}: procurementBreakdown(scope: $${field.alias}, ${field.args ?? ''}) { ${BREAKDOWN} }`
 }
 

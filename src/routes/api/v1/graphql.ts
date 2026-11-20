@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { carriesOlderKey } from '@/lib/disclosure-key'
 
 const API_PATH = '/api/v1/graphql'
 const LOCAL_API_ORIGIN = 'http://127.0.0.1:3001'
@@ -82,13 +83,27 @@ function safeOrigin(value: string): string | null {
  */
 function transportErrorResponse(
   status: number,
-  code: 'UPSTREAM_UNAVAILABLE' | 'PROXY_MISCONFIGURED',
+  code: 'UPSTREAM_UNAVAILABLE' | 'PROXY_MISCONFIGURED' | 'STALE_DISCLOSURE',
   message: string,
 ): Response {
   return new Response(
     JSON.stringify({ data: null, errors: [{ message, extensions: { code } }] }),
     { status, headers: { 'Content-Type': 'application/json' } },
   )
+}
+
+/**
+ * Whether a proxied body carries a `meta.disclosureKey` older than the newest
+ * seen. Checked only, never noted: the proxy forwards any caller's document,
+ * and a caller's aliases must not move the process's newest key. A body that
+ * is not JSON is passed on as it is.
+ */
+function isStaleDisclosure(text: string): boolean {
+  try {
+    return carriesOlderKey((JSON.parse(text) as { data?: unknown }).data)
+  } catch {
+    return false
+  }
 }
 
 export const Route = createFileRoute('/api/v1/graphql')({
@@ -137,7 +152,14 @@ export const Route = createFileRoute('/api/v1/graphql')({
         // A GraphQL error carries a 200 with `errors[]`, and an auth failure
         // carries its own status; rewriting either would erase the distinction
         // the client branches on.
-        return new Response(await response.text(), {
+        const text = await response.text()
+        // D6 (API doc 10): never pass on an answer under an older supplier-privacy publication than this process has seen —
+        // the same check the transport makes (`@/lib/disclosure-key`). Used only by `vite dev` (`env.ts`: a production build
+        // calls the API directly), but served by every build.
+        if (isStaleDisclosure(text)) {
+          return transportErrorResponse(409, 'STALE_DISCLOSURE', 'GraphQL answer under an older supplier-privacy publication than one already seen.')
+        }
+        return new Response(text, {
           status: response.status,
           statusText: response.statusText,
           headers: {

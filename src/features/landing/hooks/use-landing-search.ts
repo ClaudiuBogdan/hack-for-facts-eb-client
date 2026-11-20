@@ -76,6 +76,7 @@ export function useSearchResults({
   roles = NO_ROLES,
   suggestions: suggestionsEnabled = true,
   initialTerm = '',
+  enabled = true,
 }: {
   readonly debounceMs?: number
   /**
@@ -107,6 +108,8 @@ export function useSearchResults({
   readonly suggestions?: boolean
   /** The text the field starts with: what was typed into the plain field before this one. */
   readonly initialTerm?: string
+  /** Off, nothing is asked or kept: a field whose results could not be offered (D6: a direct purchase's supplier by name). */
+  readonly enabled?: boolean
 } = {}) {
   const [term, setTerm] = useState(initialTerm)
   const [filters, setFilters] = useState<readonly SearchFilter[]>([])
@@ -154,7 +157,7 @@ export function useSearchResults({
         complete: current && response.continuation.nextOffset === null,
       }
     },
-    enabled: isQueryable,
+    enabled: isQueryable && enabled,
     retry: false,
     // A non-current answer is not kept as the answer to come back to.
     staleTime: (query) => (query.state.data?.current === false ? 0 : CURRENT_STALE_MS),

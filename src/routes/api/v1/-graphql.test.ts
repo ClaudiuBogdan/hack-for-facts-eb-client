@@ -161,6 +161,27 @@ describe('GraphQL server proxy — the route handler with runtime-only configura
     expect(await response.text()).toBe('{"errors":[{"message":"no"}]}')
   })
 
+  it('never passes on an answer under an older supplier-privacy publication than the process has seen (D6, API doc 10)', async () => {
+    const { noteKey, resetNewestKeyForTests } = await import('@/lib/disclosure-key')
+    resetNewestKeyForTests()
+    noteKey('2026-11-19T03:10:00.123456Z')
+    runtimeOnly({ INTERNAL_API_URL: INTERNAL })
+    const body = (key: string) => JSON.stringify({ data: { r: [{ meta: { disclosureKey: key } }] } })
+    fetchMock.mockResolvedValueOnce(new Response(body('2026-11-18T03:10:00.123456Z'), { status: 200, headers: { 'content-type': 'application/json' } }))
+    const stale = await handler({ request: request('https://dev-client.example.com') })
+    expect(stale.status).toBe(409)
+    expect(await stale.text()).toContain('STALE_DISCLOSURE')
+    fetchMock.mockResolvedValueOnce(new Response(body('2026-11-19T03:10:00.123456Z'), { status: 200, headers: { 'content-type': 'application/json' } }))
+    const current = await handler({ request: request('https://dev-client.example.com') })
+    expect(current.status).toBe(200)
+    // A caller's document cannot move the process's newest key, whatever its aliases name `meta { disclosureKey }`.
+    const { newestKey } = await import('@/lib/disclosure-key')
+    fetchMock.mockResolvedValueOnce(new Response(body('2099-01-01T00:00:00.000000Z'), { status: 200, headers: { 'content-type': 'application/json' } }))
+    await handler({ request: request('https://dev-client.example.com') })
+    expect(newestKey()).toBe('2026-11-19T03:10:00.123456Z')
+    resetNewestKeyForTests()
+  })
+
   it('reports an unreachable upstream as the GraphQL-shaped 502', async () => {
     runtimeOnly({ VITE_API_URL: 'https://public-api.example.com' })
     fetchMock.mockRejectedValue(new TypeError('fetch failed'))

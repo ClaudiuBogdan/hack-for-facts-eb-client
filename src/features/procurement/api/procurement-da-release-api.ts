@@ -91,6 +91,10 @@ export async function resolveReleaseId(legacyId: string, signal?: AbortSignal): 
  * the legacy surface.
  */
 export async function fetchPurchaseForPage(id: string, signal?: AbortSignal): Promise<DirectPurchase | null> {
+  // D6 fails closed: with D6 on and its supplier-privacy publication unreadable, a purchase is not read at all. Its API
+  // type carries no publication, and a read in a brief restoration of access could carry a withheld name (root).
+  const status = await readDaRelease()
+  if (status.privacyEnforced && status.privacyAsOf === null) throw new Error('Direct purchases cannot be read while the supplier-privacy publication is unreadable.')
   if (!isReleaseId(id)) {
     const link = await resolveLegacyLink(id, signal)
     // Unresolved is a failed read — retried — never a legacy page the next read would replace.

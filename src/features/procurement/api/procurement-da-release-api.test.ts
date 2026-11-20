@@ -57,6 +57,14 @@ describe('isReleaseId', () => {
 })
 
 describe('fetchPurchaseForPage', () => {
+  it('reads no purchase while D6 is on and its supplier-privacy publication cannot be read (fails closed, root)', async () => {
+    answer({ ProcurementDaRelease: () => ({ procurementDaRelease: { enabled: true, dataAsOf: '2026-11-18T04:00:00Z', privacyEnforced: true, privacyAsOf: null } }) })
+    await expect(fetchPurchaseForPage(RELEASE_ID)).rejects.toThrow('unreadable')
+    await expect(fetchPurchaseForPage('12345')).rejects.toThrow('unreadable')
+    expect(legacy.fetchDirectPurchase).not.toHaveBeenCalled()
+    expect(graphqlQuery.mock.calls.every((call) => (call[2] as { operationName: string }).operationName === 'ProcurementDaRelease')).toBe(true)
+  })
+
   it('a legacy id with the release off reads the legacy surface', async () => {
     answer({ ProcurementDaRelease: release(false) })
     legacy.fetchDirectPurchase.mockResolvedValue('legacy')

@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import {
   fetchProcurementHomeBigContracts,
   fetchProcurementHomeCategories,
@@ -35,8 +36,9 @@ export const procurementHomeKeys = {
 export function procurementHomeNationalQueryOptions(year: number, initialData?: NationalRead) {
   return queryOptions({
     queryKey: procurementHomeKeys.national(year),
+    // D6: direct purchases' figures.
+    ...DA_QUERY_CACHE,
     queryFn: ({ signal }) => fetchProcurementHomeNational(year, signal),
-    staleTime: STALE_TIME,
     ...(initialData?.year === year ? { initialData } : {}),
   })
 }
@@ -44,8 +46,9 @@ export function procurementHomeNationalQueryOptions(year: number, initialData?: 
 export function procurementHomeCategoriesQueryOptions(year: number, initialData?: HomeCategoriesRead) {
   return queryOptions({
     queryKey: procurementHomeKeys.categories(year),
+    // D6: direct purchases' categories.
+    ...DA_QUERY_CACHE,
     queryFn: ({ signal }) => fetchProcurementHomeCategories(year, signal),
-    staleTime: STALE_TIME,
     ...(initialData ? { initialData } : {}),
   })
 }
@@ -83,6 +86,7 @@ export function useProcurementHomeRecent(grain: HomeGrain, month: string | null)
         ? fetchProcurementHomeRecentContracts(month ?? '', HOME_RECENT_RECORDS, signal)
         : fetchProcurementHomeRecentDirect(month ?? '', HOME_RECENT_RECORDS, signal),
     enabled: month !== null,
-    staleTime: STALE_TIME,
+    // D6: the direct purchases' recent records are never kept past their read.
+    ...(grain === 'direct' ? DA_QUERY_CACHE : { staleTime: STALE_TIME }),
   })
 }

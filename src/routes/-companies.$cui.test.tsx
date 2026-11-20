@@ -27,7 +27,7 @@ import { companyProfile } from '@/features/private-companies/lib/company-profile
 
 const CUI = companyProfile().cui ?? ''
 
-const route = vi.hoisted(() => ({ loaderData: { cui: '' } as { cui: string; profile?: unknown } }))
+const route = vi.hoisted(() => ({ loaderData: { cui: '' } as { cui: string; profile?: unknown; disclosure?: string | null; disclosureReadAt?: number } }))
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: Record<string, unknown>) => ({
@@ -178,8 +178,7 @@ describe('/companies/$cui — a profile cached by an earlier visit (C20-R2)', ()
 
     render(app(client, Page))
     expect(screen.getByRole('status', { name: 'Se încarcă profilul firmei' })).toBeInTheDocument()
-    // Fresh in the cache for a minute: the route does not even re-read it; the page still shows none of it.
-    expect(api.profile).not.toHaveBeenCalled()
+    // Never fresh past its read (D6, root): the page reads it again; meanwhile it shows none of the cached one.
 
     api.profile.mockResolvedValue(companyUnder('S1', 'ACTUAL SRL'))
     await act(async () => first.resolve(capabilities('S1')))
@@ -705,5 +704,21 @@ describe('/companies/$cui — refusal episodes of the comparison read', () => {
     expect(document.title).toBe(`PREZENT SRL (CUI ${CUI})`)
     expect(reads('registry')).toBe(1)
     expect(reads('diff')).toBe(4)
+  })
+})
+
+describe('/companies/$cui — the server\'s profile under D6 (root, scope B: its public money carries direct purchases)', () => {
+  it('stands in only while the tab accepts its publication: one older than the newest seen is not shown', async () => {
+    const { noteKey, resetNewestKeyForTests } = await import('@/lib/disclosure-key')
+    resetNewestKeyForTests()
+    const Page = await routePage()
+    const seed = (privacyAsOf: string) => ({ cui: CUI, profile: companyUnder('S1', 'PREZENT SRL'), disclosure: `on:t1:d6:${privacyAsOf}`, disclosureReadAt: Date.now() })
+    route.loaderData = seed('2026-11-18T03:10:00.123456Z')
+    expect(renderToString(app(appQueryClient(), Page))).toContain('Prezent SRL</h1>')
+    noteKey('2026-11-19T03:10:00.123456Z')
+    expect(renderToString(app(appQueryClient(), Page))).not.toContain('Prezent SRL')
+    route.loaderData = seed('2026-11-19T03:10:00.123456Z')
+    expect(renderToString(app(appQueryClient(), Page))).toContain('Prezent SRL</h1>')
+    resetNewestKeyForTests()
   })
 })

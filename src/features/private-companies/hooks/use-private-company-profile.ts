@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { DA_QUERY_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { fetchPrivateCompanyProfile } from '../api/private-company-api'
 
 export function privateCompanyProfileQueryKey(cui: string) {
@@ -20,6 +21,8 @@ export function privateCompanyProfileQueryOptions(cui: string) {
     queryKey: privateCompanyProfileQueryKey(cui),
     queryFn: () => fetchPrivateCompanyProfile(cui),
     structuralSharing: false,
+    // D6 (root, scope B): its public money carries the company's incoming direct purchases.
+    ...DA_QUERY_CACHE,
   })
 }
 

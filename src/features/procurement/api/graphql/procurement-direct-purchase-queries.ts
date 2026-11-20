@@ -43,9 +43,9 @@ const AROUND_FIELDS = 'id uniqueCode title titleWithheld cpvLabel valueRon statu
  */
 export const DIRECT_PURCHASE_AROUND_QUERY = /* GraphQL */ `
   query ProcurementDirectPurchaseAround($all: ProcurementDirectAcquisitionsFilter!, $newer: ProcurementDirectAcquisitionsFilter!, $older: ProcurementDirectAcquisitionsFilter!, $perSide: Int!) {
-    all: procurementDirectAcquisitions(filter: $all, sort: date_desc, pageSize: 1) { total totalEstimated items { id } }
-    newer: procurementDirectAcquisitions(filter: $newer, sort: date_asc, pageSize: $perSide) { items { ${AROUND_FIELDS} } }
-    older: procurementDirectAcquisitions(filter: $older, sort: date_desc, pageSize: $perSide) { items { ${AROUND_FIELDS} } }
+    all: procurementDirectAcquisitions(filter: $all, sort: date_desc, pageSize: 1) { total totalEstimated meta { disclosureKey } items { id } }
+    newer: procurementDirectAcquisitions(filter: $newer, sort: date_asc, pageSize: $perSide) { meta { disclosureKey } items { ${AROUND_FIELDS} } }
+    older: procurementDirectAcquisitions(filter: $older, sort: date_desc, pageSize: $perSide) { meta { disclosureKey } items { ${AROUND_FIELDS} } }
   }
 `
 

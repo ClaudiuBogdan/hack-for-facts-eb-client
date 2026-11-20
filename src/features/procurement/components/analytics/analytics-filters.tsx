@@ -107,7 +107,9 @@ const PARTY_DOC_TYPES = {
 function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cumparator' | 'furnizor'; readonly label: string; readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   const filter = query.filters[axis]
   // Each field asks for its own families: a shared search's eight results could all be the other side's.
-  const search = useSearchResults({ docTypes: PARTY_DOC_TYPES[axis], suggestions: false })
+  // D6: no firm is offered by name as a direct purchase's supplier, so none is searched for either. A CUI typed is picked as typed.
+  const named = !(axis === 'furnizor' && query.tip === 'directe')
+  const search = useSearchResults({ docTypes: PARTY_DOC_TYPES[axis], suggestions: false, enabled: named })
   const term = search.term.trim()
   const wanted = axis === 'furnizor' ? '/suppliers/' : '/institutions/'
   const hits = search.results
@@ -116,8 +118,7 @@ function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cum
       const cui = href?.split('/').pop()
       return href && cui && href.includes(wanted) ? [{ id: hit.id, title: hit.title, cui }] : []
     })
-    // D6: no firm is offered by name as a direct purchase's supplier — the registry names it, not its direct purchases. A CUI typed is picked as typed.
-    .filter(() => !(axis === 'furnizor' && query.tip === 'directe'))
+    .filter(() => named)
     .slice(0, 6)
   const typed = /^(ro)?\s*\d{2,12}$/iu.test(term) ? term.replace(/^ro\s*/iu, '') : null
   const pick = (cui: string) => {
@@ -167,7 +168,9 @@ function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cum
               id={keys.listId}
               label={axis === 'furnizor' ? t`Firme` : t`Instituții`}
               notices={
-                state === 'pending' || state === 'loading' ? (
+                !named ? (
+                  typed ? null : <Notice kind="empty">{t`La achizițiile directe, firma se alege după CUI.`}</Notice>
+                ) : state === 'pending' || state === 'loading' ? (
                   <Notice kind="loading">{t`Se caută…`}</Notice>
                 ) : state === 'error' ? (
                   <Notice kind="failed" onRetry={search.retry}>

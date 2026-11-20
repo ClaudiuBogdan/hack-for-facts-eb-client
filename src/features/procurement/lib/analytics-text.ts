@@ -1,4 +1,5 @@
 import { plural, t } from '@lingui/core/macro'
+import { withoutLeadingZeros } from './fiscal-code'
 import { i18n } from '@lingui/core'
 import { displayCompanyName } from '@/features/private-companies/lib/company-name-display'
 import { cpvDivisionLabelEn, cpvDivisionLabelRo } from './cpv-labels'
@@ -45,26 +46,30 @@ export function cpvLabel(prefix: string, namer: Namer): string {
 }
 
 /**
+ * The buyer the address gives, as its chip and headline name it. For direct
+ * purchases, a buyer given the same code as the supplier — as the API compares
+ * codes (`withoutLeadingZeros`) — is not named from the registry: that name
+ * would be the supplier's (D6), also from a names read kept as a placeholder.
+ */
+export function buyerFilterLabel(query: Pick<Query, 'tip' | 'filters'>, key: string, namer: Namer): string {
+  const code = withoutLeadingZeros(key)
+  // D6 fails closed (root): that code is the supplier's too, so it is not printed either.
+  if (query.tip === 'directe' && query.filters.furnizor?.values.some((supplier) => withoutLeadingZeros(supplier) === code)) return t`Instituție`
+  return keyLabel('cumparator', 'cui', key, namer)
+}
+
+/**
  * The supplier the address gives, as its chip and headline name it. For
  * direct purchases (D6) only from its own direct purchases served as a
  * company (`names.daSuppliers`), never from the registry's names — which a
  * buyer of the same CUI, or a contracts read kept as a placeholder, could carry.
  */
-/**
- * The buyer the address gives, as its chip and headline name it. For direct
- * purchases, a buyer given the same code as the supplier is not named from
- * the registry: that name would be the supplier's (D6).
- */
-export function buyerFilterLabel(query: Pick<Query, 'tip' | 'filters'>, key: string, namer: Namer): string {
-  if (query.tip === 'directe' && query.filters.furnizor?.values.includes(key)) return t`Instituția cu CUI ${key}`
-  return keyLabel('cumparator', 'cui', key, namer)
-}
-
 export function supplierFilterLabel(query: Pick<Query, 'tip'>, key: string, namer: Namer): string {
   if (query.tip !== 'directe') return keyLabel('furnizor', 'cui', key, namer)
   if (isNaturalPersonKey(key)) return naturalPersonsLabel()
   const name = namer.names?.daSuppliers.get(key)
-  return name ? displayCompanyName(name) : t`Firma cu CUI ${key}`
+  // D6 fails closed (root, 19 November 2026): a supplier the API does not name as a company is not shown by the address's code either.
+  return name ? displayCompanyName(name) : t`Furnizor`
 }
 
 /** What a key stands for, as a reader names it. */

@@ -1,4 +1,5 @@
 import { assertServedUnder, daSupplierReads, disclosureVersion } from './procurement-da-release-status'
+import { withoutLeadingZeros } from '../lib/fiscal-code'
 import { z } from 'zod'
 import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
@@ -133,6 +134,7 @@ const statsSchema = z.object({
           provisional: z.boolean().nullable(),
           caveats: z.array(z.string()).nullable(),
           undatedInScope: z.object({ count: decimal, valueRon: decimal }).nullable(),
+          disclosureKey: z.string().nullish(),
         })
         .nullable(),
     }),
@@ -154,7 +156,7 @@ export interface Figures {
 }
 
 const STATS_FIELDS =
-  'blocks { recordCount withValueCount valueAwardedSum avgValueAwarded meta { answerability provisional caveats undatedInScope { count valueRon } } }'
+  'blocks { recordCount withValueCount valueAwardedSum avgValueAwarded meta { answerability provisional caveats undatedInScope { count valueRon } disclosureKey } }'
 
 function figuresOf(raw: unknown): Figures | null {
   const block = statsSchema.parse(raw).blocks[0]
@@ -172,7 +174,14 @@ function figuresOf(raw: unknown): Figures | null {
   }
 }
 
-export async function readFigures(scope: Scope, previous: Scope | null, build: string | null, signal: AbortSignal) {
+/** The D6 state a direct-purchase block was served under, checked against its plan's (like rankings and records): an answer of another publication is never kept. */
+function assertDirectServed(scope: Scope, disclosure: string | null, blocks: readonly ({ readonly meta?: { readonly disclosureKey?: string | null } | null } | undefined)[]): void {
+  if (scope.grain !== 'direct_acquisition') return
+  // A block without its key, or no block at all, cannot be placed in a publication: it fails closed.
+  for (const block of blocks) assertServedUnder(disclosure, block?.meta?.disclosureKey)
+}
+
+export async function readFigures(scope: Scope, previous: Scope | null, build: string | null, signal: AbortSignal, disclosure: string | null = null) {
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsFigures($now: ProcurementAnalysisScopeInput${previous ? ', $before: ProcurementAnalysisScopeInput' : ''}, $build: String) {
       now: procurementStats(scope: $now, build: $build) { ${STATS_FIELDS} }
@@ -181,10 +190,11 @@ export async function readFigures(scope: Scope, previous: Scope | null, build: s
     previous ? { now: scope, before: previous, build } : { now: scope, build },
     { operationName: 'AnalyticsFigures', signal },
   )
+  assertDirectServed(scope, disclosure, [statsSchema.parse(raw.now).blocks[0], ...(previous ? [statsSchema.parse(raw.before).blocks[0]] : [])])
   return { now: figuresOf(raw.now), before: previous ? figuresOf(raw.before) : null }
 }
 
-const concentrationSchema = z.array(z.object({ supplierCount: z.number().nullable(), top1Share: decimal, top5Share: decimal }))
+const concentrationSchema = z.array(z.object({ supplierCount: z.number().nullable(), top1Share: decimal, top5Share: decimal, meta: z.object({ disclosureKey: z.string().nullish() }).nullish() }))
 
 export interface Concentration {
   readonly firms: number | null
@@ -194,15 +204,16 @@ export interface Concentration {
   readonly unavailable?: true
 }
 
-export async function readConcentration(scope: Scope, basis: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Concentration | null> {
+export async function readConcentration(scope: Scope, basis: 'count' | 'value', build: string | null, signal: AbortSignal, disclosure: string | null = null): Promise<Concentration | null> {
   // Direct purchases' supplier concentration is refused while D6 is enforced and the release is off: none, not a failure.
   if (scope.grain === 'direct_acquisition' && !(await daSupplierReads()).figures) return { firms: null, top1: null, top5: null, unavailable: true }
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsConcentration($s: ProcurementAnalysisScopeInput, $build: String) { c: procurementConcentration(scope: $s, basis: ${basis}, build: $build) { supplierCount top1Share top5Share } }`,
+    `query AnalyticsConcentration($s: ProcurementAnalysisScopeInput, $build: String) { c: procurementConcentration(scope: $s, basis: ${basis}, build: $build) { supplierCount top1Share top5Share meta { disclosureKey } } }`,
     { s: scope, build },
     { operationName: 'AnalyticsConcentration', signal },
   )
   const block = concentrationSchema.parse(raw.c)[0]
+  assertDirectServed(scope, disclosure, [block])
   return block ? { firms: block.supplierCount, top1: block.top1Share, top5: block.top5Share } : null
 }
 
@@ -277,7 +288,7 @@ export async function readRanking(
   return { dimension, rankedBy: block?.rankedBy === 'value' ? 'value' : 'count', buckets: scrub ? buckets.map(scrubDaSupplierBucket) : buckets, withheld: block?.valueWithheldAssociationSum ?? null }
 }
 
-const seriesSchema = z.array(z.object({ points: z.array(z.object({ bucket: z.string(), value: decimal })).nullable() }))
+const seriesSchema = z.array(z.object({ points: z.array(z.object({ bucket: z.string(), value: decimal })).nullable(), meta: z.object({ disclosureKey: z.string().nullish() }).nullish() }))
 
 export interface Point {
   readonly bucket: string
@@ -286,15 +297,16 @@ export interface Point {
 }
 
 /** A series of counts and money by bucket, every bucket of the scope's months: the API leaves out an empty one, which is a zero, not a gap. */
-export async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'month', withMoney: boolean, build: string | null, signal: AbortSignal): Promise<readonly Point[]> {
+export async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'month', withMoney: boolean, build: string | null, signal: AbortSignal, disclosure: string | null = null): Promise<readonly Point[]> {
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsSeries($s: ProcurementAnalysisScopeInput, $build: String) {
-      n: procurementSeries(scope: $s, bucket: ${bucket}, measure: recordCount, build: $build) { points { bucket value } }
-      ${withMoney ? `v: procurementSeries(scope: $s, bucket: ${bucket}, measure: valueAwardedSum, build: $build) { points { bucket value } }` : ''}
+      n: procurementSeries(scope: $s, bucket: ${bucket}, measure: recordCount, build: $build) { points { bucket value } meta { disclosureKey } }
+      ${withMoney ? `v: procurementSeries(scope: $s, bucket: ${bucket}, measure: valueAwardedSum, build: $build) { points { bucket value } meta { disclosureKey } }` : ''}
     }`,
     { s: scope, build },
     { operationName: 'AnalyticsSeries', signal },
   )
+  assertDirectServed(scope, disclosure, [seriesSchema.parse(raw.n)[0], ...(withMoney ? [seriesSchema.parse(raw.v)[0]] : [])])
   const counts = new Map((seriesSchema.parse(raw.n)[0]?.points ?? []).map((point) => [point.bucket, point.value]))
   const money = new Map((withMoney ? (seriesSchema.parse(raw.v)[0]?.points ?? []) : []).map((point) => [point.bucket, point.value]))
   const keys = typeof scope.from === 'string' && typeof scope.to === 'string' ? bucketsBetween(scope.from, scope.to, bucket) : [...counts.keys()]
@@ -327,29 +339,50 @@ const DA_SUPPLIER_NAMES = 4
  * the API serves it there as a company (D6): the registry would name a
  * person the direct purchases withhold.
  */
-export async function readNames(cuis: readonly string[], codes: readonly string[], signal: AbortSignal, daSuppliers: readonly string[] = []): Promise<Names> {
-  const asked = daSuppliers.slice(0, DA_SUPPLIER_NAMES)
+/** Whether an answer was served under the plan's publication (`assertServedUnder`), as a yes or no. */
+function servedUnderPlan(planned: string | null, served: unknown): boolean {
+  try {
+    assertServedUnder(planned, typeof served === 'string' ? served : null)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The names the page shows. A direct-purchase supplier's name is kept only
+ * under the publication it was planned under (D6): each answer's own
+ * `meta.disclosureKey` must be the plan's, and the publication is also asked
+ * afresh after the read — a publish in between drops the names rather than
+ * keep them under the old key.
+ */
+export async function readNames(cuis: readonly string[], codes: readonly string[], signal: AbortSignal, daSuppliers: readonly string[] = [], disclosure: string | null = null, disclosureSeen?: string | null): Promise<Names> {
+  const asked = disclosure === null ? [] : daSuppliers.slice(0, DA_SUPPLIER_NAMES)
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsNames($cuis: [String!]!, $codes: [String!]!, $withOrgs: Boolean!, $withCpv: Boolean!${asked.map((_, index) => `, $da${index}: String!`).join('')}) {
       labels: organizationLabels(cuis: $cuis) @include(if: $withOrgs) { cui canonicalName status }
       cpv: procurementCpvCodes(codes: $codes) @include(if: $withCpv) { cpvCode labelRo labelEn }
-      ${asked.map((_, index) => `da${index}: procurementDirectAcquisitions(filter: { supplierCui: { eq: $da${index} } }, page: 1, pageSize: 1) { items { supplier { cui name displayName displayKind } } }`).join('\n      ')}
+      ${asked.map((_, index) => `da${index}: procurementDirectAcquisitions(filter: { supplierCui: { eq: $da${index} } }, page: 1, pageSize: 1) { meta { disclosureKey } items { supplier { cui name displayName displayKind } } }`).join('\n      ')}
     }`,
     { cuis: cuis.slice(0, 250), codes: codes.slice(0, 200), withOrgs: cuis.length > 0, withCpv: codes.length > 0, ...Object.fromEntries(asked.map((cui, index) => [`da${index}`, cui])) },
-    { operationName: 'AnalyticsNames', signal },
+    // D6: the ranked keys sent were read under the newest key the caller saw then; a newer one since, nothing is sent.
+    { operationName: 'AnalyticsNames', signal, disclosureSeen },
   )
   const parsed = namesSchema.parse(raw)
   const orgs = new Map<string, string>()
   for (const label of parsed.labels ?? []) if (label.cui && label.canonicalName && label.status === 'named') orgs.set(label.cui, label.canonicalName)
   const daSuppliersNamed = new Map<string, string>()
   asked.forEach((cui, index) => {
+    // D6: a name only from an answer served under the planned publication (its own `meta.disclosureKey`, API doc 10).
+    if (!servedUnderPlan(disclosure, (raw[`da${index}`] as { meta?: { disclosureKey?: unknown } } | undefined)?.meta?.disclosureKey)) return
     const supplier = daSupplierNameSchema.parse(raw[`da${index}`] ?? { items: [] }).items[0]?.supplier
     const name = supplier && isNamedDaSupplier(supplier) && supplier.cui === cui ? (supplier.displayName ?? supplier.name) : null
     if (name) daSuppliersNamed.set(cui, name)
   })
   const cpv = new Map<string, { ro: string | null; en: string | null }>()
   for (const code of parsed.cpv ?? []) cpv.set(code.cpvCode, { ro: code.labelRo, en: code.labelEn })
-  return { orgs, cpv, daSuppliers: daSuppliersNamed }
+  const current = asked.length > 0 && (await disclosureVersion({ fresh: true }).catch(() => null)) === disclosure
+  return { orgs, cpv, daSuppliers: current ? daSuppliersNamed : new Map<string, string>() }
 }
 
 const divisionsSchema = z.object({ procurementCpvDivisions: z.array(z.object({ divisionCode: z.string(), labelRo: z.string().nullable(), labelEn: z.string() })) })
@@ -503,11 +536,11 @@ export function planAnswer(query: Query, cutoffs: AnalyticsCutoff | null, option
     scopes: { now, before, years: yearsScope },
     supplierFixed,
     dimension,
-    figures: { key: procurementAnalyticsKeys.figures(now!, before, kept), enabled: now !== null, read: (signal) => readFigures(now!, before, build, signal) },
-    concentration: { key: procurementAnalyticsKeys.concentration(now!, rankBy, kept), enabled: now !== null && !supplierFixed, read: (signal) => readConcentration(now!, rankBy, build, signal) },
+    figures: { key: procurementAnalyticsKeys.figures(now!, before, kept), enabled: now !== null, read: (signal) => readFigures(now!, before, build, signal, cutoffs?.disclosure ?? null) },
+    concentration: { key: procurementAnalyticsKeys.concentration(now!, rankBy, kept), enabled: now !== null && !supplierFixed, read: (signal) => readConcentration(now!, rankBy, build, signal, cutoffs?.disclosure ?? null) },
     ranking: { key: procurementAnalyticsKeys.ranking(now!, dimension, topN, rankBy, kept), enabled: now !== null && dimension !== null, read: (signal) => readRanking(now!, dimension!, topN, rankBy, build, signal, cutoffs?.disclosure ?? null) },
-    series: { key: procurementAnalyticsKeys.series(now!, bucket, moneyAllowed, kept), enabled: now !== null && bucket !== null, read: (signal) => readSeries(now!, bucket ?? 'month', moneyAllowed, build, signal) },
-    years: { key: procurementAnalyticsKeys.years(yearsScope, moneyAllowed, kept), enabled: yearsScope !== null && options.years, read: (signal) => readSeries(yearsScope!, 'year', moneyAllowed, build, signal) },
+    series: { key: procurementAnalyticsKeys.series(now!, bucket, moneyAllowed, kept), enabled: now !== null && bucket !== null, read: (signal) => readSeries(now!, bucket ?? 'month', moneyAllowed, build, signal, cutoffs?.disclosure ?? null) },
+    years: { key: procurementAnalyticsKeys.years(yearsScope, moneyAllowed, kept), enabled: yearsScope !== null && options.years, read: (signal) => readSeries(yearsScope!, 'year', moneyAllowed, build, signal, cutoffs?.disclosure ?? null) },
   }
 }
 
@@ -530,6 +563,8 @@ export interface NameKeys {
   readonly cpv: readonly string[]
   /** Direct-purchase suppliers named only by their own direct purchases (D6). */
   readonly daSuppliers?: readonly string[]
+  /** The question is about direct purchases: its names (a DA ranking's included) follow the direct-purchase cache rules (D6). */
+  readonly direct?: boolean
   /** The disclosure publication those names were read under: a new one reads them afresh (D6). */
   readonly disclosure?: string | null
 }
@@ -539,9 +574,14 @@ export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[
   const orgs: string[] = []
   const cpv: string[] = []
   const daSuppliers: string[] = []
-  if (query.filters.cumparator) orgs.push(...query.filters.cumparator.values)
-  // D6: a supplier the address names is named, for direct purchases, only by its own direct purchases.
-  if (query.filters.furnizor) (direct ? daSuppliers : orgs).push(...query.filters.furnizor.values)
+  const furnizor = query.filters.furnizor?.values ?? []
+  const suppliers = new Set(furnizor.map(withoutLeadingZeros))
+  // D6: a buyer code that is also the direct purchases' supplier asked for — as the API compares codes (`withoutLeadingZeros`) — is not named from the registry (the chip says „Instituția cu CUI").
+  if (query.filters.cumparator) orgs.push(...query.filters.cumparator.values.filter((cui) => !(direct && suppliers.has(withoutLeadingZeros(cui)))))
+  // D6: a supplier the address names is named, for direct purchases, only by its own direct purchases — and only under a known publication, which the names are kept under.
+  if (direct) {
+    if (disclosure !== null) daSuppliers.push(...furnizor)
+  } else orgs.push(...furnizor)
   // The category and each step of its path, which the head shows over the headline.
   if (query.filters.cpv) cpv.push(...query.filters.cpv.values.flatMap((value) => cpvPath(value).map((step) => step.padEnd(8, '0'))))
   for (const ranking of rankings) {
@@ -553,16 +593,17 @@ export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[
       if (ranking.dimension.startsWith('cpv')) cpv.push(bucket.key)
     }
   }
-  return { orgs: [...new Set(orgs)].sort(), cpv: [...new Set(cpv)].sort(), daSuppliers: [...new Set(daSuppliers)].sort(), disclosure }
+  return { orgs: [...new Set(orgs)].sort(), cpv: [...new Set(cpv)].sort(), daSuppliers: [...new Set(daSuppliers)].sort(), disclosure, direct }
 }
 
 /** The names read, planned: nothing to name reads nothing. */
-export function planNames(keys: NameKeys): PlannedRead<Names> {
+export function planNames(keys: NameKeys, disclosureSeen?: string | null): PlannedRead<Names> {
   const daSuppliers = keys.daSuppliers ?? []
   return {
     // Direct-purchase names belong to the disclosure publication they were read under (D6).
-    key: procurementAnalyticsKeys.names(keys.orgs, keys.cpv, daSuppliers, daSuppliers.length > 0 ? (keys.disclosure ?? 'unknown') : null),
+    // The question's population is in the key: a direct-purchase question's names keep the direct-purchase cache rules alone.
+    key: [...procurementAnalyticsKeys.names(keys.orgs, keys.cpv, daSuppliers, daSuppliers.length > 0 ? (keys.disclosure ?? 'unknown') : null), keys.direct === true],
     enabled: keys.orgs.length > 0 || keys.cpv.length > 0 || daSuppliers.length > 0,
-    read: (signal) => readNames(keys.orgs, keys.cpv, signal, daSuppliers),
+    read: (signal) => readNames(keys.orgs, keys.cpv, signal, daSuppliers, keys.disclosure ?? null, disclosureSeen),
   }
 }

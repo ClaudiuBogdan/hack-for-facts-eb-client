@@ -1,4 +1,5 @@
 import { queryOptions, useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import {
   fetchProcurementAuthoritySlice,
   fetchProcurementSearch,
@@ -35,7 +36,9 @@ export function procurementSupplierSliceQueryOptions(
 ) {
   return queryOptions({
     queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui, scope ?? null] as const,
-    queryFn: () => fetchProcurementSupplierSlice(cui, scope),
+    queryFn: ({ signal }) => fetchProcurementSupplierSlice(cui, scope, signal),
+    // D6: the slice reads the supplier-records connection, which carries no publication yet: kept only while shown.
+    ...DA_QUERY_CACHE,
   })
 }
 
@@ -60,7 +63,9 @@ export function procurementAuthoritySliceQueryOptions(
       cui,
       scope ?? null,
     ] as const,
-    queryFn: () => fetchProcurementAuthoritySlice(cui, scope),
+    queryFn: ({ signal }) => fetchProcurementAuthoritySlice(cui, scope, signal),
+    // D6: the slice ranks direct purchases' suppliers; kept only while shown, as the supplier's.
+    ...DA_QUERY_CACHE,
   })
 }
 

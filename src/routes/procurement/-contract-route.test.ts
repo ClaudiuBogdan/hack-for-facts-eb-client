@@ -12,6 +12,11 @@ vi.mock('@tanstack/react-router', () => ({
 
 const readForSsr = vi.fn()
 vi.mock('@/features/procurement/api/procurement-contract-ssr', () => ({ readProcurementContractForSsr: (...args: unknown[]) => readForSsr(...args) }))
+// D6: the render is kept under the publication it was read in (the context carries the pair's direct purchases).
+vi.mock('@/features/procurement/api/procurement-da-release-status', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/procurement/api/procurement-da-release-status')>()),
+  seededUnder: async <T extends object>(read: () => Promise<T>) => ({ ...(await read()), disclosure: 'off:-:nod6:-' }),
+}))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 // The head speaks the request's language through a translator; the real one needs the app's i18n set up.
 // Every description reads `descriere`; the title's own words translate, so a page in English is named in English.
@@ -65,7 +70,7 @@ describe('/procurement/contracts/$id', () => {
     const read = { id: sheet.id, contract: sheet, context: ctContext() }
     readForSsr.mockResolvedValue(read)
     const data = await asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: sheet.id } }))
-    expect(data).toBe(read)
+    expect(data).toEqual({ ...read, disclosure: 'off:-:nod6:-' })
     expect(readForSsr).toHaveBeenCalledWith(sheet.id)
   })
 
@@ -81,11 +86,14 @@ describe('/procurement/contracts/$id', () => {
     expect(client.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(procurementContractKeys.contract(sheet.id))
   })
 
-  it('caches only a whole render: contract and context read', () => {
+  it('caches only a whole render under a known publication, ten minutes at most, never stale across a publish (D6)', () => {
     vi.stubEnv('DEV', false)
     try {
-      const whole = route.headers({ loaderData: { id: '1', contract: sheet, context: ctContext() } })
+      const whole = route.headers({ loaderData: { id: '1', contract: sheet, context: ctContext(), disclosure: 'off:-:nod6:-' } })
       expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(whole['CDN-Cache-Control']).not.toMatch(/stale-while-revalidate=[1-9]/u)
+      // Read under an unknown publication: kept nowhere.
+      expect(route.headers({ loaderData: { id: '1', contract: sheet, context: ctContext(), disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
       for (const loaderData of [
         { id: '1' },
         { id: '1', contract: { ...sheet, partial: true }, context: ctContext() },
@@ -95,7 +103,7 @@ describe('/procurement/contracts/$id', () => {
         expect(route.headers({ loaderData })['CDN-Cache-Control']).toBe('no-store')
       }
       // With no context to read (no CUI for a side, no date, before 2019) the server says so — `null` — and the contract alone is whole.
-      expect(route.headers({ loaderData: { id: '1', contract: sheet, context: null } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(route.headers({ loaderData: { id: '1', contract: sheet, context: null, disclosure: 'off:-:nod6:-' } })['CDN-Cache-Control']).toContain('s-maxage=600')
     } finally {
       vi.unstubAllEnvs()
     }

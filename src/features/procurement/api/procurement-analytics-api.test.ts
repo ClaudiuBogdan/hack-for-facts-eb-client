@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import { queryOf } from '../lib/analytics-model'
-import { DisclosureMismatchError } from './procurement-da-release-status'
+import { DisclosureMismatchError, resetDaReleaseForTests } from './procurement-da-release-status'
 import { isStaleBuild, planAnswer, planRecords, readConcentration, readFigures, readNames, readRanking, readRecords, scopeOf, type AnalyticsCutoff } from './procurement-analytics-api'
 /** The publication with D6 off, as the release's status names it. */
 const OFF = 'off:-:nod6:-'
@@ -10,9 +10,16 @@ const OFF = 'off:-:nod6:-'
 const graphql = vi.hoisted(() => ({ query: vi.fn() }))
 // The switches: direct purchases' supplier figures readable unless a test says otherwise.
 const supplierReads = vi.hoisted(() => ({ figures: true }))
+// The publication the API reads now: what a fresh check sees.
+const release = vi.hoisted(() => ({ version: 'v1' as string | null, fresh: 0 }))
 vi.mock('./procurement-da-release-status', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./procurement-da-release-status')>()),
-  daSupplierReads: () => Promise.resolve({ figures: supplierReads.figures, places: false, known: true }), disclosureVersion: () => Promise.resolve('v1') }))
+  daSupplierReads: () => Promise.resolve({ figures: supplierReads.figures, places: false, known: true }),
+  disclosureVersion: (options?: { readonly fresh?: boolean }) => {
+    if (options?.fresh) release.fresh += 1
+    return Promise.resolve(release.version)
+  },
+}))
 vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()), graphqlQuery: graphql.query }))
 
 const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13', disclosure: 'off:-:nod6:-' }
@@ -21,6 +28,9 @@ const PERIOD = { from: '2025-01', to: '2025-12' }
 const party = (cui: string | null, name: string) => ({ cui, name, displayName: name })
 
 beforeEach(() => {
+  resetDaReleaseForTests()
+  release.version = 'v1'
+  release.fresh = 0
   graphql.query.mockReset()
   graphql.query.mockResolvedValue({ l: { total: '0', items: [], meta: { answerability: 'served', disclosureKey: 'off' } } })
 })
@@ -118,8 +128,8 @@ describe('planRecords', () => {
 
 describe('the build pin', () => {
   it('pins the figures to the cutoff’s build', async () => {
-    graphql.query.mockResolvedValue({ now: { blocks: [] } })
-    await readFigures({ grain: 'direct_acquisition' }, null, '13', new AbortController().signal)
+    graphql.query.mockResolvedValue({ now: { blocks: [{ recordCount: '1', withValueCount: '1', valueAwardedSum: '1', avgValueAwarded: '1', meta: { answerability: 'served', provisional: false, caveats: [], undatedInScope: null, disclosureKey: 'off' } }] } })
+    await readFigures({ grain: 'direct_acquisition' }, null, '13', new AbortController().signal, OFF)
     const [document, variables] = graphql.query.mock.calls[0]!
     expect(document).toContain('procurementStats(scope: $now, build: $build)')
     expect(variables).toEqual({ now: { grain: 'direct_acquisition' }, build: '13' })
@@ -159,17 +169,61 @@ describe('D6 on direct purchases, whatever the release flag', () => {
 
   it('a supplier the address names is named by its own direct purchases, only as a company', async () => {
     graphql.query.mockResolvedValueOnce({
-      da0: { items: [{ supplier: party('14837428', 'FLORARIA IRIS', 'company') }] },
-      da1: { items: [{ supplier: party(null, null, 'natural_person') }] },
-      da2: { items: [] },
+      // Each answer names the D6 state it was served under (API doc 10); 'v1' plans D6 off.
+      da0: { meta: { disclosureKey: 'off' }, items: [{ supplier: party('14837428', 'FLORARIA IRIS', 'company') }] },
+      da1: { meta: { disclosureKey: 'off' }, items: [{ supplier: party(null, null, 'natural_person') }] },
+      da2: { meta: { disclosureKey: 'off' }, items: [] },
     })
-    const names = await readNames([], [], new AbortController().signal, ['14837428', '9446547', '1234'])
+    const names = await readNames([], [], new AbortController().signal, ['14837428', '9446547', '1234'], 'v1')
     expect([...names.daSuppliers.entries()]).toEqual([['14837428', 'FLORARIA IRIS']])
+    expect(release.fresh).toBe(1)
     // Kept apart from the registry's names: a buyer of the same CUI never names the supplier.
     expect(names.orgs.size).toBe(0)
     const [query, variables] = graphql.query.mock.calls[graphql.query.mock.calls.length - 1] as [string, Record<string, unknown>]
     expect(query).not.toContain('organizationLabels(cuis: $cuis) @include(if: true)')
     expect(variables).toMatchObject({ withOrgs: false, da0: '14837428', da1: '9446547', da2: '1234' })
+  })
+})
+
+describe('D6: a direct-purchase supplier\'s name is kept only under the publication it was read in', () => {
+  const supplier = { cui: '14837428', name: 'FLORARIA IRIS', displayName: 'FLORARIA IRIS', displayKind: 'company' }
+  const answer = { da0: { meta: { disclosureKey: 'off' }, items: [{ supplier }] } }
+
+  it('drops a name whose answer was served under another publication than planned, even when the fresh status agrees', async () => {
+    const planned = 'on:t1:d6:2026-11-18T03:10:00.123456Z'
+    release.version = planned
+    graphql.query.mockResolvedValueOnce({ da0: { meta: { disclosureKey: '2026-11-18T03:10:00.123456Z' }, items: [{ supplier }] } })
+    expect([...(await readNames([], [], new AbortController().signal, ['14837428'], planned)).daSuppliers.keys()]).toEqual(['14837428'])
+    graphql.query.mockResolvedValueOnce({ da0: { items: [{ supplier }] } })
+    expect((await readNames([], [], new AbortController().signal, ['14837428'], planned)).daSuppliers.size).toBe(0)
+    // Served under a newer publication: dropped (and that publication is now the newest seen).
+    graphql.query.mockResolvedValueOnce({ da0: { meta: { disclosureKey: '2026-11-19T03:10:00.123456Z' }, items: [{ supplier }] } })
+    expect((await readNames([], [], new AbortController().signal, ['14837428'], planned)).daSuppliers.size).toBe(0)
+  })
+
+  it('keeps the names when the publication is still the planned one', async () => {
+    graphql.query.mockResolvedValueOnce(answer)
+    expect([...(await readNames([], [], new AbortController().signal, ['14837428'], 'v1')).daSuppliers.keys()]).toEqual(['14837428'])
+  })
+
+  it('drops the names when a publish came between the plan and the answer', async () => {
+    graphql.query.mockResolvedValueOnce(answer)
+    release.version = 'v2'
+    const names = await readNames([], [], new AbortController().signal, ['14837428'], 'v1')
+    expect(names.daSuppliers.size).toBe(0)
+  })
+
+  it('drops them when the publication cannot be read afresh', async () => {
+    graphql.query.mockResolvedValueOnce(answer)
+    release.version = null
+    expect((await readNames([], [], new AbortController().signal, ['14837428'], 'v1')).daSuppliers.size).toBe(0)
+  })
+
+  it('asks none under an unknown publication', async () => {
+    graphql.query.mockResolvedValueOnce({})
+    await readNames([], [], new AbortController().signal, ['14837428'], null)
+    const [, variables] = graphql.query.mock.calls[graphql.query.mock.calls.length - 1] as [string, Record<string, unknown>]
+    expect(variables).not.toHaveProperty('da0')
   })
 })
 
@@ -214,9 +268,18 @@ describe('D6: a name-bearing direct-purchase answer is kept only under the state
   const scope = { grain: 'direct_acquisition', from: '2025-01', to: '2025-12' }
   const ranking = (disclosureKey: string) => ({ r: [{ rankedBy: 'value', valueWithheldAssociationSum: null, buckets: [], meta: { disclosureKey } }] })
 
-  it('matches by the supplier-privacy publication, as the same instant', async () => {
+  it('matches by the supplier-privacy publication, as the same instant at full precision', async () => {
     graphql.query.mockResolvedValueOnce(ranking('2026-11-18T03:10:00.123456Z'))
-    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, 'on:t1:d6:2026-11-18T03:10:00.123Z')).resolves.toMatchObject({ buckets: [] })
+    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, 'on:t1:d6:2026-11-18T03:10:00.123456Z')).resolves.toMatchObject({ buckets: [] })
+    graphql.query.mockResolvedValueOnce(ranking('2026-11-18 03:10:00.123456+00:00'))
+    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, 'on:t1:d6:2026-11-18T03:10:00.123456Z')).resolves.toMatchObject({ buckets: [] })
+  })
+
+  it('refuses two publications within the same millisecond', async () => {
+    graphql.query.mockResolvedValueOnce(ranking('2026-11-18T03:10:00.123456Z'))
+    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, 'on:t1:d6:2026-11-18T03:10:00.123Z')).rejects.toBeInstanceOf(DisclosureMismatchError)
+    graphql.query.mockResolvedValueOnce(ranking('2026-11-18T03:10:00.123457Z'))
+    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, 'on:t1:d6:2026-11-18T03:10:00.123456Z')).rejects.toBeInstanceOf(DisclosureMismatchError)
   })
 
   it('refuses an answer of another publication, and one with names under an unknown publication', async () => {
@@ -228,8 +291,26 @@ describe('D6: a name-bearing direct-purchase answer is kept only under the state
     await expect(readRecords(scope, '13', 'value_desc', 1, new AbortController().signal, 'on:t1:d6:p1')).rejects.toBeInstanceOf(DisclosureMismatchError)
   })
 
-  it('keeps an answer that names no supplier (unavailable) under an unknown publication', async () => {
+  it('a late P1 ranking after a P2 one is neither returned nor kept (API doc 10)', async () => {
+    const { QueryClient } = await import('@tanstack/react-query')
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const P1 = '2026-11-18T03:10:00.123456Z'
+    const P2 = '2026-11-19T03:10:00.123456Z'
+    graphql.query.mockResolvedValueOnce(ranking(P2))
+    await client.fetchQuery({ queryKey: ['procurement', 'r', P2], queryFn: ({ signal }) => readRanking(scope, 'supplier', 25, 'value', null, signal, `on:t2:d6:${P2}`) })
+    graphql.query.mockResolvedValueOnce(ranking(P1))
+    await expect(
+      client.fetchQuery({ queryKey: ['procurement', 'r', P1], queryFn: ({ signal }) => readRanking(scope, 'supplier', 25, 'value', null, signal, `on:t1:d6:${P1}`) }),
+    ).rejects.toBeInstanceOf(DisclosureMismatchError)
+    expect(client.getQueryData(['procurement', 'r', P1])).toBeUndefined()
+  })
+
+  it('never keeps an answer served unavailable, under any publication (API contract d534ebd0)', async () => {
     graphql.query.mockResolvedValueOnce(ranking('unavailable'))
-    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, null)).resolves.toMatchObject({ buckets: [] })
+    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, null)).rejects.toBeInstanceOf(DisclosureMismatchError)
+    graphql.query.mockResolvedValueOnce(ranking('unavailable'))
+    await expect(readRanking(scope, 'supplier', 25, 'value', null, new AbortController().signal, 'on:t1:d6:p1')).rejects.toBeInstanceOf(DisclosureMismatchError)
+    graphql.query.mockResolvedValueOnce({ l: { total: '0', items: [], meta: { answerability: 'served', disclosureKey: 'unavailable' } } })
+    await expect(readRecords(scope, '13', 'value_desc', 1, new AbortController().signal, null)).rejects.toBeInstanceOf(DisclosureMismatchError)
   })
 })

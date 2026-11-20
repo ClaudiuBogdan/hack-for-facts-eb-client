@@ -29,8 +29,7 @@ vi.mock('../../api/procurement-da-release-api', () => ({ fetchPurchaseForPage: v
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
 describe('a legacy link that leads to the release', () => {
-  it('replaces the URL with the release id, and keeps the purchase under that id only', async () => {
-    // Kept as the app keeps a query (the test client collects at once): the release route's own query picks it up.
+  it('replaces the URL with the release id, and keeps the purchase under neither id (D6: the release page reads its own)', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })
     const purchase = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
     const legacyId = '10120196'
@@ -41,7 +40,8 @@ describe('a legacy link that leads to the release', () => {
       </QueryClientProvider>,
     )
     await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: '/procurement/direct-acquisitions/$id', params: { id: RELEASE_ID }, replace: true }))
-    expect(client.getQueryData(procurementDirectPurchaseKeys.purchase(RELEASE_ID))).toBe(purchase)
+    // No entry written for the release id: it would be kept with the default lifetime, past the page (D6, root 19 November 2026).
+    expect(client.getQueryData(procurementDirectPurchaseKeys.purchase(RELEASE_ID))).toBeUndefined()
     await waitFor(() => expect(client.getQueryData(procurementDirectPurchaseKeys.purchase(legacyId))).toBeUndefined())
   })
 

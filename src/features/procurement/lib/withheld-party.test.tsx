@@ -93,12 +93,38 @@ describe('analytics', () => {
     expect(keys.orgs).toEqual(['14837428'])
   })
 
-  it('a direct-purchase supplier filter is named only by its own direct purchases', () => {
-    const keys = nameKeys({ tip: 'directe', filters: { furnizor: { level: 'cui', values: ['9446547'] } } } as never, [])
+  it('a direct-purchase supplier filter is named only by its own direct purchases, under a known publication', () => {
+    const keys = nameKeys({ tip: 'directe', filters: { furnizor: { level: 'cui', values: ['9446547'] } } } as never, [], 'on:t1:d6:p1')
     expect(keys.orgs).toEqual([])
     expect(keys.daSuppliers).toEqual(['9446547'])
+    // Unknown, nothing is asked: a name read then could be kept past the publish that withholds it.
+    expect(nameKeys({ tip: 'directe', filters: { furnizor: { level: 'cui', values: ['9446547'] } } } as never, [], null).daSuppliers).toEqual([])
     // Contracts are not D6's: their supplier is named from the registry as before.
     expect(nameKeys({ tip: 'contracte', filters: { furnizor: { level: 'cui', values: ['9446547'] } } } as never, []).orgs).toEqual(['9446547'])
+  })
+
+  it('a buyer code that is also the direct purchases\' supplier asked for is not named from the registry', () => {
+    const filters = { cumparator: { level: 'cui', values: ['9446547', '4267117'] }, furnizor: { level: 'cui', values: ['9446547'] } }
+    expect(nameKeys({ tip: 'directe', filters } as never, [], 'on:t1:d6:p1').orgs).toEqual(['4267117'])
+    // As the API compares codes (a51e6790): zeros drop only from an all-digit code of at most ten.
+    const sameAs = (buyer: string, supplier: string) =>
+      nameKeys({ tip: 'directe', filters: { cumparator: { level: 'cui', values: [buyer] }, furnizor: { level: 'cui', values: [supplier] } } } as never, [], 'on:t1:d6:p1').orgs.length === 0
+    expect(sameAs('0014399840', '14399840')).toBe(true)
+    expect(sameAs('14399840', '0014399840')).toBe(true)
+    expect(sameAs('0000014399840', '14399840')).toBe(false)
+    expect(sameAs('14399840', '0000014399840')).toBe(false)
+    expect(sameAs('RO14399840', '14399840')).toBe(false)
+    expect(sameAs('14399840', 'RO14399840')).toBe(false)
+    expect(nameKeys({ tip: 'contracte', filters } as never, []).orgs).toEqual(['4267117', '9446547'])
+  })
+})
+
+describe('a direct-purchase supplier the address names (D6 fails closed, root)', () => {
+  it('is shown by its name only when the API names it a company, never by the address\'s code', () => {
+    const namer = (daSuppliers: Map<string, string>) => ({ names: { orgs: new Map([['14837428', 'REGISTRY SRL']]), cpv: new Map(), daSuppliers }, divisions: new Map(), counties: new Map(), localities: null }) as never
+    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map()))).toBe('Furnizor')
+    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map()))).not.toContain('14837428')
+    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', 'FLORARIA IRIS SRL']]))).toUpperCase()).toContain('FLORARIA')
   })
 })
 
@@ -179,5 +205,14 @@ describe('a buyer the analytics address gives the supplier’s code, under D6', 
     const filters = { furnizor: { level: 'cui', values: ['14837428'] } } as never
     expect(buyerFilterLabel({ tip: 'directe', filters }, '14837428', namer).toUpperCase()).not.toContain('REGISTRY')
     expect(buyerFilterLabel({ tip: 'directe', filters: {} }, '14837428', namer).toUpperCase()).toContain('REGISTRY')
+  })
+
+  it('compares the codes as the API does: a zero-padded CUI is the same, a longer or RO-prefixed one is not', () => {
+    const label = (supplier: string) => buyerFilterLabel({ tip: 'directe', filters: { furnizor: { level: 'cui', values: [supplier] } } as never }, '14837428', namer).toUpperCase()
+    expect(label('0014837428')).not.toContain('REGISTRY')
+    // Nor is the code printed: it is the supplier's too (D6 fails closed, root).
+    expect(label('0014837428')).not.toContain('14837428')
+    expect(label('0000014837428')).toContain('REGISTRY')
+    expect(label('RO14837428')).toContain('REGISTRY')
   })
 })

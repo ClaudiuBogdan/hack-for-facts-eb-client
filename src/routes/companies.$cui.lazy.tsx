@@ -1,4 +1,5 @@
 import { createLazyFileRoute, useParams } from '@tanstack/react-router'
+import { isSeedCurrent } from '@/features/procurement/lib/disclosure-seed'
 import { CompanyProfilePage } from '@/features/private-companies/components/profile/company-profile-page'
 import {
   CompanyProfileError,
@@ -41,7 +42,9 @@ function PrivateCompanyRoutePage() {
   // own read settles; a failed read leaves nothing to show. Whether either may
   // be shown at all is the page's decision, under its registry pin — and so is
   // the tab's title, which names the company only once it is shown.
-  const profile = isSuccess ? data : isError ? undefined : loaderData?.profile
+  // D6: the server's answer stands in only while the open tab accepts its publication and age (`isSeedCurrent`).
+  const seed = loaderData && isSeedCurrent(loaderData) ? loaderData.profile : undefined
+  const profile = isSuccess ? data : isError ? undefined : seed
   // While the page is mounted it names the tab; in the route's own states — loading, failed, not found, including
   // after the page unmounts — the tab says the CUI alone, never a company no longer shown.
   useClientDocumentTitle(profile ? null : buildPrivateCompanyNeutralTitle(companyCui))

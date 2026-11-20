@@ -1,6 +1,8 @@
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { PROCUREMENT_DA_RELEASE_QUERY, procurementDaReleaseSchema } from './graphql/procurement-da-release-queries'
+import { DA_RELEASE_STATUS_TTL_MS } from '../lib/disclosure-cache'
+import { isOlderThanNewest, noteKey, resetNewestKeyForTests, sameKey, StaleDisclosureError } from '@/lib/disclosure-key'
 
 /**
  * Whether the API serves direct acquisitions release 1
@@ -17,8 +19,8 @@ export interface DaReleaseStatus {
   readonly privacyAsOf: string | null
 }
 
-/** How long one answer about the release holds: the flag flips with a deploy, not per request. */
-const RELEASE_TTL_MS = 60 * 1000
+/** How long one answer about the release holds: part of the disclosure-change bound (`DA_DISCLOSURE_CHANGE_BOUND_SECONDS`). */
+const RELEASE_TTL_MS = DA_RELEASE_STATUS_TTL_MS
 /** The shared read's own deadline: it serves many readers, none of whose signals it takes. */
 const RELEASE_DEADLINE_MS = 3_000
 
@@ -30,10 +32,19 @@ let cached: { readonly at: number; readonly status: Promise<DaReleaseStatus> } |
  * kept and fails: a release id then shows a failed read, never „not found",
  * and a legacy link stays on its legacy page.
  */
-export function readDaRelease(): Promise<DaReleaseStatus> {
+export function readDaRelease(options?: { readonly fresh?: boolean }): Promise<DaReleaseStatus> {
   const now = Date.now()
-  if (cached && now - cached.at < RELEASE_TTL_MS) return cached.status
-  const status = graphqlQuery<unknown>(PROCUREMENT_DA_RELEASE_QUERY, {}, { operationName: 'ProcurementDaRelease', signal: withDeadline(undefined, RELEASE_DEADLINE_MS) }).then((raw) => procurementDaReleaseSchema.parse(raw).procurementDaRelease)
+  // Fresh: a check that authorises what an earlier read served asks the API now, never the minute-old answer (D6).
+  // A kept answer is checked again on each hit: a later request's older answer can have been kept before an earlier one's newer answer arrived.
+  if (!options?.fresh && cached && now - cached.at < RELEASE_TTL_MS) {
+    return cached.status.then((kept) => (isOlderThanNewest(kept.privacyAsOf) ? readDaRelease({ fresh: true }) : kept))
+  }
+  // An answer older than one already seen (a response the network reordered) is dropped and read again once; still older, the read fails.
+  const status = fetchStatus().then((first) => (isOlderThanNewest(first.privacyAsOf) ? fetchStatus() : first)).then((answer) => {
+    if (isOlderThanNewest(answer.privacyAsOf)) throw new StaleDisclosureError(answer.privacyAsOf)
+    noteKey(answer.privacyAsOf)
+    return answer
+  })
   status.catch(() => {
     if (cached?.status === status) cached = null
   })
@@ -41,9 +52,17 @@ export function readDaRelease(): Promise<DaReleaseStatus> {
   return status
 }
 
-/** Tests only: forget the release's answer. */
+function fetchStatus(): Promise<DaReleaseStatus> {
+  return graphqlQuery<unknown>(PROCUREMENT_DA_RELEASE_QUERY, {}, { operationName: 'ProcurementDaRelease', signal: withDeadline(undefined, RELEASE_DEADLINE_MS) }).then((raw) => procurementDaReleaseSchema.parse(raw).procurementDaRelease)
+}
+
+// The newest publication seen lives in `@/lib/disclosure-key`: the status, every response and the watch feed it.
+export { StaleDisclosureError } from '@/lib/disclosure-key'
+
+/** Tests only: forget the release's answer and the newest publication seen. */
 export function resetDaReleaseForTests(): void {
   cached = null
+  resetNewestKeyForTests()
 }
 
 
@@ -63,8 +82,8 @@ export function isDaReleaseOn(): Promise<boolean> {
  * withheld by a publish is never served from a memo past it (owner via root,
  * D6). Null when it cannot be read: the caller reads fresh and keeps nothing.
  */
-export function disclosureVersion(): Promise<string | null> {
-  return readDaRelease().then(
+export function disclosureVersion(options?: { readonly fresh?: boolean }): Promise<string | null> {
+  return readDaRelease(options).then(
     (status) =>
       // D6 on with its supplier-privacy publication unreadable (everyone withheld for now): never kept, so nothing outlives it (API contract d534ebd0).
       status.privacyEnforced && status.privacyAsOf === null
@@ -72,12 +91,6 @@ export function disclosureVersion(): Promise<string | null> {
         : `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}:${status.privacyEnforced ? 'd6' : 'nod6'}:${status.privacyAsOf ?? '-'}`,
     () => null,
   )
-}
-
-/** A memoised read under the publication it belongs to; unknown publication, a fresh read kept nowhere. */
-export async function underDisclosure<T>(memo: (key: string, read: () => Promise<T>) => Promise<T>, key: string, read: () => Promise<T>): Promise<T> {
-  const version = await disclosureVersion()
-  return version === null ? read() : memo(`${version}|${key}`, read)
 }
 
 /** What a page may ask of direct purchases' suppliers in the current switch state. */
@@ -105,7 +118,8 @@ export function daSupplierReads(): Promise<DaSupplierReads> {
  * own — everyone withheld — which a page must not keep names across.
  */
 export function readDisclosureNow(): Promise<string> {
-  return readDaRelease().then((status) =>
+  // Fresh: the watcher reads once a minute anyway, and must never take a status another read refreshed just before a publish.
+  return readDaRelease({ fresh: true }).then((status) =>
     status.privacyEnforced && status.privacyAsOf === null
       ? 'd6-unavailable'
       : `${status.enabled ? 'on' : 'off'}:${status.dataAsOf ?? '-'}:${status.privacyEnforced ? 'd6' : 'nod6'}:${status.privacyAsOf ?? '-'}`,
@@ -119,9 +133,11 @@ export function readDisclosureNow(): Promise<string> {
  * render whose publication is unknown, and the browser drops a seed whose
  * publication is not the one it reads (`use-disclosure-watch`).
  */
-export async function seededUnder<T extends object>(read: () => Promise<T>): Promise<T & { readonly disclosure: string | null }> {
+export async function seededUnder<T extends object>(read: () => Promise<T>): Promise<T & { readonly disclosure: string | null; readonly disclosureReadAt: number }> {
+  // When the publication was read: an open tab's fail-closed clock starts from it, so a CDN copy cannot extend the bound (§24.4).
+  const disclosureReadAt = Date.now()
   const disclosure = await disclosureVersion()
-  return { ...(await read()), disclosure }
+  return { ...(await read()), disclosure, disclosureReadAt }
 }
 
 /** A direct-purchase answer served under another D6 state than the one its cache key was planned under. */
@@ -133,7 +149,7 @@ export class DisclosureMismatchError extends Error {
 }
 
 /** The D6 state a publication's answers are served under, as the API's `meta.disclosureKey` says it: `off`, `unavailable`, or the supplier-privacy publication. */
-function servedKeyOf(version: string | null): string | null {
+function servedKeyOf(version: string | null): string {
   if (version === null) return 'unavailable'
   // `on|off:<dataAsOf>:d6|nod6:<privacyAsOf>` — the timestamps hold colons, so the D6 part is read from the end.
   const d6Part = /:(nod6|d6):([^]*)$/u.exec(version)
@@ -143,24 +159,22 @@ function servedKeyOf(version: string | null): string | null {
   return privacyAsOf && privacyAsOf !== '-' ? privacyAsOf : 'unavailable'
 }
 
-function sameInstant(a: string, b: string): boolean {
-  if (a === b) return true
-  const left = Date.parse(a)
-  const right = Date.parse(b)
-  return Number.isFinite(left) && left === right
-}
-
 /**
  * A name-bearing direct-purchase answer (a ranking, a records page) is kept
  * only under the D6 state it was served under (API contract: key DA caches
- * by build and disclosure key). Planned under an unknown publication, only an
- * answer that names no supplier (`unavailable`) is kept; any other mismatch
- * fails the read, nothing is kept, and the release is read again.
+ * by build and disclosure key), and never under a publication older than the
+ * newest seen. An answer served `unavailable` is never kept
+ * (API contract: the one state that can recur after a named answer, and a page
+ * read while access was restored can carry it), nor one planned under an
+ * unknown publication: either fails the read, nothing is kept, and the release
+ * is read again.
  */
 export function assertServedUnder(expected: string | null, served: string | null | undefined): void {
   const want = servedKeyOf(expected)
   const got = served ?? null
-  if (got !== null && want !== null && (got === want || (want !== 'off' && want !== 'unavailable' && sameInstant(got, want)))) return
+  // Whatever the plan, a newer publication served is remembered: an older plan's answer that follows it is refused.
+  noteKey(got)
+  if (got !== null && got !== 'unavailable' && want !== 'unavailable' && !isOlderThanNewest(got) && (got === want || (want !== 'off' && sameKey(got, want)))) return
   cached = null
   throw new DisclosureMismatchError(expected, got)
 }

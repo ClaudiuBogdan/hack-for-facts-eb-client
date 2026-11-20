@@ -39,9 +39,10 @@ export const homeSeriesBlockSchema = z.object({
   points: z.array(z.object({ bucket: z.string(), value: decimal })).nullable(),
 })
 
-const STATS = 'recordCount withValueCount valueAwardedSum'
-const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount valueSum shareOfScope } valueWithheldAssociationSum'
-const SERIES = 'points { bucket value }'
+// Every block names the D6 state it was served under (`meta.disclosureKey`): the transport refuses an older one.
+const STATS = 'recordCount withValueCount valueAwardedSum meta { disclosureKey }'
+const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount valueSum shareOfScope } valueWithheldAssociationSum meta { disclosureKey }'
+const SERIES = 'points { bucket value } meta { disclosureKey }'
 
 // ───────────────────────────────────────────────── the national picture ──
 
@@ -177,6 +178,7 @@ export const procurementHomeContractsResponseSchema = z.object({
 export const PROCUREMENT_HOME_DIRECT_QUERY = /* GraphQL */ `
   query ProcurementHomeDirect($filter: ProcurementDirectAcquisitionsFilter, $rows: Int) {
     procurementDirectAcquisitions(filter: $filter, sort: value_desc, page: 1, pageSize: $rows) {
+      meta { disclosureKey }
       items { id publicationDate finalizationDate title cpvCode authority { ${DA_PARTY} } supplier { ${DA_PARTY} } value { ${VALUE} } }
     }
   }

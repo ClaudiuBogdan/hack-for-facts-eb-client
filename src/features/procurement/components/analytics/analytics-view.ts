@@ -1,8 +1,9 @@
 import { isNamedDaSupplierBucket, isNaturalPersonKey, unnamedSupplierLabel } from '../../lib/withheld-party'
+import { withoutLeadingZeros } from '../../lib/fiscal-code'
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { monthText } from '../../lib/home-format'
-import { clippedBucket, cpvLevelOf, cpvPrefix, POPULATIONS, recordsViewSearch, searchOf, unreadParams, type AnalyticsSearch, type AxisId, type Query, type RecordsView } from '../../lib/analytics-model'
+import { clippedBucket, cpvLevelOf, cpvPrefix, POPULATIONS, recordsViewSearch, searchOf, unreadParams, withoutFilter, type AnalyticsSearch, type AxisId, type Query, type RecordsView } from '../../lib/analytics-model'
 import type { Ranking } from '../../api/procurement-analytics-api'
 import { QUESTIONS } from '../../lib/analytics-questions'
 import { COUNTY_POPULATION, type Answer } from '../../hooks/use-procurement-analytics'
@@ -92,11 +93,17 @@ export const PROCEDURES = [
  * link a journalist cites must not move with the next month. On the records,
  * the list's order and page go with it.
  */
-export function shareUrl(query: Query, answer: Answer, view: RecordsView | null = null): string {
+export function shareUrl(query: Query, answer: Answer, view: RecordsView | null = null, isNamedDaSupplier: (cui: string) => boolean = () => false): string {
   // The last twelve months and a year in progress move with the next month; the link carries the months they are today.
   const moving = query.period.kind === 'recent' || (query.period.kind === 'year' && answer.period !== null && !answer.period.to.endsWith('-12'))
   const period = answer.period && moving ? { kind: 'months' as const, from: answer.period.from, to: answer.period.to } : query.period
-  const search = { ...searchOf({ ...query, period }), ...(view && query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : {}) }
+  // D6 fails closed (root, 19 November 2026): a link the page makes never carries a direct-purchase supplier the API does not name as a company.
+  const unnamed = query.tip === 'directe' && query.filters.furnizor && !query.filters.furnizor.values.every(isNamedDaSupplier)
+  const dropped = new Set(unnamed ? query.filters.furnizor!.values.map(withoutLeadingZeros) : [])
+  // A buyer given the same code is the supplier's code too: it goes with it.
+  const withoutSupplier = unnamed ? withoutFilter(query, 'furnizor') : query
+  const shared = unnamed && withoutSupplier.filters.cumparator?.values.some((cui) => dropped.has(withoutLeadingZeros(cui))) ? withoutFilter(withoutSupplier, 'cumparator') : withoutSupplier
+  const search = { ...searchOf({ ...shared, period }), ...(view && shared.dupa.axis === 'inregistrari' ? recordsViewSearch(view, shared) : {}) }
   const params = new URLSearchParams(Object.entries(search).flatMap(([key, value]): [string, string][] => (value === undefined ? [] : [[key, String(value)]])))
   return `${window.location.origin}${window.location.pathname}${params.size > 0 ? `?${params.toString()}` : ''}`
 }
@@ -131,7 +138,11 @@ export function readoutNotes(query: Query, answer: Answer, search: AnalyticsSear
   if (now?.answerability === 'degraded') warnings.push(degradedNote(now.undated, now.undatedMoney))
   if (now?.answerability === 'abstained') warnings.push(t`Sursa nu răspunde pentru această selecție: cifrele lipsesc, nu sunt zero.`)
   return {
-    unread: unread.length > 0 ? t`Din adresă n-am putut folosi: ${unread.map((item) => `${item.param}=${item.value}`).join(', ')}. Răspunsul de mai jos nu ține seama de ele.` : null,
+    // D6 (root): a direct-purchase question names a refused party filter, never echoes its code.
+    unread:
+      unread.length > 0
+        ? t`Din adresă n-am putut folosi: ${unread.map((item) => (query.tip === 'directe' && (item.param === 'furnizor' || item.param === 'cumparator') ? item.param : `${item.param}=${item.value}`)).join(', ')}. Răspunsul de mai jos nu ține seama de ele.`
+        : null,
     warnings,
     trap: question?.trap ? i18n._(question.trap) : null,
   }
@@ -251,4 +262,14 @@ export function cpvFilterOf(code: string): { readonly level: string; readonly va
 /** How many filters a query holds: its axes, its title words, its value range. */
 export function filterCount(query: Query): number {
   return Object.keys(query.filters).length + (query.titlu ? 1 : 0) + (query.valoare ? 1 : 0)
+}
+
+/**
+ * The scope as the method shows it. For direct purchases no party's code is
+ * printed (D6 fails closed, root 19 November 2026): the address may hold a
+ * supplier the API withholds, and a buyer given the same code is the same code.
+ */
+export function shownScope(scope: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+  if (scope.grain !== 'direct_acquisition') return scope
+  return Object.fromEntries(Object.entries(scope).map(([key, value]) => [key, key === 'supplierCui' || key === 'authorityCui' ? '…' : value]))
 }

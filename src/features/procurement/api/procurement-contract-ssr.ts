@@ -21,7 +21,6 @@ const MAX_CONTRACTS = 1_000
 
 // A partial read (the names, the notice or a context read failed) is served once and read again, never kept.
 const contracts = createServerMemo<ContractSheet | null>(KEEP_MS, { maxEntries: MAX_CONTRACTS, keep: (sheet) => sheet === null || !sheet.partial })
-const contexts = createServerMemo<CtContext>(KEEP_MS, { maxEntries: MAX_CONTRACTS, keep: (context) => !context.partial })
 
 const deadline = () => withDeadline(undefined, SSR_DEADLINE_MS)
 
@@ -33,7 +32,13 @@ export interface ProcurementContractServerRead {
   readonly context?: CtContext | null
 }
 
-/** The contract, then its context; a failed context is left out and the contract stands. */
+/**
+ * The contract, then its context; a failed context is left out and the
+ * contract stands. The contract is kept (its supplier is not D6's in this
+ * release). The context is read on every render: it carries the pair's direct
+ * purchases (`pairDirect`, `pairDirectValue`), and direct-purchase reads are
+ * never kept in the server process (D6, root 19 November 2026; design §24.4).
+ */
 export async function readProcurementContractForSsr(id: string): Promise<ProcurementContractServerRead> {
   let contract: ContractSheet | null
   try {
@@ -46,7 +51,7 @@ export async function readProcurementContractForSsr(id: string): Promise<Procure
   if (!input) return { id, contract, context: null }
   const found = contract
   try {
-    const context = await contexts(id, () => fetchContractContext(input, found, deadline()))
+    const context = await fetchContractContext(input, found, deadline())
     return { id, contract, context }
   } catch {
     return { id, contract }

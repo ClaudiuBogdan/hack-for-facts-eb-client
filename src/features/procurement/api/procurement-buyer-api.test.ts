@@ -292,7 +292,7 @@ describe('fetchProcurementBuyer', () => {
     expect(figures.directPrev).toEqual({ authorityCui: '4364446', from: '2024-06', to: '2025-05', grain: 'direct_acquisition' })
     // Distinct firms over the whole window: two calendar years' counts would not add up.
     expect(figures.directSellers).toEqual({ authorityCui: '4364446', from: '2025-06', to: '2026-05', grain: 'direct_acquisition' })
-    expect(callOf('ProcurementBuyerFigures')?.[0]).toContain('directSellers: procurementConcentration(scope: $directSellers, basis: count) { supplierCount }')
+    expect(callOf('ProcurementBuyerFigures')?.[0]).toContain('directSellers: procurementConcentration(scope: $directSellers, basis: count) { supplierCount meta { disclosureKey } }')
     expect(callOf('ProcurementBuyerExtras')?.[1].county).toEqual({ buyerCounty: 'IF', from: '2025-06', to: '2026-05', grain: 'direct_acquisition' })
     expect(profile).toMatchObject({ period: { kind: 'recent', year: 2026, from: '2025-06', through: '2026-05' }, partial: false })
     expect(profile.directPrev).not.toBeNull()

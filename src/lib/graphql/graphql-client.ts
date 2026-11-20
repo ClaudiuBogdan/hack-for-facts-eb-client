@@ -7,9 +7,13 @@
  *
  * This module is deliberately generic — it knows nothing about companies,
  * parliament, or any feature. Per-feature schemas + queries live next to the
- * feature; this is the shared transport every feature reuses.
+ * feature; this is the shared transport every feature reuses. One API-wide
+ * response contract is enforced here, because every read passes here: a
+ * response whose `meta.disclosureKey` is older than one already seen is
+ * refused before anything keeps it (`@/lib/disclosure-key`, API doc 10).
  */
 import { getApiBaseUrl } from '@/config/env'
+import { assertNoAdvanceSince, checkResponseKeys } from '@/lib/disclosure-key'
 import { getAuthToken } from '@/lib/auth'
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options'
 import { createLogger } from '@/lib/logger'
@@ -146,6 +150,12 @@ export interface GraphQLQueryOptions {
    */
   readonly operationName?: string
   /**
+   * The newest disclosure key (`@/lib/disclosure-key`) when the codes this
+   * request sends were read. If a newer publication has been seen since, those
+   * codes may be withheld now: the request is not sent (D6).
+   */
+  readonly disclosureSeen?: string | null
+  /**
    * Public reads can bypass Clerk initialization entirely. The default remains
    * optional auth so existing private/mixed surfaces keep attaching a token
    * whenever one is available.
@@ -178,6 +188,9 @@ export async function graphqlQuery<T>(
       // Anonymous access is supported for public data; ignore token failures.
     }
   }
+
+  // D6: checked last, just before sending, after any wait for a token.
+  if (options.disclosureSeen !== undefined) assertNoAdvanceSince(options.disclosureSeen)
 
   let response: Response
   let rawText: string
@@ -227,6 +240,9 @@ export async function graphqlQuery<T>(
   if (!parsed || typeof parsed !== 'object') {
     throw new GraphQLRequestError('GraphQL response was not valid JSON', { query })
   }
+
+  // D6: a partial answer's keys count too, before its errors are raised.
+  if (parsed.data != null) checkResponseKeys(parsed.data)
 
   if (Array.isArray(parsed.errors) && parsed.errors.length > 0) {
     const error = new GraphQLRequestError(`GraphQL errors: ${formatGraphQLErrors(parsed.errors)}`, {

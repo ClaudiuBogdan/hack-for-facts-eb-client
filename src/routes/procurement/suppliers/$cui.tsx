@@ -1,4 +1,4 @@
-import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
+import { DA_DISCLOSURE_CACHE, DA_ROUTE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { z } from 'zod'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
@@ -32,6 +32,8 @@ const cuiSchema = z
  */
 export const Route = createFileRoute('/procurement/suppliers/$cui')({
   ssr: true,
+  // D6: a page left keeps no loader data in the router (root, 19 November 2026): its seed may name a supplier a publish withholds.
+  ...DA_ROUTE_CACHE,
   params: {
     parse: (params) => {
       const parsed = cuiSchema.safeParse(params.cui)

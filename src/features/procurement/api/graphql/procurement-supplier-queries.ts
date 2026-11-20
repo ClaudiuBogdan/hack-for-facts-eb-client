@@ -78,7 +78,7 @@ export function supplierDaysQuery(count: number): string {
 export function supplierDirectNamesQuery(count: number): string {
   const aliases = Array.from({ length: count }, (_, index) => `n${index}`)
   const declarations = aliases.map((alias) => `$${alias}: ProcurementDirectAcquisitionsFilter`).join(', ')
-  const body = aliases.map((alias) => `${alias}: procurementDirectAcquisitions(filter: $${alias}, page: 1, pageSize: 1) { items { authority { cui name displayName } } }`).join('\n  ')
+  const body = aliases.map((alias) => `${alias}: procurementDirectAcquisitions(filter: $${alias}, page: 1, pageSize: 1) { meta { disclosureKey } items { authority { cui name displayName } } }`).join('\n  ')
   return `query ProcurementSupplierDirectNames(${declarations}) {\n  ${body}\n}`
 }
 

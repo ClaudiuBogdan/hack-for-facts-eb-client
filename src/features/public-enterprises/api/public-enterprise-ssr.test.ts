@@ -20,9 +20,19 @@ describe('the enterprise page’s server reads', () => {
     fetchPrivateCompanyProfile.mockResolvedValueOnce(null)
     fetchProcurementBuyer.mockResolvedValueOnce({ partial: false })
     const read = await readPublicEnterpriseForSsr('789401')
-    expect(read).toEqual({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false }, disclosureKnown: true, disclosure: 'v1' })
+    expect(read).toEqual({ enterprise: enterpriseReadFixture(), company: null, buyer: { partial: false }, disclosureKnown: true, disclosure: 'v1', disclosureReadAt: expect.any(Number) })
     expect(fetchProcurementBuyer).toHaveBeenCalledWith('789401', 'recent', expect.any(AbortSignal))
     expect(isCompleteServerRead(read)).toBe(true)
+  })
+
+  it('reads the company\'s public money (its incoming direct purchases) and the buyer profile on every render, never kept (D6)', async () => {
+    fetchPublicEnterprise.mockResolvedValue(enterpriseReadFixture({ cui: '11054545' }))
+    fetchPrivateCompanyProfile.mockReset().mockResolvedValue(null)
+    fetchProcurementBuyer.mockReset().mockResolvedValue({ partial: false })
+    await readPublicEnterpriseForSsr('11054545')
+    await readPublicEnterpriseForSsr('11054545')
+    expect(fetchPrivateCompanyProfile).toHaveBeenCalledTimes(2)
+    expect(fetchProcurementBuyer).toHaveBeenCalledTimes(2)
   })
 
   it('leaves a failed read out, the others standing, and the render uncached', async () => {

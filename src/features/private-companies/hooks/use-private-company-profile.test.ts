@@ -33,12 +33,9 @@ describe('privateCompanyProfileQueryOptions', () => {
     api.profile.mockResolvedValueOnce(first).mockResolvedValueOnce(again)
 
     expect(await client.fetchQuery(privateCompanyProfileQueryOptions(CUI))).toBe(first)
-    // Fresh for a minute: asked again, the cache answers with the object it holds, and nothing is read.
-    expect(await client.fetchQuery(privateCompanyProfileQueryOptions(CUI))).toBe(first)
-    expect(api.profile).toHaveBeenCalledTimes(1)
-
-    // A completed read: its own object, not the earlier one it equals.
-    await client.refetchQueries({ queryKey: privateCompanyProfileQueryKey(CUI), exact: true })
+    // Never fresh past its read (D6, root: its public money carries direct purchases): asked again, it is read again —
+    // and that completed read is its own object, not the earlier one it equals.
+    expect(await client.fetchQuery(privateCompanyProfileQueryOptions(CUI))).toBe(again)
     expect(api.profile).toHaveBeenCalledTimes(2)
     expect(client.getQueryData(privateCompanyProfileQueryKey(CUI))).toBe(again)
     expect(client.getQueryData(privateCompanyProfileQueryKey(CUI))).not.toBe(first)

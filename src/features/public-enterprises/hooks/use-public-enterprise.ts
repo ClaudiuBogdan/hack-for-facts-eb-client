@@ -46,8 +46,8 @@ export function usePublicEnterprise(cui: string, initialData?: PublicEnterpriseR
  */
 export function enterpriseCompanyQueryOptions(cui: string, initialData?: PrivateCompanyProfile | null) {
   return {
+    // D6: its public money carries the company's incoming direct purchases (the options carry the DA cache rules).
     ...privateCompanyProfileQueryOptions(cui),
-    staleTime: STALE_TIME,
     ...(initialData !== undefined && (initialData === null || initialData.cui === cui) ? { initialData } : {}),
   }
 }

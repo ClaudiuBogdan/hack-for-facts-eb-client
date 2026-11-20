@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import { fetchProcurementBuyer, fetchProcurementBuyerRecords } from '../api/procurement-buyer-api'
 import type { BuyerProfile, BuyerRecords } from '../lib/buyer-model'
 import { procurementBuyerKeys } from '../lib/buyer-keys'
@@ -11,9 +12,6 @@ import { answersChoice, type PeriodChoice } from '../lib/profile-period'
  * profile shown until the new one arrives, instead of blanking the page.
  */
 
-/** SEAP loads daily at most; an hour keeps a return visit from reading again. */
-const STALE_TIME = 60 * 60 * 1000
-
 /** How many records „Cele mai mari" lists per population. */
 export const BUYER_LARGEST_RECORDS = 8
 
@@ -23,8 +21,8 @@ export function procurementBuyerQueryOptions(cui: string, choice: PeriodChoice, 
   return queryOptions({
     queryKey: procurementBuyerKeys.profile(cui, choice),
     queryFn: ({ signal }) => fetchProcurementBuyer(cui, choice, signal),
-    // A partial profile (names or years unread) is stale at once: the next mount reads it again.
-    staleTime: (query) => (query.state.data?.partial ? 0 : STALE_TIME),
+    // D6: the profile ranks direct purchases' suppliers; never kept past its read.
+    ...DA_QUERY_CACHE,
     ...(initialData && initialData.identity.cui === cui && answersChoice(initialData.period, choice) ? { initialData } : {}),
   })
 }
@@ -34,7 +32,8 @@ export function procurementBuyerRecordsQueryOptions(cui: string, choice: PeriodC
   return queryOptions({
     queryKey: procurementBuyerKeys.records(cui, choice, BUYER_LARGEST_RECORDS),
     queryFn: ({ signal }) => fetchProcurementBuyerRecords(cui, choice, BUYER_LARGEST_RECORDS, signal),
-    staleTime: STALE_TIME,
+    // D6: the largest records include direct purchases.
+    ...DA_QUERY_CACHE,
     ...(initialData ? { initialData } : {}),
   })
 }

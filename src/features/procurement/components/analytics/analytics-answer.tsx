@@ -28,12 +28,14 @@ const ICON = 'inline-flex size-9 shrink-0 items-center justify-center border tex
 
 // ─────────────────────────────────────────────────────────── controls ──
 
-export function ShareIcon({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
+export function ShareIcon({ query, answer, namer, className }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly className?: string }) {
   const [copied, setCopied] = useState(false)
   // The records list's order and page, from the address: the link keeps the reader's place.
   const view = recordsViewOf(useSearchStrings(), query)
+  // D6: a direct-purchase supplier goes in the link only if this page's own names read names it as a company.
+  const isNamedDaSupplier = (cui: string) => namer.names?.daSuppliers.has(cui) === true
   const copy = () =>
-    void navigator.clipboard?.writeText(shareUrl(query, answer, view)).then(() => {
+    void navigator.clipboard?.writeText(shareUrl(query, answer, view, isNamedDaSupplier)).then(() => {
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1500)
     })

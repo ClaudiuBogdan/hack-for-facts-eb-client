@@ -1,4 +1,5 @@
 import { readLargestDirect } from './procurement-direct-records'
+import { newestKey } from '@/lib/disclosure-key'
 import { daSupplierReads, type DaSupplierReads } from './procurement-da-release-status'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -424,7 +425,10 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
     return graphqlQuery<RawBuyerProfile>(procurementBuyerQuery(operationName, own, false), variables, { operationName, signal })
   }) as [Promise<RawBuyerProfile>, Promise<RawBuyerProfile>, Promise<RawBuyerProfile>]
 
-  const extrasRead = Promise.all([keysRead, identityRead]).then(async ([keysRaw, identity]): Promise<BuyerExtras | null> => {
+  // D6: the follow-up sends the keys' codes (the suppliers ranked); none is sent once a newer publication has been seen
+  // since they were read — taken when the keys arrive, not after the identity, which can come later.
+  const keysSeen = keysRead.then((raw) => ({ raw, seen: newestKey() }))
+  const extrasRead = Promise.all([keysSeen, identityRead]).then(async ([{ raw: keysRaw, seen: seenWithKeys }, identity]): Promise<BuyerExtras | null> => {
     const found = buyerKeysOf({ ...keysRaw, ...identity.raw })
     // The buyer's own label rides along: it names the page when the budget platform has no record of the buyer.
     const keys = { ...found, cuis: [cui, ...found.cuis.filter((key) => key !== cui)] }
@@ -432,7 +436,7 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
     const readExtras = async () => {
       const variables: Record<string, unknown> = Object.fromEntries(extraFields.map((field) => [field.alias, field.scope]))
       variables.cuis = keys.cuis
-      const raw = await graphqlQuery<RawBuyerProfile>(procurementBuyerExtrasQuery(extraFields), variables, { operationName: 'ProcurementBuyerExtras', signal })
+      const raw = await graphqlQuery<RawBuyerProfile>(procurementBuyerExtrasQuery(extraFields), variables, { operationName: 'ProcurementBuyerExtras', signal, disclosureSeen: seenWithKeys })
       return mapBuyerExtras(raw, keys.cuis, keys.spanSuppliers, latest, keys.county)
     }
     try {

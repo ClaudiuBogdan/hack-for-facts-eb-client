@@ -166,6 +166,7 @@ type PartyDimension = 'authority' | 'supplier'
  */
 async function loadPartyNames(
   aggregates: RawProcurementAggregates,
+  signal?: AbortSignal,
 ): Promise<ReadonlyMap<string, string>> {
   const now = Date.now()
   const names = new Map<string, string>()
@@ -216,6 +217,8 @@ async function loadPartyNames(
       },
       {
       operationName: 'ProcurementPartyNames',
+      // Cancelled (a purge, D6) while it waits — for a token or the network — it sends nothing.
+      signal,
       },
     )
     const parsed = procurementPartyNamesResponseSchema.parse(raw)
@@ -405,6 +408,7 @@ export async function fetchSupplierRecordsLive(
 export async function fetchSupplierProcurementSliceLive(
   cui: string,
   scope: ProcurementSliceScope = {},
+  signal?: AbortSignal,
 ): Promise<SupplierProcurementSlice> {
   const [aggregates, divisions, recentRecords, supplierName] =
     await Promise.all([
@@ -420,7 +424,9 @@ export async function fetchSupplierProcurementSliceLive(
       fetchSupplierRecordsLive(cui),
       resolvePartyName(cui, 'supplier'),
     ])
-  const partyNames = new Map(await loadPartyNames(aggregates))
+  // A read cancelled meanwhile (a purge, D6) asks nothing more: the names lookup would carry codes from the first round.
+  signal?.throwIfAborted()
+  const partyNames = new Map(await loadPartyNames(aggregates, signal))
   if (supplierName) {
     partyNames.set(`supplier:${cui}`, supplierName)
   }
@@ -459,6 +465,7 @@ function monthToEndDate(month: string): string {
 export async function fetchAuthorityProcurementSliceLive(
   cui: string,
   scope: ProcurementAuthoritySliceScope = {},
+  signal?: AbortSignal,
 ): Promise<AuthorityProcurementSlice> {
   const authorityCui = cui.trim()
   const [aggregates, divisions, recentPage, authorityName] = await Promise.all([
@@ -488,7 +495,9 @@ export async function fetchAuthorityProcurementSliceLive(
     ),
     resolvePartyName(authorityCui, 'authority'),
   ])
-  const partyNames = new Map(await loadPartyNames(aggregates))
+  // A read cancelled meanwhile (a purge, D6) asks nothing more: the names lookup would carry codes from the first round.
+  signal?.throwIfAborted()
+  const partyNames = new Map(await loadPartyNames(aggregates, signal))
   if (authorityName) {
     partyNames.set(`authority:${authorityCui}`, authorityName)
   }

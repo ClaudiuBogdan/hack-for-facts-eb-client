@@ -37,7 +37,7 @@ import {
   undatedText,
   type Namer,
 } from '../../lib/analytics-text'
-import { cpvFilterOf, PROCEDURES } from './analytics-view'
+import { cpvFilterOf, PROCEDURES, shownScope } from './analytics-view'
 
 /** The analytics page's controls and shared parts: the period, the quick filter, the questions, the link, the caveats, the group-by, the rows, the method. */
 
@@ -108,6 +108,9 @@ export function PeriodMenu({ query, answer, onChange, triggerClassName }: { read
   )
 }
 
+const BUYER_DOC_TYPES: readonly string[] = ['organization', 'public_enterprise']
+const PARTY_DOC_TYPES_ALL: readonly string[] = ['organization', 'public_enterprise', 'company']
+
 /**
  * „+ Filtru": one box over institutions and firms (the site's search),
  * categories (the CPV names), counties, procedures — and, for what a name
@@ -128,7 +131,8 @@ export function AddFilter({
   readonly triggerClassName?: string
 }) {
   const [open, setOpen] = useState(false)
-  const search = useSearchResults({ docTypes: ['organization', 'public_enterprise', 'company'], suggestions: false })
+  // D6: for direct purchases a firm is never offered as the supplier by name, so firms are not searched for there.
+  const search = useSearchResults({ docTypes: query.tip === 'directe' ? BUYER_DOC_TYPES : PARTY_DOC_TYPES_ALL, suggestions: false })
   const cpv = useCpvSearch(search.term)
   const term = search.term.trim().toLocaleLowerCase('ro-RO')
   const counties = [...namer.counties.entries()].filter(([code, name]) => term.length >= 2 && (name.toLocaleLowerCase('ro-RO').includes(term) || code.toLocaleLowerCase('ro-RO') === term)).slice(0, 4)
@@ -395,7 +399,7 @@ export function MethodBody({ query, answer, className }: { readonly query: Query
             ))}
           </ul>
         ) : null}
-        {answer.scopes.now ? <pre className="overflow-x-auto bg-muted/60 p-2 font-mono text-xs">{JSON.stringify(answer.scopes.now)}</pre> : null}
+        {answer.scopes.now ? <pre className="overflow-x-auto bg-muted/60 p-2 font-mono text-xs">{JSON.stringify(shownScope(answer.scopes.now))}</pre> : null}
     </div>
   )
 }

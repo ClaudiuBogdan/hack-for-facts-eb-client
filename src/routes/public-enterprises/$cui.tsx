@@ -1,4 +1,4 @@
-import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
+import { DA_DISCLOSURE_CACHE, DA_ROUTE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import type { PublicEnterpriseServerRead } from '@/features/public-enterprises/api/public-enterprise-ssr'
 import { PublicEnterprisePending } from '@/features/public-enterprises/components/enterprise/enterprise-pending'
@@ -27,6 +27,8 @@ export type PublicEnterpriseRouteLoaderData = PublicEnterpriseServerRead & {
  */
 export const Route = createFileRoute('/public-enterprises/$cui')({
   ssr: true,
+  // D6: a page left keeps no loader data in the router (root, 19 November 2026): its seed may name a supplier a publish withholds.
+  ...DA_ROUTE_CACHE,
   params: {
     parse: (params) => {
       const cui = parsePublicEnterpriseCuiParam(params.cui)

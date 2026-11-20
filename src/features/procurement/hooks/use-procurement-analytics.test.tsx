@@ -6,6 +6,7 @@ import { forgetProcurementCutoff } from '../api/procurement-cutoff'
 import { queryOf } from '../lib/analytics-model'
 import { homeYear } from '../lib/home-model'
 import { resetRecoveredBuilds, useAnswer } from './use-procurement-analytics'
+import { resetNewestKeyForTests } from '@/lib/disclosure-key'
 vi.mock('../api/procurement-da-release-status', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../api/procurement-da-release-status')>()),
   daSupplierReads: () => Promise.resolve({ figures: true, places: true, known: true }), disclosureVersion: () => Promise.resolve('v1') }))
@@ -20,6 +21,8 @@ vi.mock('../api/procurement-da-release-status', async (importOriginal) => ({
 
 const api = vi.hoisted(() => ({
   served: '13',
+  /** The D6 state the API serves its direct-purchase blocks under. */
+  key: 'off',
   cutoffBuild: '13',
   cutoffFailures: 0,
   calls: [] as { readonly op: string; readonly build: unknown }[],
@@ -43,11 +46,11 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
       if (variables?.build !== api.served) {
         return Promise.reject(new actual.GraphQLRequestError('stale', { graphQLErrors: [{ message: 'stale', extensions: { code: 'INVALID_INPUT', field: 'build' } }] }))
       }
-      const block = { recordCount: api.served, withValueCount: '0', valueAwardedSum: null, avgValueAwarded: null, meta: null }
+      const block = { recordCount: api.served, withValueCount: '0', valueAwardedSum: null, avgValueAwarded: null, meta: { answerability: null, provisional: null, caveats: null, undatedInScope: null, disclosureKey: api.key } }
       if (op === 'AnalyticsFigures') return Promise.resolve({ now: { blocks: [block] }, before: { blocks: [block] } })
-      if (op === 'AnalyticsRanking') return Promise.resolve({ r: [{ rankedBy: 'count', valueWithheldAssociationSum: null, buckets: [{ key: api.served, kind: 'top', recordCount: '1', withValueCount: '0', valueSum: null, shareOfScope: null }], meta: { disclosureKey: 'off' } }] })
-      if (op === 'AnalyticsConcentration') return Promise.resolve({ c: [] })
-      return Promise.resolve({ n: [{ points: [] }], v: [{ points: [] }] })
+      if (op === 'AnalyticsRanking') return Promise.resolve({ r: [{ rankedBy: 'count', valueWithheldAssociationSum: null, buckets: [{ key: api.served, kind: 'top', recordCount: '1', withValueCount: '0', valueSum: null, shareOfScope: null }], meta: { disclosureKey: api.key } }] })
+      if (op === 'AnalyticsConcentration') return Promise.resolve({ c: [{ supplierCount: null, top1Share: null, top5Share: null, meta: { disclosureKey: api.key } }] })
+      return Promise.resolve({ n: [{ points: [], meta: { disclosureKey: api.key } }], v: [{ points: [], meta: { disclosureKey: api.key } }] })
     },
   }
 })
@@ -64,11 +67,13 @@ function render(topN = 25) {
 
 beforeEach(() => {
   api.served = '13'
+  api.key = 'off'
   api.cutoffBuild = '13'
   api.cutoffFailures = 0
   api.calls = []
   forgetProcurementCutoff(homeYear())
   resetRecoveredBuilds()
+  resetNewestKeyForTests()
 })
 
 describe('the page’s generation guard', () => {
@@ -99,6 +104,26 @@ describe('the page’s generation guard', () => {
     expect(cutoffReads()).toBe(2)
     const after = pinned().slice(pinned().findIndex((call) => call.build === '14'))
     expect(after.every((call) => call.build === '14')).toBe(true)
+  })
+
+  it('a read refused for its publication re-plans once per newest key, then stops, said (D6, API doc 10)', async () => {
+    // The API serves a supplier-privacy publication the plan (its status, `v1`) does not know.
+    api.key = '2026-11-19T03:10:00.123456Z'
+    const { result } = render()
+    await waitFor(() => expect(cutoffReads()).toBe(2))
+    await waitFor(() => expect(result.current.figures.isError).toBe(true))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    // Once for this key: no loop.
+    expect(cutoffReads()).toBe(2)
+  })
+
+  it('a refusal that moves no key (an answer served unavailable) also re-plans once, then stops', async () => {
+    api.key = 'unavailable'
+    const { result } = render()
+    await waitFor(() => expect(cutoffReads()).toBe(2))
+    await waitFor(() => expect(result.current.figures.isError).toBe(true))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(cutoffReads()).toBe(2)
   })
 
   it('recovers once per refused build: the same build again stops, said, and a retry reads the cutoff again', async () => {

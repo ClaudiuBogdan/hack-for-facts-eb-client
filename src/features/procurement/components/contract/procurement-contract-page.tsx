@@ -23,6 +23,8 @@ import { ContractHead, ContractHeadPending, ContractHeadShell } from './contract
  */
 
 export interface ProcurementContractInitialData {
+  /** The disclosure publication a server render was read under (D6: the context carries the pair's direct purchases); null: unknown, kept nowhere. Absent: not a server render. */
+  readonly disclosure?: string | null
   readonly id: string
   /** `null`: SEAP has no such record. Absent: not read on the server (a client-side navigation, or a failed read). */
   readonly contract?: ContractSheet | null

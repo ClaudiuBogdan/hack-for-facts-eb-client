@@ -1,4 +1,5 @@
 import { hashKey } from '@tanstack/react-query'
+import { newestKey } from '@/lib/disclosure-key'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import type { AnalyticsSeed } from '../hooks/use-procurement-analytics'
@@ -28,15 +29,13 @@ import { fetchProcurementGeographyOptions } from './procurement-reference-api'
  * to the analysis build it was read from), then the answer's reads side by
  * side — the figures, the concentration, the ranking or the series or the
  * records' page the address holds, the years — and the names of what they
- * hold. A question is kept per build: a publication starts every question
- * over.
+ * hold. No question is kept in the process (D6): each render reads afresh,
+ * and only the CDN keeps the page.
  * They seed the page's queries under the keys the browser plans (see
  * `planAnswer`), so the document carries the answer and the browser reads
  * only what the server could not.
  *
- * Every read of a question shares one budget, not the request's signal: a
- * question's reads are kept in the process for as long as a shared cache may
- * keep the page, and shared by the renders in that time. A read past the
+ * Every read of a question shares one budget, not the request's signal. A read past the
  * budget fails as a read: the render goes out `no-store` and the page reads
  * it again in the browser. The records are the exception — a wide list is
  * often slower than the budget, so a render without them may still be kept,
@@ -45,13 +44,13 @@ import { fetchProcurementGeographyOptions } from './procurement-reference-api'
 
 // Short: a slow read is better read in the browser, under the painted page, than held against the whole document.
 const SSR_BUDGET_MS = 3_500
-const KEEP_MS = 10 * 60 * 1000
 const KEEP_REFERENCE_MS = 6 * 60 * 60 * 1000
-const MAX_QUESTIONS = 300
 
 export interface ProcurementAnalyticsServerRead {
   /** The disclosure publication a server render was read under (D6); null: unknown, kept nowhere. Absent: not a server render. */
   readonly disclosure?: string | null
+  /** When the server read it (epoch ms): the open tab's fail-closed clock starts from it. */
+  readonly disclosureReadAt?: number
   /** Each read the server made, by the key the page's query has. */
   readonly seed: AnalyticsSeed
   /** Every read the question needs, the records aside, was read: the render may be kept by a shared cache. */
@@ -62,8 +61,8 @@ export interface ProcurementAnalyticsServerRead {
   readonly landingName?: { readonly ro: string | null; readonly en: string | null }
 }
 
-// A partial read is served once and read again, never kept.
-const questions = createServerMemo<ProcurementAnalyticsServerRead>(KEEP_MS, { maxEntries: MAX_QUESTIONS, keep: (read) => read.complete })
+// No question is kept in the server process: every one carries direct purchases' figures, its own or its tabs' counts
+// (D6, root 19 November 2026; design §24.4). The reference lists are kept.
 const reference = createServerMemo<unknown>(KEEP_REFERENCE_MS, { maxEntries: 4 })
 
 export async function readProcurementAnalyticsForSsr(search: Readonly<Record<string, unknown>>): Promise<ProcurementAnalyticsServerRead> {
@@ -74,12 +73,13 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
   const latest = homeYear()
   // The shared cutoff read keeps itself (`procurement-cutoff.ts`): its build keys the question. Within the render's budget.
   const cutoffBudget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
+  // When the publication was read, with the cutoff: an open tab's fail-closed clock starts from it (§24.4).
+  const disclosureReadAt = Date.now()
   const pinned = await untilAborted(readAnalyticsCutoff(latest), cutoffBudget).catch(() => null)
   // D6: a render whose disclosure publication cannot be read is kept nowhere — not in the memo, not by the CDN (incomplete).
   const disclosureUnknown = pinned !== null && (pinned.disclosure ?? null) === null
-  const keep = disclosureUnknown
-    ? (_key: string, render: () => Promise<ProcurementAnalyticsServerRead>) => render().then((read) => ({ ...read, complete: false }))
-    : questions
+  const keep = (_key: string, render: () => Promise<ProcurementAnalyticsServerRead>) =>
+    render().then((read) => (disclosureUnknown ? { ...read, complete: false } : read))
   // The publication the seeds were read under, read with the cutoff before them: the browser drops seeds of another (D6).
   const read = await keep(hashKey([urlSearchOf(query), query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : null, pinned?.build ?? null, pinned?.disclosure ?? null]), async () => {
     const budget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
@@ -105,8 +105,17 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
       .filter((read) => read.enabled)
     // Not waited for with the answer: a slow count must not spend the names' budget.
     const counting = Promise.allSettled(others.map((read) => seeded(read)))
+    // D6: the newest key when the ranking arrived: its keys go to the names lookup, which sends none once a newer one is seen.
+    let rankingSeen: string | null | undefined
     const [settled, listed] = await Promise.all([
-      Promise.allSettled(answer.map((read) => seeded(read))),
+      Promise.allSettled(
+        answer.map((read) =>
+          seeded(read).then((value) => {
+            if (read === plan.ranking) rankingSeen = newestKey()
+            return value
+          }),
+        ),
+      ),
       records?.enabled ? Promise.allSettled([seeded(records)]) : Promise.resolve([]),
     ])
     let complete = counties.status === 'fulfilled' && divisions.status === 'fulfilled'
@@ -119,7 +128,7 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     const rankingIndex = answer.indexOf(plan.ranking)
     const rankingRead = rankingIndex >= 0 ? settled[rankingIndex] : undefined
     const ranking = rankingRead?.status === 'fulfilled' ? (rankingRead.value.data as Ranking) : undefined
-    const names = planNames(nameKeys(query, [ranking], pinned?.disclosure ?? null))
+    const names = planNames(nameKeys(query, [ranking], pinned?.disclosure ?? null), rankingSeen)
     // The category's name, whatever address asked: the memo keeps one read per question, and the
     // landing's own address shares it with addresses that are not landings (`?cpv=X&dupa=<its default>`).
     const category = query.filters.cpv?.values[0] ?? null
@@ -142,5 +151,5 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     if (refused) forgetProcurementCutoff(latest)
     return { seed, complete: complete && !refused, latest, ...(landingName ? { landingName } : {}) }
   })
-  return { ...read, disclosure: pinned?.disclosure ?? null }
+  return { ...read, disclosure: pinned?.disclosure ?? null, disclosureReadAt }
 }

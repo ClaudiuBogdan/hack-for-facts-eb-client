@@ -1,4 +1,4 @@
-import { DisclosureWatch } from "@/features/procurement/hooks/use-disclosure-watch";
+import { DisclosureWatch, PublicationScope } from "@/features/procurement/hooks/use-disclosure-watch";
 import { useEffect } from "react";
 import { Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
@@ -121,7 +121,10 @@ export function AppShell({
                       >
                         <div className="flex min-h-full min-w-0 flex-1 flex-col">
                           <AnalyticsPageviewBridge />
-                          <Outlet />
+                          {/* D6: a retired publication's answers leave every view that shows them. */}
+                          <PublicationScope>
+                            <Outlet />
+                          </PublicationScope>
                           <Toaster />
                         </div>
                       </main>

@@ -1,4 +1,4 @@
-import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
+import { DA_DISCLOSURE_CACHE, DA_ROUTE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
@@ -43,6 +43,8 @@ function validateAnalyticsSearch(search: Record<string, unknown>): AnalyticsUrlS
  */
 export const Route = createFileRoute('/procurement/analytics')({
   ssr: true,
+  // D6: a page left keeps no loader data in the router (root, 19 November 2026): its seed may name a supplier a publish withholds.
+  ...DA_ROUTE_CACHE,
   validateSearch: validateAnalyticsSearch,
   beforeLoad: async ({ location, abortController }) => {
     const raw = location.search as Record<string, unknown>

@@ -180,6 +180,21 @@ describe('live procurement adapter', () => {
   })
 })
 
+describe('a cancelled slice read (D6 purge)', () => {
+  it('asks no names after its first round once its signal is aborted', async () => {
+    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] })
+    await fetchSupplierProcurementSliceLive('222')
+    const whole = callsOf('ProcurementPartyNames').length
+    graphqlQueryMock.mockClear()
+    resetProcurementLiveCachesForTests()
+    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] })
+    const cancelled = new AbortController()
+    cancelled.abort()
+    await expect(fetchSupplierProcurementSliceLive('222', {}, cancelled.signal)).rejects.toThrow()
+    expect(callsOf('ProcurementPartyNames').length).toBeLessThan(whole)
+  })
+})
+
 describe('live procurement reference caches', () => {
   const SIX_HOURS = 6 * 60 * 60 * 1000
 

@@ -10,6 +10,7 @@
  * - the newest complete month's largest contract awards, or direct purchases.
  */
 import { daSupplierReads } from './procurement-da-release-status'
+import { newestKey } from '@/lib/disclosure-key'
 import { readLargestDirect } from './procurement-direct-records'
 import { partyOf } from '../lib/home-party'
 import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
@@ -96,6 +97,7 @@ async function loadPartyNames(
   authorityCuis: readonly string[],
   supplierCuis: readonly string[],
   signal?: AbortSignal,
+  disclosureSeen?: string | null,
 ): Promise<ReadonlyMap<string, string>> {
   const authorities = [...new Set(authorityCuis)]
   const suppliers = [...new Set(supplierCuis)]
@@ -109,7 +111,7 @@ async function loadPartyNames(
       includeAuthorities: authorities.length > 0,
       includeSuppliers: suppliers.length > 0,
     },
-    { operationName: 'ProcurementPartyNames', signal },
+    { operationName: 'ProcurementPartyNames', signal, disclosureSeen },
   )
   const parsed = procurementPartyNamesResponseSchema.parse(raw)
   // Positional: the server answers each requested CUI in order.
@@ -229,11 +231,14 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
       { operationName: 'ProcurementHomeNational', signal },
     ),
   )
+  // D6: the names lookup sends the rankings' codes; none is sent once a newer publication has been seen since they were read.
+  const seenWithRanking = newestKey()
   const names = await loadPartyNames(
     [...topKeys(raw.awardsBuyers), ...topKeys(raw.directBuyers)],
     // D6: only a supplier the API serves as a company has a name to look up.
     raw.directSellers ? namedSupplierKeys(raw.directSellers) : [],
     signal,
+    seenWithRanking,
   )
   return mapProcurementHomeNational(raw, year, names)
 }

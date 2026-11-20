@@ -1,4 +1,4 @@
-import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
+import { DA_DISCLOSURE_CACHE, DA_ROUTE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
@@ -27,6 +27,8 @@ import { buildDirectPurchaseDocumentTitle } from '@/features/procurement/lib/pro
  */
 export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
   ssr: true,
+  // D6: a page left keeps no loader data in the router (root, 19 November 2026): its seed may name a supplier a publish withholds.
+  ...DA_ROUTE_CACHE,
   loader: async ({ context, params }): Promise<ProcurementDirectPurchaseInitialData> => {
     if (!shouldBlockLoaderForSsr()) {
       const hooks = await import('@/features/procurement/hooks/use-procurement-direct-purchase')

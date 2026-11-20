@@ -227,6 +227,8 @@ export const rawAnswerMetaSchema = z.object({
   dateBasis: z.string().nullable(),
   population: z.string().nullable(),
   buildId: z.string().nullable(),
+  /** DA blocks: the D6 state served under (D6; the transport refuses an older one). Null on other grains. */
+  disclosureKey: z.string().nullish(),
   counts: z
     .object({ rows: z.string().nullable(), withValue: z.string().nullable() })
     .nullable(),
@@ -243,7 +245,7 @@ const ANSWER_META_FIELDS = /* GraphQL */ `
   answerability reason policyKey grain valueBasis dateBasis population buildId
   counts { rows withValue }
   undatedInScope { count valueRon }
-  provisional caveats canonicalScope
+  provisional caveats canonicalScope disclosureKey
 `
 
 /** Per-measure money answerability (one entry per declared money measure). */
@@ -437,6 +439,7 @@ export const PROCUREMENT_DIRECT_ACQUISITIONS_QUERY = /* GraphQL */ `
   query ProcurementDirectAcquisitions($filter: ProcurementDirectAcquisitionsFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int, $facets: [String!]) {
     procurementDirectAcquisitions(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize, facets: $facets) {
       ${PAGE_META_FIELDS}
+      meta { disclosureKey }
       facets { dimension otherCount buckets { key count } }
       items { ${DIRECT_ACQUISITION_FIELDS} }
     }
@@ -542,6 +545,7 @@ export const PROCUREMENT_DA_DETAIL_QUERY = /* GraphQL */ `
   query ProcurementDirectAcquisitionDetail($id: ID!) {
     procurementDirectAcquisition(id: $id) {
       directAcquisition { ${DIRECT_ACQUISITION_FIELDS} }
+      meta { disclosureKey }
       detail { ${DA_DETAIL_FIELDS} }
       detailAvailability
       ${DETAIL_SHARED_FIELDS}
@@ -579,6 +583,7 @@ export const PROCUREMENT_DA_RECORD_QUERY = /* GraphQL */ `
   query ProcurementDirectAcquisitionRecord($id: ID!) {
     procurementDirectAcquisition(id: $id) {
       directAcquisition { ${DIRECT_ACQUISITION_FIELDS} }
+      meta { disclosureKey }
     }
   }
 `
@@ -697,6 +702,7 @@ export const PROCUREMENT_SUPPLIER_RECORDS_QUERY = /* GraphQL */ `
   query ProcurementSupplierRecords($supplierCui: ID!, $first: Int, $after: String) {
     procurementSupplierRecords(supplierCui: $supplierCui, first: $first, after: $after) {
       total
+      meta { disclosureKey }
       edges {
         cursor
         node {
