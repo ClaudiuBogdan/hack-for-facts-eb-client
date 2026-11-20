@@ -145,7 +145,9 @@ export function ActReadingLayout({
   const probeRefused = probeId !== null && !probePending && !probeOwn
   const ownId = resolution?.kind === 'own' ? resolution.documentId : probeOwn ? resolvedId : null
   const documentId = probePending ? null : (ownId ?? canonicalId)
-  const render = useLegalRender(documentId)
+  // legal_v2 renders revalidate on every mount (no-store; content can be
+  // withdrawn) — legacy generations stay fresh for 30 minutes.
+  const render = useLegalRender(documentId, { legalV2: act.dataSource === 'legal_v2' })
   const override = ownId ?? undefined
   const foreignDoc = resolution?.kind === 'foreign' || probeRefused
   // The version on screen. The render's `servedForm` (legal_v2 REST meta) is
