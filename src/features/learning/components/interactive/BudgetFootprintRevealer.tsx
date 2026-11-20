@@ -280,8 +280,8 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
     <Card
       className={cn(
         'cursor-pointer overflow-hidden transition-all duration-300 rounded-4xl border-2',
-        !isRevealed && 'border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 hover:shadow-lg bg-white dark:bg-zinc-950',
-        isRevealed && 'border-emerald-500/30 bg-emerald-50/30 dark:bg-emerald-950/10'
+        !isRevealed && 'border-border hover:border-primary/30 hover:shadow-lg bg-card',
+        isRevealed && 'border-status-live-fg/30 bg-status-live-bg'
       )}
       onClick={handleClick}
       role="button"
@@ -300,8 +300,8 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
           <div
             className={cn(
               'flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl transition-colors shadow-sm',
-              !isRevealed && 'bg-zinc-100 dark:bg-zinc-900',
-              isRevealed && 'bg-white dark:bg-zinc-900 shadow-emerald-100 dark:shadow-none'
+              !isRevealed && 'bg-muted',
+              isRevealed && 'bg-card'
             )}
           >
             {activity.icon}
@@ -309,35 +309,35 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{activity.time}</span>
-                {isRevealed && <Check className="h-4 w-4 text-emerald-500 stroke-3" />}
+                <span className="text-xs font-bold uppercase tracking-wider text-foreground">{activity.time}</span>
+                {isRevealed && <Check className="h-4 w-4 text-status-live-fg stroke-3" />}
               </div>
               {isRevealed && (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">+{totalCost.toFixed(1)}</span>
-                  <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">RON</span>
+                  <span className="text-lg font-black text-status-live-fg">+{totalCost.toFixed(1)}</span>
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">RON</span>
                   {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-zinc-400" />
+                    <ChevronUp className="h-5 w-5 text-foreground" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-zinc-400" />
+                    <ChevronDown className="h-5 w-5 text-foreground" />
                   )}
                 </div>
               )}
               {!isRevealed && (
-                <span className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <span className="rounded-full bg-muted px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
                   {t`Tap`}
                 </span>
               )}
             </div>
-            <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{activity.label}</p>
+            <p className="text-lg font-bold text-foreground">{activity.label}</p>
           </div>
         </div>
 
         {/* Expanded content */}
         {isRevealed && isExpanded && (
-          <div className="mt-6 animate-in fade-in slide-in-from-top-2 space-y-5 border-t border-emerald-500/10 pt-6 duration-300">
+          <div className="mt-6 animate-in fade-in slide-in-from-top-2 space-y-5 border-t border-border pt-6 duration-300">
             <div className="space-y-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
                 {t`Hidden infrastructure you used`}
               </p>
               {activity.hiddenServices.map((service, index) => (
@@ -348,9 +348,9 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xl group-hover:scale-110 transition-transform">{service.icon}</span>
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{service.name}</span>
+                    <span className="text-sm font-medium text-foreground">{service.name}</span>
                   </div>
-                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                  <span className="text-sm font-bold text-status-live-fg tabular-nums">
                     +{service.dailyCostRon.toFixed(1)} RON
                   </span>
                 </div>
@@ -358,15 +358,15 @@ function ActivityCard({ activity, isRevealed, isExpanded, onReveal, onToggle }: 
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-zinc-500 dark:text-zinc-400">{t`Budget category`}</span>
-              <span className="rounded-full bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 font-bold text-indigo-600 dark:text-indigo-400 text-[10px] uppercase tracking-wide">
+              <span className="font-medium text-foreground">{t`Budget category`}</span>
+              <span className="rounded-full bg-card px-3 py-1 font-bold text-foreground text-[10px] uppercase tracking-wide">
                 {activity.budgetCategory}
               </span>
             </div>
 
-            <div className="flex items-start gap-3 rounded-2xl border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 p-4">
-              <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-amber-500 fill-amber-500/20" />
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200 leading-relaxed">{activity.funFact}</p>
+            <div className="flex items-start gap-3 rounded-2xl border border-status-partial-fg/30 bg-status-partial-bg p-4">
+              <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-status-partial-fg fill-status-partial-fg/20" />
+              <p className="text-sm font-medium text-status-partial-fg leading-relaxed">{activity.funFact}</p>
             </div>
           </div>
         )}
@@ -461,12 +461,12 @@ type TotalDisplayProps = {
 function TotalDisplay({ totalCost, onReset, locale }: TotalDisplayProps) {
 
   return (
-    <Card className="border-green-500/30 bg-linear-to-b from-green-500/5 to-transparent rounded-4xl">
+    <Card className="border-status-live-fg/30 bg-status-live-bg rounded-4xl">
       <CardContent className="relative p-6">
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+          className="absolute right-2 top-2 h-8 w-8 text-foreground hover:ring-2 hover:ring-primary/40"
           onClick={onReset}
           title={t`Start over`}
         >
@@ -474,19 +474,19 @@ function TotalDisplay({ totalCost, onReset, locale }: TotalDisplayProps) {
         </Button>
 
         <div className="text-center">
-          <p className="mb-2 text-sm font-medium text-muted-foreground">
+          <p className="mb-2 text-sm font-medium text-foreground">
             {t`Your daily budget footprint`}
           </p>
           <div className="flex items-baseline justify-center gap-2">
-            <span className="text-5xl font-extrabold tabular-nums text-green-600 sm:text-6xl dark:text-green-500">
+            <span className="text-5xl font-extrabold tabular-nums text-status-live-fg sm:text-6xl">
               <AnimatedCounter value={totalCost} />
             </span>
-            <span className="text-xl font-bold text-green-600/70 sm:text-2xl dark:text-green-500/70">
+            <span className="text-xl font-bold text-status-live-fg sm:text-2xl">
               RON / {t`day`}
             </span>
           </div>
         </div>
-        <p className="mt-4 text-center text-xs text-muted-foreground/80 leading-relaxed">
+        <p className="mt-4 text-center text-xs text-foreground leading-relaxed">
           {DISCLAIMER_TEXT[locale]}
         </p>
       </CardContent>

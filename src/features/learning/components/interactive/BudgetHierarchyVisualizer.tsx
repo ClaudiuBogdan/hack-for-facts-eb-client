@@ -32,47 +32,13 @@ interface BudgetHierarchyVisualizerProps {
   readonly explorerUrl?: string
 }
 
+// Category identity is carried by the bar fill only, in the order the lesson shows the levels.
 const COLOR_MAP = {
-  blue: {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    border: 'border-blue-200 dark:border-blue-800',
-    text: 'text-blue-700 dark:text-blue-300',
-    iconBg: 'bg-blue-100 dark:bg-blue-900/50',
-    bar: 'bg-blue-500',
-    ring: 'ring-blue-400/20',
-  },
-  emerald: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    text: 'text-emerald-700 dark:text-emerald-300',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/50',
-    bar: 'bg-emerald-500',
-    ring: 'ring-emerald-400/20',
-  },
-  amber: {
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
-    border: 'border-amber-200 dark:border-amber-800',
-    text: 'text-amber-700 dark:text-amber-300',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/50',
-    bar: 'bg-amber-500',
-    ring: 'ring-amber-400/20',
-  },
-  rose: {
-    bg: 'bg-rose-50 dark:bg-rose-950/30',
-    border: 'border-rose-200 dark:border-rose-800',
-    text: 'text-rose-700 dark:text-rose-300',
-    iconBg: 'bg-rose-100 dark:bg-rose-900/50',
-    bar: 'bg-rose-500',
-    ring: 'ring-rose-400/20',
-  },
-  slate: {
-    bg: 'bg-slate-50 dark:bg-slate-950/30',
-    border: 'border-slate-200 dark:border-slate-800',
-    text: 'text-slate-700 dark:text-slate-300',
-    iconBg: 'bg-slate-100 dark:bg-slate-900/50',
-    bar: 'bg-slate-500',
-    ring: 'ring-slate-400/20',
-  },
+  slate: { bar: 'bg-chart-1' },
+  blue: { bar: 'bg-chart-2' },
+  emerald: { bar: 'bg-chart-3' },
+  amber: { bar: 'bg-chart-4' },
+  rose: { bar: 'bg-chart-1' },
 } as const
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -121,7 +87,7 @@ interface PercentageBarProps {
 
 function PercentageBar({ percentage, color, animate = true }: PercentageBarProps) {
   return (
-    <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
       <motion.div
         initial={animate ? { width: 0 } : { width: `${percentage}%` }}
         animate={{ width: `${percentage}%` }}
@@ -154,7 +120,7 @@ function ConnectionLine({ isVisible, className, direction = 'vertical' }: Connec
         initial={{ pathLength: 0, opacity: 0 }}
         animate={isVisible ? { pathLength: 1, opacity: 0.3 } : { pathLength: 0, opacity: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-zinc-300 dark:text-zinc-700"
+        className="text-muted-foreground"
       />
     </svg>
   )
@@ -180,7 +146,8 @@ function BudgetCard({
   depth,
 }: BudgetCardProps) {
   const Icon = ICON_MAP[level.icon] || Landmark
-  const colors = COLOR_MAP[level.color]
+  // Secondary text sits on a tint when selected, so it takes the full foreground there.
+  const subtle = isSelected ? 'text-foreground' : 'text-muted-foreground'
   const name = locale === 'ro' ? level.nameRo : level.name
 
   // Layout variants based on depth
@@ -195,9 +162,8 @@ function BudgetCard({
       whileTap={{ scale: 0.98 }}
       className={cn(
         'relative rounded-3xl border-2 transition-all cursor-pointer select-none overflow-hidden',
-        colors.border,
-        isSelected ? cn(colors.bg, 'ring-4', colors.ring) : 'bg-white dark:bg-zinc-900',
-        isDeemphasized && 'opacity-40 grayscale-[0.5] scale-[0.98]',
+        isSelected ? 'border-primary bg-primary/10 ring-4 ring-primary/40' : 'border-border bg-card',
+        isDeemphasized && 'border-dashed scale-[0.98]',
         // Dimensions & Layout
         isRoot && 'w-full max-w-2xl mx-auto p-6',
         isPillar && 'flex-1 p-5 flex flex-col h-full min-h-[240px]',
@@ -220,26 +186,26 @@ function BudgetCard({
       {isRoot && (
         <>
           <div className="flex items-center gap-5 mb-4">
-            <div className={cn('p-3.5 rounded-2xl shrink-0', colors.iconBg, colors.text)}>
+            <div className={'p-3.5 rounded-2xl shrink-0 bg-muted text-foreground'}>
               <Icon className="w-7 h-7" />
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-black text-xl leading-tight">{name}</h4>
               {level.amount && (
-                <p className="text-base font-bold opacity-60 mt-0.5">{level.amount}</p>
+                <p className={cn('text-base font-bold mt-0.5', subtle)}>{level.amount}</p>
               )}
             </div>
             {level.children && (
               <ChevronDown
                 className={cn(
-                  'w-6 h-6 transition-transform duration-300 opacity-40 shrink-0',
+                  'w-6 h-6 transition-transform duration-300 shrink-0', subtle,
                   isExpanded && 'rotate-180'
                 )}
               />
             )}
           </div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-black uppercase tracking-wider opacity-40">
+            <span className={cn('text-xs font-black uppercase tracking-wider', subtle)}>
               {level.percentage}%
             </span>
           </div>
@@ -251,13 +217,13 @@ function BudgetCard({
       {isPillar && (
         <>
           <div className="flex justify-between items-start mb-4">
-            <div className={cn('p-3 rounded-2xl shrink-0', colors.iconBg, colors.text)}>
+            <div className={'p-3 rounded-2xl shrink-0 bg-muted text-foreground'}>
               <Icon className="w-6 h-6" />
             </div>
             {level.children && (
               <ChevronDown
                 className={cn(
-                  'w-5 h-5 transition-transform duration-300 opacity-40',
+                  'w-5 h-5 transition-transform duration-300', subtle,
                   isExpanded && 'rotate-180'
                 )}
               />
@@ -269,13 +235,13 @@ function BudgetCard({
               {name}
             </h4>
             {level.amount && (
-              <p className="text-sm font-bold opacity-60">{level.amount}</p>
+              <p className={cn('text-sm font-bold', subtle)}>{level.amount}</p>
             )}
           </div>
 
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-black uppercase tracking-wider opacity-40">
+              <span className={cn('text-xs font-black uppercase tracking-wider', subtle)}>
                 {level.percentage}%
               </span>
             </div>
@@ -288,7 +254,7 @@ function BudgetCard({
       {isLeaf && (
         <div className="flex flex-col h-full justify-between">
           <div className="flex flex-col items-center text-center gap-3">
-            <div className={cn('p-2.5 rounded-2xl shrink-0', colors.iconBg, colors.text)}>
+            <div className={'p-2.5 rounded-2xl shrink-0 bg-muted text-foreground'}>
               <Icon className="w-5 h-5" />
             </div>
             <h4 className="font-black text-sm leading-tight break-words hyphens-auto">
@@ -298,7 +264,7 @@ function BudgetCard({
           
           <div className="w-full mt-3">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider opacity-40">
+              <span className={cn('text-[10px] font-black uppercase tracking-wider', subtle)}>
                 {level.percentage}%
               </span>
             </div>
@@ -319,7 +285,6 @@ interface DetailPanelProps {
 
 function DetailPanel({ level, locale, text, explorerUrl }: DetailPanelProps) {
   const description = locale === 'ro' ? level.descriptionRo : level.description
-  const colors = COLOR_MAP[level.color]
 
   return (
     <motion.div
@@ -329,21 +294,21 @@ function DetailPanel({ level, locale, text, explorerUrl }: DetailPanelProps) {
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className="overflow-hidden w-full"
     >
-      <Card className={cn('p-6 mt-4 rounded-[2rem] border-2', colors.border, colors.bg)}>
+      <Card className={'p-6 mt-4 rounded-[2rem] border-2 border-primary/30 bg-primary/10'}>
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-4">
-            <h5 className="text-xs font-black uppercase tracking-widest opacity-40">
+            <h5 className="text-xs font-black uppercase tracking-widest text-foreground">
               {text.clickToExplore}
             </h5>
-            <p className="text-lg font-medium leading-relaxed text-zinc-700 dark:text-zinc-300">
+            <p className="text-lg font-medium leading-relaxed text-foreground">
               {description}
             </p>
             
             {explorerUrl && level.explorerFilter && (
-              <Button asChild className={cn('rounded-full font-bold', colors.bar, '!text-white hover:opacity-90')}>
-                <a href={`${explorerUrl}?${level.explorerFilter}`} className="!text-white">
+              <Button asChild className={'rounded-full font-bold bg-primary !text-primary-foreground hover:bg-primary hover:ring-2 hover:ring-primary/40'}>
+                <a href={`${explorerUrl}?${level.explorerFilter}`} className="!text-primary-foreground">
                   {text.exploreInPlatform}
-                  <ExternalLink className="ml-2 w-4 h-4 text-white" />
+                  <ExternalLink className="ml-2 w-4 h-4 text-primary-foreground" />
                 </a>
               </Button>
             )}
@@ -351,7 +316,7 @@ function DetailPanel({ level, locale, text, explorerUrl }: DetailPanelProps) {
 
           {level.examples && (
             <div className="space-y-4">
-              <h5 className="text-xs font-black uppercase tracking-widest opacity-40">
+              <h5 className="text-xs font-black uppercase tracking-widest text-foreground">
                 {text.examplesLabel}
               </h5>
               <div className="flex flex-wrap gap-2">
@@ -359,7 +324,7 @@ function DetailPanel({ level, locale, text, explorerUrl }: DetailPanelProps) {
                   <Badge
                     key={i}
                     variant="secondary"
-                    className="px-4 py-1.5 rounded-full text-sm font-bold bg-white/50 dark:bg-zinc-800/50 border-none"
+                    className="px-4 py-1.5 rounded-full text-sm font-bold bg-card text-foreground border-none"
                   >
                     {locale === 'ro' ? ex.nameRo : ex.name}
                   </Badge>
@@ -400,7 +365,7 @@ export function BudgetHierarchyVisualizer({
         <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-4 leading-tight">
           {text.title}
         </h2>
-        <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium max-w-2xl mx-auto">
+        <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto">
           {text.subtitle}
         </p>
       </div>

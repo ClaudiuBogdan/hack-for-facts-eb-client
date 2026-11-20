@@ -80,20 +80,20 @@ function StepItem({ step }: { step: ExplorerStep }) {
   return (
     <motion.div
       variants={stepVariants}
-      className="flex items-start gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800"
+      className="flex items-start gap-4 p-4 rounded-2xl bg-card border border-border"
     >
       {/* Step number badge */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500 text-white font-black text-lg shadow-lg shadow-indigo-500/20">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-lg shadow-lg">
         {step.number}
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+        <p className="font-bold text-foreground mb-1">
           {step.instruction}
         </p>
         {step.hint && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{step.hint}</p>
+          <p className="text-sm text-muted-foreground">{step.hint}</p>
         )}
         {step.link && (
           <Button
@@ -131,17 +131,17 @@ function ChallengeSection({
   return (
     <motion.div
       variants={challengeVariants}
-      className="mt-8 p-6 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/50"
+      className="mt-8 p-6 rounded-2xl bg-status-partial-bg border border-status-partial-fg/30"
     >
       <div className="flex items-start gap-4 mb-4">
-        <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/30 shrink-0">
-          <HelpCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+        <div className="p-2 rounded-xl bg-card shrink-0">
+          <HelpCircle className="w-5 h-5 text-status-partial-fg" />
         </div>
         <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-1">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-status-partial-fg mb-1">
             {t`Challenge Question`}
           </div>
-          <p className="font-bold text-zinc-900 dark:text-zinc-100">
+          <p className="font-bold text-foreground">
             {challenge.question}
           </p>
         </div>
@@ -155,7 +155,7 @@ function ChallengeSection({
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder={t`Type your answer...`}
-              className="flex-1 h-12 rounded-xl border-zinc-200 dark:border-zinc-700"
+              className="flex-1 h-12 rounded-xl border-border"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && answer.trim()) {
                   onCheck()
@@ -165,14 +165,14 @@ function ChallengeSection({
             <Button
               onClick={onCheck}
               disabled={!answer.trim()}
-              className="h-12 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold"
+              className="h-12 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary hover:ring-2 hover:ring-primary/40 font-bold"
             >
               <Check className="w-5 h-5" />
             </Button>
           </div>
 
           <ExpandableHint trigger={challenge.hint}>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-foreground">
               {challenge.hint}
             </p>
           </ExpandableHint>
@@ -187,26 +187,26 @@ function ChallengeSection({
             className={cn(
               'p-4 rounded-xl flex items-center justify-between',
               isCorrect
-                ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800'
-                : 'bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
+                ? 'bg-status-live-bg border border-status-live-fg/30'
+                : 'bg-status-blocked-bg border border-status-blocked-fg/30'
             )}
           >
             <div className="flex items-center gap-3">
               {isCorrect ? (
                 <>
-                  <Check className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                  <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                  <Check className="w-6 h-6 text-status-live-fg" />
+                  <span className="font-bold text-status-live-fg">
                     {t`Correct!`}
                   </span>
                 </>
               ) : (
                 <>
-                  <X className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <X className="w-6 h-6 text-status-blocked-fg" />
                   <div>
-                    <span className="font-bold text-red-700 dark:text-red-300 block">
+                    <span className="font-bold text-status-blocked-fg block">
                       {t`Not quite!`}
                     </span>
-                    <span className="text-sm text-red-600 dark:text-red-400">
+                    <span className="text-sm text-status-blocked-fg">
                       {t`The answer is:`} {challenge.correctAnswer}
                     </span>
                   </div>
@@ -253,7 +253,7 @@ export function HandsOnExplorer({
 
   return (
     <div ref={ref} className="w-full max-w-2xl mx-auto py-8">
-      <Card className="rounded-[3rem] bg-white dark:bg-zinc-950 border-none shadow-lg overflow-hidden relative">
+      <Card className="rounded-[3rem] bg-card border-none shadow-lg overflow-hidden relative">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -262,14 +262,14 @@ export function HandsOnExplorer({
         >
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
-            <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10">
-              <Compass className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <div className="p-3 rounded-2xl bg-primary/10">
+              <Compass className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 mb-1">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
                 {t`Hands-On Activity`}
               </div>
-              <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+              <h3 className="text-xl font-black text-foreground tracking-tight">
                 {title}
               </h3>
             </div>
@@ -295,10 +295,6 @@ export function HandsOnExplorer({
             />
           )}
         </motion.div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-400/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-400/10 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
       </Card>
     </div>
   )
