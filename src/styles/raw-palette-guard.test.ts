@@ -66,14 +66,6 @@ const PENDING: readonly string[] = [
   'src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx',
   'src/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles.ts',
   'src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts',
-  'src/features/campaigns/buget/components/CampaignAccessShareCard.tsx',
-  'src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx',
-  'src/features/campaigns/buget/components/hub/buget-entity-map-selector-map.tsx',
-  'src/features/campaigns/buget/components/hub/buget-entity-map-selector-page.tsx',
-  'src/features/campaigns/buget/components/hub/buget-entity-selector-gate.tsx',
-  'src/features/campaigns/buget/components/hub/campaign-participants-map.tsx',
-  'src/features/campaigns/buget/components/hub/recent-uat-badges.tsx',
-  'src/features/campaigns/buget/components/layout/campaign-page-frame.tsx',
 ]
 
 /** Repository-relative paths, always with `/`, so the list compares the same on every platform. */

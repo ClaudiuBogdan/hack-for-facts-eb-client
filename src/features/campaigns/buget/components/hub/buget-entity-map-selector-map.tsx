@@ -403,7 +403,7 @@ export function BugetEntityMapSelectorMap({
         scrollWheelZoom
         preferCanvas
         style={{ height: '100%', width: '100%', backgroundColor: 'transparent' }}
-        className="z-0 h-full w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 sm:rounded-2xl"
+        className="z-0 h-full w-full overflow-hidden rounded-xl border border-border sm:rounded-2xl"
         data-testid="campaign-entity-map-selector"
       >
         {uatGeoJson.type === 'FeatureCollection' ? (

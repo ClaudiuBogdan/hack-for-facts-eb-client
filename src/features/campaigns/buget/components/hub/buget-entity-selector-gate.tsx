@@ -209,7 +209,7 @@ export function BugetEntitySelectorGate({
 
     if (isSubscriptionStatsError || isUatCuiMapError) {
       return (
-        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+        <span className="text-xs font-semibold text-muted-foreground">
           --
         </span>
       )
@@ -312,7 +312,7 @@ export function BugetEntitySelectorGate({
           <DialogHeader>
             <DialogTitle>{confirmDialogTitle}</DialogTitle>
             <DialogDescription className="sr-only">{selectedEntityDialogLabel}</DialogDescription>
-            <p className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+            <p className="text-2xl font-black tracking-tight text-foreground">
               {selectedEntityDialogLabel}
             </p>
           </DialogHeader>

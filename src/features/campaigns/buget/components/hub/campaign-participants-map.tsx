@@ -85,7 +85,7 @@ export function CampaignParticipantsMap({
       {mapError ? (
         <div
           className={cn(
-            'flex flex-col items-center justify-center gap-3 text-sm text-red-600 dark:text-red-400',
+            'flex flex-col items-center justify-center gap-3 text-sm text-status-blocked-fg',
             mapHeightClassName,
           )}
         >

@@ -311,11 +311,11 @@ function NotificationPreferencesContent({
       <Card className="overflow-hidden">
         <div className="flex items-center justify-between gap-4 px-5 py-4 bg-muted/30">
           <div className="flex items-center gap-3 min-w-0">
-            <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${isGlobalEnabled ? 'bg-muted/60' : 'bg-red-500/10'}`}>
+            <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${isGlobalEnabled ? 'bg-muted/60' : 'bg-status-blocked-bg'}`}>
               {isGlobalEnabled ? (
                 <Bell className="h-4.5 w-4.5 text-muted-foreground" aria-hidden="true" />
               ) : (
-                <BellOff className="h-4.5 w-4.5 text-red-500" aria-hidden="true" />
+                <BellOff className="h-4.5 w-4.5 text-status-blocked-fg" aria-hidden="true" />
               )}
             </div>
             <div className="min-w-0">
@@ -367,8 +367,8 @@ function NotificationPreferencesContent({
                   key={notification.id}
                   className="flex items-center gap-3 px-4 py-3 first:pt-3 last:pb-3"
                 >
-                  <div className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 ${notification.isActive ? 'bg-muted/60' : 'bg-red-500/10'}`}>
-                    <Building2 className={`h-4 w-4 ${notification.isActive ? 'text-muted-foreground' : 'text-red-500'}`} aria-hidden="true" />
+                  <div className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 ${notification.isActive ? 'bg-muted/60' : 'bg-status-blocked-bg'}`}>
+                    <Building2 className={`h-4 w-4 ${notification.isActive ? 'text-muted-foreground' : 'text-status-blocked-fg'}`} aria-hidden="true" />
                   </div>
                   <Link
                     to="/primarie/$cui/buget"

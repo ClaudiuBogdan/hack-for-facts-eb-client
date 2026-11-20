@@ -28,7 +28,7 @@ function CampaignShareCard({
   return (
     <article
       className={cn(
-        'w-full max-w-[54rem] rounded-[30px] border border-[#ef2d00]/12 bg-linear-to-r from-white via-orange-50/55 to-[#3565c4]/[0.08] p-5 text-left shadow-sm sm:p-6 md:p-7',
+        'w-full max-w-[54rem] rounded-[30px] border border-border bg-card p-5 text-left shadow-sm sm:p-6 md:p-7',
         className,
       )}
     >
