@@ -31,7 +31,7 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { Calendar, Star, ChevronRight, ChevronDown, X, CheckCircle2 } from 'lucide-react'
+import { Calendar, Star, ChevronRight, ChevronDown, X, CheckCircle2, Equal, Minus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -158,7 +158,7 @@ function Countdown({ days, label, deadlinePassedLabel }: CountdownProps) {
         <span
           className={cn(
             'text-xs font-bold uppercase tracking-wider mb-1',
-            isUrgent ? 'text-status-partial-fg' : 'text-muted-foreground'
+            isUrgent ? 'text-status-partial-fg' : 'text-foreground'
           )}
         >
           {label ? label.split(' ')[0] : t`days`}
@@ -166,7 +166,7 @@ function Countdown({ days, label, deadlinePassedLabel }: CountdownProps) {
       </div>
       <span className={cn(
         "text-[10px] font-bold uppercase tracking-widest relative z-10",
-        isUrgent ? "text-status-partial-fg" : "text-muted-foreground"
+        isUrgent ? "text-status-partial-fg" : "text-foreground"
       )}>
         {t`Until Nov 15`}
       </span>
@@ -269,6 +269,11 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide hidden md:inline">
           {label.timing}
         </span>
+        {isCurrent && (
+          <span className="text-[10px] font-bold uppercase tracking-wider text-status-blocked-fg">
+            <Trans>Now</Trans>
+          </span>
+        )}
       </div>
 
       {/* Bar container (full width for positioning) */}
@@ -281,7 +286,7 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
             colors.bgSolid,
             isSelected
               ? 'ring-4 ring-offset-2 ring-offset-background shadow-md scale-[1.02]'
-              : 'hover:scale-[1.01] hover:shadow-md opacity-90 hover:opacity-100',
+              : 'hover:scale-[1.01] hover:shadow-md',
             isSelected && (isHighOpportunity ? 'ring-status-partial-fg/30' : 'ring-primary/40'),
             isCurrent && !isSelected && 'ring-2 ring-status-blocked-fg/30',
             // Special styling for full-year execution bar to make it less monolithic
@@ -307,7 +312,7 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
             <Icon className="w-4 h-4 text-background" />
           </div>
 
-          {isHighOpportunity && <Star className="w-3.5 h-3.5 text-background fill-current animate-pulse" />}
+          {isHighOpportunity ? <Star className="w-3.5 h-3.5 text-background fill-current animate-pulse" /> : <OpportunityMark opportunity={phase.opportunity} className="w-3.5 h-3.5 text-background" />}
 
           <span className={cn(
             "text-xs font-bold text-background tracking-tight",
@@ -320,6 +325,13 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
       </div>
     </motion.div>
   )
+}
+
+/** Medium and low opportunity carry a symbol too (high already has the star), so the level never rides on colour alone. */
+function OpportunityMark({ opportunity, className }: Readonly<{ opportunity: 'low' | 'medium' | 'high'; className?: string }>) {
+  if (opportunity === 'high') return <Star className={cn(className, 'fill-current')} aria-hidden="true" />
+  if (opportunity === 'medium') return <Equal className={className} aria-hidden="true" />
+  return <Minus className={className} aria-hidden="true" />
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -361,14 +373,14 @@ function MobilePhaseCard({ phase, label, isSelected, isCurrent, onClick }: Mobil
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-bold text-foreground truncate">{label.name}</span>
-          {isHighOpportunity && <Star className="w-3.5 h-3.5 text-status-partial-fg fill-current shrink-0" />}
+          <OpportunityMark opportunity={phase.opportunity} className={cn('w-3.5 h-3.5 shrink-0', isHighOpportunity ? 'text-status-partial-fg' : 'text-muted-foreground')} />
           {isCurrent && (
             <span className="text-[10px] font-bold uppercase tracking-wider text-status-blocked-fg shrink-0">
               <Trans>Now</Trans>
             </span>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">{label.timing}</span>
+        <span className="text-xs text-foreground">{label.timing}</span>
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
     </button>
@@ -439,7 +451,7 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
                   </span>
                 )}
               </div>
-              <p className="text-base text-muted-foreground mt-0 font-medium">{label.timing}</p>
+              <p className="text-base text-foreground mt-0 font-medium">{label.timing}</p>
             </div>
           </div>
           <Button
@@ -461,7 +473,7 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
         <div className="grid gap-6 md:grid-cols-3 relative z-10">
           {/* Key Activities */}
           <div className="space-y-3">
-            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
+            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-foreground">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               {text?.activitiesLabel ?? t`Key Activities`}
             </h5>
@@ -469,7 +481,7 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
               {content.keyActivities.map((activity, i) => (
                 <li
                   key={i}
-                  className="text-sm font-medium text-muted-foreground flex items-start gap-2.5 leading-snug"
+                  className="text-sm font-medium text-foreground flex items-start gap-2.5 leading-snug"
                 >
                   <span className="shrink-0 w-1 h-1 rounded-full bg-border mt-2" />
                   {activity}
@@ -480,7 +492,7 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
 
           {/* Citizen Opportunities */}
           <div className="space-y-3">
-            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
+            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-foreground">
               <div className={cn("w-1.5 h-1.5 rounded-full", isHighOpportunity ? "bg-status-partial-fg" : "bg-muted-foreground")} />
               {text?.opportunitiesLabel ?? t`Your Opportunity`}
             </h5>
@@ -492,7 +504,7 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
                     'text-sm font-medium flex items-start gap-2.5 leading-snug',
                     isHighOpportunity
                       ? 'text-status-partial-fg'
-                      : 'text-muted-foreground'
+                      : 'text-foreground'
                   )}
                 >
                   <CheckCircle2 className={cn(
@@ -507,7 +519,7 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
 
           {/* Key Deadlines */}
           <div className="space-y-3">
-            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
+            <h5 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-foreground">
               <div className="w-1.5 h-1.5 rounded-full bg-status-blocked-fg" />
               {text?.deadlinesLabel ?? t`Key Deadlines`}
             </h5>
@@ -518,13 +530,13 @@ function PhaseInfoPanel({ phase, content, label, onClose, text }: PhaseInfoPanel
                     className={cn(
                       'shrink-0 px-2 py-0.5 rounded-md font-mono font-bold text-xs',
                       isHighOpportunity
-                        ? 'bg-status-partial-bg text-status-partial-fg transition-colors'
-                        : 'bg-muted text-muted-foreground transition-colors'
+                        ? 'bg-status-partial-bg text-status-partial-fg group-hover:bg-status-partial-fg/20 transition-colors'
+                        : 'bg-muted text-foreground group-hover:bg-border transition-colors'
                     )}
                   >
                     {deadline.date}
                   </span>
-                  <span className="text-muted-foreground font-medium pt-0.5">{deadline.description}</span>
+                  <span className="text-foreground font-medium pt-0.5">{deadline.description}</span>
                 </li>
               ))}
             </ul>
@@ -601,7 +613,6 @@ export function BudgetCycleTimeline({
       )}
     >
       {/* Decorative background */}
-      <div className="absolute inset-0 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -663,7 +674,7 @@ export function BudgetCycleTimeline({
                   'flex-1 text-xs font-medium pl-2', // Align to start of column (grid line)
                   i + 1 === currentMonth
                     ? 'text-status-blocked-fg font-bold'
-                    : 'text-muted-foreground'
+                    : 'text-foreground'
                 )}
               >
                 {label}
@@ -739,15 +750,15 @@ export function BudgetCycleTimeline({
             <span>{text?.currentPhaseLabel ?? t`Current date`}</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="w-3 h-3 rounded-full bg-status-partial-fg" />
+            <div className="w-4 h-4 rounded-full bg-status-partial-fg flex items-center justify-center"><OpportunityMark opportunity="high" className="w-2.5 h-2.5 text-background" /></div>
             <span><Trans>High opportunity</Trans></span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="w-3 h-3 rounded-full bg-primary" />
+            <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center"><OpportunityMark opportunity="medium" className="w-2.5 h-2.5 text-background" /></div>
             <span><Trans>Medium opportunity</Trans></span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="w-3 h-3 rounded-full bg-muted-foreground" />
+            <div className="w-4 h-4 rounded-full bg-muted-foreground flex items-center justify-center"><OpportunityMark opportunity="low" className="w-2.5 h-2.5 text-background" /></div>
             <span><Trans>Low opportunity</Trans></span>
           </div>
         </div>

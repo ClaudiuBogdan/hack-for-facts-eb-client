@@ -366,53 +366,13 @@ function BudgetBalanceIndicator({
   const isBalanced = status === 'balanced'
   const isDeficit = status === 'deficit'
 
-  // Severity-based styling for deficits
-  const getDeficitSeverityClasses = (sev?: DeficitSeverity) => {
-    switch (sev) {
-      case 'mild':
-        return {
-          bg: 'bg-status-partial-bg',
-          border: 'border-status-partial-fg/30',
-          text: 'text-status-partial-fg',
-          icon: 'text-status-partial-fg',
-        }
-      case 'moderate':
-        return {
-          bg: 'bg-status-partial-bg',
-          border: 'border-status-partial-fg/30',
-          text: 'text-status-partial-fg',
-          icon: 'text-status-partial-fg',
-        }
-      case 'severe':
-        return {
-          bg: 'bg-status-blocked-bg',
-          border: 'border-status-blocked-fg/30',
-          text: 'text-status-blocked-fg',
-          icon: 'text-status-blocked-fg',
-        }
-      case 'critical':
-        return {
-          bg: 'bg-status-blocked-bg',
-          border: 'border-status-blocked-fg/30',
-          text: 'text-status-blocked-fg',
-          icon: 'text-status-blocked-fg',
-        }
-      case 'catastrophic':
-        return {
-          bg: 'bg-status-blocked-bg',
-          border: 'border-status-blocked-fg/30',
-          text: 'text-status-blocked-fg',
-          icon: 'text-status-blocked-fg',
-        }
-      default:
-        return {
-          bg: 'bg-status-blocked-bg',
-          border: 'border-status-blocked-fg/30',
-          text: 'text-status-blocked-fg',
-          icon: 'text-status-blocked-fg',
-        }
-    }
-  }
+  // A deficit is always the blocked status; the severity is carried by the consequence text.
+  const getDeficitSeverityClasses = (_sev?: DeficitSeverity) => ({
+    bg: 'bg-status-blocked-bg',
+    border: 'border-status-blocked-fg/30',
+    text: 'text-status-blocked-fg',
+    icon: 'text-status-blocked-fg',
+  })
 
   const deficitClasses = isDeficit
     ? getDeficitSeverityClasses(severity as DeficitSeverity)
@@ -428,7 +388,7 @@ function BudgetBalanceIndicator({
         isDeficit && deficitClasses && `${deficitClasses.bg} ${deficitClasses.border}`,
         !isBalanced &&
         !isDeficit &&
-        'bg-status-partial-bg border-status-partial-fg/30'
+        'bg-status-live-bg border-status-live-fg/30'
       )}
     >
       <div className="flex items-center justify-between gap-4">
@@ -438,12 +398,12 @@ function BudgetBalanceIndicator({
           ) : isDeficit ? (
             <AlertTriangle className={cn('w-5 h-5', deficitClasses?.icon)} />
           ) : (
-            <AlertTriangle className="w-5 h-5 text-status-partial-fg" />
+            <AlertTriangle className="w-5 h-5 text-status-live-fg" />
           )}
           <div>
             <div className="font-bold text-lg">Total: {total}%</div>
             {!isBalanced && consequence && (
-              <div className="text-sm text-muted-foreground max-w-md">
+              <div className="text-sm text-foreground max-w-md">
                 {consequence}
               </div>
             )}
@@ -454,7 +414,7 @@ function BudgetBalanceIndicator({
             'text-2xl font-black tabular-nums',
             isBalanced && 'text-status-live-fg',
             isDeficit && deficitClasses?.text,
-            !isBalanced && !isDeficit && 'text-status-partial-fg'
+            !isBalanced && !isDeficit && 'text-status-live-fg'
           )}
         >
           {isBalanced
@@ -503,7 +463,7 @@ function StakeholderBar({
         >
           <span className="text-2xl">{stakeholder.emoji}</span>
           <ReactionEmoji reaction={reaction} />
-          <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+          <span className="text-[10px] font-medium text-foreground text-center leading-tight">
             {stakeholder.label}
           </span>
         </motion.div>
@@ -563,7 +523,7 @@ function InlineConsequence({
                   className={cn(
                     severity === 'positive' && 'text-status-live-fg',
                     severity === 'negative' && 'text-status-blocked-fg',
-                    severity === 'neutral' && 'text-muted-foreground'
+                    severity === 'neutral' && 'text-foreground'
                   )}
                 >
                   {diff > 0 ? '+' : ''}
@@ -577,7 +537,7 @@ function InlineConsequence({
                 {impacts.slice(0, 3).map((impact, i) => (
                   <li
                     key={i}
-                    className="text-xs text-muted-foreground flex items-start gap-1.5"
+                    className="text-xs text-foreground flex items-start gap-1.5"
                   >
                     <span className="text-muted-foreground mt-0.5">•</span>
                     <span>{impact}</span>
@@ -662,7 +622,7 @@ function ImpactSection({
                 {categoryImpacts.slice(0, 3).map((impact, i) => (
                   <li
                     key={i}
-                    className="text-sm text-muted-foreground flex items-start gap-1.5"
+                    className="text-sm text-foreground flex items-start gap-1.5"
                   >
                     <span className="text-muted-foreground mt-0.5">•</span>
                     <span>{impact}</span>
@@ -722,7 +682,7 @@ function StakeholderReactionsList({
               <ReactionEmoji reaction={reaction} />
               <span className="text-xs font-semibold">{stakeholder.label}</span>
             </div>
-            <p className="text-xs text-muted-foreground line-clamp-2">
+            <p className="text-xs text-foreground line-clamp-2">
               &ldquo;{message}&rdquo;
             </p>
           </div>
@@ -881,7 +841,7 @@ export function BudgetAllocatorGame({
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-status-blocked-bg text-status-blocked-fg mb-2 shadow-inner"
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-primary/10 text-primary mb-2 shadow-inner"
                   >
                     <Briefcase className="w-10 h-10" />
                   </motion.div>
@@ -900,7 +860,7 @@ export function BudgetAllocatorGame({
                       className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-muted"
                     >
                       <span className="text-3xl">{stakeholder.emoji}</span>
-                      <span className="text-sm font-medium text-muted-foreground">
+                      <span className="text-sm font-medium text-foreground">
                         {stakeholder.label}
                       </span>
                     </div>
@@ -918,8 +878,8 @@ export function BudgetAllocatorGame({
               </div>
 
               {/* Decorative artifacts */}
-              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-status-blocked-bg/30 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-status-partial-bg/20 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-muted rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
             </Card>
           </motion.div>
         )}
@@ -1074,7 +1034,7 @@ export function BudgetAllocatorGame({
               <div className="p-8 md:p-12 max-w-3xl mx-auto space-y-10">
                 {/* Header */}
                 <div className="text-center space-y-4">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-xs font-black text-foreground uppercase tracking-[0.2em]">
                     Reality Check
                   </div>
                   <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tight">
@@ -1160,8 +1120,8 @@ export function BudgetAllocatorGame({
               </div>
 
               {/* Atmospheric Glows */}
-              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-status-blocked-fg/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-status-live-fg/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-muted rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
             </Card>
           </motion.div>
         )}

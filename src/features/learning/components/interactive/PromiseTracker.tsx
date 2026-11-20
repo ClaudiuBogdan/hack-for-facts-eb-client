@@ -75,20 +75,23 @@ function getRateColorClasses(rate: number) {
 
     if (isLow) {
         return {
-            bar: "bg-status-blocked-fg/50",
+            bar: "bg-status-blocked-fg",
+            track: "bg-status-blocked-bg",
             icon: "bg-status-blocked-bg text-status-blocked-fg",
             text: "text-status-blocked-fg"
         }
     }
     if (isHigh) {
         return {
-            bar: "bg-status-live-fg/50",
+            bar: "bg-status-live-fg",
+            track: "bg-status-live-bg",
             icon: "bg-status-live-bg text-status-live-fg",
             text: "text-status-live-fg"
         }
     }
     return {
-        bar: "bg-status-partial-fg/50",
+        bar: "bg-status-partial-fg",
+            track: "bg-status-partial-bg",
         icon: "bg-status-partial-bg text-status-partial-fg",
         text: "text-status-partial-fg"
     }
@@ -219,7 +222,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                 <TabsTrigger
                                                     key={year}
                                                     value={year.toString()}
-                                                    className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-sm font-bold text-muted-foreground data-[state=active]:text-foreground"
+                                                    className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-sm font-bold text-foreground"
                                                 >
                                                     {year}
                                                 </TabsTrigger>
@@ -299,7 +302,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
 
                                 {/* Header Section */}
                                 <div className="text-center space-y-6">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted text-xs font-black text-foreground uppercase tracking-[0.2em]">
                                         {selectedYear} {t`Reality Check`}
                                     </div>
 
@@ -318,7 +321,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                     </div>
 
                                     <div className="flex justify-center gap-3">
-                                        <InsightPill className="bg-muted text-muted-foreground border-border">
+                                        <InsightPill className="bg-muted text-foreground border-border">
                                             {t`Your guess`}: {guess}%
                                         </InsightPill>
                                         <InsightPill className="bg-primary/10 text-primary border-primary/20">
@@ -353,7 +356,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                         className="p-6 flex items-center justify-between group hover:bg-muted/50 transition-colors relative overflow-hidden"
                                                     >
                                                         {/* Subtle Progress Bar Background */}
-                                                        <div className="absolute bottom-0 left-0 h-1 bg-muted w-full" />
+                                                        <div className={cn("absolute bottom-0 left-0 h-1 w-full", colorClasses.track)} />
                                                         <motion.div
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${rate}%` }}
@@ -367,7 +370,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                             </div>
                                                             <div>
                                                                 <div className="text-sm font-black text-foreground">{CATEGORY_LABELS[key]}</div>
-                                                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                                <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
                                                                     {t`Planned`}: {formatBillions(data.planned)}
                                                                 </div>
                                                             </div>
@@ -376,7 +379,7 @@ export function PromiseTracker({ locale, contentId, predictionId, contentVersion
                                                             <div className={cn("text-xl font-black tabular-nums", colorClasses.text)}>
                                                                 {rate}%
                                                             </div>
-                                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                            <div className="text-[10px] font-bold text-foreground uppercase tracking-wider">
                                                                 {t`Executed`}
                                                             </div>
                                                         </div>

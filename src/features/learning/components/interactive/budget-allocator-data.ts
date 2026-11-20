@@ -116,49 +116,41 @@ export const COLOR_VARIANTS = {
   rose: {
     bg: 'bg-chart-1',
     text: 'text-foreground',
-    border: 'border-t-chart-1',
     bgLight: 'bg-chart-1/10',
   },
   blue: {
     bg: 'bg-chart-2',
     text: 'text-foreground',
-    border: 'border-t-chart-2',
     bgLight: 'bg-chart-2/10',
   },
   violet: {
-    bg: 'bg-chart-3',
+    bg: 'bg-chart-2',
     text: 'text-foreground',
-    border: 'border-t-chart-3',
-    bgLight: 'bg-chart-3/10',
+    bgLight: 'bg-chart-2/10',
   },
   emerald: {
     bg: 'bg-chart-4',
     text: 'text-foreground',
-    border: 'border-t-chart-4',
     bgLight: 'bg-chart-4/10',
   },
   amber: {
     bg: 'bg-chart-1',
     text: 'text-foreground',
-    border: 'border-t-chart-1',
     bgLight: 'bg-chart-1/10',
   },
   slate: {
-    bg: 'bg-chart-2',
+    bg: 'bg-chart-3',
     text: 'text-foreground',
-    border: 'border-t-chart-2',
-    bgLight: 'bg-chart-2/10',
+    bgLight: 'bg-chart-3/10',
   },
   red: {
     bg: 'bg-chart-3',
     text: 'text-foreground',
-    border: 'border-t-chart-3',
     bgLight: 'bg-chart-3/10',
   },
   teal: {
     bg: 'bg-chart-4',
     text: 'text-foreground',
-    border: 'border-t-chart-4',
     bgLight: 'bg-chart-4/10',
   },
 } as const

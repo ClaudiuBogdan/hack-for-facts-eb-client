@@ -63,7 +63,7 @@ function formatCurrency(amount: number) {
 // SUB-COMPONENTS
 // -----------------------------------------------------------------------------
 
-function AnimatedNumber({ value, size }: { value: number; size?: string }) {
+function AnimatedNumber({ value, size }: { value: number; size?: keyof typeof NUMBER_SIZE_CLASSES }) {
   const spring = useSpring(value, { mass: 0.8, stiffness: 75, damping: 15 })
   const display = useTransform(spring, (current) => formatCurrency(Math.floor(current)))
 
@@ -71,24 +71,28 @@ function AnimatedNumber({ value, size }: { value: number; size?: string }) {
     spring.set(value)
   }, [value, spring])
 
-  return <motion.span className={cn("tabular-nums", size && `text-${size}`)}>{display}</motion.span>
+  return <motion.span className={cn("tabular-nums", size && NUMBER_SIZE_CLASSES[size])}>{display}</motion.span>
 }
 
 const ROW_TONE_CLASSES = {
-  'text-muted-foreground': { chip: 'bg-muted', bar: 'bg-muted-foreground/40' },
-  'text-status-partial-fg': { chip: 'bg-status-partial-fg/10', bar: 'bg-status-partial-fg/40' },
-  'text-primary': { chip: 'bg-primary/10', bar: 'bg-primary/40' },
-  'text-status-blocked-fg': { chip: 'bg-status-blocked-fg/10', bar: 'bg-status-blocked-fg/40' },
+  base: { chip: 'bg-muted', icon: 'text-muted-foreground', bar: 'bg-muted-foreground/40' },
+  'chart-1': { chip: 'bg-chart-1', icon: 'text-background', bar: 'bg-chart-1' },
+  'chart-2': { chip: 'bg-chart-2', icon: 'text-background', bar: 'bg-chart-2' },
+  'chart-3': { chip: 'bg-chart-3', icon: 'text-background', bar: 'bg-chart-3' },
 } as const
 
-type RowColorClass = keyof typeof ROW_TONE_CLASSES
+type RowTone = keyof typeof ROW_TONE_CLASSES
+
+const NUMBER_SIZE_CLASSES = {
+  '4xl': 'text-4xl',
+} as const
 
 function RowBreakdown({
   label,
   value,
   calculation,
   icon: Icon,
-  colorClass,
+  tone: toneKey,
   delay = 0,
   isLast = false,
 }: {
@@ -96,11 +100,11 @@ function RowBreakdown({
   value: string
   calculation: string
   icon: React.ComponentType<{ className?: string }>
-  colorClass: RowColorClass
+  tone: RowTone
   delay?: number
   isLast?: boolean
 }) {
-  const tone = ROW_TONE_CLASSES[colorClass]
+  const tone = ROW_TONE_CLASSES[toneKey]
 
   return (
     <motion.div
@@ -113,12 +117,12 @@ function RowBreakdown({
       )}
     >
       <div className="flex items-center gap-4 text-left">
-        <div className={cn("p-2.5 rounded-xl shadow-sm", tone.chip, colorClass)}>
+        <div className={cn("p-2.5 rounded-xl shadow-sm", tone.chip, tone.icon)}>
           <Icon className="w-5 h-5" />
         </div>
         <div>
           <div className="text-[13px] font-black tracking-tight text-foreground">{label}</div>
-          <div className="text-[10px] font-bold uppercase tracking-widest opacity-40">{calculation}</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-foreground">{calculation}</div>
         </div>
       </div>
       <div className="flex flex-col items-end">
@@ -240,7 +244,7 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
 
                 <div className="w-full max-w-md space-y-6">
                   <div className="relative flex items-center group transition-all duration-500">
-                    <span className="absolute left-8 text-primary font-black text-2xl pointer-events-none group-focus-within:text-primary transition-colors">{t`RON`}</span>
+                    <span className="absolute left-8 text-foreground font-black text-2xl pointer-events-none group-focus-within:text-primary transition-colors">{t`RON`}</span>
                     <Input
                       type="number"
                       value={grossInput}
@@ -324,7 +328,6 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
                 </div>
               </div>
 
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(16,185,129,0.08),transparent)] pointer-events-none" />
             </Card>
           </motion.div>
         )}
@@ -353,14 +356,14 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
                       value={formatCurrency(result.gross)}
                       calculation={t`Base Amount (100%)`}
                       icon={Landmark}
-                      colorClass="text-muted-foreground"
+                      tone="base"
                     />
                     <RowBreakdown
                       label={t`Pension (CAS)`}
                       value={`-${formatCurrency(result.cas)}`}
                       calculation={`${formatCurrency(result.gross)} × 25%`}
                       icon={ShieldCheck}
-                      colorClass="text-status-partial-fg"
+                      tone="chart-1"
                       delay={0.1}
                     />
                     <RowBreakdown
@@ -368,7 +371,7 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
                       value={`-${formatCurrency(result.cass)}`}
                       calculation={`${formatCurrency(result.gross)} × 10%`}
                       icon={Stethoscope}
-                      colorClass="text-primary"
+                      tone="chart-2"
                       delay={0.2}
                     />
                     <RowBreakdown
@@ -376,7 +379,7 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
                       value={`-${formatCurrency(result.incomeTax)}`}
                       calculation={t`(${formatCurrency(result.gross)} - deductions) × 10%`}
                       icon={TrendingDown}
-                      colorClass="text-status-blocked-fg"
+                      tone="chart-3"
                       delay={0.3}
                       isLast={true}
                     />
@@ -397,7 +400,7 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
                     </h2>
                     
                     <div className="flex flex-wrap justify-center gap-2.5 pt-2">
-                      <div className="px-4 py-1.5 rounded-full bg-muted text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                      <div className="px-4 py-1.5 rounded-full bg-muted text-[10px] font-black text-foreground uppercase tracking-[0.2em]">
                         {t`Your guess`}: {formatCurrency(userGuess)}
                       </div>
                       <InsightPill className="bg-status-blocked-fg/10 text-status-blocked-fg border-status-blocked-fg/20 py-1.5 text-xs">
@@ -409,10 +412,10 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
 
                 {/* Footer Insight (Labor Cost) */}
                 <div className="flex flex-col items-center space-y-10 group pb-4">
-                  <div className="w-full rounded-[2.5rem] bg-foreground text-background/50 p-10 flex flex-col items-center text-center gap-8 relative overflow-hidden transition-all hover:bg-foreground/90">
+                  <div className="w-full rounded-[2.5rem] bg-foreground text-background p-10 flex flex-col items-center text-center gap-8 relative overflow-hidden transition-all hover:bg-foreground/90">
                     <div className="relative z-10 flex flex-col items-center gap-4">
                       <div className="space-y-4">
-                        <h4 className="font-black text-background text-xl tracking-tight uppercase tracking-[0.2em] text-[10px] opacity-50">{t`Labor Cost Summary`}</h4>
+                        <h4 className="font-black text-background text-xl tracking-tight uppercase tracking-[0.2em] text-[10px]">{t`Labor Cost Summary`}</h4>
                         <div className="space-y-2">
                             <p className="text-lg leading-relaxed font-medium max-w-sm">
                             <Trans>Your employer actually spends <span className="text-background font-black">{formatCurrency(result.employerTotal)}</span>.</Trans>
@@ -420,7 +423,7 @@ export function SalaryTaxCalculator({ contentId, calculatorId, contentVersion }:
                             <p className="text-lg leading-relaxed font-medium max-w-sm">
                             <Trans>The state total claim is <span className="text-background font-black tracking-tighter">{formatCurrency(result.employerTotal - result.net)}</span>.</Trans>
                             </p>
-                            <p className="text-sm text-background/50 mt-1">
+                            <p className="text-sm text-background mt-1">
                               <Trans>That is <span className="text-background font-bold">{formatCurrency((result.employerTotal - result.net) * 12)}</span> per year.</Trans>
                             </p>
                         </div>

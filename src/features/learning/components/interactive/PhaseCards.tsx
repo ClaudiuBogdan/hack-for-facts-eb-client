@@ -195,7 +195,7 @@ function PhaseChip({
             isSelected 
               ? cn(colors.bgSolid, 'scale-110')
               : isExplored 
-                ? 'bg-card border-2 border-primary' 
+                ? 'bg-card border-2 border-status-live-fg' 
                 : 'bg-card border-2 border-border group-hover:scale-105',
             isSelected && "shadow-xl ring-4 ring-background"
           )}
@@ -203,13 +203,13 @@ function PhaseChip({
           <Icon
             className={cn(
               'w-7 h-7 transition-colors duration-300',
-              isSelected ? 'text-background' : isExplored ? 'text-primary' : 'text-muted-foreground'
+              isSelected ? 'text-background' : isExplored ? 'text-status-live-fg' : 'text-muted-foreground'
             )}
           />
 
           {/* Explored Badge */}
           {isExplored && !isSelected && (
-            <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary border-2 border-background flex items-center justify-center shadow-sm z-20">
+            <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-status-live-fg border-2 border-background flex items-center justify-center shadow-sm z-20">
               <Check className="w-3.5 h-3.5 text-background" />
             </div>
           )}
@@ -291,7 +291,7 @@ function MobilePhaseCard({ phase, content, isSelected, isExplored, onClick, text
       >
         <Icon className={cn('w-6 h-6', isSelected ? 'text-background' : 'text-muted-foreground')} />
         {isExplored && !isSelected && (
-          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary border-2 border-background flex items-center justify-center">
+          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-status-live-fg border-2 border-background flex items-center justify-center">
             <Check className="w-3 h-3 text-background" />
           </div>
         )}
@@ -307,7 +307,7 @@ function MobilePhaseCard({ phase, content, isSelected, isExplored, onClick, text
             </span>
           )}
         </div>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{content.timing}</span>
+        <span className="text-xs font-medium text-foreground uppercase tracking-wide">{content.timing}</span>
       </div>
       
       <ChevronDown
@@ -352,7 +352,6 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
         )}
       >
         {/* Background decorative elements */}
-        <div className="absolute inset-0 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
         
         <div className={cn(
           "absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none opacity-40",
@@ -383,7 +382,7 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
                   </span>
                 )}
               </div>
-              <p className="text-base text-muted-foreground font-medium">{content.timing}</p>
+              <p className="text-base text-foreground font-medium">{content.timing}</p>
             </div>
           </div>
         </div>
@@ -392,7 +391,7 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
           <div className="grid gap-8 md:grid-cols-3">
           {/* Key Activities */}
           <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               {text?.activitiesLabel ?? t`Key Activities`}
             </h4>
@@ -400,7 +399,7 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
               {content.keyActivities.map((activity, i) => (
                 <li
                   key={i}
-                  className="text-sm font-medium text-muted-foreground flex items-start gap-3"
+                  className="text-sm font-medium text-foreground flex items-start gap-3"
                 >
                   <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-border mt-2" />
                   {activity}
@@ -411,7 +410,7 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
 
             {/* Citizen Opportunities */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
                 <div className={cn("w-1.5 h-1.5 rounded-full", isHighOpportunity ? "bg-status-partial-fg" : "bg-muted-foreground")} />
                 {text?.opportunitiesLabel ?? t`Your Opportunity`}
               </h4>
@@ -436,7 +435,7 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
 
             {/* Key Deadlines */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-status-blocked-fg" />
                 {text?.deadlinesLabel ?? t`Key Deadlines`}
               </h4>
@@ -447,13 +446,13 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
                       className={cn(
                         'shrink-0 px-2 py-0.5 rounded-md font-mono font-bold text-xs',
                         isHighOpportunity
-                          ? 'bg-status-partial-bg text-status-partial-fg transition-colors'
-                          : 'bg-muted text-muted-foreground transition-colors'
+                          ? 'bg-status-partial-bg text-status-partial-fg group-hover:bg-status-partial-fg/20 transition-colors'
+                          : 'bg-muted text-foreground group-hover:bg-border transition-colors'
                       )}
                     >
                       {deadline.date}
                     </span>
-                    <span className="text-muted-foreground font-medium pt-0.5">{deadline.description}</span>
+                    <span className="text-foreground font-medium pt-0.5">{deadline.description}</span>
                   </li>
                 ))}
               </ul>
