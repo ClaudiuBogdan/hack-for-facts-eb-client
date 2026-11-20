@@ -49,8 +49,6 @@ const HEX_GUARDED = 'src/features/learning/'
  * the diff.
  */
 const PENDING: readonly string[] = [
-  'src/content/learning/modules/local-national-budgets/02-local-government-structure/index.en.mdx',
-  'src/content/learning/modules/local-national-budgets/02-local-government-structure/index.ro.mdx',
   'src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx',
   'src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx',
   'src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx',
