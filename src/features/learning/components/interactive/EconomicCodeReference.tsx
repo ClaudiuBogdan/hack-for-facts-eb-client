@@ -65,7 +65,7 @@ function ExecutionBar({ rate, type, label, inView }: ExecutionBarProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
+      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
         <span>{label}</span>
         <span className={cn('font-black tabular-nums text-lg', colors.text)}>
           {rate}%
@@ -96,7 +96,7 @@ function WarningBadge({ label }: WarningBadgeProps) {
     <div
       className={cn(
         'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider',
-        'bg-red-600 text-white shadow-xs'
+        'bg-status-blocked-fg text-background shadow-xs'
       )}
     >
       <AlertTriangle className="w-2.5 h-2.5" />
@@ -123,7 +123,7 @@ function SubcodeList({ subcodes, type }: SubcodeListProps) {
     <div className={cn('mt-4 space-y-5 pl-4 border-l border-dashed', colors.border)}>
       {subcodes.map((subcode) => (
         <div key={subcode.code} className="flex items-baseline gap-3">
-          <code className="text-[10px] font-bold text-muted-foreground shrink-0 font-mono min-w-[35px]">
+          <code className="text-[10px] font-bold text-foreground shrink-0 font-mono min-w-[35px]">
             {subcode.code}
           </code>
           <div className="flex-1 min-w-0">
@@ -166,8 +166,8 @@ function CodeRow({ code, type, warningLabel }: CodeRowProps) {
       className={cn(
         'group rounded-xl border transition-all duration-200',
         isExpanded 
-          ? 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 shadow-sm' 
-          : 'border-transparent hover:bg-slate-50/30 dark:hover:bg-slate-900/10',
+          ? 'border-border bg-card shadow-sm' 
+          : 'border-transparent hover:bg-muted/30',
         hasSubcodes && 'cursor-pointer'
       )}
       onClick={handleToggle}
@@ -244,7 +244,7 @@ function CategorySection({
     <motion.div variants={itemVariants} className="flex flex-col h-full">
       <div className="mb-6 space-y-2">
         <div className="flex items-center gap-3">
-          <h3 className={cn('text-3xl md:text-4xl font-black uppercase tracking-tight text-slate-900 dark:text-white')}>
+          <h3 className={cn('text-3xl md:text-4xl font-black uppercase tracking-tight text-foreground')}>
             {label}
           </h3>
           {isCapital && (
@@ -252,7 +252,7 @@ function CategorySection({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="cursor-help">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                    <AlertTriangle className="w-5 h-5 text-status-blocked-fg" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[220px] text-xs leading-relaxed p-3">
@@ -362,16 +362,16 @@ export function EconomicCodeReference({
         variants={itemVariants}
         initial="hidden"
         animate={inView ? 'visible' : 'hidden'}
-        className="mt-16 p-8 rounded-[2rem] bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 flex gap-6 items-start shadow-sm"
+        className="mt-16 p-8 rounded-[2rem] bg-primary/10 border border-primary/20 flex gap-6 items-start shadow-sm"
       >
-        <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center shrink-0">
-          <Info className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center shrink-0">
+          <Info className="w-6 h-6 text-primary" />
         </div>
         <div className="space-y-3">
-          <h4 className="text-sm font-black text-blue-900 dark:text-blue-100 uppercase tracking-widest">
+          <h4 className="text-sm font-black text-foreground uppercase tracking-widest">
             <Trans>Key Lesson Insight</Trans>
           </h4>
-          <p className="text-base text-blue-800/90 dark:text-blue-200/90 leading-relaxed font-medium">
+          <p className="text-base text-foreground leading-relaxed font-medium">
             <Trans>
               Notice the gap: <strong>Current Expenses</strong> (salaries, utilities) almost always reach full execution. 
               <strong> Capital Expenses</strong> (investments) are the first to be cut or delayed, often falling below 60%. 
@@ -385,10 +385,10 @@ export function EconomicCodeReference({
         <div className="mt-16 flex justify-center">
           <Link
             to={explorerUrl as '/'}
-            className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-[#1e40af] hover:bg-[#1e3a8a] text-sm font-black transition-all shadow-xl hover:shadow-2xl active:scale-95 uppercase tracking-widest"
+            className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-primary text-sm font-black transition-all shadow-xl hover:shadow-2xl hover:ring-4 hover:ring-primary/30 active:scale-95 uppercase tracking-widest"
           >
-            <span className="text-white">{text.explorerLabel}</span>
-            <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+            <span className="text-primary-foreground">{text.explorerLabel}</span>
+            <ArrowRight className="w-5 h-5 text-primary-foreground group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       )}

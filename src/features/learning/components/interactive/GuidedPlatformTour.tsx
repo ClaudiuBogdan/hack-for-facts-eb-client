@@ -146,9 +146,7 @@ function StepCard({
   return (
     <div
       className={cn(
-        'relative flex gap-4 py-4 transition-all duration-300',
-        !isCurrent && !isCompleted && 'opacity-50',
-        isCompleted && 'opacity-70'
+        'relative flex gap-4 py-4 transition-all duration-300'
       )}
     >
       {/* Step indicator */}
@@ -156,9 +154,9 @@ function StepCard({
         <div
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all',
-            isCompleted && 'bg-green-500 text-white',
+            isCompleted && 'bg-status-live-fg text-background',
             isCurrent && !isCompleted && 'bg-primary text-primary-foreground ring-4 ring-primary/20',
-            !isCurrent && !isCompleted && 'bg-muted text-muted-foreground'
+            !isCurrent && !isCompleted && 'bg-muted text-foreground'
           )}
         >
           {isCompleted ? <Check className="h-5 w-5" /> : stepNumber}
@@ -167,7 +165,7 @@ function StepCard({
         <div
           className={cn(
             'mt-2 w-0.5 flex-1 transition-colors',
-            isCompleted ? 'bg-green-500' : 'bg-border'
+            isCompleted ? 'bg-status-live-fg' : 'bg-border'
           )}
         />
       </div>
@@ -177,7 +175,7 @@ function StepCard({
         <p
           className={cn(
             'font-medium transition-colors',
-            isCompleted && 'text-green-600 line-through dark:text-green-400',
+            isCompleted && 'text-status-live-fg line-through',
             isCurrent && !isCompleted && 'text-foreground',
             !isCurrent && !isCompleted && 'text-muted-foreground'
           )}
@@ -221,17 +219,17 @@ type CelebrationProps = {
 
 function Celebration({ onReset }: CelebrationProps) {
   return (
-    <Card className="border-green-500/30 bg-gradient-to-b from-green-500/5 to-transparent">
+    <Card className="border-status-live-fg/30 bg-status-live-bg">
       <CardContent className="relative p-6 text-center">
         <div className="mb-4 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 animate-in zoom-in duration-500">
-            <PartyPopper className="h-8 w-8 text-green-500" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-card animate-in zoom-in duration-500">
+            <PartyPopper className="h-8 w-8 text-status-live-fg" />
           </div>
         </div>
-        <h3 className="text-lg font-bold text-green-600 dark:text-green-400">
+        <h3 className="text-lg font-bold text-status-live-fg">
           {t`Tour Complete!`}
         </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-foreground">
           {t`You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own.`}
         </p>
         <Button variant="ghost" size="sm" onClick={onReset} className="mt-4 gap-2">

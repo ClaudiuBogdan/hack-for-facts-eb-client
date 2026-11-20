@@ -88,18 +88,6 @@ const PENDING: readonly string[] = [
   'src/features/challenges/components/player/sectioned-step-footer.tsx',
   'src/features/challenges/components/player/sectioned-step-header.tsx',
   'src/features/challenges/components/player/sectioned-step-interactives.tsx',
-  'src/features/learning/components/interactive/DeficitVisual.tsx',
-  'src/features/learning/components/interactive/EUComparisonChart.tsx',
-  'src/features/learning/components/interactive/EconomicCodeReference.tsx',
-  'src/features/learning/components/interactive/ExecutionPatternComparison.tsx',
-  'src/features/learning/components/interactive/GuidedPlatformTour.tsx',
-  'src/features/learning/components/interactive/PlatformMission.tsx',
-  'src/features/learning/components/interactive/UATTypeBreakdown.tsx',
-  'src/features/learning/components/interactive/VATCalculator.tsx',
-  'src/features/learning/components/interactive/VATReformCard.tsx',
-  'src/features/learning/components/interactive/economic-code-reference-data.ts',
-  'src/features/learning/components/interactive/functional-classification-accordion-data.ts',
-  'src/features/learning/components/interactive/uat-type-breakdown-data.ts',
 ]
 
 /** Repository-relative paths, always with `/`, so the list compares the same on every platform. */
