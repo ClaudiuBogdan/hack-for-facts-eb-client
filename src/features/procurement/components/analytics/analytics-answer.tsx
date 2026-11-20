@@ -337,10 +337,14 @@ export function AnswerRecords({
 }) {
   // A framework has no value to order by (a ceiling at most): its records come newest first, with no choice.
   const valued = POPULATIONS[query.tip].money !== 'none'
-  const { sort, page } = view
-  const { read: records, retry } = useRecords(query, answer.cutoff, sort, page)
+  const { page } = view
+  const { read: records, retry } = useRecords(query, answer.cutoff, view.sort, page)
+  // The order the rows come in: newest first where the API refused the value order (its spend gate withholds the money, DA-008).
+  const sort = records.data?.valueOrderWithheld === true ? 'date_desc' : view.sort
+  // A value order is offered only while the figures say the money is served: not before their verdict, without it, or on a failed read.
+  const ordersByValue = valued && !answer.figures.isError && answer.figures.data?.now?.awardedWithheld === false && records.data?.valueOrderWithheld !== true
   const order = (next: RecordsSort) => () => onView({ sort: next, page: 1 })
-  const setPage = (next: number) => onView({ sort, page: next })
+  const setPage = (next: number) => onView({ sort: view.sort, page: next })
   // No cutoff, no build: nothing is listed — said, with a retry that reads the cutoff again.
   if (answer.cutoffFailed || records.isError) return (
       <p className={cn('py-6 text-sm text-muted-foreground', className)}>
@@ -376,7 +380,8 @@ export function AnswerRecords({
               {/* The column's name for screen readers: a phone shows only the order control here. */}
               <span className="sr-only">{t`Înregistrarea`}</span>
               {/* A phone has no date column: the date order is here, above the dates the rows say — a toggle, back to the value order. */}
-              {valued ? (
+              {/* Back to the value order only where it is offered; to the newest first from a value-ordered list always. */}
+              {valued && (ordersByValue || sort === 'value_desc') ? (
                 <button
                   type="button"
                   onClick={order(sort === 'date_desc' ? 'value_desc' : 'date_desc')}
@@ -386,10 +391,16 @@ export function AnswerRecords({
                   {t`Cele mai noi`}
                   {sort === 'date_desc' ? <ArrowDown className="size-3" aria-hidden="true" /> : null}
                 </button>
+              ) : valued ? (
+                // Newest first with no value order to go back to: said, not offered.
+                <span className="inline-flex min-h-11 items-center gap-1 font-semibold text-foreground sm:hidden">
+                  {t`Cele mai noi`}
+                  <ArrowDown className="size-3" aria-hidden="true" />
+                </span>
               ) : null}
             </TableHead>
             <SortHead label={t({ message: 'Data', context: 'day' })} active={sort === 'date_desc'} onClick={sort === 'date_desc' ? null : order('date_desc')} className="hidden sm:table-cell" />
-            <SortHead label={t`Valoare`} active={sort === 'value_desc'} onClick={!valued || sort === 'value_desc' ? null : order('value_desc')} />
+            <SortHead label={t`Valoare`} active={sort === 'value_desc'} onClick={!ordersByValue || sort === 'value_desc' ? null : order('value_desc')} />
           </TableRow>
         </TableHeader>
         <TableBody>

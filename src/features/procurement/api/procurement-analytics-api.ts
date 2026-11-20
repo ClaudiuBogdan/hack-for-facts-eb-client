@@ -137,6 +137,8 @@ const statsSchema = z.object({
           disclosureKey: z.string().nullish(),
         })
         .nullable(),
+      /** The API's verdict on each money measure: `abstained` where its spend gate withholds it. */
+      moneyVerdicts: z.array(z.object({ measure: z.string(), answerability: z.string().nullable() })).nullish(),
     }),
   ),
 })
@@ -153,10 +155,18 @@ export interface Figures {
   readonly caveats: readonly string[]
   readonly undated: number | null
   readonly undatedMoney: number | null
+  /** The spend gate withholds the awarded money here, so nothing is ordered by it (DA-008); undefined: no verdict was served. */
+  readonly awardedWithheld?: boolean
 }
 
 const STATS_FIELDS =
-  'blocks { recordCount withValueCount valueAwardedSum avgValueAwarded meta { answerability provisional caveats undatedInScope { count valueRon } disclosureKey } }'
+  'blocks { recordCount withValueCount valueAwardedSum avgValueAwarded meta { answerability provisional caveats undatedInScope { count valueRon } disclosureKey } moneyVerdicts { measure answerability } }'
+
+/** The verdict on the awarded money, when one is served: no verdict is no answer either way. */
+function awardedVerdictOf(verdicts: readonly { readonly measure: string; readonly answerability: string | null }[] | null | undefined): { readonly awardedWithheld?: boolean } {
+  const awarded = verdicts?.find((verdict) => verdict.measure === 'valueAwardedSum')
+  return awarded ? { awardedWithheld: awarded.answerability === 'abstained' } : {}
+}
 
 function figuresOf(raw: unknown): Figures | null {
   const block = statsSchema.parse(raw).blocks[0]
@@ -171,6 +181,7 @@ function figuresOf(raw: unknown): Figures | null {
     caveats: block.meta?.caveats ?? [],
     undated: block.meta?.undatedInScope?.count ?? null,
     undatedMoney: block.meta?.undatedInScope?.valueRon ?? null,
+    ...awardedVerdictOf(block.moneyVerdicts),
   }
 }
 
@@ -441,6 +452,17 @@ export interface Records {
   readonly total: number | null
   /** The figures abstain for this scope: there is no list to show. */
   readonly abstained: boolean
+  /** The API refused the value order (its spend gate withholds this scope's money), so the rows come newest first. */
+  readonly valueOrderWithheld?: boolean
+}
+
+/**
+ * The API refuses a value order where its spend gate withholds the money
+ * (`INVALID_INPUT` on `sort`): an order by a withheld value would give the
+ * value away.
+ */
+function isValueOrderRefused(error: unknown): boolean {
+  return error instanceof GraphQLRequestError && error.graphQLErrors.some((entry) => entry.extensions?.code === GRAPHQL_INVALID_INPUT_CODE && entry.extensions?.field === 'sort')
 }
 
 /** A label that says something: a blank one is no label, so the next one stands in. */
@@ -457,6 +479,16 @@ export { defaultRecordsSort, type RecordsSort } from '../lib/analytics-model'
 
 /** A page of the records the figures count: the same scope, the same build, the rows one by one. */
 export async function readRecords(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal, disclosure: string | null = null): Promise<Records> {
+  try {
+    return await readRecordsSorted(scope, build, sort, page, signal, disclosure)
+  } catch (error) {
+    // The money is withheld here: the list comes newest first instead, and says so.
+    if (sort !== 'value_desc' || !isValueOrderRefused(error)) throw error
+    return { ...(await readRecordsSorted(scope, build, 'date_desc', page, signal, disclosure)), valueOrderWithheld: true }
+  }
+}
+
+async function readRecordsSorted(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal, disclosure: string | null): Promise<Records> {
   const direct = scope.grain === 'direct_acquisition'
   // Its own deadline: a list the API cannot answer in time fails here, as a read, with the reason said.
   const deadline = withDeadline(signal, 9_000)

@@ -38,7 +38,8 @@ function Records({ query, answer: read = answer, initial }: { readonly query: Qu
 const last = () => records.calls[records.calls.length - 1]
 
 const CUTOFF: AnalyticsCutoff = { direct: '2026-05', contract: '2026-05', builds: { direct: '13', contract: '13' }, build: '13' }
-const answer = { cutoff: CUTOFF, cutoffFailed: false, retryCutoff: vi.fn() } as unknown as Answer
+// The figures' verdict: the money is served, so a value order is offered.
+const answer = { cutoff: CUTOFF, cutoffFailed: false, retryCutoff: vi.fn(), figures: { data: { now: { awardedWithheld: false }, before: null }, isError: false, retry: vi.fn() } } as unknown as Answer
 
 const row = (id: string, supplier: string, value: number | null) => ({
   id,
@@ -124,6 +125,63 @@ describe('AnswerRecords', () => {
     expect(screen.queryAllByRole('row')).toHaveLength(0)
     fireEvent.click(screen.getByRole('button', { name: /Încearcă din nou/u }))
     expect(records.retry).toHaveBeenCalledTimes(1)
+  })
+
+  it('where the spend gate withholds the money, lists newest first and offers no value order', () => {
+    // Contracts, 2025-06 to 2026-05 on dev: the API refuses `value_desc` (DA-008), the read falls back to the newest
+    // first, and the API serves no row's value there.
+    records.data = { total: 60, abstained: false, rows: records.data!.rows.map((entry) => ({ ...entry, value: null })), valueOrderWithheld: true }
+    render(<Records query={queryOf({ tip: 'contracte' })} />)
+    expect(screen.queryByRole('button', { name: /Valoare/u })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Cele mai noi/u })).toBeNull()
+    expect(screen.getByRole('columnheader', { name: /Data/u }).getAttribute('aria-sort')).toBe('descending')
+    expect(screen.getByRole('columnheader', { name: /Valoare/u }).getAttribute('aria-sort')).toBe('none')
+    // Paging keeps the address's order: the next page is asked as the first was, and falls back the same way.
+    fireEvent.click(screen.getByRole('button', { name: /Pagina următoare/u }))
+    expect(last()).toMatchObject({ sort: 'value_desc', page: 2 })
+  })
+
+  it('offers no value order on a page opened newest first where the figures say the money is withheld', () => {
+    // `ordine=data`: the list is never refused, so the figures' verdict is what says the gate abstains.
+    records.data = { total: 60, abstained: false, rows: records.data!.rows.map((entry) => ({ ...entry, value: null })) }
+    const gated = { ...answer, figures: { data: { now: { awardedWithheld: true }, before: null }, isError: false, retry: vi.fn() } } as unknown as Answer
+    render(<Records query={queryOf({ tip: 'contracte' })} answer={gated} initial={{ sort: 'date_desc', page: 1 }} />)
+    expect(last()).toMatchObject({ sort: 'date_desc', page: 1 })
+    expect(screen.queryByRole('button', { name: /Valoare/u })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Cele mai noi/u })).toBeNull()
+  })
+
+  it('offers a value order only once the figures say the money is served, and never on a failed read', () => {
+    const figures = (data: unknown, isError = false) => ({ ...answer, figures: { data, isError, retry: vi.fn() } }) as unknown as Answer
+    const valueButton = () => screen.queryByRole('button', { name: /Valoare/u })
+    // The rows arrive before the verdict: nothing offered yet; the verdict says served: offered.
+    const { rerender, unmount } = render(<Records query={queryOf({ tip: 'directe' })} answer={figures(undefined)} initial={{ sort: 'date_desc', page: 1 }} />)
+    expect(valueButton()).toBeNull()
+    rerender(<Records query={queryOf({ tip: 'directe' })} answer={figures({ now: { awardedWithheld: false }, before: null })} />)
+    expect(valueButton()).toBeTruthy()
+    // The verdict says withheld: no longer offered.
+    rerender(<Records query={queryOf({ tip: 'directe' })} answer={figures({ now: { awardedWithheld: true }, before: null })} />)
+    expect(valueButton()).toBeNull()
+    unmount()
+    // A failed refetch keeping a served verdict, or figures with no verdict at all: not offered.
+    const { unmount: second } = render(<Records query={queryOf({ tip: 'directe' })} answer={figures({ now: { awardedWithheld: false }, before: null }, true)} initial={{ sort: 'date_desc', page: 1 }} />)
+    expect(valueButton()).toBeNull()
+    // The phone's order: said as newest first, with no toggle back to a value order not offered.
+    expect(screen.queryByRole('button', { name: /Cele mai noi/u })).toBeNull()
+    expect(screen.getByText(/Cele mai noi/u)).toBeTruthy()
+    second()
+    render(<Records query={queryOf({ tip: 'directe' })} answer={figures({ now: {}, before: null })} initial={{ sort: 'date_desc', page: 1 }} />)
+    expect(valueButton()).toBeNull()
+  })
+
+  it('keeps the phone’s way to the newest first on a value-ordered list while the verdict is unknown', () => {
+    const pending = { ...answer, figures: { data: undefined, isError: false, retry: vi.fn() } } as unknown as Answer
+    render(<Records query={queryOf({ tip: 'directe' })} answer={pending} />)
+    expect(screen.getByRole('columnheader', { name: /Valoare/u }).getAttribute('aria-sort')).toBe('descending')
+    fireEvent.click(screen.getByRole('button', { name: /Cele mai noi/u }))
+    expect(last()).toMatchObject({ sort: 'date_desc', page: 1 })
+    // Newest first now, and no way back to a value order not yet offered.
+    expect(screen.queryByRole('button', { name: /Cele mai noi/u })).toBeNull()
   })
 
   it('orders frameworks by date only and shows no ceiling as a value', () => {

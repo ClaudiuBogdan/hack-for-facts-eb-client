@@ -126,6 +126,49 @@ describe('planRecords', () => {
   })
 })
 
+describe('a value order the spend gate refuses (DA-008)', () => {
+  const scope = { grain: 'contract' as const, recordKind: 'contract_award' as const, from: '2025-06', to: '2026-05' }
+  const refusal = (field: string) =>
+    new GraphQLRequestError('GraphQL errors', { graphQLErrors: [{ message: 'a value order is unavailable: the spend gate withholds this grain’s money', path: ['l'], extensions: { code: 'INVALID_INPUT', field } }] })
+
+  it('reads the page again newest first, and says the value order was withheld', async () => {
+    graphql.query.mockRejectedValueOnce(refusal('sort')).mockResolvedValueOnce({ l: { total: '3', items: [], meta: { answerability: 'degraded' } } })
+    const records = await readRecords(scope, '16', 'value_desc', 2, new AbortController().signal)
+    expect(records).toMatchObject({ total: 3, valueOrderWithheld: true })
+    const queries = graphql.query.mock.calls.map(([query]) => query as string)
+    expect(queries).toHaveLength(2)
+    expect(queries[0]).toContain('sort: value_desc, page: 2')
+    expect(queries[1]).toContain('sort: date_desc, page: 2')
+  })
+
+  it('does not fall back on any other refusal, nor from the date order', async () => {
+    graphql.query.mockRejectedValueOnce(refusal('scope'))
+    await expect(readRecords(scope, '16', 'value_desc', 1, new AbortController().signal)).rejects.toBeInstanceOf(GraphQLRequestError)
+    graphql.query.mockRejectedValueOnce(refusal('sort'))
+    await expect(readRecords(scope, '16', 'date_desc', 1, new AbortController().signal)).rejects.toBeInstanceOf(GraphQLRequestError)
+    expect(graphql.query).toHaveBeenCalledTimes(2)
+  })
+
+  it('the figures carry the spend gate’s verdict on the awarded money', async () => {
+    const block = (answerability: string) => ({ recordCount: '37412', withValueCount: '33362', valueAwardedSum: null, avgValueAwarded: null, meta: null, moneyVerdicts: [{ measure: 'valueEstimatedSum', answerability: 'abstained' }, { measure: 'valueAwardedSum', answerability }] })
+    graphql.query.mockResolvedValueOnce({ now: { blocks: [block('abstained')] } })
+    expect((await readFigures(scope, null, '16', new AbortController().signal)).now?.awardedWithheld).toBe(true)
+    graphql.query.mockResolvedValueOnce({ now: { blocks: [block('degraded')] } })
+    expect((await readFigures(scope, null, '16', new AbortController().signal)).now?.awardedWithheld).toBe(false)
+    // No verdict served: unknown, not served.
+    graphql.query.mockResolvedValueOnce({ now: { blocks: [{ ...block('served'), moneyVerdicts: null }] } })
+    expect((await readFigures(scope, null, '16', new AbortController().signal)).now?.awardedWithheld).toBeUndefined()
+    graphql.query.mockResolvedValueOnce({ now: { blocks: [{ ...block('served'), moneyVerdicts: [{ measure: 'valueEstimatedSum', answerability: 'served' }] }] } })
+    expect((await readFigures(scope, null, '16', new AbortController().signal)).now?.awardedWithheld).toBeUndefined()
+    expect(graphql.query.mock.calls[0]?.[0]).toContain('moneyVerdicts { measure answerability }')
+  })
+
+  it('a list the API orders by value says nothing withheld', async () => {
+    const records = await readRecords(scope, '16', 'value_desc', 1, new AbortController().signal)
+    expect(records.valueOrderWithheld).toBeUndefined()
+  })
+})
+
 describe('the build pin', () => {
   it('pins the figures to the cutoff’s build', async () => {
     graphql.query.mockResolvedValue({ now: { blocks: [{ recordCount: '1', withValueCount: '1', valueAwardedSum: '1', avgValueAwarded: '1', meta: { answerability: 'served', provisional: false, caveats: [], undatedInScope: null, disclosureKey: 'off' } }] } })
