@@ -2,19 +2,16 @@ import * as Sentry from "@sentry/react";
 import { env } from "@/config/env";
 import { hasAnalyticsConsent, hasSentryConsent } from "@/lib/consent";
 import {
-  isJusticeLitigationProfilePath,
-  isJusticePath,
-  sanitizeJusticeTelemetryValue,
-} from "@/lib/privacy/sensitive-route-sanitizer";
-import {
   sanitizeSentryEventPayload,
   sanitizeSentryTransaction,
+  scrubbingTransport,
+  scrubSentryBreadcrumb,
+  scrubSentryEventInPlace,
   type SentryTelemetryEventLike,
 } from "@/lib/sentry";
 import {
   captureConsoleIntegration,
   extraErrorDataIntegration,
-  replayIntegration,
 } from "@sentry/react";
 
 /**
@@ -181,50 +178,6 @@ export function cleanupSentry(): void {
   openSentryBugReport = null;
 }
 
-function isCurrentJusticeSensitiveLocation(): boolean {
-  if (!isBrowser) return false;
-  return (
-    isJusticePath(window.location.pathname) ||
-    isJusticeLitigationProfilePath(
-      window.location.pathname,
-      window.location.search,
-    )
-  );
-}
-
-function sanitizeReplayRecordingValue<T>(value: T, depth = 0): T {
-  if (depth > 8) return value;
-  if (typeof value === "string") return sanitizeJusticeTelemetryValue(value);
-  if (Array.isArray(value)) {
-    let changed = false;
-    const next = value.map((item) => {
-      const sanitized = sanitizeReplayRecordingValue(item, depth + 1);
-      if (sanitized !== item) changed = true;
-      return sanitized;
-    });
-    return (changed ? next : value) as T;
-  }
-  if (!value || typeof value !== "object") {
-    return value;
-  }
-  if (value instanceof Date || value instanceof RegExp) {
-    return value;
-  }
-
-  const entries = Object.entries(value as Record<string, unknown>);
-  let changed = false;
-  const next: Record<string, unknown> = {};
-  for (const [key, entryValue] of entries) {
-    const sanitized = sanitizeReplayRecordingValue(entryValue, depth + 1);
-    if (sanitized !== entryValue) changed = true;
-    next[key] = sanitized;
-  }
-  return (changed ? next : value) as T;
-}
-
-function sanitizeReplayRecordingEvent<T>(event: T): T | null | undefined {
-  return sanitizeReplayRecordingValue(event);
-}
 
 /**
  * Initialize Sentry for the client app.
@@ -243,29 +196,14 @@ export function initSentry(router: unknown): void {
 
   const analyticsConsent = hasAnalyticsConsent();
   const sentryConsent = hasSentryConsent();
-  const currentJusticeSensitiveLocation = isCurrentJusticeSensitiveLocation();
-
   const integrations: NonNullable<
     Parameters<typeof Sentry.init>[0]
   >["integrations"] = [];
 
-  // Replays (only with analytics consent). Justice-sensitive route URLs are
-  // scrubbed from custom replay events; text/input/media are masked globally.
-  if (analyticsConsent && !currentJusticeSensitiveLocation) {
-    integrations.push(
-      replayIntegration({
-        maskAllText: true,
-        maskAllInputs: true,
-        blockAllMedia: true,
-        networkDetailDenyUrls: [
-          /\/(?:justice|justitie)(?:\/|$)/,
-          /\/(?:companies|entities)\/[^?#]+(?:\?[^#]*(?:\btab=litigii\b|\b(?:partyKey|caseNumber|from)=))/,
-        ],
-        beforeAddRecordingEvent: sanitizeReplayRecordingEvent,
-        beforeErrorSampling: () => !isCurrentJusticeSensitiveLocation(),
-      }),
-    );
-  }
+  // No session replay (TEL-001, root 19 November 2026): rrweb records a link's resolved address before any masker
+  // runs and puts the page URL in its own records, with no hook, and a session refresh can restart it after a stop.
+  // Party codes (and justice addresses) would reach Sentry. It comes back only as a decision of its own, on an SDK
+  // that can scrub every recorded URL — see docs/issues/TEL-001-party-codes-in-telemetry.md.
 
   // Performance tracing — only if sampling > 0 AND analytics consent granted
   const configuredTracesSampleRate = Number(env.VITE_SENTRY_TRACES_SAMPLE_RATE ?? 0);
@@ -333,6 +271,11 @@ export function initSentry(router: unknown): void {
   try {
     Sentry.init({
       dsn: env.VITE_SENTRY_DSN!,
+      // TEL-001: every envelope scrubbed at the one point all of them pass, whatever the SDK added after the hooks.
+      transport: (options) => scrubbingTransport(Sentry.makeFetchTransport(options)),
+      // TEL-001: every breadcrumb scrubbed as it is recorded. The SDK merges the scope's breadcrumbs into an event after
+      // `preprocessEvent`, and feedback and internal errors pass no `beforeSend`: they must be clean already.
+      beforeBreadcrumb: (breadcrumb) => scrubSentryBreadcrumb(breadcrumb),
       environment: env.VITE_APP_ENVIRONMENT,
       release: env.VITE_APP_VERSION,
       integrations,
@@ -346,9 +289,9 @@ export function initSentry(router: unknown): void {
       ],
       // Performance
       tracesSampleRate,
-      replaysOnErrorSampleRate: currentJusticeSensitiveLocation ? 0 : 1.0,
-      replaysSessionSampleRate:
-        analyticsConsent && !currentJusticeSensitiveLocation ? 0.1 : 0,
+      // No session replay (TEL-001): above.
+      replaysOnErrorSampleRate: 0,
+      replaysSessionSampleRate: 0,
       beforeSendTransaction: (event) => sanitizeSentryTransaction(event as unknown as SentryTelemetryEventLike) as unknown as typeof event | null,
       // Respect privacy consent
       beforeSend(event) {
@@ -421,6 +364,9 @@ export function initSentry(router: unknown): void {
         return telemetrySanitized as unknown as typeof event;
       },
     });
+    // TEL-001: every event the SDK prepares — feedback and its own internal errors pass no `beforeSend` —
+    // scrubbed before any hook or transport sees it.
+    Sentry.getClient()?.on("preprocessEvent", (event) => scrubSentryEventInPlace(event as unknown as Record<string, unknown>));
   } catch {
     // If init fails, keep openers null and return quietly.
     openSentryFeedback = null;

@@ -1,4 +1,5 @@
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
+import { withoutCodesInTitle, withoutNamedCodes, withoutProcurementPartyCodes } from './procurement-party-codes'
 
 /**
  * Sanitizes sensitive route URLs for analytics / error reporting.
@@ -376,6 +377,11 @@ function shouldRedactJusticePayloadValue(
 
 export function sanitizeJusticeTelemetryString(value: string): string {
   if (value.length === 0) return value
+  // TEL-001: no procurement party code, nor a fiscal code named in text, in any telemetry string, whatever the justice passes make of it.
+  return withoutNamedCodes(withoutProcurementPartyCodes(sanitizeJusticeTelemetryStringOnly(value)))
+}
+
+function sanitizeJusticeTelemetryStringOnly(value: string): string {
   // The passes rebuild what they recognise; the guard reads only what they return.
   let sanitized = sanitizeFragmentAt(value, 0)
   sanitized = sanitized.replace(ABSOLUTE_URL_PATTERN, (match) =>
@@ -403,7 +409,8 @@ export function sanitizeJusticeTelemetryValue<T>(
   key?: string,
   depth = 0,
 ): T {
-  if (depth > 8) return value
+  // Past the depth read in full: a string is still scrubbed; anything deeper is not sent unread (fail closed, TEL-001).
+  if (depth > 8) return (typeof value === 'string' ? sanitizeJusticeTelemetryString(value) : value !== null && typeof value === 'object' ? REDACTED_JUSTICE_VALUE : value) as T
   if (shouldRedactJusticePayloadValue(key, value)) {
     return REDACTED_JUSTICE_VALUE as T
   }
@@ -422,7 +429,11 @@ export function sanitizeJusticeTelemetryValue<T>(
   if (!value || typeof value !== 'object') {
     return value
   }
-  if (value instanceof Date || value instanceof RegExp || value instanceof URL) {
+  // A URL is sent as its address (TEL-001): scrubbed as one.
+  if (value instanceof URL) {
+    return sanitizeJusticeTelemetryString(value.href) as T
+  }
+  if (value instanceof Date || value instanceof RegExp) {
     return value
   }
 
@@ -448,7 +459,7 @@ const TITLE_KEYS = new Set(['title', '$title'])
 /**
  * An analytics event's properties as the SDK is about to send them: every
  * URL, path and keyed identifier scrubbed as above, and a page title's case
- * number replaced. The SDK adds its own properties after a capture call —
+ * number and fiscal codes replaced (TEL-001). The SDK adds its own properties after a capture call —
  * the current and previous URLs, the referrer, the document title — so this
  * runs on the final payload (`before_send`), not only on what the app passes.
  */
@@ -467,7 +478,9 @@ function redactTitles(value: unknown, depth: number): unknown {
   const out: Record<string, unknown> = {}
   for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
     const next =
-      TITLE_KEYS.has(key) && typeof entry === 'string' ? entry.replace(CASE_NUMBER_IN_TITLE, REDACTED_JUSTICE_CASE_NUMBER_SEGMENT) : redactTitles(entry, depth + 1)
+      TITLE_KEYS.has(key) && typeof entry === 'string'
+        ? withoutCodesInTitle(entry.replace(CASE_NUMBER_IN_TITLE, REDACTED_JUSTICE_CASE_NUMBER_SEGMENT))
+        : redactTitles(entry, depth + 1)
     if (next !== entry) changed = true
     out[key] = next
   }

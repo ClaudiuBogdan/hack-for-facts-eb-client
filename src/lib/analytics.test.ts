@@ -5,6 +5,8 @@ const posthogMock = vi.hoisted(() => ({
   init: vi.fn(),
   register: vi.fn(),
   capture: vi.fn(),
+  // The SDK's request layer, which TEL-001 wraps; without it PostHog is not started.
+  _send_request: vi.fn(),
 }))
 
 vi.mock('posthog-js', () => ({
@@ -105,10 +107,33 @@ describe('analytics privacy sanitization', () => {
         caseNumber: '[scrubbed]',
         context: {
           partyKey: '[scrubbed]',
-          companyUrl: '/companies/14399840?tab=summary',
+          companyUrl: '/companies/_?tab=summary',
         },
         safeMetric: 2,
       }),
     )
+  })
+})
+
+describe('the PostHog payload (D6, root)', () => {
+  it('scrubs procurement party codes from every URL property the SDK adds, on any event', () => {
+    const event = sanitizePostHogEvent({
+      event: '$pageleave',
+      properties: {
+        $current_url: 'https://transparenta.eu/procurement/suppliers/14837428?year=2025',
+        $pathname: '/procurement/suppliers/14837428',
+        $prev_pageview_pathname: '/procurement/institutions/4267117',
+        $referrer: 'https://transparenta.eu/procurement/analytics?tip=directe&furnizor=14837428',
+        other: '/budget/4267117',
+        $initial_current_url: 'https://transparenta.eu/Procurement/Analytics?tip=directe&furnizor=14837428',
+        $title: 'Example SRL (CUI 14837428) — Transparenta.eu',
+        title: 'The company with tax ID 4267117',
+      },
+    })
+    expect(JSON.stringify(event)).not.toContain('14837428')
+    expect(JSON.stringify(event)).not.toContain('4267117/')
+    expect(event?.properties?.$current_url).toBe('https://transparenta.eu/procurement/suppliers/_?year=2025')
+    expect(event?.properties?.$prev_pageview_pathname).toBe('/procurement/institutions/_')
+    expect(event?.properties?.other).toBe('/budget/4267117')
   })
 })

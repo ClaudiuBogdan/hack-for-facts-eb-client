@@ -206,14 +206,160 @@ export function sanitizeSentryEventPayload<T extends SentryTelemetryEventLike>(
 
 /** A justice route anywhere in a performance event: its name, its URL, its spans' attributes. */
 const JUSTICE_ROUTE_IN_EVENT = /\/(?:justice|justitie)(?=[/"?#\s]|$)/;
+/**
+ * A procurement or company page anywhere in a performance event (TEL-001, D6):
+ * the router's spans carry its `cui` param as a bare value no URL scrub reads.
+ * The company list's own `/companies/search` and `/companies/analytics` are not
+ * party pages.
+ */
+const PARTY_ROUTE_IN_EVENT = /(?:\/|%2F)(?:procurement(?=[/"?#\s%]|$)|companies(?:\/|%2F)(?!(?:search|analytics)(?=[/"?#\s%]|$)))/iu;
+
+/** Keys a performance event's route is not read from: the SDK's own circular metadata, and earlier pages' breadcrumbs. */
+const NOT_THE_ROUTE = new Set(["sdkProcessingMetadata", "breadcrumbs"]);
 
 /**
- * A performance transaction as it leaves. One that touches a justice page is
- * dropped whole: the router's spans carry its route params — a case page's
- * splat is the case number — under keys the URL sanitizer does not read.
- * Any other is scrubbed like an error event.
+ * Whether any string in a value, at any depth, matches. Cycle-safe and never
+ * throwing: SDK metadata can be circular, and a throw here would have the SDK
+ * send its own internal error — raw URL and all — past every hook. A value that
+ * cannot be read in full counts as matching: it is dropped, never sent unread.
+ */
+export function anyStringMatches(value: unknown, pattern: RegExp, skip: ReadonlySet<string> = new Set()): boolean {
+  try {
+    const seen = new WeakSet<object>();
+    const stack: unknown[] = [value];
+    let visited = 0;
+    while (stack.length > 0) {
+      const item = stack.pop();
+      if ((visited += 1) > 50_000) return true;
+      if (typeof item === "string") {
+        if (pattern.test(item)) return true;
+        continue;
+      }
+      if (!item || typeof item !== "object" || seen.has(item)) continue;
+      seen.add(item);
+      // What the serializer will send: a URL's address, an object's own `toJSON()`.
+      if (item instanceof URL) {
+        stack.push(item.href);
+        continue;
+      }
+      const toJSON = (item as { toJSON?: unknown }).toJSON;
+      if (typeof toJSON === "function") {
+        stack.push((toJSON as () => unknown).call(item));
+        continue;
+      }
+      for (const [key, child] of Object.entries(item)) {
+        if (skip.has(key)) continue;
+        if (pattern.test(key)) return true;
+        stack.push(child);
+      }
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+/** Whether a performance event or span touches a justice page, or a procurement or company page (TEL-001). */
+export function touchesSensitiveRoute(event: unknown): boolean {
+  // Justice as before TEL-001: any mention, breadcrumbs included. A party page by the event's own route.
+  return anyStringMatches(event, JUSTICE_ROUTE_IN_EVENT, SDK_METADATA) || anyStringMatches(event, PARTY_ROUTE_IN_EVENT, NOT_THE_ROUTE);
+}
+
+const SDK_METADATA = new Set(["sdkProcessingMetadata"]);
+
+/**
+ * A performance transaction as it leaves. One that touches a justice page, or
+ * a procurement or company page (TEL-001), is dropped whole: the router's spans
+ * carry its route params — a case page's splat is the case number, a party
+ * page's `cui` its code — under keys the URL sanitizer does not read. Any other
+ * is scrubbed like an error event.
  */
 export function sanitizeSentryTransaction<T extends SentryTelemetryEventLike>(event: T): T | null {
-  if (JUSTICE_ROUTE_IN_EVENT.test(JSON.stringify(event))) return null;
+  if (touchesSensitiveRoute(event)) return null;
   return sanitizeSentryEventPayload(event);
+}
+
+type EnvelopeItem = readonly [Record<string, unknown>, unknown];
+type Envelope = readonly [Record<string, unknown>, readonly EnvelopeItem[]];
+
+/**
+ * An envelope as it is about to be sent (TEL-001): the one point every Sentry
+ * payload passes — events, the SDK's internal errors, standalone spans,
+ * feedback, client reports — whatever was added after the event hooks. Each
+ * item is read as the serializer will write it (`toJSON`, URLs) and scrubbed;
+ * a transaction or span that touches a sensitive page is dropped; an item that
+ * cannot be read is dropped; of the binary items only an image attachment (a
+ * feedback screenshot the reader chose to attach, accepted P3) is kept.
+ */
+export function scrubEnvelope(envelope: Envelope): Envelope {
+  const [headers, items] = envelope;
+  const kept: EnvelopeItem[] = [];
+  for (const [itemHeaders, payload] of items) {
+    if (typeof payload === "string" || payload instanceof Uint8Array) {
+      const image = itemHeaders.type === "attachment" && typeof itemHeaders.content_type === "string" && itemHeaders.content_type.startsWith("image/");
+      if (image) kept.push([itemHeaders, payload]);
+      continue;
+    }
+    try {
+      const plain: unknown = JSON.parse(JSON.stringify(payload));
+      if ((itemHeaders.type === "transaction" || itemHeaders.type === "span") && touchesSensitiveRoute(plain)) continue;
+      kept.push([sanitizeJusticeTelemetryValue(itemHeaders), sanitizeJusticeTelemetryValue(plain)]);
+    } catch {
+      // Not readable as JSON: not sent.
+    }
+  }
+  let scrubbedHeaders: Record<string, unknown> = {};
+  try {
+    scrubbedHeaders = sanitizeJusticeTelemetryValue(JSON.parse(JSON.stringify(headers)) as Record<string, unknown>);
+  } catch {
+    // The headers the transport needs are rebuilt from nothing: a DSN-less envelope is refused, which fails closed.
+  }
+  return [scrubbedHeaders, kept];
+}
+
+type TransportLike = { send: (envelope: never) => PromiseLike<unknown>; flush: (timeout?: number) => PromiseLike<boolean> };
+
+/** The SDK's transport, every envelope scrubbed before it is sent (`scrubEnvelope`). */
+export function scrubbingTransport<T extends TransportLike>(transport: T): T {
+  return { ...transport, send: (envelope: never) => transport.send(scrubEnvelope(envelope as unknown as Envelope) as never) };
+}
+
+/** The fields of an event that can carry an address or a party code, of every event type the SDK prepares. */
+const SCRUBBED_EVENT_FIELDS = ["message", "exception", "request", "breadcrumbs", "extra", "contexts", "tags", "transaction", "spans", "urls", "logentry", "user"] as const;
+
+/**
+ * Every event the SDK prepares — errors, its own internal errors, transactions,
+ * feedback, replay events — scrubbed in place before any hook or transport
+ * sees it (the client's `preprocessEvent`; TEL-001). If scrubbing fails, the
+ * fields that could carry an address are dropped: fail closed, never sent raw.
+ */
+export function scrubSentryEventInPlace(event: Record<string, unknown>): void {
+  try {
+    for (const field of SCRUBBED_EVENT_FIELDS) {
+      // A code named in text („X SRL (CUI 14837428)") too: the shared string rules (TEL-001).
+      if (field in event && event[field] !== undefined) event[field] = sanitizeJusticeTelemetryValue(event[field]);
+    }
+  } catch {
+    for (const field of SCRUBBED_EVENT_FIELDS) {
+      try {
+        delete event[field];
+      } catch {
+        // A field that cannot be removed (a frozen event): the others still go.
+      }
+    }
+    try {
+      event.message = "[telemetry scrub failed]";
+    } catch {
+      // As above.
+    }
+  }
+}
+
+/** A breadcrumb as it is recorded (`beforeBreadcrumb`), scrubbed like an event; one that cannot be scrubbed is not kept. */
+export function scrubSentryBreadcrumb<T>(breadcrumb: T): T | null {
+  try {
+    return sanitizeJusticeTelemetryValue(breadcrumb);
+  } catch {
+    return null;
+  }
 }

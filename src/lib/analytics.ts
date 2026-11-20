@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { withoutProcurementPartyCodes } from "@/lib/privacy/procurement-party-codes";
 import type { PostHog } from "posthog-js";
 import { useLocation } from "@tanstack/react-router";
 import { env } from "@/config/env";
@@ -123,6 +124,41 @@ function withPostHog(send: (posthog: PostHog) => void): void {
   );
 }
 
+type PostHogRequest = { url?: unknown; data?: unknown; fireCallbackOnDrop?: boolean; callback?: (response: { statusCode: number }) => void };
+
+/**
+ * Every request PostHog sends, scrubbed at the one point all of them pass
+ * (`_send_request`: events, retries and `sendBeacon`, and what never meets
+ * `before_send` — its logs, which remote config can turn on, carry the page URL;
+ * its conversations widget sends `current_url`). TEL-001, the principle of the
+ * Sentry transport: the body and the URL go through the shared telemetry
+ * sanitizer; a body it cannot read is not sent. `_send_request` is the SDK's
+ * internal method (posthog-js 1.408); if it is ever missing, PostHog is not
+ * started at all — fail closed.
+ */
+export function guardPostHogRequests(posthog: PostHog): void {
+  const instance = posthog as unknown as { _send_request?: (options: PostHogRequest) => void };
+  const send = instance._send_request;
+  if (typeof send !== "function") throw new Error("PostHog request layer not found: analytics stays off (TEL-001).");
+  instance._send_request = function guardedSend(this: unknown, options: PostHogRequest) {
+    let scrubbed: PostHogRequest;
+    try {
+      scrubbed = {
+        ...options,
+        ...(typeof options.url === "string" ? { url: sanitizeJusticeTelemetryValue(options.url) } : {}),
+        // Read as PostHog writes it (`JSON.stringify`, a bigint as its digits).
+        ...(options.data !== undefined ? { data: sanitizeJusticeEventProperties({ value: JSON.parse(JSON.stringify(options.data, (_key, value: unknown) => (typeof value === "bigint" ? value.toString() : value))) as unknown }).value } : {}),
+      };
+    } catch {
+      if (options.fireCallbackOnDrop) options.callback?.({ statusCode: 0 });
+      return;
+    }
+    // The page's full address never rides along as `Referer` (a same-origin proxy would get it): origin only, as Sentry's transport sends.
+    const fetchOptions = { ...((scrubbed as { fetchOptions?: Record<string, unknown> }).fetchOptions ?? {}), referrerPolicy: "strict-origin" };
+    send.call(this ?? posthog, { ...scrubbed, fetchOptions });
+  };
+}
+
 export function isAnalyticsEnabled(): boolean {
   return (
     isBrowser &&
@@ -144,6 +180,8 @@ function ensurePostHogInitialized(posthog: PostHog): void {
   if (!apiKey || !apiHost) return;
 
   try {
+    // TEL-001: before init, so the requests init itself makes pass through it too.
+    guardPostHogRequests(posthog);
     posthog.init(apiKey, {
       api_host: apiHost,
       autocapture: false,
@@ -184,6 +222,7 @@ export function sanitizePostHogEvent<T extends { properties?: Record<string, unk
   event: T | null,
 ): T | null {
   if (!event) return event;
+  // The shared sanitizer also masks procurement party codes in every string (D6, root): the SDK's URLs on any event.
   return {
     ...event,
     ...(event.properties ? { properties: sanitizeJusticeEventProperties(event.properties) } : {}),
@@ -286,9 +325,11 @@ export function capturePageview(payload?: {
     const sanitizedFragment = sanitizeJusticeUrlFragment(
       `${rawPathname}${rawSearch}`,
     );
-    const queryIndex = sanitizedFragment.indexOf("?");
-    const pathname = queryIndex === -1 ? sanitizedFragment : sanitizedFragment.slice(0, queryIndex);
-    const search = queryIndex === -1 ? "" : sanitizedFragment.slice(queryIndex);
+    // D6 (root, 19 November 2026): no procurement party's code goes to the analytics service.
+    const procurementFragment = withoutProcurementPartyCodes(sanitizedFragment);
+    const queryIndex = procurementFragment.indexOf("?");
+    const pathname = queryIndex === -1 ? procurementFragment : procurementFragment.slice(0, queryIndex);
+    const search = queryIndex === -1 ? "" : procurementFragment.slice(queryIndex);
 
     const url = `${window.location.origin}${pathname}${search}`;
     const host = window.location.host;

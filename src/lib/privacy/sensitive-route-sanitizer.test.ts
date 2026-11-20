@@ -254,8 +254,9 @@ describe('the output guard', () => {
   })
 
   it('keeps what hides nothing exactly as it was', () => {
+    // A company's code is masked, its address read in the clear (TEL-001: no party code in telemetry); nothing else of it changes.
     const safe = cookies('/companies/123?tab=litigii#results')
-    expect(sanitizeJusticeTelemetryString(safe)).toBe(safe)
+    expect(sanitizeJusticeTelemetryString(safe)).toBe('/cookies?redirect=/companies/_?tab=litigii#results')
     for (const value of ['/justice%2Eleague/intro', 'https://justice%2egov/about']) {
       const text = `/cookies?redirect=${layers(value, 7)}`
       expect(sanitizeJusticeTelemetryString(text)).toBe(text)
@@ -502,7 +503,7 @@ describe('sanitizeJusticeTelemetryValue', () => {
       caseNumber: '[scrubbed]',
       nested: {
         partyKey: '[scrubbed]',
-        href: 'https://transparenta.eu/companies/14399840?tab=summary',
+        href: 'https://transparenta.eu/companies/_?tab=summary',
       },
       links: ['/justitie/dosare/:caseId?court=TB-BUCURESTI'],
       label: 'safe aggregate text',
