@@ -21,19 +21,43 @@ type ApiError = {
 type ApiResponse<T> = ApiSuccess<T> | ApiError;
 
 /**
+ * A failure as these functions tell it: the operation and, for a failed
+ * response, its status number. Never the API's message, error type, status
+ * text or body, nor what fetch or the JSON parser threw: the API's not-found
+ * message repeats the code, and its other messages are free text (LOG-001).
+ */
+class ShortLinkFailure extends Error {
+  constructor(operation: string, reason?: number | "not authenticated") {
+    super(reason === undefined ? `${operation} failed` : `${operation} failed: ${reason}`);
+    this.name = "ShortLinkFailure";
+  }
+}
+
+async function told<T>(operation: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    const failure = error instanceof ShortLinkFailure ? error : new ShortLinkFailure(operation);
+    logger.error(`${operation} failed`, { error: failure });
+    throw failure;
+  }
+}
+
+/**
  * Create a deterministic short link code for a given URL.
  * Requires authentication via Bearer token.
  */
 export async function createShortLink(originalUrl: string): Promise<string> {
-  const endpoint = `${getApiBaseUrl()}/api/v1/short-links`;
+  const operation = "Create short link";
 
-  try {
+  return told(operation, async () => {
+    const endpoint = `${getApiBaseUrl()}/api/v1/short-links`;
     const token = await getAuthToken();
     if (!token) {
-      throw new Error("Not authenticated");
+      throw new ShortLinkFailure(operation, "not authenticated");
     }
 
-    logger.info("Creating short link", { originalUrl });
+    logger.info("Creating short link");
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -46,54 +70,46 @@ export async function createShortLink(originalUrl: string): Promise<string> {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Create short link failed: ${response.status} ${response.statusText} - ${errorText}`
-      );
+      throw new ShortLinkFailure(operation, response.status);
     }
 
     const result = (await response.json()) as ApiResponse<{ code: string }>;
-    if (!result.ok) {
-      throw new Error(result.error || "Unknown short link API error");
+    const code: unknown = result?.ok ? result.data?.code : undefined;
+    // No answer without a code: an undefined one would fail in the cache helper, whose key is the shared URL.
+    if (typeof code !== "string" || code === "") {
+      throw new ShortLinkFailure(operation, response.status);
     }
 
-    return result.data.code;
-  } catch (error) {
-    logger.error("Failed to create short link", { error });
-    throw error;
-  }
+    return code;
+  });
 }
 
 /**
  * Resolve a short link code into the original URL. Public endpoint.
  */
 export async function resolveShortLinkCode(code: string): Promise<string> {
-  const endpoint = `${getApiBaseUrl()}/api/v1/short-links/${encodeURIComponent(code)}`;
+  const operation = "Resolve short link";
 
-  try {
-    logger.info("Resolving short link code", { code });
+  return told(operation, async () => {
+    const endpoint = `${getApiBaseUrl()}/api/v1/short-links/${encodeURIComponent(code)}`;
+    logger.info("Resolving short link code");
     const response = await fetch(endpoint, {
       method: "GET",
       referrerPolicy: API_FETCH_REFERRER_POLICY,
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Resolve short link failed: ${response.status} ${response.statusText} - ${errorText}`
-      );
+      throw new ShortLinkFailure(operation, response.status);
     }
 
     const result = (await response.json()) as ApiResponse<{ url: string }>;
-    if (!result.ok) {
-      throw new Error(result.error || "Unknown short link API error");
+    const url: unknown = result?.ok ? result.data?.url : undefined;
+    if (typeof url !== "string" || url === "") {
+      throw new ShortLinkFailure(operation, response.status);
     }
 
-    return result.data.url;
-  } catch (error) {
-    logger.error("Failed to resolve short link", { error });
-    throw error;
-  }
+    return url;
+  });
 }
 
 /**

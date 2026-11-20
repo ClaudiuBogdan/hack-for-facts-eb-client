@@ -106,8 +106,9 @@ function remapUrlToClientHost(apiUrl: string) {
     const serverUrl = new URL(apiUrl);
     const clientOrigin = window.location.origin;
     return `${clientOrigin}${serverUrl.pathname}${serverUrl.search}${serverUrl.hash}`;
-  } catch (error) {
-    console.error(`Could not remap invalid URL: "${apiUrl}"`, error);
+  } catch {
+    // The shared URL is not printed (LOG-001).
+    console.error('Could not remap an invalid shared URL');
     return apiUrl;
   }
 }

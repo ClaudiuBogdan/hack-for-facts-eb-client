@@ -1,12 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const log = vi.hoisted(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }));
 vi.mock('@/lib/logger', () => ({
-  createLogger: vi.fn(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  })),
+  createLogger: vi.fn(() => log),
 }));
 
 vi.mock('../auth', () => ({
@@ -68,5 +64,45 @@ describe('short links api', () => {
         referrerPolicy: API_FETCH_REFERRER_POLICY,
       })
     );
+  });
+
+  it('logs and throws neither the code nor the shared URL, on any path (LOG-001)', async () => {
+    vi.mocked(getAuthToken).mockResolvedValue('token');
+    const json = (body: unknown, status: number, statusText: string) => new Response(JSON.stringify(body), { status, statusText });
+
+    fetchMock.mockResolvedValueOnce(json({ ok: false, error: 'Secret123', message: "Short link with code 'Secret123' not found" }, 404, 'Secret123'));
+    await expect(resolveShortLinkCode('Secret123')).rejects.toThrow(/^Resolve short link failed: 404$/u);
+
+    fetchMock.mockResolvedValueOnce(json({ ok: false, error: 'insert of https://transparenta.eu/alerts/new?preset=private failed' }, 500, 'Internal Server Error'));
+    await expect(createShortLink('https://transparenta.eu/alerts/new?preset=private')).rejects.toThrow(/^Create short link failed: 500$/u);
+
+    fetchMock.mockResolvedValueOnce(new Response('<html>Secret123</html>', { status: 502, statusText: 'Bad Gateway' }));
+    await expect(resolveShortLinkCode('Secret123')).rejects.toThrow(/^Resolve short link failed: 502$/u);
+
+    // A 2xx body that says it failed, and an unreadable one.
+    fetchMock.mockResolvedValueOnce(json({ ok: false, error: 'Secret123' }, 200, 'OK'));
+    await expect(resolveShortLinkCode('Secret123')).rejects.toThrow(/^Resolve short link failed: 200$/u);
+    fetchMock.mockResolvedValueOnce(new Response('Secret123 not json', { status: 200 }));
+    await expect(resolveShortLinkCode('Secret123')).rejects.toThrow(/^Resolve short link failed$/u);
+
+    // A 2xx answer without a code or URL.
+    fetchMock.mockResolvedValueOnce(json({ ok: true, data: {} }, 200, 'OK'));
+    await expect(createShortLink('https://transparenta.eu/alerts/new?preset=private')).rejects.toThrow(/^Create short link failed: 200$/u);
+    fetchMock.mockResolvedValueOnce(json({ ok: true, data: { url: '' } }, 200, 'OK'));
+    await expect(resolveShortLinkCode('Secret123')).rejects.toThrow(/^Resolve short link failed: 200$/u);
+
+    // What fetch itself throws.
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch https://api.example/api/v1/short-links/Secret123'));
+    await expect(resolveShortLinkCode('Secret123')).rejects.toThrow(/^Resolve short link failed$/u);
+    fetchMock.mockRejectedValueOnce(new TypeError('body https://transparenta.eu/alerts/new?preset=private'));
+    await expect(createShortLink('https://transparenta.eu/alerts/new?preset=private')).rejects.toThrow(/^Create short link failed$/u);
+
+    vi.mocked(getAuthToken).mockResolvedValueOnce(null as never);
+    await expect(createShortLink('https://transparenta.eu/alerts/new?preset=private')).rejects.toThrow(/^Create short link failed: not authenticated$/u);
+
+    const logged = JSON.stringify([...log.info.mock.calls, ...log.error.mock.calls.map(([message, extra]) => [message, String((extra as { error?: unknown })?.error)])]);
+    expect(log.error).toHaveBeenCalledTimes(10);
+    expect(logged).not.toContain('Secret123');
+    expect(logged).not.toContain('preset=private');
   });
 });
