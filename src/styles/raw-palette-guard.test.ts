@@ -43,6 +43,14 @@ const HEX = /(?<!(?:href|to|hash)\s*[:=]\s*['"\x60])(?<=['"\x60(\s:[,])#(?:[0-9a
 const HEX_GUARDED = 'src/features/learning/'
 
 /**
+ * A hex colour as a Tailwind arbitrary value in a class (`bg-[#3565c4]`,
+ * `hover:text-[#c91d00]`, `shadow-[#3565c4]/20`). Checked in every guarded
+ * folder: unlike a MapLibre paint string, it is a stylesheet class and has a
+ * token.
+ */
+const HEX_CLASS = /(?<=[a-z])-\[#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\](?:\/(?:\d+|\[[^\]]+\]))?/g
+
+/**
  * Files not converted yet. Each conversion batch removes its files; the second
  * test fails if a listed file is already clean, so a converted file must leave.
  * That the list only shrinks is otherwise a review rule: an addition shows in
@@ -81,6 +89,7 @@ function sourceFiles(dir: string): string[] {
 function rawColours(file: string, text: string): string[] {
   const found = [...text.matchAll(PALETTE)].map((m) => m[0])
   if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) found.push(...[...text.matchAll(HEX)].map((m) => m[0]))
+  if (!file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) found.push(...[...text.matchAll(HEX_CLASS)].map((m) => m[0]))
   return found
 }
 
@@ -122,5 +131,18 @@ describe('raw palette colours', () => {
     ['nothing in a fragment link', 'href="#abc"', []],
   ])('finds hex in learning: %s', (_, text, expected) => {
     expect(rawColours('src/features/learning/x.tsx', text)).toEqual(expected)
+  })
+})
+
+describe('hex colours in class names', () => {
+  it.each([
+    ['an arbitrary background', 'className="bg-[#3565c4] px-6"', ['-[#3565c4]']],
+    ['a variant and a shadow with opacity', 'hover:text-[#c91d00] shadow-[#3565c4]/20', ['-[#c91d00]', '-[#3565c4]/20']],
+  ])('finds %s in a campaigns file', (_, text, expected) => {
+    expect(rawColours('src/features/campaigns/x.tsx', text)).toEqual(expected)
+  })
+
+  it('leaves a MapLibre paint string outside learning alone', () => {
+    expect(rawColours('src/features/campaigns/x.tsx', "paint: { 'fill-color': '#ef2d00' }")).toEqual([])
   })
 })

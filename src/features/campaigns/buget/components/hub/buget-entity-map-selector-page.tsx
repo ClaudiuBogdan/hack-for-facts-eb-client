@@ -196,7 +196,7 @@ export function BugetEntityMapSelectorPage({
           {locale === 'en' ? 'Campaign reach' : 'Participare în campanie'}
         </p>
         {isSubscriptionStatsError ? (
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-status-blocked-fg">
             {locale === 'en'
               ? 'Subscription stats are temporarily unavailable.'
               : 'Statisticile de abonare sunt temporar indisponibile.'}
@@ -248,6 +248,7 @@ export function BugetEntityMapSelectorPage({
             </Button>
             <Button
               type="button"
+              className="hover:bg-primary hover:ring-2 hover:ring-primary/40"
               disabled={isResolvingSelection}
               onClick={() => {
                 if (!pendingUatSelection) return

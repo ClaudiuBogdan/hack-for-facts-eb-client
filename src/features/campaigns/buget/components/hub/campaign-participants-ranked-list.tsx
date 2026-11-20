@@ -97,7 +97,7 @@ export function CampaignParticipantsRankedList({
         </div>
 
         <div className="shrink-0 pt-1 text-right">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#c91d00]">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">
             {listLabel}
           </p>
           <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-semibold text-foreground">
@@ -112,10 +112,10 @@ export function CampaignParticipantsRankedList({
 
       <CollapsibleContent className="border-t border-border/50 px-3 pb-3 pt-3">
         <div className="flex items-center justify-between px-1 pb-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/80">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
             {isRomanian ? 'Localitate' : 'Locality'}
           </span>
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/80">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
             {countColumnLabel}
           </span>
         </div>
@@ -134,7 +134,7 @@ export function CampaignParticipantsRankedList({
                   className={cn(
                     'flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                     isCurrent
-                      ? 'border-[#ef2d00]/20 bg-[#ef2d00]/5'
+                      ? 'border-primary/30 bg-primary/10'
                       : 'border-transparent bg-muted/15',
                   )}
                 >
@@ -147,14 +147,14 @@ export function CampaignParticipantsRankedList({
                         {entry.uatName}
                       </p>
                       {isCurrent ? (
-                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#c91d00]">
+                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-foreground">
                           {isRomanian ? 'Actual' : 'Current'}
                         </p>
                       ) : null}
                     </div>
                   </div>
 
-                  <span className="shrink-0 rounded-full bg-[#ef2d00]/10 px-2.5 py-1 text-xs font-semibold text-[#c91d00]">
+                  <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground">
                     {formatNumber(entry.count, 'standard')}
                   </span>
                 </button>

@@ -389,7 +389,7 @@ export function ChallengesHubPage({
           {locale === 'en' ? 'Read the campaign ' : 'Consultă '}
           <Link
             to={CAMPAIGN_TERMS_PATH}
-            className="font-medium text-foreground underline decoration-[#3565c4] underline-offset-4 transition-colors hover:text-[#3565c4]"
+            className="font-medium text-foreground underline decoration-primary underline-offset-4 transition-colors hover:text-primary"
           >
             {locale === 'en' ? 'terms and conditions' : 'termenii și condițiile campaniei'}
           </Link>
