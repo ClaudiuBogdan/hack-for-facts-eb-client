@@ -73,19 +73,19 @@ export interface ClassificationExplorerProps {
 
 export const CLASSIFICATION_COLORS = {
   fn: {
-    bg: 'bg-indigo-500',
-    bgLight: 'bg-indigo-500/10',
-    bgLighter: 'bg-indigo-50 dark:bg-indigo-500/10',
-    text: 'text-indigo-600 dark:text-indigo-400',
-    border: 'border-indigo-200 dark:border-indigo-800',
-    blur: 'bg-indigo-100/30 dark:bg-indigo-500/5',
+    bg: 'bg-chart-1',
+    bgLight: 'bg-chart-1/10',
+    bgLighter: 'bg-chart-1/10',
+    text: 'text-primary',
+    border: 'border-chart-1/40',
+    blur: 'bg-chart-1/10',
   },
   ec: {
-    bg: 'bg-emerald-500',
-    bgLight: 'bg-emerald-500/10',
-    bgLighter: 'bg-emerald-50 dark:bg-emerald-500/10',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    blur: 'bg-emerald-100/30 dark:bg-emerald-500/5',
+    bg: 'bg-chart-2',
+    bgLight: 'bg-chart-2/10',
+    bgLighter: 'bg-chart-2/10',
+    text: 'text-primary',
+    border: 'border-chart-2/40',
+    blur: 'bg-chart-2/10',
   },
 } as const

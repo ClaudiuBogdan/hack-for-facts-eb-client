@@ -117,9 +117,9 @@ function LensCard({
         'relative flex flex-col items-center p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-[2.5rem] border-2 transition-all cursor-pointer overflow-hidden group',
         colors.border,
         isFocused 
-          ? cn(colors.bgLighter, 'ring-4 ring-offset-4 dark:ring-offset-zinc-950', type === 'organizational' ? 'ring-slate-400/20' : type === 'functional' ? 'ring-indigo-400/20' : 'ring-emerald-400/20')
-          : 'bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-900',
-        isDeemphasized && 'opacity-40 grayscale-[0.5] scale-[0.98]'
+          ? cn(colors.bgLighter, 'ring-4 ring-offset-4 ring-offset-background', type === 'organizational' ? 'ring-chart-1/20' : type === 'functional' ? 'ring-chart-2/20' : 'ring-chart-3/20')
+          : 'bg-card hover:bg-muted/50',
+        isDeemphasized && 'grayscale scale-[0.98]'
       )}
       role="button"
       tabIndex={0}
@@ -151,7 +151,7 @@ function LensCard({
       </Badge>
 
       {/* Label */}
-      <h4 className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-zinc-400 dark:text-zinc-500 mb-1 md:mb-3">
+      <h4 className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-muted-foreground mb-1 md:mb-3">
         {label}
       </h4>
 
@@ -165,7 +165,7 @@ function LensCard({
 
       {/* Subvalue */}
       {subvalue && (
-        <div className="text-[11px] md:text-sm font-medium text-zinc-500 dark:text-zinc-400 text-center mb-2 md:mb-4 leading-snug px-2 md:px-4">
+        <div className="text-[11px] md:text-sm font-medium text-muted-foreground text-center mb-2 md:mb-4 leading-snug px-2 md:px-4">
           {subvalue}
         </div>
       )}
@@ -175,7 +175,7 @@ function LensCard({
         {showCode && code && (
           <div
             className={cn(
-              'px-2 md:px-4 py-0.5 md:py-1 rounded-lg md:rounded-xl font-mono text-[9px] md:text-[10px] font-bold opacity-60',
+              'px-2 md:px-4 py-0.5 md:py-1 rounded-lg md:rounded-xl font-mono text-[9px] md:text-[10px] font-bold',
               colors.text
             )}
           >
@@ -184,7 +184,7 @@ function LensCard({
         )}
 
         {!showCode && (
-          <div className="text-[7px] md:text-[8px] font-bold text-zinc-300 dark:text-zinc-600 italic uppercase tracking-wider md:tracking-widest text-center max-w-[100px] md:max-w-[120px] leading-tight">
+          <div className="text-[7px] md:text-[8px] font-bold text-muted-foreground italic uppercase tracking-wider md:tracking-widest text-center max-w-[100px] md:max-w-[120px] leading-tight">
             {noCodeLabel}
           </div>
         )}
@@ -207,11 +207,11 @@ function ExampleHeader({ title, amount }: ExampleHeaderProps) {
 
   return (
     <div className="text-center">
-      <h3 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white mb-2 tracking-tighter leading-tight">
+      <h3 className="text-3xl md:text-4xl font-black text-foreground mb-2 tracking-tighter leading-tight">
         {title}
       </h3>
-      <div className="inline-flex items-center gap-2 text-2xl md:text-3xl font-black text-indigo-600 dark:text-indigo-400">
-        {formattedAmount} <span className="text-sm font-bold opacity-60">RON</span>
+      <div className="inline-flex items-center gap-2 text-2xl md:text-3xl font-black text-primary">
+        {formattedAmount} <span className="text-sm font-bold">RON</span>
       </div>
     </div>
   )
@@ -239,9 +239,9 @@ function LensInsightPanel({ lens, insight, onClose, closeLabel }: LensInsightPan
     <div 
       className={cn(
         'relative rounded-[2.5rem] border p-8 backdrop-blur-xs',
-        lens === 'organizational' && 'bg-slate-50/40 dark:bg-slate-950/10 border-slate-200/50 dark:border-slate-800/30',
-        lens === 'functional' && 'bg-indigo-50/40 dark:bg-indigo-950/10 border-indigo-200/50 dark:border-indigo-800/30',
-        lens === 'economic' && 'bg-emerald-50/40 dark:bg-emerald-950/10 border-emerald-200/50 dark:border-emerald-800/30'
+        lens === 'organizational' && 'bg-chart-1/10 border-chart-1/40',
+        lens === 'functional' && 'bg-chart-2/10 border-chart-2/40',
+        lens === 'economic' && 'bg-chart-3/10 border-chart-3/40'
       )}
       role="region"
       aria-label={insight.title}
@@ -261,7 +261,7 @@ function LensInsightPanel({ lens, insight, onClose, closeLabel }: LensInsightPan
           <h3 className={cn('text-xl font-black mb-2 tracking-tight', colors.text)}>
             {insight.title}
           </h3>
-          <p className="text-lg text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
+          <p className="text-lg text-foreground leading-relaxed font-medium">
             {insight.text}
           </p>
         </div>
@@ -269,7 +269,7 @@ function LensInsightPanel({ lens, insight, onClose, closeLabel }: LensInsightPan
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="absolute top-4 right-4 h-10 w-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+          className="absolute top-4 right-4 h-10 w-10 rounded-full hover:bg-foreground/10"
           aria-label={closeLabel ?? 'Close'}
         >
           <X className="w-5 h-5" />
@@ -334,10 +334,10 @@ export function ThreeLensesExplorer({
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-zinc-900 dark:text-white mb-4 leading-[0.9]">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground mb-4 leading-[0.9]">
             {text.title}
           </h2>
-          <p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 font-medium max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
             {text.subtitle}
           </p>
         </motion.div>
@@ -352,10 +352,10 @@ export function ThreeLensesExplorer({
                 variant="ghost"
                 size="icon"
                 onClick={handlePrev}
-                className="h-14 w-14 rounded-full bg-white dark:bg-zinc-900 shadow-xl border border-zinc-100 dark:border-zinc-800 hover:scale-110 active:scale-95 transition-all group"
+                className="h-14 w-14 rounded-full bg-card shadow-xl border border-border hover:scale-110 active:scale-95 transition-all group"
                 aria-label="Previous example"
               >
-                <ChevronLeft className="w-6 h-6 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+                <ChevronLeft className="w-6 h-6 text-muted-foreground group-hover:text-foreground transition-colors" />
               </Button>
             </div>
             <div className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-6 md:translate-x-10 z-30 hidden lg:block">
@@ -363,10 +363,10 @@ export function ThreeLensesExplorer({
                 variant="ghost"
                 size="icon"
                 onClick={handleNext}
-                className="h-14 w-14 rounded-full bg-white dark:bg-zinc-900 shadow-xl border border-zinc-100 dark:border-zinc-800 hover:scale-110 active:scale-95 transition-all group"
+                className="h-14 w-14 rounded-full bg-card shadow-xl border border-border hover:scale-110 active:scale-95 transition-all group"
                 aria-label="Next example"
               >
-                <ChevronRight className="w-6 h-6 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+                <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-foreground transition-colors" />
               </Button>
             </div>
           </>
@@ -457,7 +457,7 @@ export function ThreeLensesExplorer({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="flex items-center justify-center gap-2 text-sm text-zinc-400 dark:text-zinc-500"
+                className="flex items-center justify-center gap-2 text-sm text-muted-foreground"
               >
                 <MousePointerClick className="w-4 h-4" />
                 <span className="font-medium">{text.hintText}</span>
@@ -483,16 +483,16 @@ export function ThreeLensesExplorer({
                   closeLabel={text.closeInsightLabel}
                 />
               ) : (
-                <div className="relative rounded-[2.5rem] bg-amber-50/40 dark:bg-amber-950/10 border border-amber-100/50 dark:border-amber-900/30 p-8 backdrop-blur-xs">
+                <div className="relative rounded-[2.5rem] bg-status-partial-bg border border-status-partial-fg/30 p-8 backdrop-blur-xs">
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                    <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-900/30 shrink-0 shadow-inner">
-                      <Lightbulb className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                    <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-status-partial-fg/10 shrink-0 shadow-inner">
+                      <Lightbulb className="w-8 h-8 text-status-partial-fg" />
                     </div>
                     <div className="text-center md:text-left">
-                      <div className="text-xl font-black text-amber-900 dark:text-amber-100 mb-2 tracking-tight">
+                      <div className="text-xl font-black text-status-partial-fg mb-2 tracking-tight">
                         {text.insightTitle}
                       </div>
-                      <p className="text-lg text-amber-800/80 dark:text-amber-200/80 leading-relaxed font-medium">
+                      <p className="text-lg text-status-partial-fg leading-relaxed font-medium">
                         {text.insightText}
                       </p>
                     </div>
@@ -523,8 +523,8 @@ export function ThreeLensesExplorer({
                     className={cn(
                       'h-2 rounded-full transition-all duration-500',
                       index === currentIndex 
-                        ? 'w-8 bg-zinc-900 dark:bg-white' 
-                        : 'w-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300'
+                        ? 'w-8 bg-primary' 
+                        : 'w-2 bg-border hover:bg-muted-foreground'
                     )}
                     aria-label={`Go to example ${index + 1}`}
                   />
