@@ -664,6 +664,21 @@ export const legalActDetailV2NoKnownFormFixture: LegalActDetail = {
   documents: [],
 }
 
+/**
+ * The server names no default and no latest available form, but the list
+ * holds a READABLE original with no known date (it cannot be ordered against
+ * the other versions; 1,924 acts in production on 2026-11-21).
+ */
+export const legalActDetailV2UndatedOriginalFixture: LegalActDetail = {
+  ...legalActDetailV2NoTextFixture,
+  actId: '900006',
+  latestDocumentId: V2_REPUBLICATION_NOT_LOADED.documentId,
+  documents: [
+    { ...V2_ORIGINAL, versionDate: null, firstPublicationDate: null },
+    V2_REPUBLICATION_NOT_LOADED,
+  ],
+}
+
 const BY_ID: Record<string, LegalActDetail> = {
   [legalActDetailFixture.actId]: legalActDetailFixture,
   [legalActDetailRichFixture.actId]: legalActDetailRichFixture,

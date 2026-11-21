@@ -87,7 +87,11 @@ describe('ActVersionsBand', () => {
     it('counts the newer versions whose text is not available (latest_not_available)', () => {
       render(<ActVersionsBand act={legalActDetailV2LatestNotAvailableFixture} />)
       open()
-      expect(screen.getByText(/mai listează o versiune mai nouă/)).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          'O versiune fără text disponibil, de la aceeași dată sau mai nouă decât cea mai recentă versiune cu text.',
+        ),
+      ).toBeInTheDocument()
       // The latest form with text is marked as shown by default, not current;
       // no row claims to be the current default.
       expect(screen.getByText('afișată implicit — nu este versiunea curentă')).toBeInTheDocument()

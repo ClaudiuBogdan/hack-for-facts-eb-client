@@ -28,6 +28,7 @@ import {
   legalActDetailV2LatestNotAvailableFixture,
   legalActDetailV2NoKnownFormFixture,
   legalActDetailV2NoTextFixture,
+  legalActDetailV2UndatedOriginalFixture,
   legalActDetailV2UnbridgedFixture,
 } from '../../mocks/fixtures/legal-act-detail'
 import { ActReadingLayout } from './legal-reader-page'
@@ -325,6 +326,46 @@ describe('ActReadingLayout on legal_v2', () => {
       expect(await screen.findByText('Fără expresie canonică')).toBeInTheDocument()
       expect(requestedIds()).toEqual([])
       expect(screen.queryByText(/Afișăm versiunea/)).not.toBeInTheDocument()
+    })
+
+    it('no default named, but a readable undated original: shows its text with the date notice, never "no text"', async () => {
+      const { container } = render(
+        <ActReadingLayout act={legalActDetailV2UndatedOriginalFixture} lead={null} fisa={null} />,
+      )
+      await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
+      expect(requestedIds()).toEqual(['f900011'])
+      expect(
+        screen.getByText(
+          /Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de\s+celelalte versiuni\. Afișăm singurul text disponibil\./,
+        ),
+      ).toBeInTheDocument()
+      expect(screen.queryByText('Fără expresie canonică')).not.toBeInTheDocument()
+    })
+
+    it('with several readable undated versions, shows the original first and lists the others', async () => {
+      const act = {
+        ...legalActDetailV2UndatedOriginalFixture,
+        documents: [
+          ...legalActDetailV2UndatedOriginalFixture.documents,
+          {
+            ...legalActDetailV2Fixture.documents[1]!,
+            documentId: 'f900015',
+            versionKind: 'republicare',
+            versionDate: null,
+            isCanonical: false,
+            caveat: null,
+          },
+        ],
+      }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      await screen.findByText(/Afișăm una dintre versiunile cu text/)
+      expect(requestedIds()).toEqual(['f900011'])
+      const select = screen.getByLabelText(/Versiunea textului/)
+      const values = Array.from(select.querySelectorAll('option'))
+        .filter((option) => !option.disabled)
+        .map((option) => option.value)
+      expect(values).toEqual(expect.arrayContaining(['f900011', 'f900015']))
+      expect(select).toHaveValue('f900011')
     })
 
     it('says quietly when same-day versions were ordered by the fixed rule', async () => {

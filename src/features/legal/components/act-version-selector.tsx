@@ -56,7 +56,9 @@ export function ActVersionSelector({ act, shownDocumentId }: Props) {
   const label = (doc: LegalActDocumentVersion) => {
     const text = baseLabel(doc)
     if (doc.documentId !== defaultReading.documentId) return text
-    return defaultReading.current ? t`${text} (implicită)` : t`${text} (afișată implicit, nu e curentă)`
+    if (defaultReading.basis === 'canonical') return t`${text} (implicită)`
+    if (defaultReading.basis === 'latest_available') return t`${text} (afișată implicit, nu e curentă)`
+    return t`${text} (afișată implicit)`
   }
 
   const only = options.length === 1 && latestUnavailable === null ? options[0] : undefined

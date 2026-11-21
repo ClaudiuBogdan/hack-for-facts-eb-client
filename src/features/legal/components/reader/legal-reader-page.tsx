@@ -164,8 +164,9 @@ export function ActReadingLayout({
   const sourceUrl = shownVersion?.sourceUrl ?? act.officialTextUrl
   const showConsolidationBanner =
     render.isSuccess && shownVersion !== null && isConsolidationVersion(shownVersion)
-  const notCurrentDefault =
-    !defaultReading.current && documentId !== null && documentId === canonicalId
+  const showsDefault = documentId !== null && documentId === canonicalId
+  const notCurrentDefault = showsDefault && defaultReading.basis === 'latest_available'
+  const onlyReadableDefault = showsDefault && defaultReading.basis === 'only_readable'
   const outlineQuery = useLegalOutline(documentId)
   const outline = useMemo(() => outlineQuery.data ?? [], [outlineQuery.data])
   const navigate = useNavigate()
@@ -424,6 +425,7 @@ export function ActReadingLayout({
               act={act}
               shown={shownVersion}
               notCurrentDefault={notCurrentDefault}
+              onlyReadableDefault={onlyReadableDefault}
             />
 
             {showConsolidationBanner && <ActConsolidationBanner version={shownVersion} />}

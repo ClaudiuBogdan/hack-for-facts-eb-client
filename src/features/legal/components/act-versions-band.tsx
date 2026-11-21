@@ -5,6 +5,7 @@ import { Plural, Trans } from '@lingui/react/macro'
 import type { LegalActDetail, LegalActDocumentVersion } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
 import {
+  defaultReadingOf,
   isConsolidationVersion,
   isReadableVersion,
   orderVersionsNewestFirst,
@@ -28,8 +29,9 @@ type Props = {
  * Either way a row links into the reader only when its text is readable
  * here; everything else says the text is not available yet, never implying
  * we hold a text we do not. A consolidation is always named as unofficial
- * (LEG-X3AV), and `newerNotAvailable` says how many newer Portal versions
- * (of any kind, under `latest_any_kind`) exist without a text we can show.
+ * (LEG-X3AV), and `newerNotAvailable` says how many versions of any kind
+ * without a text we can show are dated on or after the latest readable one
+ * (a same-day version counts).
  */
 export function ActVersionsBand({ act }: Props) {
   const { i18n } = useLingui()
@@ -37,6 +39,7 @@ export function ActVersionsBand({ act }: Props) {
   if (documents.length === 0) return null
 
   const ordered = orderVersionsNewestFirst(documents)
+  const defaultReading = defaultReadingOf(act)
   const newerNotAvailable = act.newerNotAvailable ?? 0
   const formatDate = (value: string) => formatLegalDate(value, i18n.locale)
 
@@ -64,9 +67,9 @@ export function ActVersionsBand({ act }: Props) {
         <p className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
           <Plural
             value={newerNotAvailable}
-            one="Portalul Legislativ mai listează o versiune mai nouă, al cărei text nu este încă disponibil aici."
-            few="Portalul Legislativ mai listează # versiuni mai noi, al căror text nu este încă disponibil aici."
-            other="Portalul Legislativ mai listează # de versiuni mai noi, al căror text nu este încă disponibil aici."
+            one="O versiune fără text disponibil, de la aceeași dată sau mai nouă decât cea mai recentă versiune cu text."
+            few="# versiuni fără text disponibil, de la aceeași dată sau mai noi decât cea mai recentă versiune cu text."
+            other="# de versiuni fără text disponibil, de la aceeași dată sau mai noi decât cea mai recentă versiune cu text."
           />
         </p>
       )}
@@ -78,7 +81,12 @@ export function ActVersionsBand({ act }: Props) {
             actId={act.actId}
             formatDate={formatDate}
             notCurrentDefault={
-              act.canonical === null && doc.documentId === act.latestAvailableDocumentId
+              defaultReading.basis === 'latest_available' &&
+              doc.documentId === defaultReading.documentId
+            }
+            onlyReadableDefault={
+              defaultReading.basis === 'only_readable' &&
+              doc.documentId === defaultReading.documentId
             }
           />
         ))}
@@ -92,12 +100,15 @@ function VersionRow({
   actId,
   formatDate,
   notCurrentDefault,
+  onlyReadableDefault,
 }: {
   readonly doc: LegalActDocumentVersion
   readonly actId: string
   readonly formatDate: (value: string) => string
   /** The latest form with text, shown by default because the latest has none. */
   readonly notCurrentDefault: boolean
+  /** Shown by default as the only readable version (the server names no default). */
+  readonly onlyReadableDefault: boolean
 }) {
   const readable = isReadableVersion(doc)
   const date = versionDateOf(doc)
@@ -117,6 +128,11 @@ function VersionRow({
         {notCurrentDefault && (
           <span className="rounded border border-[var(--pnrr-subtle)] px-1.5 py-0.5 text-xs text-[var(--pnrr-muted)]">
             <Trans>afișată implicit — nu este versiunea curentă</Trans>
+          </span>
+        )}
+        {onlyReadableDefault && (
+          <span className="rounded border border-[var(--pnrr-subtle)] px-1.5 py-0.5 text-xs text-[var(--pnrr-muted)]">
+            <Trans>afișată implicit</Trans>
           </span>
         )}
       </span>
@@ -149,7 +165,7 @@ function VersionRow({
           params={{ actId }}
           // The text lives on this same page — a non-canonical expression
           // swaps it via `?doc=`; the canonical row just jumps to the text.
-          {...(doc.isCanonical || notCurrentDefault
+          {...(doc.isCanonical || notCurrentDefault || onlyReadableDefault
             ? { hash: 'act-text' }
             : { search: { doc: doc.documentId }, hash: 'act-text' })}
           className="text-sm underline underline-offset-2"

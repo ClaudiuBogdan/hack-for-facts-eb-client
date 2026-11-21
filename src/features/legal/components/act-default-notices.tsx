@@ -3,6 +3,7 @@ import { Trans } from '@lingui/react/macro'
 import type { LegalActDetail } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
 import {
+  isSelectableVersion,
   latestUnavailableVersion,
   versionDateOf,
   versionKindLabel,
@@ -16,6 +17,11 @@ type Props = {
   readonly shown: ShownVersion | null
   /** True when the shown text is the act's default but NOT its current version. */
   readonly notCurrentDefault: boolean
+  /**
+   * True when the shown text is the default only because it is the readable
+   * version the list holds — the server names no default (date unknown).
+   */
+  readonly onlyReadableDefault?: boolean
 }
 
 /**
@@ -28,7 +34,12 @@ type Props = {
  *  - same-day versions were ordered by the fixed tie rule rather than by a
  *    reviewer (`defaultOrderReviewed: false`) — a quiet note.
  */
-export function ActDefaultNotices({ act, shown, notCurrentDefault }: Props) {
+export function ActDefaultNotices({
+  act,
+  shown,
+  notCurrentDefault,
+  onlyReadableDefault = false,
+}: Props) {
   const { i18n } = useLingui()
   const date = (value: string | null) => (value === null ? null : formatLegalDate(value, i18n.locale))
   const latest = latestUnavailableVersion(act)
@@ -36,6 +47,7 @@ export function ActDefaultNotices({ act, shown, notCurrentDefault }: Props) {
   const latestDate = latest !== null ? date(versionDateOf(latest)) : null
   const shownKind = shown !== null ? versionKindLabel(shown.versionKind) : null
   const shownDate = shown !== null ? date(shown.versionDate) : null
+  const readableCount = act.documents.filter(isSelectableVersion).length
 
   return (
     <>
@@ -58,6 +70,31 @@ export function ActDefaultNotices({ act, shown, notCurrentDefault }: Props) {
             ) : (
               <Trans>
                 Afișăm cea mai recentă versiune cu text, care nu este versiunea curentă.
+              </Trans>
+            )}
+          </p>
+        </div>
+      )}
+      {onlyReadableDefault && (
+        <div className={`${legislationAlertClassName} mb-4`} role="note">
+          <p className="text-sm font-medium leading-6 text-[var(--pnrr-fg)]">
+            {shown === null || shown.versionDate === null ? (
+              readableCount > 1 ? (
+                <Trans>
+                  Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de
+                  celelalte versiuni. Afișăm una dintre versiunile cu text; celelalte se pot
+                  alege din listă.
+                </Trans>
+              ) : (
+                <Trans>
+                  Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de
+                  celelalte versiuni. Afișăm singurul text disponibil.
+                </Trans>
+              )
+            ) : (
+              <Trans>
+                Nu putem stabili versiunea curentă a actului. Afișăm un text disponibil,
+                care poate să nu fie versiunea curentă.
               </Trans>
             )}
           </p>
