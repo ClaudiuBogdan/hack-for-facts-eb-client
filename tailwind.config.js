@@ -3,7 +3,14 @@ import defaultTheme from "tailwindcss/defaultTheme";
 
 export default {
   darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx,md,mdx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx,md,mdx}",
+    // The palette guard's fixtures are colours and URLs it must reject. Scanned, they would ship as rules, and one,
+    // an escaped url(), fails the inlined-stylesheet check in scripts/validate-build-output.mjs. (`@source not` in
+    // src/index.css does not narrow these explicit globs.)
+    "!./src/styles/raw-palette-guard.test.ts",
+  ],
   theme: {
     extend: {
       borderRadius: {
