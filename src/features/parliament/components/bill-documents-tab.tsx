@@ -13,7 +13,7 @@ type Props = {
 export function BillDocumentsTab({ bill }: Props) {
   if (bill.documents.length === 0) {
     return (
-      <p className="text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <p className="text-base text-parliament-muted">
         Nu există documente publicate pentru acest proiect.
       </p>
     )
@@ -32,14 +32,14 @@ export function BillDocumentsTab({ bill }: Props) {
             )}
           >
             <div>
-              <p className="text-base font-bold text-[#512178]">{document.label}</p>
+              <p className="text-base font-bold text-parliament-resource">{document.label}</p>
               {/*
                 The date is OPTIONAL: `bill_documents` has no date column, so a
                 shown date would be the bill's latest-event date copied onto
                 every document. Omit the line rather than invent it.
               */}
               {document.publishedAt || document.chamber ? (
-                <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="mt-1 text-sm text-parliament-muted">
                   {[
                     document.publishedAt ? formatBillDate(document.publishedAt) : null,
                     document.chamber ? getChamberLabel(document.chamber) : null,
@@ -49,7 +49,7 @@ export function BillDocumentsTab({ bill }: Props) {
                 </p>
               ) : null}
               {document.versionLabel ? (
-                <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="mt-1 text-sm text-parliament-muted">
                   {document.versionLabel}
                 </p>
               ) : null}
@@ -57,7 +57,7 @@ export function BillDocumentsTab({ bill }: Props) {
             <Button
               asChild
               variant="outline"
-              className="rounded-none border-2 border-[#1d70b8] text-[#1d70b8] hover:bg-[#1d70b8]/5"
+              className="rounded-none border-2 border-parliament-link text-parliament-link hover:bg-parliament-link/5"
             >
               <a href={document.url} target="_blank" rel="noopener noreferrer">
                 <Download className="mr-2 h-4 w-4" />

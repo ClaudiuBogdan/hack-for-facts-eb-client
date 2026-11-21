@@ -63,11 +63,11 @@ export function BillOutcomeSummary({
     <div className="space-y-3">
       <div className="grid gap-4 sm:grid-cols-2">
         {bill.lawMilestone ? (
-          <div className="border-2 border-[#00703c] bg-[#f3faf5] p-4 dark:bg-[var(--pnrr-bg)]">
-            <p className="text-xs font-black uppercase tracking-wide text-[#00703c]">
+          <div className="border-2 border-parliament-success bg-parliament-success/5 p-4">
+            <p className="text-xs font-black uppercase tracking-wide text-parliament-success">
               Promulgată ca lege
             </p>
-            <p className="mt-1 text-lg font-black text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <p className="mt-1 text-lg font-black text-parliament-fg">
               {bill.lawMilestone.actTitle ??
                 `Legea nr. ${bill.lawMilestone.lawNumber}/${bill.lawMilestone.lawYear ?? ''}`}
             </p>
@@ -80,13 +80,13 @@ export function BillOutcomeSummary({
               chamber: headlineVote.chamber,
               voteId: headlineVote.voteId,
             }}
-            className="group flex items-start justify-between gap-3 border-2 border-[#1d70b8] bg-[#f0f6fb] p-4 transition-colors hover:bg-[#e3eef8] dark:bg-[var(--pnrr-bg)]"
+            className="group flex items-start justify-between gap-3 border-2 border-parliament-link bg-parliament-link/5 p-4 transition-colors hover:bg-parliament-link/15"
           >
             <div className="min-w-0">
-              <p className="text-xs font-black uppercase tracking-wide text-[#1d70b8]">
+              <p className="text-xs font-black uppercase tracking-wide text-parliament-link">
                 {voteLabel}
               </p>
-              <p className="mt-1 truncate text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              <p className="mt-1 truncate text-base font-bold text-parliament-fg">
                 {voteLine}
               </p>
             </div>
@@ -95,7 +95,7 @@ export function BillOutcomeSummary({
         ) : null}
       </div>
       {continuedAfterVote ? (
-        <p className="max-w-4xl text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="max-w-4xl text-sm leading-6 text-parliament-muted">
           Procedura a continuat după acest vot — vezi etapele de mai jos.
         </p>
       ) : null}

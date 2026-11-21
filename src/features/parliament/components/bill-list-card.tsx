@@ -15,11 +15,11 @@ type Props = {
   readonly className?: string
 }
 
-const VALUE_CLASS = 'text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+const VALUE_CLASS = 'text-sm text-parliament-muted'
 
 /** House micro-label (see agenda-list-card, bill-passage-tracker). */
 const LABEL_CLASS =
-  'text-xs font-black uppercase tracking-wide text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+  'text-xs font-black uppercase tracking-wide text-parliament-muted'
 
 /** One labelled fact of the row's definition list. */
 function BillFact({
@@ -66,13 +66,13 @@ export function BillListCard({ bill, className }: Props) {
       params={{ billId: bill.billId }}
       aria-label={`${bill.number} — ${bill.title}`}
       className={cn(
-        'group block px-5 py-4 transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] focus-visible:ring-inset sm:px-6',
+        'group block px-5 py-4 transition-colors hover:bg-parliament-frame-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus focus-visible:ring-inset sm:px-6',
         className,
       )}
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="min-w-0 text-base font-bold leading-snug text-[#0b0c0c] group-hover:underline dark:text-[var(--pnrr-fg)]">
+          <h3 className="min-w-0 text-base font-bold leading-snug text-parliament-fg group-hover:underline">
             {bill.title}
           </h3>
           {/*
@@ -99,12 +99,12 @@ export function BillListCard({ bill, className }: Props) {
             to two lines: the card is a way in, not the document.
           */}
           {bill.objectOfRegulation ? (
-            <p className="mt-2 line-clamp-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-2 line-clamp-2 text-sm text-parliament-muted">
               {bill.objectOfRegulation}
             </p>
           ) : null}
         </div>
-        <ParliamentCardChevron className="mt-0.5 shrink-0 text-[#505a5f] dark:text-[var(--pnrr-muted)]" />
+        <ParliamentCardChevron className="mt-0.5 shrink-0 text-parliament-muted" />
       </div>
 
       {/* Two columns on a phone (a 2×2 block), four tracks from lg up. */}
@@ -124,7 +124,7 @@ export function BillListCard({ bill, className }: Props) {
           <dd className={cn('mt-1', VALUE_CLASS)}>
             {bill.nextStageLabel ?? bill.currentStageLabel}
           </dd>
-          <dd className="mt-1 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <dd className="mt-1 text-xs text-parliament-muted">
             {bill.number}
           </dd>
         </BillFact>
@@ -146,7 +146,7 @@ export function BillListCard({ bill, className }: Props) {
             {formatBillUpdatedAt(bill.lastUpdatedAt)}
           </dd>
           {bill.lastEventDescription ? (
-            <dd className="mt-1 line-clamp-2 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <dd className="mt-1 line-clamp-2 text-xs text-parliament-muted">
               {bill.lastEventDescription}
             </dd>
           ) : null}
@@ -170,7 +170,7 @@ export function BillListContainer({
   return (
     <div
       className={cn(
-        'divide-y divide-[var(--pnrr-border)]/20 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]',
+        'divide-y divide-parliament-border-strong/20 border-2 border-parliament-border-strong bg-parliament-card',
         className,
       )}
     >

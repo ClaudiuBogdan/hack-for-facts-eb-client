@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils'
 import type { ParliamentBillTimelineStep } from '@/schemas/parliament'
 import {
+  BILL_DETAIL_UNSTATED_GREY,
+  BILL_DETAIL_UNSTATED_TEXT_CLASS_NAME,
   BILL_STAGE_COLUMN_META,
-  PARLIAMENT_ACTION_BLUE,
 } from '../lib/bill-detail-theme'
 import {
   billStageColumnOf,
@@ -57,7 +58,7 @@ export function BillStagesTimeline({
 
   if (entries.length === 0) {
     return (
-      <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <p className="text-base leading-7 text-parliament-muted">
         Nu există etape procedurale înregistrate pentru acest proiect.
       </p>
     )
@@ -71,7 +72,7 @@ export function BillStagesTimeline({
         undatedCount={undatedCount}
       />
       {/* The left margin is the gutter the chamber labels sit in. */}
-      <ol className="ml-[4.25rem] border-l-2 border-[#b1b4b6] sm:ml-[7rem] dark:border-[var(--pnrr-border)]">
+      <ol className="ml-[4.25rem] border-l-2 border-parliament-border sm:ml-[7rem]">
         {entries.map((entry) => (
           <TimelineEntry
             key={entry.key}
@@ -94,8 +95,8 @@ function TimelineSummary({
   readonly undatedCount: number
 }) {
   return (
-    <p className="max-w-4xl text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-      <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+    <p className="max-w-4xl text-sm leading-6 text-parliament-muted">
+      <span className="font-bold text-parliament-fg">
         {stepCount}
       </span>{' '}
       {romanianNeedsDe(stepCount) ? 'de ' : ''}
@@ -103,7 +104,7 @@ function TimelineSummary({
       {span !== undefined && span > 0 ? (
         <>
           , pe parcursul a{' '}
-          <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <span className="font-bold text-parliament-fg">
             {span}
           </span>{' '}
           {romanianNeedsDe(span) ? 'de ' : ''}
@@ -118,7 +119,7 @@ function TimelineSummary({
             'una dintre ele'
           ) : (
             <>
-              <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              <span className="font-bold text-parliament-fg">
                 {undatedCount}
               </span>{' '}
               dintre ele
@@ -148,19 +149,12 @@ function TimelineEntry({
             top 5px. */}
         <span
           className={cn(
-            'absolute top-[5px] -left-[8px] h-3.5 w-3.5 rounded-full border-2 bg-white dark:bg-[var(--pnrr-bg)]',
-            entry.kind === 'undated'
-              ? 'border-dashed border-[#b1b4b6]'
-              : 'border-[#b1b4b6]',
-          )}
-          style={
+            'absolute top-[5px] -left-[8px] h-3.5 w-3.5 rounded-full border-2',
             isMilestoneDay
-              ? {
-                  borderColor: PARLIAMENT_ACTION_BLUE,
-                  backgroundColor: PARLIAMENT_ACTION_BLUE,
-                }
-              : undefined
-          }
+              ? 'border-parliament-link bg-parliament-link'
+              : 'border-parliament-border bg-parliament-card',
+            entry.kind === 'undated' && 'border-dashed',
+          )}
           aria-hidden
         />
         <EntryHeading entry={entry} isMilestoneDay={isMilestoneDay} />
@@ -194,8 +188,8 @@ function EntryHeading({
         className={cn(
           'text-base font-bold leading-6',
           isMilestoneDay
-            ? 'text-[#1d70b8]'
-            : 'text-[#0b0c0c] dark:text-[var(--pnrr-fg)]',
+            ? 'text-parliament-link'
+            : 'text-parliament-fg',
         )}
       >
         {formatDayLong(entry.date)}
@@ -204,10 +198,10 @@ function EntryHeading({
   }
   return (
     <div>
-      <h4 className="text-base font-bold leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <h4 className="text-base font-bold leading-6 text-parliament-muted">
         {undatedRangeLabel(entry)}
       </h4>
-      <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <p className="text-xs text-parliament-muted">
         Dată neconsemnată de sursă — poziția în fișă este singura dovadă
       </p>
     </div>
@@ -251,7 +245,7 @@ function TimelineStep({
 }) {
   const column = billStageColumnOf(step)
   const meta = BILL_STAGE_COLUMN_META[column]
-  const color = meta?.color ?? '#505a5f'
+  const mark = meta?.mark ?? BILL_DETAIL_UNSTATED_GREY
   const nameRecord = shouldNameRecord(step, showRecordChip)
 
   return (
@@ -262,19 +256,21 @@ function TimelineStep({
           description (24px tall → centre at 12px), so the three read as one row:
           label box is 16px → top 4px; dot is 12px → top 6px. */}
       <span
-        className="absolute top-1 right-full mr-3 w-14 text-right text-[11px] leading-4 font-black uppercase sm:w-24 sm:text-xs"
-        style={{ color }}
+        className={cn(
+          'absolute top-1 right-full mr-3 w-14 text-right text-[11px] leading-4 font-black uppercase sm:w-24 sm:text-xs',
+          meta?.textClassName ?? BILL_DETAIL_UNSTATED_TEXT_CLASS_NAME,
+        )}
       >
         {meta?.gutter ?? 'Necunoscut'}
       </span>
       <span
         className="absolute top-1.5 -left-[7px] h-3 w-3 rounded-full"
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: mark }}
         aria-hidden
       />
       <p
         className={cn(
-          'text-base leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]',
+          'text-base leading-6 text-parliament-fg',
           step.isMilestone && 'font-bold',
         )}
       >
@@ -283,7 +279,7 @@ function TimelineStep({
       {/* WHOSE record this row is — said only where the gutter's chamber does
           not already imply it. */}
       {nameRecord && step.sourceBillKey ? (
-        <p className="mt-0.5 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="mt-0.5 text-xs text-parliament-muted">
           consemnat în fișa {sourceRecordShortLabel(step.sourceBillKey)}
         </p>
       ) : null}

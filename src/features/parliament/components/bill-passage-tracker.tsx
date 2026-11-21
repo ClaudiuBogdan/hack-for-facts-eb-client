@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { ParliamentBillTimelineStep } from '@/schemas/parliament'
 import {
+  BILL_DETAIL_UNSTATED_GREY,
   BILL_STAGE_COLUMN_META,
   billDetailCardClassName,
 } from '../lib/bill-detail-theme'
@@ -46,25 +47,25 @@ function StepRow({ step }: { readonly step: ParliamentBillTimelineStep }) {
     <li
       className={cn(
         'flex items-start gap-3 px-4 py-3',
-        step.isMilestone ? 'bg-[#f8f8f8] dark:bg-[var(--pnrr-subtle)]' : '',
+        step.isMilestone ? 'bg-parliament-hover' : '',
       )}
     >
       <span
         className={cn(
           'mt-1 h-2.5 w-2.5 shrink-0 rounded-full',
-          step.isMilestone ? 'bg-[#1d70b8]' : 'bg-[#b1b4b6]',
+          step.isMilestone ? 'bg-parliament-link' : 'bg-parliament-faint',
         )}
         aria-hidden
       />
       <div className="min-w-0 flex-1">
         {date ? (
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-parliament-muted">
             {date}
           </p>
         ) : null}
         <p
           className={cn(
-            'leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]',
+            'leading-snug text-parliament-fg',
             step.isMilestone ? 'text-sm font-bold' : 'text-sm',
           )}
         >
@@ -92,13 +93,13 @@ function PassageColumn({
   const [showRoutine, setShowRoutine] = useState(false)
   const meta = BILL_STAGE_COLUMN_META[columnKey]
   const title = meta?.title ?? ''
-  const color = meta?.color ?? '#505a5f'
+  const color = meta?.mark ?? BILL_DETAIL_UNSTATED_GREY
 
   if (steps.length === 0) {
     return (
       <div className={cn(billDetailCardClassName, 'flex flex-col opacity-60')}>
         <ColumnHeader title={title} color={color} />
-        <p className="px-4 py-4 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="px-4 py-4 text-sm text-parliament-muted">
           Nu a parcurs această etapă.
         </p>
       </div>
@@ -111,17 +112,17 @@ function PassageColumn({
   return (
     <div className={cn(billDetailCardClassName, 'flex flex-col')}>
       <ColumnHeader title={title} color={color} />
-      <ol className="divide-y divide-[#e5e5e5] dark:divide-[var(--pnrr-border)]">
+      <ol className="divide-y divide-parliament-muted/15">
         {primary.map((step) => (
           <StepRow key={step.stepId} step={step} />
         ))}
       </ol>
       {routine.length > 0 ? (
-        <div className="border-t border-[#e5e5e5] dark:border-[var(--pnrr-border)]">
+        <div className="border-t border-parliament-muted/15">
           <button
             type="button"
             onClick={() => setShowRoutine((value) => !value)}
-            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold text-[#1d70b8]"
+            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold text-parliament-link"
           >
             <span>
               {showRoutine
@@ -136,7 +137,7 @@ function PassageColumn({
             />
           </button>
           {showRoutine ? (
-            <ol className="divide-y divide-[#e5e5e5] border-t border-[#e5e5e5] dark:divide-[var(--pnrr-border)] dark:border-[var(--pnrr-border)]">
+            <ol className="divide-y divide-parliament-muted/15 border-t border-parliament-muted/15">
               {routine.map((step) => (
                 <StepRow key={step.stepId} step={step} />
               ))}
@@ -157,11 +158,11 @@ function ColumnHeader({
 }) {
   return (
     <div
-      className="flex items-center gap-2 border-b border-[#b1b4b6] px-4 py-3 dark:border-[var(--pnrr-border)]"
+      className="flex items-center gap-2 border-b border-parliament-border px-4 py-3"
       style={{ borderTopWidth: 4, borderTopColor: color, borderTopStyle: 'solid' }}
     >
       <ParliamentChamberMark color={color} className="mt-0" />
-      <h3 className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+      <h3 className="text-base font-bold text-parliament-fg">
         {title}
       </h3>
     </div>
@@ -230,7 +231,7 @@ export function BillStagesRecordLanes({
       {lanes.map((lane) => (
         <section key={lane.sourceBillKey} className="space-y-4">
           {lanes.length > 1 ? (
-            <h3 className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <h3 className="text-base font-bold text-parliament-fg">
               {sourceRecordLabel(lane.sourceBillKey)}
             </h3>
           ) : null}

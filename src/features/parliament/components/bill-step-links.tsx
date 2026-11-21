@@ -94,7 +94,7 @@ export function StepLinks({
             key={linkIdentity(link)}
             to="/parlament/comisii/$committeeKey"
             params={{ committeeKey: link.targetKey }}
-            className="inline-flex max-w-full items-center rounded-sm border border-[#b1b4b6] bg-white px-2 py-0.5 text-xs font-semibold text-[#1d70b8] hover:bg-[#f3f2f1] dark:bg-transparent"
+            className="inline-flex max-w-full items-center rounded-sm border border-parliament-border bg-parliament-card px-2 py-0.5 text-xs font-semibold text-parliament-link hover:bg-parliament-surface"
           >
             <span className="truncate">{link.sourceText ?? 'Comisie'}</span>
           </Link>
@@ -105,7 +105,7 @@ export function StepLinks({
             target="_blank"
             rel="noopener noreferrer"
             title="Comisia este publicată de sursă, dar nu figurează în registrul nostru"
-            className="inline-flex max-w-full items-center rounded-sm border border-dashed border-[#b1b4b6] px-2 py-0.5 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+            className="inline-flex max-w-full items-center rounded-sm border border-dashed border-parliament-border px-2 py-0.5 text-xs text-parliament-muted"
           >
             <span className="truncate">{link.sourceText ?? 'Comisie'}</span>
           </a>
@@ -119,7 +119,7 @@ export function StepLinks({
             chamber: chamberOfVoteKey(link.targetKey ?? ''),
             voteId: link.targetKey ?? '',
           }}
-          className="inline-flex items-center rounded-sm border border-[#1d70b8] px-2 py-0.5 text-xs font-semibold text-[#1d70b8] hover:bg-[#f0f6fb]"
+          className="inline-flex items-center rounded-sm border border-parliament-link px-2 py-0.5 text-xs font-semibold text-parliament-link hover:bg-parliament-link/5"
         >
           Votul
         </Link>
@@ -130,7 +130,7 @@ export function StepLinks({
           href={link.sourceHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex max-w-full items-center rounded-sm border border-[#512178] px-2 py-0.5 text-xs font-semibold text-[#512178] hover:bg-[#f6f2f9]"
+          className="inline-flex max-w-full items-center rounded-sm border border-parliament-resource px-2 py-0.5 text-xs font-semibold text-parliament-resource hover:bg-parliament-resource/5"
         >
           <span className="truncate">
             {link.linkKind === 'mo_issue' ? 'Monitorul Oficial ' : ''}
@@ -145,7 +145,7 @@ export function StepLinks({
           // is a different surface and a session key there resolves to nothing.
           to="/parlament/stenograme/sedinte/$sessionKey"
           params={{ sessionKey: link.targetKey ?? '' }}
-          className="inline-flex items-center rounded-sm border border-[#512178] px-2 py-0.5 text-xs font-semibold text-[#512178] hover:bg-[#f6f2f9]"
+          className="inline-flex items-center rounded-sm border border-parliament-resource px-2 py-0.5 text-xs font-semibold text-parliament-resource hover:bg-parliament-resource/5"
         >
           Dezbaterea
         </Link>
@@ -170,7 +170,7 @@ export function StepActions({
             chamber: chamberOfVoteKey(step.voteId),
             voteId: step.voteId,
           }}
-          className="text-sm font-semibold text-[#1d70b8] underline underline-offset-4"
+          className="text-sm font-semibold text-parliament-link underline underline-offset-4"
         >
           Vezi votul
         </Link>
@@ -183,7 +183,7 @@ export function StepActions({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-[#1d70b8] underline underline-offset-4"
+          className="text-sm text-parliament-link underline underline-offset-4"
         >
           {step.docUrls.length > 1 ? `Document ${index + 1}` : 'Document'}
         </a>

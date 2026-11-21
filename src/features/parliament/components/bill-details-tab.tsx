@@ -27,8 +27,8 @@ import { AiSummaryCard } from './ai-summary-card'
 import { ParliamentChamberMark } from './parliament-hub-panel'
 import { VoteChamberVoteCard } from './vote-chamber-vote-card'
 import {
-  PARLIAMENT_CAMERA_GREEN,
-  PARLIAMENT_SENAT_RED,
+  PARLIAMENT_CAMERA_MARK,
+  PARLIAMENT_SENAT_MARK,
 } from '../lib/hub-theme'
 
 type Props = {
@@ -62,17 +62,17 @@ function BillProcedureFact({
   return (
     <div
       className={cn(
-        'border-[#b1b4b6] px-5 py-4 dark:border-[var(--pnrr-border)]',
+        'border-parliament-border px-5 py-4',
         className,
       )}
     >
-      <dt className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+      <dt className="text-sm font-bold text-parliament-fg">
         {term}
       </dt>
-      <dd className="mt-2 text-base text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+      <dd className="mt-2 text-base text-parliament-fg">
         {children}
       </dd>
-      <dd className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <dd className="mt-1 text-sm text-parliament-muted">
         {detail}
       </dd>
     </div>
@@ -84,8 +84,8 @@ export function BillDetailsTab({ bill }: Props) {
   const currentDocument = bill.documents[bill.documents.length - 1]
   const originColor =
     bill.originatingChamber === 'camera'
-      ? PARLIAMENT_CAMERA_GREEN
-      : PARLIAMENT_SENAT_RED
+      ? PARLIAMENT_CAMERA_MARK
+      : PARLIAMENT_SENAT_MARK
   // Keep each summary PAIRED with its edge role: the cards all carry the bill's
   // own title, so the role and the chamber are the only things that tell a
   // procedural division apart from the final vote.
@@ -177,14 +177,14 @@ export function BillDetailsTab({ bill }: Props) {
       {bill.objectOfRegulation ? (
         <section>
           <h2 className={billDetailSectionTitleClassName}>Obiectul reglementării</h2>
-          <p className="mt-4 max-w-4xl whitespace-pre-line text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <p className="mt-4 max-w-4xl whitespace-pre-line text-base leading-7 text-parliament-fg">
             {bill.objectOfRegulation}
           </p>
         </section>
       ) : null}
 
       {bill.summary ? (
-        <p className="max-w-4xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="max-w-4xl text-base leading-7 text-parliament-muted">
           {bill.summary}
         </p>
       ) : null}
@@ -192,11 +192,11 @@ export function BillDetailsTab({ bill }: Props) {
       <section>
         <h2 className={billDetailSectionTitleClassName}>Stadiu curent</h2>
         <div className={cn(billDetailCardClassName, 'mt-4 grid gap-0 sm:grid-cols-2 lg:max-w-4xl')}>
-          <div className="border-b border-[#b1b4b6] px-5 py-4 sm:border-b-0 sm:border-r dark:border-[var(--pnrr-border)]">
-            <p className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <div className="border-b border-parliament-border px-5 py-4 sm:border-b-0 sm:border-r">
+            <p className="text-sm font-bold text-parliament-fg">
               Etapa curentă
             </p>
-            <p className="mt-2 text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-2 text-base text-parliament-muted">
               {bill.currentStageLabel}
             </p>
             {/* WHAT the last move was. The status string above is the source's
@@ -204,35 +204,35 @@ export function BillDetailsTab({ bill }: Props) {
                 page keeps showing, and without it "Actualizat" is a date with
                 nothing attached to it. */}
             {bill.lastEventDescription ? (
-              <p className="mt-3 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-3 text-sm text-parliament-muted">
                 Ultima mișcare:{' '}
-                <span className="font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+                <span className="font-semibold text-parliament-fg">
                   {bill.lastEventDescription}
                 </span>
               </p>
             ) : null}
             {lastEventSourceNote ? (
-              <p className="mt-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-2 text-sm text-parliament-muted">
                 {lastEventSourceNote}
               </p>
             ) : null}
             {bill.nextStageLabel ? (
-              <p className="mt-3 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-3 text-sm text-parliament-muted">
                 Următoarea etapă:{' '}
-                <span className="font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+                <span className="font-semibold text-parliament-fg">
                   {bill.nextStageLabel}
                 </span>
               </p>
             ) : null}
           </div>
           <div className="px-5 py-4">
-            <p className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <p className="text-sm font-bold text-parliament-fg">
               Localizare
             </p>
-            <p className="mt-2 text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-2 text-base text-parliament-muted">
               {getBillLocationLabel(bill.currentLocation)}
             </p>
-            <p className="mt-3 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-3 text-sm text-parliament-muted">
               {getBillTypeLabel(bill.billType)} · Actualizat{' '}
               {formatBillUpdatedAt(bill.lastUpdatedAt)}
             </p>
@@ -240,14 +240,14 @@ export function BillDetailsTab({ bill }: Props) {
                 bills and never shown until now; with the update date it bounds
                 how long the bill has actually been in play. */}
             {bill.firstEventAt ? (
-              <p className="mt-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-2 text-sm text-parliament-muted">
                 Prima etapă: {formatBillDate(bill.firstEventAt)}
               </p>
             ) : null}
           </div>
         </div>
         {bill.dossierBillIds.length > 1 ? (
-          <p className="mt-3 max-w-4xl text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-3 max-w-4xl text-sm text-parliament-muted">
             Acest proiect are înregistrări atât la Camera Deputaților, cât și la
             Senat; fișa reunește etapele, documentele și voturile ambelor
             înregistrări.
@@ -259,7 +259,7 @@ export function BillDetailsTab({ bill }: Props) {
         <Link
           to="/parlament/proiecte/$billId/etape"
           params={{ billId: bill.billId }}
-          className="mt-4 inline-flex items-center gap-1 text-base font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#003078]"
+          className="mt-4 inline-flex items-center gap-1 text-base font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-link-hover"
         >
           Vezi toate etapele parcursului
           <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
@@ -270,20 +270,20 @@ export function BillDetailsTab({ bill }: Props) {
         <h2 className={billDetailSectionTitleClassName}>Inițiator</h2>
         <div className={cn(billDetailCardClassName, 'mt-4 max-w-3xl')}>
           {bill.initiator.departmentName ? (
-            <div className="flex items-center justify-between border-b border-[#b1b4b6] px-5 py-4 dark:border-[var(--pnrr-border)]">
-              <span className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <div className="flex items-center justify-between border-b border-parliament-border px-5 py-4">
+              <span className="text-base font-bold text-parliament-fg">
                 {bill.initiator.departmentName}
               </span>
-              <ChevronRight className="h-5 w-5 text-[#505a5f]" aria-hidden />
+              <ChevronRight className="h-5 w-5 text-parliament-muted" aria-hidden />
             </div>
           ) : null}
           {bill.initiator.memberId && bill.initiator.memberName ? (
             <Link
               to="/parlament/membri/$memberId"
               params={{ memberId: bill.initiator.memberId }}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-[#f3f2f1] dark:hover:bg-[var(--pnrr-subtle)]"
+              className="flex items-center gap-4 px-5 py-4 hover:bg-parliament-surface"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f3f2f1] text-sm font-bold text-[#505a5f] dark:bg-[var(--pnrr-subtle)]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-parliament-surface text-sm font-bold text-parliament-muted">
                 {bill.initiator.memberName
                   .split(' ')
                   .map((part) => part[0])
@@ -291,10 +291,10 @@ export function BillDetailsTab({ bill }: Props) {
                   .slice(0, 2)}
               </div>
               <div>
-                <p className="text-base font-bold text-[#1d70b8] underline-offset-2 hover:underline">
+                <p className="text-base font-bold text-parliament-link underline-offset-2 hover:underline">
                   {bill.initiator.memberName}
                 </p>
-                <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="text-sm text-parliament-muted">
                   Inițiator parlamentar
                 </p>
               </div>
@@ -312,7 +312,7 @@ export function BillDetailsTab({ bill }: Props) {
             would be an unproven claim about the source.
           */}
           {!bill.initiator.departmentName && !bill.initiator.memberName ? (
-            <p className="px-5 py-4 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="px-5 py-4 text-sm text-parliament-muted">
               Nu am putut lega inițiatorii acestui proiect de fișele de parlamentar
               din baza noastră.
             </p>
@@ -329,9 +329,9 @@ export function BillDetailsTab({ bill }: Props) {
           and an unnecessary caveat teaches readers to ignore the necessary ones.
         */}
         {bill.initiatorClassification ? (
-          <p className="mt-3 max-w-3xl text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-3 max-w-3xl text-sm text-parliament-muted">
             Clasificare proprie (nu o mențiune a Parlamentului):{' '}
-            <span className="font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <span className="font-semibold text-parliament-fg">
               {getInitiatorClassificationLabel(bill.initiatorClassification)}
             </span>
             {getInitiatorMethodExplanation(bill.initiatorClassification.method)
@@ -402,7 +402,7 @@ export function BillDetailsTab({ bill }: Props) {
           <h2 className={billDetailSectionTitleClassName}>Surse oficiale</h2>
           {bill.sourceLinks.length > 0 ? (
             <>
-              <p className="mt-2 max-w-3xl text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-2 max-w-3xl text-base text-parliament-muted">
                 Paginile oficiale de pe care au fost preluate datele de mai sus.
               </p>
               <ul className="mt-4 space-y-2">
@@ -412,7 +412,7 @@ export function BillDetailsTab({ bill }: Props) {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-base font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#003078]"
+                      className="inline-flex items-center gap-1.5 text-base font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-link-hover"
                     >
                       {link.label}
                       <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -422,7 +422,7 @@ export function BillDetailsTab({ bill }: Props) {
               </ul>
             </>
           ) : (
-            <p className="mt-2 max-w-3xl text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-2 max-w-3xl text-base text-parliament-muted">
               Sursa nu a înregistrat o pagină publică pentru acest proiect.
             </p>
           )}
@@ -433,7 +433,7 @@ export function BillDetailsTab({ bill }: Props) {
             they would compete with the bill's own number.
           */}
           {bill.senateCod || bill.governmentRegistration ? (
-            <p className="mt-4 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-4 text-sm text-parliament-muted">
               {[
                 bill.senateCod ? `Cod Senat: ${bill.senateCod}` : undefined,
                 bill.governmentRegistration
@@ -451,7 +451,7 @@ export function BillDetailsTab({ bill }: Props) {
             and is never labelled as though it were.
           */}
           {bill.sourceCapturedAt ? (
-            <p className="mt-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-2 text-sm text-parliament-muted">
               Datele au fost preluate de noi la{' '}
               {formatBillDate(bill.sourceCapturedAt)}.
             </p>
@@ -463,11 +463,11 @@ export function BillDetailsTab({ bill }: Props) {
         <section>
           <h2 className={billDetailSectionTitleClassName}>Versiunea curentă a proiectului</h2>
           <div className={cn(billDetailCardClassName, 'mt-4 max-w-3xl overflow-hidden')}>
-            <div className="flex flex-col gap-4 border-l-4 border-[#1d70b8] p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 border-l-4 border-parliament-link p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-base font-bold text-[#512178]">{currentDocument.label}</p>
+                <p className="text-base font-bold text-parliament-resource">{currentDocument.label}</p>
                 {currentDocument.versionLabel ? (
-                  <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <p className="mt-1 text-sm text-parliament-muted">
                     {currentDocument.versionLabel}
                   </p>
                 ) : null}
@@ -475,7 +475,7 @@ export function BillDetailsTab({ bill }: Props) {
               <Button
                 asChild
                 variant="outline"
-                className="rounded-none border-2 border-[#1d70b8] text-[#1d70b8] hover:bg-[#1d70b8]/5"
+                className="rounded-none border-2 border-parliament-link text-parliament-link hover:bg-parliament-link/5"
               >
                 <a href={currentDocument.url} target="_blank" rel="noopener noreferrer">
                   <Download className="mr-2 h-4 w-4" />
@@ -483,9 +483,9 @@ export function BillDetailsTab({ bill }: Props) {
                 </a>
               </Button>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#b1b4b6] px-5 py-3 dark:border-[var(--pnrr-border)]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-parliament-border px-5 py-3">
               {currentDocument.publishedAt ? (
-                <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="text-sm text-parliament-muted">
                   {formatBillDate(currentDocument.publishedAt)}
                 </p>
               ) : (
@@ -496,19 +496,19 @@ export function BillDetailsTab({ bill }: Props) {
                   <ParliamentChamberMark
                     color={
                       currentDocument.chamber === 'camera'
-                        ? PARLIAMENT_CAMERA_GREEN
-                        : PARLIAMENT_SENAT_RED
+                        ? PARLIAMENT_CAMERA_MARK
+                        : PARLIAMENT_SENAT_MARK
                     }
                     className="mt-0"
                   />
-                  <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <span className="text-sm text-parliament-muted">
                     {getChamberLabel(currentDocument.chamber)}
                   </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <ParliamentChamberMark color={originColor} className="mt-0" />
-                  <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <span className="text-sm text-parliament-muted">
                     {getChamberLabel(bill.originatingChamber)}
                   </span>
                 </div>
@@ -523,7 +523,7 @@ export function BillDetailsTab({ bill }: Props) {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className={billDetailSectionTitleClassName}>Voturi asociate</h2>
-              <p className="mt-2 text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-2 text-base text-parliament-muted">
                 Divizările parlamentare legate de acest proiect.
               </p>
             </div>
@@ -531,7 +531,7 @@ export function BillDetailsTab({ bill }: Props) {
               <Link
                 to="/parlament/proiecte/$billId/voturi"
                 params={{ billId: bill.billId }}
-                className="text-sm font-semibold text-[#1d70b8] underline underline-offset-2"
+                className="text-sm font-semibold text-parliament-link underline underline-offset-2"
               >
                 Vezi toate voturile
               </Link>
@@ -550,7 +550,7 @@ export function BillDetailsTab({ bill }: Props) {
             <Link
               to="/parlament/proiecte/$billId/voturi"
               params={{ billId: bill.billId }}
-              className="mt-4 inline-block text-sm font-semibold text-[#1d70b8] underline underline-offset-2"
+              className="mt-4 inline-block text-sm font-semibold text-parliament-link underline underline-offset-2"
             >
               Detalii voturi
             </Link>

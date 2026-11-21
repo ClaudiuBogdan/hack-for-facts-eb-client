@@ -50,7 +50,7 @@ export function BillStagesTab({ bill, view, onViewChange }: Props) {
           cannot say it itself — most of all the duplication in `camere`. The
           rail carries no hint: it would only restate what is on screen. */}
       {BILL_STAGES_VIEW_HINTS[active] ? (
-        <p className="max-w-4xl text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="max-w-4xl text-sm leading-6 text-parliament-muted">
           {BILL_STAGES_VIEW_HINTS[active]}
           {isMergedDossier ? (
             <>
@@ -62,7 +62,7 @@ export function BillStagesTab({ bill, view, onViewChange }: Props) {
       ) : null}
 
       {steps.length === 0 ? (
-        <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="text-base leading-7 text-parliament-muted">
           Nu există etape procedurale înregistrate pentru acest proiect.
         </p>
       ) : active === 'cronologic' ? (

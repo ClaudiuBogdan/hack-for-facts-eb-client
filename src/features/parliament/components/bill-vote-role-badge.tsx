@@ -1,8 +1,13 @@
+import { cn } from '@/lib/utils'
 import type { VoteChamber, VoteOutcome } from '@/schemas/parliament'
 import {
   getFinalBillVoteVerdict,
   isFinalBillVote,
 } from '../api/graphql/parliament-mappers'
+import {
+  BILL_VOTE_ROLE_NEUTRAL_BADGE_CLASS_NAME,
+  BILL_VOTE_VERDICT_BADGE_CLASS_NAMES,
+} from '../lib/bill-detail-theme'
 import { getVoteChamberLabel } from '../lib/formatting'
 import { foldText } from '../lib/text-fold'
 
@@ -39,11 +44,6 @@ const VERDICT_TEXT = {
   rejection_failed: 'Respingerea nu a trecut',
 } as const
 
-const VERDICT_COLOR = {
-  respins: '#9C051A',
-  rejection_failed: '#505a5f',
-} as const
-const NEUTRAL_ROLE_COLOR = '#505a5f'
 
 type Props = {
   /**
@@ -92,21 +92,25 @@ export function BillVoteRoleBadge({
   const verdict = contradicted
     ? undefined
     : getFinalBillVoteVerdict({ linkRole, outcome, voteSubject })
-  const color = verdict ? VERDICT_COLOR[verdict] : NEUTRAL_ROLE_COLOR
+  const chipClassName = verdict
+    ? BILL_VOTE_VERDICT_BADGE_CLASS_NAMES[verdict]
+    : BILL_VOTE_ROLE_NEUTRAL_BADGE_CLASS_NAME
 
   return (
     // Chamber first, chip last: the badge sits flush at the card footer's right
     // edge, so the coloured verdict lands on the edge rather than inside it.
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
       {chamber ? (
-        <span className="text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <span className="text-xs font-semibold uppercase tracking-wide text-parliament-muted">
           {getVoteChamberLabel(chamber)}
         </span>
       ) : null}
       {roleLabel ? (
         <span
-          className="border-2 px-1.5 py-0.5 text-xs font-black uppercase leading-none tracking-wide"
-          style={{ color, borderColor: color }}
+          className={cn(
+            'border-2 px-1.5 py-0.5 text-xs font-black uppercase leading-none tracking-wide',
+            chipClassName,
+          )}
         >
           {verdict ? `${roleLabel} · ${VERDICT_TEXT[verdict]}` : roleLabel}
         </span>

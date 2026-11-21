@@ -31,7 +31,7 @@ export function BillStagesViewSwitcher({ value, onChange }: Props) {
     <div className="flex shrink-0 items-center gap-2">
       {/* A plain span, not a <label>: the trigger is a button, so `htmlFor`
           would name nothing. The accessible name comes from the trigger. */}
-      <span className="text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <span className="text-sm font-semibold text-parliament-muted">
         Vizualizare
       </span>
       <Select
@@ -40,7 +40,7 @@ export function BillStagesViewSwitcher({ value, onChange }: Props) {
       >
         <SelectTrigger
           aria-label="Vizualizare"
-          className="h-11 w-full min-w-[11rem] rounded-none border-0 bg-[#1d70b8] px-4 text-sm font-normal text-white shadow-none focus:ring-2 focus:ring-white/40 sm:w-auto [&>svg]:text-white [&>svg]:opacity-100"
+          className="h-11 w-full min-w-[11rem] rounded-none border-0 bg-parliament-action px-4 text-sm font-normal text-white shadow-none focus:ring-2 focus:ring-white/40 sm:w-auto [&>svg]:text-white [&>svg]:opacity-100"
         >
           <SelectValue />
         </SelectTrigger>

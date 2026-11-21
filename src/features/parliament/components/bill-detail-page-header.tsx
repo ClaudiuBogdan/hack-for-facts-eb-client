@@ -31,7 +31,7 @@ export function BillDetailPageHeader({ bill }: Props) {
             className="flex shrink-0 items-center gap-2 border border-white/25 px-3 py-2"
             style={{ backgroundColor: chamberColor }}
           >
-            <ParliamentChamberMark color="#ffffff" className="mt-0 bg-transparent ring-white/40" />
+            <ParliamentChamberMark color="white" className="mt-0 bg-transparent ring-white/40" />
             <span className="text-sm font-semibold leading-none">{chamberLabel}</span>
           </div>
         </div>

@@ -148,7 +148,7 @@ export function ParliamentBillsContent({ search }: Props) {
           >
             <SelectTrigger
               id="bills-sort"
-              className="h-11 w-52 rounded-none border-2 border-[#b1b4b6] bg-white text-sm text-[#0b0c0c] shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]"
+              className="h-11 w-52 rounded-none border-2 border-parliament-border bg-parliament-card text-sm text-parliament-fg shadow-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
             >
               <SelectValue />
             </SelectTrigger>
@@ -189,7 +189,7 @@ export function ParliamentBillsContent({ search }: Props) {
           ) : null}
 
           {data && data.total === 0 ? (
-            <p className="text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="text-base text-parliament-muted">
               Nu am găsit proiecte de lege care să corespundă criteriilor
               selectate.
             </p>

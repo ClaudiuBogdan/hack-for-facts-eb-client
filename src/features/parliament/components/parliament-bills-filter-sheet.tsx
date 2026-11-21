@@ -38,13 +38,13 @@ import {
 export type ParliamentBillsFilterPatch = Partial<ParliamentBillsSearch>
 
 const SECTION_LABEL_CLASS =
-  'text-xs font-bold uppercase tracking-wide text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
+  'text-xs font-bold uppercase tracking-wide text-parliament-fg'
 
 const TOGGLE_ITEM_CLASS =
-  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] data-[state=on]:border-[#1d70b8] data-[state=on]:bg-[#1d70b8] data-[state=on]:text-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]'
+  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm font-semibold text-parliament-fg transition-colors hover:bg-parliament-surface data-[state=on]:border-parliament-action data-[state=on]:bg-parliament-action data-[state=on]:text-white'
 
 const SELECT_CLASS =
-  'h-10 w-full rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm text-[#0b0c0c] shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
+  'h-10 w-full rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm text-parliament-fg shadow-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 const BILL_TYPES: readonly BillType[] = [
   'guvern',
@@ -90,13 +90,13 @@ export function ParliamentBillsFilterSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="flex w-full max-w-full flex-col gap-0 overflow-hidden border-l-2 border-[#b1b4b6] bg-white p-0 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-bg)] sm:max-w-md"
+        className="flex w-full max-w-full flex-col gap-0 overflow-hidden border-l-2 border-parliament-border bg-parliament-card p-0 sm:max-w-md"
       >
-        <SheetHeader className="border-b-2 border-[#b1b4b6] p-6 pr-14 text-left dark:border-[var(--pnrr-border)]">
-          <SheetTitle className="text-left text-2xl font-black tracking-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <SheetHeader className="border-b-2 border-parliament-border p-6 pr-14 text-left">
+          <SheetTitle className="text-left text-2xl font-black tracking-tight text-parliament-fg">
             Filtre proiecte
           </SheetTitle>
-          <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <SheetDescription className="pt-1 text-left text-sm font-semibold text-parliament-muted">
             {activeCount} {activeCount === 1 ? 'filtru activ' : 'filtre active'}
           </SheetDescription>
         </SheetHeader>
@@ -159,7 +159,7 @@ export function ParliamentBillsFilterSheet({
             <Label className={SECTION_LABEL_CLASS}>
               <Trans>Data ultimei etape</Trans>
             </Label>
-            <p className="text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="text-sm leading-5 text-parliament-muted">
               <Trans>
                 Filtrează după data ultimei etape publicate pentru fiecare
                 proiect.
@@ -204,19 +204,19 @@ export function ParliamentBillsFilterSheet({
           </section>
         </div>
 
-        <div className="border-t-2 border-[#b1b4b6] p-4 dark:border-[var(--pnrr-border)]">
+        <div className="border-t-2 border-parliament-border p-4">
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="outline"
-              className="h-11 rounded-none border-2 border-[#b1b4b6] bg-white px-2 text-xs font-black uppercase tracking-wide text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] sm:text-sm"
+              className="h-11 rounded-none border-2 border-parliament-border bg-parliament-card px-2 text-xs font-black uppercase tracking-wide text-parliament-fg hover:bg-parliament-surface sm:text-sm"
               onClick={onClearAll}
             >
               Golește filtrele
             </Button>
             <Button
               type="button"
-              className="h-11 rounded-none border-2 border-[#1d70b8] bg-[#1d70b8] px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
+              className="h-11 rounded-none border-2 border-parliament-action bg-parliament-action px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
               onClick={() => onOpenChange(false)}
             >
               Închide
