@@ -100,7 +100,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary hover:bg-primary text-primary-foreground border-none`}
       >
         <Link to={nextStepUrl as '/'}>
           <Play className="mr-2 lg:mr-3 h-5 w-5 fill-current" aria-hidden="true" />
@@ -115,7 +115,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-md shadow-primary/10 transition-all hover:scale-[1.02] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-md shadow-primary/10 transition-all hover:scale-[1.02] active:scale-95 bg-primary hover:bg-primary text-primary-foreground border-none`}
         onClick={onNavigateAndSwitch}
       >
         <Link to={nextStepUrl as '/'}>

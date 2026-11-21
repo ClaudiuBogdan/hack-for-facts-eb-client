@@ -212,9 +212,9 @@ function ChallengeSectionedStepRendererBody({
 
   if (!sectionedPlayer.currentSection || !sectionedPlayer.currentSectionComponent) {
     return (
-      <Card className="border-destructive/50 bg-destructive/5">
+      <Card className="border-status-blocked-fg/30 bg-status-blocked-bg">
         <CardContent className="p-6 text-center">
-          <p className="text-sm text-destructive">{t`This sectioned step has no sections to render.`}</p>
+          <p className="text-sm text-status-blocked-fg">{t`This sectioned step has no sections to render.`}</p>
         </CardContent>
       </Card>
     )

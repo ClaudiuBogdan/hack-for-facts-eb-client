@@ -216,7 +216,7 @@ function LessonWidgetShell({
   readonly children: ReactNode
 }) {
   return (
-    <Card className="not-prose my-8 overflow-hidden rounded-[32px] border-border/50 bg-background/95 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.2)]">
+    <Card className="not-prose my-8 overflow-hidden rounded-[32px] border-border/50 bg-background/95 shadow-sm">
       <CardHeader className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           {badge ? (
