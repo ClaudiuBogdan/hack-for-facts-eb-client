@@ -1,10 +1,12 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 /**
  * Keeps raw Tailwind palette colours out of the folders that moved onto the
- * design tokens (docs/design/learning-design-tokens.md). Colour there comes from
+ * design tokens (docs/design/learning-design-tokens.md), and parliament's skin
+ * on its own named tokens (docs/design/parliament-skin-tokens.md). Colour there comes from
  * the tokens — `primary`, the neutrals, `status-*`, `chart-1…4` — so a lesson,
  * a challenge or a campaign page looks like the rest of the app in both themes,
  * and the global stylesheet does not carry a shade, an opacity and a `dark:`
@@ -16,7 +18,151 @@ import { describe, expect, it } from 'vitest'
  */
 
 const ROOT = resolve(__dirname, '../..')
-const GUARDED = ['src/features/learning', 'src/features/campaigns', 'src/features/challenges', 'src/content/learning']
+const GUARDED = ['src/features/learning', 'src/features/campaigns', 'src/features/challenges', 'src/content/learning', 'src/features/parliament']
+
+/**
+ * Parliament draws with `--parliament-*`, never PNRR's tokens: PNRR's brutalist skin is quarantined to PNRR
+ * (DESIGN.md), so a change there must not move parliament. Any reference counts, in a class or an inline style.
+ */
+const PNRR_VARIABLE = /--pnrr-[\w-]+/g
+const PARLIAMENT = 'src/features/parliament/'
+
+/**
+ * The colours in parliament's code that are data, not skin: party brand colours and ballot categories. Hex is allowed
+ * inside these declarations only; anywhere else in parliament code (a theme constant, an inline style, a fallback) a
+ * colour comes from a `--parliament-*` token.
+ */
+const PARLIAMENT_DATA_COLOURS: Readonly<Record<string, readonly string[]>> = {
+  'src/features/parliament/lib/group-colors.ts': ['GROUP_BRAND_COLORS', 'FALLBACK_PALETTE'],
+  'src/features/parliament/lib/group-theme.ts': ['GROUP_BALLOT_COLORS'],
+}
+
+/**
+ * Parliament files not yet converted (docs/design/parliament-skin-tokens-plan.md, Tasks 4–8). Each batch removes the
+ * files it converts; a listed file that is already clean fails, so the list only shrinks. Empty, then deleted, after
+ * Task 8.
+ */
+const PENDING_PARLIAMENT: readonly string[] = [
+  'src/features/parliament/components/agenda-dossier-header.tsx',
+  'src/features/parliament/components/agenda-item-row.tsx',
+  'src/features/parliament/components/agenda-list-card.tsx',
+  'src/features/parliament/components/ai-summary-card.tsx',
+  'src/features/parliament/components/bill-detail-page-header.tsx',
+  'src/features/parliament/components/bill-detail-skeleton.tsx',
+  'src/features/parliament/components/bill-detail-tab-nav.tsx',
+  'src/features/parliament/components/bill-details-tab.tsx',
+  'src/features/parliament/components/bill-documents-tab.tsx',
+  'src/features/parliament/components/bill-list-card.tsx',
+  'src/features/parliament/components/bill-outcome-summary.tsx',
+  'src/features/parliament/components/bill-passage-tracker.tsx',
+  'src/features/parliament/components/bill-stages-tab.tsx',
+  'src/features/parliament/components/bill-stages-timeline.tsx',
+  'src/features/parliament/components/bill-stages-view-switcher.tsx',
+  'src/features/parliament/components/bill-step-links.tsx',
+  'src/features/parliament/components/bill-vote-role-badge.tsx',
+  'src/features/parliament/components/bill-votes-tab.tsx',
+  'src/features/parliament/components/chamber-composition-section.tsx',
+  'src/features/parliament/components/chamber-hemicycle.tsx',
+  'src/features/parliament/components/find-rep-dialog.tsx',
+  'src/features/parliament/components/member-alegeri-tab.tsx',
+  'src/features/parliament/components/member-committees-section.tsx',
+  'src/features/parliament/components/member-contact-tab.tsx',
+  'src/features/parliament/components/member-detail-hero.tsx',
+  'src/features/parliament/components/member-initiative-tab.tsx',
+  'src/features/parliament/components/member-interese-tab.tsx',
+  'src/features/parliament/components/member-interventii-tab.tsx',
+  'src/features/parliament/components/member-intrebari-tab.tsx',
+  'src/features/parliament/components/member-overview-tab.tsx',
+  'src/features/parliament/components/member-portret-tab.tsx',
+  'src/features/parliament/components/member-profile-activity-row.tsx',
+  'src/features/parliament/components/member-profile-card.tsx',
+  'src/features/parliament/components/member-profile-skeleton.tsx',
+  'src/features/parliament/components/member-speech-activity-heatmap.tsx',
+  'src/features/parliament/components/member-speech-record-card.tsx',
+  'src/features/parliament/components/member-speeches-filter-sheet.tsx',
+  'src/features/parliament/components/member-vote-activity-heatmap.tsx',
+  'src/features/parliament/components/member-vote-record-card.tsx',
+  'src/features/parliament/components/member-votes-filter-sheet.tsx',
+  'src/features/parliament/components/member-voting-tab.tsx',
+  'src/features/parliament/components/members-active-filters.tsx',
+  'src/features/parliament/components/members-filter-sheet.tsx',
+  'src/features/parliament/components/members-pagination.tsx',
+  'src/features/parliament/components/members-table.tsx',
+  'src/features/parliament/components/parliament-agenda-detail-page.tsx',
+  'src/features/parliament/components/parliament-agenda-page.tsx',
+  'src/features/parliament/components/parliament-bills-content.tsx',
+  'src/features/parliament/components/parliament-bills-filter-sheet.tsx',
+  'src/features/parliament/components/parliament-committee-detail-page.tsx',
+  'src/features/parliament/components/parliament-committees-page.tsx',
+  'src/features/parliament/components/parliament-debounced-search-input.tsx',
+  'src/features/parliament/components/parliament-filter-trigger-button.tsx',
+  'src/features/parliament/components/parliament-group-cohesion-panel.tsx',
+  'src/features/parliament/components/parliament-group-detail-page.tsx',
+  'src/features/parliament/components/parliament-group-detail-skeleton.tsx',
+  'src/features/parliament/components/parliament-groups-floating-bar.tsx',
+  'src/features/parliament/components/parliament-hub-activity-heatmap.tsx',
+  'src/features/parliament/components/parliament-hub-bill-activity.tsx',
+  'src/features/parliament/components/parliament-hub-bills-section.tsx',
+  'src/features/parliament/components/parliament-hub-page.tsx',
+  'src/features/parliament/components/parliament-hub-panel.tsx',
+  'src/features/parliament/components/parliament-hub-parlamentari-section.tsx',
+  'src/features/parliament/components/parliament-hub-vote-activity.tsx',
+  'src/features/parliament/components/parliament-hub-votes-section.tsx',
+  'src/features/parliament/components/parliament-list-surface.tsx',
+  'src/features/parliament/components/parliament-load-error-page.tsx',
+  'src/features/parliament/components/parliament-not-found-page.tsx',
+  'src/features/parliament/components/parliament-resource-card.tsx',
+  'src/features/parliament/components/parliament-shell.tsx',
+  'src/features/parliament/components/parliament-speaker-combobox.tsx',
+  'src/features/parliament/components/parliament-speech-activity-panel.tsx',
+  'src/features/parliament/components/parliament-speech-detail-page.tsx',
+  'src/features/parliament/components/parliament-speech-search-depth-notice.tsx',
+  'src/features/parliament/components/parliament-speeches-filter-sheet.tsx',
+  'src/features/parliament/components/parliament-stenogram-controls.tsx',
+  'src/features/parliament/components/parliament-stenogram-document.test.tsx',
+  'src/features/parliament/components/parliament-stenogram-document.tsx',
+  'src/features/parliament/components/parliament-stenogram-failure.tsx',
+  'src/features/parliament/components/parliament-stenogram-intervention-rail.test.tsx',
+  'src/features/parliament/components/parliament-stenogram-intervention-rail.tsx',
+  'src/features/parliament/components/parliament-stenogram-interventions-view.tsx',
+  'src/features/parliament/components/parliament-stenogram-reader-page.tsx',
+  'src/features/parliament/components/parliament-stenogram-session-card.test.tsx',
+  'src/features/parliament/components/parliament-stenogram-session-card.tsx',
+  'src/features/parliament/components/parliament-stenogram-sessions-view.tsx',
+  'src/features/parliament/components/parliament-stenogram-speaker-filter.tsx',
+  'src/features/parliament/components/parliament-stenogram-toc.tsx',
+  'src/features/parliament/components/parliament-tab-nav.tsx',
+  'src/features/parliament/components/parliament-year-combobox.tsx',
+  'src/features/parliament/components/party-legend-card.tsx',
+  'src/features/parliament/components/vote-chamber-vote-card.tsx',
+  'src/features/parliament/components/vote-detail-content.tsx',
+  'src/features/parliament/components/vote-detail-skeleton.tsx',
+  'src/features/parliament/components/vote-group-votes-table.tsx',
+  'src/features/parliament/components/vote-individual-votes-section.tsx',
+  'src/features/parliament/components/vote-kind-chip.tsx',
+  'src/features/parliament/components/vote-list-row-card.tsx',
+  'src/features/parliament/components/vote-member-result-card.tsx',
+  'src/features/parliament/components/vote-party-chart.tsx',
+  'src/features/parliament/components/vote-related-bills-card.tsx',
+  'src/features/parliament/components/votes-chamber-panel.tsx',
+  'src/features/parliament/components/votes-filter-sheet.tsx',
+  'src/features/parliament/components/votes-list-layout.tsx',
+  'src/features/parliament/components/votes-list-pagination.tsx',
+  'src/features/parliament/lib/bill-detail-theme.ts',
+  'src/features/parliament/lib/chamber-composition.ts',
+  'src/features/parliament/lib/committee-theme.ts',
+  'src/features/parliament/lib/formatting.ts',
+  'src/features/parliament/lib/group-colors.ts',
+  'src/features/parliament/lib/group-theme.ts',
+  'src/features/parliament/lib/header-theme.ts',
+  'src/features/parliament/lib/hub-theme.ts',
+  'src/features/parliament/lib/list-surface-theme.ts',
+  'src/features/parliament/lib/member-detail-theme.ts',
+  'src/features/parliament/lib/stenogram-theme.ts',
+  'src/features/parliament/lib/table-theme.ts',
+  'src/features/parliament/lib/vote-detail-theme.ts',
+]
+const pending = new Set(PENDING_PARLIAMENT)
 
 /** The palette families of the installed Tailwind, read from its own theme, so a new family is caught too. */
 const FAMILIES = [...new Set([...readFileSync(join(ROOT, 'node_modules/tailwindcss/theme.css'), 'utf8').matchAll(/--color-([a-z]+)-50:/g)].map((m) => m[1]))]
@@ -58,10 +204,12 @@ const FUNCTION_LITERAL = /(?<![A-Za-z0-9-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklc
 /**
  * Tailwind's arbitrary brackets in a class: a utility's value (`bg-[…]`,
  * `shadow-[…]`, `hover:text-[…]/20`) or an arbitrary property starting a class
- * (`[color:…]`, `hover:[background:…]`). Their content has no spaces or quotes,
- * so a JavaScript array (`['#fee2e2']`) or index (`items[0]`) is not one.
+ * (`[color:…]`, `hover:[background:…]`). Their content has no spaces; a value may
+ * hold quotes (`bg-[url('/a.png'),linear-gradient(#123,#456)]`). A JavaScript array
+ * (`['#fee2e2']`) or index (`items[0]`) does not follow a utility's `-` or start with a
+ * property, so it is not one.
  */
-const ARBITRARY = /(?:(?<=[a-z0-9])-\[([^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\[([a-zA-Z0-9_-]+:[^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\[([^\]\s'"\x60]+)\](?=:))/gm
+const ARBITRARY = /(?:(?<=[a-z0-9])-\[((?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|[^\]\s'"])+)\]|(?<=^|[\s'"\x60:!{(,])\[([a-zA-Z0-9_-]+:(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|[^\]\s'"])+)\]|(?<=^|[\s'"\x60:!{(,])\[([^\]\s'"\x60]+)\](?=:))/gm
 
 /**
  * A colour literal inside an arbitrary value or property, in any guarded file
@@ -80,8 +228,8 @@ function arbitraryColours(text: string): string[] {
     const isVariant = text[m.index + m[0].length] === ':'
     const literals = [...content.matchAll(LITERAL)].filter((l) => {
       if (l[0][0] !== '#') return true
-      if (content.slice(Math.max(0, l.index - 4), l.index) === 'url(') return false // a fragment: `mask-[url(#fade)]`
-      return !isVariant || STARTS_WITH_PROPERTY.test(content)
+      if (/url\(\s*['"]?$/.test(content.slice(0, l.index))) return false // a fragment: `mask-[url(#fade)]`, `url('#fade')`
+      return !isVariant || isDeclarationVariant(text, m.index, content)
     })
     if (literals.length > 0) found.push(m[0])
   }
@@ -95,13 +243,22 @@ function arbitraryColours(text: string): string[] {
  */
 const STARTS_WITH_PROPERTY = /^-{0,2}[a-zA-Z][\w-]*:/
 
+/**
+ * Whether an arbitrary variant's bracket holds a declaration (`supports-[color:#123456]:`) rather than a selector
+ * (`has-[a:is(#abc)]:`, `group-has-[#x]:`, `[&_#x]:`): only a `supports-` variant takes a declaration.
+ */
+function isDeclarationVariant(text: string, bracketAt: number, content: string): boolean {
+  const variant = text.slice(Math.max(0, bracketAt - 24), bracketAt + 1).match(/([\w-]*)-?\[?$/)?.[1] ?? ''
+  return /(^|-)supports$/.test(variant.replace(/-$/, '')) && STARTS_WITH_PROPERTY.test(content)
+}
+
 /** Absolute offsets of the `#id` selectors inside arbitrary variants (`has-[#a,#b]:underline`). */
 function variantIdOffsets(text: string): Set<number> {
   const ids = new Set<number>()
   for (const m of text.matchAll(ARBITRARY)) {
     if (text[m.index + m[0].length] !== ':') continue
     const content = m[1] ?? m[2] ?? m[3]
-    if (STARTS_WITH_PROPERTY.test(content)) continue
+    if (isDeclarationVariant(text, m.index, content)) continue
     const start = m.index + m[0].indexOf('[') + 1
     for (const l of content.matchAll(/#[0-9A-Za-z-]+/g)) ids.add(start + l.index)
   }
@@ -117,15 +274,65 @@ function sourceFiles(dir: string): string[] {
   })
 }
 
-/** The raw colours in one piece of source text, as the guard sees them in `file`. */
-function rawColours(file: string, text: string): string[] {
-  const found = [...text.matchAll(PALETTE)].map((m) => m[0])
-  if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) {
-    const ids = variantIdOffsets(text)
-    found.push(...[...text.matchAll(HEX)].filter((m) => !ids.has(m.index)).map((m) => m[0]))
-    found.push(...[...text.matchAll(FUNCTION_LITERAL)].map((m) => m[0]))
+/**
+ * The source with its comments, and the initializers of the declarations named in `allowed`, blanked to spaces
+ * (offsets kept). Read through the TypeScript parser, so a bracket or a `#172` in a comment, or a nested literal in a
+ * data map, cannot shift what is skipped.
+ */
+function codeOnly(text: string, allowed: readonly string[] = []): string {
+  const source = ts.createSourceFile('guarded.tsx', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+  const comments: [number, number][] = []
+  const data: [number, number][] = []
+  const jsxText: [number, number][] = []
+  const found = new Set<string>()
+  const commentsAt = (at: number) => [...(ts.getLeadingCommentRanges(text, at) ?? []), ...(ts.getTrailingCommentRanges(text, at) ?? [])]
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxText(node)) jsxText.push([node.pos, node.end])
+    for (const c of [...commentsAt(node.pos), ...commentsAt(node.end)]) comments.push([c.pos, c.end])
+    // `{/* … */}`: a comment that is the whole of a JSX expression.
+    if (ts.isJsxExpression(node)) for (const c of commentsAt(node.getStart(source) + 1)) comments.push([c.pos, c.end])
+    if (ts.isVariableDeclaration(node) && node.initializer && allowed.includes(node.name.getText(source))) {
+      found.add(node.name.getText(source))
+      data.push([node.initializer.getStart(source), node.initializer.end])
+    }
+    ts.forEachChild(node, visit)
   }
+  visit(source)
+  for (const name of allowed) if (!found.has(name)) throw new Error(`${name}: declared data colours not found; update PARLIAMENT_DATA_COLOURS`)
+  // JSX text that reads like `// …` is text, not a comment.
+  const inJsxText = ([from]: [number, number]) => jsxText.some(([a, b]) => from >= a && from < b)
+  // TypeScript's offsets count UTF-16 units, as string indexes do: blank by index, not by code point.
+  let code = text
+  for (const [from, to] of [...comments.filter((range) => !inJsxText(range)), ...data]) {
+    code = code.slice(0, from) + code.slice(from, to).replace(/[^\n]/g, ' ') + code.slice(to)
+  }
+  return code
+}
+
+/** Hex and colour functions written in code (comments and the `allowed` data declarations aside). */
+function codeColours(text: string, allowed: readonly string[] = []): string[] {
+  const code = codeOnly(text, allowed)
+  const ids = variantIdOffsets(code)
+  // `url('#fade')` names an SVG fragment, not a colour.
+  const isFragment = (at: number) => /url\(\s*['"\x60]?$/.test(code.slice(Math.max(0, at - 8), at))
+  return [...[...code.matchAll(HEX)].filter((m) => !ids.has(m.index) && !isFragment(m.index)).map((m) => m[0]), ...[...code.matchAll(FUNCTION_LITERAL)].map((m) => m[0])]
+}
+
+/**
+ * The raw colours in one piece of source text, as the guard sees them in `file`. A parliament file still pending
+ * conversion is checked for Tailwind palette classes only: those were never allowed there.
+ */
+function rawColours(file: string, text: string, isPending = pending.has(file)): string[] {
+  const found = [...text.matchAll(PALETTE)].map((m) => m[0])
+  if (isPending) return found
+  const isCode = /\.tsx?$/.test(file)
+  if (file.startsWith(HEX_GUARDED) && isCode) found.push(...codeColours(text))
   found.push(...arbitraryColours(text))
+  if (file.startsWith(PARLIAMENT)) {
+    // Tests hold party and API fixtures: their classes are checked, their data is not.
+    if (isCode && !/\.test\.tsx?$/.test(file)) found.push(...codeColours(text, PARLIAMENT_DATA_COLOURS[file]))
+    found.push(...[...text.matchAll(PNRR_VARIABLE)].map((m) => m[0]))
+  }
   return found
 }
 
@@ -139,6 +346,15 @@ describe('raw palette colours', () => {
       .filter(({ colours }) => colours.length > 0)
       .map(({ file, colours }) => `${file}: ${colours.slice(0, 6).join(' ')}${colours.length > 6 ? ' …' : ''}`)
     expect(offenders).toEqual([])
+  })
+
+  it('leave no pending parliament file listed once it is clean, or listed twice, or missing', () => {
+    // Checked as if not pending: the file must still hold a colour the conversion will remove.
+    const unexempted = (file: string) => rawColours(file, readFileSync(join(ROOT, file), 'utf8'), false)
+    const parliamentFiles = files.filter((file) => file.startsWith(PARLIAMENT))
+    expect(PENDING_PARLIAMENT.filter((file) => !parliamentFiles.includes(file)), 'listed but not a parliament source file').toEqual([])
+    expect(PENDING_PARLIAMENT.length, 'listed twice').toBe(pending.size)
+    expect(PENDING_PARLIAMENT.filter((file) => unexempted(file).length === 0), 'already clean: remove from PENDING_PARLIAMENT').toEqual([])
   })
 
   it.each([
@@ -181,6 +397,9 @@ describe('colour literals in arbitrary values', () => {
     ['a colour value inside an arbitrary variant', 'supports-[color:#123456]:underline', ['-[color:#123456]']],
     ['a colour in a custom-property value', 'className="[--cmp-2:#1baf7a] hover:[--cmp-2:#1BAF7A]"', ['[--cmp-2:#1baf7a]', '[--cmp-2:#1BAF7A]']],
     ['an upper-case colour function', 'bg-[RGB(15_23_42)] text-[HSL(220_80%_35%)] shadow-[0_1px_2px_RGBA(0,0,0,0.1)]', ['-[RGB(15_23_42)]', '-[HSL(220_80%_35%)]', '-[0_1px_2px_RGBA(0,0,0,0.1)]']],
+    ['a colour after a quoted url', "className=\"dark:bg-[url('/a.png'),linear-gradient(#0b0c0c,#505a5f)]\"", ["-[url('/a.png'),linear-gradient(#0b0c0c,#505a5f)]"]],
+    ['a colour after a quoted url with an escaped quote', "bg-[url('/it\\'s.svg'),linear-gradient(#123456,#abcdef)]", ["-[url('/it\\'s.svg'),linear-gradient(#123456,#abcdef)]"]],
+    ['a colour after a quoted url holding a bracket', "className=\"bg-[url('/icon[2].png'),linear-gradient(#0b0c0c,#505a5f)]\"", ["-[url('/icon[2].png'),linear-gradient(#0b0c0c,#505a5f)]"]],
   ])('finds %s, in every guarded folder', (_, text, expected) => {
     for (const file of ['src/features/campaigns/x.tsx', 'src/features/challenges/x.tsx', 'src/content/learning/x.mdx']) {
       expect(rawColours(file, text), file).toEqual(expected)
@@ -198,7 +417,7 @@ describe('colour literals in arbitrary values', () => {
     ['a token read through a variable', 'bg-[hsl(var(--muted))] [--tw-prose-kbd-shadows:hsl(var(--foreground)/0.1)] shadow-[0_0_0_1px_rgb(var(--x)/0.1)]'],
     ['an ID selector list inside a variant', 'has-[#abc,#def]:underline [&_#abc,#def]:hidden'],
     ['a custom property holding a token', '[--cmp-2:var(--chart-2)] [--cmp-3:hsl(var(--chart-3))]'],
-    ['a url fragment', 'fill-[url(#abcd1)] mask-[url(#fade)]'],
+    ['a url fragment', "fill-[url(#abcd1)] mask-[url(#fade)] mask-[url('#fade')] fill-[url(\"#g1\")]"],
   ])('leaves %s alone', (_, text) => {
     expect(rawColours('src/features/campaigns/x.tsx', text)).toEqual([])
   })
@@ -220,6 +439,7 @@ describe('values and selectors in an arbitrary bracket', () => {
 
   it.each([
     ['an ID list', 'has-[#abc,#def]:underline'],
+    ['an ID inside a selector that names an element', 'has-[a:is(#abc)]:underline'],
     ['an ID after a combinator in a list', '[&_#abc,#def]:hidden'],
     ['one ID in a group variant', 'group-has-[#abc]:block'],
     ['a fragment link', 'href="#abc"'],
@@ -229,6 +449,59 @@ describe('values and selectors in an arbitrary bracket', () => {
 
   it('leaves a MapLibre paint string alone outside learning', () => {
     expect(rawColours('src/features/campaigns/x.tsx', "'fill-color': '#ef2d00'")).toEqual([])
+  })
+})
+
+describe('parliament', () => {
+  const FILE = 'src/features/parliament/components/x.tsx'
+  it.each([
+    ['a hex class with its dark PNRR partner', 'text-[#0b0c0c] dark:text-[var(--pnrr-fg)]', ['-[#0b0c0c]', '#0b0c0c', '--pnrr-fg']],
+    ['a PNRR border', 'dark:border-[var(--pnrr-border)]', ['--pnrr-border']],
+    ['a PNRR variable in an inline style', "style={{ background: 'var(--pnrr-card)' }}", ['--pnrr-card']],
+    ['a PNRR variable with a fallback, spaces, or the shorthand', "dark:text-[var(--pnrr-fg,var(--parliament-fg))] dark:bg-(--pnrr-card) style={{ color: 'var( --pnrr-muted )' }}", ['--pnrr-fg', '--pnrr-card', '--pnrr-muted']],
+    ['a hex shadow', 'shadow-[inset_0_-2px_0_0_#b1b4b6]', ['-[inset_0_-2px_0_0_#b1b4b6]']],
+    ['a skin hex in a theme constant', "export const VOTE_DETAIL_SURFACE = '#f3f2f1'", ['#f3f2f1']],
+    ['a skin hex in an inline style or a fallback', "style={{ backgroundColor: '#372554' }} groupColors[id] ?? '#505a5f'", ['#372554', '#505a5f']],
+    ['a colour after JSX text that looks like a comment', "<div>// <b style={{ color: '#123abc' }} /></div>", ['#123abc']],
+    ['a colour after a comment and emoji', "const label = '🙂🙂🙂'\nconst bg = /* fallback */ '#123abc'", ['#123abc']],
+    ['a short hex, with or without a letter', "style={{ color: '#000', fill: '#1234', stroke: '#fff' }}", ['#000', '#1234', '#fff']],
+  ])('finds %s', (_, text, expected) => {
+    expect(rawColours(FILE, text)).toEqual(expected)
+  })
+
+  it.each([
+    ['token classes', 'text-parliament-muted border-parliament-border-strong bg-parliament-link/5'],
+    ['a token inside a bracket', 'shadow-[inset_0_-2px_0_0_var(--parliament-border)]'],
+    ['an issue number in a comment', '// see #172\n/* the committee at #172 of 191 */'],
+    ['a hex quoted in a comment', "/** warm grey `#f3f2f1` */ const x = 1"],
+    ['a JSX comment', '<div>{/* see #172 and #abc */}</div>'],
+    ['a quoted url fragment', "<path style={{ mask: \"url('#fade')\" }} />"],
+  ])('leaves %s alone', (_, text) => {
+    expect(rawColours(FILE, text)).toEqual([])
+  })
+
+  it('allows hex only inside the declared data colours, not beside them', () => {
+    const groupTheme = "export const GROUP_NOTICE_BG = '#f3f0ff'\nexport const GROUP_BALLOT_COLORS = {\n  pentru: '#1d70b8',\n  impotriva: '#d4351c',\n} as const"
+    expect(rawColours('src/features/parliament/lib/group-theme.ts', groupTheme, false)).toEqual(['#f3f0ff'])
+    const groupColors = "export const GROUP_BRAND_COLORS: Readonly<Record<string, string>> = {\n  psd: '#E4002B',\n}\nexport const PARLIAMENT_GROUP_FALLBACK_COLOR = '#505a5f'\nconst FALLBACK_PALETTE: readonly string[] = [\n  '#b5651d',\n]"
+    expect(rawColours('src/features/parliament/lib/group-colors.ts', groupColors, false)).toEqual(['#505a5f'])
+    // A bracket in a comment inside the data cannot hide what follows it.
+    const tricky = "export const GROUP_BALLOT_COLORS = {\n  // Opening marker: [\n  pentru: '#1d70b8',\n}\nexport const NEW_SURFACE = '#123abc'"
+    expect(rawColours('src/features/parliament/lib/group-theme.ts', tricky, false)).toEqual(['#123abc'])
+  })
+
+  it('leaves the fixtures in parliament tests alone, but not their classes', () => {
+    expect(rawColours('src/features/parliament/lib/x.test.ts', "expect(color).toBe('#E4002B')")).toEqual([])
+    expect(rawColours('src/features/parliament/lib/x.test.tsx', 'className="text-[#0b0c0c]"')).toEqual(['-[#0b0c0c]'])
+  })
+
+  it('still finds Tailwind palette classes in a file pending conversion', () => {
+    const file = PENDING_PARLIAMENT[0]
+    expect(rawColours(file, 'dark:bg-red-500 text-[#0b0c0c]')).toEqual(['bg-red-500'])
+  })
+
+  it('does not apply the PNRR rule outside parliament', () => {
+    expect(rawColours('src/features/campaigns/x.tsx', 'text-[var(--pnrr-fg)]')).toEqual([])
   })
 })
 
