@@ -78,7 +78,7 @@ export const voteDetailTabTriggerClassName =
   'shrink-0 rounded-none border-b-[3px] border-transparent bg-transparent px-0 py-3 text-sm font-normal text-parliament-muted shadow-none sm:text-base data-[state=active]:border-parliament-resource data-[state=active]:bg-transparent data-[state=active]:font-bold data-[state=active]:text-parliament-fg data-[state=active]:shadow-none'
 
 export const voteDetailToggleActiveClassName =
-  'border-parliament-resource-fill bg-parliament-resource-fill text-white hover:bg-parliament-resource-fill/90'
+  'border-parliament-resource-fill bg-parliament-resource-fill text-white hover:bg-parliament-resource-fill/90 hover:focus-visible:bg-parliament-resource-fill'
 
 export const voteDetailToggleInactiveClassName =
   'border-parliament-border bg-parliament-card text-parliament-fg hover:bg-parliament-surface'
