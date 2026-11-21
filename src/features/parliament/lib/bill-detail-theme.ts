@@ -15,7 +15,6 @@ export const BILL_DETAIL_BREADCRUMB_BG = PARLIAMENT_ICON_BG
 export const BILL_DETAIL_SURFACE = PARLIAMENT_SURFACE
 export const BILL_DETAIL_CONTENT_BG = 'var(--parliament-card)'
 export const BILL_DETAIL_INFO_BG = PARLIAMENT_NOTICE_TINT
-export const BILL_DETAIL_FINAL_PURPLE = PARLIAMENT_RESOURCE_PURPLE
 
 export function getBillDetailHeroColor(
   originatingChamber: 'camera' | 'senat',
@@ -94,6 +93,22 @@ export const BILL_VOTE_VERDICT_BADGE_CLASS_NAMES = {
 } as const
 
 export const BILL_VOTE_ROLE_NEUTRAL_BADGE_CLASS_NAME = 'border-parliament-muted text-parliament-muted'
+
+/** The bill list row's fact values and their house micro-labels (see agenda-list-card, bill-passage-tracker). */
+export const billListValueClassName = 'text-sm text-parliament-muted'
+
+export const billListLabelClassName =
+  'text-xs font-black uppercase tracking-wide text-parliament-muted'
+
+/** The bills filter sheet: section labels, the bill-type toggles and the select and date controls. */
+export const billsFilterSectionLabelClassName =
+  'text-xs font-bold uppercase tracking-wide text-parliament-fg'
+
+export const billsFilterToggleItemClassName =
+  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm font-semibold text-parliament-fg transition-colors hover:bg-parliament-surface data-[state=on]:border-parliament-link data-[state=on]:bg-parliament-action data-[state=on]:text-white'
+
+export const billsFilterControlClassName =
+  'h-10 w-full rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm text-parliament-fg shadow-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 export const billDetailPageContainerClassName =
   'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'

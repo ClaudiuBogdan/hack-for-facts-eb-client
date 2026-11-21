@@ -28,7 +28,13 @@ import {
   getBillLocationChipLabel,
   getBillTypeChipLabel,
 } from '../lib/bills-filter'
+import { cn } from '@/lib/utils'
 import { getBillLocationLabel, getBillTypeLabel } from '../lib/bill-labels'
+import {
+  billsFilterControlClassName,
+  billsFilterSectionLabelClassName,
+  billsFilterToggleItemClassName,
+} from '../lib/bill-detail-theme'
 import {
   ParliamentActiveFilterChips,
   type ParliamentFilterChip,
@@ -36,15 +42,6 @@ import {
 
 /** Patch merged into the search + committed to the URL by the tab. */
 export type ParliamentBillsFilterPatch = Partial<ParliamentBillsSearch>
-
-const SECTION_LABEL_CLASS =
-  'text-xs font-bold uppercase tracking-wide text-parliament-fg'
-
-const TOGGLE_ITEM_CLASS =
-  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm font-semibold text-parliament-fg transition-colors hover:bg-parliament-surface data-[state=on]:border-parliament-action data-[state=on]:bg-parliament-action data-[state=on]:text-white'
-
-const SELECT_CLASS =
-  'h-10 w-full rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm text-parliament-fg shadow-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 const BILL_TYPES: readonly BillType[] = [
   'guvern',
@@ -103,7 +100,7 @@ export function ParliamentBillsFilterSheet({
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Tip proiect</Label>
+            <Label className={billsFilterSectionLabelClassName}>Tip proiect</Label>
             <ToggleGroup
               type="single"
               value={search.billType ?? ''}
@@ -120,7 +117,7 @@ export function ParliamentBillsFilterSheet({
                 <ToggleGroupItem
                   key={type}
                   value={type}
-                  className={TOGGLE_ITEM_CLASS}
+                  className={billsFilterToggleItemClassName}
                 >
                   {getBillTypeLabel(type)}
                 </ToggleGroupItem>
@@ -129,7 +126,7 @@ export function ParliamentBillsFilterSheet({
           </section>
 
           <section className="space-y-2">
-            <Label htmlFor="bills-location" className={SECTION_LABEL_CLASS}>
+            <Label htmlFor="bills-location" className={billsFilterSectionLabelClassName}>
               Cameră / etapă curentă
             </Label>
             <Select
@@ -141,7 +138,7 @@ export function ParliamentBillsFilterSheet({
                 })
               }
             >
-              <SelectTrigger id="bills-location" className={SELECT_CLASS}>
+              <SelectTrigger id="bills-location" className={billsFilterControlClassName}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -156,7 +153,7 @@ export function ParliamentBillsFilterSheet({
           </section>
 
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>
+            <Label className={billsFilterSectionLabelClassName}>
               <Trans>Data ultimei etape</Trans>
             </Label>
             <p className="text-sm leading-5 text-parliament-muted">
@@ -180,7 +177,7 @@ export function ParliamentBillsFilterSheet({
                   onChange={(event) =>
                     onChange({ from: event.target.value || undefined })
                   }
-                  className={SELECT_CLASS}
+                  className={cn(billsFilterControlClassName, 'dark:scheme-dark')}
                 />
               </div>
               <div className="space-y-1">
@@ -197,7 +194,7 @@ export function ParliamentBillsFilterSheet({
                   onChange={(event) =>
                     onChange({ to: event.target.value || undefined })
                   }
-                  className={SELECT_CLASS}
+                  className={cn(billsFilterControlClassName, 'dark:scheme-dark')}
                 />
               </div>
             </div>
@@ -216,7 +213,7 @@ export function ParliamentBillsFilterSheet({
             </Button>
             <Button
               type="button"
-              className="h-11 rounded-none border-2 border-parliament-action bg-parliament-action px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
+              className="h-11 rounded-none border-2 border-parliament-link bg-parliament-action px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
               onClick={() => onOpenChange(false)}
             >
               Închide

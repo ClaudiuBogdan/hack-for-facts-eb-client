@@ -122,7 +122,7 @@ function PassageColumn({
           <button
             type="button"
             onClick={() => setShowRoutine((value) => !value)}
-            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold text-parliament-link"
+            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold text-parliament-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-parliament-focus"
           >
             <span>
               {showRoutine

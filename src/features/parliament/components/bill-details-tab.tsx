@@ -281,7 +281,7 @@ export function BillDetailsTab({ bill }: Props) {
             <Link
               to="/parlament/membri/$memberId"
               params={{ memberId: bill.initiator.memberId }}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-parliament-surface"
+              className="flex items-center gap-4 px-5 py-4 hover:bg-parliament-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-parliament-focus"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-parliament-surface text-sm font-bold text-parliament-muted">
                 {bill.initiator.memberName

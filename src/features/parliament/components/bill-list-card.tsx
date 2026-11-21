@@ -8,18 +8,13 @@ import {
   PARLIAMENT_CAMERA_GREEN,
   PARLIAMENT_SENAT_RED,
 } from '../lib/hub-theme'
+import { billListLabelClassName, billListValueClassName } from '../lib/bill-detail-theme'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 
 type Props = {
   readonly bill: ParliamentBillSummary
   readonly className?: string
 }
-
-const VALUE_CLASS = 'text-sm text-parliament-muted'
-
-/** House micro-label (see agenda-list-card, bill-passage-tracker). */
-const LABEL_CLASS =
-  'text-xs font-black uppercase tracking-wide text-parliament-muted'
 
 /** One labelled fact of the row's definition list. */
 function BillFact({
@@ -33,7 +28,7 @@ function BillFact({
 }) {
   return (
     <div className={cn('min-w-0', className)}>
-      <dt className={LABEL_CLASS}>{label}</dt>
+      <dt className={billListLabelClassName}>{label}</dt>
       {children}
     </div>
   )
@@ -117,11 +112,11 @@ export function BillListCard({ bill, className }: Props) {
           registered in, say, 2012.
         */}
         <BillFact label="Înregistrat">
-          <dd className={cn('mt-1', VALUE_CLASS)}>{bill.legislatureId}</dd>
+          <dd className={cn('mt-1', billListValueClassName)}>{bill.legislatureId}</dd>
         </BillFact>
 
         <BillFact label="Următoarea etapă">
-          <dd className={cn('mt-1', VALUE_CLASS)}>
+          <dd className={cn('mt-1', billListValueClassName)}>
             {bill.nextStageLabel ?? bill.currentStageLabel}
           </dd>
           <dd className="mt-1 text-xs text-parliament-muted">
@@ -130,7 +125,7 @@ export function BillListCard({ bill, className }: Props) {
         </BillFact>
 
         <BillFact label="Tip">
-          <dd className={cn('mt-1', VALUE_CLASS)}>
+          <dd className={cn('mt-1', billListValueClassName)}>
             {getBillTypeLabel(bill.billType)}
           </dd>
         </BillFact>
@@ -142,7 +137,7 @@ export function BillListCard({ bill, className }: Props) {
           about what the movement was.
         */}
         <BillFact label="Actualizat">
-          <dd className={cn('mt-1', VALUE_CLASS)}>
+          <dd className={cn('mt-1', billListValueClassName)}>
             {formatBillUpdatedAt(bill.lastUpdatedAt)}
           </dd>
           {bill.lastEventDescription ? (
