@@ -1,5 +1,6 @@
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import { withoutCodesInTitle, withoutNamedCodes, withoutProcurementPartyCodes } from './procurement-party-codes'
+import { holdsSearchParam, isDecodedCampaignKey, isSearchTermKey, isSearchTermPair, SEARCH_TERM_MASK, withoutSearchTerms } from './search-terms'
 
 /**
  * Sanitizes sensitive route URLs for analytics / error reporting.
@@ -377,8 +378,10 @@ function shouldRedactJusticePayloadValue(
 
 export function sanitizeJusticeTelemetryString(value: string): string {
   if (value.length === 0) return value
-  // TEL-001: no procurement party code, nor a fiscal code named in text, in any telemetry string, whatever the justice passes make of it.
-  return withoutNamedCodes(withoutProcurementPartyCodes(sanitizeJusticeTelemetryStringOnly(value)))
+  // TEL-001: no procurement party code, nor a fiscal code named in text, in any telemetry string, whatever the justice passes make of it;
+  // nor a reader's search text (any `q` parameter, docs/design/landing-search-query-param.md), masked first, while its value's
+  // boundaries are still encoded (the passes after it decode whole strings).
+  return withoutNamedCodes(withoutProcurementPartyCodes(sanitizeJusticeTelemetryStringOnly(withoutSearchTerms(value))))
 }
 
 function sanitizeJusticeTelemetryStringOnly(value: string): string {
@@ -409,10 +412,18 @@ export function sanitizeJusticeTelemetryValue<T>(
   key?: string,
   depth = 0,
 ): T {
+  // A search term held by its key, whatever its shape (`{ q: 'Cluj' }`, `{ q: ['Cluj', 'Napoca'] }`): no reader's search text leaves.
+  if (isSearchTermKey(key) && value !== null && value !== undefined && value !== '') return SEARCH_TERM_MASK as T
+  // A decoded campaign parameter that holds a search: its boundaries are gone, so all of it.
+  if (isDecodedCampaignKey(key) && typeof value === 'string' && holdsSearchParam(value)) return SEARCH_TERM_MASK as T
   // Past the depth read in full: a string is still scrubbed; anything deeper is not sent unread (fail closed, TEL-001).
   if (depth > 8) return (typeof value === 'string' ? sanitizeJusticeTelemetryString(value) : value !== null && typeof value === 'object' ? REDACTED_JUSTICE_VALUE : value) as T
   if (shouldRedactJusticePayloadValue(key, value)) {
     return REDACTED_JUSTICE_VALUE as T
+  }
+  // A query string as pairs (`['q', 'Cluj']`): the same.
+  if (isSearchTermPair(value)) {
+    return [value[0], SEARCH_TERM_MASK] as T
   }
   if (typeof value === 'string') {
     return sanitizeJusticeTelemetryString(value) as T

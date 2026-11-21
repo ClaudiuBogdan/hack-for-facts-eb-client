@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { withoutProcurementPartyCodes } from "@/lib/privacy/procurement-party-codes";
+import { withoutSearchTerms } from "@/lib/privacy/search-terms";
 import type { PostHog } from "posthog-js";
 import { useLocation } from "@tanstack/react-router";
 import { env } from "@/config/env";
@@ -319,17 +320,19 @@ export function capturePageview(payload?: {
     const searchRaw = payload?.search ?? window.location.search ?? "";
     const rawSearch = searchRaw && !searchRaw.startsWith("?") ? `?${searchRaw}` : searchRaw;
 
+    // A reader's search text (any `q` parameter, docs/design/landing-search-query-param.md) is masked first,
+    // while its value's boundaries are still encoded.
     // Sanitize sensitive justice route params (partyKey, caseNumber, from,
     // unknown params) before they reach PostHog. Only the safe aggregate
     // allowlist is preserved on /justitie* URLs.
     const sanitizedFragment = sanitizeJusticeUrlFragment(
-      `${rawPathname}${rawSearch}`,
+      withoutSearchTerms(`${rawPathname}${rawSearch}`),
     );
     // D6 (root, 19 November 2026): no procurement party's code goes to the analytics service.
-    const procurementFragment = withoutProcurementPartyCodes(sanitizedFragment);
-    const queryIndex = procurementFragment.indexOf("?");
-    const pathname = queryIndex === -1 ? procurementFragment : procurementFragment.slice(0, queryIndex);
-    const search = queryIndex === -1 ? "" : procurementFragment.slice(queryIndex);
+    const scrubbedFragment = withoutProcurementPartyCodes(sanitizedFragment);
+    const queryIndex = scrubbedFragment.indexOf("?");
+    const pathname = queryIndex === -1 ? scrubbedFragment : scrubbedFragment.slice(0, queryIndex);
+    const search = queryIndex === -1 ? "" : scrubbedFragment.slice(queryIndex);
 
     const url = `${window.location.origin}${pathname}${search}`;
     const host = window.location.host;

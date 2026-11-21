@@ -50,6 +50,17 @@ describe('the scrubbing transport, through the real Sentry client (TEL-001)', ()
     expect(sent.join('\n')).not.toContain(CODE)
   })
 
+  it('an error on the landing carries no search text from the scope (docs/design/landing-search-query-param.md)', async () => {
+    const { client, sent } = clientSending()
+    const scope = new Scope()
+    scope.addBreadcrumb({ category: 'navigation', data: { from: '/?q=Cluj%20Napoca', to: '/entities/4305857' } })
+    scope.setContext('global_error', { route: '/', query: '?q=Cluj%20Napoca' })
+    client.captureException(new Error('failed'), { data: { __sentry__: true } }, scope)
+    await client.flush(1000)
+    expect(sent.length).toBeGreaterThan(0)
+    expect(sent.join('\n')).not.toMatch(/Cluj|Napoca/u)
+  })
+
   it('feedback (no beforeSend) carries no party code', async () => {
     const { client, sent } = clientSending()
     client.captureEvent({ type: 'feedback', contexts: { feedback: { message: 'hi', url: `https://transparenta.eu/procurement/suppliers/${CODE}` } } }, {}, rawScope())

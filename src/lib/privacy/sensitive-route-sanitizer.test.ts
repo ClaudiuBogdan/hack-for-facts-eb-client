@@ -261,8 +261,10 @@ describe('the output guard', () => {
       const text = `/cookies?redirect=${layers(value, 7)}`
       expect(sanitizeJusticeTelemetryString(text)).toBe(text)
     }
-    const romanian = '/search?q=%C8%99coal%C4%83%20general%C4%83'
+    const romanian = '/search?tip=%C8%99coal%C4%83%20general%C4%83'
     expect(sanitizeJusticeTelemetryString(romanian)).toBe(romanian)
+    // A reader's search text is not left as it was (docs/design/landing-search-query-param.md, decision 9).
+    expect(sanitizeJusticeTelemetryString('/search?q=%C8%99coal%C4%83%20general%C4%83')).toBe('/search?q=_')
     // A key that only ends in a sensitive one's name is another key.
     for (const text of ['/dashboard?showcase_id=42', 'Error: getCaseId=not-found']) expect(sanitizeJusticeTelemetryString(text)).toBe(text)
     expect(sanitizeJusticeTelemetryString('x caseId=9999999')).toBe('x caseId=[scrubbed]')

@@ -74,6 +74,36 @@ describe('analytics privacy sanitization', () => {
     expect(sanitizePostHogEvent(null)).toBeNull()
   })
 
+  it('keeps the landing’s search text out of the pageview and of what the SDK adds', async () => {
+    Analytics.capturePageview({ pathname: '/', search: '?harta=venituri&q=primaria%20cluj' })
+    await vi.waitFor(() =>
+      expect(posthogMock.capture).toHaveBeenCalledWith('$pageview', {
+        $current_url: `${window.location.origin}/?harta=venituri&q=_`,
+        $pathname: '/',
+        $host: window.location.host,
+      }),
+    )
+    expect(
+      sanitizePostHogEvent({
+        event: '$pageleave',
+        properties: {
+          $current_url: 'https://transparenta.eu/entities/1',
+          $referrer: 'https://transparenta.eu/?q=primaria+cluj',
+          $prev_pageview_pathname: '/',
+        },
+        $set_once: { $initial_current_url: 'https://transparenta.eu/?q=2816464', $initial_referrer: '$direct' },
+      }),
+    ).toEqual({
+      event: '$pageleave',
+      properties: {
+        $current_url: 'https://transparenta.eu/entities/1',
+        $referrer: 'https://transparenta.eu/?q=_',
+        $prev_pageview_pathname: '/',
+      },
+      $set_once: { $initial_current_url: 'https://transparenta.eu/?q=_', $initial_referrer: '$direct' },
+    })
+  })
+
   it('scrubs justice case path and query identifiers from pageviews', async () => {
     Analytics.capturePageview({
       pathname: '/justitie/dosare/portal-just-bucuresti-2024-001',
