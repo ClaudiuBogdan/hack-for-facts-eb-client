@@ -37,7 +37,7 @@ const TAB_WIDTHS = ['w-36', 'w-40', 'w-24', 'w-24', 'w-20'] as const
 /** One placeholder ballot card, matching `VoteMemberResultCard`'s frame. */
 function MemberCardSkeleton() {
   return (
-    <div className="flex overflow-hidden rounded-none border border-l-0 border-[#ececec] bg-white dark:border-[var(--pnrr-border)]/50 dark:bg-[var(--pnrr-card)]">
+    <div className="flex overflow-hidden rounded-none border border-l-0 border-parliament-muted/10 bg-parliament-card">
       <Skeleton className="w-1.5 shrink-0 self-stretch rounded-none sm:w-2" />
       <div className="flex min-w-0 flex-1 items-start gap-x-2.5 px-3 pb-4 pt-4">
         <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
@@ -139,7 +139,7 @@ export function VoteDetailSkeleton({ chamber }: Props) {
                     <Skeleton key={tick} className="h-3 w-7 rounded-none" />
                   ))}
                 </div>
-                <div className="grid flex-1 grid-cols-2 items-end gap-6 border-b border-l border-[#b1b4b6] px-6 pb-0">
+                <div className="grid flex-1 grid-cols-2 items-end gap-6 border-b border-l border-parliament-border px-6 pb-0">
                   {[0, 1].map((column) => (
                     <Skeleton
                       key={column}
@@ -166,7 +166,7 @@ export function VoteDetailSkeleton({ chamber }: Props) {
           </div>
 
           <div
-            className="border-t border-[#b1b4b6] dark:border-[var(--pnrr-border)]"
+            className="border-t border-parliament-border"
             role="separator"
             aria-hidden
           />
@@ -193,7 +193,7 @@ export function VoteDetailSkeleton({ chamber }: Props) {
               </div>
             </div>
 
-            <div className="mt-6 flex flex-nowrap gap-6 overflow-hidden border-b border-[#b1b4b6] sm:gap-8 dark:border-[var(--pnrr-border)]">
+            <div className="mt-6 flex flex-nowrap gap-6 overflow-hidden border-b border-parliament-border sm:gap-8">
               {TAB_WIDTHS.map((width, index) => (
                 <Skeleton
                   // Keyed by POSITION: two tabs legitimately share a width, and

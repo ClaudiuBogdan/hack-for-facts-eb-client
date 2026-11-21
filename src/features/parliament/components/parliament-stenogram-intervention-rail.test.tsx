@@ -340,7 +340,7 @@ describe('ParliamentStenogramInterventionRail — where the reader is', () => {
     // on. Its bar is the same mark as every other, in the accent at full weight.
     expect(nodeOf(reading)).toBeNull()
     const tick = tickOf(reading)
-    expect(tick.className).toContain('bg-[#1d70b8]')
+    expect(tick.className).toContain('bg-parliament-link')
     expect(tick.className).toContain('opacity-100')
     expect(tick.className).not.toContain('invisible')
     expect(tick.className).not.toContain('rounded-full')
@@ -358,12 +358,12 @@ describe('ParliamentStenogramInterventionRail — where the reader is', () => {
       'inView',
       'idle',
     ])
-    expect(tickOf(markers()[1]!).className).toContain('bg-[#1d70b8]')
+    expect(tickOf(markers()[1]!).className).toContain('bg-parliament-link')
     expect(tickOf(markers()[1]!).className).toContain(
       'opacity-[calc(0.55+var(--rail-wave,0)*0.45)]',
     )
     // …and a contribution off screen stays ink, not accent.
-    expect(tickOf(markers()[2]!).className).toContain('bg-[#0b0c0c]')
+    expect(tickOf(markers()[2]!).className).toContain('bg-parliament-fg')
   })
 
   it('carries the run onto a collapsed cluster, so a dense stretch still lights', () => {
@@ -372,7 +372,7 @@ describe('ParliamentStenogramInterventionRail — where the reader is', () => {
 
     const cluster = container.querySelector<HTMLElement>('[data-rail-cluster]')!
     expect(cluster.dataset.state).toBe('reading')
-    expect(cluster.className).toContain('bg-[#1d70b8]')
+    expect(cluster.className).toContain('bg-parliament-link')
   })
 
   it('keeps the deep link as INK among the accent bars, with its notch', () => {
@@ -383,7 +383,7 @@ describe('ParliamentStenogramInterventionRail — where the reader is', () => {
     expect(selected.dataset.state).toBe('selected')
     // Ink, not a second accent: the run owns the accent, and a deep link inside
     // the run would vanish into it.
-    expect(tickOf(selected).className).toContain('bg-[#0b0c0c]')
+    expect(tickOf(selected).className).toContain('bg-parliament-fg')
     expect(tickOf(selected).className).toContain(
       'opacity-[calc(0.8+var(--rail-wave,0)*0.2)]',
     )
@@ -409,7 +409,7 @@ describe('ParliamentStenogramInterventionRail — where the reader is', () => {
 
     const selected = markers()[2]!
     expect(selected.dataset.state).toBe('selected')
-    expect(tickOf(selected).className).toContain('bg-[#0b0c0c]')
+    expect(tickOf(selected).className).toContain('bg-parliament-fg')
   })
 })
 

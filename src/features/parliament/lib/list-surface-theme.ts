@@ -20,23 +20,23 @@
 
 /** Tab title. `h2` — the shell already owns the page's `h1`. */
 export const parliamentListTitleClassName =
-  'text-2xl font-bold leading-snug text-[#0b0c0c] sm:text-[1.75rem] dark:text-[var(--pnrr-fg)]'
+  'text-2xl font-bold leading-snug text-parliament-fg sm:text-[1.75rem]'
 
 /** One or two lines under the title. Longer than that belongs in the disclosure. */
 export const parliamentListIntroClassName =
-  'mt-3 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+  'mt-3 max-w-3xl text-base leading-7 text-parliament-muted'
 
 /** The hairline that closes the header and the one that opens the footer. */
 export const parliamentListRuleClassName =
-  'border-[#b1b4b6] dark:border-[var(--pnrr-border)]'
+  'border-parliament-border'
 
 /** Muted small print — the footer count, the pager's position. */
 export const parliamentListMutedClassName =
-  'text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+  'text-sm text-parliament-muted'
 
 /** Emphasis inside muted small print, for the numbers themselves. */
 export const parliamentListStrongClassName =
-  'font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
+  'font-bold text-parliament-fg'
 
 /**
  * A capped total, said as what it is.

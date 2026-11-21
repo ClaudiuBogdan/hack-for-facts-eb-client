@@ -10,7 +10,7 @@ export function ParliamentChamberMark({
   return (
     <span
       className={cn(
-        'mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--pnrr-card)] ring-2 ring-[var(--pnrr-border)]',
+        'mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-parliament-card ring-2 ring-parliament-border-strong',
         className,
       )}
       aria-hidden

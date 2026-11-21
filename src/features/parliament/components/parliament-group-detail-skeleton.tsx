@@ -61,7 +61,7 @@ export function ParliamentGroupDetailSkeleton() {
         </div>
       </nav>
 
-      <section className="py-8" style={{ backgroundColor: '#505a5f' }}>
+      <section className="py-8" style={{ backgroundColor: 'var(--parliament-muted)' }}>
         <div className={groupPageContainerClassName}>
           <div className="h-8 w-56 animate-pulse bg-white/30 sm:h-9 sm:w-72" />
           <div className="mt-4 h-4 w-64 animate-pulse bg-white/20" />
@@ -80,11 +80,11 @@ export function ParliamentGroupDetailSkeleton() {
         <section className="space-y-4">
           <h2 className={groupSectionTitleClassName}>Cum a votat grupul</h2>
           <div className={cn(groupCardClassName, 'p-5 sm:p-6')}>
-            <div className="h-4 w-48 animate-pulse bg-[#dee0e2]" />
-            <div className="mt-4 h-4 w-full animate-pulse bg-[#dee0e2]" />
+            <div className="h-4 w-48 animate-pulse bg-parliament-border/40" />
+            <div className="mt-4 h-4 w-full animate-pulse bg-parliament-border/40" />
             <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
               {Array.from({ length: 4 }, (_, index) => (
-                <div key={index} className="h-10 animate-pulse bg-[#dee0e2]" />
+                <div key={index} className="h-10 animate-pulse bg-parliament-border/40" />
               ))}
             </div>
           </div>
@@ -94,8 +94,8 @@ export function ParliamentGroupDetailSkeleton() {
           <h2 className={groupSectionTitleClassName}>Componență</h2>
           <div className={cn(groupCardClassName, 'p-4 sm:p-5')}>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="h-11 flex-1 animate-pulse bg-[#dee0e2]" />
-              <div className="h-11 animate-pulse bg-[#dee0e2] sm:w-64" />
+              <div className="h-11 flex-1 animate-pulse bg-parliament-border/40" />
+              <div className="h-11 animate-pulse bg-parliament-border/40 sm:w-64" />
             </div>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

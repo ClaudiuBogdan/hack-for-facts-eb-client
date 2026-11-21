@@ -150,7 +150,7 @@ export function MemberProfileSkeleton({ memberId, activeTab }: Props) {
           {/* The portrait well, including the overhang into the body below it —
               drop that and everything under the hero starts 3.5rem too high. */}
           <div className="lg:-mb-14 lg:justify-self-end">
-            <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_4px_14px_rgba(11,12,12,0.2)] sm:h-44 sm:w-44 lg:h-52 lg:w-52">
+            <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-parliament-card shadow-[0_4px_14px_color-mix(in_srgb,var(--parliament-fg)_20%,transparent)] sm:h-44 sm:w-44 lg:h-52 lg:w-52">
               <Skeleton className="h-full w-full rounded-full" />
             </div>
           </div>
@@ -287,7 +287,7 @@ function MemberTabBodySkeleton({
         <ToolbarSkeleton withSearch />
         {/* The day grid ships COLLAPSED behind a summary row, so only the row
             is reserved — opening it is the reader's choice, not the loader's. */}
-        <div className="border-2 border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+        <div className="border-2 border-parliament-border bg-parliament-card">
           <div className="flex items-center justify-between gap-3 px-5 py-3">
             <Skeleton className="h-5 w-56 rounded-none" />
             <Skeleton className="h-5 w-16 rounded-none" />

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   voteDetailCardClassName,
   voteDetailPageContainerClassName,
+  VOTE_DETAIL_BREADCRUMB_BG,
   VOTE_DETAIL_SURFACE,
 } from "../lib/vote-detail-theme";
 import { VoteDetailBreadcrumb } from "./vote-detail-breadcrumb";
@@ -35,21 +36,21 @@ export function ParliamentInlineLoadError({
   return (
     <div
       className={cn(
-        "border-2 border-[#b1b4b6] bg-white px-5 py-6 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]",
+        "border-2 border-parliament-border bg-parliament-card px-5 py-6",
         className,
       )}
       role="alert"
     >
       <div className="flex items-start gap-3">
         <ServerCrash
-          className="mt-0.5 h-5 w-5 shrink-0 text-[#d4351c]"
+          className="mt-0.5 h-5 w-5 shrink-0 text-parliament-error"
           aria-hidden
         />
         <div>
-          <p className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <p className="font-bold text-parliament-fg">
             {title}
           </p>
-          <p className="mt-1 text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-1 text-sm leading-6 text-parliament-muted">
             {description}
           </p>
           {onRetry ? (
@@ -100,7 +101,7 @@ export function ParliamentLoadErrorPage({
       ) : (
         <nav
           className="py-3 text-sm text-white"
-          style={{ backgroundColor: "#372554" }}
+          style={{ backgroundColor: VOTE_DETAIL_BREADCRUMB_BG }}
           aria-label="Breadcrumb"
         >
           <div className={voteDetailPageContainerClassName}>
@@ -134,20 +135,20 @@ export function ParliamentLoadErrorPage({
         >
           <div className="flex max-w-2xl flex-col gap-6 sm:flex-row sm:items-start">
             <span
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-[#dee0e2] bg-[#fdf6f6] text-[#d4351c]"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-parliament-border/40 bg-parliament-error/5 text-parliament-error"
               aria-hidden
             >
               <ServerCrash className="h-7 w-7" strokeWidth={2} />
             </span>
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold uppercase tracking-wide text-[#d4351c]">
+              <p className="text-sm font-bold uppercase tracking-wide text-parliament-error">
                 Eroare temporară
               </p>
-              <h1 className="mt-2 text-2xl font-bold leading-tight text-[#0b0c0c] sm:text-3xl dark:text-[var(--pnrr-fg)]">
+              <h1 className="mt-2 text-2xl font-bold leading-tight text-parliament-fg sm:text-3xl">
                 {title}
               </h1>
-              <p className="mt-4 text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-4 text-base leading-7 text-parliament-muted">
                 {description}
               </p>
 
@@ -166,7 +167,7 @@ export function ParliamentLoadErrorPage({
               <Link
                 to="/parlament"
                 search={{ tab: "prezentare" }}
-                className="mt-6 flex items-center gap-2 text-sm font-medium text-[#1d70b8] hover:underline"
+                className="mt-6 flex items-center gap-2 text-sm font-medium text-parliament-link hover:underline"
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden />
                 Înapoi la Parlament

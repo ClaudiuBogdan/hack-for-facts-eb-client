@@ -27,27 +27,27 @@ export const groupPageContainerClassName =
   'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'
 
 export const groupCardClassName =
-  'rounded-none border border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]'
+  'rounded-none border border-parliament-border bg-parliament-card'
 
 export const groupSectionTitleClassName =
-  'text-xl font-bold leading-tight text-[#0b0c0c] sm:text-2xl dark:text-[var(--pnrr-fg)]'
+  'text-xl font-bold leading-tight text-parliament-fg sm:text-2xl'
 
 /** Muted label — tier one of the three-tier hierarchy. */
 export const groupEyebrowClassName =
-  'text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+  'text-xs font-semibold uppercase tracking-wide text-parliament-muted'
 
 export const groupMutedTextClassName =
-  'text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+  'text-sm text-parliament-muted'
 
 /** Controls on the filter bar. One height, so the row reads as one bar. */
 export const groupControlClassName =
-  'h-11 rounded-none border-2 border-[#b1b4b6] bg-white text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
+  'h-11 rounded-none border-2 border-parliament-border bg-parliament-card text-parliament-fg'
 
 /** Provenance / caveat band: a purple left rule on a tinted ground. */
 export const groupNoticeClassName =
-  'border-l-[5px] px-4 py-3 text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
+  'border-l-[5px] px-4 py-3 text-sm leading-6 text-parliament-fg'
 
-export const GROUP_NOTICE_BG = '#f3f0ff'
+export const GROUP_NOTICE_BG = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
 
 /**
  * Four effective ballot outcomes plus two non-choice evidence buckets.
@@ -66,6 +66,20 @@ export const GROUP_BALLOT_COLORS = {
   unknown: '#505a5f',
 } as const
 
+/**
+ * A ballot category written as TEXT (the vote table's counts). The colours above are data and stay one colour, which
+ * is right for a chart segment but not for a figure on a dark card, so text takes the flipping token that holds the
+ * same light colour.
+ */
+export const GROUP_BALLOT_TEXT_CLASS_NAMES: Readonly<Record<keyof typeof GROUP_BALLOT_COLORS, string>> = {
+  pentru: 'text-parliament-link',
+  impotriva: 'text-parliament-error',
+  abtinere: 'text-parliament-abstain',
+  absent: 'text-parliament-faint',
+  conflicting: 'text-parliament-conflict',
+  unknown: 'text-parliament-muted',
+}
+
 export const GROUP_BALLOT_LABELS = {
   pentru: 'Pentru',
   impotriva: 'Împotrivă',
@@ -82,10 +96,9 @@ export const GROUP_BALLOT_LABELS = {
 export const groupCohesionBandToneClassName: Readonly<
   Record<CohesionBand, string>
 > = {
-  high: 'border-[#00703c] text-[#00703c] dark:border-[#85c99b] dark:text-[#85c99b]',
-  medium:
-    'border-[#1d70b8] text-[#1d70b8] dark:border-[#7fb3e3] dark:text-[#7fb3e3]',
-  low: 'border-[#d4351c] text-[#d4351c] dark:border-[#f4a196] dark:text-[#f4a196]',
+  high: 'border-parliament-success text-parliament-success',
+  medium: 'border-parliament-link text-parliament-link',
+  low: 'border-parliament-error text-parliament-error',
 }
 
 export const groupCohesionBandLabel: Readonly<Record<CohesionBand, string>> = {

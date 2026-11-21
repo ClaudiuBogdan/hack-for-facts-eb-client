@@ -6,6 +6,7 @@ import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
 import {
   voteDetailCardClassName,
   voteDetailPageContainerClassName,
+  VOTE_DETAIL_BREADCRUMB_BG,
   VOTE_DETAIL_SURFACE,
 } from '../lib/vote-detail-theme'
 import { VoteDetailBreadcrumb } from './vote-detail-breadcrumb'
@@ -42,7 +43,7 @@ export function ParliamentNotFoundPage({
       ) : (
         <nav
           className="py-3 text-sm text-white"
-          style={{ backgroundColor: '#372554' }}
+          style={{ backgroundColor: VOTE_DETAIL_BREADCRUMB_BG }}
           aria-label="Breadcrumb"
         >
           <div className={voteDetailPageContainerClassName}>
@@ -67,20 +68,20 @@ export function ParliamentNotFoundPage({
         <section className={cn(voteDetailCardClassName, 'overflow-visible p-8 sm:p-10')}>
           <div className="flex max-w-2xl flex-col gap-6 sm:flex-row sm:items-start">
             <span
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-[#dee0e2] bg-[#f8f9fd] text-[#512178]"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-parliament-border/40 bg-parliament-link/5 text-parliament-resource"
               aria-hidden
             >
               <FileQuestion className="h-7 w-7" strokeWidth={2} />
             </span>
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold uppercase tracking-wide text-[#512178]">
+              <p className="text-sm font-bold uppercase tracking-wide text-parliament-resource">
                 Nu am găsit pagina
               </p>
-              <h1 className="mt-2 text-2xl font-bold leading-tight text-[#0b0c0c] sm:text-3xl dark:text-[var(--pnrr-fg)]">
+              <h1 className="mt-2 text-2xl font-bold leading-tight text-parliament-fg sm:text-3xl">
                 {title}
               </h1>
-              <p className="mt-4 text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-4 text-base leading-7 text-parliament-muted">
                 {description}
               </p>
 
@@ -91,7 +92,7 @@ export function ParliamentNotFoundPage({
                       key={action.label}
                       asChild
                       variant="outline"
-                      className="h-10 rounded-none border-[#b1b4b6] px-4 text-sm font-normal"
+                      className="h-10 rounded-none border-parliament-border px-4 text-sm font-normal"
                     >
                       <Link to={action.to} search={action.search}>
                         {action.label}
@@ -115,7 +116,7 @@ export function ParliamentNotFoundPage({
               <Link
                 to="/parlament"
                 search={{ tab: 'prezentare' }}
-                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#1d70b8] hover:underline"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-parliament-link hover:underline"
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden />
                 Înapoi la Parlament

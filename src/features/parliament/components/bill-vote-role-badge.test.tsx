@@ -280,7 +280,7 @@ describe('VoteChamberVoteCard — bill context', () => {
       />,
     )
     expect(
-      container.querySelector('span[style*="rgb(0, 100, 53)"]'),
+      container.querySelector('span[style*="var(--parliament-commons-fill)"]'),
     ).toBeInTheDocument()
     expect(
       screen.getByText('„Pentru” = pentru respingerea proiectului'),
@@ -375,7 +375,7 @@ describe('VoteChamberVoteCard — bill context', () => {
     expect(screen.queryByText('Senat')).not.toBeInTheDocument()
     expect(screen.queryByText(/Vot final/)).not.toBeInTheDocument()
     expect(
-      container.querySelector('span[style*="rgb(0, 100, 53)"]'),
+      container.querySelector('span[style*="var(--parliament-commons-fill)"]'),
     ).toBeInTheDocument()
   })
 })

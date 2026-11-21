@@ -3,13 +3,15 @@ import {
   PARLIAMENT_RESOURCE_PURPLE,
   PARLIAMENT_SENAT_RED,
   PARLIAMENT_ACTION_BLUE,
+  PARLIAMENT_ICON_BG,
+  PARLIAMENT_SURFACE,
 } from './hub-theme'
 
-export const BILL_DETAIL_BREADCRUMB_BG = '#372554'
-export const BILL_DETAIL_SURFACE = '#f3f2f1'
-export const BILL_DETAIL_CONTENT_BG = '#ffffff'
-export const BILL_DETAIL_INFO_BG = '#f3f0ff'
-export const BILL_DETAIL_FINAL_PURPLE = '#512178'
+export const BILL_DETAIL_BREADCRUMB_BG = PARLIAMENT_ICON_BG
+export const BILL_DETAIL_SURFACE = PARLIAMENT_SURFACE
+export const BILL_DETAIL_CONTENT_BG = 'var(--parliament-card)'
+export const BILL_DETAIL_INFO_BG = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
+export const BILL_DETAIL_FINAL_PURPLE = PARLIAMENT_RESOURCE_PURPLE
 
 export function getBillDetailHeroColor(
   originatingChamber: 'camera' | 'senat',
@@ -20,7 +22,7 @@ export function getBillDetailHeroColor(
 }
 
 /** Neutral grey for steps whose chamber the source never stated. */
-export const BILL_DETAIL_UNSTATED_GREY = '#505a5f'
+export const BILL_DETAIL_UNSTATED_GREY = 'var(--parliament-muted)'
 
 /**
  * Column titles and colours, shared by the two column views and the
@@ -71,21 +73,21 @@ export const billDetailPageContainerClassName =
 
 /** Height-matched to the votes list controls, so the two pages feel alike. */
 export const billDetailControlClassName =
-  'h-11 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-base text-[#0b0c0c] focus-visible:ring-2 focus-visible:ring-[#1d70b8] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
+  'h-11 rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-base text-parliament-fg focus-visible:ring-2 focus-visible:ring-parliament-link'
 
 export const billDetailCardClassName =
-  'overflow-hidden rounded-none border border-[#b1b4b6] bg-white shadow-[0_2px_0_0_rgba(11,12,12,0.04)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]'
+  'overflow-hidden rounded-none border border-parliament-border bg-parliament-card shadow-[0_2px_0_0_color-mix(in_srgb,var(--parliament-fg)_4%,transparent)]'
 
 export const billDetailSectionTitleClassName =
-  'text-xl font-bold leading-tight text-[#121847] sm:text-2xl dark:text-[var(--pnrr-fg)]'
+  'text-xl font-bold leading-tight text-parliament-bill-heading sm:text-2xl'
 
 export const billDetailTabLinkClassName =
   'relative whitespace-nowrap px-4 py-3 text-base transition-colors sm:px-5'
 
 export const billDetailTabActiveClassName =
-  'font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
+  'font-bold text-parliament-fg'
 
 export const billDetailTabInactiveClassName =
-  'font-normal text-[#505a5f] hover:text-[#0b0c0c] dark:text-[var(--pnrr-muted)] dark:hover:text-[var(--pnrr-fg)]'
+  'font-normal text-parliament-muted hover:text-parliament-fg'
 
 export { PARLIAMENT_ACTION_BLUE, PARLIAMENT_CAMERA_GREEN, PARLIAMENT_RESOURCE_PURPLE, PARLIAMENT_SENAT_RED }

@@ -1,6 +1,6 @@
 /**
  * Class constants for the stenogram surfaces — the parliament GOV.UK-light skin
- * (warm grey `#f3f2f1`, action blue `#1d70b8`, 2px borders, 0 radius), kept in
+ * (warm grey surface, link blue, 2px borders, 0 radius), kept in
  * one place per the "theme constants per surface" convention so components
  * never hardcode their own.
  *
@@ -12,22 +12,22 @@
 
 /** Sticky toolbar band above a list. `top-0` + a solid background, never blur. */
 export const stenogramStickyBarClassName =
-  'sticky top-0 z-20 -mx-4 border-b-2 border-[#b1b4b6] bg-background px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 dark:border-[var(--pnrr-border)] print:hidden'
+  'sticky top-0 z-20 -mx-4 border-b-2 border-parliament-border bg-background px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 print:hidden'
 
 export const stenogramSectionTitleClassName =
-  'text-xl font-bold leading-tight text-[#0b0c0c] sm:text-2xl dark:text-[var(--pnrr-fg)]'
+  'text-xl font-bold leading-tight text-parliament-fg sm:text-2xl'
 
 export const stenogramSectionIntroClassName =
-  'mt-3 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+  'mt-3 max-w-3xl text-base leading-7 text-parliament-muted'
 
 export const stenogramMutedTextClassName =
-  'text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]'
+  'text-sm leading-6 text-parliament-muted'
 
 export const stenogramCardClassName =
-  'border-2 border-[#b1b4b6] bg-white p-5 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]'
+  'border-2 border-parliament-border bg-parliament-card p-5'
 
 export const stenogramBadgeClassName =
-  'inline-flex items-center gap-1.5 border border-[#b1b4b6] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]'
+  'inline-flex items-center gap-1.5 border border-parliament-border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-parliament-muted'
 
 /**
  * WHICH ASSEMBLY, IN THE HOUSE PAIR. The same two colours the votes surfaces
@@ -45,9 +45,9 @@ export const stenogramBadgeClassName =
  */
 export const stenogramChamberToneClassName: Readonly<Record<string, string>> = {
   camera_deputatilor:
-    'border-[#006435] text-[#006435] dark:border-[#58b083] dark:text-[#58b083]',
+    'border-parliament-commons text-parliament-commons',
   senat:
-    'border-[#9C051A] text-[#9C051A] dark:border-[#e8697c] dark:text-[#e8697c]',
+    'border-parliament-senate text-parliament-senate',
 }
 
 /**
@@ -68,13 +68,13 @@ export const stenogramChamberToneClassName: Readonly<Record<string, string>> = {
 export const stenogramChamberLeftRuleClassName: Readonly<
   Record<string, string>
 > = {
-  camera_deputatilor: 'border-l-4 border-l-[#006435] dark:border-l-[#58b083]',
-  senat: 'border-l-4 border-l-[#9C051A] dark:border-l-[#e8697c]',
+  camera_deputatilor: 'border-l-4 border-l-parliament-commons',
+  senat: 'border-l-4 border-l-parliament-senate',
 }
 
 
 export const stenogramLinkClassName =
-  'font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:hover:text-[var(--pnrr-fg)]'
+  'font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 /**
  * A secondary action sitting in a card's META LINE — the row that already
@@ -88,10 +88,10 @@ export const stenogramLinkClassName =
  * darkening rather than colouring on hover.
  */
 export const stenogramMetaActionClassName =
-  'inline-flex items-center gap-1.5 font-medium text-[#505a5f] underline decoration-[#b1b4b6] underline-offset-4 hover:text-[#0b0c0c] hover:decoration-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[var(--pnrr-muted)] dark:decoration-[var(--pnrr-border)] dark:hover:text-[var(--pnrr-fg)] dark:hover:decoration-[var(--pnrr-fg)]'
+  'inline-flex items-center gap-1.5 font-medium text-parliament-muted underline decoration-parliament-border underline-offset-4 hover:text-parliament-fg hover:decoration-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 export const stenogramControlClassName =
-  'h-10 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] hover:bg-[#f3f2f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]'
+  'h-10 rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm font-semibold text-parliament-fg hover:bg-parliament-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 /**
  * Availability tint pairs — a tinted container plus a dark label, per the
@@ -102,16 +102,16 @@ export const stenogramAvailabilityToneClassName: Readonly<
   Record<'COMPLETE' | 'PARTIAL' | 'SOURCE_ONLY', string>
 > = {
   COMPLETE:
-    'border-[#00703c] bg-[#e7f3ec] text-[#00552d] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]',
+    'border-parliament-success bg-parliament-success/10 text-parliament-commons',
   PARTIAL:
-    'border-[#b58840] bg-[#fdf3e3] text-[#6b4a08] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]',
+    'border-parliament-notice-edge bg-parliament-notice text-parliament-notice-fg',
   SOURCE_ONLY:
-    'border-[#b1b4b6] bg-[#f3f2f1] text-[#383f43] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-muted)]',
+    'border-parliament-border bg-parliament-surface text-parliament-muted',
 }
 
 /** Left-rule notice band, matching the member-detail notice rhythm. */
 export const stenogramNoticeClassName =
-  'border-l-[5px] border-l-[#1d70b8] bg-[#f0f5fb] p-5 text-sm leading-6 text-[#0b0c0c] sm:p-6 dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]'
+  'border-l-[5px] border-l-parliament-link bg-parliament-link/5 p-5 text-sm leading-6 text-parliament-fg sm:p-6'
 
 /**
  * The FILTERED-READING notice — the one band on this surface that is printed.
@@ -123,7 +123,7 @@ export const stenogramNoticeClassName =
  * a grey smear.
  */
 export const stenogramFilterNoticeClassName =
-  'border-l-[5px] border-l-[#b58840] bg-[#fdf3e3] p-5 text-sm leading-6 text-[#0b0c0c] sm:p-6 dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)] print:border-2 print:border-black print:border-l-2 print:bg-transparent print:p-3 print:text-black'
+  'border-l-[5px] border-l-parliament-notice-edge bg-parliament-notice p-5 text-sm leading-6 text-parliament-fg sm:p-6 print:border-2 print:border-black print:border-l-2 print:bg-transparent print:p-3 print:text-black'
 
 /**
  * The scroll-to-top button — an IN-FLOW action in the left lane, never a FAB.
@@ -138,7 +138,7 @@ export const stenogramFilterNoticeClassName =
  * (narrow), where it can overlap nothing.
  */
 export const stenogramScrollTopClassName =
-  'h-11 w-full justify-start rounded-none border-2 border-[#0b0c0c] bg-white px-3 text-sm font-bold text-[#0b0c0c] hover:bg-[#f3f2f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-fg)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)] print:hidden'
+  'h-11 w-full justify-start rounded-none border-2 border-parliament-fg bg-parliament-card px-3 text-sm font-bold text-parliament-fg hover:bg-parliament-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus print:hidden'
 
 /**
  * The same control at the FOOT OF THE RAIL — a bare arrow, no words and no box.
@@ -156,7 +156,7 @@ export const stenogramScrollTopClassName =
  * as the bars; the box around it stays 32px so the target is still a target.
  */
 export const stenogramScrollTopCompactClassName =
-  'size-8 shrink-0 justify-start rounded-none border-0 bg-transparent p-0 text-[#0b0c0c] hover:bg-transparent hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[var(--pnrr-fg)] dark:hover:bg-transparent dark:hover:text-[var(--pnrr-blue)] print:hidden'
+  'size-8 shrink-0 justify-start rounded-none border-0 bg-transparent p-0 text-parliament-fg hover:bg-transparent hover:text-parliament-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus print:hidden'
 
 /**
  * The reader's LEFT LANE — one sticky stack, not several sticky children.
@@ -192,7 +192,7 @@ export const stenogramLeftLaneClassName =
  * stenogram is long-form prose and reads badly at full container width.
  */
 export const stenogramReadingColumnClassName =
-  'max-w-3xl text-base leading-8 text-[#0b0c0c] dark:text-[var(--pnrr-fg)] print:max-w-none print:text-[11pt] print:leading-6 print:text-black'
+  'max-w-3xl text-base leading-8 text-parliament-fg print:max-w-none print:text-[11pt] print:leading-6 print:text-black'
 
 /**
  * One reading block.
@@ -239,17 +239,17 @@ export function estimateBlockSize(segment: {
 
 /** The block named by `?interventie=` — highlighted WITHOUT hiding its context. */
 export const stenogramBlockSelectedClassName =
-  'border-l-[#1d70b8] bg-[#f0f5fb] dark:bg-[var(--pnrr-subtle)] print:bg-transparent'
+  'border-l-parliament-link bg-parliament-link/5 print:bg-transparent'
 
 export const stenogramSpeakerNameClassName =
-  'font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)] print:text-black'
+  'font-bold text-parliament-fg print:text-black'
 
 export const stenogramAgendaHeadingClassName =
-  'mt-8 border-b-2 border-[#0b0c0c] pb-2 text-lg font-bold uppercase tracking-wide text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-fg)] print:mt-6 print:border-black print:text-black'
+  'mt-8 border-b-2 border-parliament-fg pb-2 text-lg font-bold uppercase tracking-wide text-parliament-fg print:mt-6 print:border-black print:text-black'
 
 /** Table of contents rail — collapses below the document on small screens. */
 export const stenogramTocClassName =
-  'border-2 border-[#b1b4b6] bg-[#f3f2f1] p-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] print:hidden'
+  'border-2 border-parliament-border bg-parliament-surface p-4 print:hidden'
 
 /* ── intervention rail (the reading-progress scrollbar) ─────────────────── */
 
@@ -360,12 +360,12 @@ export const stenogramRailClusterDensityClassName: Readonly<
 export const stenogramRailMarkerToneClassName: Readonly<
   Record<'idle' | 'inView' | 'reading' | 'selected', string>
 > = {
-  idle: 'bg-[#0b0c0c] opacity-[calc(0.3+var(--rail-wave,0)*0.7)] dark:bg-[var(--pnrr-fg)]',
+  idle: 'bg-parliament-fg opacity-[calc(0.3+var(--rail-wave,0)*0.7)]',
   inView:
-    'bg-[#1d70b8] opacity-[calc(0.55+var(--rail-wave,0)*0.45)] dark:bg-[var(--pnrr-blue)]',
-  reading: 'bg-[#1d70b8] opacity-100 dark:bg-[var(--pnrr-blue)]',
+    'bg-parliament-link opacity-[calc(0.55+var(--rail-wave,0)*0.45)]',
+  reading: 'bg-parliament-link opacity-100',
   selected:
-    'bg-[#0b0c0c] opacity-[calc(0.8+var(--rail-wave,0)*0.2)] dark:bg-[var(--pnrr-fg)]',
+    'bg-parliament-fg opacity-[calc(0.8+var(--rail-wave,0)*0.2)]',
 }
 
 /**
@@ -374,7 +374,7 @@ export const stenogramRailMarkerToneClassName: Readonly<
  * never eats into the room the wave grows into.
  */
 export const stenogramRailMarkerHitClassName =
-  'group/marker absolute -left-2 right-0 hover:z-10 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+  'group/marker absolute -left-2 right-0 hover:z-10 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 /**
  * The tick a marker draws — a short mark pinned to the track's left edge
@@ -398,7 +398,7 @@ export const stenogramRailMarkerTickClassName = `absolute left-2 top-1/2 w-3 -tr
  * of over the prose the reader is scanning.
  */
 export const stenogramRailTooltipClassName =
-  'max-w-[15rem] rounded-none border-2 border-[#0b0c0c] bg-white p-3 text-left text-[#0b0c0c] shadow-md dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
+  'max-w-[15rem] rounded-none border-2 border-parliament-fg bg-parliament-card p-3 text-left text-parliament-fg shadow-md'
 
 /** Hidden on screen, shown only on paper (source URL, provenance footer). */
 export const stenogramPrintOnlyClassName = 'hidden print:block'

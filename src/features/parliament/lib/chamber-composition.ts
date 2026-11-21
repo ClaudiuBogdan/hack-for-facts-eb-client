@@ -18,7 +18,7 @@ import {
   sortHemicyclePositionsLeftToRight,
 } from './hemicycle-layout'
 
-const DEFAULT_GROUP_COLOR = '#505a5f'
+const DEFAULT_GROUP_COLOR = 'var(--parliament-muted)'
 const CENTER_FALLBACK = { x: 50, y: 52 } as const
 
 const SYNTHETIC_FIRST_NAMES = [

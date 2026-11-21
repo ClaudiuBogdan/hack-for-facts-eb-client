@@ -153,11 +153,11 @@ export function getVoteOutcomeAccentColor(outcome: VoteOutcome): string {
   switch (outcome) {
     case "egalitate":
     case "necunoscut":
-      return "#505a5f";
+      return "var(--parliament-muted)";
     case "adoptat":
-      return "#006435";
+      return "var(--parliament-commons-fill)";
     case "respins":
-      return "#9C051A";
+      return "var(--parliament-senate-fill)";
   }
 }
 
@@ -165,13 +165,13 @@ export function getVoteOutcomeAccentColor(outcome: VoteOutcome): string {
 export function getVoteChoiceAccentColor(choice: MemberVoteChoice): string {
   switch (choice) {
     case "pentru":
-      return "#006435";
+      return "var(--parliament-commons-fill)";
     case "impotriva":
-      return "#9C051A";
+      return "var(--parliament-senate-fill)";
     case "abtinere":
-      return "#505a5f";
+      return "var(--parliament-muted)";
     case "nu_a_votat":
-      return "#b1b4b6";
+      return "var(--parliament-border)";
   }
 }
 

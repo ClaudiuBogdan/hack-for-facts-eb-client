@@ -77,7 +77,7 @@ export function BillDetailSkeleton({ billId, activeTab }: Props) {
               style={{ backgroundColor: BILL_DETAIL_UNSTATED_GREY }}
             >
               <ParliamentChamberMark
-                color="#ffffff"
+                color="white"
                 className="mt-0 bg-transparent ring-white/40"
               />
               <Skeleton
@@ -209,14 +209,14 @@ function BillDetailsTabSkeleton({ billId }: { readonly billId: string }) {
         >
           {/* The two cell labels are fixed text — greying them would make the
               card re-layout on arrival instead of filling in. */}
-          <div className="border-b border-[#b1b4b6] px-5 py-4 sm:border-b-0 sm:border-r dark:border-[var(--pnrr-border)]">
-            <p className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <div className="border-b border-parliament-border px-5 py-4 sm:border-b-0 sm:border-r">
+            <p className="text-sm font-bold text-parliament-fg">
               Etapa curentă
             </p>
             <Skeleton className="mt-2 h-6 w-40 rounded-none" />
           </div>
           <div className="px-5 py-4">
-            <p className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <p className="text-sm font-bold text-parliament-fg">
               Localizare
             </p>
             <Skeleton className="mt-2 h-6 w-44 rounded-none" />
@@ -226,7 +226,7 @@ function BillDetailsTabSkeleton({ billId }: { readonly billId: string }) {
         <Link
           to="/parlament/proiecte/$billId/etape"
           params={{ billId }}
-          className="mt-4 inline-flex items-center gap-1 text-base font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#003078]"
+          className="mt-4 inline-flex items-center gap-1 text-base font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-link-hover"
         >
           Vezi toate etapele parcursului
           <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
@@ -258,7 +258,7 @@ function BillStagesTabSkeleton() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className={billDetailSectionTitleClassName}>Parcurs legislativ</h2>
         <div className="flex shrink-0 items-center gap-2">
-          <span className="text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <span className="text-sm font-semibold text-parliament-muted">
             Vizualizare
           </span>
           <Skeleton className="h-11 w-44 rounded-none" />
@@ -268,7 +268,7 @@ function BillStagesTabSkeleton() {
       <div className="space-y-5">
         <Skeleton className="h-5 w-72 rounded-none" />
         {/* The rail's own frame, gutter included, so the steps land in place. */}
-        <ol className="ml-[4.25rem] space-y-6 border-l-2 border-[#b1b4b6] pl-5 sm:ml-[7rem] dark:border-[var(--pnrr-border)]">
+        <ol className="ml-[4.25rem] space-y-6 border-l-2 border-parliament-border pl-5 sm:ml-[7rem]">
           {[0, 1, 2, 3].map((step) => (
             <li key={step} className="space-y-2">
               <Skeleton className="h-5 w-40 rounded-none" />

@@ -80,16 +80,16 @@ export function ParliamentTabNav({ activeTab }: Props) {
             onTouchStart={warm}
             className={cn(
               'relative whitespace-nowrap px-4 py-3 text-base transition-colors sm:px-5',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus',
               isActive
-                ? 'font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
-                : 'font-normal text-[var(--pnrr-muted)] hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)]',
+                ? 'font-bold text-parliament-fg'
+                : 'font-normal text-parliament-frame-muted hover:text-parliament-fg',
             )}
           >
             {tab.label}
             <span
               className={cn(
-                'absolute bottom-0 left-0 right-0 h-[3px] bg-[#0b0c0c] transition-opacity dark:bg-[var(--pnrr-fg)]',
+                'absolute bottom-0 left-0 right-0 h-[3px] bg-parliament-fg transition-opacity',
                 isActive ? 'opacity-100' : 'opacity-0',
               )}
               aria-hidden

@@ -18,7 +18,7 @@ export function BillDetailTabNav({ billId, activeTab }: Props) {
   return (
     <nav
       aria-label="Secțiuni proiect de lege"
-      className="flex min-w-0 items-end gap-1 overflow-x-auto border-b border-[#b1b4b6] px-4 hide-scrollbar dark:border-[var(--pnrr-border)] sm:px-6 lg:px-8"
+      className="flex min-w-0 items-end gap-1 overflow-x-auto border-b border-parliament-border px-4 hide-scrollbar sm:px-6 lg:px-8"
     >
       {BILL_DETAIL_NAV_ITEMS.map((item) => {
         const isActive = activeTab === item.id

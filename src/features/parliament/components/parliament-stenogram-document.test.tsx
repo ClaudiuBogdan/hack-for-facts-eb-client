@@ -99,7 +99,7 @@ describe('ParliamentStenogramDocument', () => {
 
     const selected = container.querySelector(`#${segmentDomId(1)}`)!
     expect(selected).toHaveAttribute('aria-current', 'true')
-    expect(selected.className).toContain('border-l-[#1d70b8]')
+    expect(selected.className).toContain('border-l-parliament-link')
   })
 
   it('marks the selected block only', () => {

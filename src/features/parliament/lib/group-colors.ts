@@ -65,7 +65,7 @@ export const GROUP_BRAND_COLORS: Readonly<Record<string, string>> = {
   pumr: '#0f766e',
 }
 
-export const PARLIAMENT_GROUP_FALLBACK_COLOR = '#505a5f'
+export const PARLIAMENT_GROUP_FALLBACK_COLOR = 'var(--parliament-muted)'
 
 /**
  * Deterministic, collision-avoiding fallback palette for an unknown/new group.

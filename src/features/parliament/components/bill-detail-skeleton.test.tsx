@@ -81,13 +81,13 @@ describe('BillDetailSkeleton', () => {
     // announce "Camera Deputaților" for a bill that may be the Senate's.
     render(<BillDetailSkeleton billId="23135" activeTab="detalii" />)
     expect(
-      document.querySelector('section[style*="rgb(80, 90, 95)"]'),
+      document.querySelector('section[style*="var(--parliament-muted)"]'),
     ).toBeInTheDocument()
     expect(
-      document.querySelector('section[style*="rgb(0, 100, 53)"]'),
+      document.querySelector('section[style*="var(--parliament-commons-fill)"]'),
     ).not.toBeInTheDocument()
     expect(
-      document.querySelector('section[style*="rgb(156, 5, 26)"]'),
+      document.querySelector('section[style*="var(--parliament-senate-fill)"]'),
     ).not.toBeInTheDocument()
   })
 

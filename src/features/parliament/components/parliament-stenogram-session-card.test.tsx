@@ -82,8 +82,8 @@ describe('ParliamentStenogramSessionCard', () => {
     // The router `Link` is mocked here and drops its class, so the styling
     // assertion rides on the source link — both carry the same class.
     const source = screen.getByRole('link', { name: /cdep\.ro/ })
-    expect(source.className).not.toContain('text-[#1d70b8]')
-    expect(source.className).toContain('text-[#505a5f]')
+    expect(source.className).not.toContain('text-parliament-link')
+    expect(source.className).toContain('text-parliament-muted')
     expect(source.className).toContain('underline')
 
     // …and both actions share the row with the counts rather than standing

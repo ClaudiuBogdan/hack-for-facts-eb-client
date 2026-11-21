@@ -1,23 +1,23 @@
 /** Parlament header typography — PNRR-weight hero on light surface */
 export const parliamentHeaderTitleClassName =
-  'max-w-5xl text-balance font-black leading-[0.85] tracking-tight text-[var(--pnrr-fg)]'
+  'max-w-5xl text-balance font-black leading-[0.85] tracking-tight text-parliament-frame-fg'
 
 export const parliamentHeaderTitleLineClassName = 'block'
 
 export const parliamentHeaderDescriptionClassName =
-  'max-w-[40rem] text-[1.125rem] font-normal leading-8 text-[var(--pnrr-fg)]'
+  'max-w-[40rem] text-[1.125rem] font-normal leading-8 text-parliament-frame-fg'
 
 export const parliamentHeaderMetaClassName =
-  'text-base font-normal leading-6 text-[var(--pnrr-muted)]'
+  'text-base font-normal leading-6 text-parliament-frame-muted'
 
 export const parliamentHeaderStatClassName =
-  'inline-flex items-center gap-2 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-base'
+  'inline-flex items-center gap-2 rounded-none border-2 border-parliament-border-strong bg-parliament-card px-3 py-2 text-base'
 
 export const parliamentHeaderStatValueClassName =
-  'font-bold tabular-nums text-[var(--pnrr-fg)]'
+  'font-bold tabular-nums text-parliament-frame-fg'
 
 export const parliamentHeaderStatLabelClassName =
-  'font-normal text-[var(--pnrr-muted)]'
+  'font-normal text-parliament-frame-muted'
 
 /** PNRR-scale hero title */
 export const parliamentHeaderTitleStyle = {

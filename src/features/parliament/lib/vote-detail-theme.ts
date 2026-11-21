@@ -1,16 +1,18 @@
 import {
   PARLIAMENT_CAMERA_GREEN,
+  PARLIAMENT_ICON_BG,
   PARLIAMENT_RESOURCE_PURPLE,
   PARLIAMENT_SENAT_RED,
+  PARLIAMENT_SURFACE,
 } from './hub-theme'
 
-export const VOTE_DETAIL_BREADCRUMB_BG = '#372554'
-export const VOTE_DETAIL_SURFACE = '#f3f2f1'
-export const VOTE_DETAIL_INFO_BG = '#f3f0ff'
+export const VOTE_DETAIL_BREADCRUMB_BG = PARLIAMENT_ICON_BG
+export const VOTE_DETAIL_SURFACE = PARLIAMENT_SURFACE
+export const VOTE_DETAIL_INFO_BG = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
 
 /** Plot-area wash behind the party chart. Shared so the loading placeholder
  *  reserves the same block of colour the chart lands in. */
-export const VOTE_DETAIL_CHART_PLOT_BG = '#f8f9fd'
+export const VOTE_DETAIL_CHART_PLOT_BG = 'color-mix(in srgb, var(--parliament-link) 5%, var(--parliament-card))'
 
 export function getVoteDetailHeroColor(
   chamber: 'camera' | 'senat' | 'comun',
@@ -57,27 +59,27 @@ export const voteDetailHeroStickyClassName = 'lg:sticky lg:top-0 lg:z-30'
 
 /** UK Parliament member card shadow — soft lift, bottom/right bias */
 export const voteMemberCardShadowClassName =
-  'shadow-[1px_2px_8px_rgba(11,12,12,0.08)] hover:shadow-[1px_3px_10px_rgba(11,12,12,0.1)]'
+  'shadow-[1px_2px_8px_color-mix(in_srgb,var(--parliament-fg)_8%,transparent)] hover:shadow-[1px_3px_10px_color-mix(in_srgb,var(--parliament-fg)_10%,transparent)]'
 
 export const voteDetailCardClassName =
-  'overflow-hidden rounded-none border border-[#b1b4b6] bg-white shadow-[0_2px_0_0_rgba(11,12,12,0.04)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]'
+  'overflow-hidden rounded-none border border-parliament-border bg-parliament-card shadow-[0_2px_0_0_color-mix(in_srgb,var(--parliament-fg)_4%,transparent)]'
 
 export const voteDetailPageContainerClassName =
   'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'
 
 export const voteDetailSectionTitleClassName =
-  'text-xl font-bold leading-tight text-[#0b0c0c] sm:text-2xl lg:text-[1.75rem] dark:text-[var(--pnrr-fg)]'
+  'text-xl font-bold leading-tight text-parliament-fg sm:text-2xl lg:text-[1.75rem]'
 
 export const voteDetailTabListClassName =
-  'h-auto w-max min-w-full flex-nowrap justify-start gap-0 rounded-none border-b border-[#b1b4b6] bg-transparent p-0 dark:border-[var(--pnrr-border)]'
+  'h-auto w-max min-w-full flex-nowrap justify-start gap-0 rounded-none border-b border-parliament-border bg-transparent p-0'
 
 export const voteDetailTabTriggerClassName =
-  'shrink-0 rounded-none border-b-[3px] border-transparent bg-transparent px-0 py-3 text-sm font-normal text-[#505a5f] shadow-none sm:text-base data-[state=active]:border-[#512178] data-[state=active]:bg-transparent data-[state=active]:font-bold data-[state=active]:text-[#0b0c0c] data-[state=active]:shadow-none dark:data-[state=active]:text-[var(--pnrr-fg)]'
+  'shrink-0 rounded-none border-b-[3px] border-transparent bg-transparent px-0 py-3 text-sm font-normal text-parliament-muted shadow-none sm:text-base data-[state=active]:border-parliament-resource-fill data-[state=active]:bg-transparent data-[state=active]:font-bold data-[state=active]:text-parliament-fg data-[state=active]:shadow-none'
 
 export const voteDetailToggleActiveClassName =
-  'border-[#512178] bg-[#512178] text-white hover:bg-[#512178]/90'
+  'border-parliament-resource-fill bg-parliament-resource-fill text-white hover:bg-parliament-resource-fill/90'
 
 export const voteDetailToggleInactiveClassName =
-  'border-[#b1b4b6] bg-white text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
+  'border-parliament-border bg-parliament-card text-parliament-fg hover:bg-parliament-surface'
 
 export { PARLIAMENT_RESOURCE_PURPLE }
