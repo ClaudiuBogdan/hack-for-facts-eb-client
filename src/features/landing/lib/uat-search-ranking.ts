@@ -1,7 +1,7 @@
 import type { EntitySearchHit } from '@/schemas/entity-search'
 
-const MUNICIPALITY_PREFIX = /^(?:municipiul|municipiu|mun) /u
-const UAT_PREFIX = /^(?:municipiul|municipiu|mun|orasul|oras|or|comuna|com) /u
+const MUNICIPALITY_PREFIX = /^(?:primaria )?(?:municipiul|municipiului|municipiu|mun) /u
+const UAT_PREFIX = /^(?:primaria )?(?:municipiul|municipiului|municipiu|mun|orasul|orasului|oras|or|comuna|comunei|com) /u
 
 function normalizeLocalityName(name: string): string {
   return name.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()

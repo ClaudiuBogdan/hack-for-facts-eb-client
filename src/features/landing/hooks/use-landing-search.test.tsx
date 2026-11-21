@@ -134,6 +134,18 @@ describe('landing universal search', () => {
     await search(result, 'brasov')
     await waitFor(() => expect(result.current.results).toEqual([brasov, COMPANY]))
   })
+  it.each([
+    ['mangalia', '4515255', 'MUNICIPIULUI MANGALIA', 'Constanța'],
+    ['singureni', '5123780', 'PRIMARIA COMUNEI SINGURENI', 'GIURGIU'],
+    ['ludesti', '5359111', 'PRIMĂRIA COMUNEI LUDEȘTI', 'DÂMBOVIȚA'],
+  ])('promotes %s under its registry title', async (term, cui, title, county) => {
+    const candidate = uat(cui, title, county)
+    searchEntities.mockResolvedValueOnce(response([COMPANY]))
+      .mockResolvedValueOnce(response([candidate]))
+    const { result } = setup()
+    await search(result, term)
+    expect(result.current.results).toEqual([candidate, COMPANY])
+  })
   it('does not promote a locality mentioned inside a longer query', async () => {
     searchEntities.mockResolvedValueOnce(response([COMPANY]))
       .mockResolvedValueOnce(response([SIBIU]))
