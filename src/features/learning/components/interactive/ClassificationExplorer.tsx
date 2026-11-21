@@ -134,27 +134,27 @@ export function ClassificationExplorer({
             animate="visible"
             exit="exit"
           >
-            <Card className="p-10 md:p-16 rounded-[3rem] bg-white dark:bg-zinc-950 border-none shadow-lg overflow-hidden relative">
+            <Card className="p-10 md:p-16 rounded-[3rem] bg-card border-none shadow-lg overflow-hidden relative">
               <div className="relative z-10 flex flex-col items-center text-center space-y-10">
                 {/* Icon */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                  className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-inner"
+                  className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-primary/10 text-primary shadow-inner"
                 >
                   <Eye className="w-10 h-10" />
                 </motion.div>
 
                 {/* Headline */}
                 <div className="space-y-4 max-w-xl">
-                  <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-zinc-900 dark:text-white leading-[0.95]">
+                  <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.95]">
                     {text.hookTitle}{' '}
-                    <span className="text-indigo-600 dark:text-indigo-400 italic">
+                    <span className="text-primary italic">
                       {text.hookTitleHighlight}
                     </span>
                   </h2>
-                  <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                  <p className="text-xl text-foreground font-medium leading-relaxed">
                     {text.hookSubtitle}
                   </p>
                 </div>
@@ -178,10 +178,10 @@ export function ClassificationExplorer({
                       <div className={cn('font-black text-lg', CLASSIFICATION_COLORS.fn.text)}>
                         {text.fnPreview.title}
                       </div>
-                      <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      <div className="text-sm font-medium text-foreground">
                         {text.fnPreview.subtitle}
                       </div>
-                      <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                      <div className="text-xs text-foreground mt-1">
                         {text.fnPreview.examples}
                       </div>
                     </div>
@@ -204,10 +204,10 @@ export function ClassificationExplorer({
                       <div className={cn('font-black text-lg', CLASSIFICATION_COLORS.ec.text)}>
                         {text.ecPreview.title}
                       </div>
-                      <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      <div className="text-sm font-medium text-foreground">
                         {text.ecPreview.subtitle}
                       </div>
-                      <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                      <div className="text-xs text-foreground mt-1">
                         {text.ecPreview.examples}
                       </div>
                     </div>
@@ -218,7 +218,7 @@ export function ClassificationExplorer({
                 <div className="w-full max-w-md">
                   <Button
                     onClick={() => setStep('EXPLORE')}
-                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                    className="w-full h-20 rounded-[1.8rem] text-2xl font-black bg-primary text-primary-foreground hover:shadow-2xl hover:ring-4 hover:ring-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                   >
                     {text.hookButton} <ArrowRight className="ml-2 w-7 h-7" />
                   </Button>
@@ -226,8 +226,8 @@ export function ClassificationExplorer({
               </div>
 
               {/* Atmospheric blur effects */}
-              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-indigo-100/30 dark:bg-indigo-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-emerald-100/20 dark:bg-emerald-500/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-chart-2/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
             </Card>
           </motion.div>
         )}
@@ -241,14 +241,14 @@ export function ClassificationExplorer({
             animate="visible"
             exit="exit"
           >
-            <Card className="rounded-[3rem] bg-white dark:bg-zinc-950 border-none shadow-lg overflow-hidden">
+            <Card className="rounded-[3rem] bg-card border-none shadow-lg overflow-hidden">
               <div className="p-6 md:p-10 space-y-6">
                 {/* Header */}
                 <div className="text-center space-y-2">
-                  <div className="text-zinc-400 dark:text-zinc-500 text-sm font-black uppercase tracking-[0.3em]">
+                  <div className="text-muted-foreground text-sm font-black uppercase tracking-[0.3em]">
                     {text.explorePhaseLabel}
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-zinc-900 dark:text-white">
+                  <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
                     {text.exploreTitle}{' '}
                     <span className={cn('italic', colors.text)}>
                       {text.exploreTitleHighlight}
@@ -258,20 +258,20 @@ export function ClassificationExplorer({
 
                 {/* Toggle tabs */}
                 <div className="flex justify-center">
-                  <div className="inline-flex p-1.5 rounded-[1.5rem] bg-zinc-100 dark:bg-zinc-900">
+                  <div className="inline-flex p-1.5 rounded-[1.5rem] bg-muted">
                     <button
                       onClick={() => handleViewChange('fn')}
                       className={cn(
                         'flex items-center gap-2 px-6 py-4 rounded-[1.2rem] font-bold transition-all',
                         currentView === 'fn'
-                          ? 'bg-white dark:bg-zinc-800 shadow-md text-indigo-600 dark:text-indigo-400'
-                          : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                          ? 'bg-card shadow-md text-primary'
+                          : 'text-foreground hover:text-primary'
                       )}
                     >
                       <Building2 className="w-5 h-5" />
                       <span className="hidden sm:inline">{text.functionalLabel}</span>
                       <span className="sm:hidden">FN</span>
-                      <span className="text-xs opacity-70">
+                      <span className="text-xs">
                         ({text.functionalQuestion})
                       </span>
                     </button>
@@ -280,14 +280,14 @@ export function ClassificationExplorer({
                       className={cn(
                         'flex items-center gap-2 px-6 py-4 rounded-[1.2rem] font-bold transition-all',
                         currentView === 'ec'
-                          ? 'bg-white dark:bg-zinc-800 shadow-md text-emerald-600 dark:text-emerald-400'
-                          : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                          ? 'bg-card shadow-md text-primary'
+                          : 'text-foreground hover:text-primary'
                       )}
                     >
                       <Wallet className="w-5 h-5" />
                       <span className="hidden sm:inline">{text.economicLabel}</span>
                       <span className="sm:hidden">EC</span>
-                      <span className="text-xs opacity-70">
+                      <span className="text-xs">
                         ({text.economicQuestion})
                       </span>
                     </button>
@@ -305,19 +305,17 @@ export function ClassificationExplorer({
                     className={cn(
                       'rounded-2xl border p-4',
                       colors.border,
-                      currentView === 'fn'
-                        ? 'bg-indigo-50/50 dark:bg-indigo-950/20'
-                        : 'bg-emerald-50/50 dark:bg-emerald-950/20'
+                      colors.bgLighter
                     )}
                   >
-                    <p className={cn('text-sm font-medium', colors.text.replace('text-', 'text-').replace('-600', '-800').replace('-400', '-200'))}>
+                    <p className={cn('text-sm font-medium', 'text-foreground')}>
                       {hintText}
                     </p>
                   </motion.div>
                 </AnimatePresence>
 
                 {/* Treemap */}
-                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-2 sm:p-4">
+                <div className="rounded-2xl border border-border bg-muted/50 p-2 sm:p-4">
                   <div className="mb-3 flex justify-end">
                     <FilteredSpendingInfo
                       unit={treemapUnit}
@@ -342,17 +340,17 @@ export function ClassificationExplorer({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-5"
+                  className="rounded-2xl bg-status-partial-bg border border-status-partial-fg/30 p-5"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-amber-500/10 shrink-0">
-                      <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <div className="p-2 rounded-xl bg-status-partial-fg/10 shrink-0">
+                      <Lightbulb className="w-5 h-5 text-status-partial-fg" />
                     </div>
                     <div>
-                      <div className="font-bold text-amber-800 dark:text-amber-200 mb-1">
+                      <div className="font-bold text-status-partial-fg mb-1">
                         {text.keyInsightTitle}
                       </div>
-                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                      <p className="text-sm text-status-partial-fg">
                         {text.keyInsightText}
                       </p>
                       {dynamicSourceUrl && (
@@ -360,7 +358,7 @@ export function ClassificationExplorer({
                           href={dynamicSourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 mt-2 transition-colors"
+                          className="inline-flex items-center gap-1.5 text-xs font-medium !text-status-partial-fg hover:underline mt-2 transition-colors"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           {text.sourceLabel} ({budgetInfo.year}, {budgetInfo.totalBillions}B {budgetInfo.currency})

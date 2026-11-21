@@ -35,29 +35,29 @@ export function VATReformCard({
 }: VATReformCardProps) {
   return (
     <div className="w-full mx-auto py-8 px-4 select-none">
-      <Card className="rounded-[3rem] bg-white text-zinc-900 border-zinc-200 shadow-xl relative overflow-hidden group">
+      <Card className="rounded-[3rem] shadow-xl relative overflow-hidden group">
         
         {/* Header */}
-        <div className="relative z-10 p-8 md:p-10 pb-6 border-b border-zinc-100">
+        <div className="relative z-10 p-8 md:p-10 pb-6 border-b border-border">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4">
-               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 border border-zinc-200 text-[11px] font-black uppercase tracking-widest text-zinc-600">
+               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted border border-border text-[11px] font-black uppercase tracking-widest text-foreground">
                 <Scale className="w-3.5 h-3.5" /> {badge}
               </div>
               <div>
-                <h3 className="text-2xl font-black tracking-tight text-zinc-900">
+                <h3 className="text-2xl font-black tracking-tight text-foreground">
                   {title}
                 </h3>
-                <p className="text-zinc-500 font-medium mt-1">
+                <p className="text-muted-foreground font-medium mt-1">
                   {description}
                 </p>
               </div>
             </div>
             <div className="hidden md:flex flex-col items-end gap-1 text-right">
-               <div className="flex items-center gap-2 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+               <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-black uppercase tracking-widest">
                   <Calendar className="w-3.5 h-3.5" /> {dateLabel}
                </div>
-               <div className="text-lg font-black text-zinc-900">{date}</div>
+               <div className="text-lg font-black text-foreground">{date}</div>
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@ export function VATReformCard({
             
             {/* The Shift Visual */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400 px-1">
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
                     <span>{oldRatesLabel}</span>
                     <span>{newRealityLabel}</span>
                 </div>
@@ -77,28 +77,28 @@ export function VATReformCard({
                    
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                        {/* Standard Rate */}
-                       <div className="flex flex-col md:flex-row items-center justify-between bg-zinc-50 rounded-2xl p-6 md:px-8 group-hover:bg-zinc-100/80 transition-colors gap-2 md:gap-0">
+                       <div className="flex flex-col md:flex-row items-center justify-between bg-muted rounded-2xl p-6 md:px-8 gap-2 md:gap-0">
                             <div className="space-y-1 text-center md:text-left">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{standardLabel}</div>
-                                <div className="text-xl font-bold text-zinc-400 line-through decoration-zinc-300">19%</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-foreground">{standardLabel}</div>
+                                <div className="text-xl font-bold text-foreground line-through decoration-foreground/50">19%</div>
                             </div>
-                            <ArrowRight className="w-5 h-5 text-zinc-300 rotate-90 md:rotate-0" />
+                            <ArrowRight className="w-5 h-5 text-muted-foreground rotate-90 md:rotate-0" />
                             <div className="space-y-1 text-center md:text-right">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{newLabel}</div>
-                                <div className="text-4xl font-black text-indigo-600">21%</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-foreground">{newLabel}</div>
+                                <div className="text-4xl font-black text-primary">21%</div>
                             </div>
                        </div>
 
                        {/* Essentials Rate */}
-                       <div className="flex flex-col md:flex-row items-center justify-between bg-zinc-50 rounded-2xl p-6 md:px-8 group-hover:bg-zinc-100/80 transition-colors gap-2 md:gap-0">
+                       <div className="flex flex-col md:flex-row items-center justify-between bg-muted rounded-2xl p-6 md:px-8 gap-2 md:gap-0">
                             <div className="space-y-1 text-center md:text-left">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{essentialsLabel}</div>
-                                <div className="text-xl font-bold text-zinc-400 line-through decoration-zinc-300">5-9%</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-foreground">{essentialsLabel}</div>
+                                <div className="text-xl font-bold text-foreground line-through decoration-foreground/50">5-9%</div>
                             </div>
-                            <ArrowRight className="w-5 h-5 text-zinc-300 rotate-90 md:rotate-0" />
+                            <ArrowRight className="w-5 h-5 text-muted-foreground rotate-90 md:rotate-0" />
                             <div className="space-y-1 text-center md:text-right">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{unifiedLabel}</div>
-                                <div className="text-4xl font-black text-emerald-500">11%</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-foreground">{unifiedLabel}</div>
+                                <div className="text-4xl font-black text-primary">11%</div>
                             </div>
                        </div>
                    </div>
@@ -106,28 +106,24 @@ export function VATReformCard({
             </div>
 
             {/* Impact Text */}
-            <div className="flex items-start gap-4 p-6 rounded-3xl bg-indigo-50/50">
-                 <FileText className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-4 p-6 rounded-3xl bg-primary/10">
+                 <FileText className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                  <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-indigo-900">{explanationTitle}</h4>
-                    <p className="text-sm text-indigo-900/60 leading-relaxed font-medium">
+                    <h4 className="text-sm font-bold text-foreground">{explanationTitle}</h4>
+                    <p className="text-sm text-foreground leading-relaxed font-medium">
                         {explanation}
                     </p>
                  </div>
             </div>
             
-            <div className="md:hidden flex flex-col items-center gap-1 text-center pt-4 border-t border-zinc-100">
-               <div className="flex items-center gap-2 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+            <div className="md:hidden flex flex-col items-center gap-1 text-center pt-4 border-t border-border">
+               <div className="flex items-center gap-2 text-muted-foreground text-[10px] font-black uppercase tracking-widest">
                   <Calendar className="w-3.5 h-3.5" /> {dateLabel}
                </div>
-               <div className="text-lg font-black text-zinc-900">{date}</div>
+               <div className="text-lg font-black text-foreground">{date}</div>
             </div>
 
         </div>
-
-        {/* Decorative Gradients */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-500/5 rounded-full blur-[80px]" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px]" />
       </Card>
     </div>
   )

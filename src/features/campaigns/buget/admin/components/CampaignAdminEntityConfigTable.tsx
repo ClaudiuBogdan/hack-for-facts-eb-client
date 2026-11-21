@@ -40,6 +40,7 @@ import type { CampaignAdminEntityConfigClipboardIssue } from "@/features/campaig
 import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { cn, getUserLocale } from "@/lib/utils";
 
+import { campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminEntityConfigTableProps = {
   readonly items: readonly CampaignAdminEntityConfigListItem[];
   readonly header?: (input: {
@@ -187,7 +188,7 @@ function ConfiguredBadge({
   return configured ? (
     <Badge
       variant="outline"
-      className="border-emerald-300 bg-emerald-100 text-emerald-950"
+      className="border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
     >
       {t`Configured`}
     </Badge>
@@ -241,12 +242,12 @@ function StagedValuesCell({
       <div className="flex flex-wrap gap-1.5">
         <Badge
           variant="outline"
-          className="border-sky-300 bg-sky-100 text-sky-950"
+          className="border-primary/30 bg-primary/10 text-foreground"
         >
           {selected && !isStale ? t`Ready` : t`Staged`}
         </Badge>
         {isStale ? (
-          <Badge variant="destructive">{t`Conflict`}</Badge>
+          <Badge variant="outline" className={campaignAdminStatusClassNames.blocked}>{t`Conflict`}</Badge>
         ) : null}
       </div>
       <dl className="space-y-1 text-xs">
@@ -289,11 +290,11 @@ function PasteIssuesList({
   }
 
   return (
-    <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
+    <div className="space-y-2 rounded-xl border border-status-blocked-fg/30 bg-status-blocked-bg p-3">
       {issues.map((issue) => (
         <div
           key={`${issue.rowNumber}-${issue.entityCui ?? issue.message}`}
-          className="flex items-start gap-3 text-sm text-destructive"
+          className="flex items-start gap-3 text-sm text-status-blocked-fg"
         >
           <AlertTriangle
             className="mt-0.5 h-4 w-4 shrink-0"
@@ -533,7 +534,7 @@ export function CampaignAdminEntityConfigTable({
                 key={item.entityCui}
                 className={cn(
                   stagedDraft !== undefined &&
-                    "bg-sky-50/70 hover:bg-sky-50 dark:bg-sky-950/20 dark:hover:bg-sky-950/25",
+                    "bg-primary/10 hover:bg-primary/10 [&_.text-muted-foreground]:text-foreground",
                 )}
               >
                 <TableCell className="align-top">
@@ -619,7 +620,7 @@ export function CampaignAdminEntityConfigTable({
             {pasteIssues.map((issue) => (
               <TableRow
                 key={`${issue.rowNumber}-${issue.entityCui ?? issue.message}`}
-                className="bg-destructive/5 hover:bg-destructive/5"
+                className="bg-status-blocked-bg hover:bg-status-blocked-bg"
               >
                 <TableCell colSpan={9}>
                   <PasteIssuesList issues={[issue]} />

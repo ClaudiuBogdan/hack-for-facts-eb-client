@@ -106,7 +106,7 @@ export function MoneyFlowDiagram({ data, text, locale }: MoneyFlowDiagramProps) 
         <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2">
           {text.title}
         </h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+        <p className="text-sm text-muted-foreground font-medium">
           {text.subtitle}
         </p>
       </motion.header>
@@ -121,7 +121,7 @@ export function MoneyFlowDiagram({ data, text, locale }: MoneyFlowDiagramProps) 
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: ANIMATION_DURATION.normal, delay: ANIMATION_DELAY.container }}
-          className="p-4 md:p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl border-2 border-zinc-200 dark:border-zinc-800"
+          className="p-4 md:p-6 bg-muted/50 rounded-3xl border-2 border-border"
         >
           <SectionLabel label={text.localLabel} />
 
@@ -160,7 +160,7 @@ export function MoneyFlowDiagram({ data, text, locale }: MoneyFlowDiagramProps) 
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ delay: ANIMATION_DELAY.hint }}
-                className="text-center text-xs text-zinc-400 dark:text-zinc-500 mt-4"
+                className="text-center text-xs text-foreground mt-4"
               >
                 {text.clickToLearnMore}
               </motion.p>
@@ -205,11 +205,11 @@ const SourceNode = memo(function SourceNode({ label, animate }: SourceNodeProps)
       transition={{ duration: ANIMATION_DURATION.normal }}
       className="flex flex-col items-center"
     >
-      <div className="flex items-center justify-center gap-3 px-8 py-4 bg-slate-100 dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 shadow-sm">
-        <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-slate-700">
-          <Landmark className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+      <div className="flex items-center justify-center gap-3 px-8 py-4 bg-muted rounded-2xl border-2 border-border shadow-sm">
+        <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-card">
+          <Landmark className="w-5 h-5 text-foreground" />
         </div>
-        <span className="text-lg font-black text-slate-700 dark:text-slate-200">
+        <span className="text-lg font-black text-foreground">
           {label}
         </span>
       </div>
@@ -246,13 +246,13 @@ const BranchingArrows = memo(function BranchingArrows({ animate, colors }: Branc
         <defs>
           {/* Arrowheads: refX=1 connects path to back of triangle for clean join */}
           <marker id="arrow-0" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto">
-            <path d="M 0 0 L 10 5 L 0 10 Z" fill={colors[0] ?? '#3B82F6'} />
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill={colors[0] ?? 'hsl(var(--chart-1))'} />
           </marker>
           <marker id="arrow-1" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto">
-            <path d="M 0 0 L 10 5 L 0 10 Z" fill={colors[1] ?? '#8B5CF6'} />
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill={colors[1] ?? 'hsl(var(--chart-2))'} />
           </marker>
           <marker id="arrow-2" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto">
-            <path d="M 0 0 L 10 5 L 0 10 Z" fill={colors[2] ?? '#F59E0B'} />
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill={colors[2] ?? 'hsl(var(--chart-3))'} />
           </marker>
         </defs>
 
@@ -260,7 +260,7 @@ const BranchingArrows = memo(function BranchingArrows({ animate, colors }: Branc
         <motion.path
           d={`M ${centerX} 0 C ${centerX} 35, ${leftX} 35, ${leftX} 62`}
           fill="none"
-          stroke={colors[0] ?? '#3B82F6'}
+          stroke={colors[0] ?? 'hsl(var(--chart-1))'}
           strokeWidth="2"
           strokeLinecap="round"
           markerEnd="url(#arrow-0)"
@@ -273,7 +273,7 @@ const BranchingArrows = memo(function BranchingArrows({ animate, colors }: Branc
         <motion.path
           d={`M ${centerX} 0 L ${centerX} 62`}
           fill="none"
-          stroke={colors[1] ?? '#8B5CF6'}
+          stroke={colors[1] ?? 'hsl(var(--chart-2))'}
           strokeWidth="2"
           strokeLinecap="round"
           markerEnd="url(#arrow-1)"
@@ -286,7 +286,7 @@ const BranchingArrows = memo(function BranchingArrows({ animate, colors }: Branc
         <motion.path
           d={`M ${centerX} 0 C ${centerX} 35, ${rightX} 35, ${rightX} 62`}
           fill="none"
-          stroke={colors[2] ?? '#F59E0B'}
+          stroke={colors[2] ?? 'hsl(var(--chart-3))'}
           strokeWidth="2"
           strokeLinecap="round"
           markerEnd="url(#arrow-2)"
@@ -311,8 +311,8 @@ const MobileFlowArrow = memo(function MobileFlowArrow({ animate }: MobileFlowArr
       transition={{ duration: ANIMATION_DURATION.fast, delay: ANIMATION_DELAY.mobileArrow }}
       className="flex flex-col items-center py-3 md:hidden"
     >
-      <div className="w-0.5 h-6 bg-gradient-to-b from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-500" />
-      <ArrowDown className="w-5 h-5 text-slate-400 dark:text-slate-500 -mt-1" />
+      <div className="w-0.5 h-6 bg-border" />
+      <ArrowDown className="w-5 h-5 text-muted-foreground -mt-1" />
     </motion.div>
   )
 })
@@ -324,11 +324,11 @@ interface SectionLabelProps {
 const SectionLabel = memo(function SectionLabel({ label }: SectionLabelProps) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
-      <span className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2">
+      <div className="h-px flex-1 bg-border" />
+      <span className="text-xs font-black uppercase tracking-widest text-foreground px-2">
         {label}
       </span>
-      <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+      <div className="h-px flex-1 bg-border" />
     </div>
   )
 })
@@ -383,9 +383,9 @@ const TransferCard = memo(function TransferCard({
         'relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all h-full',
         colors.border,
         isSelected
-          ? cn(colors.bg, 'ring-4 ring-offset-2 dark:ring-offset-zinc-950', colors.ring)
-          : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-900/80',
-        isDeemphasized && 'opacity-40 grayscale-[0.5] scale-[0.98]'
+          ? cn(colors.bg, 'border-primary ring-4 ring-offset-2 ring-offset-background', colors.ring)
+          : 'bg-card hover:bg-muted/50',
+        isDeemphasized && 'grayscale scale-[0.98]'
       )}
       role="button"
       tabIndex={0}
@@ -396,7 +396,7 @@ const TransferCard = memo(function TransferCard({
         <Icon className={cn('w-5 h-5', colors.text)} />
       </div>
 
-      <h4 className="text-xs font-black uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+      <h4 className="text-xs font-black uppercase tracking-wide text-foreground mb-2">
         {name}
       </h4>
 
@@ -424,16 +424,16 @@ interface ProgressBarProps {
 }
 
 const PROGRESS_COLOR_MAP = {
-  blue: 'bg-blue-500',
-  purple: 'bg-purple-500',
-  amber: 'bg-amber-500',
-  emerald: 'bg-emerald-500',
-  slate: 'bg-slate-500',
+  blue: 'bg-chart-1',
+  purple: 'bg-chart-2',
+  amber: 'bg-chart-3',
+  emerald: 'bg-chart-2',
+  slate: 'bg-chart-1',
 } as const
 
 const ProgressBar = memo(function ProgressBar({ percentage, color, animate, delay }: ProgressBarProps) {
   return (
-    <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
       <motion.div
         initial={{ width: 0 }}
         animate={animate ? { width: `${percentage}%` } : { width: 0 }}
@@ -471,7 +471,7 @@ function DetailPanel({ transfer, locale, detailsLabel, closeLabel, onClose }: De
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="absolute top-3 right-3 h-8 w-8 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+          className="absolute top-3 right-3 h-8 w-8 rounded-full hover:bg-foreground/10"
           aria-label={closeLabel}
         >
           <X className="w-4 h-4" />
@@ -480,16 +480,16 @@ function DetailPanel({ transfer, locale, detailsLabel, closeLabel, onClose }: De
         <div className="flex flex-col md:flex-row md:items-start gap-6">
           <div className="md:w-1/3">
             <h4 className={cn('text-xl font-black', colors.text)}>{name}</h4>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{description}</p>
+            <p className="text-sm text-foreground mt-1">{description}</p>
           </div>
 
           <div className="md:w-2/3">
-            <h5 className="text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
+            <h5 className="text-xs font-black uppercase tracking-wider text-foreground mb-3">
               {detailsLabel}
             </h5>
             <ul className="space-y-2">
               {details.map((detail, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-zinc-600 dark:text-zinc-300">
+                <li key={i} className="flex items-start gap-3 text-sm text-foreground">
                   <span className={cn('mt-1.5 w-2 h-2 rounded-full shrink-0', colors.bgSolid)} />
                   {detail}
                 </li>
@@ -522,35 +522,35 @@ const BudgetSummaryBar = memo(function BudgetSummaryBar({
       initial={{ opacity: 0, y: 10 }}
       animate={animate ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: ANIMATION_DURATION.normal, delay: ANIMATION_DELAY.summary }}
-      className="mt-6 pt-5 border-t border-zinc-200 dark:border-zinc-700"
+      className="mt-6 pt-5 border-t border-border"
     >
       <div className="flex items-center gap-4 mb-3">
-        <div className="flex-1 h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden flex">
+        <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden flex">
           <motion.div
             initial={{ width: 0 }}
             animate={animate ? { width: `${centralPercentage}%` } : {}}
             transition={{ duration: ANIMATION_DURATION.progress, delay: ANIMATION_DELAY.summaryBar, ease: 'easeOut' }}
-            className="h-full bg-slate-500"
+            className="h-full bg-chart-1"
           />
           <motion.div
             initial={{ width: 0 }}
             animate={animate ? { width: `${ownPercentage}%` } : {}}
             transition={{ duration: ANIMATION_DURATION.progress, delay: 0.9, ease: 'easeOut' }}
-            className="h-full bg-emerald-500"
+            className="h-full bg-chart-2"
           />
         </div>
       </div>
 
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-slate-500" aria-hidden="true" />
-          <span className="font-bold text-zinc-600 dark:text-zinc-400">{fromCenterLabel}</span>
-          <span className="font-black text-slate-600 dark:text-slate-300">{centralPercentage}%</span>
+          <span className="w-3 h-3 rounded-full bg-chart-1" aria-hidden="true" />
+          <span className="font-bold text-foreground">{fromCenterLabel}</span>
+          <span className="font-black text-foreground">{centralPercentage}%</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-emerald-500" aria-hidden="true" />
-          <span className="font-bold text-zinc-600 dark:text-zinc-400">{ownLabel}</span>
-          <span className="font-black text-emerald-600 dark:text-emerald-400">{ownPercentage}%</span>
+          <span className="w-3 h-3 rounded-full bg-chart-2" aria-hidden="true" />
+          <span className="font-bold text-foreground">{ownLabel}</span>
+          <span className="font-black text-foreground">{ownPercentage}%</span>
         </div>
       </div>
     </motion.div>
@@ -572,16 +572,16 @@ const InsightCallout = memo(function InsightCallout({ title, content, animate }:
       className="w-full"
       role="note"
     >
-      <div className="relative p-5 bg-amber-50 dark:bg-amber-950/30 rounded-2xl border-2 border-amber-200 dark:border-amber-800">
+      <div className="relative p-5 bg-status-partial-bg rounded-2xl border-2 border-status-partial-fg/30">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50 shrink-0">
-            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+          <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-status-partial-fg/10 shrink-0">
+            <AlertTriangle className="w-5 h-5 text-status-partial-fg" aria-hidden="true" />
           </div>
           <div>
-            <h4 className="text-sm font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">
+            <h4 className="text-sm font-black uppercase tracking-wider text-status-partial-fg mb-1">
               {title}
             </h4>
-            <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">{content}</p>
+            <p className="text-sm text-status-partial-fg leading-relaxed">{content}</p>
           </div>
         </div>
       </div>

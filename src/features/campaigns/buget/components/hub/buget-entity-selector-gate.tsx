@@ -209,7 +209,7 @@ export function BugetEntitySelectorGate({
 
     if (isSubscriptionStatsError || isUatCuiMapError) {
       return (
-        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+        <span className="text-xs font-semibold text-foreground">
           --
         </span>
       )
@@ -222,7 +222,7 @@ export function BugetEntitySelectorGate({
         : `${count.toLocaleString('ro-RO')} participanți`
 
     return (
-      <span className="inline-flex items-center justify-center rounded-full bg-[#ef2d00]/10 px-2.5 py-1 text-xs font-semibold text-[#c91d00]">
+      <span className="inline-flex items-center justify-center rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground">
         <span aria-hidden="true">
           {count.toLocaleString(locale === 'en' ? 'en-US' : 'ro-RO')}
         </span>
@@ -283,7 +283,7 @@ export function BugetEntitySelectorGate({
       <div ref={mapSectionRef} className="mt-12">
         <div className="mx-auto flex max-w-md items-center gap-4 mb-8">
           <div className="h-px flex-1 bg-border/70" />
-          <p className="shrink-0 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+          <p className="shrink-0 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
             {mapSectionLabel}
           </p>
           <div className="h-px flex-1 bg-border/70" />
@@ -312,7 +312,7 @@ export function BugetEntitySelectorGate({
           <DialogHeader>
             <DialogTitle>{confirmDialogTitle}</DialogTitle>
             <DialogDescription className="sr-only">{selectedEntityDialogLabel}</DialogDescription>
-            <p className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+            <p className="text-2xl font-black tracking-tight text-foreground">
               {selectedEntityDialogLabel}
             </p>
           </DialogHeader>
@@ -330,6 +330,7 @@ export function BugetEntitySelectorGate({
             </Button>
             <Button
               type="button"
+              className="hover:bg-primary hover:ring-2 hover:ring-primary/40"
               disabled={isResolvingSelection}
               onClick={() => {
                 if (!pendingUatSelection) return

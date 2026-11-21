@@ -52,15 +52,15 @@ function BudgetRow({ stage, maxAmount, index, inView, isLast }: BudgetRowProps) 
     >
       {/* Connector Line */}
       {!isLast && (
-        <div className="absolute left-[11px] top-6 bottom-0 w-0.5 bg-zinc-200 dark:bg-zinc-800" />
+        <div className="absolute left-[11px] top-6 bottom-0 w-0.5 bg-border" />
       )}
 
       {/* Dot */}
       <div className={cn(
-        "absolute left-0 top-1.5 w-6 h-6 rounded-full border-4 border-white dark:border-zinc-950 flex items-center justify-center z-10",
+        "absolute left-0 top-1.5 w-6 h-6 rounded-full border-4 border-card flex items-center justify-center z-10",
         hasChange
-          ? stage.changeType === 'increase' ? "bg-emerald-400" : "bg-rose-400"
-          : "bg-blue-400"
+          ? stage.changeType === 'increase' ? "bg-status-live-fg" : "bg-status-blocked-fg"
+          : "bg-primary"
       )}>
         <div className="w-2 h-2 bg-white rounded-full opacity-50" />
       </div>
@@ -69,10 +69,10 @@ function BudgetRow({ stage, maxAmount, index, inView, isLast }: BudgetRowProps) 
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-col">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {stage.month}
             </span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-200">
+            <span className="font-medium text-foreground">
               {stage.label}
             </span>
           </div>
@@ -83,8 +83,8 @@ function BudgetRow({ stage, maxAmount, index, inView, isLast }: BudgetRowProps) 
                 className={cn(
                   'flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold',
                   stage.changeType === 'increase'
-                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
-                    : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+                    ? 'bg-status-live-bg text-status-live-fg'
+                    : 'bg-status-blocked-bg text-status-blocked-fg'
                 )}
               >
                 {stage.changeType === 'increase' ? (
@@ -96,22 +96,22 @@ function BudgetRow({ stage, maxAmount, index, inView, isLast }: BudgetRowProps) 
                 {stage.change}B
               </span>
             )}
-            <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100 tabular-nums">
+            <span className="text-lg font-bold text-foreground tabular-nums">
               {stage.amount}B
             </span>
           </div>
         </div>
 
         {/* Bar */}
-        <div className="h-3 w-full bg-zinc-50 dark:bg-zinc-800/50 rounded-full overflow-hidden">
+        <div className={cn('h-3 w-full rounded-full overflow-hidden', hasChange ? (stage.changeType === 'increase' ? 'bg-status-live-bg' : 'bg-status-blocked-bg') : 'bg-muted')}>
           <motion.div
             className={cn(
               'h-full rounded-full',
               hasChange
                 ? stage.changeType === 'increase'
-                  ? 'bg-emerald-400'
-                  : 'bg-rose-400'
-                : 'bg-blue-400'
+                  ? 'bg-status-live-fg'
+                  : 'bg-status-blocked-fg'
+                : 'bg-primary'
             )}
             initial={{ width: 0 }}
             animate={inView ? { width: `${widthPercent}%` } : { width: 0 }}
@@ -140,16 +140,16 @@ export function RectificationFlow({ stages: stagesProp, locale = 'en' }: Rectifi
     <div ref={ref} className="my-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-lg font-semibold text-foreground">
           {t`How Budgets Change`}
         </h3>
-        <span className="text-xs font-medium text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full">
+        <span className="text-xs font-medium text-foreground bg-muted px-2 py-1 rounded-full">
           {t`Flow`}
         </span>
       </div>
 
       {/* Flow Chart */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
         <div className="pt-2">
           {stages.map((stage, index) => (
             <BudgetRow
@@ -165,28 +165,28 @@ export function RectificationFlow({ stages: stagesProp, locale = 'en' }: Rectifi
       </div>
 
       {/* Summary */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 p-4 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-100 dark:border-zinc-800">
-        <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-          <span>{t`Original:`} <span className="font-semibold text-zinc-700 dark:text-zinc-200">{firstAmount}B</span></span>
-          <ArrowRight className="w-4 h-4 text-zinc-300" />
-          <span>{t`Final:`} <span className="font-semibold text-zinc-700 dark:text-zinc-200">{lastAmount}B</span></span>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 p-4 rounded-xl bg-card border border-border">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>{t`Original:`} <span className="font-semibold text-foreground">{firstAmount}B</span></span>
+          <ArrowRight className="w-4 h-4 text-muted-foreground" />
+          <span>{t`Final:`} <span className="font-semibold text-foreground">{lastAmount}B</span></span>
         </div>
 
-        <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
+        <div className="h-4 w-px bg-border hidden sm:block" />
 
         <div className="text-sm font-medium">
           {totalChange < 0 ? (
-            <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded-md">
+            <span className="flex items-center gap-1.5 text-status-blocked-fg bg-status-blocked-bg px-2 py-1 rounded-md">
               <ArrowDown className="w-4 h-4" />
               {Math.abs(totalChange)}B {t`decrease`}
             </span>
           ) : totalChange > 0 ? (
-            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md">
+            <span className="flex items-center gap-1.5 text-status-live-fg bg-status-live-bg px-2 py-1 rounded-md">
               <ArrowUp className="w-4 h-4" />
               +{totalChange}B {t`increase`}
             </span>
           ) : (
-            <span className="text-zinc-400">{t`No change`}</span>
+            <span className="text-muted-foreground">{t`No change`}</span>
           )}
         </div>
       </div>

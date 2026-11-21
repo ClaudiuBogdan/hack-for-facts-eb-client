@@ -15,6 +15,7 @@ import type {
   CampaignAdminAppendInstitutionThreadResponseResult,
   CampaignAdminInstitutionThreadDetail,
 } from "@/features/campaigns/buget/admin/types";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminInstitutionThreadSheetProps = {
   readonly open: boolean;
@@ -67,7 +68,7 @@ export function CampaignAdminInstitutionThreadSheet({
               ))}
             </div>
           ) : errorMessage ? (
-            <Alert variant="destructive">
+            <Alert className={campaignAdminBlockedAlertClassName}>
               <AlertTitle>{t`Failed to load institution thread`}</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>

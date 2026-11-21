@@ -28,7 +28,7 @@ import { useState, useCallback } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Check, Star, RotateCcw, CheckCircle2 } from 'lucide-react'
+import { ChevronDown, Check, RotateCcw, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -40,6 +40,7 @@ import {
   type BudgetPhaseDefinition,
   type BudgetPhaseId,
 } from './budget-cycle-data'
+import { OpportunityLegendItems, OpportunityMark, getOpportunityLabel } from './opportunity-level'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -89,22 +90,22 @@ function ProgressBar({ current, total, label }: ProgressBarProps) {
   const percentage = total > 0 ? (current / total) * 100 : 0
 
   return (
-    <div className="space-y-3 mt-8 p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-md">
+    <div className="space-y-3 mt-8 p-4 bg-card rounded-2xl border border-border shadow-md">
       <div className="flex items-center justify-between text-sm font-bold">
-        <span className="text-zinc-500 dark:text-zinc-400">
+        <span className="text-muted-foreground">
           {label ?? t`Exploration Progress`}
         </span>
-        <span className={cn("tabular-nums", isComplete ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-900 dark:text-zinc-100")}>
+        <span className={cn("tabular-nums", isComplete ? "text-status-live-fg" : "text-foreground")}>
           {current} / {total}
         </span>
       </div>
-      <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden shadow-inner">
+      <div className="h-3 bg-muted rounded-full overflow-hidden shadow-inner">
         <motion.div
           className={cn(
             'h-full rounded-full relative overflow-hidden',
             isComplete
-              ? 'bg-emerald-500'
-              : 'bg-blue-500'
+              ? 'bg-status-live-fg'
+              : 'bg-primary'
           )}
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
@@ -118,7 +119,7 @@ function ProgressBar({ current, total, label }: ProgressBarProps) {
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm"
+          className="flex items-center justify-center gap-2 text-status-live-fg font-bold text-sm"
         >
           <CheckCircle2 className="w-4 h-4" />
           <Trans>All phases explored!</Trans>
@@ -150,7 +151,6 @@ function PhaseChip({
   isFirst,
 }: PhaseChipProps) {
   const Icon = getPhaseIcon(phase.icon)
-  const colors = OPPORTUNITY_COLORS[phase.opportunity]
   const isHighOpportunity = phase.opportunity === 'high'
 
   const handleKeyDown = useCallback(
@@ -171,8 +171,8 @@ function PhaseChip({
           <div className={cn(
             "w-full h-full transition-colors duration-500",
             isExplored || isSelected
-              ? "bg-blue-500 dark:bg-blue-400"
-              : "bg-zinc-200 dark:bg-zinc-800"
+              ? "bg-primary"
+              : "bg-muted"
           )} />
         </div>
       )}
@@ -186,43 +186,43 @@ function PhaseChip({
           isSelected ? 'scale-110' : 'hover:scale-105'
         )}
         aria-pressed={isSelected}
-        aria-label={t`Phase: ${content.name}`}
+        aria-label={`${t`Phase: ${content.name}`}, ${getOpportunityLabel(phase.opportunity)}`}
       >
           {/* Icon Container - Scaled on select */}
         <div
           className={cn(
             'relative w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg shrink-0',
             isSelected 
-              ? cn(colors.bgSolid, 'scale-110')
+              ? 'bg-primary scale-110'
               : isExplored 
-                ? 'bg-white dark:bg-zinc-800 border-2 border-blue-500 dark:border-blue-400' 
-                : 'bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 group-hover:scale-105',
-            isSelected && "shadow-xl ring-4 ring-white dark:ring-zinc-950"
+                ? 'bg-card border-2 border-status-live-fg' 
+                : 'bg-card border-2 border-border group-hover:scale-105',
+            isSelected && "shadow-xl ring-4 ring-background"
           )}
         >
           <Icon
             className={cn(
               'w-7 h-7 transition-colors duration-300',
-              isSelected ? 'text-white' : isExplored ? 'text-blue-500 dark:text-blue-400' : 'text-zinc-400 dark:text-zinc-600'
+              isSelected ? 'text-primary-foreground' : isExplored ? 'text-status-live-fg' : 'text-muted-foreground'
             )}
           />
 
           {/* Explored Badge */}
           {isExplored && !isSelected && (
-            <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-blue-500 border-2 border-white dark:border-zinc-950 flex items-center justify-center shadow-sm z-20">
-              <Check className="w-3.5 h-3.5 text-white" />
+            <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-status-live-fg border-2 border-background flex items-center justify-center shadow-sm z-20">
+              <Check className="w-3.5 h-3.5 text-background" />
             </div>
           )}
 
-          {/* High opportunity star */}
-          {isHighOpportunity && (
-            <div className={cn(
-              "absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-zinc-950 z-20",
-              isSelected ? "bg-white text-amber-500" : "bg-amber-100 dark:bg-amber-900 text-amber-600"
-            )}>
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-          )}
+          {/* Opportunity level: the same symbols as the budget-cycle timeline, named in the button's label */}
+          <div className={cn(
+            "absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm border-2 border-background z-20",
+            isHighOpportunity
+              ? isSelected ? "bg-background text-status-partial-fg" : "bg-status-partial-bg text-status-partial-fg"
+              : "bg-muted text-foreground"
+          )}>
+            <OpportunityMark opportunity={phase.opportunity} className="w-4 h-4" />
+          </div>
         </div>
 
         {/* Label */}
@@ -230,12 +230,12 @@ function PhaseChip({
           <span
             className={cn(
               'text-sm font-bold text-center leading-tight transition-colors duration-200 line-clamp-2',
-              isSelected ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200'
+              isSelected ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
             )}
           >
             {content.name}
           </span>
-          <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">
+          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
             {content.timing}
           </span>
         </div>
@@ -259,60 +259,61 @@ type MobilePhaseCardProps = {
 
 function MobilePhaseCard({ phase, content, isSelected, isExplored, onClick, text }: MobilePhaseCardProps) {
   const Icon = getPhaseIcon(phase.icon)
-  const colors = OPPORTUNITY_COLORS[phase.opportunity]
   const isHighOpportunity = phase.opportunity === 'high'
 
   return (
     <button
       onClick={onClick}
       aria-pressed={isSelected}
-      aria-label={t`Phase: ${content.name}`}
+      aria-label={`${t`Phase: ${content.name}`}, ${getOpportunityLabel(phase.opportunity)}`}
       className={cn(
         'w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-left relative overflow-hidden group',
         'border',
         isSelected
-          ? 'bg-zinc-50 dark:bg-zinc-900 ring-2'
-          : 'bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900',
-        isSelected && (isHighOpportunity ? 'ring-amber-400 border-amber-200 dark:border-amber-800' : 'ring-blue-400 border-blue-200 dark:border-blue-800'),
-        !isSelected && 'border-zinc-200 dark:border-zinc-800',
-        isHighOpportunity && !isSelected && 'border-amber-200/50 dark:border-amber-800/30'
+          ? 'bg-muted ring-2'
+          : 'bg-card hover:bg-muted',
+        isSelected && 'ring-primary/40 border-primary/30',
+        !isSelected && 'border-border',
+        isHighOpportunity && !isSelected && 'border-status-partial-fg/50'
       )}
     >
       {/* Background highlight for high opportunity */}
       {isHighOpportunity && (
-        <div className="absolute inset-0 bg-amber-50/30 dark:bg-amber-900/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-status-partial-bg/30 pointer-events-none" />
       )}
 
       <div
         className={cn(
           'shrink-0 p-3 rounded-xl relative shadow-sm transition-transform group-hover:scale-105',
-          isSelected ? colors.bgSolid : 'bg-zinc-100 dark:bg-zinc-800'
+          isSelected ? 'bg-primary' : 'bg-muted'
         )}
       >
-        <Icon className={cn('w-6 h-6', isSelected ? 'text-white' : 'text-zinc-500 dark:text-zinc-400')} />
+        <Icon className={cn('w-6 h-6', isSelected ? 'text-primary-foreground' : 'text-muted-foreground')} />
         {isExplored && !isSelected && (
-          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-blue-500 border-2 border-white dark:border-zinc-950 flex items-center justify-center">
-            <Check className="w-3 h-3 text-white" />
+          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-status-live-fg border-2 border-background flex items-center justify-center">
+            <Check className="w-3 h-3 text-background" />
           </div>
         )}
       </div>
       
       <div className="flex-1 min-w-0 relative z-10">
         <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-bold text-base text-zinc-900 dark:text-zinc-100">{content.name}</span>
-          {isHighOpportunity && (
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-              <Star className="w-2.5 h-2.5 fill-current" />
+          <span className="font-bold text-base text-foreground">{content.name}</span>
+          {isHighOpportunity ? (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-status-partial-bg text-status-partial-fg">
+              <OpportunityMark opportunity="high" className="w-2.5 h-2.5" />
               {text?.highOpportunityBadge ?? t`High`}
             </span>
+          ) : (
+            <OpportunityMark opportunity={phase.opportunity} className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
           )}
         </div>
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{content.timing}</span>
+        <span className="text-xs font-medium text-foreground uppercase tracking-wide">{content.timing}</span>
       </div>
       
       <ChevronDown
         className={cn(
-          'w-5 h-5 text-zinc-400 shrink-0 transition-transform relative z-10',
+          'w-5 h-5 text-muted-foreground shrink-0 transition-transform relative z-10',
           isSelected && 'rotate-180'
         )}
       />
@@ -345,18 +346,17 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
     >
       <Card
         className={cn(
-          'p-8 mt-3 rounded-4xl border border-zinc-100 dark:border-zinc-800 shadow-sm relative overflow-hidden',
+          'p-8 mt-3 rounded-4xl border border-border shadow-sm relative overflow-hidden',
           isHighOpportunity
-            ? 'bg-amber-50/30 dark:bg-amber-950/20'
-            : 'bg-white dark:bg-zinc-950'
+            ? 'bg-status-partial-bg/30'
+            : 'bg-card'
         )}
       >
         {/* Background decorative elements */}
-        <div className="absolute inset-0 bg-grid-zinc-100/50 dark:bg-grid-zinc-900/50 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
         
         <div className={cn(
           "absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none opacity-40",
-          isHighOpportunity ? "bg-amber-400/20" : "bg-blue-400/10"
+          isHighOpportunity ? "bg-status-partial-fg/20" : "bg-primary/10"
         )} />
 
         {/* Header */}
@@ -366,24 +366,29 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
               className={cn(
                 'shrink-0 p-3.5 rounded-2xl shadow-sm',
                 colors.bgSolid,
-                isHighOpportunity && 'ring-4 ring-amber-100 dark:ring-amber-900/30'
+                isHighOpportunity && 'ring-4 ring-status-partial-fg/30'
               )}
             >
-              <Icon className="w-6 h-6 text-white" />
+              <Icon className="w-6 h-6 text-background" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-black text-xl md:text-2xl text-zinc-900 dark:text-zinc-50 tracking-tight">
+                <h4 className="font-black text-xl md:text-2xl text-foreground tracking-tight">
                   {content.name}
                 </h4>
-                {isHighOpportunity && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-800/50">
-                    <Star className="w-2.5 h-2.5 fill-current" />
+                {isHighOpportunity ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-status-partial-bg text-status-partial-fg ring-1 ring-status-partial-fg/30">
+                    <OpportunityMark opportunity="high" className="w-2.5 h-2.5" />
                     <Trans>High Impact</Trans>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-muted text-foreground">
+                    <OpportunityMark opportunity={phase.opportunity} className="w-2.5 h-2.5" />
+                    {getOpportunityLabel(phase.opportunity)}
                   </span>
                 )}
               </div>
-              <p className="text-base text-zinc-500 dark:text-zinc-400 font-medium">{content.timing}</p>
+              <p className="text-base text-foreground font-medium">{content.timing}</p>
             </div>
           </div>
         </div>
@@ -392,17 +397,17 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
           <div className="grid gap-8 md:grid-cols-3">
           {/* Key Activities */}
           <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               {text?.activitiesLabel ?? t`Key Activities`}
             </h4>
             <ul className="space-y-3">
               {content.keyActivities.map((activity, i) => (
                 <li
                   key={i}
-                  className="text-sm font-medium text-zinc-600 dark:text-zinc-300 flex items-start gap-3"
+                  className="text-sm font-medium text-foreground flex items-start gap-3"
                 >
-                  <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600 mt-2" />
+                  <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-border mt-2" />
                   {activity}
                 </li>
               ))}
@@ -411,8 +416,8 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
 
             {/* Citizen Opportunities */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 flex items-center gap-2">
-                <div className={cn("w-1.5 h-1.5 rounded-full", isHighOpportunity ? "bg-amber-500" : "bg-zinc-400")} />
+              <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
+                <div className={cn("w-1.5 h-1.5 rounded-full", isHighOpportunity ? "bg-status-partial-fg" : "bg-muted-foreground")} />
                 {text?.opportunitiesLabel ?? t`Your Opportunity`}
               </h4>
               <ul className="space-y-3">
@@ -421,12 +426,12 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
                     key={i}
                     className={cn(
                       'text-sm font-bold flex items-start gap-3',
-                      isHighOpportunity ? 'text-amber-700 dark:text-amber-200' : 'text-zinc-600 dark:text-zinc-400'
+                      isHighOpportunity ? 'text-status-partial-fg' : 'text-muted-foreground'
                     )}
                   >
                     <CheckCircle2 className={cn(
                       "shrink-0 w-4 h-4 mt-0.5",
-                      isHighOpportunity ? "text-amber-500" : "text-zinc-400"
+                      isHighOpportunity ? "text-status-partial-fg" : "text-muted-foreground"
                     )} />
                     {opportunity}
                   </li>
@@ -436,8 +441,8 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
 
             {/* Key Deadlines */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-status-blocked-fg" />
                 {text?.deadlinesLabel ?? t`Key Deadlines`}
               </h4>
               <ul className="space-y-3">
@@ -447,13 +452,13 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
                       className={cn(
                         'shrink-0 px-2 py-0.5 rounded-md font-mono font-bold text-xs',
                         isHighOpportunity
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/60 transition-colors'
-                          : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors'
+                          ? 'bg-status-partial-bg text-status-partial-fg group-hover:bg-status-partial-fg/20 transition-colors'
+                          : 'bg-muted text-foreground group-hover:bg-border transition-colors'
                       )}
                     >
                       {deadline.date}
                     </span>
-                    <span className="text-zinc-600 dark:text-zinc-400 font-medium pt-0.5">{deadline.description}</span>
+                    <span className="text-foreground font-medium pt-0.5">{deadline.description}</span>
                   </li>
                 ))}
               </ul>
@@ -514,12 +519,12 @@ export function PhaseCards({
       <div className="flex items-center justify-between">
         <div>
           {text?.title && (
-            <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
+            <h3 className="text-xl font-bold text-foreground tracking-tight">
               {text.title}
             </h3>
           )}
           {text?.subtitle && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{text.subtitle}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{text.subtitle}</p>
           )}
         </div>
         {exploredCount > 0 && (
@@ -528,7 +533,7 @@ export function PhaseCards({
             size="sm"
             onClick={handleReset}
             aria-label={t`Reset progress`}
-            className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="text-muted-foreground hover:text-foreground"
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </Button>
@@ -589,6 +594,11 @@ export function PhaseCards({
         ))}
       </div>
 
+      {/* Opportunity levels: the words for the symbols on each phase */}
+      <div className="flex flex-wrap items-center gap-4">
+        <OpportunityLegendItems />
+      </div>
+
       {/* Progress Bar */}
       {contentId && (
         <ProgressBar
@@ -603,9 +613,9 @@ export function PhaseCards({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 text-center"
+          className="p-4 rounded-xl bg-status-live-bg border border-status-live-fg/30 text-center"
         >
-          <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+          <p className="text-sm font-medium text-status-live-fg">
             <Trans>You've explored all 6 phases of the budget cycle!</Trans>
           </p>
         </motion.div>

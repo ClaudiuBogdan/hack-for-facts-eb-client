@@ -76,7 +76,7 @@ export function QuickResourcesPreview({
   return (
     <div className="rounded-2xl bg-muted/20 p-5 border border-border/30">
       {/* Label */}
-      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">
         {t`Resources`}
       </span>
 
@@ -90,13 +90,13 @@ export function QuickResourcesPreview({
           className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0">
-            <Building2 className="h-4 w-4 text-slate-100 dark:text-slate-900" aria-hidden="true" />
+            <Building2 className="h-4 w-4 text-background" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
               {t`My city hall`}
             </span>
-            <span className="block text-xs text-muted-foreground">
+            <span className="block text-xs text-foreground">
               {t`See the budget analysis for the selected entity.`}
             </span>
           </div>
@@ -108,7 +108,7 @@ export function QuickResourcesPreview({
           <div
             role="note"
             aria-disabled="true"
-            className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 opacity-80"
+            className="flex items-center gap-3 rounded-xl p-2.5 -mx-1"
           >
             <div className="h-8 w-8 rounded-xl bg-muted/60 flex items-center justify-center flex-shrink-0">
               <Lock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -117,7 +117,7 @@ export function QuickResourcesPreview({
               <span className="block truncate text-sm font-medium text-foreground/70">
                 {t`Debate request unavailable`}
               </span>
-              <span className="block text-xs text-muted-foreground">
+              <span className="block text-xs text-foreground">
                 {getDebateRequestUnavailableDescription(debateRequestAvailability)}
               </span>
             </div>
@@ -130,13 +130,13 @@ export function QuickResourcesPreview({
             className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
           >
             <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-              <Send className="h-4 w-4 text-[#3565c4]" aria-hidden="true" />
+              <Send className="h-4 w-4 text-primary" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium text-foreground/80">
                 {t`Send debate request`}
               </span>
-              <span className="block text-xs text-muted-foreground">
+              <span className="block text-xs text-foreground">
                 {t`Request a public debate for the local budget.`}
               </span>
             </div>
@@ -151,13 +151,13 @@ export function QuickResourcesPreview({
           className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-            <MessageSquare className="h-4 w-4 text-red-500" aria-hidden="true" />
+            <MessageSquare className="h-4 w-4 text-primary" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
               {t`Forum discussion`}
             </span>
-            <span className="block text-xs text-muted-foreground">
+            <span className="block text-xs text-foreground">
               {t`Open the campaign forum discussion.`}
             </span>
           </div>
@@ -178,7 +178,7 @@ export function QuickResourcesPreview({
             <span className="block truncate text-sm font-medium text-foreground/80">
               {t`Guides & templates`}
             </span>
-            <span className="block text-xs text-muted-foreground">
+            <span className="block text-xs text-foreground">
               {t`Budget guides, request templates, and more.`}
             </span>
           </div>
@@ -194,16 +194,16 @@ export function QuickResourcesPreview({
         >
           <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
             {showDisabledNotification ? (
-              <BellOff className="h-4 w-4 text-red-500" aria-hidden="true" />
+              <BellOff className="h-4 w-4 text-status-blocked-fg" aria-hidden="true" />
             ) : (
-              <Bell className="h-4 w-4 text-amber-500" aria-hidden="true" />
+              <Bell className="h-4 w-4 text-primary" aria-hidden="true" />
             )}
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
               {t`Notification preferences`}
             </span>
-            <span className="block text-xs text-muted-foreground">
+            <span className="block text-xs text-foreground">
               {t`Manage email updates for this campaign.`}
             </span>
           </div>

@@ -29,6 +29,7 @@ import {
   type CampaignAdminInstitutionThreadResponseStatus,
 } from "@/features/campaigns/buget/admin/types";
 
+import { campaignAdminBlockedAlertClassName, campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminInstitutionThreadResponseFormProps = {
   readonly thread: CampaignAdminInstitutionThreadDetail;
   readonly isPending: boolean;
@@ -144,7 +145,7 @@ export function CampaignAdminInstitutionThreadResponseForm({
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       {effectiveErrorMessage ? (
-        <Alert variant="destructive">
+        <Alert className={campaignAdminBlockedAlertClassName}>
           <AlertTitle>{t`Unable to record response`}</AlertTitle>
           <AlertDescription>{effectiveErrorMessage}</AlertDescription>
         </Alert>
@@ -264,10 +265,10 @@ function NotificationExecutionPanel({
     );
   const statusClassName =
     execution.status === "queued"
-      ? "border-emerald-300 bg-emerald-100 text-emerald-950"
+      ? campaignAdminStatusClassNames.info
       : execution.status === "partial"
-        ? "border-amber-300 bg-amber-100 text-amber-950"
-        : "border-slate-300 bg-slate-100 text-slate-900";
+        ? campaignAdminStatusClassNames.partial
+        : campaignAdminStatusClassNames.neutral;
 
   return (
     <div className="space-y-3 rounded-xl border border-border/70 bg-muted/20 p-4">
@@ -337,7 +338,7 @@ function ExecutionStatCard({
       </p>
       <p
         className={`mt-1 text-lg font-semibold tabular-nums ${
-          tone === "destructive" ? "text-destructive" : "text-foreground"
+          tone === "destructive" ? "text-status-blocked-fg" : "text-foreground"
         }`}
       >
         {value}

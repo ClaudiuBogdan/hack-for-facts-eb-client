@@ -125,12 +125,7 @@ export function FunctionalClassificationAccordion({
                               />
                             )}
                             <span
-                              className={cn(
-                                'font-mono text-sm font-bold w-8',
-                                isHighlighted
-                                  ? 'text-foreground'
-                                  : 'text-muted-foreground'
-                              )}
+                              className="font-mono text-sm font-bold w-8 text-foreground"
                             >
                               {code.code}
                             </span>
@@ -149,7 +144,7 @@ export function FunctionalClassificationAccordion({
                               {code.name}
                             </span>
                             {code.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5">
+                              <p className="text-xs text-foreground mt-0.5">
                                 {code.description}
                               </p>
                             )}
@@ -170,7 +165,7 @@ export function FunctionalClassificationAccordion({
         <div className="mt-4 flex justify-end">
           <Link
             to={explorerUrl as '/'}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors"
           >
             {text.explorerLabel}
             <ExternalLink className="w-3.5 h-3.5" />

@@ -28,7 +28,7 @@ function CampaignShareCard({
   return (
     <article
       className={cn(
-        'w-full max-w-[54rem] rounded-[30px] border border-[#ef2d00]/12 bg-linear-to-r from-white via-orange-50/55 to-[#3565c4]/[0.08] p-5 text-left shadow-sm sm:p-6 md:p-7',
+        'w-full max-w-[54rem] rounded-[30px] border border-border bg-card p-5 text-left shadow-sm sm:p-6 md:p-7',
         className,
       )}
     >
@@ -53,7 +53,7 @@ function CampaignShareCard({
         <Button
           asChild
           size="lg"
-          className="h-12 rounded-full bg-[#3565c4] px-6 text-base font-semibold text-white shadow-lg shadow-[#3565c4]/20 hover:bg-[#2d57a8]"
+          className="h-12 rounded-full px-6 text-base font-semibold shadow-lg bg-primary text-primary-foreground hover:bg-primary hover:ring-2 hover:ring-primary/40"
         >
           <Link to={to as '/'} search={search}>
             {t`Open campaign`}

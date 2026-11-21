@@ -291,7 +291,7 @@ msgid "((Live births − Deaths) / Population) × 1,000"
 msgstr "((Live births − Deaths) / Population) × 1,000"
 
 #. placeholder {0}: formatCurrency(result.gross)
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:369
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:380
 msgid "({0} - deductions) × 10%"
 msgstr "({0} - deductions) × 10%"
 
@@ -1623,7 +1623,7 @@ msgid "{0} records in this window have no usable amount — counts stay authorit
 msgstr "{0} records in this window have no usable amount — counts stay authoritative, sums do not."
 
 #. placeholder {0}: data.rectificationCount
-#: src/features/learning/components/interactive/RectificationHistory.tsx:127
+#: src/features/learning/components/interactive/RectificationHistory.tsx:145
 msgid "{0} rectifications"
 msgstr "{0} rectifications"
 
@@ -2767,25 +2767,25 @@ msgstr "{historical, plural, one {One enterprise has left the lists and is not c
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:45
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:53
-#: src/features/learning/components/cards/LearningPathCard.tsx:201
+#: src/features/learning/components/cards/LearningPathCard.tsx:194
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:95
 msgid "{hours}h"
 msgstr "{hours}h"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:46
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:54
-#: src/features/learning/components/cards/LearningPathCard.tsx:202
+#: src/features/learning/components/cards/LearningPathCard.tsx:195
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:96
 msgid "{hours}h {mins}m"
 msgstr "{hours}h {mins}m"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:37
-#: src/features/learning/components/cards/LearningPathCard.tsx:193
+#: src/features/learning/components/cards/LearningPathCard.tsx:186
 msgid "{hours}h {mins}m remaining"
 msgstr "{hours}h {mins}m remaining"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:36
-#: src/features/learning/components/cards/LearningPathCard.tsx:192
+#: src/features/learning/components/cards/LearningPathCard.tsx:185
 msgid "{hours}h remaining"
 msgstr "{hours}h remaining"
 
@@ -3013,13 +3013,13 @@ msgstr "{members, plural, one {One public enterprise: who controls it, what it d
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:42
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:50
-#: src/features/learning/components/cards/LearningPathCard.tsx:198
+#: src/features/learning/components/cards/LearningPathCard.tsx:191
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:92
 msgid "{minutes}m"
 msgstr "{minutes}m"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:33
-#: src/features/learning/components/cards/LearningPathCard.tsx:189
+#: src/features/learning/components/cards/LearningPathCard.tsx:182
 msgid "{minutes}m remaining"
 msgstr "{minutes}m remaining"
 
@@ -5833,7 +5833,7 @@ msgstr "Add series"
 msgid "Add Series"
 msgstr "Add Series"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1006
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1019
 msgid "Add the association name to use this option."
 msgstr "Add the association name to use this option."
 
@@ -5842,7 +5842,7 @@ msgstr "Add the association name to use this option."
 msgid "Add the city hall's contact details for future communications."
 msgstr "Add the city hall's contact details for future communications."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:873
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:886
 msgid "Add the legal address from the NGO registration documents."
 msgstr "Add the legal address from the NGO registration documents."
 
@@ -5851,11 +5851,11 @@ msgstr "Add the legal address from the NGO registration documents."
 msgid "Add the link to the city hall's budget document."
 msgstr "Add the link to the city hall's budget document."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:907
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:920
 msgid "Add the NGO fiscal identification code exactly as it appears on official documents."
 msgstr "Add the NGO fiscal identification code exactly as it appears on official documents."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:941
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:954
 msgid "Add the role used in official documents, for example president or executive director."
 msgstr "Add the role used in official documents, for example president or executive director."
 
@@ -6481,7 +6481,7 @@ msgstr "All Classifications"
 msgid "All counties"
 msgstr "All counties"
 
-#: src/features/learning/components/interactive/PhaseCards.tsx:124
+#: src/features/learning/components/interactive/PhaseCards.tsx:125
 msgid "All phases explored!"
 msgstr "All phases explored!"
 
@@ -8295,7 +8295,7 @@ msgstr "Ask questions and discuss this lesson with the community."
 msgid "Ask the Transparenta agent…"
 msgstr "Ask the Transparenta agent…"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1053
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1066
 msgid "Ask us to send it"
 msgstr "Ask us to send it"
 
@@ -8350,17 +8350,17 @@ msgstr "The associations and foundations in the Ministry of Justice’s registry
 #~ msgid "Asociațiile, fundațiile și federațiile din Registrul național al Ministerului Justiției, județ cu județ."
 #~ msgstr "The associations, foundations and federations in the Ministry of Justice's national registry, county by county."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:709
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:722
 msgid "Association"
 msgstr "Association"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:721
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1017
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:734
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1030
 msgid "Association email"
 msgstr "Association email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:844
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:851
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:857
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:864
 msgid "Association name"
 msgstr "Association name"
 
@@ -8583,7 +8583,7 @@ msgstr "Available budget credits"
 msgid "Available commitment credits"
 msgstr "Available commitment credits"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1001
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1014
 msgid "Available for legally established associations."
 msgstr "Available for legally established associations."
 
@@ -8658,8 +8658,8 @@ msgstr "today"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:399
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:470
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:611
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:953
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1081
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:966
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1094
 #: src/routes/alerts/new.lazy.tsx:175
 msgid "Back"
 msgstr "Back"
@@ -8818,11 +8818,11 @@ msgstr "Bar Chart"
 msgid "Bar Chart (Aggregated)"
 msgstr "Bar Chart (Aggregated)"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:346
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:357
 msgid "Base Amount (100%)"
 msgstr "Base Amount (100%)"
 
-#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:249
+#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:248
 msgid "Based on 2024 budgetary data"
 msgstr "Based on 2024 budgetary data"
 
@@ -8830,7 +8830,7 @@ msgstr "Based on 2024 budgetary data"
 #~ msgid "Bază identitate"
 #~ msgstr "Bază identitate"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:432
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:445
 msgid "Before confirming, make sure you:"
 msgstr "Before confirming, make sure you:"
 
@@ -9147,7 +9147,7 @@ msgstr "Budget balance"
 msgid "Budget Calendar"
 msgstr "Budget Calendar"
 
-#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:361
+#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:364
 msgid "Budget category"
 msgstr "Budget category"
 
@@ -9171,7 +9171,7 @@ msgstr "Budget Credits"
 msgid "Budget credits are annual (cash you can pay within the selected year). Legal commitments represent the total value of contracts signed (often multi-year), so they can exceed the annual budget without implying overspending. To assess contracting, compare commitments to commitment authority."
 msgstr "Budget credits are annual (cash you can pay within the selected year). Legal commitments represent the total value of contracts signed (often multi-year), so they can exceed the annual budget without implying overspending. To assess contracting, compare commitments to commitment authority."
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:616
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:625
 msgid "Budget Cycle Timeline"
 msgstr "Budget Cycle Timeline"
 
@@ -9241,11 +9241,11 @@ msgid "Budget status 2026"
 msgstr "Budget status 2026"
 
 #. placeholder {0}: defaultYearRange.end
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:126
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:127
 msgid "Budget submitted for {0}"
 msgstr "Budget submitted for {0}"
 
-#: src/features/learning/components/layout/LearningLayout.tsx:176
+#: src/features/learning/components/layout/LearningLayout.tsx:180
 msgid "Budgetary Academy"
 msgstr "Budgetary Academy"
 
@@ -9711,7 +9711,7 @@ msgstr "Calculation"
 msgid "Calculation sources are supported only when their result is still UAT-level."
 msgstr "Calculation sources are supported only when their result is still UAT-level."
 
-#: src/features/learning/components/interactive/VATCalculator.tsx:198
+#: src/features/learning/components/interactive/VATCalculator.tsx:194
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 
@@ -10807,6 +10807,11 @@ msgstr "The search changed between pages."
 msgid "Cauți fie după citare — „Legea 53/2003” — fie după denumire — „Codul muncii”. Ambele te duc la fișa actului, cu statutul lui și istoricul modificărilor."
 msgstr "You search either by citation — “Legea 53/2003” — or by name — “Codul muncii” (the Labour Code). Both take you to the act page, with its status and amendment history."
 
+#: src/features/learning/components/interactive/RectificationHistory.tsx:78
+#: src/features/learning/components/interactive/RedFlagCards.tsx:64
+msgid "Caution"
+msgstr "Caution"
+
 #: src/routes/justitie.index.tsx:109
 #: src/routes/justitie.instante.$courtId.tsx:122
 #~ msgid "Cauze"
@@ -10832,8 +10837,8 @@ msgstr "Cases communicated to the Government"
 msgid "Cauzele comunicate sunt cererile trimise Guvernului pentru observații: cauze pe rol, nu hotărâri."
 msgstr "Communicated cases are applications sent to the Government for its observations: pending cases, not judgments."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:368
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:394
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:381
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:407
 msgid "CC"
 msgstr "CC"
 
@@ -11696,8 +11701,8 @@ msgstr "Challenge Question"
 
 #: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:45
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:183
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:293
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:586
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:297
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:590
 msgid "Challenges"
 msgstr "Challenges"
 
@@ -11780,7 +11785,7 @@ msgstr "Chart view"
 msgid "Charts"
 msgstr "Charts"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:260
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:241
 msgid "Check"
 msgstr "Check"
 
@@ -11796,11 +11801,11 @@ msgstr "Checking request availability"
 msgid "Checking request availability."
 msgstr "Checking request availability."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:272
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:253
 msgid "Checking your answer..."
 msgstr "Checking your answer..."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:273
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:254
 msgid "Checking..."
 msgstr "Checking..."
 
@@ -11985,7 +11990,7 @@ msgstr "Choose a source value"
 msgid "Choose a unit"
 msgstr "Choose a unit"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:283
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:264
 msgid "Choose an answer"
 msgstr "Choose an answer"
 
@@ -12014,7 +12019,7 @@ msgstr "Choose file"
 msgid "Choose how to combine the selected periods before loading this series."
 msgstr "Choose how to combine the selected periods before loading this series."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:970
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:983
 msgid "Choose how you want the public debate request to be sent."
 msgstr "Choose how you want the public debate request to be sent."
 
@@ -12409,7 +12414,7 @@ msgstr "Cititorul de stenograme nu este disponibil momentan"
 msgid "Citizens allowed to speak"
 msgstr "Citizens allowed to speak"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:377
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:381
 msgid "City hall"
 msgstr "City hall"
 
@@ -12425,8 +12430,8 @@ msgstr "City hall contact info"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:278
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:516
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:704
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:792
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:717
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:805
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:135
 msgid "City hall email"
 msgstr "City hall email"
@@ -12657,7 +12662,7 @@ msgstr "Click: show this year on the page"
 msgid "Clic: doar {0}"
 msgstr "Click: only {0}"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:630
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:639
 msgid "Click a phase to explore details"
 msgstr "Click a phase to explore details"
 
@@ -12742,7 +12747,7 @@ msgstr "Close entity search dialog"
 msgid "Close Search"
 msgstr "Close Search"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:315
+#: src/features/learning/components/interactive/PromiseTracker.tsx:318
 msgid "Close!"
 msgstr "Close!"
 
@@ -13504,7 +13509,7 @@ msgstr "Competitor din sursa"
 msgid "completare"
 msgstr "supplement"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1011
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1024
 msgid "Complete all NGO legal details to generate the request template."
 msgstr "Complete all NGO legal details to generate the request template."
 
@@ -13512,11 +13517,11 @@ msgstr "Complete all NGO legal details to generate the request template."
 msgid "Complete path"
 msgstr "Complete path"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:184
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:165
 msgid "Complete this section before continuing."
 msgstr "Complete this section before continuing."
 
-#: src/features/learning/components/interactive/FlashCardDeck.tsx:270
+#: src/features/learning/components/interactive/FlashCardDeck.tsx:265
 msgid "Complete!"
 msgstr "Complete!"
 
@@ -13529,14 +13534,17 @@ msgid "Completează selecțiile de mai sus pentru a afișa graficul. Dacă tabel
 msgstr "Complete the selections above to display the chart. If the table contains observations, select a row's series with all its INS coordinates."
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:93
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:87
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:151
+#: src/features/learning/components/layout/LearningLayout.tsx:80
 msgid "Completed"
 msgstr "Completed"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:226
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:207
 msgid "Completed."
 msgstr "Completed."
 
-#: src/features/learning/components/cards/LearningPathCard.tsx:115
+#: src/features/learning/components/cards/LearningPathCard.tsx:108
 #: src/routes/certificates.$id.tsx:64
 msgid "Completion"
 msgstr "Completion"
@@ -13599,7 +13607,8 @@ msgstr "Communications"
 msgid "Concentrarea este calculată pe {positive} din {known} furnizori identificați — cei care au {basis} în această selecție."
 msgstr "Concentrarea este calculată pe {positive} din {known} furnizori identificați — cei care au {basis} în această selecție."
 
-#: src/features/learning/components/interactive/ExecutionRateChart.tsx:245
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:62
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:248
 msgid "Concerning"
 msgstr "Concerning"
 
@@ -13954,8 +13963,8 @@ msgstr "Continues the series:"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:362
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:406
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:477
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:817
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:960
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:830
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:973
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:145
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:219
 #: src/features/learning/components/cards/LearningPathCard.tsx:25
@@ -14629,7 +14638,11 @@ msgstr "Corpusul conține {0} de acte normative, preluate din Portal Legislativ 
 msgid "Corpusul conține acte normative preluate din Portal Legislativ și din Monitorul Oficial: legi, ordonanțe, hotărâri și celelalte tipuri de acte, cu statutul lor, cu trimiterile dintre ele și cu numărul de Monitor în care au apărut."
 msgstr "Corpusul conține acte normative preluate din Portal Legislativ și din Monitorul Oficial: legi, ordonanțe, hotărâri și celelalte tipuri de acte, cu statutul lor, cu trimiterile dintre ele și cu numărul de Monitor în care au apărut."
 
-#: src/features/learning/components/assessment/Quiz.tsx:172
+#: src/features/learning/components/assessment/quiz-answer-presentation.tsx:68
+msgid "Correct answer"
+msgstr "Correct answer"
+
+#: src/features/learning/components/assessment/Quiz.tsx:163
 msgid "Correct Choice"
 msgstr "Correct Choice"
 
@@ -14637,7 +14650,7 @@ msgstr "Correct Choice"
 msgid "Correct!"
 msgstr "Correct!"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:293
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:274
 msgid "Correct."
 msgstr "Correct."
 
@@ -14869,7 +14882,7 @@ msgstr "County:"
 msgid "Course Content"
 msgstr "Course Content"
 
-#: src/features/learning/components/layout/LearningLayout.tsx:126
+#: src/features/learning/components/layout/LearningLayout.tsx:130
 msgid "Course Progress"
 msgstr "Course Progress"
 
@@ -15695,7 +15708,7 @@ msgstr "Currency is ignored for % of GDP."
 msgid "Current"
 msgstr "Current"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:740
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:750
 msgid "Current date"
 msgstr "Current date"
 
@@ -15759,7 +15772,7 @@ msgstr "Keywords"
 msgid "Da"
 msgstr "Yes"
 
-#: src/features/learning/components/cards/LearningPathCard.tsx:175
+#: src/features/learning/components/cards/LearningPathCard.tsx:168
 msgid "Daily Streak"
 msgstr "Daily Streak"
 
@@ -15994,7 +16007,7 @@ msgstr "Data View"
 #~ msgid "Data workbook"
 #~ msgstr "Data workbook"
 
-#: src/features/learning/components/interactive/EUComparisonChart.tsx:206
+#: src/features/learning/components/interactive/EUComparisonChart.tsx:226
 msgid "Data: Eurostat 2024 (Provisional)"
 msgstr "Data: Eurostat 2024 (Provisional)"
 
@@ -16522,12 +16535,12 @@ msgstr "Debts, at {debts}, are {0} of equity."
 msgid "Datoriile, de {debts}, sunt de {0} ori capitalurile proprii."
 msgstr "Debts, at {debts}, are {0} times equity."
 
-#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:485
+#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:488
 #: src/features/learning/utils/streak.ts:124
 msgid "day"
 msgstr "day"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:164
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:165
 #: src/features/learning/utils/streak.ts:124
 msgid "days"
 msgstr "days"
@@ -16793,9 +16806,9 @@ msgstr "Death rate captures health and age-structure pressure and helps explain 
 msgid "Deaths (POP206D)"
 msgstr "Deaths (POP206D)"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:267
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:736
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:763
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:274
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:749
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:776
 msgid "Debate request"
 msgstr "Debate request"
 
@@ -16981,7 +16994,7 @@ msgid "defect cunoscut"
 msgstr "known defect"
 
 #: src/features/landing/lib/budget-map-measures.ts:105
-#: src/features/learning/components/interactive/RectificationHistory.tsx:49
+#: src/features/learning/components/interactive/RectificationHistory.tsx:50
 #: src/features/national-budget/analytics/components/analytics-contents.tsx:144
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:755
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:810
@@ -17142,7 +17155,7 @@ msgstr "Deleting..."
 #~ msgstr "Delivery"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:258
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:695
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:708
 msgid "Delivery path"
 msgstr "Delivery path"
 
@@ -18353,7 +18366,7 @@ msgstr "dissolved"
 msgid "Dizolvate"
 msgstr "Dissolved"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:833
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:846
 msgid "Do you represent a legally established association?"
 msgstr "Do you represent a legally established association?"
 
@@ -18635,8 +18648,8 @@ msgstr "Donations"
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:32
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:41
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:49
-#: src/features/learning/components/cards/LearningPathCard.tsx:188
-#: src/features/learning/components/cards/LearningPathCard.tsx:197
+#: src/features/learning/components/cards/LearningPathCard.tsx:181
+#: src/features/learning/components/cards/LearningPathCard.tsx:190
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:91
 msgid "Done"
 msgstr "Done"
@@ -19136,7 +19149,7 @@ msgstr "Duration"
 #~ msgid "Durata medie a vieții"
 #~ msgstr "Life expectancy"
 
-#: src/features/learning/components/cards/LearningPathCard.tsx:159
+#: src/features/learning/components/cards/LearningPathCard.tsx:152
 msgid "Duration"
 msgstr "Duration"
 
@@ -19844,7 +19857,7 @@ msgstr "Enter series label..."
 msgid "Enter text content…"
 msgstr "Enter text content…"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:890
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:903
 msgid "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
 msgstr "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
 
@@ -20042,7 +20055,7 @@ msgstr "estimated {estimate}"
 msgid "estimat la {estimate}"
 msgstr "estimated at {estimate}"
 
-#: src/features/learning/components/cards/LearningPathCard.tsx:159
+#: src/features/learning/components/cards/LearningPathCard.tsx:152
 msgid "Estimate"
 msgstr "Estimate"
 
@@ -20119,7 +20132,7 @@ msgstr "eticheta sursa fara rezolvare"
 msgid "Etichetele sunt ale dicționarului Ministerului Finanțelor din acel an. „—\" e o celulă goală în sursă; 0 e un zero raportat."
 msgstr "The labels are the Ministry of Finance dictionary's for that year. “—” is a blank cell in the source; 0 is a reported zero."
 
-#: src/features/learning/components/interactive/EUComparisonChart.tsx:100
+#: src/features/learning/components/interactive/EUComparisonChart.tsx:109
 msgid "EU Average"
 msgstr "EU Average"
 
@@ -20135,7 +20148,7 @@ msgstr "EU Average"
 msgid "EU Funds, Dividends, etc."
 msgstr "EU Funds, Dividends, etc."
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:121
+#: src/features/learning/components/interactive/PromiseTracker.tsx:124
 msgid "EU Projects"
 msgstr "EU Projects"
 
@@ -20152,7 +20165,7 @@ msgstr "Undated events cannot be filtered by period — choose another view for 
 msgid "Evenimentele marcate „Monitorul Oficial” sunt susținute de o publicare în Monitor; cele marcate „Portal” provin din evidența Portal Legislativ. Unele trimiteri ale instanțelor la modificări sau completări sunt omise; trimiterile la abrogări și evenimentele de statut înregistrate sunt păstrate."
 msgstr "Events marked “Official Gazette” are backed by a publication in the Gazette; those marked “Portal” come from Portal Legislativ’s records. Some court references to amendments or additions are omitted; references to repeals and recorded status events are kept."
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:228
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:240
 msgid "Ever wondered where your money actually goes?"
 msgstr "Ever wondered where your money actually goes?"
 
@@ -20221,7 +20234,7 @@ msgstr "e.g. Legea 227/2015 or codul fiscal"
 #~ msgstr "Exact phrase"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:692
-#: src/features/learning/components/interactive/RedFlagCards.tsx:116
+#: src/features/learning/components/interactive/RedFlagCards.tsx:111
 msgid "Example:"
 msgstr "Example:"
 
@@ -20279,7 +20292,8 @@ msgstr "Surplus, {year}"
 msgid "Excedent: {0}"
 msgstr "Surplus: {0}"
 
-#: src/features/learning/components/interactive/ExecutionRateChart.tsx:233
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:42
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:236
 msgid "Excellent"
 msgstr "Excellent"
 
@@ -20354,7 +20368,7 @@ msgstr "Excluding"
 msgid "Executant"
 msgstr "Executant"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:380
+#: src/features/learning/components/interactive/PromiseTracker.tsx:383
 msgid "Executed"
 msgstr "Executed"
 
@@ -20504,7 +20518,7 @@ msgstr "Expired"
 #~ msgid "Explorare pentru organizatii neguvernamentale, furnizori de servicii sociale, surse oficiale si legaturi de finantare."
 #~ msgstr "Explorare pentru organizatii neguvernamentale, furnizori de servicii sociale, surse oficiale si legaturi de finantare."
 
-#: src/features/learning/components/interactive/PhaseCards.tsx:95
+#: src/features/learning/components/interactive/PhaseCards.tsx:96
 msgid "Exploration Progress"
 msgstr "Exploration Progress"
 
@@ -20556,7 +20570,7 @@ msgstr "Explore more paths"
 #~ msgid "Explorează pe teme"
 #~ msgstr "Explore by topic"
 
-#: src/features/learning/components/interactive/FlashCardDeck.tsx:266
+#: src/features/learning/components/interactive/FlashCardDeck.tsx:261
 msgid "explored"
 msgstr "explored"
 
@@ -20666,7 +20680,7 @@ msgid "Extras raw"
 msgstr "Extras raw"
 
 #: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:48
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:296
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:300
 msgid "Eyes on Local Budgets"
 msgstr "Eyes on Local Budgets"
 
@@ -22036,7 +22050,7 @@ msgstr "File imported"
 #~ msgid "File received on {date}"
 #~ msgstr "File received on {date}"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:767
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:780
 msgid "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 msgstr "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 
@@ -22445,8 +22459,8 @@ msgstr "Find resources, report issues, or get in touch."
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4226
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:144
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:150
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:239
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:131
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:220
 msgid "Finish"
 msgstr "Finish"
 
@@ -22935,7 +22949,7 @@ msgstr "Fiscal"
 #~ msgid "Fiscal CAEN from ANAF matches an authorized ONRC activity."
 #~ msgstr "Fiscal CAEN from ANAF matches an authorized ONRC activity."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:895
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:908
 msgid "Fiscal code (CIF)"
 msgstr "Fiscal code (CIF)"
 
@@ -23073,7 +23087,7 @@ msgstr "Focus Year Selector"
 msgid "Focus year selector in entity details"
 msgstr "Focus year selector in entity details"
 
-#: src/features/learning/components/layout/LearningLayout.tsx:179
+#: src/features/learning/components/layout/LearningLayout.tsx:183
 msgid "Follow the money"
 msgstr "Follow the money"
 
@@ -23483,7 +23497,7 @@ msgstr "Supplier"
 msgid "Furnizorul este o persoană fizică: Transparenta nu îi arată numele și nu îi adună achizițiile."
 msgstr "The supplier is a natural person: Transparenta does not show their name or gather their purchases."
 
-#: src/features/learning/components/interactive/EUComparisonChart.tsx:71
+#: src/features/learning/components/interactive/EUComparisonChart.tsx:80
 msgid "Gap"
 msgstr "Gap"
 
@@ -23677,7 +23691,8 @@ msgstr "Clear the search"
 msgid "Golul cel mai important: deciziile Curții Constituționale"
 msgstr "The most important gap: Constitutional Court decisions"
 
-#: src/features/learning/components/interactive/ExecutionRateChart.tsx:239
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:53
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:242
 msgid "Good"
 msgstr "Good"
 
@@ -23685,7 +23700,7 @@ msgstr "Good"
 msgid "Good for shortlists used in audits, reporting, or manual review."
 msgstr "Good for shortlists used in audits, reporting, or manual review."
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:119
+#: src/features/learning/components/interactive/PromiseTracker.tsx:122
 msgid "Goods & Services"
 msgstr "Goods & Services"
 
@@ -23809,7 +23824,7 @@ msgstr "Greater than"
 msgid "Grid view"
 msgstr "Grid view"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:306
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:318
 msgid "Gross"
 msgstr "Gross"
 
@@ -23930,7 +23945,7 @@ msgstr "The Romanian government published this release in September 2025 using p
 msgid "Guvernul și ministerele, contribuția României la bugetul UE, cofinanțarea proiectelor europene"
 msgstr "the Government and ministries, Romania's contribution to the EU budget, co-financing of European projects"
 
-#: src/features/learning/components/interactive/HandsOnExplorer.tsx:270
+#: src/features/learning/components/interactive/HandsOnExplorer.tsx:278
 msgid "Hands-On Activity"
 msgstr "Hands-On Activity"
 
@@ -24017,7 +24032,7 @@ msgstr "Hash rand"
 msgid "Hașurat: firme fără o valoare raportată."
 msgstr "Hatched: companies with no reported value."
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:359
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:370
 msgid "Health (CASS)"
 msgstr "Health (CASS)"
 
@@ -24051,7 +24066,7 @@ msgstr "Help"
 #~ msgid "Help us understand usage to improve the product. No analytics data is sent unless you opt in."
 #~ msgstr "Help us understand usage to improve the product. No analytics data is sent unless you opt in."
 
-#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:341
+#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:344
 msgid "Hidden infrastructure you used"
 msgstr "Hidden infrastructure you used"
 
@@ -24087,7 +24102,7 @@ msgid "Hide roads"
 msgstr "Hide roads"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:229
-#: src/features/learning/components/interactive/PhaseCards.tsx:306
+#: src/features/learning/components/interactive/PhaseCards.tsx:305
 msgid "High"
 msgstr "High"
 
@@ -24095,12 +24110,12 @@ msgstr "High"
 #~ msgid "High confidence"
 #~ msgstr "High confidence"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:439
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:445
 #: src/features/learning/components/interactive/PhaseCards.tsx:382
 msgid "High Impact"
 msgstr "High Impact"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:744
+#: src/features/learning/components/interactive/opportunity-level.tsx:15
 msgid "High opportunity"
 msgstr "High opportunity"
 
@@ -24214,11 +24229,11 @@ msgstr "How calculated"
 msgid "How does this allocation affect the community? Think of concrete services: schools, roads, green spaces."
 msgstr "How does this allocation affect the community? Think of concrete services: schools, roads, green spaces."
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:275
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:287
 msgid "How much stays <0/><1>in your wallet?</1>"
 msgstr "How much stays <0/><1>in your wallet?</1>"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:241
+#: src/features/learning/components/interactive/PromiseTracker.tsx:244
 msgid "How much was <0>built</0>?"
 msgstr "How much was <0>built</0>?"
 
@@ -24250,7 +24265,7 @@ msgstr "Hub de scrutin cu concursuri, acoperire si rezultate principale."
 #~ msgid "HUDOC (CEDO)"
 #~ msgstr "HUDOC (CEDO)"
 
-#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:204
+#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:202
 msgid "I did this"
 msgstr "I did this"
 
@@ -24264,7 +24279,7 @@ msgid "I don't know"
 msgstr "I don't know"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:583
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:448
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:461
 msgid "I sent the email"
 msgstr "I sent the email"
 
@@ -24396,7 +24411,7 @@ msgid "Ieșite din funcțiune"
 msgstr "No longer in business"
 
 #. placeholder {0}: formatCurrency(gross)
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:278
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:290
 msgid "If you earn <0>{0}</0> gross, drag the slider to your expected net home pay."
 msgstr "If you earn <0>{0}</0> gross, drag the slider to your expected net home pay."
 
@@ -25710,7 +25725,7 @@ msgstr "Income"
 msgid "Income - Expenses"
 msgstr "Income - Expenses"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:367
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:378
 msgid "Income Tax"
 msgstr "Income Tax"
 
@@ -26024,8 +26039,8 @@ msgstr "Info"
 #~ msgid "Informatii pastrate pentru custodie si reproducere."
 #~ msgstr "Informatii pastrate pentru custodie si reproducere."
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:120
-#: src/features/learning/components/interactive/PromiseTracker.tsx:325
+#: src/features/learning/components/interactive/PromiseTracker.tsx:123
+#: src/features/learning/components/interactive/PromiseTracker.tsx:328
 msgid "Infrastructure"
 msgstr "Infrastructure"
 
@@ -26746,7 +26761,7 @@ msgstr "Tools"
 msgid "Insufficient data"
 msgstr "Insufficient data"
 
-#: src/features/learning/components/interactive/RectificationHistory.tsx:225
+#: src/features/learning/components/interactive/RectificationHistory.tsx:243
 msgid "Interactive"
 msgstr "Interactive"
 
@@ -27254,7 +27269,7 @@ msgstr "Istoricul nu este disponibil pentru acest act."
 msgid "IT și telecomunicații"
 msgstr "IT and telecommunications"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:651
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:660
 msgid "It's budget season! November-December is the best time for citizen engagement."
 msgstr "It's budget season! November-December is the best time for citizen engagement."
 
@@ -27637,7 +27652,7 @@ msgid "Justiție / Portalul instanțelor"
 msgstr "Justice / The courts' portal"
 
 #. placeholder {0}: cc.join(', ')
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:437
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:450
 msgid "Keep <0>{0}</0> in CC so we can track the request"
 msgstr "Keep <0>{0}</0> in CC so we can track the request"
 
@@ -27645,13 +27660,13 @@ msgstr "Keep <0>{0}</0> in CC so we can track the request"
 msgid "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
 msgstr "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:467
-#: src/features/learning/components/interactive/PhaseCards.tsx:397
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:473
+#: src/features/learning/components/interactive/PhaseCards.tsx:402
 msgid "Key Activities"
 msgstr "Key Activities"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:513
-#: src/features/learning/components/interactive/PhaseCards.tsx:441
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:519
+#: src/features/learning/components/interactive/PhaseCards.tsx:446
 msgid "Key Deadlines"
 msgstr "Key Deadlines"
 
@@ -27902,7 +27917,7 @@ msgstr "Label"
 #~ msgid "Label not available in nomenclature"
 #~ msgstr "Label not available in nomenclature"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:407
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:418
 msgid "Labor Cost Summary"
 msgstr "Labor Cost Summary"
 
@@ -28008,7 +28023,7 @@ msgstr "Learning Certificate Verification (PoC)"
 msgid "Learning path"
 msgstr "Learning path"
 
-#: src/features/learning/components/layout/LearningLayout.tsx:192
+#: src/features/learning/components/layout/LearningLayout.tsx:196
 msgid "Learning Path"
 msgstr "Learning Path"
 
@@ -28043,15 +28058,15 @@ msgstr "Legal Commitments"
 #~ msgid "Legal form"
 #~ msgstr "Legal form"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:715
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:728
 msgid "Legal representative"
 msgstr "Legal representative"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:912
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:925
 msgid "Legal representative name"
 msgstr "Legal representative name"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:929
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:942
 msgid "Legal representative role"
 msgstr "Legal representative role"
 
@@ -28403,7 +28418,7 @@ msgstr "Lesson completed!"
 msgid "Lesson not found"
 msgstr "Lesson not found"
 
-#: src/features/learning/components/cards/LearningPathCard.tsx:131
+#: src/features/learning/components/cards/LearningPathCard.tsx:124
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:163
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:222
 msgid "Lessons"
@@ -28984,7 +28999,7 @@ msgstr "Loading chart configuration..."
 msgid "Loading chart data..."
 msgstr "Loading chart data..."
 
-#: src/features/challenges/components/analysis/budget-item-analytics.tsx:777
+#: src/features/challenges/components/analysis/budget-item-analytics.tsx:789
 msgid "Loading chart data…"
 msgstr "Loading chart data…"
 
@@ -29367,7 +29382,7 @@ msgstr "Location"
 msgid "Lock annotation"
 msgstr "Lock annotation"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:314
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:326
 msgid "Lock In Prediction"
 msgstr "Lock In Prediction"
 
@@ -29572,7 +29587,7 @@ msgstr "lots {lotList}"
 msgid "Low"
 msgstr "Low"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:752
+#: src/features/learning/components/interactive/opportunity-level.tsx:17
 msgid "Low opportunity"
 msgstr "Low opportunity"
 
@@ -30186,7 +30201,7 @@ msgstr "Size is read from the {year} statement; the other groupings describe the
 msgid "Mărirea hărții"
 msgstr "Map zoom"
 
-#: src/features/learning/components/player/MarkComplete.tsx:106
+#: src/features/learning/components/player/MarkComplete.tsx:105
 msgid "Mark as complete"
 msgstr "Mark as complete"
 
@@ -30194,11 +30209,11 @@ msgstr "Mark as complete"
 msgid "Mark charts as favorites to quickly find them here."
 msgstr "Mark charts as favorites to quickly find them here."
 
-#: src/features/learning/components/player/MarkComplete.tsx:88
+#: src/features/learning/components/player/MarkComplete.tsx:87
 msgid "Mark this step as complete"
 msgstr "Mark this step as complete"
 
-#: src/features/learning/components/player/MarkComplete.tsx:90
+#: src/features/learning/components/player/MarkComplete.tsx:89
 msgid "Mark this step as done to save your progress."
 msgstr "Mark this step as done to save your progress."
 
@@ -30415,7 +30430,7 @@ msgstr "environment, pollution, water"
 msgid "Medium"
 msgstr "Medium"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:748
+#: src/features/learning/components/interactive/opportunity-level.tsx:16
 msgid "Medium opportunity"
 msgstr "Medium opportunity"
 
@@ -30463,7 +30478,7 @@ msgstr "Go to the first page"
 msgid "Mergi la ultima pagină"
 msgstr "Go to the last page"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:407
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:420
 msgid "Message"
 msgstr "Message"
 
@@ -30639,7 +30654,7 @@ msgstr "Minimise the institutions window"
 msgid "Minimum"
 msgstr "Minimum"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:305
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:317
 msgid "Minimum Pay"
 msgstr "Minimum Pay"
 
@@ -30980,7 +30995,7 @@ msgstr "Module link"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:215
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:265
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:210
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:214
 msgid "Module progress"
 msgstr "Module progress"
 
@@ -31001,7 +31016,7 @@ msgstr "money"
 #~ msgid "Money flows"
 #~ msgstr "Money flows"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:403
+#: src/features/learning/components/interactive/PromiseTracker.tsx:406
 msgid "Money gets redirected: salaries and social transfers often exceed initial plans (100%+), while infrastructure lags at 55-60% and EU projects at just 30-35%."
 msgstr "Money gets redirected: salaries and social transfers often exceed initial plans (100%+), while infrastructure lags at 55-60% and EU projects at just 30-35%."
 
@@ -31049,7 +31064,7 @@ msgstr "Monthly {0} in RON"
 #~ msgid "Monthly awarded value"
 #~ msgstr "Monthly awarded value"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:344
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:355
 msgid "Monthly Gross Income"
 msgstr "Monthly Gross Income"
 
@@ -31645,7 +31660,7 @@ msgstr "Net migration in absolute terms shows whether people are moving in or ou
 msgid "Net migration rate captures attractiveness and retention dynamics adjusted for population size."
 msgstr "Net migration rate captures attractiveness and retention dynamics adjusted for population size."
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:386
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:397
 msgid "Net Monthly Income"
 msgstr "Net Monthly Income"
 
@@ -31716,7 +31731,7 @@ msgstr "Newest"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:582
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:211
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:127
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:150
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:131
 #: src/features/learning/components/player/LessonPlayer.tsx:576
 msgid "Next"
 msgstr "Next"
@@ -32769,7 +32784,7 @@ msgstr "No description provided."
 msgid "No detailed data available for this selection."
 msgstr "No detailed data available for this selection."
 
-#: src/features/learning/components/interactive/RectificationHistory.tsx:193
+#: src/features/learning/components/interactive/RectificationHistory.tsx:211
 msgid "No detailed records available."
 msgstr "No detailed records available."
 
@@ -33011,7 +33026,7 @@ msgstr "No ranking data available."
 #~ msgid "No records match these filters."
 #~ msgstr "No records match these filters."
 
-#: src/features/learning/components/interactive/RectificationHistory.tsx:127
+#: src/features/learning/components/interactive/RectificationHistory.tsx:145
 msgid "No rectifications"
 msgstr "No rectifications"
 
@@ -33153,6 +33168,11 @@ msgstr "None"
 msgid "Normă"
 msgstr "Norm"
 
+#: src/features/learning/components/interactive/RectificationHistory.tsx:77
+#: src/features/learning/components/interactive/RedFlagCards.tsx:63
+msgid "Normal"
+msgstr "Normal"
+
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:110
 #: src/components/charts/components/series-config/SeriesFilter.tsx:743
 #: src/components/filters/EntityAnalyticsFilter.tsx:443
@@ -33251,7 +33271,7 @@ msgstr "Not pinned yet: the active release is read."
 #~ msgid "Not provided"
 #~ msgstr "Not provided"
 
-#: src/features/learning/components/assessment/Quiz.tsx:172
+#: src/features/learning/components/assessment/Quiz.tsx:163
 msgid "Not Quite"
 msgstr "Not Quite"
 
@@ -33287,7 +33307,7 @@ msgstr "Note de parsare"
 msgid "Note your observations about the debate…"
 msgstr "Note your observations about the debate…"
 
-#: src/features/learning/components/interactive/RectificationHistory.tsx:245
+#: src/features/learning/components/interactive/RectificationHistory.tsx:263
 msgid "Note: Romania has been under EU Excessive Deficit Procedure since 2020"
 msgstr "Note: Romania has been under EU Excessive Deficit Procedure since 2020"
 
@@ -33355,7 +33375,9 @@ msgstr "Nov"
 msgid "November"
 msgstr "November"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:368
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:207
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:275
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:374
 msgid "Now"
 msgstr "Now"
 
@@ -34888,7 +34910,7 @@ msgstr "Oldest"
 #~ msgid "Oldest first"
 #~ msgstr "Oldest first"
 
-#: src/features/learning/components/interactive/EUComparisonChart.tsx:101
+#: src/features/learning/components/interactive/EUComparisonChart.tsx:110
 msgid "One of the lowest"
 msgstr "One of the lowest"
 
@@ -35115,7 +35137,7 @@ msgstr "Open announcement"
 msgid "Open bins preset menu"
 msgstr "Open bins preset menu"
 
-#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:199
+#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:197
 msgid "Open Budget Explorer"
 msgstr "Open Budget Explorer"
 
@@ -35123,7 +35145,7 @@ msgstr "Open Budget Explorer"
 msgid "Open campaign"
 msgstr "Open campaign"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:577
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:581
 msgid "Open challenges menu"
 msgstr "Open challenges menu"
 
@@ -35159,7 +35181,7 @@ msgstr "Open email"
 msgid "Open email again"
 msgstr "Open email again"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:426
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:439
 msgid "Open email client"
 msgstr "Open email client"
 
@@ -35291,7 +35313,7 @@ msgstr "opens in new tab"
 msgid "Opens your email client with the completed contestation."
 msgstr "Opens your email client with the completed contestation."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:997
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1010
 msgid "Opens your email client with the completed request. Recommended when you represent a legally established association."
 msgstr "Opens your email client with the completed request. Recommended when you represent a legally established association."
 
@@ -35637,7 +35659,7 @@ msgstr "Outliers series"
 #~ msgid "Over {0} companies — refine your search"
 #~ msgstr "Over {0} companies — refine your search"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:135
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:116
 msgid "Overview"
 msgstr "Overview"
 
@@ -36126,7 +36148,7 @@ msgstr "Pastures, farming and forests"
 msgid "Path"
 msgstr "Path"
 
-#: src/features/learning/components/cards/LearningPathCard.tsx:279
+#: src/features/learning/components/cards/LearningPathCard.tsx:272
 msgid "Path Completed"
 msgstr "Path Completed"
 
@@ -36134,7 +36156,7 @@ msgstr "Path Completed"
 msgid "Path not found"
 msgstr "Path not found"
 
-#: src/features/learning/components/cards/LearningPathCard.tsx:89
+#: src/features/learning/components/cards/LearningPathCard.tsx:82
 msgid "Path Progress"
 msgstr "Path Progress"
 
@@ -36620,7 +36642,7 @@ msgstr "public pensions"
 msgid "Pensiile, sănătatea și șomajul au bugete și legi proprii: fiecare fond e separat și nu se adună cu bugetul de stat."
 msgstr "Pensions, health and unemployment have their own budgets and laws: each fund is separate and is not added to the state budget."
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:351
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:362
 msgid "Pension (CAS)"
 msgstr "Pension (CAS)"
 
@@ -37022,7 +37044,7 @@ msgstr "Staff, people"
 msgid "Personalized paths and interactive lessons."
 msgstr "Personalized paths and interactive lessons."
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:118
+#: src/features/learning/components/interactive/PromiseTracker.tsx:121
 msgid "Personnel Costs"
 msgstr "Personnel Costs"
 
@@ -37080,13 +37102,13 @@ msgstr "Oil and natural gas"
 msgid "Phase 01"
 msgstr "Phase 01"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:273
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:285
 msgid "Phase 02"
 msgstr "Phase 02"
 
 #. placeholder {0}: content.name
 #: src/features/learning/components/interactive/PhaseCards.tsx:189
-#: src/features/learning/components/interactive/PhaseCards.tsx:269
+#: src/features/learning/components/interactive/PhaseCards.tsx:268
 msgid "Phase: {0}"
 msgstr "Phase: {0}"
 
@@ -37194,7 +37216,7 @@ msgstr "Base legal ceiling (G)"
 msgid "Plain text"
 msgstr "Plain text"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:371
+#: src/features/learning/components/interactive/PromiseTracker.tsx:374
 msgid "Planned"
 msgstr "Planned"
 
@@ -37425,7 +37447,8 @@ msgstr "GDP shares for {0} aren't shown: {spendingRefused}."
 msgid "Ponderile în PIB pentru {0} nu sunt disponibile în datele noastre."
 msgstr "GDP shares for {0} aren't available in our data."
 
-#: src/features/learning/components/interactive/ExecutionRateChart.tsx:251
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:70
+#: src/features/learning/components/interactive/ExecutionRateChart.tsx:254
 msgid "Poor"
 msgstr "Poor"
 
@@ -37939,11 +37962,11 @@ msgstr "Manufacture of wood and of products of wood and cork, except furniture; 
 msgid "Prelucrarea țițeiului"
 msgstr "Oil refining"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1046
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1059
 msgid "Prepare email"
 msgstr "Prepare email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:382
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:395
 msgid "Prepared email"
 msgstr "Prepared email"
 
@@ -38023,7 +38046,7 @@ msgstr "Annual plan"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:442
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:382
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:541
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:379
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:392
 #: src/routes/alerts/$alertId/index.lazy.tsx:237
 #: src/routes/alerts/new.lazy.tsx:203
 msgid "Preview"
@@ -38073,11 +38096,11 @@ msgstr "Previous observations"
 #~ msgid "Previous page"
 #~ msgstr "Previous page"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:115
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:96
 msgid "Previous section"
 msgstr "Previous section"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:128
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:109
 msgid "Previous step"
 msgstr "Previous step"
 
@@ -38605,7 +38628,7 @@ msgstr "Progres absorbție {0}"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:209
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:262
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:206
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:210
 msgid "Progress"
 msgstr "Progress"
 
@@ -38857,8 +38880,8 @@ msgstr "Public Debate Campaign"
 msgid "Public debate details"
 msgstr "Public debate details"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:737
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:765
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:750
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:778
 msgid "Public debate request"
 msgstr "Public debate request"
 
@@ -38872,12 +38895,12 @@ msgstr "Public debate request available"
 msgid "Public debate request closed"
 msgstr "Public debate request closed"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:327
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:340
 msgid "Public debate request submissions are closed."
 msgstr "Public debate request submissions are closed."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:248
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:329
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:342
 msgid "Public debate request submissions are open."
 msgstr "Public debate request submissions are open."
 
@@ -39030,7 +39053,7 @@ msgstr "Publications"
 
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:121
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:159
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:290
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:303
 msgid "Publication date"
 msgstr "Publication date"
 
@@ -39110,8 +39133,7 @@ msgstr "Quick settings"
 msgid "Quickly adjust chart settings"
 msgstr "Quickly adjust chart settings"
 
-#: src/features/challenges/components/player/sectioned-step-interactives.tsx:35
-#: src/features/learning/components/assessment/Quiz.tsx:68
+#: src/features/learning/components/assessment/quiz-answer-presentation.tsx:78
 msgid "Quiz configuration error"
 msgstr "Quiz configuration error"
 
@@ -39510,7 +39532,7 @@ msgstr "Read more"
 msgid "Reading the current release…"
 msgstr "Reading the current release…"
 
-#: src/features/learning/components/layout/LearningLayout.tsx:261
+#: src/features/learning/components/layout/LearningLayout.tsx:262
 msgid "Ready to Begin?"
 msgstr "Ready to Begin?"
 
@@ -39540,12 +39562,12 @@ msgstr "Real"
 msgid "Real prices"
 msgstr "Real prices"
 
-#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:299
+#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:298
 msgid "Reality"
 msgstr "Reality"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:303
-#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:243
+#: src/features/learning/components/interactive/PromiseTracker.tsx:306
+#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:242
 msgid "Reality Check"
 msgstr "Reality Check"
 
@@ -39652,11 +39674,11 @@ msgstr "record counts"
 #~ msgstr "Record type"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:264
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:701
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:714
 msgid "Recorded"
 msgstr "Recorded"
 
-#: src/features/learning/components/player/MarkComplete.tsx:101
+#: src/features/learning/components/player/MarkComplete.tsx:100
 msgid "Recording..."
 msgstr "Recording..."
 
@@ -39690,7 +39712,7 @@ msgstr "correction"
 msgid "Rectificare"
 msgstr "Correction"
 
-#: src/features/learning/components/interactive/RectificationHistory.tsx:222
+#: src/features/learning/components/interactive/RectificationHistory.tsx:240
 msgid "Rectification History (2020-2024)"
 msgstr "Rectification History (2020-2024)"
 
@@ -39856,7 +39878,7 @@ msgstr "Region Filters"
 #~ msgid "Registered before {0}"
 #~ msgstr "Registered before {0}"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:861
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:874
 msgid "Registered office"
 msgstr "Registered office"
 
@@ -39893,7 +39915,7 @@ msgstr "Registered unemployment share"
 #~ msgid "Registration date in source"
 #~ msgstr "Registration date in source"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:878
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:891
 msgid "Registration number"
 msgstr "Registration number"
 
@@ -40497,11 +40519,11 @@ msgstr "Request a public debate for the local budget."
 msgid "Request availability cannot be confirmed right now."
 msgstr "Request availability cannot be confirmed right now."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:298
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:311
 msgid "Request deadline"
 msgstr "Request deadline"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1063
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1076
 msgid "Request submission"
 msgstr "Request submission"
 
@@ -40509,15 +40531,15 @@ msgstr "Request submission"
 msgid "Request submissions are temporarily unavailable"
 msgstr "Request submissions are temporarily unavailable"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:319
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:332
 msgid "Request submissions are temporarily unavailable. Please try again later."
 msgstr "Request submissions are temporarily unavailable. Please try again later."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:700
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:713
 msgid "Requested platform delivery"
 msgstr "Requested platform delivery"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:746
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:759
 msgid "Requests are closed, so this submission cannot be updated and sent again."
 msgstr "Requests are closed, so this submission cannot be updated and sent again."
 
@@ -40546,7 +40568,7 @@ msgstr "Reset"
 msgid "Reset amount filter"
 msgstr "Reset amount filter"
 
-#: src/features/learning/components/interactive/PhaseCards.tsx:530
+#: src/features/learning/components/interactive/PhaseCards.tsx:535
 msgid "Reset progress"
 msgstr "Reset progress"
 
@@ -40779,7 +40801,7 @@ msgstr "Retry INS data"
 #~ msgid "Revalidarea profilului a esuat"
 #~ msgstr "Revalidarea profilului a esuat"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:279
+#: src/features/learning/components/interactive/PromiseTracker.tsx:282
 msgid "Reveal Reality"
 msgstr "Reveal Reality"
 
@@ -40788,11 +40810,11 @@ msgid "Reveal Truth"
 msgstr "Reveal Truth"
 
 #: src/features/learning/components/interactive/DeficitVisual.tsx:10
-#: src/features/learning/components/interactive/EUComparisonChart.tsx:61
+#: src/features/learning/components/interactive/EUComparisonChart.tsx:70
 msgid "Revenue"
 msgstr "Revenue"
 
-#: src/features/learning/components/interactive/EUComparisonChart.tsx:96
+#: src/features/learning/components/interactive/EUComparisonChart.tsx:105
 msgid "Revenue as % of GDP: EU Comparison"
 msgstr "Revenue as % of GDP: EU Comparison"
 
@@ -41172,7 +41194,7 @@ msgstr "of Romania"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:764
 #: src/components/theme/currency-toggle.tsx:64
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:235
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:247
 msgid "RON"
 msgstr "RON"
 
@@ -41373,7 +41395,7 @@ msgstr "Average net pay"
 msgid "Salariul net"
 msgstr "Net salary"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:340
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:351
 msgid "Salary Calculation"
 msgstr "Salary Calculation"
 
@@ -42746,7 +42768,7 @@ msgstr "Select a predefined dataset to track"
 msgid "Select a snapshot to clone into a new map"
 msgstr "Select a snapshot to clone into a new map"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:418
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:422
 msgid "Select a topic to begin"
 msgstr "Select a topic to begin"
 
@@ -42806,7 +42828,7 @@ msgstr "Select operation"
 msgid "Select options"
 msgstr "Select options"
 
-#: src/features/learning/components/layout/LearningLayout.tsx:195
+#: src/features/learning/components/layout/LearningLayout.tsx:199
 msgid "Select Path"
 msgstr "Select Path"
 
@@ -42846,7 +42868,7 @@ msgstr "Select the group workspace that should receive the aggregated values."
 msgid "Select the UAT-level source series to aggregate."
 msgstr "Select the UAT-level source series to aggregate."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:315
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:319
 msgid "Select topic"
 msgstr "Select topic"
 
@@ -43014,11 +43036,11 @@ msgstr "Send debate request"
 msgid "Send feedback"
 msgstr "Send feedback"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:995
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1008
 msgid "Send it yourself"
 msgstr "Send it yourself"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:435
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:448
 msgid "Send the email from your association's email address"
 msgstr "Send the email from your association's email address"
 
@@ -43030,7 +43052,7 @@ msgstr "Send via email"
 msgid "Sender"
 msgstr "Sender"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:698
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:711
 msgid "Sent by you"
 msgstr "Sent by you"
 
@@ -43800,8 +43822,8 @@ msgstr "Sign in required"
 msgid "Sign in required to manage notifications"
 msgstr "Sign in required to manage notifications"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:159
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:259
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:140
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:240
 msgid "Sign in to answer this section and save your progress."
 msgstr "Sign in to answer this section and save your progress."
 
@@ -43834,7 +43856,7 @@ msgstr "Sign in to receive updates about <0>{entityName}</0>:"
 msgid "Sign in to receive updates about the entities you care about."
 msgstr "Sign in to receive updates about the entities you care about."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:238
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:219
 msgid "Sign in to save this step as completed."
 msgstr "Sign in to save this step as completed."
 
@@ -44046,7 +44068,7 @@ msgstr "The {year} statements, by revenue, in lei"
 msgid "Skip"
 msgstr "Skip"
 
-#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:346
+#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:344
 msgid "Skip tour"
 msgstr "Skip tour"
 
@@ -44399,7 +44421,7 @@ msgstr "Green space"
 #~ msgstr "Spend (RON)"
 
 #: src/features/learning/components/interactive/DeficitVisual.tsx:17
-#: src/features/learning/components/interactive/EUComparisonChart.tsx:81
+#: src/features/learning/components/interactive/EUComparisonChart.tsx:90
 msgid "Spending"
 msgstr "Spending"
 
@@ -44702,7 +44724,7 @@ msgstr "Start"
 #~ msgid "Start an investigation"
 #~ msgstr "Start an investigation"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:249
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:261
 msgid "Start Analysis"
 msgstr "Start Analysis"
 
@@ -44710,7 +44732,7 @@ msgstr "Start Analysis"
 msgid "Start at 3.5, then lower gradually if you need more candidates."
 msgstr "Start at 3.5, then lower gradually if you need more candidates."
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:229
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:241
 msgid "Start by entering your monthly Gross (Brut) income."
 msgstr "Start by entering your monthly Gross (Brut) income."
 
@@ -44723,14 +44745,14 @@ msgstr "Start from the UAT list, then paste, import, or edit values manually."
 msgid "Start Learning"
 msgstr "Start Learning"
 
-#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:471
-#: src/features/learning/components/interactive/FlashCardDeck.tsx:357
-#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:239
+#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:474
+#: src/features/learning/components/interactive/FlashCardDeck.tsx:352
+#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:237
 #: src/features/learning/components/onboarding/LearningOnboarding.tsx:286
 msgid "Start over"
 msgstr "Start over"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:426
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:437
 msgid "Start Over"
 msgstr "Start Over"
 
@@ -44751,7 +44773,7 @@ msgid "State Takes"
 msgstr "State Takes"
 
 #. placeholder {0}: Math.round((result.gross - result.net) / result.gross * 100)
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:396
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:407
 msgid "State takes {0}%"
 msgstr "State takes {0}%"
 
@@ -45116,13 +45138,13 @@ msgid "Subcontracte PNRR"
 msgstr "PNRR subcontracts"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:142
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:369
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:399
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:382
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:412
 msgid "Subject"
 msgstr "Subject"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:663
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:641
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:676
 msgid "Submission failed. Please try again."
 msgstr "Submission failed. Please try again."
 
@@ -45151,15 +45173,15 @@ msgstr "Submitted"
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:150
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:139
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:284
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:727
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:740
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:169
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:99
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:34
 msgid "Submitted on"
 msgstr "Submitted on"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:448
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1063
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:461
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1076
 msgid "Submitting..."
 msgstr "Submitting..."
 
@@ -45858,11 +45880,11 @@ msgstr "Tags"
 msgid "Tags in the same group combine with OR; different groups combine with AND."
 msgstr "Tags in the same group combine with OR; different groups combine with AND."
 
-#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:328
+#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:331
 msgid "Tap"
 msgstr "Tap"
 
-#: src/features/challenges/components/player/sectioned-step-interactives.tsx:53
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:52
 msgid "Tap an answer to continue."
 msgstr "Tap an answer to continue."
 
@@ -46180,7 +46202,7 @@ msgid "Textul, pe legislatie.just.ro"
 msgstr "Textul, pe legislatie.just.ro"
 
 #. placeholder {0}: formatCurrency((result.employerTotal - result.net) * 12)
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:416
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:427
 msgid "That is <0>{0}</0> per year."
 msgstr "That is <0>{0}</0> per year."
 
@@ -46218,7 +46240,7 @@ msgstr "The answer is:"
 #~ msgid "The API did not return a matched administrative unit for this address. Only the ONRC registered office text is available."
 #~ msgstr "The API did not return a matched administrative unit for this address. Only the ONRC registered office text is available."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1035
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1048
 msgid "The association email address is not valid."
 msgstr "The association email address is not valid."
 
@@ -46323,7 +46345,7 @@ msgstr "The Deficit"
 msgid "The detail rows could not be loaded"
 msgstr "The detail rows could not be loaded"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:807
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:820
 msgid "The email address is not valid."
 msgstr "The email address is not valid."
 
@@ -46360,7 +46382,7 @@ msgid "The generated contestation needs a sender identity."
 msgstr "The generated contestation needs a sender identity."
 
 #. placeholder {0}: formatBillions(investmentData.planned)
-#: src/features/learning/components/interactive/PromiseTracker.tsx:244
+#: src/features/learning/components/interactive/PromiseTracker.tsx:247
 msgid "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 msgstr "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 
@@ -46418,7 +46440,7 @@ msgid "The live dataset may not be published yet, or the snapshot may have chang
 msgstr "The live dataset may not be published yet, or the snapshot may have changed. No sample data is shown."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:222
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:324
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:337
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:36
 msgid "The local budget debate has already taken place."
 msgstr "The local budget debate has already taken place."
@@ -46447,7 +46469,7 @@ msgstr "The new fiscal reality affecting your wallet."
 msgid "The page you are looking for doesn't exist or has been moved."
 msgstr "The page you are looking for doesn't exist or has been moved."
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:400
+#: src/features/learning/components/interactive/PromiseTracker.tsx:403
 msgid "The Pattern"
 msgstr "The Pattern"
 
@@ -46463,7 +46485,7 @@ msgstr "The public dataset link is malformed."
 msgid "The public debate request period has ended."
 msgstr "The public debate request period has ended."
 
-#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:247
+#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:246
 msgid "The Reality"
 msgstr "The Reality"
 
@@ -46538,7 +46560,7 @@ msgid "The starting month must not follow the ending month."
 msgstr "The starting month must not follow the ending month."
 
 #. placeholder {0}: formatCurrency(result.employerTotal - result.net)
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:413
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:424
 msgid "The state total claim is <0>{0}</0>."
 msgstr "The state total claim is <0>{0}</0>."
 
@@ -46716,7 +46738,7 @@ msgstr "This is not an employment rate by age group; it is a general intensity i
 #~ msgid "This is the general INS catalog. Availability for this entity's area is checked after you select a dataset."
 #~ msgstr "This is the general INS catalog. Availability for this entity's area is checked after you select a dataset."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:924
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:937
 msgid "This is the person who signs the request on behalf of the association."
 msgstr "This is the person who signs the request on behalf of the association."
 
@@ -46772,11 +46794,11 @@ msgstr "This sectioned step has no sections to render."
 msgid "This snapshot will be visible on the public map URL."
 msgstr "This snapshot will be visible on the public map URL."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:685
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:698
 msgid "This submitted request was rejected, but new public debate requests are no longer available."
 msgstr "This submitted request was rejected, but new public debate requests are no longer available."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:686
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:699
 msgid "This submitted request was rejected. Request availability must be confirmed before it can be updated."
 msgstr "This submitted request was rejected. Request availability must be confirmed before it can be updated."
 
@@ -47049,8 +47071,8 @@ msgstr "The procedure's title: SEAP gives the contract none of its own."
 msgid "Titlurile capitolului, sub grupele lor; cota, din totalul capitolului."
 msgstr "The chapter's titles, under their groups; the share is of the chapter's total."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:367
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:380
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:402
 msgid "To"
 msgstr "To"
 
@@ -47550,7 +47572,7 @@ msgstr "Top furnizori"
 #~ msgid "Top suppliers"
 #~ msgstr "Top suppliers"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:310
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:314
 msgid "Topic"
 msgstr "Topic"
 
@@ -47749,7 +47771,7 @@ msgstr "Toți vorbitorii — stenograma integrală"
 msgid "Totul pornit"
 msgstr "Everything on"
 
-#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:232
+#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:230
 msgid "Tour Complete!"
 msgstr "Tour Complete!"
 
@@ -47983,9 +48005,9 @@ msgstr "Try a different search term or sorting."
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1116
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:253
 #: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:247
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:304
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:314
-#: src/features/learning/components/interactive/HandsOnExplorer.tsx:218
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:285
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:295
+#: src/features/learning/components/interactive/HandsOnExplorer.tsx:226
 #: src/routes/alerts/$alertId/index.lazy.tsx:192
 #: src/routes/unsubscribe.$token.tsx:77
 msgid "Try again"
@@ -47995,7 +48017,7 @@ msgstr "Try again"
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2642
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2822
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2957
-#: src/features/learning/components/assessment/Quiz.tsx:188
+#: src/features/learning/components/assessment/Quiz.tsx:179
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Try Again"
@@ -48004,7 +48026,7 @@ msgstr "Try Again"
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:747
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:760
 msgid "Try again is unavailable while request availability is being checked."
 msgstr "Try again is unavailable while request availability is being checked."
 
@@ -48012,16 +48034,16 @@ msgstr "Try again is unavailable while request availability is being checked."
 msgid "Try again later to see the latest budget and debate details for this city hall."
 msgstr "Try again later to see the latest budget and debate details for this city hall."
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:417
+#: src/features/learning/components/interactive/PromiseTracker.tsx:420
 msgid "Try Another Year"
 msgstr "Try Another Year"
 
-#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:340
+#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:337
 msgid "Try guessing again"
 msgstr "Try guessing again"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:303
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:313
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:284
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:294
 msgid "Try once more before moving on."
 msgstr "Try once more before moving on."
 
@@ -48596,7 +48618,7 @@ msgstr "Where the clients are"
 msgid "Unde sursele nu se potrivesc"
 msgstr "Where the sources disagree"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:840
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:853
 msgid "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 msgstr "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 
@@ -48868,7 +48890,7 @@ msgstr "Unsubscribe from notifications"
 msgid "Unsupported chart type: {0}"
 msgstr "Unsupported chart type: {0}"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:171
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:172
 msgid "Until Nov 15"
 msgstr "Until Nov 15"
 
@@ -49093,7 +49115,7 @@ msgstr "Use only the first matching observation for each period."
 #~ msgid "Use source defaults"
 #~ msgstr "Use source defaults"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1031
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1044
 msgid "Use the association email address from which you will actually send the request."
 msgstr "Use the association email address from which you will actually send the request."
 
@@ -49101,7 +49123,7 @@ msgstr "Use the association email address from which you will actually send the 
 #~ msgid "Use the fiscal CAEN from ANAF below when ONRC activities are missing."
 #~ msgstr "Use the fiscal CAEN from ANAF below when ONRC activities are missing."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:856
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:869
 msgid "Use the full official name exactly as it appears in the Register of Associations and Foundations."
 msgstr "Use the full official name exactly as it appears in the Register of Associations and Foundations."
 
@@ -50338,7 +50360,7 @@ msgstr "View Chart"
 
 #: src/components/budget-explorer/BudgetTreemap.tsx:1105
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:196
-#: src/features/learning/components/cards/LearningPathCard.tsx:76
+#: src/features/learning/components/cards/LearningPathCard.tsx:69
 msgid "View Details"
 msgstr "View Details"
 
@@ -50370,7 +50392,7 @@ msgstr "View source on INS Tempo"
 #~ msgid "View the color scale and values for the heatmap visualization"
 #~ msgstr "View the color scale and values for the heatmap visualization"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:621
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:630
 msgid "Viewing:"
 msgstr "Viewing:"
 
@@ -50507,7 +50529,12 @@ msgstr "Votes, in the data’s order"
 msgid "Want to add a comment?"
 msgstr "Want to add a comment?"
 
-#: src/features/learning/components/interactive/RedFlagCards.tsx:147
+#: src/features/learning/components/interactive/RectificationHistory.tsx:79
+#: src/features/learning/components/interactive/RedFlagCards.tsx:65
+msgid "Warning"
+msgstr "Warning"
+
+#: src/features/learning/components/interactive/RedFlagCards.tsx:140
 msgid "Warning Signs"
 msgstr "Warning Signs"
 
@@ -50541,7 +50568,7 @@ msgstr "Water volume per inhabitant is a proxy for household and economic utilit
 msgid "Water, gas, and network service proxies."
 msgstr "Water, gas, and network service proxies."
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:315
+#: src/features/learning/components/interactive/PromiseTracker.tsx:318
 msgid "Way off!"
 msgstr "Way off!"
 
@@ -50549,7 +50576,7 @@ msgstr "Way off!"
 msgid "We are checking the campaign calendar before enabling public debate request submissions."
 msgstr "We are checking the campaign calendar before enabling public debate request submissions."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:315
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:328
 msgid "We are still checking whether public debate request submissions are open."
 msgstr "We are still checking whether public debate request submissions are open."
 
@@ -50597,7 +50624,7 @@ msgstr "We couldn't display this page due to a data validation issue. The URL pa
 #~ msgid "We value your privacy"
 #~ msgstr "We value your privacy"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1055
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1068
 msgid "We will record the request and send it through the platform."
 msgstr "We will record the request and send it through the platform."
 
@@ -50647,7 +50674,7 @@ msgstr "What change do you propose?"
 msgid "What is the impact?"
 msgstr "What is the impact?"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:246
+#: src/features/learning/components/interactive/PromiseTracker.tsx:249
 msgid "What percentage was actually used?"
 msgstr "What percentage was actually used?"
 
@@ -50691,7 +50718,7 @@ msgstr "What this means"
 msgid "What you submitted"
 msgstr "What you submitted"
 
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:225
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:237
 msgid "What's your <0>gross</0> salary?"
 msgstr "What's your <0>gross</0> salary?"
 
@@ -50699,7 +50726,7 @@ msgstr "What's your <0>gross</0> salary?"
 msgid "When campaign activity for this entity changes"
 msgstr "When campaign activity for this entity changes"
 
-#: src/features/learning/components/interactive/RedFlagCards.tsx:165
+#: src/features/learning/components/interactive/RedFlagCards.tsx:158
 msgid "When Rectifications Are Normal"
 msgstr "When Rectifications Are Normal"
 
@@ -50711,7 +50738,7 @@ msgstr "When was the budget draft published?"
 #~ msgid "Where are all the records on this map?"
 #~ msgstr "Where are all the records on this map?"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:338
+#: src/features/learning/components/interactive/PromiseTracker.tsx:341
 msgid "Where did the money go?"
 msgstr "Where did the money go?"
 
@@ -50838,7 +50865,7 @@ msgstr "Yearly"
 msgid "Yes"
 msgstr "Yes"
 
-#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:311
+#: src/features/learning/components/interactive/RevenueDistributionGame.tsx:310
 msgid "You"
 msgstr "You"
 
@@ -50850,12 +50877,12 @@ msgstr "You"
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "You are viewing a shared map. Only the owner can edit the name."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:690
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:703
 msgid "You asked the platform to send the public debate request on your behalf."
 msgstr "You asked the platform to send the public debate request on your behalf."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:453
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:467
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:434
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:448
 msgid "You can continue, but this step will not be marked complete yet."
 msgstr "You can continue, but this step will not be marked complete yet."
 
@@ -50927,7 +50954,7 @@ msgstr "You need to be signed in to manage notifications"
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "You need to be signed in to subscribe to notifications"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:688
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:701
 msgid "You opened the prepared email and confirmed that you sent the public debate request."
 msgstr "You opened the prepared email and confirmed that you sent the public debate request."
 
@@ -50944,17 +50971,21 @@ msgstr "You're doing great. Keep up the momentum."
 msgid "You've completed this learning path."
 msgstr "You've completed this learning path."
 
-#: src/features/learning/components/interactive/PhaseCards.tsx:609
+#: src/features/learning/components/interactive/PhaseCards.tsx:619
 msgid "You've explored all 6 phases of the budget cycle!"
 msgstr "You've explored all 6 phases of the budget cycle!"
 
-#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:235
+#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:233
 msgid "You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own."
 msgstr "You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own."
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:181
 #~ msgid "Young companies — check who won contracts shortly after being founded."
 #~ msgstr "Young companies — check who won contracts shortly after being founded."
+
+#: src/features/learning/components/assessment/quiz-answer-presentation.tsx:68
+msgid "Your answer"
+msgstr "Your answer"
 
 #: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:40
 msgid "Your changes to this dataset draft will be lost if you leave this page."
@@ -50976,7 +51007,7 @@ msgstr "Your current dataset draft will be replaced with this local snapshot. Un
 msgid "Your current map configuration will be replaced with this local snapshot. Unsaved changes will be lost."
 msgstr "Your current map configuration will be replaced with this local snapshot. Unsaved changes will be lost."
 
-#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:478
+#: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:481
 msgid "Your daily budget footprint"
 msgstr "Your daily budget footprint"
 
@@ -50985,7 +51016,7 @@ msgid "Your datasets"
 msgstr "Your datasets"
 
 #. placeholder {0}: formatCurrency(result.employerTotal)
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:410
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:421
 msgid "Your employer actually spends <0>{0}</0>."
 msgstr "Your employer actually spends <0>{0}</0>."
 
@@ -50993,7 +51024,7 @@ msgstr "Your employer actually spends <0>{0}</0>."
 #~ msgid "Your filters already fix this dimension to a single bucket, so there is nothing to rank. Clear the corresponding filter to see this leaderboard."
 #~ msgstr "Your filters already fix this dimension to a single bucket, so there is nothing to rank. Clear the corresponding filter to see this leaderboard."
 
-#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:308
+#: src/features/learning/components/interactive/GuidedPlatformTour.tsx:306
 msgid "Your First Exploration"
 msgstr "Your First Exploration"
 
@@ -51001,8 +51032,8 @@ msgstr "Your First Exploration"
 msgid "Your full name or organization"
 msgstr "Your full name or organization"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:322
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:393
+#: src/features/learning/components/interactive/PromiseTracker.tsx:325
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:404
 msgid "Your guess"
 msgstr "Your guess"
 
@@ -51022,8 +51053,8 @@ msgstr "Your map will only be visible to you. Public links will no longer work."
 msgid "Your name or organization"
 msgstr "Your name or organization"
 
-#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:486
-#: src/features/learning/components/interactive/PhaseCards.tsx:416
+#: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:492
+#: src/features/learning/components/interactive/PhaseCards.tsx:421
 msgid "Your Opportunity"
 msgstr "Your Opportunity"
 
@@ -51031,8 +51062,8 @@ msgstr "Your Opportunity"
 msgid "Your path is ready"
 msgstr "Your path is ready"
 
-#: src/features/learning/components/interactive/PromiseTracker.tsx:256
-#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:288
+#: src/features/learning/components/interactive/PromiseTracker.tsx:259
+#: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:300
 msgid "YOUR PREDICTION"
 msgstr "YOUR PREDICTION"
 
@@ -51040,15 +51071,15 @@ msgstr "YOUR PREDICTION"
 msgid "Your progress has been saved. You can continue to the next step."
 msgstr "Your progress has been saved. You can continue to the next step."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:691
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:704
 msgid "Your public debate request was recorded."
 msgstr "Your public debate request was recorded."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:201
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:182
 msgid "Your response was sent. You can continue or update it below."
 msgstr "Your response was sent. You can continue or update it below."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:216
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:197
 msgid "Your response was sent. You can continue."
 msgstr "Your response was sent. You can continue."
 

@@ -100,6 +100,7 @@ import type {
 } from "@/features/campaigns/buget/admin/types";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
+import { campaignAdminBlockedAlertClassName, getCampaignAdminThreadPhaseClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 const ENTITY_DETAIL_PREVIEW_LIMIT = 10;
 
@@ -312,7 +313,7 @@ function SectionError({
   readonly onRetry: () => void;
 }) {
   return (
-    <Alert variant="destructive">
+    <Alert className={campaignAdminBlockedAlertClassName}>
       <Ban className="h-4 w-4" aria-hidden="true" />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription className="space-y-3">
@@ -339,12 +340,12 @@ function ReviewStatusBadge({
 }) {
   const className =
     reviewStatus === "approved"
-      ? "border-emerald-300 bg-emerald-100 text-emerald-950"
+      ? "border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
       : reviewStatus === "rejected"
-        ? "border-rose-300 bg-rose-100 text-rose-950"
+        ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
         : reviewStatus === "pending"
-          ? "border-amber-300 bg-amber-100 text-amber-950"
-          : "border-slate-300 bg-slate-100 text-slate-900";
+          ? "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg"
+          : "border-border bg-muted text-foreground";
 
   return (
     <Badge variant="outline" className={className}>
@@ -358,12 +359,7 @@ function ThreadPhaseBadge({
 }: {
   readonly threadPhase: CampaignAdminUserInteractionListItem["threadPhase"];
 }) {
-  const className =
-    threadPhase === "failed"
-      ? "border-rose-300 bg-rose-100 text-rose-950"
-      : threadPhase === null
-        ? "border-slate-300 bg-slate-100 text-slate-900"
-        : "border-sky-300 bg-sky-100 text-sky-950";
+  const className = getCampaignAdminThreadPhaseClassName(threadPhase);
 
   return (
     <Badge variant="outline" className={className}>
@@ -811,14 +807,14 @@ export function CampaignAdminEntityDetailPage({
                 <EntitySummaryStat
                   label={t`Pending reviews`}
                   value={cachedEntitySummary?.pendingReviewCount ?? null}
-                  className="text-amber-600 dark:text-amber-400"
+                  className="text-status-partial-fg"
                 />
                 <EntitySummaryStat
                   label={t`Subscribers`}
                   value={
                     cachedEntitySummary?.notificationSubscriberCount ?? null
                   }
-                  className="text-emerald-600 dark:text-emerald-400"
+                  className="text-status-live-fg"
                 />
                 <CompactStat
                   label={t`Notifications`}
@@ -832,7 +828,7 @@ export function CampaignAdminEntityDetailPage({
                     notificationsQuery.isLoading &&
                     notificationsQuery.data === undefined
                   }
-                  className="text-blue-600 dark:text-blue-400"
+                  className="text-primary"
                 />
               </>
             ) : null}

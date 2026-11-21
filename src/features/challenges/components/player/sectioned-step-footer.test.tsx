@@ -51,7 +51,7 @@ describe('SectionedStepFooter', () => {
     expect(screen.getByRole('button', { name: /Next/i })).toBeDisabled()
   })
 
-  it('renders the skip button with an amber border and shadow when the primary action is disabled', () => {
+  it('renders the skip button with a caution border and shadow when the primary action is disabled', () => {
     render(
       <SectionedStepFooter
         footerState={{ ...baseFooterState, primaryDisabled: true }}
@@ -61,8 +61,8 @@ describe('SectionedStepFooter', () => {
     )
 
     const skip = screen.getByTestId('sectioned-footer-skip')
-    expect(skip).toHaveClass('border-amber-400/70')
-    expect(skip).toHaveClass('shadow-[0_0_14px_rgba(245,158,11,0.40)]')
+    expect(skip).toHaveClass('border-status-partial-fg/40')
+    expect(skip).toHaveClass('shadow-sm')
   })
 
   it('renders the primary button as an outline when disabled for a check action', () => {

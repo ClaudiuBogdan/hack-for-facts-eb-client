@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { t } from '@lingui/core/macro'
 import { AlertTriangle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -36,54 +36,52 @@ const DEFAULT_THRESHOLDS: ExecutionThresholds = {
 function getExecutionColor(rate: number, thresholds: ExecutionThresholds) {
   if (rate >= thresholds.excellent) {
     return {
-      bar: 'bg-emerald-500',
-      barGlow: 'shadow-emerald-500/20',
-      text: 'text-emerald-600 dark:text-emerald-400',
-      bg: 'bg-emerald-50 dark:bg-emerald-950/20',
-      border: 'border-emerald-200 dark:border-emerald-800',
-      emoji: '✓',
+      bar: 'bg-status-live-fg',
+      track: 'bg-status-live-bg',
+      text: 'text-status-live-fg',
+      level: t`Excellent`,
       showWarning: false,
     }
   }
+  // A positive judgement (Excellent, Good) is live, a cautionary one (Concerning) partial and an adverse one
+  // (Poor) blocked, as in PromiseTracker; the thresholds stay this lesson's own.
   if (rate >= thresholds.good) {
     return {
-      bar: 'bg-amber-500',
-      barGlow: 'shadow-amber-500/20',
-      text: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-50 dark:bg-amber-950/20',
-      border: 'border-amber-200 dark:border-amber-800',
-      emoji: '~',
+      bar: 'bg-status-live-fg',
+      track: 'bg-status-live-bg',
+      text: 'text-status-live-fg',
+      level: t`Good`,
       showWarning: false,
     }
   }
   if (rate >= thresholds.concerning) {
     return {
-      bar: 'bg-orange-500',
-      barGlow: 'shadow-orange-500/20',
-      text: 'text-orange-600 dark:text-orange-400',
-      bg: 'bg-orange-50 dark:bg-orange-950/20',
-      border: 'border-orange-200 dark:border-orange-800',
-      emoji: '!',
+      bar: 'bg-status-partial-fg',
+      track: 'bg-status-partial-bg',
+      text: 'text-status-partial-fg',
+      level: t`Concerning`,
       showWarning: true,
     }
   }
   return {
-    bar: 'bg-red-500',
-    barGlow: 'shadow-red-500/20',
-    text: 'text-red-600 dark:text-red-400',
-    bg: 'bg-red-50 dark:bg-red-950/20',
-    border: 'border-red-200 dark:border-red-800',
-    emoji: '!!',
+    bar: 'bg-status-blocked-fg',
+    track: 'bg-status-blocked-bg',
+    text: 'text-status-blocked-fg',
+    level: t`Poor`,
     showWarning: true,
   }
 }
 
-function AnimatedPercentage({ value, inView }: { value: number; inView: boolean }) {
+function AnimatedPercentage({ value, inView, instant }: { value: number; inView: boolean; instant: boolean }) {
   const [displayValue, setDisplayValue] = useState(0)
   const animationRef = useRef<number | null>(null)
   const startTimeRef = useRef<number | null>(null)
 
   useEffect(() => {
+    if (instant) {
+      setDisplayValue(value)
+      return
+    }
     if (!inView) {
       setDisplayValue(0)
       return
@@ -113,7 +111,7 @@ function AnimatedPercentage({ value, inView }: { value: number; inView: boolean 
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [value, inView])
+  }, [value, inView, instant])
 
   return <span className="tabular-nums">{displayValue}</span>
 }
@@ -122,11 +120,13 @@ function ExecutionBar({
   category,
   index,
   inView,
+  instant,
   thresholds,
 }: {
   category: ExecutionCategory
   index: number
   inView: boolean
+  instant: boolean
   thresholds: ExecutionThresholds
 }) {
   const colors = getExecutionColor(category.executionRate, thresholds)
@@ -135,16 +135,16 @@ function ExecutionBar({
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
+      transition={instant ? { duration: 0 } : { delay: index * 0.1, duration: 0.5 }}
       className="group"
     >
       {/* Category Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
             {t`Code`} {category.code}
           </span>
-          <span className="font-bold text-zinc-900 dark:text-zinc-100">
+          <span className="font-bold text-foreground">
             {category.name}
           </span>
         </div>
@@ -165,32 +165,29 @@ function ExecutionBar({
               <AlertTriangle className={cn('w-4 h-4', colors.text)} />
             </motion.div>
           )}
+          <span className={cn('text-xs font-bold', colors.text)}>{colors.level}</span>
           <span className={cn('text-xl font-black', colors.text)}>
-            <AnimatedPercentage value={category.executionRate} inView={inView} />%
+            <AnimatedPercentage value={category.executionRate} inView={inView} instant={instant} />%
           </span>
         </div>
       </div>
 
       {/* Bar Container */}
-      <div className="h-8 bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden">
+      <div className={cn('h-8 rounded-lg overflow-hidden', colors.track)}>
         <motion.div
-          className={cn(
-            'h-full rounded-lg shadow-lg',
-            colors.bar,
-            colors.barGlow
-          )}
+          className={cn('h-full rounded-lg shadow-lg', colors.bar)}
           initial={{ width: 0 }}
           animate={inView ? { width: `${category.executionRate}%` } : { width: 0 }}
-          transition={{
-            delay: index * 0.1,
-            duration: 0.8,
-            ease: [0.16, 1, 0.3, 1],
-          }}
+          transition={
+            instant
+              ? { duration: 0 }
+              : { delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+          }
         />
       </div>
 
       {/* Description */}
-      <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-sm text-muted-foreground">
         {category.description}
       </p>
     </motion.div>
@@ -203,10 +200,16 @@ export function ExecutionRateChart({
   title,
   footer,
 }: Readonly<ExecutionRateChartProps>) {
-  const { ref, inView } = useInView({
+  // Any pixel of the chart in view starts the animation: a share of a tall card can never be met on a short
+  // viewport or with a large browser font, which left the rows hidden. Without IntersectionObserver, or with
+  // reduced motion, the rows show at once.
+  const { ref, inView: chartInView } = useInView({
     triggerOnce: true,
-    threshold: 0.3,
+    threshold: 0,
+    fallbackInView: true,
   })
+  const instant = useReducedMotion() === true
+  const inView = chartInView || instant
 
   const sortedCategories = useMemo(
     () => [...categories].sort((a, b) => b.executionRate - a.executionRate),
@@ -215,11 +218,11 @@ export function ExecutionRateChart({
 
   return (
     <div ref={ref} className="w-full max-w-3xl mx-auto py-8">
-      <Card className="p-6 md:p-10 rounded-[3rem] bg-zinc-50 dark:bg-zinc-950 border-none shadow-sm relative overflow-hidden">
+      <Card className="p-6 md:p-10 rounded-[3rem] bg-card border-none shadow-sm relative overflow-hidden">
         {/* Header */}
         {title && (
           <div className="mb-8 text-center md:text-left">
-            <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+            <h3 className="text-2xl font-black text-foreground tracking-tight">
               {title}
             </h3>
           </div>
@@ -228,26 +231,26 @@ export function ExecutionRateChart({
         {/* Legend */}
         <div className="flex flex-wrap gap-3 mb-8">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <div className="w-3 h-3 rounded-full bg-status-live-fg" />
+            <span className="text-xs font-medium text-muted-foreground">
               {t`Excellent`} (≥{thresholds.excellent}%)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <div className="w-3 h-3 rounded-full bg-status-live-fg" />
+            <span className="text-xs font-medium text-muted-foreground">
               {t`Good`} (≥{thresholds.good}%)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-orange-500" />
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <div className="w-3 h-3 rounded-full bg-status-partial-fg" />
+            <span className="text-xs font-medium text-muted-foreground">
               {t`Concerning`} (≥{thresholds.concerning}%)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <div className="w-3 h-3 rounded-full bg-status-blocked-fg" />
+            <span className="text-xs font-medium text-muted-foreground">
               {t`Poor`} (&lt;{thresholds.concerning}%)
             </span>
           </div>
@@ -261,6 +264,7 @@ export function ExecutionRateChart({
               category={category}
               index={index}
               inView={inView}
+              instant={instant}
               thresholds={thresholds}
             />
           ))}
@@ -268,14 +272,10 @@ export function ExecutionRateChart({
 
         {/* Footer */}
         {footer && (
-          <div className="mt-10 pt-6 border-t border-zinc-100/50 dark:border-zinc-800/50 text-center">
+          <div className="mt-10 pt-6 border-t border-border text-center">
             {footer}
           </div>
         )}
-
-        {/* Decorative blur glows */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-red-400/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
       </Card>
     </div>
   )

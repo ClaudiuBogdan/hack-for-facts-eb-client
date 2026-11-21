@@ -103,7 +103,7 @@ export function ChallengeHubAccessCard({
               <AuthSignInButton>
                 <Button
                   size="lg"
-                  className="w-full rounded-[22px] px-8 lg:px-10 h-16 text-lg font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none"
+                  className="w-full rounded-[22px] px-8 lg:px-10 h-16 text-lg font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary hover:bg-primary text-primary-foreground border-none"
                 >
                   {t`Sign in`}
                 </Button>

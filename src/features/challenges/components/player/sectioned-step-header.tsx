@@ -79,7 +79,7 @@ export function SectionedStepHeader({
                   aria-label={t`Open discussion`}
                   title={t`Open discussion`}
                 >
-                  <MessageSquare aria-hidden="true" className="mr-2 h-4 w-4 text-[#3565c4]" />
+                  <MessageSquare aria-hidden="true" className="mr-2 h-4 w-4 text-primary" />
                   {t`Discussion`}
                   <ExternalLink aria-hidden="true" className="ml-2 h-3 w-3 opacity-70" />
                 </a>
@@ -138,8 +138,8 @@ export function SectionedStepHeader({
                       <span
                         className={[
                           'block h-2 w-full rounded-full transition-colors',
-                          index < currentSectionIndex ? 'bg-emerald-500' : '',
-                          index === currentSectionIndex ? 'bg-foreground' : '',
+                          index < currentSectionIndex ? 'bg-primary/40' : '',
+                          index === currentSectionIndex ? 'bg-primary' : '',
                           index > currentSectionIndex
                             ? 'bg-muted group-hover:bg-muted-foreground/45'
                             : '',

@@ -22,6 +22,7 @@ import type {
   CampaignAdminNotificationTriggerExecutionResponse,
   CampaignAdminNotificationTriggerMode,
 } from "@/features/campaigns/buget/admin/types";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminNotificationTriggersSectionProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -196,7 +197,7 @@ export function CampaignAdminNotificationTriggersSection({
             className="max-w-xl rounded-3xl border border-border/70 bg-card/80"
           />
         ) : triggersQuery.error ? (
-          <Alert variant="destructive" aria-live="polite">
+          <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
             <AlertTitle>{t`Failed to load triggers`}</AlertTitle>
             <AlertDescription className="space-y-3">
               <p>{triggersQuery.error.message}</p>

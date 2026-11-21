@@ -123,6 +123,7 @@ import {
   getCampaignAdminEntityConfigSelectedSendValidationIssues,
 } from "@/features/campaigns/buget/admin/utils/entity-config-workspace";
 import { isCampaignAdminEditablePasteTarget } from "@/features/campaigns/buget/admin/utils/review-workspace";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminEntitiesPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -1396,11 +1397,11 @@ export function CampaignAdminEntitiesPage({
               >
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                   <CompactStat label={t`Total entities`} value={meta.totalEntities} />
-                  <CompactStat label={t`Pending reviews`} value={meta.entitiesWithPendingReviews} className="text-amber-600 dark:text-amber-400" />
-                  <CompactStat label={t`Subscribers`} value={meta.entitiesWithSubscribers} className="text-emerald-600 dark:text-emerald-400" />
-                  <CompactStat label={t`Notification activity`} value={meta.entitiesWithNotificationActivity} className="text-blue-600 dark:text-blue-400" />
+                  <CompactStat label={t`Pending reviews`} value={meta.entitiesWithPendingReviews} className="text-status-partial-fg" />
+                  <CompactStat label={t`Subscribers`} value={meta.entitiesWithSubscribers} className="text-status-live-fg" />
+                  <CompactStat label={t`Notification activity`} value={meta.entitiesWithNotificationActivity} className="text-primary" />
                   {meta.entitiesWithFailedNotifications > 0 ? (
-                    <CompactStat label={t`Failed notifications`} value={meta.entitiesWithFailedNotifications} className="text-rose-600 dark:text-rose-400" />
+                    <CompactStat label={t`Failed notifications`} value={meta.entitiesWithFailedNotifications} className="text-status-blocked-fg" />
                   ) : null}
                   <CollapsibleTrigger asChild>
                     <button
@@ -1518,7 +1519,7 @@ export function CampaignAdminEntitiesPage({
           entitiesQuery.error.status !== 401 &&
           entitiesQuery.error.status !== 403 &&
           entitiesQuery.error.status !== 404 ? (
-            <Alert variant="destructive" aria-live="polite">
+            <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
               <Ban className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Failed to load entities`}</AlertTitle>
               <AlertDescription className="space-y-3">
@@ -1734,7 +1735,7 @@ export function CampaignAdminEntitiesPage({
               className="max-w-xl rounded-3xl border border-border/70 bg-card/80"
             />
           ) : entityConfigQuery.error ? (
-            <Alert variant="destructive" aria-live="polite">
+            <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
               <Ban className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Failed to load entity config`}</AlertTitle>
               <AlertDescription className="space-y-3">

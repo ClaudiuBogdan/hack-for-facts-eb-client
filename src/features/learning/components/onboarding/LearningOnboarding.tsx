@@ -264,7 +264,7 @@ export function LearningOnboarding() {
                   </p>
                 </div>
               ) : (
-                <p className="text-sm text-destructive text-center">
+                <p className="text-sm text-status-blocked-fg text-center">
                   {t`The learning path you're looking for doesn't exist.`}
                 </p>
               )}

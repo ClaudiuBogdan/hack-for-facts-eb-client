@@ -282,7 +282,7 @@ export function ChallengeEntityAnalysisHeader({
           inert={!isCompactHeaderVisible ? true : undefined}
           onClick={stopCompactHeaderClickPropagation}
           className={cn(
-            'fixed top-0 z-40 overflow-hidden rounded-b-[28px] shadow-[0_16px_34px_-22px_rgba(15,23,42,0.32)] backdrop-blur-xl will-change-[translate,opacity]',
+            'fixed top-0 z-40 overflow-hidden rounded-b-[28px] shadow-lg backdrop-blur-xl will-change-[translate,opacity]',
             'transition-[opacity,translate] duration-[260ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:translate-y-0 motion-reduce:transition-opacity',
             isCompactHeaderVisible ? 'pointer-events-auto' : 'pointer-events-none',
             isCompactHeaderVisible
@@ -299,7 +299,7 @@ export function ChallengeEntityAnalysisHeader({
           }
         >
           <div className="w-full">
-            <section className="rounded-b-[28px] border-x border-b border-border/50 bg-linear-to-br from-background/92 via-background/88 to-primary/[0.08] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.32)] supports-[backdrop-filter]:bg-background/78 sm:px-5">
+            <section className="rounded-b-[28px] border-x border-b border-border/50 bg-linear-to-br from-background/92 via-background/88 to-primary/[0.08] px-4 py-3 supports-[backdrop-filter]:bg-background/78 sm:px-5">
               <div className="flex flex-col gap-1">
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">

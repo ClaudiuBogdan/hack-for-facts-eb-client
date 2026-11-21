@@ -865,6 +865,24 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-11-21 — Learning, challenges and the budget campaign follow the main
+  system; the status tokens exist in code.** The data-trust pairs
+  (`status-{live,mock,partial,blocked}-{bg,fg}`) were only in this file's YAML, so
+  the classes that used them drew nothing. They are now defined in `src/index.css`
+  (light values as above; dark: the same hues at inverted lightness) and exposed as
+  Tailwind colours, and `src/styles/design-tokens.test.ts` holds their values,
+  their hues across themes and AA for every label on its container and on the
+  page. The lessons, challenges and campaign pages (reader and admin) moved off the
+  raw palette onto the tokens by meaning: neutrals, `primary` for selection and
+  information, `status-*` for outcomes, `chart-1…4` as fills for categories, with a
+  word or icon beside every colour that carries meaning. `src/styles/raw-palette-guard.test.ts`
+  keeps raw palette colours and hex colours in class names out of those folders.
+  *Why:* those surfaces drew in eight decorative hues with shades, opacities and
+  `dark:` variants, which made ≈100 KB of the global stylesheet theirs alone and
+  set them apart from the rest of the app. The shipped stylesheet went from
+  531,305 to 437,824 bytes minified (−17.6%, a compiled estimate). Design and record:
+  `docs/design/learning-design-tokens.md`.
+
 - **2026-10-02 — A map legend names exactly the values each class holds.**
   A class holds its lower bound and not its upper one unless its scale says
   otherwise, and its label says which: whole numbers as closed ranges („1–20",

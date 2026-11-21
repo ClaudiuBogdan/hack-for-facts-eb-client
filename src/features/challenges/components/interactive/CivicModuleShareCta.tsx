@@ -108,7 +108,7 @@ export function CivicModuleShareCta({
 
           <div aria-live="polite" className="contents">
             {copyState === 'error' && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-status-blocked-fg">
                 <Trans>Copy failed. You can still select and copy the link manually.</Trans>
               </p>
             )}

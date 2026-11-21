@@ -1,7 +1,12 @@
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
-import { Check, X } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import {
+  QUIZ_ANSWER_ROW_CLASS_NAMES,
+  QuizAnswerMark,
+  QuizAnswerOutcome,
+  QuizConfigError,
+  getQuizAnswerState,
+} from '@/features/learning/components/assessment/quiz-answer-presentation'
 import { cn } from '@/lib/utils'
 import type { ChallengeQuizMdxProps } from './challenge-mdx-components'
 
@@ -29,13 +34,7 @@ export function ChallengeSectionedQuiz({
   }
 
   if (!Array.isArray(options) || options.length === 0) {
-    return (
-      <Card className="not-prose my-8 border-destructive/20 bg-destructive/5 shadow-none">
-        <CardContent className="p-6 text-center">
-          <p className="text-sm font-medium text-destructive">{t`Quiz configuration error`}</p>
-        </CardContent>
-      </Card>
-    )
+    return <QuizConfigError />
   }
 
   return (
@@ -58,9 +57,8 @@ export function ChallengeSectionedQuiz({
       <div className="space-y-3">
         {options.map((option, index) => {
           const isSelected = selectedOptionId === option.id
-          const showAsCorrect = isAnswered && option.isCorrect
-          const showAsIncorrect = isAnswered && isSelected && !option.isCorrect
-          const isDimmed = isAnswered && !showAsCorrect && !showAsIncorrect
+          const answerState = getQuizAnswerState({ isAnswered, isSelected, isCorrect: option.isCorrect })
+          const letter = String.fromCharCode(65 + index)
 
           return (
             <button
@@ -70,37 +68,32 @@ export function ChallengeSectionedQuiz({
               disabled={isAnswered || isPending}
               className={cn(
                 'flex w-full items-center gap-4 rounded-3xl border-2 p-4 text-left transition-[color,background-color,border-color,opacity,box-shadow] md:p-5',
-                !isAnswered &&
+                !isAnswered && !isSelected &&
                   'border-border/60 bg-card hover:border-foreground/20 hover:bg-muted/30',
                 isSelected &&
                   !isAnswered &&
-                  'border-foreground bg-foreground text-background shadow-lg',
-                showAsCorrect &&
-                  'border-emerald-300 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20',
-                showAsIncorrect &&
-                  'border-rose-300 bg-rose-500 text-white shadow-lg shadow-rose-500/20',
-                isDimmed && 'opacity-40',
-                isPending && 'cursor-wait opacity-70',
+                  'border-primary bg-primary text-primary-foreground shadow-lg hover:bg-primary hover:text-primary-foreground',
+                // Answered: the outcome, shared with the lesson quiz and the article view
+                answerState && QUIZ_ANSWER_ROW_CLASS_NAMES[answerState],
+                isPending && 'cursor-wait',
               )}
             >
-              <div
-                className={cn(
-                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black',
-                  !isAnswered && !isSelected && 'bg-muted text-muted-foreground',
-                  isSelected && !isAnswered && 'bg-background/10 text-background',
-                  showAsCorrect && 'bg-white/20 text-white',
-                  showAsIncorrect && 'bg-white/20 text-white',
-                )}
-              >
-                {showAsCorrect ? (
-                  <Check aria-hidden="true" className="h-5 w-5" />
-                ) : showAsIncorrect ? (
-                  <X aria-hidden="true" className="h-5 w-5" />
-                ) : (
-                  String.fromCharCode(65 + index)
-                )}
-              </div>
-              <span className="text-sm font-semibold md:text-base">{option.text}</span>
+              {answerState ? (
+                <QuizAnswerMark state={answerState} letter={letter} className="h-10 w-10 rounded-2xl" />
+              ) : (
+                <div
+                  className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black',
+                    isSelected ? 'bg-transparent text-primary-foreground' : 'bg-muted text-foreground',
+                  )}
+                >
+                  {letter}
+                </div>
+              )}
+              <span className="text-sm font-semibold md:text-base">
+                {option.text}
+                {isAnswered ? <QuizAnswerOutcome isSelected={isSelected} isCorrect={option.isCorrect} /> : null}
+              </span>
             </button>
           )
         })}

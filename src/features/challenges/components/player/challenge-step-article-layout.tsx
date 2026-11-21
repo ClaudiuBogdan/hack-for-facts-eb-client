@@ -53,9 +53,9 @@ export function ChallengeStepArticleLayout({
       <div className={CHALLENGE_ARTICLE_PROSE_CLASS_NAME}>
         {isLoading && <LessonSkeleton />}
         {error ? (
-          <Card className="border-destructive/50 bg-destructive/5">
+          <Card className="border-status-blocked-fg/30 bg-status-blocked-bg">
             <CardContent className="p-6 text-center">
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-status-blocked-fg">{error}</p>
             </CardContent>
           </Card>
         ) : null}

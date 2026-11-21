@@ -168,11 +168,10 @@ function UATCard({
       }}
       className={cn(
         'relative rounded-2xl border-2 transition-all cursor-pointer select-none overflow-hidden',
-        colors.border,
         isSelected
-          ? cn(colors.bg, 'ring-4 ring-offset-2 dark:ring-offset-zinc-950', colors.ring)
-          : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-900/80',
-        isDeemphasized && 'opacity-40 grayscale-[0.5] scale-[0.98]',
+          ? cn(colors.selectedBorder, colors.bg, 'ring-4 ring-offset-2 ring-offset-background', colors.ring)
+          : cn(colors.border, 'bg-card hover:border-primary/40'),
+        isDeemphasized && 'scale-[0.98]',
         variant === 'wide' ? 'p-6' : 'p-5'
       )}
       role="listitem"
@@ -199,13 +198,13 @@ function UATCard({
                 <AnimatedNumber value={category.count} />
               </span>
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+            <p className={cn('text-sm font-medium', isSelected ? 'text-foreground' : 'text-muted-foreground')}>
               {description}
             </p>
           </div>
           <ChevronDown
             className={cn(
-              'w-6 h-6 transition-transform duration-300 text-zinc-400 shrink-0',
+              'w-6 h-6 transition-transform duration-300 text-muted-foreground shrink-0',
               isSelected && 'rotate-180'
             )}
           />
@@ -222,13 +221,13 @@ function UATCard({
           >
             <Icon className="w-6 h-6" />
           </div>
-          <h4 className="text-sm font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
+          <h4 className={cn('text-sm font-black uppercase tracking-wider mb-2', isSelected ? 'text-foreground' : 'text-muted-foreground')}>
             {name}
           </h4>
           <div className={cn('text-4xl font-black mb-3', colors.text)}>
             <AnimatedNumber value={category.count} />
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mb-2 flex-1">
+          <p className={cn('text-xs font-medium mb-2 flex-1', isSelected ? 'text-foreground' : 'text-muted-foreground')}>
             {description}
           </p>
           {category.populationMin && (
@@ -245,7 +244,7 @@ function UATCard({
           )}
           <ChevronDown
             className={cn(
-              'w-5 h-5 mt-3 transition-transform duration-300 text-zinc-300 dark:text-zinc-600',
+              'w-5 h-5 mt-3 transition-transform duration-300 text-muted-foreground',
               isSelected && 'rotate-180'
             )}
           />
@@ -288,7 +287,7 @@ function DetailPanel({
       <div
         className={cn(
           'relative rounded-2xl border-2 p-6 mt-4',
-          colors.border,
+          colors.panelBorder,
           colors.bg
         )}
       >
@@ -305,7 +304,7 @@ function DetailPanel({
           <X className="w-4 h-4" />
         </Button>
 
-        <h5 className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">
+        <h5 className="text-xs font-black uppercase tracking-widest text-foreground mb-4">
           {text.examplesLabel}: {name}
         </h5>
 
@@ -314,11 +313,11 @@ function DetailPanel({
             <Badge
               key={i}
               variant="secondary"
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-white/60 dark:bg-zinc-800/60 border-none"
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-card hover:bg-card border-none"
             >
               <span>{example.name}</span>
               {example.population && (
-                <span className="ml-2 text-xs opacity-60">
+                <span className="ml-2 text-xs text-muted-foreground">
                   {example.population}
                 </span>
               )}
@@ -332,7 +331,7 @@ function DetailPanel({
             className={cn(
               'rounded-full font-bold',
               colors.bar,
-              '!text-white hover:opacity-90'
+              '!text-primary-foreground hover:bg-primary hover:ring-4 hover:ring-primary/30'
             )}
           >
             <a href={`${mapBaseUrl}?${category.mapFilterParam}`}>
@@ -396,7 +395,7 @@ export function UATTypeBreakdown({
         <h2 className="text-3xl md:text-4xl font-black tracking-tighter mb-3">
           {text.title}
         </h2>
-        <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium max-w-2xl mx-auto">
+        <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto">
           {text.subtitle}
         </p>
       </motion.div>
@@ -410,11 +409,11 @@ export function UATTypeBreakdown({
         {/* Level 1: Counties */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-            <span className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
               {text.level1Label}
             </span>
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           <UATCard
@@ -442,11 +441,11 @@ export function UATTypeBreakdown({
         {/* Level 2: Municipalities, Towns, Communes */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-            <span className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
               {text.level2Label}
             </span>
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -503,22 +502,22 @@ export function UATTypeBreakdown({
           variants={cardVariants}
           className="flex items-center justify-center gap-4 pt-4"
         >
-          <div className="h-px w-16 bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-px w-16 bg-border" />
           <div className="text-center">
-            <span className="text-xs font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
               {text.totalLabel}
             </span>
-            <div className="text-2xl font-black text-zinc-900 dark:text-white">
+            <div className="text-2xl font-black text-foreground">
               <AnimatedNumber value={data.totalCount} /> UAT
             </div>
           </div>
-          <div className="h-px w-16 bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-px w-16 bg-border" />
         </motion.div>
 
         {/* Legal note */}
         <motion.p
           variants={cardVariants}
-          className="text-center text-xs text-zinc-400 dark:text-zinc-500 italic"
+          className="text-center text-xs text-muted-foreground italic"
         >
           {text.legalNoteLabel}
         </motion.p>
@@ -530,7 +529,7 @@ export function UATTypeBreakdown({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center justify-center gap-2 text-sm text-zinc-400 dark:text-zinc-500"
+              className="flex items-center justify-center gap-2 text-sm text-muted-foreground"
             >
               <MousePointerClick className="w-4 h-4" />
               <span className="font-medium">{text.clickToExpand}</span>

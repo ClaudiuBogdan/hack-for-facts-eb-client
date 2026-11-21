@@ -30,13 +30,6 @@ export function LearningPathCard({
       data-testid="learning-path-card"
       data-variant={variant}
     >
-      {/* Background trophy decoration */}
-      <div
-        className={`absolute top-0 right-0 opacity-[0.03] pointer-events-none ${isActive ? 'p-10 group-hover:scale-110 transition-transform duration-1000' : 'p-8'}`}
-      >
-        <Trophy className={isActive ? 'h-64 w-64 rotate-12' : 'h-48 w-48 rotate-12'} />
-      </div>
-
       <CardContent className={`${styles.padding} ${styles.spacing}`}>
         {/* Header: Title, Description, Actions */}
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 lg:gap-8">
@@ -48,7 +41,7 @@ export function LearningPathCard({
               {getTranslatedText(path.title, locale)}
             </h3>
             <p
-              className={`text-muted-foreground ${styles.description} font-medium leading-relaxed max-w-xl opacity-70`}
+              className={`text-muted-foreground ${styles.description} font-medium leading-relaxed max-w-xl`}
               data-testid="path-description"
             >
               {getTranslatedText(path.description, locale)}
@@ -167,8 +160,8 @@ export function LearningPathCard({
           {/* Streak - only for active variant */}
           {isActive && streak && (
             <div className="flex items-center gap-3 group cursor-default" data-testid="streak-stat">
-              <div className="h-10 w-10 rounded-2xl bg-muted/50 flex items-center justify-center group-hover:bg-amber-500/5 transition-colors">
-                <Sparkles className="h-4 w-4 text-muted-foreground group-hover:text-amber-500 transition-colors" />
+              <div className="h-10 w-10 rounded-2xl bg-muted/50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                <Sparkles className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
@@ -230,8 +223,8 @@ export type LearningPathCardProps = {
 
 function getCardStyles(isActive: boolean): string {
   return isActive
-    ? 'shadow-2xl shadow-primary/5 bg-gradient-to-br from-background via-background to-primary/[0.03] group hover:shadow-primary/10'
-    : 'shadow-xl shadow-primary/5 bg-gradient-to-br from-background via-background to-muted/30 hover:shadow-primary/10'
+    ? 'shadow-2xl bg-card group'
+    : 'shadow-xl bg-card hover:shadow-2xl'
 }
 
 function getVariantStyles(isActive: boolean) {
@@ -272,7 +265,7 @@ function ActionButton({
       <Button
         variant="outline"
         size="lg"
-        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-green-500/20 bg-green-500/[0.05] text-green-600 hover:bg-green-500/10 transition-all`}
+        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-status-live-fg/30 bg-status-live-bg text-status-live-fg hover:bg-status-live-bg hover:text-status-live-fg hover:border-status-live-fg/50 transition-all`}
         data-testid="completed-button"
       >
         <Trophy className="mr-2 lg:mr-3 h-5 w-5" />
@@ -286,7 +279,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-2xl shadow-primary/20 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg transition-all hover:scale-[1.03] active:scale-95 bg-primary hover:bg-primary text-primary-foreground border-none`}
         data-testid="action-button"
       >
         <Link to={nextLessonUrl as '/'}>
@@ -302,7 +295,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg transition-all hover:scale-[1.02] active:scale-95 bg-primary hover:bg-primary text-primary-foreground border-none`}
         onClick={onNavigateAndSwitch}
         data-testid="action-button"
       >

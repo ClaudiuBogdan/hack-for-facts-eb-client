@@ -29,10 +29,10 @@ export function SectionedStepFooter({
               className={cn(
                 'rounded-2xl px-4 py-3 text-sm font-medium',
                 footerState.tone === 'success' &&
-                'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+                'bg-status-live-bg text-status-live-fg',
                 footerState.tone === 'error' &&
-                'bg-rose-500/10 text-rose-700 dark:text-rose-300',
-                footerState.tone === 'neutral' && 'bg-muted text-muted-foreground',
+                'bg-status-blocked-bg text-status-blocked-fg',
+                footerState.tone === 'neutral' && 'bg-muted text-foreground',
               )}
             >
               {footerState.message}
@@ -57,7 +57,7 @@ export function SectionedStepFooter({
               onClick={onSkip}
               className={cn(
                 'h-12 rounded-full px-7 text-base font-semibold select-none transition-all',
-                footerState.primaryDisabled && 'border border-amber-400/70 shadow-[0_0_14px_rgba(245,158,11,0.40)] hover:bg-amber-500/10 hover:border-amber-400',
+                footerState.primaryDisabled && 'border border-status-partial-fg/40 shadow-sm hover:bg-status-partial-bg hover:text-status-partial-fg hover:border-status-partial-fg',
               )}
             >
               {t`Skip`}
@@ -74,9 +74,10 @@ export function SectionedStepFooter({
             className={cn(
               'h-12 min-w-[10rem] rounded-full px-7 text-base font-semibold select-none transition-all',
               !footerState.primaryDisabled && 'shadow-lg',
-              !footerState.primaryDisabled && footerState.tone === 'success' && 'bg-emerald-600 hover:bg-emerald-700',
-              !footerState.primaryDisabled && footerState.tone === 'error' && 'bg-rose-600 hover:bg-rose-700',
-              footerState.primaryDisabled && 'border-border/80 text-muted-foreground shadow-none',
+              !footerState.primaryDisabled && footerState.tone !== 'success' && footerState.tone !== 'error' && 'hover:bg-primary hover:shadow-xl',
+              !footerState.primaryDisabled && footerState.tone === 'success' && 'bg-status-live-fg text-background hover:bg-status-live-fg hover:shadow-xl',
+              !footerState.primaryDisabled && footerState.tone === 'error' && 'bg-status-blocked-fg text-background hover:bg-status-blocked-fg hover:shadow-xl',
+              footerState.primaryDisabled && 'border-border/80 text-muted-foreground shadow-none disabled:opacity-100',
             )}
           >
             {footerState.primaryLabel}

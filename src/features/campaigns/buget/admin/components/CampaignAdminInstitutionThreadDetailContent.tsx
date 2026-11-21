@@ -21,6 +21,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
+import {
+  getCampaignAdminInstitutionResponseStatusClassName,
+  getCampaignAdminInstitutionThreadStateClassName,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 import { CampaignAdminInstitutionThreadResponseForm } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm";
 import {
   getCampaignAdminInstitutionThreadResponseStatusLabel,
@@ -32,8 +36,6 @@ import type {
   CampaignAdminInstitutionThreadCorrespondenceEntry,
   CampaignAdminInstitutionThreadDetail,
   CampaignAdminInstitutionThreadResponseEvent,
-  CampaignAdminInstitutionThreadResponseStatus,
-  CampaignAdminInstitutionThreadState,
 } from "@/features/campaigns/buget/admin/types";
 
 type TimelineItem = {
@@ -84,52 +86,20 @@ function formatDateShort(value: string): string {
   });
 }
 
-function getThreadStateBadgeClassName(
-  threadState: CampaignAdminInstitutionThreadState,
-): string {
-  switch (threadState) {
-    case "started":
-      return "border-sky-300 bg-sky-100 text-sky-950";
-    case "pending":
-      return "border-amber-300 bg-amber-100 text-amber-950";
-    case "resolved":
-      return "border-emerald-300 bg-emerald-100 text-emerald-950";
-    default:
-      return "";
-  }
-}
-
-function getResponseStatusBadgeClassName(
-  responseStatus: CampaignAdminInstitutionThreadResponseStatus | null,
-): string {
-  switch (responseStatus) {
-    case "registration_number_received":
-      return "border-sky-300 bg-sky-100 text-sky-950";
-    case "request_confirmed":
-      return "border-emerald-300 bg-emerald-100 text-emerald-950";
-    case "request_denied":
-      return "border-rose-300 bg-rose-100 text-rose-950";
-    case null:
-      return "border-slate-300 bg-slate-100 text-slate-900";
-    default:
-      return "";
-  }
-}
-
 function getDirectionBadge(
   direction: "outbound" | "inbound",
 ): { label: string; className: string; icon: typeof ArrowUp } {
   if (direction === "inbound") {
     return {
       label: t`Inbound`,
-      className: "border-blue-300 bg-blue-100 text-blue-950",
+      className: "border-primary/30 bg-primary/10 text-foreground",
       icon: ArrowDown,
     };
   }
 
   return {
     label: t`Outbound`,
-    className: "border-violet-300 bg-violet-100 text-violet-950",
+    className: "border-primary/30 bg-primary/10 text-foreground",
     icon: ArrowUp,
   };
 }
@@ -393,7 +363,7 @@ function TimelineResponseEventNode({
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="outline"
-            className={getResponseStatusBadgeClassName(event.responseStatus)}
+            className={getCampaignAdminInstitutionResponseStatusClassName(event.responseStatus)}
           >
             {getCampaignAdminInstitutionThreadResponseStatusLabel(
               event.responseStatus,
@@ -485,14 +455,14 @@ export function CampaignAdminInstitutionThreadDetailContent({
             <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className={getThreadStateBadgeClassName(detail.threadState)}
+                className={getCampaignAdminInstitutionThreadStateClassName(detail.threadState)}
               >
                 <Clock className="mr-1 h-3 w-3" />
                 {getCampaignAdminInstitutionThreadStateLabel(detail.threadState)}
               </Badge>
               <Badge
                 variant="outline"
-                className={getResponseStatusBadgeClassName(
+                className={getCampaignAdminInstitutionResponseStatusClassName(
                   detail.currentResponseStatus,
                 )}
               >

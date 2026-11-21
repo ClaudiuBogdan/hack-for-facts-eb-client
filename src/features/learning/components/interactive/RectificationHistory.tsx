@@ -14,7 +14,7 @@ import { useState, useCallback } from 'react'
 import { t } from '@lingui/core/macro'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { ChevronDown, Calendar, FileText } from 'lucide-react'
+import { AlertTriangle, CheckCircle, ChevronDown, Calendar, FileText, XCircle, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { LearningLocale } from '../../types'
 import {
@@ -37,20 +37,21 @@ type RectificationHistoryProps = {
 // Deficit Bar Component
 // ═══════════════════════════════════════════════════════════════════════════
 
-function DeficitBar({ percent, status }: { percent: number; status: StatusLevel }) {
+function DeficitBar({ percent }: { percent: number }) {
   const maxPercent = 10
   const widthPercent = Math.min((percent / maxPercent) * 100, 100)
-  const colors = STATUS_COLORS[status]
+  // The deficit is always drawn as a deficit (blocked pair); the year's own level is the icon and word beside it.
+  const colors = STATUS_COLORS.red
 
   return (
     <div className="flex flex-col gap-1 w-full">
       <div className="flex justify-between items-end">
-        <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
           {t`Deficit`}
         </span>
         <span className={cn('text-xs font-bold tabular-nums', colors.text)}>{percent.toFixed(1)}%</span>
       </div>
-      <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-status-blocked-bg rounded-full overflow-hidden">
         <motion.div
           className={cn('h-full rounded-full', colors.dot)}
           initial={{ width: 0 }}
@@ -66,11 +67,28 @@ function DeficitBar({ percent, status }: { percent: number; status: StatusLevel 
 // Status Badge Component
 // ═══════════════════════════════════════════════════════════════════════════
 
+const STATUS_ICONS: Record<StatusLevel, LucideIcon> = {
+  green: CheckCircle,
+  yellow: AlertTriangle,
+  red: XCircle,
+}
+
+function getStatusLabel(status: StatusLevel): string {
+  if (status === 'green') return t`Normal`
+  if (status === 'yellow') return t`Caution`
+  return t`Warning`
+}
+
+/** The level rides on a shape and a screen-reader word as well as on the colour. */
 function StatusBadge({ status }: { status: StatusLevel }) {
   const colors = STATUS_COLORS[status]
-  
+  const Icon = STATUS_ICONS[status]
+
   return (
-    <div className={cn('w-2.5 h-2.5 rounded-full shrink-0', colors.dot)} />
+    <>
+      <Icon className={cn('w-4 h-4 shrink-0', colors.text)} aria-hidden="true" />
+      <span className="sr-only">{getStatusLabel(status)}</span>
+    </>
   )
 }
 
@@ -91,9 +109,9 @@ function YearRow({ data, isExpanded, onToggle, index, inView }: YearRowProps) {
     <motion.div
       className={cn(
         'group rounded-xl overflow-hidden border transition-all duration-200',
-        isExpanded 
-          ? 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800' 
-          : 'bg-white/50 dark:bg-zinc-900/30 border-transparent hover:bg-white hover:border-zinc-200 dark:hover:bg-zinc-900 dark:hover:border-zinc-800'
+        isExpanded
+          ? 'bg-card border-primary/30 shadow-sm ring-1 ring-primary/40'
+          : 'bg-card border-transparent hover:border-border'
       )}
       initial={{ opacity: 0, y: 10 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
@@ -108,7 +126,7 @@ function YearRow({ data, isExpanded, onToggle, index, inView }: YearRowProps) {
         <div className="flex items-center justify-between w-full sm:w-auto gap-4">
           <div className="flex items-center gap-3 min-w-[100px]">
             <StatusBadge status={data.status} />
-            <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tabular-nums tracking-tight">
+            <span className="text-xl font-bold text-foreground tabular-nums tracking-tight">
               {data.year}
             </span>
           </div>
@@ -116,34 +134,34 @@ function YearRow({ data, isExpanded, onToggle, index, inView }: YearRowProps) {
           {/* Mobile Expand Icon */}
           <div className="sm:hidden">
             <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <ChevronDown className="w-5 h-5 text-zinc-400" />
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
             </motion.div>
           </div>
         </div>
 
         {/* Rectification Count */}
         <div className="flex items-center gap-2 sm:w-32">
-          <span className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <span className="px-2.5 py-1 rounded-md bg-muted text-xs font-medium text-foreground">
             {data.rectificationCount === 0 ? t`No rectifications` : t`${data.rectificationCount} rectifications`}
           </span>
         </div>
 
         {/* Context */}
         <div className="flex-1 min-w-0 hidden sm:block">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 truncate font-medium">
+          <p className="text-sm text-muted-foreground truncate font-medium">
             {data.context}
           </p>
         </div>
 
         {/* Deficit */}
         <div className="w-full sm:w-32 mt-2 sm:mt-0">
-          <DeficitBar percent={data.deficitPercent} status={data.status} />
+          <DeficitBar percent={data.deficitPercent} />
         </div>
 
         {/* Desktop Expand Icon */}
         <div className="hidden sm:block pl-2">
           <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronDown className="w-5 h-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+            <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </motion.div>
         </div>
       </button>
@@ -159,9 +177,9 @@ function YearRow({ data, isExpanded, onToggle, index, inView }: YearRowProps) {
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 pt-0">
-              <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
+              <div className="pt-4 border-t border-border space-y-3">
                 {/* Mobile context */}
-                <p className="sm:hidden text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-3">
+                <p className="sm:hidden text-sm font-medium text-foreground mb-3">
                   {data.context}
                 </p>
 
@@ -171,26 +189,26 @@ function YearRow({ data, isExpanded, onToggle, index, inView }: YearRowProps) {
                     {data.details.map((detail, i) => (
                       <div
                         key={i}
-                        className="relative pl-4 border-l-2 border-zinc-200 dark:border-zinc-700 py-1"
+                        className="relative pl-4 border-l-2 border-border py-1"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 mb-1">
-                          <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             <Calendar className="w-3 h-3" />
                             {detail.date}
                           </div>
-                          <div className="flex items-center gap-1.5 text-xs font-mono text-zinc-400 dark:text-zinc-500">
+                          <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
                             <FileText className="w-3 h-3" />
                             {detail.reference}
                           </div>
                         </div>
-                        <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                        <p className="text-sm text-foreground leading-relaxed">
                           {detail.description}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-zinc-500 italic">{t`No detailed records available.`}</p>
+                  <p className="text-sm text-muted-foreground italic">{t`No detailed records available.`}</p>
                 )}
               </div>
             </div>
@@ -218,10 +236,10 @@ export function RectificationHistory({ data: dataProp, locale = 'en' }: Rectific
     <div ref={ref} className="my-8 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-lg font-semibold text-foreground">
           {t`Rectification History (2020-2024)`}
         </h3>
-        <span className="text-xs font-medium text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full">
+        <span className="text-xs font-medium text-foreground bg-muted px-2 py-1 rounded-full">
           {t`Interactive`}
         </span>
       </div>
@@ -241,7 +259,7 @@ export function RectificationHistory({ data: dataProp, locale = 'en' }: Rectific
       </div>
 
       {/* Footer Note */}
-      <div className="mt-4 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400 text-center">
+      <div className="mt-4 p-3 rounded-lg bg-card border border-border text-xs text-muted-foreground text-center">
         {t`Note: Romania has been under EU Excessive Deficit Procedure since 2020`}
       </div>
     </div>

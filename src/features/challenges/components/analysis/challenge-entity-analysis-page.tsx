@@ -2628,7 +2628,7 @@ export function ChallengeEntityAnalysisPage({
 
   if (!overviewEntity || (entityDetailsQuery.isError && !canRetainOverview)) {
     return (
-      <Alert className="rounded-[28px] border-destructive/50 bg-destructive/5">
+      <Alert className="rounded-[28px] border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg [&>svg]:text-status-blocked-fg">
         <AlertTriangle className="h-5 w-5" />
         <AlertTitle>{t`We could not load the analysis.`}</AlertTitle>
         <AlertDescription className="space-y-4">
@@ -2812,7 +2812,7 @@ export function ChallengeEntityAnalysisPage({
         )
 
   const lineItemsFallback = entityLineItemsQuery.isError ? (
-    <Alert className="rounded-[28px] border-destructive/50 bg-destructive/5" data-testid="entity-line-items-error">
+    <Alert className="rounded-[28px] border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg [&>svg]:text-status-blocked-fg" data-testid="entity-line-items-error">
       <AlertTriangle className="h-5 w-5" />
       <AlertTitle>{t`Error loading data`}</AlertTitle>
       <AlertDescription className="space-y-4">

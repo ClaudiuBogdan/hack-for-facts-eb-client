@@ -370,7 +370,7 @@ export function CampaignAdminUsersSectionPage({
               <CompactStat
                 label={t`Pending reviews`}
                 value={meta.usersWithPendingReviews}
-                className="text-amber-600 dark:text-amber-400"
+                className="text-status-partial-fg"
               />
             ) : (
               <CompactStat label={t`Pending reviews`} value={meta.usersWithPendingReviews} />

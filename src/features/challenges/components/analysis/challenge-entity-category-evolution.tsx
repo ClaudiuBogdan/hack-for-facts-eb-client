@@ -479,7 +479,7 @@ export function ChallengeEntityCategoryEvolution({
               <LoadingSpinner text={copy.loading} />
             </div>
           ) : !retained && dataError ? (
-            <div className="rounded-[24px] border border-dashed border-destructive/40 bg-destructive/5 px-6 py-12 text-center text-sm font-medium text-destructive">
+            <div className="rounded-[24px] border border-dashed border-status-blocked-fg/30 bg-status-blocked-bg px-6 py-12 text-center text-sm font-medium text-status-blocked-fg">
               {dataError.message}
             </div>
           ) : !shownDataMap || shownDataMap.size === 0 ? (

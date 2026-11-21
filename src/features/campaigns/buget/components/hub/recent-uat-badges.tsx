@@ -52,7 +52,7 @@ export function RecentUatBadges({ locale, onSelect }: RecentUatBadgesProps) {
 
   return (
     <div className="mt-6 space-y-3">
-      <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500">
+      <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">
         <SectionIcon className="h-3 w-3" />
         <span>{sectionLabel}</span>
       </div>
@@ -74,9 +74,9 @@ export function RecentUatBadges({ locale, onSelect }: RecentUatBadgesProps) {
             >
               <Badge
                 variant="outline"
-                className="cursor-pointer rounded-2xl border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 shadow-sm transition duration-200 hover:shadow-md hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                className="cursor-pointer rounded-2xl border-border bg-card px-3.5 py-2 shadow-sm transition duration-200 hover:shadow-md hover:border-primary/40 hover:bg-muted"
               >
-                <span className="text-sm text-zinc-600 dark:text-zinc-300 whitespace-nowrap">
+                <span className="text-sm text-foreground whitespace-nowrap">
                   {formatEntityName(entity.name)}
                 </span>
               </Badge>

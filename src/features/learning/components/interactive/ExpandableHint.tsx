@@ -61,26 +61,24 @@ export function ExpandableHint({
 
   const getIconBgClass = () => {
     if (!isOpen) {
-      return "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+      return "bg-muted text-muted-foreground"
     }
     return isTriggerMode
-      ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
-      : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+      ? "bg-status-partial-bg text-status-partial-fg"
+      : "bg-primary/10 text-primary"
   }
 
   return (
     <div className={cn(
       "my-8 rounded-2xl overflow-hidden transition-all duration-300",
-      "border border-zinc-200 dark:border-zinc-800",
-      "bg-white dark:bg-zinc-950",
-      isOpen ? "shadow-md ring-1 ring-zinc-200 dark:ring-zinc-800" : "shadow-sm hover:shadow-md"
+      "border border-border",
+      "bg-card",
+      isOpen ? "shadow-md ring-1 ring-border" : "shadow-sm hover:shadow-md"
     )}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between px-6 py-5 text-left transition-colors focus-visible:-outline-offset-2",
-          "hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
-          isOpen && "bg-zinc-50/80 dark:bg-zinc-900/80"
+          "w-full flex items-center justify-between px-6 py-5 text-left transition-colors focus-visible:-outline-offset-2"
         )}
       >
         <div className="flex items-center gap-4">
@@ -92,15 +90,12 @@ export function ExpandableHint({
           </div>
           <div className="flex flex-col gap-1">
             <span className={cn(
-              "font-bold text-base leading-snug",
-              isTriggerMode 
-                ? "text-zinc-800 dark:text-zinc-100" 
-                : "text-zinc-700 dark:text-zinc-300"
+              "font-bold text-base leading-snug text-foreground"
             )}>
               {displayText}
             </span>
             {!isOpen && isTriggerMode && (
-              <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Click to reveal answer
               </span>
             )}
@@ -109,9 +104,9 @@ export function ExpandableHint({
         
         <div className={cn(
           "shrink-0 ml-4 p-1 rounded-full transition-transform duration-300",
-          isOpen ? "rotate-180 bg-zinc-200 dark:bg-zinc-800" : "bg-transparent"
+          isOpen ? "rotate-180 bg-muted" : "bg-transparent"
         )}>
-          <ChevronDown className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
+          <ChevronDown className="w-5 h-5 text-muted-foreground" />
         </div>
       </button>
 
@@ -124,16 +119,14 @@ export function ExpandableHint({
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <div className={cn(
-              "px-6 pb-6 pt-2 border-t border-zinc-100 dark:border-zinc-800/50",
-              isTriggerMode 
-                ? "bg-amber-50/30 dark:bg-amber-950/10" 
-                : "bg-zinc-50/50 dark:bg-zinc-900/30"
+              "px-6 pb-6 pt-2 border-t bg-card",
+              isTriggerMode ? "border-status-partial-fg/30" : "border-border"
             )}>
               <div className={cn(
-                "md:pl-3 prose prose-zinc dark:prose-invert max-w-none",
+                "md:pl-3 prose max-w-none [--tw-prose-body:hsl(var(--foreground))] [--tw-prose-bullets:hsl(var(--muted-foreground))] [--tw-prose-counters:hsl(var(--muted-foreground))]",
                 isTriggerMode 
-                  ? "prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-relaxed" 
-                  : "prose-p:text-zinc-600 dark:prose-p:text-zinc-400 prose-p:text-sm prose-p:font-mono"
+                  ? "prose-p:text-foreground prose-p:leading-relaxed" 
+                  : "prose-p:text-muted-foreground prose-p:text-sm prose-p:font-mono"
               )}>
                 {children}
               </div>

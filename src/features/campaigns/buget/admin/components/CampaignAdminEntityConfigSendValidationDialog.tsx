@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { CampaignAdminEntityConfigSendValidationIssueData } from "@/features/campaigns/buget/admin/utils/entity-config-workspace";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminEntityConfigSendValidationDialogProps = {
   readonly open: boolean;
@@ -42,7 +43,7 @@ export function CampaignAdminEntityConfigSendValidationDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <Alert variant="destructive">
+          <Alert className={campaignAdminBlockedAlertClassName}>
             <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             <AlertTitle>
               {issues.length === 1
@@ -73,7 +74,7 @@ export function CampaignAdminEntityConfigSendValidationDialog({
                 <p className="font-mono text-xs text-muted-foreground">
                   {issue.recordKey}
                 </p>
-                <p className="text-sm text-destructive">{issue.message}</p>
+                <p className="text-sm text-status-blocked-fg">{issue.message}</p>
               </button>
             ))}
           </div>

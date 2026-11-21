@@ -39,25 +39,25 @@ type ExecutionPatternComparisonProps = {
 
 const STATUS_CONFIG = {
   excellent: {
-    barColor: 'bg-emerald-500',
-    barBg: 'bg-emerald-100 dark:bg-emerald-900/30',
-    textColor: 'text-emerald-600 dark:text-emerald-400',
+    barColor: 'bg-status-live-fg',
+    barBg: 'bg-status-live-bg',
+    textColor: 'text-status-live-fg',
     Icon: Check,
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/50',
+    iconBg: 'bg-status-live-bg',
   },
   normal: {
-    barColor: 'bg-amber-500',
-    barBg: 'bg-amber-100 dark:bg-amber-900/30',
-    textColor: 'text-amber-600 dark:text-amber-400',
+    barColor: 'bg-status-partial-fg',
+    barBg: 'bg-status-partial-bg',
+    textColor: 'text-status-partial-fg',
     Icon: Minus,
-    iconBg: 'bg-amber-100 dark:bg-amber-900/50',
+    iconBg: 'bg-status-partial-bg',
   },
   warning: {
-    barColor: 'bg-red-500',
-    barBg: 'bg-red-100 dark:bg-red-900/30',
-    textColor: 'text-red-600 dark:text-red-400',
+    barColor: 'bg-status-blocked-fg',
+    barBg: 'bg-status-blocked-bg',
+    textColor: 'text-status-blocked-fg',
     Icon: AlertTriangle,
-    iconBg: 'bg-red-100 dark:bg-red-900/50',
+    iconBg: 'bg-status-blocked-bg',
   },
 } as const
 
@@ -142,7 +142,7 @@ function ExecutionRow({ item, inView, index }: ExecutionRowProps) {
         <div className={cn('p-1 rounded-full', config.iconBg)}>
           <Icon className={cn('w-3.5 h-3.5', config.textColor)} />
         </div>
-        <span className={cn('text-xs font-bold uppercase tracking-wide hidden sm:block', config.textColor)}>
+        <span className={cn('text-xs font-bold uppercase tracking-wide sr-only sm:not-sr-only', config.textColor)}>
           {item.statusLabel}
         </span>
       </div>
@@ -167,7 +167,7 @@ export function ExecutionPatternComparison({
   return (
     <div
       ref={ref}
-      className="my-10 p-6 md:p-8 rounded-[2rem] bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800"
+      className="my-10 p-6 md:p-8 rounded-[2rem] bg-card border border-border"
     >
       {title && (
         <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-6">

@@ -48,8 +48,8 @@ export function formatTotalTime(minutes: number): string {
 
 function getCardStyles(isActive: boolean): string {
   return isActive
-    ? 'shadow-lg shadow-primary/5 bg-gradient-to-br from-background via-background to-primary/[0.03] group hover:shadow-xl hover:shadow-primary/8'
-    : 'shadow-md shadow-primary/3 bg-gradient-to-br from-background via-background to-muted/30 hover:shadow-lg hover:shadow-primary/5'
+    ? 'shadow-lg shadow-primary/5 bg-card group hover:shadow-xl hover:shadow-primary/8'
+    : 'shadow-md shadow-primary/3 bg-card hover:shadow-lg hover:shadow-primary/5'
 }
 
 function getVariantStyles(isActive: boolean) {
@@ -87,7 +87,7 @@ function ActionButton({
       <Button
         variant="outline"
         size="lg"
-        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-green-500/20 bg-green-500/[0.05] text-green-600 hover:bg-green-500/10 transition-all`}
+        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-status-live-fg/30 bg-status-live-bg text-status-live-fg hover:bg-status-live-bg hover:text-status-live-fg hover:border-status-live-fg transition-all`}
       >
         <Trophy className="mr-2 lg:mr-3 h-5 w-5" aria-hidden="true" />
         {t`Completed`}
@@ -100,7 +100,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary hover:bg-primary text-primary-foreground border-none`}
       >
         <Link to={nextStepUrl as '/'}>
           <Play className="mr-2 lg:mr-3 h-5 w-5 fill-current" aria-hidden="true" />
@@ -115,7 +115,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-md shadow-primary/10 transition-all hover:scale-[1.02] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-md shadow-primary/10 transition-all hover:scale-[1.02] active:scale-95 bg-primary hover:bg-primary text-primary-foreground border-none`}
         onClick={onNavigateAndSwitch}
       >
         <Link to={nextStepUrl as '/'}>
@@ -165,7 +165,7 @@ export function ChallengeModuleCard({
               {getTranslatedText(module.title, locale)}
             </h3>
             <p
-              className={`text-muted-foreground ${styles.description} font-medium leading-relaxed max-w-xl opacity-70`}
+              className={`text-muted-foreground ${styles.description} font-medium leading-relaxed max-w-xl`}
             >
               {getTranslatedText(module.description, locale)}
             </p>

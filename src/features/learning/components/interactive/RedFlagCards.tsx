@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { LearningLocale } from '../../types'
-import { RED_FLAGS_BY_LOCALE, type RedFlagItem } from './rectification-data'
+import { RED_FLAGS_BY_LOCALE, STATUS_COLORS, type RedFlagItem } from './rectification-data'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -59,19 +59,23 @@ type FlagItemProps = {
   readonly inView: boolean
 }
 
+function getSeverityLabel(severity: RedFlagItem['severity']): string {
+  if (severity === 'green') return t`Normal`
+  if (severity === 'yellow') return t`Caution`
+  return t`Warning`
+}
+
 function FlagItem({ flag, index, inView }: FlagItemProps) {
   const Icon = ICON_MAP[flag.icon]
+  const colors = STATUS_COLORS[flag.severity]
 
   return (
     <motion.div
       className={cn(
         'relative overflow-hidden rounded-xl p-4 border transition-all duration-200',
         'hover:shadow-md',
-        flag.severity === 'green' 
-          ? 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/30' 
-          : flag.severity === 'yellow'
-            ? 'bg-amber-50/50 dark:bg-amber-950/10 border-amber-100 dark:border-amber-900/30'
-            : 'bg-rose-50/50 dark:bg-rose-950/10 border-rose-100 dark:border-rose-900/30'
+        colors.bg,
+        colors.border
       )}
       initial={{ opacity: 0, y: 10 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
@@ -79,41 +83,32 @@ function FlagItem({ flag, index, inView }: FlagItemProps) {
     >
       <div className="flex items-start gap-4">
         {/* Icon Circle */}
-        <div className={cn(
-          'flex items-center justify-center w-10 h-10 rounded-full shrink-0 shadow-sm',
-          flag.severity === 'green' 
-            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' 
-            : flag.severity === 'yellow'
-              ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
-              : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'
-        )}>
+        <div className={cn('flex items-center justify-center w-10 h-10 rounded-full shrink-0 shadow-sm bg-card', colors.text)}>
           <Icon className="w-5 h-5" />
         </div>
 
         <div className="flex-1 min-w-0">
+          {/* Level: a word as well as the colour */}
+          <span className={cn('block text-[10px] font-bold uppercase tracking-wider mb-0.5', colors.text)}>
+            {getSeverityLabel(flag.severity)}
+          </span>
+
           {/* Title */}
-          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm leading-tight mb-1">
+          <h4 className={cn('font-semibold text-sm leading-tight mb-1', colors.text)}>
             {flag.title}
           </h4>
 
           {/* Description */}
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <p className={cn('text-sm leading-relaxed', colors.text)}>
             {flag.description}
           </p>
 
           {/* Example */}
           {flag.example && (
-            <div className={cn(
-              'mt-3 p-2.5 rounded-lg text-xs flex gap-2 items-start',
-              flag.severity === 'green' 
-                ? 'bg-emerald-100/50 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300' 
-                : flag.severity === 'yellow'
-                  ? 'bg-amber-100/50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300'
-                  : 'bg-rose-100/50 text-rose-800 dark:bg-rose-900/20 dark:text-rose-300'
-            )}>
-              <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-70" />
+            <div className="mt-3 p-2.5 rounded-lg text-xs flex gap-2 items-start bg-card text-foreground">
+              <Info className={cn('w-3.5 h-3.5 shrink-0 mt-0.5', colors.text)} />
               <span>
-                <span className="font-semibold opacity-90">{t`Example:`}</span> {flag.example}
+                <span className="font-semibold">{t`Example:`}</span> {flag.example}
               </span>
             </div>
           )}
@@ -123,8 +118,6 @@ function FlagItem({ flag, index, inView }: FlagItemProps) {
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Main Component
 // ═══════════════════════════════════════════════════════════════════════════
 
 export function RedFlagCards({ flags: flagsProp, locale = 'en' }: RedFlagCardsProps) {
@@ -140,10 +133,10 @@ export function RedFlagCards({ flags: flagsProp, locale = 'en' }: RedFlagCardsPr
       {/* Warning Signs Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
-          <div className="p-1.5 rounded-md bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400">
+          <div className="p-1.5 rounded-md bg-status-blocked-bg text-status-blocked-fg">
             <AlertTriangle className="w-4 h-4" />
           </div>
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-lg font-semibold text-foreground">
             {t`Warning Signs`}
           </h3>
         </div>
@@ -158,10 +151,10 @@ export function RedFlagCards({ flags: flagsProp, locale = 'en' }: RedFlagCardsPr
       {/* Normal Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
-          <div className="p-1.5 rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+          <div className="p-1.5 rounded-md bg-status-live-bg text-status-live-fg">
             <CheckCircle className="w-4 h-4" />
           </div>
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-lg font-semibold text-foreground">
             {t`When Rectifications Are Normal`}
           </h3>
         </div>

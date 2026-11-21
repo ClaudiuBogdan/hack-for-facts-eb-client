@@ -72,6 +72,7 @@ import {
 } from "@/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils";
 import { AuthSignInButton } from "@/lib/auth";
 
+import { campaignAdminBlockedAlertClassName, campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminNotificationsRunTabProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly search: CampaignAdminNotificationsSearch;
@@ -778,7 +779,7 @@ export function CampaignAdminNotificationsRunTab({
 
   if (runnableTemplatesQuery.error) {
     return (
-      <Alert variant="destructive" aria-live="polite">
+      <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
         <AlertTriangle className="h-4 w-4" aria-hidden="true" />
         <AlertTitle>{t`Failed to load notification types`}</AlertTitle>
         <AlertDescription className="space-y-3">
@@ -1003,7 +1004,7 @@ export function CampaignAdminNotificationsRunTab({
       ) : null}
 
       {actionError ? (
-        <Alert variant="destructive" aria-live="polite">
+        <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>{actionError.title}</AlertTitle>
           <AlertDescription>{actionError.description}</AlertDescription>
@@ -1014,7 +1015,7 @@ export function CampaignAdminNotificationsRunTab({
         activePreviewQuery.isLoading && activePreview === null ? (
           <NotificationTypesSkeleton />
         ) : previewPageError && !previewPageError.shouldClearPreview ? (
-          <Alert variant="destructive" aria-live="polite">
+          <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
             <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             <AlertTitle>{previewPageError.title}</AlertTitle>
             <AlertDescription className="space-y-3">
@@ -1108,7 +1109,15 @@ export function CampaignAdminNotificationsRunTab({
                 </div>
 
                 {sendResult ? (
-                  <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950">
+                  <div
+                    className={`rounded-2xl border p-4 text-sm ${
+                      sendResult.enqueueFailedCount > 0
+                        ? sendResult.queuedCount > 0
+                          ? campaignAdminStatusClassNames.partial
+                          : campaignAdminStatusClassNames.blocked
+                        : campaignAdminStatusClassNames.live
+                    }`}
+                  >
                     <p className="font-medium">
                       {t`Notification send completed`}
                     </p>

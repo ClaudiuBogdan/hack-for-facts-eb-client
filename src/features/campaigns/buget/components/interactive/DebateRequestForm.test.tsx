@@ -516,6 +516,35 @@ describe('DebateRequestForm', () => {
     expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument()
   })
 
+  it('shows a failed availability lookup as a blocked error, distinct from a scheduled closure', () => {
+    availabilityState = {
+      state: 'unavailable',
+      isSubmittable: false,
+      availability: null,
+      error: new Error('lookup failed'),
+    } as unknown as typeof availabilityState
+    const { unmount } = render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+    expect(screen.getByTestId('debate-availability-notice').className).toContain('border-status-blocked-fg/30')
+    expect(screen.getByTestId('debate-availability-notice').className).not.toContain('status-partial')
+    expect(screen.getByTestId('debate-availability-icon').className).toContain('bg-status-blocked-bg')
+    expect(screen.getByTestId('debate-availability-icon').className).toContain('text-status-blocked-fg')
+    expect(screen.getByText(/We cannot confirm whether requests are still open/).className).toContain('text-status-blocked-fg')
+    unmount()
+
+    availabilityState = createAvailabilityState('closed_deadline_expired', {
+      publicationDate: '2026-04-01',
+      requestDeadlineDate: '2026-04-16',
+    })
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+    expect(screen.getByTestId('debate-availability-notice').className).toContain('border-status-partial-fg/30')
+    expect(screen.getByTestId('debate-availability-icon').className).toContain('bg-status-partial-bg')
+    expect(screen.getByTestId('debate-availability-icon').className).toContain('text-status-partial-fg')
+  })
+
   it('shows disabled UI for an expired known 15-day window', () => {
     availabilityState = createAvailabilityState('closed_deadline_expired', {
       publicationDate: '2026-04-01',

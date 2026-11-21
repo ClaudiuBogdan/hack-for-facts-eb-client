@@ -101,6 +101,7 @@ import {
   buildCampaignAdminNotificationsTriggerHref,
   wasCampaignAdminReviewSavedDespiteError,
 } from "@/features/campaigns/buget/admin/utils/review-notification-helpers";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminUserInteractionsPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -1152,7 +1153,7 @@ export function CampaignAdminUserInteractionsPage({
       )}
     >
       {metaQuery.error && metaQuery.data === undefined ? (
-        <Alert variant="destructive" aria-live="polite">
+        <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>{t`Failed to load the queue summary`}</AlertTitle>
           <AlertDescription className="space-y-3">
@@ -1189,7 +1190,7 @@ export function CampaignAdminUserInteractionsPage({
       queueQuery.error.status !== 401 &&
       queueQuery.error.status !== 403 &&
       queueQuery.error.status !== 404 ? (
-        <Alert variant="destructive" aria-live="polite">
+        <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
           <Ban className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>{t`Failed to load the review queue`}</AlertTitle>
           <AlertDescription className="space-y-3">

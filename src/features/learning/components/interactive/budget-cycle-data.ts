@@ -75,25 +75,25 @@ export function getPhaseIcon(name: PhaseIconName): LucideIcon {
 
 export const OPPORTUNITY_COLORS = {
   low: {
-    bg: 'bg-zinc-100 dark:bg-zinc-800',
-    bgSolid: 'bg-zinc-400 dark:bg-zinc-600',
-    border: 'border-zinc-300 dark:border-zinc-600',
-    text: 'text-zinc-600 dark:text-zinc-400',
+    bg: 'bg-muted',
+    bgSolid: 'bg-muted-foreground',
+    border: 'border-border',
+    text: 'text-muted-foreground',
     ring: '',
   },
   medium: {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    bgSolid: 'bg-blue-500 dark:bg-blue-600',
-    border: 'border-blue-200 dark:border-blue-800',
-    text: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-primary/10',
+    bgSolid: 'bg-primary',
+    border: 'border-primary/30',
+    text: 'text-primary',
     ring: '',
   },
   high: {
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
-    bgSolid: 'bg-amber-500 dark:bg-amber-500',
-    border: 'border-amber-300 dark:border-amber-700',
-    text: 'text-amber-600 dark:text-amber-400',
-    ring: 'ring-2 ring-amber-300/50 dark:ring-amber-500/30',
+    bg: 'bg-status-partial-bg',
+    bgSolid: 'bg-status-partial-fg',
+    border: 'border-status-partial-fg/30',
+    text: 'text-status-partial-fg',
+    ring: 'ring-2 ring-status-partial-fg/50',
   },
 } as const
 

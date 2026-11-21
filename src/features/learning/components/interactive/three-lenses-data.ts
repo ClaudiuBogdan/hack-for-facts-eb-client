@@ -92,37 +92,37 @@ export interface ThreeLensesExplorerProps {
 
 /**
  * Color variants for the three lenses
- * - Organizational: Slate/Gray (neutral, less emphasized per requirements)
- * - Functional: Indigo (consistent with ClassificationExplorer)
- * - Economic: Emerald (consistent with ClassificationExplorer)
+ * - Organizational: chart-1, neutral text (less emphasized per requirements)
+ * - Functional: chart-2, primary text
+ * - Economic: chart-3, primary text
  */
 export const LENS_COLORS = {
   organizational: {
-    bg: 'bg-slate-500',
-    bgLight: 'bg-slate-500/10',
-    bgLighter: 'bg-slate-50 dark:bg-slate-800/30',
-    text: 'text-slate-600 dark:text-slate-400',
-    border: 'border-slate-200 dark:border-slate-700',
-    blur: 'bg-slate-100/30 dark:bg-slate-500/5',
-    accent: 'bg-slate-100 dark:bg-slate-800',
+    bg: 'bg-chart-1',
+    bgLight: 'bg-chart-1/10',
+    bgLighter: 'bg-chart-1/10',
+    text: 'text-foreground',
+    border: 'border-border',
+    blur: 'bg-chart-1/10',
+    accent: 'bg-chart-1/20',
   },
   functional: {
-    bg: 'bg-indigo-500',
-    bgLight: 'bg-indigo-500/10',
-    bgLighter: 'bg-indigo-50 dark:bg-indigo-500/10',
-    text: 'text-indigo-600 dark:text-indigo-400',
-    border: 'border-indigo-200 dark:border-indigo-800',
-    blur: 'bg-indigo-100/30 dark:bg-indigo-500/5',
-    accent: 'bg-indigo-100 dark:bg-indigo-900/30',
+    bg: 'bg-chart-2',
+    bgLight: 'bg-chart-2/10',
+    bgLighter: 'bg-chart-2/10',
+    text: 'text-foreground',
+    border: 'border-border',
+    blur: 'bg-chart-2/10',
+    accent: 'bg-chart-2/20',
   },
   economic: {
-    bg: 'bg-emerald-500',
-    bgLight: 'bg-emerald-500/10',
-    bgLighter: 'bg-emerald-50 dark:bg-emerald-500/10',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    blur: 'bg-emerald-100/30 dark:bg-emerald-500/5',
-    accent: 'bg-emerald-100 dark:bg-emerald-900/30',
+    bg: 'bg-chart-3',
+    bgLight: 'bg-chart-3/10',
+    bgLighter: 'bg-chart-3/10',
+    text: 'text-foreground',
+    border: 'border-border',
+    blur: 'bg-chart-3/10',
+    accent: 'bg-chart-3/20',
   },
 } as const
 

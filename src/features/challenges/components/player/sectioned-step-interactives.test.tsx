@@ -134,7 +134,8 @@ describe('ChallengeSectionedQuiz', () => {
       />,
     )
 
-    expect(screen.getByText(/Quiz configuration error/i)).toBeInTheDocument()
+    // An error, drawn with the blocked pair as in the lesson quiz.
+    expect(screen.getByText(/Quiz configuration error/i)).toHaveClass('text-status-blocked-fg')
     expect(screen.queryByRole('heading', { name: 'Pick one' })).not.toBeInTheDocument()
   })
 
@@ -157,5 +158,45 @@ describe('ChallengeSectionedQuiz', () => {
     expect(screen.getByText('A')).toBeInTheDocument()
     expect(screen.getByText('B')).toBeInTheDocument()
     expect(screen.getByText('C')).toBeInTheDocument()
+  })
+
+  it('names each outcome for assistive technology after a wrong answer', () => {
+    render(
+      <ChallengeSectionedQuiz
+        id="quiz-1"
+        question="Pick one"
+        options={defaultOptions}
+        explanation="Explanation"
+        selectedOptionId="b"
+        onSelect={vi.fn()}
+        isAnswered={true}
+        isPending={false}
+        isAccessGranted={true}
+        accessReplacement={null}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /Answer A, Correct answer$/ })).toHaveClass('bg-status-live-bg', 'text-status-live-fg')
+    expect(screen.getByRole('button', { name: /Answer B, Your answer$/ })).toHaveClass('bg-status-blocked-bg', 'text-status-blocked-fg')
+    expect(screen.getByRole('button', { name: /Answer C$/ })).toHaveClass('text-muted-foreground')
+  })
+
+  it('names a right answer as both the reader’s and the correct one', () => {
+    render(
+      <ChallengeSectionedQuiz
+        id="quiz-1"
+        question="Pick one"
+        options={defaultOptions}
+        explanation="Explanation"
+        selectedOptionId="a"
+        onSelect={vi.fn()}
+        isAnswered={true}
+        isPending={false}
+        isAccessGranted={true}
+        accessReplacement={null}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /Answer A, Your answer, Correct answer$/ })).toBeInTheDocument()
   })
 })

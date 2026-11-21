@@ -45,7 +45,7 @@ function CtaButton({
     <Button
       asChild
       size="lg"
-      className="h-12 rounded-full bg-[#3565c4] px-8 text-base font-semibold text-white hover:bg-[#2d57a8]"
+      className="h-12 rounded-full px-8 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary hover:ring-2 hover:ring-primary/40"
     >
       <Link
         to={CAMPAIGN_ENTITY_SELECTOR_PATH as '/'}
@@ -83,7 +83,7 @@ function CampaignTermsLink({
       {prefix}
       <Link
         to={CAMPAIGN_TERMS_PATH}
-        className="font-medium text-foreground underline decoration-[#3565c4] underline-offset-4 transition-colors hover:text-[#3565c4]"
+        className="font-medium text-foreground underline decoration-primary underline-offset-4 transition-colors hover:text-primary"
       >
         {linkLabel}
       </Link>
@@ -224,7 +224,7 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
       {/* Hero */}
       <div className="space-y-5">
         <div className="flex items-center gap-3">
-          <span className="text-lg font-semibold text-[#ef2d00] underline decoration-[#ef2d00] decoration-2 underline-offset-4 sm:text-xl">
+          <span className="text-lg font-semibold text-primary underline decoration-primary decoration-2 underline-offset-4 sm:text-xl">
             #ProvocareCivică2026
           </span>
           <img
@@ -265,7 +265,7 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
             <div key={item.stepNumber} className="space-y-5">
               <div className="space-y-3">
                 <h2 className="flex items-start gap-3 text-xl font-medium tracking-tight text-foreground sm:text-2xl md:text-3xl">
-                  <Icon className="mt-1 h-5 w-5 shrink-0 text-[#3565c4] sm:h-6 sm:w-6 md:h-7 md:w-7" aria-hidden="true" />
+                  <Icon className="mt-1 h-5 w-5 shrink-0 text-primary sm:h-6 sm:w-6 md:h-7 md:w-7" aria-hidden="true" />
                   <span>{item.title}</span>
                 </h2>
                 <p className="max-w-md pl-8 text-base leading-relaxed text-muted-foreground sm:pl-9 sm:text-lg">
@@ -317,7 +317,7 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
       {/* FAQ Section */}
       <div className="mt-20 sm:mt-24">
         <div className="flex items-center gap-3 mb-8">
-          <Heart className="h-6 w-6 text-[#3565c4]" aria-hidden="true" />
+          <Heart className="h-6 w-6 text-primary" aria-hidden="true" />
           <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             {locale === 'en'
               ? 'Frequently Asked Questions'

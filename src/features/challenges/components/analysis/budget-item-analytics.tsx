@@ -55,6 +55,7 @@ import {
   type BudgetItemAnalyticsResolvedViewState,
 } from './budget-item-analytics-view-state'
 import { useBudgetItemAnalyticsTitle } from './use-budget-item-analytics-title'
+import { useThemeChartColour } from './use-theme-chart-colour'
 
 const NOOP_ANNOTATION_HANDLER = () => {}
 type BudgetItemAnalyticsCodeType = 'fn' | 'ec'
@@ -686,6 +687,17 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
     chart: context.chartSearch.chart,
     enabled: true,
   })
+  // The chart link keeps the series' configured hex (the chart page's URL contract); the embedded chart draws
+  // the one series in the theme's first chart colour, which reads on this panel in both themes.
+  const chart = context.chartSearch.chart
+  const seriesColour = useThemeChartColour('--chart-1', chart.series[0]?.config.color ?? '')
+  const renderedChart = useMemo(
+    () =>
+      seriesColour
+        ? { ...chart, series: chart.series.map((series) => ({ ...series, config: { ...series.config, color: seriesColour } })) }
+        : chart,
+    [chart, seriesColour],
+  )
   const isAggregatedChart =
     context.chartSearch.chart.config.chartType === 'bar-aggr'
   const processedData = useMemo(() => {
@@ -777,7 +789,7 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
             <LoadingSpinner text={t`Loading chart data…`} />
           </div>
         ) : dataError ? (
-          <div className="flex min-h-[500px] items-center justify-center rounded-[20px] border border-dashed border-destructive/40 bg-destructive/5 px-6 py-12 text-center text-sm font-medium text-destructive">
+          <div className="flex min-h-[500px] items-center justify-center rounded-[20px] border border-dashed border-status-blocked-fg/30 bg-status-blocked-bg px-6 py-12 text-center text-sm font-medium text-status-blocked-fg">
             {dataError.message}
           </div>
         ) : !hasData ? (
@@ -787,7 +799,7 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
         ) : (
           <div className="rounded-[20px] border border-border/50 bg-muted/[0.12] px-2 py-4 sm:px-4">
             <ChartRenderer
-              chart={context.chartSearch.chart}
+              chart={renderedChart}
               dataMap={dataSeriesMap}
               timeSeriesData={processedData.timeSeriesData}
               aggregatedData={processedData.aggregatedData}

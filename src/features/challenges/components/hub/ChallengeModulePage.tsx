@@ -177,12 +177,12 @@ export function ChallengeModulePage({
         </p>
 
         {/* Stats */}
-        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/60">
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <Layers className="h-3.5 w-3.5" aria-hidden="true" />
             {module.challenges.length} {t`Challenges`}
           </span>
-          <span className="text-muted-foreground/20">·</span>
+          <span aria-hidden="true">·</span>
           <span className="inline-flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" aria-hidden="true" />
             {formatTime(
@@ -191,7 +191,7 @@ export function ChallengeModulePage({
                 : totalMinutes,
             )}
           </span>
-          <span className="text-muted-foreground/20">·</span>
+          <span aria-hidden="true">·</span>
           <span className="inline-flex items-center gap-1.5 tabular-nums">
             {stats.completedCount}/{stats.totalCount} {t`Steps`}
           </span>
@@ -258,7 +258,7 @@ export function ChallengeModulePage({
       {/* Progress bar */}
       {stats.completionPercentage > 0 && (
         <div className="mb-10">
-          <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 mb-2">
+          <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             <span>{t`Progress`}</span>
             <span className="tabular-nums">{stats.completionPercentage}%</span>
           </div>
@@ -385,7 +385,7 @@ export function ChallengeModulePage({
                                   aria-hidden="true"
                                 />
                               ) : (
-                                <span className="text-xs tabular-nums font-medium text-muted-foreground/40">
+                                <span className="text-xs tabular-nums font-medium text-muted-foreground group-hover:text-foreground">
                                   {stepIndex + 1}
                                 </span>
                               )}
@@ -401,7 +401,7 @@ export function ChallengeModulePage({
                               {getTranslatedText(step.title, locale)}
                             </span>
 
-                            <span className="hidden sm:inline text-xs text-muted-foreground/40 tabular-nums shrink-0">
+                            <span className="hidden sm:inline text-xs text-muted-foreground group-hover:text-foreground tabular-nums shrink-0">
                               {step.durationMinutes} {t`min`}
                             </span>
 

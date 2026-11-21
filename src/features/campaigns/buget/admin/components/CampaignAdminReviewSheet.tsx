@@ -37,6 +37,12 @@ import type {
 import { buildEntityDetailsPath } from '@/lib/entity-navigation'
 import { cn, getUserLocale } from '@/lib/utils'
 
+import {
+  campaignAdminStatusClassNames,
+  getCampaignAdminRiskFlagClassName,
+  getCampaignAdminRiskFlagsAlertClassName,
+  getCampaignAdminThreadPhaseClassName,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminReviewSheetProps = {
   readonly open: boolean
   readonly item: CampaignAdminUserInteractionListItem | null
@@ -578,18 +584,21 @@ export function CampaignAdminReviewSheet({
             <SheetHeader className="space-y-4 border-b border-border/60 px-6 pb-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
-                  variant={
+                  variant="outline"
+                  className={
                     item.reviewStatus === 'rejected'
-                      ? 'destructive'
+                      ? campaignAdminStatusClassNames.blocked
                       : item.reviewStatus === 'approved'
-                        ? 'success'
-                        : 'secondary'
+                        ? campaignAdminStatusClassNames.live
+                        : item.reviewStatus === 'pending'
+                          ? campaignAdminStatusClassNames.partial
+                          : campaignAdminStatusClassNames.neutral
                   }
                 >
                   {getCampaignAdminReviewStatusLabel(item.reviewStatus)}
                 </Badge>
                 <Badge variant="outline">{getCampaignAdminPhaseLabel(item.phase)}</Badge>
-                <Badge variant="outline">{getCampaignAdminThreadPhaseLabel(item.threadPhase)}</Badge>
+                <Badge variant="outline" className={getCampaignAdminThreadPhaseClassName(item.threadPhase)}>{getCampaignAdminThreadPhaseLabel(item.threadPhase)}</Badge>
               </div>
               <div className="space-y-2">
                 <SheetTitle className="text-lg font-medium tracking-tight">
@@ -610,12 +619,12 @@ export function CampaignAdminReviewSheet({
 
             <div className="space-y-6 px-6 py-6">
               {item.riskFlags.length > 0 ? (
-                <Alert variant="destructive">
+                <Alert className={getCampaignAdminRiskFlagsAlertClassName(item.riskFlags)}>
                   <ShieldAlert className="h-4 w-4" aria-hidden="true" />
                   <AlertTitle>{t`Operator warnings`}</AlertTitle>
                   <AlertDescription className="flex flex-wrap gap-2">
                     {item.riskFlags.map((riskFlag) => (
-                      <Badge key={riskFlag} variant="warning" className="text-[11px]">
+                      <Badge key={riskFlag} variant="outline" className={`text-[11px] ${getCampaignAdminRiskFlagClassName(riskFlag)}`}>
                         {getCampaignAdminRiskFlagLabel(riskFlag)}
                       </Badge>
                     ))}
@@ -660,7 +669,7 @@ export function CampaignAdminReviewSheet({
                       className={cn(
                         'flex cursor-pointer items-start gap-3 rounded-2xl border bg-background px-4 py-3 text-sm transition-all',
                         selectedDecision === 'approved'
-                          ? 'border-emerald-500 bg-emerald-50 shadow-sm ring-2 ring-emerald-200/80'
+                          ? 'border-status-live-fg bg-status-live-bg shadow-sm ring-2 ring-status-live-fg/30'
                           : 'border-border/70 text-foreground hover:border-foreground/15 hover:bg-muted/30'
                       )}
                     >
@@ -670,7 +679,7 @@ export function CampaignAdminReviewSheet({
                         disabled={isSubmitting}
                         className={cn(
                           selectedDecision === 'approved'
-                            ? 'border-emerald-600 text-emerald-600'
+                            ? 'border-status-live-fg text-status-live-fg'
                             : 'border-muted-foreground/40 text-muted-foreground'
                         )}
                       />
@@ -678,7 +687,7 @@ export function CampaignAdminReviewSheet({
                         <span
                           className={cn(
                             'block font-medium',
-                            selectedDecision === 'approved' ? 'text-emerald-900' : 'text-foreground'
+                            selectedDecision === 'approved' ? 'text-status-live-fg' : 'text-foreground'
                           )}
                         >
                           {t`Approved`}
@@ -687,8 +696,8 @@ export function CampaignAdminReviewSheet({
                           className={cn(
                             'block text-xs',
                             selectedDecision === 'approved'
-                              ? 'text-emerald-800/90'
-                              : 'text-muted-foreground'
+                              ? 'text-status-live-fg'
+                              : 'text-foreground'
                           )}
                         >
                           {t`A review note is optional for approved rows.`}
@@ -700,7 +709,7 @@ export function CampaignAdminReviewSheet({
                       className={cn(
                         'flex cursor-pointer items-start gap-3 rounded-2xl border bg-background px-4 py-3 text-sm transition-all',
                         selectedDecision === 'rejected'
-                          ? 'border-red-500 bg-red-50 shadow-sm ring-2 ring-red-200/80'
+                          ? 'border-status-blocked-fg bg-status-blocked-bg shadow-sm ring-2 ring-status-blocked-fg/30'
                           : 'border-border/70 text-foreground hover:border-foreground/15 hover:bg-muted/30'
                       )}
                     >
@@ -710,7 +719,7 @@ export function CampaignAdminReviewSheet({
                         disabled={isSubmitting}
                         className={cn(
                           selectedDecision === 'rejected'
-                            ? 'border-red-600 text-red-600'
+                            ? 'border-status-blocked-fg text-status-blocked-fg'
                             : 'border-muted-foreground/40 text-muted-foreground'
                         )}
                       />
@@ -718,7 +727,7 @@ export function CampaignAdminReviewSheet({
                         <span
                           className={cn(
                             'block font-medium',
-                            selectedDecision === 'rejected' ? 'text-red-900' : 'text-foreground'
+                            selectedDecision === 'rejected' ? 'text-status-blocked-fg' : 'text-foreground'
                           )}
                         >
                           {t`Rejected`}
@@ -727,8 +736,8 @@ export function CampaignAdminReviewSheet({
                           className={cn(
                             'block text-xs',
                             selectedDecision === 'rejected'
-                              ? 'text-red-800/90'
-                              : 'text-muted-foreground'
+                              ? 'text-status-blocked-fg'
+                              : 'text-foreground'
                           )}
                         >
                           {t`Rejected rows require a review note before saving.`}

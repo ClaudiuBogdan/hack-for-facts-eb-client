@@ -5,7 +5,7 @@ export function CampaignPageBackground({
   children,
 }: PropsWithChildren) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-zinc-50 to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
+    <div className="min-h-screen bg-background">
       {children}
     </div>
   )

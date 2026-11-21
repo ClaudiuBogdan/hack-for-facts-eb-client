@@ -838,7 +838,7 @@ export function LessonEntitySnapshot({
       </div>
 
       {snapshotInteraction.isCompleted || allChecked ? (
-        <div className="flex items-center gap-2 rounded-[24px] border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" role="status">
+        <div className="flex items-center gap-2 rounded-[24px] border border-status-live-fg/30 bg-status-live-bg px-5 py-4 text-sm font-semibold text-status-live-fg" role="status">
           <svg className="h-4 w-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
           {copy.lessonReady}
         </div>
@@ -1490,7 +1490,7 @@ export function LessonExecutionTableExcerpt({
             </span>
           </p>
         ) : (
-          <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+          <div className="flex items-center gap-2 rounded-lg border border-status-partial-fg/30 bg-status-partial-bg px-3 py-2 text-sm text-status-partial-fg">
             <Info className="h-4 w-4 shrink-0" />
             {copy.selectRowPrompt}
           </div>
@@ -1527,7 +1527,7 @@ export function LessonExecutionTableExcerpt({
         </div>
 
         {isSubmittedCurrentValue ? (
-          <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400" role="status">
+          <div className="flex items-center gap-2 text-sm font-semibold text-status-live-fg" role="status">
             <svg className="h-4 w-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
             {copy.documentReady}
           </div>

@@ -124,7 +124,7 @@ function CopyFieldButton({ text }: { readonly text: string }) {
       aria-label={t`Copy`}
     >
       {copied
-        ? <Check className="h-3.5 w-3.5 text-green-500" strokeWidth={2.5} />
+        ? <Check className="h-3.5 w-3.5 text-status-live-fg" strokeWidth={2.5} />
         : <Copy className="h-3.5 w-3.5" />}
     </button>
   )
@@ -257,9 +257,16 @@ function DebateRequestDisabledNotice({
 }) {
   const copy = getAvailabilityNoticeCopy(availabilityState)
   const availability = availabilityState.availability
+  const isLookupFailure = availabilityState.state === 'unavailable'
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-amber-200/70 bg-gradient-to-br from-amber-50/60 via-background to-background p-6 shadow-sm dark:border-amber-900/40 dark:from-amber-950/20 md:p-8">
+    <div
+      data-testid="debate-availability-notice"
+      className={cn(
+        'relative overflow-hidden rounded-[28px] border bg-card p-6 shadow-sm md:p-8',
+        isLookupFailure ? 'border-status-blocked-fg/30' : 'border-status-partial-fg/30',
+      )}
+    >
       <Send className="absolute right-4 top-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" aria-hidden="true" />
       <div className="space-y-5">
         <div className="space-y-1.5">
@@ -267,7 +274,13 @@ function DebateRequestDisabledNotice({
             <Trans>Debate request</Trans>
           </p>
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
+            <span
+              data-testid="debate-availability-icon"
+              className={cn(
+                'mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full',
+                isLookupFailure ? 'bg-status-blocked-bg text-status-blocked-fg' : 'bg-status-partial-bg text-status-partial-fg',
+              )}
+            >
               {availabilityState.state === 'loading'
                 ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 : availabilityState.state === 'ready'
@@ -276,7 +289,7 @@ function DebateRequestDisabledNotice({
             </span>
             <div className="space-y-1.5">
               <h3 className="text-lg font-black tracking-tight text-foreground">{copy.title}</h3>
-              <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+              <p className={cn('text-sm font-medium leading-relaxed', isLookupFailure ? 'text-status-blocked-fg' : 'text-muted-foreground')}>
                 {copy.description}
               </p>
             </div>
@@ -404,7 +417,7 @@ function EmailPreviewPanel({
         {/* Body */}
         <div className="group/body rounded-xl border border-border/30 bg-background p-4">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">{t`Message`}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t`Message`}</span>
             <div className="opacity-0 group-hover/body:opacity-100 transition-opacity">
               <CopyFieldButton text={fullEmailText} />
             </div>
@@ -803,7 +816,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 onChange={(e) => handleFieldChange('primariaEmail', e.target.value)}
               />
               {draft.primariaEmail && !isValidEmail(draft.primariaEmail) && (
-                <p className="text-xs text-destructive" role="alert">
+                <p className="text-xs text-status-blocked-fg" role="alert">
                   <Trans>The email address is not valid.</Trans>
                 </p>
               )}
@@ -988,8 +1001,8 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Card A - Send yourself */}
               <div className={cn(
-                'flex flex-col rounded-[24px] border-2 border-border/40 p-6 text-center transition-opacity',
-                !draft.isNgo && 'opacity-50 cursor-not-allowed'
+                'flex flex-col rounded-[24px] border-2 border-border/40 p-6 text-center',
+                !draft.isNgo && 'cursor-not-allowed'
               )}>
                 <Mail className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Send it yourself`}</p>
@@ -997,17 +1010,17 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                   <Trans>Opens your email client with the completed request. Recommended when you represent a legally established association.</Trans>
                 </p>
                 {!draft.isNgo && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  <p className="text-xs text-status-partial-fg mt-2">
                     <Trans>Available for legally established associations.</Trans>
                   </p>
                 )}
                 {draft.isNgo && !hasOrganizationName && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  <p className="text-xs text-status-partial-fg mt-2">
                     <Trans>Add the association name to use this option.</Trans>
                   </p>
                 )}
                 {draft.isNgo && hasOrganizationName && !hasRequiredNgoDetails && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  <p className="text-xs text-status-partial-fg mt-2">
                     <Trans>Complete all NGO legal details to generate the request template.</Trans>
                   </p>
                 )}
@@ -1031,7 +1044,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                       <Trans>Use the association email address from which you will actually send the request.</Trans>
                     </p>
                     {draft.ngoSenderEmail && !hasValidNgoSenderEmail && (
-                      <p className="text-xs text-destructive" role="alert">
+                      <p className="text-xs text-status-blocked-fg" role="alert">
                         <Trans>The association email address is not valid.</Trans>
                       </p>
                     )}
@@ -1067,7 +1080,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
             )}
 
             {submitError && (
-              <p className="text-sm text-destructive font-medium" role="alert">
+              <p className="text-sm text-status-blocked-fg font-medium" role="alert">
                 {submitError}
               </p>
             )}

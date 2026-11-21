@@ -403,21 +403,21 @@ export const RED_FLAGS_BY_LOCALE: Record<LearningLocale, readonly RedFlagItem[]>
 
 export const STATUS_COLORS: Record<StatusLevel, { bg: string; text: string; border: string; dot: string }> = {
   green: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-    text: 'text-emerald-700 dark:text-emerald-300',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    dot: 'bg-emerald-500',
+    bg: 'bg-status-live-bg',
+    text: 'text-status-live-fg',
+    border: 'border-status-live-fg/30',
+    dot: 'bg-status-live-fg',
   },
   yellow: {
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
-    text: 'text-amber-700 dark:text-amber-300',
-    border: 'border-amber-200 dark:border-amber-800',
-    dot: 'bg-amber-500',
+    bg: 'bg-status-partial-bg',
+    text: 'text-status-partial-fg',
+    border: 'border-status-partial-fg/30',
+    dot: 'bg-status-partial-fg',
   },
   red: {
-    bg: 'bg-rose-50 dark:bg-rose-950/30',
-    text: 'text-rose-700 dark:text-rose-300',
-    border: 'border-rose-200 dark:border-rose-800',
-    dot: 'bg-rose-500',
+    bg: 'bg-status-blocked-bg',
+    text: 'text-status-blocked-fg',
+    border: 'border-status-blocked-fg/30',
+    dot: 'bg-status-blocked-fg',
   },
 }

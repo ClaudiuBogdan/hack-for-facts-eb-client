@@ -37,6 +37,7 @@ import type {
 } from "@/features/campaigns/buget/admin/types";
 import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns/buget/admin/utils/create-campaign-admin-entity-detail-route-search";
 
+import { campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 function createCampaignAdminUserPageRouteSearch(entityCui?: string) {
   return {
     query: undefined,
@@ -240,7 +241,7 @@ function UserDirectoryRow({
       </TableCell>
       <TableCell className="align-top text-right text-sm">
         {item.pendingReviewCount > 0 ? (
-          <Badge variant="warning" className="tabular-nums">
+          <Badge variant="outline" className={`tabular-nums ${campaignAdminStatusClassNames.partial}`}>
             {item.pendingReviewCount}
           </Badge>
         ) : (

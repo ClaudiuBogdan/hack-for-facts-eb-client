@@ -1,4 +1,5 @@
 import { t } from "@lingui/core/macro";
+import { campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { toUtcRangeBoundary } from "@/features/campaigns/buget/admin/utils/date-inputs";
 import type {
@@ -526,17 +527,15 @@ export function getCampaignAdminNotificationResultClassName(
   status: CampaignAdminNotificationPlanRowStatus,
 ): string {
   switch (status) {
-    case "will_send":
-      return "border-emerald-300 bg-emerald-100 text-emerald-950";
     case "already_sent":
-      return "border-sky-300 bg-sky-100 text-sky-950";
+      return campaignAdminStatusClassNames.live;
+    case "will_send":
     case "already_pending":
-      return "border-amber-300 bg-amber-100 text-amber-950";
+      return campaignAdminStatusClassNames.info;
     case "ineligible":
     case "missing_data":
-      return "border-slate-300 bg-slate-100 text-slate-900";
     default:
-      return "border-slate-300 bg-slate-100 text-slate-900";
+      return campaignAdminStatusClassNames.neutral;
   }
 }
 

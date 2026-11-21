@@ -291,7 +291,7 @@ export function ChallengesHubPage({
               </button>
             ) : null}
           </div>
-          <p className="max-w-2xl text-base font-medium text-muted-foreground opacity-60">
+          <p className="max-w-2xl text-base font-medium text-muted-foreground">
             {subtitle}
           </p>
         </div>
@@ -389,7 +389,7 @@ export function ChallengesHubPage({
           {locale === 'en' ? 'Read the campaign ' : 'Consultă '}
           <Link
             to={CAMPAIGN_TERMS_PATH}
-            className="font-medium text-foreground underline decoration-[#3565c4] underline-offset-4 transition-colors hover:text-[#3565c4]"
+            className="font-medium text-foreground underline decoration-primary underline-offset-4 transition-colors hover:text-primary"
           >
             {locale === 'en' ? 'terms and conditions' : 'termenii și condițiile campaniei'}
           </Link>
@@ -456,7 +456,7 @@ function CompactParticipantsSummary({
 
   return (
     <span className="inline-flex flex-col items-start gap-0.5 border-l border-border/70 pl-3 sm:items-end sm:pl-4">
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
         {locale === 'en' ? 'Participants' : 'Participanți'}
       </span>
       <span className="text-sm font-medium tracking-tight text-foreground sm:text-base">

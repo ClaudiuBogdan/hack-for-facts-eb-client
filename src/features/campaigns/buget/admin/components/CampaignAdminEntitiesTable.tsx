@@ -38,6 +38,7 @@ import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { getUserLocale } from "@/lib/utils";
+import { campaignAdminStatusClassNames, getCampaignAdminNotificationStatusClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminEntitiesTableProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -205,18 +206,7 @@ function NotificationStatusBadge({
     );
   }
 
-  const className =
-    status === "delivered" || status === "sent"
-      ? "border-emerald-300 bg-emerald-100 text-emerald-950"
-      : status === "failed_transient" ||
-          status === "failed_permanent" ||
-          status === "webhook_timeout"
-        ? "border-rose-300 bg-rose-100 text-rose-950"
-        : status === "suppressed" ||
-            status === "skipped_unsubscribed" ||
-            status === "skipped_no_email"
-          ? "border-slate-300 bg-slate-100 text-slate-900"
-          : "border-amber-300 bg-amber-100 text-amber-950";
+  const className = getCampaignAdminNotificationStatusClassName(status);
 
   return (
     <Badge variant="outline" className={className}>
@@ -237,7 +227,7 @@ function EntityCell({
       <p className="text-sm font-medium text-foreground transition-colors group-hover:text-primary group-hover:underline group-hover:underline-offset-2 group-hover:decoration-primary/80">
         {displayName}
       </p>
-      <p className="font-mono text-xs text-muted-foreground">{item.entityCui}</p>
+      <p className="font-mono text-xs text-foreground">{item.entityCui}</p>
     </div>
   );
 }
@@ -592,7 +582,7 @@ export function CampaignAdminEntitiesTable({
                         entityCui: item.entityCui,
                       }}
                       search={createCampaignAdminEntityDetailRouteSearch()}
-                      className="group block px-3 py-3 text-inherit no-underline outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background rounded-sm"
+                      className="group block px-3 py-3 text-inherit no-underline outline-none transition-colors hover:ring-1 hover:ring-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background rounded-sm"
                     >
                       <EntityCell item={item} />
                     </Link>
@@ -608,7 +598,7 @@ export function CampaignAdminEntitiesTable({
                         {item.interactionCount}
                       </p>
                       {item.pendingReviewCount > 0 ? (
-                        <Badge variant="warning" className="tabular-nums">
+                        <Badge variant="outline" className={`tabular-nums ${campaignAdminStatusClassNames.partial}`}>
                           {t`${item.pendingReviewCount} pending`}
                         </Badge>
                       ) : (
@@ -629,7 +619,7 @@ export function CampaignAdminEntitiesTable({
                       {item.hasFailedNotifications ? (
                         <Badge
                           variant="outline"
-                          className="border-rose-300 bg-rose-100 text-rose-950"
+                          className="border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
                         >
                           {t`Failures present`}
                         </Badge>

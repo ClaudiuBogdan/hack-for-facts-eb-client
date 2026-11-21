@@ -172,10 +172,10 @@ export function BugetEntityMapSelectorPage({
     <section className="mx-auto max-w-5xl space-y-4 px-4 py-4 sm:px-6 sm:py-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+          <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
             {title}
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
         <Button asChild variant="outline" className="shrink-0 self-start">
           <Link
@@ -196,7 +196,7 @@ export function BugetEntityMapSelectorPage({
           {locale === 'en' ? 'Campaign reach' : 'Participare în campanie'}
         </p>
         {isSubscriptionStatsError ? (
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-status-blocked-fg">
             {locale === 'en'
               ? 'Subscription stats are temporarily unavailable.'
               : 'Statisticile de abonare sunt temporar indisponibile.'}
@@ -230,7 +230,7 @@ export function BugetEntityMapSelectorPage({
           <DialogHeader>
             <DialogTitle>{confirmDialogTitle}</DialogTitle>
             <DialogDescription className="sr-only">{selectedEntityDialogLabel}</DialogDescription>
-            <p className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+            <p className="text-2xl font-black tracking-tight text-foreground">
               {selectedEntityDialogLabel}
             </p>
           </DialogHeader>
@@ -248,6 +248,7 @@ export function BugetEntityMapSelectorPage({
             </Button>
             <Button
               type="button"
+              className="hover:bg-primary hover:ring-2 hover:ring-primary/40"
               disabled={isResolvingSelection}
               onClick={() => {
                 if (!pendingUatSelection) return

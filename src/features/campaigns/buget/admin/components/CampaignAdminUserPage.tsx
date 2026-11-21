@@ -126,6 +126,10 @@ import {
   campaignAdminEntityHubTabsTriggerClassName,
 } from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
 import { cn } from "@/lib/utils";
+import {
+  campaignAdminBlockedAlertClassName,
+  getCampaignAdminRiskFlagsSeverity,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 const USER_NOTIFICATION_PREVIEW_LIMIT = 10;
 
@@ -297,6 +301,9 @@ export function CampaignAdminUserPage({
       (item) => item.reviewStatus === "rejected",
     ).length;
     const flagged = allItems.filter((item) => item.riskFlags.length > 0).length;
+    const flaggedSeverity = getCampaignAdminRiskFlagsSeverity(
+      allItems.flatMap((item) => item.riskFlags),
+    );
 
     return {
       total: allItems.length,
@@ -304,6 +311,7 @@ export function CampaignAdminUserPage({
       approved,
       rejected,
       flagged,
+      flaggedSeverity,
     };
   }, [allItems]);
   const queueLinkSearch = useMemo(
@@ -1031,10 +1039,10 @@ export function CampaignAdminUserPage({
               type="button"
               onClick={handleCopyUserId}
               className={cn(
-                "inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-xs text-foreground ring-offset-background transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:max-w-[min(100%,min(28rem,90vw))]",
+                "inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-xs ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:max-w-[min(100%,min(28rem,90vw))]",
                 userIdCopied
-                  ? "border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/15"
-                  : "border-border/60 bg-muted/30 hover:bg-muted",
+                  ? "border-status-live-fg/50 bg-status-live-bg text-status-live-fg hover:border-status-live-fg hover:text-status-live-fg"
+                  : "border-border/60 bg-muted/30 text-foreground hover:bg-muted hover:text-foreground",
               )}
               title={t`Click to copy full user ID`}
               aria-label={
@@ -1045,7 +1053,7 @@ export function CampaignAdminUserPage({
             >
               {userIdCopied ? (
                 <Check
-                  className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-500"
+                  className="h-3.5 w-3.5 shrink-0 text-status-live-fg"
                   aria-hidden="true"
                 />
               ) : (
@@ -1144,7 +1152,7 @@ export function CampaignAdminUserPage({
       )}
     >
       {metaQuery.error && metaQuery.data === undefined ? (
-        <Alert variant="destructive" aria-live="polite">
+        <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>{t`Failed to load interaction metadata`}</AlertTitle>
           <AlertDescription className="space-y-3">
@@ -1171,7 +1179,7 @@ export function CampaignAdminUserPage({
       interactionsQuery.error.status !== 401 &&
       interactionsQuery.error.status !== 403 &&
       interactionsQuery.error.status !== 404 ? (
-        <Alert variant="destructive" aria-live="polite">
+        <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
           <Ban className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>{t`Failed to load the user workspace`}</AlertTitle>
           <AlertDescription className="space-y-3">
@@ -1209,7 +1217,7 @@ export function CampaignAdminUserPage({
               <CompactStat
                 label={t`Pending`}
                 value={summary.pending}
-                className="text-amber-600 dark:text-amber-400"
+                className="text-status-partial-fg"
               />
             ) : (
               <CompactStat label={t`Pending`} value={summary.pending} />
@@ -1219,7 +1227,11 @@ export function CampaignAdminUserPage({
               <CompactStat
                 label={t`Risk`}
                 value={summary.flagged}
-                className="text-rose-600 dark:text-rose-400"
+                className={
+                  summary.flaggedSeverity === "blocked"
+                    ? "text-status-blocked-fg"
+                    : "text-status-partial-fg"
+                }
               />
             ) : (
               <CompactStat label={t`Risk`} value={summary.flagged} />
@@ -1507,7 +1519,7 @@ export function CampaignAdminUserPage({
                 className="rounded-2xl border border-border/50 bg-muted/20"
               />
             ) : notificationsQuery.error ? (
-              <Alert variant="destructive" aria-live="polite">
+              <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
                 <Ban className="h-4 w-4" aria-hidden="true" />
                 <AlertTitle>{t`Failed to load notifications`}</AlertTitle>
                 <AlertDescription className="space-y-3">
