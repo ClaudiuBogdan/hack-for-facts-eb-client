@@ -191,7 +191,7 @@ function EntitiesHubCardSummary({
         {t`${meta.totalEntities} tracked · ${meta.entitiesWithPendingReviews} pending`}
       </p>
       {meta.entitiesWithFailedNotifications > 0 ? (
-        <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">
+        <p className="mt-2 text-xs text-status-blocked-fg">
           {t`${meta.entitiesWithFailedNotifications} delivery issues`}
         </p>
       ) : null}
@@ -218,7 +218,7 @@ function NotificationsHubCardSummary({
         {t`${meta.pendingDeliveryCount} pending delivery · ${meta.replyReceivedCount} replies`}
       </p>
       {meta.failedDeliveryCount > 0 ? (
-        <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">
+        <p className="mt-2 text-xs text-status-blocked-fg">
           {t`${meta.failedDeliveryCount} failed deliveries`}
         </p>
       ) : null}
@@ -308,7 +308,7 @@ export function CampaignAdminHubPage({
               <CompactStat
                 label={t`Users`}
                 value={overview.users.totalUsers}
-                className="text-blue-600 dark:text-blue-400"
+                className="text-primary"
               />
             ) : null}
 
@@ -319,7 +319,7 @@ export function CampaignAdminHubPage({
               <CompactStat
                 label={t`Entities`}
                 value={overview.entities.totalEntities}
-                className="text-indigo-600 dark:text-indigo-400"
+                className="text-primary"
               />
             ) : null}
 
@@ -335,20 +335,20 @@ export function CampaignAdminHubPage({
               label={t`Pending`}
               value={pendingCount}
               isLoading={metaQuery.isLoading}
-              className="text-amber-600 dark:text-amber-400"
+              className="text-status-partial-fg"
             />
             {metaQuery.isLoading ? null : riskFlaggedCount > 0 ? (
               <CompactStat
                 label={t`Flagged`}
                 value={riskFlaggedCount}
-                className="text-rose-600 dark:text-rose-400"
+                className="text-status-blocked-fg"
               />
             ) : null}
             <CompactStat
               label={t`Approved`}
               value={approvedCount}
               isLoading={metaQuery.isLoading}
-              className="text-emerald-600 dark:text-emerald-400"
+              className="text-status-live-fg"
             />
             <CompactStat
               label={t`Rejected`}
@@ -368,12 +368,12 @@ export function CampaignAdminHubPage({
                 <CompactStat
                   label={t`Delivered`}
                   value={overview.notifications.deliveredCount}
-                  className="text-cyan-600 dark:text-cyan-400"
+                  className="text-primary"
                 />
                 <CompactStat
                   label={t`Opened`}
                   value={overview.notifications.openedCount}
-                  className="text-violet-600 dark:text-violet-400"
+                  className="text-primary"
                 />
               </>
             ) : null}
@@ -470,7 +470,7 @@ export function CampaignAdminHubPage({
                 </p>
               </div>
               {riskFlaggedCount > 0 && (
-                <p className="text-xs text-amber-600 dark:text-amber-400">
+                <p className="text-xs text-status-partial-fg">
                   {t`${riskFlaggedCount} flagged for review`}
                 </p>
               )}

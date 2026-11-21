@@ -207,16 +207,16 @@ function NotificationStatusBadge({
 
   const className =
     status === "delivered" || status === "sent"
-      ? "border-emerald-300 bg-emerald-100 text-emerald-950"
+      ? "border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
       : status === "failed_transient" ||
           status === "failed_permanent" ||
           status === "webhook_timeout"
-        ? "border-rose-300 bg-rose-100 text-rose-950"
+        ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
         : status === "suppressed" ||
             status === "skipped_unsubscribed" ||
             status === "skipped_no_email"
-          ? "border-slate-300 bg-slate-100 text-slate-900"
-          : "border-amber-300 bg-amber-100 text-amber-950";
+          ? "border-border bg-muted text-foreground"
+          : "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg";
 
   return (
     <Badge variant="outline" className={className}>
@@ -629,7 +629,7 @@ export function CampaignAdminEntitiesTable({
                       {item.hasFailedNotifications ? (
                         <Badge
                           variant="outline"
-                          className="border-rose-300 bg-rose-100 text-rose-950"
+                          className="border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
                         >
                           {t`Failures present`}
                         </Badge>

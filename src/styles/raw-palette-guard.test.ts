@@ -52,33 +52,7 @@ const HEX_GUARDED = 'src/features/learning/'
  */
 const HEX_CLASS = /(?<=[a-z])-\[(?:[a-z-]+:)?#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\](?:\/(?:\d+|\[[^\]]+\]))?(?![:/])/g
 
-/**
- * Files not converted yet. Each conversion batch removes its files; the second
- * test fails if a listed file is already clean, so a converted file must leave.
- * That the list only shrinks is otherwise a review rule: an addition shows in
- * the diff.
- */
-const PENDING: readonly string[] = [
-  'src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsTable.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx',
-  'src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx',
-  'src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx',
-  'src/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles.ts',
-  'src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts',
-]
-
-/** Repository-relative paths, always with `/`, so the list compares the same on every platform. */
+/** Repository-relative paths, always with `/`, so offenders read the same on every platform. */
 function sourceFiles(dir: string): string[] {
   return readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((entry) => {
     const path = `${dir}/${entry.name}`
@@ -99,18 +73,12 @@ const files = GUARDED.flatMap(sourceFiles)
 const coloursIn = (file: string) => rawColours(file, readFileSync(join(ROOT, file), 'utf8'))
 
 describe('raw palette colours', () => {
-  it('appear in no guarded file outside PENDING', () => {
+  it('appear in no guarded file', () => {
     const offenders = files
-      .filter((file) => !PENDING.includes(file))
       .map((file) => ({ file, colours: [...new Set(coloursIn(file))] }))
       .filter(({ colours }) => colours.length > 0)
       .map(({ file, colours }) => `${file}: ${colours.slice(0, 6).join(' ')}${colours.length > 6 ? ' …' : ''}`)
     expect(offenders).toEqual([])
-  })
-
-  it('leave PENDING once a file is converted', () => {
-    const clean = PENDING.filter((file) => !files.includes(file) || coloursIn(file).length === 0)
-    expect(clean).toEqual([])
   })
 
   it.each([

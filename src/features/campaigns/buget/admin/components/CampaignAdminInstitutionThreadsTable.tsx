@@ -49,11 +49,11 @@ function getThreadStateBadgeClassName(
 ): string {
   switch (threadState) {
     case "started":
-      return "border-sky-300 bg-sky-100 text-sky-950";
+      return "border-primary/30 bg-primary/10 text-foreground";
     case "pending":
-      return "border-amber-300 bg-amber-100 text-amber-950";
+      return "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg";
     case "resolved":
-      return "border-emerald-300 bg-emerald-100 text-emerald-950";
+      return "border-status-live-fg/30 bg-status-live-bg text-status-live-fg";
     default:
       return "";
   }
@@ -64,13 +64,13 @@ function getResponseStatusBadgeClassName(
 ): string {
   switch (responseStatus) {
     case "registration_number_received":
-      return "border-sky-300 bg-sky-100 text-sky-950";
+      return "border-primary/30 bg-primary/10 text-foreground";
     case "request_confirmed":
-      return "border-emerald-300 bg-emerald-100 text-emerald-950";
+      return "border-status-live-fg/30 bg-status-live-bg text-status-live-fg";
     case "request_denied":
-      return "border-rose-300 bg-rose-100 text-rose-950";
+      return "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg";
     case null:
-      return "border-slate-300 bg-slate-100 text-slate-900";
+      return "border-border bg-muted text-foreground";
     default:
       return "";
   }

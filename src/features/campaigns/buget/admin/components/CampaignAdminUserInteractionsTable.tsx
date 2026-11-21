@@ -229,22 +229,22 @@ function ReviewStatusBadge({
       ? {
           icon: CheckCircle2,
           className:
-            "gap-1.5 border-emerald-300 bg-emerald-100 text-emerald-950",
+            "gap-1.5 border-status-live-fg/30 bg-status-live-bg text-status-live-fg",
         }
       : reviewStatus === "rejected"
         ? {
             icon: XCircle,
-            className: "gap-1.5 border-rose-300 bg-rose-100 text-rose-950",
+            className: "gap-1.5 border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg",
           }
         : reviewStatus === "pending"
           ? {
               icon: Clock3,
               className:
-                "gap-1.5 border-amber-300 bg-amber-200/80 text-amber-950",
+                "gap-1.5 border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg",
             }
           : {
               icon: CircleSlash2,
-              className: "gap-1.5 border-slate-300 bg-slate-100 text-slate-800",
+              className: "gap-1.5 border-border bg-muted text-foreground",
             };
   const Icon = presentation.icon;
 
@@ -266,11 +266,11 @@ function StagedReviewStateBadge({
       ? {
           icon: CheckCircle2,
           className:
-            "gap-1.5 border-emerald-300 bg-emerald-100 text-emerald-950",
+            "gap-1.5 border-status-live-fg/30 bg-status-live-bg text-status-live-fg",
         }
       : {
           icon: XCircle,
-          className: "gap-1.5 border-rose-300 bg-rose-100 text-rose-950",
+          className: "gap-1.5 border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg",
         };
   const Icon = presentation.icon;
 
@@ -289,10 +289,10 @@ function ThreadPhaseBadge({
 }) {
   const className =
     threadPhase === "failed"
-      ? "border-rose-300 bg-rose-100 text-rose-950"
+      ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
       : threadPhase === null
-        ? "border-slate-300 bg-slate-100 text-slate-800"
-        : "border-sky-300 bg-sky-100 text-sky-950";
+        ? "border-border bg-muted text-foreground"
+        : "border-primary/30 bg-primary/10 text-foreground";
 
   return (
     <Badge variant="outline" className={className}>
@@ -320,7 +320,7 @@ function RiskFlagBadgeList({
             key={riskFlag}
             variant="warning"
             title={label}
-            className="max-w-[11rem] overflow-hidden text-ellipsis whitespace-nowrap border-amber-300 bg-amber-200/80 text-[11px] text-amber-950"
+            className="max-w-[11rem] overflow-hidden text-ellipsis whitespace-nowrap border-status-partial-fg/30 bg-status-partial-bg text-[11px] text-status-partial-fg"
           >
             {label}
           </Badge>
@@ -360,7 +360,7 @@ function renderNotifyPreview(
   }
 
   return stagedDraft.sendNotification === true ? (
-    <Badge variant="outline" className="border-sky-300 bg-sky-100 text-sky-950">
+    <Badge variant="outline" className="border-primary/30 bg-primary/10 text-foreground">
       {t`Notify`}
     </Badge>
   ) : (
@@ -1096,7 +1096,7 @@ export function CampaignAdminUserInteractionsTable({
                       className={cn(
                         "max-w-[14rem] break-words font-medium",
                         reviewPreviewStatus === "approved"
-                          ? "text-emerald-800"
+                          ? "text-status-live-fg"
                           : "text-foreground",
                       )}
                     >
@@ -1223,7 +1223,7 @@ export function CampaignAdminUserInteractionsTable({
                       className={cn(
                         "text-sm font-medium",
                         stagedDraft?.status === "approved"
-                          ? "text-emerald-800"
+                          ? "text-status-live-fg"
                           : "text-foreground",
                       )}
                     >

@@ -660,7 +660,7 @@ export function CampaignAdminReviewSheet({
                       className={cn(
                         'flex cursor-pointer items-start gap-3 rounded-2xl border bg-background px-4 py-3 text-sm transition-all',
                         selectedDecision === 'approved'
-                          ? 'border-emerald-500 bg-emerald-50 shadow-sm ring-2 ring-emerald-200/80'
+                          ? 'border-status-live-fg bg-status-live-bg shadow-sm ring-2 ring-status-live-fg/30'
                           : 'border-border/70 text-foreground hover:border-foreground/15 hover:bg-muted/30'
                       )}
                     >
@@ -670,7 +670,7 @@ export function CampaignAdminReviewSheet({
                         disabled={isSubmitting}
                         className={cn(
                           selectedDecision === 'approved'
-                            ? 'border-emerald-600 text-emerald-600'
+                            ? 'border-status-live-fg text-status-live-fg'
                             : 'border-muted-foreground/40 text-muted-foreground'
                         )}
                       />
@@ -678,7 +678,7 @@ export function CampaignAdminReviewSheet({
                         <span
                           className={cn(
                             'block font-medium',
-                            selectedDecision === 'approved' ? 'text-emerald-900' : 'text-foreground'
+                            selectedDecision === 'approved' ? 'text-status-live-fg' : 'text-foreground'
                           )}
                         >
                           {t`Approved`}
@@ -687,7 +687,7 @@ export function CampaignAdminReviewSheet({
                           className={cn(
                             'block text-xs',
                             selectedDecision === 'approved'
-                              ? 'text-emerald-800/90'
+                              ? 'text-status-live-fg'
                               : 'text-muted-foreground'
                           )}
                         >
@@ -700,7 +700,7 @@ export function CampaignAdminReviewSheet({
                       className={cn(
                         'flex cursor-pointer items-start gap-3 rounded-2xl border bg-background px-4 py-3 text-sm transition-all',
                         selectedDecision === 'rejected'
-                          ? 'border-red-500 bg-red-50 shadow-sm ring-2 ring-red-200/80'
+                          ? 'border-status-blocked-fg bg-status-blocked-bg shadow-sm ring-2 ring-status-blocked-fg/30'
                           : 'border-border/70 text-foreground hover:border-foreground/15 hover:bg-muted/30'
                       )}
                     >
@@ -710,7 +710,7 @@ export function CampaignAdminReviewSheet({
                         disabled={isSubmitting}
                         className={cn(
                           selectedDecision === 'rejected'
-                            ? 'border-red-600 text-red-600'
+                            ? 'border-status-blocked-fg text-status-blocked-fg'
                             : 'border-muted-foreground/40 text-muted-foreground'
                         )}
                       />
@@ -718,7 +718,7 @@ export function CampaignAdminReviewSheet({
                         <span
                           className={cn(
                             'block font-medium',
-                            selectedDecision === 'rejected' ? 'text-red-900' : 'text-foreground'
+                            selectedDecision === 'rejected' ? 'text-status-blocked-fg' : 'text-foreground'
                           )}
                         >
                           {t`Rejected`}
@@ -727,7 +727,7 @@ export function CampaignAdminReviewSheet({
                           className={cn(
                             'block text-xs',
                             selectedDecision === 'rejected'
-                              ? 'text-red-800/90'
+                              ? 'text-status-blocked-fg'
                               : 'text-muted-foreground'
                           )}
                         >

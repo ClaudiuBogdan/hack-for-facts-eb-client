@@ -264,10 +264,10 @@ function NotificationExecutionPanel({
     );
   const statusClassName =
     execution.status === "queued"
-      ? "border-emerald-300 bg-emerald-100 text-emerald-950"
+      ? "border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
       : execution.status === "partial"
-        ? "border-amber-300 bg-amber-100 text-amber-950"
-        : "border-slate-300 bg-slate-100 text-slate-900";
+        ? "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg"
+        : "border-border bg-muted text-foreground";
 
   return (
     <div className="space-y-3 rounded-xl border border-border/70 bg-muted/20 p-4">

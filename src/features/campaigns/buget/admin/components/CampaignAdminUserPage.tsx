@@ -1033,7 +1033,7 @@ export function CampaignAdminUserPage({
               className={cn(
                 "inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-xs text-foreground ring-offset-background transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:max-w-[min(100%,min(28rem,90vw))]",
                 userIdCopied
-                  ? "border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/15"
+                  ? "border-status-live-fg/50 bg-status-live-bg hover:border-status-live-fg"
                   : "border-border/60 bg-muted/30 hover:bg-muted",
               )}
               title={t`Click to copy full user ID`}
@@ -1045,7 +1045,7 @@ export function CampaignAdminUserPage({
             >
               {userIdCopied ? (
                 <Check
-                  className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-500"
+                  className="h-3.5 w-3.5 shrink-0 text-status-live-fg"
                   aria-hidden="true"
                 />
               ) : (
@@ -1209,7 +1209,7 @@ export function CampaignAdminUserPage({
               <CompactStat
                 label={t`Pending`}
                 value={summary.pending}
-                className="text-amber-600 dark:text-amber-400"
+                className="text-status-partial-fg"
               />
             ) : (
               <CompactStat label={t`Pending`} value={summary.pending} />
@@ -1219,7 +1219,7 @@ export function CampaignAdminUserPage({
               <CompactStat
                 label={t`Risk`}
                 value={summary.flagged}
-                className="text-rose-600 dark:text-rose-400"
+                className="text-status-blocked-fg"
               />
             ) : (
               <CompactStat label={t`Risk`} value={summary.flagged} />

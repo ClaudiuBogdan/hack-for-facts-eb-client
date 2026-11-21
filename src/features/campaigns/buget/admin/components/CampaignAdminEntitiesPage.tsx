@@ -1396,11 +1396,11 @@ export function CampaignAdminEntitiesPage({
               >
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                   <CompactStat label={t`Total entities`} value={meta.totalEntities} />
-                  <CompactStat label={t`Pending reviews`} value={meta.entitiesWithPendingReviews} className="text-amber-600 dark:text-amber-400" />
-                  <CompactStat label={t`Subscribers`} value={meta.entitiesWithSubscribers} className="text-emerald-600 dark:text-emerald-400" />
-                  <CompactStat label={t`Notification activity`} value={meta.entitiesWithNotificationActivity} className="text-blue-600 dark:text-blue-400" />
+                  <CompactStat label={t`Pending reviews`} value={meta.entitiesWithPendingReviews} className="text-status-partial-fg" />
+                  <CompactStat label={t`Subscribers`} value={meta.entitiesWithSubscribers} className="text-status-live-fg" />
+                  <CompactStat label={t`Notification activity`} value={meta.entitiesWithNotificationActivity} className="text-primary" />
                   {meta.entitiesWithFailedNotifications > 0 ? (
-                    <CompactStat label={t`Failed notifications`} value={meta.entitiesWithFailedNotifications} className="text-rose-600 dark:text-rose-400" />
+                    <CompactStat label={t`Failed notifications`} value={meta.entitiesWithFailedNotifications} className="text-status-blocked-fg" />
                   ) : null}
                   <CollapsibleTrigger asChild>
                     <button

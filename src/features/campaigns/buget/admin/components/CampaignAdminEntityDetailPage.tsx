@@ -339,12 +339,12 @@ function ReviewStatusBadge({
 }) {
   const className =
     reviewStatus === "approved"
-      ? "border-emerald-300 bg-emerald-100 text-emerald-950"
+      ? "border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
       : reviewStatus === "rejected"
-        ? "border-rose-300 bg-rose-100 text-rose-950"
+        ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
         : reviewStatus === "pending"
-          ? "border-amber-300 bg-amber-100 text-amber-950"
-          : "border-slate-300 bg-slate-100 text-slate-900";
+          ? "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg"
+          : "border-border bg-muted text-foreground";
 
   return (
     <Badge variant="outline" className={className}>
@@ -360,10 +360,10 @@ function ThreadPhaseBadge({
 }) {
   const className =
     threadPhase === "failed"
-      ? "border-rose-300 bg-rose-100 text-rose-950"
+      ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
       : threadPhase === null
-        ? "border-slate-300 bg-slate-100 text-slate-900"
-        : "border-sky-300 bg-sky-100 text-sky-950";
+        ? "border-border bg-muted text-foreground"
+        : "border-primary/30 bg-primary/10 text-foreground";
 
   return (
     <Badge variant="outline" className={className}>
@@ -811,14 +811,14 @@ export function CampaignAdminEntityDetailPage({
                 <EntitySummaryStat
                   label={t`Pending reviews`}
                   value={cachedEntitySummary?.pendingReviewCount ?? null}
-                  className="text-amber-600 dark:text-amber-400"
+                  className="text-status-partial-fg"
                 />
                 <EntitySummaryStat
                   label={t`Subscribers`}
                   value={
                     cachedEntitySummary?.notificationSubscriberCount ?? null
                   }
-                  className="text-emerald-600 dark:text-emerald-400"
+                  className="text-status-live-fg"
                 />
                 <CompactStat
                   label={t`Notifications`}
@@ -832,7 +832,7 @@ export function CampaignAdminEntityDetailPage({
                     notificationsQuery.isLoading &&
                     notificationsQuery.data === undefined
                   }
-                  className="text-blue-600 dark:text-blue-400"
+                  className="text-primary"
                 />
               </>
             ) : null}

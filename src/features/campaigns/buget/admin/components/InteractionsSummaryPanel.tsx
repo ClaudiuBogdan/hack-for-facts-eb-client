@@ -100,14 +100,14 @@ export function InteractionsSummaryPanel({
       {/* Compact stats bar - always visible */}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <CompactStat label={t`Interactions`} value={stats.total} />
-        <CompactStat label={t`Pending`} value={stats.reviewStatusCounts.pending} className="text-amber-600 dark:text-amber-400" />
-        <CompactStat label={t`Approved`} value={stats.reviewStatusCounts.approved} className="text-emerald-600 dark:text-emerald-400" />
+        <CompactStat label={t`Pending`} value={stats.reviewStatusCounts.pending} className="text-status-partial-fg" />
+        <CompactStat label={t`Approved`} value={stats.reviewStatusCounts.approved} className="text-status-live-fg" />
         <CompactStat label={t`Rejected`} value={stats.reviewStatusCounts.rejected} className="text-muted-foreground" />
         {stats.riskFlagged > 0 ? (
-          <CompactStat label={t`Flagged`} value={stats.riskFlagged} className="text-rose-600 dark:text-rose-400" />
+          <CompactStat label={t`Flagged`} value={stats.riskFlagged} className="text-status-blocked-fg" />
         ) : null}
         {threadInProgressCount > 0 ? (
-          <CompactStat label={t`In progress`} value={threadInProgressCount} className="text-cyan-600 dark:text-cyan-400" />
+          <CompactStat label={t`In progress`} value={threadInProgressCount} className="text-primary" />
         ) : null}
         <CollapsibleTrigger asChild>
           <button

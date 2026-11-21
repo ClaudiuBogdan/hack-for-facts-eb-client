@@ -187,7 +187,7 @@ function ConfiguredBadge({
   return configured ? (
     <Badge
       variant="outline"
-      className="border-emerald-300 bg-emerald-100 text-emerald-950"
+      className="border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
     >
       {t`Configured`}
     </Badge>
@@ -241,7 +241,7 @@ function StagedValuesCell({
       <div className="flex flex-wrap gap-1.5">
         <Badge
           variant="outline"
-          className="border-sky-300 bg-sky-100 text-sky-950"
+          className="border-primary/30 bg-primary/10 text-foreground"
         >
           {selected && !isStale ? t`Ready` : t`Staged`}
         </Badge>
@@ -533,7 +533,7 @@ export function CampaignAdminEntityConfigTable({
                 key={item.entityCui}
                 className={cn(
                   stagedDraft !== undefined &&
-                    "bg-sky-50/70 hover:bg-sky-50 dark:bg-sky-950/20 dark:hover:bg-sky-950/25",
+                    "bg-primary/10 hover:bg-primary/10 [&_.text-muted-foreground]:text-foreground",
                 )}
               >
                 <TableCell className="align-top">

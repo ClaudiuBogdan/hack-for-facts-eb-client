@@ -1108,7 +1108,7 @@ export function CampaignAdminNotificationsRunTab({
                 </div>
 
                 {sendResult ? (
-                  <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950">
+                  <div className="rounded-2xl border border-status-live-fg/30 bg-status-live-bg p-4 text-sm text-status-live-fg">
                     <p className="font-medium">
                       {t`Notification send completed`}
                     </p>

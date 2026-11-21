@@ -527,16 +527,16 @@ export function getCampaignAdminNotificationResultClassName(
 ): string {
   switch (status) {
     case "will_send":
-      return "border-emerald-300 bg-emerald-100 text-emerald-950";
+      return "border-status-live-fg/30 bg-status-live-bg text-status-live-fg";
     case "already_sent":
-      return "border-sky-300 bg-sky-100 text-sky-950";
+      return "border-primary/30 bg-primary/10 text-foreground";
     case "already_pending":
-      return "border-amber-300 bg-amber-100 text-amber-950";
+      return "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg";
     case "ineligible":
     case "missing_data":
-      return "border-slate-300 bg-slate-100 text-slate-900";
+      return "border-border bg-muted text-foreground";
     default:
-      return "border-slate-300 bg-slate-100 text-slate-900";
+      return "border-border bg-muted text-foreground";
   }
 }
 
