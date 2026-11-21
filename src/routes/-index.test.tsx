@@ -50,6 +50,28 @@ describe('Index route', () => {
     expect(head.links).toEqual([{ rel: 'canonical', href: 'https://transparenta.eu' }])
   })
 
+  it('owns both of its keys: the budget map’s and the search a link opens', async () => {
+    const { Route } = await import('./index')
+    const validate = Route.options.validateSearch as (search: Record<string, unknown>) => Record<string, unknown>
+    expect(validate({})).toStrictEqual({ harta: undefined, q: undefined })
+    expect(validate({ harta: 'venituri', q: 'primaria cluj' })).toStrictEqual({ harta: 'venituri', q: 'primaria cluj' })
+    // As the router read it, so the address serialises back to itself: a CUI stays a number.
+    expect(validate({ q: 2816464 })).toStrictEqual({ harta: undefined, q: 2816464 })
+    expect(validate({ q: ['a', 'b'] })).toStrictEqual({ harta: undefined, q: undefined })
+    expect(validate({ q: { a: 1 } })).toStrictEqual({ harta: undefined, q: undefined })
+  })
+
+  it('keeps a search link out of search results, on the same canonical page', async () => {
+    const { Route } = await import('./index')
+    type Head = ReturnType<typeof import('./index').buildHomeHead>
+    const robots = (head: Head) => head.meta.find((entry) => 'name' in entry && entry.name === 'robots')
+    const head = Route.options.head as (context: { match: { search: Record<string, unknown> } }) => Head
+    expect(robots(head({ match: { search: { q: 'primaria' } } }))).toEqual({ name: 'robots', content: 'noindex,follow' })
+    expect(head({ match: { search: { q: 'primaria' } } }).links).toEqual([{ rel: 'canonical', href: 'https://transparenta.eu' }])
+    expect(robots(head({ match: { search: { q: '   ' } } }))).toEqual({ name: 'robots', content: 'index,follow' })
+    expect(robots(head({ match: { search: {} } }))).toEqual({ name: 'robots', content: 'index,follow' })
+  })
+
   it('renders the landing feature from the lazy route', async () => {
     const { Route } = await import('./index.lazy')
     const { LandingPage } = await import('@/features/landing/components/landing-page')

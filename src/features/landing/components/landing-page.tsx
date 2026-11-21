@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import type { CSSProperties } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useSearch } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
@@ -15,6 +15,7 @@ import { CampaignLandingShareCard } from '@/features/campaigns/buget/components/
 import { ParliamentPromoCard } from '@/features/parliament/components/parliament-promo-card'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { getPlatformCoverage } from '@/features/landing/lib/platform-coverage'
+import { searchTermFromAddress } from '@/features/landing/lib/address-search-term'
 import type { FieldCell } from '@/features/landing/lib/pixel-art'
 import { SmearFilters, countUpWithin, stopCounting } from './count-up'
 import { CornerTicks, RomanianFlag, TwoLayerLattice } from './hero-chrome'
@@ -96,14 +97,23 @@ const FIELD_MASK = {
  * Autofocus is desktop-only. On a phone, focusing on mount raises the keyboard
  * over the page before the reader has seen it; `scrollToTopOnFocus` is the
  * mobile counterpart, keeping the field above the keyboard once they do tap it.
+ *
+ * A search link (`/?q=`, the site's `SearchAction`) opens with the field
+ * filled. The address seeds the field and no more: typing does not write it
+ * back. The field is keyed on the term, so a new term (another link, Back)
+ * starts it afresh, and anything else in the address — the map's `harta` —
+ * leaves the reader's draft alone.
  */
 function HeroSearch({ inputRef }: { readonly inputRef: RefObject<HTMLInputElement | null> }) {
   const isMobile = useIsMobile()
+  const initialTerm = searchTermFromAddress(useSearch({ from: '/', select: (search) => search.q }))
   return (
     // The placeholder is kept short deliberately: at 375px the field has about
     // thirty characters after the magnifier's padding, and the longer wording
     // truncated mid-word.
     <DeferredLandingSearch
+      key={initialTerm ?? ''}
+      initialTerm={initialTerm}
       inputRef={inputRef}
       placeholder={t`Caută entități, statistici sau identificatori...`}
       autoFocus={!isMobile}

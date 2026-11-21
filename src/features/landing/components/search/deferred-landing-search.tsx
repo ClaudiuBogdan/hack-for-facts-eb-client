@@ -2,11 +2,13 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import type { ComponentProps, RefObject } from 'react'
 import { Search, X } from 'lucide-react'
 import { t } from '@lingui/core/macro'
+import { MIN_QUERY_CHARS } from '@/features/landing/lib/search-limits'
 import { quietImport, reloadForFreshCode } from '@/lib/chunk-recovery'
 import { cn } from '@/lib/utils'
 import type { LandingSearch } from './landing-search'
 import {
   isApplePlatform,
+  isUnclaimedFocus,
   NARROW_VIEWPORT,
   ScopePill,
   SEARCH_ACTIONS_CLASS,
@@ -44,10 +46,18 @@ import {
  * Once fetched, the combobox is drawn at once wherever the field mounts again
  * (a later page of the visit); only hydration draws the plain field first,
  * since the server cannot draw anything else.
+ *
+ * A field can start with a term (`initialTerm`: the landing's `/?q=`). The
+ * server draws it, the plain field hands it over like typed text, and a
+ * queryable one fetches the combobox at once rather than at idle, so its
+ * answer is ready when the reader comes to it.
  */
 
 type Combobox = typeof LandingSearch
-export type DeferredLandingSearchProps = Omit<ComponentProps<Combobox>, 'handover'>
+export type DeferredLandingSearchProps = Omit<ComponentProps<Combobox>, 'handover'> & {
+  /** The text the field starts with. Read at mount: a caller with a new term mounts a new field (`key`). */
+  readonly initialTerm?: string
+}
 
 /** How long the field waits for an idle moment before it fetches the combobox anyway. */
 const IDLE_TIMEOUT_MS = 3000
@@ -107,10 +117,10 @@ function isTypingTarget(target: EventTarget | null) {
   return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
 }
 
-export function DeferredLandingSearch(props: DeferredLandingSearchProps) {
+export function DeferredLandingSearch({ initialTerm, ...props }: DeferredLandingSearchProps) {
   // The server's answer, and so hydration's, is always the plain field.
   const Combobox = useSyncExternalStore(subscribe, currentCombobox, noCombobox)
-  const [term, setTerm] = useState('')
+  const [term, setTerm] = useState(initialTerm ?? '')
   const [composing, setComposing] = useState(false)
   const focusRef = useRef<SearchFocus | null>(null)
   if (Combobox && !composing) return <Combobox {...props} handover={{ term, focus: focusRef }} />
@@ -128,7 +138,7 @@ function PlainSearchField({
   onTermChange,
   onComposingChange,
   focusRef,
-}: DeferredLandingSearchProps & {
+}: Omit<DeferredLandingSearchProps, 'initialTerm'> & {
   readonly term: string
   readonly onTermChange: (term: string) => void
   readonly onComposingChange: (composing: boolean) => void
@@ -141,6 +151,8 @@ function PlainSearchField({
   const keyboardFocusRef = useRef(false)
   const pointerFocusRef = useRef(false)
   const autoFocusOnMountRef = useRef(autoFocus)
+  // The text the field was drawn with — empty, or the caller's term — against which the input tells what the reader changed.
+  const mountTermRef = useRef(term)
   const prefersReducedMotion = usePrefersReducedMotion()
   const failed = useSyncExternalStore(subscribe, currentFailure, noFailure)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -152,16 +164,22 @@ function PlainSearchField({
     setKeyboardFocus(keyboard)
   }
 
-  // What the reader typed into the server's field before the page hydrated. Hydration leaves it in the input but
-  // not in the state, and the next render would write the empty state over it; taken into the state now, it stays,
-  // with its caret, and reaches the combobox. A field mounted on the client holds the state already.
+  // What the reader did to the server's field before the page hydrated — typed, replaced the term, deleted it all.
+  // Hydration leaves it in the input but not in the state, and the next render would write the drawn text over it;
+  // taken into the state now, it stays, with its caret, and reaches the combobox. A field mounted on the client
+  // holds the state already.
   useLayoutEffect(() => {
     const typed = inputRef.current?.value
-    if (typed) onTermChange(typed)
+    if (typed !== undefined && typed !== mountTermRef.current) onTermChange(typed)
   }, [inputRef, onTermChange])
 
-  // Idle: the combobox comes in behind the page, ready before most readers reach the field.
+  // Idle: the combobox comes in behind the page, ready before most readers reach the field. A field that starts
+  // with a queryable term asks for it at once: its answer is what the reader came for.
   useEffect(() => {
+    if (mountTermRef.current.trim().length >= MIN_QUERY_CHARS) {
+      loadCombobox()
+      return
+    }
     if (typeof window.requestIdleCallback === 'function') {
       const id = window.requestIdleCallback(loadCombobox, { timeout: IDLE_TIMEOUT_MS })
       return () => window.cancelIdleCallback(id)
@@ -170,12 +188,17 @@ function PlainSearchField({
     return () => window.clearTimeout(id)
   }, [])
 
-  // Focus after mount on a wide viewport, as the combobox does (see there); not-keyboard focus.
+  // Focus after mount on a wide viewport, as the combobox does (see there); not-keyboard focus. Only focus nobody has
+  // claimed: a reader who reached the field, its clear button or anything else before the page hydrated keeps it.
+  // On a term they have not touched, the caret goes after it, ready to add to it.
   useEffect(() => {
-    if (!autoFocusOnMountRef.current || window.matchMedia(NARROW_VIEWPORT).matches) return
+    const input = inputRef.current
+    if (!input || !autoFocusOnMountRef.current || window.matchMedia(NARROW_VIEWPORT).matches) return
+    if (!isUnclaimedFocus(input.ownerDocument)) return
     pointerFocusRef.current = true
-    inputRef.current?.focus()
+    input.focus()
     pointerFocusRef.current = false
+    if (input.value && input.value === mountTermRef.current) input.setSelectionRange(input.value.length, input.value.length)
   }, [inputRef])
 
   // ⌘K / Ctrl+K, as the combobox binds `mod+k`: Cmd on Apple platforms, Ctrl elsewhere, nothing else held.
@@ -234,7 +257,11 @@ function PlainSearchField({
         <input
           ref={inputRef}
           value={term}
-          onChange={(event) => onTermChange(event.target.value)}
+          onChange={(event) => {
+            // A composition begun before the page hydrated sent no `compositionstart` this field saw; its input does say so.
+            if ((event.nativeEvent as InputEvent).isComposing) onComposingChange(true)
+            onTermChange(event.target.value)
+          }}
           onFocus={() => {
             loadCombobox()
             if (scrollToTopOnFocus) containerRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' })

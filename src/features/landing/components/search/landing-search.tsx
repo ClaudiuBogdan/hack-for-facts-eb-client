@@ -25,6 +25,7 @@ import {
   usePrefersReducedMotion,
 } from '@/features/landing/components/search/search-parts'
 import {
+  isUnclaimedFocus,
   NARROW_VIEWPORT,
   SEARCH_ACTIONS_CLASS,
   SEARCH_CLEAR_CLASS,
@@ -301,10 +302,15 @@ export function LandingSearch({
     // After a plain field the mount is not the page's arrival: that field had the
     // autofocus, and whatever it did with it is restored below.
     if (handoverOnMountRef.current?.focus.current) return
-    if (!autoFocusOnMountRef.current || window.matchMedia(NARROW_VIEWPORT).matches) return
+    const input = inputRef.current
+    if (!input || !autoFocusOnMountRef.current || window.matchMedia(NARROW_VIEWPORT).matches) return
+    // Only focus nobody has claimed: whatever the reader focused is theirs.
+    if (!isUnclaimedFocus(input.ownerDocument)) return
     pointerFocusRef.current = true
-    inputRef.current?.focus()
+    input.focus()
     pointerFocusRef.current = false
+    // A field that starts with a term (the landing's `/?q=`): the caret after it, ready to add to it.
+    if (input.value) input.setSelectionRange(input.value.length, input.value.length)
   }, [inputRef])
 
   // The plain field's focus, taken back in the commit that replaced it, before

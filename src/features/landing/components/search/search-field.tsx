@@ -156,6 +156,11 @@ export function ShortcutHint() {
 }
 
 /** Whether this reader's `mod` is Cmd: macOS and iOS. */
+/** Whether the page may take the focus on mount: nothing has it but the page itself. */
+export function isUnclaimedFocus(document: Document) {
+  return document.activeElement === null || document.activeElement === document.body
+}
+
 export function isApplePlatform() {
   return /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent)
 }

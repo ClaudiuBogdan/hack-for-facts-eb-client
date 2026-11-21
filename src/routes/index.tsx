@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { measureFromSearch, searchForMeasure } from '@/features/landing/lib/budget-map-measures'
+import { readAddressQuery, searchTermFromAddress, type AddressQuery } from '@/features/landing/lib/address-search-term'
 
 /**
  * The landing. Server-rendered and publicly cacheable: nothing on it is
@@ -10,19 +11,24 @@ import { measureFromSearch, searchForMeasure } from '@/features/landing/lib/budg
  */
 export const Route = createFileRoute('/')({
   ssr: true,
-  // The budget map's picked map (`?harta=venituri`): every key returned, an unreadable one as undefined,
-  // so the root's passthrough search cannot keep a raw value under it.
-  validateSearch: (search: Record<string, unknown>): { harta?: string } => ({ harta: searchForMeasure(measureFromSearch(search.harta) ?? 'balance') }),
+  // Both of the landing's keys returned, an unreadable one as undefined, so the root's passthrough search cannot keep
+  // a raw value under it: the budget map's picked map (`?harta=venituri`) and the search a link opens (`?q=`), kept as
+  // the router read it (`readAddressQuery`) so the address serialises back to itself.
+  validateSearch: (search: Record<string, unknown>): { harta?: string; q?: AddressQuery } => ({
+    harta: searchForMeasure(measureFromSearch(search.harta) ?? 'balance'),
+    q: readAddressQuery(search.q),
+  }),
   headers: () =>
     createPublicPageCacheHeaders({
       browserMaxAgeSeconds: 3600,
       sharedMaxAgeSeconds: 3600,
       staleWhileRevalidateSeconds: 604800,
     }),
-  head: buildHomeHead,
+  head: ({ match }) => buildHomeHead({ searchTerm: searchTermFromAddress(match.search.q) }),
 })
 
-export function buildHomeHead() {
+/** A search link (`/?q=`) is the landing with its field filled: the same canonical page, never a search result of its own. */
+export function buildHomeHead({ searchTerm }: { readonly searchTerm?: string } = {}) {
   const site = getSiteUrl()
   const pageTitle = 'Transparenta.eu – Date publice, decizii informate'
   const description =
@@ -49,7 +55,7 @@ export function buildHomeHead() {
       { name: 'twitter:image', content: image },
       { name: 'twitter:image:src', content: image },
       { name: 'twitter:image:alt', content: 'Transparenta.eu platform preview' },
-      { name: 'robots', content: 'index,follow' },
+      { name: 'robots', content: searchTerm ? 'noindex,follow' : 'index,follow' },
     ],
     links: [{ rel: 'canonical', href: canonical }],
   }

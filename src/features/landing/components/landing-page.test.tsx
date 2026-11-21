@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, within } from '@/test/test-utils'
 import { LANDING_GROUPS, visibleGroups } from '@/features/landing/lib/landing-groups'
@@ -31,8 +32,11 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
   useNavigate: () => vi.fn(),
-  useSearch: () => ({}),
+  useSearch: (options?: { readonly select?: (search: Record<string, unknown>) => unknown }) => (options?.select ? options.select(address.search) : address.search),
 }))
+
+/** The address the page reads, changed by a test as a navigation would. */
+const address = vi.hoisted(() => ({ search: {} as Record<string, unknown> }))
 
 vi.mock('@/features/campaigns/buget/components/CampaignAccessShareCard', () => ({
   CampaignLandingShareCard: () => <div>Campaign card</div>,
@@ -103,6 +107,32 @@ describe('LandingPage', () => {
     // The areas switched off in this build (`src/config/feature-flags.ts`) are not linked; the ones on are.
     expect(document.querySelector('a[href="/investitii-publice"]')).toBeNull()
     expect(document.querySelector('a[href="/alegeri"]')).not.toBeNull()
+  })
+
+  it('opens with the field filled from a search link, and a new term starts it afresh while the map keeps the draft', async () => {
+    const user = userEvent.setup()
+    try {
+      address.search = { q: 'primaria cluj' }
+      const page = render(<LandingPage />, { queryClient: createTestQueryClient() })
+      const field = () => screen.getAllByRole<HTMLInputElement>('combobox')[0]
+      expect(field()).toHaveValue('primaria cluj')
+      // The reader edits; the budget map writes its own key: the draft stays.
+      await user.clear(field())
+      await user.type(field(), 'ciorna')
+      address.search = { q: 'primaria cluj', harta: 'venituri' }
+      page.rerender(<LandingPage />)
+      expect(field()).toHaveValue('ciorna')
+      // Another term (a link, Back): the field starts with it.
+      address.search = { q: 2816464, harta: 'venituri' }
+      page.rerender(<LandingPage />)
+      expect(field()).toHaveValue('2816464')
+      // No term: an empty field.
+      address.search = { harta: 'venituri' }
+      page.rerender(<LandingPage />)
+      expect(field()).toHaveValue('')
+    } finally {
+      address.search = {}
+    }
   })
 
   it('shows the margin field only from the breakpoint the field module names', () => {

@@ -1,4 +1,4 @@
-import { act, type ReactNode } from 'react'
+import { act, StrictMode, type ReactNode } from 'react'
 import { hydrateRoot, type Root } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -375,5 +375,180 @@ describe('DeferredLandingSearch', () => {
     first.unmount()
     render(<DeferredLandingSearch />, { queryClient: createTestQueryClient() })
     expect(isCombobox(field())).toBe(true)
+  })
+})
+
+describe('DeferredLandingSearch with a starting term (the landing’s /?q=)', () => {
+  /** Server HTML for a field, put in the document as a page would get it. */
+  function serve(element: ReactNode) {
+    const container = document.createElement('div')
+    container.innerHTML = renderToString(element)
+    document.body.appendChild(container)
+    return container
+  }
+
+  it('server-renders the term in the field, with the clear button in place of the shortcut hint', async () => {
+    const { DeferredLandingSearch } = await load()
+    const html = renderToString(<DeferredLandingSearch initialTerm="Iași" />)
+    expect(html).toContain('value="Iași"')
+    expect(html).toContain('aria-label="Șterge căutarea"')
+  })
+
+  it('shows markup-like text literally and adds no element', async () => {
+    const { DeferredLandingSearch } = await load()
+    const text = '<img src=x onerror="alert(1)"> & "q"'
+    const container = serve(<DeferredLandingSearch initialTerm={text} />)
+    try {
+      expect(container.querySelector('img')).toBeNull()
+      expect(container.querySelector('input')).toHaveValue(text)
+    } finally {
+      container.remove()
+    }
+  })
+
+  it.each([
+    ['replaced it', 'Cluj', 1],
+    ['deleted it all', '', 0],
+  ])('hydrates the server’s node with no error, and keeps what the reader did before: %s', async (_case, typed, caret) => {
+    const { DeferredLandingSearch } = await load()
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const element = <DeferredLandingSearch initialTerm="Iași" />
+    const container = serve(element)
+    const serverInput = container.querySelector('input')!
+    serverInput.focus()
+    serverInput.value = typed
+    serverInput.setSelectionRange(caret, caret)
+    let root: Root | undefined
+    try {
+      await act(async () => {
+        root = hydrateRoot(container, <QueryClientProvider client={createTestQueryClient()}>{element}</QueryClientProvider>)
+      })
+      expect(field()).toBe(serverInput)
+      expect(serverInput).toHaveValue(typed)
+      expect(serverInput.selectionStart).toBe(caret)
+      arrive()
+      const input = await handedOver()
+      expect(input).toHaveValue(typed)
+      expect(input).toHaveFocus()
+      expect(errors).not.toHaveBeenCalled()
+    } finally {
+      errors.mockRestore()
+      act(() => root?.unmount())
+      container.remove()
+    }
+  })
+
+  it('leaves the clear button the reader focused before hydration focused, on a wide viewport, through the hand-over', async () => {
+    viewport({ narrow: false })
+    const { DeferredLandingSearch } = await load()
+    const element = <DeferredLandingSearch autoFocus initialTerm="Iași" />
+    const container = serve(element)
+    const serverClear = container.querySelector<HTMLButtonElement>('button[aria-label="Șterge căutarea"]')!
+    serverClear.focus()
+    let root: Root | undefined
+    try {
+      await act(async () => {
+        root = hydrateRoot(
+          container,
+          <StrictMode>
+            <QueryClientProvider client={createTestQueryClient()}>{element}</QueryClientProvider>
+          </StrictMode>,
+        )
+      })
+      expect(serverClear).toHaveFocus()
+      arrive()
+      await handedOver()
+      expect(screen.getByRole('button', { name: /[Șș]terge/u })).toHaveFocus()
+    } finally {
+      act(() => root?.unmount())
+      container.remove()
+    }
+  })
+
+  it('where the combobox has loaded already, takes no focus the reader has put elsewhere', async () => {
+    viewport({ narrow: false })
+    const { DeferredLandingSearch } = await load()
+    const first = render(<DeferredLandingSearch />, { queryClient: createTestQueryClient() })
+    arrive()
+    await handedOver(3000)
+    first.unmount()
+    const elsewhere = document.createElement('button')
+    document.body.appendChild(elsewhere)
+    elsewhere.focus()
+    try {
+      render(<DeferredLandingSearch autoFocus initialTerm="Iași" />, { queryClient: createTestQueryClient() })
+      expect(isCombobox(field())).toBe(true)
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(elsewhere).toHaveFocus()
+    } finally {
+      elsewhere.remove()
+    }
+  })
+
+  it('holds the hand-over for a composition its field saw begin only through its input (begun before hydration)', async () => {
+    const { DeferredLandingSearch } = await load()
+    render(<DeferredLandingSearch initialTerm="Iași" />, { queryClient: createTestQueryClient() })
+    const input = field()
+    fireEvent.input(input, { target: { value: 'Iașiș' }, isComposing: true })
+    arrive()
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(isCombobox(field())).toBe(false)
+    fireEvent.compositionEnd(input)
+    const combobox = await handedOver()
+    expect(combobox).toHaveValue('Iașiș')
+  })
+
+  it('fetches the combobox at once for a queryable term, and at idle for a short one', async () => {
+    const { DeferredLandingSearch } = await load()
+    const short = render(<DeferredLandingSearch initialTerm="Ia" />, { queryClient: createTestQueryClient() })
+    expect(gate.state.calls).toBe(0)
+    short.unmount()
+    render(<DeferredLandingSearch initialTerm="Iași" />, { queryClient: createTestQueryClient() })
+    expect(gate.state.calls).toBe(1)
+  })
+
+  it('on a wide viewport, focuses the term with the caret after it, and shows its results once the combobox is in', async () => {
+    viewport({ narrow: false })
+    const { DeferredLandingSearch } = await load()
+    render(<DeferredLandingSearch autoFocus initialTerm="Iași" />, { queryClient: createTestQueryClient() })
+    expect(field()).toHaveFocus()
+    expect(field().selectionStart).toBe(4)
+    expect(field().selectionEnd).toBe(4)
+    arrive()
+    const input = await handedOver()
+    expect(input).toHaveFocus()
+    expect(input.selectionStart).toBe(4)
+    await waitFor(() => expect(searchEntities).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'Iași' }), expect.any(AbortSignal)))
+    await waitFor(() => expect(screen.getAllByRole('option').map((row) => row.getAttribute('href'))).toEqual(['/entities/4541580']))
+  })
+
+  it('where the combobox has loaded already, it takes the term, the focus and the caret, and shows the results', async () => {
+    viewport({ narrow: false })
+    const { DeferredLandingSearch } = await load()
+    const first = render(<DeferredLandingSearch />, { queryClient: createTestQueryClient() })
+    arrive()
+    await handedOver(3000)
+    first.unmount()
+    render(<DeferredLandingSearch autoFocus initialTerm="Iași" />, { queryClient: createTestQueryClient() })
+    const input = field()
+    expect(isCombobox(input)).toBe(true)
+    expect(input).toHaveValue('Iași')
+    await waitFor(() => expect(input).toHaveFocus())
+    expect(input.selectionStart).toBe(4)
+    await waitFor(() => expect(screen.getAllByRole('option').map((row) => row.getAttribute('href'))).toEqual(['/entities/4541580']))
+  })
+
+  it('on a phone, shows the term without taking focus, and opens the results on the first tap', async () => {
+    const { DeferredLandingSearch } = await load()
+    const user = userEvent.setup()
+    render(<DeferredLandingSearch autoFocus initialTerm="Iași" />, { queryClient: createTestQueryClient() })
+    expect(field()).not.toHaveFocus()
+    expect(field()).toHaveValue('Iași')
+    arrive()
+    const input = await handedOver()
+    expect(input).not.toHaveFocus()
+    expect(screen.queryAllByRole('option')).toHaveLength(0)
+    await user.click(input)
+    await waitFor(() => expect(screen.getAllByRole('option').map((row) => row.getAttribute('href'))).toEqual(['/entities/4541580']))
   })
 })

@@ -9,6 +9,7 @@ import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { absorbTriggers, loadEntityTagVocabulary, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
+import { MIN_QUERY_CHARS } from '@/features/landing/lib/search-limits'
 
 export type SearchStatus =
   | { readonly kind: 'idle' }
@@ -30,7 +31,7 @@ export type SearchStatus =
   | { readonly kind: 'error' }
   | { readonly kind: 'invalid' }
 
-export const MIN_QUERY_CHARS = 3
+export { MIN_QUERY_CHARS }
 export const SEARCH_DEBOUNCE_MS = 250
 export const SEARCH_LIMIT = 8
 

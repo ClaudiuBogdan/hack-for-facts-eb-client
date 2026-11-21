@@ -1,36 +1,15 @@
-import { createRouter, parseSearchWith, stringifySearchWith } from "@tanstack/react-router";
+import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import GlobalErrorPage from "@/components/errors/GlobalErrorPage";
 import { createQueryClient } from "@/lib/queryClient";
 import { quietRoutePreloads } from "@/lib/route-code-warmup";
-import { normalizeHrefSearch, normalizeSearchEncoding } from "@/lib/router-search";
+import { normalizeHrefSearch } from "@/lib/router-search";
+import { parseAppSearch, stringifyAppSearch } from "@/lib/router-search-codec";
 import type { RouterContext } from "@/router-context";
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
   const queryClient = createQueryClient();
-  // Normalize URL encoding to avoid SSR redirect loops caused by + vs %20.
-  // Also handle double-encoded JSON search params used across routes.
-  // See: https://tanstack.com/router/v1/docs/framework/react/guide/custom-search-param-serialization
-  const searchParser = (value: string) => {
-    try {
-      return JSON.parse(value);
-    } catch {
-      // Continue to URI-decoding fallback.
-    }
-
-    try {
-      const normalized = value.replace(/\+/g, "%20");
-      return JSON.parse(decodeURIComponent(normalized));
-    } catch {
-      throw new Error("Not JSON");
-    }
-  };
-
-  const parseSearch = parseSearchWith(searchParser);
-  const baseStringifySearch = stringifySearchWith(JSON.stringify, searchParser);
-  const stringifySearch = (search: Record<string, unknown>) =>
-    normalizeSearchEncoding(baseStringifySearch(search));
 
   // On a fresh navigation the SSR inline script (`tsr-scroll-restoration-v1`)
   // has already placed the page at parse time, before first paint, and the
@@ -70,8 +49,8 @@ export function getRouter() {
     routeTree,
     context: { queryClient },
     defaultErrorComponent: ({ error }) => <GlobalErrorPage error={error} />,
-    parseSearch,
-    stringifySearch,
+    parseSearch: parseAppSearch,
+    stringifySearch: stringifyAppSearch,
     // TanStack's defaults (1000ms / 500ms) meant a route's `pendingComponent`
     // effectively never rendered: `/entities/$cui` declares a skeleton yet
     // its ~1s blocking loader finished just under the threshold, so a click
