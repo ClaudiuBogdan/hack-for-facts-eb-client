@@ -186,3 +186,43 @@ export function withServedForm(
     sourceUrl: served.sourceUrl ?? listed?.sourceUrl ?? null,
   }
 }
+
+/**
+ * The text the act page reads by default, and whether it is CURRENT.
+ *
+ * legal_v2 follows the owner's `latest_any_kind` policy: the default is the
+ * latest form of any kind. When that form has no text (`defaultBasis:
+ * latest_not_available`) no form is current — `canonical` is null — and the
+ * page shows `latestAvailableDocumentId`, the latest form that has text,
+ * saying it is not the current version. With no such form there is no
+ * default text. The legacy source's canonical is always current.
+ */
+export function defaultReadingOf(
+  act: Pick<
+    LegalActDetail,
+    'canonical' | 'defaultBasis' | 'latestAvailableDocumentId' | 'documents'
+  >,
+): { readonly documentId: string | null; readonly current: boolean } {
+  if (act.canonical !== null) return { documentId: act.canonical.documentId, current: true }
+  const fallback = act.latestAvailableDocumentId
+  if (
+    act.defaultBasis === 'latest_not_available' &&
+    fallback !== null &&
+    act.documents.some((doc) => doc.documentId === fallback)
+  ) {
+    return { documentId: fallback, current: false }
+  }
+  return { documentId: null, current: false }
+}
+
+/**
+ * The latest form, when it has no text (`latest_not_available`): the newest
+ * listed version that is not readable. Null when the server did not say the
+ * latest form is unavailable, or when the list cannot name it.
+ */
+export function latestUnavailableVersion(
+  act: Pick<LegalActDetail, 'defaultBasis' | 'documents'>,
+): LegalActDocumentVersion | null {
+  if (act.defaultBasis !== 'latest_not_available') return null
+  return orderVersionsNewestFirst(act.documents).find((doc) => !isReadableVersion(doc)) ?? null
+}

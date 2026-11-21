@@ -5,7 +5,9 @@ import { Trans } from '@lingui/react/macro'
 import type { LegalActDetail, LegalActDocumentVersion } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
 import {
+  defaultReadingOf,
   isSelectableVersion,
+  latestUnavailableVersion,
   orderVersionsNewestFirst,
   versionDateOf,
   versionKindLabel,
@@ -38,15 +40,26 @@ export function ActVersionSelector({ act, shownDocumentId }: Props) {
   const options = orderVersionsNewestFirst(act.documents.filter(isSelectableVersion))
   if (options.length === 0) return null
 
-  const label = (doc: LegalActDocumentVersion) => {
+  // The default reading: the current form, or — legal_v2
+  // `latest_not_available` — the latest form with text, which is NOT current.
+  const defaultReading = defaultReadingOf(act)
+  // The latest form, when it has no text: listed so the reader sees it
+  // exists, never selectable.
+  const latestUnavailable = latestUnavailableVersion(act)
+
+  const baseLabel = (doc: LegalActDocumentVersion) => {
     const date = versionDateOf(doc)
     const parts = [versionKindLabel(doc.versionKind)]
     if (date !== null) parts.push(formatLegalDate(date, i18n.locale))
-    const text = parts.join(' · ')
-    return doc.isCanonical ? t`${text} (implicită)` : text
+    return parts.join(' · ')
+  }
+  const label = (doc: LegalActDocumentVersion) => {
+    const text = baseLabel(doc)
+    if (doc.documentId !== defaultReading.documentId) return text
+    return defaultReading.current ? t`${text} (implicită)` : t`${text} (afișată implicit, nu e curentă)`
   }
 
-  const only = options.length === 1 ? options[0] : undefined
+  const only = options.length === 1 && latestUnavailable === null ? options[0] : undefined
   if (only !== undefined) {
     return (
       <p className="mb-4 text-sm text-[var(--pnrr-muted)]">
@@ -76,7 +89,8 @@ export function ActVersionSelector({ act, shownDocumentId }: Props) {
             to: '.',
             // A new text drops the old `?nod=`: its path belongs to the
             // previous text's outline.
-            search: chosen.isCanonical ? {} : { doc: chosen.documentId },
+            search:
+              chosen.documentId === defaultReading.documentId ? {} : { doc: chosen.documentId },
             hash: 'act-text',
             replace: true,
             resetScroll: false,
@@ -84,6 +98,11 @@ export function ActVersionSelector({ act, shownDocumentId }: Props) {
         }}
       >
         {value === '' && <option value="">{t`alege o versiune`}</option>}
+        {latestUnavailable !== null && (
+          <option value={latestUnavailable.documentId} disabled>
+            {t`${baseLabel(latestUnavailable)} — text indisponibil`}
+          </option>
+        )}
         {options.map((doc) => (
           <option key={doc.documentId} value={doc.documentId}>
             {label(doc)}
