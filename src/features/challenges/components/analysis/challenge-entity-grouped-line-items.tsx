@@ -750,9 +750,11 @@ export function ChallengeEntityGroupedLineItems({
     paragraphGroupsToDisplay,
     subchapterGroupsToDisplay,
   ])
-  const markdownPrompt = useMemo(
-    () =>
-      buildChallengeEntityAnalysisMarkdown({
+  // Built when copied, not on render: the prompt covers the whole grouped view, and the page re-renders this list on
+  // every treemap drill-down and filter change.
+  const handleCopyMarkdown = useCallback(async () => {
+    try {
+      const markdownPrompt = buildChallengeEntityAnalysisMarkdown({
         ...exportContext,
         grouped: {
           title: accountTitle,
@@ -767,27 +769,24 @@ export function ChallengeEntityGroupedLineItems({
             ? { groupedSearchTerm: currentSearchFilterTerm }
             : {}),
         },
-      }),
-    [
-      accountTitle,
-      baseTotalToDisplay,
-      currentSearchFilterTerm,
-      depth,
-      exportContext,
-      groupBy,
-      visibleItemsForExport,
-    ],
-  )
-
-  const handleCopyMarkdown = useCallback(async () => {
-    try {
+      })
       await navigator.clipboard.writeText(markdownPrompt)
       toast.success(markdownCopy.copiedToastLabel)
     } catch (error) {
       console.error('Failed to copy markdown prompt', error)
       toast.error(markdownCopy.copyFailedToastLabel)
     }
-  }, [markdownCopy.copiedToastLabel, markdownCopy.copyFailedToastLabel, markdownPrompt])
+  }, [
+    accountTitle,
+    baseTotalToDisplay,
+    currentSearchFilterTerm,
+    depth,
+    exportContext,
+    groupBy,
+    markdownCopy.copiedToastLabel,
+    markdownCopy.copyFailedToastLabel,
+    visibleItemsForExport,
+  ])
 
   const handleSectionAnalytics = useCallback(() => {
     onAnalyticsRequest?.({

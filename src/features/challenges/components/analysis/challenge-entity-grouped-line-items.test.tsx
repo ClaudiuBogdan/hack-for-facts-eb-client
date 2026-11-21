@@ -38,6 +38,7 @@ vi.mock('sonner', () => ({
 }))
 
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
+import * as markdownExport from './challenge-entity-markdown-export'
 
 const useFinancialDataMock = vi.fn()
 const groupedItemsDisplayMock = vi.fn()
@@ -606,6 +607,30 @@ describe('ChallengeEntityGroupedLineItems', () => {
     )
     expect(toastSuccessMock).toHaveBeenCalledWith('Copiat în clipboard')
     expect(toastErrorMock).not.toHaveBeenCalled()
+  })
+
+  // The prompt is a large string built from the whole grouped view. Built in render, it cost ~56 ms on each click of a
+  // treemap drill-down (the entity page re-renders this list several times per click); it is only needed when copied,
+  // and then from the context of that moment.
+  it('builds the markdown prompt only when it is copied, from the latest context', async () => {
+    const build = vi.spyOn(markdownExport, 'buildChallengeEntityAnalysisMarkdown')
+    const { rerender } = render(<ChallengeEntityGroupedLineItems {...defaultProps} />)
+    rerender(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        exportContext={{ ...defaultProps.exportContext, filters: { ...defaultProps.exportContext.filters, year: 2023 } }}
+      />,
+    )
+    expect(build).not.toHaveBeenCalled()
+
+    fireEvent.pointerDown(screen.getByTestId('challenge-grouped-line-items-menu-trigger'))
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Copiază promptul' }))
+
+    await waitFor(() => expect(mockClipboardWriteText).toHaveBeenCalledTimes(1))
+    expect(build).toHaveBeenCalledTimes(1)
+    expect(mockClipboardWriteText).toHaveBeenCalledWith(expect.stringContaining('`2023`'))
+    expect(mockClipboardWriteText).not.toHaveBeenCalledWith(expect.stringContaining('`2025`'))
+    build.mockRestore()
   })
 
   it('shows an error toast when copying the markdown fails', async () => {
