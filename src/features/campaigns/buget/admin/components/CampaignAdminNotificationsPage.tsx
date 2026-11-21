@@ -293,7 +293,7 @@ function TemplateListRow({
                     {field.name}
                     <span className="text-muted-foreground">{field.type}</span>
                     {field.required ? (
-                      <span className="text-status-blocked-fg">*</span>
+                      <span>*</span>
                     ) : null}
                   </span>
                 ))}

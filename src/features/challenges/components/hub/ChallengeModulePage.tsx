@@ -385,7 +385,7 @@ export function ChallengeModulePage({
                                   aria-hidden="true"
                                 />
                               ) : (
-                                <span className="text-xs tabular-nums font-medium text-muted-foreground">
+                                <span className="text-xs tabular-nums font-medium text-muted-foreground group-hover:text-foreground">
                                   {stepIndex + 1}
                                 </span>
                               )}
@@ -401,7 +401,7 @@ export function ChallengeModulePage({
                               {getTranslatedText(step.title, locale)}
                             </span>
 
-                            <span className="hidden sm:inline text-xs text-muted-foreground tabular-nums shrink-0">
+                            <span className="hidden sm:inline text-xs text-muted-foreground group-hover:text-foreground tabular-nums shrink-0">
                               {step.durationMinutes} {t`min`}
                             </span>
 

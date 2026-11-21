@@ -50,10 +50,10 @@ const HEX_GUARDED = 'src/features/learning/'
  * `rgb(var(--x) / 0.5)`) is not a literal.
  */
 const COLOUR_LITERAL = String.raw`#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![0-9A-Za-z-])|(?<![A-Za-z0-9-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\((?!\s*var\()`
-const LITERAL = new RegExp(COLOUR_LITERAL, 'g')
+const LITERAL = new RegExp(COLOUR_LITERAL, 'gi')
 
 /** A colour function written with numbers, anywhere in learning code (inline styles, data files). */
-const FUNCTION_LITERAL = /(?<![A-Za-z0-9-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\((?!\s*var\()/g
+const FUNCTION_LITERAL = /(?<![A-Za-z0-9-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\((?!\s*var\()/gi
 
 /**
  * Tailwind's arbitrary brackets in a class: a utility's value (`bg-[…]`,
@@ -61,7 +61,7 @@ const FUNCTION_LITERAL = /(?<![A-Za-z0-9-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklc
  * (`[color:…]`, `hover:[background:…]`). Their content has no spaces or quotes,
  * so a JavaScript array (`['#fee2e2']`) or index (`items[0]`) is not one.
  */
-const ARBITRARY = /(?:(?<=[a-z0-9])-\[([^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\[([a-z-]+:[^\]\s'"\x60]+)\])/gm
+const ARBITRARY = /(?:(?<=[a-z0-9])-\[([^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\[([a-z0-9-]+:[^\]\s'"\x60]+)\])/gm
 
 /**
  * A colour literal inside an arbitrary value or property, in any guarded file
@@ -81,11 +81,37 @@ function arbitraryColours(text: string): string[] {
     const literals = [...content.matchAll(LITERAL)].filter((l) => {
       if (l[0][0] !== '#') return true
       if (content.slice(Math.max(0, l.index - 4), l.index) === 'url(') return false // a fragment: `mask-[url(#fade)]`
-      return !isVariant || /[:(,]/.test(content[l.index - 1] ?? '')
+      return !isVariant || isColourPosition(content, l.index)
     })
     if (literals.length > 0) found.push(m[0])
   }
   return found
+}
+
+/**
+ * In an arbitrary variant, a `#hex` is a colour only as a value (after `:` or `(`, or a later argument of a
+ * function); after `[`, `_`, `,` outside parentheses or a combinator it is an ID in a selector list.
+ */
+function isColourPosition(content: string, index: number): boolean {
+  const before = content[index - 1] ?? ''
+  if (before === ':' || before === '(') return true
+  if (before !== ',') return false
+  const head = content.slice(0, index)
+  return head.split('(').length > head.split(')').length
+}
+
+/** Absolute offsets of the `#id` selectors inside arbitrary variants (`has-[#a,#b]:underline`). */
+function variantIdOffsets(text: string): Set<number> {
+  const ids = new Set<number>()
+  for (const m of text.matchAll(ARBITRARY)) {
+    if (text[m.index + m[0].length] !== ':') continue
+    const content = m[1] ?? m[2]
+    const start = m.index + m[0].indexOf('[') + 1
+    for (const l of content.matchAll(/#[0-9A-Za-z-]+/g)) {
+      if (!isColourPosition(content, l.index)) ids.add(start + l.index)
+    }
+  }
+  return ids
 }
 
 /** Repository-relative paths, always with `/`, so offenders read the same on every platform. */
@@ -106,7 +132,8 @@ function isIdSelector(text: string, start: number, length: number): boolean {
 function rawColours(file: string, text: string): string[] {
   const found = [...text.matchAll(PALETTE)].map((m) => m[0])
   if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) {
-    found.push(...[...text.matchAll(HEX)].filter((m) => !isIdSelector(text, m.index, m[0].length)).map((m) => m[0]))
+    const ids = variantIdOffsets(text)
+    found.push(...[...text.matchAll(HEX)].filter((m) => !isIdSelector(text, m.index, m[0].length) && !ids.has(m.index)).map((m) => m[0]))
     found.push(...[...text.matchAll(FUNCTION_LITERAL)].map((m) => m[0]))
   }
   found.push(...arbitraryColours(text))
@@ -145,6 +172,7 @@ describe('raw palette colours', () => {
     ['nothing in a fragment link', 'href="#abc"', []],
     ['nothing in a #id inside an arbitrary variant', 'has-[#fff]:underline group-has-[#abc]:flex', []],
     ['a colour value inside a variant', 'supports-[color:#123456]:underline', ['#123456', '-[color:#123456]']],
+    ['nothing in an ID list inside a variant', 'has-[#abc,#def]:underline', []],
   ])('finds hex in learning: %s', (_, text, expected) => {
     expect(rawColours('src/features/learning/x.tsx', text)).toEqual(expected)
   })
@@ -162,6 +190,8 @@ describe('colour literals in arbitrary values', () => {
     ['an rgb value of any colour', 'shadow-[inset_0_1px_0_rgba(255,255,255,0.32)] bg-[rgb(0_0_0)]', ['-[inset_0_1px_0_rgba(255,255,255,0.32)]', '-[rgb(0_0_0)]']],
     ['an hsl literal', 'bg-[hsl(220_80%_35%)] [--accent:hsla(0,0%,0%,0.5)]', ['-[hsl(220_80%_35%)]', '[--accent:hsla(0,0%,0%,0.5)]']],
     ['a colour value inside an arbitrary variant', 'supports-[color:#123456]:underline', ['-[color:#123456]']],
+    ['a colour in a custom-property value', 'className="[--cmp-2:#1baf7a] hover:[--cmp-2:#1BAF7A]"', ['[--cmp-2:#1baf7a]', '[--cmp-2:#1BAF7A]']],
+    ['an upper-case colour function', 'bg-[RGB(15_23_42)] text-[HSL(220_80%_35%)] shadow-[0_1px_2px_RGBA(0,0,0,0.1)]', ['-[RGB(15_23_42)]', '-[HSL(220_80%_35%)]', '-[0_1px_2px_RGBA(0,0,0,0.1)]']],
   ])('finds %s, in every guarded folder', (_, text, expected) => {
     for (const file of ['src/features/campaigns/x.tsx', 'src/features/challenges/x.tsx', 'src/content/learning/x.mdx']) {
       expect(rawColours(file, text), file).toEqual(expected)
@@ -177,6 +207,8 @@ describe('colour literals in arbitrary values', () => {
     ['a MapLibre paint string', "paint: { 'fill-color': '#ef2d00', 'line-color': 'rgba(15, 23, 42, 0.4)' }"],
     ['a colour scale array', "const SCALE = ['#fee2e2', '#fca5a5'] as const"],
     ['a token read through a variable', 'bg-[hsl(var(--muted))] [--tw-prose-kbd-shadows:hsl(var(--foreground)/0.1)] shadow-[0_0_0_1px_rgb(var(--x)/0.1)]'],
+    ['an ID selector list inside a variant', 'has-[#abc,#def]:underline [&_#abc,#def]:hidden'],
+    ['a custom property holding a token', '[--cmp-2:var(--chart-2)] [--cmp-3:hsl(var(--chart-3))]'],
     ['a url fragment', 'fill-[url(#abcd1)] mask-[url(#fade)]'],
   ])('leaves %s alone', (_, text) => {
     expect(rawColours('src/features/campaigns/x.tsx', text)).toEqual([])
