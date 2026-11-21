@@ -61,7 +61,7 @@ export function ParliamentGroupDetailSkeleton() {
         </div>
       </nav>
 
-      <section className="py-8" style={{ backgroundColor: 'var(--parliament-muted)' }}>
+      <section className="py-8" style={{ backgroundColor: 'var(--parliament-neutral-fill)' }}>
         <div className={groupPageContainerClassName}>
           <div className="h-8 w-56 animate-pulse bg-white/30 sm:h-9 sm:w-72" />
           <div className="mt-4 h-4 w-64 animate-pulse bg-white/20" />

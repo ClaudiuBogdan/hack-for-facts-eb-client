@@ -6,7 +6,6 @@ import type { BillDetailTab } from '../lib/bill-detail-nav'
 import {
   BILL_DETAIL_BREADCRUMB_BG,
   BILL_DETAIL_SURFACE,
-  BILL_DETAIL_UNSTATED_GREY,
   billDetailCardClassName,
   billDetailPageContainerClassName,
   billDetailSectionTitleClassName,
@@ -74,7 +73,7 @@ export function BillDetailSkeleton({ billId, activeTab }: Props) {
             </div>
             <div
               className="flex shrink-0 items-center gap-2 border border-white/25 px-3 py-2"
-              style={{ backgroundColor: BILL_DETAIL_UNSTATED_GREY }}
+              style={{ backgroundColor: 'var(--parliament-neutral-fill)' }}
             >
               <ParliamentChamberMark
                 color="white"
@@ -129,7 +128,7 @@ export function BillDetailSkeleton({ billId, activeTab }: Props) {
 
       <section
         className="py-8 text-white"
-        style={{ backgroundColor: BILL_DETAIL_UNSTATED_GREY }}
+        style={{ backgroundColor: 'var(--parliament-neutral-fill)' }}
       >
         <div
           className={cn(

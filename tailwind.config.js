@@ -81,6 +81,7 @@ export default {
           "commons-fill": "var(--parliament-commons-fill)",
           "senate-fill": "var(--parliament-senate-fill)",
           "resource-fill": "var(--parliament-resource-fill)",
+          "neutral-fill": "var(--parliament-neutral-fill)",
           resource: "var(--parliament-resource)",
           commons: "var(--parliament-commons)",
           senate: "var(--parliament-senate)",

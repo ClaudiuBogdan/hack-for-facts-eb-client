@@ -10,7 +10,6 @@ import { getChamberFromMandateKey } from '../lib/member-mandate-key'
 import {
   getMemberDetailHeroColor,
   MEMBER_DETAIL_BREADCRUMB_BG,
-  MEMBER_DETAIL_MUTED_TEXT,
   MEMBER_DETAIL_SIDEBAR_WIDTH,
   MEMBER_DETAIL_SURFACE,
   memberDetailBodyGridClassName,
@@ -121,7 +120,7 @@ export function MemberProfileSkeleton({ memberId, activeTab }: Props) {
           // claims no chamber, for the keys we cannot read.
           backgroundColor: chamber
             ? getMemberDetailHeroColor(chamber)
-            : MEMBER_DETAIL_MUTED_TEXT,
+            : 'var(--parliament-neutral-fill)',
         }}
       >
         <div

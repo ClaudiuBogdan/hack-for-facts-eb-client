@@ -104,7 +104,7 @@ describe('MemberProfileSkeleton', () => {
     // Naming the wrong chamber over someone's name is worse than naming none.
     render(<MemberProfileSkeleton memberId="necunoscut" activeTab="overview" />)
     expect(
-      document.querySelector('section[style*="var(--parliament-muted)"]'),
+      document.querySelector('section[style*="var(--parliament-neutral-fill)"]'),
     ).toBeInTheDocument()
     expect(screen.queryByText('Camera Deputaților')).not.toBeInTheDocument()
     expect(screen.queryByText('Senatul României')).not.toBeInTheDocument()

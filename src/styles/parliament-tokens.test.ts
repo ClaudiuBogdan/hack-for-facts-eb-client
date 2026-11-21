@@ -29,6 +29,7 @@ const SLOTS = {
   'commons-fill': ['#006435', '#006435'],
   'senate-fill': ['#9c051a', '#9c051a'],
   'resource-fill': ['#512178', '#512178'],
+  'neutral-fill': ['#505a5f', '#505a5f'],
   resource: ['#512178', '#c4a7e7'],
   commons: ['#006435', '#58b083'],
   senate: ['#9c051a', '#ef8a9a'],
@@ -67,7 +68,7 @@ const SURFACES: readonly Slot[] = ['page', 'card', 'hover', 'surface']
 /** Dark mode is new work, so it is held to AA on the frame's surfaces too. Light mode is today's, measured on the page's. */
 const DARK_SURFACES: readonly Slot[] = [...SURFACES, 'frame-subtle', 'frame-hover']
 /** Fills that carry white text, and so keep one colour in both themes. */
-const WHITE_TEXT_FILLS: readonly Slot[] = ['action', 'ink', 'icon', 'commons-fill', 'senate-fill', 'resource-fill']
+const WHITE_TEXT_FILLS: readonly Slot[] = ['action', 'ink', 'icon', 'commons-fill', 'senate-fill', 'resource-fill', 'neutral-fill']
 /** Text that only ever sits on one fill: [text, fill]. */
 const OWN_FILL_PAIRS: readonly (readonly [Slot, Slot])[] = [
   ['accent-fg', 'accent'], // the lime filter chip

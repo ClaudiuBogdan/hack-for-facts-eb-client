@@ -81,7 +81,7 @@ describe('BillDetailSkeleton', () => {
     // announce "Camera Deputaților" for a bill that may be the Senate's.
     render(<BillDetailSkeleton billId="23135" activeTab="detalii" />)
     expect(
-      document.querySelector('section[style*="var(--parliament-muted)"]'),
+      document.querySelector('section[style*="var(--parliament-neutral-fill)"]'),
     ).toBeInTheDocument()
     expect(
       document.querySelector('section[style*="var(--parliament-commons-fill)"]'),
