@@ -44,11 +44,13 @@ const HEX_GUARDED = 'src/features/learning/'
 
 /**
  * A hex colour as a Tailwind arbitrary value in a class (`bg-[#3565c4]`,
- * `hover:text-[#c91d00]`, `shadow-[#3565c4]/20`). Checked in every guarded
- * folder: unlike a MapLibre paint string, it is a stylesheet class and has a
+ * `hover:text-[#c91d00]`, `shadow-[#3565c4]/20`, the typed `text-[color:#abc]`).
+ * A `#id` inside an arbitrary variant (`has-[#x]:underline`) is a selector, not a
+ * colour, and is skipped: the `]` of a value is not followed by `:`. Checked in
+ * every guarded file type (MDX included) and folder: unlike a MapLibre paint string, it is a stylesheet class and has a
  * token.
  */
-const HEX_CLASS = /(?<=[a-z])-\[#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\](?:\/(?:\d+|\[[^\]]+\]))?/g
+const HEX_CLASS = /(?<=[a-z])-\[(?:[a-z-]+:)?#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\](?:\/(?:\d+|\[[^\]]+\]))?(?![:/])/g
 
 /**
  * Files not converted yet. Each conversion batch removes its files; the second
@@ -89,7 +91,7 @@ function sourceFiles(dir: string): string[] {
 function rawColours(file: string, text: string): string[] {
   const found = [...text.matchAll(PALETTE)].map((m) => m[0])
   if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) found.push(...[...text.matchAll(HEX)].map((m) => m[0]))
-  if (!file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) found.push(...[...text.matchAll(HEX_CLASS)].map((m) => m[0]))
+  if (!(file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file))) found.push(...[...text.matchAll(HEX_CLASS)].map((m) => m[0]))
   return found
 }
 
@@ -140,6 +142,18 @@ describe('hex colours in class names', () => {
     ['a variant and a shadow with opacity', 'hover:text-[#c91d00] shadow-[#3565c4]/20', ['-[#c91d00]', '-[#3565c4]/20']],
   ])('finds %s in a campaigns file', (_, text, expected) => {
     expect(rawColours('src/features/campaigns/x.tsx', text)).toEqual(expected)
+  })
+
+  it('finds a hex value in guarded MDX', () => {
+    expect(rawColours('src/content/learning/x.mdx', '<div className="bg-[#fff] p-2" />')).toEqual(['-[#fff]'])
+  })
+
+  it('finds the typed colour form, with an opacity', () => {
+    expect(rawColours('src/features/campaigns/x.tsx', 'text-[color:#abc] bg-[color:#112233]/40')).toEqual(['-[color:#abc]', '-[color:#112233]/40'])
+  })
+
+  it('leaves a #id inside an arbitrary variant alone', () => {
+    expect(rawColours('src/features/campaigns/x.tsx', 'has-[#fff]:underline group-has-[#abc]:flex [&_#x]:block')).toEqual([])
   })
 
   it('leaves a MapLibre paint string outside learning alone', () => {
