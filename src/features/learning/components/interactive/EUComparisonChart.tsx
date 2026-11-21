@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { t } from '@lingui/core/macro'
 import { Lightbulb } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -40,7 +40,7 @@ interface EUComparisonChartProps {
     insight?: InsightData
 }
 
-function InsightBox({ insight, inView }: { insight: InsightData; inView: boolean }) {
+function InsightBox({ insight, inView, instant }: { insight: InsightData; inView: boolean; instant: boolean }) {
     const hasGap = insight.revenue !== undefined && insight.spending !== undefined
     const gap = hasGap ? insight.spending! - insight.revenue! : 0
 
@@ -48,7 +48,7 @@ function InsightBox({ insight, inView }: { insight: InsightData; inView: boolean
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ delay: 1.0, duration: 0.5 }}
+            transition={instant ? { duration: 0 } : { delay: 1.0, duration: 0.5 }}
             className="mt-8 p-6 rounded-2xl bg-status-partial-bg border border-status-partial-fg/30"
         >
             <div className="flex items-start gap-4">
@@ -111,10 +111,16 @@ export function EUComparisonChart({
     highlightTone = 'primary',
     insight,
 }: Readonly<EUComparisonChartProps>) {
-    const { ref, inView } = useInView({
+    // The trigger is the bars themselves, and any pixel of them in view starts the animation: a share of the
+    // whole card can never be met when the card is taller than the viewport (a phone, or a phone turned sideways),
+    // which left the data hidden. Without IntersectionObserver, or with reduced motion, the data shows at once.
+    const { ref, inView: barsInView } = useInView({
         triggerOnce: true,
-        threshold: 0.5,
+        threshold: 0,
+        fallbackInView: true,
     })
+    const instant = useReducedMotion() === true
+    const inView = barsInView || instant
 
     const sortedItems = useMemo(() => {
         return [...items].sort((a, b) => b.value - a.value)
@@ -124,7 +130,7 @@ export function EUComparisonChart({
     const maxValue = Math.max(...items.map(i => i.value), averageValue || 0) * 1.1
 
     return (
-        <div ref={ref} className="w-full max-w-3xl mx-auto py-8">
+        <div className="w-full max-w-3xl mx-auto py-8">
             <Card className="p-4 md:p-10 rounded-[3rem] bg-card border-none shadow-sm relative overflow-hidden">
 
                 {/* Header */}
@@ -133,7 +139,7 @@ export function EUComparisonChart({
                 </div>
 
                 {/* Chart Container */}
-                <div className="relative space-y-3">
+                <div ref={ref} className="relative space-y-3">
 
                     {/* Average Line */}
                     {averageValue && (
@@ -155,7 +161,7 @@ export function EUComparisonChart({
                             key={item.id}
                             initial={{ width: 0, opacity: 0 }}
                             animate={inView ? { width: "100%", opacity: 1 } : { width: 0, opacity: 0 }}
-                            transition={{ delay: index * 0.1, duration: 0.5, ease: "easeOut" }}
+                            transition={instant ? { duration: 0 } : { delay: index * 0.1, duration: 0.5, ease: "easeOut" }}
                             className="relative z-10 group"
                         >
                             <div className="flex items-center gap-3 md:gap-4">
@@ -181,7 +187,7 @@ export function EUComparisonChart({
                                         )}
                                         initial={{ width: 0 }}
                                         animate={inView ? { width: `${(item.value / maxValue) * 100}%` } : { width: 0 }}
-                                        transition={{ delay: index * 0.1, duration: 0.8, ease: "circOut" }}
+                                        transition={instant ? { duration: 0 } : { delay: index * 0.1, duration: 0.8, ease: "circOut" }}
                                     >
                                         <span className={cn(
                                             "text-sm font-black relative z-10",
@@ -196,7 +202,7 @@ export function EUComparisonChart({
                                         <motion.div
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                                            transition={{ delay: 1.5 }}
+                                            transition={instant ? { duration: 0 } : { delay: 1.5 }}
                                             className="absolute -right-4 hidden md:flex items-center gap-1.5 whitespace-nowrap"
                                         >
                                             <span className={cn(tone.note, "font-bold text-xs uppercase tracking-wide")}>← {highlightLabel}</span>
@@ -212,7 +218,7 @@ export function EUComparisonChart({
                 </div>
 
                 {/* Insight Box */}
-                {insight && <InsightBox insight={insight} inView={inView} />}
+                {insight && <InsightBox insight={insight} inView={inView} instant={instant} />}
 
                 {/* Footer info */}
                 <div className="mt-10 pt-6 border-t border-border text-center">
