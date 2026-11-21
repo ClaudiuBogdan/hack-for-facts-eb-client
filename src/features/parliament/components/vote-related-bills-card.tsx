@@ -26,8 +26,8 @@ export function VoteRelatedBillsCard({
   if (links.length === 0) return null
 
   return (
-    <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-      <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+    <div className="mb-6 border border-parliament-border bg-parliament-card px-5 py-4">
+      <p className="text-sm text-parliament-muted">
         {links.length > 1
           ? 'Vot asociat mai multor proiecte de lege'
           : 'Vot asociat proiectului de lege'}
@@ -42,7 +42,7 @@ export function VoteRelatedBillsCard({
               <Link
                 to="/parlament/proiecte/$billId"
                 params={{ billId: link.billId }}
-                className="text-base font-bold text-[#1d70b8] underline underline-offset-2 hover:text-[#1d70b8]/80"
+                className="text-base font-bold text-parliament-link underline underline-offset-2 hover:text-parliament-link/80"
               >
                 {/* The chamber's own reference leads when there is one; it is
                     short and citable. The title is the fallback, and "Vezi
@@ -51,7 +51,7 @@ export function VoteRelatedBillsCard({
                 {link.billNumber ?? link.billTitle ?? 'Vezi proiectul de lege'}
               </Link>
               {link.billNumber && link.billTitle ? (
-                <p className="mt-1 text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="mt-1 text-sm leading-5 text-parliament-muted">
                   {link.billTitle}
                 </p>
               ) : null}

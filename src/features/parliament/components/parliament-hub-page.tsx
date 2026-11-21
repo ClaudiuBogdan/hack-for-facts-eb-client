@@ -26,7 +26,7 @@ export function ParliamentHubContent() {
       {isLoading ? (
         <Skeleton className="h-[32rem] w-full rounded-none" />
       ) : isError || !data ? (
-        <p className="text-[var(--pnrr-muted)]">
+        <p className="text-parliament-frame-muted">
           Nu am putut încărca datele parlamentare.
         </p>
       ) : (

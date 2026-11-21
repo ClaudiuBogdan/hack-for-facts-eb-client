@@ -114,7 +114,7 @@ export function ParliamentHubBillActivity() {
       cta={
         <Button
           asChild
-          className="mt-4 h-10 rounded-none bg-[#1d70b8] px-5 text-base font-normal text-white hover:bg-[#1d70b8]/90"
+          className="mt-4 h-10 rounded-none bg-parliament-action px-5 text-base font-normal text-white hover:bg-parliament-action/90"
         >
           <Link to="/parlament" search={{ tab: 'proiecte' }}>
             <Trans>Vezi toate proiectele</Trans>

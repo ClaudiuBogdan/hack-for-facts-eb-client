@@ -14,16 +14,15 @@ import {
 import { useRouter } from "@tanstack/react-router";
 import { Trans } from "@lingui/react/macro";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import type { ParliamentSearch } from "@/schemas/parliament";
 import { appendDayToHref } from "../lib/activity-heatmap-href";
+import {
+  PARLIAMENT_HEATMAP_RAMP,
+  parliamentHeatmapCellEdgeClassName,
+  parliamentHeatmapEmptyCellClassName,
+} from "../lib/hub-theme";
 import { buildWindowGrid, type RollingWindow } from "../lib/vote-activity-grid";
-
-/**
- * GOV.UK blue ramp (#1d70b8) for buckets 1–4 — the same intensity scale the
- * member and stenograme heatmaps use, so a square means the same thing on
- * every parliamentary surface.
- */
-const GOVUK_BLUE_RAMP = ["#d2e2f1", "#a3c6e3", "#5e94c9", "#1d70b8"] as const;
 
 /**
  * Smallest a square may get. Below `sm` a year of them is wider than the card,
@@ -39,7 +38,7 @@ const MIN_CELL_PX = 12;
  */
 const UNCAPTURED_FILL = {
   backgroundImage:
-    "repeating-linear-gradient(45deg, #d8d8d4 0, #d8d8d4 1px, transparent 1px, transparent 4px)",
+    "repeating-linear-gradient(45deg, color-mix(in srgb, var(--parliament-border) 50%, transparent) 0, color-mix(in srgb, var(--parliament-border) 50%, transparent) 1px, transparent 1px, transparent 4px)",
 } as const;
 
 /** How long a pointer must rest on a square before its tooltip opens. */
@@ -50,8 +49,7 @@ const TOOLTIP_CLOSE_DELAY_MS = 150;
 const TOOLTIP_OFFSET_PX = 4;
 const TOOLTIP_VIEWPORT_MARGIN_PX = 8;
 
-const EMPTY_CELL_CLASS_NAME =
-  "aspect-square border border-[#e5e5e0] bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-map-empty)]";
+const EMPTY_CELL_CLASS_NAME = cn("aspect-square", parliamentHeatmapEmptyCellClassName);
 
 /** One counted day. Days absent from the map are drawn as empty squares. */
 export interface ActivityHeatmapDay {
@@ -388,7 +386,7 @@ export function ParliamentHubActivityHeatmap({
                   title={square.label}
                   className={
                     square.kind === "uncaptured"
-                      ? "aspect-square border border-[#e5e5e0] dark:border-[var(--pnrr-border)]"
+                      ? cn("aspect-square", parliamentHeatmapCellEdgeClassName)
                       : EMPTY_CELL_CLASS_NAME
                   }
                   style={square.kind === "uncaptured" ? UNCAPTURED_FILL : undefined}
@@ -397,7 +395,7 @@ export function ParliamentHubActivityHeatmap({
             case "counted": {
               const fill = {
                 backgroundColor:
-                  GOVUK_BLUE_RAMP[bucketOf(square.day.total) - 1],
+                  PARLIAMENT_HEATMAP_RAMP[bucketOf(square.day.total) - 1],
               };
               return baseHref !== undefined ? (
                 // A LINK, not a button: the square's whole job is to open that
@@ -409,7 +407,7 @@ export function ParliamentHubActivityHeatmap({
                   href={appendDayToHref(baseHref, cell.isoDate)}
                   aria-label={square.day.label}
                   title={square.day.label}
-                  className="block aspect-square rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+                  className="block aspect-square rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
                   style={fill}
                 />
               ) : (
@@ -441,13 +439,13 @@ export function ParliamentHubActivityHeatmap({
         // empty grid here would read as "Parliament did nothing".
         <div
           role="status"
-          className="border-2 border-[#b1b4b6] bg-[#f3f2f1] p-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)]"
+          className="border-2 border-parliament-border bg-parliament-surface p-4"
         >
-          <p className="text-base leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <p className="text-base leading-6 text-parliament-fg">
             {errorLead}
           </p>
           {errorDetail ? (
-            <p className="mt-2 break-words text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-2 break-words text-xs text-parliament-muted">
               {errorDetail}
             </p>
           ) : null}
@@ -458,7 +456,7 @@ export function ParliamentHubActivityHeatmap({
         // must show its hatching rather than collapse into a sentence claiming
         // the chambers never voted. Without coverage this stays exactly as it
         // was — the honest two-state reading.
-        <p className="text-base leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="text-base leading-6 text-parliament-muted">
           {emptyLabel}
         </p>
       ) : (
@@ -470,7 +468,7 @@ export function ParliamentHubActivityHeatmap({
                 <span
                   key={`${String(label.columnIndex)}-${String(label.month)}`}
                   style={{ gridColumnStart: label.columnIndex + 1 }}
-                  className="whitespace-nowrap text-[11px] leading-4 text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+                  className="whitespace-nowrap text-[11px] leading-4 text-parliament-muted"
                 >
                   {label.label}
                 </span>
@@ -502,19 +500,19 @@ export function ParliamentHubActivityHeatmap({
               onPointerLeave={scheduleHide}
               // Measured before it is shown: placed by the layout effect above.
               style={{ position: "fixed", left: 0, top: 0, visibility: "hidden" }}
-              className="z-50 max-w-xs overflow-hidden rounded-none bg-[#0b0c0c] px-3 py-1.5 text-xs text-white"
+              className="z-50 max-w-xs overflow-hidden rounded-none bg-parliament-ink px-3 py-1.5 text-xs text-white"
             >
               {active.kind === "counted" ? active.day.tooltip : active.label}
             </div>
           ) : null}
 
           {/* Legend: Mai puține [5 squares] Mai multe. */}
-          <div className="mt-3 flex items-center gap-2 text-[11px] text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <div className="mt-3 flex items-center gap-2 text-[11px] text-parliament-muted">
             <span>
               <Trans>Mai puține</Trans>
             </span>
-            <span className="inline-block h-3 w-3 border border-[#e5e5e0] bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-map-empty)]" />
-            {GOVUK_BLUE_RAMP.map((color) => (
+            <span className={cn("inline-block h-3 w-3", parliamentHeatmapEmptyCellClassName)} />
+            {PARLIAMENT_HEATMAP_RAMP.map((color) => (
               <span
                 key={color}
                 className="inline-block h-3 w-3"
@@ -529,7 +527,7 @@ export function ParliamentHubActivityHeatmap({
       )}
 
       {coverageNote ? (
-        <div className="mt-3 text-xs leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <div className="mt-3 text-xs leading-5 text-parliament-muted">
           {coverageNote}
         </div>
       ) : null}

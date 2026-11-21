@@ -99,15 +99,15 @@ const SCOPE_OPTIONS: ReadonlyArray<{
 ]
 
 const labelClassName =
-  'block text-sm font-bold leading-5 text-[var(--pnrr-fg)]'
+  'block text-sm font-bold leading-5 text-parliament-frame-fg'
 
 const controlClassName =
-  'box-border h-11 w-full shrink-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-base leading-none shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+  'box-border h-11 w-full shrink-0 rounded-none border-2 border-parliament-border-strong bg-parliament-card px-3 text-base leading-none shadow-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 const sectionClassName = 'space-y-3'
 
 const legendClassName =
-  'text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]'
+  'text-xs font-semibold uppercase tracking-wide text-parliament-frame-muted'
 
 const CHOICE_OPTIONS: ReadonlyArray<{
   readonly value: MemberVoteChoice
@@ -299,13 +299,13 @@ export function VotesFilterSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="flex w-full max-w-full flex-col overflow-hidden border-l-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-0 sm:max-w-xl [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:h-8 [&>button.absolute]:w-8 [&>button.absolute]:rounded-none [&>button.absolute]:bg-transparent [&>button.absolute]:opacity-100 [&>button.absolute]:ring-offset-0 [&>button.absolute]:hover:bg-[var(--pnrr-card)] [&>button.absolute]:focus:ring-[var(--pnrr-blue)]"
+        className="flex w-full max-w-full flex-col overflow-hidden border-l-2 border-parliament-border-strong bg-parliament-page p-0 sm:max-w-xl [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:h-8 [&>button.absolute]:w-8 [&>button.absolute]:rounded-none [&>button.absolute]:bg-transparent [&>button.absolute]:opacity-100 [&>button.absolute]:ring-offset-0 [&>button.absolute]:hover:bg-parliament-card [&>button.absolute]:focus:ring-parliament-focus"
       >
-        <SheetHeader className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-6 pr-14 text-left">
-          <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
+        <SheetHeader className="border-b-2 border-parliament-border-strong bg-parliament-page p-6 pr-14 text-left">
+          <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-parliament-frame-fg">
             Filtre
           </SheetTitle>
-          <SheetDescription className="pt-1 text-left text-base font-bold text-[var(--pnrr-muted)]">
+          <SheetDescription className="pt-1 text-left text-base font-bold text-parliament-frame-muted">
             {activeCount === 1 ? '1 filtru activ' : `${activeCount} filtre active`}
           </SheetDescription>
         </SheetHeader>
@@ -315,7 +315,7 @@ export function VotesFilterSheet({
             <div className="w-full min-w-0 space-y-6 p-4 sm:p-6">
               <fieldset className={sectionClassName}>
                 <legend className={legendClassName}>Camera</legend>
-                <p className="text-sm leading-5 text-[var(--pnrr-muted)]">
+                <p className="text-sm leading-5 text-parliament-frame-muted">
                   „Toate camerele” caută în Camera Deputaților, Senat și
                   ședințele comune deodată; fiecare rezultat spune camera care a
                   votat.
@@ -347,7 +347,7 @@ export function VotesFilterSheet({
                   says so once instead of implying all six carry the same
                   authority.
                 */}
-                <p className="text-sm leading-5 text-[var(--pnrr-muted)]">
+                <p className="text-sm leading-5 text-parliament-frame-muted">
                   „Proiecte de lege” urmează legătura către proiect. Celelalte
                   categorii sunt deduse din titlul votului, care nu este
                   standardizat.
@@ -366,13 +366,13 @@ export function VotesFilterSheet({
                           className={cn(
                             'flex items-center gap-3 text-base',
                             empty
-                              ? 'text-[var(--pnrr-muted)]'
-                              : 'text-[var(--pnrr-fg)]',
+                              ? 'text-parliament-frame-muted'
+                              : 'text-parliament-frame-fg',
                           )}
                         >
                           <input
                             type="checkbox"
-                            className="h-5 w-5 shrink-0 rounded-none border-2 border-[var(--pnrr-border)] accent-[var(--pnrr-blue)]"
+                            className="h-5 w-5 shrink-0 rounded-none border-2 border-parliament-border-strong accent-parliament-focus"
                             checked={draft.kinds.includes(kind)}
                             disabled={empty}
                             onChange={(event) =>
@@ -396,7 +396,7 @@ export function VotesFilterSheet({
                           {count === undefined ? null : (
                             <>
                               {' '}
-                              <span className="shrink-0 tabular-nums text-sm text-[var(--pnrr-muted)]">
+                              <span className="shrink-0 tabular-nums text-sm text-parliament-frame-muted">
                                 {count.toLocaleString('ro-RO')}
                               </span>
                             </>
@@ -469,7 +469,7 @@ export function VotesFilterSheet({
 
               <fieldset className={sectionClassName}>
                 <legend className={legendClassName}>Poziția unui grup</legend>
-                <p className="text-sm leading-5 text-[var(--pnrr-muted)]">
+                <p className="text-sm leading-5 text-parliament-frame-muted">
                   Doar grupul: toate voturile la care grupul a participat. Cu o
                   variantă aleasă: doar voturile în care majoritatea grupului a
                   ales-o — un vot în care grupul s-a împărțit egal nu apare.
@@ -522,7 +522,7 @@ export function VotesFilterSheet({
                 </div>
                 {stanceWithoutGroup ? (
                   <p
-                    className="border-l-4 border-l-[#d4351c] pl-3 text-sm leading-5 text-[var(--pnrr-fg)]"
+                    className="border-l-4 border-l-parliament-error pl-3 text-sm leading-5 text-parliament-frame-fg"
                     role="status"
                   >
                     Alegeți un grup — o variantă de vot fără grup nu descrie
@@ -531,7 +531,7 @@ export function VotesFilterSheet({
                 ) : null}
                 {groupNeedsPeriod ? (
                   <p
-                    className="border-l-4 border-l-[#d4351c] pl-3 text-sm leading-5 text-[var(--pnrr-fg)]"
+                    className="border-l-4 border-l-parliament-error pl-3 text-sm leading-5 text-parliament-frame-fg"
                     role="status"
                   >
                     Pentru „Toate camerele”, poziția unui grup se caută
@@ -539,7 +539,7 @@ export function VotesFilterSheet({
                     la selectarea grupului am completat ultimele 12 luni.
                   </p>
                 ) : draft.chamber === 'all' && draft.grupVot !== '' ? (
-                  <p className="text-sm leading-5 text-[var(--pnrr-muted)]">
+                  <p className="text-sm leading-5 text-parliament-frame-muted">
                     În „Toate camerele”, poziția grupului se caută în perioada
                     aleasă mai sus.
                   </p>
@@ -548,7 +548,7 @@ export function VotesFilterSheet({
             </div>
           </ScrollArea>
 
-          <div className="flex shrink-0 flex-col gap-3 border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4 sm:flex-row sm:p-6">
+          <div className="flex shrink-0 flex-col gap-3 border-t-2 border-parliament-border-strong bg-parliament-page p-4 sm:flex-row sm:p-6">
             <Button
               type="button"
               variant="outline"

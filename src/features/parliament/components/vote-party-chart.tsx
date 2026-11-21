@@ -55,9 +55,9 @@ type VotePartyTooltipProps = {
   readonly payload?: ReadonlyArray<VotePartyTooltipEntry>
 }
 
-const CHART_AXIS_COLOR = '#505a5f'
-const CHART_GRID_COLOR = '#dee0e2'
-const CHART_AXIS_LINE = '#b1b4b6'
+const CHART_AXIS_COLOR = 'var(--parliament-muted)'
+const CHART_GRID_COLOR = 'color-mix(in srgb, var(--parliament-border) 40%, transparent)'
+const CHART_AXIS_LINE = 'var(--parliament-border)'
 
 function buildYAxisTicks(maxValue: number): number[] {
   const step = 50
@@ -69,12 +69,12 @@ function buildYAxisTicks(maxValue: number): number[] {
   return ticks
 }
 
-const PNRR_TOOLTIP_STYLE = {
+const VOTE_PARTY_TOOLTIP_STYLE = {
   borderRadius: 0,
-  border: '2px solid var(--pnrr-border)',
+  border: '2px solid var(--parliament-border-strong)',
   boxShadow: 'none',
-  background: 'var(--pnrr-card)',
-  color: 'var(--pnrr-fg)',
+  background: 'var(--parliament-card)',
+  color: 'var(--parliament-frame-fg)',
   padding: '10px 14px',
 } as const
 
@@ -90,8 +90,8 @@ function VotePartyChartTooltip({
     .sort((a, b) => Number(b.value ?? 0) - Number(a.value ?? 0))
 
   return (
-    <div className="min-w-[10.5rem]" style={PNRR_TOOLTIP_STYLE}>
-      <p className="mb-2.5 border-b border-[var(--pnrr-border)] pb-2 text-sm font-bold leading-tight">
+    <div className="min-w-[10.5rem]" style={VOTE_PARTY_TOOLTIP_STYLE}>
+      <p className="mb-2.5 border-b border-parliament-border-strong pb-2 text-sm font-bold leading-tight">
         {label}
       </p>
       <ul className="space-y-2">
@@ -102,7 +102,7 @@ function VotePartyChartTooltip({
           >
             <span
               className="h-2.5 w-2.5 shrink-0"
-              style={{ backgroundColor: entry.color ?? '#505a5f' }}
+              style={{ backgroundColor: entry.color ?? 'var(--parliament-muted)' }}
               aria-hidden
             />
             <span className="text-sm font-bold leading-none">
@@ -135,11 +135,11 @@ function VotePartyChartLegend({
       {payload.map((entry) => (
         <li
           key={entry.value}
-          className="flex items-center gap-2 text-sm leading-none text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+          className="flex items-center gap-2 text-sm leading-none text-parliament-muted"
         >
           <span
             className="h-3 w-3 shrink-0"
-            style={{ backgroundColor: entry.color ?? '#505a5f' }}
+            style={{ backgroundColor: entry.color ?? 'var(--parliament-muted)' }}
             aria-hidden
           />
           <span>{entry.value}</span>
@@ -164,7 +164,7 @@ function buildChartModel(
   const series = activeGroups.map((group) => ({
     id: group.groupId,
     name: group.groupName,
-    color: groupColors[group.groupId] ?? '#505a5f',
+    color: groupColors[group.groupId] ?? 'var(--parliament-muted)',
   }))
 
   const pentruRow: Record<string, string | number> = {
@@ -238,7 +238,7 @@ export function VotePartyChart({
         <h2 className={voteDetailSectionTitleClassName}>
           Voturi pe grupuri parlamentare
         </h2>
-        <p className="mt-4 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="mt-4 text-sm text-parliament-muted">
           Nu există date de grup disponibile pentru această divizare.
         </p>
       </VotePartyChartShell>
@@ -252,7 +252,7 @@ export function VotePartyChart({
       </h2>
 
       {conflictingTotal > 0 || unknownTotal > 0 ? (
-        <p className="mt-4 border-l-4 border-[#d4351c] bg-[#f3f2f1] px-4 py-3 text-sm text-[#0b0c0c] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
+        <p className="mt-4 border-l-4 border-parliament-error bg-parliament-surface px-4 py-3 text-sm text-parliament-fg">
           <Trans>
             Poziții fără alegere efectivă: {conflictingTotal} cu observații
             contradictorii
@@ -296,7 +296,7 @@ export function VotePartyChart({
                 width={36}
               />
               <Tooltip
-                cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                cursor={{ fill: 'color-mix(in srgb, var(--parliament-fg) 3%, transparent)' }}
                 wrapperStyle={{ zIndex: 20, outline: 'none' }}
                 contentStyle={{
                   padding: 0,

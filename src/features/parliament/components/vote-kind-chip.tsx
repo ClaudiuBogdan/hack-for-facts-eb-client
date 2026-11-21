@@ -38,7 +38,7 @@ export function VoteKindChip({
         'border px-1.5 py-0.5 text-xs font-semibold uppercase leading-none tracking-wide',
         tone === 'inverse'
           ? 'border-white/60 text-white'
-          : 'border-[#b1b4b6] text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]',
+          : 'border-parliament-border text-parliament-muted',
         className,
       )}
     >

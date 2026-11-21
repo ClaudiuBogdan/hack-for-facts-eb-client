@@ -90,21 +90,21 @@ export function VoteDetailContent({
             voteSubject={detail.voteSubject}
           />
         ) : detail.resolutionStatus === "conflict" ? (
-          <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-            <p className="text-sm font-bold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <div className="mb-6 border border-parliament-border bg-parliament-card px-5 py-4">
+            <p className="text-sm font-bold text-parliament-muted">
               Proiect de lege neconfirmat
             </p>
-            <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-1 text-sm text-parliament-muted">
               Sursele indică mai multe proiecte de lege diferite pentru acest
               vot, așa că niciunul nu este prezentat ca fiind cel corect.
             </p>
           </div>
         ) : detail.resolutionStatus === "unresolved" ? (
-          <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-            <p className="text-sm font-bold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <div className="mb-6 border border-parliament-border bg-parliament-card px-5 py-4">
+            <p className="text-sm font-bold text-parliament-muted">
               Fără proiect de lege asociat
             </p>
-            <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-1 text-sm text-parliament-muted">
               Nu există dovezi suficiente pentru a lega acest vot de un proiect
               de lege. Aceasta nu înseamnă că votul nu a avut unul.
             </p>
@@ -112,14 +112,14 @@ export function VoteDetailContent({
         ) : detail.relatedBillId &&
           (detail.resolutionStatus === "resolved" ||
             detail.resolutionStatus === "adjudicated") ? (
-          <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-            <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <div className="mb-6 border border-parliament-border bg-parliament-card px-5 py-4">
+            <p className="text-sm text-parliament-muted">
               Vot asociat proiectului de lege
             </p>
             <Link
               to="/parlament/proiecte/$billId"
               params={{ billId: detail.relatedBillId }}
-              className="mt-1 inline-block text-base font-bold text-[#1d70b8] underline underline-offset-2 hover:text-[#1d70b8]/80"
+              className="mt-1 inline-block text-base font-bold text-parliament-link underline underline-offset-2 hover:text-parliament-link/80"
             >
               Vezi proiectul de lege
             </Link>
@@ -131,7 +131,7 @@ export function VoteDetailContent({
             href={detail.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d70b8] underline underline-offset-2 hover:text-[#1d70b8]/80"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-parliament-link underline underline-offset-2 hover:text-parliament-link/80"
           >
             Sursa oficială a votului
             <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -154,7 +154,7 @@ export function VoteDetailContent({
           />
 
           <div
-            className="border-t border-[#b1b4b6] dark:border-[var(--pnrr-border)]"
+            className="border-t border-parliament-border"
             role="separator"
             aria-hidden
           />

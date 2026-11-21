@@ -13,7 +13,7 @@ import { VotesChamberPanel } from './votes-chamber-panel'
  * section already has its own border and the inset just cost the columns width
  * they use for four vote cards each.
  */
-const panelSurfaceClassName = 'bg-[#f3f2f1] dark:bg-[var(--pnrr-subtle)]'
+const panelSurfaceClassName = 'bg-parliament-surface'
 
 /**
  * The Voturi block on the hub: one column per chamber, closed by the activity
@@ -54,8 +54,8 @@ export function ParliamentHubVotesSection() {
         <div className={parliamentVotesOverviewGridClassName}>
           {isLoading ? (
             <>
-              <Skeleton className="h-[42rem] w-full rounded-none bg-white/60" />
-              <Skeleton className="h-[42rem] w-full rounded-none bg-white/60" />
+              <Skeleton className="h-[42rem] w-full rounded-none bg-parliament-card/60" />
+              <Skeleton className="h-[42rem] w-full rounded-none bg-parliament-card/60" />
             </>
           ) : (
             <>
@@ -70,7 +70,7 @@ export function ParliamentHubVotesSection() {
       </div>
 
       {/* The section's own footer: WHEN the chambers voted, then the list. */}
-      <div className="border-t-2 border-[var(--pnrr-border)] p-5 sm:p-6">
+      <div className="border-t-2 border-parliament-border-strong p-5 sm:p-6">
         {showActivity ? (
           <ParliamentHubVoteActivity />
         ) : (

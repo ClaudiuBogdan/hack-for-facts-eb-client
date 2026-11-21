@@ -90,21 +90,21 @@ export function VotesChamberPanel({ chamber, votes }: Props) {
   return (
     <section
       className={cn(
-        'min-w-0 bg-white dark:bg-[var(--pnrr-card)]',
+        'min-w-0 bg-parliament-card',
         'flex flex-col',
         'lg:row-span-6 lg:grid lg:grid-rows-subgrid',
       )}
       style={{ borderTop: `6px solid ${config.color}` }}
     >
-      <div className="border-b border-[#b1b4b6] px-5 py-4 dark:border-[var(--pnrr-border)]">
-        <h2 className="flex items-center gap-2.5 text-xl font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+      <div className="border-b border-parliament-border px-5 py-4">
+        <h2 className="flex items-center gap-2.5 text-xl font-bold leading-snug text-parliament-fg">
           <ParliamentChamberMark color={config.color} className="mt-0" />
           <span>{config.title}</span>
         </h2>
       </div>
 
-      <div className="border-b border-[#b1b4b6] dark:border-[var(--pnrr-border)]">
-        <div className="aspect-[16/9] overflow-hidden bg-[#dee0e2] dark:bg-[var(--pnrr-subtle)]">
+      <div className="border-b border-parliament-border">
+        <div className="aspect-[16/9] overflow-hidden bg-parliament-border/40">
           <VoteIllustration
             src={config.illustration.src}
             srcSet={config.illustration.srcSet}
@@ -113,7 +113,7 @@ export function VotesChamberPanel({ chamber, votes }: Props) {
         <div className="h-1.5" style={{ backgroundColor: config.color }} aria-hidden />
       </div>
 
-      <p className="px-5 pt-5 text-base font-normal leading-7 text-[#0b0c0c] lg:pb-5 dark:text-[var(--pnrr-fg)]">
+      <p className="px-5 pt-5 text-base font-normal leading-7 text-parliament-fg lg:pb-5">
         {config.description}
       </p>
 
@@ -129,7 +129,7 @@ export function VotesChamberPanel({ chamber, votes }: Props) {
         </Button>
       </div>
 
-      <p className="px-5 pt-8 text-base font-normal leading-snug text-[#0b0c0c] lg:pt-8 dark:text-[var(--pnrr-fg)]">
+      <p className="px-5 pt-8 text-base font-normal leading-snug text-parliament-fg lg:pt-8">
         {config.recentLabel}
       </p>
 
@@ -139,7 +139,7 @@ export function VotesChamberPanel({ chamber, votes }: Props) {
             <VoteChamberVoteCard key={vote.voteId} vote={vote} className="w-full" />
           ))
         ) : (
-          <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="text-sm text-parliament-muted">
             Nu există voturi recente pentru {getChamberLabel(chamber)}.
           </p>
         )}

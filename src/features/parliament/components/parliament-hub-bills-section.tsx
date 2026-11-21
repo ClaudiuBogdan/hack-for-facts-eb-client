@@ -53,17 +53,17 @@ export function ParliamentHubBillsSection() {
         // Hairline rules between rows, exactly as the Voturi card lists its
         // votes — the bills used to arrive as bordered cards stacked inside an
         // already-bordered section.
-        <div className="divide-y divide-[var(--pnrr-border)]/20">
+        <div className="divide-y divide-parliament-border-strong/20">
           {data.bills.map((bill) => (
             <BillListCard key={bill.billId} bill={bill} />
           ))}
         </div>
       ) : (
-        <p className="px-5 py-6 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p className="px-5 py-6 text-sm text-parliament-frame-muted sm:px-6">
           <Trans>Nu există proiecte de lege disponibile.</Trans>
         </p>
       )}
-      <div className="border-t-2 border-[var(--pnrr-border)] p-5 sm:p-6">
+      <div className="border-t-2 border-parliament-border-strong p-5 sm:p-6">
         {showActivity ? (
           <ParliamentHubBillActivity />
         ) : (

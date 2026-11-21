@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import type { ParliamentVoteSummary, VoteChamber } from '@/schemas/parliament'
+import type { ParliamentVoteSummary, VoteChamber, VoteOutcome } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import {
   formatVoteDivisionMeta,
@@ -8,19 +8,26 @@ import {
   getVoteOutcomeAccentColor,
   toVoteDetailChamberParam,
 } from '../lib/formatting'
-import {
-  PARLIAMENT_CAMERA_GREEN,
-  PARLIAMENT_RESOURCE_PURPLE,
-  PARLIAMENT_SENAT_RED,
-} from '../lib/hub-theme'
 import { VOTE_KIND_CHIP_LABELS } from '../lib/votes-filter-state'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 import { VoteKindChip } from './vote-kind-chip'
 
-const CHAMBER_BADGE_COLOR: Readonly<Record<VoteChamber, string>> = {
-  camera: PARLIAMENT_CAMERA_GREEN,
-  senat: PARLIAMENT_SENAT_RED,
-  comun: PARLIAMENT_RESOURCE_PURPLE,
+/**
+ * Outlined badges: the border frames text on the card, so border and text both take the flipping colour (the fills
+ * are for the accent stripe).
+ */
+const CHAMBER_BADGE_CLASS_NAME: Readonly<Record<VoteChamber, string>> = {
+  camera: 'border-parliament-commons text-parliament-commons',
+  senat: 'border-parliament-senate text-parliament-senate',
+  comun: 'border-parliament-resource text-parliament-resource',
+}
+
+/** The outcome badge in the stripe's colour (`getVoteOutcomeAccentColor`), as text. */
+const OUTCOME_BADGE_CLASS_NAME: Readonly<Record<VoteOutcome, string>> = {
+  adoptat: 'border-parliament-commons text-parliament-commons',
+  respins: 'border-parliament-senate text-parliament-senate',
+  egalitate: 'border-parliament-muted text-parliament-muted',
+  necunoscut: 'border-parliament-muted text-parliament-muted',
 }
 
 type Props = {
@@ -70,7 +77,7 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
         voteId: vote.voteId,
       }}
       className={cn(
-        'group flex rounded-none border border-[#b1b4b6] bg-white transition-colors hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:hover:bg-[var(--pnrr-surface)]',
+        'group flex rounded-none border border-parliament-border bg-parliament-card transition-colors hover:bg-parliament-surface',
         className,
       )}
       // Title alone does not identify a row here: every division of a bill
@@ -99,7 +106,7 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
 
       <div className="flex min-w-0 flex-1 flex-col gap-3 px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:gap-6">
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-bold leading-snug text-[#0b0c0c] group-hover:underline dark:text-[var(--pnrr-fg)]">
+          <h3 className="text-base font-bold leading-snug text-parliament-fg group-hover:underline">
             {vote.title}
           </h3>
           {/* The chamber's own label for the question. On this surface the title
@@ -107,19 +114,18 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
               division the title is the bill's — so the subject explains
               underneath rather than replacing it. */}
           {vote.voteSubject ? (
-            <p className="mt-1 text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-1 text-sm leading-5 text-parliament-muted">
               {vote.voteSubject}
             </p>
           ) : null}
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-parliament-muted">
             {showChamber ? (
               <>
                 <span
-                  className="inline-flex items-center rounded-none border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide"
-                  style={{
-                    borderColor: CHAMBER_BADGE_COLOR[vote.chamber],
-                    color: CHAMBER_BADGE_COLOR[vote.chamber],
-                  }}
+                  className={cn(
+                    'inline-flex items-center rounded-none border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
+                    CHAMBER_BADGE_CLASS_NAME[vote.chamber],
+                  )}
                 >
                   {getVoteChamberLabel(vote.chamber)}
                 </span>
@@ -127,8 +133,10 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
               </>
             ) : null}
             <span
-              className="inline-flex items-center rounded-none border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide"
-              style={{ borderColor: accentColor, color: accentColor }}
+              className={cn(
+                'inline-flex items-center rounded-none border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
+                OUTCOME_BADGE_CLASS_NAME[vote.outcome],
+              )}
             >
               {outcomeLabel}
             </span>
@@ -147,16 +155,16 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
           <dl className="flex gap-5 sm:gap-7">
             {counts.map((count) => (
               <div key={count.label}>
-                <dt className="text-xs leading-none text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <dt className="text-xs leading-none text-parliament-muted">
                   {count.label}
                 </dt>
-                <dd className="mt-1.5 text-xl font-bold leading-none tabular-nums text-[#0b0c0c] dark:text-[var(--pnrr-fg)] sm:text-2xl">
+                <dd className="mt-1.5 text-xl font-bold leading-none tabular-nums text-parliament-fg sm:text-2xl">
                   {count.value}
                 </dd>
               </div>
             ))}
           </dl>
-          <ParliamentCardChevron className="hidden shrink-0 text-[#505a5f] lg:block dark:text-[var(--pnrr-muted)]" />
+          <ParliamentCardChevron className="hidden shrink-0 text-parliament-muted lg:block" />
         </div>
       </div>
     </Link>

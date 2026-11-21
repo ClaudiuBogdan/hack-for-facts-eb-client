@@ -68,7 +68,7 @@ export function ParliamentListPaginationNav({
         type="button"
         variant="outline"
         size="icon"
-        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        className="h-9 w-9 rounded-none border-parliament-border bg-parliament-card"
         onClick={() => onPageChange(1)}
         disabled={safePage <= 1}
         aria-label="Prima pagină"
@@ -79,7 +79,7 @@ export function ParliamentListPaginationNav({
         type="button"
         variant="outline"
         size="icon"
-        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        className="h-9 w-9 rounded-none border-parliament-border bg-parliament-card"
         onClick={() => onPageChange(safePage - 1)}
         disabled={safePage <= 1}
         aria-label="Pagina anterioară"
@@ -91,7 +91,7 @@ export function ParliamentListPaginationNav({
         item.type === 'ellipsis' ? (
           <span
             key={`ellipsis-${index}`}
-            className="px-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+            className="px-1 text-sm text-parliament-muted"
           >
             …
           </span>
@@ -103,8 +103,8 @@ export function ParliamentListPaginationNav({
             className={cn(
               'h-9 min-w-9 rounded-none px-3 text-sm',
               item.page === safePage
-                ? 'border-[#0b0c0c] bg-[#0b0c0c] text-white hover:bg-[#0b0c0c]/90'
-                : 'border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]',
+                ? 'border-parliament-ink bg-parliament-ink text-white hover:bg-parliament-ink/90'
+                : 'border-parliament-border bg-parliament-card',
             )}
             onClick={() => onPageChange(item.page)}
             aria-current={item.page === safePage ? 'page' : undefined}
@@ -118,7 +118,7 @@ export function ParliamentListPaginationNav({
         type="button"
         variant="outline"
         size="icon"
-        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        className="h-9 w-9 rounded-none border-parliament-border bg-parliament-card"
         onClick={() => onPageChange(safePage + 1)}
         disabled={safePage >= totalPages}
         aria-label="Pagina următoare"
@@ -129,7 +129,7 @@ export function ParliamentListPaginationNav({
         type="button"
         variant="outline"
         size="icon"
-        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        className="h-9 w-9 rounded-none border-parliament-border bg-parliament-card"
         onClick={() => onPageChange(totalPages)}
         disabled={safePage >= totalPages}
         aria-label="Ultima pagină"
@@ -157,14 +157,14 @@ export function VotesListPagination({
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 border border-[#b1b4b6] bg-[#f3f2f1] px-4 py-3 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-col gap-4 border border-parliament-border bg-parliament-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between',
         className,
       )}
     >
-      <p className="text-sm text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+      <p className="text-sm text-parliament-fg">
         <span className="font-bold">{total}</span> rezultate
         {totalPages > 1 ? (
-          <span className="text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <span className="text-parliament-muted">
             {' '}
             (pagina {safePage} din {totalPages})
           </span>

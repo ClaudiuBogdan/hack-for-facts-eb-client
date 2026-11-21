@@ -26,7 +26,7 @@ import {
   DEFAULT_VOTE_TAB,
   type VoteTab,
 } from '../lib/vote-detail-search'
-import { PARLIAMENT_RESOURCE_PURPLE } from '../lib/hub-theme'
+import { PARLIAMENT_NOTICE_TINT, PARLIAMENT_RESOURCE_PURPLE } from '../lib/hub-theme'
 import {
   voteDetailCardClassName,
   voteDetailSectionTitleClassName,
@@ -269,9 +269,9 @@ export function VoteIndividualVotesSection({
       className={cn('overflow-visible p-5 sm:p-6', className)}
     >
       <div
-        className="mb-6 border-l-[5px] px-4 py-3 text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
+        className="mb-6 border-l-[5px] px-4 py-3 text-sm leading-6 text-parliament-fg"
         style={{
-          backgroundColor: '#f3f0ff',
+          backgroundColor: PARLIAMENT_NOTICE_TINT,
           borderLeftColor: PARLIAMENT_RESOURCE_PURPLE,
         }}
       >
@@ -296,7 +296,7 @@ export function VoteIndividualVotesSection({
         </h2>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="inline-flex overflow-hidden rounded-none border border-[#b1b4b6] dark:border-[var(--pnrr-border)]">
+          <div className="inline-flex overflow-hidden rounded-none border border-parliament-border">
             <Button
               type="button"
               variant="outline"
@@ -319,7 +319,7 @@ export function VoteIndividualVotesSection({
               type="button"
               variant="outline"
               className={cn(
-                'h-10 rounded-none border-0 border-l border-[#b1b4b6] px-4 text-sm dark:border-[var(--pnrr-border)]',
+                'h-10 rounded-none border-0 border-l border-parliament-border px-4 text-sm',
                 viewMode === 'member'
                   ? voteDetailToggleActiveClassName
                   : voteDetailToggleInactiveClassName,
@@ -338,7 +338,7 @@ export function VoteIndividualVotesSection({
           <Select value={partyFilter} onValueChange={setPartyFilter}>
             <SelectTrigger
               aria-label="Filtru grup parlamentar"
-              className="h-10 w-full min-w-[12rem] rounded-none border-0 bg-[#1d70b8] px-4 text-sm font-normal text-white shadow-none focus:ring-2 focus:ring-white/40 sm:w-auto [&>svg]:text-white [&>svg]:opacity-100"
+              className="h-10 w-full min-w-[12rem] rounded-none border-0 bg-parliament-action px-4 text-sm font-normal text-white shadow-none focus:ring-2 focus:ring-white/40 sm:w-auto [&>svg]:text-white [&>svg]:opacity-100"
             >
               <SelectValue placeholder="Toate grupurile" />
             </SelectTrigger>
@@ -401,7 +401,7 @@ export function VoteIndividualVotesSection({
           return (
             <TabsContent key={tab.id} value={tab.id} className="mt-6 space-y-6">
               {tabVotes.length === 0 ? (
-                <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="text-sm text-parliament-muted">
                   Nu există membri în această categorie.
                 </p>
               ) : viewMode === 'party' && tab.id === ALL_CHOICES_TAB ? (
@@ -431,7 +431,7 @@ export function VoteIndividualVotesSection({
                       value={groupId}
                       className="mb-5 border-0 last:mb-0"
                     >
-                      <AccordionTrigger className="rounded-none border-0 bg-transparent px-0 py-2 text-lg font-bold text-[#372554] hover:no-underline dark:text-[var(--pnrr-fg)] [&>svg]:h-5 [&>svg]:w-5 [&>svg]:stroke-[2] [&>svg]:text-[#372554] dark:[&>svg]:text-[var(--pnrr-fg)]">
+                      <AccordionTrigger className="rounded-none border-0 bg-transparent px-0 py-2 text-lg font-bold text-parliament-resource-heading hover:no-underline [&>svg]:h-5 [&>svg]:w-5 [&>svg]:stroke-[2] [&>svg]:text-parliament-resource-heading">
                         {votes[0]?.groupName} ({votes.length})
                       </AccordionTrigger>
                       <AccordionContent className="px-1 pt-3 pb-5">
@@ -448,7 +448,7 @@ export function VoteIndividualVotesSection({
                                   : undefined
                               }
                               accentColor={
-                                groupColors[vote.groupId] ?? '#505a5f'
+                                groupColors[vote.groupId] ?? 'var(--parliament-muted)'
                               }
                               // No choice label: this branch only ever renders a
                               // single-choice tab now — the tab IS the choice,
@@ -471,7 +471,7 @@ export function VoteIndividualVotesSection({
                       judetName={
                         vote.memberId ? memberJudete[vote.memberId] : undefined
                       }
-                      accentColor={groupColors[vote.groupId] ?? '#505a5f'}
+                      accentColor={groupColors[vote.groupId] ?? 'var(--parliament-muted)'}
                       choiceLabel={
                         tab.id === ALL_CHOICES_TAB
                           ? votePositionLabel(vote)

@@ -46,15 +46,15 @@ function VoteTallyColumn({ label, count, icon, className }: TallyColumnProps) {
 
   return (
     <div className={cn('flex min-h-[4.75rem] flex-col justify-center py-3.5 sm:py-4', className)}>
-      <p className="text-sm leading-none text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <p className="text-sm leading-none text-parliament-muted">
         {label}
       </p>
       <div className="mt-2.5 flex items-center gap-2">
-        <span className="text-[1.75rem] font-bold leading-none tabular-nums text-[#0b0c0c] dark:text-[var(--pnrr-fg)] sm:text-[2rem]">
+        <span className="text-[1.75rem] font-bold leading-none tabular-nums text-parliament-fg sm:text-[2rem]">
           {count}
         </span>
         <Icon
-          className="h-[1.125rem] w-[1.125rem] shrink-0 text-[#b1b4b6] dark:text-[var(--pnrr-muted)]"
+          className="h-[1.125rem] w-[1.125rem] shrink-0 text-parliament-faint"
           strokeWidth={1.75}
           aria-hidden
         />
@@ -127,11 +127,11 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
           )}
         >
           <div className="min-w-0 flex-1">
-            <h3 className="text-base font-bold leading-snug text-[#0b0c0c] group-hover:underline sm:text-lg dark:text-[var(--pnrr-fg)]">
+            <h3 className="text-base font-bold leading-snug text-parliament-fg group-hover:underline sm:text-lg">
               {heading}
             </h3>
             {subheading ? (
-              <p className="mt-1 text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-1 text-sm leading-5 text-parliament-muted">
                 {subheading}
               </p>
             ) : null}
@@ -140,12 +140,12 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
                 subject happens to BE that text. Saying which is which costs one
                 muted line and removes the ambiguity the fallback created. */}
             {billContext && !subject ? (
-              <p className="mt-1 text-sm italic leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-1 text-sm italic leading-5 text-parliament-muted">
                 Subiectul votului nu a fost consemnat de sursă
               </p>
             ) : null}
           </div>
-          <ParliamentCardChevron className="shrink-0 text-[#505a5f] dark:text-[var(--pnrr-muted)]" />
+          <ParliamentCardChevron className="shrink-0 text-parliament-muted" />
         </div>
 
         <div
@@ -173,7 +173,7 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
         {tallySubjectNote ? (
           <p
             className={cn(
-              'border-t px-4 py-2 text-sm leading-5 text-[#505a5f] sm:px-5 dark:text-[var(--pnrr-muted)]',
+              'border-t px-4 py-2 text-sm leading-5 text-parliament-muted sm:px-5',
               parliamentVoteCardDividerClassName,
             )}
           >
@@ -191,7 +191,7 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
             parliamentVoteCardDividerClassName,
           )}
         >
-          <span className="text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <span className="text-sm leading-5 text-parliament-muted">
             {formatVoteDivisionMeta(vote, vote.divisionNumber)}
           </span>
           {/* On a bill page the edge's ROLE is the sharper fact and takes the

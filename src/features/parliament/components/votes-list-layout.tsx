@@ -325,7 +325,7 @@ export function VotesListLayout({ search }: Props) {
           >
             <SelectTrigger
               id="vote-sort"
-              className="h-11 w-52 rounded-none border-2 border-[#b1b4b6] bg-white text-sm text-[#0b0c0c] shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]"
+              className="h-11 w-52 rounded-none border-2 border-parliament-border bg-parliament-card text-sm text-parliament-fg shadow-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
             >
               <SelectValue />
             </SelectTrigger>
@@ -412,7 +412,7 @@ export function VotesListLayout({ search }: Props) {
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 rounded-none border-2 border-[#0b0c0c] px-5 text-base font-normal dark:border-[var(--pnrr-border)]"
+                className="h-11 rounded-none border-2 border-parliament-fg px-5 text-base font-normal"
                 onClick={() => void fetchNextPage()}
                 disabled={isFetchingNextPage}
               >
@@ -422,11 +422,11 @@ export function VotesListLayout({ search }: Props) {
           </ParliamentListFooter>
         </div>
       ) : (
-        <div className="border border-[#b1b4b6] bg-white px-5 py-10 text-center dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-          <p className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <div className="border border-parliament-border bg-parliament-card px-5 py-10 text-center">
+          <p className="text-base font-bold text-parliament-fg">
             Niciun vot nu corespunde căutării
           </p>
-          <p className="mt-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-2 text-sm text-parliament-muted">
             Încearcă un alt titlu, interval de date sau resetează filtrele.
           </p>
         </div>
@@ -439,15 +439,15 @@ export function VotesListLayout({ search }: Props) {
           numbers must not be read as the same claim. */}
       <section
         aria-labelledby="votes-list-activity-heading"
-        className="border-t-2 border-[var(--pnrr-border)] pt-6"
+        className="border-t-2 border-parliament-border-strong pt-6"
       >
         <h3
           id="votes-list-activity-heading"
-          className="text-xl font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
+          className="text-xl font-bold leading-snug text-parliament-fg"
         >
           Când a votat Parlamentul
         </h3>
-        <p className="mt-2 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="mt-2 max-w-3xl text-base leading-7 text-parliament-muted">
           Numărul de voturi din plen pe zile, în ultimele 12 luni, folosind
           filtrele de mai sus. Alege o zi pentru a o adăuga la filtrele
           curente.
@@ -461,7 +461,7 @@ export function VotesListLayout({ search }: Props) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="mt-4 h-10 rounded-none border-2 border-[#0b0c0c] px-5 text-base font-normal dark:border-[var(--pnrr-border)]"
+                  className="mt-4 h-10 rounded-none border-2 border-parliament-fg px-5 text-base font-normal"
                   onClick={() =>
                     handleSearchChange({
                       ...listSearch,
@@ -474,7 +474,7 @@ export function VotesListLayout({ search }: Props) {
                   Renunță la ziua aleasă ({formatDay(dayFilter)})
                 </Button>
               ) : (
-                <p className="mt-4 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="mt-4 text-sm text-parliament-muted">
                   Ziua aleasă se adaugă la filtre; celelalte rămân active.
                 </p>
               )

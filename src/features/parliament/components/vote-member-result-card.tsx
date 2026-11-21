@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
 import { voteMemberCardShadowClassName } from '../lib/vote-detail-theme'
 
 type Props = {
@@ -25,7 +24,7 @@ type Props = {
 }
 
 const CARD_CLASS_NAME =
-  'group flex overflow-hidden rounded-none border border-l-0 border-[#ececec] bg-white transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)]/50 dark:bg-[var(--pnrr-card)]'
+  'group flex overflow-hidden rounded-none border border-l-0 border-parliament-muted/10 bg-parliament-card transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -97,8 +96,7 @@ export function VoteMemberResultCard({
 
       <div className="grid min-w-0 flex-1 grid-cols-[3rem_1fr_auto] gap-x-2.5 px-3 pb-1 pt-4">
         <span
-          className="col-start-1 row-start-1 flex h-12 w-12 shrink-0 items-center justify-center self-start rounded-full border-2 bg-[#eef2f6] text-xs font-bold text-[#1d70b8] dark:bg-[var(--pnrr-subtle)]"
-          style={{ borderColor: PARLIAMENT_ACTION_BLUE }}
+          className="col-start-1 row-start-1 flex h-12 w-12 shrink-0 items-center justify-center self-start rounded-full border-2 border-parliament-link bg-parliament-link/5 text-xs font-bold text-parliament-link"
           aria-hidden
         >
           {getInitials(memberName)}
@@ -107,17 +105,17 @@ export function VoteMemberResultCard({
         <div className="col-start-2 row-start-1 min-w-0 self-start">
           <p
             className={cn(
-              'truncate text-[15px] font-bold leading-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]',
+              'truncate text-[15px] font-bold leading-tight text-parliament-fg',
               resolved && 'group-hover:underline',
             )}
           >
             {memberName}
           </p>
-          <p className="mt-0.5 truncate text-sm leading-tight text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-0.5 truncate text-sm leading-tight text-parliament-muted">
             {groupName}
           </p>
           {resolved ? null : (
-            <p className="mt-0.5 truncate text-xs leading-tight text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-0.5 truncate text-xs leading-tight text-parliament-muted">
               Neasociat unui profil
             </p>
           )}
@@ -125,7 +123,7 @@ export function VoteMemberResultCard({
 
         {resolved ? (
           <ChevronRight
-            className="col-start-3 row-start-1 mt-0.5 h-5 w-5 shrink-0 self-start stroke-[2.5] text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+            className="col-start-3 row-start-1 mt-0.5 h-5 w-5 shrink-0 self-start stroke-[2.5] text-parliament-muted"
             aria-hidden
           />
         ) : (
@@ -135,12 +133,12 @@ export function VoteMemberResultCard({
         {hasFootnote ? (
           <>
             <div
-              className="col-start-2 col-end-4 row-start-2 border-t border-[#dee0e2] dark:border-[var(--pnrr-border)]/60"
+              className="col-start-2 col-end-4 row-start-2 border-t border-parliament-border/40"
               aria-hidden
             />
-            <p className="col-start-2 col-end-4 row-start-3 truncate pb-1.5 pt-1.5 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="col-start-2 col-end-4 row-start-3 truncate pb-1.5 pt-1.5 text-xs text-parliament-muted">
               {choiceLabel ? (
-                <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+                <span className="font-bold text-parliament-fg">
                   {choiceLabel}
                 </span>
               ) : null}

@@ -1,11 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import type { ParliamentGroup } from '@/schemas/parliament'
+import { cn } from '@/lib/utils'
 import { getChamberLabel } from '../lib/formatting'
-import {
-  PARLIAMENT_CAMERA_GREEN,
-  PARLIAMENT_SENAT_RED,
-  parliamentHubLinkClassName,
-} from '../lib/hub-theme'
+import { parliamentHubLinkClassName } from '../lib/hub-theme'
 import { ParliamentHubSection } from './parliament-hub-section'
 import { PartyLegendCard } from './party-legend-card'
 
@@ -22,16 +19,20 @@ type Props = {
   readonly memberCountByChamberAllMandates?: ChamberCounts
 }
 
+/** The chamber's name in its colour, as text: the flipping chamber tokens, not the hero fills. */
+const CHAMBER_LABEL_CLASS_NAME = {
+  camera: 'text-parliament-commons',
+  senat: 'text-parliament-senate',
+} as const
+
 function ChamberSummary({
   chamber,
   count,
   totalMandates,
-  accentColor,
 }: {
   readonly chamber: 'camera' | 'senat'
   readonly count: number
   readonly totalMandates?: number
-  readonly accentColor: string
 }) {
   // Surface the superseded delta when current < all-mandates (SC-1).
   const superseded =
@@ -39,20 +40,22 @@ function ChamberSummary({
       ? totalMandates - count
       : 0
   return (
-    <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
+    <div className="border-2 border-parliament-border-strong bg-parliament-page p-4">
       <p
-        className="text-xs font-black uppercase tracking-wide"
-        style={{ color: accentColor }}
+        className={cn(
+          'text-xs font-black uppercase tracking-wide',
+          CHAMBER_LABEL_CLASS_NAME[chamber],
+        )}
       >
         {getChamberLabel(chamber)}
       </p>
-      <p className="mt-2 text-3xl font-black tabular-nums leading-none text-[var(--pnrr-fg)]">
+      <p className="mt-2 text-3xl font-black tabular-nums leading-none text-parliament-frame-fg">
         {count.toLocaleString('ro-RO')}
       </p>
-      <p className="mt-1 text-sm text-[var(--pnrr-muted)]">locuri ocupate</p>
+      <p className="mt-1 text-sm text-parliament-frame-muted">locuri ocupate</p>
       {superseded > 0 ? (
         <p
-          className="mt-1 text-xs text-[var(--pnrr-muted)]"
+          className="mt-1 text-xs text-parliament-frame-muted"
           title={`${totalMandates!.toLocaleString('ro-RO')} mandate în total în legislatură, incluzând ${superseded} încheiate (deces/demisie)`}
         >
           {totalMandates!.toLocaleString('ro-RO')} mandate în total
@@ -92,13 +95,11 @@ export function ParliamentHubParlamentariSection({
           chamber="camera"
           count={memberCountByChamber.camera}
           totalMandates={memberCountByChamberAllMandates?.camera}
-          accentColor={PARLIAMENT_CAMERA_GREEN}
         />
         <ChamberSummary
           chamber="senat"
           count={memberCountByChamber.senat}
           totalMandates={memberCountByChamberAllMandates?.senat}
-          accentColor={PARLIAMENT_SENAT_RED}
         />
       </div>
 
@@ -106,7 +107,7 @@ export function ParliamentHubParlamentariSection({
         <section aria-labelledby="parliament-hub-camera-groups-heading">
           <h3
             id="parliament-hub-camera-groups-heading"
-            className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--pnrr-muted)]"
+            className="mb-3 text-sm font-black uppercase tracking-wide text-parliament-frame-muted"
           >
             {getChamberLabel('camera')}
           </h3>
@@ -126,7 +127,7 @@ export function ParliamentHubParlamentariSection({
         <section aria-labelledby="parliament-hub-senat-groups-heading">
           <h3
             id="parliament-hub-senat-groups-heading"
-            className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--pnrr-muted)]"
+            className="mb-3 text-sm font-black uppercase tracking-wide text-parliament-frame-muted"
           >
             {getChamberLabel('senat')}
           </h3>

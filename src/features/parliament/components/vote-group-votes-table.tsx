@@ -15,7 +15,7 @@ import type {
   MemberVoteChoice,
   ParliamentMemberVoteRecord,
 } from '@/schemas/parliament'
-import { GROUP_BALLOT_COLORS } from '../lib/group-theme'
+import { GROUP_BALLOT_TEXT_CLASS_NAMES } from '../lib/group-theme'
 import {
   isUnattributedVote,
   memberChoiceLabel,
@@ -35,18 +35,18 @@ type Props = {
   readonly className?: string
 }
 
-/** The four recorded choices, in tally order, each with its ballot colour. */
+/** The four recorded choices, in tally order, each with its ballot colour as text. */
 const VOTE_KIND_COLUMNS: ReadonlyArray<{
   readonly choice: MemberVoteChoice
-  readonly color: string
+  readonly textClassName: string
 }> = [
-  { choice: 'pentru', color: GROUP_BALLOT_COLORS.pentru },
-  { choice: 'impotriva', color: GROUP_BALLOT_COLORS.impotriva },
-  { choice: 'abtinere', color: GROUP_BALLOT_COLORS.abtinere },
-  { choice: 'nu_a_votat', color: GROUP_BALLOT_COLORS.absent },
+  { choice: 'pentru', textClassName: GROUP_BALLOT_TEXT_CLASS_NAMES.pentru },
+  { choice: 'impotriva', textClassName: GROUP_BALLOT_TEXT_CLASS_NAMES.impotriva },
+  { choice: 'abtinere', textClassName: GROUP_BALLOT_TEXT_CLASS_NAMES.abtinere },
+  { choice: 'nu_a_votat', textClassName: GROUP_BALLOT_TEXT_CLASS_NAMES.absent },
 ]
 
-const UNRESOLVED_ACCENT = '#505a5f'
+const UNRESOLVED_ACCENT = 'var(--parliament-muted)'
 
 /**
  * The scroll box the sticky head sticks to. Bounded so a 300-member division
@@ -66,7 +66,7 @@ const tableViewportClassName = 'max-h-[min(40rem,70vh)] [scrollbar-gutter:stable
  * boxed grid: no rule under the head cells of the block, none around the rows.
  */
 const numericColumnRuleClassName =
-  'border-l border-[#dee0e2] dark:border-[var(--pnrr-border)]/60'
+  'border-l border-parliament-border/40'
 
 /**
  * Sticky, opaque, and carrying its bottom rule as an INSET SHADOW: under
@@ -75,7 +75,7 @@ const numericColumnRuleClassName =
  * detaches and rows scroll under it.
  */
 const headCellClassName =
-  'sticky top-0 z-10 h-9 bg-white px-2 py-2 align-bottom text-xs font-bold uppercase tracking-wide text-[#505a5f] shadow-[inset_0_-2px_0_0_#b1b4b6] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-muted)] dark:shadow-[inset_0_-2px_0_0_var(--pnrr-border)]'
+  'sticky top-0 z-10 h-9 bg-parliament-card px-2 py-2 align-bottom text-xs font-bold uppercase tracking-wide text-parliament-muted shadow-[inset_0_-2px_0_0_var(--parliament-border)]'
 
 /**
  * The head's share of the column rule, as a second shadow layer for the same
@@ -84,7 +84,7 @@ const headCellClassName =
  * reader scrolled. Body cells keep the real border.
  */
 const numericHeadRuleClassName =
-  'shadow-[inset_1px_0_0_0_#dee0e2,inset_0_-2px_0_0_#b1b4b6] dark:shadow-[inset_1px_0_0_0_var(--pnrr-border),inset_0_-2px_0_0_var(--pnrr-border)]'
+  'shadow-[inset_1px_0_0_0_color-mix(in_srgb,var(--parliament-border)_40%,transparent),inset_0_-2px_0_0_var(--parliament-border)]'
 
 const numericCellClassName = cn(
   'px-2 py-2 text-right tabular-nums',
@@ -92,7 +92,7 @@ const numericCellClassName = cn(
 )
 
 const rowClassName =
-  'border-b border-[#dee0e2] transition-colors motion-reduce:transition-none dark:border-[var(--pnrr-border)]/60'
+  'border-b border-parliament-border/40 transition-colors motion-reduce:transition-none'
 
 /**
  * `top-9` is `h-9` on the head cells above — the head's height is PINNED rather
@@ -120,14 +120,14 @@ const STICKY_HEAD_OFFSET_CLASS_NAME = 'top-9'
 const summaryCellStickyClassName = cn(
   'sticky z-[5]',
   STICKY_HEAD_OFFSET_CLASS_NAME,
-  'shadow-[inset_0_-1px_0_0_#dee0e2] dark:shadow-[inset_0_-1px_0_0_var(--pnrr-border)]',
+  'shadow-[inset_0_-1px_0_0_color-mix(in_srgb,var(--parliament-border)_40%,transparent)]',
 )
 
 /** The same pin, plus the numeric column's left rule as a second layer. */
 const summaryNumericCellStickyClassName = cn(
   'sticky z-[5]',
   STICKY_HEAD_OFFSET_CLASS_NAME,
-  'border-l-0 shadow-[inset_1px_0_0_0_#dee0e2,inset_0_-1px_0_0_#dee0e2] dark:shadow-[inset_1px_0_0_0_var(--pnrr-border),inset_0_-1px_0_0_var(--pnrr-border)]',
+  'border-l-0 shadow-[inset_1px_0_0_0_color-mix(in_srgb,var(--parliament-border)_40%,transparent),inset_0_-1px_0_0_color-mix(in_srgb,var(--parliament-border)_40%,transparent)]',
 )
 
 function countByChoice(
@@ -159,13 +159,13 @@ function MemberIdentityCell({
     <Link
       to="/parlament/membri/$memberId"
       params={{ memberId: vote.memberId }}
-      className="text-sm text-[#1d70b8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[#7fb3e3]"
+      className="text-sm text-parliament-link hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
     >
       {vote.memberName}
     </Link>
   ) : (
     <span
-      className="text-sm text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
+      className="text-sm text-parliament-fg"
       title={t`Votul nu a putut fi asociat unui parlamentar`}
     >
       {vote.memberName}
@@ -179,14 +179,14 @@ function MemberIdentityCell({
       <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
         {name}
         {judetName ? (
-          <span className="shrink-0 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <span className="shrink-0 text-xs text-parliament-muted">
             {judetName}
           </span>
         ) : null}
         {/* A conflicting or unmarked position ticks NO column, so without this
             the row would read as a member who simply is not there. */}
         {unattributed ? (
-          <span className="shrink-0 text-xs font-bold text-[#912b88] dark:text-[#d8a3d0]">
+          <span className="shrink-0 text-xs font-bold text-parliament-conflict">
             {votePositionLabel(vote)}
           </span>
         ) : null}
@@ -203,15 +203,14 @@ function MemberVoteRow({
   readonly judetName?: string
 }) {
   return (
-    <TableRow className={cn(rowClassName, 'hover:bg-[#f8f8f8]')}>
+    <TableRow className={cn(rowClassName, 'hover:bg-parliament-hover')}>
       <MemberIdentityCell vote={vote} judetName={judetName} />
       {VOTE_KIND_COLUMNS.map((column) => (
         <TableCell key={column.choice} className={numericCellClassName}>
           {vote.choice === column.choice ? (
             <>
               <Check
-                className="inline-block h-4 w-4 stroke-[3]"
-                style={{ color: column.color }}
+                className={cn('inline-block h-4 w-4 stroke-[3]', column.textClassName)}
                 aria-hidden
               />
               {/* The tick is the only visible mark; the word is what a screen
@@ -339,8 +338,8 @@ export function VoteGroupVotesTable({
         // The pinned cells carry the row's fill, so hover has to reach them from
         // the row: `group-hover` on each cell, not `hover` on the `<tr>`.
         const summaryFillClassName = expanded
-          ? 'bg-[#f3f2f1] dark:bg-[var(--pnrr-subtle)]'
-          : 'bg-white group-hover/summary:bg-[#f3f2f1] dark:bg-[var(--pnrr-card)] dark:group-hover/summary:bg-[var(--pnrr-subtle)]'
+          ? 'bg-parliament-surface'
+          : 'bg-parliament-card group-hover/summary:bg-parliament-surface'
         const summaryCellClassName = cn(
           summaryCellStickyClassName,
           summaryFillClassName,
@@ -376,14 +375,14 @@ export function VoteGroupVotesTable({
                       }}
                       aria-hidden
                     />
-                    <span className="text-[15px] font-bold text-[#372554] dark:text-[var(--pnrr-fg)]">
+                    <span className="text-[15px] font-bold text-parliament-resource-heading">
                       {groupLabel}
                     </span>
                     {/* Says why the four columns do not add up to the count on
                         the name, rather than leaving the reader to assume a
                         miscount. */}
                     {unattributedCount > 0 ? (
-                      <span className="shrink-0 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                      <span className="shrink-0 text-xs text-parliament-muted">
                         {t`${unattributedCount} fără alegere înregistrată`}
                       </span>
                     ) : null}
@@ -401,11 +400,11 @@ export function VoteGroupVotesTable({
                     )}
                   >
                     {counts[column.choice] > 0 ? (
-                      <span style={{ color: column.color }}>
+                      <span className={column.textClassName}>
                         {counts[column.choice]}
                       </span>
                     ) : (
-                      <span className="font-normal text-[#b1b4b6] dark:text-[var(--pnrr-muted)]">
+                      <span className="font-normal text-parliament-faint">
                         0
                       </span>
                     )}
@@ -417,7 +416,7 @@ export function VoteGroupVotesTable({
                     numericCellClassName,
                     summaryNumericCellStickyClassName,
                     summaryFillClassName,
-                    'text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]',
+                    'text-sm font-bold text-parliament-fg',
                   )}
                 >
                   {explicitTotal}
@@ -436,7 +435,7 @@ export function VoteGroupVotesTable({
                     onClick={() => {
                       toggleGroup(groupId)
                     }}
-                    className="inline-flex h-8 w-8 touch-manipulation items-center justify-center rounded-none text-[#372554] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] focus-visible:ring-offset-1 dark:text-[var(--pnrr-fg)]"
+                    className="inline-flex h-8 w-8 touch-manipulation items-center justify-center rounded-none text-parliament-resource-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus focus-visible:ring-offset-1"
                   >
                     <ChevronDown
                       className={cn(
