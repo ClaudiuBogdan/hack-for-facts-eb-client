@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { t } from '@lingui/core/macro'
-import { Check, RotateCcw, X } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { useQuizInteraction } from '../../hooks/use-learning-interactions'
+import { QUIZ_ANSWER_ROW_CLASS_NAMES, QuizAnswerMark, QuizAnswerOutcome, QuizConfigError, getQuizAnswerState } from './quiz-answer-presentation'
 
 export type QuizOption = {
   readonly id: string
@@ -62,13 +63,7 @@ export function Quiz({
   const handleRetry = () => void reset()
 
   if (validOptions.length === 0) {
-    return (
-      <Card className="my-8 border-destructive/20 bg-destructive/5 shadow-none">
-        <CardContent className="p-6 text-center">
-          <p className="text-sm font-medium text-destructive">{t`Quiz configuration error`}</p>
-        </CardContent>
-      </Card>
-    )
+    return <QuizConfigError />
   }
 
   return (
@@ -88,9 +83,8 @@ export function Quiz({
           <AnimatePresence>
             {validOptions.map((option, index) => {
               const isSelected = selectedOptionId === option.id
-              const showAsCorrect = isAnswered && option.isCorrect
-              const showAsIncorrect = isAnswered && isSelected && !option.isCorrect
-              const isDimmed = isAnswered && !showAsCorrect && !showAsIncorrect
+              const answerState = getQuizAnswerState({ isAnswered, isSelected, isCorrect: option.isCorrect })
+              const letter = String.fromCharCode(65 + index)
 
               return (
                 <motion.button
@@ -113,33 +107,30 @@ export function Quiz({
                     !isAnswered && !isSelected && 'bg-card border-border hover:bg-background hover:border-foreground/30 shadow-sm',
                     // Selected state (pre-reveal)
                     !isAnswered && isSelected && 'bg-card border-primary shadow-md ring-4 ring-primary/10',
-                    // Success State
-                    showAsCorrect && 'bg-status-live-bg border-status-live-fg text-status-live-fg shadow-md !opacity-100',
-                    // Error State
-                    showAsIncorrect && 'bg-status-blocked-bg border-status-blocked-fg text-status-blocked-fg shadow-md !opacity-100',
-                    // Dimmed state for unselected options
-                    isDimmed && 'bg-card border-border/50 grayscale-[0.5]',
+                    // Answered: the outcome, shared with the challenge views
+                    answerState && QUIZ_ANSWER_ROW_CLASS_NAMES[answerState],
+                    answerState && answerState !== 'dimmed' && '!opacity-100',
+                    answerState === 'dimmed' && 'grayscale-[0.5]',
                     isSaving && 'cursor-wait opacity-70'
                   )}
                 >
                   <div className="flex items-center gap-6">
-                    <div
-                      className={cn(
-                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-black transition-colors duration-300',
-                        !isAnswered && !isSelected && 'bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground',
-                        isSelected && !isAnswered && 'bg-primary text-primary-foreground',
-                        showAsCorrect && 'bg-status-live-fg/10 text-status-live-fg',
-                        showAsIncorrect && 'bg-status-blocked-fg/10 text-status-blocked-fg',
-                        isDimmed && 'bg-transparent text-muted-foreground'
-                      )}
-                    >
-                      {showAsCorrect ? <Check className="w-5 h-5" /> : showAsIncorrect ? <X className="w-5 h-5" /> : String.fromCharCode(65 + index)}
-                    </div>
-                    <span className={cn(
-                      "text-base font-bold transition-colors",
-                      showAsCorrect ? "text-status-live-fg" : showAsIncorrect ? "text-status-blocked-fg" : isDimmed ? "text-muted-foreground" : "text-foreground"
-                    )}>
+                    {answerState ? (
+                      <QuizAnswerMark state={answerState} letter={letter} className="h-9 w-9 rounded-xl transition-colors duration-300" />
+                    ) : (
+                      <div
+                        className={cn(
+                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-black transition-colors duration-300',
+                          !isSelected && 'bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground',
+                          isSelected && 'bg-primary text-primary-foreground'
+                        )}
+                      >
+                        {letter}
+                      </div>
+                    )}
+                    <span className={cn("text-base font-bold transition-colors", !answerState && "text-foreground")}>
                       {option.text}
+                      {isAnswered ? <QuizAnswerOutcome isSelected={isSelected} isCorrect={option.isCorrect} /> : null}
                     </span>
                   </div>
                 </motion.button>
