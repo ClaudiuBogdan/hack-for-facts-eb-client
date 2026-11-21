@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Analytics } from '@/lib/analytics'
 import { searchEntitiesLive } from '@/features/entity-search/api/entity-search-api.live'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
+import { withDeadline } from '@/lib/ssr/deadline-signal'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { absorbTriggers, loadEntityTagVocabulary, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
@@ -57,24 +58,8 @@ const NO_FILTERS: readonly SearchFilter[] = []
 
 /** How long an answer is trusted from the cache; a non-current one is asked again at once. */
 const CURRENT_STALE_MS = 1000 * 60 * 5
-// An optional lookup must never leave the regular results waiting on a slow response.
-const UAT_LOOKUP_TIMEOUT_MS = 400
-
-async function lookupUats(query: string, signal: AbortSignal) {
-  if (signal.aborted) return null
-  const controller = new AbortController()
-  const abort = () => controller.abort()
-  signal.addEventListener('abort', abort, { once: true })
-  const timeout = setTimeout(abort, UAT_LOOKUP_TIMEOUT_MS)
-  try {
-    return await searchEntitiesLive({ q: query, docTypes: ['organization'], isUat: true, limit: SEARCH_LIMIT }, controller.signal)
-  } catch {
-    return null
-  } finally {
-    clearTimeout(timeout)
-    signal.removeEventListener('abort', abort)
-  }
-}
+// This only bounds the optional request. The regular results can render while it runs.
+const UAT_LOOKUP_TIMEOUT_MS = 5000
 
 /**
  * One request's answer, as the field reads it. The field asks for the first
@@ -86,6 +71,7 @@ type LandingAnswer = {
   readonly hits: readonly EntitySearchHit[]
   readonly current: boolean
   readonly complete: boolean
+  readonly generationId: string | null
 }
 
 export function useSearchResults({
@@ -162,25 +148,21 @@ export function useSearchResults({
     ...(roles.length > 0 ? [`roles:${roles.join(',')}`] : []),
   ].join('|')
   const { data, error, isError, isFetching, isPlaceholderData, isSuccess, refetch } = useQuery({
-    queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters, uatQuery],
+    queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters],
     queryFn: async ({ signal }): Promise<LandingAnswer> => {
       const tags = [...entityTags, ...(serverFilters.entityTags ?? [])]
-      const regularSearch = searchEntitiesLive({
+      const response = await searchEntitiesLive({
         q: normalized, docTypes, ...serverFilters, ...(tags.length > 0 && { entityTags: tags }),
         ...(roles.length > 0 && { roles }), limit: SEARCH_LIMIT,
       }, signal)
-      const uatSearch = uatQuery === null ? null : lookupUats(normalized, signal)
-      const [response, uats] = await Promise.all([regularSearch, uatSearch])
       // The engine could not look: an error to retry, never an empty answer.
       if (response.degraded) throw new Error('Search unavailable')
       const current = response.companyContribution === 'CURRENT'
       const hits = response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit))
-      const sameGeneration = response.generation !== null && uats?.generation?.generationId === response.generation.generationId
       return {
-        hits: uatQuery !== null && uats && !uats.degraded && sameGeneration
-          ? rankUatSearchHits(uatQuery, hits, uats.hits, SEARCH_LIMIT)
-          : hits,
+        hits,
         current,
+        generationId: response.generation?.generationId ?? null,
         // The initial page is the whole answer only when it is current and the
         // server offers no next page; otherwise its emptiness proves nothing.
         complete: current && response.continuation.nextOffset === null,
@@ -192,7 +174,28 @@ export function useSearchResults({
     staleTime: (query) => (query.state.data?.current === false ? 0 : CURRENT_STALE_MS),
     gcTime: 1000 * 60 * 30,
   })
-  const results = data?.hits ?? NO_RESULTS
+  const uatLookupEnabled = enabled && isQueryable && uatQuery !== null
+  const { data: uats, isFetching: uatsFetching } = useQuery({
+    queryKey: ['landingUatSearch', uatLookupEnabled ? normalized : null],
+    queryFn: async ({ signal }) => {
+      const answer = await searchEntitiesLive(
+        { q: normalized, docTypes: ['organization'], isUat: true, limit: SEARCH_LIMIT },
+        withDeadline(signal, UAT_LOOKUP_TIMEOUT_MS),
+      )
+      if (answer.degraded) throw new Error('Municipality search unavailable')
+      return answer
+    },
+    enabled: uatLookupEnabled,
+    retry: false,
+    staleTime: (query) => query.state.data?.generation ? CURRENT_STALE_MS : 0,
+    gcTime: 1000 * 60 * 30,
+  })
+  const isRankingUats = uatLookupEnabled && uatsFetching && uats === undefined
+  const results = useMemo(() => {
+    const hits = data?.hits ?? NO_RESULTS
+    if (uatQuery === null || !data?.generationId || uats?.generation?.generationId !== data.generationId) return hits
+    return rankUatSearchHits(uatQuery, hits, uats.hits, SEARCH_LIMIT)
+  }, [data, uatQuery, uats])
   const isCurrent = isQueryable && normalized === trimmed && isSuccess && !isPlaceholderData && !isFetching
 
   const status: SearchStatus = useMemo(() => {
@@ -201,11 +204,12 @@ export function useSearchResults({
     if (isError && normalized === trimmed) return { kind: isSearchInputError(error) ? 'invalid' : 'error' }
     if (results.length) return { kind: 'results', results, stale: !isCurrent, partial: data?.current === false }
     if (isCurrent) {
+      if (isRankingUats) return { kind: 'loading' }
       if (data?.complete) return { kind: 'empty', term: trimmed }
       return { kind: 'incomplete', term: trimmed, reason: data?.current ? 'more' : 'not-current' }
     }
     return normalized === trimmed && isFetching ? { kind: 'loading' } : { kind: 'pending' }
-  }, [trimmed, normalized, error, isError, isFetching, results, isCurrent, filters, data])
+  }, [trimmed, normalized, error, isError, isFetching, results, isCurrent, isRankingUats, filters, data])
 
   const suggestions = useMemo(
     () => (suggestionsEnabled ? suggestFilters(term, filters, tagFilters) : []),
@@ -261,7 +265,7 @@ export function useSearchResults({
   /** A failed search asked again, as it stands. */
   const retry = useCallback(() => void refetch(), [refetch])
 
-  return { term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, retry }
+  return { term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, isRankingUats, retry }
 }
 
 export function useEntitySelection({

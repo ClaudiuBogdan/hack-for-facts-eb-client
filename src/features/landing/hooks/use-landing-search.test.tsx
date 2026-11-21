@@ -153,6 +153,35 @@ describe('landing universal search', () => {
     await search(result, 'universitatea sibiu')
     expect(result.current.results).toEqual([COMPANY])
   })
+  it('promotes a municipality after the regular results have already appeared', async () => {
+    const cluj = uat('4305857', 'MUNICIPIUL CLUJ-NAPOCA', 'CLUJ')
+    let uatSignal: AbortSignal | undefined
+    searchEntities.mockResolvedValueOnce(response([COMPANY])).mockImplementationOnce((_input, signal: AbortSignal) => {
+      uatSignal = signal
+      return new Promise(resolve => setTimeout(() => resolve(response([cluj])), 650))
+    })
+    const { result } = setup()
+    await search(result, 'cluj')
+    expect(result.current.results).toEqual([COMPANY])
+    expect(result.current.isRankingUats).toBe(true)
+    await waitFor(() => expect(result.current.results).toEqual([cluj, COMPANY]), { timeout: 2000 })
+    expect(result.current.isRankingUats).toBe(false)
+    expect(uatSignal?.aborted).toBe(false)
+  })
+  it('discards a late municipality result after the query changes', async () => {
+    let resolveOldSearch = (_answer: EntitySearchResult) => {}
+    searchEntities.mockResolvedValueOnce(response([COMPANY])).mockImplementationOnce(
+      () => new Promise<EntitySearchResult>(resolve => { resolveOldSearch = resolve }),
+    )
+    const { result } = setup()
+    await search(result, 'sib')
+    expect(result.current.isRankingUats).toBe(true)
+    searchEntities.mockResolvedValue(response([COMPANY]))
+    await search(result, 'Dante')
+    act(() => resolveOldSearch(response([SIBIU])))
+    await waitFor(() => expect(result.current.isRankingUats).toBe(false))
+    expect(result.current.results).toEqual([COMPANY])
+  })
   it('uses regular results if the optional lookup fails', async () => {
     searchEntities.mockResolvedValueOnce(response([COMPANY]))
       .mockRejectedValueOnce(new Error('lookup unavailable'))

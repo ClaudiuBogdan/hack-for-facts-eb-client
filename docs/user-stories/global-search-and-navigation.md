@@ -34,8 +34,10 @@ The [navigation search](../../src/features/landing/hooks/use-landing-search.ts)
 requests public organizations with the existing isUat filter in parallel with the
 regular results. It checks the entire typed phrase against the locality name and
 deduplicates by entity ID. CUI and other numeric lookups, searches with filter
-chips, and fixed-scope pickers use their regular search. The regular results still
-work when the UAT lookup fails, times out, or returns from a different index generation.
+chips, and fixed-scope pickers use their regular search. Regular results can
+appear before the UAT lookup finishes. A matching UAT moves to the top when its
+result arrives from the same index generation for the current query. If that
+lookup fails or reaches its five-second limit, the regular results remain available.
 
 ### Error and Empty States
 

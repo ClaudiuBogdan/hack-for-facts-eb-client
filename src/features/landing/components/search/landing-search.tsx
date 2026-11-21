@@ -254,7 +254,7 @@ export function LandingSearch({
   const { i18n } = useLingui()
   const placeholder = placeholderProp ?? t`Caută entități, statistici sau identificatori...`
   const {
-    term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent,
+    term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, isRankingUats,
   } = useSearchResults({ docTypes, entityTags, roles, suggestions: fixedScope === undefined, initialTerm: handover?.term })
   const commit = useEntitySelection({ onSelect })
 
@@ -329,7 +329,7 @@ export function LandingSearch({
     }
   }, [inputRef])
 
-  const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
+  const isBusy = isRankingUats || status.kind === 'loading' || (status.kind === 'results' && status.stale)
   const isDropdownOpen = isOpen && status.kind !== 'idle'
   const pointed = (entity: EntitySearchHit): EntitySearchHit => {
     const href = hrefOf?.(entity)
@@ -540,6 +540,11 @@ export function LandingSearch({
                 return
               }
               if (highlightedRef.current) return
+              if (isRankingUats) {
+                event.preventDefault()
+                event.preventBaseUIHandler()
+                return
+              }
 
               // Enter with nothing highlighted takes the first result, but
               // only once the list is known to answer what is in the box.
