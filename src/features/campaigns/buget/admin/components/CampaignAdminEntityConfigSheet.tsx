@@ -19,6 +19,7 @@ import type {
   CampaignAdminEntityConfigDetail,
   CampaignAdminUpdateEntityConfigBody,
 } from "@/features/campaigns/buget/admin/types";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminEntityConfigSheetProps = {
   readonly open: boolean;
@@ -299,7 +300,7 @@ export function CampaignAdminEntityConfigEditor({
           ))}
         </div>
       ) : effectiveErrorMessage && entity === null ? (
-        <Alert variant="destructive">
+        <Alert className={campaignAdminBlockedAlertClassName}>
           <AlertTitle>{t`Failed to load entity config`}</AlertTitle>
           <AlertDescription>{effectiveErrorMessage}</AlertDescription>
         </Alert>
@@ -362,7 +363,7 @@ export function CampaignAdminEntityConfigEditor({
 
           <form className="space-y-4" onSubmit={handleSubmit} noValidate>
             {effectiveErrorMessage ? (
-              <Alert variant="destructive">
+              <Alert className={campaignAdminBlockedAlertClassName}>
                 <AlertTitle>{t`Unable to save entity config`}</AlertTitle>
                 <AlertDescription>{effectiveErrorMessage}</AlertDescription>
               </Alert>

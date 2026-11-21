@@ -123,6 +123,7 @@ import {
   getCampaignAdminEntityConfigSelectedSendValidationIssues,
 } from "@/features/campaigns/buget/admin/utils/entity-config-workspace";
 import { isCampaignAdminEditablePasteTarget } from "@/features/campaigns/buget/admin/utils/review-workspace";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminEntitiesPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -1518,7 +1519,7 @@ export function CampaignAdminEntitiesPage({
           entitiesQuery.error.status !== 401 &&
           entitiesQuery.error.status !== 403 &&
           entitiesQuery.error.status !== 404 ? (
-            <Alert variant="destructive" aria-live="polite">
+            <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
               <Ban className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Failed to load entities`}</AlertTitle>
               <AlertDescription className="space-y-3">
@@ -1734,7 +1735,7 @@ export function CampaignAdminEntitiesPage({
               className="max-w-xl rounded-3xl border border-border/70 bg-card/80"
             />
           ) : entityConfigQuery.error ? (
-            <Alert variant="destructive" aria-live="polite">
+            <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
               <Ban className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Failed to load entity config`}</AlertTitle>
               <AlertDescription className="space-y-3">

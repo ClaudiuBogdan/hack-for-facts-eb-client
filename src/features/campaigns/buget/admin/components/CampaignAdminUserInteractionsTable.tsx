@@ -58,7 +58,10 @@ import type {
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { cn, getUserLocale } from "@/lib/utils";
-import { campaignAdminStatusClassNames, getCampaignAdminThreadPhaseClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
+import {
+  getCampaignAdminRiskFlagClassName,
+  getCampaignAdminThreadPhaseClassName,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 const campaignAdminUserWorkspaceDefaultLinkSearch =
   normalizeCampaignAdminUserPageSearch({});
@@ -316,7 +319,7 @@ function RiskFlagBadgeList({
             key={riskFlag}
             variant="outline"
             title={label}
-            className={`max-w-[11rem] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] ${campaignAdminStatusClassNames.partial}`}
+            className={`max-w-[11rem] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] ${getCampaignAdminRiskFlagClassName(riskFlag)}`}
           >
             {label}
           </Badge>
@@ -341,7 +344,7 @@ function renderReviewNotePreview(
 
   if (stagedDraft?.status === "rejected") {
     return (
-      <span className="text-sm font-medium text-destructive">{t`Review note required`}</span>
+      <span className="text-sm font-medium text-status-blocked-fg">{t`Review note required`}</span>
     );
   }
 

@@ -20,6 +20,7 @@ import type {
   CampaignAdminNotificationFieldDescriptor,
   CampaignAdminNotificationTemplateDescriptor,
 } from "@/features/campaigns/buget/admin/types";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminTemplatePreviewDialogProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -168,7 +169,7 @@ export function CampaignAdminTemplatePreviewDialog({
             <PreviewLoadingState />
           ) : previewQuery.error ? (
             <div className="p-6">
-              <Alert variant="destructive">
+              <Alert className={campaignAdminBlockedAlertClassName}>
                 <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                 <AlertTitle>{t`Failed to load template preview`}</AlertTitle>
                 <AlertDescription className="space-y-3">

@@ -11,6 +11,7 @@ import {
   getCampaignAdminThreadPhaseLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
+import { campaignAdminFlaggedCountClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 function SummaryCard({
   label,
@@ -104,7 +105,7 @@ export function InteractionsSummaryPanel({
         <CompactStat label={t`Approved`} value={stats.reviewStatusCounts.approved} className="text-status-live-fg" />
         <CompactStat label={t`Rejected`} value={stats.reviewStatusCounts.rejected} className="text-muted-foreground" />
         {stats.riskFlagged > 0 ? (
-          <CompactStat label={t`Flagged`} value={stats.riskFlagged} className="text-status-blocked-fg" />
+          <CompactStat label={t`Flagged`} value={stats.riskFlagged} className={campaignAdminFlaggedCountClassName} />
         ) : null}
         {threadInProgressCount > 0 ? (
           <CompactStat label={t`In progress`} value={threadInProgressCount} className="text-primary" />

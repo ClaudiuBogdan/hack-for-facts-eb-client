@@ -21,6 +21,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
+import {
+  getCampaignAdminInstitutionResponseStatusClassName,
+  getCampaignAdminInstitutionThreadStateClassName,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 import { CampaignAdminInstitutionThreadResponseForm } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm";
 import {
   getCampaignAdminInstitutionThreadResponseStatusLabel,
@@ -32,8 +36,6 @@ import type {
   CampaignAdminInstitutionThreadCorrespondenceEntry,
   CampaignAdminInstitutionThreadDetail,
   CampaignAdminInstitutionThreadResponseEvent,
-  CampaignAdminInstitutionThreadResponseStatus,
-  CampaignAdminInstitutionThreadState,
 } from "@/features/campaigns/buget/admin/types";
 
 type TimelineItem = {
@@ -82,38 +84,6 @@ function formatDateShort(value: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function getThreadStateBadgeClassName(
-  threadState: CampaignAdminInstitutionThreadState,
-): string {
-  switch (threadState) {
-    case "started":
-      return "border-primary/30 bg-primary/10 text-foreground";
-    case "pending":
-      return "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg";
-    case "resolved":
-      return "border-status-live-fg/30 bg-status-live-bg text-status-live-fg";
-    default:
-      return "";
-  }
-}
-
-function getResponseStatusBadgeClassName(
-  responseStatus: CampaignAdminInstitutionThreadResponseStatus | null,
-): string {
-  switch (responseStatus) {
-    case "registration_number_received":
-      return "border-primary/30 bg-primary/10 text-foreground";
-    case "request_confirmed":
-      return "border-status-live-fg/30 bg-status-live-bg text-status-live-fg";
-    case "request_denied":
-      return "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg";
-    case null:
-      return "border-border bg-muted text-foreground";
-    default:
-      return "";
-  }
 }
 
 function getDirectionBadge(
@@ -393,7 +363,7 @@ function TimelineResponseEventNode({
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="outline"
-            className={getResponseStatusBadgeClassName(event.responseStatus)}
+            className={getCampaignAdminInstitutionResponseStatusClassName(event.responseStatus)}
           >
             {getCampaignAdminInstitutionThreadResponseStatusLabel(
               event.responseStatus,
@@ -485,14 +455,14 @@ export function CampaignAdminInstitutionThreadDetailContent({
             <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className={getThreadStateBadgeClassName(detail.threadState)}
+                className={getCampaignAdminInstitutionThreadStateClassName(detail.threadState)}
               >
                 <Clock className="mr-1 h-3 w-3" />
                 {getCampaignAdminInstitutionThreadStateLabel(detail.threadState)}
               </Badge>
               <Badge
                 variant="outline"
-                className={getResponseStatusBadgeClassName(
+                className={getCampaignAdminInstitutionResponseStatusClassName(
                   detail.currentResponseStatus,
                 )}
               >

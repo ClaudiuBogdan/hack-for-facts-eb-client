@@ -30,6 +30,7 @@ import type {
   CampaignAdminNotificationTriggerExecutionResponse,
   CampaignAdminNotificationTriggerMode,
 } from "@/features/campaigns/buget/admin/types";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminNotificationTriggerDialogProps = {
   readonly open: boolean;
@@ -283,7 +284,7 @@ function TriggerFieldInput({
         {field.required ? <span>{t`Required`}</span> : <span>{t`Optional`}</span>}
       </div>
       {error ? (
-        <p className="text-sm text-destructive">
+        <p className="text-sm text-status-blocked-fg">
           {error}
         </p>
       ) : null}
@@ -308,7 +309,7 @@ function ResultStatCard({
       <p
         className={`mt-0.5 text-base font-semibold tabular-nums ${
           variant === "destructive"
-            ? "text-destructive"
+            ? "text-status-blocked-fg"
             : variant === "muted"
               ? "text-muted-foreground"
               : "text-foreground"
@@ -605,7 +606,7 @@ export function CampaignAdminNotificationTriggerDialog({
                               : t`Leave blank to use the server default.`}
                           </p>
                           {fieldErrors.limit ? (
-                            <p className="text-sm text-destructive">{fieldErrors.limit}</p>
+                            <p className="text-sm text-status-blocked-fg">{fieldErrors.limit}</p>
                           ) : null}
                         </div>
                         <div className="space-y-2">
@@ -676,7 +677,7 @@ export function CampaignAdminNotificationTriggerDialog({
               )}
 
               {submissionError ? (
-                <Alert variant="destructive">
+                <Alert className={campaignAdminBlockedAlertClassName}>
                   <AlertTitle>{t`Trigger execution failed`}</AlertTitle>
                   <AlertDescription>{submissionError}</AlertDescription>
                 </Alert>

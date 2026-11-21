@@ -76,6 +76,7 @@ import type {
   CampaignAdminSortOrder,
 } from "@/features/campaigns/buget/admin/types";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminNotificationsPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -215,7 +216,7 @@ function NotificationsTabErrorState({
   }
 
   return (
-    <Alert variant="destructive" aria-live="polite">
+    <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
       <AlertTriangle className="h-4 w-4" aria-hidden="true" />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription className="space-y-3">
@@ -292,7 +293,7 @@ function TemplateListRow({
                     {field.name}
                     <span className="text-muted-foreground">{field.type}</span>
                     {field.required ? (
-                      <span className="text-destructive">*</span>
+                      <span className="text-status-blocked-fg">*</span>
                     ) : null}
                   </span>
                 ))}

@@ -17,6 +17,10 @@ import {
   getCampaignAdminInstitutionThreadStateLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
+import {
+  getCampaignAdminInstitutionResponseStatusClassName,
+  getCampaignAdminInstitutionThreadStateClassName,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 import type { CampaignAdminInstitutionThreadListItem } from "@/features/campaigns/buget/admin/types";
 
 type CampaignAdminInstitutionThreadsTableProps = {
@@ -42,38 +46,6 @@ function formatDateTime(value: string | null): string {
   }
 
   return parsedDate.toLocaleString();
-}
-
-function getThreadStateBadgeClassName(
-  threadState: CampaignAdminInstitutionThreadListItem["threadState"],
-): string {
-  switch (threadState) {
-    case "started":
-      return "border-primary/30 bg-primary/10 text-foreground";
-    case "pending":
-      return "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg";
-    case "resolved":
-      return "border-status-live-fg/30 bg-status-live-bg text-status-live-fg";
-    default:
-      return "";
-  }
-}
-
-function getResponseStatusBadgeClassName(
-  responseStatus: CampaignAdminInstitutionThreadListItem["currentResponseStatus"],
-): string {
-  switch (responseStatus) {
-    case "registration_number_received":
-      return "border-primary/30 bg-primary/10 text-foreground";
-    case "request_confirmed":
-      return "border-status-live-fg/30 bg-status-live-bg text-status-live-fg";
-    case "request_denied":
-      return "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg";
-    case null:
-      return "border-border bg-muted text-foreground";
-    default:
-      return "";
-  }
 }
 
 export function CampaignAdminInstitutionThreadsTable({
@@ -156,7 +128,7 @@ export function CampaignAdminInstitutionThreadsTable({
                 <TableCell>
                   <Badge
                     variant="outline"
-                    className={getThreadStateBadgeClassName(item.threadState)}
+                    className={getCampaignAdminInstitutionThreadStateClassName(item.threadState)}
                   >
                     {getCampaignAdminInstitutionThreadStateLabel(item.threadState)}
                   </Badge>
@@ -164,7 +136,7 @@ export function CampaignAdminInstitutionThreadsTable({
                 <TableCell>
                   <Badge
                     variant="outline"
-                    className={getResponseStatusBadgeClassName(
+                    className={getCampaignAdminInstitutionResponseStatusClassName(
                       item.currentResponseStatus,
                     )}
                   >

@@ -126,6 +126,10 @@ import {
   campaignAdminEntityHubTabsTriggerClassName,
 } from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
 import { cn } from "@/lib/utils";
+import {
+  campaignAdminBlockedAlertClassName,
+  getCampaignAdminRiskFlagsSeverity,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 const USER_NOTIFICATION_PREVIEW_LIMIT = 10;
 
@@ -297,6 +301,9 @@ export function CampaignAdminUserPage({
       (item) => item.reviewStatus === "rejected",
     ).length;
     const flagged = allItems.filter((item) => item.riskFlags.length > 0).length;
+    const flaggedSeverity = getCampaignAdminRiskFlagsSeverity(
+      allItems.flatMap((item) => item.riskFlags),
+    );
 
     return {
       total: allItems.length,
@@ -304,6 +311,7 @@ export function CampaignAdminUserPage({
       approved,
       rejected,
       flagged,
+      flaggedSeverity,
     };
   }, [allItems]);
   const queueLinkSearch = useMemo(
@@ -1144,7 +1152,7 @@ export function CampaignAdminUserPage({
       )}
     >
       {metaQuery.error && metaQuery.data === undefined ? (
-        <Alert variant="destructive" aria-live="polite">
+        <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>{t`Failed to load interaction metadata`}</AlertTitle>
           <AlertDescription className="space-y-3">
@@ -1171,7 +1179,7 @@ export function CampaignAdminUserPage({
       interactionsQuery.error.status !== 401 &&
       interactionsQuery.error.status !== 403 &&
       interactionsQuery.error.status !== 404 ? (
-        <Alert variant="destructive" aria-live="polite">
+        <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
           <Ban className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>{t`Failed to load the user workspace`}</AlertTitle>
           <AlertDescription className="space-y-3">
@@ -1219,7 +1227,11 @@ export function CampaignAdminUserPage({
               <CompactStat
                 label={t`Risk`}
                 value={summary.flagged}
-                className="text-status-blocked-fg"
+                className={
+                  summary.flaggedSeverity === "blocked"
+                    ? "text-status-blocked-fg"
+                    : "text-status-partial-fg"
+                }
               />
             ) : (
               <CompactStat label={t`Risk`} value={summary.flagged} />
@@ -1507,7 +1519,7 @@ export function CampaignAdminUserPage({
                 className="rounded-2xl border border-border/50 bg-muted/20"
               />
             ) : notificationsQuery.error ? (
-              <Alert variant="destructive" aria-live="polite">
+              <Alert className={campaignAdminBlockedAlertClassName} aria-live="polite">
                 <Ban className="h-4 w-4" aria-hidden="true" />
                 <AlertTitle>{t`Failed to load notifications`}</AlertTitle>
                 <AlertDescription className="space-y-3">

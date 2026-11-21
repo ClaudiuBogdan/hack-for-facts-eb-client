@@ -29,6 +29,7 @@ import type {
   CampaignAdminUserInteractionListItem,
 } from '@/features/campaigns/buget/admin/types'
 import type { CampaignAdminBulkReviewClipboardIssue } from '@/features/campaigns/buget/admin/utils/bulk-review-clipboard'
+import { campaignAdminBlockedAlertClassName } from '@/features/campaigns/buget/admin/utils/campaign-admin-status-classes'
 
 type CampaignAdminBulkReviewDialogProps = {
   readonly open: boolean
@@ -230,7 +231,7 @@ export function CampaignAdminBulkReviewDialog({
           </div>
 
           {importIssues.length > 0 ? (
-            <Alert variant="destructive">
+            <Alert className={campaignAdminBlockedAlertClassName}>
               <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Import issues`}</AlertTitle>
               <AlertDescription>

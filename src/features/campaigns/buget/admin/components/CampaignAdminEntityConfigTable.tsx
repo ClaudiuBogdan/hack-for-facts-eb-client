@@ -290,11 +290,11 @@ function PasteIssuesList({
   }
 
   return (
-    <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
+    <div className="space-y-2 rounded-xl border border-status-blocked-fg/30 bg-status-blocked-bg p-3">
       {issues.map((issue) => (
         <div
           key={`${issue.rowNumber}-${issue.entityCui ?? issue.message}`}
-          className="flex items-start gap-3 text-sm text-destructive"
+          className="flex items-start gap-3 text-sm text-status-blocked-fg"
         >
           <AlertTriangle
             className="mt-0.5 h-4 w-4 shrink-0"
@@ -620,7 +620,7 @@ export function CampaignAdminEntityConfigTable({
             {pasteIssues.map((issue) => (
               <TableRow
                 key={`${issue.rowNumber}-${issue.entityCui ?? issue.message}`}
-                className="bg-destructive/5 hover:bg-destructive/5"
+                className="bg-status-blocked-bg hover:bg-status-blocked-bg"
               >
                 <TableCell colSpan={9}>
                   <PasteIssuesList issues={[issue]} />

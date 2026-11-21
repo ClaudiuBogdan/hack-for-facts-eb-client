@@ -37,7 +37,12 @@ import type {
 import { buildEntityDetailsPath } from '@/lib/entity-navigation'
 import { cn, getUserLocale } from '@/lib/utils'
 
-import { campaignAdminStatusClassNames, getCampaignAdminThreadPhaseClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
+import {
+  campaignAdminStatusClassNames,
+  getCampaignAdminRiskFlagClassName,
+  getCampaignAdminRiskFlagsAlertClassName,
+  getCampaignAdminThreadPhaseClassName,
+} from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminReviewSheetProps = {
   readonly open: boolean
   readonly item: CampaignAdminUserInteractionListItem | null
@@ -614,12 +619,12 @@ export function CampaignAdminReviewSheet({
 
             <div className="space-y-6 px-6 py-6">
               {item.riskFlags.length > 0 ? (
-                <Alert className={`${campaignAdminStatusClassNames.blocked} [&>svg]:text-status-blocked-fg`}>
+                <Alert className={getCampaignAdminRiskFlagsAlertClassName(item.riskFlags)}>
                   <ShieldAlert className="h-4 w-4" aria-hidden="true" />
                   <AlertTitle>{t`Operator warnings`}</AlertTitle>
                   <AlertDescription className="flex flex-wrap gap-2">
                     {item.riskFlags.map((riskFlag) => (
-                      <Badge key={riskFlag} variant="outline" className={`text-[11px] ${campaignAdminStatusClassNames.partial}`}>
+                      <Badge key={riskFlag} variant="outline" className={`text-[11px] ${getCampaignAdminRiskFlagClassName(riskFlag)}`}>
                         {getCampaignAdminRiskFlagLabel(riskFlag)}
                       </Badge>
                     ))}

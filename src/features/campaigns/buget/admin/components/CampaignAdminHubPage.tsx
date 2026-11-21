@@ -19,6 +19,7 @@ import { useCampaignAdminStatsOverviewQuery } from "@/features/campaigns/buget/a
 import { useCampaignAdminInteractionMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
 import { useCampaignAdminUsersMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
 import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
+import { campaignAdminFlaggedCountClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminEntitiesMetaResponse,
@@ -341,7 +342,7 @@ export function CampaignAdminHubPage({
               <CompactStat
                 label={t`Flagged`}
                 value={riskFlaggedCount}
-                className="text-status-blocked-fg"
+                className={campaignAdminFlaggedCountClassName}
               />
             ) : null}
             <CompactStat
@@ -470,7 +471,7 @@ export function CampaignAdminHubPage({
                 </p>
               </div>
               {riskFlaggedCount > 0 && (
-                <p className="text-xs text-status-blocked-fg">
+                <p className={`text-xs ${campaignAdminFlaggedCountClassName}`}>
                   {t`${riskFlaggedCount} flagged for review`}
                 </p>
               )}

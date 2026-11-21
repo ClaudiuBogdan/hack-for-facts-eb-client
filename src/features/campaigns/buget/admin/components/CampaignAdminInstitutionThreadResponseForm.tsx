@@ -29,7 +29,7 @@ import {
   type CampaignAdminInstitutionThreadResponseStatus,
 } from "@/features/campaigns/buget/admin/types";
 
-import { campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
+import { campaignAdminBlockedAlertClassName, campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminInstitutionThreadResponseFormProps = {
   readonly thread: CampaignAdminInstitutionThreadDetail;
   readonly isPending: boolean;
@@ -145,7 +145,7 @@ export function CampaignAdminInstitutionThreadResponseForm({
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       {effectiveErrorMessage ? (
-        <Alert variant="destructive">
+        <Alert className={campaignAdminBlockedAlertClassName}>
           <AlertTitle>{t`Unable to record response`}</AlertTitle>
           <AlertDescription>{effectiveErrorMessage}</AlertDescription>
         </Alert>
@@ -338,7 +338,7 @@ function ExecutionStatCard({
       </p>
       <p
         className={`mt-1 text-lg font-semibold tabular-nums ${
-          tone === "destructive" ? "text-destructive" : "text-foreground"
+          tone === "destructive" ? "text-status-blocked-fg" : "text-foreground"
         }`}
       >
         {value}

@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { campaignAdminBlockedAlertClassName } from '@/features/campaigns/buget/admin/utils/campaign-admin-status-classes'
 
 export type CampaignAdminSendValidationIssue = {
   readonly selectionKey: string
@@ -48,7 +49,7 @@ export function CampaignAdminSendValidationDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <Alert variant="destructive">
+          <Alert className={campaignAdminBlockedAlertClassName}>
             <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             <AlertTitle>
               {issues.length === 1
@@ -73,7 +74,7 @@ export function CampaignAdminSendValidationDialog({
                   <span className="shrink-0 text-xs font-medium text-primary">{t`Open row`}</span>
                 </div>
                 <p className="font-mono text-xs text-muted-foreground">{issue.recordKey}</p>
-                <p className="text-sm text-destructive">{issue.message}</p>
+                <p className="text-sm text-status-blocked-fg">{issue.message}</p>
               </button>
             ))}
           </div>

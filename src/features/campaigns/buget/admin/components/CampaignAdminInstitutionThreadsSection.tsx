@@ -30,6 +30,7 @@ import type {
   CampaignAdminInstitutionThreadListItem,
   CampaignAdminInstitutionThreadsSearch,
 } from "@/features/campaigns/buget/admin/types";
+import { campaignAdminBlockedAlertClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminInstitutionThreadsSectionProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -373,7 +374,7 @@ export function CampaignAdminInstitutionThreadsSection({
       ) : (
         <>
           {conflictMessage ? (
-            <Alert variant="destructive">
+            <Alert className={campaignAdminBlockedAlertClassName}>
               <Ban className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Invalid filter combination`}</AlertTitle>
               <AlertDescription>{conflictMessage}</AlertDescription>
@@ -381,13 +382,13 @@ export function CampaignAdminInstitutionThreadsSection({
           ) : null}
 
           {listQuery.error?.status === 403 ? (
-            <Alert variant="destructive">
+            <Alert className={campaignAdminBlockedAlertClassName}>
               <LockKeyhole className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Access denied`}</AlertTitle>
               <AlertDescription>{listQuery.error.message}</AlertDescription>
             </Alert>
           ) : listQuery.error?.status === 404 ? (
-            <Alert variant="destructive">
+            <Alert className={campaignAdminBlockedAlertClassName}>
               <Ban className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Institution threads unavailable`}</AlertTitle>
               <AlertDescription>{listQuery.error.message}</AlertDescription>
@@ -397,7 +398,7 @@ export function CampaignAdminInstitutionThreadsSection({
           {listQuery.error &&
           listQuery.error.status !== 403 &&
           listQuery.error.status !== 404 ? (
-            <Alert variant="destructive">
+            <Alert className={campaignAdminBlockedAlertClassName}>
               <Ban className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>{t`Failed to load institution threads`}</AlertTitle>
               <AlertDescription className="space-y-3">
