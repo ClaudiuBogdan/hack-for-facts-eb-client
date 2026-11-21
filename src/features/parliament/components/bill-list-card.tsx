@@ -61,7 +61,7 @@ export function BillListCard({ bill, className }: Props) {
       params={{ billId: bill.billId }}
       aria-label={`${bill.number} — ${bill.title}`}
       className={cn(
-        'group block px-5 py-4 transition-colors hover:bg-parliament-frame-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus focus-visible:ring-inset sm:px-6',
+        'group block px-5 py-4 transition-colors hover:bg-parliament-frame-hover focus-visible:outline-hidden focus-visible:-outline-offset-2 focus-visible:ring-2 focus-visible:ring-parliament-focus focus-visible:ring-inset sm:px-6',
         className,
       )}
     >
