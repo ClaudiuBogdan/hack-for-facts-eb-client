@@ -31,13 +31,23 @@ Exact names outrank prefixes. Matches with the same exact name show their
 counties. If only prefixes match, a municipality is preferred to a town or commune.
 
 The [navigation search](../../src/features/landing/hooks/use-landing-search.ts)
-requests public organizations with the existing isUat filter in parallel with the
-regular results. It checks the entire typed phrase against the locality name and
-deduplicates by entity ID. CUI and other numeric lookups, searches with filter
-chips, and fixed-scope pickers use their regular search. Regular results can
-appear before the UAT lookup finishes. A matching UAT moves to the top when its
-result arrives from the same index generation for the current query. If that
-lookup fails or reaches its five-second limit, the regular results remain available.
+loads a compact directory on the first eligible search, alongside the single
+Meilisearch request. The directory stays in memory for the rest of the page
+session. Regular results stay available while the directory loads or if it fails.
+If loading takes more than two seconds, Enter can use the regular first result
+while the directory continues to load. A late directory can still promote a
+match for the current query. When a municipality is already in the API response,
+search moves that row up and keeps its live details, filling in a missing county.
+Other directory matches link directly to their public profiles. Each promoted
+organization appears once by CUI. CUI lookups, filter chips, fixed-scope pickers,
+and API answers without a verified generation use the regular ordering.
+
+The [directory generator](../../scripts/generate-uat-search-directory.mjs) takes
+names, types, counties, and CUIs from the dated boundary asset. It checks the
+CUI against the SIRUTA mapping and includes Municipiul București separately from
+its six sectors. Run the generator after publishing a new boundary revision,
+passing its path with `--source`. Run it with `--check` to verify the checked-in
+directory against that source.
 
 ### Error and Empty States
 

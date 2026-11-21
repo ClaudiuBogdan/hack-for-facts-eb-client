@@ -6,7 +6,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Analytics } from '@/lib/analytics'
 import { searchEntitiesLive } from '@/features/entity-search/api/entity-search-api.live'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
-import { withDeadline } from '@/lib/ssr/deadline-signal'
+import { loadUatSearchDirectory } from '@/features/landing/lib/uat-search-directory-loader'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { absorbTriggers, loadEntityTagVocabulary, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
@@ -58,8 +58,7 @@ const NO_FILTERS: readonly SearchFilter[] = []
 
 /** How long an answer is trusted from the cache; a non-current one is asked again at once. */
 const CURRENT_STALE_MS = 1000 * 60 * 5
-// This only bounds the optional request. The regular results can render while it runs.
-const UAT_LOOKUP_TIMEOUT_MS = 5000
+const UAT_DIRECTORY_WAIT_MS = 2000
 
 /**
  * One request's answer, as the field reads it. The field asks for the first
@@ -71,7 +70,7 @@ type LandingAnswer = {
   readonly hits: readonly EntitySearchHit[]
   readonly current: boolean
   readonly complete: boolean
-  readonly generationId: string | null
+  readonly canRankUats: boolean
 }
 
 export function useSearchResults({
@@ -162,10 +161,10 @@ export function useSearchResults({
       return {
         hits,
         current,
-        generationId: response.generation?.generationId ?? null,
         // The initial page is the whole answer only when it is current and the
         // server offers no next page; otherwise its emptiness proves nothing.
         complete: current && response.continuation.nextOffset === null,
+        canRankUats: response.generation !== null,
       }
     },
     enabled: isQueryable && enabled,
@@ -176,25 +175,26 @@ export function useSearchResults({
   })
   const uatLookupEnabled = enabled && isQueryable && uatQuery !== null
   const { data: uats, isFetching: uatsFetching } = useQuery({
-    queryKey: ['landingUatSearch', uatLookupEnabled ? normalized : null],
-    queryFn: async ({ signal }) => {
-      const answer = await searchEntitiesLive(
-        { q: normalized, docTypes: ['organization'], isUat: true, limit: SEARCH_LIMIT },
-        withDeadline(signal, UAT_LOOKUP_TIMEOUT_MS),
-      )
-      if (answer.degraded) throw new Error('Municipality search unavailable')
-      return answer
-    },
+    queryKey: ['landingUatDirectory'],
+    queryFn: loadUatSearchDirectory,
     enabled: uatLookupEnabled,
     retry: false,
-    staleTime: (query) => query.state.data?.generation ? CURRENT_STALE_MS : 0,
-    gcTime: 1000 * 60 * 30,
+    staleTime: Infinity,
+    gcTime: Infinity,
   })
-  const isRankingUats = uatLookupEnabled && uatsFetching && uats === undefined
+  const [directorySlow, setDirectorySlow] = useState(false)
+  useEffect(() => {
+    if (!uatLookupEnabled || !uatsFetching || uats !== undefined) return
+    // Let ordinary results settle even if the optional chunk stalls. A late
+    // directory remains usable for the current and subsequent searches.
+    const timer = setTimeout(() => setDirectorySlow(true), UAT_DIRECTORY_WAIT_MS)
+    return () => clearTimeout(timer)
+  }, [uatLookupEnabled, uatsFetching, uats])
+  const isRankingUats = uatLookupEnabled && uatsFetching && uats === undefined && !directorySlow
   const results = useMemo(() => {
     const hits = data?.hits ?? NO_RESULTS
-    if (uatQuery === null || !data?.generationId || uats?.generation?.generationId !== data.generationId) return hits
-    return rankUatSearchHits(uatQuery, hits, uats.hits, SEARCH_LIMIT)
+    if (uatQuery === null || !data?.canRankUats || !uats) return hits
+    return rankUatSearchHits(uatQuery, hits, uats, SEARCH_LIMIT)
   }, [data, uatQuery, uats])
   const isCurrent = isQueryable && normalized === trimmed && isSuccess && !isPlaceholderData && !isFetching
 
