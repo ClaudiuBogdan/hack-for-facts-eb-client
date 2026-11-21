@@ -2,6 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Status (2026-11-21):** paused after Task 7 on the owner's request (Batch D committed, not reviewed; Batch E and
+> Task 9 pending). See the spec's Status section for what is done, pending and parked.
+
 **Goal:** every colour in `src/features/parliament` comes from a named `parliament-*` token whose dark value lives in
 the token. Light mode is unchanged apart from the listed near-duplicates. Dark mode reads everywhere. Parliament no
 longer references `--pnrr-*`.
