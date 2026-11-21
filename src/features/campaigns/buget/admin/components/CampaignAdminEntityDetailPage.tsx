@@ -100,6 +100,7 @@ import type {
 } from "@/features/campaigns/buget/admin/types";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
+import { getCampaignAdminThreadPhaseClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 const ENTITY_DETAIL_PREVIEW_LIMIT = 10;
 
@@ -358,12 +359,7 @@ function ThreadPhaseBadge({
 }: {
   readonly threadPhase: CampaignAdminUserInteractionListItem["threadPhase"];
 }) {
-  const className =
-    threadPhase === "failed"
-      ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
-      : threadPhase === null
-        ? "border-border bg-muted text-foreground"
-        : "border-primary/30 bg-primary/10 text-foreground";
+  const className = getCampaignAdminThreadPhaseClassName(threadPhase);
 
   return (
     <Badge variant="outline" className={className}>

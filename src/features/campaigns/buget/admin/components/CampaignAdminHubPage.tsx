@@ -354,7 +354,7 @@ export function CampaignAdminHubPage({
               label={t`Rejected`}
               value={rejectedCount}
               isLoading={metaQuery.isLoading}
-              className="text-muted-foreground"
+              className="text-status-blocked-fg"
             />
 
             {/* Notification Metrics Group */}
@@ -368,7 +368,7 @@ export function CampaignAdminHubPage({
                 <CompactStat
                   label={t`Delivered`}
                   value={overview.notifications.deliveredCount}
-                  className="text-primary"
+                  className="text-status-live-fg"
                 />
                 <CompactStat
                   label={t`Opened`}
@@ -470,7 +470,7 @@ export function CampaignAdminHubPage({
                 </p>
               </div>
               {riskFlaggedCount > 0 && (
-                <p className="text-xs text-status-partial-fg">
+                <p className="text-xs text-status-blocked-fg">
                   {t`${riskFlaggedCount} flagged for review`}
                 </p>
               )}

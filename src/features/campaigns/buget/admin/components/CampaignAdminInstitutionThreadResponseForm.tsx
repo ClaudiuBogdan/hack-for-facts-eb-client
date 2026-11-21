@@ -29,6 +29,7 @@ import {
   type CampaignAdminInstitutionThreadResponseStatus,
 } from "@/features/campaigns/buget/admin/types";
 
+import { campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminInstitutionThreadResponseFormProps = {
   readonly thread: CampaignAdminInstitutionThreadDetail;
   readonly isPending: boolean;
@@ -264,10 +265,10 @@ function NotificationExecutionPanel({
     );
   const statusClassName =
     execution.status === "queued"
-      ? "border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
+      ? campaignAdminStatusClassNames.info
       : execution.status === "partial"
-        ? "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg"
-        : "border-border bg-muted text-foreground";
+        ? campaignAdminStatusClassNames.partial
+        : campaignAdminStatusClassNames.neutral;
 
   return (
     <div className="space-y-3 rounded-xl border border-border/70 bg-muted/20 p-4">

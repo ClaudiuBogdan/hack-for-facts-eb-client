@@ -764,9 +764,9 @@ describe("CampaignAdminNotificationsPage", () => {
       within(sendDialog).getByRole("button", { name: "Send 2 notifications" }),
     );
 
-    expect(
-      await screen.findByText("Notification send completed"),
-    ).toBeInTheDocument();
+    const mixedHeading = await screen.findByText("Notification send completed");
+    expect(mixedHeading).toBeInTheDocument();
+    expect(mixedHeading.closest("div")).toHaveClass("bg-status-partial-bg");
     expect(
       screen.getByText(
         "Queued 2, already sent 1, already pending 0, not eligible 1, missing data 0, enqueue failed 1.",
@@ -781,6 +781,28 @@ describe("CampaignAdminNotificationsPage", () => {
       screen.getByText(
         "Run preview again to create a fresh result set before sending.",
       ),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a send where every enqueue failed as a blocked result, not a success", async () => {
+    sendCampaignAdminNotificationPlanMock.mockResolvedValue(
+      createSendResponse({ queuedCount: 0, alreadySentCount: 0, ineligibleCount: 0, enqueueFailedCount: 3 }),
+    );
+
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Send 2 notifications" }));
+    const sendDialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(sendDialog).getByRole("button", { name: "Send 2 notifications" }));
+
+    const heading = await screen.findByText("Notification send completed");
+    expect(heading.closest("div")).toHaveClass("bg-status-blocked-bg");
+    expect(heading.closest("div")).not.toHaveClass("bg-status-live-bg");
+    expect(
+      screen.getByText("Queued 0, already sent 0, already pending 0, not eligible 0, missing data 0, enqueue failed 3."),
     ).toBeInTheDocument();
   });
 

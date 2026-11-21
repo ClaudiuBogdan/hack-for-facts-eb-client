@@ -37,6 +37,7 @@ import type {
 import { buildEntityDetailsPath } from '@/lib/entity-navigation'
 import { cn, getUserLocale } from '@/lib/utils'
 
+import { campaignAdminStatusClassNames, getCampaignAdminThreadPhaseClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminReviewSheetProps = {
   readonly open: boolean
   readonly item: CampaignAdminUserInteractionListItem | null
@@ -578,18 +579,21 @@ export function CampaignAdminReviewSheet({
             <SheetHeader className="space-y-4 border-b border-border/60 px-6 pb-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
-                  variant={
+                  variant="outline"
+                  className={
                     item.reviewStatus === 'rejected'
-                      ? 'destructive'
+                      ? campaignAdminStatusClassNames.blocked
                       : item.reviewStatus === 'approved'
-                        ? 'success'
-                        : 'secondary'
+                        ? campaignAdminStatusClassNames.live
+                        : item.reviewStatus === 'pending'
+                          ? campaignAdminStatusClassNames.partial
+                          : campaignAdminStatusClassNames.neutral
                   }
                 >
                   {getCampaignAdminReviewStatusLabel(item.reviewStatus)}
                 </Badge>
                 <Badge variant="outline">{getCampaignAdminPhaseLabel(item.phase)}</Badge>
-                <Badge variant="outline">{getCampaignAdminThreadPhaseLabel(item.threadPhase)}</Badge>
+                <Badge variant="outline" className={getCampaignAdminThreadPhaseClassName(item.threadPhase)}>{getCampaignAdminThreadPhaseLabel(item.threadPhase)}</Badge>
               </div>
               <div className="space-y-2">
                 <SheetTitle className="text-lg font-medium tracking-tight">
@@ -615,7 +619,7 @@ export function CampaignAdminReviewSheet({
                   <AlertTitle>{t`Operator warnings`}</AlertTitle>
                   <AlertDescription className="flex flex-wrap gap-2">
                     {item.riskFlags.map((riskFlag) => (
-                      <Badge key={riskFlag} variant="warning" className="text-[11px]">
+                      <Badge key={riskFlag} variant="outline" className={`text-[11px] ${campaignAdminStatusClassNames.partial}`}>
                         {getCampaignAdminRiskFlagLabel(riskFlag)}
                       </Badge>
                     ))}
@@ -688,7 +692,7 @@ export function CampaignAdminReviewSheet({
                             'block text-xs',
                             selectedDecision === 'approved'
                               ? 'text-status-live-fg'
-                              : 'text-muted-foreground'
+                              : 'text-foreground'
                           )}
                         >
                           {t`A review note is optional for approved rows.`}
@@ -728,7 +732,7 @@ export function CampaignAdminReviewSheet({
                             'block text-xs',
                             selectedDecision === 'rejected'
                               ? 'text-status-blocked-fg'
-                              : 'text-muted-foreground'
+                              : 'text-foreground'
                           )}
                         >
                           {t`Rejected rows require a review note before saving.`}

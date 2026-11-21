@@ -58,6 +58,7 @@ import type {
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { cn, getUserLocale } from "@/lib/utils";
+import { campaignAdminStatusClassNames, getCampaignAdminThreadPhaseClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 const campaignAdminUserWorkspaceDefaultLinkSearch =
   normalizeCampaignAdminUserPageSearch({});
@@ -287,12 +288,7 @@ function ThreadPhaseBadge({
 }: {
   readonly threadPhase: CampaignAdminUserInteractionListItem["threadPhase"];
 }) {
-  const className =
-    threadPhase === "failed"
-      ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
-      : threadPhase === null
-        ? "border-border bg-muted text-foreground"
-        : "border-primary/30 bg-primary/10 text-foreground";
+  const className = getCampaignAdminThreadPhaseClassName(threadPhase);
 
   return (
     <Badge variant="outline" className={className}>
@@ -318,9 +314,9 @@ function RiskFlagBadgeList({
         return (
           <Badge
             key={riskFlag}
-            variant="warning"
+            variant="outline"
             title={label}
-            className="max-w-[11rem] overflow-hidden text-ellipsis whitespace-nowrap border-status-partial-fg/30 bg-status-partial-bg text-[11px] text-status-partial-fg"
+            className={`max-w-[11rem] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] ${campaignAdminStatusClassNames.partial}`}
           >
             {label}
           </Badge>
@@ -1095,7 +1091,8 @@ export function CampaignAdminUserInteractionsTable({
                     <TableCell
                       className={cn(
                         "max-w-[14rem] break-words font-medium",
-                        reviewPreviewStatus === "approved"
+                        reviewPreviewStatus === "approved" &&
+                          isColumnVisible("reviewState")
                           ? "text-status-live-fg"
                           : "text-foreground",
                       )}

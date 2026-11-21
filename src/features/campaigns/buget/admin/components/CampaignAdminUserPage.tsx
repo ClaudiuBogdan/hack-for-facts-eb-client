@@ -1031,10 +1031,10 @@ export function CampaignAdminUserPage({
               type="button"
               onClick={handleCopyUserId}
               className={cn(
-                "inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-xs text-foreground ring-offset-background transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:max-w-[min(100%,min(28rem,90vw))]",
+                "inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-xs ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:max-w-[min(100%,min(28rem,90vw))]",
                 userIdCopied
-                  ? "border-status-live-fg/50 bg-status-live-bg hover:border-status-live-fg"
-                  : "border-border/60 bg-muted/30 hover:bg-muted",
+                  ? "border-status-live-fg/50 bg-status-live-bg text-status-live-fg hover:border-status-live-fg hover:text-status-live-fg"
+                  : "border-border/60 bg-muted/30 text-foreground hover:bg-muted hover:text-foreground",
               )}
               title={t`Click to copy full user ID`}
               aria-label={

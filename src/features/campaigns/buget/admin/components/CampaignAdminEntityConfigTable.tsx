@@ -40,6 +40,7 @@ import type { CampaignAdminEntityConfigClipboardIssue } from "@/features/campaig
 import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { cn, getUserLocale } from "@/lib/utils";
 
+import { campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminEntityConfigTableProps = {
   readonly items: readonly CampaignAdminEntityConfigListItem[];
   readonly header?: (input: {
@@ -246,7 +247,7 @@ function StagedValuesCell({
           {selected && !isStale ? t`Ready` : t`Staged`}
         </Badge>
         {isStale ? (
-          <Badge variant="destructive">{t`Conflict`}</Badge>
+          <Badge variant="outline" className={campaignAdminStatusClassNames.blocked}>{t`Conflict`}</Badge>
         ) : null}
       </div>
       <dl className="space-y-1 text-xs">

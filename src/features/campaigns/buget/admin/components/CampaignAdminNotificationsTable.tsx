@@ -39,6 +39,7 @@ import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { cn, getUserLocale } from "@/lib/utils";
+import { getCampaignAdminNotificationStatusClassName } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 
 type CampaignAdminNotificationsTableProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -224,18 +225,7 @@ function NotificationStatusBadge({
 }: {
   readonly status: CampaignAdminNotificationListItem["status"];
 }) {
-  const className =
-    status === "delivered" || status === "sent"
-      ? "border-status-live-fg/30 bg-status-live-bg text-status-live-fg"
-      : status === "failed_transient" ||
-          status === "failed_permanent" ||
-          status === "webhook_timeout"
-        ? "border-status-blocked-fg/30 bg-status-blocked-bg text-status-blocked-fg"
-        : status === "suppressed" ||
-            status === "skipped_unsubscribed" ||
-            status === "skipped_no_email"
-          ? "border-border bg-muted text-foreground"
-          : "border-status-partial-fg/30 bg-status-partial-bg text-status-partial-fg";
+  const className = getCampaignAdminNotificationStatusClassName(status);
 
   return (
     <Badge variant="outline" className={className}>

@@ -37,9 +37,11 @@ const PALETTE = new RegExp(
  * A hex colour in code: in a string, an arbitrary value (`bg-[#1e40af]`) or a
  * style. Not a fragment link (`href="#abc"`). Checked in learning only: the
  * campaign and challenge maps paint MapLibre layers and canvases, which take
- * colour strings, not classes, and are outside this pass.
+ * colour strings, not classes, and are outside this pass. A `#id` inside an
+ * arbitrary variant (`has-[#fff]:underline`) is a selector and is skipped here too:
+ * the `]` after it is followed by `:`.
  */
-const HEX = /(?<!(?:href|to|hash)\s*[:=]\s*['"\x60])(?<=['"\x60(\s:[,])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g
+const HEX = /(?<!(?:href|to|hash)\s*[:=]\s*['"\x60])(?<=['"\x60(\s:[,])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])(?!\]:)/g
 const HEX_GUARDED = 'src/features/learning/'
 
 /**
@@ -99,6 +101,7 @@ describe('raw palette colours', () => {
     ['an arbitrary-value colour', 'bg-[#1e40af] hover:bg-[#1e3a8a]', ['#1e40af', '#1e3a8a']],
     ['a quoted colour', "fill: '#3B82F6'", ['#3B82F6']],
     ['nothing in a fragment link', 'href="#abc"', []],
+    ['nothing in a #id inside an arbitrary variant', 'has-[#fff]:underline group-has-[#abc]:flex', []],
   ])('finds hex in learning: %s', (_, text, expected) => {
     expect(rawColours('src/features/learning/x.tsx', text)).toEqual(expected)
   })

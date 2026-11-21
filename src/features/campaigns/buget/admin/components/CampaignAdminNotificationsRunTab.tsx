@@ -72,6 +72,7 @@ import {
 } from "@/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils";
 import { AuthSignInButton } from "@/lib/auth";
 
+import { campaignAdminStatusClassNames } from "@/features/campaigns/buget/admin/utils/campaign-admin-status-classes";
 type CampaignAdminNotificationsRunTabProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly search: CampaignAdminNotificationsSearch;
@@ -1108,7 +1109,15 @@ export function CampaignAdminNotificationsRunTab({
                 </div>
 
                 {sendResult ? (
-                  <div className="rounded-2xl border border-status-live-fg/30 bg-status-live-bg p-4 text-sm text-status-live-fg">
+                  <div
+                    className={`rounded-2xl border p-4 text-sm ${
+                      sendResult.enqueueFailedCount > 0
+                        ? sendResult.queuedCount > 0
+                          ? campaignAdminStatusClassNames.partial
+                          : campaignAdminStatusClassNames.blocked
+                        : campaignAdminStatusClassNames.live
+                    }`}
+                  >
                     <p className="font-medium">
                       {t`Notification send completed`}
                     </p>
