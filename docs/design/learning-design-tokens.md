@@ -126,28 +126,35 @@ directories.
 
 ## Results (2026-11-21)
 
-Built in nine reviewed batches on `dev` (status tokens and guard, then learning in five batches, the lesson
-pair, challenges, campaign reader pages, campaign admin), each reviewed by Astra until clean, with fix rounds
-committed separately. `PENDING` is gone: the guard covers all four folders.
+Built on `dev` in two foundation tasks (status tokens; the guard and the measuring tool) and nine conversion
+batches (learning in five, the lesson pair, challenges, the campaign's reader pages, the campaign admin), each
+reviewed by Astra until clean, then one whole-change review whose fixes went in as a final wave. `PENDING` is
+gone: the guard covers all four folders, including colour literals inside any arbitrary value.
 
-- **Stylesheet** (`docs/performance/2026-11-17-landing/tools/css-attribution.mjs`, what the shipped sheet would
-  lose without each area): shipped 531,305 → 436,450 bytes minified (−94,855, −18%); own bytes learning
-  99,382 → 28,167, campaigns 26,585 → 12,249, challenges 17,010 → 16,270 (mostly layout, not colour).
-- **Contrast:** every text pair introduced was measured from rendered pixels in both themes at ≥ 4.5:1; the
-  reviews caught muted text on tints, opacity on text, `/90` hovers and translucent status marks, and the brief
-  gained a rule for each.
-- **Behaviour:** a functional pass clicked every control in each lesson on a build of the pre-migration commit
-  and on the converted tree and compared the outcome of every step (≈200 interactions across the learning
-  lessons, a six-step challenge play-through, the campaign forms and pages): same outcomes, no new errors. Not
-  driven in a browser, because they need a Clerk sign-in that cannot be done locally: the signed-in
-  notification preferences and the campaign admin; those were checked by their component tests and by pixel
-  measurement of their markup.
-- **Rulings recorded on the way:** hex colour strings that paint MapLibre layers and canvases stay; hex in class
-  names does not. A lesson component may take a prop for a colour that depends on the lesson's framing (the EU
-  comparison's `highlightTone`). Pre-existing issues found and left for the owner: the shared shadcn Button's
-  `hover:bg-primary/90` (4.41–4.46:1 in dark), the shared Badge's raw amber and destructive variants, the
-  economic-code rows' missing keyboard access, the learning banner's Sign In doing nothing in dev, flash-card
-  flips not restored after reload, and a few challenge-page captions faded below AA with no palette class.
+- **Stylesheet**, a compiled estimate from `docs/performance/2026-11-17-landing/tools/css-attribution.mjs`
+  (Tailwind's compiler and optimizer over the files the Docker build context ships, counted as JavaScript string
+  length; not measured from a production artefact): 531,305 → 437,824 bytes minified (−93,481, −17.6%). What the
+  shipped sheet would lose without each area: learning 99,382 → 34,589, campaigns 26,585 → 12,873, challenges
+  17,010 → 15,517 (mostly layout, not colour).
+- **Contrast:** text pairs introduced by the batches were measured in both themes, mostly from rendered pixels,
+  some from the computed token values; the reviews then found and fixed the states the batches had missed (muted
+  text on tints, opacity on text, `/90` hovers, translucent status marks). Thin 12 px glyphs sample a little low
+  from antialiasing where the token itself passes.
+- **Behaviour:** a functional pass clicked the controls inside each converted lesson on a build of the
+  pre-migration commit and on the converted tree and compared the outcome of each step (learning lessons, a
+  six-step challenge play-through, the campaign forms and reader pages): same outcomes, no new errors; the only
+  differences were the words added on purpose. Not driven in a browser: the campaign admin and the signed-in
+  notification preferences (they need a Clerk sign-in that cannot be done locally), the flash deck's completion
+  state (no lesson renders it), the mounted Discourse discussion, and a few error states; those rest on their
+  component tests and on pixel measurement of their markup.
+- **Rulings recorded on the way:** hex colour strings that paint MapLibre layers and canvases, and their matching
+  legend, stay; hex in class names and chart series colours do not. A lesson component may take a prop for a
+  colour that depends on the lesson's framing (the EU comparison's `highlightTone`). Pre-existing issues found
+  and left for the owner: the shared shadcn Button's `hover:bg-primary/90` (4.41–4.46:1 in dark), the shared
+  Badge's raw amber and destructive variants, the economic-code rows' missing keyboard access, the learning
+  banner's Sign In doing nothing in dev, flash-card flips not restored after reload, the chart page opened from a
+  challenge's analytics link still drawing the URL's fixed series colour, and a flaky unhandled Radix timer in
+  `CampaignAdminEntityConfigToolbar.test.tsx`.
 
 ## Left to the builder
 

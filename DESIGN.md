@@ -880,7 +880,7 @@ Append-only. Newest first. Each entry: date · decision · why.
   *Why:* those surfaces drew in eight decorative hues with shades, opacities and
   `dark:` variants, which made ≈100 KB of the global stylesheet theirs alone and
   set them apart from the rest of the app. The shipped stylesheet went from
-  531,305 to 436,450 bytes minified (−18%). Design and record:
+  531,305 to 437,824 bytes minified (−17.6%, a compiled estimate). Design and record:
   `docs/design/learning-design-tokens.md`.
 
 - **2026-10-02 — A map legend names exactly the values each class holds.**
