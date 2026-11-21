@@ -5,7 +5,6 @@ import {
   billDetailTabActiveClassName,
   billDetailTabInactiveClassName,
   billDetailTabLinkClassName,
-  PARLIAMENT_ACTION_BLUE,
 } from '../lib/bill-detail-theme'
 
 type Props = {
@@ -39,10 +38,9 @@ export function BillDetailTabNav({ billId, activeTab }: Props) {
             {item.label}
             <span
               className={cn(
-                'absolute bottom-0 left-0 right-0 h-[3px] transition-opacity',
+                'absolute bottom-0 left-0 right-0 h-[3px] bg-parliament-link transition-opacity',
                 isActive ? 'opacity-100' : 'opacity-0',
               )}
-              style={{ backgroundColor: PARLIAMENT_ACTION_BLUE }}
               aria-hidden
             />
           </Link>

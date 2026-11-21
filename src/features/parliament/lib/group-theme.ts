@@ -1,6 +1,7 @@
 import {
   PARLIAMENT_CAMERA_GREEN,
   PARLIAMENT_ICON_BG,
+  PARLIAMENT_NOTICE_TINT,
   PARLIAMENT_RESOURCE_PURPLE,
   PARLIAMENT_SENAT_RED,
   PARLIAMENT_SURFACE,
@@ -47,7 +48,7 @@ export const groupControlClassName =
 export const groupNoticeClassName =
   'border-l-[5px] px-4 py-3 text-sm leading-6 text-parliament-fg'
 
-export const GROUP_NOTICE_BG = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
+export const GROUP_NOTICE_BG = PARLIAMENT_NOTICE_TINT
 
 /**
  * Four effective ballot outcomes plus two non-choice evidence buckets.

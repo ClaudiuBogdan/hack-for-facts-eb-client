@@ -1,6 +1,7 @@
 import {
   PARLIAMENT_CAMERA_GREEN,
   PARLIAMENT_ICON_BG,
+  PARLIAMENT_NOTICE_TINT,
   PARLIAMENT_RESOURCE_PURPLE,
   PARLIAMENT_SENAT_RED,
   PARLIAMENT_SURFACE,
@@ -8,7 +9,7 @@ import {
 
 export const VOTE_DETAIL_BREADCRUMB_BG = PARLIAMENT_ICON_BG
 export const VOTE_DETAIL_SURFACE = PARLIAMENT_SURFACE
-export const VOTE_DETAIL_INFO_BG = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
+export const VOTE_DETAIL_INFO_BG = PARLIAMENT_NOTICE_TINT
 
 /** Plot-area wash behind the party chart. Shared so the loading placeholder
  *  reserves the same block of colour the chart lands in. */
@@ -74,7 +75,7 @@ export const voteDetailTabListClassName =
   'h-auto w-max min-w-full flex-nowrap justify-start gap-0 rounded-none border-b border-parliament-border bg-transparent p-0'
 
 export const voteDetailTabTriggerClassName =
-  'shrink-0 rounded-none border-b-[3px] border-transparent bg-transparent px-0 py-3 text-sm font-normal text-parliament-muted shadow-none sm:text-base data-[state=active]:border-parliament-resource-fill data-[state=active]:bg-transparent data-[state=active]:font-bold data-[state=active]:text-parliament-fg data-[state=active]:shadow-none'
+  'shrink-0 rounded-none border-b-[3px] border-transparent bg-transparent px-0 py-3 text-sm font-normal text-parliament-muted shadow-none sm:text-base data-[state=active]:border-parliament-resource data-[state=active]:bg-transparent data-[state=active]:font-bold data-[state=active]:text-parliament-fg data-[state=active]:shadow-none'
 
 export const voteDetailToggleActiveClassName =
   'border-parliament-resource-fill bg-parliament-resource-fill text-white hover:bg-parliament-resource-fill/90'

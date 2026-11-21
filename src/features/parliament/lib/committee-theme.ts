@@ -1,6 +1,7 @@
 import {
   PARLIAMENT_CAMERA_GREEN,
   PARLIAMENT_ICON_BG,
+  PARLIAMENT_NOTICE_TINT,
   PARLIAMENT_RESOURCE_PURPLE,
   PARLIAMENT_SENAT_RED,
   PARLIAMENT_SURFACE,
@@ -58,6 +59,6 @@ export const committeeChamberRuleClassName = 'border-l-4'
 export const committeeNoticeClassName =
   'border-l-[5px] px-4 py-3 text-sm leading-6 text-parliament-fg'
 
-export const COMMITTEE_NOTICE_BG = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
+export const COMMITTEE_NOTICE_BG = PARLIAMENT_NOTICE_TINT
 
 export { PARLIAMENT_RESOURCE_PURPLE }

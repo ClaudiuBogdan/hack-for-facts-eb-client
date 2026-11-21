@@ -354,13 +354,16 @@ export const stenogramRailClusterDensityClassName: Readonly<
  * they clicked turns accent because they are now there, and nothing else
  * appears next to it.
  *
- * Each tone carries its own opacity ramp, ending at 1 under the pointer, so
- * every bar answers the wave from wherever its resting weight is.
+ * Each tone carries its own ramp, ending at full ink under the pointer, so
+ * every bar answers the wave from wherever its resting weight is. `idle` ramps
+ * its COLOUR rather than its opacity: it rests on the faint grey, which keeps
+ * today's light weight and still clears 3:1 on the dark page (ink at 30% over
+ * the page did not), and darkens to ink as the wave reaches it.
  */
 export const stenogramRailMarkerToneClassName: Readonly<
   Record<'idle' | 'inView' | 'reading' | 'selected', string>
 > = {
-  idle: 'bg-parliament-fg opacity-[calc(0.3+var(--rail-wave,0)*0.7)]',
+  idle: 'bg-[color-mix(in_srgb,var(--parliament-fg)_calc(var(--rail-wave,0)*100%),var(--parliament-faint))]',
   inView:
     'bg-parliament-link opacity-[calc(0.55+var(--rail-wave,0)*0.45)]',
   reading: 'bg-parliament-link opacity-100',

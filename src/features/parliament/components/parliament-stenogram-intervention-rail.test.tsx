@@ -231,7 +231,7 @@ describe('ParliamentStenogramInterventionRail — bars, and nothing but', () => 
     const tick = tickOf(markers()[0]!)
     expect(tick.className).not.toContain('group-hover/marker:bg-')
     expect(tick.className).not.toContain('group-focus-visible/marker:bg-')
-    expect(tick.className).toContain('opacity-[calc(0.3+var(--rail-wave,0)*0.7)]')
+    expect(tick.className).toContain('bg-[color-mix(in_srgb,var(--parliament-fg)_calc(var(--rail-wave,0)*100%),var(--parliament-faint))]')
   })
 
   it('leaves the track itself unpainted — no border, no paper', () => {
@@ -363,7 +363,7 @@ describe('ParliamentStenogramInterventionRail — where the reader is', () => {
       'opacity-[calc(0.55+var(--rail-wave,0)*0.45)]',
     )
     // …and a contribution off screen stays ink, not accent.
-    expect(tickOf(markers()[2]!).className).toContain('bg-parliament-fg')
+    expect(tickOf(markers()[2]!).className).toContain('var(--parliament-fg)')
   })
 
   it('carries the run onto a collapsed cluster, so a dense stretch still lights', () => {

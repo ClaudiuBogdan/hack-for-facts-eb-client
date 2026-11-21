@@ -35,7 +35,7 @@ export const memberDetailSidebarLinkClassName =
   'block shrink-0 border-l-[5px] border-transparent bg-transparent px-5 py-3.5 text-base font-normal leading-snug text-parliament-fg hover:bg-parliament-card/70 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-resource focus-visible:ring-inset lg:min-w-0 lg:px-6 lg:py-4'
 
 export const memberDetailSidebarActiveLinkClassName =
-  'border-l-parliament-resource-fill bg-parliament-card font-bold no-underline hover:bg-parliament-card lg:-mr-px lg:border-r lg:border-r-parliament-card'
+  'border-l-parliament-resource bg-parliament-card font-bold no-underline hover:bg-parliament-card lg:-mr-px lg:border-r lg:border-r-parliament-card'
 
 export const memberDetailContentPanelClassName =
   'min-w-0 bg-parliament-card p-6 sm:p-8 lg:p-10'

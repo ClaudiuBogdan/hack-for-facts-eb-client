@@ -4,13 +4,14 @@ import {
   PARLIAMENT_SENAT_RED,
   PARLIAMENT_ACTION_BLUE,
   PARLIAMENT_ICON_BG,
+  PARLIAMENT_NOTICE_TINT,
   PARLIAMENT_SURFACE,
 } from './hub-theme'
 
 export const BILL_DETAIL_BREADCRUMB_BG = PARLIAMENT_ICON_BG
 export const BILL_DETAIL_SURFACE = PARLIAMENT_SURFACE
 export const BILL_DETAIL_CONTENT_BG = 'var(--parliament-card)'
-export const BILL_DETAIL_INFO_BG = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
+export const BILL_DETAIL_INFO_BG = PARLIAMENT_NOTICE_TINT
 export const BILL_DETAIL_FINAL_PURPLE = PARLIAMENT_RESOURCE_PURPLE
 
 export function getBillDetailHeroColor(

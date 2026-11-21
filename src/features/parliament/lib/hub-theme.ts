@@ -13,9 +13,14 @@ export const PARLIAMENT_ICON_BG = 'var(--parliament-icon)'
 export const PARLIAMENT_ACTION_BLUE = 'var(--parliament-action)'
 export const PARLIAMENT_SURFACE = 'var(--parliament-surface)'
 
+/** The purple notice ground under the caveat bands (resource at 10% over the card, opaque). */
+export const PARLIAMENT_NOTICE_TINT = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
+
 /**
- * The heat maps' blue ramp (hub activity, member votes, member speeches), lightest to darkest, as inline fills for
- * counted cells: one copy, so the three maps cannot drift. A cell with no count is `parliamentHeatmapEmptyCellClassName`.
+ * The heat maps' blue ramp (hub activity, member votes, member speeches) as inline fills for counted cells, fewest to
+ * most: one copy, so the three maps cannot drift. In light the steps run light to dark; in dark they run dark to light,
+ * rising from the empty cell. Counted cells take no edge: every dark step clears 3:1 on the card by itself. A cell with
+ * no count is `parliamentHeatmapEmptyCellClassName`.
  */
 export const PARLIAMENT_HEATMAP_RAMP = [
   'var(--parliament-ramp-1)',
@@ -27,7 +32,7 @@ export const PARLIAMENT_HEATMAP_RAMP = [
 /** A heat-map cell with no count: the zero step inside its edge. */
 export const parliamentHeatmapEmptyCellClassName = 'border border-parliament-ramp-edge bg-parliament-ramp-0'
 
-/** The edge around a counted heat-map cell (its fill comes from `PARLIAMENT_HEATMAP_RAMP`). */
+/** The edge alone, for a cell with no data at all (a day outside the capture, the hub's uncaptured cells); never for a counted cell. */
 export const parliamentHeatmapCellEdgeClassName = 'border border-parliament-ramp-edge'
 
 /** UK Parliament quick-link card typography */
