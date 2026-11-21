@@ -1,12 +1,17 @@
-/** UK Parliament content palette */
-export const PARLIAMENT_CAMERA_GREEN = '#006435'
-export const PARLIAMENT_SENAT_RED = '#9C051A'
-export const PARLIAMENT_RESOURCE_PURPLE = '#512178'
-export const PARLIAMENT_ICON_BG = '#372554'
-export const PARLIAMENT_ACTION_BLUE = '#1d70b8'
-export const PARLIAMENT_QUICK_LINK_ILLUSTRATION = '#c5c7c9'
-export const PARLIAMENT_SURFACE = '#f3f2f1'
-export const PARLIAMENT_UK_TEXT = '#0b0c0c'
+/**
+ * Parliament's palette as CSS references to its tokens (`--parliament-*` in `src/index.css`), for inline styles and
+ * SVG that take a colour string; classes use the Tailwind colours (`bg-parliament-commons-fill`).
+ *
+ * The chamber and resource colours here are the fills: hero bands, accent bars and rules, under white text. They keep
+ * one colour in both themes, so they are for fills only: text in a chamber's colour belongs on the flipping
+ * `text-parliament-commons` / `var(--parliament-commons)` (docs/design/parliament-skin-tokens-plan.md, batches).
+ */
+export const PARLIAMENT_CAMERA_GREEN = 'var(--parliament-commons-fill)'
+export const PARLIAMENT_SENAT_RED = 'var(--parliament-senate-fill)'
+export const PARLIAMENT_RESOURCE_PURPLE = 'var(--parliament-resource-fill)'
+export const PARLIAMENT_ICON_BG = 'var(--parliament-icon)'
+export const PARLIAMENT_ACTION_BLUE = 'var(--parliament-action)'
+export const PARLIAMENT_SURFACE = 'var(--parliament-surface)'
 
 /** UK Parliament quick-link card typography */
 export const parliamentQuickLinkTitleClassName =

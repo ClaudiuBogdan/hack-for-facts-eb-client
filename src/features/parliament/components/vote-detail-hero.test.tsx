@@ -65,7 +65,7 @@ describe('VoteDetailHero — which division is this?', () => {
     // pinned group rows (`z-[5]`), under the sidebar and FABs (`z-40`).
     expect(hero).toHaveClass('lg:sticky', 'lg:top-0', 'lg:z-30')
     // Its own opaque fill, so the page does not read through it.
-    expect(hero).toHaveStyle({ backgroundColor: '#9C051A' })
+    expect(hero).toHaveStyle({ backgroundColor: 'var(--parliament-senate-fill)' })
   })
 
   it('stays ordinary in-flow content below the desktop breakpoint', () => {

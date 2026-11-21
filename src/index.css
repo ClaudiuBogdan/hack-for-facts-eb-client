@@ -156,6 +156,58 @@
     --pnrr-red: #ef4444;
     --pnrr-orange: #f59e0b;
     --pnrr-blue: #3b82f6;
+
+    /* Parliament's GOV.UK-style skin and its hub frame (docs/design/parliament-skin-tokens.md). Hex, not HSL
+     * triples, so light values stay exact; opacity steps mix with color-mix(). */
+    --parliament-fg: #0b0c0c;
+    --parliament-muted: #505a5f;
+    --parliament-border: #b1b4b6;
+    --parliament-border-strong: #1f1f1f;
+    --parliament-card: #ffffff;
+    --parliament-surface: #f3f2f1;
+    --parliament-hover: #f8f8f8;
+    --parliament-page: #fafaf8;
+    --parliament-frame-fg: #1f1f1f;
+    --parliament-frame-muted: #6f6f6f;
+    --parliament-frame-subtle: #e7e7e3;
+    --parliament-frame-hover: #f0f0ec;
+    --parliament-link: #1d70b8;
+    --parliament-link-hover: #003078;
+    --parliament-action: #1d70b8;
+    --parliament-ink: #0b0c0c;
+    --parliament-icon: #372554;
+    --parliament-commons-fill: #006435;
+    --parliament-senate-fill: #9c051a;
+    --parliament-resource-fill: #512178;
+    --parliament-resource: #512178;
+    --parliament-commons: #006435;
+    --parliament-senate: #9c051a;
+    --parliament-success: #00703c;
+    --parliament-error: #d4351c;
+    --parliament-focus: #3b82f6;
+    --parliament-accent: #b6ff00;
+    --parliament-ramp-1: #d2e2f1;
+    --parliament-ramp-2: #a3c6e3;
+    --parliament-ramp-3: #5e94c9;
+    --parliament-ramp-4: #1d70b8;
+    --parliament-initials-1: #f3f2f1;
+    --parliament-initials-2: #ede7f6;
+    --parliament-initials-3: #e8f5e9;
+    --parliament-initials-4: #fff3e0;
+    --parliament-accent-fg: #1f1f1f;
+    --parliament-resource-heading: #372554;
+    --parliament-bill-heading: #121847;
+    --parliament-conflict: #912b88;
+    --parliament-notice: #fdf3e3;
+    --parliament-notice-fg: #6b4a08;
+    --parliament-notice-edge: #b58840;
+    --parliament-highlight: #ffdd00;
+    --parliament-inactive: #c5c7c9;
+    --parliament-ramp-0: #f3f2f1;
+    --parliament-ramp-edge: #e5e5e0;
+    --parliament-accent-focus: #3b82f6;
+    --parliament-abstain: #f47738;
+    --parliament-faint: #b1b4b6;
   }
 
   .dark {
@@ -242,6 +294,58 @@
     --pnrr-red: #ff6b6b;
     --pnrr-orange: #fbbf24;
     --pnrr-blue: #60a5fa;
+
+    /* Parliament: the same slots at night. action, ink, icon and the *-fill slots carry white text and
+     * do not flip. */
+    --parliament-fg: #f7f7f2;
+    --parliament-muted: #a8aaa3;
+    --parliament-border: #e7e7dc;
+    --parliament-border-strong: #e7e7dc;
+    --parliament-card: #1b1f1c;
+    --parliament-surface: #30362f;
+    --parliament-hover: #262b27;
+    --parliament-page: #111412;
+    --parliament-frame-fg: #f7f7f2;
+    --parliament-frame-muted: #a8aaa3;
+    --parliament-frame-subtle: #30362f;
+    --parliament-frame-hover: #262b27;
+    --parliament-link: #94c1ea;
+    --parliament-link-hover: #b3d3f2;
+    --parliament-action: #1d70b8;
+    --parliament-ink: #0b0c0c;
+    --parliament-icon: #372554;
+    --parliament-commons-fill: #006435;
+    --parliament-senate-fill: #9c051a;
+    --parliament-resource-fill: #512178;
+    --parliament-resource: #c4a7e7;
+    --parliament-commons: #58b083;
+    --parliament-senate: #ef8a9a;
+    --parliament-success: #85c99b;
+    --parliament-error: #f4a196;
+    --parliament-focus: #60a5fa;
+    --parliament-accent: #b6ff00;
+    --parliament-ramp-1: #4d7299;
+    --parliament-ramp-2: #6290c0;
+    --parliament-ramp-3: #86b3e0;
+    --parliament-ramp-4: #c0dcf7;
+    --parliament-initials-1: #30362f;
+    --parliament-initials-2: #33293f;
+    --parliament-initials-3: #22352a;
+    --parliament-initials-4: #3d3122;
+    --parliament-accent-fg: #1f1f1f;
+    --parliament-resource-heading: #f7f7f2;
+    --parliament-bill-heading: #f7f7f2;
+    --parliament-conflict: #d8a3d0;
+    --parliament-notice: #30362f;
+    --parliament-notice-fg: #f7f7f2;
+    --parliament-notice-edge: #e7e7dc;
+    --parliament-highlight: #ffdd00;
+    --parliament-inactive: #8f958f;
+    --parliament-ramp-0: #2a302a;
+    --parliament-ramp-edge: #e7e7dc;
+    --parliament-accent-focus: #1d4ed8;
+    --parliament-abstain: #f8a26c;
+    --parliament-faint: #a8aaa3;
   }
 
   /*

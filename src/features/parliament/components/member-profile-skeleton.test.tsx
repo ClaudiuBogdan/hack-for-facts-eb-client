@@ -38,6 +38,10 @@ const DEPUTY = '2:2024:133'
 /** A senator — chamber 1. */
 const SENATOR = '1:2024:13'
 
+
+/** The hero band's fill, read from its own `background-color`, not from anywhere in a style attribute. */
+const heroFill = () => [...document.querySelectorAll('section')].map((section) => section.style.backgroundColor).find(Boolean)
+
 describe('MemberProfileSkeleton', () => {
   it('announces itself as busy', () => {
     render(<MemberProfileSkeleton memberId={DEPUTY} activeTab="overview" />)
@@ -87,16 +91,12 @@ describe('MemberProfileSkeleton', () => {
     const { unmount } = render(
       <MemberProfileSkeleton memberId={DEPUTY} activeTab="overview" />,
     )
-    expect(
-      document.querySelector('section[style*="rgb(0, 100, 53)"]'),
-    ).toBeInTheDocument()
+    expect(heroFill()).toBe('var(--parliament-commons-fill)')
     expect(screen.getByText('Camera Deputaților')).toBeInTheDocument()
     unmount()
 
     render(<MemberProfileSkeleton memberId={SENATOR} activeTab="overview" />)
-    expect(
-      document.querySelector('section[style*="rgb(156, 5, 26)"]'),
-    ).toBeInTheDocument()
+    expect(heroFill()).toBe('var(--parliament-senate-fill)')
     expect(screen.getByText('Senatul României')).toBeInTheDocument()
   })
 

@@ -21,6 +21,10 @@ vi.mock('@tanstack/react-router', () => ({
 
 const { VoteDetailSkeleton } = await import('./vote-detail-skeleton')
 
+
+/** The hero band's fill, read from its own `background-color`, not from anywhere in a style attribute. */
+const heroFill = () => [...document.querySelectorAll('section')].map((section) => section.style.backgroundColor).find(Boolean)
+
 describe('VoteDetailSkeleton', () => {
   it('announces itself as busy', () => {
     render(<VoteDetailSkeleton chamber="camera" />)
@@ -49,15 +53,11 @@ describe('VoteDetailSkeleton', () => {
 
   it('paints the hero in the chamber colour, which the URL already settles', () => {
     const { unmount } = render(<VoteDetailSkeleton chamber="camera" />)
-    expect(
-      document.querySelector('section[style*="rgb(0, 100, 53)"]'),
-    ).toBeInTheDocument()
+    expect(heroFill()).toBe('var(--parliament-commons-fill)')
     unmount()
 
     render(<VoteDetailSkeleton chamber="senat" />)
-    expect(
-      document.querySelector('section[style*="rgb(156, 5, 26)"]'),
-    ).toBeInTheDocument()
+    expect(heroFill()).toBe('var(--parliament-senate-fill)')
   })
 
   it('renders the labels that do not depend on the response', () => {
