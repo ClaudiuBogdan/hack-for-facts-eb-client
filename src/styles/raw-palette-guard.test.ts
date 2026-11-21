@@ -38,10 +38,10 @@ const PALETTE = new RegExp(
  * style. Not a fragment link (`href="#abc"`). Checked in learning only: the
  * campaign and challenge maps paint MapLibre layers and canvases, which take
  * colour strings, not classes, and are outside this pass. A `#id` inside an
- * arbitrary variant (`has-[#fff]:underline`) is a selector and is skipped here too:
- * the `]` after it is followed by `:`.
+ * arbitrary variant (`has-[#fff]:underline`) is a selector and is skipped here too
+ * (see `isIdSelector`); `supports-[color:#123456]:underline` is a colour and is not.
  */
-const HEX = /(?<!(?:href|to|hash)\s*[:=]\s*['"\x60])(?<=['"\x60(\s:[,])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])(?!\]:)/g
+const HEX = /(?<!(?:href|to|hash)\s*[:=]\s*['"\x60])(?<=['"\x60(\s:[,])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g
 const HEX_GUARDED = 'src/features/learning/'
 
 /**
@@ -52,7 +52,7 @@ const HEX_GUARDED = 'src/features/learning/'
  * every guarded file type (MDX included) and folder: unlike a MapLibre paint string, it is a stylesheet class and has a
  * token.
  */
-const HEX_CLASS = /(?<=[a-z])-\[(?:[a-z-]+:)?#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\](?:\/(?:\d+|\[[^\]]+\]))?(?![:/])/g
+const HEX_CLASS = /(?<=[a-z])-\[(?:[a-z-]+:#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\](?:\/(?:\d+|\[[^\]]+\]))?|#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\](?:\/(?:\d+|\[[^\]]+\]))?(?![:/]))/g
 
 /** Repository-relative paths, always with `/`, so offenders read the same on every platform. */
 function sourceFiles(dir: string): string[] {
@@ -63,10 +63,15 @@ function sourceFiles(dir: string): string[] {
   })
 }
 
+/** A `#id` selector inside an arbitrary variant: `[#fff]:` with the `#` right after the bracket. */
+function isIdSelector(text: string, start: number, length: number): boolean {
+  return text[start - 1] === '[' && text.slice(start + length, start + length + 2) === ']:'
+}
+
 /** The raw colours in one piece of source text, as the guard sees them in `file`. */
 function rawColours(file: string, text: string): string[] {
   const found = [...text.matchAll(PALETTE)].map((m) => m[0])
-  if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) found.push(...[...text.matchAll(HEX)].map((m) => m[0]))
+  if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) found.push(...[...text.matchAll(HEX)].filter((m) => !isIdSelector(text, m.index, m[0].length)).map((m) => m[0]))
   if (!(file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file))) found.push(...[...text.matchAll(HEX_CLASS)].map((m) => m[0]))
   return found
 }
@@ -102,6 +107,7 @@ describe('raw palette colours', () => {
     ['a quoted colour', "fill: '#3B82F6'", ['#3B82F6']],
     ['nothing in a fragment link', 'href="#abc"', []],
     ['nothing in a #id inside an arbitrary variant', 'has-[#fff]:underline group-has-[#abc]:flex', []],
+    ['a colour value inside a variant', 'supports-[color:#123456]:underline', ['#123456']],
   ])('finds hex in learning: %s', (_, text, expected) => {
     expect(rawColours('src/features/learning/x.tsx', text)).toEqual(expected)
   })
@@ -125,6 +131,10 @@ describe('hex colours in class names', () => {
 
   it('leaves a #id inside an arbitrary variant alone', () => {
     expect(rawColours('src/features/campaigns/x.tsx', 'has-[#fff]:underline group-has-[#abc]:flex [&_#x]:block')).toEqual([])
+  })
+
+  it('finds a colour value inside an arbitrary variant', () => {
+    expect(rawColours('src/features/campaigns/x.tsx', 'supports-[color:#123456]:underline')).toEqual(['-[color:#123456]'])
   })
 
   it('leaves a MapLibre paint string outside learning alone', () => {

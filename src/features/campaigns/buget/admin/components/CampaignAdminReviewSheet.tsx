@@ -614,7 +614,7 @@ export function CampaignAdminReviewSheet({
 
             <div className="space-y-6 px-6 py-6">
               {item.riskFlags.length > 0 ? (
-                <Alert variant="destructive">
+                <Alert className={`${campaignAdminStatusClassNames.blocked} [&>svg]:text-status-blocked-fg`}>
                   <ShieldAlert className="h-4 w-4" aria-hidden="true" />
                   <AlertTitle>{t`Operator warnings`}</AlertTitle>
                   <AlertDescription className="flex flex-wrap gap-2">

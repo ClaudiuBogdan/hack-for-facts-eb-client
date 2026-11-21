@@ -227,7 +227,7 @@ function EntityCell({
       <p className="text-sm font-medium text-foreground transition-colors group-hover:text-primary group-hover:underline group-hover:underline-offset-2 group-hover:decoration-primary/80">
         {displayName}
       </p>
-      <p className="font-mono text-xs text-muted-foreground">{item.entityCui}</p>
+      <p className="font-mono text-xs text-foreground">{item.entityCui}</p>
     </div>
   );
 }
