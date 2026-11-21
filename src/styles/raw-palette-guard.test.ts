@@ -39,7 +39,7 @@ const PALETTE = new RegExp(
  * campaign and challenge maps paint MapLibre layers and canvases, which take
  * colour strings, not classes, and are outside this pass. A `#id` inside an
  * arbitrary variant (`has-[#fff]:underline`) is a selector and is skipped here too
- * (see `isIdSelector`); `supports-[color:#123456]:underline` is a colour and is not.
+ * (see `variantIdOffsets`); `supports-[color:#123456]:underline` is a colour and is not.
  */
 const HEX = /(?<!(?:href|to|hash)\s*[:=]\s*['"\x60])(?<=['"\x60(\s:[,])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g
 const HEX_GUARDED = 'src/features/learning/'
@@ -61,7 +61,7 @@ const FUNCTION_LITERAL = /(?<![A-Za-z0-9-])(?:rgba?|hsla?|hwb|lab|lch|oklab|oklc
  * (`[color:…]`, `hover:[background:…]`). Their content has no spaces or quotes,
  * so a JavaScript array (`['#fee2e2']`) or index (`items[0]`) is not one.
  */
-const ARBITRARY = /(?:(?<=[a-z0-9])-\[([^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\[([a-z0-9-]+:[^\]\s'"\x60]+)\])/gm
+const ARBITRARY = /(?:(?<=[a-z0-9])-\[([^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\[([a-zA-Z0-9_-]+:[^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\[([^\]\s'"\x60]+)\](?=:))/gm
 
 /**
  * A colour literal inside an arbitrary value or property, in any guarded file
@@ -76,12 +76,12 @@ const ARBITRARY = /(?:(?<=[a-z0-9])-\[([^\]\s'"\x60]+)\]|(?<=^|[\s'"\x60:!{(,])\
 function arbitraryColours(text: string): string[] {
   const found: string[] = []
   for (const m of text.matchAll(ARBITRARY)) {
-    const content = m[1] ?? m[2]
+    const content = m[1] ?? m[2] ?? m[3]
     const isVariant = text[m.index + m[0].length] === ':'
     const literals = [...content.matchAll(LITERAL)].filter((l) => {
       if (l[0][0] !== '#') return true
       if (content.slice(Math.max(0, l.index - 4), l.index) === 'url(') return false // a fragment: `mask-[url(#fade)]`
-      return !isVariant || isColourPosition(content, l.index)
+      return !isVariant || STARTS_WITH_PROPERTY.test(content)
     })
     if (literals.length > 0) found.push(m[0])
   }
@@ -89,27 +89,21 @@ function arbitraryColours(text: string): string[] {
 }
 
 /**
- * In an arbitrary variant, a `#hex` is a colour only as a value (after `:` or `(`, or a later argument of a
- * function); after `[`, `_`, `,` outside parentheses or a combinator it is an ID in a selector list.
+ * What an arbitrary variant's bracket starts with tells a value from a selector: a property
+ * (`color:`, `background:`, `--cmp-2:`, `--brandAccent:`) makes the rest a value, so any hex in it is a colour;
+ * anything else (`&`, `#`, `.`, `:`, `>`) is a selector, where `#name` is an ID.
  */
-function isColourPosition(content: string, index: number): boolean {
-  const before = content[index - 1] ?? ''
-  if (before === ':' || before === '(') return true
-  if (before !== ',') return false
-  const head = content.slice(0, index)
-  return head.split('(').length > head.split(')').length
-}
+const STARTS_WITH_PROPERTY = /^-{0,2}[a-zA-Z][\w-]*:/
 
 /** Absolute offsets of the `#id` selectors inside arbitrary variants (`has-[#a,#b]:underline`). */
 function variantIdOffsets(text: string): Set<number> {
   const ids = new Set<number>()
   for (const m of text.matchAll(ARBITRARY)) {
     if (text[m.index + m[0].length] !== ':') continue
-    const content = m[1] ?? m[2]
+    const content = m[1] ?? m[2] ?? m[3]
+    if (STARTS_WITH_PROPERTY.test(content)) continue
     const start = m.index + m[0].indexOf('[') + 1
-    for (const l of content.matchAll(/#[0-9A-Za-z-]+/g)) {
-      if (!isColourPosition(content, l.index)) ids.add(start + l.index)
-    }
+    for (const l of content.matchAll(/#[0-9A-Za-z-]+/g)) ids.add(start + l.index)
   }
   return ids
 }
@@ -123,17 +117,12 @@ function sourceFiles(dir: string): string[] {
   })
 }
 
-/** A `#id` selector inside an arbitrary variant: `[#fff]:` with the `#` right after the bracket. */
-function isIdSelector(text: string, start: number, length: number): boolean {
-  return text[start - 1] === '[' && text.slice(start + length, start + length + 2) === ']:'
-}
-
 /** The raw colours in one piece of source text, as the guard sees them in `file`. */
 function rawColours(file: string, text: string): string[] {
   const found = [...text.matchAll(PALETTE)].map((m) => m[0])
   if (file.startsWith(HEX_GUARDED) && /\.tsx?$/.test(file)) {
     const ids = variantIdOffsets(text)
-    found.push(...[...text.matchAll(HEX)].filter((m) => !isIdSelector(text, m.index, m[0].length) && !ids.has(m.index)).map((m) => m[0]))
+    found.push(...[...text.matchAll(HEX)].filter((m) => !ids.has(m.index)).map((m) => m[0]))
     found.push(...[...text.matchAll(FUNCTION_LITERAL)].map((m) => m[0]))
   }
   found.push(...arbitraryColours(text))
@@ -212,6 +201,34 @@ describe('colour literals in arbitrary values', () => {
     ['a url fragment', 'fill-[url(#abcd1)] mask-[url(#fade)]'],
   ])('leaves %s alone', (_, text) => {
     expect(rawColours('src/features/campaigns/x.tsx', text)).toEqual([])
+  })
+})
+
+describe('values and selectors in an arbitrary bracket', () => {
+  const FILES = ['src/features/campaigns/x.tsx', 'src/features/learning/x.tsx']
+  it.each([
+    ['a later argument after a property', 'supports-[background:none,#abc]:underline', '#abc'],
+    ['a camel-case custom property', '[--brandAccent:#abc]', '#abc'],
+    ['a custom property', '[--cmp-2:#1baf7a]', '#1baf7a'],
+    ['a typed property', '[color:#abc]', '#abc'],
+    ['an upper-case colour function', 'bg-[RGB(15_23_42)]', 'RGB('],
+    ['a plain utility hex', 'bg-[#fff]', '#fff'],
+    ['a shadow hex', 'shadow-[0_0_4px_#ef4444]', '#ef4444'],
+  ])('flags %s', (_, text, colour) => {
+    for (const file of FILES) expect(rawColours(file, text).some((c) => c.includes(colour)), file).toBe(true)
+  })
+
+  it.each([
+    ['an ID list', 'has-[#abc,#def]:underline'],
+    ['an ID after a combinator in a list', '[&_#abc,#def]:hidden'],
+    ['one ID in a group variant', 'group-has-[#abc]:block'],
+    ['a fragment link', 'href="#abc"'],
+  ])('leaves %s alone', (_, text) => {
+    for (const file of FILES) expect(rawColours(file, text), file).toEqual([])
+  })
+
+  it('leaves a MapLibre paint string alone outside learning', () => {
+    expect(rawColours('src/features/campaigns/x.tsx', "'fill-color': '#ef2d00'")).toEqual([])
   })
 })
 

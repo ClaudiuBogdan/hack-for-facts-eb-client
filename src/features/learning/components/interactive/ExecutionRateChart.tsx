@@ -72,12 +72,16 @@ function getExecutionColor(rate: number, thresholds: ExecutionThresholds) {
   }
 }
 
-function AnimatedPercentage({ value, inView }: { value: number; inView: boolean }) {
+function AnimatedPercentage({ value, inView, instant }: { value: number; inView: boolean; instant: boolean }) {
   const [displayValue, setDisplayValue] = useState(0)
   const animationRef = useRef<number | null>(null)
   const startTimeRef = useRef<number | null>(null)
 
   useEffect(() => {
+    if (instant) {
+      setDisplayValue(value)
+      return
+    }
     if (!inView) {
       setDisplayValue(0)
       return
@@ -107,7 +111,7 @@ function AnimatedPercentage({ value, inView }: { value: number; inView: boolean 
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [value, inView])
+  }, [value, inView, instant])
 
   return <span className="tabular-nums">{displayValue}</span>
 }
@@ -116,11 +120,13 @@ function ExecutionBar({
   category,
   index,
   inView,
+  instant,
   thresholds,
 }: {
   category: ExecutionCategory
   index: number
   inView: boolean
+  instant: boolean
   thresholds: ExecutionThresholds
 }) {
   const colors = getExecutionColor(category.executionRate, thresholds)
@@ -129,7 +135,7 @@ function ExecutionBar({
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
+      transition={instant ? { duration: 0 } : { delay: index * 0.1, duration: 0.5 }}
       className="group"
     >
       {/* Category Header */}
@@ -161,7 +167,7 @@ function ExecutionBar({
           )}
           <span className={cn('text-xs font-bold', colors.text)}>{colors.level}</span>
           <span className={cn('text-xl font-black', colors.text)}>
-            <AnimatedPercentage value={category.executionRate} inView={inView} />%
+            <AnimatedPercentage value={category.executionRate} inView={inView} instant={instant} />%
           </span>
         </div>
       </div>
@@ -172,11 +178,11 @@ function ExecutionBar({
           className={cn('h-full rounded-lg shadow-lg', colors.bar)}
           initial={{ width: 0 }}
           animate={inView ? { width: `${category.executionRate}%` } : { width: 0 }}
-          transition={{
-            delay: index * 0.1,
-            duration: 0.8,
-            ease: [0.16, 1, 0.3, 1],
-          }}
+          transition={
+            instant
+              ? { duration: 0 }
+              : { delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+          }
         />
       </div>
 
@@ -258,6 +264,7 @@ export function ExecutionRateChart({
               category={category}
               index={index}
               inView={inView}
+              instant={instant}
               thresholds={thresholds}
             />
           ))}
