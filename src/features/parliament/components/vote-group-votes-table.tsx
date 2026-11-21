@@ -15,6 +15,7 @@ import type {
   MemberVoteChoice,
   ParliamentMemberVoteRecord,
 } from '@/schemas/parliament'
+import { PARLIAMENT_GROUP_FALLBACK_COLOR } from '../lib/group-colors'
 import { GROUP_BALLOT_TEXT_CLASS_NAMES } from '../lib/group-theme'
 import {
   isUnattributedVote,
@@ -45,8 +46,6 @@ const VOTE_KIND_COLUMNS: ReadonlyArray<{
   { choice: 'abtinere', textClassName: GROUP_BALLOT_TEXT_CLASS_NAMES.abtinere },
   { choice: 'nu_a_votat', textClassName: GROUP_BALLOT_TEXT_CLASS_NAMES.absent },
 ]
-
-const UNRESOLVED_ACCENT = 'var(--parliament-muted)'
 
 /**
  * The scroll box the sticky head sticks to. Bounded so a 300-member division
@@ -371,7 +370,7 @@ export function VoteGroupVotesTable({
                       className="h-3.5 w-1.5 shrink-0 self-center"
                       style={{
                         backgroundColor:
-                          groupColors[groupId] ?? UNRESOLVED_ACCENT,
+                          groupColors[groupId] ?? PARLIAMENT_GROUP_FALLBACK_COLOR,
                       }}
                       aria-hidden
                     />

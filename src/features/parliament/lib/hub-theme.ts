@@ -6,12 +6,22 @@
  * one colour in both themes, so they are for fills only: text in a chamber's colour belongs on the flipping
  * `text-parliament-commons` / `var(--parliament-commons)` (docs/design/parliament-skin-tokens-plan.md, batches).
  */
+import type { VoteChamber, VoteOutcome } from '@/schemas/parliament'
+
 export const PARLIAMENT_CAMERA_GREEN = 'var(--parliament-commons-fill)'
 export const PARLIAMENT_SENAT_RED = 'var(--parliament-senate-fill)'
 export const PARLIAMENT_RESOURCE_PURPLE = 'var(--parliament-resource-fill)'
 export const PARLIAMENT_ICON_BG = 'var(--parliament-icon)'
 export const PARLIAMENT_ACTION_BLUE = 'var(--parliament-action)'
 export const PARLIAMENT_SURFACE = 'var(--parliament-surface)'
+
+/**
+ * The chamber and resource colours as MARKS: a rule, stripe, bar or glyph that carries no text. They take the flipping
+ * colour, so they hold 3:1 on the dark card; light is the same as the fills.
+ */
+export const PARLIAMENT_CAMERA_MARK = 'var(--parliament-commons)'
+export const PARLIAMENT_SENAT_MARK = 'var(--parliament-senate)'
+export const PARLIAMENT_RESOURCE_MARK = 'var(--parliament-resource)'
 
 /** The purple notice ground under the caveat bands (resource at 10% over the card, opaque). */
 export const PARLIAMENT_NOTICE_TINT = 'color-mix(in srgb, var(--parliament-resource) 10%, var(--parliament-card))'
@@ -92,3 +102,35 @@ export const parliamentVotesOverviewGridClassName =
 /** UK Parliament votes overview surface */
 export const parliamentVotesSurfaceClassName =
   '-mx-4 rounded-none bg-parliament-surface px-4 py-6 sm:-mx-6 sm:px-6 sm:py-8 lg:-mx-8 lg:px-8'
+
+/**
+ * A division's outcome as the vote card's accent stripe (a mark with no text): the flipping colours, same light values
+ * as `getVoteOutcomeAccentColor`.
+ */
+export const VOTE_OUTCOME_STRIPE_CLASS_NAMES: Readonly<Record<VoteOutcome, string>> = {
+  adoptat: 'bg-parliament-commons',
+  respins: 'bg-parliament-senate',
+  egalitate: 'bg-parliament-muted',
+  necunoscut: 'bg-parliament-muted',
+}
+
+/** The outcome as an outlined badge: the border frames text on the card, so border and text both flip. */
+export const VOTE_OUTCOME_BADGE_CLASS_NAMES: Readonly<Record<VoteOutcome, string>> = {
+  adoptat: 'border-parliament-commons text-parliament-commons',
+  respins: 'border-parliament-senate text-parliament-senate',
+  egalitate: 'border-parliament-muted text-parliament-muted',
+  necunoscut: 'border-parliament-muted text-parliament-muted',
+}
+
+/** The chamber as an outlined badge on a vote row (border and text flip, as above). */
+export const VOTE_CHAMBER_BADGE_CLASS_NAMES: Readonly<Record<VoteChamber, string>> = {
+  camera: 'border-parliament-commons text-parliament-commons',
+  senat: 'border-parliament-senate text-parliament-senate',
+  comun: 'border-parliament-resource text-parliament-resource',
+}
+
+/** A chamber's name written in its colour (the hub's seat counts): the flipping text colours, not the hero fills. */
+export const PARLIAMENT_CHAMBER_LABEL_CLASS_NAMES = {
+  camera: 'text-parliament-commons',
+  senat: 'text-parliament-senate',
+} as const

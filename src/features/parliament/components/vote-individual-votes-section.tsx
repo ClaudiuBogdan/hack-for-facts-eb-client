@@ -26,7 +26,8 @@ import {
   DEFAULT_VOTE_TAB,
   type VoteTab,
 } from '../lib/vote-detail-search'
-import { PARLIAMENT_NOTICE_TINT, PARLIAMENT_RESOURCE_PURPLE } from '../lib/hub-theme'
+import { PARLIAMENT_GROUP_FALLBACK_COLOR } from '../lib/group-colors'
+import { PARLIAMENT_NOTICE_TINT, PARLIAMENT_RESOURCE_MARK } from '../lib/hub-theme'
 import {
   voteDetailCardClassName,
   voteDetailSectionTitleClassName,
@@ -272,7 +273,7 @@ export function VoteIndividualVotesSection({
         className="mb-6 border-l-[5px] px-4 py-3 text-sm leading-6 text-parliament-fg"
         style={{
           backgroundColor: PARLIAMENT_NOTICE_TINT,
-          borderLeftColor: PARLIAMENT_RESOURCE_PURPLE,
+          borderLeftColor: PARLIAMENT_RESOURCE_MARK,
         }}
       >
         {conflictingCount > 0 ? (
@@ -301,7 +302,7 @@ export function VoteIndividualVotesSection({
               type="button"
               variant="outline"
               className={cn(
-                'h-10 rounded-none border-0 px-4 text-sm',
+                'h-10 rounded-none border-0 px-4 text-sm focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-parliament-focus',
                 viewMode === 'party'
                   ? voteDetailToggleActiveClassName
                   : voteDetailToggleInactiveClassName,
@@ -319,7 +320,7 @@ export function VoteIndividualVotesSection({
               type="button"
               variant="outline"
               className={cn(
-                'h-10 rounded-none border-0 border-l border-parliament-border px-4 text-sm',
+                'h-10 rounded-none border-0 border-l border-parliament-border px-4 text-sm focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-parliament-focus',
                 viewMode === 'member'
                   ? voteDetailToggleActiveClassName
                   : voteDetailToggleInactiveClassName,
@@ -448,7 +449,7 @@ export function VoteIndividualVotesSection({
                                   : undefined
                               }
                               accentColor={
-                                groupColors[vote.groupId] ?? 'var(--parliament-muted)'
+                                groupColors[vote.groupId] ?? PARLIAMENT_GROUP_FALLBACK_COLOR
                               }
                               // No choice label: this branch only ever renders a
                               // single-choice tab now — the tab IS the choice,
@@ -471,7 +472,7 @@ export function VoteIndividualVotesSection({
                       judetName={
                         vote.memberId ? memberJudete[vote.memberId] : undefined
                       }
-                      accentColor={groupColors[vote.groupId] ?? 'var(--parliament-muted)'}
+                      accentColor={groupColors[vote.groupId] ?? PARLIAMENT_GROUP_FALLBACK_COLOR}
                       choiceLabel={
                         tab.id === ALL_CHOICES_TAB
                           ? votePositionLabel(vote)

@@ -54,8 +54,8 @@ export function ParliamentHubVotesSection() {
         <div className={parliamentVotesOverviewGridClassName}>
           {isLoading ? (
             <>
-              <Skeleton className="h-[42rem] w-full rounded-none bg-parliament-card/60" />
-              <Skeleton className="h-[42rem] w-full rounded-none bg-parliament-card/60" />
+              <Skeleton className="h-[42rem] w-full rounded-none bg-white/60" />
+              <Skeleton className="h-[42rem] w-full rounded-none bg-white/60" />
             </>
           ) : (
             <>

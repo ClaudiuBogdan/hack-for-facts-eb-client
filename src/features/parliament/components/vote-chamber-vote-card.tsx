@@ -6,10 +6,10 @@ import {
   formatVoteDivisionMeta,
   getOutcomeLabel,
   getVoteChamberLabel,
-  getVoteOutcomeAccentColor,
   toVoteDetailChamberParam,
 } from '../lib/formatting'
 import {
+  VOTE_OUTCOME_STRIPE_CLASS_NAMES,
   parliamentVoteCardClassName,
   parliamentVoteCardDividerClassName,
 } from '../lib/hub-theme'
@@ -69,7 +69,6 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
   // The accent reads the DIVISION's result, always — same rule on every surface.
   // What the division did to the BILL is a different fact, and the badge states
   // it in words rather than recolouring the bar to mean two things at once.
-  const accentColor = getVoteOutcomeAccentColor(vote.outcome)
   const tallySubjectNote = billContext
     ? getVoteTallySubjectNote(billContext.linkRole, vote.outcome, vote.voteSubject)
     : undefined
@@ -110,8 +109,7 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
         .join(' — ')}
     >
       <span
-        className="w-[5px] shrink-0 self-stretch"
-        style={{ backgroundColor: accentColor }}
+        className={cn('w-[5px] shrink-0 self-stretch', VOTE_OUTCOME_STRIPE_CLASS_NAMES[vote.outcome])}
         aria-hidden
       />
 

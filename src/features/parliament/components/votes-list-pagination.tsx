@@ -103,7 +103,7 @@ export function ParliamentListPaginationNav({
             className={cn(
               'h-9 min-w-9 rounded-none px-3 text-sm',
               item.page === safePage
-                ? 'border-parliament-ink bg-parliament-ink text-white hover:bg-parliament-ink/90'
+                ? 'border-parliament-fg bg-parliament-fg text-parliament-card hover:bg-parliament-fg/90'
                 : 'border-parliament-border bg-parliament-card',
             )}
             onClick={() => onPageChange(item.page)}

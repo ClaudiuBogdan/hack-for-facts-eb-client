@@ -2,7 +2,10 @@ import { Link } from '@tanstack/react-router'
 import type { ParliamentGroup } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import { getChamberLabel } from '../lib/formatting'
-import { parliamentHubLinkClassName } from '../lib/hub-theme'
+import {
+  PARLIAMENT_CHAMBER_LABEL_CLASS_NAMES,
+  parliamentHubLinkClassName,
+} from '../lib/hub-theme'
 import { ParliamentHubSection } from './parliament-hub-section'
 import { PartyLegendCard } from './party-legend-card'
 
@@ -18,12 +21,6 @@ type Props = {
   /** ALL mandate rows incl. superseded (secondary, optional). */
   readonly memberCountByChamberAllMandates?: ChamberCounts
 }
-
-/** The chamber's name in its colour, as text: the flipping chamber tokens, not the hero fills. */
-const CHAMBER_LABEL_CLASS_NAME = {
-  camera: 'text-parliament-commons',
-  senat: 'text-parliament-senate',
-} as const
 
 function ChamberSummary({
   chamber,
@@ -44,7 +41,7 @@ function ChamberSummary({
       <p
         className={cn(
           'text-xs font-black uppercase tracking-wide',
-          CHAMBER_LABEL_CLASS_NAME[chamber],
+          PARLIAMENT_CHAMBER_LABEL_CLASS_NAMES[chamber],
         )}
       >
         {getChamberLabel(chamber)}

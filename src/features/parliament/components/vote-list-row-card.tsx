@@ -1,34 +1,21 @@
 import { Link } from '@tanstack/react-router'
-import type { ParliamentVoteSummary, VoteChamber, VoteOutcome } from '@/schemas/parliament'
+import type { ParliamentVoteSummary } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import {
   formatVoteDivisionMeta,
   getOutcomeLabel,
   getVoteChamberLabel,
-  getVoteOutcomeAccentColor,
   toVoteDetailChamberParam,
 } from '../lib/formatting'
 import { VOTE_KIND_CHIP_LABELS } from '../lib/votes-filter-state'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 import { VoteKindChip } from './vote-kind-chip'
 
-/**
- * Outlined badges: the border frames text on the card, so border and text both take the flipping colour (the fills
- * are for the accent stripe).
- */
-const CHAMBER_BADGE_CLASS_NAME: Readonly<Record<VoteChamber, string>> = {
-  camera: 'border-parliament-commons text-parliament-commons',
-  senat: 'border-parliament-senate text-parliament-senate',
-  comun: 'border-parliament-resource text-parliament-resource',
-}
-
-/** The outcome badge in the stripe's colour (`getVoteOutcomeAccentColor`), as text. */
-const OUTCOME_BADGE_CLASS_NAME: Readonly<Record<VoteOutcome, string>> = {
-  adoptat: 'border-parliament-commons text-parliament-commons',
-  respins: 'border-parliament-senate text-parliament-senate',
-  egalitate: 'border-parliament-muted text-parliament-muted',
-  necunoscut: 'border-parliament-muted text-parliament-muted',
-}
+import {
+  VOTE_CHAMBER_BADGE_CLASS_NAMES,
+  VOTE_OUTCOME_BADGE_CLASS_NAMES,
+  VOTE_OUTCOME_STRIPE_CLASS_NAMES,
+} from '../lib/hub-theme'
 
 type Props = {
   readonly vote: ParliamentVoteSummary
@@ -56,7 +43,6 @@ type Props = {
  * the row.
  */
 export function VoteListRowCard({ vote, className, showChamber }: Props) {
-  const accentColor = getVoteOutcomeAccentColor(vote.outcome)
   const outcomeLabel = getOutcomeLabel(vote.outcome)
   const { pentru, impotriva, abtinere, nuAVotat } = vote.tally
 
@@ -99,8 +85,7 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
         .join(' — ')}
     >
       <span
-        className="w-[5px] shrink-0 self-stretch"
-        style={{ backgroundColor: accentColor }}
+        className={cn('w-[5px] shrink-0 self-stretch', VOTE_OUTCOME_STRIPE_CLASS_NAMES[vote.outcome])}
         aria-hidden
       />
 
@@ -124,7 +109,7 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
                 <span
                   className={cn(
                     'inline-flex items-center rounded-none border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
-                    CHAMBER_BADGE_CLASS_NAME[vote.chamber],
+                    VOTE_CHAMBER_BADGE_CLASS_NAMES[vote.chamber],
                   )}
                 >
                   {getVoteChamberLabel(vote.chamber)}
@@ -135,7 +120,7 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
             <span
               className={cn(
                 'inline-flex items-center rounded-none border px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
-                OUTCOME_BADGE_CLASS_NAME[vote.outcome],
+                VOTE_OUTCOME_BADGE_CLASS_NAMES[vote.outcome],
               )}
             >
               {outcomeLabel}

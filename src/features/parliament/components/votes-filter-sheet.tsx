@@ -421,7 +421,7 @@ export function VotesFilterSheet({
                     onChange={(e) =>
                       setDraft((prev) => ({ ...prev, from: e.target.value }))
                     }
-                    className={controlClassName}
+                    className={cn(controlClassName, 'dark:scheme-dark')}
                   />
                 </div>
                 <div className="space-y-2">
@@ -435,7 +435,7 @@ export function VotesFilterSheet({
                     onChange={(e) =>
                       setDraft((prev) => ({ ...prev, to: e.target.value }))
                     }
-                    className={controlClassName}
+                    className={cn(controlClassName, 'dark:scheme-dark')}
                   />
                 </div>
               </fieldset>

@@ -9,8 +9,8 @@ import senatVotes1024 from '../assets/votes-senat-1024.png'
 import senatVotes512 from '../assets/votes-senat-512.png'
 import {
   PARLIAMENT_ACTION_BLUE,
-  PARLIAMENT_CAMERA_GREEN,
-  PARLIAMENT_SENAT_RED,
+  PARLIAMENT_CAMERA_MARK,
+  PARLIAMENT_SENAT_MARK,
 } from '../lib/hub-theme'
 import { getChamberLabel } from '../lib/formatting'
 import { ParliamentChamberMark } from './parliament-hub-panel'
@@ -18,7 +18,7 @@ import { VoteChamberVoteCard } from './vote-chamber-vote-card'
 
 const CHAMBER_CONFIG = {
   camera: {
-    color: PARLIAMENT_CAMERA_GREEN,
+    color: PARLIAMENT_CAMERA_MARK,
     title: 'Voturi în Camera Deputaților',
     description:
       'Voturile din Camera Deputaților sunt numite divizări. Pentru fiecare divizare, numărăm câți deputați au votat pentru, împotrivă sau s-au abținut.',
@@ -30,7 +30,7 @@ const CHAMBER_CONFIG = {
     recentLabel: 'Ultimele patru voturi în Camera Deputaților',
   },
   senat: {
-    color: PARLIAMENT_SENAT_RED,
+    color: PARLIAMENT_SENAT_MARK,
     title: 'Voturi în Senat',
     description:
       'Voturile din Senat sunt numite divizări. Pentru fiecare divizare, numărăm câți senatori au votat pentru, împotrivă sau s-au abținut.',

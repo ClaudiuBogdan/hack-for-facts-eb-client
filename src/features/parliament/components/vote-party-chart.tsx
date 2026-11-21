@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import { PARLIAMENT_GROUP_FALLBACK_COLOR } from '../lib/group-colors'
 import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
 import {
   VOTE_DETAIL_CHART_PLOT_BG,
@@ -102,7 +103,7 @@ function VotePartyChartTooltip({
           >
             <span
               className="h-2.5 w-2.5 shrink-0"
-              style={{ backgroundColor: entry.color ?? 'var(--parliament-muted)' }}
+              style={{ backgroundColor: entry.color ?? PARLIAMENT_GROUP_FALLBACK_COLOR }}
               aria-hidden
             />
             <span className="text-sm font-bold leading-none">
@@ -139,7 +140,7 @@ function VotePartyChartLegend({
         >
           <span
             className="h-3 w-3 shrink-0"
-            style={{ backgroundColor: entry.color ?? 'var(--parliament-muted)' }}
+            style={{ backgroundColor: entry.color ?? PARLIAMENT_GROUP_FALLBACK_COLOR }}
             aria-hidden
           />
           <span>{entry.value}</span>
@@ -164,7 +165,7 @@ function buildChartModel(
   const series = activeGroups.map((group) => ({
     id: group.groupId,
     name: group.groupName,
-    color: groupColors[group.groupId] ?? 'var(--parliament-muted)',
+    color: groupColors[group.groupId] ?? PARLIAMENT_GROUP_FALLBACK_COLOR,
   }))
 
   const pentruRow: Record<string, string | number> = {
