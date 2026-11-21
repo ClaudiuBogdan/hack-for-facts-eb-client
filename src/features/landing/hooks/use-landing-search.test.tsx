@@ -496,6 +496,15 @@ describe('landing rows and announcements', () => {
     })
     expect(text).toContain('județul instituției: Sibiu')
   })
+  it('labels UATs as town halls and formats the administrative county', () => {
+    const text = rowText({ ...SIBIU, countyName: 'SIBIU' })
+    expect(text).toContain('Primărie · Jud. Sibiu')
+  })
+  it('keeps București as a municipality in the town hall county line', () => {
+    const text = rowText({ ...SIBIU, title: 'Municipiul București', countyName: 'MUNICIPIUL BUCUREȘTI' })
+    expect(text).toContain('Primărie · București')
+    expect(text).not.toContain('Jud.')
+  })
   it('keeps a plain county for an identity without a company part', () => {
     const text = rowText({ ...COMPANY, docType: 'organization', countyName: 'Cluj', company: null })
     expect(text).toContain('Cluj')

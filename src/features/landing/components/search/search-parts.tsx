@@ -6,7 +6,7 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { getDocTypeMeta } from '@/features/entity-search/lib/doc-type-meta'
-import { placeOf, statusOf } from '@/features/ngos/organization/model'
+import { countyOf, placeOf, statusOf } from '@/features/ngos/organization/model'
 import { statusLabel } from '@/features/ngos/organization/words'
 import { highlightSegments } from '@/features/landing/lib/search-highlight'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
@@ -91,6 +91,13 @@ export const resultRowClass = cn(
   'data-disabled:cursor-default',
 )
 
+function townHallCountyLabel(countyName: string | null): string | null {
+  const county = countyOf(countyName)
+  if (!county) return countyName?.trim() || null
+  const { name } = county
+  return county.code === 'B' ? name : t`Jud. ${name}`
+}
+
 /**
  * What goes inside a row, whatever the wrapper turns out to be.
  *
@@ -117,9 +124,12 @@ export function ResultRowContent({
   const company = entity.company ?? null
   const onrcCounty = company?.countyName?.trim() || null
   const genericCounty = entity.countyName
-  const county = entity.ngoRegistryNumber
-    ? placeOf({ county: entity.countyName, locality: null })
-    : onrcCounty ?? (company && genericCounty ? t`județul instituției: ${genericCounty}` : genericCounty)
+  const townHall = entity.docType === 'organization' && entity.isUat === true
+  const county = townHall
+    ? townHallCountyLabel(genericCounty)
+    : entity.ngoRegistryNumber
+      ? placeOf({ county: genericCounty, locality: null })
+      : onrcCounty ?? (company && genericCounty ? t`județul instituției: ${genericCounty}` : genericCounty)
   // A company name the published edition does not hold is the directory's, and says so —
   // only on a company document, whose title IS the company name (shared-search r4 §4). A
   // mixed role keeps its own title, which the company part's name does not label.
@@ -129,7 +139,8 @@ export function ResultRowContent({
       : null
   // A result no page holds says so where its link would have taken the reader.
   const unlinked = entity.href === '' ? t`fără profil pe platformă` : null
-  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, county, closed, unlinked, nameSource].filter(Boolean).join(' · ')
+  const docTypeLabel = townHall ? t`Primărie` : getDocTypeMeta(entity.docType).label
+  const place = [showDocType ? docTypeLabel : null, county, closed, unlinked, nameSource].filter(Boolean).join(' · ')
 
   return (
     <>

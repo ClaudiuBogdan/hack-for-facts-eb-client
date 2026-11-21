@@ -28,7 +28,9 @@ In the unfiltered navigation search, a locality name or prefix of at least three
 letters can put a municipality, town, or commune first. For example, Sibiu and
 sib put Municipiul Sibiu first. The lookup ignores case and Romanian diacritics.
 Exact names outrank prefixes. Matches with the same exact name show their
-counties. If only prefixes match, a municipality is preferred to a town or commune.
+counties. A town hall row reads “Primărie · Jud. Sibiu” in Romanian and
+“Town hall · Sibiu County” in English. București is shown by name alone in the
+place label. If only prefixes match, a municipality is preferred to a town or commune.
 
 The [navigation search](../../src/features/landing/hooks/use-landing-search.ts)
 loads a compact directory on the first eligible search, alongside the single
