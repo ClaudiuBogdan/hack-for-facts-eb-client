@@ -42,7 +42,7 @@ function CommitteeRow({
   const interval = formatInterval(membership);
 
   return (
-    <li className="border border-[#b1b4b6] bg-white p-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+    <li className="border border-parliament-border bg-parliament-card p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           {/*
@@ -56,7 +56,7 @@ function CommitteeRow({
             <Link
               to="/parlament/comisii/$committeeKey"
               params={{ committeeKey }}
-              className="text-base font-bold text-[#1d70b8] underline underline-offset-2 hover:text-[#1d70b8]/80"
+              className="text-base font-bold text-parliament-link underline underline-offset-2 hover:text-parliament-link/80"
             >
               {name}
             </Link>
@@ -65,18 +65,18 @@ function CommitteeRow({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-start gap-1.5 text-base font-bold text-[#1d70b8] underline underline-offset-2 hover:text-[#1d70b8]/80"
+              className="inline-flex items-start gap-1.5 text-base font-bold text-parliament-link underline underline-offset-2 hover:text-parliament-link/80"
             >
               {name}
               <ExternalLink className="mt-1 h-4 w-4 shrink-0" aria-hidden />
             </a>
           ) : (
-            <span className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <span className="text-base font-bold text-parliament-fg">
               {name}
             </span>
           )}
           {interval ? (
-            <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-1 text-sm text-parliament-muted">
               {interval}
             </p>
           ) : null}
@@ -85,7 +85,7 @@ function CommitteeRow({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-flex items-center gap-1.5 text-sm text-[#505a5f] underline underline-offset-2 hover:text-[#1d70b8] dark:text-[var(--pnrr-muted)]"
+              className="mt-1 inline-flex items-center gap-1.5 text-sm text-parliament-muted underline underline-offset-2 hover:text-parliament-link"
             >
               Sursa oficială
               <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -94,11 +94,11 @@ function CommitteeRow({
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <span className="rounded-none bg-[#f3f0ff] px-2 py-1 text-xs font-semibold text-[#512178] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
+          <span className="rounded-none bg-parliament-resource/10 px-2 py-1 text-xs font-semibold text-parliament-resource">
             {committeeRoleLabel(membership.role)}
           </span>
           {membership.isBureau ? (
-            <span className="rounded-none bg-[#eef7f1] px-2 py-1 text-xs font-semibold text-[#006435]">
+            <span className="rounded-none bg-parliament-success/10 px-2 py-1 text-xs font-semibold text-parliament-commons">
               Birou
             </span>
           ) : null}
@@ -138,7 +138,7 @@ export function MemberCommitteesSection({ member }: Props) {
           ))}
         </ul>
       ) : (
-        <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="text-base leading-7 text-parliament-muted">
           {emptyMessage}
         </p>
       )}

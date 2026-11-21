@@ -113,9 +113,9 @@ export function ParliamentGroupCohesionPanel({
   if (isLoading) {
     return (
       <div className={cn(groupCardClassName, 'p-5 sm:p-6')}>
-        <div className="h-4 w-48 animate-pulse bg-[#dee0e2]" />
-        <div className="mt-5 h-4 w-full animate-pulse bg-[#dee0e2]" />
-        <div className="mt-5 h-4 w-64 animate-pulse bg-[#dee0e2]" />
+        <div className="h-4 w-48 animate-pulse bg-parliament-border/40" />
+        <div className="mt-5 h-4 w-full animate-pulse bg-parliament-border/40" />
+        <div className="mt-5 h-4 w-64 animate-pulse bg-parliament-border/40" />
       </div>
     )
   }
@@ -247,7 +247,7 @@ export function ParliamentGroupCohesionPanel({
       )}
 
       {band && row.cohesionIndex !== undefined ? (
-        <div className="mt-6 border-t border-[#b1b4b6] pt-4 dark:border-[var(--pnrr-border)]">
+        <div className="mt-6 border-t border-parliament-border pt-4">
           <div className="flex flex-wrap items-center gap-3">
             <span
               className={cn(

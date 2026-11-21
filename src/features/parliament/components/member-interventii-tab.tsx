@@ -175,7 +175,7 @@ export function MemberInterventiiTab({ member, search }: Props) {
             <Link
               to="/parlament"
               search={{ tab: 'voturi', chamber: member.chamber }}
-              className="font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)]"
+              className="font-semibold text-parliament-fg underline underline-offset-4 hover:text-parliament-link"
             >
               {getChamberLabel(member.chamber)}
             </Link>{' '}
@@ -183,7 +183,7 @@ export function MemberInterventiiTab({ member, search }: Props) {
             <Link
               to="/parlament/stenograme"
               search={{ vorbitor: member.memberId }}
-              className="font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)]"
+              className="font-semibold text-parliament-fg underline underline-offset-4 hover:text-parliament-link"
             >
               căuta în toate stenogramele Parlamentului
             </Link>
@@ -216,12 +216,12 @@ export function MemberInterventiiTab({ member, search }: Props) {
         />
       </div>
 
-      <details className="group border-2 border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-sm font-semibold text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[var(--pnrr-fg)]">
+      <details className="group border-2 border-parliament-border bg-parliament-card">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-sm font-semibold text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus">
           <span>
             <Trans>Activitatea în plen pe zile ({year})</Trans>
           </span>
-          <span className="text-[#1d70b8] underline underline-offset-4">
+          <span className="text-parliament-link underline underline-offset-4">
             <span className="group-open:hidden">
               <Trans>Arată</Trans>
             </span>
@@ -230,7 +230,7 @@ export function MemberInterventiiTab({ member, search }: Props) {
             </span>
           </span>
         </summary>
-        <div className="space-y-4 border-t-2 border-[#b1b4b6] p-5 dark:border-[var(--pnrr-border)]">
+        <div className="space-y-4 border-t-2 border-parliament-border p-5">
           <p className={stenogramMutedTextClassName}>
             <Trans>
               Fiecare pătrat este o zi; intensitatea arată câte intervenții a
@@ -276,7 +276,7 @@ export function MemberInterventiiTab({ member, search }: Props) {
         <div className="space-y-8">
           <p
             aria-live="polite"
-            className="border border-[#b1b4b6] bg-[#f3f2f1] px-5 py-3 text-sm tabular-nums text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]"
+            className="border border-parliament-border bg-parliament-surface px-5 py-3 text-sm tabular-nums text-parliament-fg"
           >
             <Trans>
               Afișate <span className="font-bold">{speeches.length}</span> din{' '}
@@ -286,13 +286,13 @@ export function MemberInterventiiTab({ member, search }: Props) {
 
           {groups.map((group) => (
             <section key={group.key} className="space-y-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b-2 border-[#b1b4b6] pb-2 dark:border-[var(--pnrr-border)]">
-                <h3 className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b-2 border-parliament-border pb-2">
+                <h3 className="text-base font-bold text-parliament-fg">
                   {formatSittingDate(
                     group.spokenAt ? group.spokenAt.slice(0, 10) : undefined,
                     i18n.locale,
                   )}
-                  <span className="ml-2 text-sm font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <span className="ml-2 text-sm font-normal text-parliament-muted">
                     {stenogramChamberLabel(group.chamber)}
                   </span>
                 </h3>

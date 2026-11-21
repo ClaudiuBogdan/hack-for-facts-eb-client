@@ -12,7 +12,13 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
 import type { MemberVoteChoice, MemberVotesSearch } from '@/schemas/parliament'
-import { getMemberVoteChoiceLabel, getVoteChoiceAccentColor } from '../lib/formatting'
+import { getMemberVoteChoiceLabel } from '../lib/formatting'
+import {
+  MEMBER_VOTE_CHOICE_MARK_COLORS,
+  memberFilterDateInputClassName,
+  memberFilterSectionLabelClassName,
+  memberFilterToggleItemClassName,
+} from '../lib/member-detail-theme'
 import {
   countActiveMemberVoteFilters,
   getMemberVoteChoiceValues,
@@ -27,15 +33,6 @@ const CHOICE_OPTIONS: readonly MemberVoteChoice[] = [
   'abtinere',
   'nu_a_votat',
 ]
-
-const SECTION_LABEL_CLASS =
-  'text-xs font-bold uppercase tracking-wide text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
-
-const TOGGLE_ITEM_CLASS =
-  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] data-[state=on]:border-[#1d70b8] data-[state=on]:bg-[#1d70b8] data-[state=on]:text-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]'
-
-const DATE_INPUT_CLASS =
-  'h-10 w-full rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
 
 type SheetProps = {
   readonly open: boolean
@@ -60,32 +57,32 @@ export function MemberVotesFilterSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="flex w-full max-w-full flex-col gap-0 overflow-hidden border-l-2 border-[#b1b4b6] bg-white p-0 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-bg)] sm:max-w-md"
+        className="flex w-full max-w-full flex-col gap-0 overflow-hidden border-l-2 border-parliament-border bg-parliament-card p-0 sm:max-w-md"
       >
-        <SheetHeader className="border-b-2 border-[#b1b4b6] p-6 pr-14 text-left dark:border-[var(--pnrr-border)]">
-          <SheetTitle className="text-left text-2xl font-black tracking-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <SheetHeader className="border-b-2 border-parliament-border p-6 pr-14 text-left">
+          <SheetTitle className="text-left text-2xl font-black tracking-tight text-parliament-fg">
             Filtre voturi
           </SheetTitle>
-          <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <SheetDescription className="pt-1 text-left text-sm font-semibold text-parliament-muted">
             {activeCount} {activeCount === 1 ? 'filtru activ' : 'filtre active'}
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Interval de timp</Label>
+            <Label className={memberFilterSectionLabelClassName}>Interval de timp</Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label
                   htmlFor="member-votes-from"
-                  className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+                  className="text-xs font-normal text-parliament-muted"
                 >
                   De la
                 </Label>
                 <input
                   id="member-votes-from"
                   type="date"
-                  className={DATE_INPUT_CLASS}
+                  className={memberFilterDateInputClassName}
                   value={search.from ?? ''}
                   max={search.to ?? undefined}
                   onChange={(event) =>
@@ -96,14 +93,14 @@ export function MemberVotesFilterSheet({
               <div className="space-y-1">
                 <Label
                   htmlFor="member-votes-to"
-                  className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+                  className="text-xs font-normal text-parliament-muted"
                 >
                   Până la
                 </Label>
                 <input
                   id="member-votes-to"
                   type="date"
-                  className={DATE_INPUT_CLASS}
+                  className={memberFilterDateInputClassName}
                   value={search.to ?? ''}
                   min={search.from ?? undefined}
                   onChange={(event) =>
@@ -115,7 +112,7 @@ export function MemberVotesFilterSheet({
           </section>
 
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Votul exprimat</Label>
+            <Label className={memberFilterSectionLabelClassName}>Votul exprimat</Label>
             <ToggleGroup
               type="multiple"
               value={choiceValues}
@@ -128,12 +125,12 @@ export function MemberVotesFilterSheet({
                 <ToggleGroupItem
                   key={choice}
                   value={choice}
-                  className={TOGGLE_ITEM_CLASS}
+                  className={memberFilterToggleItemClassName}
                 >
                   <span
                     aria-hidden
                     className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: getVoteChoiceAccentColor(choice) }}
+                    style={{ backgroundColor: MEMBER_VOTE_CHOICE_MARK_COLORS[choice] }}
                   />
                   <span className="truncate">{getMemberVoteChoiceLabel(choice)}</span>
                 </ToggleGroupItem>
@@ -142,7 +139,7 @@ export function MemberVotesFilterSheet({
           </section>
 
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Rezultatul votului</Label>
+            <Label className={memberFilterSectionLabelClassName}>Rezultatul votului</Label>
             <ToggleGroup
               type="single"
               value={search.outcome ?? ''}
@@ -153,17 +150,17 @@ export function MemberVotesFilterSheet({
               }
               className="grid grid-cols-2 gap-2"
             >
-              <ToggleGroupItem value="adoptat" className={TOGGLE_ITEM_CLASS}>
+              <ToggleGroupItem value="adoptat" className={memberFilterToggleItemClassName}>
                 Majoritate pentru
               </ToggleGroupItem>
-              <ToggleGroupItem value="respins" className={TOGGLE_ITEM_CLASS}>
+              <ToggleGroupItem value="respins" className={memberFilterToggleItemClassName}>
                 Majoritate împotrivă
               </ToggleGroupItem>
             </ToggleGroup>
           </section>
 
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Tipul ședinței</Label>
+            <Label className={memberFilterSectionLabelClassName}>Tipul ședinței</Label>
             <ToggleGroup
               type="single"
               value={search.session ?? ''}
@@ -174,29 +171,29 @@ export function MemberVotesFilterSheet({
               }
               className="grid grid-cols-2 gap-2"
             >
-              <ToggleGroupItem value="proprie" className={TOGGLE_ITEM_CLASS}>
+              <ToggleGroupItem value="proprie" className={memberFilterToggleItemClassName}>
                 Camera proprie
               </ToggleGroupItem>
-              <ToggleGroupItem value="comun" className={TOGGLE_ITEM_CLASS}>
+              <ToggleGroupItem value="comun" className={memberFilterToggleItemClassName}>
                 Ședință comună
               </ToggleGroupItem>
             </ToggleGroup>
           </section>
         </div>
 
-        <div className="border-t-2 border-[#b1b4b6] p-4 dark:border-[var(--pnrr-border)]">
+        <div className="border-t-2 border-parliament-border p-4">
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="outline"
-              className="h-11 rounded-none border-2 border-[#b1b4b6] bg-white px-2 text-xs font-black uppercase tracking-wide text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] sm:text-sm"
+              className="h-11 rounded-none border-2 border-parliament-border bg-parliament-card px-2 text-xs font-black uppercase tracking-wide text-parliament-fg hover:bg-parliament-surface sm:text-sm"
               onClick={onClearAll}
             >
               Golește filtrele
             </Button>
             <Button
               type="button"
-              className="h-11 rounded-none border-2 border-[#1d70b8] bg-[#1d70b8] px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
+              className="h-11 rounded-none border-2 border-parliament-link bg-parliament-action px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
               onClick={() => onOpenChange(false)}
             >
               Închide
@@ -225,7 +222,7 @@ export function MemberVotesFilterTriggerButton({
       type="button"
       variant="outline"
       className={cn(
-        'relative h-11 gap-2 rounded-none border-2 border-[#b1b4b6] bg-white px-4 text-sm font-semibold text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]',
+        'relative h-11 gap-2 rounded-none border-2 border-parliament-border bg-parliament-card px-4 text-sm font-semibold text-parliament-fg hover:bg-parliament-surface',
         className,
       )}
       onClick={onClick}
@@ -235,7 +232,7 @@ export function MemberVotesFilterTriggerButton({
       {activeCount > 0 ? (
         <Badge
           variant="default"
-          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#1d70b8] p-0 text-[11px] text-white"
+          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-parliament-action p-0 text-[11px] text-white"
         >
           {activeCount}
         </Badge>
@@ -321,14 +318,14 @@ export function MemberVotesActiveFilters({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex max-w-full items-center gap-1.5 border-2 border-[#b1b4b6] bg-[#f3f2f1] px-2.5 py-1 text-sm font-semibold text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]"
+          className="inline-flex max-w-full items-center gap-1.5 border-2 border-parliament-border bg-parliament-surface px-2.5 py-1 text-sm font-semibold text-parliament-fg"
         >
           <span className="min-w-0 truncate">{chip.label}</span>
           <button
             type="button"
             onClick={chip.onRemove}
             aria-label={`Elimină filtrul ${chip.label}`}
-            className="inline-flex h-4 w-4 shrink-0 items-center justify-center hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            className="inline-flex h-4 w-4 shrink-0 items-center justify-center hover:text-parliament-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
           >
             <X className="h-3.5 w-3.5" aria-hidden />
           </button>
@@ -337,7 +334,7 @@ export function MemberVotesActiveFilters({
       <button
         type="button"
         onClick={onClearAll}
-        className="text-sm font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+        className="text-sm font-semibold text-parliament-fg underline underline-offset-4 hover:text-parliament-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
       >
         Șterge tot
       </button>

@@ -23,10 +23,10 @@ import {
   getMemberChamberFilter,
   getPanelFilterCount,
 } from '../lib/member-search'
-import { parliamentFilterLabelClassName } from '../lib/table-theme'
-
-const FILTER_TOGGLE_ITEM_CLASS =
-  'h-10 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-sm font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] data-[state=on]:bg-[var(--pnrr-fg)] data-[state=on]:text-[var(--pnrr-bg)] sm:px-4'
+import {
+  parliamentFilterLabelClassName,
+  parliamentMembersFilterToggleClassName,
+} from '../lib/table-theme'
 
 type SheetProps = {
   readonly open: boolean
@@ -97,13 +97,13 @@ export function MembersFilterSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="flex w-full max-w-full flex-col overflow-hidden border-l-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-0 sm:max-w-xl [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:h-8 [&>button.absolute]:w-8 [&>button.absolute]:rounded-none [&>button.absolute]:bg-transparent [&>button.absolute]:opacity-100 [&>button.absolute]:ring-offset-0 [&>button.absolute]:hover:bg-[var(--pnrr-card)] [&>button.absolute]:focus:ring-[var(--pnrr-blue)]"
+        className="flex w-full max-w-full flex-col overflow-hidden border-l-2 border-parliament-border-strong bg-parliament-page p-0 sm:max-w-xl [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:h-8 [&>button.absolute]:w-8 [&>button.absolute]:rounded-none [&>button.absolute]:bg-transparent [&>button.absolute]:opacity-100 [&>button.absolute]:ring-offset-0 [&>button.absolute]:hover:bg-parliament-card [&>button.absolute]:focus:ring-parliament-focus"
       >
-        <SheetHeader className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-6 pr-14 text-left">
-          <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
+        <SheetHeader className="border-b-2 border-parliament-border-strong bg-parliament-page p-6 pr-14 text-left">
+          <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-parliament-frame-fg">
             Filtre avansate
           </SheetTitle>
-          <SheetDescription className="pt-1 text-left text-base font-bold text-[var(--pnrr-muted)]">
+          <SheetDescription className="pt-1 text-left text-base font-bold text-parliament-frame-muted">
             {activeCount} filtre active
           </SheetDescription>
         </SheetHeader>
@@ -126,13 +126,13 @@ export function MembersFilterSheet({
                 }}
                 className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3"
               >
-                <ToggleGroupItem value="all" className={FILTER_TOGGLE_ITEM_CLASS}>
+                <ToggleGroupItem value="all" className={parliamentMembersFilterToggleClassName}>
                   Toate
                 </ToggleGroupItem>
-                <ToggleGroupItem value="camera" className={FILTER_TOGGLE_ITEM_CLASS}>
+                <ToggleGroupItem value="camera" className={parliamentMembersFilterToggleClassName}>
                   Camera
                 </ToggleGroupItem>
-                <ToggleGroupItem value="senat" className={FILTER_TOGGLE_ITEM_CLASS}>
+                <ToggleGroupItem value="senat" className={parliamentMembersFilterToggleClassName}>
                   Senat
                 </ToggleGroupItem>
               </ToggleGroup>
@@ -178,19 +178,19 @@ export function MembersFilterSheet({
           </div>
         </ScrollArea>
 
-        <div className="border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4 sm:p-6">
+        <div className="border-t-2 border-parliament-border-strong bg-parliament-page p-4 sm:p-6">
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="outline"
-              className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)] sm:text-sm"
+              className="h-11 min-w-0 rounded-none border-2 border-parliament-border-strong bg-parliament-card px-2 text-xs font-black uppercase tracking-wide text-parliament-frame-fg hover:bg-parliament-page sm:text-sm"
               onClick={handleClearPanelFilters}
             >
               Șterge filtrele
             </Button>
             <Button
               type="button"
-              className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-bg)] hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] sm:text-sm"
+              className="h-11 min-w-0 rounded-none border-2 border-parliament-border-strong bg-parliament-frame-fg px-2 text-xs font-black uppercase tracking-wide text-parliament-page hover:bg-parliament-card hover:text-parliament-frame-fg sm:text-sm"
               onClick={() => onOpenChange(false)}
             >
               Închide
@@ -219,7 +219,7 @@ export function MembersFilterTriggerButton({
       type="button"
       variant="outline"
       className={cn(
-        'relative h-12 gap-2 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 text-sm font-bold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]',
+        'relative h-12 gap-2 rounded-none border-2 border-parliament-border-strong bg-parliament-card px-4 text-sm font-bold text-parliament-frame-fg hover:bg-parliament-frame-fg hover:text-parliament-page',
         className,
       )}
       onClick={onClick}
@@ -229,7 +229,7 @@ export function MembersFilterTriggerButton({
       {activeCount > 0 ? (
         <Badge
           variant="default"
-          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--pnrr-fg)] p-0 text-[11px] text-[var(--pnrr-bg)]"
+          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-parliament-frame-fg p-0 text-[11px] text-parliament-page"
         >
           {activeCount}
         </Badge>

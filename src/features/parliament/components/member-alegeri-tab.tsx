@@ -46,29 +46,29 @@ export function MemberAlegeriTab({ member }: Props) {
 
       {result ? (
         <div className={memberDetailCareerCardClassName}>
-          <div className="border-l-[5px] border-l-[#3d434a] px-5 py-5 sm:px-6">
-            <p className="text-lg font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <div className="border-l-[5px] border-l-parliament-muted px-5 py-5 sm:px-6">
+            <p className="text-lg font-bold text-parliament-fg">
               {result.electionName}
             </p>
-            <p className="mt-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-2 text-sm text-parliament-muted">
               Circumscripția {result.constituency}
             </p>
             <dl className="mt-6 grid gap-4 sm:grid-cols-3">
               <div>
-                <dt className="text-sm text-[#505a5f]">Voturi obținute</dt>
-                <dd className="mt-1 text-2xl font-bold tabular-nums text-[#0b0c0c]">
+                <dt className="text-sm text-parliament-muted">Voturi obținute</dt>
+                <dd className="mt-1 text-2xl font-bold tabular-nums text-parliament-fg">
                   {result.votesReceived.toLocaleString('ro-RO')}
                 </dd>
               </div>
               <div>
-                <dt className="text-sm text-[#505a5f]">Procent</dt>
-                <dd className="mt-1 text-2xl font-bold tabular-nums text-[#0b0c0c]">
+                <dt className="text-sm text-parliament-muted">Procent</dt>
+                <dd className="mt-1 text-2xl font-bold tabular-nums text-parliament-fg">
                   {result.votesSharePercent.toFixed(1)}%
                 </dd>
               </div>
               <div>
-                <dt className="text-sm text-[#505a5f]">Rezultat</dt>
-                <dd className="mt-1 text-base font-bold text-[#006435]">
+                <dt className="text-sm text-parliament-muted">Rezultat</dt>
+                <dd className="mt-1 text-base font-bold text-parliament-commons">
                   {result.elected ? 'Ales' : 'Neales'}
                 </dd>
               </div>
@@ -84,11 +84,11 @@ export function MemberAlegeriTab({ member }: Props) {
         // electoral data lives in the elections domain, which is not loaded or
         // served, so the API carries no `electionResult` field at all. Saying
         // "nu există" about a dataset we never queried would be a false claim.
-        <div className="border-2 border-[#b1b4b6] bg-white px-5 py-6 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-          <p className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <div className="border-2 border-parliament-border bg-parliament-card px-5 py-6">
+          <p className="text-base font-bold text-parliament-fg">
             Rezultatele electorale nu sunt încă integrate
           </p>
-          <p className="mt-2 max-w-2xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-2 max-w-2xl text-base leading-7 text-parliament-muted">
             Datele despre alegeri (voturi obținute, procent, poziția pe listă) provin
             din setul de date electorale, care nu este încă publicat în platformă.
             Nu înseamnă că acest parlamentar nu are un rezultat electoral.

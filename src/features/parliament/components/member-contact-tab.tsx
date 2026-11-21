@@ -64,7 +64,7 @@ export function MemberContactTab({ member }: Props) {
         <h2 className={memberDetailSectionTitleClassName}>Contact {memberName}</h2>
         <p className={memberDetailSectionIntroClassName}>
           Când contactați acest parlamentar, folosiți formula{' '}
-          <span className="font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <span className="font-semibold text-parliament-fg">
             {formatMemberSalutation(member)}
           </span>
           .
@@ -88,7 +88,7 @@ export function MemberContactTab({ member }: Props) {
           </a>
           .
         </p>
-        <p className="mt-3 border-t border-[#512178]/15 pt-3">
+        <p className="mt-3 border-t border-parliament-resource/15 pt-3">
           Mesajele transmise ar trebui să rămână clare și respectuoase. Conținutul
           ofensator, amenințător sau abuziv poate fi ignorat sau raportat.
         </p>
@@ -102,16 +102,16 @@ export function MemberContactTab({ member }: Props) {
               <section className={`${memberDetailContactCardClassName} p-5 sm:p-6`}>
                 <div className="flex flex-col gap-6 lg:flex-row lg:justify-between">
                   <div className="flex gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f3f0ff] text-[#512178]">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-parliament-resource/10 text-parliament-resource">
                       <IdCard className="h-5 w-5" aria-hidden />
                     </span>
                     <div className="min-w-0">
                       {contact.address ? (
-                        <p className="max-w-xl text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+                        <p className="max-w-xl text-base leading-7 text-parliament-fg">
                           {contact.address}
                         </p>
                       ) : (
-                        <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                        <p className="text-sm leading-6 text-parliament-muted">
                           Adresa biroului parlamentar nu este publicată aici.
                         </p>
                       )}
@@ -122,7 +122,7 @@ export function MemberContactTab({ member }: Props) {
                     {contact.phone ? (
                       <a
                         href={`tel:${contact.phone}`}
-                        className="flex items-center gap-2 text-base font-normal text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)]"
+                        className="flex items-center gap-2 text-base font-normal text-parliament-fg underline underline-offset-4 hover:text-parliament-link"
                       >
                         <Phone className="h-4 w-4 shrink-0" aria-hidden />
                         {contact.phone}
@@ -131,7 +131,7 @@ export function MemberContactTab({ member }: Props) {
                     {contact.email ? (
                       <a
                         href={`mailto:${contact.email}`}
-                        className="flex items-center gap-2 text-base font-normal text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)]"
+                        className="flex items-center gap-2 text-base font-normal text-parliament-fg underline underline-offset-4 hover:text-parliament-link"
                       >
                         <Mail className="h-4 w-4 shrink-0" aria-hidden />
                         {contact.email}
@@ -150,13 +150,13 @@ export function MemberContactTab({ member }: Props) {
                 href={contact.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${memberDetailContactCardClassName} flex items-center justify-between gap-4 p-5 transition-colors hover:bg-[#f8f8f8] sm:p-6 dark:hover:bg-[var(--pnrr-hover)]`}
+                className={`${memberDetailContactCardClassName} flex items-center justify-between gap-4 p-5 transition-colors hover:bg-parliament-hover sm:p-6`}
               >
                 <span className="flex min-w-0 items-center gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f3f0ff] text-[#512178]">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-parliament-resource/10 text-parliament-resource">
                     <Globe className="h-5 w-5" aria-hidden />
                   </span>
-                  <span className="min-w-0 text-base leading-7 text-[#0b0c0c] underline underline-offset-4 dark:text-[var(--pnrr-fg)]">
+                  <span className="min-w-0 text-base leading-7 text-parliament-fg underline underline-offset-4">
                     {contact.website}
                   </span>
                 </span>
@@ -172,13 +172,13 @@ export function MemberContactTab({ member }: Props) {
                 href={contact.cvUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${memberDetailContactCardClassName} flex items-center justify-between gap-4 p-5 transition-colors hover:bg-[#f8f8f8] sm:p-6 dark:hover:bg-[var(--pnrr-hover)]`}
+                className={`${memberDetailContactCardClassName} flex items-center justify-between gap-4 p-5 transition-colors hover:bg-parliament-hover sm:p-6`}
               >
                 <span className="flex min-w-0 items-center gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f3f0ff] text-[#512178]">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-parliament-resource/10 text-parliament-resource">
                     <FileText className="h-5 w-5" aria-hidden />
                   </span>
-                  <span className="min-w-0 text-base leading-7 text-[#0b0c0c] underline underline-offset-4 dark:text-[var(--pnrr-fg)]">
+                  <span className="min-w-0 text-base leading-7 text-parliament-fg underline underline-offset-4">
                     Descarcă CV-ul oficial (PDF)
                   </span>
                 </span>
@@ -191,13 +191,13 @@ export function MemberContactTab({ member }: Props) {
         <div className="space-y-2">
           <h3 className={memberDetailCardLabelClassName}>Date de contact</h3>
           <section className={`${memberDetailContactCardClassName} p-5 sm:p-6`}>
-            <p className="max-w-2xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="max-w-2xl text-base leading-7 text-parliament-muted">
               Nu sunt disponibile date directe de contact. Verificați paginile
               oficiale ale Camerei Deputaților și Senatului pentru informații
               actualizate despre parlamentar.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Button asChild className="h-10 rounded-none bg-[#1d70b8] px-5 text-base font-normal text-white hover:bg-[#1d70b8]/90">
+              <Button asChild className="h-10 rounded-none bg-parliament-action px-5 text-base font-normal text-white hover:bg-parliament-action/90">
                 <a href="https://www.cdep.ro" target="_blank" rel="noopener noreferrer">
                   Camera Deputaților
                 </a>
@@ -205,7 +205,7 @@ export function MemberContactTab({ member }: Props) {
               <Button
                 asChild
                 variant="outline"
-                className="h-10 rounded-none border-[#b1b4b6] bg-white px-5 text-base font-normal text-[#0b0c0c] hover:bg-[#f3f2f1]"
+                className="h-10 rounded-none border-parliament-border bg-parliament-card px-5 text-base font-normal text-parliament-fg hover:bg-parliament-surface"
               >
                 <a href="https://www.senat.ro" target="_blank" rel="noopener noreferrer">
                   Senatul României

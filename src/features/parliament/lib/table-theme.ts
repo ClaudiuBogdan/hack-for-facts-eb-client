@@ -27,4 +27,8 @@ export const parliamentPaginationButtonClassName =
 export const parliamentActiveFilterChipClassName =
   'inline-flex items-center gap-2 bg-parliament-accent px-3 py-2 text-sm text-parliament-accent-fg'
 
+/** The members filter sheet's toggles (chamber): the hub frame, the selected one a chip that flips. */
+export const parliamentMembersFilterToggleClassName =
+  'h-10 min-w-0 rounded-none border-2 border-parliament-border-strong bg-parliament-card px-2 text-sm font-black text-parliament-frame-fg transition-colors hover:bg-parliament-page data-[state=on]:bg-parliament-frame-fg data-[state=on]:text-parliament-page sm:px-4'
+
 export const DEFAULT_MEMBERS_PAGE_SIZE = 20

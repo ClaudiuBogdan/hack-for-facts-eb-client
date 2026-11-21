@@ -116,10 +116,10 @@ export function MemberSpeechRecordCard({
     : 'Dată indisponibilă'
 
   const dateLinkClassName =
-    'text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+    'text-sm font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
 
   return (
-    <article className="border-2 border-[#b1b4b6] bg-white p-5 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+    <article className="border-2 border-parliament-border bg-parliament-card p-5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         {showDate ? (
           sitting ? (
@@ -140,30 +140,30 @@ export function MemberSpeechRecordCard({
               {dateLabel}
             </Link>
           ) : (
-            <span className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <span className="text-sm font-semibold text-parliament-fg">
               {dateLabel}
             </span>
           )
         ) : null}
         <span
-          className="inline-flex items-center border border-[#b1b4b6] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]"
+          className="inline-flex items-center border border-parliament-border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-parliament-muted"
         >
           {badge.label}
         </span>
       </div>
 
       {speaker ? (
-        <p className="mt-1.5 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="mt-1.5 text-sm text-parliament-muted">
           {speaker.memberId ? (
             <Link
               to="/parlament/membri/$memberId/interventii"
               params={{ memberId: speaker.memberId }}
-              className="font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+              className="font-semibold text-parliament-fg underline underline-offset-4 hover:text-parliament-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
             >
               {speaker.name}
             </Link>
           ) : (
-            <span className="font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <span className="font-semibold text-parliament-fg">
               {speaker.name}
             </span>
           )}
@@ -171,21 +171,21 @@ export function MemberSpeechRecordCard({
         </p>
       ) : null}
 
-      <p className="mt-2 whitespace-pre-line text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+      <p className="mt-2 whitespace-pre-line text-base leading-7 text-parliament-fg">
         {lead}
       </p>
 
       <details className="group mt-3">
-        <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-[#1d70b8] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]">
+        <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-parliament-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus">
           <span className="group-open:hidden">Transcriere completă</span>
           <span className="hidden group-open:inline">Ascunde transcrierea</span>
         </summary>
         {speech.fullText ? (
-          <p className="mt-2 whitespace-pre-wrap border-l-2 border-[#b1b4b6] pl-4 text-sm leading-7 text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-fg)]">
+          <p className="mt-2 whitespace-pre-wrap border-l-2 border-parliament-border pl-4 text-sm leading-7 text-parliament-fg">
             {speech.fullText}
           </p>
         ) : (
-          <p className="mt-2 text-sm leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <p className="mt-2 text-sm leading-7 text-parliament-muted">
             Transcrierea completă nu este încă disponibilă.
           </p>
         )}
@@ -197,7 +197,7 @@ export function MemberSpeechRecordCard({
             to="/parlament/stenograme/sedinte/$sessionKey"
             params={{ sessionKey: sitting.sessionKey }}
             search={{ interventie: sitting.interventie }}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
           >
             <BookOpen className="h-3.5 w-3.5" aria-hidden />
             <Trans>Vezi în stenograma completă a ședinței</Trans>
@@ -212,7 +212,7 @@ export function MemberSpeechRecordCard({
               href={speech.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
             >
               Vezi în stenogramă (cdep.ro)
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -223,12 +223,12 @@ export function MemberSpeechRecordCard({
                 href={speech.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-parliament-link underline underline-offset-4 hover:text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
               >
                 Stenogramele Senatului (senat.ro)
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               </a>
-              <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="text-xs text-parliament-muted">
                 Linkul deschide lista stenogramelor; pagina exactă a acestei
                 intervenții trebuie găsită după dată.
               </p>

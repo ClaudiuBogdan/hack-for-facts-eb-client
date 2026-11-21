@@ -136,7 +136,7 @@ export function MemberVotingTab({ member, search }: Props) {
           <Link
             to="/parlament"
             search={{ tab: 'voturi', chamber: member.chamber }}
-            className="font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)]"
+            className="font-semibold text-parliament-fg underline underline-offset-4 hover:text-parliament-link"
           >
             {getChamberLabel(member.chamber)}
           </Link>
@@ -199,7 +199,7 @@ export function MemberVotingTab({ member, search }: Props) {
         />
       ) : votes.length > 0 ? (
         <div className="space-y-4">
-          <p className="border border-[#b1b4b6] bg-[#f3f2f1] px-5 py-3 text-sm text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)]">
+          <p className="border border-parliament-border bg-parliament-surface px-5 py-3 text-sm text-parliament-fg">
             Afișate <span className="font-bold">{votes.length}</span> din{' '}
             <span className="font-bold">{total}</span> voturi
           </p>
@@ -233,7 +233,7 @@ export function MemberVotingTab({ member, search }: Props) {
           ) : null}
         </div>
       ) : (
-        <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="text-base leading-7 text-parliament-muted">
           {activeCount > 0 ? (
             <Trans>Niciun vot nu corespunde filtrelor selectate.</Trans>
           ) : (

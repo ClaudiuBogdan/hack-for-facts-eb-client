@@ -26,11 +26,11 @@ export function MemberProfileActivityRow({
     <div className={memberDetailCareerCardBodyClassName}>
       <div className="flex min-w-0 flex-1 items-start justify-between gap-4 px-5 py-4 sm:px-6">
         <div className="min-w-0">
-          <p className="text-base font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <p className="text-base font-bold leading-snug text-parliament-fg">
             {title}
           </p>
           {meta ? (
-            <p className="mt-1 text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-1 text-sm leading-6 text-parliament-muted">
               {meta}
             </p>
           ) : null}
@@ -51,7 +51,7 @@ export function MemberProfileActivityRow({
         rel="noopener noreferrer"
         className={cn(
           memberDetailCareerCardClassName,
-          'group block transition-colors hover:bg-[#f8f8f8] dark:hover:bg-[var(--pnrr-hover)]',
+          'group block transition-colors hover:bg-parliament-hover',
           className,
         )}
       >

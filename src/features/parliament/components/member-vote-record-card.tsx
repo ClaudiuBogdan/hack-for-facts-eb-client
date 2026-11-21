@@ -9,9 +9,13 @@ import {
   getMemberVoteChoiceLabel,
   formatVoteDayLong,
   formatVoteDivisionMeta,
-  getVoteChoiceAccentColor,
 } from '../lib/formatting'
-import { memberDetailCareerCardClassName } from '../lib/member-detail-theme'
+import {
+  MEMBER_VOTE_CHOICE_MARK_COLORS,
+  MEMBER_VOTE_CONFLICT_MARK_COLOR,
+  MEMBER_VOTE_UNKNOWN_MARK_COLOR,
+  memberDetailCareerCardClassName,
+} from '../lib/member-detail-theme'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 
 type Props = {
@@ -50,11 +54,12 @@ export function MemberVoteRecordCard({
       : choice === 'impotriva'
         ? ThumbsDown
         : ThumbsUp
+  // The left rule carries no text: a mark, so it takes the flipping colours.
   const accentColor = isConflict
-    ? '#d4351c'
+    ? MEMBER_VOTE_CONFLICT_MARK_COLOR
     : isUnknown || choice === undefined
-      ? '#505a5f'
-      : getVoteChoiceAccentColor(choice)
+      ? MEMBER_VOTE_UNKNOWN_MARK_COLOR
+      : MEMBER_VOTE_CHOICE_MARK_COLORS[choice]
   const positionLabel = isConflict
     ? 'Conflict în sursă'
     : isUnknown || choice === undefined
@@ -67,30 +72,30 @@ export function MemberVoteRecordCard({
       params={{ chamber, voteId }}
       className={cn(
         memberDetailCareerCardClassName,
-        'group block transition-colors hover:bg-[#f8f8f8] dark:hover:bg-[var(--pnrr-hover)]',
+        'group block transition-colors hover:bg-parliament-hover',
       )}
     >
       <div
         className="flex border-l-[5px]"
         style={{ borderLeftColor: accentColor }}
       >
-        <div className="flex w-24 shrink-0 flex-col items-center justify-center gap-1 border-r border-[#b1b4b6] px-3 py-5 dark:border-[var(--pnrr-border)]">
+        <div className="flex w-24 shrink-0 flex-col items-center justify-center gap-1 border-r border-parliament-border px-3 py-5">
           <Icon
-            className="h-5 w-5 text-[#505a5f]"
+            className="h-5 w-5 text-parliament-muted"
             strokeWidth={2}
             aria-hidden
           />
-          <span className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <span className="text-sm font-bold text-parliament-fg">
             {positionLabel}
           </span>
         </div>
 
         <div className="flex min-w-0 flex-1 items-start justify-between gap-4 px-5 py-4 sm:px-6">
           <div className="min-w-0">
-            <p className="text-base font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <p className="text-base font-bold leading-snug text-parliament-fg">
               {title}
             </p>
-            <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="mt-1 text-sm text-parliament-muted">
               {divisionNumber
                 ? formatVoteDivisionMeta({ heldAt }, divisionNumber)
                 : formatVoteDayLong(heldAt)}
@@ -100,14 +105,14 @@ export function MemberVoteRecordCard({
           {tally ? (
             <div className="hidden shrink-0 gap-6 sm:flex">
               <div>
-                <p className="text-sm text-[#505a5f]">Pentru</p>
-                <p className="text-2xl font-bold tabular-nums text-[#0b0c0c]">
+                <p className="text-sm text-parliament-muted">Pentru</p>
+                <p className="text-2xl font-bold tabular-nums text-parliament-fg">
                   {tally.pentru}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-[#505a5f]">Împotrivă</p>
-                <p className="text-2xl font-bold tabular-nums text-[#0b0c0c]">
+                <p className="text-sm text-parliament-muted">Împotrivă</p>
+                <p className="text-2xl font-bold tabular-nums text-parliament-fg">
                   {tally.impotriva}
                 </p>
               </div>

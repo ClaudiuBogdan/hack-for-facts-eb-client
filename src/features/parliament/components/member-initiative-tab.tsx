@@ -114,7 +114,7 @@ export function MemberInitiativeTab({ member }: Props) {
                       <Link
                         to="/parlament/proiecte/$billId"
                         params={{ billId: entry.billId }}
-                        className="text-sm font-semibold text-[#1d70b8] underline underline-offset-4"
+                        className="text-sm font-semibold text-parliament-link underline underline-offset-4"
                       >
                         Vezi proiectul
                       </Link>
@@ -125,7 +125,7 @@ export function MemberInitiativeTab({ member }: Props) {
             )
           })
         ) : (
-          <p className="text-base leading-7 text-[#505a5f]">
+          <p className="text-base leading-7 text-parliament-muted">
             <Trans>
               Nu există inițiative legislative publicate pentru acest
               parlamentar.

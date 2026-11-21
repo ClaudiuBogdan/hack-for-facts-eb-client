@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ParliamentMember } from "@/schemas/parliament";
 import { getParliamentGroupColorMap } from "../api/parliament-api-sync";
+import { PARLIAMENT_GROUP_FALLBACK_COLOR } from "../lib/group-colors";
 import {
   formatMemberMandatePeriod,
   formatMemberName,
@@ -35,7 +36,7 @@ export function MemberOverviewTab({ member }: Props) {
     member.mandateStart,
     member.mandateEndDate ?? member.mandateEnd,
   );
-  const groupColor = groupColors[member.groupId] ?? "#505a5f";
+  const groupColor = groupColors[member.groupId] ?? PARLIAMENT_GROUP_FALLBACK_COLOR;
 
   return (
     <div className="space-y-8">

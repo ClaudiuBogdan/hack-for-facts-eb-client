@@ -36,14 +36,14 @@ export function MemberPortretTab({ member }: Props) {
       </aside>
 
       {portraitUrl ? (
-        <figure className="max-w-md border border-[#b1b4b6] bg-white p-4 dark:border-[var(--pnrr-border)]">
+        <figure className="max-w-md border border-parliament-border bg-parliament-card p-4">
           <img
             src={portraitUrl}
             alt={`Portret oficial ${memberName}`}
             className="aspect-[3/4] w-full object-cover"
           />
           {data?.officialPortraitCaption ? (
-            <figcaption className="mt-4 text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <figcaption className="mt-4 text-sm leading-6 text-parliament-muted">
               {data.officialPortraitCaption}
             </figcaption>
           ) : null}
@@ -53,19 +53,19 @@ export function MemberPortretTab({ member }: Props) {
         // heading "Portret oficial" — a placeholder presented as the thing it
         // stands in for. No official portrait is captured for any member yet (no
         // extraction lane, licensing unresolved), so say that instead.
-        <div className="max-w-2xl border-2 border-[#b1b4b6] bg-white px-5 py-6 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+        <div className="max-w-2xl border-2 border-parliament-border bg-parliament-card px-5 py-6">
           <div className="flex items-start gap-4">
             <span
-              className="flex h-16 w-16 shrink-0 items-center justify-center border border-[#b1b4b6] bg-[#f3f2f1] text-xl font-bold text-[#512178] dark:border-[var(--pnrr-border)]"
+              className="flex h-16 w-16 shrink-0 items-center justify-center border border-parliament-border bg-parliament-surface text-xl font-bold text-parliament-resource"
               aria-hidden
             >
               {getMemberInitials(member)}
             </span>
             <div className="min-w-0">
-              <p className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              <p className="text-base font-bold text-parliament-fg">
                 Portretul oficial nu este disponibil
               </p>
-              <p className="mt-2 text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="mt-2 text-base leading-7 text-parliament-muted">
                 Platforma nu preia încă portretele publicate de Camera Deputaților și
                 Senat. Inițialele de mai sus sunt un substitut vizual, nu portretul
                 oficial al {memberName}.

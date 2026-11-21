@@ -92,7 +92,7 @@ export function ParliamentGroupsFloatingBar({
       aria-hidden={!isVisible}
       inert={!isVisible ? true : undefined}
       className={cn(
-        'fixed top-0 z-30 border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)]/90 backdrop-blur-md transition-[transform,opacity] duration-200 ease-out',
+        'fixed top-0 z-30 border-b-2 border-parliament-border-strong bg-parliament-page/90 backdrop-blur-md transition-[transform,opacity] duration-200 ease-out',
         isVisible
           ? 'translate-y-0 opacity-100'
           : '-translate-y-full opacity-0 pointer-events-none',
@@ -114,7 +114,7 @@ export function ParliamentGroupsFloatingBar({
               .getElementById('membri')
               ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
           }}
-          className="shrink-0 text-sm font-black tracking-tight text-[var(--pnrr-fg)] transition-colors hover:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+          className="shrink-0 text-sm font-black tracking-tight text-parliament-frame-fg transition-colors hover:text-parliament-frame-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
         >
           Membri
         </button>
@@ -133,7 +133,7 @@ export function ParliamentGroupsFloatingBar({
       </div>
 
       {hasActiveFilters ? (
-        <div className="border-t-2 border-[var(--pnrr-border)]">
+        <div className="border-t-2 border-parliament-border-strong">
           <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
             <MembersActiveFilters
               search={search}

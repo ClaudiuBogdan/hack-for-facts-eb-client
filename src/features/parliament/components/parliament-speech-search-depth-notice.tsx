@@ -16,19 +16,19 @@ export function ParliamentSpeechSearchDepthNotice({ depth }: Props) {
   return (
     <div
       role="note"
-      className="flex items-start gap-2.5 border-2 border-[#b1b4b6] bg-[#f3f2f1] px-4 py-3 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)]"
+      className="flex items-start gap-2.5 border-2 border-parliament-border bg-parliament-surface px-4 py-3"
     >
       <Info
         aria-hidden
-        className="mt-0.5 h-4 w-4 shrink-0 text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+        className="mt-0.5 h-4 w-4 shrink-0 text-parliament-muted"
       />
       {full ? (
-        <p className="text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <p className="text-sm leading-6 text-parliament-fg">
           Căutarea include <strong>transcrierea completă</strong> a
           intervențiilor, acolo unde stenograma a fost încărcată.
         </p>
       ) : (
-        <p className="text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <p className="text-sm leading-6 text-parliament-fg">
           Căutarea se aplică <strong>titlurilor și rezumatelor</strong>{' '}
           intervențiilor. Pentru a căuta și în transcrierea completă, alegeți un
           vorbitor sau restrângeți perioada la cel mult 3 luni (din filtre).

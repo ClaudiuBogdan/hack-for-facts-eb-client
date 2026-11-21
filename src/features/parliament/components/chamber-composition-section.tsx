@@ -7,8 +7,8 @@ import type {
 import { useParliamentChamberComposition } from '../hooks/use-parliament-data'
 import { getChamberLabel } from '../lib/formatting'
 import {
-  PARLIAMENT_CAMERA_GREEN,
-  PARLIAMENT_SENAT_RED,
+  PARLIAMENT_CAMERA_MARK,
+  PARLIAMENT_SENAT_MARK,
   parliamentHubSectionBodyClassName,
   parliamentHubSectionClassName,
   parliamentHubSectionHeaderClassName,
@@ -27,8 +27,9 @@ export function ChamberCompositionSection({ chamber, search }: Props) {
     chamber,
     search,
   )
+  // The left rule carries no text: it is a mark, so it takes the flipping chamber colour.
   const accentColor =
-    chamber === 'camera' ? PARLIAMENT_CAMERA_GREEN : PARLIAMENT_SENAT_RED
+    chamber === 'camera' ? PARLIAMENT_CAMERA_MARK : PARLIAMENT_SENAT_MARK
 
   if (isLoading || !composition) {
     return (
@@ -58,11 +59,11 @@ export function ChamberCompositionSection({ chamber, search }: Props) {
         style={{ borderLeftWidth: '4px', borderLeftColor: accentColor }}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-parliament-muted">
             {getChamberLabel(chamber)}
           </h2>
           {composition.hasActiveFilters ? (
-            <span className="text-xs font-semibold text-[var(--pnrr-muted)]">
+            <span className="text-xs font-semibold text-parliament-frame-muted">
               {composition.activeSeatCount} / {composition.totalSeats} evidențiate
             </span>
           ) : null}

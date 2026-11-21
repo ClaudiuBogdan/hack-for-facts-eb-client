@@ -8,6 +8,7 @@ import {
   voteDetailSectionTitleClassName,
 } from './vote-detail-theme'
 import { PARLIAMENT_RESOURCE_PURPLE, PARLIAMENT_SURFACE } from './hub-theme'
+import type { MemberVoteChoice } from '@/schemas/parliament'
 
 export const MEMBER_DETAIL_ACTIVE_PURPLE = PARLIAMENT_RESOURCE_PURPLE
 export const MEMBER_DETAIL_BORDER = 'var(--parliament-border)'
@@ -66,6 +67,36 @@ export const memberDetailContactCardClassName =
 
 export const memberDetailNoticeClassName =
   'border-l-[5px] border-l-parliament-resource-fill bg-parliament-resource/10 p-5 text-sm leading-6 text-parliament-fg sm:p-6'
+
+/**
+ * A member's vote choice as a MARK (the vote card's left rule, the filter sheet's dots): no text sits on it, so it
+ * takes the flipping colour and holds 3:1 on the dark card. Same light values as `getVoteChoiceAccentColor` (the fills,
+ * kept for the dark heat-map tooltip, whose ground does not flip).
+ */
+export const MEMBER_VOTE_CHOICE_MARK_COLORS: Readonly<Record<MemberVoteChoice, string>> = {
+  pentru: 'var(--parliament-commons)',
+  impotriva: 'var(--parliament-senate)',
+  abtinere: 'var(--parliament-muted)',
+  nu_a_votat: 'var(--parliament-border)',
+}
+
+/** The vote card's rule for a choice the source contradicts (conflict) or does not state (unknown). */
+export const MEMBER_VOTE_CONFLICT_MARK_COLOR = 'var(--parliament-error)'
+export const MEMBER_VOTE_UNKNOWN_MARK_COLOR = 'var(--parliament-muted)'
+
+/** The member votes and speeches filter sheets: one look for both. */
+export const memberFilterSectionLabelClassName =
+  'text-xs font-bold uppercase tracking-wide text-parliament-fg'
+
+export const memberFilterToggleItemClassName =
+  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm font-semibold text-parliament-fg transition-colors hover:bg-parliament-surface data-[state=on]:border-parliament-link data-[state=on]:bg-parliament-action data-[state=on]:text-white'
+
+export const memberFilterInputClassName =
+  'h-10 w-full rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'
+
+/** A native date input: the browser draws its picker glyph, so it also takes the dark colour scheme. */
+export const memberFilterDateInputClassName =
+  'h-10 w-full rounded-none border-2 border-parliament-border bg-parliament-card px-3 text-sm text-parliament-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus dark:scheme-dark'
 
 export {
   getVoteDetailHeroColor as getMemberDetailHeroColor,

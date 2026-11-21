@@ -81,7 +81,7 @@ export function MemberIntereseTab({ member }: Props) {
                           href={entry.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-[#1d70b8] underline underline-offset-2 hover:text-[#1d70b8]/80"
+                          className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-parliament-link underline underline-offset-2 hover:text-parliament-link/80"
                         >
                           Deschide declarația
                           <ExternalLink
@@ -96,7 +96,7 @@ export function MemberIntereseTab({ member }: Props) {
             </div>
           ))
         ) : (
-          <p className="text-base leading-7 text-[#505a5f]">
+          <p className="text-base leading-7 text-parliament-muted">
             Nu există declarații publicate pentru acest parlamentar.
           </p>
         )}

@@ -5,6 +5,7 @@ import { Trans } from '@lingui/react/macro'
 import type { ParliamentSpeechActivity } from '@/schemas/parliament'
 import { useParliamentSpeechActivity } from '../hooks/use-parliament-data'
 import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
+import { speechActivityStepButtonClassName } from '../lib/stenogram-theme'
 import { MemberSpeechActivityHeatmap } from './member-speech-activity-heatmap'
 import { ParliamentYearCombobox } from './parliament-year-combobox'
 
@@ -68,9 +69,6 @@ function resolveRange(range: Range, today: Date) {
     anchorYear: end.getUTCFullYear(),
   }
 }
-
-const STEP_CLASS =
-  'inline-flex size-9 shrink-0 items-center justify-center rounded-none border-2 border-[#b1b4b6] bg-white text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] disabled:opacity-40 disabled:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)] dark:disabled:hover:bg-[var(--pnrr-card)]'
 
 /**
  * Plenary activity per day, over a range the reader chooses.
@@ -179,7 +177,7 @@ export function ParliamentSpeechActivityPanel({
   return (
     <section
       aria-label={t`Activitatea în plen pe zile`}
-      className="border-2 border-[#b1b4b6] bg-white p-5 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+      className="border-2 border-parliament-border bg-parliament-card p-5"
     >
       {/* Heading and period control on ONE row. A strip of thirty year chips
           was wider than the chart and pushed it down the page; a dropdown says
@@ -187,14 +185,14 @@ export function ParliamentSpeechActivityPanel({
           reader actually wants — "the period before this one" — without opening
           anything. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <h3 className="text-sm font-bold text-parliament-fg">
           <Trans>Activitatea în plen pe zile</Trans>
         </h3>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className={STEP_CLASS}
+            className={speechActivityStepButtonClassName}
             disabled={!canGoOlder}
             aria-label={t`Perioada anterioară`}
             onClick={() => step(1)}
@@ -222,7 +220,7 @@ export function ParliamentSpeechActivityPanel({
 
           <button
             type="button"
-            className={STEP_CLASS}
+            className={speechActivityStepButtonClassName}
             disabled={!canGoNewer}
             aria-label={t`Perioada următoare`}
             onClick={() => step(-1)}
@@ -232,7 +230,7 @@ export function ParliamentSpeechActivityPanel({
         </div>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+      <p className="mt-3 text-sm leading-6 text-parliament-muted">
         <Trans>
           Fiecare pătrat este o zi; intensitatea arată câte intervenții au fost
           consemnate. Faceți clic pe o zi pentru a filtra lista.

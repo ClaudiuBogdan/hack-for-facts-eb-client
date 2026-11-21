@@ -201,14 +201,14 @@ export function ParliamentSpeechDetailPage({ speechKey }: Props) {
 
         <header className="space-y-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <span className="text-sm font-semibold text-parliament-fg">
               {turn.spokenAt
                 ? formatVoteDayLong(turn.spokenAt)
                 : t`Dată indisponibilă`}
             </span>
             <span
               className={cn(
-                'inline-flex items-center border border-[#b1b4b6] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]',
+                'inline-flex items-center border border-parliament-border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-parliament-muted',
                 stenogramChamberToneClassName[turn.chamber ?? ''],
               )}
             >
@@ -247,21 +247,21 @@ export function ParliamentSpeechDetailPage({ speechKey }: Props) {
 
         {turn.summary?.trim() ? (
           <section className="space-y-2">
-            <h2 className="text-lg font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <h2 className="text-lg font-bold text-parliament-fg">
               <Trans>Rezumat</Trans>
             </h2>
-            <p className="whitespace-pre-line text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            <p className="whitespace-pre-line text-base leading-7 text-parliament-fg">
               {turn.summary}
             </p>
           </section>
         ) : null}
 
         <section className="space-y-2">
-          <h2 className="text-lg font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <h2 className="text-lg font-bold text-parliament-fg">
             <Trans>Transcrierea completă</Trans>
           </h2>
           {turn.fullText ? (
-            <p className="whitespace-pre-wrap border-l-2 border-[#b1b4b6] pl-4 text-base leading-7 text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-fg)]">
+            <p className="whitespace-pre-wrap border-l-2 border-parliament-border pl-4 text-base leading-7 text-parliament-fg">
               {turn.fullText}
             </p>
           ) : (
@@ -290,7 +290,7 @@ export function ParliamentSpeechDetailPage({ speechKey }: Props) {
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
             </a>
             {precisionNote ? (
-              <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <p className="text-xs text-parliament-muted">
                 {precisionNote}
               </p>
             ) : null}

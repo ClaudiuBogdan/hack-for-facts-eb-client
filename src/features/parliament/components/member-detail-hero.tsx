@@ -15,7 +15,12 @@ type Props = {
   readonly member: ParliamentMember;
 };
 
-const INITIALS_BG = ["#f3f2f1", "#ede7f6", "#e8f5e9", "#fff3e0"] as const;
+const INITIALS_BG = [
+  "var(--parliament-initials-1)",
+  "var(--parliament-initials-2)",
+  "var(--parliament-initials-3)",
+  "var(--parliament-initials-4)",
+] as const;
 
 function getMemberInitials(member: ParliamentMember): string {
   return `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
@@ -111,7 +116,7 @@ export function MemberDetailHero({ member }: Props) {
         </div>
 
         <div className="lg:-mb-14 lg:justify-self-end">
-          <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_4px_14px_rgba(11,12,12,0.2)] sm:h-44 sm:w-44 lg:h-52 lg:w-52">
+          <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-parliament-card shadow-[0_4px_14px_color-mix(in_srgb,var(--parliament-fg)_20%,transparent)] sm:h-44 sm:w-44 lg:h-52 lg:w-52">
             {member.photoUrl ? (
               <img
                 src={member.photoUrl}
@@ -120,7 +125,7 @@ export function MemberDetailHero({ member }: Props) {
               />
             ) : (
               <span
-                className="flex h-full w-full items-center justify-center text-4xl font-bold text-[#512178] sm:text-5xl"
+                className="flex h-full w-full items-center justify-center text-4xl font-bold text-parliament-resource sm:text-5xl"
                 style={{
                   backgroundColor: getInitialsBackground(member.memberId),
                 }}

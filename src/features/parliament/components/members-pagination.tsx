@@ -53,7 +53,7 @@ export function MembersPagination({
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="px-2 text-xs tabular-nums text-[var(--pnrr-muted)]">
+            <span className="px-2 text-xs tabular-nums text-parliament-frame-muted">
               {safePage} / {totalPages}
             </span>
             <button
@@ -84,7 +84,7 @@ export function MembersPagination({
                 item === 'ellipsis' ? (
                   <span
                     key={`ellipsis-${index}`}
-                    className="shrink-0 px-1.5 text-xs text-[var(--pnrr-muted)]"
+                    className="shrink-0 px-1.5 text-xs text-parliament-frame-muted"
                   >
                     …
                   </span>
@@ -94,10 +94,10 @@ export function MembersPagination({
                     type="button"
                     onClick={() => onPageChange(item)}
                     className={cn(
-                      'h-8 w-8 shrink-0 border-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
+                      'h-8 w-8 shrink-0 border-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus',
                       item === safePage
-                        ? 'border-[var(--pnrr-fg)] bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]'
-                        : 'border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]',
+                        ? 'border-parliament-frame-fg bg-parliament-frame-fg text-parliament-page'
+                        : 'border-parliament-border-strong bg-parliament-card text-parliament-frame-fg hover:bg-parliament-frame-fg hover:text-parliament-page',
                     )}
                     aria-current={item === safePage ? 'page' : undefined}
                   >

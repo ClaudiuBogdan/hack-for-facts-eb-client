@@ -93,7 +93,7 @@ export function MembersActiveFilters({
     return (
       <div className="flex min-w-0 flex-wrap items-center gap-2.5 pb-2 pt-1">
         <span
-          className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center bg-[var(--pnrr-fg)] px-1.5 text-[11px] font-semibold text-[var(--pnrr-bg)]"
+          className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center bg-parliament-frame-fg px-1.5 text-[11px] font-semibold text-parliament-page"
           aria-hidden
         >
           {chips.length}
@@ -102,14 +102,14 @@ export function MembersActiveFilters({
           {chips.map((chip) => (
             <span
               key={chip.key}
-              className="group inline-flex max-w-full items-center gap-1.5 bg-[var(--pnrr-green)] px-2.5 py-1.5 text-sm text-[var(--pnrr-fg)]"
+              className="group inline-flex max-w-full items-center gap-1.5 bg-parliament-accent px-2.5 py-1.5 text-sm text-parliament-accent-fg"
               title={chip.label}
             >
               <span className="min-w-0 truncate font-bold">{chip.label}</span>
               <button
                 type="button"
                 onClick={chip.onRemove}
-                className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-[var(--pnrr-fg)]/70 transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+                className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-parliament-accent-fg/70 transition-colors hover:text-parliament-accent-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-accent-focus"
                 aria-label={`Elimină filtrul ${chip.label}`}
               >
                 <X className="h-3 w-3" aria-hidden />
@@ -120,7 +120,7 @@ export function MembersActiveFilters({
         <button
           type="button"
           onClick={onClearAll}
-          className="hidden shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] sm:inline-flex"
+          className="hidden shrink-0 text-sm text-parliament-frame-fg underline underline-offset-4 transition-colors hover:text-parliament-frame-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus sm:inline-flex"
         >
           Șterge filtrele
         </button>

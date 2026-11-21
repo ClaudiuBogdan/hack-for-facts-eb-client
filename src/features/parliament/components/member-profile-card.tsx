@@ -7,6 +7,7 @@ import {
   memberDetailCareerCardFooterClassName,
   memberDetailCardLabelClassName,
 } from '../lib/member-detail-theme'
+import { PARLIAMENT_CAMERA_GREEN, PARLIAMENT_SENAT_RED } from '../lib/hub-theme'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 
 type CareerCardLinkProps = {
@@ -46,11 +47,11 @@ export function MemberProfileCareerCard(props: CareerCardLinkProps) {
           <div className="flex min-w-0 items-start gap-4">
             {leading}
             <div className="min-w-0">
-              <p className="text-lg font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              <p className="text-lg font-bold leading-snug text-parliament-fg">
                 {title}
               </p>
               {subtitle ? (
-                <p className="mt-1 text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <p className="mt-1 text-sm leading-6 text-parliament-muted">
                   {subtitle}
                 </p>
               ) : null}
@@ -76,7 +77,7 @@ export function MemberProfileCareerCard(props: CareerCardLinkProps) {
           params={'params' in props ? props.params : undefined}
           className={cn(
             memberDetailCareerCardClassName,
-            'group block transition-colors hover:bg-[#f8f8f8] dark:hover:bg-[var(--pnrr-hover)]',
+            'group block transition-colors hover:bg-parliament-hover',
           )}
         >
           {body}
@@ -95,10 +96,11 @@ type ChamberBadgeProps = {
 /** Small chamber badge for career card footers */
 export function MemberProfileChamberBadge({ chamber }: ChamberBadgeProps) {
   const label = chamber === 'camera' ? 'Camera Deputaților' : 'Senat'
-  const color = chamber === 'camera' ? '#006435' : '#9C051A'
+  // A solid disc under white text: the non-flipping chamber fill.
+  const color = chamber === 'camera' ? PARLIAMENT_CAMERA_GREEN : PARLIAMENT_SENAT_RED
 
   return (
-    <span className="inline-flex items-center gap-2 font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+    <span className="inline-flex items-center gap-2 font-semibold text-parliament-fg">
       <span
         className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
         style={{ backgroundColor: color }}

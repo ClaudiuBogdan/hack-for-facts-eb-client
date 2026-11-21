@@ -17,13 +17,11 @@ import {
   buildYearGrid,
   RO_WEEKDAY_LABELS,
 } from '../lib/vote-activity-grid'
+import {
+  PARLIAMENT_HEATMAP_RAMP,
+  parliamentHeatmapEmptyCellClassName,
+} from '../lib/hub-theme'
 import { ParliamentYearCombobox } from './parliament-year-combobox'
-
-/**
- * GOV.UK blue ramp (#1d70b8) for buckets 1–4 — light→dark tints of the action
- * blue, so the intensity reads in both colour modes without a dark override.
- */
-const GOVUK_BLUE_RAMP = ['#d2e2f1', '#a3c6e3', '#5e94c9', '#1d70b8'] as const
 
 /** Weekday rows that get a printed letter (Luni / Miercuri / Vineri). */
 const LABELLED_WEEKDAY_ROWS = new Set([0, 2, 4])
@@ -116,7 +114,7 @@ export function MemberSpeechActivityHeatmap({
           {isLoading ? (
             <Skeleton className="h-32 w-full rounded-none" />
           ) : !hasActivity ? (
-            <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="text-base leading-7 text-parliament-muted">
               {emptyLabel ?? `Nicio intervenție în plen în ${String(year)}.`}
             </p>
           ) : (
@@ -132,7 +130,7 @@ export function MemberSpeechActivityHeatmap({
                       return (
                         <div
                           key={columnIndex}
-                          className="h-4 w-3 shrink-0 text-[11px] leading-4 text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+                          className="h-4 w-3 shrink-0 text-[11px] leading-4 text-parliament-muted"
                         >
                           {label ? (
                             <span className="whitespace-nowrap">{label.label}</span>
@@ -148,7 +146,7 @@ export function MemberSpeechActivityHeatmap({
                       {RO_WEEKDAY_LABELS.map((label, row) => (
                         <div
                           key={row}
-                          className="h-3 text-[10px] leading-3 text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+                          className="h-3 text-[10px] leading-3 text-parliament-muted"
                         >
                           {LABELLED_WEEKDAY_ROWS.has(row) ? label : ''}
                         </div>
@@ -168,7 +166,7 @@ export function MemberSpeechActivityHeatmap({
                           const bucket = speechBucketFor(total)
                           const isSelected = cell.isoDate === selectedDay
                           const selectionRing = isSelected
-                            ? 'ring-2 ring-[#0b0c0c] dark:ring-[var(--pnrr-fg)]'
+                            ? 'ring-2 ring-parliament-fg'
                             : ''
 
                           if (total === 0 || !day) {
@@ -176,7 +174,8 @@ export function MemberSpeechActivityHeatmap({
                               <div
                                 key={cell.isoDate}
                                 className={cn(
-                                  'h-3 w-3 shrink-0 border border-[#e5e5e0] bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-map-empty)]',
+                                  'h-3 w-3 shrink-0',
+                                  parliamentHeatmapEmptyCellClassName,
                                   selectionRing,
                                 )}
                               />
@@ -193,15 +192,15 @@ export function MemberSpeechActivityHeatmap({
                                   title={label}
                                   onClick={() => onSelectDay(cell.isoDate)}
                                   className={cn(
-                                    'h-3 w-3 shrink-0 rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
+                                    'h-3 w-3 shrink-0 rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus',
                                     selectionRing,
                                   )}
                                   style={{
-                                    backgroundColor: GOVUK_BLUE_RAMP[bucket - 1],
+                                    backgroundColor: PARLIAMENT_HEATMAP_RAMP[bucket - 1],
                                   }}
                                 />
                               </TooltipTrigger>
-                              <TooltipContent className="rounded-none bg-[#0b0c0c] text-white">
+                              <TooltipContent className="rounded-none bg-parliament-ink text-white">
                                 <p className="font-semibold">{formatLongDate(cell.isoDate)}</p>
                                 <p className="mb-1 text-[11px] text-white/80">
                                   {interventionsLabel(total)}
@@ -218,10 +217,10 @@ export function MemberSpeechActivityHeatmap({
                   </div>
 
                   {/* Legend: Mai puține [5 squares] Mai multe. */}
-                  <div className="mt-2 flex items-center gap-2 pl-8 text-[11px] text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <div className="mt-2 flex items-center gap-2 pl-8 text-[11px] text-parliament-muted">
                     <span>Mai puține</span>
-                    <span className="inline-block h-3 w-3 border border-[#e5e5e0] bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-map-empty)]" />
-                    {GOVUK_BLUE_RAMP.map((color) => (
+                    <span className={cn('inline-block h-3 w-3', parliamentHeatmapEmptyCellClassName)} />
+                    {PARLIAMENT_HEATMAP_RAMP.map((color) => (
                       <span
                         key={color}
                         className="inline-block h-3 w-3"

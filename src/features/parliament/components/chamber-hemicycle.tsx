@@ -3,13 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import type { ParliamentChamberComposition, ParliamentSeat } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import { getChamberLabel, formatSeatSharePercent } from '../lib/formatting'
-import {
-  PARLIAMENT_CAMERA_GREEN,
-  PARLIAMENT_SENAT_RED,
-} from '../lib/hub-theme'
+import { PARLIAMENT_CHAMBER_LABEL_CLASS_NAMES } from '../lib/hub-theme'
 
-const INACTIVE_SEAT_FILL = '#c5c7c9'
-const INACTIVE_SEAT_STROKE = '#b1b4b6'
+const INACTIVE_SEAT_FILL = 'var(--parliament-inactive)'
+const INACTIVE_SEAT_STROKE = 'var(--parliament-border)'
 
 type Props = {
   readonly composition: ParliamentChamberComposition
@@ -24,10 +21,6 @@ function getSeatFill(seat: ParliamentSeat): string {
 export function ChamberHemicycle({ composition, className }: Props) {
   const navigate = useNavigate()
   const [hoveredSeat, setHoveredSeat] = useState<ParliamentSeat | null>(null)
-  const chamberAccent =
-    composition.chamber === 'camera'
-      ? PARLIAMENT_CAMERA_GREEN
-      : PARLIAMENT_SENAT_RED
 
   const handleSeatClick = (
     event: React.MouseEvent<SVGCircleElement>,
@@ -73,7 +66,7 @@ export function ChamberHemicycle({ composition, className }: Props) {
               cy={seat.y}
               r={composition.seatRadius}
               fill={getSeatFill(seat)}
-              stroke={seat.isActive ? '#ffffff' : INACTIVE_SEAT_STROKE}
+              stroke={seat.isActive ? 'white' : INACTIVE_SEAT_STROKE}
               strokeWidth={0.15}
               className={cn(
                 'transition-opacity',
@@ -95,7 +88,7 @@ export function ChamberHemicycle({ composition, className }: Props) {
 
       {hoveredSeat ? (
         <div
-          className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-none border border-[#b1b4b6] bg-[#0b0c0c] px-3 py-1.5 text-center text-xs text-white shadow-sm dark:border-[var(--pnrr-border)]"
+          className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-none border border-parliament-border bg-parliament-ink px-3 py-1.5 text-center text-xs text-white shadow-sm"
           role="tooltip"
         >
           <p className="font-semibold">
@@ -111,11 +104,11 @@ export function ChamberHemicycle({ composition, className }: Props) {
       ) : null}
 
       <div className="mt-1 text-center">
-        <p className="text-3xl font-black tabular-nums leading-none text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <p className="text-3xl font-black tabular-nums leading-none text-parliament-fg">
           {composition.hasActiveFilters ? (
             <>
               {composition.activeSeatCount}
-              <span className="text-xl font-bold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <span className="text-xl font-bold text-parliament-muted">
                 {' '}
                 / {composition.totalSeats}
               </span>
@@ -124,20 +117,20 @@ export function ChamberHemicycle({ composition, className }: Props) {
             composition.totalSeats
           )}
         </p>
-        <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="mt-1 text-sm text-parliament-muted">
           {getChamberLabel(composition.chamber)}
           {composition.hasActiveFilters ? ' · filtru activ' : ''}
         </p>
       </div>
 
-      <div className="mt-3 flex justify-between gap-4 border-t border-[#b1b4b6] pt-3 text-xs text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]">
+      <div className="mt-3 flex justify-between gap-4 border-t border-parliament-border pt-3 text-xs text-parliament-muted">
         <p>
-          <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          <span className="font-bold text-parliament-fg">
             {composition.majoritySeats}
           </span>{' '}
           locuri pentru majoritate
         </p>
-        <p className="font-medium" style={{ color: chamberAccent }}>
+        <p className={cn('font-medium', PARLIAMENT_CHAMBER_LABEL_CLASS_NAMES[composition.chamber])}>
           {formatSeatSharePercent(
             composition.activeSeatCount,
             composition.totalSeats,

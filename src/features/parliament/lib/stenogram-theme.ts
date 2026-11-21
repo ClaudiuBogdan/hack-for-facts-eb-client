@@ -404,3 +404,7 @@ export const stenogramRailTooltipClassName =
 
 /** Hidden on screen, shown only on paper (source URL, provenance footer). */
 export const stenogramPrintOnlyClassName = 'hidden print:block'
+
+/** The speech activity panel's previous/next range buttons. */
+export const speechActivityStepButtonClassName =
+  'inline-flex size-9 shrink-0 items-center justify-center rounded-none border-2 border-parliament-border bg-parliament-card text-parliament-fg transition-colors hover:bg-parliament-surface disabled:opacity-40 disabled:hover:bg-parliament-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus'

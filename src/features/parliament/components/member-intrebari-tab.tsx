@@ -74,7 +74,7 @@ export function MemberIntrebariTab({ member }: Props) {
       </aside>
 
       {questions.length > 0 ? (
-        <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className="text-sm text-parliament-muted">
           {isPartial ? (
             <>
               Se afișează cele mai recente{" "}
@@ -110,8 +110,8 @@ export function MemberIntrebariTab({ member }: Props) {
                   <span
                     className={`rounded-none px-2 py-1 text-xs font-semibold ${
                       entry.status === "raspuns"
-                        ? "bg-[#eef7f1] text-[#006435]"
-                        : "bg-[#f3f2f1] text-[#505a5f]"
+                        ? "bg-parliament-success/10 text-parliament-commons"
+                        : "bg-parliament-surface text-parliament-muted"
                     }`}
                   >
                     {getQuestionStatusLabel(entry.status)}
@@ -123,21 +123,21 @@ export function MemberIntrebariTab({ member }: Props) {
                   href={entry.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-[#1d70b8] underline underline-offset-2 hover:text-[#1d70b8]/80"
+                  className="inline-flex items-center gap-1.5 text-sm text-parliament-link underline underline-offset-2 hover:text-parliament-link/80"
                 >
                   Sursa oficială
                   <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </a>
               ) : null}
               {entry.aiMetadata ? (
-                <details className="group border border-[#512178]/30 bg-[#faf9ff] dark:bg-[var(--pnrr-card)]">
-                  <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-[#512178] marker:content-none">
+                <details className="group border border-parliament-resource/30 bg-parliament-resource/5">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-parliament-resource marker:content-none">
                     <Sparkles className="h-4 w-4" aria-hidden />
                     Rezumat generat de AI
                   </summary>
-                  <div className="border-t border-[#512178]/15 p-1">
+                  <div className="border-t border-parliament-resource/15 p-1">
                     <AiSummaryCard
-                      className="border-0 border-l-0 bg-transparent p-4 dark:bg-transparent"
+                      className="border-0 border-l-0 bg-transparent p-4"
                       disclaimer={entry.aiMetadata.disclaimer}
                       model={entry.aiMetadata.model}
                       summary={entry.aiMetadata.summary}
@@ -155,7 +155,7 @@ export function MemberIntrebariTab({ member }: Props) {
             </div>
           ))
         ) : (
-          <p className="text-base leading-7 text-[#505a5f]">
+          <p className="text-base leading-7 text-parliament-muted">
             Nu există întrebări publicate pentru acest parlamentar.
           </p>
         )}

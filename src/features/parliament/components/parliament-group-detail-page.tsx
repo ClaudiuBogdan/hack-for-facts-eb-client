@@ -85,7 +85,7 @@ function RosterCard({ member }: { readonly member: ParliamentMember }) {
       params={{ memberId: member.memberId }}
       className={cn(
         groupCardClassName,
-        'block p-4 transition-colors hover:bg-[#f3f2f1] dark:hover:bg-[var(--pnrr-surface)]',
+        'block p-4 transition-colors hover:bg-parliament-surface',
       )}
     >
       <p className="font-bold leading-tight">
@@ -98,7 +98,7 @@ function RosterCard({ member }: { readonly member: ParliamentMember }) {
         <span
           className={cn(
             groupBadgeClassName,
-            'mt-2 border-[#505a5f] text-[#505a5f] dark:border-[var(--pnrr-muted)] dark:text-[var(--pnrr-muted)]',
+            'mt-2 border-parliament-muted text-parliament-muted',
           )}
         >
           Mandat încheiat
@@ -380,7 +380,7 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
                       judet: undefined,
                     })
                   }
-                  className={cn(groupControlClassName, 'mt-1.5 w-full px-3')}
+                  className={cn(groupControlClassName, 'mt-1.5 w-full px-3 dark:scheme-dark')}
                 >
                   {PARLIAMENT_LEGISLATURE_YEARS.map((year) => (
                     <option key={year} value={year}>
@@ -419,7 +419,7 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
                   id="group-roster-county"
                   value={search.judet ?? ''}
                   onChange={(event) => setFilter({ judet: event.target.value })}
-                  className={cn(groupControlClassName, 'mt-1.5 w-full px-3')}
+                  className={cn(groupControlClassName, 'mt-1.5 w-full px-3 dark:scheme-dark')}
                 >
                   <option value="">Toate ({members.length})</option>
                   {counties.map((county) => (
@@ -431,7 +431,7 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[#b1b4b6] pt-3 dark:border-[var(--pnrr-border)]">
+            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-parliament-border pt-3">
               <p className={groupMutedTextClassName}>
                 {membersLoading
                   ? 'Se încarcă lista…'

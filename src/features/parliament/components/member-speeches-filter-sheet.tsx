@@ -15,18 +15,15 @@ import {
   countActiveMemberSpeechFilters,
   getMemberSpeechQ,
 } from '../lib/member-speeches-filter'
+import {
+  memberFilterDateInputClassName,
+  memberFilterInputClassName,
+  memberFilterSectionLabelClassName,
+  memberFilterToggleItemClassName,
+} from '../lib/member-detail-theme'
 
 /** Patch merged into the search + committed to the URL by the tab. */
 export type MemberSpeechesFilterPatch = Partial<MemberSpeechesSearch>
-
-const SECTION_LABEL_CLASS =
-  'text-xs font-bold uppercase tracking-wide text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
-
-const TOGGLE_ITEM_CLASS =
-  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] data-[state=on]:border-[#1d70b8] data-[state=on]:bg-[#1d70b8] data-[state=on]:text-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]'
-
-const INPUT_CLASS =
-  'h-10 w-full rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
 
 /** Debounce before a keystroke reaches the URL/query (avoids a fetch per key). */
 const Q_DEBOUNCE_MS = 400
@@ -77,32 +74,32 @@ export function MemberSpeechesFilterSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="flex w-full max-w-full flex-col gap-0 overflow-hidden border-l-2 border-[#b1b4b6] bg-white p-0 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-bg)] sm:max-w-md"
+        className="flex w-full max-w-full flex-col gap-0 overflow-hidden border-l-2 border-parliament-border bg-parliament-card p-0 sm:max-w-md"
       >
-        <SheetHeader className="border-b-2 border-[#b1b4b6] p-6 pr-14 text-left dark:border-[var(--pnrr-border)]">
-          <SheetTitle className="text-left text-2xl font-black tracking-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        <SheetHeader className="border-b-2 border-parliament-border p-6 pr-14 text-left">
+          <SheetTitle className="text-left text-2xl font-black tracking-tight text-parliament-fg">
             Filtre intervenții
           </SheetTitle>
-          <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <SheetDescription className="pt-1 text-left text-sm font-semibold text-parliament-muted">
             {activeCount} {activeCount === 1 ? 'filtru activ' : 'filtre active'}
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Interval de timp</Label>
+            <Label className={memberFilterSectionLabelClassName}>Interval de timp</Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label
                   htmlFor="member-speeches-from"
-                  className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+                  className="text-xs font-normal text-parliament-muted"
                 >
                   De la
                 </Label>
                 <input
                   id="member-speeches-from"
                   type="date"
-                  className={INPUT_CLASS}
+                  className={memberFilterDateInputClassName}
                   value={search.from ?? ''}
                   max={search.to ?? undefined}
                   onChange={(event) =>
@@ -113,14 +110,14 @@ export function MemberSpeechesFilterSheet({
               <div className="space-y-1">
                 <Label
                   htmlFor="member-speeches-to"
-                  className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+                  className="text-xs font-normal text-parliament-muted"
                 >
                   Până la
                 </Label>
                 <input
                   id="member-speeches-to"
                   type="date"
-                  className={INPUT_CLASS}
+                  className={memberFilterDateInputClassName}
                   value={search.to ?? ''}
                   min={search.from ?? undefined}
                   onChange={(event) =>
@@ -132,7 +129,7 @@ export function MemberSpeechesFilterSheet({
           </section>
 
           <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Tipul ședinței</Label>
+            <Label className={memberFilterSectionLabelClassName}>Tipul ședinței</Label>
             <ToggleGroup
               type="single"
               value={search.session ?? ''}
@@ -144,10 +141,10 @@ export function MemberSpeechesFilterSheet({
               }
               className="grid grid-cols-2 gap-2"
             >
-              <ToggleGroupItem value="proprie" className={TOGGLE_ITEM_CLASS}>
+              <ToggleGroupItem value="proprie" className={memberFilterToggleItemClassName}>
                 Camera proprie
               </ToggleGroupItem>
-              <ToggleGroupItem value="comun" className={TOGGLE_ITEM_CLASS}>
+              <ToggleGroupItem value="comun" className={memberFilterToggleItemClassName}>
                 Ședință comună
               </ToggleGroupItem>
             </ToggleGroup>
@@ -156,7 +153,7 @@ export function MemberSpeechesFilterSheet({
           <section className="space-y-2">
             <Label
               htmlFor="member-speeches-q"
-              className={SECTION_LABEL_CLASS}
+              className={memberFilterSectionLabelClassName}
             >
               Căutare în intervenții
             </Label>
@@ -165,30 +162,30 @@ export function MemberSpeechesFilterSheet({
               type="search"
               inputMode="search"
               placeholder="Caută în titlu, rezumat și transcriere…"
-              className={INPUT_CLASS}
+              className={memberFilterInputClassName}
               value={qDraft}
               onChange={(event) => setQDraft(event.target.value)}
             />
-            <p className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="text-xs font-normal text-parliament-muted">
               Caută textul integral al intervenției, unde transcrierea este
               disponibilă.
             </p>
           </section>
         </div>
 
-        <div className="border-t-2 border-[#b1b4b6] p-4 dark:border-[var(--pnrr-border)]">
+        <div className="border-t-2 border-parliament-border p-4">
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="outline"
-              className="h-11 rounded-none border-2 border-[#b1b4b6] bg-white px-2 text-xs font-black uppercase tracking-wide text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] sm:text-sm"
+              className="h-11 rounded-none border-2 border-parliament-border bg-parliament-card px-2 text-xs font-black uppercase tracking-wide text-parliament-fg hover:bg-parliament-surface sm:text-sm"
               onClick={onClearAll}
             >
               Golește filtrele
             </Button>
             <Button
               type="button"
-              className="h-11 rounded-none border-2 border-[#1d70b8] bg-[#1d70b8] px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
+              className="h-11 rounded-none border-2 border-parliament-link bg-parliament-action px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm"
               onClick={() => onOpenChange(false)}
             >
               Închide
@@ -271,14 +268,14 @@ export function MemberSpeechesActiveFilters({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex max-w-full items-center gap-1.5 border-2 border-[#b1b4b6] bg-[#f3f2f1] px-2.5 py-1 text-sm font-semibold text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]"
+          className="inline-flex max-w-full items-center gap-1.5 border-2 border-parliament-border bg-parliament-surface px-2.5 py-1 text-sm font-semibold text-parliament-fg"
         >
           <span className="min-w-0 truncate">{chip.label}</span>
           <button
             type="button"
             onClick={chip.onRemove}
             aria-label={`Elimină filtrul ${chip.label}`}
-            className="inline-flex h-4 w-4 shrink-0 items-center justify-center hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            className="inline-flex h-4 w-4 shrink-0 items-center justify-center hover:text-parliament-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
           >
             <X className="h-3.5 w-3.5" aria-hidden />
           </button>
@@ -287,7 +284,7 @@ export function MemberSpeechesActiveFilters({
       <button
         type="button"
         onClick={onClearAll}
-        className="text-sm font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+        className="text-sm font-semibold text-parliament-fg underline underline-offset-4 hover:text-parliament-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-parliament-focus"
       >
         Șterge tot
       </button>
