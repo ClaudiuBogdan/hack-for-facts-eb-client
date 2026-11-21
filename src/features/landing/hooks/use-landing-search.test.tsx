@@ -55,6 +55,16 @@ const PARTIAL = {
   companyContribution: 'PARTIAL', companyContributionReason: 'generation_scope_stale',
 } as const
 
+function uat(cui: string, title: string, countyName = 'SIBIU'): EntitySearchHit {
+  return {
+    ...COMPANY, id: 'organization_' + cui, docType: 'organization', title, countyName, isUat: true,
+    docKey: cui, identifiers: [cui], href: '/entities/' + cui, roles: ['organization'],
+  }
+}
+
+const SIBIU = uat('4270740', 'MUNICIPIUL SIBIU')
+const SIBOT = uat('4562354', 'COMUNA ȘIBOT', 'ALBA')
+
 function setup(debounceMs = 0) {
   const queryClient = createTestQueryClient()
   function Wrapper({ children }: { readonly children: ReactNode }) {
@@ -97,7 +107,60 @@ describe('landing universal search', () => {
     expect(LANDING_SEARCH_TYPES).toEqual(['organization', 'company', 'public_enterprise', 'ngo', 'organization_unclassified', 'legal_act', 'ins_dataset'])
     expect(result.current.status).toEqual({ kind: 'results', results: [COMPANY], stale: false, partial: false })
     await search(result, '  Dante  ')
+    expect(searchEntities).toHaveBeenCalledTimes(2)
+  })
+  it.each(['sibiu', 'sib'])('promotes Municipiul Sibiu once for %s', async (term) => {
+    searchEntities.mockResolvedValueOnce(response(term === 'sibiu' ? [COMPANY] : [COMPANY, SIBIU]))
+      .mockResolvedValueOnce(response([SIBOT, SIBIU]))
+    const { result } = setup()
+    await search(result, term)
+    expect(searchEntities).toHaveBeenCalledWith({
+      q: term, docTypes: ['organization'], isUat: true, limit: 8,
+    }, expect.any(AbortSignal))
+    expect(result.current.results).toEqual([SIBIU, COMPANY])
+  })
+  it('keeps exact locality names with each county and compares Romanian names accent-insensitively', async () => {
+    const covasna = uat('12126500', 'COMUNA VALEA MARE', 'Covasna')
+    const valcea = uat('2541754', 'COMUNA VALEA MARE', 'VÂLCEA')
+    const pravat = uat('5010196', 'COMUNA VALEA MARE-PRAVĂȚ', 'ARGEȘ')
+    const brasov = uat('4384206', 'MUNICIPIUL BRAȘOV', 'BRAȘOV')
+    const { result } = setup()
+    searchEntities.mockResolvedValueOnce(response([COMPANY]))
+      .mockResolvedValueOnce(response([pravat, covasna, valcea]))
+    await search(result, 'valea mare')
+    expect(result.current.results).toEqual([covasna, valcea, COMPANY])
+    searchEntities.mockResolvedValueOnce(response([COMPANY]))
+      .mockResolvedValueOnce(response([brasov]))
+    await search(result, 'brasov')
+    await waitFor(() => expect(result.current.results).toEqual([brasov, COMPANY]))
+  })
+  it('does not promote a locality mentioned inside a longer query', async () => {
+    searchEntities.mockResolvedValueOnce(response([COMPANY]))
+      .mockResolvedValueOnce(response([SIBIU]))
+    const { result } = setup()
+    await search(result, 'universitatea sibiu')
+    expect(result.current.results).toEqual([COMPANY])
+  })
+  it('uses regular results if the optional lookup fails', async () => {
+    searchEntities.mockResolvedValueOnce(response([COMPANY]))
+      .mockRejectedValueOnce(new Error('lookup unavailable'))
+    const { result } = setup()
+    await search(result, 'sibiu')
+    expect(result.current.results).toEqual([COMPANY])
+  })
+  it('does not promote a candidate from a different index generation', async () => {
+    searchEntities.mockResolvedValueOnce(response([COMPANY]))
+      .mockResolvedValueOnce(response([SIBIU], PARTIAL))
+    const { result } = setup()
+    await search(result, 'sibiu')
+    expect(result.current.results).toEqual([COMPANY])
+  })
+  it('keeps exact CUI searches on the normal path', async () => {
+    searchEntities.mockResolvedValue(response([SIBIU]))
+    const { result } = setup()
+    await search(result, '4270740')
     expect(searchEntities).toHaveBeenCalledTimes(1)
+    expect(result.current.results).toEqual([SIBIU])
   })
   it('sends a caller-fixed scope, keys the cache by it, and offers no chips over it', async () => {
     const queryClient = createTestQueryClient()
@@ -241,14 +304,14 @@ describe('landing universal search', () => {
     await searchIn('Dante')
     await searchIn('Dante')
     // A current answer: the second field reads the first one's cache.
-    expect(searchEntities).toHaveBeenCalledTimes(1)
+    expect(searchEntities).toHaveBeenCalledTimes(2)
 
     searchEntities.mockResolvedValue(response([], UNAVAILABLE))
     const first = await searchIn('Sibiu')
     expect(first.result.current.status.kind).toBe('incomplete')
     const second = await searchIn('Sibiu')
     // A non-current answer is asked again, not served from the cache as the answer.
-    expect(searchEntities).toHaveBeenCalledTimes(3)
+    expect(searchEntities).toHaveBeenCalledTimes(6)
     expect(second.result.current.status.kind).toBe('incomplete')
   })
   it('shows a failed re-read of the same term as an error, never its cached rows', async () => {
@@ -344,10 +407,10 @@ describe('landing universal search', () => {
     searchEntities.mockImplementation(() => new Promise(() => {}))
     const { result, unmount } = setup()
     act(() => result.current.setTerm('Dante'))
-    await waitFor(() => expect(searchEntities).toHaveBeenCalledTimes(1))
-    const signal = searchEntities.mock.calls[0][1] as AbortSignal
+    await waitFor(() => expect(searchEntities).toHaveBeenCalledTimes(2))
+    const signals = searchEntities.mock.calls.map((call) => call[1] as AbortSignal)
     unmount()
-    expect(signal.aborted).toBe(true)
+    expect(signals.every((signal) => signal.aborted)).toBe(true)
   })
 })
 
@@ -448,7 +511,7 @@ describe('INS scope transitions', () => {
     expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: ['ins_dataset'], limit: 8 }, expect.any(AbortSignal))
     expect(result.current.results).toEqual([matrix])
     act(() => result.current.removeFilter(result.current.filters[0]))
-    await waitFor(() => expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: LANDING_SEARCH_TYPES, limit: 8 }, expect.any(AbortSignal)))
+    await waitFor(() => expect(searchEntities).toHaveBeenCalledWith({ q: 'populație', docTypes: LANDING_SEARCH_TYPES, limit: 8 }, expect.any(AbortSignal)))
   })
   it.each([getSearchFilter('uat'), getSearchFilter('pnrr'), getSearchFilter('public_enterprise'), hospital, excluded])('leaves INS when selecting $id', filter => {
     const { result } = setup()

@@ -9,6 +9,7 @@ import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { absorbTriggers, loadEntityTagVocabulary, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
+import { rankUatSearchHits, uatLookupQuery } from '@/features/landing/lib/uat-search-ranking'
 
 export type SearchStatus =
   | { readonly kind: 'idle' }
@@ -56,6 +57,24 @@ const NO_FILTERS: readonly SearchFilter[] = []
 
 /** How long an answer is trusted from the cache; a non-current one is asked again at once. */
 const CURRENT_STALE_MS = 1000 * 60 * 5
+// An optional lookup must never leave the regular results waiting on a slow response.
+const UAT_LOOKUP_TIMEOUT_MS = 400
+
+async function lookupUats(query: string, signal: AbortSignal) {
+  if (signal.aborted) return null
+  const controller = new AbortController()
+  const abort = () => controller.abort()
+  signal.addEventListener('abort', abort, { once: true })
+  const timeout = setTimeout(abort, UAT_LOOKUP_TIMEOUT_MS)
+  try {
+    return await searchEntitiesLive({ q: query, docTypes: ['organization'], isUat: true, limit: SEARCH_LIMIT }, controller.signal)
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timeout)
+    signal.removeEventListener('abort', abort)
+  }
+}
 
 /**
  * One request's answer, as the field reads it. The field asks for the first
@@ -127,6 +146,10 @@ export function useSearchResults({
   const trimmed = term.trim()
   const normalized = useDebouncedValue(trimmed, debounceMs)
   const isQueryable = normalized.length >= MIN_QUERY_CHARS
+  const uatQuery = suggestionsEnabled && filters.length === 0 && entityTags.length === 0
+    && roles.length === 0 && docTypes.length > 1 && docTypes.includes('organization')
+    ? uatLookupQuery(normalized)
+    : null
   // The request carries the query, the caller's scope and the chips' filters.
   // The scope is in the key because the same term over different families is
   // a different answer, and two fields on two pages must not share one. A
@@ -139,18 +162,24 @@ export function useSearchResults({
     ...(roles.length > 0 ? [`roles:${roles.join(',')}`] : []),
   ].join('|')
   const { data, error, isError, isFetching, isPlaceholderData, isSuccess, refetch } = useQuery({
-    queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters],
+    queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters, uatQuery],
     queryFn: async ({ signal }): Promise<LandingAnswer> => {
       const tags = [...entityTags, ...(serverFilters.entityTags ?? [])]
-      const response = await searchEntitiesLive({
+      const regularSearch = searchEntitiesLive({
         q: normalized, docTypes, ...serverFilters, ...(tags.length > 0 && { entityTags: tags }),
         ...(roles.length > 0 && { roles }), limit: SEARCH_LIMIT,
       }, signal)
+      const uatSearch = uatQuery === null ? null : lookupUats(normalized, signal)
+      const [response, uats] = await Promise.all([regularSearch, uatSearch])
       // The engine could not look: an error to retry, never an empty answer.
       if (response.degraded) throw new Error('Search unavailable')
       const current = response.companyContribution === 'CURRENT'
+      const hits = response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit))
+      const sameGeneration = response.generation !== null && uats?.generation?.generationId === response.generation.generationId
       return {
-        hits: response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit)),
+        hits: uatQuery !== null && uats && !uats.degraded && sameGeneration
+          ? rankUatSearchHits(uatQuery, hits, uats.hits, SEARCH_LIMIT)
+          : hits,
         current,
         // The initial page is the whole answer only when it is current and the
         // server offers no next page; otherwise its emptiness proves nothing.
