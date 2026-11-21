@@ -393,14 +393,18 @@ describe('fetchLegalActDetailLive on legal_v2', () => {
       defaultBasis: basis,
       defaultOrderReviewed: reviewed,
       latestAvailableDocumentId: latest,
+      latestDocumentId: basis === 'no_known_form' ? null : 'f900014',
       ...(basis !== 'current' && { canonicalDocumentId: null, canonical: null }),
     })
     const act = await fetchLegalActDetailLive('1')
+    expect(act?.latestDocumentId).toBe(basis === 'no_known_form' ? null : 'f900014')
     expect(act?.defaultBasis).toBe(basis)
     expect(act?.defaultOrderReviewed).toBe(reviewed)
     expect(act?.latestAvailableDocumentId).toBe(latest)
     const [query] = graphqlQueryMock.mock.calls[0] as unknown as [string]
-    expect(query).toMatch(/defaultBasis\s+defaultOrderReviewed\s+latestAvailableDocumentId/)
+    expect(query).toMatch(
+      /defaultBasis\s+defaultOrderReviewed\s+latestAvailableDocumentId\s+latestDocumentId/,
+    )
   })
 
   it("links the Portal through the canonical form's own page, never an f<id>", async () => {

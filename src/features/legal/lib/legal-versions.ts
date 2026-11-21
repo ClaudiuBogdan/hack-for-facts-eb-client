@@ -216,13 +216,19 @@ export function defaultReadingOf(
 }
 
 /**
- * The latest form, when it has no text (`latest_not_available`): the newest
- * listed version that is not readable. Null when the server did not say the
- * latest form is unavailable, or when the list cannot name it.
+ * The latest form, when it has no text (`latest_not_available`). The server
+ * names it (`latestDocumentId`, the form its `latest_any_kind` rule picks,
+ * same-day ties included); only when that field is null (an older server)
+ * is it inferred as the newest listed version that is not readable. Null
+ * when the server did not say the latest form is unavailable, or when the
+ * list cannot name it.
  */
 export function latestUnavailableVersion(
-  act: Pick<LegalActDetail, 'defaultBasis' | 'documents'>,
+  act: Pick<LegalActDetail, 'defaultBasis' | 'documents' | 'latestDocumentId'>,
 ): LegalActDocumentVersion | null {
   if (act.defaultBasis !== 'latest_not_available') return null
+  if (act.latestDocumentId !== null) {
+    return act.documents.find((doc) => doc.documentId === act.latestDocumentId) ?? null
+  }
   return orderVersionsNewestFirst(act.documents).find((doc) => !isReadableVersion(doc)) ?? null
 }

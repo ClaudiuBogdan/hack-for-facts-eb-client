@@ -23,6 +23,7 @@ const LEGACY_ACT_SOURCE: Pick<
   | 'defaultBasis'
   | 'defaultOrderReviewed'
   | 'latestAvailableDocumentId'
+  | 'latestDocumentId'
 > = {
   dataSource: 'legal',
   bridgedFields: [],
@@ -30,6 +31,7 @@ const LEGACY_ACT_SOURCE: Pick<
   defaultBasis: null,
   defaultOrderReviewed: null,
   latestAvailableDocumentId: null,
+  latestDocumentId: null,
 }
 
 /**
@@ -545,6 +547,7 @@ export const legalActDetailV2Fixture: LegalActDetail = {
   defaultBasis: 'current',
   defaultOrderReviewed: true,
   latestAvailableDocumentId: null,
+  latestDocumentId: 'f900012',
   canonical: {
     documentId: V2_CONSOLIDATION.documentId,
     ...V2_CANONICAL_HEAD,
@@ -582,6 +585,7 @@ export const legalActDetailV2UnbridgedFixture: LegalActDetail = {
   bridgedFields: [],
   newerNotAvailable: 0,
   defaultBasis: 'current',
+  latestDocumentId: V2_ORIGINAL.documentId,
   canonical: {
     documentId: V2_ORIGINAL.documentId,
     ...V2_CANONICAL_HEAD,
@@ -629,6 +633,7 @@ export const legalActDetailV2LatestNotAvailableFixture: LegalActDetail = {
   newerNotAvailable: 1,
   defaultBasis: 'latest_not_available',
   latestAvailableDocumentId: V2_CONSOLIDATION.documentId,
+  latestDocumentId: V2_REPUBLICATION_NOT_LOADED.documentId,
   canonical: null,
   documents: [
     V2_ORIGINAL,
@@ -655,6 +660,7 @@ export const legalActDetailV2NoKnownFormFixture: LegalActDetail = {
   defaultBasis: 'no_known_form',
   defaultOrderReviewed: null,
   latestAvailableDocumentId: null,
+  latestDocumentId: null,
   documents: [],
 }
 

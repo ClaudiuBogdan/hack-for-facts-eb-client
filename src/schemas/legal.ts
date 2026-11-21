@@ -477,6 +477,12 @@ export const legalActDetailSchema = z.object({
   defaultOrderReviewed: z.boolean().nullable(),
   /** legal_v2 only: the latest form with text, when the latest form has none. */
   latestAvailableDocumentId: z.string().nullable(),
+  /**
+   * legal_v2 only: the form the `latest_any_kind` rule picks as latest,
+   * whether or not it has text (`f<id>`). Names the latest form in the "not
+   * current" notice and the selector; null on legacy or an older server.
+   */
+  latestDocumentId: z.string().nullable(),
   canonical: legalDocumentSchema.nullable(),
   summary: legalActSummarySchema.nullable(),
   /**

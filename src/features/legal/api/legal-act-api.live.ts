@@ -58,6 +58,7 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
       defaultBasis
       defaultOrderReviewed
       latestAvailableDocumentId
+      latestDocumentId
       canonical {
         documentId
         versionKind
@@ -439,6 +440,7 @@ function mapAct(raw: RawAct): LegalActDetail {
     defaultBasis: asString(raw.defaultBasis),
     defaultOrderReviewed: asBoolean(raw.defaultOrderReviewed),
     latestAvailableDocumentId: asString(raw.latestAvailableDocumentId),
+    latestDocumentId: asString(raw.latestDocumentId),
     canonical: canonical
       ? {
           documentId: String(canonical.documentId ?? ''),

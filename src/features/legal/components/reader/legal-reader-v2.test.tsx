@@ -291,6 +291,32 @@ describe('ActReadingLayout on legal_v2', () => {
       expect(navigateMock).toHaveBeenLastCalledWith(expect.objectContaining({ search: {} }))
     })
 
+    it("names the latest form the server picks (latestDocumentId), not the client's guess", async () => {
+      // A same-day tie: the server's rule picked the consolidation f900013
+      // (not loaded), not the republication the newest-first guess would name.
+      const act = {
+        ...legalActDetailV2LatestNotAvailableFixture,
+        latestDocumentId: 'f900013',
+      }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      const notice = (await screen.findByText(/Cea mai recentă versiune a actului/)).closest(
+        '[role="note"]',
+      )
+      expect(notice).toHaveTextContent(/\(formă consolidată neoficială, .*2020.*\)/)
+      const select = screen.getByLabelText(/Versiunea textului/)
+      const disabled = Array.from(select.querySelectorAll('option')).filter((o) => o.disabled)
+      expect(disabled.map((o) => o.value)).toEqual(['f900013'])
+    })
+
+    it('falls back to the newest unreadable version when the server does not name the latest', async () => {
+      const act = { ...legalActDetailV2LatestNotAvailableFixture, latestDocumentId: null }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      const notice = (await screen.findByText(/Cea mai recentă versiune a actului/)).closest(
+        '[role="note"]',
+      )
+      expect(notice).toHaveTextContent(/\(republicare, .*2025.*\)/)
+    })
+
     it.each([
       ['latest_not_available with no form that has text', legalActDetailV2NoTextFixture],
       ['no_known_form', legalActDetailV2NoKnownFormFixture],
