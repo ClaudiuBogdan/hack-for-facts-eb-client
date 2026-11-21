@@ -9,15 +9,20 @@ import vocabulary from '@/assets/entity-tags.json'
 import { getSearchFilter, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { EntitySearchHit, EntitySearchResult } from '@/schemas/entity-search'
 import { LANDING_SEARCH_TYPES, useEntitySelection, useSearchResults } from '@/features/landing/hooks/use-landing-search'
+import { indexUatSearchDirectory } from '@/features/landing/lib/uat-search-ranking'
 import { announcement, ResultRowContent } from '@/features/landing/components/search/search-parts'
 
 const navigate = vi.fn()
 const searchEntities = vi.fn()
+const loadDirectory = vi.fn()
 const capture = vi.fn()
 vi.mock('@lingui/react', () => ({ useLingui: () => ({ i18n: { locale: 'ro' } }) }))
 vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
 vi.mock('@/features/entity-search/api/entity-search-api.live', () => ({
   searchEntitiesLive: (...args: readonly unknown[]) => searchEntities(...args),
+}))
+vi.mock('@/features/landing/lib/uat-search-directory-loader', () => ({
+  loadUatSearchDirectory: () => loadDirectory(),
 }))
 vi.mock('@/lib/analytics', () => ({ Analytics: {
   EVENTS: { EntitySearchPerformed: 'search', EntitySearchSelected: 'selected' },
@@ -55,6 +60,29 @@ const PARTIAL = {
   companyContribution: 'PARTIAL', companyContributionReason: 'generation_scope_stale',
 } as const
 
+function uat(cui: string, title: string, countyName = 'SIBIU'): EntitySearchHit {
+  return {
+    ...COMPANY, id: 'organization_' + cui, docType: 'organization', title, countyName, isUat: true,
+    docKey: cui, identifiers: [cui], href: '/entities/' + cui, roles: ['organization'],
+  }
+}
+
+const SIBIU = uat('4270740', 'MUNICIPIUL SIBIU')
+const directory = indexUatSearchDirectory([
+  ['4562354', 'Șibot', 'AB', 'commune'],
+  ['4270740', 'Sibiu', 'SB', 'municipality'],
+  ['4305857', 'Cluj-Napoca', 'CJ', 'municipality'],
+  ['12126500', 'Valea Mare', 'CV', 'commune'],
+  ['2541754', 'Valea Mare', 'VL', 'commune'],
+  ['5010196', 'Valea Mare-Pravăț', 'AG', 'commune'],
+  ['4384206', 'Brașov', 'BV', 'municipality'],
+  ['4515255', 'Mangalia', 'CT', 'municipality'],
+  ['5123780', 'Singureni', 'GR', 'commune'],
+  ['5359111', 'Ludești', 'DB', 'commune'],
+  ['4505359', 'București Sectorul 1', 'B', 'sector'],
+  ['4267117', 'București', 'B', 'municipality'],
+])
+
 function setup(debounceMs = 0) {
   const queryClient = createTestQueryClient()
   function Wrapper({ children }: { readonly children: ReactNode }) {
@@ -76,6 +104,7 @@ async function tagSuggestion(result: { current: ReturnType<typeof useSearchResul
 beforeEach(() => {
   navigate.mockReset(); capture.mockReset(); searchEntities.mockReset()
   searchEntities.mockResolvedValue(response())
+  loadDirectory.mockReset().mockResolvedValue(directory)
 })
 
 describe('landing universal search', () => {
@@ -87,6 +116,7 @@ describe('landing universal search', () => {
     act(() => result.current.setTerm('Dante'))
     expect(result.current.status.kind).toBe('pending')
     expect(searchEntities).not.toHaveBeenCalled()
+    expect(loadDirectory).not.toHaveBeenCalled()
   })
   it('uses universal search with the supported families and cancellation', async () => {
     const { result } = setup()
@@ -98,6 +128,103 @@ describe('landing universal search', () => {
     expect(result.current.status).toEqual({ kind: 'results', results: [COMPANY], stale: false, partial: false })
     await search(result, '  Dante  ')
     expect(searchEntities).toHaveBeenCalledTimes(1)
+    expect(loadDirectory).toHaveBeenCalledTimes(1)
+  })
+  it.each(['sibiu', 'sib'])('promotes Municipiul Sibiu once for %s with one search request', async (term) => {
+    const liveSibiu = { ...SIBIU, docKey: null }
+    searchEntities.mockResolvedValueOnce(response(term === 'sibiu' ? [COMPANY] : [COMPANY, liveSibiu]))
+    const { result } = setup()
+    await search(result, term)
+    await waitFor(() => expect(result.current.results.map(hit => hit.href)).toEqual([SIBIU.href, COMPANY.href]))
+    expect(searchEntities).toHaveBeenCalledTimes(1)
+    if (term === 'sib') expect(result.current.results[0]).toBe(liveSibiu)
+  })
+  it('keeps exact namesakes with their counties and reuses the loaded directory', async () => {
+    const liveCovasna = { ...uat('12126500', 'COMUNA VALEA MARE'), countyName: null }
+    searchEntities.mockResolvedValueOnce(response([COMPANY, liveCovasna]))
+    const { result } = setup()
+    await search(result, 'valea mare')
+    await waitFor(() => expect(result.current.results.map(hit => hit.docKey)).toEqual(['12126500', '2541754', '14399840']))
+    expect(result.current.results[0]).toEqual({ ...liveCovasna, countyName: 'Covasna' })
+    expect(result.current.results.slice(0, 2).map(hit => hit.countyName)).toEqual(['Covasna', 'Vâlcea'])
+    await search(result, 'brasov')
+    await waitFor(() => expect(result.current.results[0]).toMatchObject({ title: 'Municipiul Brașov', docKey: '4384206' }))
+    expect(loadDirectory).toHaveBeenCalledTimes(1)
+    expect(searchEntities).toHaveBeenCalledTimes(2)
+  })
+  it.each([
+    ['mangalia', '4515255', 'MUNICIPIULUI MANGALIA', 'Constanța'],
+    ['singureni', '5123780', 'PRIMARIA COMUNEI SINGURENI', 'GIURGIU'],
+    ['ludesti', '5359111', 'PRIMĂRIA COMUNEI LUDEȘTI', 'DÂMBOVIȚA'],
+  ])('promotes %s and keeps the published title if the API returned it', async (term, cui, title, county) => {
+    const candidate = uat(cui, title, county)
+    searchEntities.mockResolvedValueOnce(response([COMPANY, candidate]))
+    const { result } = setup()
+    await search(result, term)
+    await waitFor(() => expect(result.current.results).toEqual([candidate, COMPANY]))
+  })
+  it('promotes București itself ahead of its sectors', async () => {
+    const { result } = setup()
+    await search(result, 'bucuresti')
+    await waitFor(() => expect(result.current.results[0]).toMatchObject({ title: 'Municipiul București', docKey: '4267117' }))
+  })
+  it('matches a locality name containing a number', async () => {
+    const { result } = setup()
+    await search(result, 'bucuresti sectorul 1')
+    await waitFor(() => expect(result.current.results[0]?.href).toBe('/entities/4505359'))
+  })
+  it('does not promote a locality mentioned inside a longer query', async () => {
+    const { result } = setup()
+    await search(result, 'universitatea sibiu')
+    expect(result.current.results).toEqual([COMPANY])
+  })
+  it('promotes the current query after the directory arrives late', async () => {
+    let resolveDirectory = (_directory: typeof directory) => {}
+    loadDirectory.mockImplementationOnce(() => new Promise<typeof directory>(resolve => { resolveDirectory = resolve }))
+    const { result } = setup()
+    await search(result, 'sib')
+    expect(result.current.isRankingUats).toBe(true)
+    expect(result.current.results).toEqual([COMPANY])
+    await search(result, 'cluj')
+    await waitFor(() => expect(result.current.isCurrent).toBe(true))
+    act(() => resolveDirectory(directory))
+    await waitFor(() => expect(result.current.results[0]?.href).toBe('/entities/4305857'))
+    expect(result.current.isRankingUats).toBe(false)
+    expect(loadDirectory).toHaveBeenCalledTimes(1)
+  })
+  it('releases ordinary search while a slow directory can still promote a late match', async () => {
+    let resolveDirectory = (_directory: typeof directory) => {}
+    loadDirectory.mockImplementationOnce(() => new Promise<typeof directory>(resolve => { resolveDirectory = resolve }))
+    const { result } = setup()
+    await search(result, 'cluj')
+    expect(result.current.isRankingUats).toBe(true)
+    await waitFor(() => expect(result.current.isRankingUats).toBe(false), { timeout: 3500 })
+    expect(result.current.results).toEqual([COMPANY])
+    act(() => resolveDirectory(directory))
+    await waitFor(() => expect(result.current.results[0]?.href).toBe('/entities/4305857'))
+  })
+  it('uses regular results if loading the directory fails', async () => {
+    loadDirectory.mockRejectedValueOnce(new Error('directory unavailable'))
+    const { result } = setup()
+    await search(result, 'sibiu')
+    await waitFor(() => expect(result.current.isRankingUats).toBe(false))
+    expect(result.current.results).toEqual([COMPANY])
+  })
+  it('does not promote a directory row when the live result explicitly says it is not a UAT', async () => {
+    const institution = { ...SIBIU, isUat: false }
+    searchEntities.mockResolvedValueOnce(response([COMPANY, institution]))
+    const { result } = setup()
+    await search(result, 'sibiu')
+    await waitFor(() => expect(result.current.isRankingUats).toBe(false))
+    expect(result.current.results).toEqual([COMPANY, institution])
+  })
+  it('keeps exact CUI searches on the normal path', async () => {
+    searchEntities.mockResolvedValue(response([SIBIU]))
+    const { result } = setup()
+    await search(result, '4270740')
+    expect(searchEntities).toHaveBeenCalledTimes(1)
+    expect(loadDirectory).not.toHaveBeenCalled()
+    expect(result.current.results).toEqual([SIBIU])
   })
   it('sends a caller-fixed scope, keys the cache by it, and offers no chips over it', async () => {
     const queryClient = createTestQueryClient()
@@ -300,7 +427,7 @@ describe('landing universal search', () => {
     expect(searchEntities).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'sibiu', docTypes: ['organization'], isUat: true }), expect.any(AbortSignal))
     searchEntities.mockResolvedValue(response([COMPANY]))
     act(() => result.current.removeFilter(result.current.filters[0]))
-    await waitFor(() => expect(result.current.results).toEqual([COMPANY]))
+    await waitFor(() => expect(result.current.results.map(hit => hit.href)).toEqual([SIBIU.href, COMPANY.href]))
   })
   it('sends a caller’s tag with a chip’s, never instead of it', async () => {
     const queryClient = createTestQueryClient()
@@ -368,6 +495,15 @@ describe('landing rows and announcements', () => {
       company: { ...COMPANY_PART, countyCode: null, countyName: null },
     })
     expect(text).toContain('județul instituției: Sibiu')
+  })
+  it('labels UATs as town halls and formats the administrative county', () => {
+    const text = rowText({ ...SIBIU, countyName: 'SIBIU' })
+    expect(text).toContain('Primărie · Jud. Sibiu')
+  })
+  it('keeps București as a municipality in the town hall county line', () => {
+    const text = rowText({ ...SIBIU, title: 'Municipiul București', countyName: 'MUNICIPIUL BUCUREȘTI' })
+    expect(text).toContain('Primărie · București')
+    expect(text).not.toContain('Jud.')
   })
   it('keeps a plain county for an identity without a company part', () => {
     const text = rowText({ ...COMPANY, docType: 'organization', countyName: 'Cluj', company: null })
@@ -448,7 +584,7 @@ describe('INS scope transitions', () => {
     expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: ['ins_dataset'], limit: 8 }, expect.any(AbortSignal))
     expect(result.current.results).toEqual([matrix])
     act(() => result.current.removeFilter(result.current.filters[0]))
-    await waitFor(() => expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: LANDING_SEARCH_TYPES, limit: 8 }, expect.any(AbortSignal)))
+    await waitFor(() => expect(searchEntities).toHaveBeenCalledWith({ q: 'populație', docTypes: LANDING_SEARCH_TYPES, limit: 8 }, expect.any(AbortSignal)))
   })
   it.each([getSearchFilter('uat'), getSearchFilter('pnrr'), getSearchFilter('public_enterprise'), hospital, excluded])('leaves INS when selecting $id', filter => {
     const { result } = setup()

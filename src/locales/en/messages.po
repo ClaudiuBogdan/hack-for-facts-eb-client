@@ -27375,6 +27375,7 @@ msgstr "{0} County"
 msgid "jud. {countyReference}<0/> · RO {countryReference}<1/>"
 msgstr "county {countyReference}<0/> · RO {countryReference}<1/>"
 
+#: src/features/landing/components/search/search-parts.tsx:98
 #: src/features/ngos/registry/place.ts:47
 #: src/features/procurement/lib/analytics-places.ts:167
 #: src/features/procurement/lib/analytics-places.ts:304
@@ -38201,6 +38202,7 @@ msgstr "General mayor"
 #~ msgid "Primăria Municipiului Cluj-Napoca"
 #~ msgstr "Primăria Municipiului Cluj-Napoca"
 
+#: src/features/landing/components/search/search-parts.tsx:142
 #: src/features/procurement/lib/buyer-text.ts:84
 msgid "Primărie"
 msgstr "Town hall"

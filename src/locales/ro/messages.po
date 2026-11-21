@@ -27371,6 +27371,7 @@ msgstr "jud. {0}"
 msgid "jud. {countyReference}<0/> · RO {countryReference}<1/>"
 msgstr "jud. {countyReference}<0/> · RO {countryReference}<1/>"
 
+#: src/features/landing/components/search/search-parts.tsx:98
 #: src/features/ngos/registry/place.ts:47
 #: src/features/procurement/lib/analytics-places.ts:167
 #: src/features/procurement/lib/analytics-places.ts:304
@@ -38197,6 +38198,7 @@ msgstr "Primar general"
 #~ msgid "Primăria Municipiului Cluj-Napoca"
 #~ msgstr ""
 
+#: src/features/landing/components/search/search-parts.tsx:142
 #: src/features/procurement/lib/buyer-text.ts:84
 msgid "Primărie"
 msgstr "Primărie"

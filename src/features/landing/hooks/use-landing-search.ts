@@ -6,10 +6,12 @@ import { useNavigate } from '@tanstack/react-router'
 import { Analytics } from '@/lib/analytics'
 import { searchEntitiesLive } from '@/features/entity-search/api/entity-search-api.live'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
+import { loadUatSearchDirectory } from '@/features/landing/lib/uat-search-directory-loader'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { absorbTriggers, loadEntityTagVocabulary, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 import { MIN_QUERY_CHARS } from '@/features/landing/lib/search-limits'
+import { rankUatSearchHits, uatLookupQuery } from '@/features/landing/lib/uat-search-ranking'
 
 export type SearchStatus =
   | { readonly kind: 'idle' }
@@ -57,6 +59,7 @@ const NO_FILTERS: readonly SearchFilter[] = []
 
 /** How long an answer is trusted from the cache; a non-current one is asked again at once. */
 const CURRENT_STALE_MS = 1000 * 60 * 5
+const UAT_DIRECTORY_WAIT_MS = 2000
 
 /**
  * One request's answer, as the field reads it. The field asks for the first
@@ -68,6 +71,7 @@ type LandingAnswer = {
   readonly hits: readonly EntitySearchHit[]
   readonly current: boolean
   readonly complete: boolean
+  readonly canRankUats: boolean
 }
 
 export function useSearchResults({
@@ -128,6 +132,10 @@ export function useSearchResults({
   const trimmed = term.trim()
   const normalized = useDebouncedValue(trimmed, debounceMs)
   const isQueryable = normalized.length >= MIN_QUERY_CHARS
+  const uatQuery = suggestionsEnabled && filters.length === 0 && entityTags.length === 0
+    && roles.length === 0 && docTypes.length > 1 && docTypes.includes('organization')
+    ? uatLookupQuery(normalized)
+    : null
   // The request carries the query, the caller's scope and the chips' filters.
   // The scope is in the key because the same term over different families is
   // a different answer, and two fields on two pages must not share one. A
@@ -150,12 +158,14 @@ export function useSearchResults({
       // The engine could not look: an error to retry, never an empty answer.
       if (response.degraded) throw new Error('Search unavailable')
       const current = response.companyContribution === 'CURRENT'
+      const hits = response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit))
       return {
-        hits: response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit)),
+        hits,
         current,
         // The initial page is the whole answer only when it is current and the
         // server offers no next page; otherwise its emptiness proves nothing.
         complete: current && response.continuation.nextOffset === null,
+        canRankUats: response.generation !== null,
       }
     },
     enabled: isQueryable && enabled,
@@ -164,7 +174,29 @@ export function useSearchResults({
     staleTime: (query) => (query.state.data?.current === false ? 0 : CURRENT_STALE_MS),
     gcTime: 1000 * 60 * 30,
   })
-  const results = data?.hits ?? NO_RESULTS
+  const uatLookupEnabled = enabled && isQueryable && uatQuery !== null
+  const { data: uats, isFetching: uatsFetching } = useQuery({
+    queryKey: ['landingUatDirectory'],
+    queryFn: loadUatSearchDirectory,
+    enabled: uatLookupEnabled,
+    retry: false,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  })
+  const [directorySlow, setDirectorySlow] = useState(false)
+  useEffect(() => {
+    if (!uatLookupEnabled || !uatsFetching || uats !== undefined) return
+    // Let ordinary results settle even if the optional chunk stalls. A late
+    // directory remains usable for the current and subsequent searches.
+    const timer = setTimeout(() => setDirectorySlow(true), UAT_DIRECTORY_WAIT_MS)
+    return () => clearTimeout(timer)
+  }, [uatLookupEnabled, uatsFetching, uats])
+  const isRankingUats = uatLookupEnabled && uatsFetching && uats === undefined && !directorySlow
+  const results = useMemo(() => {
+    const hits = data?.hits ?? NO_RESULTS
+    if (uatQuery === null || !data?.canRankUats || !uats) return hits
+    return rankUatSearchHits(uatQuery, hits, uats, SEARCH_LIMIT)
+  }, [data, uatQuery, uats])
   const isCurrent = isQueryable && normalized === trimmed && isSuccess && !isPlaceholderData && !isFetching
 
   const status: SearchStatus = useMemo(() => {
@@ -173,11 +205,12 @@ export function useSearchResults({
     if (isError && normalized === trimmed) return { kind: isSearchInputError(error) ? 'invalid' : 'error' }
     if (results.length) return { kind: 'results', results, stale: !isCurrent, partial: data?.current === false }
     if (isCurrent) {
+      if (isRankingUats) return { kind: 'loading' }
       if (data?.complete) return { kind: 'empty', term: trimmed }
       return { kind: 'incomplete', term: trimmed, reason: data?.current ? 'more' : 'not-current' }
     }
     return normalized === trimmed && isFetching ? { kind: 'loading' } : { kind: 'pending' }
-  }, [trimmed, normalized, error, isError, isFetching, results, isCurrent, filters, data])
+  }, [trimmed, normalized, error, isError, isFetching, results, isCurrent, isRankingUats, filters, data])
 
   const suggestions = useMemo(
     () => (suggestionsEnabled ? suggestFilters(term, filters, tagFilters) : []),
@@ -233,7 +266,7 @@ export function useSearchResults({
   /** A failed search asked again, as it stands. */
   const retry = useCallback(() => void refetch(), [refetch])
 
-  return { term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, retry }
+  return { term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, isRankingUats, retry }
 }
 
 export function useEntitySelection({
