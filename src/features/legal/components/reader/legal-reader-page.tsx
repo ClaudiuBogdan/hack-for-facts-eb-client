@@ -64,12 +64,14 @@ import {
 import type { LegalRenderFailure } from '../../lib/legal-render-error'
 import { uniqueGazettePublication } from '../../lib/act-facts'
 import {
+  defaultReadingOf,
   findVersion,
   isConsolidationVersion,
   resolveDocOverride,
   withServedForm,
 } from '../../lib/legal-versions'
 import { ActConsolidationBanner } from '../act-consolidation-banner'
+import { ActDefaultNotices } from '../act-default-notices'
 import { ActVersionSelector } from '../act-version-selector'
 import { legalIssuerLabel } from '../../lib/legal-vocabulary'
 import { splitMasthead } from '../../lib/tldf/masthead'
@@ -134,7 +136,11 @@ export function ActReadingLayout({
   // is kept only when it names one of this act's versions — otherwise the
   // default text is read, with the notice. Nothing renders while it resolves:
   // the default text must not flash in and then be replaced.
-  const canonicalId = act.canonical?.documentId ?? null
+  // The default text: the canonical (current) form, or — when the latest
+  // form has no text (legal_v2 `latest_not_available`) — the latest form
+  // that has one, shown as NOT the current version.
+  const defaultReading = defaultReadingOf(act)
+  const canonicalId = defaultReading.documentId
   const resolution = docOverride === undefined ? null : resolveDocOverride(act, docOverride)
   const probeId = resolution?.kind === 'probe' ? resolution.documentId : null
   const resolved = useLegalResolveDocument(act.actId, probeId)
@@ -158,6 +164,9 @@ export function ActReadingLayout({
   const sourceUrl = shownVersion?.sourceUrl ?? act.officialTextUrl
   const showConsolidationBanner =
     render.isSuccess && shownVersion !== null && isConsolidationVersion(shownVersion)
+  const showsDefault = documentId !== null && documentId === canonicalId
+  const notCurrentDefault = showsDefault && defaultReading.basis === 'latest_available'
+  const onlyReadableDefault = showsDefault && defaultReading.basis === 'only_readable'
   const outlineQuery = useLegalOutline(documentId)
   const outline = useMemo(() => outlineQuery.data ?? [], [outlineQuery.data])
   const navigate = useNavigate()
@@ -411,6 +420,13 @@ export function ActReadingLayout({
                 )}
               </div>
             )}
+
+            <ActDefaultNotices
+              act={act}
+              shown={shownVersion}
+              notCurrentDefault={notCurrentDefault}
+              onlyReadableDefault={onlyReadableDefault}
+            />
 
             {showConsolidationBanner && <ActConsolidationBanner version={shownVersion} />}
 

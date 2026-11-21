@@ -458,8 +458,31 @@ export const legalActDetailSchema = z.object({
    * but cannot be shown (no text, not accepted, held). Null on legacy.
    */
   newerNotAvailable: z.number().int().nonnegative().nullable(),
-  /** legal_v2 only: `latest_consolidation` | `original` — why the canonical is the default. */
+  /**
+   * legal_v2 only: the default form's posture under the owner's policy
+   * `latest_any_kind` (latest form of any kind, republications included):
+   *  - `current` — `canonical` is the latest form, and it has text;
+   *  - `latest_not_available` — the latest form has no text, so NO form is
+   *    current and `canonical` is null; `latestAvailableDocumentId` names the
+   *    latest form that has text, shown as "not the current version";
+   *  - `no_known_form`.
+   * Null on the legacy source. An unknown value is kept as served.
+   */
   defaultBasis: z.string().nullable(),
+  /**
+   * legal_v2 only: false when two or more forms share the latest date and a
+   * reviewer has not ranked them all — the fixed tie rule chose. Null when
+   * not applicable (legacy, no forms).
+   */
+  defaultOrderReviewed: z.boolean().nullable(),
+  /** legal_v2 only: the latest form with text, when the latest form has none. */
+  latestAvailableDocumentId: z.string().nullable(),
+  /**
+   * legal_v2 only: the form the `latest_any_kind` rule picks as latest,
+   * whether or not it has text (`f<id>`). Names the latest form in the "not
+   * current" notice and the selector; null on legacy or an older server.
+   */
+  latestDocumentId: z.string().nullable(),
   canonical: legalDocumentSchema.nullable(),
   summary: legalActSummarySchema.nullable(),
   /**

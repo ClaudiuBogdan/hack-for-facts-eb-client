@@ -56,6 +56,9 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
       bridgedFields
       newerNotAvailable
       defaultBasis
+      defaultOrderReviewed
+      latestAvailableDocumentId
+      latestDocumentId
       canonical {
         documentId
         versionKind
@@ -435,6 +438,9 @@ function mapAct(raw: RawAct): LegalActDetail {
     bridgedFields: asStringArray(raw.bridgedFields),
     newerNotAvailable: asNullableInt(raw.newerNotAvailable),
     defaultBasis: asString(raw.defaultBasis),
+    defaultOrderReviewed: asBoolean(raw.defaultOrderReviewed),
+    latestAvailableDocumentId: asString(raw.latestAvailableDocumentId),
+    latestDocumentId: asString(raw.latestDocumentId),
     canonical: canonical
       ? {
           documentId: String(canonical.documentId ?? ''),

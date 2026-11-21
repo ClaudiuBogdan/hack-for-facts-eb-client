@@ -186,3 +186,73 @@ export function withServedForm(
     sourceUrl: served.sourceUrl ?? listed?.sourceUrl ?? null,
   }
 }
+
+/**
+ * Why the act page reads the text it reads by default:
+ *  - `canonical` — the current form (legacy canonical, or legal_v2 `current`);
+ *  - `latest_available` — the latest form has no text, so the page shows the
+ *    latest form that has one, which is NOT the current version;
+ *  - `only_readable` — the server names no default and no latest available
+ *    form (typically an original with no known date, which cannot be ordered
+ *    against the other versions), but the list holds a readable version: its
+ *    text is shown, saying its date is unknown;
+ *  - `none` — no readable version at all.
+ */
+export type DefaultReadingBasis = 'canonical' | 'latest_available' | 'only_readable' | 'none'
+
+/**
+ * The text the act page reads by default, and whether it is CURRENT.
+ *
+ * legal_v2 follows the owner's `latest_any_kind` policy: the default is the
+ * latest form of any kind. When that form has no text (`defaultBasis:
+ * latest_not_available`) no form is current — `canonical` is null — and the
+ * page shows `latestAvailableDocumentId`, the latest form that has text,
+ * saying it is not the current version. When the server names neither, a
+ * readable version in the list is still shown (originals first, undated
+ * first): the page never says "no text" while it holds one. The legacy
+ * source's canonical is always current.
+ */
+export function defaultReadingOf(
+  act: Pick<
+    LegalActDetail,
+    'canonical' | 'defaultBasis' | 'latestAvailableDocumentId' | 'documents'
+  >,
+): {
+  readonly documentId: string | null
+  readonly current: boolean
+  readonly basis: DefaultReadingBasis
+} {
+  if (act.canonical !== null) {
+    return { documentId: act.canonical.documentId, current: true, basis: 'canonical' }
+  }
+  const fallback = act.latestAvailableDocumentId
+  if (fallback !== null && act.documents.some((doc) => doc.documentId === fallback)) {
+    return { documentId: fallback, current: false, basis: 'latest_available' }
+  }
+  const readable = act.documents.filter(isSelectableVersion)
+  const rank = (doc: LegalActDocumentVersion) =>
+    (doc.versionKind === 'original' ? 0 : 2) + (versionDateOf(doc) === null ? 0 : 1)
+  const pick = [...readable].sort((a, b) => rank(a) - rank(b))[0]
+  if (pick !== undefined) {
+    return { documentId: pick.documentId, current: false, basis: 'only_readable' }
+  }
+  return { documentId: null, current: false, basis: 'none' }
+}
+
+/**
+ * The latest form, when it has no text (`latest_not_available`). The server
+ * names it (`latestDocumentId`, the form its `latest_any_kind` rule picks,
+ * same-day ties included); only when that field is null (an older server)
+ * is it inferred as the newest listed version that is not readable. Null
+ * when the server did not say the latest form is unavailable, or when the
+ * list cannot name it.
+ */
+export function latestUnavailableVersion(
+  act: Pick<LegalActDetail, 'defaultBasis' | 'documents' | 'latestDocumentId'>,
+): LegalActDocumentVersion | null {
+  if (act.defaultBasis !== 'latest_not_available') return null
+  if (act.latestDocumentId !== null) {
+    return act.documents.find((doc) => doc.documentId === act.latestDocumentId) ?? null
+  }
+  return orderVersionsNewestFirst(act.documents).find((doc) => !isReadableVersion(doc)) ?? null
+}

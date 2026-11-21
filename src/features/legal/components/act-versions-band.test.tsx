@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import {
   legalActDetailRichFixture,
   legalActDetailV2Fixture,
+  legalActDetailV2LatestNotAvailableFixture,
 } from '../mocks/fixtures/legal-act-detail'
 import { ActVersionsBand } from './act-versions-band'
 
@@ -83,12 +84,18 @@ describe('ActVersionsBand', () => {
       expect(screen.getAllByText(/Portalul Legislativ indică „consolidarea din/)).toHaveLength(2)
     })
 
-    it('counts the newer consolidations whose text is not available', () => {
-      render(<ActVersionsBand act={legalActDetailV2Fixture} />)
+    it('counts the newer versions whose text is not available (latest_not_available)', () => {
+      render(<ActVersionsBand act={legalActDetailV2LatestNotAvailableFixture} />)
       open()
       expect(
-        screen.getByText(/mai listează o formă consolidată mai nouă/),
+        screen.getByText(
+          'O versiune fără text disponibil, de la aceeași dată sau mai nouă decât cea mai recentă versiune cu text.',
+        ),
       ).toBeInTheDocument()
+      // The latest form with text is marked as shown by default, not current;
+      // no row claims to be the current default.
+      expect(screen.getByText('afișată implicit — nu este versiunea curentă')).toBeInTheDocument()
+      expect(screen.queryByText('forma afișată implicit')).not.toBeInTheDocument()
     })
 
     it('marks a form whose Portal capture is held', () => {

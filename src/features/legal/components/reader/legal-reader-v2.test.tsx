@@ -25,6 +25,10 @@ import { LegalRenderFailureError } from '../../lib/legal-render-error'
 import type { LegalRenderData } from '../../lib/tldf/schemas'
 import {
   legalActDetailV2Fixture,
+  legalActDetailV2LatestNotAvailableFixture,
+  legalActDetailV2NoKnownFormFixture,
+  legalActDetailV2NoTextFixture,
+  legalActDetailV2UndatedOriginalFixture,
   legalActDetailV2UnbridgedFixture,
 } from '../../mocks/fixtures/legal-act-detail'
 import { ActReadingLayout } from './legal-reader-page'
@@ -237,5 +241,146 @@ describe('ActReadingLayout on legal_v2', () => {
     render(<ActReadingLayout act={legalActDetailV2UnbridgedFixture} lead={null} fisa={null} />)
     expect(await screen.findByText(/Versiunea afișată: forma publicată/)).toBeInTheDocument()
     expect(screen.queryByLabelText(/Versiunea textului/)).not.toBeInTheDocument()
+  })
+
+  describe('the default form under latest_any_kind (defaultBasis)', () => {
+    it('current: reads the canonical with no "not current" notice and no tie note', async () => {
+      render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
+      await screen.findByText(/Formă consolidată neoficială, cu caracter informativ\./)
+      expect(requestedIds()).toEqual(['f900012'])
+      expect(screen.queryByText(/nu este versiunea curentă/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/regulă fixă/)).not.toBeInTheDocument()
+    })
+
+    it('latest_not_available: reads the latest form with text and says plainly it is not current', async () => {
+      const { container } = render(
+        <ActReadingLayout act={legalActDetailV2LatestNotAvailableFixture} lead={null} fisa={null} />,
+      )
+      await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
+      expect(requestedIds()).toEqual(['f900012'])
+      const notice = screen.getByText(/Cea mai recentă versiune a actului/).closest('[role="note"]')
+      expect(notice).toHaveTextContent(
+        /Cea mai recentă versiune a actului \(republicare, .*2025.*\) nu are încă text disponibil\./,
+      )
+      expect(notice).toHaveTextContent(
+        /Afișăm versiunea din .*2024.* \(formă consolidată neoficială\), care nu este versiunea curentă\./,
+      )
+      // The shown text is a consolidation: its LEG-X3AV label stays.
+      expect(
+        screen.getByText(/Formă consolidată neoficială, cu caracter informativ\./),
+      ).toBeInTheDocument()
+      // No "not this act's document" notice: this is the default reading.
+      expect(screen.queryByText(/nu aparține acestui act/)).not.toBeInTheDocument()
+    })
+
+    it('latest_not_available: the selector lists the latest form as "text indisponibil", never selectable', async () => {
+      render(
+        <ActReadingLayout act={legalActDetailV2LatestNotAvailableFixture} lead={null} fisa={null} />,
+      )
+      const select = await screen.findByLabelText(/Versiunea textului/)
+      const options = Array.from(select.querySelectorAll('option'))
+      const latest = options.find((option) => option.value === 'f900014')
+      expect(latest).toBeDefined()
+      expect(latest?.disabled).toBe(true)
+      expect(latest?.textContent).toMatch(/republicare .* — text indisponibil/)
+      const shown = options.find((option) => option.value === 'f900012')
+      expect(shown?.textContent).toMatch(/\(afișată implicit, nu e curentă\)/)
+      expect(select).toHaveValue('f900012')
+      // Choosing the default reading clears ?doc=.
+      fireEvent.change(select, { target: { value: 'f900011' } })
+      fireEvent.change(select, { target: { value: 'f900012' } })
+      expect(navigateMock).toHaveBeenLastCalledWith(expect.objectContaining({ search: {} }))
+    })
+
+    it("names the latest form the server picks (latestDocumentId), not the client's guess", async () => {
+      // A same-day tie: the server's rule picked the consolidation f900013
+      // (not loaded), not the republication the newest-first guess would name.
+      const act = {
+        ...legalActDetailV2LatestNotAvailableFixture,
+        latestDocumentId: 'f900013',
+      }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      const notice = (await screen.findByText(/Cea mai recentă versiune a actului/)).closest(
+        '[role="note"]',
+      )
+      expect(notice).toHaveTextContent(/\(formă consolidată neoficială, .*2020.*\)/)
+      const select = screen.getByLabelText(/Versiunea textului/)
+      const disabled = Array.from(select.querySelectorAll('option')).filter((o) => o.disabled)
+      expect(disabled.map((o) => o.value)).toEqual(['f900013'])
+    })
+
+    it('falls back to the newest unreadable version when the server does not name the latest', async () => {
+      const act = { ...legalActDetailV2LatestNotAvailableFixture, latestDocumentId: null }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      const notice = (await screen.findByText(/Cea mai recentă versiune a actului/)).closest(
+        '[role="note"]',
+      )
+      expect(notice).toHaveTextContent(/\(republicare, .*2025.*\)/)
+    })
+
+    it.each([
+      ['latest_not_available with no form that has text', legalActDetailV2NoTextFixture],
+      ['no_known_form', legalActDetailV2NoKnownFormFixture],
+    ])('%s: keeps the no-text state and requests no text', async (_case, act) => {
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      expect(await screen.findByText('Fără expresie canonică')).toBeInTheDocument()
+      expect(requestedIds()).toEqual([])
+      expect(screen.queryByText(/Afișăm versiunea/)).not.toBeInTheDocument()
+    })
+
+    it('no default named, but a readable undated original: shows its text with the date notice, never "no text"', async () => {
+      const { container } = render(
+        <ActReadingLayout act={legalActDetailV2UndatedOriginalFixture} lead={null} fisa={null} />,
+      )
+      await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
+      expect(requestedIds()).toEqual(['f900011'])
+      expect(
+        screen.getByText(
+          /Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de\s+celelalte versiuni\. Afișăm singurul text disponibil\./,
+        ),
+      ).toBeInTheDocument()
+      expect(screen.queryByText('Fără expresie canonică')).not.toBeInTheDocument()
+    })
+
+    it('with several readable undated versions, shows the original first and lists the others', async () => {
+      const act = {
+        ...legalActDetailV2UndatedOriginalFixture,
+        documents: [
+          ...legalActDetailV2UndatedOriginalFixture.documents,
+          {
+            ...legalActDetailV2Fixture.documents[1]!,
+            documentId: 'f900015',
+            versionKind: 'republicare',
+            versionDate: null,
+            isCanonical: false,
+            caveat: null,
+          },
+        ],
+      }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      await screen.findByText(/Afișăm una dintre versiunile cu text/)
+      expect(requestedIds()).toEqual(['f900011'])
+      const select = screen.getByLabelText(/Versiunea textului/)
+      const values = Array.from(select.querySelectorAll('option'))
+        .filter((option) => !option.disabled)
+        .map((option) => option.value)
+      expect(values).toEqual(expect.arrayContaining(['f900011', 'f900015']))
+      expect(select).toHaveValue('f900011')
+    })
+
+    it('says quietly when same-day versions were ordered by the fixed rule', async () => {
+      render(
+        <ActReadingLayout
+          act={{ ...legalActDetailV2Fixture, defaultOrderReviewed: false }}
+          lead={null}
+          fisa={null}
+        />,
+      )
+      expect(
+        await screen.findByText(
+          'Versiunile cu aceeași dată au fost ordonate după o regulă fixă, nu de un verificator.',
+        ),
+      ).toBeInTheDocument()
+    })
   })
 })

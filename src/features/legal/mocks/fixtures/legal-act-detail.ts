@@ -17,12 +17,21 @@ export const LEGACY_FORM_FIELDS = {
 /** The act-level legal_v2 fields as the legacy source serves them. */
 const LEGACY_ACT_SOURCE: Pick<
   LegalActDetail,
-  'dataSource' | 'bridgedFields' | 'newerNotAvailable' | 'defaultBasis'
+  | 'dataSource'
+  | 'bridgedFields'
+  | 'newerNotAvailable'
+  | 'defaultBasis'
+  | 'defaultOrderReviewed'
+  | 'latestAvailableDocumentId'
+  | 'latestDocumentId'
 > = {
   dataSource: 'legal',
   bridgedFields: [],
   newerNotAvailable: null,
   defaultBasis: null,
+  defaultOrderReviewed: null,
+  latestAvailableDocumentId: null,
+  latestDocumentId: null,
 }
 
 /**
@@ -469,11 +478,15 @@ const V2_CONSOLIDATION = {
   sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
 } as const
 
-/** A newer consolidation the Portal lists but whose text is not loaded. */
+/**
+ * An OLDER consolidation the Portal lists but whose text is not loaded. Under
+ * `latest_any_kind` only the latest form can be the default, so a form
+ * without text before it leaves the default current.
+ */
 const V2_CONSOLIDATION_NOT_LOADED = {
   documentId: 'f900013',
   versionKind: 'consolidare',
-  versionDate: '2025-06-01',
+  versionDate: '2020-01-15',
   isCanonical: false,
   title: null,
   firstPublicationDate: null,
@@ -481,9 +494,9 @@ const V2_CONSOLIDATION_NOT_LOADED = {
   readable: false,
   caveat: 'unofficial_consolidation',
   portalLabelRaw: null,
-  portalLabelDate: '2025-06-01',
+  portalLabelDate: '2020-01-15',
   held: false,
-  formKey: 'cons:2025-06-01',
+  formKey: 'cons:2020-01-15',
   sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900013',
 } as const
 
@@ -499,7 +512,7 @@ const V2_CANONICAL_HEAD = {
   compatibilityTier: null,
 } as const
 
-/** A bridged legal_v2 act whose default form is a consolidation. */
+/** A bridged legal_v2 act whose default (latest, readable) form is a consolidation. */
 export const legalActDetailV2Fixture: LegalActDetail = {
   actId: '900001',
   displayCitation: 'Hotărârea nr. 206/1996',
@@ -530,8 +543,11 @@ export const legalActDetailV2Fixture: LegalActDetail = {
     'timeline',
     'summary',
   ],
-  newerNotAvailable: 1,
-  defaultBasis: 'latest_consolidation',
+  newerNotAvailable: 0,
+  defaultBasis: 'current',
+  defaultOrderReviewed: true,
+  latestAvailableDocumentId: null,
+  latestDocumentId: 'f900012',
   canonical: {
     documentId: V2_CONSOLIDATION.documentId,
     ...V2_CANONICAL_HEAD,
@@ -568,7 +584,8 @@ export const legalActDetailV2UnbridgedFixture: LegalActDetail = {
   amendedAfterPublication: null,
   bridgedFields: [],
   newerNotAvailable: 0,
-  defaultBasis: 'original',
+  defaultBasis: 'current',
+  latestDocumentId: V2_ORIGINAL.documentId,
   canonical: {
     documentId: V2_ORIGINAL.documentId,
     ...V2_CANONICAL_HEAD,
@@ -584,6 +601,82 @@ export const legalActDetailV2UnbridgedFixture: LegalActDetail = {
   },
   documents: [{ ...V2_ORIGINAL, isCanonical: true }],
   officialTextUrl: V2_ORIGINAL.sourceUrl,
+}
+
+/** The latest form: a republication the Portal lists, with no text yet. */
+const V2_REPUBLICATION_NOT_LOADED = {
+  documentId: 'f900014',
+  versionKind: 'republicare',
+  versionDate: '2025-06-01',
+  isCanonical: false,
+  title: null,
+  firstPublicationDate: '2025-06-01',
+  render: { renderStatus: 'not_loaded', chunkCount: null },
+  readable: false,
+  caveat: null,
+  portalLabelRaw: null,
+  portalLabelDate: null,
+  held: false,
+  formKey: 'rep:2025-06-01',
+  sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900014',
+} as const
+
+/**
+ * `latest_not_available`: the latest form (a 2025 republication) has no
+ * text, so NO form is current — `canonical` is null — and the latest form
+ * that has text (the 2024 consolidation) is offered as "not the current
+ * version".
+ */
+export const legalActDetailV2LatestNotAvailableFixture: LegalActDetail = {
+  ...legalActDetailV2Fixture,
+  actId: '900003',
+  newerNotAvailable: 1,
+  defaultBasis: 'latest_not_available',
+  latestAvailableDocumentId: V2_CONSOLIDATION.documentId,
+  latestDocumentId: V2_REPUBLICATION_NOT_LOADED.documentId,
+  canonical: null,
+  documents: [
+    V2_ORIGINAL,
+    { ...V2_CONSOLIDATION, isCanonical: false },
+    V2_CONSOLIDATION_NOT_LOADED,
+    V2_REPUBLICATION_NOT_LOADED,
+  ],
+  officialTextUrl: null,
+}
+
+/** `latest_not_available` with no form that has text: nothing to offer. */
+export const legalActDetailV2NoTextFixture: LegalActDetail = {
+  ...legalActDetailV2LatestNotAvailableFixture,
+  actId: '900004',
+  latestAvailableDocumentId: null,
+  documents: [V2_REPUBLICATION_NOT_LOADED],
+}
+
+/** `no_known_form`: an act legal_v2 holds with no form at all. */
+export const legalActDetailV2NoKnownFormFixture: LegalActDetail = {
+  ...legalActDetailV2LatestNotAvailableFixture,
+  actId: '900005',
+  newerNotAvailable: 0,
+  defaultBasis: 'no_known_form',
+  defaultOrderReviewed: null,
+  latestAvailableDocumentId: null,
+  latestDocumentId: null,
+  documents: [],
+}
+
+/**
+ * The server names no default and no latest available form, but the list
+ * holds a READABLE original with no known date (it cannot be ordered against
+ * the other versions; 1,924 acts in production on 2026-11-21).
+ */
+export const legalActDetailV2UndatedOriginalFixture: LegalActDetail = {
+  ...legalActDetailV2NoTextFixture,
+  actId: '900006',
+  latestDocumentId: V2_REPUBLICATION_NOT_LOADED.documentId,
+  documents: [
+    { ...V2_ORIGINAL, versionDate: null, firstPublicationDate: null },
+    V2_REPUBLICATION_NOT_LOADED,
+  ],
 }
 
 const BY_ID: Record<string, LegalActDetail> = {
