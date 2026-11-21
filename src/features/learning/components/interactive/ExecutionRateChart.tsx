@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { t } from '@lingui/core/macro'
 import { AlertTriangle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -194,10 +194,16 @@ export function ExecutionRateChart({
   title,
   footer,
 }: Readonly<ExecutionRateChartProps>) {
-  const { ref, inView } = useInView({
+  // Any pixel of the chart in view starts the animation: a share of a tall card can never be met on a short
+  // viewport or with a large browser font, which left the rows hidden. Without IntersectionObserver, or with
+  // reduced motion, the rows show at once.
+  const { ref, inView: chartInView } = useInView({
     triggerOnce: true,
-    threshold: 0.3,
+    threshold: 0,
+    fallbackInView: true,
   })
+  const instant = useReducedMotion() === true
+  const inView = chartInView || instant
 
   const sortedCategories = useMemo(
     () => [...categories].sort((a, b) => b.executionRate - a.executionRate),

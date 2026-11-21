@@ -29,7 +29,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion, useSpring, useTransform } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { Calendar, Star, ChevronRight, ChevronDown, X, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -559,7 +559,11 @@ export function BudgetCycleTimeline({
   const [selectedPhase, setSelectedPhase] = useState<BudgetPhaseId | null>(
     content ? currentPhaseId : null
   )
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 })
+  // Any pixel in view is enough: a share of a tall element is never met on a short viewport or with a large
+  // browser font, which kept the today marker hidden. Without IntersectionObserver, or with reduced motion, it shows.
+  const { ref, inView: timelineInView } = useInView({ triggerOnce: true, threshold: 0, fallbackInView: true })
+  const instant = useReducedMotion() === true
+  const inView = timelineInView || instant
 
   // Update current date every minute
   useEffect(() => {
