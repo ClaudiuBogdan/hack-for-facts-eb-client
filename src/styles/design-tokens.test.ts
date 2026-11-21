@@ -34,6 +34,10 @@ let emitted = ''
 let light: ReadonlyMap<string, string> = new Map()
 let dark: ReadonlyMap<string, string> = new Map()
 
+/** Every declaration of a measured token (the status pairs and the surfaces they sit on) marked `!important`. */
+const importantDecls: string[] = []
+const MEASURED = (name: string) => name.startsWith('status-') || name === 'card' || name === 'background'
+
 /** Where each status variable is declared: the rule's selectors, its layer, and any condition around it. */
 const placements: { readonly name: string; readonly selectors: readonly string[]; readonly layer: string; readonly conditions: readonly string[] }[] = []
 
@@ -49,6 +53,8 @@ beforeAll(async () => {
     const isDark = rule.selectors.includes('.dark')
     rule.walkDecls(/^--/, (decl) => {
       const name = decl.prop.slice(2)
+      // `!important` outranks source order, which the replay below assumes decides every value.
+      if (decl.important && MEASURED(name)) importantDecls.push(`${rule.selectors.join(', ')} { ${decl.prop}: ${decl.value} !important }`)
       if (name.startsWith('status-')) {
         const ancestors: { readonly type: string; readonly name?: string; readonly params?: string }[] = []
         for (let node = rule.parent; node && node.type !== 'root'; node = node.parent) ancestors.push(node as never)
@@ -105,6 +111,12 @@ describe('the status tokens', () => {
       expect(conditions, `${name} conditions`).toEqual([])
       expect(layer, `${name} layer`).toBe(placements[0].layer)
     }
+  })
+
+  it('and the surfaces they are measured on, are never declared !important', () => {
+    // The values below are replayed in source order; an important declaration would win out of order and
+    // make the measured value not the one the browser uses.
+    expect(importantDecls).toEqual([])
   })
 
   it('use DESIGN.md’s light values', () => {
