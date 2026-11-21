@@ -124,6 +124,31 @@ directories.
 4. Challenges (9 files), then the campaign's reader pages, then its admin pages.
 5. Measure, review, record the decision in DESIGN.md's decision log.
 
+## Results (2026-11-21)
+
+Built in nine reviewed batches on `dev` (status tokens and guard, then learning in five batches, the lesson
+pair, challenges, campaign reader pages, campaign admin), each reviewed by Astra until clean, with fix rounds
+committed separately. `PENDING` is gone: the guard covers all four folders.
+
+- **Stylesheet** (`docs/performance/2026-11-17-landing/tools/css-attribution.mjs`, what the shipped sheet would
+  lose without each area): shipped 531,305 → 436,450 bytes minified (−94,855, −18%); own bytes learning
+  99,382 → 28,167, campaigns 26,585 → 12,249, challenges 17,010 → 16,270 (mostly layout, not colour).
+- **Contrast:** every text pair introduced was measured from rendered pixels in both themes at ≥ 4.5:1; the
+  reviews caught muted text on tints, opacity on text, `/90` hovers and translucent status marks, and the brief
+  gained a rule for each.
+- **Behaviour:** a functional pass clicked every control in each lesson on a build of the pre-migration commit
+  and on the converted tree and compared the outcome of every step (≈200 interactions across the learning
+  lessons, a six-step challenge play-through, the campaign forms and pages): same outcomes, no new errors. Not
+  driven in a browser, because they need a Clerk sign-in that cannot be done locally: the signed-in
+  notification preferences and the campaign admin; those were checked by their component tests and by pixel
+  measurement of their markup.
+- **Rulings recorded on the way:** hex colour strings that paint MapLibre layers and canvases stay; hex in class
+  names does not. A lesson component may take a prop for a colour that depends on the lesson's framing (the EU
+  comparison's `highlightTone`). Pre-existing issues found and left for the owner: the shared shadcn Button's
+  `hover:bg-primary/90` (4.41–4.46:1 in dark), the shared Badge's raw amber and destructive variants, the
+  economic-code rows' missing keyboard access, the learning banner's Sign In doing nothing in dev, flash-card
+  flips not restored after reload, and a few challenge-page captions faded below AA with no palette class.
+
 ## Left to the builder
 
 The exact token for each occurrence within the mapping's rules, batch boundaries, the screenshot tooling, and the
