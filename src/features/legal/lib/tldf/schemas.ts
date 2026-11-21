@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod'
+import { legalServedFormSchema, type LegalServedForm } from '@/schemas/legal'
 
 import type {
   TldfAccounting,
@@ -194,11 +195,24 @@ export const tldfChunkPayloadSchema: z.ZodType<TldfChunkPayload> = z.object({
 
 const legalRenderMetaSchema = z.object({
   requestId: z.string(),
-  /** Generation identity — the same values the server's ETag is built from. */
+  /**
+   * Generation identity — the same values the legacy server's ETag is built
+   * from. A legal_v2 render is `Cache-Control: no-store` with no ETag and no
+   * 304 (link targets and custody can change under one composition), so
+   * nothing here may assume a revalidation.
+   */
   runId: z.string(),
   textSha256: z.string(),
   compilerVersion: z.string(),
   compiledAt: z.string(),
+  /** legal_v2 only: where the body came from ('legal_v2:tldf-unit/1'). */
+  renderSource: z.string().optional(),
+  /** legal_v2 only: see `legalServedFormSchema`. A malformed value is dropped. */
+  servedForm: legalServedFormSchema.nullable().optional().catch(undefined),
+  /** legal_v2 only: the versioned envelope-head substitutions (not read here). */
+  renderHead: z.unknown().optional(),
+  /** legal_v2 only: the unit's fidelity flags (not read here). */
+  fidelityFlags: z.array(z.string()).optional().catch(undefined),
 })
 
 const renderDataCommon = {
@@ -221,8 +235,15 @@ export const legalRenderResponseSchema = z.object({
   ]),
   meta: legalRenderMetaSchema,
 })
+export type { LegalServedForm }
 export type LegalRenderResponse = z.infer<typeof legalRenderResponseSchema>
-export type LegalRenderData = LegalRenderResponse['data']
+/**
+ * The render payload the reader consumes: the response's `data`, plus the
+ * meta's `servedForm` (legal_v2) carried alongside, since the banner needs it.
+ */
+export type LegalRenderData = LegalRenderResponse['data'] & {
+  readonly servedForm?: LegalServedForm | null
+}
 
 /** The module error envelope the render routes emit on 4xx/5xx. */
 export const legalRenderErrorEnvelopeSchema = z.object({

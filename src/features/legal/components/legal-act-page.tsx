@@ -7,7 +7,7 @@ import { useLegalAct } from '../hooks/use-legal-act'
 import { legislationLinkClassName } from '../lib/legislation-theme'
 import { ActAccordion } from './act-accordion'
 import { ActDetailHeader } from './act-detail-header'
-import { hasSummaryContent } from '../lib/act-facts'
+import { bridgeCovers, hasSummaryContent } from '../lib/act-facts'
 import { ActKeyDates } from './act-key-dates'
 import { ActPlainSummary } from './act-plain-summary'
 import { ActProvenanceNotes } from './act-provenance-notes'
@@ -121,14 +121,28 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
               <ActKeyDates keyDates={data.summary.keyDates} />
             ) : null}
             <ActPublicationBand act={data} />
+            {/* Bridged on legal_v2: what the previous corpus does not
+                hold for this act says "not available", never "none". */}
             <ActTimelineBand
               timeline={data.timeline}
               complete={data.timelineComplete}
+              available={bridgeCovers(data, 'timeline')}
             />
             <ActVersionsBand act={data} />
-            <ActReferencesBand group={data.outLinks} direction="out" />
-            <ActReferencesBand group={data.inLinks} direction="in" />
-            <ActAnchorsBand group={data.incomingAnchors} />
+            <ActReferencesBand
+              group={data.outLinks}
+              direction="out"
+              available={bridgeCovers(data, 'links')}
+            />
+            <ActReferencesBand
+              group={data.inLinks}
+              direction="in"
+              available={bridgeCovers(data, 'links')}
+            />
+            <ActAnchorsBand
+              group={data.incomingAnchors}
+              available={bridgeCovers(data, 'incomingAnchors')}
+            />
             <ActProvenanceNotes
               act={data}
               mastheadInHeader={masthead?.lifted ?? false}

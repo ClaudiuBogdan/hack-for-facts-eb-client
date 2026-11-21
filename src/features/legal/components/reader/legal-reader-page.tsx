@@ -29,7 +29,11 @@
  * escape hatch on every one of them. An outline failure degrades to a
  * nav-less text — it never blocks the text.
  *
- * `?doc=` reads a specific non-canonical expression. `?nod=` (a
+ * `?doc=` reads a specific non-canonical expression — an opaque id: a Portal
+ * page id on the legacy source, `f<form_id>` on legal_v2, where an old page id
+ * from a shipped link still resolves (`resolveDocOverride`). A version
+ * selector heads the text, and a Portal consolidation's text always carries
+ * the consolidation banner (LEG-X3AV). `?nod=` (a
  * document_nodes PATH) resolves against the served outline; scroll-position
  * sync highlights the TOC entry only and never writes the URL back (the
  * copy/share mechanism is selecting a TOC entry, not scrolling).
@@ -52,9 +56,21 @@ import { useQueryClient } from '@tanstack/react-query'
 import { fetchLegalRender } from '../../api/legal-render-api'
 import { useLegalOutline } from '../../hooks/use-legal-outline'
 import { legalRenderQueryKey, useLegalRender } from '../../hooks/use-legal-render'
-import { LegalRenderFailureError } from '../../lib/legal-render-error'
+import { useLegalResolveDocument } from '../../hooks/use-legal-resolve-document'
+import {
+  isTextNotYetAvailable,
+  LegalRenderFailureError,
+} from '../../lib/legal-render-error'
 import type { LegalRenderFailure } from '../../lib/legal-render-error'
 import { uniqueGazettePublication } from '../../lib/act-facts'
+import {
+  findVersion,
+  isConsolidationVersion,
+  resolveDocOverride,
+  withServedForm,
+} from '../../lib/legal-versions'
+import { ActConsolidationBanner } from '../act-consolidation-banner'
+import { ActVersionSelector } from '../act-version-selector'
 import { legalIssuerLabel } from '../../lib/legal-vocabulary'
 import { splitMasthead } from '../../lib/tldf/masthead'
 import type { MastheadFactsInHeader, MastheadSplit } from '../../lib/tldf/masthead'
@@ -113,13 +129,35 @@ export function ActReadingLayout({
   // `?doc=` must name an expression OF THIS ACT. Any other document id is
   // refused, never rendered under this act's header, summary and official
   // link (I-17: `?doc=54260` put the 1886 Berne Convention under CNSU 2022).
-  const override =
-    docOverride !== undefined && act.documents.some((d) => d.documentId === docOverride)
-      ? docOverride
-      : undefined
-  const foreignDoc = docOverride !== undefined && override === undefined
-  const documentId = override ?? act.canonical?.documentId ?? null
-  const render = useLegalRender(documentId)
+  // On legal_v2 an old numeric page id from a shipped link is resolved by the
+  // server's act-scoped lookup (`LegalAct.resolveDocument`), and its answer
+  // is kept only when it names one of this act's versions — otherwise the
+  // default text is read, with the notice. Nothing renders while it resolves:
+  // the default text must not flash in and then be replaced.
+  const canonicalId = act.canonical?.documentId ?? null
+  const resolution = docOverride === undefined ? null : resolveDocOverride(act, docOverride)
+  const probeId = resolution?.kind === 'probe' ? resolution.documentId : null
+  const resolved = useLegalResolveDocument(act.actId, probeId)
+  const resolvedId = probeId !== null ? (resolved.data ?? null) : null
+  const probeOwn =
+    resolvedId !== null && act.documents.some((d) => d.documentId === resolvedId)
+  const probePending = probeId !== null && resolved.isPending
+  const probeRefused = probeId !== null && !probePending && !probeOwn
+  const ownId = resolution?.kind === 'own' ? resolution.documentId : probeOwn ? resolvedId : null
+  const documentId = probePending ? null : (ownId ?? canonicalId)
+  // legal_v2 renders revalidate on every mount (no-store; content can be
+  // withdrawn) — legacy generations stay fresh for 30 minutes.
+  const render = useLegalRender(documentId, { legalV2: act.dataSource === 'legal_v2' })
+  const override = ownId ?? undefined
+  const foreignDoc = resolution?.kind === 'foreign' || probeRefused
+  // The version on screen. The render's `servedForm` (legal_v2 REST meta) is
+  // the authoritative account of the text actually served; the version list
+  // fills in what it lacks.
+  const shownId = render.data?.servedForm?.documentId ?? render.data?.documentId ?? documentId
+  const shownVersion = withServedForm(findVersion(act, shownId), render.data?.servedForm ?? null)
+  const sourceUrl = shownVersion?.sourceUrl ?? act.officialTextUrl
+  const showConsolidationBanner =
+    render.isSuccess && shownVersion !== null && isConsolidationVersion(shownVersion)
   const outlineQuery = useLegalOutline(documentId)
   const outline = useMemo(() => outlineQuery.data ?? [], [outlineQuery.data])
   const navigate = useNavigate()
@@ -340,7 +378,9 @@ export function ActReadingLayout({
           <section id="act-text" aria-label={t`Textul actului`} className="mt-10 scroll-mt-24">
             {/* No standing fidelity caption (user decision 2026-08-12): the
                 provenance story lives in the summary footer and the fișa.
-                Only CONTEXTUAL notices render here. */}
+                Only CONTEXTUAL notices render here — and the version
+                selector, which names the text below. */}
+            <ActVersionSelector act={act} shownDocumentId={shownId} />
             {(outlineQuery.isError || docOverride !== undefined) && (
               <div className="mb-4 space-y-1">
                 {outlineQuery.isError && (
@@ -372,14 +412,16 @@ export function ActReadingLayout({
               </div>
             )}
 
+            {showConsolidationBanner && <ActConsolidationBanner version={shownVersion} />}
+
             <div>
-              {documentId === null && (
+              {documentId === null && !probePending && (
                 <StateCard title={t`Fără expresie canonică`}>
                   <Trans>
                     Ținem metadatele acestui act, dar nu o expresie de text
                     căreia să îi servim conținutul.
                   </Trans>
-                  <SourceLink act={act} />
+                  <SourceLink url={sourceUrl} />
                 </StateCard>
               )}
               {nodMissed && (
@@ -387,7 +429,7 @@ export function ActReadingLayout({
                   <Trans>Nu am găsit fragmentul cerut în acest text.</Trans>
                 </p>
               )}
-              {documentId !== null && render.isLoading && (
+              {((documentId !== null && render.isLoading) || probePending) && (
                 // A skeleton at the serif's rhythm, not a bare grey line: it
                 // reserves real height, so the fișa below doesn't leap
                 // thousands of pixels when the text lands.
@@ -406,7 +448,7 @@ export function ActReadingLayout({
               {render.isError && (
                 <RenderFailureCard
                   error={render.error}
-                  act={act}
+                  sourceUrl={sourceUrl}
                   onRetry={() => void render.refetch()}
                 />
               )}
@@ -431,7 +473,7 @@ export function ActReadingLayout({
                   key={`${documentId ?? ''}:${render.data.tldf.generation.run_id}`}
                   documentId={documentId ?? ''}
                   manifest={render.data.tldf}
-                  act={act}
+                  sourceUrl={sourceUrl}
                   mastheadFacts={mastheadFacts}
                   onMasthead={handleMasthead}
                   chainThroughGroup={nodResolution?.chunkGroupIndex ?? null}
@@ -483,12 +525,13 @@ function EnvelopeReader({
   )
 }
 
-function SourceLink({ act }: { readonly act: LegalActDetail | null }) {
-  if (act?.officialTextUrl === null || act?.officialTextUrl === undefined) return null
+/** The shown text's Portal page — the escape hatch on every failure state. */
+function SourceLink({ url }: { readonly url: string | null }) {
+  if (url === null) return null
   return (
     <p className="mt-3">
       <a
-        href={act.officialTextUrl}
+        href={url}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1 underline"
@@ -520,11 +563,11 @@ function StateCard({
 
 function RenderFailureCard({
   error,
-  act,
+  sourceUrl,
   onRetry,
 }: {
   readonly error: unknown
-  readonly act: LegalActDetail | null
+  readonly sourceUrl: string | null
   readonly onRetry: () => void
 }) {
   const failure: LegalRenderFailure =
@@ -532,26 +575,40 @@ function RenderFailureCard({
       ? error.failure
       : { kind: 'transport', message: String(error), retryable: true }
 
-  const title = {
-    not_found: t`Nu există un text servit pentru acest document`,
-    restricted: t`Textul acestui document este restricționat`,
-    unavailable: t`Nu avem un text servibil pentru acest act`,
-    inconsistent: t`Textul stocat este momentan inconsistent`,
-    transport: t`Nu am putut încărca textul`,
-  }[failure.kind]
+  // legal_v2: a form whose text is not loaded yet, or whose text is a
+  // composition this version does not serve (a header plus a body), is "not
+  // yet available" — a fact about the corpus today, not about the act.
+  const notYet = isTextNotYetAvailable(failure)
 
-  const body = {
-    not_found: t`Ținem actul, dar nicio generare de text pentru această expresie.`,
-    restricted: t`Metadatele rămân publice; textul se consultă la sursa oficială.`,
-    unavailable: t`Extracția nu a produs un text servibil pentru această expresie.`,
-    inconsistent: t`Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum.`,
-    transport: t`Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă.`,
-  }[failure.kind]
+  const title = notYet
+    ? t`Textul nu este încă disponibil`
+    : {
+        not_found: t`Nu există un text servit pentru acest document`,
+        restricted: t`Textul acestui document este restricționat`,
+        unavailable: t`Nu avem un text servibil pentru acest act`,
+        inconsistent: t`Textul stocat este momentan inconsistent`,
+        transport: t`Nu am putut încărca textul`,
+      }[failure.kind]
+
+  const body =
+    failure.renderStatus === 'composition_not_served'
+      ? t`Textul acestei versiuni are mai multe părți (antet și corp), pe care nu le afișăm încă împreună.`
+      : failure.renderStatus === 'label_missing'
+        ? t`Nu afișăm o formă consolidată fără mențiunea Portalului Legislativ și data ei, care lipsesc încă pentru această versiune.`
+        : notYet
+        ? t`Versiunea există pe Portalul Legislativ, dar textul ei nu este încă încărcat aici.`
+        : {
+            not_found: t`Ținem actul, dar nicio generare de text pentru această expresie.`,
+            restricted: t`Metadatele rămân publice; textul se consultă la sursa oficială.`,
+            unavailable: t`Extracția nu a produs un text servibil pentru această expresie.`,
+            inconsistent: t`Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum.`,
+            transport: t`Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă.`,
+          }[failure.kind]
 
   return (
     <StateCard title={title}>
       <p>{body}</p>
-      <SourceLink act={act} />
+      <SourceLink url={sourceUrl} />
       {failure.retryable && (
         <Button variant="outline" size="sm" className="mt-3" onClick={onRetry}>
           <Trans>Încearcă din nou</Trans>
@@ -581,7 +638,7 @@ type ChunkSlot =
 function ChunkedReader({
   documentId,
   manifest,
-  act,
+  sourceUrl,
   mastheadFacts,
   onMasthead,
   chainThroughGroup = null,
@@ -590,7 +647,7 @@ function ChunkedReader({
   readonly documentId: string
   readonly manifest: TldfManifestPayload
   /** For the partial-failure card's official-source escape hatch. */
-  readonly act: LegalActDetail | null
+  readonly sourceUrl: string | null
   readonly mastheadFacts: MastheadFactsInHeader
   readonly onMasthead?: (split: MastheadSplit) => void
   readonly chainThroughGroup?: number | null
@@ -759,7 +816,7 @@ function ChunkedReader({
             {/* Every failure state keeps the official-source escape hatch —
                 on a summaryless act this card may be the page's only route
                 to the law. */}
-            <SourceLink act={act} />
+            <SourceLink url={sourceUrl} />
           </StateCard>
         </div>
       )}

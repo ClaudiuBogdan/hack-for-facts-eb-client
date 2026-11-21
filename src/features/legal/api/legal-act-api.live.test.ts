@@ -81,8 +81,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.outLinks.totalCount).toBe(3)
-    expect(act?.outLinks.hasMore).toBe(false)
+    expect(act?.outLinks?.totalCount).toBe(3)
+    expect(act?.outLinks?.hasMore).toBe(false)
   })
 
   it('treats a saturated totalCount as unknown rather than exact', async () => {
@@ -96,8 +96,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.outLinks.totalCount).toBeNull()
-    expect(act?.outLinks.hasMore).toBe(true)
+    expect(act?.outLinks?.totalCount).toBeNull()
+    expect(act?.outLinks?.hasMore).toBe(true)
   })
 
   it('does not turn an absent totalCount into a confident zero', async () => {
@@ -105,8 +105,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.outLinks.totalCount).toBeNull()
-    expect(act?.outLinks.hasMore).toBe(true)
+    expect(act?.outLinks?.totalCount).toBeNull()
+    expect(act?.outLinks?.hasMore).toBe(true)
   })
 
   it('prefers inDegree over the saturating incoming count', async () => {
@@ -120,8 +120,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.inLinks.totalCount).toBe(2621)
-    expect(act?.inLinks.hasMore).toBe(true)
+    expect(act?.inLinks?.totalCount).toBe(2621)
+    expect(act?.inLinks?.hasMore).toBe(true)
   })
 
   it('distrusts an inDegree that is smaller than the rows it returned', async () => {
@@ -134,8 +134,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.inLinks.totalCount).toBeNull()
-    expect(act?.inLinks.hasMore).toBe(true)
+    expect(act?.inLinks?.totalCount).toBeNull()
+    expect(act?.inLinks?.hasMore).toBe(true)
   })
 
   it('reports an exact incoming total when inDegree matches the rows', async () => {
@@ -146,8 +146,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.inLinks.totalCount).toBe(2)
-    expect(act?.inLinks.hasMore).toBe(false)
+    expect(act?.inLinks?.totalCount).toBe(2)
+    expect(act?.inLinks?.hasMore).toBe(false)
   })
 
   it('drops a confidence that is not on the 0–1 scale', async () => {
@@ -204,9 +204,11 @@ describe('fetchLegalActDetailLive', () => {
     respond({ timelineComplete: true })
     expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBe(true)
 
-    // A mock lane without the field reads as complete.
+    // A server that does not say is UNKNOWN — never a complete history.
     respond({ timelineComplete: undefined })
-    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBe(true)
+    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBeNull()
+    respond({ timelineComplete: null })
+    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBeNull()
   })
 
   it('maps document versions with their render availability', async () => {
@@ -261,8 +263,8 @@ describe('fetchLegalActDetailLive', () => {
 
     const act = await fetchLegalActDetailLive('1')
 
-    expect(act?.incomingAnchors.totalCount).toBe(395)
-    expect(act?.incomingAnchors.items[0]?.targetFragment).toBe('art. 291')
+    expect(act?.incomingAnchors?.totalCount).toBe(395)
+    expect(act?.incomingAnchors?.items[0]?.targetFragment).toBe('art. 291')
 
     respond({
       incomingAnchors: {
@@ -271,13 +273,184 @@ describe('fetchLegalActDetailLive', () => {
       },
     })
     const inconsistent = await fetchLegalActDetailLive('1')
-    // A count below the rows it came with is not a count.
-    expect(inconsistent?.incomingAnchors.totalCount).toBe(1)
+    // A count below the rows it came with is not a count: unknown, not the
+    // page length.
+    expect(inconsistent?.incomingAnchors?.totalCount).toBeNull()
+
+    respond({ incomingAnchors: { totalCount: null, edges: [] } })
+    // A missing count is unknown — never a confident zero.
+    expect((await fetchLegalActDetailLive('1'))?.incomingAnchors?.totalCount).toBeNull()
   })
 
   it('returns null for an act the server does not have', async () => {
     graphqlQueryMock.mockResolvedValue({ legalAct: null } as never)
 
     expect(await fetchLegalActDetailLive('999999999')).toBeNull()
+  })
+})
+
+/**
+ * The legal_v2 source (server LEGAL_SOURCE=v2): documents are forms with an
+ * opaque `f<form_id>` id and the form fields; status, its evidence, in-degree
+ * and the amendment count are BRIDGED and null when the previous corpus does
+ * not hold the act. Shapes from the server's typedefs and contract test
+ * (branch feat/legal-v2-dev).
+ */
+describe('fetchLegalActDetailLive on legal_v2', () => {
+  beforeEach(() => {
+    graphqlQueryMock.mockReset()
+  })
+
+  const consolidation = {
+    documentId: 'f900012',
+    versionKind: 'consolidare',
+    versionDate: '2024-03-12',
+    isCanonical: true,
+    title: null,
+    firstPublicationDate: null,
+    readable: true,
+    caveat: 'unofficial_consolidation',
+    portalLabelRaw: null,
+    portalLabelDate: '2024-03-12',
+    held: false,
+    formKey: 'cons:2024-03-12',
+    sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
+    render: { renderStatus: 'served', chunkCount: 1 },
+  }
+  const notLoaded = {
+    ...consolidation,
+    documentId: 'f900013',
+    versionDate: '2025-06-01',
+    isCanonical: false,
+    readable: false,
+    portalLabelDate: '2025-06-01',
+    formKey: 'cons:2025-06-01',
+    sourceUrl: null,
+    render: { renderStatus: 'not_loaded', chunkCount: null },
+  }
+  const { render: _render, ...canonicalForm } = consolidation
+  void _render
+
+  it('requests the act-level and form-level legal_v2 fields', async () => {
+    respond()
+    await fetchLegalActDetailLive('1')
+    const [query] = graphqlQueryMock.mock.calls[0] as unknown as [string]
+    for (const field of [
+      'dataSource',
+      'bridgedFields',
+      'newerNotAvailable',
+      'defaultBasis',
+      'readable',
+      'caveat',
+      'portalLabelRaw',
+      'portalLabelDate',
+      'held',
+      'formKey',
+      'sourceUrl',
+    ]) {
+      expect(query).toContain(field)
+    }
+  })
+
+  it('maps forms with their opaque ids and form fields, and the act-level facts', async () => {
+    respond({
+      dataSource: 'legal_v2',
+      bridgedFields: ['status', 'inDegree', 'summary'],
+      newerNotAvailable: 1,
+      defaultBasis: 'latest_consolidation',
+      canonicalDocumentId: 'f900012',
+      canonical: { ...canonicalForm, den: null, issuerRaw: null, publicationRaw: null, extractionStatus: null, compatibilityTier: null },
+      documents: [consolidation, notLoaded],
+    })
+
+    const act = await fetchLegalActDetailLive('1')
+
+    expect(act?.dataSource).toBe('legal_v2')
+    expect(act?.bridgedFields).toEqual(['status', 'inDegree', 'summary'])
+    expect(act?.newerNotAvailable).toBe(1)
+    expect(act?.defaultBasis).toBe('latest_consolidation')
+    expect(act?.canonical?.documentId).toBe('f900012')
+    expect(act?.canonical?.caveat).toBe('unofficial_consolidation')
+    expect(act?.documents.map((doc) => doc.documentId)).toEqual(['f900012', 'f900013'])
+    expect(act?.documents[0]).toMatchObject({
+      readable: true,
+      caveat: 'unofficial_consolidation',
+      portalLabelDate: '2024-03-12',
+      held: false,
+      formKey: 'cons:2024-03-12',
+    })
+    expect(act?.documents[1]?.render?.renderStatus).toBe('not_loaded')
+    expect(act?.documents[1]?.readable).toBe(false)
+  })
+
+  it("links the Portal through the canonical form's own page, never an f<id>", async () => {
+    respond({
+      dataSource: 'legal_v2',
+      canonicalDocumentId: 'f900012',
+      canonical: { ...canonicalForm, den: null, issuerRaw: null, publicationRaw: null, extractionStatus: null, compatibilityTier: null },
+    })
+    expect((await fetchLegalActDetailLive('1'))?.officialTextUrl).toBe(
+      'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
+    )
+
+    respond({
+      dataSource: 'legal_v2',
+      canonicalDocumentId: 'f900012',
+      canonical: { ...canonicalForm, sourceUrl: null, den: null, issuerRaw: null, publicationRaw: null, extractionStatus: null, compatibilityTier: null },
+    })
+    expect((await fetchLegalActDetailLive('1'))?.officialTextUrl).toBeNull()
+
+    // Not even the legacy derivation turns an f<id> into a Portal URL.
+    respond({ canonicalDocumentId: 'f900012' })
+    expect((await fetchLegalActDetailLive('1'))?.officialTextUrl).toBeNull()
+  })
+
+  it('keeps null bridged facts null — never a guessed status or a confident zero', async () => {
+    respond({
+      dataSource: 'legal_v2',
+      bridgedFields: [],
+      status: null,
+      statusEvidence: null,
+      inDegree: null,
+      amendedAfterPublication: null,
+      inLinks: { totalCount: 0, edges: [] },
+    })
+
+    const act = await fetchLegalActDetailLive('1')
+
+    expect(act?.status).toBeNull()
+    expect(act?.statusEvidence).toBeNull()
+    expect(act?.inDegree).toBeNull()
+    expect(act?.amendedAfterPublication).toBeNull()
+    // With no authoritative in-degree the incoming total is not asserted
+    // from it either.
+    expect(act?.inLinks?.totalCount).toBe(0)
+  })
+
+  it('keeps null links, anchors and timeline null — "not available", never empty and complete', async () => {
+    respond({
+      dataSource: 'legal_v2',
+      bridgedFields: [],
+      outLinks: null,
+      inLinks: null,
+      incomingAnchors: null,
+      timeline: null,
+      timelineComplete: null,
+    })
+    const act = await fetchLegalActDetailLive('1')
+    expect(act?.outLinks).toBeNull()
+    expect(act?.inLinks).toBeNull()
+    expect(act?.incomingAnchors).toBeNull()
+    expect(act?.timeline).toBeNull()
+    expect(act?.timelineComplete).toBeNull()
+  })
+
+  it('keeps a linked act with a null status or in-degree null', async () => {
+    const target = { ...edge('7').targetAct, status: null, inDegree: null }
+    respond({
+      outLinks: { totalCount: 1, edges: [{ ...edge('7'), targetAct: target }] },
+    })
+    const act = await fetchLegalActDetailLive('1')
+    expect(act?.outLinks?.items[0]?.act).toMatchObject({ status: null, inDegree: null })
   })
 })

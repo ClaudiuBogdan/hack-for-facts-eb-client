@@ -156,6 +156,25 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
                   <Trans>Publicat în Monitorul Oficial {moCitation}</Trans>
                 </p>
               ) : null}
+
+              {/* legal_v2 serves identity, versions and text from the rebuilt
+                  corpus and BRIDGES the rest from the previous one by act id.
+                  One quiet line says so; an act the previous corpus does not
+                  hold has no status, links or summary at all, and says that. */}
+              {act.dataSource === 'legal_v2' ? (
+                <p className={cn(legislationHeaderMetaClassName, 'mt-1 text-xs')}>
+                  {act.bridgedFields.length > 0 ? (
+                    <Trans>
+                      Starea, legăturile și rezumatul provin din corpusul anterior.
+                    </Trans>
+                  ) : (
+                    <Trans>
+                      Starea, legăturile și rezumatul nu sunt disponibile pentru
+                      acest act: corpusul anterior nu îl conține.
+                    </Trans>
+                  )}
+                </p>
+              ) : null}
             </div>
 
           </div>

@@ -9,8 +9,15 @@ import { LegalStatusBadge } from './legal-status-badge'
 import { ActAccordionItem } from './act-accordion'
 
 type Props = {
-  readonly group: LegalReferenceGroup
+  /** Null when the links are not available for this act (bridged on legal_v2). */
+  readonly group: LegalReferenceGroup | null
   readonly direction: 'out' | 'in'
+  /**
+   * False when the links are not available for this act (legal_v2 bridges
+   * them from the previous corpus, which may not hold the act): the band
+   * says so instead of reading as "no references".
+   */
+  readonly available?: boolean
 }
 
 /**
@@ -26,12 +33,32 @@ type Props = {
  * The list is capped at what the query returned; `totalCount` leads so the scale
  * is honest even when only 12 of 2.621 rows are on screen.
  */
-export function ActReferencesBand({ group, direction }: Props) {
+export function ActReferencesBand({ group, direction, available = true }: Props) {
   const { i18n } = useLingui()
-
-  if (group.items.length === 0 && (group.totalCount ?? 0) === 0) return null
-
   const isOut = direction === 'out'
+
+  // Unavailable, or an unknown total with nothing to show: say so — an
+  // empty band would read as "no references".
+  if (
+    !available ||
+    group === null ||
+    (group.items.length === 0 && group.totalCount === null)
+  ) {
+    return (
+      <ActAccordionItem
+        id={`act-references-${direction}-heading`}
+        title={isOut ? t`Ce face acest act` : t`Cine îl citează`}
+      >
+        <p className="px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+          <Trans>Legăturile nu sunt disponibile pentru acest act.</Trans>
+        </p>
+      </ActAccordionItem>
+    )
+  }
+
+  // A known zero says nothing; an unknown total with no rows is not a zero.
+  if (group.items.length === 0 && group.totalCount === 0) return null
+
   const shownCount = group.items.length
 
   // "12 trimiteri" on an act with 2.621 of them is the exact over-claim this
@@ -67,8 +94,8 @@ export function ActReferencesBand({ group, direction }: Props) {
         <Trans>
           Relații deduse automat din textul actelor — nu afirmate de portal
           (acelea apar la „Trimiteri afirmate de portal”). Doar potrivirile
-          sigure sunt legături. Din 1.103.595 de trimiteri între acte, 400.368
-          (36,3%) nu se rezolvă la un act anume și rămân text citat.
+          sigure sunt legături. O trimitere care nu se rezolvă la un act
+          anume rămâne text citat.
         </Trans>
       }
     >

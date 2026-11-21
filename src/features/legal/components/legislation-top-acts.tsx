@@ -31,7 +31,9 @@ type Props = {
  */
 export function LegislationTopActs({ acts }: Props) {
   const { i18n } = useLingui()
-  const max = acts.reduce((peak, act) => Math.max(peak, act.inDegree), 0)
+  // An unknown in-degree (bridged and null on legal_v2) draws no bar and no
+  // number — never a zero.
+  const max = acts.reduce((peak, act) => Math.max(peak, act.inDegree ?? 0), 0)
 
   return (
     <LegislationSection
@@ -40,10 +42,10 @@ export function LegislationTopActs({ acts }: Props) {
       description={t`Ordonate după câte alte acte le citează — cel mai direct semn că un act contează.`}
       bodyClassName="p-0"
       footnote={
+        // No measured resolution rate: no query serves it (live or nothing).
         <Trans>
           „Citări primite” numără trimiterile din alte acte către acesta.
-          Graful de citări rezolvă 56,9% dintre trimiteri la un act intern;
-          restul rămân potriviri posibile.
+          Trimiterile care nu se rezolvă la un act rămân potriviri posibile.
         </Trans>
       }
     >
@@ -58,7 +60,10 @@ export function LegislationTopActs({ acts }: Props) {
             <span
               className="pointer-events-none absolute inset-y-0 left-0"
               style={{
-                width: max > 0 ? `${(act.inDegree / max) * 100}%` : '0%',
+                width:
+                  max > 0 && act.inDegree !== null
+                    ? `${(act.inDegree / max) * 100}%`
+                    : '0%',
                 backgroundColor: LEGISLATION_ACCENT,
                 opacity: 0.09,
               }}
@@ -85,12 +90,16 @@ export function LegislationTopActs({ acts }: Props) {
               </span>
             </span>
             <span className="relative shrink-0 text-right">
-              <span className="block text-base font-bold tabular-nums text-[var(--pnrr-fg)]">
-                {formatLegalNumber(act.inDegree, i18n.locale)}
-              </span>
-              <span className="block text-[0.7rem] text-[var(--pnrr-muted)]">
-                <Trans>citări primite</Trans>
-              </span>
+              {act.inDegree !== null ? (
+                <>
+                  <span className="block text-base font-bold tabular-nums text-[var(--pnrr-fg)]">
+                    {formatLegalNumber(act.inDegree, i18n.locale)}
+                  </span>
+                  <span className="block text-[0.7rem] text-[var(--pnrr-muted)]">
+                    <Trans>citări primite</Trans>
+                  </span>
+                </>
+              ) : null}
             </span>
           </Link>
         ))}

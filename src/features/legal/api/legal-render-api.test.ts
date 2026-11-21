@@ -13,7 +13,11 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { classifyRenderFailure, LegalRenderFailureError } from '../lib/legal-render-error'
+import {
+  classifyRenderFailure,
+  isTextNotYetAvailable,
+  LegalRenderFailureError,
+} from '../lib/legal-render-error'
 import { fetchLegalRenderLive, renderUrl } from './legal-render-api.live'
 import { fetchLegalRenderMock } from './legal-render-api.mock'
 
@@ -174,5 +178,98 @@ describe('classifyRenderFailure edge shapes', () => {
   it('a status/code mismatch (403 without its code) stays transport, not restricted', () => {
     const failure = classifyRenderFailure(403, { ok: false, error: 'WEIRD', message: 'm' }, '42')
     expect(failure.kind).toBe('transport')
+  })
+})
+
+/**
+ * legal_v2 (server LEGAL_SOURCE=v2): the REST shape is unchanged — the
+ * server converts the stored `tldf-unit` v1 into the same TLDF 1.1 envelope
+ * — so the reader needs no format change. The fixture is the server's own
+ * converter output (`core/v2/tldf-unit.ts`, branch feat/legal-v2-dev) for a
+ * real unit (Portal page 8851), served under a form id.
+ */
+describe('legal_v2 render payloads', () => {
+  const stubFetch = (status: number, body: unknown) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        new Response(JSON.stringify(body), {
+          status,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    )
+  }
+
+  it("parses the server converter's envelope — f<id>, empty exclusion accounting, no defects, renderSource meta", async () => {
+    const rows = (await import('../mocks/fixtures/tldf/render-rows-v2-f900012.json'))
+      .default as { tldf: { document_id: string; generation: { run_id: number }; text_sha256: string } }[]
+    const tldf = rows[0]?.tldf
+    expect(tldf?.document_id).toBe('f900012')
+    stubFetch(200, {
+      ok: true,
+      data: { documentId: 'f900012', kind: 'envelope', chunkIndex: 0, chunkCount: 1, tldf },
+      meta: {
+        requestId: 'r',
+        runId: String(tldf?.generation.run_id),
+        textSha256: tldf?.text_sha256,
+        compilerVersion: 'unit-compiler',
+        compiledAt: '2026-11-20T00:00:00Z',
+        renderSource: 'legal_v2:tldf-unit/1',
+        servedForm: {
+          documentId: 'f900012',
+          versionKind: 'consolidare',
+          versionDate: '2024-03-12',
+          caveat: 'unofficial_consolidation',
+          portalLabelRaw: null,
+          portalLabelDate: '2024-03-12',
+          sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/8851',
+        },
+        renderHead: { version: 1 },
+        fidelityFlags: [],
+      },
+    })
+
+    const data = await fetchLegalRenderLive('f900012')
+    // The served form rides along for the reader's banner.
+    expect(data.servedForm).toMatchObject({
+      documentId: 'f900012',
+      caveat: 'unofficial_consolidation',
+      portalLabelDate: '2024-03-12',
+    })
+
+    expect(data.kind).toBe('envelope')
+    expect(data.documentId).toBe('f900012')
+    if (data.kind !== 'envelope') return
+    expect(data.tldf.accounting.excluded_by_reason).toEqual({})
+    expect(data.tldf.defects).toBeUndefined()
+    expect(data.tldf.blocks.length).toBeGreaterThan(0)
+    // A resolved Portal link keeps the act target the reader links by.
+    const actLink = data.tldf.marks.find((mark) => mark.link?.kind === 'act')?.link
+    expect(typeof actLink?.target_act_id).toBe('number')
+  })
+
+  it.each(['not_loaded', 'composition_not_served', 'label_missing', 'source_not_bound'])(
+    '409 RENDER_UNAVAILABLE %s → unavailable, terminal, "text not yet available"',
+    async (renderStatus) => {
+      stubFetch(409, {
+        ok: false,
+        error: 'RENDER_UNAVAILABLE',
+        message: `document f7 has no servable text (${renderStatus})`,
+        renderStatus,
+      })
+      const failure = await failureOf(fetchLegalRenderLive('f7'))
+      expect(failure).toMatchObject({ kind: 'unavailable', renderStatus, retryable: false })
+      expect(isTextNotYetAvailable(failure)).toBe(true)
+    },
+  )
+
+  it('keeps the legacy unavailable states apart from "not yet available"', () => {
+    const failure = classifyRenderFailure(
+      409,
+      { ok: false, error: 'RENDER_UNAVAILABLE', message: 'm', renderStatus: 'content_unavailable' },
+      '42',
+    )
+    expect(isTextNotYetAvailable(failure)).toBe(false)
   })
 })

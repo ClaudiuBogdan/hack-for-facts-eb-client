@@ -12,7 +12,11 @@ import { cn } from '@/lib/utils'
 import type { LegalActStatus } from '@/schemas/legal'
 
 type Props = {
-  readonly status: LegalActStatus
+  /**
+   * Null when the server does not know the status (legal_v2 bridges it from
+   * the previous corpus, which may not hold the act): no badge renders.
+   */
+  readonly status: LegalActStatus | null
   readonly className?: string
 }
 
@@ -46,6 +50,7 @@ const STATUS_ICON: Record<LegalActStatus, typeof CheckCircle2> = {
  * icon, never colour alone.
  */
 export function LegalStatusBadge({ status, className }: Props) {
+  if (status === null) return null
   const Icon = STATUS_ICON[status]
 
   return (

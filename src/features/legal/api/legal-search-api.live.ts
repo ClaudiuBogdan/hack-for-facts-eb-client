@@ -8,13 +8,14 @@ import {
  * Live adapter for the Caută tab — one `legalSearch` call per submitted
  * query.
  *
- * `channel: docs` is a hardcoded literal, not an option: measured on
- * production 2026-08-26, the sections channel is an act-NAME echo ("codul
- * muncii" returns the matched act's own sections, while genuine text phrases
- * — "concediu de odihna", "salariul minim", "contract individual de munca" —
- * return nothing), so requesting sections would dress a name lookup up as a
- * text search. Re-open the channel when the OpenSearch engine ships and
- * sections become content matches.
+ * `channel: auto` asks for acts AND provision hits. The acts list is the same
+ * as `channel: docs` on both sources (the server's docs leg runs on `auto`
+ * too). Provision hits are kept only from the OpenSearch engine: measured on
+ * production 2026-08-26, the Postgres path's sections are an act-NAME echo
+ * ("codul muncii" returns the matched act's own sections, while genuine text
+ * phrases return nothing), so serving them would dress a name lookup up as a
+ * text search. On legal_v2 every provision hit was verified against the form
+ * it names (`servedForm`), whose consolidation label the finder shows.
  *
  * `includeHistorical` rides the URL toggle: the server's default (false)
  * EXCLUDES abrogated / out-of-force acts even from an exact-citation lookup,
@@ -22,7 +23,7 @@ import {
  */
 const FINDER_SEARCH_QUERY = /* GraphQL */ `
   query LegislationFinderSearch($q: String!, $includeHistorical: Boolean!, $limit: Int!) {
-    legalSearch(q: $q, includeHistorical: $includeHistorical, channel: docs, limit: $limit) {
+    legalSearch(q: $q, includeHistorical: $includeHistorical, channel: auto, limit: $limit) {
       acts {
         score
         act {
@@ -37,6 +38,23 @@ const FINDER_SEARCH_QUERY = /* GraphQL */ `
         }
         summary {
           description
+        }
+      }
+      sections {
+        act {
+          actId
+        }
+        documentId
+        nodeLabel
+        snippet
+        servedForm {
+          documentId
+          versionKind
+          versionDate
+          caveat
+          portalLabelRaw
+          portalLabelDate
+          sourceUrl
         }
       }
       caveats
@@ -109,24 +127,64 @@ export async function fetchLegalSearchLive(
         actNumber: str(act.actNumber),
         actYear: typeof act.actYear === 'number' ? act.actYear : null,
         issuerSlug: str(act.issuerSlug),
+        // Bridged on legal_v2: a null status or in-degree stays null (unknown).
         status:
-          STATUS_BY_ENUM[typeof act.status === 'string' ? act.status : ''] ??
-          'necunoscut',
+          typeof act.status === 'string'
+            ? (STATUS_BY_ENUM[act.status] ?? 'necunoscut')
+            : null,
         inDegree:
           typeof act.inDegree === 'number' && Number.isFinite(act.inDegree)
             ? Math.trunc(act.inDegree)
-            : 0,
+            : null,
       },
       description: str(summary.description),
     }
   })
 
+  const engine = str(result.engine) ?? 'postgres'
+  // Provision hits are content matches only on the OpenSearch engine; the
+  // Postgres path's are a name echo (see the note at the top) and dropped.
+  const sections =
+    engine !== 'opensearch' || !Array.isArray(result.sections)
+      ? []
+      : result.sections.flatMap((hit) => {
+          const raw = rec(hit)
+          // BigInt travels as a string; accept a number too, never invent one.
+          const rawActId = rec(raw.act).actId
+          const actId =
+            typeof rawActId === 'string' || typeof rawActId === 'number' ? String(rawActId) : ''
+          const documentId = str(raw.documentId)
+          if (actId === '' || documentId === null) return []
+          const served = raw.servedForm ? rec(raw.servedForm) : null
+          return [
+            {
+              actId,
+              documentId,
+              nodeLabel: str(raw.nodeLabel),
+              snippet: str(raw.snippet),
+              servedForm:
+                served === null
+                  ? null
+                  : {
+                      documentId: str(served.documentId),
+                      versionKind: str(served.versionKind),
+                      versionDate: str(served.versionDate),
+                      caveat: str(served.caveat),
+                      portalLabelRaw: str(served.portalLabelRaw),
+                      portalLabelDate: str(served.portalLabelDate),
+                      sourceUrl: str(served.sourceUrl),
+                    },
+            },
+          ]
+        })
+
   return legalSearchResultSchema.parse({
     acts,
+    sections,
     caveats: (Array.isArray(result.caveats) ? result.caveats : []).filter(
       (caveat): caveat is string => typeof caveat === 'string',
     ),
-    engine: str(result.engine) ?? 'postgres',
+    engine,
     // null is a CLAIM ("this path cannot count"), never coerced to 0.
     actsTotal:
       typeof result.actsTotal === 'number' && Number.isFinite(result.actsTotal)

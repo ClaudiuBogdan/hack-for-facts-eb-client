@@ -1,6 +1,31 @@
 import type { LegalActDetail } from '@/schemas/legal'
 
 /**
+ * The legal_v2 form fields as the LEGACY source serves them: all null. The
+ * two production copies below predate legal_v2, so they carry these.
+ */
+export const LEGACY_FORM_FIELDS = {
+  readable: null,
+  caveat: null,
+  portalLabelRaw: null,
+  portalLabelDate: null,
+  held: null,
+  formKey: null,
+  sourceUrl: null,
+} as const
+
+/** The act-level legal_v2 fields as the legacy source serves them. */
+const LEGACY_ACT_SOURCE: Pick<
+  LegalActDetail,
+  'dataSource' | 'bridgedFields' | 'newerNotAvailable' | 'defaultBasis'
+> = {
+  dataSource: 'legal',
+  bridgedFields: [],
+  newerNotAvailable: null,
+  defaultBasis: null,
+}
+
+/**
  * Two real acts, copied verbatim from the production `legalAct` response on
  * 2026-08-01 — not invented. They are the two ends of the corpus (see
  * `docs/design/legal/act-detail.md` §2), so the page can be exercised at both
@@ -31,6 +56,7 @@ export const legalActDetailFixture: LegalActDetail = {
   inDegree: 0,
   aliases: [],
   amendedAfterPublication: 0,
+  ...LEGACY_ACT_SOURCE,
   canonical: {
     documentId: '222901',
     versionKind: 'original',
@@ -42,6 +68,7 @@ export const legalActDetailFixture: LegalActDetail = {
     firstPublicationDate: '2020-01-07',
     extractionStatus: 'accepted',
     compatibilityTier: 'standard_articles',
+    ...LEGACY_FORM_FIELDS,
   },
   summary: {
     description:
@@ -142,6 +169,7 @@ export const legalActDetailFixture: LegalActDetail = {
       title: 'LEGE nr. 30 din 10 ianuarie 2019',
       firstPublicationDate: '2019-01-17',
       render: { renderStatus: 'served', chunkCount: 1 },
+      ...LEGACY_FORM_FIELDS,
     },
   ],
   officialTextUrl: 'https://legislatie.just.ro/Public/DetaliiDocument/222901',
@@ -170,6 +198,7 @@ export const legalActDetailRichFixture: LegalActDetail = {
   inDegree: 2621,
   aliases: ['codul fiscal'],
   amendedAfterPublication: 295,
+  ...LEGACY_ACT_SOURCE,
   canonical: {
     documentId: '171282',
     versionKind: 'corp',
@@ -181,6 +210,7 @@ export const legalActDetailRichFixture: LegalActDetail = {
     firstPublicationDate: '2015-09-10',
     extractionStatus: 'accepted',
     compatibilityTier: 'standard_articles',
+    ...LEGACY_FORM_FIELDS,
   },
   summary: {
     description:
@@ -368,6 +398,7 @@ export const legalActDetailRichFixture: LegalActDetail = {
       title: 'COD FISCAL 08/09/2015',
       firstPublicationDate: '2015-09-10',
       render: { renderStatus: 'served', chunkCount: 4 },
+      ...LEGACY_FORM_FIELDS,
     },
     {
       documentId: '171280',
@@ -377,6 +408,7 @@ export const legalActDetailRichFixture: LegalActDetail = {
       title: 'LEGE nr. 227 din 8 septembrie 2015',
       firstPublicationDate: '2015-09-10',
       render: null,
+      ...LEGACY_FORM_FIELDS,
     },
     {
       documentId: '171282-c2026',
@@ -386,9 +418,172 @@ export const legalActDetailRichFixture: LegalActDetail = {
       title: null,
       firstPublicationDate: null,
       render: null,
+      ...LEGACY_FORM_FIELDS,
     },
   ],
   officialTextUrl: 'https://legislatie.just.ro/Public/DetaliiDocument/171282',
+}
+
+/**
+ * legal_v2-SHAPED fixtures (`dataSource: 'legal_v2'`): documents are forms
+ * (`f<form_id>`), consolidations carry the LEG-X3AV caveat and the Portal's
+ * label date, and status/in-degree/summary are bridged or null.
+ *
+ * Test-only on purpose — they are NOT in `BY_ID`, so mock mode never shows a
+ * synthesized consolidation under a real act's name. Ids are in a range no
+ * real act or form uses (9000xx); the text a test serves for them is the
+ * server converter's output of a real unit (`render-rows-v2-f900012.json`).
+ */
+const V2_ORIGINAL = {
+  documentId: 'f900011',
+  versionKind: 'original',
+  versionDate: '1996-04-03',
+  isCanonical: false,
+  title: null,
+  firstPublicationDate: '1996-04-03',
+  render: { renderStatus: 'served', chunkCount: 1 },
+  readable: true,
+  caveat: null,
+  portalLabelRaw: null,
+  portalLabelDate: null,
+  held: false,
+  formKey: 'orig',
+  sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900011',
+} as const
+
+/** The default form: a readable consolidation whose Portal date has passed. */
+const V2_CONSOLIDATION = {
+  documentId: 'f900012',
+  versionKind: 'consolidare',
+  versionDate: '2024-03-12',
+  isCanonical: true,
+  title: null,
+  firstPublicationDate: null,
+  render: { renderStatus: 'served', chunkCount: 1 },
+  readable: true,
+  caveat: 'unofficial_consolidation',
+  portalLabelRaw: null,
+  portalLabelDate: '2024-03-12',
+  held: false,
+  formKey: 'cons:2024-03-12',
+  sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012',
+} as const
+
+/** A newer consolidation the Portal lists but whose text is not loaded. */
+const V2_CONSOLIDATION_NOT_LOADED = {
+  documentId: 'f900013',
+  versionKind: 'consolidare',
+  versionDate: '2025-06-01',
+  isCanonical: false,
+  title: null,
+  firstPublicationDate: null,
+  render: { renderStatus: 'not_loaded', chunkCount: null },
+  readable: false,
+  caveat: 'unofficial_consolidation',
+  portalLabelRaw: null,
+  portalLabelDate: '2025-06-01',
+  held: false,
+  formKey: 'cons:2025-06-01',
+  sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900013',
+} as const
+
+const V2_CANONICAL_HEAD = {
+  versionKind: 'consolidare',
+  versionDate: '2024-03-12',
+  den: 'HOTĂRÂRE nr. 206 din 27 martie 1996',
+  title: null,
+  issuerRaw: null,
+  publicationRaw: 'MONITORUL OFICIAL nr. 67 din 3 aprilie 1996',
+  firstPublicationDate: null,
+  extractionStatus: null,
+  compatibilityTier: null,
+} as const
+
+/** A bridged legal_v2 act whose default form is a consolidation. */
+export const legalActDetailV2Fixture: LegalActDetail = {
+  actId: '900001',
+  displayCitation: 'Hotărârea nr. 206/1996',
+  actType: 'hotarare',
+  actNumber: '206',
+  actYear: 1996,
+  issuerSlug: 'guvernul',
+  status: 'in-vigoare',
+  statusEvidence: {
+    modifiedByCount: 0,
+    contradictedAbrogations: 0,
+    abrogatedByCount: 0,
+    futureEventCount: 0,
+  },
+  entryIntoForce: null,
+  inDegree: 3,
+  aliases: [],
+  amendedAfterPublication: 0,
+  dataSource: 'legal_v2',
+  bridgedFields: [
+    'status',
+    'statusEvidence',
+    'inDegree',
+    'entryIntoForce',
+    'amendedAfterPublication',
+    'links',
+    'incomingAnchors',
+    'timeline',
+    'summary',
+  ],
+  newerNotAvailable: 1,
+  defaultBasis: 'latest_consolidation',
+  canonical: {
+    documentId: V2_CONSOLIDATION.documentId,
+    ...V2_CANONICAL_HEAD,
+    readable: true,
+    caveat: 'unofficial_consolidation',
+    portalLabelRaw: null,
+    portalLabelDate: '2024-03-12',
+    held: false,
+    formKey: V2_CONSOLIDATION.formKey,
+    sourceUrl: V2_CONSOLIDATION.sourceUrl,
+  },
+  summary: null,
+  timeline: [],
+  timelineComplete: true,
+  gazettePublications: [],
+  outLinks: { totalCount: 0, hasMore: false, items: [] },
+  inLinks: { totalCount: 0, hasMore: false, items: [] },
+  incomingAnchors: { totalCount: 0, items: [] },
+  documents: [V2_ORIGINAL, V2_CONSOLIDATION, V2_CONSOLIDATION_NOT_LOADED],
+  officialTextUrl: V2_CONSOLIDATION.sourceUrl,
+}
+
+/**
+ * A legal_v2 act the previous corpus does not hold: nothing bridged, so
+ * status, its evidence, in-degree and the amendment count are null. Its
+ * default form is the original.
+ */
+export const legalActDetailV2UnbridgedFixture: LegalActDetail = {
+  ...legalActDetailV2Fixture,
+  actId: '900002',
+  status: null,
+  statusEvidence: null,
+  inDegree: null,
+  amendedAfterPublication: null,
+  bridgedFields: [],
+  newerNotAvailable: 0,
+  defaultBasis: 'original',
+  canonical: {
+    documentId: V2_ORIGINAL.documentId,
+    ...V2_CANONICAL_HEAD,
+    versionKind: 'original',
+    versionDate: '1996-04-03',
+    readable: true,
+    caveat: null,
+    portalLabelRaw: null,
+    portalLabelDate: null,
+    held: false,
+    formKey: V2_ORIGINAL.formKey,
+    sourceUrl: V2_ORIGINAL.sourceUrl,
+  },
+  documents: [{ ...V2_ORIGINAL, isCanonical: true }],
+  officialTextUrl: V2_ORIGINAL.sourceUrl,
 }
 
 const BY_ID: Record<string, LegalActDetail> = {

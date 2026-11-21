@@ -212,7 +212,9 @@ export function ActPlainSummary({ summary, officialTextUrl = null, qualifiers }:
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 underline underline-offset-2"
                 >
-                  <Trans>Textul oficial, pe legislatie.just.ro</Trans>
+                  {/* Not "textul oficial": on legal_v2 the default text may be
+                      a Portal consolidation, which is unofficial (LEG-X3AV). */}
+                  <Trans>Textul, pe legislatie.just.ro</Trans>
                   <ExternalLink className="size-3" aria-hidden />
                 </a>
               </>

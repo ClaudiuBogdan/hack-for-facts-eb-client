@@ -3,15 +3,10 @@ import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { AlertTriangle, ExternalLink } from 'lucide-react'
-import { LEGAL_ORIGINAL_TEXT_CAVEAT } from '@/schemas/legal'
 import {
-  CCR_DECISION_COUNT,
-  CHANGES_LATEST_EFFECTIVE_DATE,
-  GAZETTE_LATEST_ISSUE_DATE,
-  LEGAL_ACT_COUNT,
-  LEGAL_CORPUS_SIZE_MEASURED_AT,
-  LEGAL_PARSED_DOCUMENT_COUNT,
-} from '../lib/legal-coverage'
+  useLegislationFreshness,
+  useLegislationStatusCounts,
+} from '../hooks/use-legislation'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import {
   legislationAlertClassName,
@@ -28,11 +23,12 @@ const externalLinkClassName =
  * `/legislation/guide` — the Ghid tab: what a reader must know to use this
  * corpus HONESTLY, stated in plain Romanian.
  *
- * Every number here is a measured constant from `legal-coverage.ts` (or the
- * caveat constant the server itself serves), never a hardcoded string — the
- * test asserts the figures move when the constants do. The guide makes no
- * live queries on purpose: editorial prose must not have a loading or a
- * failure state, so it prints measurements WITH their dates instead.
+ * Every figure here is LIVE (2026-11-20): the act total from the STATUS
+ * aggregate, the CCR count and the two frontiers from
+ * `useLegislationFreshness`. The measured constants it used to print
+ * described the previous corpus and could not stay true under legal_v2. A
+ * sentence has no loading or failure state: while a figure is unknown the
+ * sentence is written without it, never with a zero or a stale number.
  *
  * The section order is the reader's path: what this is → how to find a law →
  * how to read its status → the Constitutional Court gap (the module's
@@ -45,6 +41,12 @@ export function LegislationGuide() {
   const { i18n } = useLingui()
   const number = (value: number) => formatLegalNumber(value, i18n.locale)
   const date = (value: string) => formatLegalDate(value, i18n.locale)
+  const { data: counts } = useLegislationStatusCounts()
+  const { data: freshness } = useLegislationFreshness()
+  const actTotal = counts?.total
+  const ccrCount = freshness?.ccrDecisionCount ?? null
+  const latestIssue = freshness?.latestIssueDate ?? null
+  const latestChange = freshness?.latestEffectiveChangeDate ?? null
 
   return (
     <div className="flex flex-col gap-12">
@@ -55,15 +57,22 @@ export function LegislationGuide() {
       >
         <div className="flex flex-col gap-3">
           <p className={paragraphClassName}>
-            <Trans>
-              Corpusul conține {number(LEGAL_ACT_COUNT)} de acte normative și{' '}
-              {number(LEGAL_PARSED_DOCUMENT_COUNT)} de documente parsate
-              (măsurat la {date(LEGAL_CORPUS_SIZE_MEASURED_AT)}), preluate din
-              Portal Legislativ și din Monitorul Oficial: legi, ordonanțe,
-              hotărâri și celelalte tipuri de acte, cu statutul lor, cu
-              trimiterile dintre ele și cu numărul de Monitor în care au
-              apărut.
-            </Trans>
+            {actTotal !== undefined ? (
+              <Trans>
+                Corpusul conține {number(actTotal)} de acte normative, preluate
+                din Portal Legislativ și din Monitorul Oficial: legi, ordonanțe,
+                hotărâri și celelalte tipuri de acte, cu statutul lor, cu
+                trimiterile dintre ele și cu numărul de Monitor în care au
+                apărut.
+              </Trans>
+            ) : (
+              <Trans>
+                Corpusul conține acte normative preluate din Portal Legislativ
+                și din Monitorul Oficial: legi, ordonanțe, hotărâri și celelalte
+                tipuri de acte, cu statutul lor, cu trimiterile dintre ele și cu
+                numărul de Monitor în care au apărut.
+              </Trans>
+            )}
           </p>
           <p className={paragraphClassName}>
             <Trans>
@@ -99,17 +108,18 @@ export function LegislationGuide() {
           </p>
           <p className={paragraphClassName}>
             <Trans>
-              Ce NU funcționează încă: căutarea după o frază din interiorul
-              unei legi („concediu de odihnă”, „salariul minim”) nu găsește
-              nimic — corpusul nu are deocamdată căutare în text.{' '}
+              Ce NU funcționează încă: căutarea după sens. O întrebare
+              formulată liber poate să nu găsească prevederea pe care o
+              cauți.{' '}
               <Link
                 to="/legislation/search"
                 className={legislationLinkClassName}
               >
                 Pagina de căutare
               </Link>{' '}
-              spune același lucru, ca să nu iei o listă goală drept „legea nu
-              există”.
+              spune la fiecare căutare dacă a căutat și în textul legilor sau
+              doar după numărul și denumirea actelor, ca să nu iei o listă
+              goală drept „legea nu există”.
             </Trans>
           </p>
         </div>
@@ -153,14 +163,24 @@ export function LegislationGuide() {
             aria-hidden
           />
           <p className="text-sm font-medium leading-6 text-[var(--pnrr-fg)]">
-            <Trans>
-              Cele {number(CCR_DECISION_COUNT)} de decizii ale Curții
-              Constituționale există ca acte în corpus, dar nu modifică
-              niciodată statutul actelor pe care le vizează. O prevedere
-              declarată neconstituțională poate apărea în continuare „în
-              vigoare” aici. Verifică întotdeauna separat deciziile Curții
-              înainte să te bazezi pe un articol contestat.
-            </Trans>
+            {ccrCount !== null ? (
+              <Trans>
+                Cele {number(ccrCount)} de decizii ale Curții Constituționale
+                există ca acte în corpus, dar nu modifică niciodată statutul
+                actelor pe care le vizează. O prevedere declarată
+                neconstituțională poate apărea în continuare „în vigoare” aici.
+                Verifică întotdeauna separat deciziile Curții înainte să te
+                bazezi pe un articol contestat.
+              </Trans>
+            ) : (
+              <Trans>
+                Deciziile Curții Constituționale există ca acte în corpus, dar
+                nu modifică niciodată statutul actelor pe care le vizează. O
+                prevedere declarată neconstituțională poate apărea în continuare
+                „în vigoare” aici. Verifică întotdeauna separat deciziile Curții
+                înainte să te bazezi pe un articol contestat.
+              </Trans>
+            )}
           </p>
         </div>
       </LegislationSection>
@@ -172,14 +192,23 @@ export function LegislationGuide() {
       >
         <div className="flex flex-col gap-3">
           <p className={paragraphClassName}>
-            <Trans>
-              Edițiile Monitorului Oficial din corpus se opresc la{' '}
-              {date(GAZETTE_LATEST_ISSUE_DATE)}, iar cea mai recentă modificare
-              intrată în vigoare pe care o avem înregistrată este din{' '}
-              {date(CHANGES_LATEST_EFFECTIVE_DATE)}. O lege publicată sau o
-              modificare intrată în vigoare după aceste date poate lipsi de
-              aici — absența ei nu înseamnă că nu există.
-            </Trans>
+            {latestIssue !== null && latestChange !== null ? (
+              <Trans>
+                Edițiile Monitorului Oficial din corpus se opresc la{' '}
+                {date(latestIssue)}, iar cea mai recentă modificare intrată în
+                vigoare pe care o avem înregistrată este din{' '}
+                {date(latestChange)}. O lege publicată sau o modificare intrată
+                în vigoare după aceste date poate lipsi de aici — absența ei nu
+                înseamnă că nu există.
+              </Trans>
+            ) : (
+              <Trans>
+                Edițiile Monitorului Oficial și modificările din corpus se opresc
+                la o anumită dată. O lege publicată sau o modificare intrată în
+                vigoare după ea poate lipsi de aici — absența ei nu înseamnă că
+                nu există.
+              </Trans>
+            )}
           </p>
           <p className={paragraphClassName}>
             <Trans>
@@ -207,19 +236,30 @@ export function LegislationGuide() {
       <LegislationSection
         id="legislation-guide-text-heading"
         title={t`Ce text citești aici — și unde e forma oficială`}
-        description={t`Textul servit este versiunea publicată, nu forma consolidată la zi.`}
+        description={t`Textul afișat este o formă publicată a actului sau o formă consolidată neoficială — niciuna nu este „textul în vigoare la o dată”.`}
       >
         <div className="flex flex-col gap-3">
-          {/* The caveat the server itself attaches to served texts — rendered
-              verbatim from the shared constant, never paraphrased, so the
-              module speaks ONE version of its most important disclaimer. */}
-          <p className={paragraphClassName}>{LEGAL_ORIGINAL_TEXT_CAVEAT}</p>
+          {/* True on both sources: the previous corpus serves published forms
+              only, legal_v2 also serves Portal consolidations — unofficial
+              and informative (LEG-X3AV). The server's own published-form
+              caveat is no longer quoted here: on legal_v2 it is not the
+              caveat the server attaches. */}
           <p className={paragraphClassName}>
             <Trans>
-              Concret: dacă o lege a fost modificată după publicare, textul de
-              aici rămâne cel inițial, iar modificările apar ca evenimente în
-              istoricul actului — nu topite în text. Pentru forma în vigoare și
-              pentru orice decizie cu miză, mergi la sursa oficială:
+              Pe fișa unui act citești fie o formă publicată în Monitorul
+              Oficial (actul inițial sau o republicare), fie o formă
+              consolidată preluată din Portalul Legislativ. Versiunea afișată
+              este numită deasupra textului și o poți schimba acolo.
+            </Trans>
+          </p>
+          <p className={paragraphClassName}>
+            <Trans>
+              O formă consolidată este neoficială și are caracter informativ:
+              poartă mențiunea Portalului și data ei, care nu este data la care
+              te interesează legea. O formă publicată nu include modificările
+              ulterioare. Pentru a stabili dispozițiile aplicabile la o dată,
+              consultă în Monitorul Oficial actul, republicările, actele
+              modificatoare și dispozițiile tranzitorii relevante:
             </Trans>
           </p>
           <ul className="flex flex-col gap-2 text-sm leading-6 text-[var(--pnrr-fg)]">
@@ -233,7 +273,7 @@ export function LegislationGuide() {
                 legislatie.just.ro
                 <ExternalLink className="size-3" aria-hidden />
               </a>{' '}
-              <Trans>— forma consolidată, în vigoare, a fiecărui act;</Trans>
+              <Trans>— Portalul Legislativ, cu formele consolidate neoficiale ale actelor;</Trans>
             </li>
             <li>
               <a

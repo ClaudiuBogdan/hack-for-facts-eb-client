@@ -8,7 +8,13 @@ import { LegalStatusBadge } from './legal-status-badge'
 import { ActAccordionItem } from './act-accordion'
 
 type Props = {
-  readonly group: LegalIncomingAnchorGroup
+  /** Null when the anchors are not available for this act (bridged on legal_v2). */
+  readonly group: LegalIncomingAnchorGroup | null
+  /**
+   * False when the anchors are not available for this act (legal_v2 bridges
+   * them from the previous corpus, which may not hold the act).
+   */
+  readonly available?: boolean
 }
 
 /**
@@ -22,24 +28,45 @@ type Props = {
  * (`linkText`) and, when the anchor points at a provision, the fragment
  * (`art. 5`). Unlike the citation connection, `totalCount` here is REAL.
  */
-export function ActAnchorsBand({ group }: Props) {
+export function ActAnchorsBand({ group, available = true }: Props) {
   const { i18n } = useLingui()
+
+  // Unavailable, or an unknown total with nothing to show: say so — an
+  // empty band would read as "no anchors".
+  if (
+    !available ||
+    group === null ||
+    (group.items.length === 0 && group.totalCount === null)
+  ) {
+    return (
+      <ActAccordionItem id="act-anchors-heading" title={t`Trimiteri afirmate de portal`}>
+        <p className="px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+          <Trans>Trimiterile afirmate de portal nu sunt disponibile pentru acest act.</Trans>
+        </p>
+      </ActAccordionItem>
+    )
+  }
 
   if (group.items.length === 0 && group.totalCount === 0) return null
 
   const shownCount = group.items.length
+  const totalCount = group.totalCount
 
   return (
     <ActAccordionItem
       id="act-anchors-heading"
       title={t`Trimiteri afirmate de portal`}
       meta={
-        <Plural
-          value={group.totalCount}
-          one="# ancoră"
-          few="# ancore"
-          other="# de ancore"
-        />
+        totalCount !== null ? (
+          <Plural value={totalCount} one="# ancoră" few="# ancore" other="# de ancore" />
+        ) : (
+          <Plural
+            value={shownCount}
+            one="cel puțin # ancoră"
+            few="cel puțin # ancore"
+            other="cel puțin # de ancore"
+          />
+        )
       }
       description={t`Legături pe care portalul legislativ le afirmă în textul actelor care citează acest act — cu formularea exactă din pagina-sursă.`}
       footnote={
@@ -55,11 +82,11 @@ export function ActAnchorsBand({ group }: Props) {
         ))}
       </ul>
 
-      {shownCount < group.totalCount ? (
+      {totalCount !== null && shownCount < totalCount ? (
         <p className="border-t border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
           <Trans>
             Se afișează {formatLegalNumber(shownCount, i18n.locale)} din{' '}
-            {formatLegalNumber(group.totalCount, i18n.locale)}.
+            {formatLegalNumber(totalCount, i18n.locale)}.
           </Trans>
         </p>
       ) : null}

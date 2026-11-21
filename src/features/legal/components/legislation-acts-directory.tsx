@@ -401,10 +401,15 @@ export function LegislationActsDirectory({ filter }: Props) {
                       <span className="text-xs text-[var(--pnrr-muted)]">
                         {legalActTypeLabel(act.actType)}
                         {act.actYear !== null ? ` · ${act.actYear}` : ''}
-                        {' · '}
-                        <Trans>
-                          citat de {formatLegalNumber(act.inDegree, i18n.locale)} ori
-                        </Trans>
+                        {/* Unknown (null) in-degree says nothing — never "0 ori". */}
+                        {act.inDegree !== null && (
+                          <>
+                            {' · '}
+                            <Trans>
+                              citat de {formatLegalNumber(act.inDegree, i18n.locale)} ori
+                            </Trans>
+                          </>
+                        )}
                       </span>
                     </span>
                     <LegalStatusBadge status={act.status} />

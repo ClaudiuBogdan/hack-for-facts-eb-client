@@ -13,9 +13,12 @@ import {
   fetchGazetteIssueContents,
   fetchGazetteIssuesPage,
 } from '../api/legal-gazette-api'
+import { useLegislationFreshness } from '../hooks/use-legislation'
 import {
+  bucharestToday,
   GAZETTE_FIRST_ISSUE_YEAR,
-  GAZETTE_LATEST_ISSUE_DATE,
+  GAZETTE_STALE_AFTER_DAYS,
+  isFrontierStale,
 } from '../lib/legal-coverage'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import {
@@ -35,15 +38,6 @@ import { LegislationSection } from './legislation-section'
 /** The server's own default page size — one `moIssues` page per screenful. */
 const PAGE_SIZE = 20
 
-/**
- * The newest year with data. Derived from the measured frontier constant, not
- * from the clock: discovery is frozen at 2026-07-09, so `new Date()`'s year
- * would point past the corpus as soon as January 2027 starts.
- */
-const GAZETTE_LATEST_ISSUE_YEAR = Number.parseInt(
-  GAZETTE_LATEST_ISSUE_DATE.slice(0, 4),
-  10,
-)
 
 /** Same compact-control language as the acts directory's selects. */
 const controlClassName =
@@ -53,10 +47,12 @@ const secondaryButtonClassName =
   'inline-flex h-11 items-center rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-5 text-sm font-semibold text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] disabled:opacity-50'
 
 /** Newest year first — the list the year `<select>` renders. */
-const YEAR_OPTIONS: readonly number[] = Array.from(
-  { length: GAZETTE_LATEST_ISSUE_YEAR - GAZETTE_FIRST_ISSUE_YEAR + 1 },
-  (_unused, index) => GAZETTE_LATEST_ISSUE_YEAR - index,
-)
+function yearOptions(latestYear: number): readonly number[] {
+  return Array.from(
+    { length: Math.max(latestYear - GAZETTE_FIRST_ISSUE_YEAR + 1, 1) },
+    (_unused, index) => latestYear - index,
+  )
+}
 
 type Props = {
   readonly search: GazetteBrowseSearch
@@ -84,24 +80,42 @@ export function LegislationGazetteDirectory({ search }: Props) {
   const { i18n } = useLingui()
   const navigate = useNavigate()
 
-  // A year outside the measured corpus range drops to the default rather than
+  // The newest year with data is the LIVE gazette frontier, not the clock:
+  // when discovery stops, the clock's year points past the corpus. So the
+  // DEFAULT year waits for the frontier; only a frontier that cannot be read
+  // (or holds no issue) falls back to the clock's year, where an empty year
+  // reads as an empty list, never as a stale claim.
+  const freshness = useLegislationFreshness()
+  const latestIssueDate = freshness.data?.latestIssueDate ?? null
+  const clockYear = new Date().getFullYear()
+  const frontierYear =
+    latestIssueDate !== null ? Number.parseInt(latestIssueDate.slice(0, 4), 10) : null
+  const latestYear = frontierYear ?? (freshness.isPending ? null : clockYear)
+  const years = yearOptions(latestYear ?? clockYear)
+  const frontierStale =
+    isFrontierStale(latestIssueDate, GAZETTE_STALE_AFTER_DAYS, bucharestToday()) === true
+
+  // A year outside the corpus range drops to the default rather than
   // rendering a select that cannot display the URL's value.
   const year =
     search.year !== undefined &&
     search.year >= GAZETTE_FIRST_ISSUE_YEAR &&
-    search.year <= GAZETTE_LATEST_ISSUE_YEAR
+    search.year <= (latestYear ?? clockYear)
       ? search.year
-      : GAZETTE_LATEST_ISSUE_YEAR
+      : latestYear
   const part = search.part
   const page = search.page ?? 1
 
   const issuesQuery = useQuery({
     queryKey: ['legal', 'gazette-issues', { year, part: part ?? null, page }],
-    queryFn: ({ signal }) =>
-      fetchGazetteIssuesPage(
+    queryFn: ({ signal }) => {
+      if (year === null) throw new Error('unreachable: query disabled')
+      return fetchGazetteIssuesPage(
         { year, ...(part !== undefined && { part }) },
         { page, pageSize: PAGE_SIZE, signal },
-      ),
+      )
+    },
+    enabled: year !== null,
     staleTime: 5 * 60 * 1000,
     retry: 1,
   })
@@ -114,7 +128,8 @@ export function LegislationGazetteDirectory({ search }: Props) {
     setExpandedIssueId(null)
   }, [year, part, page])
 
-  const setFilters = (next: { year: number; part: GazettePartCode | undefined }) => {
+  const setFilters = (next: { year: number | null; part: GazettePartCode | undefined }) => {
+    if (next.year === null) return
     // A filter change resets paging by omitting `page` — the URL is the whole
     // paging state here, so there is no in-memory reset machinery to keep in
     // sync (unlike the cursor-accumulating acts directory).
@@ -129,6 +144,7 @@ export function LegislationGazetteDirectory({ search }: Props) {
   }
 
   const goToPage = (nextPage: number) => {
+    if (year === null) return
     // Paging pushes history (back returns to the previous page) and pins the
     // effective year, so the link cannot drift onto another year when the
     // default year advances.
@@ -152,7 +168,8 @@ export function LegislationGazetteDirectory({ search }: Props) {
   const isPastEnd = issuesQuery.isSuccess && items.length === 0 && page > 1
 
   const partLabel = part !== undefined ? legalGazettePartLabel(part) : null
-  const countLine = issuesQuery.isSuccess
+  const countLine =
+    issuesQuery.isSuccess && year !== null
     ? isPastEnd
       ? undefined
       : total !== null
@@ -169,22 +186,25 @@ export function LegislationGazetteDirectory({ search }: Props) {
   return (
     <div className="flex flex-col gap-6">
       {/* The staleness caveat qualifies everything below it, so it reads first.
-          The date is the SAME constant the shell's "date până la" meta line
-          formats — the two statements cannot drift apart. */}
-      <div className={legislationAlertClassName} role="note">
-        <AlertTriangle
-          className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
-          aria-hidden
-        />
-        <p className="text-sm font-medium text-[var(--pnrr-fg)]">
-          <Trans>
-            Cea mai recentă ediție din corpus a apărut pe{' '}
-            {formatLegalDate(GAZETTE_LATEST_ISSUE_DATE, i18n.locale)}.
-            Preluarea edițiilor noi este oprită de la acea dată, deci numerele
-            publicate ulterior în Monitorul Oficial nu apar încă aici.
-          </Trans>
-        </p>
-      </div>
+          The date is the live frontier the shell's "date până la" meta line
+          reads too, and the caveat shows only while that frontier is older
+          than GAZETTE_STALE_AFTER_DAYS — a current corpus is not "stopped". */}
+      {frontierStale && latestIssueDate !== null && (
+        <div className={legislationAlertClassName} role="note">
+          <AlertTriangle
+            className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
+            aria-hidden
+          />
+          <p className="text-sm font-medium text-[var(--pnrr-fg)]">
+            <Trans>
+              Cea mai recentă ediție din corpus a apărut pe{' '}
+              {formatLegalDate(latestIssueDate, i18n.locale)}. Preluarea
+              edițiilor noi este oprită de la acea dată, deci numerele publicate
+              ulterior în Monitorul Oficial nu apar încă aici.
+            </Trans>
+          </p>
+        </div>
+      )}
 
       <LegislationSection
         id="gazette-directory-heading"
@@ -210,7 +230,8 @@ export function LegislationGazetteDirectory({ search }: Props) {
             </span>
             <select
               className={cn(controlClassName, 'w-32')}
-              value={year}
+              value={year ?? ''}
+              disabled={year === null}
               onChange={(event) =>
                 setFilters({
                   year: Number.parseInt(event.target.value, 10),
@@ -218,7 +239,7 @@ export function LegislationGazetteDirectory({ search }: Props) {
                 })
               }
             >
-              {YEAR_OPTIONS.map((option) => (
+              {years.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>
@@ -233,6 +254,7 @@ export function LegislationGazetteDirectory({ search }: Props) {
             <select
               className={cn(controlClassName, 'min-w-[13rem]')}
               value={part ?? ''}
+              disabled={year === null}
               onChange={(event) => {
                 const parsed = gazettePartCodeSchema.safeParse(event.target.value)
                 setFilters({

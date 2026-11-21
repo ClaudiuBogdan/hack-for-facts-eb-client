@@ -92,7 +92,7 @@ describe('ActPlainSummary content combinations', () => {
       'https://legislatie.just.ro/Public/DetaliiDocument/178667',
     )
     expect(
-      screen.getByRole('link', { name: /Textul oficial/ }).getAttribute('href'),
+      screen.getByRole('link', { name: /Textul, pe legislatie/ }).getAttribute('href'),
     ).toContain('legislatie.just.ro')
   })
 

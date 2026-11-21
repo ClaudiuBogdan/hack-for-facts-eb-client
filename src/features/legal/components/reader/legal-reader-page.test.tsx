@@ -23,7 +23,10 @@ import { describe, expect, it, vi } from 'vitest'
 const render = (ui: Parameters<typeof renderShared>[0]) =>
   renderShared(ui, { queryClient: createTestQueryClient() })
 
-import { legalActDetailFixture } from '../../mocks/fixtures/legal-act-detail'
+import {
+  LEGACY_FORM_FIELDS,
+  legalActDetailFixture,
+} from '../../mocks/fixtures/legal-act-detail'
 import { foldTldfBlocks } from '../../lib/tldf/fold'
 import { ActReadingLayout } from './legal-reader-page'
 import type { TldfChunkPayload, TldfEnvelope } from '../../lib/tldf/types'
@@ -75,6 +78,7 @@ const owning = (...documentIds: string[]): typeof legalActDetailFixture => ({
       title: null,
       firstPublicationDate: null,
       render: null,
+      ...LEGACY_FORM_FIELDS,
     })),
   ],
 })

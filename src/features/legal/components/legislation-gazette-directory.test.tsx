@@ -2,11 +2,12 @@ import {
   render as renderShared,
   screen,
   fireEvent,
+  waitFor,
   createTestQueryClient,
 } from '@/test/test-utils'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { ReactNode } from 'react'
-import { GAZETTE_LATEST_ISSUE_DATE } from '../lib/legal-coverage'
+import { legislationFreshnessFixture } from '../mocks/fixtures/legislation-freshness'
 import { LegislationGazetteDirectory } from './legislation-gazette-directory'
 
 const navigateMock = vi.fn()
@@ -42,8 +43,14 @@ vi.mock('@tanstack/react-router', () => ({
 const render = (ui: Parameters<typeof renderShared>[0]) =>
   renderShared(ui, { queryClient: createTestQueryClient() })
 
-/** The default year is the frozen frontier's year, never the clock's. */
-const LATEST_YEAR = Number.parseInt(GAZETTE_LATEST_ISSUE_DATE.slice(0, 4), 10)
+/**
+ * The default year is the LIVE frontier's year (the freshness fixture in the
+ * mock lane), never the clock's.
+ */
+const LATEST_YEAR = Number.parseInt(
+  (legislationFreshnessFixture.latestIssueDate ?? '').slice(0, 4),
+  10,
+)
 
 describe('LegislationGazetteDirectory', () => {
   beforeEach(() => {
@@ -54,9 +61,11 @@ describe('LegislationGazetteDirectory', () => {
     render(<LegislationGazetteDirectory search={{}} />)
 
     // The staleness note is the page's honesty contract: remove it and a
-    // reader believes they are seeing today's gazette. The date inside it is
-    // locale-formatted, so the year is asserted rather than the spelling.
-    const note = screen.getByRole('note')
+    // reader believes they are seeing today's gazette. It shows while the
+    // live frontier (the fixture's 2026-07-09) is older than a week. The date
+    // inside it is locale-formatted, so the year is asserted rather than the
+    // spelling.
+    const note = await screen.findByRole('note')
     expect(note).toHaveTextContent(/Cea mai recentă ediție din corpus/)
     expect(note).toHaveTextContent(String(LATEST_YEAR))
     expect(note).toHaveTextContent(/Preluarea edițiilor noi este oprită/)
@@ -107,6 +116,10 @@ describe('LegislationGazetteDirectory', () => {
   it('writes filter changes to the URL and resets paging by omission', async () => {
     render(<LegislationGazetteDirectory search={{ page: 3 }} />)
     await screen.findByLabelText(/Filtre/)
+    // The default year waits for the live frontier; the filters with it.
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Anul/)).toHaveValue(String(LATEST_YEAR)),
+    )
 
     fireEvent.change(screen.getByLabelText(/Partea/), {
       target: { value: 'PII' },

@@ -6,6 +6,7 @@ import {
 } from '@/test/test-utils'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { ReactNode } from 'react'
+import type { LegalSearchResultData } from '@/schemas/legal'
 import { LegislationActFinder } from './legislation-act-finder'
 
 const navigateMock = vi.fn()
@@ -230,5 +231,112 @@ describe('LegislationActFinder', () => {
         search: { q: 'Legea 53/2003' },
       }),
     )
+  })
+
+  describe('on the legal-v2 OpenSearch engine', () => {
+    /** The v2 engine's answer shape (server core/v2/search.ts). */
+    const v2Answer = (
+      acts: LegalSearchResultData['acts'],
+      sections: LegalSearchResultData['sections'] = [],
+    ): LegalSearchResultData => ({
+      acts,
+      sections,
+      caveats: [
+        'semantic search unavailable',
+        'Formele consolidate sunt neoficiale, cu caracter informativ; textul unui act nu este „textul în vigoare la o dată”.',
+      ],
+      engine: 'opensearch',
+      actsTotal: null,
+      totalsExhaustive: false,
+      degraded: false,
+      asOf: '2026-11-18T00:00:00Z',
+      unhydratedHits: 0,
+    })
+    const hit: LegalSearchResultData['acts'][number] = {
+      score: 1,
+      act: {
+        actId: '900002',
+        displayCitation: 'Hotărârea nr. 206/1996',
+        actType: 'hotarare',
+        actNumber: '206',
+        actYear: 1996,
+        issuerSlug: 'guvernul',
+        status: null,
+        inDegree: null,
+      },
+      description: null,
+    }
+
+    it('shows the consolidation caveat verbatim, an unknown total, and claims only meaning search is missing', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(v2Answer([hit]))
+      render(<LegislationActFinder search={{ q: 'renunțare cetățenie' }} />)
+
+      await screen.findByRole('link', { name: 'Hotărârea nr. 206/1996' })
+      expect(screen.getByText(/Formele consolidate sunt neoficiale/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/o potrivire afișată — numărul total nu este cunoscut/),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/Potriviri după cuvintele din numele, titlul și textul actelor/),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByText(/Căutarea în textul legilor nu este încă disponibilă/),
+      ).not.toBeInTheDocument()
+      // A null status shows no badge, a null in-degree no "citat de".
+      expect(screen.queryByText('Necunoscut')).not.toBeInTheDocument()
+      expect(screen.queryByText(/citat de/)).not.toBeInTheDocument()
+    })
+
+    it('quotes a verified provision hit and labels one from a consolidation (LEG-X3AV)', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(
+        v2Answer(
+          [hit],
+          [
+            {
+              actId: '900002',
+              documentId: 'f900012',
+              nodeLabel: 'Articol unic',
+              snippet: 'Se aprobă <em>renunțarea</em> la <b>cetățenia</b> română',
+              servedForm: {
+                documentId: 'f900012',
+                versionKind: 'consolidare',
+                caveat: 'unofficial_consolidation',
+                portalLabelRaw: null,
+                portalLabelDate: '2024-03-12',
+              },
+            },
+            {
+              actId: '900002',
+              documentId: 'f900011',
+              nodeLabel: null,
+              snippet: 'renunțarea din forma publicată',
+              servedForm: { documentId: 'f900011', versionKind: 'original', caveat: null },
+            },
+          ],
+        ),
+      )
+      render(<LegislationActFinder search={{ q: 'renunțare cetățenie' }} />)
+
+      await screen.findByRole('link', { name: 'Hotărârea nr. 206/1996' })
+      // The matched word is marked; any other tag is text, never HTML.
+      expect(screen.getByText('renunțarea').tagName).toBe('MARK')
+      expect(screen.getByText(/<b>cetățenia<\/b>/)).toBeInTheDocument()
+      // Exactly one hit — the consolidation's — carries the label.
+      const labels = screen.getAllByText(/Dintr-o formă consolidată neoficială/)
+      expect(labels).toHaveLength(1)
+      expect(labels[0]).toHaveTextContent(/Portalul Legislativ indică „consolidarea din .*2024/)
+    })
+
+    it('does not deny text search when a words query finds nothing', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(v2Answer([]))
+      render(<LegislationActFinder search={{ q: 'concediu de odihna' }} />)
+
+      const note = await screen.findByRole('note')
+      expect(note).toHaveTextContent(/Am căutat cuvintele în numele, titlul și textul actelor/)
+      expect(note).not.toHaveTextContent(/nu este încă disponibilă/)
+    })
   })
 })

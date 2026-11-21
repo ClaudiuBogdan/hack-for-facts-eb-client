@@ -1,5 +1,4 @@
 import type { LegislationOverview } from '@/schemas/legal'
-import { LEGAL_CORPUS_MEASURED_AT } from '../../lib/legal-coverage'
 
 /**
  * Overview fixture. The headline counts left this payload with the overview
@@ -139,7 +138,8 @@ export const legislationOverviewFixture: LegislationOverview = {
   coverage: {
     authorities: ['Portal Legislativ', 'Monitorul Oficial'],
     yearsRange: [1990, 2026],
-    retrievedAt: LEGAL_CORPUS_MEASURED_AT,
+    // The mock's own capture date (the measured constant it used is gone).
+    retrievedAt: '2026-06-29',
     publishedAt: null,
     knownGaps: [
       'Deciziile Curții Constituționale nu modifică statutul actelor vizate.',

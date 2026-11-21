@@ -89,9 +89,11 @@ describe('LegislationChangesFeed', () => {
     render(<LegislationChangesFeed search={{}} />)
 
     // The staleness note is the tab's honesty contract: without it a reader
-    // believes they are seeing this week's changes. Locale-formatted date, so
-    // the year is asserted rather than the spelling.
-    const note = screen.getByRole('note')
+    // believes they are seeing this week's changes. Its date is the LIVE
+    // frontier (the freshness fixture in the mock lane), so it arrives with
+    // that query. Locale-formatted date, so the year is asserted rather than
+    // the spelling.
+    const note = await screen.findByRole('note')
     expect(note).toHaveTextContent(/Cea mai recentă modificare/)
     expect(note).toHaveTextContent(/2026/)
     expect(note).toHaveTextContent(/acte deja publicate/)

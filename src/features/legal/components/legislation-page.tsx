@@ -3,7 +3,7 @@ import {
   useLegislationFrontDoor,
   useLegislationStatusCounts,
 } from '../hooks/use-legislation'
-import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
+import { useLegislationFrontier } from '../hooks/use-legislation-frontier'
 import { LegislationDomainGrid } from './legislation-domain-grid'
 import { LegislationGazetteBand } from './legislation-gazette-band'
 import { LegislationHonestyNotes } from './legislation-honesty-notes'
@@ -41,12 +41,14 @@ export function LegislationPage() {
   // the analytics strip); `?? {}` keeps the chip row's space reserved while
   // the counts are on the wire, so their arrival does not shift the tab nav.
   const { data: statusCounts } = useLegislationStatusCounts()
+  // "date până la" is the staler of the live gazette and changes frontiers.
+  const { measuredAt } = useLegislationFrontier('corpus')
 
   return (
     <LegislationShell
       activeTab="prezentare"
       counts={statusCounts ?? {}}
-      measuredAt={LEGAL_CORPUS_MEASURED_AT}
+      measuredAt={measuredAt}
       dataStatus={data?.coverage.dataStatus}
     >
       {isLoading ? (

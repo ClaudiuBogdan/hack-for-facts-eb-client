@@ -30,6 +30,7 @@ import {
 } from '../lib/legislation-theme'
 import { LegalStatusBadge } from './legal-status-badge'
 import { LegislationSearchSkeleton } from './legislation-search-skeleton'
+import { LegislationSearchSnippet } from './legislation-search-snippet'
 import { LegislationSection } from './legislation-section'
 
 /** Queries the tab can actually answer today — every chip is a measured hit. */
@@ -47,6 +48,9 @@ type Props = {
   readonly search: LegalFinderSearch
 }
 
+
+/** Provision hits shown under one act (the server sends up to three). */
+const SNIPPETS_PER_ACT = 3
 /**
  * The Caută tab (`/legislation/search`) — a citation and name finder that
  * states plainly it is NOT full-text search.
@@ -62,7 +66,12 @@ type Props = {
  * honesty surfaces: `actsTotal: null` renders as "unknown", never 0; every
  * server caveat except the English sentinel renders VERBATIM in the footnote
  * (the published-form warning is the server's own wording, not ours); the
- * answering engine is named.
+ * answering engine is named — and decides the copy: on `opensearch` (the
+ * legal-v2 units index, or the legacy sections index) words in the acts' text
+ * DO match, so only meaning search is said to be missing; on `postgres` text
+ * search is said to be missing too. The legal-v2 engine never counts
+ * (`actsTotal: null`) and always sends its consolidation caveat, rendered
+ * verbatim like every non-sentinel caveat.
  *
  * Two lanes run per submitted query, both URL-driven (`q` is a shareable
  * link): `legalSearch` (acts channel — sections are a name echo today, see
@@ -138,6 +147,12 @@ export function LegislationActFinder({ search }: Props) {
     result?.caveats.filter(
       (caveat) => caveat !== LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT,
     ) ?? []
+  // Which kind of search answered decides what the empty and partial states
+  // may claim: the OpenSearch engine matches words in the acts' TEXT (on the
+  // legacy sections index and on the legal-v2 units index alike), the
+  // Postgres path only citations and names. Meaning search runs on neither
+  // today — the server's semantic sentinel says so on both.
+  const textSearched = result?.engine === 'opensearch'
   const isCitationShaped = parseLegalCitationShape(q) !== null
   const emptyResult = searchQuery.isSuccess && acts.length === 0
   // The strip earns its place twice: a name that maps to SEVERAL acts is an
@@ -292,10 +307,10 @@ export function LegislationActFinder({ search }: Props) {
             />
             <p className="text-sm font-medium text-[var(--pnrr-fg)]">
               <Trans>
-                Căutarea după expresii din textul legilor — de exemplu
-                „concediu de odihnă” sau „salariul minim” — nu este încă
-                disponibilă. Dacă o astfel de căutare nu găsește nimic, asta
-                nu înseamnă că prevederea nu există în legislație.
+                Căutarea după sens nu este încă disponibilă, iar căutarea în
+                textul legilor depinde de motorul care răspunde — rezultatele
+                spun care a fost. Dacă o căutare nu găsește nimic, asta nu
+                înseamnă că prevederea nu există în legislație.
               </Trans>
             </p>
           </div>
@@ -321,11 +336,19 @@ export function LegislationActFinder({ search }: Props) {
 
       {searchQuery.isSuccess && semanticUnavailable && acts.length > 0 && (
         <p className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-xs text-[var(--pnrr-muted)] sm:px-6">
-          <Trans>
-            Potriviri după numărul și denumirea actelor. Căutarea în textul
-            legilor nu este încă disponibilă — o prevedere poate exista chiar
-            dacă nu apare aici.
-          </Trans>
+          {textSearched ? (
+            <Trans>
+              Potriviri după cuvintele din numele, titlul și textul actelor.
+              Căutarea după sens nu este încă disponibilă — o prevedere poate
+              exista chiar dacă nu apare aici.
+            </Trans>
+          ) : (
+            <Trans>
+              Potriviri după numărul și denumirea actelor. Căutarea în textul
+              legilor nu este încă disponibilă — o prevedere poate exista chiar
+              dacă nu apare aici.
+            </Trans>
+          )}
         </p>
       )}
 
@@ -392,7 +415,7 @@ export function LegislationActFinder({ search }: Props) {
                   {hit.act.issuerSlug !== null
                     ? ` · ${legalIssuerLabel(hit.act.issuerSlug)}`
                     : ''}
-                  {hit.act.inDegree > 0 && (
+                  {hit.act.inDegree !== null && hit.act.inDegree > 0 && (
                     <>
                       {' · '}
                       <Trans>
@@ -407,6 +430,15 @@ export function LegislationActFinder({ search }: Props) {
                     {hit.description}
                   </p>
                 )}
+                {(result?.sections ?? [])
+                  .filter((section) => section.actId === hit.act.actId)
+                  .slice(0, SNIPPETS_PER_ACT)
+                  .map((section, index) => (
+                    <LegislationSearchSnippet
+                      key={`${section.documentId}-${index}`}
+                      hit={section}
+                    />
+                  ))}
               </div>
             </li>
           ))}
@@ -452,14 +484,23 @@ export function LegislationActFinder({ search }: Props) {
                 </Trans>
               </p>
               <p className="text-sm text-[var(--pnrr-fg)]">
-                <Trans>
-                  Deocamdată căutarea funcționează după numărul actului (de
-                  exemplu „Legea 53/2003”) și după denumirea lui (de exemplu
-                  „Codul muncii”). Căutarea după expresii din textul legilor —
-                  cum ar fi „concediu de odihnă” — nu este încă disponibilă,
-                  așa că lipsa rezultatelor nu spune nimic despre existența
-                  prevederii.
-                </Trans>
+                {textSearched ? (
+                  <Trans>
+                    Am căutat cuvintele în numele, titlul și textul actelor,
+                    dar nu și după sens — o prevedere formulată cu alte cuvinte
+                    nu apare, așa că lipsa rezultatelor nu spune nimic despre
+                    existența ei.
+                  </Trans>
+                ) : (
+                  <Trans>
+                    Deocamdată căutarea funcționează după numărul actului (de
+                    exemplu „Legea 53/2003”) și după denumirea lui (de exemplu
+                    „Codul muncii”). Căutarea după expresii din textul legilor —
+                    cum ar fi „concediu de odihnă” — nu este încă disponibilă,
+                    așa că lipsa rezultatelor nu spune nimic despre existența
+                    prevederii.
+                  </Trans>
+                )}
               </p>
               {historicalRetry}
             </div>
@@ -470,11 +511,19 @@ export function LegislationActFinder({ search }: Props) {
       {emptyResult && showStrip && (
         <div className="flex flex-col gap-2 px-5 py-4 sm:px-6">
           <p className="text-sm text-[var(--pnrr-muted)]">
-            <Trans>
-              Căutarea directă nu a găsit nimic — actele de mai sus sunt
-              potriviri după denumirea sau numărul actului. Căutarea în textul
-              legilor nu este încă disponibilă.
-            </Trans>
+            {textSearched ? (
+              <Trans>
+                Căutarea directă nu a găsit nimic — actele de mai sus sunt
+                potriviri după denumirea sau numărul actului. Căutarea după
+                sens nu este încă disponibilă.
+              </Trans>
+            ) : (
+              <Trans>
+                Căutarea directă nu a găsit nimic — actele de mai sus sunt
+                potriviri după denumirea sau numărul actului. Căutarea în
+                textul legilor nu este încă disponibilă.
+              </Trans>
+            )}
           </p>
           {historicalRetry}
         </div>

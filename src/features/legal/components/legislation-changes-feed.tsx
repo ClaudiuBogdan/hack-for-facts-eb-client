@@ -16,7 +16,7 @@ import {
   fetchRecentChangesCount,
   fetchRecentChangesPage,
 } from '../api/legal-changes-api'
-import { CHANGES_LATEST_EFFECTIVE_DATE } from '../lib/legal-coverage'
+import { useLegislationFreshness } from '../hooks/use-legislation'
 import {
   formatLegalDate,
   formatLegalNumber,
@@ -91,6 +91,7 @@ type Props = {
  */
 export function LegislationChangesFeed({ search }: Props) {
   const { i18n } = useLingui()
+  const latestChange = useLegislationFreshness().data?.latestEffectiveChangeDate ?? null
   const navigate = useNavigate()
 
   const view: ChangesView =
@@ -264,23 +265,26 @@ export function LegislationChangesFeed({ search }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* The staleness caveat qualifies everything below it, so it reads
-          first. Every claim in it is measured on the feed itself (the date is
-          the same constant the shell's "date până la" meta line formats). */}
-      <div className={legislationAlertClassName} role="note">
-        <AlertTriangle
-          className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
-          aria-hidden
-        />
-        <p className="text-sm font-medium text-[var(--pnrr-fg)]">
-          <Trans>
-            Cea mai recentă modificare intrată deja în vigoare are data de{' '}
-            {formatLegalDate(CHANGES_LATEST_EFFECTIVE_DATE, i18n.locale)} —
-            schimbările produse după această dată nu apar încă aici.
-            Modificările cu dată viitoare provin din acte deja publicate.
-          </Trans>
-        </p>
-      </div>
+      {/* The frontier caveat qualifies everything below it, so it reads
+          first. The date is read live off the feed itself (the same query
+          the shell's "date până la" meta line reads); while it is unknown the
+          caveat is not shown rather than shown with a stale date. */}
+      {latestChange !== null && (
+        <div className={legislationAlertClassName} role="note">
+          <AlertTriangle
+            className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
+            aria-hidden
+          />
+          <p className="text-sm font-medium text-[var(--pnrr-fg)]">
+            <Trans>
+              Cea mai recentă modificare intrată deja în vigoare are data de{' '}
+              {formatLegalDate(latestChange, i18n.locale)} — schimbările
+              produse după această dată nu apar încă aici. Modificările cu dată
+              viitoare provin din acte deja publicate.
+            </Trans>
+          </p>
+        </div>
+      )}
 
       <LegislationSection
         id="changes-feed-heading"

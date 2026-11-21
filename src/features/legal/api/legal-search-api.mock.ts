@@ -60,7 +60,7 @@ const statusCaveats = (
   rows: readonly LegislationFinderFixtureRow[],
 ): string[] =>
   rows
-    .filter((row) => row.status !== 'in-vigoare')
+    .filter((row) => row.status !== null && row.status !== 'in-vigoare')
     .map(
       (row) =>
         `${row.displayCitation}: status ${row.status} — verificați versiunea în vigoare.`,
@@ -72,7 +72,7 @@ export async function fetchLegalSearchMock(
 ): Promise<LegalSearchResultData> {
   const historical = options.historical === true
   const gate = (row: LegislationFinderFixtureRow): boolean =>
-    historical || LIVE_STATUSES.includes(row.status)
+    historical || (row.status !== null && LIVE_STATUSES.includes(row.status))
 
   // Citation shortcut — no status caveats (the server's early return skips
   // them; its version-provenance caveat is not fabricated here).
@@ -87,6 +87,7 @@ export async function fetchLegalSearchMock(
     if (exact !== undefined && gate(exact)) {
       return {
         acts: [toHit(exact, 1)],
+        sections: [],
         caveats: [LEGAL_ORIGINAL_TEXT_CAVEAT],
         engine: 'postgres',
         actsTotal: 1,
@@ -113,11 +114,14 @@ export async function fetchLegalSearchMock(
           )
           .sort(
             (a, b) =>
-              b.inDegree - a.inDegree || Number(a.actId) - Number(b.actId),
+              (b.inDegree ?? 0) - (a.inDegree ?? 0) ||
+              Number(a.actId) - Number(b.actId),
           )
 
   return {
     acts: rows.map((row, index) => toHit(row, 1 - index * 0.1)),
+    // The mock mirrors the Postgres path, whose provision hits are dropped.
+    sections: [],
     caveats: [
       LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT,
       ...(rows.length > 0 ? [LEGAL_ORIGINAL_TEXT_CAVEAT] : []),
