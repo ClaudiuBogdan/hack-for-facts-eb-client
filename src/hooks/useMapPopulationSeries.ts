@@ -1,5 +1,5 @@
-import { useQueries } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useQueries, type UseQueryResult } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
 import type { GeoJsonObject } from 'geojson';
 import type { UatFeature } from '@/components/maps/interfaces';
 import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
@@ -16,26 +16,60 @@ function features(data: GeoJsonObject | undefined): UatFeature[] {
     : [];
 }
 
-/** Shared by editor and public viewer; TanStack deduplicates each year/level request. */
+type PopulationRows = Awaited<ReturnType<typeof fetchMapPopulation>>;
+
+/**
+ * The year queries as one value, built by a `combine` whose identity depends only on `active`. TanStack reuses a
+ * combined result while the results, query hashes and `combine` are unchanged, so the `data` array keeps its identity
+ * across renders, which keeps the vectors below memoised. `active` is part of the identity because toggling `enabled`
+ * alone does not invalidate that cache: without it, the first render after re-enabling would report the previous
+ * status and error.
+ */
+function usePopulationQueriesCombine(active: boolean) {
+  return useCallback(
+    (results: readonly UseQueryResult<PopulationRows>[]) => ({
+      data: results.map((query) => query.data),
+      isLoading: active && results.some((query) => query.isLoading),
+      isFetching: active && results.some((query) => query.isFetching),
+      error: active ? (results.find((query) => query.error)?.error ?? null) : null,
+    }),
+    [active],
+  );
+}
+
+/**
+ * Shared by editor and public viewer; TanStack deduplicates each year/level request.
+ *
+ * The returned `values`, `units` and `warnings` keep their identity while the inputs and data are unchanged: the map
+ * recomputes its whole pipeline from them, and its parents re-render often (a treemap drill-down on the entity page
+ * re-renders the whole page).
+ */
 export function useMapPopulationSeries(
   series: MapSupportedSeries[],
   granularity: 'UAT' | 'County',
   enabled: boolean,
   roots?: ReadonlySet<string>,
 ) {
-  const populationSeries = populationSeriesInUse(series, roots);
+  const populationSeries = useMemo(
+    () => populationSeriesInUse(series, roots),
+    [series, roots],
+  );
   const active = enabled && populationSeries.length > 0;
   const geometry = useGeoJsonData(granularity, { enabled: active });
-  const years = [
-    ...new Set(
-      populationSeries.flatMap((entry) =>
-        entry.datasetKey === 'annualPopulation' && entry.year !== undefined
-          ? [entry.year]
-          : [],
-      ),
-    ),
-  ].sort();
-  const queries = useQueries({
+  const years = useMemo(
+    () =>
+      [
+        ...new Set(
+          populationSeries.flatMap((entry) =>
+            entry.datasetKey === 'annualPopulation' && entry.year !== undefined
+              ? [entry.year]
+              : [],
+          ),
+        ),
+      ].sort(),
+    [populationSeries],
+  );
+  const populationQueries = useQueries({
     queries: years.map((year) => ({
       queryKey: ['mapAnnualPopulation', granularity, year],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
@@ -44,6 +78,7 @@ export function useMapPopulationSeries(
       gcTime: 0,
       enabled: active && typeof window !== 'undefined',
     })),
+    combine: usePopulationQueriesCombine(active),
   });
   const result = useMemo(
     () =>
@@ -52,23 +87,17 @@ export function useMapPopulationSeries(
         features(geometry.data),
         granularity,
         new Map(
-          queries.flatMap((query, index) =>
-            query.data ? [[years[index], query.data] as const] : [],
+          populationQueries.data.flatMap((rows, index) =>
+            rows ? [[years[index], rows] as const] : [],
           ),
         ),
       ),
-    [populationSeries, geometry.data, granularity, queries, years],
+    [populationSeries, geometry.data, granularity, populationQueries.data, years],
   );
   return {
     ...result,
-    isLoading:
-      active &&
-      (geometry.isLoading || queries.some((query) => query.isLoading)),
-    isFetching:
-      active &&
-      (geometry.isFetching || queries.some((query) => query.isFetching)),
-    error: active
-      ? (geometry.error ?? queries.find((query) => query.error)?.error ?? null)
-      : null,
+    isLoading: active && (geometry.isLoading || populationQueries.isLoading),
+    isFetching: active && (geometry.isFetching || populationQueries.isFetching),
+    error: active ? (geometry.error ?? populationQueries.error) : null,
   };
 }

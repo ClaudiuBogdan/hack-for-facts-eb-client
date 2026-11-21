@@ -7,8 +7,9 @@ const fetchPopulation = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/map-population', () => ({
   fetchMapPopulation: fetchPopulation,
 }));
-vi.mock('./useGeoJson', () => ({
-  useGeoJsonData: () => ({
+// Stable data inside a fresh wrapper, as the real query returns: the identity tests below must not depend on the
+// wrapper object.
+const geometry = vi.hoisted(() => ({
     data: {
       type: 'FeatureCollection',
       features: [
@@ -25,7 +26,9 @@ vi.mock('./useGeoJson', () => ({
     isLoading: false,
     isFetching: false,
     error: null,
-  }),
+}));
+vi.mock('./useGeoJson', () => ({
+  useGeoJsonData: () => ({ ...geometry }),
 }));
 const series = GeoJsonDatasetSeriesConfigurationSchema.parse({
   type: 'geojson-dataset-series',
@@ -94,5 +97,50 @@ describe('shared map population loading', () => {
       expect(result.current.error?.message).toBe('Unavailable'),
     );
     expect(result.current.values.get('p')?.get('179141')).toBeUndefined();
+  });
+  // The map recomputes its whole pipeline (values, colour range, styled GeoJSON) whenever these change identity, so a
+  // parent re-render with the same inputs — a treemap drill-down on the entity page, for instance — must not.
+  it('returns the same vectors when re-rendered with the same inputs', async () => {
+    fetchPopulation.mockResolvedValue([
+      { territoryCode: '179141', territoryId: 1, year: 2025, population: 264698, metadata: null },
+    ]);
+    const list = [series];
+    const { result, rerender } = renderHook(({ input }) => useMapPopulationSeries(input, 'UAT', true), {
+      wrapper,
+      initialProps: { input: list },
+    });
+    await waitFor(() => expect(result.current.values.get('p')?.get('179141')).toBe('264698'));
+    const before = result.current;
+    rerender({ input: list });
+    expect(result.current.values).toBe(before.values);
+    expect(result.current.units).toBe(before.units);
+    expect(result.current.warnings).toBe(before.warnings);
+  });
+  it('reports loading and no stale error on the first render after it is re-enabled', async () => {
+    fetchPopulation.mockRejectedValueOnce(new Error('Unavailable'))
+    const list = [series];
+    const { result, rerender } = renderHook(({ enabled }) => useMapPopulationSeries(list, 'UAT', enabled), {
+      wrapper,
+      initialProps: { enabled: true },
+    });
+    await waitFor(() => expect(result.current.error?.message).toBe('Unavailable'));
+    rerender({ enabled: false });
+    expect(result.current.error).toBeNull();
+    fetchPopulation.mockImplementation(() => new Promise(() => {}));
+    rerender({ enabled: true });
+    // Checked at once, before any wait: the combined result must reflect the re-enabled query.
+    expect(result.current.isLoading || result.current.isFetching).toBe(true);
+    expect(result.current.error).toBeNull();
+  });
+  it('returns the same empty vectors when no population series is in use', () => {
+    const list = [{ ...series, enabled: false }];
+    const { result, rerender } = renderHook(({ input }) => useMapPopulationSeries(input, 'UAT', true), {
+      wrapper,
+      initialProps: { input: list },
+    });
+    const before = result.current;
+    rerender({ input: list });
+    expect(result.current.values).toBe(before.values);
+    expect(result.current.warnings).toBe(before.warnings);
   });
 });
