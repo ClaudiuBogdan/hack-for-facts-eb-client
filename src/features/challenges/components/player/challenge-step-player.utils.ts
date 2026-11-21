@@ -1,6 +1,11 @@
 import { t } from '@lingui/core/macro'
 import type { QuizOption } from '@/features/learning/components/assessment/Quiz'
 import type { DerivedInteractiveLifecycleState } from '@/features/learning/utils/interactive-state'
+import {
+  LESSON_PROSE_BLOCKQUOTE_CLASS_NAME,
+  LESSON_PROSE_CODE_CLASS_NAME,
+  LESSON_PROSE_COLOUR_CLASS_NAME,
+} from '@/features/learning/components/player/lesson-prose-classes'
 import { cn } from '@/lib/utils'
 import {
   buildCampaignProvocariModulePath,
@@ -18,60 +23,31 @@ import type {
 
 export const EMPTY_QUIZ_OPTIONS: readonly QuizOption[] = []
 
-const CHALLENGE_PROSE_COLOUR_CLASS_NAME = cn(
-  '[--tw-prose-body:hsl(var(--foreground))] [--tw-prose-headings:hsl(var(--foreground))] [--tw-prose-lead:hsl(var(--foreground))]',
-  '[--tw-prose-links:hsl(var(--primary))] [--tw-prose-bold:hsl(var(--foreground))] [--tw-prose-counters:hsl(var(--muted-foreground))]',
-  '[--tw-prose-bullets:hsl(var(--muted-foreground))] [--tw-prose-hr:hsl(var(--border))] [--tw-prose-quotes:hsl(var(--foreground))]',
-  '[--tw-prose-quote-borders:hsl(var(--border))] [--tw-prose-captions:hsl(var(--muted-foreground))] [--tw-prose-code:hsl(var(--foreground))]',
-  '[--tw-prose-pre-code:hsl(var(--foreground))] [--tw-prose-pre-bg:hsl(var(--muted))] [--tw-prose-th-borders:hsl(var(--border))]',
-  '[--tw-prose-td-borders:hsl(var(--border))]',
-)
-
-const CHALLENGE_PROSE_BLOCKQUOTE_CLASS_NAME = cn(
-  '[&_blockquote]:relative [&_blockquote]:my-10 [&_blockquote]:not-italic',
-  '[&_blockquote]:rounded-r-2xl [&_blockquote]:rounded-l-none',
-  '[&_blockquote]:border [&_blockquote]:border-l-0 [&_blockquote]:border-status-partial-fg/30',
-  '[&_blockquote]:bg-status-partial-bg [&_blockquote]:text-status-partial-fg [&_blockquote_li]:text-status-partial-fg',
-  '[&_blockquote_a]:text-status-partial-fg [&_blockquote_a]:underline [&_blockquote_li]:marker:text-status-partial-fg',
-  '[&_blockquote]:pl-6 [&_blockquote]:pr-6 [&_blockquote]:py-5 [&_blockquote]:md:pl-8 [&_blockquote]:md:pr-8 [&_blockquote]:md:py-6',
-  '[&_blockquote]:shadow-sm',
-  '[&_blockquote]:before:absolute [&_blockquote]:before:left-0 [&_blockquote]:before:top-0 [&_blockquote]:before:bottom-0',
-  '[&_blockquote]:before:w-1',
-  '[&_blockquote]:before:bg-status-partial-fg',
-  '[&_blockquote_p]:relative [&_blockquote_p]:z-10',
-  '[&_blockquote_p]:text-base [&_blockquote_p]:md:text-lg [&_blockquote_p]:font-medium [&_blockquote_p]:leading-relaxed',
-  '[&_blockquote_p]:text-status-partial-fg',
-  '[&_blockquote_p:first-child]:mt-0 [&_blockquote_p:last-child]:mb-0',
-  '[&_blockquote_p:first-of-type]:before:content-none [&_blockquote_p:last-of-type]:after:content-none',
-  '[&_blockquote_strong]:font-black [&_blockquote_strong]:text-status-partial-fg',
-  '[&_blockquote_strong]:tracking-tight',
-)
-
 export const CHALLENGE_ARTICLE_PROSE_CLASS_NAME = cn(
   'prose max-w-none',
-  CHALLENGE_PROSE_COLOUR_CLASS_NAME,
+  LESSON_PROSE_COLOUR_CLASS_NAME,
   'prose-headings:scroll-mt-20 prose-headings:font-black prose-headings:tracking-tight prose-headings:leading-tight',
   'prose-h1:text-4xl prose-h1:md:text-6xl prose-h1:tracking-tighter',
   'prose-h2:text-2xl prose-h2:md:text-3xl',
   'prose-h3:text-xl prose-h3:md:text-2xl',
   'prose-p:leading-relaxed',
-  CHALLENGE_PROSE_BLOCKQUOTE_CLASS_NAME,
+  LESSON_PROSE_BLOCKQUOTE_CLASS_NAME,
   'prose-a:text-primary prose-a:no-underline hover:prose-a:underline',
-  'prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-normal prose-code:before:content-none prose-code:after:content-none',
+  LESSON_PROSE_CODE_CLASS_NAME,
   'prose-img:rounded-xl prose-img:shadow-md',
 )
 
 export const SECTIONED_STEP_PROSE_CLASS_NAME = cn(
   'prose mx-auto max-w-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200',
-  CHALLENGE_PROSE_COLOUR_CLASS_NAME,
+  LESSON_PROSE_COLOUR_CLASS_NAME,
   'prose-headings:scroll-mt-20 prose-headings:font-black prose-headings:tracking-tight prose-headings:leading-tight',
   'prose-h1:text-4xl prose-h1:md:text-5xl prose-h1:tracking-tighter',
   'prose-h2:text-2xl prose-h2:md:text-3xl',
   'prose-h3:text-xl prose-h3:md:text-2xl',
   'prose-p:leading-relaxed',
-  CHALLENGE_PROSE_BLOCKQUOTE_CLASS_NAME,
+  LESSON_PROSE_BLOCKQUOTE_CLASS_NAME,
   'prose-a:text-primary prose-a:no-underline hover:prose-a:underline',
-  'prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-normal prose-code:before:content-none prose-code:after:content-none',
+  LESSON_PROSE_CODE_CLASS_NAME,
   'prose-img:rounded-xl prose-img:shadow-md',
 )
 

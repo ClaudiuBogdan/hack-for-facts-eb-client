@@ -160,7 +160,7 @@ export function UATFinder({ locale, text, onSelect, finderId }: UATFinderProps) 
                   aria-expanded={showDropdown}
                   aria-controls={`${searchId}-listbox`}
                   aria-activedescendant={activeIndex >= 0 ? `${searchId}-result-${activeIndex}` : undefined}
-                  className="w-full h-20 pl-20 pr-16 text-xl md:text-2xl font-bold bg-muted/50 border-4 border-border focus:border-primary rounded-[2rem] shadow-sm transition-all focus:ring-0 placeholder:text-muted-foreground"
+                  className="w-full h-20 pl-20 pr-16 text-xl md:text-2xl font-bold bg-card border-4 border-border focus:border-primary rounded-[2rem] shadow-sm transition-all focus:ring-0 placeholder:text-muted-foreground"
                 />
                 {searchTerm && (
                   <button

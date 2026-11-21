@@ -43,11 +43,13 @@ function getExecutionColor(rate: number, thresholds: ExecutionThresholds) {
       showWarning: false,
     }
   }
+  // A positive judgement (Excellent, Good) is live, a cautionary one (Concerning) partial and an adverse one
+  // (Poor) blocked, as in PromiseTracker; the thresholds stay this lesson's own.
   if (rate >= thresholds.good) {
     return {
-      bar: 'bg-status-partial-fg',
-      track: 'bg-status-partial-bg',
-      text: 'text-status-partial-fg',
+      bar: 'bg-status-live-fg',
+      track: 'bg-status-live-bg',
+      text: 'text-status-live-fg',
       level: t`Good`,
       showWarning: false,
     }
@@ -223,7 +225,7 @@ export function ExecutionRateChart({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-status-partial-fg" />
+            <div className="w-3 h-3 rounded-full bg-status-live-fg" />
             <span className="text-xs font-medium text-muted-foreground">
               {t`Good`} (≥{thresholds.good}%)
             </span>
