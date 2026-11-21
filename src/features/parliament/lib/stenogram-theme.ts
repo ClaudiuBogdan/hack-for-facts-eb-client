@@ -355,15 +355,14 @@ export const stenogramRailClusterDensityClassName: Readonly<
  * appears next to it.
  *
  * Each tone carries its own ramp, ending at full ink under the pointer, so
- * every bar answers the wave from wherever its resting weight is. `idle` ramps
- * its COLOUR rather than its opacity: it rests on the faint grey, which keeps
- * today's light weight and still clears 3:1 on the dark page (ink at 30% over
- * the page did not), and darkens to ink as the wave reaches it.
+ * every bar answers the wave from wherever its resting weight is. `idle`
+ * rests at 35% ink: enough to clear 3:1 on the dark page, and still quieter
+ * than the in-view run, so "where you are" stays the loudest mark at rest.
  */
 export const stenogramRailMarkerToneClassName: Readonly<
   Record<'idle' | 'inView' | 'reading' | 'selected', string>
 > = {
-  idle: 'bg-[color-mix(in_srgb,var(--parliament-fg)_calc(var(--rail-wave,0)*100%),var(--parliament-faint))]',
+  idle: 'bg-parliament-fg opacity-[calc(0.35+var(--rail-wave,0)*0.65)]',
   inView:
     'bg-parliament-link opacity-[calc(0.55+var(--rail-wave,0)*0.45)]',
   reading: 'bg-parliament-link opacity-100',
