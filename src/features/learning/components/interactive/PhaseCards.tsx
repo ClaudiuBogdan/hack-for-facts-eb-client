@@ -28,7 +28,7 @@ import { useState, useCallback } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Check, Star, RotateCcw, CheckCircle2 } from 'lucide-react'
+import { ChevronDown, Check, RotateCcw, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -40,6 +40,7 @@ import {
   type BudgetPhaseDefinition,
   type BudgetPhaseId,
 } from './budget-cycle-data'
+import { OpportunityLegendItems, OpportunityMark, getOpportunityLabel } from './opportunity-level'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -150,7 +151,6 @@ function PhaseChip({
   isFirst,
 }: PhaseChipProps) {
   const Icon = getPhaseIcon(phase.icon)
-  const colors = OPPORTUNITY_COLORS[phase.opportunity]
   const isHighOpportunity = phase.opportunity === 'high'
 
   const handleKeyDown = useCallback(
@@ -186,14 +186,14 @@ function PhaseChip({
           isSelected ? 'scale-110' : 'hover:scale-105'
         )}
         aria-pressed={isSelected}
-        aria-label={t`Phase: ${content.name}`}
+        aria-label={`${t`Phase: ${content.name}`}, ${getOpportunityLabel(phase.opportunity)}`}
       >
           {/* Icon Container - Scaled on select */}
         <div
           className={cn(
             'relative w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg shrink-0',
             isSelected 
-              ? cn(colors.bgSolid, 'scale-110')
+              ? 'bg-primary scale-110'
               : isExplored 
                 ? 'bg-card border-2 border-status-live-fg' 
                 : 'bg-card border-2 border-border group-hover:scale-105',
@@ -203,7 +203,7 @@ function PhaseChip({
           <Icon
             className={cn(
               'w-7 h-7 transition-colors duration-300',
-              isSelected ? 'text-background' : isExplored ? 'text-status-live-fg' : 'text-muted-foreground'
+              isSelected ? 'text-primary-foreground' : isExplored ? 'text-status-live-fg' : 'text-muted-foreground'
             )}
           />
 
@@ -214,15 +214,15 @@ function PhaseChip({
             </div>
           )}
 
-          {/* High opportunity star */}
-          {isHighOpportunity && (
-            <div className={cn(
-              "absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm border-2 border-background z-20",
-              isSelected ? "bg-background text-status-partial-fg" : "bg-status-partial-bg text-status-partial-fg"
-            )}>
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-          )}
+          {/* Opportunity level: the same symbols as the budget-cycle timeline, named in the button's label */}
+          <div className={cn(
+            "absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm border-2 border-background z-20",
+            isHighOpportunity
+              ? isSelected ? "bg-background text-status-partial-fg" : "bg-status-partial-bg text-status-partial-fg"
+              : "bg-muted text-foreground"
+          )}>
+            <OpportunityMark opportunity={phase.opportunity} className="w-4 h-4" />
+          </div>
         </div>
 
         {/* Label */}
@@ -259,21 +259,20 @@ type MobilePhaseCardProps = {
 
 function MobilePhaseCard({ phase, content, isSelected, isExplored, onClick, text }: MobilePhaseCardProps) {
   const Icon = getPhaseIcon(phase.icon)
-  const colors = OPPORTUNITY_COLORS[phase.opportunity]
   const isHighOpportunity = phase.opportunity === 'high'
 
   return (
     <button
       onClick={onClick}
       aria-pressed={isSelected}
-      aria-label={t`Phase: ${content.name}`}
+      aria-label={`${t`Phase: ${content.name}`}, ${getOpportunityLabel(phase.opportunity)}`}
       className={cn(
         'w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-left relative overflow-hidden group',
         'border',
         isSelected
           ? 'bg-muted ring-2'
           : 'bg-card hover:bg-muted',
-        isSelected && (isHighOpportunity ? 'ring-status-partial-fg/50 border-status-partial-fg/50' : 'ring-primary/40 border-primary/30'),
+        isSelected && 'ring-primary/40 border-primary/30',
         !isSelected && 'border-border',
         isHighOpportunity && !isSelected && 'border-status-partial-fg/50'
       )}
@@ -286,10 +285,10 @@ function MobilePhaseCard({ phase, content, isSelected, isExplored, onClick, text
       <div
         className={cn(
           'shrink-0 p-3 rounded-xl relative shadow-sm transition-transform group-hover:scale-105',
-          isSelected ? colors.bgSolid : 'bg-muted'
+          isSelected ? 'bg-primary' : 'bg-muted'
         )}
       >
-        <Icon className={cn('w-6 h-6', isSelected ? 'text-background' : 'text-muted-foreground')} />
+        <Icon className={cn('w-6 h-6', isSelected ? 'text-primary-foreground' : 'text-muted-foreground')} />
         {isExplored && !isSelected && (
           <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-status-live-fg border-2 border-background flex items-center justify-center">
             <Check className="w-3 h-3 text-background" />
@@ -300,11 +299,13 @@ function MobilePhaseCard({ phase, content, isSelected, isExplored, onClick, text
       <div className="flex-1 min-w-0 relative z-10">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="font-bold text-base text-foreground">{content.name}</span>
-          {isHighOpportunity && (
+          {isHighOpportunity ? (
             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-status-partial-bg text-status-partial-fg">
-              <Star className="w-2.5 h-2.5 fill-current" />
+              <OpportunityMark opportunity="high" className="w-2.5 h-2.5" />
               {text?.highOpportunityBadge ?? t`High`}
             </span>
+          ) : (
+            <OpportunityMark opportunity={phase.opportunity} className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
           )}
         </div>
         <span className="text-xs font-medium text-foreground uppercase tracking-wide">{content.timing}</span>
@@ -375,10 +376,15 @@ function DetailPanel({ phase, content, text }: DetailPanelProps) {
                 <h4 className="font-black text-xl md:text-2xl text-foreground tracking-tight">
                   {content.name}
                 </h4>
-                {isHighOpportunity && (
+                {isHighOpportunity ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-status-partial-bg text-status-partial-fg ring-1 ring-status-partial-fg/30">
-                    <Star className="w-2.5 h-2.5 fill-current" />
+                    <OpportunityMark opportunity="high" className="w-2.5 h-2.5" />
                     <Trans>High Impact</Trans>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-muted text-foreground">
+                    <OpportunityMark opportunity={phase.opportunity} className="w-2.5 h-2.5" />
+                    {getOpportunityLabel(phase.opportunity)}
                   </span>
                 )}
               </div>
@@ -586,6 +592,11 @@ export function PhaseCards({
             </AnimatePresence>
           </div>
         ))}
+      </div>
+
+      {/* Opportunity levels: the words for the symbols on each phase */}
+      <div className="flex flex-wrap items-center gap-4">
+        <OpportunityLegendItems />
       </div>
 
       {/* Progress Bar */}

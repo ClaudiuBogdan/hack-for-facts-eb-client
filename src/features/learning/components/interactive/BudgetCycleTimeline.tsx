@@ -31,7 +31,7 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { Calendar, Star, ChevronRight, ChevronDown, X, CheckCircle2, Equal, Minus } from 'lucide-react'
+import { Calendar, Star, ChevronRight, ChevronDown, X, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -45,6 +45,7 @@ import {
   type BudgetPhaseDefinition,
   type BudgetPhaseId,
 } from './budget-cycle-data'
+import { OpportunityLegendItems, OpportunityMark, getOpportunityLabel } from './opportunity-level'
 import { defaultYearRange } from '@/schemas/charts'
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -201,9 +202,9 @@ function CurrentDateIndicator({ date }: CurrentDateIndicatorProps) {
       className="absolute top-0 bottom-0 z-20 pointer-events-none"
       style={{ left: `${leftPercent}%` }}
     >
-      <div className="absolute left-0 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-status-blocked-fg" />
-      <div className="absolute left-0 -translate-x-1/2 -top-5 px-1.5 py-0.5 rounded bg-status-blocked-fg text-[10px] font-bold uppercase text-background">
-        Now
+      <div className="absolute left-0 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary ring-1 ring-background" />
+      <div className="absolute left-0 -translate-x-1/2 -top-5 px-1.5 py-0.5 rounded bg-primary text-[10px] font-bold uppercase text-primary-foreground">
+        <Trans>Now</Trans>
       </div>
     </div>
   )
@@ -270,7 +271,7 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
           {label.timing}
         </span>
         {isCurrent && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-status-blocked-fg">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
             <Trans>Now</Trans>
           </span>
         )}
@@ -287,8 +288,8 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
             isSelected
               ? 'ring-4 ring-offset-2 ring-offset-background shadow-md scale-[1.02]'
               : 'hover:scale-[1.01] hover:shadow-md',
-            isSelected && (isHighOpportunity ? 'ring-status-partial-fg/30' : 'ring-primary/40'),
-            isCurrent && !isSelected && 'ring-2 ring-status-blocked-fg/30',
+            isSelected && 'ring-primary/40',
+            isCurrent && !isSelected && 'ring-2 ring-primary/40',
             // Special styling for full-year execution bar to make it less monolithic
             isFullYear && 'bg-primary'
           )}
@@ -327,19 +328,6 @@ function PhaseBar({ phase, label, isSelected, isCurrent, onClick, animationDelay
   )
 }
 
-/** Medium and low opportunity carry a symbol too (high already has the star), so the level never rides on colour alone. */
-function getOpportunityLabel(opportunity: 'low' | 'medium' | 'high'): string {
-  if (opportunity === 'high') return t`High opportunity`
-  if (opportunity === 'medium') return t`Medium opportunity`
-  return t`Low opportunity`
-}
-
-function OpportunityMark({ opportunity, className }: Readonly<{ opportunity: 'low' | 'medium' | 'high'; className?: string }>) {
-  if (opportunity === 'high') return <Star className={cn(className, 'fill-current')} aria-hidden="true" />
-  if (opportunity === 'medium') return <Equal className={className} aria-hidden="true" />
-  return <Minus className={className} aria-hidden="true" />
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // Mobile Phase Card (for vertical layout)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -364,8 +352,8 @@ function MobilePhaseCard({ phase, label, isSelected, isCurrent, onClick }: Mobil
         'w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left',
         'border border-border',
         isSelected && 'ring-2',
-        isSelected && (isHighOpportunity ? 'ring-status-partial-fg/30 bg-status-partial-bg/50' : 'ring-primary/40 bg-primary/10'),
-        isCurrent && !isSelected && 'border-status-blocked-fg/30 bg-status-blocked-bg/30'
+        isSelected && 'ring-primary/40 bg-primary/10',
+        isCurrent && !isSelected && 'border-primary/50'
       )}
     >
       <div
@@ -382,7 +370,7 @@ function MobilePhaseCard({ phase, label, isSelected, isCurrent, onClick }: Mobil
           <OpportunityMark opportunity={phase.opportunity} className={cn('w-3.5 h-3.5 shrink-0', isHighOpportunity ? 'text-status-partial-fg' : 'text-muted-foreground')} />
           <span className="sr-only">{getOpportunityLabel(phase.opportunity)}</span>
           {isCurrent && (
-            <span className="text-[10px] font-bold uppercase tracking-wider text-status-blocked-fg shrink-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary shrink-0">
               <Trans>Now</Trans>
             </span>
           )}
@@ -680,7 +668,7 @@ export function BudgetCycleTimeline({
                 className={cn(
                   'flex-1 text-xs font-medium pl-2', // Align to start of column (grid line)
                   i + 1 === currentMonth
-                    ? 'text-status-blocked-fg font-bold'
+                    ? 'text-primary font-bold'
                     : 'text-foreground'
                 )}
               >
@@ -752,22 +740,12 @@ export function BudgetCycleTimeline({
 
         {/* Legend */}
         <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="w-3 h-3 rounded-full bg-status-blocked-fg" />
+          {/* The card's glow sits behind the legend, so its words take the foreground. */}
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <div className="w-0.5 h-4 bg-primary" />
             <span>{text?.currentPhaseLabel ?? t`Current date`}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="w-4 h-4 rounded-full bg-status-partial-fg flex items-center justify-center"><OpportunityMark opportunity="high" className="w-2.5 h-2.5 text-background" /></div>
-            <span><Trans>High opportunity</Trans></span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center"><OpportunityMark opportunity="medium" className="w-2.5 h-2.5 text-background" /></div>
-            <span><Trans>Medium opportunity</Trans></span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="w-4 h-4 rounded-full bg-muted-foreground flex items-center justify-center"><OpportunityMark opportunity="low" className="w-2.5 h-2.5 text-background" /></div>
-            <span><Trans>Low opportunity</Trans></span>
-          </div>
+          <OpportunityLegendItems textClassName="text-foreground" />
         </div>
       </div>
     </Card>

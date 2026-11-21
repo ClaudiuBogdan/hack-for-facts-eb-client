@@ -77,8 +77,8 @@ function ModuleNav({ module, pathId, locale, currentLessonId, lessonProgress, ac
           {getTranslatedText(module.title, locale)}
         </span>
         {isModuleComplete ? (
-          <div className="h-4 w-4 rounded-full bg-status-live-bg flex items-center justify-center shrink-0">
-            <CheckCircle2 className="h-2.5 w-2.5 text-status-live-fg" />
+          <div role="img" aria-label={t`Completed`} className="h-4 w-4 rounded-full bg-status-live-bg flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-2.5 w-2.5 text-status-live-fg" aria-hidden="true" />
           </div>
         ) : (
           <span className="text-[10px] font-medium text-muted-foreground tabular-nums shrink-0">
