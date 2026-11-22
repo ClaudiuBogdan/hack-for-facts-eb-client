@@ -29,6 +29,7 @@ import { PixelFieldCanvas, useCanvasFieldMotion } from './pixel-canvas'
 import { ProvenanceBand } from './provenance-band'
 import { scrambleWithin, stopScrambling } from './scramble-text'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './scroll-light'
+import { SectionsMenu } from './sections-menu'
 import { DeferredLandingSearch } from './search/deferred-landing-search'
 import { SectionLight, SectionLightStyles, useSectionLight } from './section-light'
 import { ShardDefs } from './shards'
@@ -108,14 +109,14 @@ function HeroSearch({ inputRef }: { readonly inputRef: RefObject<HTMLInputElemen
   const isMobile = useIsMobile()
   const initialTerm = searchTermFromAddress(useSearch({ from: '/', select: (search) => search.q }))
   return (
-    // The placeholder is kept short deliberately: at 375px the field has about
-    // thirty characters after the magnifier's padding, and the longer wording
-    // truncated mid-word.
+    // The placeholder names three things people look for, not the search's
+    // whole reach, to stay short: it is 209px wide and the field has 218px of
+    // text room at 390px. Narrower phones cut it at the end.
     <DeferredLandingSearch
       key={initialTerm ?? ''}
       initialTerm={initialTerm}
       inputRef={inputRef}
-      placeholder={t`Caută entități, statistici sau identificatori...`}
+      placeholder={t`Caută primării, firme, legi…`}
       autoFocus={!isMobile}
       scrollToTopOnFocus={isMobile}
     />
@@ -256,14 +257,19 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
                   <MonoLabel className="ml-1.5 text-muted-foreground">România</MonoLabel>
                 </span>
               </span>
-              <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+              {/* Extra-bold and tightly tracked, which is the headline's voice.
+                  Tracking also closes the gaps between words, so they are given
+                  back (`word-spacing`), and the lines sit far enough apart for
+                  the circumflex of „î" to clear the descender above it. `ss03`
+                  is Inter's round commas: the headline has a comma and a „ț". */}
+              <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [font-feature-settings:'ss03'] [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
                 <Trans>
                   Date publice,
                   <br />
                   pe înțeles
                 </Trans>
               </h1>
-              <p className="mt-5 max-w-[46ch] text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p className="mt-5 max-w-[46ch] text-balance text-lg leading-relaxed tracking-normal text-muted-foreground sm:text-xl">
                 <Trans>
                   Din surse oficiale, pentru decizii informate.
                 </Trans>
@@ -273,28 +279,40 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
               </div>
               {/* Balances the column against the taller panel, and gives the
                   three heaviest surfaces a direct route out of the hero. The
-                  label sits on its own line below `sm`, where keeping it inline
-                  pushed one shortcut onto a second row on its own.
+                  label is a sentence that runs into the links, so it is set in
+                  their voice (plain text, not a mono caption) and shares their
+                  baseline. It sits on its own line below `sm`, where keeping it
+                  inline pushed one shortcut onto a second row on its own.
 
                   On a phone each shortcut is a 44px row rather than a 20px line
                   of text: these are the first things a thumb reaches for after
-                  the search, and 20px is under the 24 WCAG 2.2 §2.5.8 asks for. */}
-              <nav aria-label={t`Scurtături`} className="mt-4">
-                <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">
+                  the search, and 20px is under the 24 WCAG 2.2 §2.5.8 asks for.
+
+                  The icon button opens every section, for a reader whose
+                  section is not one of the three. It closes the row on a wide
+                  screen. On a phone the three links fill the row, so it sits
+                  at the end of the label's line; its negative margins keep
+                  either line from growing around a 44px (32px) button. */}
+              <nav
+                aria-label={t`Scurtături`}
+                className="mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap sm:items-baseline sm:justify-start sm:gap-x-4"
+              >
+                <span className="text-sm text-muted-foreground">
                   <Trans>Sau mergi direct la</Trans>
-                </MonoLabel>
-                <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
+                </span>
+                <span className="order-last flex basis-full flex-wrap gap-x-4 sm:order-none sm:basis-auto sm:gap-x-5 sm:gap-y-1.5">
                   {SHORTCUTS.map((shortcut) => (
                     <Link
                       key={shortcut.to}
                       to={shortcut.to}
                       preload="intent"
-                      className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline sm:min-h-0"
+                      className="inline-flex min-h-11 items-center text-sm font-medium text-foreground transition-colors hover:text-primary sm:min-h-0"
                     >
                       {i18n._(shortcut.label)}
                     </Link>
                   ))}
                 </span>
+                <SectionsMenu groups={coverage.groups} className="-my-2 -mr-3 sm:-my-1.5 sm:-ml-1 sm:mr-0 sm:self-center" />
               </nav>
             </div>
             {/* `self-stretch` against the grid's `items-start`: with the window

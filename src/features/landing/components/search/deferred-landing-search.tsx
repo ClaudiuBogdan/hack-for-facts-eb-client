@@ -145,7 +145,7 @@ function PlainSearchField({
   /** Written as the field unmounts: where its focus was, for the combobox to take back. */
   readonly focusRef: RefObject<SearchFocus | null>
 }) {
-  const placeholder = placeholderProp ?? t`Caută entități, statistici sau identificatori...`
+  const placeholder = placeholderProp ?? t`Caută primării, firme, legi…`
   // As the combobox draws it: the ring for keyboard focus only, the pointer remembered from `pointerdown`.
   const [keyboardFocus, setKeyboardFocus] = useState(false)
   const keyboardFocusRef = useRef(false)

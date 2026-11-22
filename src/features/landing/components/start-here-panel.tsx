@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ArrowUpRight, Minus, X } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Minus, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import logo from '@/assets/logo/logo-mark.webp'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities'
-import { buildPreferredEntityPath } from '@/lib/entity-navigation'
+import { buildEntityDetailsPath } from '@/lib/entity-navigation'
 import { cn } from '@/lib/utils'
 import { useDockDrag } from '@/features/landing/hooks/use-dock-drag'
 import { TILT_PANEL_CLASS, TILT_SCENE_CLASS, TILT_SHADOW_CLASS } from './panel-tilt'
@@ -82,8 +80,39 @@ const LIGHT_TARGET_CLASS =
  */
 type WindowState = 'open' | 'minimised' | 'closed'
 
-/** How many of the predefined entities the panel lists. Six lines is the height the hero was tuned to. */
-const PANEL_ROWS = 6
+/**
+ * The panel's rows: five large town halls and a ministry, each a page a
+ * first-time reader can open and find full. Named in full and described as the
+ * search describes its results („Primărie · Jud. Sibiu"), so a row here and a
+ * row in the dropdown read as the same kind of thing. `county: null` is
+ * Bucharest, which is no county.
+ */
+type Institution = {
+  readonly cui: string
+  readonly name: string
+  readonly kind: 'townHall' | 'ministry'
+  readonly county: string | null
+}
+
+const INSTITUTIONS: readonly Institution[] = [
+  { cui: '4270740', name: 'Municipiul Sibiu', kind: 'townHall', county: 'Sibiu' },
+  { cui: '4267117', name: 'Municipiul București', kind: 'townHall', county: null },
+  { cui: '4305857', name: 'Municipiul Cluj-Napoca', kind: 'townHall', county: 'Cluj' },
+  { cui: '14756536', name: 'Municipiul Timișoara', kind: 'townHall', county: 'Timiș' },
+  { cui: '4541580', name: 'Municipiul Iași', kind: 'townHall', county: 'Iași' },
+  { cui: '4266456', name: 'Ministerul Sănătății', kind: 'ministry', county: null },
+]
+
+/**
+ * A row's second line: what the institution is, and where. The county is
+ * called `name` because the variable's name is part of the message id:
+ * `Jud. {name}` is already translated, `Jud. {county}` would be a new string.
+ */
+function describe({ kind, county: name }: Institution): string {
+  const what = kind === 'townHall' ? t`Primărie` : t`Minister`
+  const where = name ? t`Jud. ${name}` : 'București'
+  return `${what} · ${where}`
+}
 
 /**
  * Real entities, as product UI. Three-tier hierarchy, tabular CUIs.
@@ -96,9 +125,11 @@ const PANEL_ROWS = 6
  * On a phone it is a list, and that is all of it. The hero is one column there,
  * so a pane angled toward a headline sitting directly above it would be angled
  * at nothing; and a title bar carrying three window controls, on a device that
- * has no windows, is a costume rather than a metaphor. The chrome, the corners
- * and the depth all begin at `lg` together, because they are one idea and half
- * of it is worse than none of it.
+ * has no windows, is a costume rather than a metaphor. The chrome and the
+ * depth begin at `lg` together. Below it the list is a card in the search
+ * field's own outline — the same radius and border colour — with its caption
+ * on the tinted strip the search dropdown's header has (owner, 22 November
+ * 2026: the square hairline box read as unfinished under the rounded field).
  *
  * The lights work, which is the whole reason they are built the way they are: a
  * control that looks like it closes something and does nothing is worse than no
@@ -183,13 +214,10 @@ export function StartHerePanel({
       {/* `overflow-hidden` so the rows clip to the rounded corners rather than
           squaring them off at the top and bottom of the list. 8px is the
           system's ceiling on radius, which is also about what a macOS window
-          uses — the one place those two agree. Square and unclipped below
-          `lg`: the radius is here to make a window corner, and with no window
-          to corner it is a softened list that no longer agrees with the
-          flat-edged blocks beneath it. */}
+          uses, and what the search field above has. */}
       <div
         ref={panelRef}
-        className={cn(TILT_PANEL_CLASS, 'border bg-card lg:overflow-hidden lg:rounded-lg')}
+        className={cn(TILT_PANEL_CLASS, 'overflow-hidden rounded-lg border border-input bg-card lg:border-border')}
       >
         {/* The title bar, and the only place the window can be closed from —
             which is why it and the states it sets are both scoped to `lg`. */}
@@ -232,31 +260,31 @@ export function StartHerePanel({
             </Link>
           </span>
         </div>
-        <div className="flex items-baseline justify-between border-b px-4 py-3">
-          <MonoLabel className="text-muted-foreground">
-            <Trans>Începe de aici</Trans>
-          </MonoLabel>
-          <MonoLabel className="text-muted-foreground/60">CUI</MonoLabel>
+        {/* The list's caption and its one column label, in the page's own
+            voice: sentence case, the sans, quieter than the rows. The mono is
+            kept for the identifiers themselves (DESIGN.md, „mono only where
+            it is necessary"). The search dropdown's header is set the same. */}
+        <div className="flex items-baseline justify-between gap-3 border-b bg-muted/40 px-4 py-3 text-xs text-muted-foreground lg:bg-transparent">
+          <span>
+            <Trans>Instituții</Trans>
+          </span>
+          <span>CUI</span>
         </div>
+        {/* No rules between the rows: the two-line rhythm separates them, and
+            six hairlines would make a table of a short list. */}
         <ul>
-          {PREDEFINED_ENTITIES.slice(0, PANEL_ROWS).map((entity) => (
+          {INSTITUTIONS.map((entity) => (
             <li key={entity.cui}>
               <Link
-                to={buildPreferredEntityPath({
-                  cui: entity.cui,
-                  entityType: entity.entity_type,
-                  isUat: entity.is_uat,
-                })}
+                to={buildEntityDetailsPath(entity.cui)}
                 preload="intent"
-                className="group flex items-baseline justify-between gap-3 border-b px-4 py-2.5 transition-colors last:border-b-0 hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                className="group flex items-baseline justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium text-card-foreground group-hover:underline">
                     {entity.name}
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {entity.uat?.county_name}
-                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">{describe(entity)}</span>
                 </span>
                 <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
                   {entity.cui}
@@ -265,6 +293,19 @@ export function StartHerePanel({
             </li>
           ))}
         </ul>
+        {/* The way on from six examples to every institution. The zoom light
+            goes to the same page, but only a reader who tries the lights finds
+            that, and a phone has no lights. */}
+        <Link
+          to="/entity-analytics"
+          preload="intent"
+          className="group flex items-center justify-between gap-3 border-t bg-muted/40 px-4 py-2.5 text-sm font-medium text-card-foreground transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        >
+          <span className="group-hover:underline">
+            <Trans>Toate instituțiile</Trans>
+          </span>
+          <ArrowRight aria-hidden="true" className="size-4 text-muted-foreground" />
+        </Link>
       </div>
       {/* What a minimised window is: the app's own icon, the size of a dock
           tile, and clicking it gives the window back.

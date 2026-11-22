@@ -10,7 +10,6 @@ import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 import {
   announcement,
@@ -253,7 +252,7 @@ export function LandingSearch({
   readonly handover?: SearchHandover
 }) {
   const { i18n } = useLingui()
-  const placeholder = placeholderProp ?? t`Caută entități, statistici sau identificatori...`
+  const placeholder = placeholderProp ?? t`Caută primării, firme, legi…`
   const {
     term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, isRankingUats,
   } = useSearchResults({ docTypes, entityTags, roles, suggestions: fixedScope === undefined, initialTerm: handover?.term })
@@ -666,13 +665,11 @@ export function LandingSearch({
                 there is one — the chips, read out — because the rows below are
                 a different list once a chip is on. The right column holds each
                 result's identifier, which is not necessarily a CUI. */}
-            <div className="flex items-baseline justify-between gap-3 border-b bg-muted/40 px-4 py-3">
-              <MonoLabel className="text-muted-foreground">
-                {scope || (status.kind === 'results' ? t`Rezultate` : t`Caută`)}
-              </MonoLabel>
-              <MonoLabel className="text-muted-foreground/55">
+            <div data-search-header className="flex items-baseline justify-between gap-3 border-b bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
+              <span>{scope || (status.kind === 'results' ? t`Rezultate` : t`Caută`)}</span>
+              <span>
                 <Trans>Identificator</Trans>
-              </MonoLabel>
+              </span>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">

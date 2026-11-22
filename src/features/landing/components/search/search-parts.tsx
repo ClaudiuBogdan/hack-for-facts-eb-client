@@ -68,9 +68,10 @@ function Highlighted({
  * from the wrapper or the four stop looking alike.
  */
 export const resultRowClass = cn(
-  // Name over a quiet subline, tabular CUI right-aligned: the same grid the
-  // "Începe de aici" panel uses, so the dropdown reads as that panel answering
-  // rather than as a layer over it.
+  // Name over a quiet subline, tabular CUI right-aligned: the layout of a row
+  // in the hero's institutions panel, so the dropdown reads as that panel
+  // answering rather than as a layer over it. The dropdown keeps a rule between
+  // rows, the panel's six rows have none.
   'group flex cursor-pointer items-baseline justify-between gap-3 border-b px-4 py-2.5 last:border-b-0',
   'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
   // The active row is styled off `data-highlighted`, which the combobox sets,

@@ -282,6 +282,13 @@ height / `0.02em` tracking.
 - Codes and identifiers (CUI, SIRUTA, CPV, matrix codes like `POP107D`) use
   tabular figures and appear in provenance/secondary text — never as a record's
   primary human label.
+- **Mono only where it is necessary.** A monospaced face is for what is read
+  character by character: codes and identifiers, keyboard hints, figures that
+  must line up in a column. Words a reader reads as language (labels, captions,
+  sentence fragments, navigation) are set in Inter, in sentence case. A mono
+  capital caption is a second voice on the page; use one only where it names a
+  column of codes or figures, and never for text that continues into a sentence
+  or a link.
 - All money, dates, numbers, and percentages use locale-aware formatting (Lingui /
   `Intl`), keyed to the active locale — never hardcoded `ro-RO`.
 
@@ -715,6 +722,8 @@ single-owner rule that applies to the data-trust components.
 - Don't nest cards, add gradient/bokeh/decorative backgrounds, or use radius > 8px.
 - Don't add a fourth text-emphasis level or a second accent hue per page, or a
   second display font.
+- Don't set words in mono, or in tracked mono capitals, when plain Inter says the
+  same thing; keep mono for codes, key hints and aligned figures.
 - Don't spread the PNRR brutalist skin or the Parliament GOV.UK palette beyond
   their own surfaces — reuse the structure, re-skin to neutral-navy.
 - Don't reach for a chart library when an inline proportion fill conveys the
@@ -802,7 +811,9 @@ diff. Currently: the landing page's mono captions (`text-muted-foreground/50`
 through `/70` at 10px, 21 elements, worst 1.95:1) are **knowingly below AA**. The
 judgement is that they are secondary to the information beside them. Noted
 against it: two of the twenty-one are footer column headings, which name a
-navigation group rather than decorate it.
+navigation group rather than decorate it. The exception covers what exists; it
+is not a pattern to extend (Typography: mono only where necessary). The hero's
+shortcut label left this list on 2026-11-22, rewritten as plain text at AA.
 
 ## Data Trust & Provenance
 
@@ -865,6 +876,15 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-11-22 — Mono only where it is necessary.** Monospaced type is kept for
+  codes and identifiers, keyboard hints and figures that must align; labels,
+  captions and navigation are set in Inter, in sentence case. First applied to
+  the landing hero's shortcut row („Sau mergi direct la"), whose 10px mono
+  capital label became plain `text-sm` text on the links' baseline. *Why:* the
+  product owner asked for it; a tracked mono caption next to normal text is a
+  second voice that adds noise without adding information, and at 10px in a
+  faded grey it was below AA (about 2.7:1). Existing mono captions on the
+  landing are not removed by this entry; each is reviewed when its section is.
 - **2026-11-21 — Learning, challenges and the budget campaign follow the main
   system; the status tokens exist in code.** The data-trust pairs
   (`status-{live,mock,partial,blocked}-{bg,fg}`) were only in this file's YAML, so

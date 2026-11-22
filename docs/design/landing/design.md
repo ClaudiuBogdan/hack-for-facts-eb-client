@@ -300,6 +300,188 @@ Not done: the horizontal lines are still counted from the top of the hero. At
 desktop sizes they now fall above the headline (144px) and under it (288px)
 rather than through it, which follows from the 144px module, not from a rule.
 
+## Search placeholder — 22 November 2026
+
+The hero search's placeholder is **„Caută primării, firme, legi…"** (owner's
+choice), replacing „Caută entități, statistici sau identificatori...".
+
+- **Why it changed.** The old wording named categories of the data model
+  ("entități", "identificatori"), not things a reader looks for, and at 46
+  characters it was cut mid-word on every phone.
+- **What it names.** Three things people come to find, each a real result type
+  of the search: town halls, companies, laws. It is an example of the reach,
+  not a list of it (the search also returns INS statistics, NGOs, state
+  companies, MPs); „date INS" was considered and left out because it assumes
+  the acronym.
+- **Length.** The field's text room is 158px at 320, 188px at 360, 203px at
+  375 and 218px at 390 (80px on the right is kept for the spinner and the
+  clear button). The Romanian text is 209px: whole from 390px, the last dot of
+  its „…" clipped at 375px, cut inside „legi" at 360px. Measure with a span
+  that carries the field's letter spacing (0.32px); a canvas `measureText`
+  ignores it and reads 9px short. Dropping „Caută" would fit 360px too; the
+  owner kept the verb.
+- **English.** "Town halls, firms, laws…" (188px, whole from 360px). With
+  "Search" in front, or with "companies", no English wording fits a phone, so
+  the English drops the verb the magnifier already shows.
+- The same string is the default in `landing-search.tsx` and
+  `deferred-landing-search.tsx`, so the field reads the same before and after
+  the search code loads.
+
+## Hero headline typesetting — 22 November 2026
+
+The headline keeps its extra-bold weight (owner: "I like the bold version of
+the title we have"); only its spacing changed. Six treatments were compared in
+the real font, including lighter weights (620, 500), which the owner declined.
+
+| | Before | Now |
+|---|---|---|
+| Weight | 800 | 800 |
+| Letter spacing | `-0.05em` | `-0.04em` |
+| Word spacing | none | `0.06em` |
+| Line height | 0.92 | 0.96 |
+| Commas | square | round (`ss03`) |
+
+- **Why.** Tracking that tight also closes the gap between words, so the two
+  lines read close to „Datepublice, peînțeles"; the word gap is given back. At
+  0.92 the circumflex of „î" nearly touched the descender of „p" above it.
+- **Round commas** are Inter's own alternate (`ss03`), on the headline only. The
+  headline has a comma and a „ț", and the square ones read as slabs at 72px.
+- **Subtitle.** `tracking-normal`: the site's `0.02em` is set for 14px text and
+  looked loose at 20px under a tight headline. Colour and size are unchanged
+  (no new emphasis level).
+- **Not done.** A second typeface (DESIGN.md rules it out, and it would add a
+  font download to a page tuned for load), two weights or colours inside the
+  headline, and the single-storey „a" (`cv11`), which would appear nowhere else.
+- The widest line is 252px in a 280px column at 320px, so it still holds two
+  lines on every phone.
+
+## Hero shortcut row — 22 November 2026
+
+The row under the search („Sau mergi direct la" + three links) was polished and
+its label rewritten. Four versions were shown on the real page (the row
+repaired as it was; the label in plain text; three small buttons; a ruled strip
+with arrows); the owner chose the plain-text label, without underlined links.
+
+- **Faults fixed.** The label was centred on the links (`align-middle` on
+  both), which left its baseline about 3px above theirs on desktop; the two now
+  share a baseline (`sm:items-baseline`).
+  The label was 10px mono capitals at about 2.7:1; it is `text-sm
+  text-muted-foreground` (4.6:1).
+- **One voice.** The label is a sentence that continues into the links, so it is
+  set like them, not as a mono caption. This is the first use of the rule now in
+  DESIGN.md: mono only where it is necessary.
+- **Links.** Medium weight in the foreground colour against the muted label;
+  the accent colour on hover. No underline, at rest or on hover (owner).
+- **Phone.** Unchanged in structure: the label on its own line, each shortcut a
+  44px row.
+
+## Sections menu — 22 November 2026
+
+The hero's shortcut row names three sections. An icon button beside them
+(`sections-menu.tsx`, a grid icon, „Toate secțiunile") opens every section the
+landing can offer: the same groups as the index further down
+(`visibleGroups()`), as icon and title, without the blurbs.
+
+**Placement.** On a wide screen the button closes the row, after the third
+shortcut. On a phone the three shortcuts already fill the row (they need 316px
+of 342px at 390px), so the button sits at the end of the label's line. It is a
+44px target on a phone and 32px on a wide screen; negative margins keep either
+line from growing around it (the label's line is 28px on a phone, 8px taller
+than before).
+
+**Panel.** 30rem wide on a wide screen, under the button with its end on the
+button's end: the search dropdown's outline and header strip, groups flowing
+into two columns. A bottom sheet below 640px: each group's links two abreast,
+44px tall, so the whole list fits without scrolling at 390 × 844. The panel
+closes at the click on a link, since the next page can take a moment to
+arrive. The links are a `nav` of links, not a `menu` of items: they can be
+opened in a new tab, are read out as links, and the Tab key walks them, straight on from the
+button.
+
+**On a wide screen the panel is part of the page, not a floating popover**
+(owner, 22 November: the first version, a Radix popover, trailed the page on
+scroll). A Radix popover is drawn at the end of the document, pinned to the
+window (`position: fixed`), and a script moves it after every scroll event, a
+frame behind the page. The panel is instead an absolutely placed child of a
+`relative` wrapper around the button, so the browser scrolls it with the hero
+like any other content, and no script places it. What that costs:
+
+- **No collision handling.** It always opens below the button. It is 375px
+  tall and starts about 455px down the page, so a window shorter than about
+  830px shows its lower part only after a scroll. A popover would flip above
+  the button, over the headline.
+- **It lives in the page's layers.** It works because no ancestor of the row
+  clips downwards or forms its own stacking context (the page wrapper clips
+  sideways only, and the panel never leaves it: its left edge is at 65px or
+  more from 640px up, in both languages). An `overflow: hidden`, a transform
+  or a `z-index` added to a hero ancestor later would cut it or put it under
+  the next section; `z-30`, as the search dropdown.
+- **Its own closing rules**, about twenty lines in the component: Escape (the
+  focus back on the button), a press outside, the focus leaving. The focus is
+  not moved on opening; the panel follows the button in the document, so Tab
+  goes on into the links.
+
+**Phone: the app's bottom sheet** (`sheet.tsx`, Radix Dialog), as the
+notification bell's. It is modal, so the page does not scroll under it.
+
+**Size.** No library code the landing did not already download: the sheet,
+dialog and focus code come with the app shell. The new download is the
+component itself, about 1.5 KB gzip (an esbuild bundle of the file with its
+imports external; not a production build), and the window-size hook, 0.3 KB.
+
+**Tried and not kept.** Both were built as a `/development` prototype, removed
+on the owner's word once the choice was made:
+
+- *Radix popover through `ResponsivePopover`*: about 3 KB gzip more (the
+  popover primitive and the wrapper), and the scroll lag above.
+- *Base UI popover and drawer*: its popover scrolls with the page too
+  (absolutely placed by default), and its drawer follows the finger and closes
+  on a swipe down, the one thing it does better. But Base UI is on the landing
+  only inside the search's deferred chunk, and `Popover` and `Drawer` add about
+  28 KB gzip on top of it (an esbuild bundle of the search's `Autocomplete`
+  with and without them: drawer alone +19 KB, popover alone +11 KB), which
+  would need a deferred load of its own.
+
+For scale: the production build of 21 November downloads 203 scripts, 860 KB
+gzip, on the landing.
+
+## Institutions panel — 22 November 2026
+
+The hero's list of example institutions (`start-here-panel.tsx`), polished with
+the owner. The list itself stays; what changed is how it is captioned, named and
+framed.
+
+- **Caption.** „Instituții" on the left and „CUI" on the right, in sentence-case
+  sans at `text-xs`, replacing the uppercase mono „Începe de aici"
+  (`DESIGN.md`, "Mono only where it is necessary"). The caption names what the
+  rows are, as a column heading does. The search dropdown's header
+  (`landing-search.tsx`) is set the same way, so the two lists read as one kind
+  of thing; that header is shared by every page that uses the search.
+- **Full names.** „Municipiul Sibiu", not „Mun. Sibiu". A name that does not
+  fit beside its CUI is cut with an ellipsis; none is at 390px.
+- **Second line says what the row is.** „Primărie · Jud. Sibiu",
+  „Minister · București" — the same form as a search result's second line. The
+  panel keeps its own six-row list (`INSTITUTIONS`) with the kind and county
+  written in, instead of importing the search's row component, which would pull
+  the search's code into the eager bundle.
+- **Rows.** No rules between rows: the two-line rhythm separates six rows
+  without making a table of them. A row answers the pointer with its background
+  and an underline on the name (owner: the underline was removed, then asked
+  back the same day; the row separators stay off).
+- **Last row.** „Toate instituțiile" with an arrow, to `/entity-analytics`, on
+  the caption's tint. The zoom light leads to the same page, but a phone has no
+  lights and a desktop reader has to try them to find out.
+- **Below `lg`** the panel is a card in the search field's outline (`rounded-lg`,
+  the field's border colour) with the caption on a tinted strip, as the search
+  dropdown's header has. The square hairline box read as unfinished under the
+  rounded field. From `lg` the window chrome and tilt are unchanged.
+
+Measured in the browser: the hero is 916px tall at 390px and 650px at 1440px
+(Romanian and English), every row 56px on a phone, no hydration warnings.
+
+Not changed: `PREDEFINED_ENTITIES` (`src/lib/constants/predefined-entities.ts`)
+still feeds the budget campaign's badges; the panel no longer reads it.
+
 ## Follow-ups
 
 - A real `/despre` page, and the band link back once it exists.

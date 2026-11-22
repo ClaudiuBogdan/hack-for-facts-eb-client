@@ -3,7 +3,7 @@
  *
  * Tests the landing page functionality including:
  * - Hero heading and entity search
- * - "Începe de aici" entity panel
+ * - The institutions panel
  * - Shortcuts and the grouped surface index
  * - Footer navigation
  */
@@ -32,12 +32,12 @@ test.describe('Landing Page', () => {
   })
 
   test('displays the entity panel with predefined entities', async ({ page }) => {
-    const sibiu = page.getByRole('link', { name: /Mun\. Sibiu/ })
+    const sibiu = page.getByRole('link', { name: /Municipiul Sibiu/ })
     await expect(sibiu).toBeVisible({ timeout: 5000 })
     await expect(sibiu).toHaveAttribute('href', /\/entities\/4270740/)
 
-    await expect(page.getByRole('link', { name: /Mun\. București/ })).toBeVisible()
-    await expect(page.getByRole('link', { name: /Mun\. Cluj-Napoca/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Municipiul București/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Municipiul Cluj-Napoca/ })).toBeVisible()
   })
 
   test('displays the shortcuts to the heaviest surfaces', async ({ page }) => {
@@ -113,7 +113,7 @@ test.describe('Landing Page', () => {
   })
 
   test('clicking a panel entity link navigates to entity page', async ({ page }) => {
-    const entityLink = page.getByRole('link', { name: /Mun\. Cluj-Napoca/ })
+    const entityLink = page.getByRole('link', { name: /Municipiul Cluj-Napoca/ })
     await expect(entityLink).toBeVisible({ timeout: 5000 })
     await entityLink.click()
 

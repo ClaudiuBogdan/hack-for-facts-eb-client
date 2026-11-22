@@ -767,7 +767,7 @@ describe('LandingSearch', () => {
       await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
       expect(screen.getAllByRole('option')[0]).toHaveAttribute('href', '/companies/2816464')
       // The header names the scope.
-      expect(screen.getByText('Firme', { selector: '.font-mono' })).toBeInTheDocument()
+      expect(document.querySelector('[data-search-header]')).toHaveTextContent('Firme')
       // The scope reaches the API before pagination.
       expect(searchEntities).toHaveBeenLastCalledWith(
         expect.objectContaining({ q: 'dedeman', docTypes: ['company'] }), expect.any(AbortSignal),
