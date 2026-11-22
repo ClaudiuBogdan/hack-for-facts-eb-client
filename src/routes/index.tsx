@@ -30,7 +30,7 @@ export const Route = createFileRoute('/')({
 /** A search link (`/?q=`) is the landing with its field filled: the same canonical page, never a search result of its own. */
 export function buildHomeHead({ searchTerm }: { readonly searchTerm?: string } = {}) {
   const site = getSiteUrl()
-  const pageTitle = 'Transparenta.eu – Date publice, decizii informate'
+  const pageTitle = 'Transparenta.eu – Date publice, pe înțeles'
   const description =
     'Bugete, achiziții, legislație, justiție și instituții — fiecare cifră cu sursa și perioada ei. Caută o entitate sau pornește de la domeniul care te interesează.'
   const canonical = site

@@ -43,7 +43,7 @@ describe('Index route', () => {
         'title' in entry ? entry.title : (entry as { content: string }).content,
       ]),
     )
-    expect(meta.get('title')).toContain('Date publice, decizii informate')
+    expect(meta.get('title')).toContain('Date publice, pe înțeles')
     expect(meta.get('og:title')).toBe(meta.get('title'))
     expect(meta.get('description')).toBe(meta.get('og:description'))
     expect(meta.get('robots')).toBe('index,follow')

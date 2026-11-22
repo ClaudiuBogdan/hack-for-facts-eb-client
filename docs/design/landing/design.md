@@ -235,6 +235,48 @@ The SVG zoom engine the prototype produced is shared as
 `src/components/maps/svg-zoom/` (`useSvgMapZoom`), off unless enabled; the INS
 hub's UAT map opts in with `smoothZoom`.
 
+## Hero copy — 22 November 2026
+
+The owner asked for every line on the landing to be there on purpose, starting
+with the hero.
+
+**Title:** „Date publice, pe înțeles" / "Public data, made clear".
+**Subtitle:** „Din surse oficiale, pentru decizii informate." / "From official
+sources, for informed decisions."
+**Page title** (browser, search engines, share cards): „Transparenta.eu – Date
+publice, pe înțeles".
+
+Each phrase says one thing, once:
+
+| Phrase | Job |
+|---|---|
+| Date publice | What we have. The category, not a list, so new datasets (companies, satellite data) need no rewrite. |
+| pe înțeles | How we present it: clear at first sight. |
+| Din surse oficiale | Why to trust it. |
+| pentru decizii informate | What it is for. |
+
+Decisions, all the owner's:
+
+1. **The subject is public data, not public money and not the state.** The
+   platform also carries parliament votes, legislation, justice and private
+   companies; „Banii publici" and „Statul român" were both too narrow.
+2. **The subtitle does not list datasets.** The shortcuts under the search and
+   the section list already name them; a list here repeated them and would go
+   out of date. Ordered lists („de la bugete și contracte publice până la firme,
+   legi și voturi") were considered and dropped for that reason.
+3. **Tools are not named in the hero.** Search, charts, analytics, AI summaries
+   and campaigns are shown by the page, not announced.
+4. **No „toate" / „fiecare".** Some datasets are still being connected.
+
+The previous pair („Date publice, decizii informate" + „Transformăm date
+publice în informații clare, pentru a înțelege și decide mai bine.") said the
+same thing twice and nothing concrete; the purpose moved into the subtitle.
+
+The second title line is now short enough for a flat 2.75rem on every phone
+(widest line 243px against a 280px column at 320px), so the fluid size the
+longer line needed is gone. The subtitle is balanced so a phone breaks it after
+„oficiale," and not before a lone last word.
+
 ## Follow-ups
 
 - A real `/despre` page, and the band link back once it exists.

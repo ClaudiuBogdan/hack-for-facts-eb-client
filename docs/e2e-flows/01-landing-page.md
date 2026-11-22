@@ -41,7 +41,7 @@
 
 ### 3. Page load
 
-- [x] **3.1 Landing page loads** — `h1` "Date publice, decizii informate", search reachable
+- [x] **3.1 Landing page loads** — `h1` "Date publice, pe înțeles", search reachable
 - [x] **3.2 Footer** — one `navigation` "Navigare footer" with privacy, terms, cookie policy, cookie settings (with `redirect`), GitHub and status links
 - [ ] **3.3 Provenance** — the institution count appears only after the API answers; the other coverage figures render immediately
 - [ ] **3.4 Reduced motion** — with `prefers-reduced-motion: reduce`, no `data-reveal="pending"` is ever set

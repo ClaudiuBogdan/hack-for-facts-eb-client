@@ -69,7 +69,7 @@ describe('LandingPage', () => {
       </QueryClientProvider>,
     )
 
-    expect(html).toContain('decizii informate')
+    expect(html).toContain('pe înțeles')
     for (const group of LANDING_GROUPS) {
       for (const entry of group.entries.filter((candidate) => candidate.gate === undefined)) {
         expect(html).toContain(`href="${entry.to}"`)
@@ -90,7 +90,7 @@ describe('LandingPage', () => {
   it('renders the search, the shortcuts and the index as reachable controls', () => {
     render(<LandingPage />, { queryClient: createTestQueryClient() })
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/decizii informate/)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/pe înțeles/)
     // Two comboboxes: the search field, and the budget map's picker at the foot of the page.
     expect(screen.getAllByRole('combobox').filter((element) => element.tagName === 'INPUT')).toHaveLength(1)
     expect(screen.getByRole('combobox', { name: /Harta afișată/ })).toBeInTheDocument()

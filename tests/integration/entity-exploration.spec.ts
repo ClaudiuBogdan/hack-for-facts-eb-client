@@ -56,7 +56,7 @@ test.describe('Entity Exploration Flow', () => {
 
     // Wait for main heading to appear
     await expect(
-      page.getByRole('heading', { name: /decizii informate|informed decisions/i, level: 1 })
+      page.getByRole('heading', { name: /pe înțeles|made clear/i, level: 1 })
     ).toBeVisible({ timeout: 10000 })
 
     await waitForHydration(page)

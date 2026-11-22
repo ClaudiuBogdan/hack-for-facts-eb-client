@@ -11,7 +11,7 @@
 import { test, expect } from '../utils/integration-base'
 import { waitForHydration } from '../utils/test-helpers'
 
-const HERO_HEADING = /decizii informate|informed decisions/i
+const HERO_HEADING = /pe înțeles|made clear/i
 const SEARCH_NAME = /entit|cui/i
 const POLITICS = /^(politică|politics)$/i
 

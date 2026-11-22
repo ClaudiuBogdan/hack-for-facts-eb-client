@@ -252,22 +252,16 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
                   <MonoLabel className="ml-1.5 text-muted-foreground">România</MonoLabel>
                 </span>
               </span>
-              {/* The base size is fluid rather than fixed: at a flat 2.75rem the
-                  second line measured 313px against a 309px column at 360px, so
-                  it overflowed on every phone narrower than an iPhone 14. The
-                  clamp keeps 2.75rem wherever it fits and scales down only
-                  where it does not; `sm:` and up are unaffected. */}
-              <h1 className="mt-6 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
                 <Trans>
                   Date publice,
                   <br />
-                  decizii informate
+                  pe înțeles
                 </Trans>
               </h1>
-              <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p className="mt-5 max-w-[46ch] text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
                 <Trans>
-                  Transformăm date publice în informații clare, pentru a înțelege și decide mai
-                  bine.
+                  Din surse oficiale, pentru decizii informate.
                 </Trans>
               </p>
               <div className="mt-6 sm:mt-7">
