@@ -33,6 +33,18 @@ export function isReleaseId(id: string): boolean {
 const hasCode = (error: unknown, code: string): boolean =>
   error instanceof GraphQLRequestError && error.graphQLErrors.some((entry) => entry.extensions?.code === code)
 
+/**
+ * A release id asked while the API does not serve the release
+ * (`procurementDaRelease.enabled` false): the purchase is not available yet,
+ * which says nothing about whether it exists. Not retried; never "not found".
+ */
+export class DaReleaseOffError extends Error {
+  constructor() {
+    super('The API does not serve direct acquisitions release 1 now.')
+    this.name = 'DaReleaseOffError'
+  }
+}
+
 /** A release purchase with its lines and the buyer's and category's names; null when the release has no such purchase. */
 export async function fetchReleasePurchase(id: string, signal?: AbortSignal): Promise<DirectPurchase | null> {
   let detail
@@ -41,6 +53,8 @@ export async function fetchReleasePurchase(id: string, signal?: AbortSignal): Pr
     detail = procurementDaPurchaseSchema.parse(raw).procurementDaPurchase
   } catch (error) {
     if (!signal?.aborted && hasCode(error, 'NOT_FOUND')) return null
+    // The release switched off since its status was read (a rollback): every release read then answers this. Asked afresh.
+    if (!signal?.aborted && hasCode(error, 'SERVICE_UNAVAILABLE') && !(await readDaRelease({ fresh: true })).enabled) throw new DaReleaseOffError()
     throw error
   }
   // The buyer only: a supplier is named by the release alone (D6), never by another read.
@@ -74,6 +88,11 @@ export async function resolveLegacyLink(legacyId: string, signal?: AbortSignal):
     return id ? { kind: 'release', id } : { kind: 'legacy' }
   } catch (error) {
     if (signal?.aborted) throw error
+    // The release switched off since its status was read (a rollback): the legacy page stands, as with the release off.
+    if (hasCode(error, 'SERVICE_UNAVAILABLE')) {
+      const now = await readDaRelease({ fresh: true }).catch(() => null)
+      if (now && !now.enabled) return { kind: 'legacy' }
+    }
     return { kind: 'failed' }
   }
 }
@@ -85,23 +104,30 @@ export async function resolveReleaseId(legacyId: string, signal?: AbortSignal): 
 }
 
 /**
- * The purchase the page shows for an id: a release id reads the release (none
- * when it is off); a legacy id, the release's purchase it leads to when there
+ * The purchase the page shows for an id: a release id reads the release (not
+ * available while it is off: `DaReleaseOffError`); a legacy id, the release's purchase it leads to when there
  * is one (its `id` then differs, and the page replaces the URL with it), else
  * the legacy surface.
  */
 export async function fetchPurchaseForPage(id: string, signal?: AbortSignal): Promise<DirectPurchase | null> {
   // D6 fails closed: with D6 on and its supplier-privacy publication unreadable, a purchase is not read at all. Its API
   // type carries no publication, and a read in a brief restoration of access could carry a withheld name (root).
-  const status = await readDaRelease()
+  let status = await readDaRelease()
+  // A release id about to fail closed asks afresh first: a release switched off since (a rollback) is said as such.
+  if (isReleaseId(id) && status.enabled && status.privacyEnforced && status.privacyAsOf === null) status = await readDaRelease({ fresh: true })
+  // The release off is said as such whatever else holds: nothing is read for a release id then.
+  if (isReleaseId(id) && !status.enabled) throw new DaReleaseOffError()
   if (status.privacyEnforced && status.privacyAsOf === null) throw new Error('Direct purchases cannot be read while the supplier-privacy publication is unreadable.')
   if (!isReleaseId(id)) {
     const link = await resolveLegacyLink(id, signal)
     // Unresolved is a failed read — retried — never a legacy page the next read would replace.
     if (link.kind === 'failed') throw new Error('Could not tell where this direct-purchase link leads.')
-    const found = link.kind === 'release' ? await fetchReleasePurchase(link.id, signal) : null
+    const found = link.kind === 'release' ? await fetchReleasePurchase(link.id, signal).catch((error: unknown) => {
+      // Switched off between the link's lookup and the purchase's read: the legacy page stands, as with the release off.
+      if (error instanceof DaReleaseOffError) return null
+      throw error
+    }) : null
     return found ?? fetchDirectPurchase(id, signal)
   }
-  const release = await readDaRelease()
-  return release.enabled ? fetchReleasePurchase(id, signal) : null
+  return fetchReleasePurchase(id, signal)
 }

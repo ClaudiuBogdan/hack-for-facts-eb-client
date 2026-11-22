@@ -24,7 +24,6 @@ import {
   withheldTextNotice,
   inTotalsText,
   notCountedText,
-  notListedText,
   reportedApartText,
   ruleText,
   symbolicText,
@@ -465,13 +464,17 @@ function SourceLine({ purchase, className }: { readonly purchase: DirectPurchase
   )
 }
 
-/** Release 1, after the source: the counted value's basis, whether the portal still lists the purchase, and when the data was published. */
+/**
+ * Release 1, after the source: the counted value's basis and when the data
+ * was published. A purchase removed from the portal says so through its
+ * reason for being out of totals (`removed_from_portal`); `listedNow` alone is
+ * information the page does not label (procurement-prod, 22 November 2026).
+ */
 function ReleaseNotes({ purchase }: { readonly purchase: DirectPurchase }) {
   const asOf = purchase.dataAsOf ? dayLong(purchase.dataAsOf.slice(0, 10)) : null
   return (
     <>
       <Trans>Valoarea numărată e fără TVA.</Trans>
-      {purchase.listedNow === false ? <> {notListedText()}</> : null}
       {asOf ? <> {t`Date publicate de Transparenta pe ${asOf}.`}</> : null}
     </>
   )

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { FINANCIAL_METRICS, privateCompanyProfileSchema } from '@/schemas/private-company'
 import { qualifiedNet, reportedNumber } from '../../lib/financial-qualification'
 import {
@@ -691,5 +691,22 @@ describe('mapCompanyProfile — long-format-only statements (B5c)', () => {
       [2013, null, 'ir', OMV_2013.resourceUrl],
       [2012, 'mfp', null, null],
     ])
+  })
+})
+
+describe('public money and DA supplier names (root ruling 2026-11-22 under 22a47bb2)', () => {
+  it('a company with incoming direct purchases marks the render; one without does not', async () => {
+    const { installDaSupplierNameSink } = await import('@/lib/da-supplier-name-mark')
+    const marks = vi.fn()
+    installDaSupplierNameSink(marks)
+    try {
+      const money = (flowType: string) => ({ totalRon: '100', flowCount: 1, byFlowType: [{ flowType, totalRon: '100', count: 1 }], byYear: [] })
+      mapCompanyProfile({ ...dedemanResponse, company: { ...dedemanResponse.company!, publicMoney: money('procurement_contract') } } as never)
+      expect(marks).not.toHaveBeenCalled()
+      mapCompanyProfile({ ...dedemanResponse, company: { ...dedemanResponse.company!, publicMoney: money('direct_acquisition') } } as never)
+      expect(marks).toHaveBeenCalled()
+    } finally {
+      installDaSupplierNameSink(null)
+    }
   })
 })

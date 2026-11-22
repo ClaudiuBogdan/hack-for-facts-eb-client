@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
 
 /**
  * Decision D6 on every procurement surface that reads direct acquisitions:
@@ -26,7 +27,13 @@ export function nameableKeys(keys: readonly string[]): readonly string[] {
  * is withheld, whatever name or code came with it.
  */
 export function isNamedDaSupplier(party: { readonly displayKind?: string | null } | null | undefined): boolean {
-  return party?.displayKind === 'company'
+  return named(party?.displayKind === 'company')
+}
+
+/** A decision to name a DA supplier: a server render that makes one is kept by no cache (`da-supplier-name-mark.ts`). */
+function named(yes: boolean): boolean {
+  if (yes) markDaSupplierNamed()
+  return yes
 }
 
 /** The withheld group, as a ranking row names it: every supplier the platform does not name, together. */
@@ -41,7 +48,7 @@ export function naturalPersonsLabel(): string {
  * flag says, so a rollback never re-exposes a name).
  */
 export function isNamedDaSupplierBucket(bucket: { readonly key: string | null; readonly displayKind?: string | null }): boolean {
-  return bucket.key !== null && !isNaturalPersonKey(bucket.key) && bucket.displayKind === 'company'
+  return named(bucket.key !== null && !isNaturalPersonKey(bucket.key) && bucket.displayKind === 'company')
 }
 
 /**

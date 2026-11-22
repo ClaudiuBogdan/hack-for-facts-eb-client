@@ -40,6 +40,7 @@ import { DIRECT_COMPARABLE_FROM, homeYear, truncatePartYear, type RecentRecord, 
 import type { CountyFigureRow, PartyYears } from '../lib/profile-model'
 import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
 import type { ClientRanking, ClientWeight, GrainFigures, SupplierProfile } from '../lib/supplier-model'
+import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
 
 export { SUPPLIER_LARGEST_RECORDS, SUPPLIER_ROWS_READ, supplierContractPicture }
 
@@ -299,6 +300,15 @@ function clientsOf(raw: unknown, period: Period): { readonly clients: number | n
   return { clients: pointsOf(buyerSeriesSchema.parse(raw ?? [])).get(String(period.year)) ?? null, clientsAtLeast: false }
 }
 
+/**
+ * Whether the profile shows the firm's direct purchases. Its name then stands
+ * beside them, so the render is kept by no cache (root ruling 2026-11-22 under
+ * 22a47bb2), wherever the name came from (the registry, a record, the spine).
+ */
+export function showsDirectPurchases(profile: { readonly directYears: readonly unknown[]; readonly directClients: { readonly rows: readonly unknown[] } }): boolean {
+  return profile.directYears.length > 0 || profile.directClients.rows.length > 0
+}
+
 export function mapSupplierProfile(cui: string, period: Period, latest: number, reads: SupplierReads): SupplierProfile {
   const { raw, rows: read } = reads
   const part = latest + 1
@@ -341,6 +351,7 @@ export function mapSupplierProfile(cui: string, period: Period, latest: number, 
   if (partThrough) contractYears.push({ year: part, value: null, count: sumOf([...read.partMonths.entries()].filter(([month]) => month <= partThrough).map(([, rows]) => rows)) })
 
   const directClients = ranking(breakdown('directClients'))
+  if (showsDirectPurchases({ directYears: directPoints, directClients })) markDaSupplierNamed()
   const weights = new Map<string, ClientWeight>()
   const weightRaw = reads.weights.raw
   if (weightRaw) {

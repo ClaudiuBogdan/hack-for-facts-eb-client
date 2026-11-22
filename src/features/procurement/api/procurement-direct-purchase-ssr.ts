@@ -1,6 +1,6 @@
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { contextInputOf, type DirectPurchase, type DpContext } from '../lib/direct-purchase-model'
-import { fetchPurchaseForPage, isReleaseId, resolveLegacyLink, type LegacyLink } from './procurement-da-release-api'
+import { DaReleaseOffError, fetchPurchaseForPage, isReleaseId, resolveLegacyLink, type LegacyLink } from './procurement-da-release-api'
 import { fetchDirectPurchase, fetchDirectPurchaseContext } from './procurement-direct-purchase-api'
 
 /**
@@ -26,6 +26,8 @@ export interface ProcurementDirectPurchaseServerRead {
   readonly purchase?: DirectPurchase | null
   /** `null`: the purchase has none to read (no CUI for a side, no date, before 2019). Absent: not read, or the read failed. */
   readonly context?: DpContext | null
+  /** A release id while the API does not serve the release: not available yet, which is neither a record nor a failed read. */
+  readonly releaseOff?: true
 }
 
 export function resolveLegacyLinkForSsr(id: string): Promise<LegacyLink> {
@@ -43,7 +45,8 @@ export async function readProcurementDirectPurchaseForSsr(id: string): Promise<P
   let purchase: DirectPurchase | null
   try {
     purchase = await (isReleaseId(id) ? fetchPurchaseForPage(id, deadline()) : fetchDirectPurchase(id, deadline()))
-  } catch {
+  } catch (error) {
+    if (error instanceof DaReleaseOffError) return { id, releaseOff: true }
     return { id }
   }
   if (!purchase) return { id, purchase }

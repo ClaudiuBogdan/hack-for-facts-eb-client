@@ -91,11 +91,6 @@ export function symbolicText(): string {
   return t`Valoare simbolică: o numărăm, dar o semnalăm.`
 }
 
-/** A purchase the portal no longer lists. */
-export function notListedText(): string {
-  return t`Portalul nu mai listează această achiziție.`
-}
-
 /** The supplier's name as the page writes it: a company's, as its own page names it; any other supplier is a natural person, never named. */
 export function supplierNameText(supplier: DpSupplierName): string {
   if (supplier.kind === 'company') return displayCompanyName(supplier.name)

@@ -73,6 +73,7 @@ import type {
   RawStatementQualification,
 } from './company-queries'
 import { mapCaenClassState, mapCaenRevision, mapRegistryEnvelope, mapRegistryEvidence } from './company-registry-graphql'
+import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
 
 /** Whose name the API gave: an unknown answer is never credited to the ONRC edition. */
 function mapNameSource(raw: string): 'onrc_edition' | 'core_organization' {
@@ -538,6 +539,9 @@ function mapPublicMoney(company: RawCompany): PrivateCompanyPublicMoney | null {
     totalRon: toNumberOrNull(row.totalRon),
     count: row.count,
   }))
+  // The company's name beside its incoming direct purchases: a render with any is kept by no cache (root ruling
+  // 2026-11-22 under 22a47bb2), as a supplier profile's is.
+  if ([...byFlowType, ...byYear].some((flow) => flow.flowType === 'direct_acquisition' && (flow.count > 0 || (flow.totalRon ?? 0) > 0))) markDaSupplierNamed()
   const totalRon = toNumberOrNull(money.totalRon)
   // A header total we could not parse says nothing about the per-flow rows,
   // which come from an independent aggregation — keep them.

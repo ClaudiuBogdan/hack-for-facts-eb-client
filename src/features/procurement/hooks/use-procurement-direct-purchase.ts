@@ -1,6 +1,7 @@
 import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { fetchPurchaseForPage } from '../api/procurement-da-release-api'
+import { DaReleaseOffError, fetchPurchaseForPage } from '../api/procurement-da-release-api'
+import { shouldRetryQuery } from '@/lib/queryClient'
 import { fetchDirectPurchaseContext } from '../api/procurement-direct-purchase-api'
 import { contextInputOf, type DirectPurchase, type DpContext } from '../lib/direct-purchase-model'
 import { procurementDirectPurchaseKeys } from '../lib/direct-purchase-keys'
@@ -20,6 +21,8 @@ export function procurementDirectPurchaseQueryOptions(id: string, initialData?: 
     queryKey: procurementDirectPurchaseKeys.purchase(id),
     // A release id reads direct acquisitions release 1; any other id the legacy surface.
     queryFn: ({ signal }) => fetchPurchaseForPage(id, signal),
+    // The release off is the API's current state, not a failure: asking again changes nothing.
+    retry: (failureCount, error) => !(error instanceof DaReleaseOffError) && shouldRetryQuery(failureCount, error),
     // D6: the purchase's API type carries no publication yet, so it is kept only while the page shows it.
     ...DA_QUERY_CACHE,
     ...(initialData !== undefined && (initialData === null || initialData.id === id) ? { initialData } : {}),

@@ -46,6 +46,7 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
     const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
     const read = await seededUnder(() => readProcurementDirectPurchaseForSsr(params.id))
     if (read.purchase === null) throw notFound()
+    // A release id while the release is off: not available yet — no 404, and (no purchase) not kept.
     return read
   },
   // A render with a failed or partial read is served once and read again, never cached for everyone; a purchase with no context to read (`null`) is whole without one.

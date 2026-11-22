@@ -416,3 +416,12 @@ describe('fetchProcurementSupplierDirect', () => {
     expect(graphqlQuery.mock.calls[0]?.[1]).toEqual({ s: { supplierCui: '9813902', year: LATEST, grain: 'direct_acquisition' } })
   })
 })
+
+describe('showsDirectPurchases (root ruling 2026-11-22 under 22a47bb2)', () => {
+  it('a profile with direct purchases (years or clients) names its firm beside them; one without does not', async () => {
+    const { showsDirectPurchases } = await import('./procurement-supplier-api')
+    expect(showsDirectPurchases({ directYears: [{ year: 2025 }], directClients: { rows: [] } })).toBe(true)
+    expect(showsDirectPurchases({ directYears: [], directClients: { rows: [{ cui: '4267117' }] } })).toBe(true)
+    expect(showsDirectPurchases({ directYears: [], directClients: { rows: [] } })).toBe(false)
+  })
+})

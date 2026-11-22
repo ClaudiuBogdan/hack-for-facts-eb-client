@@ -52,8 +52,10 @@ describe('mapReleasePurchase — the contract example rows', () => {
     expect(mapReleasePurchase(RELEASE_CASES.before2025(), NO_NAMES).money).toMatchObject({ kind: 'not-counted', reported: 8400, reason: { code: 'value_not_qualified' } })
   })
 
-  it('no longer listed', () => {
-    expect(mapReleasePurchase(RELEASE_CASES.noLongerListed(), NO_NAMES).listedNow).toBe(false)
+  it('removed from the portal: out of totals with its reason, and not listed', () => {
+    const purchase = mapReleasePurchase(RELEASE_CASES.noLongerListed(), NO_NAMES)
+    expect(purchase.listedNow).toBe(false)
+    expect(purchase.money).toMatchObject({ kind: 'not-counted', reported: 5200, reason: { code: 'removed_from_portal' } })
   })
 
   it('symbolic price', () => {

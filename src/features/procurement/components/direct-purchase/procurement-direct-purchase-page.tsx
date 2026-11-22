@@ -4,11 +4,12 @@ import { useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
-import { FileQuestion } from 'lucide-react'
+import { Clock, FileQuestion } from 'lucide-react'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { HubLoadError, HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
+import { DaReleaseOffError } from '../../api/procurement-da-release-api'
 import { useProcurementDirectPurchase, useProcurementDirectPurchaseContext } from '../../hooks/use-procurement-direct-purchase'
 import { contextInputOf, dayOf, redoOf, type DirectPurchase, type DpContext } from '../../lib/direct-purchase-model'
 import { procurementDirectPurchaseKeys } from '../../lib/direct-purchase-keys'
@@ -34,6 +35,8 @@ export interface ProcurementDirectPurchaseInitialData {
   readonly purchase?: DirectPurchase | null
   /** `null`: the purchase has no context to read. */
   readonly context?: DpContext | null
+  /** A release id while the API does not serve the release: not available yet. */
+  readonly releaseOff?: true
 }
 
 export function ProcurementDirectPurchasePage({ id, initialData }: { readonly id: string; readonly initialData?: ProcurementDirectPurchaseInitialData }) {
@@ -48,6 +51,8 @@ export function ProcurementDirectPurchasePage({ id, initialData }: { readonly id
 
   if (purchase) return <DirectPurchaseSheet purchase={purchase} initialContext={initialData?.id === id ? (initialData.context ?? undefined) : undefined} />
   if (purchase === null) return <DirectPurchaseMissing id={id} />
+  // The release off is the API's current state: said as such, never „not found" and never a failed read.
+  if (query.error instanceof DaReleaseOffError || (initialData?.id === id && initialData.releaseOff && query.isPending)) return <DirectPurchaseNotServed />
   return (
     <div className="bg-background">
       <DirectPurchaseHeadPending>
@@ -101,6 +106,25 @@ function useReleaseUrl(id: string, purchase: DirectPurchase | null | undefined) 
       queryClient.removeQueries({ queryKey: procurementDirectPurchaseKeys.purchase(id), exact: true }),
     )
   }, [target, id, navigate, queryClient])
+}
+
+/** A release id while the API does not serve the release: not available yet, which says nothing about whether it exists. */
+function DirectPurchaseNotServed() {
+  return (
+    <div className="bg-background">
+      <DirectPurchaseHeadShell>
+        <div role="status" className="mt-8 max-w-[60ch]">
+          <Clock className="size-6 text-muted-foreground" aria-hidden="true" />
+          <p className="mt-3 text-lg font-semibold text-foreground">
+            <Trans>Achiziția nu este disponibilă încă</Trans>
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            <Trans>Linkul duce la noua publicare a achizițiilor directe, pe care platforma nu o servește încă. Revino mai târziu.</Trans>
+          </p>
+        </div>
+      </DirectPurchaseHeadShell>
+    </div>
+  )
 }
 
 /** The API answered and has no such record — distinct from a failed read, which says nothing about the record. */

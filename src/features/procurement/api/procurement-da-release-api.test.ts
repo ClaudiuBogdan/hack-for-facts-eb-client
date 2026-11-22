@@ -12,7 +12,7 @@ vi.mock('./procurement-direct-purchase-api', () => legacy)
 
 const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
 const { NO_NAMES } = await import('../lib/direct-purchase-model')
-const { fetchPurchaseForPage, isReleaseId, readDaRelease, resetDaReleaseForTests, resolveLegacyLink, resolveReleaseId } = await import('./procurement-da-release-api')
+const { DaReleaseOffError, fetchPurchaseForPage, isReleaseId, readDaRelease, resetDaReleaseForTests, resolveLegacyLink, resolveReleaseId } = await import('./procurement-da-release-api')
 
 /**
  * The page's choice of surface: the API's capability decides, a release id
@@ -109,9 +109,91 @@ describe('fetchPurchaseForPage', () => {
     expect(legacy.fetchDirectPurchase).not.toHaveBeenCalled()
   })
 
-  it('a release id with the release off has no purchase', async () => {
-    answer({ ProcurementDaRelease: release(false) })
-    await expect(fetchPurchaseForPage(RELEASE_ID)).resolves.toBeNull()
+  it('a release id with the release off is not available yet: neither no purchase nor a failed read, and nothing more is read', async () => {
+    answer({
+      ProcurementDaRelease: release(false),
+      ProcurementDaPurchase: () => {
+        throw new Error('the release is not read while it is off')
+      },
+    })
+    await expect(fetchPurchaseForPage(RELEASE_ID)).rejects.toBeInstanceOf(DaReleaseOffError)
+  })
+
+  it('the release off is said before D6 fails closed: a release id is not available yet, whatever the privacy state', async () => {
+    answer({ ProcurementDaRelease: () => ({ procurementDaRelease: { enabled: false, dataAsOf: null, privacyEnforced: true, privacyAsOf: null } }) })
+    await expect(fetchPurchaseForPage(RELEASE_ID)).rejects.toBeInstanceOf(DaReleaseOffError)
+  })
+
+  it('a release switched off after its status was read (a rollback): the purchase read is refused, the status asked afresh, and the page says not available yet', async () => {
+    let enabled = true
+    answer({
+      ProcurementDaRelease: () => release(enabled)(),
+      ProcurementDaPurchase: () => {
+        enabled = false
+        throw unavailable('SERVICE_UNAVAILABLE')
+      },
+    })
+    await expect(fetchPurchaseForPage(RELEASE_ID)).rejects.toBeInstanceOf(DaReleaseOffError)
+  })
+
+  it('a release id about to fail closed asks afresh, and a release switched off since is said as such', async () => {
+    let calls = 0
+    answer({
+      ProcurementDaRelease: () => {
+        calls += 1
+        return { procurementDaRelease: calls === 1 ? { enabled: true, dataAsOf: 't', privacyEnforced: true, privacyAsOf: null } : { enabled: false, dataAsOf: null, privacyEnforced: true, privacyAsOf: null } }
+      },
+    })
+    await expect(fetchPurchaseForPage(RELEASE_ID)).rejects.toBeInstanceOf(DaReleaseOffError)
+  })
+
+  it('a legacy link whose lookup is refused by a release switched off since keeps its legacy page', async () => {
+    let enabled = true
+    answer({
+      ProcurementDaRelease: () => release(enabled)(),
+      ProcurementDirectAcquisitionRecord: () => ({ procurementDirectAcquisition: { directAcquisition: daRecord({ sourceSystem: 'elicitatie_da', uniqueCode: 'DA37709621' }) } }),
+      ProcurementDaLookup: () => {
+        enabled = false
+        throw unavailable('SERVICE_UNAVAILABLE')
+      },
+    })
+    await expect(resolveLegacyLink('16957145')).resolves.toEqual({ kind: 'legacy' })
+  })
+
+  it('a legacy link whose lookup is refused while the release stays on is a failed read', async () => {
+    answer({
+      ProcurementDaRelease: release(true),
+      ProcurementDirectAcquisitionRecord: () => ({ procurementDirectAcquisition: { directAcquisition: daRecord({ sourceSystem: 'elicitatie_da', uniqueCode: 'DA37709621' }) } }),
+      ProcurementDaLookup: () => {
+        throw unavailable('SERVICE_UNAVAILABLE')
+      },
+    })
+    await expect(resolveLegacyLink('16957145')).resolves.toEqual({ kind: 'failed' })
+  })
+
+  it('a busy release, still on, stays a failed read', async () => {
+    answer({
+      ProcurementDaRelease: release(true),
+      ProcurementDaPurchase: () => {
+        throw unavailable('SERVICE_UNAVAILABLE')
+      },
+    })
+    await expect(fetchPurchaseForPage(RELEASE_ID)).rejects.toBeInstanceOf(GraphQLRequestError)
+  })
+
+  it('a legacy link whose release purchase is switched off mid-way keeps its legacy page', async () => {
+    let enabled = true
+    legacy.fetchDirectPurchase.mockResolvedValue({ id: '16957145' })
+    answer({
+      ProcurementDaRelease: () => release(enabled)(),
+      ProcurementDirectAcquisitionRecord: () => ({ procurementDirectAcquisition: { directAcquisition: daRecord({ sourceSystem: 'elicitatie_da', uniqueCode: 'DA37709621' }) } }),
+      ProcurementDaLookup: () => ({ procurementDaPurchases: { total: 1, items: [{ purchaseId: RELEASE_ID }] } }),
+      ProcurementDaPurchase: () => {
+        enabled = false
+        throw unavailable('SERVICE_UNAVAILABLE')
+      },
+    })
+    await expect(fetchPurchaseForPage('16957145')).resolves.toEqual({ id: '16957145' })
   })
 
   it('a release id the release does not have is no purchase', async () => {
