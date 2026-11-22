@@ -383,6 +383,20 @@ function drawFrame(
 }
 
 /**
+ * How far past its edge a field starts so its cells sit on the lattice.
+ *
+ * The lattice is counted from the frame's left rule (`TwoLayerLattice`). Where
+ * the field shows, the frame is centred: that rule is half the hero's width
+ * less 576px from the hero's edge, and 576 is a whole number of cells. So the
+ * remainder of the half width over one cell is how far the edge is from the
+ * lattice, and the field starts that much short of a whole cell outside it.
+ * `cqw` is the width of the container the landing wraps both fields in.
+ */
+function latticeOffset(cell: FieldCell): string {
+  return `calc(mod(50cqw, ${cell}px) - ${cell}px)`
+}
+
+/**
  * One margin field — both the square band and the tail — on one canvas.
  *
  * They used to be two elements so that a stylesheet could reach each layer on
@@ -455,7 +469,7 @@ export function PixelFieldCanvas({
       ref={ref}
       aria-hidden="true"
       data-field-canvas=""
-      style={{ width: `${columns * cell}px`, height: `${rows * cell}px` }}
+      style={{ width: `${columns * cell}px`, height: `${rows * cell}px`, [edge]: latticeOffset(cell) }}
       className={cn('pointer-events-none absolute', className)}
     />
   )

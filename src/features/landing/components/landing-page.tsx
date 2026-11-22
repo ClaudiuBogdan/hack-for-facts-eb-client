@@ -204,12 +204,16 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
             module the minor lattice is drawn on, so it reads as one system
             rather than a texture laid over one.
 
+            The lattice is counted from the frame, so the field
+            is too: this box is the container whose width each canvas reads to
+            find the same lines (`PixelFieldCanvas`).
+
             Shown only from 1800px up; why 1800, and how script asks the same
             question without measuring, is in `lib/margin-field.ts`. Change the
             class and that module together (a test holds them equal). */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 hidden min-[1800px]:block"
+          className="@container pointer-events-none absolute inset-0 hidden min-[1800px]:block"
         >
           {/* Clipped to 1.45x the margin beside the 1152px frame, so the tail
               carries a little past the frame while the squares stay in the
@@ -222,13 +226,13 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
             className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2*1.45)] overflow-hidden"
             style={FIELD_MASK.left}
           >
-            <PixelFieldCanvas edge="left" cell={fieldCell} className="left-0 top-0" />
+            <PixelFieldCanvas edge="left" cell={fieldCell} className="top-0" />
           </div>
           <div
             className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2*1.45)] overflow-hidden"
             style={FIELD_MASK.right}
           >
-            <PixelFieldCanvas edge="right" cell={fieldCell} className="right-0 top-0" />
+            <PixelFieldCanvas edge="right" cell={fieldCell} className="top-0" />
           </div>
         </div>
         <RuledFrame marker="hero" className="py-12 sm:py-20 lg:py-24">

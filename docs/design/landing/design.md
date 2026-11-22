@@ -277,6 +277,29 @@ The second title line is now short enough for a flat 2.75rem on every phone
 longer line needed is gone. The subtitle is balanced so a phone breaks it after
 „oficiale," and not before a lone last word.
 
+## Hero lattice aligned to the frame — 22 November 2026
+
+The owner asked for the background grid to line up with the frame's two side
+rules. It was counted from the window's left edge while the frame is centred,
+so the nearest grid line sat a few pixels beside each rule (5px at 1440) and
+the gap changed with the window's width.
+
+1. **Counted from the frame's left rule.** A major line lies on the left rule
+   at every width.
+2. **Major module 144px, not 120px.** The frame is 1152px: eight cells of 144,
+   so the right rule closes a cell. The minor module stays 24px.
+3. **Same line weight.** The lines fill whole pixels now, so their opacity was
+   halved to keep the look.
+4. **The margin squares follow.** The pixel field (1800px and wider) is offset
+   onto the same lines.
+5. **Every page head that draws the lattice changes with it** (procurement,
+   companies, NGOs, justice, national budget, statistics, public enterprises):
+   one component, one grid.
+
+Not done: the horizontal lines are still counted from the top of the hero. At
+desktop sizes they now fall above the headline (144px) and under it (288px)
+rather than through it, which follows from the 144px module, not from a rule.
+
 ## Follow-ups
 
 - A real `/despre` page, and the band link back once it exists.
