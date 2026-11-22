@@ -1,7 +1,8 @@
 # DEV-CRAWL-001: Crawlers saturate the Chronos dev ClickHouse through the dev client
 
-**Status:** open. The noindex switch and the UA log line are on in `chronos-dev`. The log line is to be removed
-once the caller is named.
+**Status:** closed 2026-11-22. The owner put Cloudflare Access in front of the dev client and the dev API, and
+the crawler load stopped. This breaks the browser's API calls on dev and client CI's integration job; see
+[Closed](#closed-2026-11-22-cloudflare-access). The noindex switch and the UA log line stay on in `chronos-dev`.
 
 ## Summary
 
@@ -63,10 +64,46 @@ the first ten minutes):
   it: a person, a browser another session drives, or a crawler. Before proposing a block, check that no session of ours runs Chrome 155 on Linux against
   dev.
 
-## Follow-ups
+## Second sample (2026-11-22)
 
-- [ ] Measure again on 2026-11-21 around 12:00Z, well past `robots.txt`'s 4 h Cloudflare cache. If this agent
-      still makes most of the requests and has not asked for `/robots.txt`, propose a block to the owner (a
-      Cloudflare rule is an owner/account action).
-- [ ] Name the caller from the UA log, then remove `REQUEST_UA_LOG` from the chronos-dev ConfigMap and record the
-      removal here.
+The UA log over the client pods' first ~10 h, to 08:30Z, with kube-probe left out:
+
+| Agent | Requests, hour to 08:30Z | Over ~10 h |
+| --- | --- | --- |
+| The Chrome/155 X11 string above | 4422 (69%) | 35,223: 32,237 pages, 2,986 assets |
+| `meta-externalagent/1.1` (18 strings, Chrome 144–145 shells) | 1545 (24%) | 16,030 |
+| `Bytespider` | 102 (1.6%) | 797 |
+| Everyone else | 371 | — |
+
+No `/robots.txt` request from these three reached the origin. A Cloudflare cache hit leaves no log line, so this
+does not prove they never asked. The Chrome/155 client's most-requested pages were `/procurement/contracts` (7002),
+`/cookies` (6959), `/procurement/direct-acquisitions` (6956) and `/procurement/analytics` (5612).
+
+Over the hour to 08:30Z the two dev API pods sent the shared ClickHouse 50,990 queries as user `readonly`
+(~850 a minute), with no errors. In the 30 min to 08:31Z, root counted 22,193 queries:
+
+- 12,081 on `proto.facts_da_v2_b16` (2,622 s in total);
+- 9,986 on `proto.facts_contracts_v2_b16` (438 s).
+
+## Closed (2026-11-22): Cloudflare Access
+
+- **The decision:** the owner first chose to block the three agents in the app. A `BLOCK_CRAWLER_UA` crawl-guard
+  switch was built and reviewed, but never pushed. The owner then put Cloudflare Access in front of both
+  `dev-chronos.transparenta.eu` and `dev-chronos-api.transparenta.eu`, and the app block was dropped.
+- **The evidence the load stopped:**
+  - Both hosts answer 302 to the devostack Access login, checked around 09:00Z.
+  - Dev ClickHouse `readonly` queries went from ~3,900 per 5 min to none after about 08:48Z.
+  - Over the ten minutes to about 09:05Z, the client pods logged 4 requests besides kube-probe, all from one
+    browser that had passed Access.
+- **Known breakage, which the owner leaves in place for now (no proxy, credentials change or token):**
+  - **Browser API calls on dev:** the dev client calls `dev-chronos-api` from the browser (`VITE_API_USE_PROXY`
+    is `"false"`). The CORS preflight (OPTIONS, `Origin: https://dev-chronos.transparenta.eu`) to `/api/v1/graphql`
+    gets a 403 with no `Access-Control-Allow-Origin`, checked around 09:15Z. So every read after the first page
+    fails for everyone, people who passed Access included: filters, paging, search and the disclosure status poll.
+    The server-rendered first page still loads, because SSR reads the API inside the cluster (`INTERNAL_API_URL`).
+  - **Client CI:** the integration job (`.github/workflows/ci.yml`) reads the live dev API from GitHub's runners.
+    It will get the 302, so its next run on a push to `dev` is expected to fail. No push to `dev` while this
+    stands, unless root asks.
+  - **Other outside readers:** anything else that reads the dev API from outside the cluster is cut off too, such
+    as other sessions' live checks.
+- **Left as they are:** `ROBOTS_DISALLOW_ALL` and `REQUEST_UA_LOG`. Removing the UA log line is the owner's call.
