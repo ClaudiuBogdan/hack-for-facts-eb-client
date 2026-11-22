@@ -159,12 +159,16 @@ export const Route = createFileRoute('/api/v1/graphql')({
         if (isStaleDisclosure(text)) {
           return transportErrorResponse(409, 'STALE_DISCLOSURE', 'GraphQL answer under an older supplier-privacy publication than one already seen.')
         }
+        // The API's own caching word travels with its answer: it marks one that names a DA supplier `no-store`
+        // (PROC-VDWQ), which no cache may then keep.
+        const cacheControl = response.headers.get('cache-control')
         return new Response(text, {
           status: response.status,
           statusText: response.statusText,
           headers: {
             'Content-Type':
               response.headers.get('content-type') ?? 'application/json',
+            ...(cacheControl ? { 'Cache-Control': cacheControl } : {}),
           },
         })
       },
