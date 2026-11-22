@@ -9,7 +9,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import type { ProcurementBuyerGrain } from '@/schemas/procurement-buyer'
-import { perResident, supplierName, type BuyerProfile, type BuyerRecords } from '../../lib/buyer-model'
+import { daSupplierName, perResident, type BuyerProfile, type BuyerRecords } from '../../lib/buyer-model'
 import {
   allCategoriesText,
   balanceLede,
@@ -172,7 +172,7 @@ export function BuyerWhoBand({ profile, index }: { readonly profile: BuyerProfil
             rows={matrix}
             year={periodYear(profile.period)}
             kind="supplier"
-            nameOf={(cui) => supplierName(profile, cui)}
+            nameOf={(cui) => daSupplierName(profile, cui)}
             caption={t`Achiziții directe de la fiecare firmă, pe ani, lei`}
           />
         </div>

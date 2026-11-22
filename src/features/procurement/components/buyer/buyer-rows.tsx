@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
-import { supplierName, type BuyerProfile, type SupplierRanking } from '../../lib/buyer-model'
+import { daRowName, supplierName, type BuyerProfile, type SupplierRanking } from '../../lib/buyer-model'
 import type { HomeGrain, Ranking } from '../../lib/home-model'
 import { PartyRows } from '../home/home-rows'
 import { periodText } from '../../lib/profile-period-text'
@@ -34,7 +34,8 @@ export function SupplierRows({
   }
   const named: Ranking = {
     rankedBy: ranking.rankedBy,
-    rows: ranking.rows.map((row) => ({ key: row.cui, label: supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
+    // DA-009: a direct-purchase supplier is named by the API's gated name alone.
+    rows: ranking.rows.map((row) => ({ key: row.cui, label: grain === 'direct' ? daRowName(row) : supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
   }
   return <PartyRows className={className} ranking={named} grain={grain} kind="supplier" year={periodYear(profile.period)} limit={8} />
 }

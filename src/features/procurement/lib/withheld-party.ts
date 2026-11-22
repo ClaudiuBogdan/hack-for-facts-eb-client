@@ -70,6 +70,21 @@ export function scrubDaSupplierBucket<B extends { readonly key: string | null; r
   return { ...bucket, key: `unnamed-${index}` }
 }
 
+/**
+ * A company supplier bucket's name (DA-009, PROC-B51G): the API's gated
+ * `displayName` and nothing else. No other lookup names a DA supplier bucket:
+ * the registry's own labels don't apply the DA name rule. A company whose name
+ * the API doesn't serve (its code has no public registry name) is shown by its
+ * code, said as missing from the registry, never as private (procurement-prod,
+ * 22 November 2026).
+ */
+export function daCompanyBucketName(bucket: { readonly key: string | null; readonly displayName?: string | null }): string {
+  const name = bucket.displayName?.trim()
+  if (name) return name
+  const code = bucket.key ?? ''
+  return t`CUI ${code} (denumire indisponibilă în registrul firmelor)`
+}
+
 /** A direct-acquisition supplier bucket the page does not name: the group, or one supplier the API did not serve as a company. */
 export function unnamedSupplierLabel(key: string | null): string {
   return isNaturalPersonKey(key) ? naturalPersonsLabel() : t`Furnizor nenumit`

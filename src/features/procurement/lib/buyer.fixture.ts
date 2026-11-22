@@ -59,11 +59,11 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
     directSuppliers: {
       rankedBy: 'value',
       rows: [
-        { cui: '30153499', count: 14, value: 4_590_000, share: 0.126, displayKind: 'company' },
-        { cui: '17046193', count: 8, value: 3_900_000, share: 0.107, displayKind: 'company' },
-        { cui: '9813902', count: 6, value: 2_960_000, share: 0.081, displayKind: 'company' },
-        { cui: '15712457', count: 4, value: 2_430_000, share: 0.067, displayKind: 'company' },
-        { cui: '35873865', count: 3, value: 2_030_000, share: 0.056, displayKind: 'company' },
+        { cui: '30153499', count: 14, value: 4_590_000, share: 0.126, displayKind: 'company', displayName: 'Upper Level SRL' },
+        { cui: '17046193', count: 8, value: 3_900_000, share: 0.107, displayKind: 'company', displayName: 'East Point Energy S.R.L.' },
+        { cui: '9813902', count: 6, value: 2_960_000, share: 0.081, displayKind: 'company', displayName: 'Costalex Construct SRL' },
+        { cui: '15712457', count: 4, value: 2_430_000, share: 0.067, displayKind: 'company', displayName: 'Inndesign Mobilier SRL' },
+        { cui: '35873865', count: 3, value: 2_030_000, share: 0.056, displayKind: 'company', displayName: 'Fast Ecotrans SRL' },
       ],
     },
     awardSuppliers: {
@@ -83,6 +83,11 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
     supplierPlaces: true,
     procedures: [{ key: 'Procedura simplificata', count: 12 }],
     proceduresUnlisted: 0,
+    // DA-009: the years' sellers by the gated names on their own buckets; the ranking rows carry theirs.
+    daNames: new Map([
+      ['9813902', 'Costalex Construct SRL'],
+      ['17046193', 'East Point Energy S.R.L.'],
+    ]),
     names: new Map([
       ['30153499', 'Upper Level SRL'],
       ['17046193', 'East Point Energy S.R.L.'],

@@ -60,16 +60,15 @@ export function buyerFilterLabel(query: Pick<Query, 'tip' | 'filters'>, key: str
 
 /**
  * The supplier the address gives, as its chip and headline name it. For
- * direct purchases (D6) only from its own direct purchases served as a
- * company (`names.daSuppliers`), never from the registry's names — which a
- * buyer of the same CUI, or a contracts read kept as a placeholder, could carry.
+ * direct purchases never by a name (DA-009: no read serves one supplier's
+ * gated name, and the registry's would bypass it): by its code when its own
+ * direct purchases serve it as a company (`names.daSuppliers`), else not at all.
  */
 export function supplierFilterLabel(query: Pick<Query, 'tip'>, key: string, namer: Namer): string {
   if (query.tip !== 'directe') return keyLabel('furnizor', 'cui', key, namer)
   if (isNaturalPersonKey(key)) return naturalPersonsLabel()
-  const name = namer.names?.daSuppliers.get(key)
-  // D6 fails closed (root, 19 November 2026): a supplier the API does not name as a company is not shown by the address's code either.
-  return name ? displayCompanyName(name) : t`Furnizor`
+  // D6 fails closed (root, 19 November 2026): a supplier the API does not serve as a company is not shown by the address's code either.
+  return namer.names?.daSuppliers.has(key) ? t`Firma cu CUI ${key}` : t`Furnizor`
 }
 
 /** What a key stands for, as a reader names it. */

@@ -3648,11 +3648,18 @@ portal list names any more and leaves it out of totals with the reason `removed_
 `listedNow` alone is information the page does not label (procurement-prod): a purchase off its day list but not
 marked removed is still counted, and nothing more is said about it.
 
-**Open (DA-009): DA ranking names from the registry.** The front door, the institution page and analytics name a DA
-ranking's company buckets through `organizationLabels`, the general identity lookup. The DA API names a supplier
+**DA-009: DA ranking names from the registry (fixed in the client, 22 November 2026).** The front door, the
+institution page and analytics named a DA ranking's company buckets through `organizationLabels`, the general
+identity lookup. The DA API names a supplier
 only where `supplier_name_public` holds (`party_public_names`). `organizationLabels` doesn't apply that flag, so a
 name the DA API withholds while the code stays public could still be shown. Root's ruling (22 November 2026):
 the gap is accepted while D6 is off everywhere, where no bucket is a company. Before D6 goes on anywhere, the API
 must serve the D6-gated name on DA breakdown buckets, and the client must use it instead of `organizationLabels`.
-That is a hard gate, on procurement-da-api's D6-enable checklist.
+That is a hard gate, on procurement-da-api's D6-enable checklist (PROC-B51G).
+
+The API serves the gated name as `displayName` on `ProcurementBreakdownBucket` (server b468474b, on Chronos dev).
+Every DA supplier ranking names a company from it alone: the front door, the institution and enterprise pages
+(`daNames`, `daSupplierName`), analytics and the entity slices. No DA supplier code is looked up in the spine any
+more. A disclosed code without a name (343 in prod) reads „CUI … (denumire indisponibilă în registrul firmelor)",
+never worded as private.
 

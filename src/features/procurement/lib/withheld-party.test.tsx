@@ -7,6 +7,7 @@ import { daSupplierOf } from '../api/procurement-home-api'
 import { daRecord } from './direct-purchase.fixture'
 import { partyLabel } from './party-links'
 import { nameKeys } from '../api/procurement-analytics-api'
+import { rowsOf } from '../components/analytics/analytics-view'
 import { PartyRows } from '../components/home/home-rows'
 import { keyLabel } from './analytics-text'
 import type { Ranking } from './home-model'
@@ -79,7 +80,23 @@ describe('analytics', () => {
     expect(keyLabel('furnizor', 'cui', 'natural_person', namer)).toBe('Persoane fizice')
   })
 
-  it('the names read asks only for companies the API names, never the group or an unclassified supplier', () => {
+  it('a direct-purchase company row is labelled by its bucket’s gated name alone, even when the spine names the same CUI (DA-009)', () => {
+    const spine = { names: { orgs: new Map([['14837428', 'SPINE NAME'], ['4305857', 'SPINE NAME 2']]), cpv: new Map(), daSuppliers: new Map() } } as never
+    const ranking = {
+      dimension: 'supplier',
+      rankedBy: 'count',
+      withheld: null,
+      buckets: [
+        { key: '14837428', kind: 'top', displayKind: 'company', displayName: 'FLORARIA IRIS SRL', count: 3, valued: null, money: null, share: null },
+        { key: '4305857', kind: 'top', displayKind: 'company', displayName: null, count: 2, valued: null, money: null, share: null },
+      ],
+    } as never
+    const { rows } = rowsOf({ tip: 'directe', filters: {}, dupa: { axis: 'furnizor', level: 'cui' }, masura: 'numar' } as never, ranking, spine)
+    expect(rows.map((row) => row.label)).toEqual(['FLORARIA IRIS SRL', 'CUI 4305857 (denumire indisponibilă în registrul firmelor)'])
+    expect(JSON.stringify(rows)).not.toContain('SPINE NAME')
+  })
+
+  it('the names read asks for no direct-purchase supplier: a company’s bucket carries its gated name (DA-009)', () => {
     const keys = nameKeys({ tip: 'directe', filters: {} } as never, [
       {
         dimension: 'supplier',
@@ -90,7 +107,7 @@ describe('analytics', () => {
         ],
       } as never,
     ])
-    expect(keys.orgs).toEqual(['14837428'])
+    expect(keys.orgs).toEqual([])
   })
 
   it('a direct-purchase supplier filter is named only by its own direct purchases, under a known publication', () => {
@@ -120,11 +137,11 @@ describe('analytics', () => {
 })
 
 describe('a direct-purchase supplier the address names (D6 fails closed, root)', () => {
-  it('is shown by its name only when the API names it a company, never by the address\'s code', () => {
+  it('is shown by its code only when the API serves it as a company, and never by a name (DA-009)', () => {
     const namer = (daSuppliers: Map<string, string>) => ({ names: { orgs: new Map([['14837428', 'REGISTRY SRL']]), cpv: new Map(), daSuppliers }, divisions: new Map(), counties: new Map(), localities: null }) as never
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map()))).toBe('Furnizor')
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map()))).not.toContain('14837428')
-    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', 'FLORARIA IRIS SRL']]))).toUpperCase()).toContain('FLORARIA')
+    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', '14837428']])))).toBe('Firma cu CUI 14837428')
   })
 })
 
@@ -145,10 +162,17 @@ describe('mapPartyBucket (entity and company slices)', () => {
     expect(mapPartyBucket(bucket('14837428', null) as never, 'contract', 'supplier').supplier).toMatchObject({ cui: '14837428' })
   })
 
-  it('a company keeps its CUI and name', () => {
-    expect(mapPartyBucket(bucket('14837428') as never, 'direct_acquisition', 'supplier', new Map([['supplier:14837428', 'FLORARIA IRIS SRL']])).supplier).toEqual({
+  it('a company keeps its CUI and is named by its bucket’s gated name alone, never the spine (DA-009)', () => {
+    const spine = new Map([['supplier:14837428', 'SPINE NAME']])
+    expect(mapPartyBucket({ ...bucket('14837428'), displayName: 'FLORARIA IRIS SRL' } as never, 'direct_acquisition', 'supplier', spine).supplier).toEqual({
       cui: '14837428',
       name: 'FLORARIA IRIS SRL',
+      displayName: null,
+    })
+    // A disclosed code with no public registry name: its code, said as missing from the registry, never private.
+    expect(mapPartyBucket(bucket('14837428') as never, 'direct_acquisition', 'supplier', spine).supplier).toEqual({
+      cui: '14837428',
+      name: 'CUI 14837428 (denumire indisponibilă în registrul firmelor)',
       displayName: null,
     })
   })
@@ -191,9 +215,9 @@ describe('the supplier the analytics address gives, under D6', () => {
   const namer = (daSuppliers: ReadonlyMap<string, string>) =>
     ({ names: { orgs: new Map([['14837428', 'REGISTRY NAME SRL']]), cpv: new Map(), daSuppliers }, divisions: new Map(), counties: new Map(), localities: null }) as const
 
-  it('for direct purchases is named only by its own direct purchases, never by the registry (a buyer of the same CUI, a contracts placeholder)', () => {
+  it('for direct purchases is never named, by the registry or otherwise: a company by its code (DA-009)', () => {
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map())).toUpperCase()).not.toContain('REGISTRY')
-    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', 'FIRMA DA SRL']])))).toContain('Firma DA')
+    expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', '14837428']])))).toBe('Firma cu CUI 14837428')
     expect(supplierFilterLabel({ tip: 'contracte' }, '14837428', namer(new Map())).toUpperCase()).toContain('REGISTRY')
   })
 })

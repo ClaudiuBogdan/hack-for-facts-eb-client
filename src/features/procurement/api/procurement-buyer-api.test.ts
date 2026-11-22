@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { periodOf, type Cutoff } from '../lib/profile-period'
+import { daRowName, daSupplierName } from '../lib/buyer-model'
 
 const graphqlQuery = vi.fn()
 // The switches as reads: legacy (release off, D6 off) unless a test says otherwise.
@@ -57,9 +58,10 @@ function otopeni(): Record<string, unknown> {
     directYearsCount: series({ '2019': '270', '2025': '293', '2026': '46' }),
     directPartValue: series({ '2026-01': '1000000', '2026-02': '1000000', '2026-03': '600000' }),
     directPartCount: series({ '2026-01': '20', '2026-02': '20', '2026-03': '6' }),
-    directSuppliers: [{ rankedBy: 'value', buckets: [top('30153499', '14', '4590000', '0.126'), top('00041200627', '2', '100000', '0.003'), { key: null, kind: 'other', recordCount: '240', valueSum: '15740000', shareOfScope: '0.43' }] }],
+    // DA-009: a company's name comes on its bucket, gated by the API; 00041200627 has none (no registry name).
+    directSuppliers: [{ rankedBy: 'value', buckets: [{ ...top('30153499', '14', '4590000', '0.126'), displayName: 'Upper Level SRL' }, top('00041200627', '2', '100000', '0.003'), { key: null, kind: 'other', recordCount: '240', valueSum: '15740000', shareOfScope: '0.43' }] }],
     directCounties: [{ rankedBy: 'value', buckets: [top('IF', '97', '18500000', '0.51'), top('B', '137', '12380000', '0.34')] }],
-    spanSuppliers: [{ rankedBy: 'value', buckets: [top('9813902', '40', '21600000')] }],
+    spanSuppliers: [{ rankedBy: 'value', buckets: [{ ...top('9813902', '40', '21600000'), displayName: 'Costalex Construct SRL' }] }],
     entity: {
       annualPopulation: { year: 2025, population: '22660' },
       organization: { name: 'ORASUL OTOPENI' },
@@ -194,16 +196,30 @@ describe('fetchProcurementBuyer', () => {
     expect(profile.cutoff).toEqual(CUTOFF)
     expect(profile.directYears.find((point) => point.year === 2026)).toEqual({ year: 2026, value: 2_000_000, count: 40 })
     expect(profile.partYear).toBe(2026)
-    // „other" is not a firm; a firm the spine cannot name keeps its CUI.
+    // „other" is not a firm. DA-009: a direct-purchase firm is named by its bucket's gated name alone, never the spine.
     expect(profile.directSuppliers?.rows.map((row) => row.cui)).toEqual(['30153499', '00041200627'])
-    expect(profile.names.get('30153499')).toBe('Upper Level SRL')
-    expect(profile.names.has('00041200627')).toBe(false)
+    expect(profile.directSuppliers?.rows.map(daRowName)).toEqual(['Upper Level SRL', 'CUI 00041200627 (denumire indisponibilă în registrul firmelor)'])
+    // The years' sellers by their own ranking's buckets; one ranking never names another's row.
+    expect(profile.daNames.get('9813902')).toBe('Costalex Construct SRL')
+    expect(daSupplierName(profile, '9813902')).toBe('Costalex Construct SRL')
+    expect(profile.daNames.has('30153499')).toBe(false)
+    expect(profile.names.has('30153499')).toBe(false)
     expect(profile.supplierYears[0]).toMatchObject({ cui: '9813902', total: 10_960_000 })
     expect(profile.countyShare?.share).toBeCloseTo(36_404_736.58 / 560_000_000, 6)
 
     const extrasVariables = callOf('ProcurementBuyerExtras')?.[1] ?? {}
-    expect(extrasVariables.cuis).toEqual(['4364446', '30153499', '00041200627', '9813902'])
+    // Only contract suppliers are looked up in the spine.
+    for (const daSupplier of ['30153499', '00041200627', '9813902']) expect(extrasVariables.cuis).not.toContain(daSupplier)
     expect(extrasVariables.county).toEqual({ buyerCounty: 'IF', year: 2025, grain: 'direct_acquisition' })
+  })
+
+  it('a firm in both rankings is named by each ranking’s own bucket: a name the period’s bucket does not carry is not borrowed (DA-009)', async () => {
+    const raw = otopeni()
+    raw.directSuppliers = [{ rankedBy: 'value', buckets: [{ ...top('9813902', '6', '2960000', '0.081'), displayName: null }] }]
+    answer(raw, () => Promise.resolve(extras()))
+    const profile = await fetchProcurementBuyer('4364446', 2025)
+    expect(profile.directSuppliers?.rows.map(daRowName)).toEqual(['CUI 9813902 (denumire indisponibilă în registrul firmelor)'])
+    expect(daSupplierName(profile, '9813902')).toBe('Costalex Construct SRL')
   })
 
   it('asks the budget platform only for a CUI it can hold, and falls back to the county on the records', async () => {
@@ -239,7 +255,7 @@ describe('fetchProcurementBuyer', () => {
     // Served, never kept: the next visit reads the identity again.
     expect(profile).toMatchObject({ partial: true, namesUnread: false, county: null })
     expect(profile.identity).toMatchObject({ name: 'Orasul Otopeni', entityType: null, hasBudget: false })
-    expect(profile.names.get('30153499')).toBe('Upper Level SRL')
+    expect(profile.directSuppliers?.rows[0]?.displayName).toBe('Upper Level SRL')
   })
 
   it('reads the year in progress through the cutoff month, compared with nothing, its county likewise', async () => {

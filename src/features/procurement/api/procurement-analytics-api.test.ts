@@ -210,37 +210,45 @@ describe('D6 on direct purchases, whatever the release flag', () => {
     expect(records.rows[0]?.supplier).toEqual({ cui: '9446547', name: 'POPESCU ION' })
   })
 
-  it('a supplier the address names is named by its own direct purchases, only as a company', async () => {
+  it('a supplier the address names is known as a company by its own latest record, and never named (DA-009)', async () => {
+    const latest = (supplier: Record<string, unknown> | null) => ({ items: supplier ? [{ supplier }] : [], meta: { disclosureKey: 'off' } })
     graphql.query.mockResolvedValueOnce({
       // Each answer names the D6 state it was served under (API doc 10); 'v1' plans D6 off.
-      da0: { meta: { disclosureKey: 'off' }, items: [{ supplier: party('14837428', 'FLORARIA IRIS', 'company') }] },
-      da1: { meta: { disclosureKey: 'off' }, items: [{ supplier: party(null, null, 'natural_person') }] },
-      da2: { meta: { disclosureKey: 'off' }, items: [] },
+      da0: latest({ cui: '14837428', displayKind: 'company' }),
+      da1: latest({ cui: null, displayKind: 'natural_person' }),
+      da2: latest(null),
+      // Another code's record, or one with no kind, says nothing about this one.
+      da3: latest({ cui: '4305858', displayKind: 'company' }),
     })
-    const names = await readNames([], [], new AbortController().signal, ['14837428', '9446547', '1234'], 'v1')
-    expect([...names.daSuppliers.entries()]).toEqual([['14837428', 'FLORARIA IRIS']])
+    const names = await readNames([], [], new AbortController().signal, ['14837428', '9446547', '1234', '4305857'], 'v1')
+    expect([...names.daSuppliers.entries()]).toEqual([['14837428', '14837428']])
     expect(release.fresh).toBe(1)
     // Kept apart from the registry's names: a buyer of the same CUI never names the supplier.
     expect(names.orgs.size).toBe(0)
     const [query, variables] = graphql.query.mock.calls[graphql.query.mock.calls.length - 1] as [string, Record<string, unknown>]
     expect(query).not.toContain('organizationLabels(cuis: $cuis) @include(if: true)')
-    expect(variables).toMatchObject({ withOrgs: false, da0: '14837428', da1: '9446547', da2: '1234' })
+    expect(variables).toMatchObject({ withOrgs: false, da0: '14837428', da1: '9446547', da2: '1234', da3: '4305857' })
+    // Its latest record's kind alone: no name is asked (a supplier breakdown over a supplier scope is refused by the API).
+    expect(query).toContain('procurementRecords(scope: { grain: direct_acquisition, supplierCui: $da0 }, sort: date_desc, page: 1, pageSize: 1) { items { supplier { cui displayKind } }')
+    expect(query).not.toContain('procurementDirectAcquisitions')
+    expect(query).not.toMatch(/da0:[^\n]*name/u)
   })
 })
 
 describe('D6: a direct-purchase supplier\'s name is kept only under the publication it was read in', () => {
-  const supplier = { cui: '14837428', name: 'FLORARIA IRIS', displayName: 'FLORARIA IRIS', displayKind: 'company' }
-  const answer = { da0: { meta: { disclosureKey: 'off' }, items: [{ supplier }] } }
+  const supplier = { cui: '14837428', displayKind: 'company' }
+  const served = (disclosureKey?: string) => ({ items: [{ supplier }], ...(disclosureKey === undefined ? {} : { meta: { disclosureKey } }) })
+  const answer = { da0: served('off') }
 
   it('drops a name whose answer was served under another publication than planned, even when the fresh status agrees', async () => {
     const planned = 'on:t1:d6:2026-11-18T03:10:00.123456Z'
     release.version = planned
-    graphql.query.mockResolvedValueOnce({ da0: { meta: { disclosureKey: '2026-11-18T03:10:00.123456Z' }, items: [{ supplier }] } })
+    graphql.query.mockResolvedValueOnce({ da0: served('2026-11-18T03:10:00.123456Z') })
     expect([...(await readNames([], [], new AbortController().signal, ['14837428'], planned)).daSuppliers.keys()]).toEqual(['14837428'])
-    graphql.query.mockResolvedValueOnce({ da0: { items: [{ supplier }] } })
+    graphql.query.mockResolvedValueOnce({ da0: served() })
     expect((await readNames([], [], new AbortController().signal, ['14837428'], planned)).daSuppliers.size).toBe(0)
     // Served under a newer publication: dropped (and that publication is now the newest seen).
-    graphql.query.mockResolvedValueOnce({ da0: { meta: { disclosureKey: '2026-11-19T03:10:00.123456Z' }, items: [{ supplier }] } })
+    graphql.query.mockResolvedValueOnce({ da0: served('2026-11-19T03:10:00.123456Z') })
     expect((await readNames([], [], new AbortController().signal, ['14837428'], planned)).daSuppliers.size).toBe(0)
   })
 

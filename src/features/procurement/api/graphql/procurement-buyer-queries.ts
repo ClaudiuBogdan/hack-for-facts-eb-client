@@ -29,7 +29,7 @@ export const buyerBreakdownSchema = z.array(
     rankedBy: z.string().nullable(),
     buckets: z
       .array(
-        z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal.optional(), valueSum: decimal, shareOfScope: decimal }),
+        z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), displayName: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal.optional(), valueSum: decimal, shareOfScope: decimal }),
       )
       .nullable(),
   }),
@@ -60,7 +60,7 @@ export type RawBuyerBreakdown = z.infer<typeof buyerBreakdownSchema>
 // Every block names the D6 state it was served under (`meta.disclosureKey`): the transport refuses an older one.
 const STATS = 'blocks { recordCount withValueCount valueAwardedSum meta { disclosureKey } }'
 const SERIES = 'points { bucket value } meta { disclosureKey }'
-const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope } meta { disclosureKey }'
+const BREAKDOWN = 'rankedBy buckets { key kind displayKind displayName recordCount withValueCount valueSum shareOfScope } meta { disclosureKey }'
 
 /**
  * Which of the profile's requests a read goes in. The API resolves one

@@ -127,7 +127,7 @@ function topBuckets(raw: RawBuyerBreakdown | undefined) {
 function supplierRanking(raw: RawBuyerBreakdown | undefined): SupplierRanking {
   return {
     rankedBy: raw?.[0]?.rankedBy === 'value' ? 'value' : 'count',
-    rows: topBuckets(raw).map((bucket) => ({ cui: bucket.key, count: bucket.recordCount ?? 0, value: bucket.valueSum, share: bucket.shareOfScope, displayKind: bucket.displayKind ?? null })),
+    rows: topBuckets(raw).map((bucket) => ({ cui: bucket.key, count: bucket.recordCount ?? 0, value: bucket.valueSum, share: bucket.shareOfScope, displayKind: bucket.displayKind ?? null, displayName: bucket.displayName ?? null })),
   }
 }
 
@@ -291,6 +291,13 @@ export function mapBuyerProfile(
         ? null
         : supplierRanking(breakdown('directSuppliers').map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null }))),
     awardSuppliers: supplierRanking(breakdown('awardSuppliers')),
+    // DA-009: the years' sellers are named by the gated name on their own buckets of that ranking; the period's ranking
+    // rows carry theirs. One ranking never names another's row: each is read on its own.
+    daNames: new Map(
+      topBuckets(breakdown('spanSuppliers')).flatMap((bucket) =>
+        isNamedDaSupplierBucket(bucket) && bucket.displayName?.trim() ? [[bucket.key, bucket.displayName.trim()] as const] : [],
+      ),
+    ),
     categories: { direct: tree('direct'), contract: tree('awards') },
     supplierCounties: counties,
     supplierPlaces: raw.directCounties !== undefined,
@@ -327,12 +334,13 @@ export function buyerExtrasFields(cui: string, period: Period, latest: number, s
 export function buyerKeysOf(raw: RawBuyerProfile): { readonly cuis: readonly string[]; readonly spanSuppliers: readonly string[]; readonly county: string | null } {
   // A read the switch state left out (D6 enforced, the release off) is absent, not malformed; one asked for parses strictly.
   const breakdown = (alias: string) => (raw[alias] === undefined ? [] : buyerBreakdownSchema.parse(raw[alias]))
-  // D6: only a direct-purchase supplier the API serves as a company has a name to look up and years of its own to read.
+  // D6: only a direct-purchase supplier the API serves as a company has years of its own to read. DA-009: none is
+  // looked up by name — its bucket carries the API's gated name; only contract suppliers are named by the spine.
   const spanSuppliers = topBuckets(breakdown('spanSuppliers')).filter(isNamedDaSupplierBucket).map((bucket) => bucket.key)
-  const listed = [...topBuckets(breakdown('directSuppliers')).filter(isNamedDaSupplierBucket), ...topBuckets(breakdown('awardSuppliers'))].map((bucket) => bucket.key)
+  const listed = topBuckets(breakdown('awardSuppliers')).map((bucket) => bucket.key)
   const territory = buyerEntitySchema.parse(raw.entity ?? null)?.territory ?? null
   return {
-    cuis: [...new Set([...listed, ...spanSuppliers])],
+    cuis: [...new Set(listed)],
     spanSuppliers,
     county: territory?.countyCode ?? topBuckets(breakdown('buyerCounty'))[0]?.key ?? null,
   }

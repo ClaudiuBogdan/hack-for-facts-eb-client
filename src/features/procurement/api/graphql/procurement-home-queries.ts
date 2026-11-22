@@ -24,6 +24,8 @@ export const homeBucketSchema = z.object({
   kind: z.string(),
   /** D6 on a supplier bucket: `company` names it; anything else does not. */
   displayKind: z.string().nullable().optional(),
+  /** DA-009 (PROC-B51G): a company supplier bucket's gated name — the only name shown for one. */
+  displayName: z.string().nullable().optional(),
   recordCount: decimal,
   valueSum: decimal,
   shareOfScope: decimal,
@@ -41,7 +43,7 @@ export const homeSeriesBlockSchema = z.object({
 
 // Every block names the D6 state it was served under (`meta.disclosureKey`): the transport refuses an older one.
 const STATS = 'recordCount withValueCount valueAwardedSum meta { disclosureKey }'
-const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount valueSum shareOfScope } valueWithheldAssociationSum meta { disclosureKey }'
+const BREAKDOWN = 'rankedBy buckets { key kind displayKind displayName recordCount valueSum shareOfScope } valueWithheldAssociationSum meta { disclosureKey }'
 const SERIES = 'points { bucket value } meta { disclosureKey }'
 
 // ───────────────────────────────────────────────── the national picture ──
