@@ -22,7 +22,7 @@ import {
   whereLede,
   yearsLede,
 } from '../../lib/buyer-text'
-import { categoryOfCode } from '../../lib/home-categories'
+import { categoryOfCode, type CategoryFigure } from '../../lib/home-categories'
 import { countText, monthText } from '../../lib/home-format'
 import { buyerCountySearch, buyerRecordsSearch } from '../../lib/home-links'
 import { DIRECT_COMPARABLE_FROM } from '../../lib/home-model'
@@ -68,13 +68,22 @@ function GrainToggle({ value, onChange }: { readonly value: ProcurementBuyerGrai
 
 // ───────────────────────────────────────────────────── what it buys ──
 
+/** The direct purchases by category, their own read: rows, on their way, or unavailable — never an empty list for a failed read. */
+export interface BuyerDirectCategories {
+  readonly data: readonly CategoryFigure[] | undefined
+  readonly isError: boolean
+  readonly retry: () => void
+}
+
 export function BuyerWhatBand({
   profile,
+  direct,
   index,
   choice,
   onChoice,
 }: {
   readonly profile: BuyerProfile
+  readonly direct: BuyerDirectCategories
   readonly index: string
   readonly choice: ProcurementBuyerGrain
   readonly onChoice: (choice: ProcurementBuyerGrain) => void
@@ -82,9 +91,10 @@ export function BuyerWhatBand({
   const { i18n } = useLingui()
   const [all, setAll] = useState(false)
   const grain = grainOf(choice)
-  const rows = profile.categories[grain]
-  const shown = all ? rows : rows.slice(0, CATEGORIES_SHOWN)
-  const lede = whatLede(rows, grain, periodText(profile.period), i18n)
+  // A failed read wins over rows kept from before it: a refresh that failed never shows an older answer, nor „none".
+  const rows = grain === 'contract' ? profile.categories.contract : direct.isError ? undefined : direct.data
+  const shown = rows ? (all ? rows : rows.slice(0, CATEGORIES_SHOWN)) : []
+  const lede = rows ? whatLede(rows, grain, periodText(profile.period), i18n) : null
   return (
     <HomeBand id="ce" labelledBy="buyer-what-title">
       <HubSectionHead
@@ -103,14 +113,23 @@ export function BuyerWhatBand({
         aside={<GrainToggle value={choice} onChange={onChoice} />}
       />
       <div className="mt-8" data-reveal>
-        {rows.length === 0 ? (
+        {!rows ? (
+          direct.isError ? (
+            <HubLoadError onRetry={direct.retry} />
+          ) : (
+            <HubPending rows={4} />
+          )
+        ) : rows.length === 0 && grain === 'direct' && (profile.direct.count ?? 0) > 0 ? (
+          // Purchases there are (the profile counts them): an empty breakdown is one not read, never „none".
+          <p className="border-y py-4 text-sm text-muted-foreground">{t`Categoriile achizițiilor nu s-au putut citi acum.`}</p>
+        ) : rows.length === 0 ? (
           <p className="border-y py-4 text-sm text-muted-foreground">
             {grain === 'direct' ? <Trans>Nicio achiziție directă în {periodText(profile.period)}.</Trans> : <Trans>Niciun contract atribuit în {periodText(profile.period)}.</Trans>}
           </p>
         ) : (
           <CategoryRows rows={shown} grain={grain} className={COLUMNS} />
         )}
-        {rows.length > CATEGORIES_SHOWN ? (
+        {rows && rows.length > CATEGORIES_SHOWN ? (
           <button
             type="button"
             onClick={() => setAll((value) => !value)}

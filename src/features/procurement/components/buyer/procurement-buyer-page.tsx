@@ -11,7 +11,7 @@ import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { cn } from '@/lib/utils'
 import type { ProcurementBuyerGrain, ProcurementBuyerSearch } from '@/schemas/procurement-buyer'
-import { useProcurementBuyer, useProcurementBuyerRecords } from '../../hooks/use-procurement-buyer'
+import { useProcurementBuyer, useProcurementBuyerDirectCategories, useProcurementBuyerRecords } from '../../hooks/use-procurement-buyer'
 import { hasAnyRecord, isEmptyYear, perResident, type BuyerProfile, type BuyerRecords } from '../../lib/buyer-model'
 import { changeText, countyShareLede, countyName } from '../../lib/buyer-text'
 import { contractsCount, directPurchasesCount, monthText, moneyText, percentText } from '../../lib/home-format'
@@ -245,6 +245,8 @@ function BuyerBody({
   const largestDefault: ProcurementBuyerGrain = (profile.awards.count ?? 0) > 0 ? 'contracte' : 'directe'
   const what = search.ce ?? whatDefault
   const largest = search.mari ?? largestDefault
+  // Read for the profile shown once its band shows them: the profile neither waits for them nor fails with them.
+  const directCategories = useProcurementBuyerDirectCategories(profile.identity.cui, profile.period, !empty && what === 'directe')
 
   const sections: HomeSection[] = empty
     ? hasContext
@@ -296,7 +298,13 @@ function BuyerBody({
           <EmptyYearBand profile={profile} />
         ) : (
           <>
-            <BuyerWhatBand profile={profile} index={index('ce')} choice={what} onChoice={(choice) => choose({ ce: choice === whatDefault ? undefined : choice })} />
+            <BuyerWhatBand
+              profile={profile}
+              direct={{ data: directCategories.data, isError: directCategories.isError, retry: () => void directCategories.refetch() }}
+              index={index('ce')}
+              choice={what}
+              onChoice={(choice) => choose({ ce: choice === whatDefault ? undefined : choice })}
+            />
             <BuyerWhoBand profile={profile} index={index('de-la-cine')} />
             {profile.supplierPlaces ? <BuyerWhereBand profile={profile} index={index('de-unde')} /> : null}
             <BuyerWhenBand profile={profile} index={index('cand')} />

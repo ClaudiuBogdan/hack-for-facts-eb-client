@@ -22,7 +22,7 @@ vi.mock('./procurement-cutoff', async (importOriginal) => {
   }
 })
 
-const { buyerProfileFields, fetchProcurementBuyer, fetchProcurementBuyerRecords } = await import('./procurement-buyer-api')
+const { buyerProfileFields, fetchProcurementBuyer, fetchProcurementBuyerDirectCategories, fetchProcurementBuyerRecords } = await import('./procurement-buyer-api')
 
 const CUTOFF: Cutoff = { direct: '2026-02', contract: '2026-02' }
 
@@ -176,11 +176,9 @@ describe('fetchProcurementBuyer', () => {
     expect(figures?.[1]).not.toHaveProperty('modifications')
     expect(figures?.[1]).not.toHaveProperty('directDivisions')
     expect(figures?.[0]).not.toContain('entity(')
-    expect(categories?.[1]).toHaveProperty('directDivisions')
-    expect(Object.keys(categories?.[1] ?? {}).sort()).toEqual(
-      ['Categories', 'Classes', 'Divisions', 'Groups'].flatMap((level) => [`awards${level}`, `direct${level}`]).sort(),
-    )
-    expect(categories?.[1]).not.toHaveProperty('direct')
+    // The direct purchases' CPV levels are their own read: the profile neither waits for them nor fails with them (owner, 23 November 2026).
+    expect(Object.keys(categories?.[1] ?? {}).sort()).toEqual(['awardsCategories', 'awardsClasses', 'awardsDivisions', 'awardsGroups'])
+    for (const call of graphqlQuery.mock.calls) expect(String(call[0])).not.toMatch(/\bdirect(Divisions|Groups|Classes|Categories)\b/)
   })
 
   it('names its firms and reads their years and the county once the keys land', async () => {
@@ -360,6 +358,68 @@ describe('fetchProcurementBuyer', () => {
     process.off('unhandledRejection', unhandled)
     release()
     expect(unhandled).not.toHaveBeenCalled()
+  })
+})
+
+describe('fetchProcurementBuyerDirectCategories', () => {
+  beforeEach(() => {
+    graphqlQuery.mockReset()
+  })
+
+  const levels = ['directDivisions', 'directGroups', 'directClasses', 'directCategories']
+  /** Every level answered, with no bucket: the API's confirmed none. */
+  const servedEmpty = (answerability = 'served') => Object.fromEntries(levels.map((alias) => [alias, [{ rankedBy: 'value', buckets: [], meta: { answerability, disclosureKey: 'k1' } }]]))
+
+  it('reads the four direct-purchase CPV levels for the profile’s own period, in a request of their own', async () => {
+    graphqlQuery.mockResolvedValue({
+      ...servedEmpty(),
+      directDivisions: [{ rankedBy: 'value', buckets: [{ key: '45000000', kind: 'top', recordCount: '13', valueSum: '8200000', withValueCount: '13', shareOfScope: '1' }], meta: { answerability: 'served', disclosureKey: 'k1' } }],
+    })
+    const rows = await fetchProcurementBuyerDirectCategories('4364446', { kind: 'year', year: 2025, from: '2025-01', through: null })
+    const [query, variables, options] = graphqlQuery.mock.calls[0] as [string, Record<string, unknown>, { readonly operationName: string }]
+    expect(graphqlQuery).toHaveBeenCalledTimes(1)
+    expect(options.operationName).toBe('ProcurementBuyerDirectCategories')
+    expect(Object.keys(variables).sort()).toEqual([...levels].sort())
+    expect(variables.directClasses).toEqual({ authorityCui: '4364446', year: 2025, grain: 'direct_acquisition' })
+    expect(query).toContain('directClasses: procurementBreakdown(scope: $directClasses, dimension: cpvClass, topN: 100, rankBy: value)')
+    expect(query).toContain('meta { answerability disclosureKey }')
+    expect(query).not.toContain('awards')
+    expect(rows).toEqual([expect.objectContaining({ value: 8_200_000, count: 13 })])
+  })
+
+  it('reads a period that stops at the cutoff through its month, as the profile did', async () => {
+    graphqlQuery.mockResolvedValue(servedEmpty())
+    await fetchProcurementBuyerDirectCategories('4364446', { kind: 'recent', year: 2026, from: '2025-06', through: '2026-05' })
+    const variables = graphqlQuery.mock.calls[0]?.[1] as Record<string, unknown>
+    expect(variables.directDivisions).toEqual({ authorityCui: '4364446', from: '2025-06', to: '2026-05', grain: 'direct_acquisition' })
+    await fetchProcurementBuyerDirectCategories('4364446', { kind: 'year', year: 2026, from: '2026-01', through: '2026-05' })
+    expect((graphqlQuery.mock.calls[1]?.[1] as Record<string, unknown>).directDivisions).toMatchObject({ from: '2026-01', to: '2026-05' })
+  })
+
+  it('answers a confirmed none as no rows, and a level the API abstained on, or left out, as no answer', async () => {
+    const period = { kind: 'year', year: 2025, from: '2025-01', through: null } as const
+    graphqlQuery.mockResolvedValue(servedEmpty())
+    await expect(fetchProcurementBuyerDirectCategories('4364446', period)).resolves.toEqual([])
+    graphqlQuery.mockResolvedValue(servedEmpty('degraded'))
+    await expect(fetchProcurementBuyerDirectCategories('4364446', period)).resolves.toEqual([])
+    // The gate shut after the profile loaded: empty buckets, no GraphQL error — not „none".
+    graphqlQuery.mockResolvedValue({ ...servedEmpty(), directClasses: [{ rankedBy: 'count', buckets: [], meta: { answerability: 'abstained', disclosureKey: null } }] })
+    await expect(fetchProcurementBuyerDirectCategories('4364446', period)).rejects.toThrow('not answered')
+    const { directGroups: _left, ...missing } = servedEmpty()
+    graphqlQuery.mockResolvedValue(missing)
+    await expect(fetchProcurementBuyerDirectCategories('4364446', period)).rejects.toThrow('not answered')
+    graphqlQuery.mockResolvedValue({ ...servedEmpty(), directDivisions: [] })
+    await expect(fetchProcurementBuyerDirectCategories('4364446', period)).rejects.toThrow('not answered')
+    // No verdict is no answer either.
+    graphqlQuery.mockResolvedValue({ ...servedEmpty(), directGroups: [{ rankedBy: 'value', buckets: [] }] })
+    await expect(fetchProcurementBuyerDirectCategories('4364446', period)).rejects.toThrow('not answered')
+    graphqlQuery.mockResolvedValue({ ...servedEmpty(), directGroups: [{ rankedBy: 'value', buckets: [], meta: { answerability: null, disclosureKey: null } }] })
+    await expect(fetchProcurementBuyerDirectCategories('4364446', period)).rejects.toThrow('not answered')
+  })
+
+  it('fails with the API, never answering a failed read as no purchases', async () => {
+    graphqlQuery.mockRejectedValue(new Error('Internal server error'))
+    await expect(fetchProcurementBuyerDirectCategories('4364446', { kind: 'year', year: 2025, from: '2025-01', through: null })).rejects.toThrow('Internal server error')
   })
 })
 
