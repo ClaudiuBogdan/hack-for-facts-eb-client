@@ -1,6 +1,7 @@
 import type { CategoryFigure } from './home-categories'
 import { DIRECT_COMPARABLE_FROM, tidyName, type RecentRecord, type YearPoint } from './home-model'
 import type { ProfilePeriod } from './profile-period'
+import { daCompanyBucketName } from './withheld-party'
 
 /**
  * One buyer's procurement page (`/procurement/institutions/$cui`): the shapes
@@ -48,6 +49,8 @@ export interface SupplierFigure {
   readonly share: number | null
   /** D6 on a direct-purchase supplier (`company` names it). */
   readonly displayKind?: string | null
+  /** DA-009: a direct-purchase company's gated name, as the API served it. */
+  readonly displayName?: string | null
 }
 
 export interface SupplierRanking {
@@ -125,8 +128,13 @@ export interface BuyerProfile {
   readonly procedures: readonly ProcedureCount[]
   /** Awards past the listed procedure types, or with none recorded: never „all had a notice". */
   readonly proceduresUnlisted: number
-  /** Supplier names by CUI; a CUI the identity spine cannot name is missing. */
+  /** Contract suppliers' names by CUI; a CUI the identity spine cannot name is missing. Never a DA supplier's (DA-009). */
   readonly names: ReadonlyMap<string, string>
+  /**
+   * The year-by-year sellers' names (`supplierYears`) by CUI: the API's gated name on their own buckets of that
+   * ranking (DA-009, PROC-B51G), nothing else. A ranking row carries its own (`SupplierFigure.displayName`).
+   */
+  readonly daNames: ReadonlyMap<string, string>
   /** The top direct-purchase sellers since 2019, year by year; empty when that read failed. */
   readonly supplierYears: readonly SupplierYears[]
   /** The buyer's direct purchases against its county's, over the page's period. */
@@ -227,7 +235,17 @@ export function steadySellers(rows: readonly SupplierYears[], through: number): 
   return rows.filter((row) => row.years.filter((point) => point.year <= through && point.value !== null && point.value > 0).length >= span - 1)
 }
 
-/** A supplier's name, or its CUI when the identity spine cannot name it. */
-export function supplierName(profile: BuyerProfile, cui: string): string {
+/** A contract supplier's name, or its CUI when the identity spine cannot name it. */
+export function supplierName(profile: Pick<BuyerProfile, 'names'>, cui: string): string {
   return profile.names.get(cui) ?? cui
+}
+
+/** A year-by-year seller's name: only the API's gated name on its bucket; its code, said as missing from the registry, without one (DA-009). */
+export function daSupplierName(profile: Pick<BuyerProfile, 'daNames'>, cui: string): string {
+  return daCompanyBucketName({ key: cui, displayName: profile.daNames.get(cui) ?? null })
+}
+
+/** A direct-purchase ranking row's name: the gated name its own bucket carried, never another ranking's (DA-009). */
+export function daRowName(row: Pick<SupplierFigure, 'cui' | 'displayName'>): string {
+  return daCompanyBucketName({ key: row.cui, displayName: row.displayName ?? null })
 }

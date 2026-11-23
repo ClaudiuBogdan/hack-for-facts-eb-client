@@ -1,9 +1,9 @@
-import { isNamedDaSupplierBucket } from './withheld-party'
+import { daCompanyBucketName, isNamedDaSupplierBucket } from './withheld-party'
 import type { I18n } from '@lingui/core'
 import { plural, t } from '@lingui/core/macro'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
-import { hasAnyRecord, steadySellers, supplierName, type BuyerIdentity, type BuyerProfile, type SupplierYears } from './buyer-model'
+import { daSupplierName, hasAnyRecord, steadySellers, type BuyerIdentity, type BuyerProfile, type SupplierYears } from './buyer-model'
 import { OTHER_CATEGORY, UNKNOWN_CATEGORY, type CategoryFigure } from './home-categories'
 import { contractsCount, directPurchasesCount, firmsCount, lowerFirst, monthText, moneyText, percentText } from './home-format'
 import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, seriesSpan, type HomeGrain } from './home-model'
@@ -194,7 +194,7 @@ export function sellersLede(profile: BuyerProfile): string | null {
   const lead = t`Cinci firme însumează ${percentText(top5, 0)} din valoarea achizițiilor directe din ${periodText(profile.period)}; au vândut ${firmsCount(firms)} în total.`
   // D6: the largest is named only when the API serves it as a company.
   const named = isNamedDaSupplierBucket({ key: first.cui, displayKind: first.displayKind })
-  const biggest = first.share >= 0.1 && named ? t`Cea mai mare parte, ${percentText(first.share, 0)}, e a firmei ${supplierName(profile, first.cui)}.` : ''
+  const biggest = first.share >= 0.1 && named ? t`Cea mai mare parte, ${percentText(first.share, 0)}, e a firmei ${daCompanyBucketName({ key: first.cui, displayName: first.displayName })}.` : ''
   return [lead, biggest].filter(Boolean).join(' ')
 }
 
@@ -203,9 +203,9 @@ export function steadyLede(profile: BuyerProfile, rows: readonly SupplierYears[]
   const steady = steadySellers(rows, through)
   const [one, two] = steady
   if (!one) return null
-  if (steady.length === 1) return t`${supplierName(profile, one.cui)} i-a vândut aproape în fiecare an din ${DIRECT_COMPARABLE_FROM} încoace.`
+  if (steady.length === 1) return t`${daSupplierName(profile, one.cui)} i-a vândut aproape în fiecare an din ${DIRECT_COMPARABLE_FROM} încoace.`
   if (steady.length === 2 && two) {
-    return t`${supplierName(profile, one.cui)} și ${supplierName(profile, two.cui)} i-au vândut aproape în fiecare an din ${DIRECT_COMPARABLE_FROM} încoace.`
+    return t`${daSupplierName(profile, one.cui)} și ${daSupplierName(profile, two.cui)} i-au vândut aproape în fiecare an din ${DIRECT_COMPARABLE_FROM} încoace.`
   }
   if (steady.length === rows.length) return t`Toate cele ${steady.length} firme de mai jos i-au vândut aproape în fiecare an din ${DIRECT_COMPARABLE_FROM} încoace.`
   return t`${steady.length} dintre firmele de mai jos i-au vândut aproape în fiecare an din ${DIRECT_COMPARABLE_FROM} încoace.`

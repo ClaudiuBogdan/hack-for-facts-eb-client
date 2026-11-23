@@ -14,7 +14,7 @@ const { fetchProcurementHomeBigContracts, fetchProcurementHomeNational, fetchPro
 const { procurementHomeCategoriesResponseSchema } = await import('./graphql/procurement-home-queries')
 
 const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })) }]
-const breakdown = (rankedBy: string, buckets: readonly { key: string | null; kind?: string; displayKind?: string | null; recordCount?: string; valueSum?: string | null; shareOfScope?: string | null }[], withheld?: string | null) => [
+const breakdown = (rankedBy: string, buckets: readonly { key: string | null; kind?: string; displayKind?: string | null; displayName?: string | null; recordCount?: string; valueSum?: string | null; shareOfScope?: string | null }[], withheld?: string | null) => [
   {
     rankedBy,
     buckets: buckets.map((bucket) => ({ kind: 'top', recordCount: '0', valueSum: null, shareOfScope: null, ...bucket })),
@@ -50,6 +50,16 @@ function nationalResponse() {
 describe('fetchProcurementHomeNational', () => {
   beforeEach(() => graphqlQuery.mockReset())
 
+  it('a direct-purchase seller is named by its bucket’s gated name, whatever the spine says (DA-009)', async () => {
+    const response = nationalResponse()
+    graphqlQuery
+      .mockResolvedValueOnce({ ...response, directSellers: breakdown('value', [{ key: '11805367', displayKind: 'company', displayName: 'Dedeman SRL', recordCount: '44181', valueSum: '68800000', shareOfScope: '0.004' }]) })
+      .mockResolvedValueOnce({ authorities: [], suppliers: [] })
+    const read = await fetchProcurementHomeNational(2025)
+    expect(read.directSellers?.rows[0]?.label).toBe('Dedeman SRL')
+    expect(graphqlQuery.mock.calls[0]?.[0]).toContain('displayName')
+  })
+
   it('reads the national picture, then names the ranked parties in one bounded request', async () => {
     graphqlQuery.mockResolvedValueOnce(nationalResponse()).mockResolvedValueOnce({
       authorities: [{ cui: '1590120', canonicalName: 'REGIA NATIONALA A PADURILOR ROMSILVA RA', status: 'named' }],
@@ -62,14 +72,14 @@ describe('fetchProcurementHomeNational', () => {
     expect(variables.frameworks).toEqual({ grain: 'contract', recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling', year: 2025 })
     expect(variables.directYears).toEqual({ grain: 'direct_acquisition', from: '2019-01', to: '2026-12' })
     const [, names] = graphqlQuery.mock.calls[1] as [string, Record<string, unknown>]
-    // One CUI asked once, whatever the rankings it is in.
-    expect(names).toMatchObject({ authorityCuis: ['1590120'], supplierCuis: ['11805367'] })
+    // One CUI asked once, whatever the rankings it is in. DA-009: no direct-purchase supplier is looked up.
+    expect(names).toMatchObject({ authorityCuis: ['1590120'], supplierCuis: [], includeSuppliers: false })
 
     expect(read.contract).toEqual({ count: 39_539, valued: 28_839, value: 103_594_626_884.4, buyers: 3_446, suppliers: 8_614 })
     expect(read.frameworks).toBe(88_105)
     expect(read.buyers.direct.rows[0]).toMatchObject({ label: 'Regia Nationala a Padurilor Romsilva RA', count: 7_293, value: 93_900_000 })
-    // A placeholder label is no name: the row shows its CUI.
-    expect(read.directSellers?.rows[0]?.label).toBe('11805367')
+    // DA-009: a company with no gated name on its bucket shows its code, said as missing from the registry.
+    expect(read.directSellers?.rows[0]?.label).toBe('CUI 11805367 (denumire indisponibilă în registrul firmelor)')
     expect(read.buyers.contract.rankedBy).toBe('count')
     // The consortia's money over all the awards' money: firms + the rest + consortia.
     expect(read.consortium?.withheld).toBeCloseTo(54_297_167_559)

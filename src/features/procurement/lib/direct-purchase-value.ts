@@ -1,4 +1,5 @@
 import type { DpLabel } from './direct-purchase-model'
+import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
 
 /**
  * A direct purchase's money and its supplier's name as the direct-acquisition
@@ -31,6 +32,8 @@ export const NOT_COUNTED_CODES = [
   'state_disagrees',
   'finalization_day_disagrees',
   'value_disagrees',
+  // D3 (20 November 2026): no longer on any portal list (server 8a9d1d9e).
+  'removed_from_portal',
 ] as const
 
 export type DpNotCountedCode = (typeof NOT_COUNTED_CODES)[number]
@@ -136,5 +139,6 @@ export function supplierNameOf(party: { readonly displayKind: string | null; rea
   if (!party) return { kind: 'none' }
   const name = party.name?.trim()
   if (party.displayKind !== 'company' || !name) return { kind: 'natural-person' }
+  markDaSupplierNamed()
   return { kind: 'company', name, cui: party.cui?.trim() || null }
 }

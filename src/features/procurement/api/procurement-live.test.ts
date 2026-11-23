@@ -225,7 +225,7 @@ describe('live procurement reference caches', () => {
     expect(callsOf('ProcurementCpvDivisions')).toHaveLength(2)
   })
 
-  it('never keeps a direct-purchase supplier’s name in the shared memo: it is read again with each page (D6)', async () => {
+  it('never looks a direct-purchase supplier’s name up: its bucket carries the gated name (DA-009); a contract supplier’s stays kept', async () => {
     const withDaCompany = () => {
       const response = aggregateResponse()
       return {
@@ -250,10 +250,10 @@ describe('live procurement reference caches', () => {
       throw new Error('unexpected read')
     })
     const asked = () => callsOf('ProcurementPartyNames').flatMap((call) => (call[1] as { supplierCuis?: readonly string[] }).supplierCuis ?? [])
+    // DA-009: a direct-purchase supplier is never looked up at all — its bucket carries the API's gated name.
     await fetchAuthorityProcurementSliceLive('111')
-    expect(asked().filter((cui) => cui === '333')).toHaveLength(1)
     await fetchAuthorityProcurementSliceLive('111')
-    expect(asked().filter((cui) => cui === '333')).toHaveLength(2)
+    expect(asked().filter((cui) => cui === '333')).toHaveLength(0)
     // A contract supplier's name is kept as before.
     expect(asked().filter((cui) => cui === '222')).toHaveLength(1)
   })

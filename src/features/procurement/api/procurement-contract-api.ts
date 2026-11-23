@@ -26,6 +26,7 @@ import {
 } from './graphql/procurement-contract-queries'
 import { readCutoffOutcome, untilAborted } from './procurement-cutoff'
 import { readNames } from './procurement-direct-purchase-api'
+import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
 
 /**
  * One contract's reads, in two queries so a failure stays in its part of the
@@ -188,9 +189,19 @@ function yearsOf(raw: Readonly<Record<string, unknown>>, latest: number, through
     const year = DIRECT_COMPARABLE_FROM + index
     return { year, awards: awards!.get(year) ?? 0, frameworks: frameworks!.get(year) ?? 0, direct: direct!.get(year) ?? 0, directLei: directLei!.get(year) ?? null }
   })
-  if (through === null) return years
+  if (through === null) return markedDirect(years)
   const [partAwards, partFrameworks, partDirect, partDirectLei] = PAIR_MEASURES.map((measure) => partOf(`part${measure}`))
-  return [...years, { year: latest + 1, awards: partAwards ?? 0, frameworks: partFrameworks ?? 0, direct: partDirect ?? 0, directLei: partDirectLei }]
+  return markedDirect([...years, { year: latest + 1, awards: partAwards ?? 0, frameworks: partFrameworks ?? 0, direct: partDirect ?? 0, directLei: partDirectLei }])
+}
+
+/**
+ * The pair's years, as they stand. The page names the contract's firm beside
+ * its direct purchases with the buyer, so a render with any is kept by no cache
+ * (root ruling 2026-11-22 under 22a47bb2), as a supplier profile's is.
+ */
+function markedDirect(years: readonly CtYear[]): readonly CtYear[] {
+  if (years.some((row) => row.direct > 0 || (row.directLei ?? 0) > 0)) markDaSupplierNamed()
+  return years
 }
 
 /**

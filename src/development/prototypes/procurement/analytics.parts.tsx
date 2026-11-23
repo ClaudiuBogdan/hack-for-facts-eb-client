@@ -103,13 +103,18 @@ export function useAnalyticsQuery(): readonly [Query, (next: Query) => void, Ana
 export function useNamer(query: Query, answer: Pick<Answer, 'ranking'>, extra: readonly Ranking[] = []): Namer {
   const orgs: string[] = []
   const cpv: string[] = []
+  // D6 / DA-009: this prototype has no gated names, so a direct-purchase supplier is never looked up: it shows its code.
+  const direct = POPULATIONS[query.tip].grain === 'direct_acquisition'
   if (query.filters.cumparator) orgs.push(...query.filters.cumparator.values)
-  if (query.filters.furnizor) orgs.push(...query.filters.furnizor.values)
+  if (query.filters.furnizor && !direct) orgs.push(...query.filters.furnizor.values)
   if (query.filters.cpv) cpv.push(...query.filters.cpv.values.map((value) => value.padEnd(8, '0')))
+  // Every code in a supplier position: for direct purchases, none is ever labelled from the registry's names.
+  const supplierKeys = new Set<string>(query.filters.furnizor?.values ?? [])
   const collect = (dimension: string, buckets: readonly Bucket[]) => {
     for (const bucket of buckets) {
       if (!bucket.key || bucket.kind !== 'top') continue
-      if (dimension === 'authority' || dimension === 'supplier') orgs.push(bucket.key)
+      if (dimension === 'supplier') supplierKeys.add(bucket.key)
+      if (dimension === 'authority' || (dimension === 'supplier' && !direct)) orgs.push(bucket.key)
       if (dimension.startsWith('cpv')) cpv.push(bucket.key)
     }
   }
@@ -122,14 +127,17 @@ export function useNamer(query: Query, answer: Pick<Answer, 'ranking'>, extra: r
     query.filters.loc_firma?.level === 'localitate' ||
     ((query.dupa.axis === 'loc' || query.dupa.axis === 'loc_firma') && query.dupa.level === 'localitate')
   const localities = useLocalities(needLocalities)
+  const supplierList = [...supplierKeys].sort().join(',')
   return useMemo(
     () => ({
-      names: names.data,
+      // Filtered on every render, names kept from the previous view included: a buyer of the same code, or a contract
+      // supplier's name, never labels a direct-purchase supplier.
+      names: direct && names.data ? { ...names.data, orgs: new Map([...names.data.orgs].filter(([cui]) => !supplierList.split(',').includes(cui))) } : names.data,
       divisions: divisions.data ?? new Map<string, string>(),
       counties: new Map((counties.data?.counties ?? []).map((county) => [county.countyCode, formatProcurementCountyName(county.countyName)])),
       localities,
     }),
-    [names.data, divisions.data, counties.data, localities],
+    [names.data, divisions.data, counties.data, localities, direct, supplierList],
   )
 }
 

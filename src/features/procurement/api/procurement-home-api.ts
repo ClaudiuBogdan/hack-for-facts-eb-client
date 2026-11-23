@@ -13,7 +13,7 @@ import { daSupplierReads } from './procurement-da-release-status'
 import { newestKey } from '@/lib/disclosure-key'
 import { readLargestDirect } from './procurement-direct-records'
 import { partyOf } from '../lib/home-party'
-import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
+import { daCompanyBucketName, isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 import type { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -60,6 +60,7 @@ import {
 } from '../lib/home-model'
 
 type RawBreakdown = z.infer<typeof homeBreakdownBlockSchema>
+type RawBucket = NonNullable<RawBreakdown['buckets']>[number]
 type RawSeries = z.infer<typeof homeSeriesBlockSchema>
 
 /** Contract awards only: framework agreements are ceilings, counted apart. */
@@ -75,11 +76,6 @@ function first<T>(blocks: readonly T[] | undefined): T | undefined {
 
 function seriesValue(blocks: readonly RawSeries[], bucket: string): number | null {
   return first(blocks)?.points?.find((point) => point.bucket === bucket)?.value ?? null
-}
-
-/** A direct-acquisition supplier ranking's keys the page may name (D6, fail closed). */
-function namedSupplierKeys(blocks: readonly RawBreakdown[]): readonly string[] {
-  return (first(blocks)?.buckets ?? []).flatMap((bucket) => (bucket.kind === 'top' && bucket.key && isNamedDaSupplierBucket(bucket) ? [bucket.key] : []))
 }
 
 function topKeys(blocks: readonly RawBreakdown[]): readonly string[] {
@@ -127,7 +123,7 @@ async function loadPartyNames(
 
 // ──────────────────────────────────────────────── the national picture ──
 
-function ranking(blocks: readonly RawBreakdown[], label: (key: string) => string): Ranking {
+function ranking(blocks: readonly RawBreakdown[], label: (key: string, bucket: RawBucket) => string): Ranking {
   const block = first(blocks)
   return {
     rankedBy: block?.rankedBy === 'value' ? 'value' : 'count',
@@ -135,7 +131,7 @@ function ranking(blocks: readonly RawBreakdown[], label: (key: string) => string
       .filter((bucket) => bucket.kind === 'top' && bucket.key !== null)
       .map((bucket) => ({
         key: bucket.key ?? '',
-        label: label(bucket.key ?? ''),
+        label: label(bucket.key ?? '', bucket),
         count: bucket.recordCount ?? 0,
         value: bucket.valueSum,
         share: bucket.shareOfScope,
@@ -202,7 +198,13 @@ export function mapProcurementHomeNational(raw: RawProcurementHomeNational, year
     },
     buyers: { contract: ranking(raw.awardsBuyers, party('authority')), direct: ranking(raw.directBuyers, party('authority')) },
     // D6: an unclassified supplier's CUI never enters the read the page keeps and serialises.
-    directSellers: raw.directSellers ? ranking(raw.directSellers.map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null })), party('supplier')) : null,
+    // DA-009: a company is named by the API's gated name on its bucket, never by the registry's labels.
+    directSellers: raw.directSellers
+      ? ranking(
+          raw.directSellers.map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null })),
+          (key, bucket) => (isNamedDaSupplierBucket(bucket) ? daCompanyBucketName(bucket) : key),
+        )
+      : null,
     procedures: ranking(raw.procedures, (key) => key),
     counties: { contract: counties(raw.awardsCounties), direct: counties(raw.directCounties) },
     directYears: truncatePartYear(years(raw.directYearValue, raw.directYearCount), directMonths, year + 1, directCutoff),
@@ -235,8 +237,8 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
   const seenWithRanking = newestKey()
   const names = await loadPartyNames(
     [...topKeys(raw.awardsBuyers), ...topKeys(raw.directBuyers)],
-    // D6: only a supplier the API serves as a company has a name to look up.
-    raw.directSellers ? namedSupplierKeys(raw.directSellers) : [],
+    // DA-009: no supplier is looked up — a DA supplier bucket carries its own gated name.
+    [],
     signal,
     seenWithRanking,
   )

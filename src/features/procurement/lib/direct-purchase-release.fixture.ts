@@ -19,12 +19,15 @@ export const NATURAL_PERSON: RawDaParty = { displayKind: 'natural_person', party
 /** A served label in both languages, as the contract words the reasons. */
 export const REASONS = {
   not_accepted: { code: 'not_accepted', labelEn: 'Refused or expired: no purchase took place.', labelRo: 'Respinsă sau expirată: achiziția nu s-a realizat.' },
+  // The API's label after server 298f9162 (the 2018–2024 checks); the page shows whatever the API serves.
   value_not_qualified: {
     code: 'value_not_qualified',
-    labelEn: "The value's currency and VAT basis are not yet confirmed for this period (before 2025).",
-    labelRo: 'Moneda și baza TVA ale valorii nu sunt încă confirmate pentru această perioadă (înainte de 2025).',
+    labelEn: "The currency and VAT basis of this purchase's value are not confirmed (held by the 2018–2024 checks).",
+    labelRo: 'Moneda și baza TVA ale valorii acestei achiziții nu sunt confirmate (reținută la verificarea anilor 2018–2024).',
   },
   reviewed_entry_error: { code: 'reviewed_entry_error', labelEn: 'Left out after review: see the rule.', labelRo: 'Exclusă după verificare: vezi regula.' },
+  // D3 (20 November 2026), the API's labels (server 8a9d1d9e).
+  removed_from_portal: { code: 'removed_from_portal', labelEn: 'The purchase is no longer on any portal list.', labelRo: 'Achiziția nu mai apare în nicio listă a portalului.' },
 } as const
 
 export const RULES = {
@@ -144,7 +147,11 @@ export const RELEASE_CASES = {
   refused: () => rawReleaseDetail({ outcome: 'refused', stateLabel: 'Respinsa', finalizationDay: '2025-05-12', reportedValue: '40000.00', counted: false, countedValue: null, notCountedReason: REASONS.not_accepted }),
   before2025: () =>
     rawReleaseDetail({ publicationDay: '2021-11-29', finalizationDay: '2021-11-30', reportedValue: '8400.00', counted: false, countedValue: null, notCountedReason: REASONS.value_not_qualified }),
-  noLongerListed: () => rawReleaseDetail({ finalizationDay: '2026-11-13', reportedValue: '5200.00', countedValue: '5200.00', listedNow: false }),
+  // D3: every purchase the platform marks removed is out of totals, with its reason, and not listed (procurement-prod, 22 November 2026).
+  noLongerListed: () =>
+    rawReleaseDetail({ finalizationDay: '2026-11-13', reportedValue: '5200.00', counted: false, countedValue: null, notCountedReason: REASONS.removed_from_portal, listedNow: false }),
+  // Rare: off its proven-complete day list, not (yet) marked removed — still counted.
+  offItsDayList: () => rawReleaseDetail({ finalizationDay: '2026-11-13', reportedValue: '5200.00', countedValue: '5200.00', listedNow: false }),
   symbolicPrice: () => rawReleaseDetail({ finalizationDay: '2025-02-11', reportedValue: '0.01', countedValue: '0.01', symbolicPrice: true }),
   naturalPerson: () => rawReleaseDetail({ finalizationDay: '2025-07-07', reportedValue: '900.00', countedValue: '900.00', supplier: NATURAL_PERSON }),
 } as const

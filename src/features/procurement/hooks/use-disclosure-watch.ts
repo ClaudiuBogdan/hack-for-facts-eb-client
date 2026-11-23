@@ -1,6 +1,6 @@
 import { t } from '@lingui/core/macro'
 import { endsUnreadable, isDisclosureUnreadable, isPastBound, isSeedCurrent, lastReadAt, markServedAt, markVerifiedPublication, privacyPartOf, retiredPublications, retirePublication, setDisclosureUnreadable, subscribeRetiredPublications } from '../lib/disclosure-seed'
-import { DA_DISCLOSURE_CHANGE_BOUND_SECONDS } from '../lib/disclosure-cache'
+import { DA_DISCLOSURE_CHANGE_BOUND_SECONDS, removeDaQueriesWhenUnshown } from '../lib/disclosure-cache'
 import { noteKey, subscribeNewestKey } from '@/lib/disclosure-key'
 import { createElement, Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { useQuery, useQueryClient, type Query, type QueryClient, type QueryFunction, type QueryFunctionContext } from '@tanstack/react-query'
@@ -120,6 +120,8 @@ export function useDisclosureWatch(): void {
   useEffect(() => {
     for (const root of WATCHED_ROOTS) client.setQueryDefaults([root], { persister: gateWatchedRead as never })
   }, [client])
+  // Supplier names are kept by no key (API 22a47bb2): a page left takes its direct-purchase queries with it.
+  useEffect(() => removeDaQueriesWhenUnshown(client.getQueryCache()), [client])
   const watch = useQuery({
     queryKey: WATCH_KEY,
     queryFn: readDisclosureNow,

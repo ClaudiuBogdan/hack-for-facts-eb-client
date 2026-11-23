@@ -226,7 +226,33 @@ describe('ProcurementBuyerPage', () => {
   it('shows CUIs and says why when the names could not be read', () => {
     render(page({}, { choice: 2025, profile: buyerProfile({ partial: true, namesUnread: true, names: new Map(), supplierYears: [] }) }))
     expect(screen.getByText(/firmele apar cu codul fiscal/)).toBeInTheDocument()
-    expect(within(document.getElementById('de-la-cine')!).getByText('30153499')).toBeInTheDocument()
+    // A contract firm the spine could not name shows its code; a direct-purchase firm keeps its bucket's gated name (DA-009).
+    const who = within(document.getElementById('de-la-cine')!)
+    expect(who.getAllByText('16634489').length).toBeGreaterThan(0)
+    expect(who.getAllByText('Upper Level SRL').length).toBeGreaterThan(0)
+  })
+
+  it('names each row by its own source when one code is a contract firm, a period seller with no gated name and a years seller (DA-009)', () => {
+    const base = buyerProfile()
+    const years = base.supplierYears[0]!
+    const profile = buyerProfile({
+      names: new Map([['30153499', 'SPINE NAME SRL']]),
+      daNames: new Map([['30153499', 'YEARS NAME SRL']]),
+      directSuppliers: { rankedBy: 'value', rows: base.directSuppliers!.rows.map((row) => (row.cui === '30153499' ? { ...row, displayName: null } : row)) },
+      awardSuppliers: { rankedBy: 'count', rows: [{ cui: '30153499', count: 2, value: 12_220_000, share: 0.167 }] },
+      supplierYears: [{ ...years, cui: '30153499' }, ...base.supplierYears.slice(1)],
+    })
+    render(page({}, { choice: 2025, profile }))
+    const lists = [...document.getElementById('de-la-cine')!.querySelectorAll('ol')]
+    const text = (list: Element) => list.textContent ?? ''
+    // The period's direct-purchase row: its own bucket carried no name, so its code — never the spine's, nor the years'.
+    const direct = lists.find((list) => text(list).includes('Inndesign Mobilier SRL'))!
+    expect(text(direct)).toContain('CUI 30153499 (denumire indisponibilă în registrul firmelor)')
+    expect(text(direct)).not.toContain('SPINE NAME')
+    expect(text(direct)).not.toContain('YEARS NAME')
+    // The contract row keeps the spine's name; the years' seller keeps its own ranking's.
+    expect(lists.some((list) => text(list).includes('SPINE NAME SRL'))).toBe(true)
+    expect(screen.getAllByText(/YEARS NAME/iu).length).toBeGreaterThan(0)
   })
 
   it('says when the last twelve months could not be read, shows the last complete year, and holds the records back', () => {

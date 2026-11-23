@@ -6,7 +6,7 @@ import { createTestQueryClient } from '@/test/test-utils'
 import { daRecord, directPurchase, dpContext } from '../../lib/direct-purchase.fixture'
 import { NO_NAMES, type DirectPurchase, type DpContext } from '../../lib/direct-purchase-model'
 import { mapReleasePurchase } from '../../lib/direct-purchase-release'
-import { RELEASE_CASES, SERVED_TEXT, rawReleaseDetail, rawReleaseItem, servedItemText } from '../../lib/direct-purchase-release.fixture'
+import { REASONS, RELEASE_CASES, SERVED_TEXT, rawReleaseDetail, rawReleaseItem, servedItemText } from '../../lib/direct-purchase-release.fixture'
 import type { RawDaPurchaseDetail } from '../../api/graphql/procurement-da-release-queries'
 import { ProcurementDirectPurchasePage } from './procurement-direct-purchase-page'
 
@@ -270,11 +270,22 @@ describe('direct acquisitions release 1', () => {
   })
 
   it('before 2025: served, not counted, why', () => {
-    expect(release(RELEASE_CASES.before2025())).toContain('Moneda și baza TVA ale valorii nu sunt încă confirmate pentru această perioadă (înainte de 2025).')
+    // The API's sentence, as served: the page keeps no copy of it.
+    expect(release(RELEASE_CASES.before2025())).toContain(REASONS.value_not_qualified.labelRo)
   })
 
-  it('no longer listed, and a symbolic price', () => {
-    expect(release(RELEASE_CASES.noLongerListed())).toContain('Portalul nu mai listează această achiziție.')
+  it('removed from the portal is said once, by its reason; off its day list alone is not labelled', () => {
+    const removed = release(RELEASE_CASES.noLongerListed())
+    expect(removed.split('Achiziția nu mai apare în nicio listă a portalului.')).toHaveLength(2)
+    expect(removed).not.toContain('Intră în totaluri.')
+    expect(removed).not.toContain('Portalul nu mai listează')
+    const offList = release(RELEASE_CASES.offItsDayList())
+    expect(offList).toContain('Intră în totaluri.')
+    expect(offList).not.toContain('Achiziția nu mai apare')
+    expect(offList).not.toContain('Portalul nu mai listează')
+  })
+
+  it('a symbolic price', () => {
     expect(release(RELEASE_CASES.symbolicPrice())).toContain('Valoare simbolică: o numărăm, dar o semnalăm.')
   })
 
@@ -293,6 +304,26 @@ describe('direct acquisitions release 1', () => {
     const page = html(mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES), dpContext())
     expect(page).toContain('Context Alte achiziții între ele')
     expect(page).toContain('Din 2019 încoace, au fost 17 achiziții directe între ele')
+  })
+})
+
+describe('direct acquisitions release 1, switched off', () => {
+  const page = (initialData: { readonly id: string; readonly releaseOff?: true }) =>
+    renderToStaticMarkup(
+      <QueryClientProvider client={createTestQueryClient()}>
+        <ProcurementDirectPurchasePage id={initialData.id} initialData={initialData} />
+      </QueryClientProvider>,
+    ).replace(/<[^>]+>/g, ' ')
+
+  it('a release id the server rendered while the release is off says the purchase is not available yet — not „not found", not a failed read', () => {
+    const text = page({ id: 'a'.repeat(64), releaseOff: true })
+    expect(text).toContain('Achiziția nu este disponibilă încă')
+    expect(text).not.toContain('nu a fost găsită')
+    expect(text).not.toContain('Încearcă din nou')
+  })
+
+  it('without that state, the same id is still being read', () => {
+    expect(page({ id: 'a'.repeat(64) })).not.toContain('Achiziția nu este disponibilă încă')
   })
 })
 

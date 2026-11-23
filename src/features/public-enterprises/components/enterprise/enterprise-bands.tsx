@@ -10,7 +10,7 @@ import type { CompanyProfileModel } from '@/features/private-companies/lib/compa
 import { moneyPeriod } from '@/features/private-companies/lib/company-profile-text'
 import { HomeBand } from '@/features/procurement/components/home/home-chrome'
 import { CategoryRows, PartyRows } from '@/features/procurement/components/home/home-rows'
-import { hasAnyRecord, isEmptyYear, supplierName, type BuyerProfile } from '@/features/procurement/lib/buyer-model'
+import { daRowName, hasAnyRecord, isEmptyYear, type BuyerProfile } from '@/features/procurement/lib/buyer-model'
 import { periodYear } from '@/features/procurement/lib/profile-period'
 import { periodText } from '@/features/procurement/lib/profile-period-text'
 import { HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
@@ -125,7 +125,7 @@ function Buying({ cui, profile }: { readonly cui: string; readonly profile: Buye
   const suppliers = profile.directSuppliers
     ? {
         rankedBy: profile.directSuppliers.rankedBy,
-        rows: profile.directSuppliers.rows.map((row) => ({ key: row.cui, label: supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
+        rows: profile.directSuppliers.rows.map((row) => ({ key: row.cui, label: daRowName(row), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
       }
     : null
   const period = periodText(profile.period)

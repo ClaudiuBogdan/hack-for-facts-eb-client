@@ -10,7 +10,7 @@
  * mappers (`crossDomain: null`, `perLotWinners`/`ted` only when the server
  * sends them) — documented gaps, never fabrication.
  */
-import { isNamedDaSupplierBucket, isNaturalPersonKey } from '../lib/withheld-party'
+import { isNaturalPersonKey } from '../lib/withheld-party'
 import type {
   AuthorityProcurementSlice,
   ProcurementRecordSummary,
@@ -171,8 +171,6 @@ async function loadPartyNames(
   const now = Date.now()
   const names = new Map<string, string>()
   const requested = new Map<string, { readonly dimension: PartyDimension; readonly cui: string }>()
-  /** Names looked up for a direct-purchase supplier: read fresh each time, never kept in the shared memo (D6 — its classification can change with a publish). */
-  const unkept = new Set<string>()
 
   for (const [dimension, blocks] of [
     ['authority', aggregates.authorities],
@@ -180,16 +178,10 @@ async function loadPartyNames(
   ] as const) {
     for (const block of blocks) {
       for (const bucket of block.buckets ?? []) {
-        // D6: a direct-purchase supplier has a name to look up only when the API serves it as a company.
         if (bucket.key === null || isNaturalPersonKey(bucket.key)) continue
-        const daSupplier = dimension === 'supplier' && block.grain === 'direct_acquisition'
-        if (daSupplier && !isNamedDaSupplierBucket(bucket)) continue
+        // DA-009: a direct-purchase supplier is never looked up — a company's bucket carries the API's gated name.
+        if (dimension === 'supplier' && block.grain === 'direct_acquisition') continue
         const cacheKey = `${dimension}:${bucket.key}`
-        if (daSupplier) {
-          unkept.add(cacheKey)
-          requested.set(cacheKey, { dimension, cui: bucket.key })
-          continue
-        }
         const kept = cachedPartyName(cacheKey, now)
         if (kept === undefined) {
           requested.set(cacheKey, { dimension, cui: bucket.key })
@@ -250,7 +242,7 @@ async function loadPartyNames(
     cacheNames(parsed.authorities ?? [], authorityCuis, 'authority')
     cacheNames(parsed.suppliers ?? [], supplierCuis, 'supplier')
     for (const [cacheKey, name] of resolved) {
-      if (!unkept.has(cacheKey)) rememberPartyName(cacheKey, name, now)
+      rememberPartyName(cacheKey, name, now)
       if (name !== null) names.set(cacheKey, name)
     }
   }

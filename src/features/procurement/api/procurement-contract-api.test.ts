@@ -190,6 +190,20 @@ describe('the context', () => {
     return sheet!
   }
 
+  it('a context with direct purchases between the pair marks the render (the firm is named beside them: root ruling 2026-11-22)', async () => {
+    const { installDaSupplierNameSink } = await import('@/lib/da-supplier-name-mark')
+    const marks = vi.fn()
+    installDaSupplierNameSink(marks)
+    try {
+      const sheet = await sheetOf(`${LATEST}-12-10`)
+      answer(handlers)
+      await fetchContractContext({ id: sheet.id, authorityCui: '4270740', supplierCui: '27843529', day: `${LATEST}-12-10` }, sheet)
+      expect(marks).toHaveBeenCalled()
+    } finally {
+      installDaSupplierNameSink(null)
+    }
+  })
+
   it('counts the pair since 2019, each side’s year, and the contracts around', async () => {
     const sheet = await sheetOf(`${LATEST}-12-10`)
     answer(handlers)

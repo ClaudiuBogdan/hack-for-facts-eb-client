@@ -161,6 +161,14 @@ describe('GraphQL server proxy — the route handler with runtime-only configura
     expect(await response.text()).toBe('{"errors":[{"message":"no"}]}')
   })
 
+  it('passes the API’s Cache-Control on (PROC-VDWQ: an answer naming a DA supplier is no-store), and adds none of its own', async () => {
+    runtimeOnly({ INTERNAL_API_URL: INTERNAL })
+    fetchMock.mockResolvedValueOnce(new Response('{"data":{}}', { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }))
+    expect((await handler({ request: request('https://dev-client.example.com') })).headers.get('Cache-Control')).toBe('no-store')
+    fetchMock.mockResolvedValueOnce(new Response('{"data":{}}', { status: 200, headers: { 'content-type': 'application/json' } }))
+    expect((await handler({ request: request('https://dev-client.example.com') })).headers.get('Cache-Control')).toBeNull()
+  })
+
   it('never passes on an answer under an older supplier-privacy publication than the process has seen (D6, API doc 10)', async () => {
     const { noteKey, resetNewestKeyForTests } = await import('@/lib/disclosure-key')
     resetNewestKeyForTests()

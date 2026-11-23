@@ -18,7 +18,7 @@ import {
   type ResolvedPeriod,
 } from '../lib/analytics-model'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { isNamedDaSupplier, isNamedDaSupplierBucket, isNaturalPersonKey, scrubDaSupplierBucket } from '../lib/withheld-party'
+import { isNamedDaSupplier, isNaturalPersonKey, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
  * The analytics page's reads. A query compiles to independent reads, each
@@ -234,7 +234,7 @@ const breakdownSchema = z.array(
   z.object({
     rankedBy: z.string().nullable(),
     valueWithheldAssociationSum: decimal,
-    buckets: z.array(z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal, valueSum: decimal, shareOfScope: decimal })).nullable(),
+    buckets: z.array(z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), displayName: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal, valueSum: decimal, shareOfScope: decimal })).nullable(),
     meta: z.object({ disclosureKey: z.string().nullable().optional() }).nullable().optional(),
   }),
 )
@@ -244,6 +244,8 @@ export interface Bucket {
   readonly kind: 'top' | 'other' | 'unknown'
   /** D6 on a supplier bucket (`authority | company | natural_person`); absent elsewhere. */
   readonly displayKind?: string | null
+  /** DA-009 (PROC-B51G): a direct-purchase company's gated name, the only one shown for it. */
+  readonly displayName?: string | null
   readonly count: number
   readonly valued: number | null
   readonly money: number | null
@@ -265,6 +267,7 @@ function bucketsOf(raw: z.infer<typeof breakdownSchema>[number]): Bucket[] {
     key: bucket.key,
     kind: bucket.kind === 'top' ? 'top' : bucket.kind === 'other' ? 'other' : 'unknown',
     displayKind: bucket.displayKind ?? null,
+    displayName: bucket.displayName ?? null,
     count: bucket.recordCount ?? 0,
     valued: bucket.withValueCount,
     money: bucket.valueSum,
@@ -286,7 +289,7 @@ export async function readRanking(
     return { dimension, rankedBy: rankBy, buckets: [], withheld: null, unavailable: true }
   }
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind displayKind recordCount withValueCount valueSum shareOfScope } meta { disclosureKey } } }`,
+    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind displayKind displayName recordCount withValueCount valueSum shareOfScope } meta { disclosureKey } } }`,
     { s: scope, build },
     { operationName: 'AnalyticsRanking', signal },
   )
@@ -326,7 +329,8 @@ export async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'mon
 
 // ───────────────────────────────────────────────────────────────── names ──
 
-const daSupplierNameSchema = z.object({ items: z.array(z.object({ supplier: z.object({ cui: z.string().nullable(), name: z.string().nullable(), displayName: z.string().nullable(), displayKind: z.string().nullable().optional() }) })) })
+/** A DA supplier's latest record, read for its D6 kind alone: whether the API serves it as a company (DA-009). */
+const daSupplierKindSchema = z.object({ items: z.array(z.object({ supplier: z.object({ cui: z.string().nullable(), displayKind: z.string().nullable().optional() }) })), meta: z.object({ disclosureKey: z.string().nullable().optional() }).nullable().optional() })
 
 const namesSchema = z.object({
   labels: z.array(z.object({ cui: z.string().nullable(), canonicalName: z.string().nullable(), status: z.string() })).optional(),
@@ -336,7 +340,10 @@ const namesSchema = z.object({
 export interface Names {
   readonly orgs: ReadonlyMap<string, string>
   readonly cpv: ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>
-  /** Direct-purchase suppliers named by their own direct purchases as companies (D6) — never mixed with the registry's names. */
+  /**
+   * Direct-purchase suppliers the address names that the API serves as companies (D6), by code. Never named
+   * (DA-009): no read gives a single supplier's gated name, so the page shows the code of a company only.
+   */
   readonly daSuppliers: ReadonlyMap<string, string>
 }
 
@@ -368,12 +375,14 @@ function servedUnderPlan(planned: string | null, served: unknown): boolean {
  * keep them under the old key.
  */
 export async function readNames(cuis: readonly string[], codes: readonly string[], signal: AbortSignal, daSuppliers: readonly string[] = [], disclosure: string | null = null, disclosureSeen?: string | null): Promise<Names> {
+  // DA-009: a DA supplier the address names is never named — no read serves one supplier's gated name, and the legacy
+  // records' names are gated by code alone. Its latest record says only whether the API serves it as a company.
   const asked = disclosure === null ? [] : daSuppliers.slice(0, DA_SUPPLIER_NAMES)
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsNames($cuis: [String!]!, $codes: [String!]!, $withOrgs: Boolean!, $withCpv: Boolean!${asked.map((_, index) => `, $da${index}: String!`).join('')}) {
       labels: organizationLabels(cuis: $cuis) @include(if: $withOrgs) { cui canonicalName status }
       cpv: procurementCpvCodes(codes: $codes) @include(if: $withCpv) { cpvCode labelRo labelEn }
-      ${asked.map((_, index) => `da${index}: procurementDirectAcquisitions(filter: { supplierCui: { eq: $da${index} } }, page: 1, pageSize: 1) { meta { disclosureKey } items { supplier { cui name displayName displayKind } } }`).join('\n      ')}
+      ${asked.map((_, index) => `da${index}: procurementRecords(scope: { grain: direct_acquisition, supplierCui: $da${index} }, sort: date_desc, page: 1, pageSize: 1) { items { supplier { cui displayKind } } meta { disclosureKey } }`).join('\n      ')}
     }`,
     { cuis: cuis.slice(0, 250), codes: codes.slice(0, 200), withOrgs: cuis.length > 0, withCpv: codes.length > 0, ...Object.fromEntries(asked.map((cui, index) => [`da${index}`, cui])) },
     // D6: the ranked keys sent were read under the newest key the caller saw then; a newer one since, nothing is sent.
@@ -384,11 +393,12 @@ export async function readNames(cuis: readonly string[], codes: readonly string[
   for (const label of parsed.labels ?? []) if (label.cui && label.canonicalName && label.status === 'named') orgs.set(label.cui, label.canonicalName)
   const daSuppliersNamed = new Map<string, string>()
   asked.forEach((cui, index) => {
-    // D6: a name only from an answer served under the planned publication (its own `meta.disclosureKey`, API doc 10).
-    if (!servedUnderPlan(disclosure, (raw[`da${index}`] as { meta?: { disclosureKey?: unknown } } | undefined)?.meta?.disclosureKey)) return
-    const supplier = daSupplierNameSchema.parse(raw[`da${index}`] ?? { items: [] }).items[0]?.supplier
-    const name = supplier && isNamedDaSupplier(supplier) && supplier.cui === cui ? (supplier.displayName ?? supplier.name) : null
-    if (name) daSuppliersNamed.set(cui, name)
+    const page = daSupplierKindSchema.safeParse(raw[`da${index}`] ?? { items: [] })
+    // D6: only from an answer served under the planned publication (its own `meta.disclosureKey`, API doc 10).
+    if (!page.success || !servedUnderPlan(disclosure, page.data.meta?.disclosureKey)) return
+    // A company by the API's own word on its record, by the API's code form (a supplier scope on a withheld code matches nothing).
+    const supplier = page.data.items[0]?.supplier
+    if (supplier?.cui && withoutLeadingZeros(supplier.cui) === withoutLeadingZeros(cui) && isNamedDaSupplier(supplier)) daSuppliersNamed.set(cui, cui)
   })
   const cpv = new Map<string, { ro: string | null; en: string | null }>()
   for (const code of parsed.cpv ?? []) cpv.set(code.cpvCode, { ro: code.labelRo, en: code.labelEn })
@@ -620,8 +630,8 @@ export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[
     if (!ranking) continue
     for (const bucket of ranking.buckets) {
       if (!bucket.key || bucket.kind !== 'top') continue
-      // D6: a direct-purchase supplier has a name to look up only when the API serves it as a company.
-      if (ranking.dimension === 'authority' || (ranking.dimension === 'supplier' && (!direct || isNamedDaSupplierBucket(bucket)) && !isNaturalPersonKey(bucket.key))) orgs.push(bucket.key)
+      // DA-009: a direct-purchase supplier is never looked up — a company's bucket carries the API's gated name.
+      if (ranking.dimension === 'authority' || (ranking.dimension === 'supplier' && !direct && !isNaturalPersonKey(bucket.key))) orgs.push(bucket.key)
       if (ranking.dimension.startsWith('cpv')) cpv.push(bucket.key)
     }
   }

@@ -3410,8 +3410,8 @@ shown keeps what it shows (a mounted query, a placeholder) until a purge or the 
   contract sheets, the home's big contracts, enterprise records, reference lists, and the procurement cutoff.
 - **Browser queries:**
   - every direct-purchase read is dated (`DA_QUERY_CACHE`) and never fresh past its read: a page mounted again
-    reads again, except a query holding only an accepted server seed (the seed rule below). It is dropped 30 s after
-    no page shows it.
+    reads again, except a query holding only an accepted server seed (the seed rule below). Once a page has shown
+    it, it is removed as soon as no page shows it; read ahead and never shown, 30 s later (§24.5).
   - Since API doc 10 (live on Chronos dev 19 November 2026), the release purchase and its lists, lookup and totals,
     the legacy detail and lists, and the supplier-records connection carry `meta.disclosureKey` too. Every one of
     those reads selects it (`procurement-da-dated-queries.test.ts`). A DA supplier's name is kept only from an
@@ -3581,3 +3581,85 @@ check and a request it then sends are gated by the API's own fresh final check.
     site-wide, and tracing is off on procurement and company pages.
   - The reader's own address still holds the code, and lookups may still send it: the API enforces. The page's
     HTML reflects that address back (router match ids, query keys), only to whoever requested it.
+
+### 24.5 DA v3: supplier names, the release off, removed purchases (22 November 2026)
+
+The API at c648184c (Chronos dev, `PROCUREMENT_DA_V3_ENABLED` and D6 off) changes no field the client reads. Three
+of its changes reach the client.
+
+**Supplier names are covered by no key** (API 22a47bb2). A named supplier's name now comes from the live registry,
+and a name, or its privacy, can change without `dataAsOf`, `privacyAsOf`, `buildId` or `disclosureKey` moving. The
+API asks clients not to keep a supplier name beyond the response that carried it. The open-tab watch can't see
+such a change, because it purges only on a key move. **Root ruling 2026-11-22 under 22a47bb2:**
+
+- **(a) Server renders.** A server render that names a DA supplier goes out `Cache-Control: no-store` and
+  `CDN-Cache-Control: no-store`, whatever its route asked for. Every decision to name one goes through the D6
+  predicates (`isNamedDaSupplier`, `isNamedDaSupplierBucket`, `supplierNameOf`), and each marks the request
+  (`src/lib/da-supplier-name-mark.ts`). The server entry runs each request in its own scope
+  (`src/lib/ssr/da-name-scope.ts`) and replaces a marked response's caching headers. TanStack Start builds the
+  response only after every loader has run (`router.load()`, then the stream handler), so a name decided in a
+  loader is always marked first. A name decided later, in a deferred render, could not change the headers: no
+  current page does that, and the server writes a warning to stderr if one ever does.
+  - A render that names a firm beside its direct purchases is marked too, wherever the name came from:
+    - a supplier profile that shows them (`showsDirectPurchases`);
+    - a contract page whose context counts direct purchases between the pair (`procurement-contract-api.ts`);
+    - a company's public money with incoming direct purchases (`company-mappers.ts`): the company page and the
+      public-enterprise page.
+
+    Root confirmed this reading (22 November 2026).
+  - The predicates mark when they allow a name, before the label is found, so a ranking that ends up printing only
+    a code still goes out `no-store`. That errs closed.
+  - Renders that name no DA supplier keep the DA CDN headers (600 s). With D6 off, as on dev today, no DA supplier
+    is named, so nothing changes there.
+- **(b) Browser queries.** A direct-purchase query (`DA_QUERY_CACHE`, marked `meta.daSupplierNames`) is removed
+  once the last page showing it unmounts, cancelled if in flight (`removeDaQueriesWhenUnshown`, installed by the
+  disclosure watch).
+  - The removal waits for the current commit, so a page that takes over the same key keeps the query. That page
+    reads it again, as any mount does under the seed rule.
+  - A query stays marked once any marked observer has watched it, or its own options marked it when it was made (a
+    prefetch). An unmarked observer of the same key doesn't clear the mark.
+  - Hydrated seeds and loader seeds (`initialData`) keep the seed rule: no read on mount. They are untouched until
+    a page shows them, and go when it is left.
+  - A query read ahead (a route prefetch) and never shown still goes 30 s later.
+  - Two legacy hooks (`use-procurement-data.ts`: the search list and the supplier records) read DA rows without
+    the marker. No DA route uses them now.
+- **(c) An open page** keeps showing the response it read; a refetch on focus or reconnect reads it again. This is
+  an accepted bound.
+
+**The release off** (`procurementDaRelease.enabled` false). Every release data read then answers
+`SERVICE_UNAVAILABLE` (never `NOT_FOUND`). A release id (64 hex) asked then is neither "not found" nor a failed
+read. The page says „Achiziția nu este disponibilă încă", the read is not retried (`DaReleaseOffError`), and the
+render, which holds no purchase, goes out `no-store`.
+- The off state is decided before D6's fail-closed check, so it holds whatever the privacy state is. A release id
+  about to fail closed asks for the status afresh first, so a release switched off since is said as such.
+- A release read refused with `SERVICE_UNAVAILABLE` asks for the status afresh. If the release has been switched
+  off since (a rollback), the page says not available yet. If it is still on, the read is a failed read, retried
+  once.
+- A legacy link whose release lookup or purchase is refused by a release switched off since keeps its legacy page.
+- Accepted: an open tab past the disclosure bound with D6's publication unreadable holds every watched read
+  (`use-disclosure-watch`), so a release id then shows a failed read rather than "not available yet". It fails
+  closed and lasts only while that state does. A legacy link with the release off keeps its legacy page, as
+before. The client tells the states apart by `enabled`, never by the error's message (procurement-da-api,
+22 November 2026).
+
+**Removed from the portal** (data platform D3, 20 November 2026; API 8a9d1d9e). The platform keeps a purchase no
+portal list names any more and leaves it out of totals with the reason `removed_from_portal`. It always comes with
+`listedNow` false and no counted value. The page says it once, through the reason's sentence, which the API serves.
+`listedNow` alone is information the page does not label (procurement-prod): a purchase off its day list but not
+marked removed is still counted, and nothing more is said about it.
+
+**DA-009: DA ranking names from the registry (fixed in the client, 22 November 2026).** The front door, the
+institution page and analytics named a DA ranking's company buckets through `organizationLabels`, the general
+identity lookup. The DA API names a supplier
+only where `supplier_name_public` holds (`party_public_names`). `organizationLabels` doesn't apply that flag, so a
+name the DA API withholds while the code stays public could still be shown. Root's ruling (22 November 2026):
+the gap is accepted while D6 is off everywhere, where no bucket is a company. Before D6 goes on anywhere, the API
+must serve the D6-gated name on DA breakdown buckets, and the client must use it instead of `organizationLabels`.
+That is a hard gate, on procurement-da-api's D6-enable checklist (PROC-B51G).
+
+The API serves the gated name as `displayName` on `ProcurementBreakdownBucket` (server b468474b, on Chronos dev).
+Every DA supplier ranking names a company from it alone: the front door, the institution and enterprise pages
+(`daNames`, `daSupplierName`), analytics and the entity slices. No DA supplier code is looked up in the spine any
+more. A disclosed code without a name (343 in prod) reads „CUI … (denumire indisponibilă în registrul firmelor)",
+never worded as private.
+

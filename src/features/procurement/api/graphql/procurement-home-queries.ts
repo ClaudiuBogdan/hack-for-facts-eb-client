@@ -24,6 +24,8 @@ export const homeBucketSchema = z.object({
   kind: z.string(),
   /** D6 on a supplier bucket: `company` names it; anything else does not. */
   displayKind: z.string().nullable().optional(),
+  /** DA-009 (PROC-B51G): a company supplier bucket's gated name — the only name shown for one. */
+  displayName: z.string().nullable().optional(),
   recordCount: decimal,
   valueSum: decimal,
   shareOfScope: decimal,
@@ -41,7 +43,7 @@ export const homeSeriesBlockSchema = z.object({
 
 // Every block names the D6 state it was served under (`meta.disclosureKey`): the transport refuses an older one.
 const STATS = 'recordCount withValueCount valueAwardedSum meta { disclosureKey }'
-const BREAKDOWN = 'rankedBy buckets { key kind displayKind recordCount valueSum shareOfScope } valueWithheldAssociationSum meta { disclosureKey }'
+const BREAKDOWN = 'rankedBy buckets { key kind displayKind displayName recordCount valueSum shareOfScope } valueWithheldAssociationSum meta { disclosureKey }'
 const SERIES = 'points { bucket value } meta { disclosureKey }'
 
 // ───────────────────────────────────────────────── the national picture ──
@@ -133,8 +135,6 @@ export const procurementHomeCategoriesResponseSchema = z.record(z.string(), brea
 // ───────────────────────────────────────────────── records, one per row ──
 
 const party = z.object({ cui: z.string().nullable(), name: z.string().nullable(), displayName: z.string().nullable() })
-/** A direct acquisition's party carries its D6 kind (`authority | company | natural_person`). */
-const daParty = party.extend({ displayKind: z.string().nullable().optional() })
 const resolvedValue = z.object({ valueAccepted: z.boolean(), valueRonComparable: z.string().nullable() })
 
 export const homeContractItemSchema = z.object({
@@ -148,19 +148,7 @@ export const homeContractItemSchema = z.object({
   value: resolvedValue,
 })
 
-export const homeDirectItemSchema = z.object({
-  id: z.string(),
-  publicationDate: z.string().nullable(),
-  finalizationDate: z.string().nullable(),
-  title: z.string().nullable(),
-  cpvCode: z.string().nullable(),
-  authority: daParty,
-  supplier: daParty,
-  value: resolvedValue,
-})
-
 const PARTY = 'cui name displayName'
-const DA_PARTY = 'cui name displayName displayKind'
 const VALUE = 'valueAccepted valueRonComparable'
 
 export const PROCUREMENT_HOME_CONTRACTS_QUERY = /* GraphQL */ `
@@ -173,17 +161,4 @@ export const PROCUREMENT_HOME_CONTRACTS_QUERY = /* GraphQL */ `
 
 export const procurementHomeContractsResponseSchema = z.object({
   procurementContracts: z.object({ items: z.array(homeContractItemSchema) }),
-})
-
-export const PROCUREMENT_HOME_DIRECT_QUERY = /* GraphQL */ `
-  query ProcurementHomeDirect($filter: ProcurementDirectAcquisitionsFilter, $rows: Int) {
-    procurementDirectAcquisitions(filter: $filter, sort: value_desc, page: 1, pageSize: $rows) {
-      meta { disclosureKey }
-      items { id publicationDate finalizationDate title cpvCode authority { ${DA_PARTY} } supplier { ${DA_PARTY} } value { ${VALUE} } }
-    }
-  }
-`
-
-export const procurementHomeDirectResponseSchema = z.object({
-  procurementDirectAcquisitions: z.object({ items: z.array(homeDirectItemSchema) }),
 })
