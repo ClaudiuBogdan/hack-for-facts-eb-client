@@ -250,7 +250,10 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
             <PixelFieldCanvas edge="right" cell={fieldCell} className="top-0" />
           </div>
         </div>
-        <RuledFrame marker="hero" className="py-12 sm:py-20 lg:py-24">
+        {/* Less below than above from `lg`: the hero is then 618px, inside
+            the margin fields' 624 (`fieldGeometry`), so the tiles reach the
+            bottom rule. At 96px it was 650 and they stopped 26px short. */}
+        <RuledFrame marker="hero" className="py-12 sm:py-20 lg:pt-24 lg:pb-16">
           <CornerTicks />
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-8">
             <div className="min-w-0 lg:col-span-7">
