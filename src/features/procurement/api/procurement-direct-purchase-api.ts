@@ -39,6 +39,7 @@ import {
   directPurchaseAroundSchema,
   directPurchaseNamesSchema,
   type RawAroundItem,
+  type RawDirectPurchaseAround,
   type RawDirectPurchaseNames,
 } from './graphql/procurement-direct-purchase-queries'
 import { readCutoffOutcome, untilAborted } from './procurement-cutoff'
@@ -195,6 +196,14 @@ function otherOf(item: RawAroundItem): DpOther {
 
 type Settled<T> = { readonly ok: true; readonly value: T } | { readonly ok: false }
 
+/** A legacy purchase's neighbours when the API no longer serves the legacy list: none, and no count. */
+const NO_LEGACY_AROUND: RawDirectPurchaseAround = { all: { total: null, totalEstimated: false }, newer: { items: [] }, older: { items: [] } }
+
+/** The API refused every field as not served: SERVICE_UNAVAILABLE, the legacy list switched off. */
+function listRetired(error: unknown): boolean {
+  return error instanceof GraphQLRequestError && error.graphQLErrors.length > 0 && error.graphQLErrors.every((entry) => entry.extensions?.code === 'SERVICE_UNAVAILABLE')
+}
+
 /** A read that fails soft — a reader who left fails it. */
 async function soft<T>(read: Promise<T>, signal?: AbortSignal): Promise<Settled<T>> {
   try {
@@ -272,7 +281,14 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
         perSide: AROUND_PER_SIDE,
       },
       { operationName: 'ProcurementDirectPurchaseAround', signal, disclosureSeen: seen },
-    ).then((raw) => directPurchaseAroundSchema.parse(raw)),
+    ).then(
+      (raw) => directPurchaseAroundSchema.parse(raw),
+      (error: unknown) => {
+        // The legacy list retired (every field SERVICE_UNAVAILABLE): no neighbours are offered, which no reload changes.
+        if (!signal?.aborted && listRetired(error)) return NO_LEGACY_AROUND
+        throw error
+      },
+    ),
     signal,
   )
 
@@ -365,7 +381,8 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
     pair: buyerRaw.ok ? statsOf(buyerRaw.value.pairYear) : null,
     buyer,
     seller,
-    others: around.ok ? aroundOf(purchase, around.value.newer, around.value.older, AROUND_SHOWN) : [],
+    // No neighbours offered (the legacy list retired): no band, rather than one holding this purchase alone.
+    others: around.ok && !(legacyAround.ok && legacyAround.value === NO_LEGACY_AROUND) ? aroundOf(purchase, around.value.newer, around.value.older, AROUND_SHOWN) : [],
     partial: !historyRaw.ok || !buyerRaw.ok || !sellerRaw.ok || !around.ok || cutoff.failed,
   }
 }

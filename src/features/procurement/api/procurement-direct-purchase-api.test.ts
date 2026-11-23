@@ -222,6 +222,7 @@ describe('the context', () => {
     expect(context.others.map((other) => other.id)).toEqual(['b'.repeat(64), release.id])
     expect(context.partial).toBe(false)
     expect(variablesOf('ProcurementDaAround')?.newer).toMatchObject({ finalizationFrom: '2025-06-02' })
+    expect(variablesOf('ProcurementDirectPurchaseAround')).toBeUndefined()
   })
 
   it('reads a complete year whole, and the purchases the explorer lists', async () => {
@@ -257,5 +258,48 @@ describe('the context', () => {
     expect(context.years).toBeNull()
     expect(context.buyer?.rank).toBe(3)
     expect(context.pair).toEqual({ count: 1, value: 98448 })
+  })
+
+  it('reads a retired legacy list as no neighbours offered, not a part that failed', async () => {
+    const unavailable = (field: string) => ({ message: 'not served', path: [field], extensions: { code: 'SERVICE_UNAVAILABLE' } })
+    answer({
+      ...handlers,
+      ProcurementDirectPurchaseAround: () => {
+        throw new GraphQLRequestError('GraphQL errors', { graphQLErrors: [unavailable('all'), unavailable('newer'), unavailable('older')] })
+      },
+    })
+    const context = await fetchDirectPurchaseContext(input, complete)
+    expect(context.partial).toBe(false)
+    expect(context.records).toBeNull()
+    expect(context.others).toEqual([])
+    expect(context.pair).toEqual({ count: 1, value: 98448 })
+  })
+
+  it('still says so when the legacy list fails any other way', async () => {
+    answer({
+      ...handlers,
+      ProcurementDirectPurchaseAround: () => {
+        throw new GraphQLRequestError('GraphQL errors', {
+          graphQLErrors: [
+            { message: 'not served', path: ['all'], extensions: { code: 'SERVICE_UNAVAILABLE' } },
+            { message: 'Internal server error', path: ['newer'], extensions: { code: 'INTERNAL_SERVER_ERROR' } },
+          ],
+        })
+      },
+    })
+    const context = await fetchDirectPurchaseContext(input, complete)
+    expect(context.partial).toBe(true)
+    expect(context.others).toEqual([])
+  })
+
+  it('still says so for a plain HTTP 503 that names no GraphQL error', async () => {
+    answer({
+      ...handlers,
+      ProcurementDirectPurchaseAround: () => {
+        throw new GraphQLRequestError('Service Unavailable', { status: 503 })
+      },
+    })
+    const context = await fetchDirectPurchaseContext(input, complete)
+    expect(context.partial).toBe(true)
   })
 })
