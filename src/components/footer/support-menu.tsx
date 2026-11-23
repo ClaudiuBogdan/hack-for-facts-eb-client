@@ -19,7 +19,7 @@ import { SendErrorAction } from "@/components/sentry/SendErrorAction";
 import { SendFeedbackAction } from "@/components/sentry/SendFeedbackAction";
 import { cn } from "@/lib/utils";
 
-const SUPPORT_EMAIL = "contact@transparenta.eu";
+export const SUPPORT_EMAIL = "contact@transparenta.eu";
 const TOAST_CONFIG = { duration: 1000 };
 
 type SupportMenuProps = {

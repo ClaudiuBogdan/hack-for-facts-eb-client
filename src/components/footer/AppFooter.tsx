@@ -12,10 +12,16 @@ import { useSentryConsent } from '@/hooks/useSentryConsent'
 import { openSentryFeedback } from '@/lib/sentry'
 import { FOOTER_SCENE_CLEAR_PX, FooterScene, FooterSceneStyles, useFooterScene } from './footer-scene'
 import { FooterUnderground } from './footer-underground'
+import { SUPPORT_EMAIL } from './support-menu'
+import { SystemStatusLink } from './system-status-link'
 
 /**
  * The app-wide footer, on the landing's skin: the ruled frame, mono column
  * captions, and the drifting horizon behind the last rows of text.
+ *
+ * It says who this is and how to reach the project, and carries the legal
+ * links. It does not list the platform's sections (the landing's index and the
+ * sidebar do) and it names no data source: every page names its own.
  *
  * It lives inside `SidebarInset`, so it sits under whatever page is open and
  * mounts once for the whole session. The scene is gated until the footer is a
@@ -31,28 +37,28 @@ type FooterLink =
   | { readonly label: MessageDescriptor; readonly href: string }
 
 type FooterColumn = {
-  readonly key: 'platform' | 'legal' | 'project'
+  readonly key: 'project' | 'legal'
   readonly title: MessageDescriptor
   readonly links: readonly FooterLink[]
 }
 
 const REPO_URL = 'https://github.com/ClaudiuBogdan/hack-for-facts-eb-client'
-const STATUS_URL = 'https://status.transparenta.eu'
+/** The founder's profile, the same one the landing's people band links. */
+const LINKEDIN_URL = 'https://www.linkedin.com/in/claudiuconstantinbogdan/'
 
 /**
- * Deliberately short. A footer that lists every surface competes with the
- * landing's own index, and on every other page it competes with the sidebar.
- * Cookie settings is added at render, because its link carries the current
- * location so the settings page can come back.
+ * Two links are added at render: the status page under `Proiect`, because it
+ * carries a live dot, and cookie settings under `Legal`, because its link
+ * carries the current location so the settings page can come back.
  */
 const COLUMNS: readonly FooterColumn[] = [
   {
-    key: 'platform',
-    title: msg`Platformă`,
+    key: 'project',
+    title: msg`Proiect`,
     links: [
-      { label: msg`Analiza entităților`, to: '/entity-analytics' },
-      { label: msg`Hărți`, to: '/map' },
-      { label: msg`Grafice`, to: '/charts' },
+      { label: msg`Contact`, href: `mailto:${SUPPORT_EMAIL}` },
+      { label: msg`LinkedIn`, href: LINKEDIN_URL },
+      { label: msg`Cod sursă pe GitHub`, href: REPO_URL },
     ],
   },
   {
@@ -62,15 +68,6 @@ const COLUMNS: readonly FooterColumn[] = [
       { label: msg`Politica de confidențialitate`, to: '/privacy' },
       { label: msg`Termeni și condiții`, to: '/terms' },
       { label: msg`Politica de cookie-uri`, to: '/cookie-policy' },
-    ],
-  },
-  {
-    key: 'project',
-    title: msg`Proiect`,
-    links: [
-      { label: msg`Cod sursă pe GitHub`, href: REPO_URL },
-      { label: msg`Raportează o problemă`, href: `${REPO_URL}/issues` },
-      { label: msg`Stare sistem`, href: STATUS_URL },
     ],
   },
 ]
@@ -83,7 +80,6 @@ export function AppFooter(): ReactElement {
   const { i18n } = useLingui()
   const location = useLocation()
   const showSentryFeedback = useSentryConsent()
-  const isPnrrPage = /(^|\/)pnrr(\/|$)/.test(location.pathname)
   const footerRef = useRef<HTMLElement>(null)
   useFooterScene(footerRef)
 
@@ -113,17 +109,18 @@ export function AppFooter(): ReactElement {
             the two cannot drift apart: the text stops above the highest cloud,
             and the peaks rise behind it. */}
         <div style={{ paddingBottom: FOOTER_SCENE_CLEAR_PX }}>
-          <div className="pointer-events-auto relative z-10 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="lg:col-span-2">
+          {/* Two link columns side by side at every width, the brand over them
+              below `lg` and beside them from there. */}
+          <div className="pointer-events-auto relative z-10 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
+            <div className="col-span-2">
               <div className="flex items-center gap-2">
                 <img src={logo} alt="" className="size-5 rounded-sm" />
                 <span className="font-semibold text-foreground">Transparenta.eu</span>
               </div>
+              {/* The hero's two lines as one: the footer is on every page,
+                  and most readers never see the hero. */}
               <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                <Trans>
-                  Banii publici, deciziile și documentele care le însoțesc — într-un singur loc, cu
-                  sursa și data lângă fiecare cifră.
-                </Trans>
+                <Trans>Date publice din surse oficiale, pe înțeles.</Trans>
               </p>
               {showSentryFeedback ? (
                 <button
@@ -145,7 +142,7 @@ export function AppFooter(): ReactElement {
             <nav aria-label={t`Navigare footer`} className="contents">
               {COLUMNS.map((column) => (
                 <div key={column.key}>
-                  <MonoLabel className="text-muted-foreground/70">{i18n._(column.title)}</MonoLabel>
+                  <MonoLabel className="text-muted-foreground">{i18n._(column.title)}</MonoLabel>
                   <ul className="mt-1 space-y-0 sm:mt-4 sm:space-y-2.5">
                     {column.links.map((link) => (
                       <li key={'to' in link ? link.to : link.href}>
@@ -154,12 +151,22 @@ export function AppFooter(): ReactElement {
                             {i18n._(link.label)}
                           </Link>
                         ) : (
-                          <a href={link.href} target="_blank" rel="noreferrer noopener" className={LINK_CLASS}>
+                          <a
+                            href={link.href}
+                            // A `mailto:` opens the mail app; only a page gets a new tab.
+                            {...(link.href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noreferrer noopener' })}
+                            className={LINK_CLASS}
+                          >
                             {i18n._(link.label)}
                           </a>
                         )}
                       </li>
                     ))}
+                    {column.key === 'project' ? (
+                      <li>
+                        <SystemStatusLink className={LINK_CLASS} />
+                      </li>
+                    ) : null}
                     {column.key === 'legal' ? (
                       <li>
                         <Link to="/cookies" search={{ redirect }} className={LINK_CLASS}>
@@ -172,38 +179,9 @@ export function AppFooter(): ReactElement {
               ))}
             </nav>
           </div>
-          <div className="pointer-events-auto relative z-10 mt-12 flex flex-wrap items-start justify-between gap-x-6 gap-y-3 border-t pt-5">
-            <MonoLabel className="block max-w-xl leading-relaxed text-muted-foreground/70">
-              {isPnrrPage ? (
-                <Trans>
-                  Date PNRR: Ministerul Investițiilor și Proiectelor Europene ·{' '}
-                  <a
-                    href="https://mfe.gov.ro/pnrr-dashboard"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                  >
-                    mfe.gov.ro/pnrr-dashboard
-                  </a>
-                </Trans>
-              ) : (
-                <Trans>
-                  Date din surse oficiale · Transparență bugetară, ANAF / Ministerul Finanțelor ·{' '}
-                  <a
-                    href="https://mfinante.gov.ro/transparenta-bugetara"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                  >
-                    mfinante.gov.ro
-                  </a>
-                </Trans>
-              )}
-            </MonoLabel>
-            <MonoLabel className="text-muted-foreground/70">
-              © {new Date().getFullYear()} Transparenta.eu
-            </MonoLabel>
-          </div>
+          <p className="pointer-events-auto relative z-10 mt-12 border-t pt-5 text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Transparenta.eu
+          </p>
         </div>
       </RuledFrame>
     </footer>

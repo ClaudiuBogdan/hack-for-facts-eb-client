@@ -12,8 +12,9 @@ import { test, expect } from '../utils/integration-base'
 import { waitForHydration } from '../utils/test-helpers'
 
 const HERO_HEADING = /pe înțeles|made clear/i
-const SEARCH_NAME = /entit|cui/i
-const POLITICS = /^(politică|politics)$/i
+// The field is named by its placeholder.
+const SEARCH_NAME = /primării, firme, legi|town halls, firms, laws/i
+const LAW = /lege, justiție și alegeri|law, justice and elections/i
 
 test.describe('Landing Page', () => {
   test.beforeEach(async ({ page, mockApi }) => {
@@ -55,8 +56,7 @@ test.describe('Landing Page', () => {
     const groups: ReadonlyArray<readonly [RegExp, readonly string[]]> = [
       [/banii publici|public money/i, ['/national-budget', '/procurement', '/pnrr']],
       [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/public-enterprises', '/ngos']],
-      [/lege și justiție|law and justice/i, ['/legislation', '/justice']],
-      [POLITICS, ['/alegeri']],
+      [LAW, ['/legislation', '/justice', '/alegeri']],
       [/instrumente|tools/i, ['/map', '/charts', '/ins']],
     ]
 
@@ -82,9 +82,9 @@ test.describe('Landing Page', () => {
     // `src/config/feature-flags.ts`: elections is on. The list reads the API's events; a failed
     // read still renders the page with its retry, so no check depends on the API's rows.
     expect((await page.request.get('/alegeri')).status()).toBe(200)
-    const politics = page.getByRole('region', { name: POLITICS })
-    await politics.scrollIntoViewIfNeeded()
-    await politics.locator('a[href="/alegeri"]').click()
+    const law = page.getByRole('region', { name: LAW })
+    await law.scrollIntoViewIfNeeded()
+    await law.locator('a[href="/alegeri"]').click()
     await expect(page).toHaveURL(/\/alegeri\/?$/)
     await expect(page.getByRole('heading', { name: /^(alegeri|elections)$/i, level: 1 })).toBeVisible()
     await expect(page.getByRole('heading', { name: /^(alegerile din date|elections in the data)$/i })).toBeVisible()

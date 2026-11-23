@@ -62,7 +62,7 @@ test.describe('Entity Exploration Flow', () => {
     await waitForHydration(page)
 
     // Find the entity search combobox
-    const searchInput = page.getByRole('combobox', { name: /entit|cui/i })
+    const searchInput = page.getByRole('combobox', { name: /primării, firme, legi|town halls, firms, laws/i })
     await expect(searchInput).toBeVisible({ timeout: 5000 })
 
     // Search for Cluj
