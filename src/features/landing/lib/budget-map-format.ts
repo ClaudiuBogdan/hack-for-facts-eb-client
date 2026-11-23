@@ -64,11 +64,6 @@ export function formatPercent(value: number | null, locale: NumberLocale): strin
   return `${minus(formatter(locale, { maximumFractionDigits: 1, signDisplay: 'exceptZero' }).format(value))}%`
 }
 
-/** A count: „3.186" or „3,186". */
-export function formatCount(value: number, locale: NumberLocale): string {
-  return formatter(locale, {}).format(value)
-}
-
 /** Rounded to `step` as `Intl` rounds: half away from zero. */
 const roundTo = (value: number, step: number) => Math.sign(value) * Math.round(Math.abs(value) / step) * step
 

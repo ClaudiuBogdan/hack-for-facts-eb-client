@@ -3,7 +3,6 @@
    CSS and the attribute state machine drift apart. */
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
-import { cn } from '@/lib/utils'
 
 /**
  * How the illustrations arrive.
@@ -208,12 +207,11 @@ const CSS = `
    * and neither has to know about the other.
    *
    * Two factors, multiplied, because they answer different questions. The base
-   * is the picture's own: the lion is a 'contain' fit and sits small in a cell
-   * whose height comes from the list beside it, so it needs to come forward on
-   * every screen. The viewport factor is the phone's closer crop. Kept apart,
-   * neither has to know the other's value, and hover multiplies both rather
-   * than replacing either — so a laptop with a touchscreen does not quietly
-   * lose the phone's framing.
+   * is a picture's own, for art that has to come forward on every screen. The
+   * viewport factor is the phone's closer crop. Kept apart, neither has to
+   * know the other's value, and hover multiplies both rather than replacing
+   * either — so a laptop with a touchscreen does not quietly lose the phone's
+   * framing.
    *
    * (No backticks in here: the whole block is a template literal.)
    */
@@ -227,9 +225,8 @@ const CSS = `
  * A phone gets a closer crop.
  *
  * The cells are capped shorter there — a picture the height of a phone screen
- * pushes the list it belongs to off the bottom — and at 'contain' a shorter box
- * only makes the art smaller. Scaling it back up spends the space on the subject
- * instead of on margin, and the cell already clips.
+ * pushes the list it belongs to off the bottom. Scaling the picture up spends
+ * the space on the subject, and the cell already clips.
  */
 @media (max-width: 40rem) {
   .tpz-pic-img {
@@ -553,17 +550,18 @@ type GroupPictureProps = {
   readonly src: string
   /** The same picture in AVIF, offered first. Same crop, same pixel size. */
   readonly avif: string
-  readonly fit: 'cover' | 'contain'
   /**
-   * How far forward this picture sits before anything is hovered.
-   *
-   * A `contain` fit letterboxes into whatever box the layout gives it, and the
-   * lion's box takes its height from the four entries beside it — so left at 1
-   * the statue reads as a small object in a large frame. This is per picture
-   * because the right amount depends on the art, not on the breakpoint.
+   * `object-position`, and the point the zoom grows from as well: the phone's
+   * closer crop and the hover zoom push the picture out of the cell away from
+   * its anchor, so a figure anchored by its head keeps its head.
+   */
+  readonly position: string
+  /**
+   * How far forward this picture sits before anything is hovered. Per picture
+   * because the right amount depends on the art: it moves where the cell's
+   * edge cuts the figure.
    */
   readonly zoom?: number
-  readonly position: string
   /**
    * The art's own pixels.
    *
@@ -585,7 +583,7 @@ type GroupPictureProps = {
  * above sets, and waiting for the bytes belongs to the hook too, because only it
  * knows when the picture has actually been reached.
  */
-export function GroupPicture({ src, avif, fit, position, width, height, zoom }: GroupPictureProps) {
+export function GroupPicture({ src, avif, position, width, height, zoom }: GroupPictureProps) {
   return (
     <div className="tpz-pic">
       {/*
@@ -636,14 +634,8 @@ export function GroupPicture({ src, avif, fit, position, width, height, zoom }: 
            * load early in local testing and why that is not evidence of a bug.
            */
           fetchPriority="low"
-          className={cn(
-            'tpz-pic-img',
-            // Padding on the element rather than the cell: the image is
-            // absolutely positioned, so the cell's own padding would not reach
-            // it, but `object-contain` fits inside the content box.
-            fit === 'contain' ? 'object-contain p-2' : 'object-cover',
-          )}
-          style={{ objectPosition: position, ['--tpz-pic-zoom-base' as string]: zoom ?? 1 }}
+          className="tpz-pic-img object-cover"
+          style={{ objectPosition: position, transformOrigin: position, ['--tpz-pic-zoom-base' as string]: zoom ?? 1 }}
         />
       </picture>
     </div>

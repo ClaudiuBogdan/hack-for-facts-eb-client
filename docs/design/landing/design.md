@@ -41,6 +41,8 @@ without reading the reason.
    scene), and the founder's LinkedIn link moves out of the footer — it is on
    the people band, beside the person it belongs to. One `nav` landmark,
    `Navigare footer`, rather than one per column.
+   *Rethought on 23 November 2026: the data-source line and the `Platformă`
+   column are gone, see „Footer — 23 November 2026".*
 2. **"Despre proiect" link.** The band linked to a prototype URL. The about
    page is a sketch with `[Provizoriu]` copy, so no `/despre` route ships and
    the link is omitted until one does. The people band otherwise ships as
@@ -50,6 +52,8 @@ without reading the reason.
    `entityAnalytics.pageInfo.totalCount` with `limit: 1` through the same
    filter the ranking page uses, and omits the figure while loading or on
    error. A stale literal is never rendered as served truth.
+   *Superseded on 23 November 2026: the landing no longer shows the count
+   (see "What the page stopped saying" below).*
 4. **`/cookies` redirect.** The shipped page returned to `?redirect=` after any
    decision; the prototype only offered a back button. Production keeps both:
    a safe `redirect` is followed after a decision, and the back button stays.
@@ -71,7 +75,8 @@ without reading the reason.
 - `redirect` on `/cookies` is normalised through URL parsing
   (`src/features/privacy/lib/safe-redirect.ts`), not a prefix check.
 - The institution count is dropped whenever the query is in error, including a
-  failed refresh over cached data.
+  failed refresh over cached data. *Superseded on 23 November 2026: the count
+  is gone from the landing.*
 - Escape collapsing the consent disclosure returns focus to its trigger.
 - The footer throw obeys reduced motion, stops off screen, and is owned by one
   pointer.
@@ -151,18 +156,23 @@ Decisions taken in the prototype:
    gestures: one finger scrolls the page on the whole country, two move the map;
    zoomed in, one finger pans. MapLibre's gesture hint is restyled from a 40%
    black wash to a small centred pill, in Romanian.
-5. **Legend** in the INS map's form: unit in the title, classes named by exactly
-   the values they hold (decision log 2026-10-02), the ends of the balance named,
-   the UAT under the pointer marked on the bar, a two-column list on a phone, the
-   no-data count, one source line with coverage.
-6. **Picker.** The trigger names the map at 18 px with a strip of its colours;
-   each option carries a one-line description and its strip. shadcn Select under
+5. **Legend.** What the map shows in one line (its name and what it is), the
+   balance's ends named, the bar with the UAT under the pointer marked on it,
+   the boundary values under the joins between colours, the no-data count, one
+   source line. Until 23 November 2026 it took the INS map's form, every class
+   named by the values it holds, with a second list on a phone („Map legend
+   and picker" below).
+6. **Picker.** The trigger is a one-line control: a strip of the map's colours,
+   its name and a chevron (an 18px name under a „Harta" caption until 23
+   November 2026); each option carries a one-line description and its strip. shadcn Select under
    a mouse; a bottom sheet of radio rows under a finger (the phone's native
    picker cannot show either, and nothing here types, so Radix's
    keyboard-resize problem does not arise).
 
 **Promoted the same day** (variant `maplibre`) as the landing's last band,
-`04 / Harta`, after the people band and the promo cards:
+after the people band and the promo cards. It was labelled `04 / Harta`; the
+numbered labels were removed on 23 November 2026 and the band opens on its
+heading.
 
 | Prototype | Promoted to |
 |---|---|
@@ -174,7 +184,7 @@ Decisions taken in the prototype:
 What changed on the way: every word is Lingui (`msg` descriptors for the
 measures, resolved at render); numbers follow the active locale — `mii`/`mil.`/
 `mld.` in Romanian, `K`/`M`/`B` in English (en-US suffixes, en-GB's are „k",
-„m", „bn") — and the class labels read „sub 5 mil." / „under 5M". The band's
+„m", „bn") — and the legend's values read „14 mil." / „14M". The band's
 title and the picker are server-rendered; the picker works before the map
 arrives and the map takes the picked measure as a prop. The prototype stays.
 
@@ -188,7 +198,8 @@ Review outcomes at promotion (Opus and Codex, 16 November 2026):
   the class its label excludes (decision log, 2026-10-02).
 - The capital's own budget has no shape (the map draws its sectors); the
   server reports it (`BUDGET_MAP_COVERAGE`) and the source line says so. The
-  coverage line counts the primării on the map.
+  coverage sentence („3.186 din 3.186 primării…") was dropped on 23 November
+  2026; the no-data count says it when some are missing.
 - Without WebGL 2 the map is not built and says so, without a retry that would
   fail again; a renderer error is logged; a failed read offers a retry; the
   theme and a resize are followed; the picked map is in the address
@@ -344,8 +355,13 @@ the real font, including lighter weights (620, 500), which the owner declined.
 - **Why.** Tracking that tight also closes the gap between words, so the two
   lines read close to „Datepublice, peînțeles"; the word gap is given back. At
   0.92 the circumflex of „î" nearly touched the descender of „p" above it.
-- **Round commas** are Inter's own alternate (`ss03`), on the headline only. The
-  headline has a comma and a „ț", and the square ones read as slabs at 72px.
+- **Round commas** are Inter's own alternate (`ss03`). They were chosen for the
+  headline, which has a comma and a „ț", where the square ones read as slabs at
+  72px. The feature is now set on the landing page's root (`landing-page.tsx`),
+  not on the headline: every comma and quotation mark on the page is the round
+  one, in a figure („19,04"), in a heading, and under each „ș" and „ț". It is in
+  the font the page already downloads; a comma keeps its width, and quotation
+  marks come out a little wider.
 - **Subtitle.** `tracking-normal`: the site's `0.02em` is set for 14px text and
   looked loose at 20px under a tight headline. Colour and size are unchanged
   (no new emphasis level).
@@ -481,6 +497,421 @@ Measured in the browser: the hero is 916px tall at 390px and 650px at 1440px
 
 Not changed: `PREDEFINED_ENTITIES` (`src/lib/constants/predefined-entities.ts`)
 still feeds the budget campaign's badges; the panel no longer reads it.
+
+## Figures band — 22 November 2026
+
+The „România în cifre" band (`national-facts-band.tsx`, figures in
+`national-facts.ts`) was brought up to date, and each tile now leads somewhere.
+
+- **Figures, re-checked on 22 November 2026.** GDP 2025 is 1,929,930 million lei
+  (INS Tempo CON111B, updated 9 October 2026; Eurostat `nama_10_gdp` has the
+  same figure, provisional), replacing 1,916.4 bn: the tile reads „1.930"
+  („1,930" in English). Population is 19,041,322 at 1 January 2026, provisional
+  (Tempo POP105A, updated 10 September 2026; Eurostat `demo_gind` the same),
+  chosen by the owner over the last definitive figure (19,043,151 at 1 January
+  2025); the tile still reads 19,04 mil. and its source line now says „INS ·
+  1 ian. 2026 · provizoriu". MFin's 2025 consolidated spending (808.7 bn) and
+  cash deficit (146.0 bn) are unchanged: published 27 January 2026, no revision
+  found.
+- **Each tile links to the platform's own page on its data**, because the tile
+  is the claim and the page is its evidence: GDP to `/ins/seturi/CON111B`,
+  population to `/ins/seturi/POP105A`, spending to
+  `/national-budget/analytics?perioada=2025`, the deficit to
+  `/national-budget/analytics?tip=sold`. The budget tiles go to the analytics
+  page, not the citizens' page (owner). The link is the label, inside the `dt`
+  so the list stays a valid `dl`, and its hit area is stretched over the tile
+  (`::after`); its accessible name is the label alone. Keyboard focus draws a
+  2px ring inside the tile. Hover gives the tile a quiet background
+  (`bg-muted/50`, as the institutions panel's rows); no underline under the
+  spaced mono capitals, where the background and the arrow already say it.
+- **Arrow cue.** A small `ArrowUpRight` in the tile's top-right corner, muted.
+  Where a pointer hovers it shows on hover or focus; on touch it is always
+  visible (owner).
+- **Unchanged on purpose.** The labels stay uppercase mono, the source lines as
+  they were (owner); no visible band title, no revenue tile.
+- **Hardcoded figures.** They are written in the file, not fetched. INS revised
+  the 2025 GDP three times in 2026, so whoever edits the file re-checks all
+  four.
+
+Measured in the browser (dev server; 390 × 844 touch, 1440 × 900 in Romanian
+and English): the four hrefs are in the server HTML, and a click on each
+number lands on its URL. At 390px the arrow is 14px, 8px in from the tile's
+top and right edges, 2px above the number's line box (the digits start lower)
+and 16px above the unit's, so it touches neither, „1.930 mld. lei" included.
+Tile heights are unchanged: 199px and 184px for the two rows on a phone,
+162.5px on a wide screen. On a wide screen the arrow is hidden at rest and
+shows on hover and on keyboard focus, with the ring. No hydration warnings in
+any of the three.
+
+Not checked: the target pages' content. The dev API sits behind an access
+login from the dev machine, so `/ins/seturi/*` and `/national-budget/analytics`
+open without data here; whether `/ins/seturi/CON111B` opens on its „PIB" row
+is unverified.
+
+## Entrances play once per page load — 22 November 2026
+
+Owner: coming back to the landing should not replay its animations; it "could
+be too distracting". The page is also put back at the scroll position it was
+left at, where a block still fading in looks like a page still loading.
+
+**What is gated.** The page's entrances: blocks fading in as they come into
+view (`data-reveal`), the figures counting up (`count-up.tsx`), the group
+titles and the figures' source lines unscrambling, the index pictures' reveal, the hero's margin-field wave
+at load (`pixel-canvas.tsx`) and the institutions panel's arrival
+(`panel-tilt.tsx`, the CSS `tpz-panel-in` and `tpz-shadow-in`). Not gated: the
+effects that follow the scroll (the scroll light, the section light, the panel
+squaring up as the page scrolls), the margin field's ripple at a click, and
+the reduced-motion rule, which still turns the entrances off on its own.
+
+**How a return is detected.** `useFirstVisit()` (`lib/first-visit.ts`) reads a
+module-level flag at the component's first render and sets it in an effect
+after mount. The first `LandingPage` mounted in a document, whichever page the
+reader arrived on, gets yes and keeps it for as long as it stays mounted;
+every later mount in the same document gets no. On no, `landing-page.tsx`:
+
+- hands the reveal and picture hooks an empty root (`NO_ROOT`), so nothing is
+  armed and every block is shown as rendered; the count-up and the scramble
+  start from the reveal, so they do not run either;
+- passes `intro: false` to `useCanvasFieldMotion`, so the load wave does not
+  play;
+- marks its root `data-entrances="played"`, which sets the panel's entrance
+  animation to `none`.
+
+**A full reload plays them again.** The flag lives in the module, not in
+`sessionStorage`, so it lasts exactly as long as the document: moving around
+the app and back skips the entrances, and a reload or a new tab starts with
+them. A stored flag could not stop them anyway: the server's HTML starts the
+hero's CSS entrance before any script runs. The flag is never set on the
+server, where effects do not run, so one request cannot switch the entrances
+off for the next, and the first client render agrees with the server's HTML.
+Because it is read at render and written at mount, StrictMode's second effect
+run still sees the first answer (`first-visit.test.ts` holds yes for the first
+mount and its re-renders, no for the next mount).
+
+## What the page stopped saying — 22–23 November 2026
+
+Owner: "Keep only what we really need. The focus and clarity for user is top
+priority."
+
+Removed:
+
+- **The statement band** over the index: the label `01 / Ce găsești aici`, the
+  heading „Fiecare sursă, într-un singur loc" and its paragraph.
+- **Every running number and count in the index**: the tile numbers, the group
+  numbers and each group's entry count.
+- **The numbered labels** above the people and map headings (`03 / Oameni`,
+  `04 / Harta`).
+- **The provenance band** (`02 / Proveniență`, „Fiecare cifră își spune
+  sursa"): its paragraph on the official sources, and its row of counts
+  (institutions with a budget execution for the year, datasets, datasets served
+  live, surfaces, domains). With it went `lib/platform-coverage.ts` (the counts,
+  from the scraper dataset catalog) and `hooks/use-institution-count.ts` (the
+  `entityAnalytics` read behind the institution count; decision 3 above).
+
+**Cost.** The landing no longer prints coverage counts, or the sentence saying
+the data comes from official sources and that some datasets are still being
+connected. Each figure tile still names its source and date.
+
+**Gain.** One fewer GraphQL request on the landing, and no dataset-catalog
+import.
+
+The index keeps a screen-reader-only h2, „Toate secțiunile" (the hero menu's
+words), so the heading outline stays h1 → h2 → h3 with the group titles as h3.
+
+Page order now: hero → national figures → index → people → promo cards →
+budget map.
+
+## Index text — 23 November 2026
+
+Every tile in the index (`lib/landing-groups.ts`) has a new line, and two names
+changed. The rule the owner approved, for these tiles and any added later:
+
+1. **One sentence per tile, in plain words, saying what the reader can find
+   out**, not how the data is organised.
+2. **No internal vocabulary.** Removed: „grila de încredere" (Achiziții
+   publice), „nivel de identitate" (ONG-uri), „valori agregate" (the
+   institutions' tile), „acoperirea declarată" (Statistici INS).
+3. **A source is named only where the name helps recognition**: SEAP,
+   Monitorul Oficial, INS.
+4. **No caveats in the tile.** The owner removed „Persoanele nu sunt numite"
+   from Justiție; the justice pages say it themselves.
+
+Two blurbs were factually stale and were corrected: Alegeri said there were no
+results („Fără rezultate deocamdată"), while the contest pages show votes and
+turnout by party; Buget național described spending only, and the budget pages
+carry revenue too. Investiții publice and Parlament are unchanged (both are
+behind gates, and neither shows on the dev server).
+
+**Names.**
+
+- „Analiza entităților" became **„Instituții publice"** on the landing, in the
+  sidebar and in the footer's `Platformă` column, so the three navigations
+  agreed (the footer's column went on 23 November). The `/entity-analytics` page itself still opens on „Analiza
+  entităților" (its h1, the mobile filter dialog's title and the document
+  title „Analiza entităților – Transparenta.eu"); renaming it is open for the
+  owner.
+- The group „Instrumente" became **„Statistici și instrumente"**, because
+  Statistici INS is data, not a tool. The group's key stays `instrumente`.
+
+**English.** The brief's wording, with the catalog's established terms where
+they exist: „Monitorul Oficial" is "the Official Gazette" (as on the
+legislation pages), „materii" is "matter" (as on the justice pages). „Primării"
+is "town halls", as in the search placeholder and the public enterprises tile;
+elsewhere the catalog mostly says "city halls", including the budget map's
+title, so the landing still uses both.
+
+**Checked against the pages** (the code, 23 November 2026): the company page
+shows financial statements year by year, employees and its contracts,
+purchases and PNRR money; PNRR has projects and beneficiaries tabs; an NGO's
+page shows its financial statements and the Ministry of Labour's licensed
+social services; an act's page lists its amendments; `/map` shows spending
+(its default) by UAT or by county; an election contest shows votes by party
+and turnout; `/entity-analytics` ranks institutions by income or by expenses,
+one at a time.
+
+Measured in the browser (dev server; 1440 × 900, and 390 × 844 touch): every
+tile shows its new title and line. At 1440 each blurb fits on one line in the
+two-column groups; in the three-column group (Hartă, Grafice, Statistici INS)
+each takes two, with two or three words on the second. At 390 every blurb
+takes two lines except Justiție (one); no line ends on a single word. Nothing
+is clipped, the page does not scroll sideways, the group titles stay on one
+line, and the hero's sections menu lists „Instituții publice" and „Statistici
+și instrumente" in both layouts. No hydration warnings.
+
+## Index polish — 23 November 2026
+
+Two redesigns of the index were built and turned down on the same day: small
+statues standing on each group's list with three lists side by side (too
+cluttered on a desktop), and a boxless table of contents with the statues at
+the end of each row. The owner kept the lattice: it gives each section and
+each picture room, and the hero's sections menu already is the short list.
+What changed inside it:
+
+1. **„Politică" is gone as a group.** With the parliament gate shut it was a
+   heading over one tile beside an empty cell. Parlament and Alegeri now close
+   the law group, renamed **„Lege, justiție și alegeri"** (key still `lege`).
+   The hero's sections menu follows, since both read `visibleGroups()`.
+2. **Justitia has a cell three tiles tall**, as a result: she shows to the
+   knees with the scales and the sword whole, where two tiles cut her at the
+   thighs.
+3. **Group labels are 13px**, up from the mono label's own 10px. Same face,
+   at 10px they did not read as headings. (The rule beside them went with
+   item 8.)
+4. **Tile titles are 18px** (were 16px). Descriptions stay 14px.
+5. **Every tile carries an arrow at rest**, top right, on the icon's line. It
+   was shown on hover only, so a phone never saw it and a tile did not look
+   like a link until the pointer was on it. It darkens and moves 2px on hover.
+6. **The lion is a portrait: closer, with the head always whole.** It was a
+   fitted picture zoomed 1.2 from its centre (1.39 on a phone), which cut the
+   plinth at the bottom on a desktop and the head as well on a phone. Now it
+   is cropped from the top with 12px of air above the mane, and brought
+   forward 1.12 so the cell's edge crosses the legs (desktop, phone) or runs
+   under the paws (tablet) and never along them. A whole lion standing on the
+   cell's bottom rule was tried first; the owner asked for it closer, as long
+   as the head stays visible.
+7. **Every picture zooms from its anchor.** The phone's closer crop and the
+   hover zoom grew from the picture's centre; they now grow from its
+   `object-position`, so a figure anchored by its head keeps its head.
+   Justitia no longer loses the top of her hair on a phone.
+8. **A group's title is a tab on its box** (owner's request, later the same
+   day). The rule that ran from the title to the right edge is gone: it was a
+   second line 16px above the box's own top rule. The title now sits in a
+   bordered tab that shares the box's left rule and has no bottom rule, so
+   tab and box read as one sheet. Same 13px mono label. The tab is the `h3`
+   itself: `w-fit border border-b-0 bg-background px-4 py-2.5`, pulled 1px
+   over the box (`-mb-px`, `z-10`) to cover the box's rule under it.
+   The tab stands on the picture's side: left for the lion and Justitia,
+   right for Atlas (`sm:ml-auto`). On a phone the picture is on top at full
+   width, so every tab stays on the left.
+9. **Atlas shows the whole globe** (owner's request). The picture is cropped
+   from the top with 14px of air above the globe (`50% 14px`, was `50% 15%`,
+   which cut the globe's crown flat against the new tab). The cut at the
+   bottom moves from the feet to the shin on a desktop; a tablet still shows
+   the plinth, a phone the globe and the head.
+
+Measured in the browser (dev server; 1440 × 900, 820 × 1100, 390 × 844): the
+index is 1,653 / 1,947 / 2,921px tall, the page does not scroll sideways, and
+there are no hydration warnings.
+
+## People band — 23 November 2026
+
+Six changes, approved by the owner; the first was reversed the same day:
+
+1. **The contributors row stays as it was.** It was first replaced by one
+   line, „Codul e public. Poți contribui pe GitHub.", and the owner restored
+   it the same day: the row is for the people who helped with feedback and
+   other contributions, not for GitHub contributors. The owner's own profile
+   in it is a demo entry, and the grey seats are placeholders until the
+   people are added. The row (label, faces, seats and the dashed „+") is
+   unchanged from before.
+2. **The founder's line is in the first person**: „Am construit
+   Transparenta.eu pentru că datele despre banii publici există, dar în zeci
+   de portaluri care nu vorbesc între ele."
+3. **The lines under the names are plain text**: 12px, muted, in their own
+   casing, where they were the 10px uppercase mono label. The founder's reads
+   „Fondator" („· Transparenta.eu" dropped). The supporters' lines are their
+   own words and did not change. The „Îngerii păzitori" label keeps the mono
+   label. The angels keep their `blurb` (a copy of the line) because the
+   about prototype prints it.
+4. **The lead follows the heading at every width.** On a phone the order was
+   heading, founder, lead, angels; the lead introduces the whole band, so it
+   now comes second. The band is one 12-column grid of four blocks. From `md`
+   the heading (5 columns) and the lead (6, from column 7) share the first
+   row, and the founder and the angels share the second, so the founder's
+   portrait and the „Îngerii păzitori" label start on the same line. The
+   angels' pictures start 26px lower, under the label.
+5. **The portraits are plain pictures**, no longer links to Facebook. The
+   icons under each name still link there.
+6. **The band closes the page.** Page order now: hero → national figures →
+   index → promo cards → budget map → people. This supersedes the order given
+   at the end of „What the page stopped saying". The band has no bottom rule
+   of its own: the footer's top rule closes it, so that line is not doubled.
+7. **The words are about the people who help, not about the founder** (owner,
+   same day). The lead was „Platforma e scrisă de un singur om și a rămas în
+   picioare pentru că alți câțiva au dat timp, date sau o ușă deschisă atunci
+   când conta."; it is now „Transparenta există datorită oamenilor care o
+   susțin: cu timp, idei, date sau o ușă deschisă atunci când conta." The
+   supporters' label „Îngerii păzitori" is now „Principalii promotori", the
+   owner's wording.
+   The heading „Cine e în spatele platformei" is now „Oamenii din spatele
+   platformei": plural, to match. The founder's own line stays in the first
+   person, and the layout (his portrait on the left half) is unchanged, by the
+   owner's choice.
+8. **The promo-card band is hidden for now** (owner, same day). It held the
+   campaign card („Provocări") and, with the parliament gate open, a
+   parliament card that repeated the index's own tile. With the campaign card
+   gone the band would have been an empty strip in production, so the whole
+   band is out; both components are kept. Page order now: hero → national
+   figures → index → budget map → people.
+
+Measured in the browser (dev server; 1440 × 900, 820 × 1100, 390 × 844): the
+band is 1,121 / 991 / 1,807px tall (it was 1,097 / 986 / 1,837). There is one
+rule between the map and the people, and one between the people and the
+footer. The page does not scroll sideways, and there are no hydration
+warnings.
+
+## Map legend and picker — 23 November 2026
+
+Owner: "I don't like the text on the legend. I think it can be improved from
+the font to the text itself. On the title and drop-down panel, I think we
+need to polish, make sure they are aligned and the design is good."
+
+**The legend has one form at every width.**
+
+1. **The first line says what the map shows**, in words the page already
+   has: the map's name and its picker description („Sold bugetar  Venituri
+   minus cheltuieli, ca procent din venituri"), at 14px. It replaces the 10px
+   uppercase mono title with its unit („SOLD BUGETAR · % DIN VENITURI").
+2. **The balance's ends**, „Deficit" and „Excedent", sit above the bar's two
+   ends in plain 12px text, without arrows.
+3. **Values under the joins.** The n − 1 boundaries are centred under the
+   joins between colours, in the page's sans at 12px: „−20%" to „+20%",
+   signed as the hover card prints them, and the amounts short without „lei"
+   („14 mil.", „22,4 mil.", „44,6 mil.", „178,5 mil."), since the first line
+   says „în lei". They replace one mono label per class („−20 – sub −10")
+   and, on a phone, a second list of swatches under the bar. Classification
+   did not change (DESIGN.md decision log, 23 November 2026). Each map prints
+   its own values (`Measure.tick`). The measures' `unit` and `note` went with
+   the old labels, and the balance's ends moved from its scale to the
+   measure, so the legend can show them before the figures arrive.
+4. **The no-data count** is plain 12px text beside its swatch.
+5. **The source line is shorter**: „Sursa: Ministerul Finanțelor, execuția
+   de casă 2025 a primăriilor (ordonator principal), cu transferurile și
+   finanțările incluse." The coverage sentence („3.186 din 3.186 primării de
+   pe hartă au date.") is gone, since the no-data count says it when it
+   matters. The sentence explaining the balance is gone too, since the first
+   line says it. The Bucharest sentence is shorter: „Bugetul propriu al
+   Municipiului București nu apare: harta arată cele șase sectoare."
+
+**The title and the picker.**
+
+6. **The trigger is an ordinary one-line control**, 40px tall: the map's
+   colour strip, its name at 14px, a chevron. It was a 56px box with a
+   „HARTA" caption and the name at 18px semibold, a second headline beside
+   the title. It is 224px wide from `sm`, so it keeps its size when the map
+   changes („Cheltuieli totale" fits uncut), and full width on a phone.
+7. **The row centres the control on the title's line.** It lined up the
+   boxes' bottoms, which put the title's text about 8px below the map's
+   name. On a phone the control sits under the title.
+8. The dropdown and the phone's sheet are unchanged.
+
+The legend's placeholder (`MapPlace`) is the legend itself, rendered unseen
+and without figures, so it wraps as the real one does at every width and in
+both languages. It first held measured heights per map; the final review
+found them 20px off in English on a phone and between 640 and 666px. The
+mounted map keeps the capital's sentence on its line while its figures are
+still on the way, for the same reason.
+
+Measured in the browser (dev server; 1440 × 900, 820 × 1100, 390 × 844):
+
+- The legend is 141 / 141 / 200px on the balance map (it was 155 at 1440 and
+  302 at 390) and 119 / 119 / 178px on the totals.
+- The band is 1,096 / 895 / 715px (it was 1,125 at 1440 and 833 at 390).
+- The title and the control share one centre line at 1440 and 820.
+- At 390 the two closest values are 12.7px apart on the balance and 13px on
+  income; in English („14M" to „178.5M") 26px.
+- The band is as tall before the map replaces its placeholder as after, on
+  both maps at all three widths (measured with the fixed heights; the unseen
+  legend that replaced them was re-measured in the final review, below).
+- The page does not scroll sideways, and there are no hydration warnings or
+  console errors.
+
+The page order stays as the people band entry records it (item 8): hero →
+national figures → index → budget map → people.
+
+## Footer — 23 November 2026
+
+The footer was an early version; the owner asked for a rethink and for the
+Ministry of Finance line to go. It is app-wide (`AppFooter`), so this applies
+to every page.
+
+1. **No data-source line.** „Date din surse oficiale · Transparență bugetară,
+   ANAF / Ministerul Finanțelor · mfinante.gov.ro" is removed, by the owner's
+   choice: every page names its own source, and one ministry under pages about
+   procurement, justice or elections was wrong more often than right. The PNRR
+   variant went with it for the same reason (PNRR has `/pnrr/surse`), and so
+   did the path check that picked it.
+2. **No list of sections.** The `Platformă` column held three links
+   (Instituții publice, Hărți, Grafice) out of thirteen sections, with no
+   reason for those three. The landing's index and the sidebar are the
+   navigation; the footer no longer repeats a part of it.
+3. **The tagline is the hero's.** „Date publice din surse oficiale, pe
+   înțeles." joins the hero's two lines in one sentence. It replaces „Banii
+   publici, deciziile și documentele care le însoțesc — într-un singur loc, cu
+   sursa și data lângă fiecare cifră.", an older pitch that promised a source
+   and a date beside *every* figure.
+4. **Two columns: `Proiect` and `Legal`.** `Proiect` is Contact, LinkedIn,
+   Cod sursă pe GitHub, Stare sistem. **Contact is new** (`mailto:` the support address
+   the support menu already uses; it opens in place, not in a new tab): the
+   footer had no way to write to the project without accepting the feedback
+   cookies. It replaces „Raportează o problemă", which sent every reader to
+   GitHub issues; the repository link still leads there. `Legal` is unchanged
+   (three policies and the cookie settings link the cookies page promises).
+5. **The last line is plain text.** „© 2026 Transparenta.eu" in `text-xs`,
+   not an uppercase mono caption. The column captions stay mono, now at full
+   `text-muted-foreground` instead of 70%.
+6. **The two columns sit side by side on a phone**, under the brand. They
+   were stacked, each link a 44px row.
+7. **„Stare sistem" carries a live dot** (owner's request), after the words:
+   green operational, amber degraded, red down, blue maintenance, and grey
+   until the status page answers or if it does not. A green dot the page had
+   not checked would be a claim. The state comes from the status page's own
+   public feed (`status.transparenta.eu/index.json`, `aggregate_state`, open
+   to any origin), read in the browser once the footer comes into view and
+   again when the reader comes back to the tab, at most every five minutes;
+   the server never reads it, so it cannot slow a page. Green needs no word;
+   any other state is written out after the name („Stare sistem:
+   indisponibil"), so colour is never the only thing that says it, and a
+   screen reader hears the state in every case. This is a
+   request from the reader's browser to Better Stack, like the announcement
+   widget production already loads. `system-status-link.tsx`.
+8. **LinkedIn is back** (owner's request): the founder's profile, as a text
+   link under `Proiect`. The promotion had moved it to the people band, which
+   only the landing shows; the footer is on every page.
+
+Measured in the browser (1440 / 820 / 390): the footer is 608 / 707 / 765px
+tall, down from 649 / 819 / 1,245px. No sideways scroll, no console errors.
+„Trimite feedback" under the tagline is unchanged (shown only with consent).
 
 ## Follow-ups
 

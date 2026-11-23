@@ -814,6 +814,9 @@ against it: two of the twenty-one are footer column headings, which name a
 navigation group rather than decorate it. The exception covers what exists; it
 is not a pattern to extend (Typography: mono only where necessary). The hero's
 shortcut label left this list on 2026-11-22, rewritten as plain text at AA.
+The footer's source line and copyright line left it on 2026-11-23 (the first
+removed, the second plain text), and its two column headings went to full
+`text-muted-foreground`.
 
 ## Data Trust & Provenance
 
@@ -876,6 +879,15 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-11-23 — The landing budget map's legend prints boundaries, not
+  class names.** An exception to the 2026-10-02 rule, by the owner's choice:
+  the values sit under the joins between colours („−20%", „14 mil."), not one
+  label per class. Classification is unchanged (a class still holds its lower
+  bound), and the hover card gives each primărie's exact figure. *Why:* the
+  owner did not like the legend's text, its font or its words; the class
+  labels were 10px mono, and on a phone they needed a second list under the
+  bar. The INS map legend is not changed. Record:
+  `docs/design/landing/design.md` („Map legend and picker").
 - **2026-11-22 — Mono only where it is necessary.** Monospaced type is kept for
   codes and identifiers, keyboard hints and figures that must align; labels,
   captions and navigation are set in Inter, in sentence case. First applied to

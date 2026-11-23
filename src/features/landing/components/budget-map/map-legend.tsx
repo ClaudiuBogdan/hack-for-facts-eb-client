@@ -1,40 +1,22 @@
 import { plural, t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { compactParts, formatCount, joinParts } from '../../lib/budget-map-format'
-import { BUDGET_YEAR, NO_DATA_COLOR, positionOnScale, type Measure, type MeasureClass, type MeasureScale } from '../../lib/budget-map-measures'
+import { BUDGET_YEAR, NO_DATA_COLOR, positionOnScale, type Measure, type MeasureScale } from '../../lib/budget-map-measures'
 import type { NumberLocale } from '../../lib/national-facts'
 
 /**
- * The legend under the map, in the INS map's form (`uat-map-legend.tsx`):
- * what the colours are and in what unit, every class named by exactly the
- * values it holds (DESIGN.md decision log, 2026-10-02: a class holds its lower
- * bound, not its upper one), the primărie under the pointer marked on the bar,
- * how many have no figure, and one line on where the figures come from.
+ * The legend under the map, one form at every width: what the map shows (its
+ * name and what it is), the balance's two ends, the colour bar with the
+ * primărie under the pointer marked on it, the values where one colour gives
+ * way to the next, how many primării have no figure, and where the figures come
+ * from.
  *
- * On a phone the classes are a two-column list beside their swatches: seven
- * labels under a 390 px bar wrap to a column of fragments.
+ * The values sit under the joins rather than naming each class (the owner's
+ * choice; DESIGN.md decision log, 23 November 2026). A class still holds its
+ * lower bound, and the hover card gives each primărie's exact figure.
+ *
+ * Before the figures arrive the bar is grey and the values row is empty but
+ * keeps its height, so nothing moves when they come.
  */
-
-/** Exactly the values a class holds, in the measure's unit; a range whose ends share a suffix names it once. */
-function useClassLabel(locale: NumberLocale) {
-    return ({ from, to }: MeasureClass): string => {
-    if (from === null && to === null) return ''
-    if (from === null) {
-      const bound = joinParts(compactParts(to!, locale), locale)
-      return t`sub ${bound}`
-    }
-    if (to === null) {
-      const bound = joinParts(compactParts(from, locale), locale)
-      return t`${bound} sau mai mult`
-    }
-    const [low, high] = [compactParts(from, locale), compactParts(to, locale)]
-    const lower = low.suffix === high.suffix ? low.number : joinParts(low, locale)
-    const upper = joinParts(high, locale)
-    return t`${lower} – sub ${upper}`
-  }
-}
-
 export function MapLegend({
   measure,
   scale,
@@ -55,77 +37,56 @@ export function MapLegend({
   readonly locale: NumberLocale
 }) {
   const { i18n } = useLingui()
-  const classLabel = useClassLabel(locale)
   const classes = scale?.classes ?? []
   const at = scale && classes.length > 0 ? positionOnScale(scale, active) : null
   const missing = coverage ? coverage.total - coverage.withData : 0
   const year = BUDGET_YEAR
-  const withData = coverage ? formatCount(coverage.withData, locale) : ''
-  const total = coverage ? formatCount(coverage.total, locale) : ''
 
   return (
     <div className="space-y-4" data-legend="budget-map">
-      <div className="max-w-2xl space-y-1.5">
-        <MonoLabel className="block text-muted-foreground">
-          {i18n._(measure.title)} · {i18n._(measure.unit)}
-        </MonoLabel>
-        {scale?.ends ? (
-          <div className="flex justify-between">
-            <MonoLabel className="text-muted-foreground">
-              <span aria-hidden="true">← </span>
-              {i18n._(scale.ends.below)}
-            </MonoLabel>
-            <MonoLabel className="text-muted-foreground">
-              {i18n._(scale.ends.above)}
-              <span aria-hidden="true"> →</span>
-            </MonoLabel>
-          </div>
+      <div className="max-w-2xl">
+        <p className="flex flex-wrap items-baseline gap-x-2">
+          <span className="text-sm font-medium text-foreground">{i18n._(measure.title)}</span>
+          <span className="text-sm text-muted-foreground">{i18n._(measure.description)}</span>
+        </p>
+        {measure.ends ? (
+          <p className="mt-3 flex justify-between text-xs text-muted-foreground">
+            <span>{i18n._(measure.ends.below)}</span>{' '}
+            <span>{i18n._(measure.ends.above)}</span>
+          </p>
         ) : null}
-        {classes.length > 0 ? (
-          <>
-            <div className="relative" aria-hidden="true">
-              <div className="flex h-2.5 gap-px">
-                {classes.map((item, i) => (
-                  <span key={i} className="flex-1" style={{ background: item.color }} />
-                ))}
-              </div>
-              {at !== null ? <span className="absolute -inset-y-1.5 w-0.5 -translate-x-1/2 bg-foreground" style={{ left: `${(at * 100).toFixed(2)}%` }} /> : null}
+        <div className={measure.ends ? 'relative mt-1.5' : 'relative mt-3'} aria-hidden="true">
+          {classes.length > 0 ? (
+            <div className="flex h-2.5 gap-px">
+              {classes.map((item, i) => (
+                <span key={i} className="flex-1" style={{ background: item.color }} />
+              ))}
             </div>
-            {/* Wider screens: each class named under its own colour. */}
-            <ol className="hidden gap-px sm:grid" style={{ gridTemplateColumns: `repeat(${classes.length}, minmax(0, 1fr))` }}>
-              {classes.map((item, i) => (
-                <li key={i} className="text-center font-mono text-[10px] leading-tight tabular-nums text-muted-foreground">
-                  {classLabel(item)}
-                </li>
-              ))}
-            </ol>
-            {/* A phone: the classes as a list, each beside its swatch. */}
-            <ol className="grid grid-cols-2 gap-x-4 gap-y-1 pt-1 sm:hidden">
-              {classes.map((item, i) => (
-                <li key={i} className="flex items-center gap-2 font-mono text-[11px] tabular-nums text-muted-foreground">
-                  <span className="size-2.5 shrink-0 rounded-[2px]" style={{ background: item.color }} aria-hidden="true" />
-                  {classLabel(item)}
-                </li>
-              ))}
-            </ol>
-          </>
-        ) : (
-          <div className="h-2.5 rounded-[2px] bg-muted" aria-hidden="true" />
-        )}
+          ) : (
+            <div className="h-2.5 rounded-[2px] bg-muted" />
+          )}
+          {at !== null ? <span className="absolute -inset-y-1.5 w-0.5 -translate-x-1/2 bg-foreground" style={{ left: `${(at * 100).toFixed(2)}%` }} /> : null}
+        </div>
+        {/* The boundaries, each centred under the join it names: classes 1..n−1 start there. */}
+        <ul className="relative mt-1.5 h-4 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
+          {classes.map((item, k) =>
+            k === 0 || item.from === null ? null : (
+              <li key={k} className="absolute top-0 -translate-x-1/2 whitespace-nowrap" style={{ left: `${((k / classes.length) * 100).toFixed(2)}%` }}>
+                {measure.tick(item.from, locale)}
+              </li>
+            ),
+          )}
+        </ul>
       </div>
       {missing > 0 ? (
-        <p className="flex items-center gap-2">
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="h-2.5 w-4 shrink-0 rounded-[2px]" style={{ background: NO_DATA_COLOR }} aria-hidden="true" />
-          <MonoLabel className="text-muted-foreground">
-            {plural(missing, { one: '# primărie fără date', few: '# primării fără date', other: '# de primării fără date' })}
-          </MonoLabel>
+          {plural(missing, { one: '# primărie fără date', few: '# primării fără date', other: '# de primării fără date' })}
         </p>
       ) : null}
       <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground" data-source-line>
-        {measure.note ? `${i18n._(measure.note)} ` : null}
-        {t`Sursa: Ministerul Finanțelor, execuția de casă ${year} a primăriilor (ordonator principal): încasările și plățile raportate, inclusiv transferurile și finanțările, în lei, valori nominale.`}
-        {coverage ? ` ${t`${withData} din ${total} primării de pe hartă au date.`}` : null}
-        {outsideMap > 0 ? ` ${t`Bugetul propriu al Municipiului București nu are un contur pe hartă și nu apare: harta arată cele șase sectoare.`}` : null}
+        {t`Sursa: Ministerul Finanțelor, execuția de casă ${year} a primăriilor (ordonator principal), cu transferurile și finanțările incluse.`}
+        {outsideMap > 0 ? ` ${t`Bugetul propriu al Municipiului București nu apare: harta arată cele șase sectoare.`}` : null}
       </p>
     </div>
   )

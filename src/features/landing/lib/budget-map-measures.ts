@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
-import { asPrinted, formatAmount, formatPercent, percentAsPrinted } from './budget-map-format'
+import { asPrinted, compactParts, formatAmount, formatPercent, joinParts, percentAsPrinted } from './budget-map-format'
 import type { NumberLocale } from './national-facts'
 
 /**
@@ -30,12 +30,10 @@ export interface MeasureClass {
   readonly to: number | null
 }
 
-/** A measure's colours for one set of values: the classes the legend lists, and where a value falls. */
+/** A measure's colours for one set of values: the classes on the legend's bar, and where a value falls. */
 export interface MeasureScale {
   readonly classes: readonly MeasureClass[]
   readonly classOf: (value: number | null) => number | null
-  /** What the bar's two ends mean, where the colours part at a middle (deficit and surplus). */
-  readonly ends?: { readonly below: MessageDescriptor; readonly above: MessageDescriptor }
 }
 
 export interface Measure {
@@ -46,16 +44,16 @@ export interface Measure {
   readonly description: MessageDescriptor
   /** The picker's heading it sits under, once there are several. */
   readonly group: MessageDescriptor
-  /** What the legend's classes are counted in. */
-  readonly unit: MessageDescriptor
-  /** How the figure is made, beside the source; none when it is the source's own. */
-  readonly note?: MessageDescriptor
+  /** What the legend bar's two ends mean, where the colours part at a middle (deficit and surplus). */
+  readonly ends?: { readonly below: MessageDescriptor; readonly above: MessageDescriptor }
   /** Its colours, one end to the other: the picker's preview of the map. */
   readonly ramp: readonly string[]
   /** The figure the colour is drawn from, or null where there is none. */
   readonly value: (figures: BudgetFigures | undefined) => number | null
   /** The figure with its unit, as a map label and the tooltip print it. */
   readonly format: (value: number | null, locale: NumberLocale) => string
+  /** A boundary between two colours, as the legend prints it under the join: short, the unit said once above. */
+  readonly tick: (value: number, locale: NumberLocale) => string
   /** The colours for these values (percentile measures need all of them). */
   readonly scale: (values: readonly (number | null)[]) => MeasureScale
 }
@@ -100,9 +98,8 @@ function classesBetween(edges: readonly number[], colors: readonly string[]): Me
 
 const BALANCE_SCALE: MeasureScale = {
   classes: classesBetween(BALANCE_EDGES, DIVERGING),
-  // Classified as printed (one decimal): „−3%" is in „−3 – sub 3", never under „−10 – sub −3".
+  // Classified as printed (one decimal): „−3%" is in the class from −3, never in the one below it.
   classOf: (value) => classAmong(BALANCE_EDGES, value === null ? null : percentAsPrinted(value)),
-  ends: { below: msg`Deficit`, above: msg`Excedent` },
 }
 
 function totalMeasure(id: 'income' | 'expenses', fields: Pick<Measure, 'title' | 'description' | 'ramp'>): Measure {
@@ -110,15 +107,16 @@ function totalMeasure(id: 'income' | 'expenses', fields: Pick<Measure, 'title' |
     id,
     ...fields,
     group: msg`Buget`,
-    unit: msg`lei`,
     value: (figures) => figures?.[id] ?? null,
     format: formatAmount,
+    // „14 mil.": the legend's first line already says „în lei".
+    tick: (value, locale) => joinParts(compactParts(value, locale), locale),
     scale: (values) => {
       // Classified on the edges as the legend prints them, so a colour never contradicts its words;
-      // equal edges merge (no empty „X – sub X" class); the strongest colours are the ones kept.
+      // equal edges merge (no empty class); the strongest colours are the ones kept.
       const edges = [...new Set(percentileEdges(values, TOTAL_PERCENTILES).map(asPrinted))]
       if (edges.length === 0) return { classes: [], classOf: () => null }
-      // The figure classified as printed too: „14 mil. lei" is never coloured „sub 14 mil.".
+      // The figure classified as printed too: „14 mil. lei" is never coloured below the 14 mil. edge.
       return {
         classes: classesBetween(edges, fields.ramp.slice(fields.ramp.length - edges.length - 1)),
         classOf: (value) => classAmong(edges, value === null ? null : asPrinted(value)),
@@ -133,8 +131,7 @@ export const MEASURES: readonly Measure[] = [
     title: msg`Sold bugetar`,
     description: msg`Venituri minus cheltuieli, ca procent din venituri`,
     group: msg`Buget`,
-    unit: msg`% din venituri`,
-    note: msg`Soldul este diferența dintre venituri și cheltuieli, raportată la venituri.`,
+    ends: { below: msg`Deficit`, above: msg`Excedent` },
     ramp: DIVERGING,
     // In percent, as the classes are: one unit from the value to the legend.
     value: (figures) => {
@@ -142,6 +139,7 @@ export const MEASURES: readonly Measure[] = [
       return ((figures.income - figures.expenses) / figures.income) * 100
     },
     format: formatPercent,
+    tick: formatPercent,
     scale: () => BALANCE_SCALE,
   },
   totalMeasure('income', { title: msg`Venituri totale`, description: msg`Tot ce a încasat primăria în ${BUDGET_YEAR}, în lei`, ramp: INCOME_RAMP }),

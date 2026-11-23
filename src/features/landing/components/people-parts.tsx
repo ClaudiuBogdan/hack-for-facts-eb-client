@@ -29,9 +29,7 @@ type SocialKind = keyof typeof SOCIAL
 
 /**
  * Brand marks are drawn inline because lucide dropped them — there is no
- * `Linkedin` or `Facebook` export in lucide-react v1. `AppFooter.tsx` already
- * carries the LinkedIn path this way; these are the same glyphs, so the app has
- * one drawing of each rather than two that drift.
+ * `Linkedin` or `Facebook` export in lucide-react v1.
  *
  * The 16px glyph sits in a 24px box from `sm` up, and a 40px one below it:
  * WCAG 2.2 §2.5.8 is about the target, not the picture, and an icon-only link

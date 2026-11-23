@@ -42,7 +42,11 @@ function RampStrip({ ramp, className }: { readonly ramp: readonly string[]; read
   )
 }
 
-/** The trigger's face, the same under a mouse and a finger. */
+/**
+ * The trigger's face, the same under a mouse and a finger: an ordinary one-line
+ * control (its colours, the map's name, the chevron), fixed in width from `sm`
+ * so it does not change size with the map. Its label says „Harta afișată".
+ */
 const TriggerFace = forwardRef<HTMLButtonElement, { readonly measure: Measure } & ComponentPropsWithoutRef<'button'>>(function TriggerFace({ measure, className, ...props }, ref) {
   const { i18n } = useLingui()
   return (
@@ -50,19 +54,14 @@ const TriggerFace = forwardRef<HTMLButtonElement, { readonly measure: Measure } 
       ref={ref}
       type="button"
       className={cn(
-        'flex min-h-14 w-full items-center gap-3 rounded-md border border-input bg-background px-3.5 py-2 text-left shadow-2xs transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring sm:w-80',
+        'flex h-10 w-full items-center gap-3 rounded-md border border-input bg-background px-3 text-left text-sm font-medium text-foreground shadow-2xs transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring sm:w-56',
         className,
       )}
       {...props}
     >
-      <span className="min-w-0 flex-1">
-        <MonoLabel className="block text-muted-foreground">{t`Harta`}</MonoLabel>
-        <span className="mt-0.5 flex items-center gap-3">
-          <span className="truncate text-lg font-semibold leading-tight text-foreground">{i18n._(measure.title)}</span>
-          <RampStrip ramp={measure.ramp} />
-        </span>
-      </span>
-      <ChevronDown className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <RampStrip ramp={measure.ramp} className="w-10" />
+      <span className="min-w-0 flex-1 truncate">{i18n._(measure.title)}</span>
+      <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </button>
   )
 })

@@ -11,10 +11,9 @@ import logo from '@/assets/logo/logo-mark.webp'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { CampaignLandingShareCard } from '@/features/campaigns/buget/components/CampaignAccessShareCard'
-import { ParliamentPromoCard } from '@/features/parliament/components/parliament-promo-card'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { getPlatformCoverage } from '@/features/landing/lib/platform-coverage'
+import { useFirstVisit } from '@/features/landing/lib/first-visit'
+import { visibleGroups } from '@/features/landing/lib/landing-groups'
 import { searchTermFromAddress } from '@/features/landing/lib/address-search-term'
 import type { FieldCell } from '@/features/landing/lib/pixel-art'
 import { SmearFilters, countUpWithin, stopCounting } from './count-up'
@@ -26,7 +25,6 @@ import { PanelTiltStyles, usePanelTilt } from './panel-tilt'
 import { PeopleArtStyles } from './people-art'
 import { PeopleBand } from './people-band'
 import { PixelFieldCanvas, useCanvasFieldMotion } from './pixel-canvas'
-import { ProvenanceBand } from './provenance-band'
 import { scrambleWithin, stopScrambling } from './scramble-text'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './scroll-light'
 import { SectionsMenu } from './sections-menu'
@@ -135,6 +133,9 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
+/** No root: handed to the entrance hooks on a return visit, so they find nothing to arm. */
+const NO_ROOT: RefObject<HTMLDivElement | null> = { current: null }
+
 /**
  * `fieldCell` is the module the margin field is quantised to. It stays a prop
  * rather than a constant because the renderer is indifferent to it — 12px is
@@ -143,7 +144,7 @@ function startArrivalEffects(block: Element, delay: number) {
  */
 export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) {
   const { i18n } = useLingui()
-  const coverage = getPlatformCoverage()
+  const groups = visibleGroups()
   // The hero is the field's host: the canvases are found inside it and a click
   // is measured against it.
   const heroRef = useRef<HTMLElement | null>(null)
@@ -154,7 +155,10 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
   // Where focus goes when the panel's close button removes the panel from under
   // it: the field the hero is built around, and the one the window points at.
   const searchInputRef = useRef<HTMLInputElement>(null)
-  useCanvasFieldMotion(heroRef, { cell: fieldCell })
+  // Entrances play the first time the page is on screen and not when the
+  // reader comes back to it (`first-visit.ts`).
+  const firstVisit = useFirstVisit()
+  useCanvasFieldMotion(heroRef, { cell: fieldCell, intro: firstVisit })
   // One root, lent to every effect that needs the page's geometry. None of them
   // owns it, which is what lets the page decide which of them run at all.
   const rootRef = useRef<HTMLDivElement>(null)
@@ -162,8 +166,9 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
   // The hero is deliberately not a group: it is on screen at load, so "first
   // time in view" would mean "at load", and hiding server-rendered text at load
   // is the failure this is built to avoid. The hero keeps its own entrance.
-  useRevealOnView(rootRef, startArrivalEffects)
-  usePictureReveal(rootRef)
+  const entranceRoot = firstVisit ? rootRef : NO_ROOT
+  useRevealOnView(entranceRoot, startArrivalEffects)
+  usePictureReveal(entranceRoot)
   useSectionLight(rootRef)
   // Module state outlives the component, so an unmount mid-flight would leave
   // both loops ticking against nodes that are no longer in the document.
@@ -181,8 +186,17 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
        layout viewport grows to match so every fixed element is drawn 6px too
        wide. `clip` rather than `hidden` because it is not a scroll container:
        the search dropdown still runs past the hero, and nothing here reaches
-       sideways on purpose — the margin fields already clip themselves. */
-    <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
+       sideways on purpose — the margin fields already clip themselves.
+
+       `ss03` is Inter's round commas and quotes, for the whole page: the
+       comma in a figure („19,04") and in a heading, and the comma under every
+       „ș" and „ț". Already in the font the page downloads, and a comma keeps
+       its width (quotation marks come out a little wider). */
+    <div
+      ref={rootRef}
+      data-entrances={firstVisit ? undefined : 'played'}
+      className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']"
+    >
       <LightMaterialStyles />
       <ScrollLightStyles />
       <SectionLightStyles />
@@ -260,9 +274,8 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
               {/* Extra-bold and tightly tracked, which is the headline's voice.
                   Tracking also closes the gaps between words, so they are given
                   back (`word-spacing`), and the lines sit far enough apart for
-                  the circumflex of „î" to clear the descender above it. `ss03`
-                  is Inter's round commas: the headline has a comma and a „ț". */}
-              <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [font-feature-settings:'ss03'] [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
+                  the circumflex of „î" to clear the descender above it. */}
+              <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
                 <Trans>
                   Date publice,
                   <br />
@@ -312,7 +325,7 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
                     </Link>
                   ))}
                 </span>
-                <SectionsMenu groups={coverage.groups} className="-my-2 -mr-3 sm:-my-1.5 sm:-ml-1 sm:mr-0 sm:self-center" />
+                <SectionsMenu groups={groups} className="-my-2 -mr-3 sm:-my-1.5 sm:-ml-1 sm:mr-0 sm:self-center" />
               </nav>
             </div>
             {/* `self-stretch` against the grid's `items-start`: with the window
@@ -330,70 +343,27 @@ export function LandingPage({ fieldCell = 12 }: { readonly fieldCell?: FieldCell
 
       <NationalFactsBand />
 
-      {/* Statement — open band. `py-14` on a phone, which is what every band
-          below it uses; this was the one at 16 and read as a gap rather than
-          a rhythm. */}
-      <section className="border-b">
-        <RuledFrame className="py-14 sm:py-20">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <MonoLabel className="block text-primary" data-reveal>
-                <Trans>01 / Ce găsești aici</Trans>
-              </MonoLabel>
-              <h2
-                data-reveal
-                className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-              >
-                <Trans>
-                  Fiecare sursă,
-                  <br />
-                  într-un singur loc
-                </Trans>
-              </h2>
-            </div>
-            <p
-              data-reveal
-              className="text-base leading-relaxed text-muted-foreground lg:col-span-6 lg:col-start-7"
-            >
-              <Trans>
-                Platforma acoperă banii publici de la bugetul de stat până la dosarul din
-                instanță. Fiecare suprafață spune ce întrebare răspunde — și de unde vin cifrele.
-              </Trans>
-            </p>
-          </div>
-        </RuledFrame>
-      </section>
-
-      {/* Index — dense band. */}
+      {/* Index — dense band. It follows the figures directly: the hero has
+          already said what the platform is, so nothing introduces the list. */}
       <section className="border-b">
         <RuledFrame className="py-14">
-          <SurfaceIndex groups={coverage.groups} />
+          <SurfaceIndex groups={groups} />
         </RuledFrame>
       </section>
 
-      {/* Provenance, then the people: the two are the same claim in two forms —
-          where the data comes from, then who stands behind it — and the second
-          is weaker anywhere else. */}
-      <ProvenanceBand coverage={coverage} />
+      {/* The campaign card („Provocări") is hidden for now, by the owner's
+          choice; `CampaignLandingShareCard` is kept for when it returns. */}
+      {/* The map, full width: every primărie's budget, loaded in the
+          background as the reader approaches it. */}
+      <BudgetMapSection />
 
-      <section className="border-b">
+      {/* The people — the page's last band. No `border-b`: the footer's top
+          rule closes it, and a second one here would double it. */}
+      <section>
         <RuledFrame className="py-14 sm:py-16">
           <PeopleBand />
         </RuledFrame>
       </section>
-
-      <section className="border-b">
-        <RuledFrame className="py-12">
-          <div className="space-y-4">
-            <CampaignLandingShareCard className="w-full" />
-            <ParliamentPromoCard className="w-full" />
-          </div>
-        </RuledFrame>
-      </section>
-
-      {/* The map — the page's last band, full width: every primărie's budget,
-          loaded in the background once the page is idle. */}
-      <BudgetMapSection />
     </div>
   )
 }

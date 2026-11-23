@@ -8,7 +8,7 @@ import { formatValue, type NumberLocale } from '@/features/landing/lib/national-
  * Figures that count up to themselves, each digit smeared by its own speed.
  *
  * The blur is not a property of the number, it is a property of each digit.
- * A counter running to 1.916 turns its units column over about five thousand
+ * A counter running to 1.930 turns its units column over about five thousand
  * times a second at the start and its thousands column five times — so the tail
  * of the figure is a streak while the leading digit is already legible, which is
  * how an odometer looks and is the whole reason it reads as speed rather than as
@@ -18,7 +18,7 @@ import { formatValue, type NumberLocale } from '@/features/landing/lib/national-
  *
  * Each column's rate falls out of its place value: the digit in the 10^p column
  * changes `|dV/dt| / 10^p` times a second. Nothing here is tuned per figure,
- * which is why it holds for numbers as differently shaped as `1.916` and
+ * which is why it holds for numbers as differently shaped as `1.930` and
  * `19,04`.
  *
  * **A fast digit gets fainter, not heavier.** An earlier pass pushed the alpha
@@ -62,7 +62,7 @@ const TICK_MS = 40
  *
  * Interpolated logarithmically between the two, because the columns of a single
  * figure differ by orders of magnitude and a linear ramp cannot describe that.
- * `1.916` starts with its units column turning over 5,200 times a second and
+ * `1.930` starts with its units column turning over 5,200 times a second and
  * its thousands column five times; on a linear scale saturating anywhere useful
  * for the thousands puts the other three columns hard against the ceiling, and
  * three digits pinned at maximum are not proportional to anything — they are
@@ -224,7 +224,7 @@ export function stopCounting() {
  * Starts every figure inside `block` counting, `delay` milliseconds from now.
  *
  * The width is pinned first, measured while the element still holds the real
- * figure — which it does, because that is what the server rendered. `1.916` is
+ * figure — which it does, because that is what the server rendered. `1.930` is
  * five characters and `0` is one, and `tabular-nums` only fixes the width of a
  * digit, not how many there are, so without this the unit beside it would walk
  * left and right for the whole second.
@@ -246,7 +246,7 @@ export function countUpWithin(block: Element, delay: number) {
     element.style.minWidth = `${element.getBoundingClientRect().width}px`
     element.style.display = 'inline-block'
     // Anchored right, so the figure grows leftward into the cell and its last
-    // digit stays welded to the unit beside it. Left-anchored, `1.916` reaches
+    // digit stays welded to the unit beside it. Left-anchored, `1.930` reaches
     // its final width by pushing rightward, which reads as the layout settling
     // rather than as a number arriving.
     element.style.textAlign = 'right'

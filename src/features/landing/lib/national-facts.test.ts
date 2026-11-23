@@ -3,8 +3,8 @@ import { NATIONAL_FACTS, formatFact, formatValue } from './national-facts'
 
 describe('national facts', () => {
   it('writes the separators of the active locale', () => {
-    expect(formatValue(1916.4, 0, 'ro')).toBe('1.916')
-    expect(formatValue(1916.4, 0, 'en')).toBe('1,916')
+    expect(formatValue(1929.9, 0, 'ro')).toBe('1.930')
+    expect(formatValue(1929.9, 0, 'en')).toBe('1,930')
     expect(formatValue(19.04, 2, 'ro')).toBe('19,04')
     expect(formatValue(19.04, 2, 'en')).toBe('19.04')
     // Romanian by default: the source language, and what the server renders.
@@ -25,5 +25,11 @@ describe('national facts', () => {
       expect(fact.key).toBeTruthy()
     }
     expect(new Set(NATIONAL_FACTS.map((fact) => fact.key)).size).toBe(NATIONAL_FACTS.length)
+  })
+
+  it('leads every figure to the platform page on its data', () => {
+    for (const fact of NATIONAL_FACTS) {
+      expect('dataset' in fact.link ? fact.link.dataset : fact.link.budget).toBeTruthy()
+    }
   })
 })

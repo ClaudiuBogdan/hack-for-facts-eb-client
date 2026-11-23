@@ -180,7 +180,8 @@ export default function BudgetMap({ measureId }: { readonly measureId: MeasureId
           scale={figures ? scale : null}
           active={valueOf(tooltip?.siruta ?? popover?.siruta ?? '')}
           coverage={figures && labels ? coverageOf(values) : null}
-          outsideMap={outsideMap}
+          // The capital's sentence holds its line until the figures say whether it applies.
+          outsideMap={figures ? outsideMap : 1}
           locale={locale}
         />
       </RuledFrame>

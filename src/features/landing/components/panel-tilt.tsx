@@ -338,6 +338,12 @@ const CSS = `
     animation: tpz-panel-in ${DURATION_MS}ms ${EASE} ${DELAY_MS}ms backwards;
   }
 
+  /* A return visit, marked on the page's root: the panel is already there. */
+  [data-entrances='played'] .${TILT_SHADOW_CLASS},
+  [data-entrances='played'] .${TILT_PANEL_CLASS} {
+    animation: none;
+  }
+
   /*
    * Two-point perspective: yawed about the vertical axis and nothing else.
    *

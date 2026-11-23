@@ -64,7 +64,7 @@ const mainItems: ReadonlyArray<{
     icon: HeartHandshake,
   },
   {
-    title: <Trans>Entity Analytics</Trans>,
+    title: <Trans>Instituții publice</Trans>,
     url: "/entity-analytics",
     icon: ListOrdered,
   },

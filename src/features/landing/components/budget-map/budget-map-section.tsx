@@ -4,18 +4,18 @@ import { useQueryClient } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { useInView } from 'react-intersection-observer'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { Button } from '@/components/ui/button'
 import { quietImport, reloadForFreshCode } from '@/lib/chunk-recovery'
 import { isUpdateAvailableError } from '@/lib/errors-utils'
 import { prefetchBudgetMap } from '../../hooks/use-budget-map-data'
-import { BUDGET_YEAR, measureFromSearch, searchForMeasure, type MeasureId } from '../../lib/budget-map-measures'
+import { BUDGET_YEAR, measureById, measureFromSearch, searchForMeasure, type MeasureId } from '../../lib/budget-map-measures'
+import { MapLegend } from './map-legend'
 import { MapPicker } from './map-picker'
 
 /**
- * `04 / Harta` — the landing's last band: every primărie's budget on a map.
+ * The landing's map band: every primărie's budget on a map.
  *
  * Light on purpose: no MapLibre code. The title and the picker are rendered
  * here, on the server too; the map itself (`budget-map.tsx`) is loaded
@@ -36,15 +36,23 @@ import { MapPicker } from './map-picker'
 const loadMap = () => quietImport(() => import('./budget-map'))
 const BudgetMap = lazy(loadMap)
 
-/** The map's place and the legend's, so nothing below moves when they arrive. */
-function MapPlace() {
+/**
+ * The map's place and the legend's, so nothing below moves when they arrive.
+ * The legend's place is the legend itself, unseen and without figures: the
+ * same words wrap the same way at every width and in both languages, which a
+ * measured height could not promise.
+ */
+function MapPlace({ measureId }: { readonly measureId: MeasureId }) {
   return (
     <div className="w-full">
       <RuledFrame className="px-px sm:px-px">
         <div className="mx-auto w-full bg-muted/30" style={{ maxWidth: 'calc(82vh * 1.4150)', aspectRatio: '1.415' }} />
       </RuledFrame>
       <RuledFrame className="pt-4 pb-14">
-        <div className="h-36 sm:h-28" />
+        <div className="invisible" aria-hidden="true">
+          {/* No scale, so no value is printed and the locale is never read. */}
+          <MapLegend measure={measureById(measureId)} scale={null} active={null} coverage={null} outsideMap={1} locale="ro" />
+        </div>
       </RuledFrame>
     </div>
   )
@@ -93,26 +101,22 @@ export function BudgetMapSection() {
   return (
     <section ref={ref} className="border-b" aria-labelledby="budget-map-title" data-budget-map>
       <RuledFrame className="pt-14 pb-6 sm:pt-20">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <MonoLabel className="block text-primary" data-reveal>
-              <Trans>04 / Harta</Trans>
-            </MonoLabel>
-            <h2 id="budget-map-title" data-reveal className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              <Trans>Bugetul fiecărei primării în {year}</Trans>
-            </h2>
-          </div>
+        {/* The control on the title's centre line from `sm`; on a phone, under it at full width. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+          <h2 id="budget-map-title" data-reveal className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            <Trans>Bugetul fiecărei primării în {year}</Trans>
+          </h2>
           <MapPicker value={measureId} onChange={setMeasureId} />
         </div>
       </RuledFrame>
       {near ? (
         <ErrorBoundary fallback={MapFailed}>
-          <Suspense fallback={<MapPlace />}>
+          <Suspense fallback={<MapPlace measureId={measureId} />}>
             <BudgetMap measureId={measureId} />
           </Suspense>
         </ErrorBoundary>
       ) : (
-        <MapPlace />
+        <MapPlace measureId={measureId} />
       )}
     </section>
   )

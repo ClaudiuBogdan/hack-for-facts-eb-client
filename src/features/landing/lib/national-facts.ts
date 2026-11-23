@@ -4,25 +4,32 @@ import type { MessageDescriptor } from '@lingui/core'
 /**
  * National context for the landing strip.
  *
- * Every figure here is an official published statistic for 2025, checked
- * against the issuing institution's own release before being written down.
- * They are hardcoded rather than fetched on purpose: they are annual, they
- * change once a year, and a landing page should not pay for a network round
- * trip to state the size of the country's economy.
+ * Every figure here is an official published statistic, the newest annual one
+ * its institution has released, checked against the institution's own data
+ * before being written down (last checked 22 November 2026: INS Tempo for the
+ * two INS figures, with Eurostat carrying the same numbers; the Ministry's
+ * December bulletin, as the platform's own budget pages hold it, for the other
+ * two). They are hardcoded rather than fetched on purpose: they are annual, and
+ * a landing page should not pay for a network round trip to state the size of
+ * the country's economy. The price is that INS revises them — GDP three times
+ * in 2026 — so whoever touches this file re-checks all four.
  *
  * What they are *not* is platform coverage. The number of institutions this app
  * holds execution data for is a different universe — a subset — and putting it
  * in the same row as a national total invites a reader to divide one by the
- * other. Coverage lives in the provenance band instead.
+ * other. The landing prints no coverage figures.
  *
  * `DESIGN.md` §Data Trust requires source, date and confidence beside every
  * claim, so each fact carries its own and the UI renders them. `publication`
- * names the primary document rather than linking it: `insse.ro` refuses
- * automated requests and `mfinante.gov.ro` refused connection outright, so no
- * deep URL here could be confirmed to resolve. Naming the release is honest;
- * shipping a plausible-looking link nobody has opened is not. Whoever promotes
- * this should resolve them and add the hrefs.
+ * names the primary document for whoever re-verifies the figure; `link` is
+ * where a reader goes from the tile — the platform's own page on the same
+ * data, where the series, its source and its revisions are in full.
  */
+
+/** Where a tile leads: an INS dataset's page, or a view of the national budget's analysis page. */
+export type NationalFactLink =
+  | { readonly dataset: string }
+  | { readonly budget: { readonly tip?: 'sold'; readonly perioada?: number } }
 
 export type NationalFact = {
   /** Stable identity for rendering; two facts can share a publication. */
@@ -38,26 +45,28 @@ export type NationalFact = {
   readonly source: MessageDescriptor
   /** The primary release this came from, for whoever has to re-verify it. */
   readonly publication: string
+  readonly link: NationalFactLink
 }
 
 export const NATIONAL_FACTS: readonly NationalFact[] = [
   {
-    // INS, 1,916,404.9 million lei at current prices, +0.7% in real terms
-    // against 2024. Eurostat carries 1,916.405bn, i.e. the same number.
+    // INS, 1,929,930.0 million lei at current prices: the „PIB" row of Tempo
+    // matrix CON111B for 2025, last updated 9 Oct 2026. Eurostat
+    // (`nama_10_gdp`, updated 11 Nov 2026) carries the same number, flagged
+    // provisional.
     //
-    // Three releases, not two: the flash estimate on 13 Feb 2026, the first
-    // detailed provisional at 1,910,390.1 million on 6 Mar 2026, then the
-    // second provisional (INS archive id `pib_tr4r2025_2`) on 9 Apr 2026 which
-    // revised it up to the figure here. The 1,910.390bn we carried first was
-    // the first provisional, not the flash. No final annual 2025 estimate has
-    // been published, so this stays labelled provisional.
+    // The fourth figure for this year: 1,910,390.1 million in the first
+    // provisional (6 Mar 2026), 1,916,404.9 million in the second (9 Apr
+    // 2026), and this one with the autumn revision of the annual accounts.
+    // Still provisional; the tile says so.
     key: 'gdp',
-    value: 1916.4,
+    value: 1929.9,
     digits: 0,
     unit: msg`mld. lei`,
     label: msg`Produs intern brut`,
     source: msg`INS · 2025 · provizoriu`,
-    publication: 'INS, PIB 2025, date provizorii (2), publicat 9 aprilie 2026',
+    publication: 'INS, PIB 2025, date provizorii; Tempo CON111B, actualizat 9 octombrie 2026',
+    link: { dataset: 'CON111B' },
   },
   {
     // Ministry of Finance, consolidated general budget, full year 2025:
@@ -74,19 +83,22 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
     source: msg`MFin · 2025 · date operative`,
     publication:
       'MFin, execuția bugetului general consolidat la 31.12.2025 (publicat 27 ian. 2026)',
+    // Spending by category, for the year.
+    link: { budget: { perioada: 2025 } },
   },
   {
     // Same release, same "date operative" status: cash deficit 146,033.2
     // million lei.
     //
     // "(cash)" is in the label because the methodology changes the answer. The
-    // EU-comparable ESA 2010 deficit for the same year is 151.063bn lei, 7.9%
-    // of GDP — a different number for the same country and period, and the one
-    // Brussels uses.
+    // EU-comparable ESA 2010 deficit for the same year is 149.731bn lei, 7.8%
+    // of GDP (Eurostat `gov_10dd_edpt1`, the October 2026 notification) — a
+    // different number for the same country and period, and the one Brussels
+    // uses.
     //
     // The ratio is deliberately not printed. MF published 7.65% of GDP using a
     // GDP denominator of 1,909,000.0 million lei in that same annex. Against
-    // the revised 1,916,404.9 million above it works out at 7.62% — a derived
+    // the revised 1,929,930.0 million above it works out at 7.57% — a derived
     // ratio, not MF's published statistic. Printing MF's 7.65% beside our own
     // GDP tile would invite a reader to divide the two and find a figure that
     // matches neither. Both are defensible alone; together they contradict.
@@ -98,28 +110,35 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
     source: msg`MFin · 2025 · date operative`,
     publication:
       'MFin, execuția bugetului general consolidat la 31.12.2025 (publicat 27 ian. 2026)',
+    // The balance, year by year.
+    link: { budget: { tip: 'sold' } },
   },
   {
-    // INS, 19,043,151 people at 1 January 2025. The only definitive figure in
-    // this list: INS published 19,036,031 provisionally on 29 Aug 2025 and the
-    // definitive series on 14 Jan 2026.
+    // INS, 19,041,322 people at 1 January 2026, provisional: Tempo matrix
+    // POP105A (total, both sexes, both residence areas), last updated 10 Sep
+    // 2026; Eurostat (`demo_gind`) carries the same number. The definitive
+    // figure follows around January 2027, as the one for 1 January 2025
+    // (19,043,151, definitive since 14 Jan 2026) followed its own provisional.
+    // The owner chose the newest figure over the last definitive one (22
+    // November 2026): it is the one the dataset page shows as its latest.
     //
-    // Labelled "rezidentă" deliberately, because INS publishes two figures 2.7
+    // Labelled "rezidentă" deliberately, because INS publishes two figures 2.6
     // million apart and they measure different things. Resident population is
     // usual residence in Romania whatever the citizenship. Population by
-    // domicile (21,739,400) is Romanian citizens with a registered domicile
-    // address, de jure, so it still counts long-term emigrants — and that
-    // figure is itself provisional, from the 28 Apr 2025 release, pending
-    // revision. Per-capita normalisation uses the resident figure, and an
-    // unlabelled number would be the wrong one to half the readers.
+    // domicile (21.646 million at the same date, as reported from the INS
+    // release of 2 Apr 2026) is Romanian citizens with a registered domicile
+    // address, de jure, so it still counts long-term emigrants. Per-capita
+    // normalisation uses the resident figure, and an unlabelled number would
+    // be the wrong one to half the readers.
     key: 'population',
     value: 19.04,
     digits: 2,
     unit: msg`mil.`,
     label: msg`Populație rezidentă`,
-    source: msg`INS · 1 ian. 2025 · definitiv`,
+    source: msg`INS · 1 ian. 2026 · provizoriu`,
     publication:
-      'INS, populația rezidentă la 1 ianuarie 2025, date definitive (14 ian. 2026)',
+      'INS, populația rezidentă la 1 ianuarie 2026, date provizorii; Tempo POP105A, actualizat 10 septembrie 2026',
+    link: { dataset: 'POP105A' },
   },
 ]
 

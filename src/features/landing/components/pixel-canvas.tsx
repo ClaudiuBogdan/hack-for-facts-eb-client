@@ -488,7 +488,16 @@ export function PixelFieldCanvas({
  */
 export function useCanvasFieldMotion(
   hostRef: RefObject<HTMLElement | null>,
-  { cell, enabled = true }: { readonly cell: FieldCell; readonly enabled?: boolean },
+  {
+    cell,
+    enabled = true,
+    intro = true,
+  }: {
+    readonly cell: FieldCell
+    readonly enabled?: boolean
+    /** Whether the wave at load plays. The ripple from a click always does. */
+    readonly intro?: boolean
+  },
 ) {
   useEffect(() => {
     const host = hostRef.current
@@ -539,7 +548,7 @@ export function useCanvasFieldMotion(
     // The intro is a load-time event: it plays for the fields built at load
     // and never for one that appears later. The query is asked again because
     // the window can narrow between the canvases' layout effects and this one.
-    if (targets.length > 0 && field.matches) {
+    if (intro && targets.length > 0 && field.matches) {
       const introStart = performance.now() + INTRO_DELAY_MS
       run('intro', introStart, introStart + Math.max(...targets.map((t) => t.packed.introEndMs)))
     }
@@ -594,7 +603,7 @@ export function useCanvasFieldMotion(
       // every cell back to rest — so the canvas has to do it explicitly.
       if (wasAnimating) for (const target of targets) drawFrame(target, null)
     }
-  }, [hostRef, enabled, cell])
+  }, [hostRef, enabled, intro, cell])
 }
 
 /** The visible span the ripple's schedule is stretched against: the clipping

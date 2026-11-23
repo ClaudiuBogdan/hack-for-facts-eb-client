@@ -62,7 +62,7 @@ describe('budget map measures', () => {
     ])
     expect(scale.classOf(-10)).toBe(2)
     expect(scale.classOf(-10.06)).toBe(1) // prints „−10,1%"
-    expect(scale.ends).toBeDefined()
+    expect(measureById('balance').ends).toBeDefined()
     expect(positionOnScale(scale, 0)).toBeCloseTo(3.5 / 7)
   })
 
@@ -83,6 +83,12 @@ describe('budget map measures', () => {
     const flat = measureById('income').scale(Array.from({ length: 100 }, () => 5_000_000))
     expect(flat.classes).toHaveLength(2)
     expect(flat.classes[1]!.color).toBe('#0b3d73')
+  })
+
+  it('print the legend’s boundaries short: a signed percent, an amount without „lei"', () => {
+    expect([-20, -3, 3, 20].map((value) => measureById('balance').tick(value, 'ro'))).toEqual(['−20%', '−3%', '+3%', '+20%'])
+    expect(measureById('income').tick(14_000_000, 'ro')).toBe(`14${NB}mil.`)
+    expect(measureById('expenses').tick(178_500_000, 'en')).toBe('178.5M')
   })
 
   it('have no classes without figures', () => {

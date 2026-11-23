@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
-import { useLingui } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import leu from '@/assets/images/landing-leu.webp'
 import leuAvif from '@/assets/images/landing-leu.avif'
 import atlas from '@/assets/images/landing-atlas.webp'
@@ -27,18 +27,12 @@ type GroupImage = {
   /** The art's own pixels. See `GroupPicture` — the cell reserves the box. */
   readonly width: number
   readonly height: number
-  /**
-   * Whether the picture is cropped to its cell or fitted inside it.
-   *
-   * The choice is about whether a crop reads as framing or as damage. Justitia
-   * is a figure running out of frame already, so a top-anchored crop reads as a
-   * portrait. The leu is a complete object on a pedestal — crop it and it looks
-   * broken, so it is fitted and the card shows through around it. Both are
-   * cut-outs on transparency; neither brings a ground of its own.
-   */
-  readonly fit: 'cover' | 'contain'
+  /** How far forward the picture sits. See `GroupPicture`. */
   readonly zoom?: number
-  /** `object-position`. Load-bearing under `cover`, where the crop decides what survives. */
+  /**
+   * `object-position`, and the point the zoom grows from. Load-bearing under
+   * `cover`, where the crop decides what survives.
+   */
   readonly position: string
   /** Which side of the entries the picture sits on. */
   readonly side: 'left' | 'right'
@@ -68,24 +62,24 @@ type GroupImage = {
  * wherever the cell is narrowest.
  */
 const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
-  // The leu, in both senses — the stone lion and the currency. The widest group
-  // at four entries, so its cell comes out the tallest and narrowest of the
-  // three, which is what a seated figure on a pedestal wants.
+  // The leu, in both senses — the stone lion and the currency.
   bani: {
     src: leu,
     avif: leuAvif,
     width: 760,
     height: 942,
-    fit: 'contain',
-    // Sat low rather than centred. `contain` fits this one by width, which
-    // leaves vertical slack, and centred in that slack the statue floated above
-    // its own plinth line.
-    position: '50% 82%',
-    // The only picture that needs it: `contain` inside a cell as tall as the
-    // four entries beside it left the statue small in a wide frame.
-    zoom: 1.2,
+    // A portrait, cropped from the top: the head is always whole and the
+    // cell's edge takes the plinth. `12px` rather than `0%`: the file is
+    // trimmed to the figure's outline, and the length is the air above the
+    // mane. It was fitted and zoomed 1.2 from its centre, which cut the plinth
+    // on a desktop and the head as well on a phone.
+    position: '50% 12px',
+    // At 1 the desktop cell, about square, cuts the figure exactly along the
+    // paws, which reads as a mistake. A little closer and the cut falls across
+    // the legs there and on a phone, and under the paws on a tablet.
+    zoom: 1.12,
     side: 'left',
-    // 4:5 against the source's own 0.807, so mobile barely letterboxes.
+    // 4:5 against the source's own 0.807, so a phone crops almost nothing.
     mobileAspect: 'aspect-4/5',
   },
   // On the right, so the three pictures alternate down the page rather than
@@ -99,23 +93,21 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     width: 760,
     height: 1250,
     /*
-     * The only one of the three that is cropped on desktop rather than fitted,
-     * because it is the only one whose proportions fight the cell.
-     *
-     * The desktop cell comes out about square — 363x365 beside three entries —
-     * and this source is 0.608. Under 'contain' that fits to height and renders
-     * the figure 221px wide in a 363px box, a small statue marooned in white
-     * space. 'cover' fills it, at the price of the pedestal.
+     * The one whose proportions fight the cell: the desktop cell comes out
+     * about square — 363x365 beside three entries — and this source is 0.608.
+     * Fitted whole it would be 221px wide in a 363px box, a small statue
+     * marooned in white space. Cropped, it fills the cell at the price of the
+     * pedestal.
      *
      * Worth the price: what is lost is the base, and what survives is the globe
      * and the figure carrying it, which is the whole of what the picture is
-     * for. '15%' rather than '0%' because anchoring the top gives the globe the
-     * entire upper half and pushes the head to the middle; a little lower
-     * trades the crown of the globe — which stays legible as a sphere even
-     * clipped — for the head, the shoulders and a knee.
+     * for. Cropped from the top, with `14px` of air above the globe (the file
+     * is trimmed to the figure's outline): the group's tab stands right over
+     * this cell, and at the earlier `15%` the globe's crown was cut flat
+     * against the tab's underside. The cut now falls across the shin on a
+     * desktop and under the plinth on a tablet.
      */
-    fit: 'cover',
-    position: '50% 15%',
+    position: '50% 14px',
     side: 'right',
     /*
      * 4:5, which crops on a phone exactly as it does on the desktop row.
@@ -138,7 +130,6 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     avif: justitiaAvif,
     width: 760,
     height: 1140,
-    fit: 'cover',
     position: '50% 0%',
     side: 'left',
     mobileAspect: 'aspect-4/3',
@@ -163,7 +154,7 @@ const ROW_SPAN: Record<number, string | undefined> = {
   6: 'sm:row-span-6',
 }
 
-function SurfaceCell({ entry, index }: { readonly entry: LandingEntry; readonly index: number }) {
+function SurfaceCell({ entry }: { readonly entry: LandingEntry }) {
   const { i18n } = useLingui()
   const Icon = entry.icon
   return (
@@ -176,17 +167,18 @@ function SurfaceCell({ entry, index }: { readonly entry: LandingEntry; readonly 
         preload="intent"
         className="group flex h-full flex-col p-5 transition-colors hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
+        {/* The arrow is always there, at rest: a phone has no hover to
+            reveal it, and a tile that only looks like a link once the pointer
+            is on it does not look like one. */}
         <span className="flex items-center justify-between">
-          <Icon className="size-4 text-muted-foreground transition-colors group-hover:text-primary" />
-          <MonoLabel className="text-muted-foreground/50 transition-colors group-hover:text-primary">
-            {String(index).padStart(2, '0')}
-          </MonoLabel>
+          <Icon aria-hidden="true" className="size-4 text-muted-foreground transition-colors group-hover:text-primary" />
+          <ArrowRight
+            aria-hidden="true"
+            className="size-4 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transition-none"
+          />
         </span>
-        <span className="mt-4 flex items-baseline gap-1.5 text-base font-semibold tracking-tight text-foreground">
-          {i18n._(entry.title)}
-          <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
-        </span>
-        <span className="mt-1.5 block text-sm leading-snug text-muted-foreground">
+        <span className="mt-4 block text-lg font-semibold leading-snug tracking-tight text-foreground">{i18n._(entry.title)}</span>
+        <span className="mt-1 block text-sm leading-snug text-muted-foreground">
           {i18n._(entry.blurb)}
         </span>
       </Link>
@@ -196,12 +188,14 @@ function SurfaceCell({ entry, index }: { readonly entry: LandingEntry; readonly 
 
 export function SurfaceIndex({ groups }: { readonly groups: readonly LandingGroup[] }) {
   const { i18n } = useLingui()
-  let running = 0
   return (
     <div className="space-y-12">
-      {groups.map((group, groupIndex) => {
-        const start = running
-        running += group.entries.length
+      {/* The list's own heading, for the page outline only: on screen the
+          groups' titles are enough. The words are the hero menu's. */}
+      <h2 className="sr-only">
+        <Trans>Toate secțiunile</Trans>
+      </h2>
+      {groups.map((group) => {
         const image = GROUP_IMAGES[group.key]
         const columns = columnsFor(group.entries.length)
         // An illustrated group closes its own rectangle: the picture spans
@@ -210,33 +204,38 @@ export function SurfaceIndex({ groups }: { readonly groups: readonly LandingGrou
         const fillers = image ? 0 : fillersFor(group.entries.length, columns)
         return (
           <section key={group.key} aria-labelledby={`group-${group.key}`}>
-            <div data-reveal className="flex items-center gap-3">
-              <MonoLabel className="text-primary">{String(groupIndex + 1).padStart(2, '0')}</MonoLabel>
-              {/* A heading, not a styled span: the index is the page's outline.
-                  Its accessible name comes from the `sr-only` copy inside
-                  `ScrambleText`, so `aria-labelledby` above keeps resolving to
-                  the real title while the visible copy is still noise. */}
-              <h3 id={`group-${group.key}`}>
-                <MonoLabel className="text-foreground">
-                  <ScrambleText>{i18n._(group.title)}</ScrambleText>
-                </MonoLabel>
-              </h3>
-              <span aria-hidden="true" className="h-px flex-1 bg-border" />
-              <MonoLabel className="text-muted-foreground/60 tabular-nums">
-                {String(group.entries.length).padStart(2, '0')}
+            {/* The title is a folder tab on the group's box: it shares the box's
+                left rule and covers the box's top rule under itself (`-mb-px`
+                over the page's own colour), so tab and box read as one sheet.
+
+                A heading, not a styled span: the index is the page's outline.
+                Its accessible name comes from the `sr-only` copy inside
+                `ScrambleText`, so `aria-labelledby` above keeps resolving to
+                the real title while the visible copy is still noise. */}
+            <h3
+              id={`group-${group.key}`}
+              data-reveal
+              className={cn(
+                'relative z-10 -mb-px w-fit border border-b-0 bg-background px-4 py-2.5',
+                // The tab stands over the picture, so it follows it to the
+                // right. On a phone the picture is on top, full width, and
+                // every tab stays on the left.
+                image?.side === 'right' && 'sm:ml-auto',
+              )}
+            >
+              {/* A size up from the label's own 10px: this one is a heading. */}
+              <MonoLabel className="text-[0.8125rem] text-foreground">
+                <ScrambleText>{i18n._(group.title)}</ScrambleText>
               </MonoLabel>
-            </div>
+            </h3>
             <div
               {...{ [SECTION_LIGHT_ATTR]: '' }}
               className={cn(
-                'mt-4 grid grid-cols-1 border',
-                // 5/7 between `sm` and `lg`, 4/8 from `lg`. At 768 the 4fr
-                // column is 218px, and the lion — a `contain` fit in a cell as
-                // tall as four entries — rendered 300px tall at the foot of a
-                // 544px box with 240px of nothing above it. On the wider track
-                // it is 382px tall under 179px of air: a quarter more statue,
-                // and the slack is what the fit costs, not what the track
-                // does. The cropped pictures simply show more of themselves.
+                'grid grid-cols-1 border',
+                // 5/7 between `sm` and `lg`, 4/8 from `lg`: at 768 a 4fr
+                // column is 218px, too narrow for a picture as tall as four
+                // entries. On the wider track the pictures show more of
+                // themselves.
                 image
                   ? image.side === 'right'
                     ? 'sm:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)]'
@@ -282,7 +281,6 @@ export function SurfaceIndex({ groups }: { readonly groups: readonly LandingGrou
                   <GroupPicture
                     src={image.src}
                     avif={image.avif}
-                    fit={image.fit}
                     position={image.position}
                     width={image.width}
                     height={image.height}
@@ -290,8 +288,8 @@ export function SurfaceIndex({ groups }: { readonly groups: readonly LandingGrou
                   />
                 </div>
               ) : null}
-              {group.entries.map((entry, i) => (
-                <SurfaceCell key={entry.to} entry={entry} index={start + i + 1} />
+              {group.entries.map((entry) => (
+                <SurfaceCell key={entry.to} entry={entry} />
               ))}
               {Array.from({ length: fillers }, (_, i) => (
                 <div

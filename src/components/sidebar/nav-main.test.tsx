@@ -134,11 +134,11 @@ describe('NavMain', () => {
       expect(screen.getByText('National Budget')).toBeInTheDocument()
     })
 
-    it('renders Entity Analytics link', async () => {
+    it('renders the Instituții publice link', async () => {
       await renderNavMain()
 
       expect(screen.getByTestId('link-/entity-analytics')).toBeInTheDocument()
-      expect(screen.getByText('Entity Analytics')).toBeInTheDocument()
+      expect(screen.getByText('Instituții publice')).toBeInTheDocument()
     })
 
     it('renders Achizitii publice link', async () => {

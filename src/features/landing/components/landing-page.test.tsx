@@ -2,12 +2,12 @@ import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, within } from '@/test/test-utils'
 import { LANDING_GROUPS, visibleGroups } from '@/features/landing/lib/landing-groups'
-import { NATIONAL_FACTS, formatFact, formatValue } from '@/features/landing/lib/national-facts'
+import { NATIONAL_FACTS, formatFact } from '@/features/landing/lib/national-facts'
 import { MARGIN_FIELD_MIN_WIDTH_PX } from '@/features/landing/lib/margin-field'
-import { ANGELS, FOUNDER } from '@/features/landing/lib/people'
+import { ANGELS, CONTRIBUTORS, FOUNDER } from '@/features/landing/lib/people'
 import { getUserLocale } from '@/lib/utils'
 import { LandingPage } from './landing-page'
 
@@ -25,9 +25,30 @@ const locale = getUserLocale() === 'en' ? 'en' : 'ro'
  * for it.
  */
 
+/** The href the router would build: path params filled in, an object search as the query. */
+function mockHref(to: unknown, params?: Record<string, string>, search?: unknown): string {
+  if (typeof to !== 'string') return '#'
+  const path = Object.entries(params ?? {}).reduce((built, [key, value]) => built.replace(`$${key}`, encodeURIComponent(value)), to)
+  const query = search && typeof search === 'object' ? new URLSearchParams(Object.entries(search).map(([key, value]) => [key, String(value)])).toString() : ''
+  return query ? `${path}?${query}` : path
+}
+
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, preload: _preload, ...props }: { readonly children: ReactNode; readonly to: string; readonly preload?: unknown }) => (
-    <a href={typeof to === 'string' ? to : '#'} {...props}>
+  Link: ({
+    children,
+    to,
+    params,
+    search,
+    preload: _preload,
+    ...props
+  }: {
+    readonly children: ReactNode
+    readonly to: string
+    readonly params?: Record<string, string>
+    readonly search?: unknown
+    readonly preload?: unknown
+  }) => (
+    <a href={mockHref(to, params, search)} {...props}>
       {children}
     </a>
   ),
@@ -38,30 +59,11 @@ vi.mock('@tanstack/react-router', () => ({
 /** The address the page reads, changed by a test as a navigation would. */
 const address = vi.hoisted(() => ({ search: {} as Record<string, unknown> }))
 
-vi.mock('@/features/campaigns/buget/components/CampaignAccessShareCard', () => ({
-  CampaignLandingShareCard: () => <div>Campaign card</div>,
-}))
-
-vi.mock('@/features/parliament/components/parliament-promo-card', () => ({
-  ParliamentPromoCard: () => <div>Parliament card</div>,
-}))
-
-const fetchEntityAnalytics = vi.fn()
-vi.mock('@/lib/api/entity-analytics', () => ({
-  fetchEntityAnalytics: (...args: readonly unknown[]) => fetchEntityAnalytics(...args),
-  entityRankingFilter: (filter: unknown) => filter,
-}))
-
 vi.mock('@/features/entity-search/api/entity-search-api.live', () => ({
   searchEntitiesLive: vi.fn(),
 }))
 
 describe('LandingPage', () => {
-  beforeEach(() => {
-    fetchEntityAnalytics.mockReset()
-    fetchEntityAnalytics.mockResolvedValue({ nodes: [], pageInfo: { totalCount: 3295, hasNextPage: false, hasPreviousPage: false } })
-  })
-
   it('server-renders every word and nothing that must not ship', () => {
     const html = renderToStaticMarkup(
       <QueryClientProvider client={createTestQueryClient()}>
@@ -78,8 +80,15 @@ describe('LandingPage', () => {
     for (const fact of NATIONAL_FACTS) {
       expect(html).toContain(formatFact(fact, locale))
     }
+    // Each figure leads to the platform's own page on its data.
+    for (const href of ['/ins/seturi/CON111B', '/national-budget/analytics?perioada=2025', '/national-budget/analytics?tip=sold', '/ins/seturi/POP105A']) {
+      expect(html).toContain(`href="${href}"`)
+    }
     expect(html).toContain(FOUNDER.name)
     for (const angel of ANGELS) expect(html).toContain(angel.name)
+    // The people close the page, after the map, and keep their contributors row.
+    expect(html.indexOf('id="budget-map-title"')).toBeLessThan(html.indexOf(FOUNDER.name))
+    for (const contributor of CONTRIBUTORS) expect(html).toContain(contributor.name)
 
     expect(html).not.toContain('MUST_NOT_SHIP')
     expect(html).not.toContain('data-dev-marker')
@@ -91,7 +100,7 @@ describe('LandingPage', () => {
     render(<LandingPage />, { queryClient: createTestQueryClient() })
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/pe înțeles/)
-    // Two comboboxes: the search field, and the budget map's picker at the foot of the page.
+    // Two comboboxes: the search field, and the budget map's picker.
     expect(screen.getAllByRole('combobox').filter((element) => element.tagName === 'INPUT')).toHaveLength(1)
     expect(screen.getByRole('combobox', { name: /Harta afișată/ })).toBeInTheDocument()
 
@@ -141,25 +150,5 @@ describe('LandingPage', () => {
     // The class is what hides the field; the module is what script asks. They must agree.
     const wrapper = document.querySelector('canvas[data-field-canvas]')?.closest('.hidden')
     expect(wrapper?.classList).toContain(`min-[${MARGIN_FIELD_MIN_WIDTH_PX}px]:block`)
-  })
-
-  it('omits the institution count until it is served', async () => {
-    let resolve: (value: unknown) => void = () => {}
-    fetchEntityAnalytics.mockReturnValue(new Promise((r) => { resolve = r }))
-    render(<LandingPage />, { queryClient: createTestQueryClient() })
-
-    expect(screen.queryByText(/instituții cu execuție/)).not.toBeInTheDocument()
-    resolve({ nodes: [], pageInfo: { totalCount: 3295, hasNextPage: false, hasPreviousPage: false } })
-    expect(await screen.findByText(/instituții cu execuție/)).toBeInTheDocument()
-    expect(screen.getByText(formatValue(3295, 0, locale))).toBeInTheDocument()
-  })
-
-  it('never prints a stand-in count when the request fails', async () => {
-    fetchEntityAnalytics.mockRejectedValue(new Error('down'))
-    render(<LandingPage />, { queryClient: createTestQueryClient() })
-    // Give the query a tick to settle into its error state.
-    await new Promise((r) => setTimeout(r, 20))
-    expect(screen.queryByText(/instituții cu execuție/)).not.toBeInTheDocument()
-    expect(screen.getByText(/seturi de date/)).toBeInTheDocument()
   })
 })

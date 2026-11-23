@@ -13,12 +13,13 @@ import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
 
 /**
- * The people on the landing's `03 / Oameni` band.
+ * The people on the landing's people band.
  *
  * Three tiers, because they are three different claims: the person who is
  * accountable for the platform, the handful who kept it alive, and everyone who
- * has ever pushed a commit. Flattening them into one grid would say they are
- * the same claim, and the second tier is the one that carries the gratitude.
+ * put something in: feedback, ideas, data or code. Flattening them into one grid
+ * would say they are the same claim, and the second tier is the one that carries
+ * the gratitude.
  *
  * **The people are real now** — names, photographs, institutions and links, all
  * supplied rather than invented. What is still stand-in is the contributor tier
@@ -84,8 +85,8 @@ const PORTRAIT_ANGEL_4: Portrait = { webp: angel4Webp, avif: angel4Avif, width: 
 export const FOUNDER: Person = {
   id: 'claudiu',
   name: 'Claudiu Constantin Bogdan',
-  role: msg`Fondator · Transparenta.eu`,
-  blurb: msg`Datele despre banii publici există deja — dar în zeci de portaluri care nu vorbesc între ele. Transparenta le pune la un loc și spune, de fiecare dată, de unde vine cifra.`,
+  role: msg`Fondator`,
+  blurb: msg`Am construit Transparenta.eu pentru că datele despre banii publici există, dar în zeci de portaluri care nu vorbesc între ele.`,
   portrait: PORTRAIT_FOUNDER,
   links: {
     facebook: 'https://www.facebook.com/claudiuconstantin.bogdan',

@@ -61,13 +61,13 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
     entries: [
       {
         title: msg`Buget național`,
-        blurb: msg`Cheltuielile statului pe capitole, de la minister la linie bugetară.`,
+        blurb: msg`De unde vin banii statului și pe ce se duc, an de an.`,
         to: '/national-budget',
         icon: Boxes,
       },
       {
         title: msg`Achiziții publice`,
-        blurb: msg`Contracte, proceduri și furnizori din SEAP, cu grila de încredere.`,
+        blurb: msg`Ce cumpără statul și de la cine: contracte și achiziții directe din SEAP.`,
         to: '/procurement',
         icon: Landmark,
       },
@@ -80,7 +80,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
       },
       {
         title: msg`PNRR`,
-        blurb: msg`Jaloane, proiecte și beneficiari din Planul de Redresare.`,
+        blurb: msg`Proiectele finanțate prin PNRR: cine primește banii și pentru ce.`,
         to: '/pnrr',
         icon: FileStack,
       },
@@ -91,26 +91,26 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
     title: msg`Instituții și organizații`,
     entries: [
       {
-        title: msg`Analiza entităților`,
-        blurb: msg`Clasamente și comparații între instituții, pe valori agregate.`,
+        title: msg`Instituții publice`,
+        blurb: msg`Primării, ministere, școli și spitale, comparate după venituri și cheltuieli.`,
         to: '/entity-analytics',
         icon: ListOrdered,
       },
       {
         title: msg`Firme`,
-        blurb: msg`Firme private, cu situația fiscală și legăturile cu banul public.`,
+        blurb: msg`Orice firmă din România: bilanțuri, angajați și contracte cu statul.`,
         to: '/companies',
         icon: Briefcase,
       },
       {
         title: msg`Întreprinderi publice`,
-        blurb: msg`Firmele statului și ale primăriilor: cine le controlează, ce fac și cum le merge.`,
+        blurb: msg`Firmele statului și ale primăriilor: cine le controlează și cum le merge.`,
         to: '/public-enterprises',
         icon: Building2,
       },
       {
         title: msg`ONG-uri`,
-        blurb: msg`Organizații neguvernamentale și servicii sociale, cu nivel de identitate.`,
+        blurb: msg`Asociații și fundații, cu banii lor și serviciile sociale licențiate.`,
         to: '/ngos',
         icon: HeartHandshake,
       },
@@ -118,26 +118,22 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
   },
   {
     key: 'lege',
-    title: msg`Lege și justiție`,
+    // Parliament and elections sit here rather than in a group of their own:
+    // with the parliament gate shut that group was a heading over one link.
+    title: msg`Lege, justiție și alegeri`,
     entries: [
       {
         title: msg`Legislație`,
-        blurb: msg`Acte normative din Monitorul Oficial, cu istoricul modificărilor.`,
+        blurb: msg`Legi, ordonanțe și hotărâri din Monitorul Oficial, cu modificările lor.`,
         to: '/legislation',
         icon: Scale,
       },
       {
         title: msg`Justiție`,
-        blurb: msg`Dosarele instanțelor, pe materii, trepte și județe. Persoanele nu sunt numite.`,
+        blurb: msg`Ce se judecă în instanțe, pe materii și județe.`,
         to: '/justice',
         icon: Gavel,
       },
-    ],
-  },
-  {
-    key: 'politica',
-    title: msg`Politică`,
-    entries: [
       {
         title: msg`Parlament`,
         blurb: msg`Membri, grupuri, voturi și traseul legislativ al inițiativelor.`,
@@ -147,7 +143,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
       },
       {
         title: msg`Alegeri`,
-        blurb: msg`Catalogul edițiilor de date electorale și al scrutinelor lor, cu etichetele din sursă. Fără rezultate deocamdată.`,
+        blurb: msg`Rezultatele alegerilor, pe partide: voturi și prezență la fiecare scrutin.`,
         to: '/alegeri',
         icon: Vote,
         gate: () => isFeatureEnabled('elections'),
@@ -156,23 +152,23 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
   },
   {
     key: 'instrumente',
-    title: msg`Instrumente`,
+    title: msg`Statistici și instrumente`,
     entries: [
       {
         title: msg`Hartă`,
-        blurb: msg`Aceleași cifre, distribuite pe județe și localități.`,
+        blurb: msg`Cheltuielile fiecărei primării și ale fiecărui județ, pe hartă.`,
         to: '/map',
         icon: Map,
       },
       {
         title: msg`Grafice`,
-        blurb: msg`Construiește-ți propriul grafic din seriile disponibile.`,
+        blurb: msg`Construiește și salvează propriile grafice din datele platformei.`,
         to: '/charts',
         icon: BarChart2,
       },
       {
         title: msg`Statistici INS`,
-        blurb: msg`Serii oficiale INS, cu acoperirea declarată pentru fiecare nivel.`,
+        blurb: msg`Salarii, prețuri, șomaj și populație, pentru țară, județe și localități.`,
         to: '/ins',
         icon: Activity,
       },
