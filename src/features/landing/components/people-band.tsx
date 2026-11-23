@@ -87,7 +87,7 @@ export function PeopleBand() {
 
         <p data-reveal className="mt-4 text-base leading-relaxed text-muted-foreground md:col-span-6 md:col-start-7 md:mt-0">
           <Trans>
-            Transparenta există datorită oamenilor care o susțin: cu timp, idei, date sau o ușă
+            Transparenta.eu există datorită oamenilor care o susțin: cu timp, idei, date sau o ușă
             deschisă atunci când conta.
           </Trans>
         </p>

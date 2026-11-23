@@ -769,10 +769,11 @@ Six changes, approved by the owner; the first was reversed the same day:
 7. **The words are about the people who help, not about the founder** (owner,
    same day). The lead was „Platforma e scrisă de un singur om și a rămas în
    picioare pentru că alți câțiva au dat timp, date sau o ușă deschisă atunci
-   când conta."; it is now „Transparenta există datorită oamenilor care o
+   când conta."; it is now „Transparenta.eu există datorită oamenilor care o
    susțin: cu timp, idei, date sau o ușă deschisă atunci când conta." The
    supporters' label „Îngerii păzitori" is now „Principalii promotori", the
-   owner's wording.
+   owner's wording. The name reads „Transparenta.eu" there, as in the founder's
+   quote (owner, 23 November).
    The heading „Cine e în spatele platformei" is now „Oamenii din spatele
    platformei": plural, to match. The founder's own line stays in the first
    person, and the layout (his portrait on the left half) is unchanged, by the

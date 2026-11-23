@@ -48036,8 +48036,8 @@ msgid "Transparenta Agent"
 msgstr "Transparenta Agent"
 
 #: src/features/landing/components/people-band.tsx:89
-msgid "Transparenta există datorită oamenilor care o susțin: cu timp, idei, date sau o ușă deschisă atunci când conta."
-msgstr "Transparenta exists thanks to the people who support it: with time, ideas, data or an open door when it mattered."
+#~ msgid "Transparenta există datorită oamenilor care o susțin: cu timp, idei, date sau o ușă deschisă atunci când conta."
+#~ msgstr "Transparenta exists thanks to the people who support it: with time, ideas, data or an open door when it mattered."
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:286
 msgid "Transparenta nu poate citi acum lista de produse și condițiile acestei achiziții."
@@ -48046,6 +48046,10 @@ msgstr "Transparenta cannot read this purchase's list of products and terms righ
 #: src/components/footer/support-menu.tsx:34
 msgid "Transparenta.eu – Support"
 msgstr "Transparenta.eu – Support"
+
+#: src/features/landing/components/people-band.tsx:89
+msgid "Transparenta.eu există datorită oamenilor care o susțin: cu timp, idei, date sau o ușă deschisă atunci când conta."
+msgstr "Transparenta.eu exists thanks to the people who support it: with time, ideas, data or an open door when it mattered."
 
 #: src/features/legal/lib/legal-domains.ts:51
 msgid "Transport"
