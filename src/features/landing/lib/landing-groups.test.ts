@@ -1,20 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LANDING_GROUPS, visibleGroups } from './landing-groups'
 
-const mockMode = vi.hoisted(() => ({ parliament: false, features: false }))
+const mockMode = vi.hoisted(() => ({ features: false }))
 
 vi.mock('@/config/feature-flags', () => ({ isFeatureEnabled: () => mockMode.features }))
-
-vi.mock('@/lib/scraper-references', () => ({
-  isMockDataEnabled: (id: string) => id === 'political-parliament' && mockMode.parliament,
-}))
 
 const allEntries = LANDING_GROUPS.flatMap((group) => group.entries)
 const count = (groups: ReturnType<typeof visibleGroups>) => groups.reduce((sum, group) => sum + group.entries.length, 0)
 
 describe('visible landing groups', () => {
   beforeEach(() => {
-    mockMode.parliament = false
     mockMode.features = false
   })
 
@@ -29,8 +24,11 @@ describe('visible landing groups', () => {
     expect(groups.length).toBe(LANDING_GROUPS.filter((group) => group.entries.some((entry) => entry.gate === undefined)).length)
   })
 
+  it('lists parliament with every flag off: it reads the live API', () => {
+    expect(visibleGroups().flatMap((group) => group.entries).map((entry) => entry.to)).toContain('/parlament')
+  })
+
   it('lists a gated section once its gate opens', () => {
-    mockMode.parliament = true
     mockMode.features = true
     expect(count(visibleGroups())).toBe(allEntries.length)
   })

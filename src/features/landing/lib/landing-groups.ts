@@ -19,7 +19,6 @@ import type { LinkProps } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
 import { isFeatureEnabled } from '@/config/feature-flags'
-import { isMockDataEnabled } from '@/lib/scraper-references'
 
 /**
  * The surfaces the landing page can offer, and the gates that decide whether it
@@ -33,8 +32,9 @@ import { isMockDataEnabled } from '@/lib/scraper-references'
  * `to` is typed against the generated route tree — a path that stops existing
  * fails `yarn run check` rather than 404-ing in someone's browser.
  *
- * Gates mirror the shipped ones verbatim: `ParliamentPromoCard` returns null
- * unless `political-parliament` is mocked.
+ * A gate is the area's feature flag (`src/config/feature-flags.ts`).
+ * Parliament had one on mock mode, carried over from the prototype; its pages
+ * have read the live API since August, so it was taken off (owner, 23 November).
  * Hiding, not badging: the sidebar's precedent, and a homepage that advertises
  * a surface the reader cannot use costs more trust than an absent tile.
  */
@@ -119,7 +119,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
   {
     key: 'lege',
     // Parliament and elections sit here rather than in a group of their own:
-    // with the parliament gate shut that group was a heading over one link.
+    // a group of their own would be two links under a heading.
     title: msg`Lege, justiție și alegeri`,
     entries: [
       {
@@ -139,7 +139,6 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
         blurb: msg`Membri, grupuri, voturi și traseul legislativ al inițiativelor.`,
         to: '/parlament',
         icon: Users,
-        gate: () => isMockDataEnabled('political-parliament'),
       },
       {
         title: msg`Alegeri`,

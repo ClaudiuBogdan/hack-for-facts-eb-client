@@ -4795,7 +4795,7 @@ msgstr "direct purchases, through {0}"
 msgid "Achiziții în timp"
 msgstr "Achiziții în timp"
 
-#: src/components/sidebar/nav-main.tsx:72
+#: src/components/sidebar/nav-main.tsx:75
 #: src/features/landing/components/landing-page.tsx:71
 #: src/features/landing/lib/landing-groups.ts:69
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:73
@@ -6360,14 +6360,14 @@ msgstr "The election has no ballot day on {0}."
 msgid "Alegerea nu are zile de vot în date."
 msgstr "The election has no ballot days in the data."
 
-#: src/components/sidebar/nav-main.tsx:94
+#: src/components/sidebar/nav-main.tsx:112
 #: src/features/elections/catalog/elections-catalog-page.tsx:43
 #: src/features/elections/catalog/elections-catalog-page.tsx:52
 #: src/features/elections/catalog/elections-catalog-page.tsx:66
 #: src/features/elections/catalog/elections-catalog-text.ts:23
 #: src/features/elections/components/election-hub-page.tsx:32
 #: src/features/elections/components/elections-page-layout.tsx:56
-#: src/features/landing/lib/landing-groups.ts:145
+#: src/features/landing/lib/landing-groups.ts:144
 msgid "Alegeri"
 msgstr "Elections"
 
@@ -11821,7 +11821,7 @@ msgstr "Chart Type"
 msgid "Chart view"
 msgstr "Chart view"
 
-#: src/components/sidebar/nav-main.tsx:52
+#: src/components/sidebar/nav-main.tsx:55
 #: src/components/ui/shortcuts.tsx:38
 #: src/routes/charts/index.lazy.tsx:192
 msgid "Charts"
@@ -11981,7 +11981,7 @@ msgstr "Expenses, {year}"
 msgid "Cheltuielile de la 1 ianuarie, {0} față de {1}"
 msgstr "Spending since 1 January, {0} vs {1}"
 
-#: src/features/landing/lib/landing-groups.ts:159
+#: src/features/landing/lib/landing-groups.ts:158
 msgid "Cheltuielile fiecărei primării și ale fiecărui județ, pe hartă."
 msgstr "Each town hall's and each county's spending, on a map."
 
@@ -13899,7 +13899,7 @@ msgstr "Construction of buildings"
 msgid "Construcții metalice și produse din metal"
 msgstr "Metal products"
 
-#: src/features/landing/lib/landing-groups.ts:165
+#: src/features/landing/lib/landing-groups.ts:164
 msgid "Construiește și salvează propriile grafice din datele platformei."
 msgstr "Build and save your own charts from the platform's data."
 
@@ -15846,7 +15846,7 @@ msgstr "Danger Zone"
 msgid "Dark"
 msgstr "Dark"
 
-#: src/components/sidebar/nav-main.tsx:37
+#: src/components/sidebar/nav-main.tsx:40
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -16359,7 +16359,7 @@ msgstr "Public data from official sources, made clear."
 #~ msgid "Date publice,<0/>decizii informate"
 #~ msgstr "Public data,<0/>informed decisions"
 
-#: src/features/landing/components/landing-page.tsx:279
+#: src/features/landing/components/landing-page.tsx:282
 msgid "Date publice,<0/>pe înțeles"
 msgstr "Public data,<0/>made clear"
 
@@ -18170,7 +18170,7 @@ msgstr "Of the selection"
 #~ msgid "Din situații au valoarea raportată"
 #~ msgstr "Of statements report the value"
 
-#: src/features/landing/components/landing-page.tsx:286
+#: src/features/landing/components/landing-page.tsx:289
 msgid "Din surse oficiale, pentru decizii informate."
 msgstr "From official sources, for informed decisions."
 
@@ -22652,7 +22652,7 @@ msgctxt "companies hub unit"
 msgid "firme"
 msgstr "companies"
 
-#: src/components/sidebar/nav-main.tsx:79
+#: src/components/sidebar/nav-main.tsx:87
 #: src/features/landing/lib/landing-groups.ts:100
 #: src/features/landing/lib/search-filters.ts:79
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:36
@@ -23844,7 +23844,7 @@ msgstr "Gradient"
 #~ msgid "Grafic textual cu tabel fallback pentru accesibilitate."
 #~ msgstr "Grafic textual cu tabel fallback pentru accesibilitate."
 
-#: src/features/landing/lib/landing-groups.ts:164
+#: src/features/landing/lib/landing-groups.ts:163
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:43
 msgid "Grafice"
 msgstr "Charts"
@@ -24055,7 +24055,7 @@ msgstr "Hang tight while we resolve and redirect you to the destination."
 msgid "Harta"
 msgstr "Map"
 
-#: src/features/landing/lib/landing-groups.ts:158
+#: src/features/landing/lib/landing-groups.ts:157
 #: src/features/ngos/registry/components/registry-county-map.tsx:22
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:42
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:292
@@ -26815,7 +26815,7 @@ msgstr "Institutions funded from own revenue"
 msgid "instituții publice"
 msgstr "public institutions"
 
-#: src/components/sidebar/nav-main.tsx:67
+#: src/components/sidebar/nav-main.tsx:70
 #: src/features/landing/lib/landing-groups.ts:94
 msgid "Instituții publice"
 msgstr "Public institutions"
@@ -27149,7 +27149,7 @@ msgstr "Enterprises with at least one SEAP record, {0}–{1}, of {2}. Purchases 
 msgid "Întreprinderi pe autorități, tipuri de autoritate, județe și domenii"
 msgstr "Enterprises by authority, kind of authority, county and activity"
 
-#: src/components/sidebar/nav-main.tsx:84
+#: src/components/sidebar/nav-main.tsx:92
 #: src/features/landing/lib/landing-groups.ts:106
 #: src/features/public-enterprises/components/authority/authority-pending.tsx:30
 #: src/features/public-enterprises/components/enterprise/enterprise-links.tsx:55
@@ -27742,6 +27742,7 @@ msgstr "Legal and accounting"
 msgid "Justice"
 msgstr "Justice"
 
+#: src/components/sidebar/nav-main.tsx:102
 #: src/features/justice/components/analysis/analysis-head.tsx:102
 #: src/features/justice/components/court/justice-court-head.tsx:40
 #: src/features/justice/components/echr/echr-head.tsx:69
@@ -28452,7 +28453,7 @@ msgstr "Legislation"
 msgid "Legislația României"
 msgstr "Romanian legislation"
 
-#: src/components/sidebar/nav-main.tsx:89
+#: src/components/sidebar/nav-main.tsx:97
 #: src/features/entity-search/lib/doc-type-meta.ts:68
 #: src/features/landing/components/landing-page.tsx:73
 #: src/features/landing/lib/landing-groups.ts:126
@@ -30104,7 +30105,7 @@ msgid "Manual"
 msgstr "Manual"
 
 #: src/components/filters/MapFilter.tsx:220
-#: src/components/sidebar/nav-main.tsx:47
+#: src/components/sidebar/nav-main.tsx:50
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1243
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3669
@@ -31526,7 +31527,7 @@ msgstr "Births above deaths"
 msgid "Național"
 msgstr "National"
 
-#: src/components/sidebar/nav-main.tsx:57
+#: src/components/sidebar/nav-main.tsx:60
 #: src/routes/budget-explorer.lazy.tsx:580
 msgid "National Budget"
 msgstr "National Budget"
@@ -35070,7 +35071,7 @@ msgstr "ONG"
 #~ msgid "ONG negasit"
 #~ msgstr "ONG negasit"
 
-#: src/components/sidebar/nav-main.tsx:62
+#: src/components/sidebar/nav-main.tsx:65
 #: src/features/landing/lib/landing-groups.ts:112
 #: src/features/landing/lib/search-filters.ts:102
 #: src/features/legal/lib/legal-vocabulary.ts:68
@@ -36073,6 +36074,7 @@ msgstr "Parent"
 msgid "Parent Categories"
 msgstr "Parent Categories"
 
+#: src/components/sidebar/nav-main.tsx:107
 #: src/features/landing/lib/landing-groups.ts:138
 msgid "Parlament"
 msgstr "Parliament"
@@ -37504,6 +37506,7 @@ msgstr "PNDL"
 msgid "PNMC"
 msgstr "PNMC"
 
+#: src/components/sidebar/nav-main.tsx:80
 #: src/features/entity-search/lib/doc-type-meta.ts:86
 #: src/features/landing/lib/landing-groups.ts:82
 #: src/features/landing/lib/search-filters.ts:129
@@ -41206,7 +41209,7 @@ msgstr "Rezultate căutare"
 msgid "Rezultatele alegerilor din Romania, 1992-2025, explorabile cu sursa langa fiecare cifra."
 msgstr "Rezultatele alegerilor din Romania, 1992-2025, explorabile cu sursa langa fiecare cifra."
 
-#: src/features/landing/lib/landing-groups.ts:146
+#: src/features/landing/lib/landing-groups.ts:145
 msgid "Rezultatele alegerilor, pe partide: voturi și prezență la fiecare scrutin."
 msgstr "Election results by party: votes and turnout for each contest."
 
@@ -41544,7 +41547,7 @@ msgstr "Employees: an average headcount above {0} or below zero is a keying erro
 msgid "Salarii"
 msgstr "Wages"
 
-#: src/features/landing/lib/landing-groups.ts:171
+#: src/features/landing/lib/landing-groups.ts:170
 msgid "Salarii, prețuri, șomaj și populație, pentru țară, județe și localități."
 msgstr "Wages, prices, unemployment and population, for the country, counties and localities."
 
@@ -41638,7 +41641,7 @@ msgstr "or tap it once more on the map"
 #~ msgstr "Sau localitatea ta"
 
 #: src/features/justice/components/hub/justice-hub-hero.tsx:53
-#: src/features/landing/components/landing-page.tsx:314
+#: src/features/landing/components/landing-page.tsx:317
 #: src/features/national-budget/home/components/home-head.tsx:68
 #: src/features/ngos/hub/ngo-hub-hero.tsx:62
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:63
@@ -41943,7 +41946,7 @@ msgid "Scrutinul pentru funcția {office} în {place}: voturile la nivel de part
 msgstr "The contest for {office} in {place}: party-level votes and turnout."
 
 #: src/features/justice/components/hub/justice-hub-hero.tsx:51
-#: src/features/landing/components/landing-page.tsx:310
+#: src/features/landing/components/landing-page.tsx:313
 #: src/features/national-budget/home/components/home-head.tsx:67
 #: src/features/ngos/hub/ngo-hub-hero.tsx:60
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:61
@@ -44987,7 +44990,7 @@ msgstr "Official statistics,<0/>in plain words"
 msgid "Statistică socială"
 msgstr "Social statistics"
 
-#: src/components/sidebar/nav-main.tsx:100
+#: src/components/sidebar/nav-main.tsx:118
 msgid "Statistici"
 msgstr "Statistics"
 
@@ -45004,7 +45007,7 @@ msgid "Statistici de utilizare"
 msgstr "Usage statistics"
 
 #: src/features/entity-search/lib/doc-type-meta.ts:33
-#: src/features/landing/lib/landing-groups.ts:170
+#: src/features/landing/lib/landing-groups.ts:169
 #: src/features/landing/lib/search-filters.ts:138
 #: src/features/statistics/components/hub/hub-dataset-search.tsx:22
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:89
@@ -45014,7 +45017,7 @@ msgstr "Usage statistics"
 msgid "Statistici INS"
 msgstr "INS statistics"
 
-#: src/features/landing/lib/landing-groups.ts:155
+#: src/features/landing/lib/landing-groups.ts:154
 msgid "Statistici și instrumente"
 msgstr "Statistics and tools"
 

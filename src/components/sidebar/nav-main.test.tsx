@@ -42,6 +42,9 @@ vi.mock('lucide-react', () => ({
   Vote: () => <span data-testid="icon-elections" />,
   HeartHandshake: () => <span data-testid="icon-ngos" />,
   Activity: () => <span data-testid="icon-statistics" />,
+  FileStack: () => <span data-testid="icon-pnrr" />,
+  Gavel: () => <span data-testid="icon-justice" />,
+  Users: () => <span data-testid="icon-parliament" />,
 }))
 
 // Mock router
@@ -155,6 +158,17 @@ describe('NavMain', () => {
       expect(screen.getByText('Legislație')).toBeInTheDocument()
     })
 
+    it.each([
+      ['/pnrr', 'PNRR'],
+      ['/justice', 'Justiție'],
+      ['/parlament', 'Parlament'],
+    ])('renders the %s link', async (url, label) => {
+      await renderNavMain()
+
+      expect(screen.getByTestId(`link-${url}`)).toBeInTheDocument()
+      expect(screen.getByText(label)).toBeInTheDocument()
+    })
+
     it('renders Alegeri link while the area is on in this build', async () => {
       await renderNavMain()
 
@@ -181,8 +195,8 @@ describe('NavMain', () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      // Twelve declared, every area on.
-      expect(menuItems).toHaveLength(12)
+      // Fifteen declared, every area on.
+      expect(menuItems).toHaveLength(15)
     })
 
     it('renders the public enterprises link, after the companies', async () => {

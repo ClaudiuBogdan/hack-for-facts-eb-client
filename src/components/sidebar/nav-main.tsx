@@ -1,4 +1,4 @@
-import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Briefcase, Vote, HeartHandshake } from "lucide-react";
+import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Briefcase, Vote, HeartHandshake, FileStack, Gavel, Users } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -19,9 +19,12 @@ type MainItemUrl =
   | "/national-budget"
   | "/entity-analytics"
   | "/procurement"
+  | "/pnrr"
   | "/companies"
   | "/public-enterprises"
   | "/legislation"
+  | "/justice"
+  | "/parlament"
   | "/alegeri"
   | "/ngos"
   | "/ins";
@@ -74,6 +77,11 @@ const mainItems: ReadonlyArray<{
     icon: Landmark,
   },
   {
+    title: <Trans>PNRR</Trans>,
+    url: "/pnrr",
+    icon: FileStack,
+  },
+  {
     // Building2 stands for "Întreprinderi publice"; private companies need
     // their own mark.
     title: <Trans>Firme</Trans>,
@@ -89,6 +97,16 @@ const mainItems: ReadonlyArray<{
     title: <Trans>Legislație</Trans>,
     url: "/legislation",
     icon: Scale,
+  },
+  {
+    title: <Trans>Justiție</Trans>,
+    url: "/justice",
+    icon: Gavel,
+  },
+  {
+    title: <Trans>Parlament</Trans>,
+    url: "/parlament",
+    icon: Users,
   },
   {
     title: <Trans>Alegeri</Trans>,
