@@ -42,6 +42,8 @@ describe('the profile helpers', () => {
     expect(isEmptyYear(buyerProfile())).toBe(false)
     expect(isEmptyYear(buyerProfile({ direct: none, awards: none, frameworks: 0 }))).toBe(true)
     expect(isEmptyYear(buyerProfile({ direct: none, awards: none, frameworks: 2 }))).toBe(false)
+    // Contracts unread (the API abstaining) are unknown: the year is not said empty.
+    expect(isEmptyYear(buyerProfile({ direct: none, awards: { count: null, valued: null, value: null, suppliers: null }, frameworks: null }))).toBe(false)
   })
 
   it('finds the firms that sold in all years but one at most', () => {

@@ -109,8 +109,10 @@ export function headSentence(profile: BuyerProfile): string {
           : t`${kind} din ${where}.`
         : `${kind}.`
   const direct = profile.direct.count ?? 0
-  const awards = profile.awards.count ?? 0
+  const awardsRead = profile.awards.count
+  const awards = awardsRead ?? 0
   const frameworks = profile.frameworks ?? 0
+  const period = year
   const bought =
     direct > 0
       ? profile.direct.value !== null
@@ -120,6 +122,11 @@ export function headSentence(profile: BuyerProfile): string {
   const awarded = awards > 0 ? contractsCount(awards) : null
   // Framework agreements are said when there are no awards to say: a year with only them is not a year with nothing.
   const signed = !awarded && frameworks > 0 ? frameworksCount(frameworks) : null
+  // Contracts unread (the API abstaining while legacy procurement is off): said so, never „only directly" or „none" — as the
+  // public enterprises' page says it.
+  if (awardsRead === null && !signed) {
+    return `${who} ${bought ? t`${bought}; contractele atribuite nu s-au putut citi acum.` : t`În ${period} nu are achiziții directe publicate în SEAP; contractele atribuite nu s-au putut citi acum.`}`
+  }
   const activity = bought
     ? awarded
       ? t`${bought}, și a atribuit ${awarded}.`
@@ -295,7 +302,9 @@ export function procedureLede(profile: BuyerProfile): string | null {
 /** Direct purchases beside contract awards: counts side by side, never a sum across the two. */
 export function balanceLede(profile: BuyerProfile): string | null {
   const direct = profile.direct.count ?? 0
-  const awards = profile.awards.count ?? 0
+  // Contracts unread are unknown: no claim that it bought only directly.
+  if (profile.awards.count === null) return null
+  const awards = profile.awards.count
   if (direct === 0) return null
   if (awards === 0) {
     // With framework agreements signed, it did not buy only directly.

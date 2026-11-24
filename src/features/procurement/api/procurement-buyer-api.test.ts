@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { periodOf, type Cutoff } from '../lib/profile-period'
 import { daRowName, daSupplierName } from '../lib/buyer-model'
+import type { GraphQLErrorEntry } from '@/lib/graphql/graphql-client'
 
 const graphqlQuery = vi.fn()
 // The switches as reads: legacy (release off, D6 off) unless a test says otherwise.
@@ -10,7 +11,10 @@ vi.mock('./procurement-da-release-status', async (importOriginal) => ({
   disclosureVersion: () => Promise.resolve('off:-:nod6:-'),
   daSupplierReads: () => Promise.resolve({ figures: !(release.d6 && !release.on), places: !release.on && !release.d6, known: true }),
 }))
-vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
+vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()),
+  graphqlQuery: (...args: unknown[]) => graphqlQuery(...args),
+}))
 // SEAP's cutoff is the shared read (tested beside it): here each test says what it is.
 const cutoffRead = vi.fn<() => Promise<Cutoff>>()
 vi.mock('./procurement-cutoff', async (importOriginal) => {
@@ -22,6 +26,7 @@ vi.mock('./procurement-cutoff', async (importOriginal) => {
   }
 })
 
+const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
 const { buyerProfileFields, fetchProcurementBuyer, fetchProcurementBuyerDirectCategories, fetchProcurementBuyerRecords } = await import('./procurement-buyer-api')
 
 const CUTOFF: Cutoff = { direct: '2026-02', contract: '2026-02' }
@@ -157,10 +162,10 @@ describe('fetchProcurementBuyer', () => {
     expect(profile.supplierPlaces).toBe(true)
   })
 
-  it('reads the profile as three requests side by side and the identity in its own, each with only its own fields', async () => {
+  it('reads the profile as four requests side by side and the identity in its own, each with only its own fields', async () => {
     answer(otopeni(), () => Promise.resolve(extras()))
     await fetchProcurementBuyer('4364446', 2025)
-    const [keys, figures, categories, identity] = ['ProcurementBuyerKeys', 'ProcurementBuyerFigures', 'ProcurementBuyerCategories', 'ProcurementBuyerIdentity'].map((name) =>
+    const [keys, figures, frameworks, categories, identity] = ['ProcurementBuyerKeys', 'ProcurementBuyerFigures', 'ProcurementBuyerFrameworks', 'ProcurementBuyerCategories', 'ProcurementBuyerIdentity'].map((name) =>
       callOf(name),
     )
     expect(Object.keys(keys?.[1] ?? {}).sort()).toEqual(['awardSuppliers', 'buyerCounty', 'directSuppliers', 'spanSuppliers'])
@@ -171,8 +176,12 @@ describe('fetchProcurementBuyer', () => {
     expect(figures?.[1]).not.toHaveProperty('nationalDirectMonths')
     expect(figures?.[1]).toHaveProperty('directPrev')
     expect(figures?.[1]).toMatchObject({ direct: { authorityCui: '4364446', year: 2025 } })
-    // Framework agreements are ceilings: the scope names the role, or the purchases default counts none.
-    expect(figures?.[1]).toMatchObject({ frameworks: { recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling' } })
+    // Framework agreements are ceilings: the scope names the role, or the purchases default counts none. Their own request, a legacy
+    // one: the API refuses it while legacy procurement is off, and that must not take the figures with it.
+    expect(Object.keys(frameworks?.[1] ?? {})).toEqual(['frameworks'])
+    expect(frameworks?.[1]).toMatchObject({ frameworks: { recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling' } })
+    expect(frameworks?.[2]).toMatchObject({ legacy: true })
+    expect(figures?.[1]).not.toHaveProperty('frameworks')
     expect(figures?.[1]).not.toHaveProperty('modifications')
     expect(figures?.[1]).not.toHaveProperty('directDivisions')
     expect(figures?.[0]).not.toContain('entity(')
@@ -181,10 +190,54 @@ describe('fetchProcurementBuyer', () => {
     for (const call of graphqlQuery.mock.calls) expect(String(call[0])).not.toMatch(/\bdirect(Divisions|Groups|Classes|Categories)\b/)
   })
 
+  describe('when the API refuses the framework read (legacy procurement off)', () => {
+    const refusing = (errors: GraphQLErrorEntry[]) => {
+      const answered = graphqlQuery.getMockImplementation()!
+      graphqlQuery.mockImplementation((query: string, variables: unknown, options: { readonly operationName: string }) =>
+        options.operationName === 'ProcurementBuyerFrameworks' ? Promise.reject(new GraphQLRequestError('GraphQL errors', { graphQLErrors: errors })) : answered(query, variables, options),
+      )
+    }
+    const ROLE = 'frameworkRole is unavailable: the active ClickHouse data build does not carry it'
+    const LEGACY_OFF = 'legacy procurement data is not served by this API; use the direct-acquisition release (procurementDa*) or procurementTotals'
+
+    it.each([
+      ['the capability refusal on the field, as the API answers today', [{ message: ROLE, path: ['frameworks'], extensions: { code: 'INVALID_INPUT' } }]],
+      ['legacy procurement\'s own off answer on the field', [{ message: LEGACY_OFF, path: ['frameworks'], extensions: { code: 'SERVICE_UNAVAILABLE' } }]],
+      ['the transport\'s replay of it for a read not sent, within the minute', [{ message: LEGACY_OFF, extensions: { code: 'SERVICE_UNAVAILABLE' } }]],
+    ])('renders the profile without the figure on %s, and keeps it nowhere (partial)', async (_case, errors) => {
+      answer(otopeni(), () => Promise.resolve(extras()))
+      refusing(errors)
+      const profile = await fetchProcurementBuyer('4364446', 2025)
+      expect(profile.frameworks).toBeNull()
+      expect(profile.direct).toEqual({ count: 293, valued: 293, value: 36_404_736.58, suppliers: 72 })
+      expect(profile.partial).toBe(true)
+    })
+
+    it.each([
+      ['another error on the field', [{ message: 'boom', path: ['frameworks'], extensions: { code: 'INTERNAL' } }]],
+      ['a busy analysis on the field (retryable)', [{ message: 'analytics is busy', path: ['frameworks'], extensions: { code: 'SERVICE_UNAVAILABLE' } }]],
+      ['an INVALID_INPUT that is not the capability refusal', [{ message: 'bad scope', path: ['frameworks'], extensions: { code: 'INVALID_INPUT' } }]],
+      ['the refusal below the field', [{ message: ROLE, path: ['frameworks', 'blocks', 0], extensions: { code: 'INVALID_INPUT' } }]],
+      ['the refusal beside another field\'s error', [{ message: ROLE, path: ['frameworks'], extensions: { code: 'INVALID_INPUT' } }, { message: ROLE, path: ['direct'], extensions: { code: 'INVALID_INPUT' } }]],
+    ])('still fails the profile on %s', async (_case, errors) => {
+      answer(otopeni(), () => Promise.resolve(extras()))
+      refusing(errors)
+      await expect(fetchProcurementBuyer('4364446', 2025)).rejects.toThrow()
+    })
+
+    it('marks the profile partial when the contract analysis abstains (no count), and not otherwise', async () => {
+      const raw = otopeni()
+      answer({ ...raw, awards: { blocks: [{ ...(raw.awards as { blocks: Record<string, unknown>[] }).blocks[0], recordCount: null }] } }, () => Promise.resolve(extras()))
+      const profile = await fetchProcurementBuyer('4364446', 2025)
+      expect(profile.awards.count).toBeNull()
+      expect(profile.partial).toBe(true)
+    })
+  })
+
   it('names its firms and reads their years and the county once the keys land', async () => {
     answer(otopeni(), () => Promise.resolve(extras()))
     const profile = await fetchProcurementBuyer('4364446', 2025)
-    expect(graphqlQuery).toHaveBeenCalledTimes(5)
+    expect(graphqlQuery).toHaveBeenCalledTimes(6)
 
     expect(profile.identity).toMatchObject({ name: 'Orașul Otopeni', isTownHall: true, hasBudget: true, population: { year: 2025, value: 22_660 } })
     expect(profile.identity.address).toBe('Orasul Otopeni, Str. 23 August, nr. 10, 75100')
@@ -329,7 +382,7 @@ describe('fetchProcurementBuyer', () => {
   it('reads the follow-up once more, then shows CUIs rather than failing the page', async () => {
     answer(otopeni(), () => Promise.reject(new Error('down')), () => Promise.reject(new Error('down')))
     const profile = await fetchProcurementBuyer('4364446', 2025)
-    expect(graphqlQuery).toHaveBeenCalledTimes(6)
+    expect(graphqlQuery).toHaveBeenCalledTimes(7)
     expect(profile).toMatchObject({ partial: true, namesUnread: true, supplierYears: [], countyShare: null })
     expect(profile.names.size).toBe(0)
   })
@@ -481,7 +534,21 @@ describe('fetchProcurementBuyerRecords', () => {
     const filters = graphqlQuery.mock.calls.map(([, variables]) => (variables as { filter: Record<string, unknown> }).filter)
     expect(filters).toContainEqual(expect.objectContaining({ authorityCui: { eq: '4364446' }, contractDate: { gte: '2025-01-01', lte: '2025-12-31' }, recordKind: { in: ['contract_award'] } }))
     expect(graphqlQuery.mock.calls.map(([, variables]) => (variables as { s?: unknown }).s)).toContainEqual({ authorityCui: '4364446', year: 2025, grain: 'direct_acquisition' })
-    expect(records.contracts[0]).toMatchObject({ id: 'c1', value: 9_610_000, winners: [{ cui: '16634489', name: 'Construct & Acting SRL' }] })
+    expect(records.contracts?.[0]).toMatchObject({ id: 'c1', value: 9_610_000, winners: [{ cui: '16634489', name: 'Construct & Acting SRL' }] })
     expect(records.direct[0]).toMatchObject({ id: 'd1', date: '2025-06-02', title: 'Lucrari de amenajare parc', value: 899_000 })
+  })
+  it('lists no contracts while the API has legacy procurement off, and keeps the direct purchases', async () => {
+    const off = { message: 'legacy procurement data is not served by this API; use the direct-acquisition release', path: ['procurementContracts'], extensions: { code: 'SERVICE_UNAVAILABLE' } }
+    const direct = { l: { meta: { disclosureKey: 'off' }, items: [{ id: 'd1', date: '2025-06-02', title: 'X', cpvLabel: null, authority: { cui: '4364446', name: 'ORASUL OTOPENI', displayName: null }, supplier: { cui: '30153499', name: 'UPPER LEVEL SRL', displayName: null, displayKind: 'company' }, valueRon: '899000' }] } }
+    graphqlQuery.mockImplementation((query: string) =>
+      query.includes('procurementContracts') ? Promise.reject(new GraphQLRequestError('GraphQL errors', { graphQLErrors: [off] })) : Promise.resolve(direct),
+    )
+    const records = await fetchProcurementBuyerRecords('4364446', 2025, 8)
+    expect(records.contracts).toBeNull()
+    expect(records.direct.map((record) => record.id)).toEqual(['d1'])
+
+    // Any other failure of the contracts still fails the records, as before.
+    graphqlQuery.mockImplementation((query: string) => (query.includes('procurementContracts') ? Promise.reject(new GraphQLRequestError('GraphQL errors', { graphQLErrors: [{ ...off, message: 'down' }] })) : Promise.resolve(direct)))
+    await expect(fetchProcurementBuyerRecords('4364446', 2025, 8)).rejects.toThrow()
   })
 })

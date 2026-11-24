@@ -72,7 +72,7 @@ const BREAKDOWN_WITH_VERDICT = 'rankedBy buckets { key kind displayKind displayN
  * (suppliers, the buyer's county) come back first and start it while the
  * figures and the CPV levels are still being read.
  */
-export type BuyerFieldGroup = 'keys' | 'figures' | 'categories'
+export type BuyerFieldGroup = 'keys' | 'figures' | 'frameworks' | 'categories'
 
 /** One aliased analysis read; the scope is its variable of the same name. */
 export interface BuyerField {

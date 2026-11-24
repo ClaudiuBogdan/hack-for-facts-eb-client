@@ -151,8 +151,8 @@ export interface BuyerProfile {
 }
 
 export interface BuyerRecords {
-  /** The period's largest contract awards, a consortium on one row. */
-  readonly contracts: readonly RecentRecord[]
+  /** The period's largest contract awards, a consortium on one row; null while the API serves no legacy contracts (the band shows the direct purchases alone). */
+  readonly contracts: readonly RecentRecord[] | null
   /** The period's largest direct purchases. */
   readonly direct: readonly RecentRecord[]
 }
@@ -223,7 +223,8 @@ export function hasAnyRecord(profile: BuyerProfile): boolean {
 
 /** The period had no record at all: the page says so once instead of seven empty bands. */
 export function isEmptyYear(profile: BuyerProfile): boolean {
-  return (profile.direct.count ?? 0) === 0 && (profile.awards.count ?? 0) === 0 && (profile.frameworks ?? 0) === 0
+  // Contracts unread (the API abstaining) are unknown, not none: such a year is never said empty.
+  return (profile.direct.count ?? 0) === 0 && profile.awards.count === 0 && (profile.frameworks ?? 0) === 0
 }
 
 /**
