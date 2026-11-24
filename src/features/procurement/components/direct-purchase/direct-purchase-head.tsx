@@ -33,11 +33,12 @@ function headingSize(title: string): keyof typeof HEADING {
 
 const NAME_LINK = 'font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground'
 
-/** A party's name as a link to its procurement page; plain text when SEAP gave no CUI. */
+/** A party's name as a link to its procurement page; plain text when SEAP gave no CUI, or the supplier is not linked (`DpParty.unlinked`). */
 export function PartyName({ party, role, year, className }: { readonly party: DpParty; readonly role: 'authority' | 'supplier'; readonly year: number | undefined; readonly className?: string }) {
   // D6: a supplier the release does not name is said as what it is, never by a name from anywhere else.
   if (party.withheld) return <span className={className}>{supplierNameText({ kind: party.withheld })}</span>
-  if (!party.cui) return <span className={className}>{party.name}</span>
+  // Root, 24 November 2026 (PROC-KR9T): a masked or code-only supplier, or one with no party id, is plain text — its pages name a sole trader in full.
+  if (!party.cui || (role === 'supplier' && party.unlinked)) return <span className={className}>{party.name}</span>
   const search = year === undefined ? {} : { year }
   return role === 'authority' ? (
     <Link to="/procurement/institutions/$cui" params={{ cui: party.cui }} search={search} className={cn(NAME_LINK, className)}>

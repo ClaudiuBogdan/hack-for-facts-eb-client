@@ -136,6 +136,11 @@ export interface BuyerProfile {
    * ranking (DA-009, PROC-B51G), nothing else. A ranking row carries its own (`SupplierFigure.displayName`).
    */
   readonly daNames: ReadonlyMap<string, string>
+  /**
+   * The year-by-year sellers whose name may link to their pages: those served as a company (root, 24 November 2026;
+   * PROC-KR9T). A masked or code-only seller is plain text: its pages name a sole trader in full.
+   */
+  readonly daLinked: ReadonlySet<string>
   /** The top direct-purchase sellers since 2019, year by year; empty when that read failed. */
   readonly supplierYears: readonly SupplierYears[]
   /** The buyer's direct purchases against its county's, over the page's period. */

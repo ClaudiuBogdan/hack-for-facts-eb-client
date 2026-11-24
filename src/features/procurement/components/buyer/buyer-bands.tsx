@@ -208,6 +208,7 @@ export function BuyerWhoBand({ profile, index }: { readonly profile: BuyerProfil
             year={periodYear(profile.period)}
             kind="supplier"
             nameOf={(cui) => daSupplierName(profile, cui)}
+            linked={(cui) => profile.daLinked.has(cui)}
             caption={t`Achiziții directe de la fiecare firmă, pe ani, lei`}
           />
         </div>

@@ -254,14 +254,15 @@ function PartyBlock({ purchase, context, role }: { readonly purchase: DirectPurc
   const search = year === undefined ? {} : { year }
   return (
     <div className="border-t pt-4">
-      <MonoLabel className="block text-muted-foreground">{role === 'authority' ? t`Instituția` : party.withheld ? t`Furnizorul` : t`Firma`}</MonoLabel>
+      <MonoLabel className="block text-muted-foreground">{role === 'authority' ? t`Instituția` : party.withheld || party.unlinked ? t`Furnizorul` : t`Firma`}</MonoLabel>
       <p className="mt-3 text-base font-semibold leading-snug">
         <PartyName party={party} role={role} year={year} />
       </p>
       {about ? <p className="mt-1 text-sm text-muted-foreground">{about}</p> : null}
       {party.cui ? <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">CUI {party.cui}</p> : null}
       {yearLine ? <p className="mt-3 text-sm text-muted-foreground">{yearLine}</p> : null}
-      {party.cui ? (
+      {/* Root, 24 November 2026 (PROC-KR9T): no way to the pages of a supplier said as plain text. */}
+      {party.cui && !(role === 'supplier' && party.unlinked) ? (
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
           {role === 'authority' ? (
             <>
@@ -305,7 +306,7 @@ function ContextIntro({ purchase }: { readonly purchase: DirectPurchase }) {
       <h2 id="direct-purchase-context" className="mt-3 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
         <Trans>Alte achiziții între ele</Trans>
       </h2>
-      {purchase.supplier.withheld ? null : (
+      {purchase.supplier.withheld || purchase.supplier.listedOnly ? null : (
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           <Trans>
             Ce a mai cumpărat {authority} de la {supplier}, din 2019 încoace.
@@ -358,6 +359,8 @@ function ContextGap({ purchase }: { readonly purchase: DirectPurchase }) {
         ) : (
           <Trans>Furnizorul este o persoană fizică: Transparenta nu îi arată numele și nu îi adună achizițiile.</Trans>
         )
+      ) : gap === 'listed-only' ? (
+        <Trans>Transparenta nu adună achizițiile acestui furnizor, așa că achiziția nu are cu ce să fie comparată.</Trans>
       ) : gap === 'no-cui' ? (
         <Trans>SEAP nu dă codul fiscal al uneia dintre părți, așa că celelalte achiziții dintre ele nu se pot aduna.</Trans>
       ) : gap === 'no-date' ? (

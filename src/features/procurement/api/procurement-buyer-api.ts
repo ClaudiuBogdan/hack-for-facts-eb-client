@@ -48,7 +48,7 @@ import {
   type PeriodScope,
   type ProfilePeriod,
 } from '../lib/profile-period'
-import { daSupplierBucketName, isShownDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
+import { daSupplierBucketName, isLinkedDaSupplierBucket, isShownDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
  * One buyer's page, read as:
@@ -344,6 +344,7 @@ export function mapBuyerProfile(
     // DA-009: the years' sellers are said as their own buckets of that ranking were served; the period's ranking
     // rows carry theirs. One ranking never names another's row: each is read on its own.
     daNames: new Map(topBuckets(breakdown('spanSuppliers')).flatMap((bucket) => (isShownDaSupplierBucket(bucket) ? [[bucket.key, daSupplierBucketName(bucket)] as const] : []))),
+    daLinked: new Set(topBuckets(breakdown('spanSuppliers')).flatMap((bucket) => (isLinkedDaSupplierBucket(bucket) ? [bucket.key] : []))),
     categories: { contract: categoriesOf(raw, 'awards') },
     supplierCounties: counties,
     supplierPlaces: raw.directCounties !== undefined,

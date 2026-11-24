@@ -10,7 +10,7 @@
  * source systems fail loud at the Zod boundary rather than becoming a wrong
  * record.
  */
-import { daSupplierBucketName, isNamedDaSupplier, isNaturalPersonKey, isShownDaSupplierBucket } from '../../lib/withheld-party'
+import { daSupplierBucketName, isLinkedDaSupplierBucket, isNamedDaSupplier, isNaturalPersonKey, isShownDaSupplierBucket } from '../../lib/withheld-party'
 import {
   categoryRowSchema,
   contractDisplayTitleSchema,
@@ -332,6 +332,8 @@ export function mapPartyBucket(
           cui: bucket.key,
           name: daCompany ? daSupplierBucketName(bucket) : (partyNames?.get(`${dimension}:${bucket.key}`) ?? null),
           displayName: null,
+          // The kind it was served as, and whether its row may link to the supplier's page: a company the API names only (PROC-KR9T).
+          ...(daCompany ? { displayKind: bucket.displayKind ?? null, linked: isLinkedDaSupplierBucket(bucket) } : {}),
         }
       : null
   return topPartyRowSchema.parse({

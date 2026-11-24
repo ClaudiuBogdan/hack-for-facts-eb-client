@@ -44,6 +44,8 @@ export interface RankedRow {
   readonly share: number | null
   /** D6 on a supplier row (`company` names it); absent elsewhere. */
   readonly displayKind?: string | null
+  /** DA-009: a direct-purchase supplier's name as the API served it on its bucket; a row links only to a company it names (PROC-KR9T). */
+  readonly displayName?: string | null
 }
 
 export interface Ranking {

@@ -92,6 +92,7 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
       ['9813902', 'Costalex Construct SRL'],
       ['17046193', 'East Point Energy S.R.L.'],
     ]),
+    daLinked: new Set(['9813902', '17046193']),
     names: new Map([
       ['30153499', 'Upper Level SRL'],
       ['17046193', 'East Point Energy S.R.L.'],

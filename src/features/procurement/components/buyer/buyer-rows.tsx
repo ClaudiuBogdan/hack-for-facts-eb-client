@@ -35,7 +35,7 @@ export function SupplierRows({
   const named: Ranking = {
     rankedBy: ranking.rankedBy,
     // DA-009: a direct-purchase supplier is named by the API's gated name alone.
-    rows: ranking.rows.map((row) => ({ key: row.cui, label: grain === 'direct' ? daRowName(row) : supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
+    rows: ranking.rows.map((row) => ({ key: row.cui, label: grain === 'direct' ? daRowName(row) : supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null, displayName: row.displayName ?? null })),
   }
   return <PartyRows className={className} ranking={named} grain={grain} kind="supplier" year={periodYear(profile.period)} limit={8} />
 }
