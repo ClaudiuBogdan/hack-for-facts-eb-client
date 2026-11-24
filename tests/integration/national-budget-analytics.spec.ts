@@ -182,7 +182,7 @@ test.describe('National budget analysis — the controls write the address', () 
     await page.goto(`${ROUTE}?lang=ro`)
     await waitForPageReady(page)
 
-    await populations(page).getByRole('button', { name: 'Deficit' }).click()
+    await populations(page).getByRole('button', { name: 'Sold bugetar (cash)', exact: true }).click()
     await expect.poll(() => params(page).tip).toBe('sold')
     expect(params(page).lang).toBe('ro')
   })
