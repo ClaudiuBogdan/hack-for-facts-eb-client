@@ -955,8 +955,9 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     disclosure reads „Alege ce pornești” and „Mereu pornite”. The
     confirmations are „Mulțumim!”, „Doar esențialul.” and „Am notat.”
   - **Size.** The cookie is 64px, 72px from `sm` up.
-  - **Title.** It sits on the cookie's baseline, right above the body, and the
-    × is in the card's corner (owner: less gap between title and text).
+  - **Title.** Beside the top of the cookie, 6px from the drawing, whose own
+    right margin holds the crumbs. The × is in the card's corner (owner, after
+    trying it on the cookie's baseline: back up, closer to the cookie).
   - **Corner marks gone.** They stuck 1px out of the scrolling card and gave
     it a horizontal scrollbar.
   - **Behaviour is unchanged:** non-modal, Escape, focus return, the ×, the

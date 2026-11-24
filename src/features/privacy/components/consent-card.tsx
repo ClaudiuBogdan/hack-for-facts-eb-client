@@ -268,8 +268,9 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
         </button>
       )}
       <div className="p-5 sm:p-6">
-        {/* The title sits on the cookie's baseline, right above the text it introduces. */}
-        <div className="flex items-end gap-4">
+        {/* The title beside the cookie's top. The drawing keeps empty room on its
+            right for the crumbs, so the gap itself is small. */}
+        <div className="flex items-start gap-1.5">
           {/* Grows a little once the decision is in — the picture is the
               answer now, and the answer is the thing to look at. */}
           <div
@@ -280,7 +281,7 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
           >
             <CookieIllustration state={cookieState} className="size-16 sm:size-[4.5rem]" />
           </div>
-          <h2 id={titleId} className="min-w-0 flex-1 pr-6 pb-0.5 text-lg font-semibold leading-snug tracking-tight text-balance">
+          <h2 id={titleId} className="min-w-0 flex-1 pt-1.5 pr-6 text-lg font-semibold leading-snug tracking-tight text-balance">
             {view === 'saved' ? saved.title : <Trans>Cookie-uri puține, la vedere</Trans>}
           </h2>
         </div>
