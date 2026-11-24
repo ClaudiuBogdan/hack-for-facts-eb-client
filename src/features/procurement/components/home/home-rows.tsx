@@ -8,7 +8,7 @@ import type { CategoryFigure } from '../../lib/home-categories'
 import { countText, dayText, firmsCount, moneyText, percentText, unitCount } from '../../lib/home-format'
 import type { HomeGrain, RankedRow, Ranking, RecentRecord } from '../../lib/home-model'
 import { Bone } from './home-chrome'
-import { isNamedDaSupplierBucket, unnamedSupplierLabel } from '../../lib/withheld-party'
+import { isShownDaSupplierBucket, unnamedSupplierLabel } from '../../lib/withheld-party'
 
 /**
  * The front door's rows. A row keeps its name on the left with what it
@@ -64,8 +64,8 @@ export function PartyRows({
   return (
     <ol className={cn(LIST, className)}>
       {rows.map((row, index) => {
-        // D6: a direct-purchase supplier the API does not serve as a company — the group, or one — is never named or linked.
-        const withheld = kind === 'supplier' && grain === 'direct' && !isNamedDaSupplierBucket({ key: row.key, displayKind: row.displayKind })
+        // D6: a direct-purchase supplier the API withholds — the group, or one — is never named or linked.
+        const withheld = kind === 'supplier' && grain === 'direct' && !isShownDaSupplierBucket({ key: row.key, displayKind: row.displayKind })
         const label = withheld ? unnamedSupplierLabel(row.key) : row.label
         const body = (
           <>

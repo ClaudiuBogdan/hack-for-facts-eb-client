@@ -1,5 +1,5 @@
 import type { DpLabel } from './direct-purchase-model'
-import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
+import { daSupplierShown, unpublishedNameText } from './withheld-party'
 
 /**
  * A direct purchase's money and its supplier's name as the direct-acquisition
@@ -125,20 +125,25 @@ export function reportedApartOf(value: DpValue): number | null {
  */
 export type DpSupplierName =
   | { readonly kind: 'company'; readonly name: string; readonly cui: string | null }
+  /** A supplier the API names by a masked name, or by no name: the text as served (or said), never tidied as a firm's. */
+  | { readonly kind: 'shown'; readonly name: string; readonly cui: string }
   | { readonly kind: 'natural-person' }
   | { readonly kind: 'none' }
 
 /**
- * The supplier from the API's party (`displayKind`: `authority | company |
- * natural_person`): named only when the API says it is a company and serves
- * a name. Anything else — a withheld name, another or unknown kind, an empty
- * name — is a natural person: a name the API did not give is never shown. No
- * party at all is no supplier named.
+ * The supplier from the API's party (`displayKind`, `withheld-party.ts`): a
+ * company when the API serves it as one with a name; a masked person by the
+ * masked name, and one the API names by no one by its code (DA-009 step 2).
+ * Anything else — a withheld name, an unknown kind, a company with no name —
+ * is a natural person: a name the API did not give is never shown. No party
+ * at all is no supplier named.
  */
 export function supplierNameOf(party: { readonly displayKind: string | null; readonly name: string | null; readonly cui: string | null } | null): DpSupplierName {
   if (!party) return { kind: 'none' }
-  const name = party.name?.trim()
-  if (party.displayKind !== 'company' || !name) return { kind: 'natural-person' }
-  markDaSupplierNamed()
-  return { kind: 'company', name, cui: party.cui?.trim() || null }
+  // A company the registry gives no name is withheld here, as before step 2 (its code is said only in rankings).
+  if (party.displayKind === 'company' && !party.name?.trim()) return { kind: 'natural-person' }
+  const shown = daSupplierShown({ displayKind: party.displayKind, name: party.name, code: party.cui })
+  if (!shown) return { kind: 'natural-person' }
+  if (shown.kind === 'company') return { kind: 'company', name: shown.name ?? '', cui: shown.code }
+  return { kind: 'shown', name: shown.kind === 'masked' ? shown.name : unpublishedNameText(), cui: shown.code }
 }

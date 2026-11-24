@@ -1,4 +1,4 @@
-import { daCompanyBucketName, isNamedDaSupplierBucket } from './withheld-party'
+import { daSupplierBucketName, isShownDaSupplierBucket } from './withheld-party'
 import type { I18n } from '@lingui/core'
 import { plural, t } from '@lingui/core/macro'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
@@ -192,9 +192,9 @@ export function sellersLede(profile: BuyerProfile): string | null {
   const first = rows[0]
   if (!first || first.share === null || top5 <= 0) return null
   const lead = t`Cinci firme însumează ${percentText(top5, 0)} din valoarea achizițiilor directe din ${periodText(profile.period)}; au vândut ${firmsCount(firms)} în total.`
-  // D6: the largest is named only when the API serves it as a company.
-  const named = isNamedDaSupplierBucket({ key: first.cui, displayKind: first.displayKind })
-  const biggest = first.share >= 0.1 && named ? t`Cea mai mare parte, ${percentText(first.share, 0)}, e a firmei ${daCompanyBucketName({ key: first.cui, displayName: first.displayName })}.` : ''
+  // D6: the largest is said only as the API serves it (a company, a masked name, a code).
+  const bucket = { key: first.cui, displayKind: first.displayKind, displayName: first.displayName }
+  const biggest = first.share >= 0.1 && isShownDaSupplierBucket(bucket) ? t`Cea mai mare parte, ${percentText(first.share, 0)}, e a firmei ${daSupplierBucketName(bucket)}.` : ''
   return [lead, biggest].filter(Boolean).join(' ')
 }
 

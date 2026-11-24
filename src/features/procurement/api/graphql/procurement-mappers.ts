@@ -10,7 +10,7 @@
  * source systems fail loud at the Zod boundary rather than becoming a wrong
  * record.
  */
-import { daCompanyBucketName, isNamedDaSupplier, isNamedDaSupplierBucket, isNaturalPersonKey } from '../../lib/withheld-party'
+import { daSupplierBucketName, isNamedDaSupplier, isNaturalPersonKey, isShownDaSupplierBucket } from '../../lib/withheld-party'
 import {
   categoryRowSchema,
   contractDisplayTitleSchema,
@@ -320,17 +320,17 @@ export function mapPartyBucket(
     bucket.withValueCount,
     `${dimension}.withValueCount`,
   )
-  // D6: a direct-purchase supplier the API does not serve as a company — the group, or one — has no CUI, no name and no link.
+  // D6: a direct-purchase supplier the API withholds — the group, or one — has no CUI, no name and no link.
   const naturalPersons = dimension === 'supplier' && isNaturalPersonKey(bucket.key)
-  const unnamed = !naturalPersons && dimension === 'supplier' && grain === 'direct_acquisition' && bucket.kind === 'top' && !isNamedDaSupplierBucket(bucket)
+  const unnamed = !naturalPersons && dimension === 'supplier' && grain === 'direct_acquisition' && bucket.kind === 'top' && !isShownDaSupplierBucket(bucket)
   const withheld = naturalPersons || unnamed
-  // DA-009: a direct-purchase company is named by the API's gated name on its bucket alone, never by the spine.
+  // DA-009: a direct-purchase supplier is said as the API serves it on its bucket alone, never by the spine.
   const daCompany = !withheld && dimension === 'supplier' && grain === 'direct_acquisition' && bucket.kind === 'top'
   const party =
     bucket.key && !withheld
       ? {
           cui: bucket.key,
-          name: daCompany ? daCompanyBucketName(bucket) : (partyNames?.get(`${dimension}:${bucket.key}`) ?? null),
+          name: daCompany ? daSupplierBucketName(bucket) : (partyNames?.get(`${dimension}:${bucket.key}`) ?? null),
           displayName: null,
         }
       : null

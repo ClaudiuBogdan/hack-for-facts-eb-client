@@ -54,10 +54,11 @@ export function releaseValueOf(raw: Pick<RawDaPurchase, 'reportedValue' | 'count
   })
 }
 
-/** The supplier under D6: a company by its served name and code; anyone else withheld, with no name and no code to look one up by. */
+/** The supplier under D6: a company by its served name and code; a masked person, or one the API does not name, by the API's text and code; anyone else withheld, with no name and no code to look one up by. */
 export function releaseSupplierOf(raw: RawDaParty | null): DpParty {
   const supplier = supplierNameOf(raw ? { displayKind: raw.displayKind, name: raw.name, cui: raw.fiscalCode } : null)
   if (supplier.kind === 'company') return { cui: supplier.cui, name: displayCompanyName(supplier.name), identity: null, hasBudget: false }
+  if (supplier.kind === 'shown') return { cui: supplier.cui, name: supplier.name, identity: null, hasBudget: false }
   return { cui: null, name: '', identity: null, hasBudget: false, withheld: supplier.kind }
 }
 

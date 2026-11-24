@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createNoStoreHeaders } from '@/lib/http-cache'
 import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
-import { isNamedDaSupplier, isNamedDaSupplierBucket } from '@/features/procurement/lib/withheld-party'
+import { isNamedDaSupplier, isShownDaSupplierBucket } from '@/features/procurement/lib/withheld-party'
 import { supplierNameOf } from '@/features/procurement/lib/direct-purchase-value'
 import { DA_DISCLOSURE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { asNoStore, withDaNameScope } from './da-name-scope'
@@ -33,8 +33,11 @@ describe('a render that names a direct-purchase supplier (root ruling 2026-11-22
   it('cannot go out with a cacheable header, whatever its route asked for', async () => {
     const namers = [
       () => isNamedDaSupplier({ displayKind: 'company' }),
-      () => isNamedDaSupplierBucket({ key: '14837428', displayKind: 'company' }),
+      () => isShownDaSupplierBucket({ key: '14837428', displayKind: 'company' }),
       () => supplierNameOf({ displayKind: 'company', name: 'Floraria Iris SRL', cui: '14837428' }),
+      // Step 2: a masked name, or a code alone, is shown too.
+      () => isShownDaSupplierBucket({ key: '30111222', displayKind: 'person_masked', displayName: 'Ion P*** PFA' }),
+      () => supplierNameOf({ displayKind: 'code_only', name: null, cui: '30111222' }),
     ]
     for (const name of namers) {
       const response = await withDaNameScope(async () => {
@@ -54,8 +57,10 @@ describe('a render that names a direct-purchase supplier (root ruling 2026-11-22
     const response = await withDaNameScope(() => {
       isNamedDaSupplier({ displayKind: 'natural_person' })
       isNamedDaSupplier({ displayKind: null })
-      isNamedDaSupplierBucket({ key: 'natural_person', displayKind: 'company' })
+      isShownDaSupplierBucket({ key: 'natural_person', displayKind: 'company' })
+      isShownDaSupplierBucket({ key: '30111222', displayKind: 'some_future_kind' })
       supplierNameOf({ displayKind: 'company', name: ' ', cui: '1' })
+      supplierNameOf({ displayKind: 'code_only', name: null, cui: null })
       return cacheable()
     })
     expect(response.headers.get('CDN-Cache-Control')).toContain('s-maxage=600')

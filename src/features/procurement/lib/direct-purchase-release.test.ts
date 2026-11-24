@@ -69,6 +69,13 @@ describe('mapReleasePurchase — D6', () => {
     expect(purchase.supplier).toEqual({ cui: '14837428', name: 'Floraria Iris SRL', identity: null, hasBudget: false })
   })
 
+  it('step 2: a masked person keeps the masked name and code, a code-only supplier its code, neither tidied as a firm', () => {
+    const masked = mapReleasePurchase(rawReleaseDetail({ supplier: { displayKind: 'person_masked', partyId: 'p-m', name: 'Ion P*** PFA', fiscalCode: '30111222' } }), NO_NAMES)
+    expect(masked.supplier).toEqual({ cui: '30111222', name: 'Ion P*** PFA', identity: null, hasBudget: false })
+    const codeOnly = mapReleasePurchase(rawReleaseDetail({ supplier: { displayKind: 'code_only', partyId: 'p-c', name: null, fiscalCode: '30111223' } }), NO_NAMES)
+    expect(codeOnly.supplier).toEqual({ cui: '30111223', name: 'Nume nepublicat', identity: null, hasBudget: false })
+  })
+
   it('a natural person has no name, no code, and no context', () => {
     const purchase = mapReleasePurchase(RELEASE_CASES.naturalPerson(), NO_NAMES)
     expect(purchase.supplier).toEqual({ cui: null, name: '', identity: null, hasBudget: false, withheld: 'natural-person' })

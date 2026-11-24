@@ -47,7 +47,7 @@ import {
   type PeriodScope,
   type ProfilePeriod,
 } from '../lib/profile-period'
-import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
+import { daSupplierBucketName, isShownDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
  * One buyer's page, read as:
@@ -330,13 +330,9 @@ export function mapBuyerProfile(
         ? null
         : supplierRanking(breakdown('directSuppliers').map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null }))),
     awardSuppliers: supplierRanking(breakdown('awardSuppliers')),
-    // DA-009: the years' sellers are named by the gated name on their own buckets of that ranking; the period's ranking
+    // DA-009: the years' sellers are said as their own buckets of that ranking were served; the period's ranking
     // rows carry theirs. One ranking never names another's row: each is read on its own.
-    daNames: new Map(
-      topBuckets(breakdown('spanSuppliers')).flatMap((bucket) =>
-        isNamedDaSupplierBucket(bucket) && bucket.displayName?.trim() ? [[bucket.key, bucket.displayName.trim()] as const] : [],
-      ),
-    ),
+    daNames: new Map(topBuckets(breakdown('spanSuppliers')).flatMap((bucket) => (isShownDaSupplierBucket(bucket) ? [[bucket.key, daSupplierBucketName(bucket)] as const] : []))),
     categories: { contract: categoriesOf(raw, 'awards') },
     supplierCounties: counties,
     supplierPlaces: raw.directCounties !== undefined,
@@ -373,9 +369,9 @@ export function buyerExtrasFields(cui: string, period: Period, latest: number, s
 export function buyerKeysOf(raw: RawBuyerProfile): { readonly cuis: readonly string[]; readonly spanSuppliers: readonly string[]; readonly county: string | null } {
   // A read the switch state left out (D6 enforced, the release off) is absent, not malformed; one asked for parses strictly.
   const breakdown = (alias: string) => (raw[alias] === undefined ? [] : buyerBreakdownSchema.parse(raw[alias]))
-  // D6: only a direct-purchase supplier the API serves as a company has years of its own to read. DA-009: none is
-  // looked up by name — its bucket carries the API's gated name; only contract suppliers are named by the spine.
-  const spanSuppliers = topBuckets(breakdown('spanSuppliers')).filter(isNamedDaSupplierBucket).map((bucket) => bucket.key)
+  // D6: only a direct-purchase supplier the API shows has years of its own to read. DA-009: none is looked up by
+  // name — its bucket carries the API's own; only contract suppliers are named by the spine.
+  const spanSuppliers = topBuckets(breakdown('spanSuppliers')).filter(isShownDaSupplierBucket).map((bucket) => bucket.key)
   const listed = topBuckets(breakdown('awardSuppliers')).map((bucket) => bucket.key)
   const territory = buyerEntitySchema.parse(raw.entity ?? null)?.territory ?? null
   return {
