@@ -278,7 +278,7 @@ These need no owner decision unless noted; they were simply not done.
    `/api/pnrr/raw/*`, `/geojson/*` and `/map-glyphs/*`. The agents set the origin headers; the rules are infra.
    The origin already compresses the glyph `.pbf` files (zstd), served as `text/plain`, which MapLibre ignores; the
    question is only whether the CDN caches them (today `/map-glyphs`, `/geojson` and `/api/pnrr/raw` are `DYNAMIC`).
-   Any HTML rule must key on the `user-locale` cookie or bypass it: Cloudflare ignores `Vary: Cookie` (REV-10).
+   Any HTML rule must key on the `user-locale` and `page-notices-dismissed` cookies or bypass them: Cloudflare ignores `Vary: Cookie` (REV-10).
    The versioned `/api/pnrr/raw/*?v=…` files come brotli-compressed from the origin; check that the CDN passes that through.
 6. **CI checks ([PERF-001](issues/PERF-001-elections-broken.md) step 4, [PERF-003](issues/PERF-003-root-preloads.md) step 4, [PERF-018](issues/PERF-018-route-dead-weight.md) step 10).** A check of the
    client's GraphQL documents against the server schema, and bundle budgets. Which schema can CI reach, and

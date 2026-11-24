@@ -6129,6 +6129,10 @@ msgstr "Agricultură, vânătoare şi servicii anexe"
 msgid "Ai atins maximul de {MAX_COMPARISON_TERRITORIES} teritorii. Scoate unul ca să adaugi altul."
 msgstr "Ai atins maximul de {MAX_COMPARISON_TERRITORIES} teritorii. Scoate unul ca să adaugi altul."
 
+#: src/components/data-trust/page-notice.tsx:59
+msgid "Ai găsit ceva greșit? Spune-ne și ne ajuți să verificăm mai repede."
+msgstr "Ai găsit ceva greșit? Spune-ne și ne ajuți să verificăm mai repede."
+
 #: src/features/procurement/lib/direct-purchase-text.ts:353
 msgid "aici, {above} peste mediană"
 msgstr "aici, {above} peste mediană"
@@ -6802,6 +6806,10 @@ msgstr "Am exportat {rowCount} rânduri."
 #: src/features/legal/components/act-warnings.tsx:198
 msgid "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 msgstr "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
+
+#: src/components/data-trust/page-notice.tsx:66
+msgid "Am înțeles"
+msgstr "Am înțeles"
 
 #: src/features/legal/components/reader/legal-reader-page.tsx:620
 msgid "Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum."
@@ -23764,7 +23772,7 @@ msgstr "Vezi Grafic"
 msgid "Go to Entity Table"
 msgstr "Vezi Tabel"
 
-#: src/routes/__root.tsx:131
+#: src/routes/__root.tsx:134
 #: src/routes/unsubscribe.$token.tsx:48
 #: src/routes/unsubscribe.$token.tsx:81
 msgid "Go to homepage"
@@ -29790,6 +29798,10 @@ msgstr ""
 #: src/features/parliament/components/parliament-stenogram-session-card.tsx:127
 msgid "Luări de cuvânt"
 msgstr ""
+
+#: src/components/data-trust/page-notice.tsx:50
+msgid "Lucrăm încă la această pagină"
+msgstr "Lucrăm încă la această pagină"
 
 #: src/features/procurement/lib/direct-purchase-text.ts:155
 msgctxt "contract type"
@@ -35904,7 +35916,7 @@ msgstr "Pagina {page}"
 msgid "error.pageRenderErrorTitle"
 msgstr "Eroare la încărcarea paginii"
 
-#: src/routes/__root.tsx:122
+#: src/routes/__root.tsx:125
 msgid "Page not found"
 msgstr "Pagina nu a fost găsită"
 
@@ -46742,7 +46754,7 @@ msgstr "Noua realitate fiscală care îți afectează portofelul."
 #~ msgid "The overview analytics are filtered by buyer location. The record list does not apply geography yet — switch to List to browse records without silently dropping this filter from the URL."
 #~ msgstr "Analitica din Prezentare generală este filtrată după locația autorității. Lista de înregistrări nu aplică încă geografia — treci la Listă ca să vezi înregistrările fără a elimina silențios acest filtru din URL."
 
-#: src/routes/__root.tsx:125
+#: src/routes/__root.tsx:128
 msgid "The page you are looking for doesn't exist or has been moved."
 msgstr "Pagina pe care o căutați nu există sau a fost mutată."
 
@@ -48271,6 +48283,7 @@ msgstr "Trimestru"
 msgid "Trimite cererea"
 msgstr "Trimite cererea"
 
+#: src/components/data-trust/page-notice.tsx:69
 #: src/components/footer/AppFooter.tsx:131
 msgid "Trimite feedback"
 msgstr "Trimite feedback"
@@ -50420,6 +50433,10 @@ msgstr ""
 #: src/features/legal/components/legislation-act-finder.tsx:461
 msgid "Verifică și numărul și anul actului — de exemplu „Legea 53/2003”."
 msgstr "Verifică și numărul și anul actului — de exemplu „Legea 53/2003”."
+
+#: src/components/data-trust/page-notice.tsx:56
+msgid "Verificăm datele, așa că unele cifre se pot schimba până terminăm."
+msgstr "Verificăm datele, așa că unele cifre se pot schimba până terminăm."
 
 #: src/features/entity-search/components/entity-company-contribution.tsx:28
 msgid "Verificarea de acum nu a putut fi făcută, așa că lipsesc și instituțiile, ONG-urile și celelalte rezultate identificate prin CUI."

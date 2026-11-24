@@ -34,6 +34,7 @@ import {
   readUserInflationAdjustedPreference,
 } from "@/lib/user-preferences";
 import { serializeForInlineScript } from "@/lib/inline-script-json";
+import { readDismissedNotices } from "@/components/data-trust/page-notice-cookie";
 
 const ANONYMOUS_CROSS_ORIGIN = "anonymous" as const;
 const DEFAULT_THEME: ResolvedTheme = "light";
@@ -78,10 +79,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     const ssrTheme = resolveThemeFromCookie(themeCookie);
     const ssrCurrency = await readUserCurrencyPreference();
     const ssrInflationAdjusted = await readUserInflationAdjustedPreference();
+    // Read on every navigation, so a notice dismissed on one page stays hidden on the next.
+    const dismissedNotices = await readDismissedNotices();
 
     // The locale this request resolved, for a route's `head` (`translatorFor`
     // in lib/i18n).
-    return { ssrTheme, ssrCurrency, ssrInflationAdjusted, locale };
+    return { ssrTheme, ssrCurrency, ssrInflationAdjusted, locale, dismissedNotices };
   },
   errorComponent: ({ error }) => <GlobalErrorPage error={error} />,
   notFoundComponent: NotFoundPage,

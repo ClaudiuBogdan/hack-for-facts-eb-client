@@ -10,6 +10,7 @@ export {
   IdentityConfidenceBadge,
   IdentityConfidenceBadge as DataTrustIdentityConfidenceBadge,
 } from './identity-confidence-badge'
+export { PageNotice } from './page-notice'
 export { PrivacyBoundaryNotice } from './privacy-boundary-notice'
 export {
   ProvenanceProvider,

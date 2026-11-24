@@ -19,6 +19,8 @@ import { AppFooter } from "@/components/footer/AppFooter";
 import { NavigationProgress } from "@/components/app/navigation-progress";
 import { useWarmRouteCodeOnIntent } from "@/hooks/use-warm-route-code";
 import { FeedbackFab } from "@/components/feedback/FeedbackFab";
+import { PageNotice } from "@/components/data-trust/page-notice";
+import { pageNoticeScope } from "@/components/data-trust/page-notice-scope";
 import { ConsentCardHost } from "@/features/privacy/components/consent-card-host";
 import { MobileBottomDock } from "@/components/mobile/mobile-bottom-dock";
 import { shouldHideMobileBottomDock } from "@/components/mobile/mobile-bottom-dock-visibility";
@@ -46,6 +48,7 @@ export function AppShell({
   const location = useLocation();
   const hasSentryConsent = useSentryConsent();
   const hideMobileBottomDock = shouldHideMobileBottomDock(location.pathname);
+  const pageNotice = pageNoticeScope(location.pathname);
   useWarmRouteCodeOnIntent();
 
   useEffect(() => {
@@ -120,6 +123,8 @@ export function AppShell({
                       >
                         <div className="flex min-h-full min-w-0 flex-1 flex-col">
                           <AnalyticsPageviewBridge />
+                          {/* Every page but the landing and the no-data ones, for now (owner, 24 November 2026). */}
+                          {pageNotice && <PageNotice key={pageNotice} id={pageNotice} contentClassName="mx-auto max-w-6xl px-4 md:px-6" />}
                           {/* D6: a retired publication's answers leave every view that shows them. */}
                           <PublicationScope>
                             <Outlet />

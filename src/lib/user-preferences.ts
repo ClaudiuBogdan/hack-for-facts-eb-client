@@ -19,7 +19,7 @@ function parseStoredValue(value: string | null): unknown | null {
   }
 }
 
-function readCookieValue(name: string): string | null {
+export function readCookieValue(name: string): string | null {
   if (typeof document === 'undefined') return null;
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
@@ -38,7 +38,8 @@ function normalizeBoolean(value: unknown): boolean | null {
   return null;
 }
 
-const readRequestCookie = createIsomorphicFn()
+/** The request's cookie on the server; null in the browser (read `document.cookie` there). */
+export const readRequestCookie = createIsomorphicFn()
   .client(async (_name: string): Promise<string | null> => null)
   .server(async (name: string): Promise<string | null> => {
     const { getCookie } = await import('@tanstack/react-start/server');
