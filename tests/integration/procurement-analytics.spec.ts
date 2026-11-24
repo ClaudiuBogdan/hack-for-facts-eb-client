@@ -8,6 +8,7 @@
 
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
+import { LEGACY_PROCUREMENT_OFF, legacyProcurementOff } from '../utils/legacy-procurement'
 import type { Page } from '@playwright/test'
 
 const ROUTE = '/procurement/analytics'
@@ -49,6 +50,8 @@ test.describe('Procurement analytics — addresses and controls', () => {
   })
 
   test('each population’s tab says its count for the question', async ({ page }) => {
+    // The contracts tab counts legacy rows.
+    test.skip(await legacyProcurementOff(), LEGACY_PROCUREMENT_OFF)
     await page.goto(`${ROUTE}?cpv=45`)
     await waitForPageReady(page)
 
