@@ -4489,6 +4489,10 @@ msgstr ""
 msgid "Abțineri"
 msgstr ""
 
+#: src/components/sidebar/nav-main.tsx:45
+msgid "Acasă"
+msgstr "Acasă"
+
 #: src/components/privacy/CookieConsentBanner.tsx:124
 #~ msgid "Accept All"
 #~ msgstr "Acceptă tot"
@@ -4795,7 +4799,7 @@ msgstr "achiziții directe, până în {0}"
 msgid "Achiziții în timp"
 msgstr ""
 
-#: src/components/sidebar/nav-main.tsx:75
+#: src/components/sidebar/nav-main.tsx:59
 #: src/features/landing/components/landing-page.tsx:71
 #: src/features/landing/lib/landing-groups.ts:69
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:73
@@ -6149,6 +6153,10 @@ msgstr "aici, fără preț pe unitate"
 msgid "aici, prețul median"
 msgstr "aici, prețul median"
 
+#: src/components/theme/inflation-toggle.tsx:69
+msgid "Ajustat cu inflația"
+msgstr "Ajustat cu inflația"
+
 #: src/features/national-budget/home/components/home-budgets.tsx:53
 #: src/features/national-budget/home/components/home-law.tsx:45
 msgid "ajutoarele de șomaj și programele de ocupare"
@@ -6360,7 +6368,7 @@ msgstr "Alegerea nu are o zi de vot la data {0}."
 msgid "Alegerea nu are zile de vot în date."
 msgstr "Alegerea nu are zile de vot în date."
 
-#: src/components/sidebar/nav-main.tsx:112
+#: src/components/sidebar/nav-main.tsx:81
 #: src/features/elections/catalog/elections-catalog-page.tsx:43
 #: src/features/elections/catalog/elections-catalog-page.tsx:52
 #: src/features/elections/catalog/elections-catalog-page.tsx:66
@@ -8820,6 +8828,7 @@ msgstr "Banii din"
 msgid "Banii drumurilor merg mai ales la asocieri: de aceea numărăm, nu adunăm lei."
 msgstr "Banii drumurilor merg mai ales la asocieri: de aceea numărăm, nu adunăm lei."
 
+#: src/components/sidebar/nav-main.tsx:56
 #: src/features/landing/lib/landing-groups.ts:60
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:184
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:358
@@ -9282,6 +9291,7 @@ msgstr "Buget"
 msgid "Buget / Național"
 msgstr "Buget / Național"
 
+#: src/components/sidebar/nav-main.tsx:58
 #: src/features/landing/components/landing-page.tsx:72
 #: src/features/landing/lib/landing-groups.ts:63
 msgid "Buget național"
@@ -9584,6 +9594,10 @@ msgstr "După numărul de înregistrări."
 #: src/features/procurement/components/procurement-rankings-view.tsx:255
 #~ msgid "By value"
 #~ msgstr "După valoare"
+
+#: src/components/sidebar/theme-switcher.tsx:22
+msgid "Ca sistemul"
+msgstr "Ca sistemul"
 
 #: src/components/shared/procurement-data/freshness-badge.tsx:57
 msgid "cadență"
@@ -11821,7 +11835,6 @@ msgstr "Tip grafic"
 msgid "Chart view"
 msgstr "Vizualizare grafică"
 
-#: src/components/sidebar/nav-main.tsx:55
 #: src/components/ui/shortcuts.tsx:38
 #: src/routes/charts/index.lazy.tsx:192
 msgid "Charts"
@@ -13687,6 +13700,10 @@ msgstr "Condiția {0}"
 msgid "Conducere"
 msgstr "Conducere"
 
+#: src/components/sidebar/nav-user.tsx:160
+msgid "Conectare"
+msgstr "Conectare"
+
 #: src/features/ngos/components/ngo-profile-page.tsx:877
 #~ msgid "conectat"
 #~ msgstr ""
@@ -13918,6 +13935,10 @@ msgstr "Consultanță în management"
 #: src/features/procurement/lib/home-categories.ts:41
 msgid "Consultanță și servicii"
 msgstr "Consultanță și servicii"
+
+#: src/components/sidebar/nav-user.tsx:124
+msgid "Cont"
+msgstr "Cont"
 
 #: src/components/footer/AppFooter.tsx:59
 msgid "Contact"
@@ -15753,7 +15774,6 @@ msgstr "Curățenie și întreținerea clădirilor"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:751
 #: src/components/maps/HeatmapDataTable.tsx:475
 #: src/components/normalization/normalization-controls.tsx:85
-#: src/components/theme/currency-toggle.tsx:57
 #: src/routes/entity-analytics.lazy.tsx:204
 msgid "Currency"
 msgstr "Monedă"
@@ -15847,8 +15867,8 @@ msgid "Dark"
 msgstr "Întunecat"
 
 #: src/components/sidebar/nav-main.tsx:40
-msgid "Dashboard"
-msgstr "Tablou de bord"
+#~ msgid "Dashboard"
+#~ msgstr "Tablou de bord"
 
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:237
 msgid "Data"
@@ -17011,6 +17031,10 @@ msgstr "Declarațiile de apel, recurs sau contestație înregistrate la acest do
 #: src/features/ngos/profile/profile-page.tsx:140
 #~ msgid "Declared fiscally inactive"
 #~ msgstr "Declarat inactiv fiscal"
+
+#: src/components/sidebar/nav-user.tsx:154
+msgid "Deconectare"
+msgstr "Deconectare"
 
 #: src/features/private-companies/lib/caen-divisions.ts:64
 msgid "Decontaminare"
@@ -18689,6 +18713,10 @@ msgstr "documentul nr. {0}"
 msgid "documentul nr. {0} din {1}"
 msgstr "documentul nr. {0} din {1}"
 
+#: src/components/theme/currency-toggle.tsx:68
+msgid "Dolari americani"
+msgstr "Dolari americani"
+
 #: src/features/landing/components/provenance-band.tsx:35
 #~ msgid "domenii"
 #~ msgstr "domenii"
@@ -19896,8 +19924,8 @@ msgid "Energie, gaze și combustibili"
 msgstr "Energie, gaze și combustibili"
 
 #: src/components/theme/language-toggle.tsx:52
-msgid "English"
-msgstr "Engleză"
+#~ msgid "English"
+#~ msgstr "Engleză"
 
 #: src/routes/cookies.lazy.tsx:226
 #~ msgid "Enhanced error reporting"
@@ -20234,9 +20262,12 @@ msgid "EU Projects"
 msgstr "Proiecte UE"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:765
-#: src/components/theme/currency-toggle.tsx:72
 msgid "EUR"
 msgstr "EUR"
+
+#: src/components/theme/currency-toggle.tsx:67
+msgid "Euro"
+msgstr "Euro"
 
 #: src/features/legal/components/legislation-changes-feed.tsx:444
 msgid "Evenimentele fără dată nu pot fi filtrate după perioadă — alege altă vedere pentru un interval de date."
@@ -22652,7 +22683,7 @@ msgctxt "companies hub unit"
 msgid "firme"
 msgstr "firme"
 
-#: src/components/sidebar/nav-main.tsx:87
+#: src/components/sidebar/nav-main.tsx:69
 #: src/features/landing/lib/landing-groups.ts:100
 #: src/features/landing/lib/search-filters.ts:79
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:36
@@ -23844,6 +23875,7 @@ msgstr "Gradient"
 #~ msgid "Grafic textual cu tabel fallback pentru accesibilitate."
 #~ msgstr ""
 
+#: src/components/sidebar/nav-main.tsx:89
 #: src/features/landing/lib/landing-groups.ts:163
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:43
 msgid "Grafice"
@@ -24055,6 +24087,7 @@ msgstr "Te rugăm să aștepți cât timp te redirecționăm către destinație.
 msgid "Harta"
 msgstr "Harta"
 
+#: src/components/sidebar/nav-main.tsx:88
 #: src/features/landing/lib/landing-groups.ts:157
 #: src/features/ngos/registry/components/registry-county-map.tsx:22
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:42
@@ -26811,7 +26844,7 @@ msgstr "Instituții finanțate din venituri proprii"
 msgid "instituții publice"
 msgstr "instituții publice"
 
-#: src/components/sidebar/nav-main.tsx:70
+#: src/components/sidebar/nav-main.tsx:67
 #: src/features/landing/lib/landing-groups.ts:94
 msgid "Instituții publice"
 msgstr "Instituții publice"
@@ -26824,6 +26857,7 @@ msgstr "instituții publice care se finanțează și din venituri proprii"
 msgid "Instituții și firme"
 msgstr "Instituții și firme"
 
+#: src/components/sidebar/nav-main.tsx:65
 #: src/features/landing/lib/landing-groups.ts:91
 msgid "Instituții și organizații"
 msgstr "Instituții și organizații"
@@ -27145,7 +27179,7 @@ msgstr "Întreprinderi cu cel puțin o înregistrare în SEAP, {0}–{1}, din {2
 msgid "Întreprinderi pe autorități, tipuri de autoritate, județe și domenii"
 msgstr "Întreprinderi pe autorități, tipuri de autoritate, județe și domenii"
 
-#: src/components/sidebar/nav-main.tsx:92
+#: src/components/sidebar/nav-main.tsx:70
 #: src/features/landing/lib/landing-groups.ts:106
 #: src/features/public-enterprises/components/authority/authority-pending.tsx:30
 #: src/features/public-enterprises/components/enterprise/enterprise-links.tsx:55
@@ -27216,6 +27250,10 @@ msgstr "Întreprinderile unei autorități"
 #~ msgid "Introdu un număr exact de dosar sau folosește filtrele din căutarea avansată. Textul liber nu este păstrat în URL."
 #~ msgstr ""
 
+#: src/components/sidebar/theme-switcher.tsx:24
+msgid "Întunecată"
+msgstr "Întunecată"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:59
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:164
 msgid "Invalid bins configuration."
@@ -27285,6 +27323,10 @@ msgstr ""
 #: src/features/parliament/components/parliament-stenogram-document.tsx:136
 msgid "invitat"
 msgstr ""
+
+#: src/components/sidebar/nav-user.tsx:40
+msgid "Invitat"
+msgstr "Invitat"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:408
 msgid "iqr"
@@ -27738,7 +27780,7 @@ msgstr "Juridic și contabilitate"
 msgid "Justice"
 msgstr "Justiție"
 
-#: src/components/sidebar/nav-main.tsx:102
+#: src/components/sidebar/nav-main.tsx:79
 #: src/features/justice/components/analysis/analysis-head.tsx:102
 #: src/features/justice/components/court/justice-court-head.tsx:40
 #: src/features/justice/components/echr/echr-head.tsx:69
@@ -28040,8 +28082,8 @@ msgstr "Indicatori ai pieței muncii și ai presiunii pe locuire."
 #~ msgstr ""
 
 #: src/components/theme/language-toggle.tsx:39
-msgid "Language"
-msgstr "Limbă"
+#~ msgid "Language"
+#~ msgstr "Limbă"
 
 #: src/features/public-investments/components/SourceProvenanceDrawer.tsx:43
 msgid "Lanțul de custodie pentru rândul din sursa publică."
@@ -28267,6 +28309,7 @@ msgstr "Lege după lege"
 #~ msgid "Lege și justiție"
 #~ msgstr "Lege și justiție"
 
+#: src/components/sidebar/nav-main.tsx:76
 #: src/features/landing/lib/landing-groups.ts:123
 msgid "Lege, justiție și alegeri"
 msgstr "Lege, justiție și alegeri"
@@ -28449,7 +28492,7 @@ msgstr "Legislația"
 msgid "Legislația României"
 msgstr "Legislația României"
 
-#: src/components/sidebar/nav-main.tsx:97
+#: src/components/sidebar/nav-main.tsx:78
 #: src/features/entity-search/lib/doc-type-meta.ts:68
 #: src/features/landing/components/landing-page.tsx:73
 #: src/features/landing/lib/landing-groups.ts:126
@@ -28479,6 +28522,7 @@ msgstr "Legislație"
 msgid "lei"
 msgstr "lei"
 
+#: src/components/theme/currency-toggle.tsx:66
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:147
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:313
 #: src/features/procurement/components/analytics/analytics-answer.tsx:211
@@ -28604,6 +28648,19 @@ msgstr "Licitație, negociere<0/>sau cumpărare directă"
 #: src/components/theme/mode-toggle.tsx:27
 msgid "Light"
 msgstr "Luminos"
+
+#: src/components/sidebar/app-sidebar.tsx:68
+#: src/components/theme/language-toggle.tsx:38
+msgid "Limbă"
+msgstr "Limbă"
+
+#: src/components/theme/language-toggle.tsx:53
+msgid "Limbă: English"
+msgstr "Limbă: English"
+
+#: src/components/theme/language-toggle.tsx:54
+msgid "Limbă: română"
+msgstr "Limbă: română"
 
 #: src/features/ngos/components/ngo-landing-page.tsx:395
 #~ msgid "Limite cunoscute"
@@ -29755,6 +29812,10 @@ msgstr "Lucrări speciale de construcţii"
 msgid "Lucrări speciale de construcții"
 msgstr "Lucrări speciale de construcții"
 
+#: src/components/sidebar/theme-switcher.tsx:23
+msgid "Luminoasă"
+msgstr "Luminoasă"
+
 #: src/features/procurement/components/procurement-party-quick-filters.tsx:252
 #~ msgid "Luna"
 #~ msgstr ""
@@ -30101,7 +30162,6 @@ msgid "Manual"
 msgstr "Manual"
 
 #: src/components/filters/MapFilter.tsx:220
-#: src/components/sidebar/nav-main.tsx:50
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1243
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3669
@@ -30567,6 +30627,10 @@ msgstr "Membri"
 #: src/features/landing/lib/landing-groups.ts:139
 msgid "Membri, grupuri, voturi și traseul legislativ al inițiativelor."
 msgstr "Membri, grupuri, voturi și traseul legislativ al inițiativelor."
+
+#: src/components/sidebar/nav-user.tsx:88
+msgid "Meniul contului"
+msgstr "Meniul contului"
 
 #: src/components/footer/system-status-link.tsx:22
 msgid "mentenanță"
@@ -31137,9 +31201,18 @@ msgstr "Progresul modulului"
 msgid "Modules"
 msgstr "Module"
 
+#: src/components/sidebar/app-sidebar.tsx:59
+#: src/components/theme/currency-toggle.tsx:62
+msgid "Monedă"
+msgstr "Monedă"
+
 #: src/features/procurement/lib/direct-purchase-value-text.ts:51
 msgid "Moneda și TVA-ul acestei valori nu sunt confirmate."
 msgstr "Moneda și TVA-ul acestei valori nu sunt confirmate."
+
+#: src/components/theme/currency-toggle.tsx:80
+msgid "Monedă: {selectedCurrency}"
+msgstr "Monedă: {selectedCurrency}"
 
 #: src/features/procurement/lib/caveat-text.ts:45
 msgid "money"
@@ -31523,7 +31596,6 @@ msgstr "Nașteri peste decese"
 msgid "Național"
 msgstr "Național"
 
-#: src/components/sidebar/nav-main.tsx:60
 #: src/routes/budget-explorer.lazy.tsx:580
 msgid "National Budget"
 msgstr "Buget Național"
@@ -33264,7 +33336,7 @@ msgstr "nomenclatorul teritorial al platformei"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:433
 #: src/components/charts/components/series-config/SeriesFilter.tsx:790
-#: src/components/theme/inflation-toggle.tsx:70
+#: src/components/theme/inflation-toggle.tsx:68
 msgid "Nominal"
 msgstr "Nominal"
 
@@ -33477,6 +33549,10 @@ msgstr "Nimic de lipit"
 #: src/features/learning/components/interactive/EconomicCodeReference.tsx:375
 msgid "Notice the gap: <0>Current Expenses</0> (salaries, utilities) almost always reach full execution.<1> Capital Expenses</1> (investments) are the first to be cut or delayed, often falling below 60%. Always check <2>Code 71</2> to see if promised infrastructure is actually being built."
 msgstr "Observați decalajul: <0>Cheltuielile curente</0> (salarii, utilități) ating aproape întotdeauna execuția completă.<1> Cheltuielile de capital</1> (investiții) sunt primele tăiate sau amânate, scăzând adesea sub 60%. Verificați întotdeauna <2>Codul 71</2> pentru a vedea dacă infrastructura promisă se construiește efectiv."
+
+#: src/components/sidebar/nav-user.tsx:138
+msgid "Notificări"
+msgstr "Notificări"
 
 #: src/features/procurement/lib/direct-purchase-text.ts:192
 msgid "notificările de atribuire"
@@ -35067,7 +35143,7 @@ msgstr ""
 #~ msgid "ONG negasit"
 #~ msgstr ""
 
-#: src/components/sidebar/nav-main.tsx:65
+#: src/components/sidebar/nav-main.tsx:71
 #: src/features/landing/lib/landing-groups.ts:112
 #: src/features/landing/lib/search-filters.ts:102
 #: src/features/legal/lib/legal-vocabulary.ts:68
@@ -36070,7 +36146,7 @@ msgstr "Părinte"
 msgid "Parent Categories"
 msgstr "Categorii părinte"
 
-#: src/components/sidebar/nav-main.tsx:107
+#: src/components/sidebar/nav-main.tsx:80
 #: src/features/landing/lib/landing-groups.ts:138
 msgid "Parlament"
 msgstr "Parlament"
@@ -37502,7 +37578,7 @@ msgstr ""
 msgid "PNMC"
 msgstr ""
 
-#: src/components/sidebar/nav-main.tsx:80
+#: src/components/sidebar/nav-main.tsx:60
 #: src/features/entity-search/lib/doc-type-meta.ts:86
 #: src/features/landing/lib/landing-groups.ts:82
 #: src/features/landing/lib/search-filters.ts:129
@@ -38181,6 +38257,23 @@ msgstr "prețul cântărește {weight}%"
 msgid "prețul cel mai scăzut"
 msgstr "prețul cel mai scăzut"
 
+#: src/components/sidebar/app-sidebar.tsx:64
+#: src/components/theme/inflation-toggle.tsx:64
+msgid "Prețuri"
+msgstr "Prețuri"
+
+#: src/components/theme/inflation-toggle.tsx:68
+msgid "Prețuri curente"
+msgstr "Prețuri curente"
+
+#: src/components/theme/inflation-toggle.tsx:80
+msgid "Prețuri: ajustate cu inflația"
+msgstr "Prețuri: ajustate cu inflația"
+
+#: src/components/theme/inflation-toggle.tsx:81
+msgid "Prețuri: curente"
+msgstr "Prețuri: curente"
+
 #: src/features/ngos/organization/components/profile-parts.tsx:319
 msgid "prevăzut"
 msgstr "prevăzut"
@@ -38277,8 +38370,8 @@ msgstr "Prezentare"
 #~ msgstr ""
 
 #: src/components/theme/inflation-toggle.tsx:59
-msgid "Prices"
-msgstr "Prețuri"
+#~ msgid "Prices"
+#~ msgstr "Prețuri"
 
 #: src/features/legal/lib/legal-vocabulary.ts:180
 msgid "Prim-ministrul"
@@ -39705,7 +39798,7 @@ msgstr "Gata de creare"
 msgid "Ready to learn?"
 msgstr "Ești gata să înveți?"
 
-#: src/components/theme/inflation-toggle.tsx:82
+#: src/components/theme/inflation-toggle.tsx:69
 msgid "Real"
 msgstr "Real"
 
@@ -41350,15 +41443,14 @@ msgstr "România,<0/>an de an"
 #~ msgstr ""
 
 #: src/components/theme/language-toggle.tsx:68
-msgid "Romanian"
-msgstr "Română"
+#~ msgid "Romanian"
+#~ msgstr "Română"
 
 #: src/features/legal/components/legislation-shell.tsx:85
 msgid "României"
 msgstr "României"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:764
-#: src/components/theme/currency-toggle.tsx:64
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:247
 msgid "RON"
 msgstr "RON"
@@ -41955,6 +42047,10 @@ msgstr "Scurtături"
 #: src/features/entity-search/components/entity-search-header.tsx:51
 msgid "Scurtături căutare"
 msgstr ""
+
+#: src/components/sidebar/nav-user.tsx:144
+msgid "Scurtături tastatură"
+msgstr "Scurtături tastatură"
 
 #: src/features/entity-search/components/entity-empty-state.tsx:149
 #: src/features/landing/components/search/landing-search.tsx:176
@@ -43552,6 +43648,7 @@ msgstr "Setează primar"
 msgid "Set the basic properties for your chart"
 msgstr "Setați proprietățile de bază pentru graficul dumneavoastră"
 
+#: src/components/sidebar/nav-user.tsx:131
 #: src/features/privacy/components/cookie-settings-page.tsx:109
 msgid "Setări"
 msgstr "Setări"
@@ -44987,8 +45084,8 @@ msgid "Statistică socială"
 msgstr "Statistică socială"
 
 #: src/components/sidebar/nav-main.tsx:118
-msgid "Statistici"
-msgstr "Statistici"
+#~ msgid "Statistici"
+#~ msgstr "Statistici"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:150
 msgid "Statistici / INS"
@@ -45002,6 +45099,7 @@ msgstr "Statistici / INS"
 msgid "Statistici de utilizare"
 msgstr "Statistici de utilizare"
 
+#: src/components/sidebar/nav-main.tsx:90
 #: src/features/entity-search/lib/doc-type-meta.ts:33
 #: src/features/landing/lib/landing-groups.ts:169
 #: src/features/landing/lib/search-filters.ts:138
@@ -45013,6 +45111,7 @@ msgstr "Statistici de utilizare"
 msgid "Statistici INS"
 msgstr "Statistici INS"
 
+#: src/components/sidebar/nav-main.tsx:86
 #: src/features/landing/lib/landing-groups.ts:154
 msgid "Statistici și instrumente"
 msgstr "Statistici și instrumente"
@@ -46130,10 +46229,10 @@ msgstr "Telecomunicații și digital"
 msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an."
 msgstr "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an."
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:71
-#: src/features/statistics/lib/explorer-chips.ts:114
-#~ msgid "Temă"
-#~ msgstr "Temă"
+#: src/components/sidebar/theme-switcher.tsx:60
+#: src/components/sidebar/theme-switcher.tsx:64
+msgid "Temă"
+msgstr "Temă"
 
 #. placeholder {0}: explorerContextLabel(chip.value, contextIndex)
 #: src/features/statistics/lib/explorer-chips.ts:101
@@ -49273,7 +49372,6 @@ msgstr "Sumele utilizabile acoperă doar {coverage} din {grain} — prea puține
 #~ msgstr "Analiza utilizării"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:766
-#: src/components/theme/currency-toggle.tsx:80
 msgid "USD"
 msgstr "USD"
 
@@ -49417,6 +49515,10 @@ msgstr "Utilități și administrarea teritoriului"
 #: src/components/commitments/CommitmentsTable.tsx:204
 msgid "Utilization"
 msgstr "Utilizare"
+
+#: src/components/sidebar/nav-user.tsx:40
+msgid "Utilizator"
+msgstr "Utilizator"
 
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:129
 msgid "Vă redirecționăm către stenograma ședinței…"

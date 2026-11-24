@@ -74,7 +74,8 @@ test.describe('Entity Details Page', () => {
     await expect(
       page.getByText(/Venituri - Cheltuieli|Income - Expenses/i).first(),
     ).toBeVisible()
-    await expect(page.getByText(/RON/).first()).toBeVisible()
+    // Visible text only: the collapsed sidebar's hidden currency switch also says RON.
+    await expect(page.getByText(/RON/).filter({ visible: true }).first()).toBeVisible()
 
     await expect(
       page.getByText(/Evoluție Financiară|Financial Trends/i).first(),

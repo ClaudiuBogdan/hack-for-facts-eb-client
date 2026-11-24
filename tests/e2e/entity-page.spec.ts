@@ -55,7 +55,7 @@ test.describe('Entity Page', () => {
 
     // Verify amounts are displayed
     await expect(
-      page.locator('text=/mld|mil|RON/i').first()
+      page.locator('text=/mld|mil|RON/i').filter({ visible: true }).first()
     ).toBeVisible({ timeout: 10000 })
   })
 

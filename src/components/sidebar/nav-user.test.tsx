@@ -22,6 +22,10 @@ import { NavUser } from './nav-user'
 // Mock Lingui
 vi.mock('@lingui/react/macro', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useLingui: () => ({
+    t: (strings: TemplateStringsArray, ...values: unknown[]) =>
+      strings.reduce((text, part, index) => text + part + (index < values.length ? String(values[index]) : ''), ''),
+  }),
 }))
 
 vi.mock('@lingui/core/macro', () => ({
@@ -37,6 +41,7 @@ vi.mock('lucide-react', () => ({
   LogIn: () => <span data-testid="icon-login" />,
   LogOut: () => <span data-testid="icon-logout" />,
   Settings: () => <span data-testid="icon-settings" />,
+  UserRound: () => <span data-testid="icon-guest" />,
 }))
 
 // Mock router
@@ -159,7 +164,7 @@ describe('NavUser', () => {
 
       render(<NavUser />)
 
-      expect(screen.getAllByText('Guest').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Invitat').length).toBeGreaterThan(0)
       expect(screen.getByTestId('icon-login')).toBeInTheDocument()
     })
   })
@@ -186,20 +191,20 @@ describe('NavUser', () => {
     it('renders logout option when signed in', () => {
       render(<NavUser />)
 
-      expect(screen.getByText('Log out')).toBeInTheDocument()
+      expect(screen.getByText('Deconectare')).toBeInTheDocument()
     })
 
     it('renders account link', () => {
       render(<NavUser />)
 
-      expect(screen.getByText('Account')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'Account' })).toHaveAttribute('href', 'https://accounts.transparenta.eu/user')
+      expect(screen.getByText('Cont')).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Cont' })).toHaveAttribute('href', 'https://accounts.transparenta.eu/user')
     })
 
     it('renders notifications link', () => {
       render(<NavUser />)
 
-      expect(screen.getByText('Notifications')).toBeInTheDocument()
+      expect(screen.getByText('Notificări')).toBeInTheDocument()
     })
 
     it('renders theme switcher', () => {
@@ -222,43 +227,31 @@ describe('NavUser', () => {
     it('renders guest display name', () => {
       render(<NavUser />)
 
-      expect(screen.getAllByText('Guest').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Invitat').length).toBeGreaterThan(0)
     })
 
-    it('renders guest initials', () => {
+    it('marks a guest with a person icon, not initials', () => {
       render(<NavUser />)
 
-      expect(screen.getAllByText('GU').length).toBeGreaterThan(0)
+      expect(screen.getAllByTestId('icon-guest').length).toBeGreaterThan(0)
+    })
+
+    it('does not repeat the guest at the top of the menu', () => {
+      render(<NavUser />)
+
+      expect(screen.getAllByText('Invitat')).toHaveLength(1)
     })
 
     it('renders sign in option', () => {
       render(<NavUser />)
 
-      expect(screen.getByText('Sign in')).toBeInTheDocument()
+      expect(screen.getByText('Conectare')).toBeInTheDocument()
     })
 
     it('wraps sign in with AuthSignInButton', () => {
       render(<NavUser />)
 
       expect(screen.getByTestId('auth-sign-in-button')).toBeInTheDocument()
-    })
-
-    it('renders Romanian sign-in copy when locale is ro', () => {
-      mockLocale.mockReturnValue('ro')
-
-      render(<NavUser />)
-
-      expect(screen.getByText('Conectare')).toBeInTheDocument()
-    })
-  })
-
-  describe('Romanian labels', () => {
-    it('renders Romanian logout copy when locale is ro', () => {
-      mockLocale.mockReturnValue('ro')
-
-      render(<NavUser />)
-
-      expect(screen.getByText('Deconectare')).toBeInTheDocument()
     })
   })
 
@@ -286,7 +279,7 @@ describe('NavUser', () => {
 
       render(<NavUser />)
 
-      expect(screen.getAllByText('User').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Utilizator').length).toBeGreaterThan(0)
     })
   })
 
@@ -300,7 +293,7 @@ describe('NavUser', () => {
 
       render(<NavUser />)
 
-      expect(screen.getByText('Keyboard Shortcuts')).toBeInTheDocument()
+      expect(screen.getByText('Scurtături tastatură')).toBeInTheDocument()
     })
 
     it('hides keyboard shortcuts option on mobile', () => {
@@ -312,7 +305,7 @@ describe('NavUser', () => {
 
       render(<NavUser />)
 
-      expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument()
+      expect(screen.queryByText('Scurtături tastatură')).not.toBeInTheDocument()
     })
   })
 

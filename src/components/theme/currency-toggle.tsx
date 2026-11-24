@@ -1,19 +1,19 @@
-import { Button } from "@/components/ui/button";
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../ui/sidebar";
-import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
+import { Banknote, DollarSign, Euro } from "lucide-react";
+import { SegmentedChoice } from "@/components/sidebar/segmented-choice";
+import { RailIndicator } from "@/components/sidebar/rail-indicator";
 import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { useSearch } from "@tanstack/react-router";
 import { setPreferenceCookie, USER_CURRENCY_STORAGE_KEY } from "@/lib/user-preferences";
 import type { Currency } from "@/schemas/charts";
 import { parseCurrencyParam, resolveNormalizationSettings, type NormalizationInput } from "@/lib/globalSettings/params";
 
-export function CurrencyToggle({
-    initialCurrency,
-}: {
+type CurrencyToggleProps = {
     readonly initialCurrency?: Currency;
-}) {
-    const { state } = useSidebar();
-    const collapsed = state === "collapsed";
+};
+
+/** The currency in effect (a URL override wins over the saved choice), and how to change it. */
+function useCurrencyChoice(initialCurrency?: Currency) {
     const [userCurrency, setUserCurrency] = useUserCurrency(initialCurrency);
     const search = useSearch({ strict: false });
 
@@ -51,37 +51,31 @@ export function CurrencyToggle({
         window.location.replace(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
     }
 
+    return { selectedCurrency, applyCurrency };
+}
+
+export function CurrencyToggle({ initialCurrency }: CurrencyToggleProps) {
+    const { t } = useLingui();
+    const { selectedCurrency, applyCurrency } = useCurrencyChoice(initialCurrency);
     return (
-        <SidebarGroup>
-            <SidebarGroupLabel >
-                <Trans>Currency</Trans>
-            </SidebarGroupLabel>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild onClick={() => applyCurrency("RON")}>
-                        <Button variant={selectedCurrency === 'RON' ? "secondary" : "ghost"} size="icon" className="w-full justify-start gap-2">
-                            <span className="text-md">🇷🇴</span>
-                            {!collapsed && <span className="flex-1 text-left"><Trans>RON</Trans></span>}
-                        </Button>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild onClick={() => applyCurrency("EUR")}>
-                        <Button variant={selectedCurrency === 'EUR' ? "secondary" : "ghost"} size="icon" className="w-full justify-start gap-2">
-                            <span className="text-md">🇪🇺</span>
-                            {!collapsed && <span className="flex-1 text-left"><Trans>EUR</Trans></span>}
-                        </Button>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild onClick={() => applyCurrency("USD")}>
-                        <Button variant={selectedCurrency === 'USD' ? "secondary" : "ghost"} size="icon" className="w-full justify-start gap-2">
-                            <span className="text-md">🇺🇸</span>
-                            {!collapsed && <span className="flex-1 text-left"><Trans>USD</Trans></span>}
-                        </Button>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
+        <SegmentedChoice
+            label={t`Monedă`}
+            value={selectedCurrency}
+            onChange={applyCurrency}
+            options={[
+                { value: "RON", label: "RON", title: t`Lei` },
+                { value: "EUR", label: "EUR", title: t`Euro` },
+                { value: "USD", label: "USD", title: t`Dolari americani` },
+            ]}
+        />
     );
+}
+
+const CURRENCY_ICONS = { RON: Banknote, EUR: Euro, USD: DollarSign } as const satisfies Record<Currency, unknown>;
+
+/** The collapsed rail's mark for the currency in effect. */
+export function CurrencyIndicator({ initialCurrency }: CurrencyToggleProps) {
+    const { t } = useLingui();
+    const { selectedCurrency } = useCurrencyChoice(initialCurrency);
+    return <RailIndicator icon={CURRENCY_ICONS[selectedCurrency]} label={t`Monedă: ${selectedCurrency}`} />;
 }

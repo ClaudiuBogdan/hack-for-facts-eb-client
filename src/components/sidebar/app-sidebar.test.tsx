@@ -10,7 +10,7 @@
  * - Test props passing
  */
 
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import { AppSidebar } from './app-sidebar'
 
@@ -26,6 +26,11 @@ vi.mock('@lingui/react/macro', () => ({
 vi.mock('@lingui/core/macro', () => ({
   t: (strings: TemplateStringsArray) => strings[0],
   msg: (strings: TemplateStringsArray) => strings[0],
+}))
+
+const mockPathname = vi.fn(() => '/')
+vi.mock('@tanstack/react-router', () => ({
+  useLocation: ({ select }: { select: (location: { pathname: string }) => string }) => select({ pathname: mockPathname() }),
 }))
 
 // Mock sidebar UI components
@@ -63,14 +68,17 @@ vi.mock('./nav-user', () => ({
 
 vi.mock('@/components/theme/language-toggle', () => ({
   LanguageToggle: () => <div data-testid="language-toggle">LanguageToggle</div>,
+  LanguageIndicator: () => <div data-testid="language-indicator" />,
 }))
 
 vi.mock('@/components/theme/currency-toggle', () => ({
   CurrencyToggle: () => <div data-testid="currency-toggle">CurrencyToggle</div>,
+  CurrencyIndicator: () => <div data-testid="currency-indicator" />,
 }))
 
 vi.mock('@/components/theme/inflation-toggle', () => ({
   InflationToggle: () => <div data-testid="inflation-toggle">InflationToggle</div>,
+  InflationIndicator: () => <div data-testid="inflation-indicator" />,
 }))
 
 // ============================================================================
@@ -126,44 +134,51 @@ describe('AppSidebar', () => {
     })
   })
 
-  describe('footer components', () => {
-    it('renders currency toggle', () => {
-      render(<AppSidebar />)
+  describe('footer', () => {
+    beforeEach(() => mockPathname.mockReturnValue('/'))
 
-      expect(screen.getByTestId('currency-toggle')).toBeInTheDocument()
-    })
-
-    it('renders inflation toggle', () => {
-      render(<AppSidebar />)
-
-      expect(screen.getByTestId('inflation-toggle')).toBeInTheDocument()
-    })
-
-    it('renders language toggle', () => {
-      render(<AppSidebar />)
-
-      expect(screen.getByTestId('language-toggle')).toBeInTheDocument()
-    })
-
-    it('renders nav user', () => {
+    it('always offers the account and the language', () => {
       render(<AppSidebar />)
 
       expect(screen.getByTestId('nav-user')).toBeInTheDocument()
+      expect(screen.getByTestId('language-toggle')).toBeInTheDocument()
     })
-  })
 
-  describe('component order in footer', () => {
-    it('renders footer components in correct order', () => {
+    it('offers only the language on a page that reads no display settings', () => {
+      mockPathname.mockReturnValue('/procurement')
       render(<AppSidebar />)
 
-      const footer = screen.getByTestId('sidebar-footer')
-      const children = footer.children
+      expect(screen.queryByTestId('currency-toggle')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('inflation-toggle')).not.toBeInTheDocument()
+      expect(screen.getByTestId('display-settings')).toContainElement(screen.getByTestId('language-toggle'))
+    })
 
-      // Order should be: CurrencyToggle, InflationToggle, LanguageToggle, NavUser
-      expect(children[0]).toHaveAttribute('data-testid', 'currency-toggle')
-      expect(children[1]).toHaveAttribute('data-testid', 'inflation-toggle')
-      expect(children[2]).toHaveAttribute('data-testid', 'language-toggle')
-      expect(children[3]).toHaveAttribute('data-testid', 'nav-user')
+    it('offers currency, prices and language on an entity page, above the account', () => {
+      mockPathname.mockReturnValue('/entities/4270740')
+      render(<AppSidebar />)
+
+      const settings = screen.getByTestId('display-settings')
+      expect(settings).toContainElement(screen.getByTestId('currency-toggle'))
+      expect(settings).toContainElement(screen.getByTestId('inflation-toggle'))
+      expect(settings).toContainElement(screen.getByTestId('language-toggle'))
+      expect(settings.compareDocumentPosition(screen.getByTestId('nav-user')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+
+    it('gives each offered setting its value mark, in the same row', () => {
+      mockPathname.mockReturnValue('/pnrr')
+      render(<AppSidebar />)
+
+      expect(screen.getByTestId('currency-indicator').parentElement).toContainElement(screen.getByTestId('currency-toggle'))
+      expect(screen.getByTestId('language-indicator').parentElement).toContainElement(screen.getByTestId('language-toggle'))
+      expect(screen.queryByTestId('inflation-indicator')).not.toBeInTheDocument()
+    })
+
+    it('offers only the currency on PNRR', () => {
+      mockPathname.mockReturnValue('/pnrr')
+      render(<AppSidebar />)
+
+      expect(screen.getByTestId('currency-toggle')).toBeInTheDocument()
+      expect(screen.queryByTestId('inflation-toggle')).not.toBeInTheDocument()
     })
   })
 

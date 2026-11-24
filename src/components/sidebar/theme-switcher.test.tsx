@@ -22,6 +22,10 @@ import { ThemeSwitcher } from './theme-switcher'
 // Mock Lingui
 vi.mock('@lingui/react/macro', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useLingui: () => ({
+    t: (strings: TemplateStringsArray, ...values: unknown[]) =>
+      strings.reduce((text, part, index) => text + part + (index < values.length ? String(values[index]) : ''), ''),
+  }),
 }))
 
 vi.mock('@lingui/core/macro', () => ({
@@ -78,7 +82,7 @@ describe('ThemeSwitcher', () => {
     it('renders theme label', () => {
       render(<ThemeSwitcher />)
 
-      expect(screen.getByText('Theme')).toBeInTheDocument()
+      expect(screen.getByText('Temă')).toBeInTheDocument()
     })
 
     it('renders system theme button', () => {
@@ -219,15 +223,15 @@ describe('ThemeSwitcher', () => {
     it('has aria-label on radiogroup', () => {
       render(<ThemeSwitcher />)
 
-      expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-label', 'Theme selection')
+      expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-label', 'Temă')
     })
 
     it('has screen reader text for each button', () => {
       render(<ThemeSwitcher />)
 
-      expect(screen.getByText('System theme')).toBeInTheDocument()
-      expect(screen.getByText('Light theme')).toBeInTheDocument()
-      expect(screen.getByText('Dark theme')).toBeInTheDocument()
+      expect(screen.getByRole('radio', { name: 'Ca sistemul' })).toBeInTheDocument()
+      expect(screen.getByRole('radio', { name: 'Luminoasă' })).toBeInTheDocument()
+      expect(screen.getByRole('radio', { name: 'Întunecată' })).toBeInTheDocument()
     })
   })
 

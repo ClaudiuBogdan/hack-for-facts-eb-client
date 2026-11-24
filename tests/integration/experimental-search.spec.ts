@@ -78,7 +78,7 @@ test.describe('Experimental entity search — desktop', () => {
     await expect(listbox.getByText('Municipiu · beneficiar PNRR')).toHaveCount(1)
     // A current answer says so, and its counts are labelled estimates.
     await expect(page.getByText(/Firme: la zi\./)).toBeVisible()
-    await expect(page.getByRole('heading', { level: 2 })).toContainText('~312 candidați estimați în index')
+    await expect(page.getByRole('heading', { level: 2, name: /candidați estimați/ })).toContainText('~312 candidați estimați în index')
 
     await page.screenshot({ path: 'tmp/shots/desktop-results.png', fullPage: true })
   })
@@ -89,7 +89,8 @@ test.describe('Experimental entity search — desktop', () => {
     await page.getByRole('combobox').fill('dedeman')
     await expect(page.locator(LISTBOX)).toBeVisible({ timeout: 15000 })
 
-    const chips = page.locator('button[aria-pressed]')
+    // Visible ones only: the collapsed sidebar keeps its RO | EN buttons in the page, hidden.
+    const chips = page.locator('button[aria-pressed]').filter({ visible: true })
     await expect(chips).toHaveCount(5)
 
     // Click the first non-"all" facet chip → URL gains a types param.

@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button";
 import { dynamicActivate } from "@/lib/i18n";
-import { Trans } from "@lingui/react/macro";
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../ui/sidebar";
+import { useLingui } from "@lingui/react/macro";
+import { SegmentedChoice } from "@/components/sidebar/segmented-choice";
+import { RailIndicator } from "@/components/sidebar/rail-indicator";
+import { FlagGb, FlagRo } from "@/components/sidebar/flag-icons";
 import { Analytics } from "@/lib/analytics";
 import { getUserLocale, setUserLocale } from "@/lib/utils";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 
 export function LanguageToggle() {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
+  const { t } = useLingui();
   const userLocale = getUserLocale();
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,44 +34,22 @@ export function LanguageToggle() {
   }
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>
-        <Trans>Language</Trans>
-      </SidebarGroupLabel>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton asChild onClick={() => setLocale("en")}>
-            <Button
-              variant={userLocale === "en" ? "secondary" : "ghost"}
-              size="icon"
-              className="w-full justify-start gap-2"
-            >
-              <span className="text-md">🇬🇧</span>
-              {!collapsed ? (
-                <span className="flex-1">
-                  <Trans>English</Trans>
-                </span>
-              ) : null}
-            </Button>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton asChild onClick={() => setLocale("ro")}>
-            <Button
-              variant={userLocale === "ro" ? "secondary" : "ghost"}
-              size="icon"
-              className="w-full justify-start gap-2"
-            >
-              <span className="text-md">🇷🇴</span>
-              {!collapsed ? (
-                <span className="flex-1">
-                  <Trans>Romanian</Trans>
-                </span>
-              ) : null}
-            </Button>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarGroup>
+    <SegmentedChoice
+      label={t`Limbă`}
+      value={userLocale === "en" ? "en" : "ro"}
+      onChange={(next) => void setLocale(next)}
+      options={[
+        { value: "ro", label: "RO", title: "Română", name: "Română" },
+        { value: "en", label: "EN", title: "English", name: "English" },
+      ]}
+    />
   );
+}
+
+/** The collapsed rail's mark for the language in use: its flag. */
+export function LanguageIndicator() {
+  const { t } = useLingui();
+  return getUserLocale() === "en"
+    ? <RailIndicator icon={FlagGb} label={t`Limbă: English`} />
+    : <RailIndicator icon={FlagRo} label={t`Limbă: română`} />;
 }

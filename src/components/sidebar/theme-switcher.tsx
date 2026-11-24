@@ -8,18 +8,20 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useTheme } from "../theme/theme-provider";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 type Theme = "system" | "light" | "dark";
 
 export function ThemeSwitcher() {
+  const { t } = useLingui();
   const { theme, setTheme } = useTheme();
 
   const options = [
-    { value: "system" as Theme, icon: Monitor, tooltip: "System" },
-    { value: "light" as Theme, icon: Sun, tooltip: "Light" },
-    { value: "dark" as Theme, icon: Moon, tooltip: "Dark" },
+    { value: "system" as Theme, icon: Monitor, tooltip: t`Ca sistemul` },
+    { value: "light" as Theme, icon: Sun, tooltip: t`Luminoasă` },
+    { value: "dark" as Theme, icon: Moon, tooltip: t`Întunecată` },
   ];
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -55,11 +57,11 @@ export function ThemeSwitcher() {
         onKeyDown={handleKeyDown}
       >
         <div className="flex items-center justify-between w-full">
-          <span className="text-sm">Theme</span>
+          <span className="text-sm"><Trans>Temă</Trans></span>
           <div
             className="flex space-x-0.5"
             role="radiogroup"
-            aria-label="Theme selection"
+            aria-label={t`Temă`}
           >
             {options.map((option) => (
               <Tooltip key={option.value} delayDuration={0}>
@@ -73,16 +75,11 @@ export function ThemeSwitcher() {
                     data-state={
                       theme === option.value ? "checked" : "unchecked"
                     }
-                    className={cn("h-8 w-8 rounded-sm", {
-                      "bg-primary": theme === option.value,
-                      "hover:bg-secondary": theme !== option.value,
-                      "hover:text-secondary-foreground": theme !== option.value,
-                      "hover:bg-secondary-foreground": theme === option.value,
-                      "hover:text-primary-foreground": theme === option.value,
-                      "focus-visible:ring-1": true,
-                      "focus-visible:ring-ring": true,
-                      "focus-visible:outline-hidden": true,
-                    })}
+                    // Pressed like the sidebar's settings: a quiet fill, not the brand colour.
+                    className={cn(
+                      "h-8 w-8 rounded-sm text-muted-foreground hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden",
+                      theme === option.value && "bg-muted text-foreground hover:bg-muted",
+                    )}
                     onClick={() => setTheme(option.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -91,12 +88,8 @@ export function ThemeSwitcher() {
                       }
                     }}
                   >
-                    <option.icon
-                      className={cn("h-4 w-4", {
-                        "text-primary-foreground": theme === option.value,
-                      })}
-                    />
-                    <span className="sr-only">{option.tooltip} theme</span>
+                    <option.icon className="h-4 w-4" />
+                    <span className="sr-only">{option.tooltip}</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="top" sideOffset={10}>

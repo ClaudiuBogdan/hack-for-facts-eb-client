@@ -1,74 +1,31 @@
 /**
- * NavMain Component Tests
- *
- * This file tests the NavMain component which displays
- * the main navigation menu in the sidebar.
- *
- * Pattern: Navigation Component Testing
- * - Mock router hooks
- * - Mock sidebar context
- * - Test active state
- * - Test mobile behavior
+ * NavMain: the sidebar's grouped sections (`docs/design/sidebar/design.md`).
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@/test/test-utils'
+import { render, screen, fireEvent, within } from '@/test/test-utils'
 
-// ============================================================================
-// MOCKS
-// ============================================================================
-
-// Mock Lingui
 vi.mock('@lingui/react/macro', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
-vi.mock('@lingui/core/macro', () => ({
-  t: (strings: TemplateStringsArray) => strings[0],
-  msg: (strings: TemplateStringsArray) => strings[0],
-}))
+vi.mock('lucide-react', () => {
+  const icon = () => <span data-testid="icon" />
+  return {
+    Activity: icon, BarChart2: icon, Map: icon, ListOrdered: icon, Boxes: icon, Landmark: icon, Scale: icon,
+    Building2: icon, Briefcase: icon, Vote: icon, HeartHandshake: icon, FileStack: icon, Gavel: icon, House: icon, Users: icon,
+  }
+})
 
-// Mock lucide-react icons
-vi.mock('lucide-react', () => ({
-  LayoutDashboard: () => <span data-testid="icon-dashboard" />,
-  BarChart2: () => <span data-testid="icon-charts" />,
-  Map: () => <span data-testid="icon-map" />,
-  ListOrdered: () => <span data-testid="icon-entity-analytics" />,
-  Boxes: () => <span data-testid="icon-budget-explorer" />,
-  Landmark: () => <span data-testid="icon-achizitii" />,
-  Scale: () => <span data-testid="icon-legislation" />,
-  Building2: () => <span data-testid="icon-public-enterprises" />,
-  Briefcase: () => <span data-testid="icon-companies" />,
-  Vote: () => <span data-testid="icon-elections" />,
-  HeartHandshake: () => <span data-testid="icon-ngos" />,
-  Activity: () => <span data-testid="icon-statistics" />,
-  FileStack: () => <span data-testid="icon-pnrr" />,
-  Gavel: () => <span data-testid="icon-justice" />,
-  Users: () => <span data-testid="icon-parliament" />,
-}))
-
-// Mock router
 const mockMatches = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    to,
-    onClick,
-    className,
-  }: {
-    children: React.ReactNode
-    to: string
-    onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void
-    className?: string
-  }) => (
+  Link: ({ children, to, onClick }: { children: React.ReactNode; to: string; onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void }) => (
     <a
       href={to}
       onClick={(event) => {
         event.preventDefault()
         onClick?.(event)
       }}
-      className={className}
-      data-testid={`link-${to}`}
     >
       {children}
     </a>
@@ -76,344 +33,94 @@ vi.mock('@tanstack/react-router', () => ({
   useMatches: () => mockMatches(),
 }))
 
-// Mock sidebar context
 const mockSetOpenMobile = vi.fn()
 const mockSidebarState = vi.fn()
 
 vi.mock('@/components/ui/sidebar', () => ({
-  SidebarGroup: ({ children }: { children: React.ReactNode }) => <div data-testid="sidebar-group">{children}</div>,
-  SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul data-testid="sidebar-menu">{children}</ul>,
-  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <li data-testid="sidebar-menu-item">{children}</li>,
-  SidebarMenuButton: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SidebarGroup: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
+  SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,
+  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <li>{children}</li>,
+  SidebarMenuButton: ({ children, isActive }: { children: React.ReactNode; isActive?: boolean }) => (
+    <div data-active={isActive ? 'true' : 'false'}>{children}</div>
+  ),
   useSidebar: () => mockSidebarState(),
 }))
-
-// ============================================================================
-// TESTS
-// ============================================================================
 
 async function renderNavMain() {
   const { NavMain } = await import('./nav-main')
   return render(<NavMain />)
 }
 
+const activeHrefs = () =>
+  screen
+    .getAllByRole('link')
+    .filter((link) => link.closest('[data-active]')?.getAttribute('data-active') === 'true')
+    .map((link) => link.getAttribute('href'))
+
 describe('NavMain', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockMatches.mockReturnValue([{ pathname: '/' }])
-    mockSidebarState.mockReturnValue({
-      state: 'expanded',
-      isMobile: false,
-      setOpenMobile: mockSetOpenMobile,
-    })
+    mockSidebarState.mockReturnValue({ state: 'expanded', isMobile: false, setOpenMobile: mockSetOpenMobile })
   })
 
-  describe('menu items', () => {
-    it('renders Dashboard link', async () => {
-      await renderNavMain()
+  it('opens with home, then four groups of sections, in order', async () => {
+    await renderNavMain()
 
-      expect(screen.getByTestId('link-/')).toBeInTheDocument()
-      expect(screen.getByText('Dashboard')).toBeInTheDocument()
-    })
-
-    it('renders Map link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/map')).toBeInTheDocument()
-      expect(screen.getByText('Map')).toBeInTheDocument()
-    })
-
-    it('renders Charts link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/charts')).toBeInTheDocument()
-      expect(screen.getByText('Charts')).toBeInTheDocument()
-    })
-
-    it('renders the National Budget link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/national-budget')).toBeInTheDocument()
-      expect(screen.getByText('National Budget')).toBeInTheDocument()
-    })
-
-    it('renders the Instituții publice link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/entity-analytics')).toBeInTheDocument()
-      expect(screen.getByText('Instituții publice')).toBeInTheDocument()
-    })
-
-    it('renders Achizitii publice link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/procurement')).toBeInTheDocument()
-      expect(screen.getByText('Achiziții publice')).toBeInTheDocument()
-    })
-
-    it('renders Legislație link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/legislation')).toBeInTheDocument()
-      expect(screen.getByText('Legislație')).toBeInTheDocument()
-    })
-
-    it.each([
-      ['/pnrr', 'PNRR'],
-      ['/justice', 'Justiție'],
-      ['/parlament', 'Parlament'],
-    ])('renders the %s link', async (url, label) => {
-      await renderNavMain()
-
-      expect(screen.getByTestId(`link-${url}`)).toBeInTheDocument()
-      expect(screen.getByText(label)).toBeInTheDocument()
-    })
-
-    it('renders Alegeri link while the area is on in this build', async () => {
-      await renderNavMain()
-
-      // `src/config/feature-flags.ts`: elections are on, as a catalog of source editions.
-      expect(screen.getByTestId('link-/alegeri')).toBeInTheDocument()
-      expect(screen.getByText('Alegeri')).toBeInTheDocument()
-    })
-
-    it('renders ONG-uri link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/ngos')).toBeInTheDocument()
-      expect(screen.getByText('ONG-uri')).toBeInTheDocument()
-    })
-
-    it('renders Statistics link', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/ins')).toBeInTheDocument()
-      expect(screen.getByText('Statistici')).toBeInTheDocument()
-    })
-
-    it('renders all menu items', async () => {
-      await renderNavMain()
-
-      const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      // Fifteen declared, every area on.
-      expect(menuItems).toHaveLength(15)
-    })
-
-    it('renders the public enterprises link, after the companies', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/public-enterprises')).toBeInTheDocument()
-      expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
-      const links = screen.getAllByRole('link').map((link) => link.getAttribute('href'))
-      expect(links.indexOf('/public-enterprises')).toBe(links.indexOf('/companies') + 1)
-    })
+    expect(screen.getByRole('link', { name: 'Acasă' })).toHaveAttribute('href', '/')
+    const groups: ReadonlyArray<readonly [string, readonly string[]]> = [
+      ['Banii publici', ['/national-budget', '/procurement', '/pnrr']],
+      ['Instituții și organizații', ['/entity-analytics', '/companies', '/public-enterprises', '/ngos']],
+      ['Lege, justiție și alegeri', ['/legislation', '/justice', '/parlament', '/alegeri']],
+      ['Statistici și instrumente', ['/map', '/charts', '/ins']],
+    ]
+    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(groups.map(([title]) => title))
+    for (const [title, hrefs] of groups) {
+      const section = screen.getByRole('heading', { name: title }).closest('section') as HTMLElement
+      expect(within(section).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(hrefs)
+    }
+    expect(screen.getAllByRole('link')).toHaveLength(15)
   })
 
-  describe('icons', () => {
-    it('renders dashboard icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-dashboard')).toBeInTheDocument()
-    })
-
-    it('renders map icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-map')).toBeInTheDocument()
-    })
-
-    it('renders charts icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-charts')).toBeInTheDocument()
-    })
-
-    it('renders achizitii icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-achizitii')).toBeInTheDocument()
-    })
-
-    it('renders public enterprises icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-public-enterprises')).toBeInTheDocument()
-    })
-
-    it('renders companies icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-companies')).toBeInTheDocument()
-    })
-
-    it('renders elections icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-elections')).toBeInTheDocument()
-    })
-
-    it('renders ONG-uri icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-ngos')).toBeInTheDocument()
-    })
-
-    it('renders statistics icon', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('icon-statistics')).toBeInTheDocument()
-    })
+  it.each([
+    ['/', '/'],
+    ['/map', '/map'],
+    ['/charts/123', '/charts'],
+    ['/public-enterprises', '/public-enterprises'],
+    ['/procurement/suppliers/1', '/procurement'],
+    ['/alegeri/contest/x', '/alegeri'],
+  ])('on %s marks only %s as active', async (path, href) => {
+    mockMatches.mockReturnValue([{ pathname: path }])
+    await renderNavMain()
+    expect(activeHrefs()).toEqual([href])
   })
 
-  describe('active state', () => {
-    it('marks Dashboard as active when on root', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/' }])
-      await renderNavMain()
-
-      const dashboardLink = screen.getByTestId('link-/')
-      expect(dashboardLink).toHaveClass('bg-muted')
-    })
-
-    it('marks Map as active when on /map', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/map' }])
-      await renderNavMain()
-
-      const mapLink = screen.getByTestId('link-/map')
-      expect(mapLink).toHaveClass('bg-muted')
-    })
-
-    it('does not mark Map as active for /maps sibling routes', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/maps/editor' }])
-      await renderNavMain()
-
-      const mapLink = screen.getByTestId('link-/map')
-      expect(mapLink).not.toHaveClass('bg-muted')
-    })
-
-    it('marks Charts as active when on /charts subpath', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/charts/123' }])
-      await renderNavMain()
-
-      const chartsLink = screen.getByTestId('link-/charts')
-      expect(chartsLink).toHaveClass('bg-muted')
-    })
-
-    it('marks public enterprises as active on the hub', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/public-enterprises' }])
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/public-enterprises')).toHaveClass('bg-muted')
-      expect(screen.getByTestId('link-/companies')).not.toHaveClass('bg-muted')
-    })
-
-    it('marks ONG-uri as active when on /ngos subpath', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/ngos/12345678' }])
-      await renderNavMain()
-
-      const ngosLink = screen.getByTestId('link-/ngos')
-      expect(ngosLink).toHaveClass('bg-muted')
-    })
-
-    it('marks Statistics as active when on /ins subpath', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/ins/teritorii/54975' }])
-      await renderNavMain()
-
-      const statisticsLink = screen.getByTestId('link-/ins')
-      expect(statisticsLink).toHaveClass('bg-muted')
-    })
-
-    it('does not mark Dashboard as active on other pages', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/map' }])
-      await renderNavMain()
-
-      const dashboardLink = screen.getByTestId('link-/')
-      expect(dashboardLink).not.toHaveClass('bg-muted')
-    })
-
-    it('marks Achizitii as active when on /procurement subpath', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/procurement/search' }])
-      await renderNavMain()
-
-      const achizitiiLink = screen.getByTestId('link-/procurement')
-      expect(achizitiiLink).toHaveClass('bg-muted')
-    })
-
-    it('marks Alegeri as active on a contest page', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/alegeri/contest/contest%3Abec-local-2024%3Amayor%3Asource_constituency%3A8-19' }])
-      await renderNavMain()
-
-      expect(screen.getByTestId('link-/alegeri')).toHaveClass('bg-muted')
-      expect(screen.getAllByRole('link').filter((link) => link.classList.contains('bg-muted'))).toHaveLength(1)
-    })
+  it('marks nothing active on a sibling path such as /maps', async () => {
+    mockMatches.mockReturnValue([{ pathname: '/maps/editor' }])
+    await renderNavMain()
+    expect(activeHrefs()).toEqual([])
   })
 
-  describe('collapsed state', () => {
-    it('shows labels when expanded', async () => {
-      mockSidebarState.mockReturnValue({
-        state: 'expanded',
-        isMobile: false,
-        setOpenMobile: mockSetOpenMobile,
-      })
-      await renderNavMain()
+  it('hides labels when collapsed, but keeps each link named for screen readers', async () => {
+    mockSidebarState.mockReturnValue({ state: 'collapsed', isMobile: false, setOpenMobile: mockSetOpenMobile })
+    await renderNavMain()
 
-      expect(screen.getByText('Dashboard')).toBeInTheDocument()
-      expect(screen.getByText('Map')).toBeInTheDocument()
-    })
-
-    it('hides labels when collapsed, but keeps each link named for screen readers', async () => {
-      mockSidebarState.mockReturnValue({
-        state: 'collapsed',
-        isMobile: false,
-        setOpenMobile: mockSetOpenMobile,
-      })
-      await renderNavMain()
-
-      expect(screen.getByText('Dashboard')).toHaveClass('sr-only')
-      expect(screen.getByText('Map')).toHaveClass('sr-only')
-      expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/')
-      expect(screen.getByRole('link', { name: 'Map' })).toHaveAttribute('href', '/map')
-    })
+    expect(screen.getByText('Hartă')).toHaveClass('sr-only')
+    expect(screen.getByRole('link', { name: 'Hartă' })).toHaveAttribute('href', '/map')
   })
 
-  describe('mobile behavior', () => {
-    it('closes sidebar on mobile when link clicked', async () => {
-      mockSidebarState.mockReturnValue({
-        state: 'expanded',
-        isMobile: true,
-        setOpenMobile: mockSetOpenMobile,
-      })
-      await renderNavMain()
+  it('closes the sheet on a phone when a link is clicked, and only there', async () => {
+    mockSidebarState.mockReturnValue({ state: 'expanded', isMobile: true, setOpenMobile: mockSetOpenMobile })
+    const { unmount } = await renderNavMain()
+    fireEvent.click(screen.getByRole('link', { name: 'Hartă' }))
+    expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
+    unmount()
 
-      fireEvent.click(screen.getByTestId('link-/map'))
-
-      expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
-    })
-
-    it('does not close sidebar on desktop when link clicked', async () => {
-      mockSidebarState.mockReturnValue({
-        state: 'expanded',
-        isMobile: false,
-        setOpenMobile: mockSetOpenMobile,
-      })
-      await renderNavMain()
-
-      fireEvent.click(screen.getByTestId('link-/map'))
-
-      expect(mockSetOpenMobile).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('structure', () => {
-    it('renders sidebar group', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('sidebar-group')).toBeInTheDocument()
-    })
-
-    it('renders sidebar menu', async () => {
-      await renderNavMain()
-
-      expect(screen.getByTestId('sidebar-menu')).toBeInTheDocument()
-    })
+    mockSetOpenMobile.mockClear()
+    mockSidebarState.mockReturnValue({ state: 'expanded', isMobile: false, setOpenMobile: mockSetOpenMobile })
+    await renderNavMain()
+    fireEvent.click(screen.getByRole('link', { name: 'Hartă' }))
+    expect(mockSetOpenMobile).not.toHaveBeenCalled()
   })
 })

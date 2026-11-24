@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, ChevronsUpDown, Keyboard, LogIn, LogOut, Settings } from "lucide-react";
+import { Bell, ChevronsUpDown, Keyboard, LogIn, LogOut, Settings, UserRound } from "lucide-react";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,7 +17,6 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { createLogger } from "@/lib/logger";
 import { AUTH_ACCOUNT_URL, useAuth, AuthSignInButton } from "@/lib/auth";
 import { ThemeSwitcher } from "./theme-switcher";
-import { getUserLocale } from "@/lib/utils";
 import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
 
 const logger = createLogger({ context: "NavUser" });
@@ -30,40 +30,25 @@ type NavUserProps = {
 };
 
 export function NavUser(_props: NavUserProps) {
+  const { t } = useLingui();
   const { isMobile, setIsOverlayLockedOpen, setOpenMobile } = useSidebar();
   const { user, isSignedIn, isLoaded, signOut } = useAuth();
-  const locale = getUserLocale();
   const [shortcutsModalOpen, setShortcutsModalOpen] = React.useState(false);
 
-  const displayName = React.useMemo(() => {
-    if (!user) return locale === "ro" ? "Invitat" : "Guest";
-    const first = user.firstName ?? "";
-    const last = user.lastName ?? "";
-    const full = `${first} ${last}`.trim();
-    return full || (locale === "ro" ? "Utilizator" : "User");
-  }, [locale, user]);
-
-  const initials = React.useMemo(() => {
-    if (!user) return locale === "ro" ? "IN" : "GU";
-    const first = (user.firstName?.[0] ?? "U").toUpperCase();
-    const last = (user.lastName?.[0] ?? "").toUpperCase();
-    return `${first}${last}`.slice(0, 2);
-  }, [locale, user]);
-
+  const signedIn = isLoaded && isSignedIn && user != null;
+  const fullName = user ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() : "";
+  const displayName = !user ? t`Invitat` : fullName || t`Utilizator`;
+  const initials = user
+    ? `${(user.firstName?.[0] ?? "U").toUpperCase()}${(user.lastName?.[0] ?? "").toUpperCase()}`.slice(0, 2)
+    : null;
   const email = user?.email ?? "";
-  const accountLabel = locale === "ro" ? "Cont" : "Account";
-  const settingsLabel = locale === "ro" ? "Setări" : "Settings";
-  const notificationsLabel = locale === "ro" ? "Notificări" : "Notifications";
-  const keyboardShortcutsLabel = locale === "ro" ? "Scurtături tastatură" : "Keyboard Shortcuts";
-  const logOutLabel = locale === "ro" ? "Deconectare" : "Log out";
-  const signInLabel = locale === "ro" ? "Conectare" : "Sign in";
 
   const handleUserMenuNavigate = React.useCallback(() => {
-    // On mobile, close the sidebar sheet when navigating from user menu
+    // On a phone, close the sheet when the menu navigates.
     if (isMobile) {
       setOpenMobile(false);
     }
-    // Also release any overlay lock held by the dropdown
+    // Also release the overlay lock the open menu holds.
     setIsOverlayLockedOpen(false);
   }, [isMobile, setOpenMobile, setIsOverlayLockedOpen]);
 
@@ -76,33 +61,39 @@ export function NavUser(_props: NavUserProps) {
     }
   };
 
+  // A guest has no picture or initials: a person mark stands in.
+  const avatar = (
+    <Avatar className="size-8 rounded-lg">
+      <AvatarImage src={undefined} alt={displayName} />
+      <AvatarFallback className="rounded-lg bg-sidebar-accent text-xs font-medium text-sidebar-accent-foreground">
+        {initials ?? <UserRound className="size-4" aria-hidden="true" />}
+      </AvatarFallback>
+    </Avatar>
+  );
+
   return (
-    <SidebarMenu>
+    // Inset like the setting rows, so the avatar sits on the rail's icon line.
+    <SidebarMenu className="px-2">
       <SidebarMenuItem>
         <DropdownMenu
           onOpenChange={(open) => {
-            // Lock sidebar open while the user menu is open
+            // Keep the sidebar open while its menu is.
             setIsOverlayLockedOpen(open);
           }}
         >
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0"
-              aria-label="User menu"
+              // Same size and no padding open or collapsed, so the avatar never moves.
+              className="h-10 gap-2 px-0 group-data-[state=expanded]:px-0 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:h-10! group-data-[collapsible=icon]:w-8! group-data-[collapsible=icon]:p-0!"
+              aria-label={t`Meniul contului`}
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={undefined} alt={displayName} />
-                <AvatarFallback className="rounded-lg font-medium group-data-[collapsible=icon]:ml-3">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              {/* Hide text when collapsed; keep a subtle chevron */}
+              {avatar}
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-semibold">{displayName}</span>
-                {email && <span className="truncate text-xs">{email}</span>}
+                <span className="truncate font-medium">{displayName}</span>
+                {email && <span className="truncate text-xs text-sidebar-foreground/70">{email}</span>}
               </div>
-              <ChevronsUpDown className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
+              <ChevronsUpDown className="mr-2 ml-auto size-4 text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -111,61 +102,63 @@ export function NavUser(_props: NavUserProps) {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={undefined} alt={displayName} />
-                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{displayName}</span>
-                  {email && <span className="truncate text-xs">{email}</span>}
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            {/* Who is signed in; a guest needs no header repeating the button. */}
+            {signedIn && (
+              <>
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    {avatar}
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-medium">{displayName}</span>
+                      {email && <span className="truncate text-xs text-muted-foreground">{email}</span>}
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuGroup>
-              {isLoaded && isSignedIn ? (
+              {signedIn ? (
                 <DropdownMenuItem asChild>
                   <a href={AUTH_ACCOUNT_URL} onClick={handleUserMenuNavigate} rel="noreferrer">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>{accountLabel}</span>
+                    <span><Trans>Cont</Trans></span>
                   </a>
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem asChild>
                   <Link to="/settings/profile" onClick={handleUserMenuNavigate}>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>{settingsLabel}</span>
+                    <span><Trans>Setări</Trans></span>
                   </Link>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem asChild>
                 <Link to="/settings/notifications" onClick={handleUserMenuNavigate}>
                   <Bell className="mr-2 h-4 w-4" />
-                  <span>{notificationsLabel}</span>
+                  <span><Trans>Notificări</Trans></span>
                 </Link>
               </DropdownMenuItem>
               {!isMobile && (
                 <DropdownMenuItem onClick={() => setShortcutsModalOpen(true)}>
                   <Keyboard className="mr-2 h-4 w-4" />
-                  <span>{keyboardShortcutsLabel}</span>
+                  <span><Trans>Scurtături tastatură</Trans></span>
                 </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <ThemeSwitcher />
             <DropdownMenuSeparator />
-            {isLoaded && isSignedIn ? (
+            {signedIn ? (
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>{logOutLabel}</span>
+                <span><Trans>Deconectare</Trans></span>
               </DropdownMenuItem>
             ) : (
               <AuthSignInButton>
                 <DropdownMenuItem>
                   <LogIn className="mr-2 h-4 w-4" />
-                  <span>{signInLabel}</span>
+                  <span><Trans>Conectare</Trans></span>
                 </DropdownMenuItem>
               </AuthSignInButton>
             )}

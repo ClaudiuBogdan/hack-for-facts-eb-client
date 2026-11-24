@@ -153,9 +153,11 @@ const Sidebar = React.forwardRef<
 
     const [hoverOverlay, setHoverOverlay] = React.useState(false);
     const isHoveringRef = React.useRef(false);
+    // Keyboard focus inside opens the rail like the pointer does, so the
+    // settings and labels it hides when collapsed stay reachable.
+    const isKeyboardFocusWithinRef = React.useRef(false);
 
-    const handleMouseEnter = React.useCallback(() => {
-      isHoveringRef.current = true;
+    const openAsOverlay = React.useCallback(() => {
       if (isMobile) return;
       if (collapsible !== "icon") return;
       if (state !== "collapsed") return;
@@ -163,16 +165,45 @@ const Sidebar = React.forwardRef<
       setOpen(true);
     }, [isMobile, collapsible, state, setOpen]);
 
-    const handleMouseLeave = React.useCallback(() => {
-      isHoveringRef.current = false;
+    const closeUnlessHeld = React.useCallback(() => {
+      if (isHoveringRef.current || isKeyboardFocusWithinRef.current) return;
       setHoverOverlay(false);
       if (open && !isOverlayLockedOpen) {
         setOpen(false);
       }
     }, [open, setOpen, isOverlayLockedOpen]);
 
+    const handleMouseEnter = React.useCallback(() => {
+      isHoveringRef.current = true;
+      openAsOverlay();
+    }, [openAsOverlay]);
+
+    const handleMouseLeave = React.useCallback(() => {
+      isHoveringRef.current = false;
+      closeUnlessHeld();
+    }, [closeUnlessHeld]);
+
+    const handleFocus = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+      // A click focuses too; only keyboard focus holds the rail open.
+      if (!(event.target instanceof HTMLElement) || !event.target.matches(":focus-visible")) return;
+      isKeyboardFocusWithinRef.current = true;
+      openAsOverlay();
+    }, [openAsOverlay]);
+
+    const handleBlur = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+      if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+      isKeyboardFocusWithinRef.current = false;
+      closeUnlessHeld();
+    }, [closeUnlessHeld]);
+
+    // Escape hands focus back to the page, which closes the rail.
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== "Escape" || !isKeyboardFocusWithinRef.current) return;
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    }, []);
+
     React.useEffect(() => {
-      if (open && !isOverlayLockedOpen && !isHoveringRef.current) {
+      if (open && !isOverlayLockedOpen && !isHoveringRef.current && !isKeyboardFocusWithinRef.current) {
         setOpen(false);
       }
     }, [isOverlayLockedOpen, open, setOpen]);
@@ -258,6 +289,9 @@ const Sidebar = React.forwardRef<
           {...props}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
         >
           <div
             data-sidebar="sidebar"

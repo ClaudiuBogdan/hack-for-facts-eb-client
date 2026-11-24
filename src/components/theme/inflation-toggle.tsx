@@ -1,18 +1,18 @@
-import { Button } from "@/components/ui/button";
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../ui/sidebar";
-import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
+import { ShoppingBasket, Tag } from "lucide-react";
+import { SegmentedChoice } from "@/components/sidebar/segmented-choice";
+import { RailIndicator } from "@/components/sidebar/rail-indicator";
 import { useUserInflationAdjusted } from "@/lib/hooks/useUserInflationAdjusted";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { setPreferenceCookie, USER_INFLATION_ADJUSTED_STORAGE_KEY } from "@/lib/user-preferences";
 import { parseBooleanParam, resolveNormalizationSettings, type NormalizationInput } from "@/lib/globalSettings/params";
 
-export function InflationToggle({
-    initialInflationAdjusted,
-}: {
+type InflationToggleProps = {
     readonly initialInflationAdjusted?: boolean;
-}) {
-    const { state } = useSidebar();
-    const collapsed = state === "collapsed";
+};
+
+/** Whether prices are adjusted for inflation (a URL override wins), and how to change it. */
+function useInflationChoice(initialInflationAdjusted?: boolean) {
     const [userInflationAdjusted, setUserInflationAdjusted] =
         useUserInflationAdjusted(initialInflationAdjusted);
     const navigate = useNavigate();
@@ -53,37 +53,30 @@ export function InflationToggle({
         } as Parameters<typeof navigate>[0]);
     }
 
+    return { selectedInflationAdjusted, applyInflationAdjusted };
+}
+
+export function InflationToggle({ initialInflationAdjusted }: InflationToggleProps) {
+    const { t } = useLingui();
+    const { selectedInflationAdjusted, applyInflationAdjusted } = useInflationChoice(initialInflationAdjusted);
     return (
-        <SidebarGroup>
-            <SidebarGroupLabel>
-                <Trans>Prices</Trans>
-            </SidebarGroupLabel>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild onClick={() => applyInflationAdjusted(false)}>
-                        <Button
-                            variant={selectedInflationAdjusted ? "ghost" : "secondary"}
-                            size="icon"
-                            className="w-full justify-start gap-2"
-                        >
-                            <span className="text-md">N</span>
-                            {!collapsed && <span className="flex-1 text-left"><Trans>Nominal</Trans></span>}
-                        </Button>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild onClick={() => applyInflationAdjusted(true)}>
-                        <Button
-                            variant={selectedInflationAdjusted ? "secondary" : "ghost"}
-                            size="icon"
-                            className="w-full justify-start gap-2"
-                        >
-                            <span className="text-md">R</span>
-                            {!collapsed && <span className="flex-1 text-left"><Trans>Real</Trans></span>}
-                        </Button>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
+        <SegmentedChoice
+            label={t`Prețuri`}
+            value={selectedInflationAdjusted ? "real" : "nominal"}
+            onChange={(next) => applyInflationAdjusted(next === "real")}
+            options={[
+                { value: "nominal", label: t`Nominal`, title: t`Prețuri curente` },
+                { value: "real", label: t`Real`, title: t`Ajustat cu inflația` },
+            ]}
+        />
     );
+}
+
+/** The collapsed rail's mark for the prices in effect: a price tag, or a basket for what the money buys. */
+export function InflationIndicator({ initialInflationAdjusted }: InflationToggleProps) {
+    const { t } = useLingui();
+    const { selectedInflationAdjusted } = useInflationChoice(initialInflationAdjusted);
+    return selectedInflationAdjusted
+        ? <RailIndicator icon={ShoppingBasket} label={t`Prețuri: ajustate cu inflația`} />
+        : <RailIndicator icon={Tag} label={t`Prețuri: curente`} />;
 }

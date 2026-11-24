@@ -223,7 +223,8 @@ test.describe('Chart Builder - Comprehensive Tests', () => {
       const colorPicker = page.locator('[class*="color"]')
         .or(page.getByLabel(/color|culoare/i))
 
-      await expect(colorPicker.first()).toBeVisible({ timeout: 5000 })
+      // Visible ones only: the collapsed sidebar's hidden settings buttons match `color` too.
+      await expect(colorPicker.filter({ visible: true }).first()).toBeVisible({ timeout: 5000 })
     })
 
     test('2.7 Description textarea is available', async ({ page }) => {
