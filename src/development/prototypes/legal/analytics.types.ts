@@ -6,6 +6,8 @@
 export type Quartiles = { readonly n: number; readonly p25?: number; readonly median?: number; readonly p75?: number }
 
 export type LegalFixture = {
+  /** The insights bundle the Felul figures come from (its MANIFEST.json sha256 and rule versions). */
+  readonly bundle: { readonly manifestSha256: string; readonly rules: Readonly<Record<string, string>> }
   readonly stamp: {
     readonly generatedAt: string
     readonly snapshot: string
@@ -27,7 +29,7 @@ export type LegalFixture = {
     readonly dinamica: readonly string[]
   }
   /** Flat rows of 8: year index, type index, kind index, issuer index, versions band, has text (0/1),
-   *  weak placement (0/1: Felul from a fallback rule), acts. */
+   *  weak placement (0/1: Felul on a weak basis, the „încadrare nesigură" class), acts. */
   readonly cube: readonly number[]
   readonly months: readonly { readonly month: string; readonly bands: readonly number[] }[]
   readonly ordinances: {
@@ -72,4 +74,6 @@ export type LegalActRow = {
   readonly cc: number
   /** 1 when the act has text in the index (it can be placed on the map). */
   readonly u: number
+  /** 1 when the act's Felul is a weak placement („încadrare nesigură"; `k` is only the rules' guess). */
+  readonly w: number
 }

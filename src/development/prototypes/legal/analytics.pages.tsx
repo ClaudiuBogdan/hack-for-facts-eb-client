@@ -29,9 +29,11 @@ import {
   YEAR_MAX,
   YEAR_MIN,
   bandOfType,
+  felulMatches,
   figures,
   fmt,
   grid,
+  inStock,
   isFiltered,
   pct,
   rank,
@@ -56,11 +58,13 @@ function hrefOf(page: 'poarta' | 'analiza' | 'tema', q: Query = DEFAULT_QUERY): 
   return `/development/legal/analytics?${params.toString()}`
 }
 
-const STOCK_TEXT = `Stocul („legislația așa cum este"): actele care stabilesc reguli și stau singure — reguli noi, norme de aplicare, parametri periodici, acorduri internaționale, organizarea instituțiilor: ${fmt(POPULATION_SIZE.stoc)} acte. Fluxul („ce s-a publicat"): toate cele ${fmt(POPULATION_SIZE.flux)} de acte. Restul (modificări, abrogări, acte individuale, decizii ale instanțelor, procedură, buget și bunuri, rapoarte, neîncadrate) e doar în flux. Definiție provizorie, până la revizuirea proprietarului; starea (în vigoare/abrogat) nu e un filtru aici.`
+const STOCK_TEXT = `Stocul („legislația așa cum este"): actele care stabilesc reguli și stau singure, încadrate ferm — reguli noi, norme de aplicare, parametri periodici, acorduri internaționale, organizarea instituțiilor: ${fmt(POPULATION_SIZE.stoc)} acte. Fluxul („ce s-a publicat"): toate cele ${fmt(POPULATION_SIZE.flux)} de acte. Restul (modificări, abrogări, acte individuale, decizii ale instanțelor, procedură, buget și bunuri, rapoarte, încadrări nesigure, neîncadrate) e doar în flux. Definiție provizorie, până la revizuirea proprietarului; starea (în vigoare/abrogat) nu e un filtru aici.`
+
+const ALL = figures(DEFAULT_QUERY)
 
 const NOTES: readonly string[] = [
   'Instantaneu: corpusul servit la 18 noiembrie 2026. Legile consolidate pe mai multe pagini, ordonanțele de urgență și o parte din ordine lipsesc mai des (21.593 de acte fără text în index: 40% din OUG, 38% din OG, 16% din ordine).',
-  'Felul actului e citit din titlu (reguli, v5): 12,4% din acte rămân neîncadrate; încadrările slabe (reguli de rezervă) sunt numărate separat.',
+  `Felul actului e citit din titlu (reguli v6). Citite independent 385 de acte: 94% din încadrările ferme coincid. Încadrările nesigure (${pct(ALL.uncertain / ALL.total)}, reguli de rezervă) sunt o clasă separată, în nicio grupă și nici în stoc; ${pct(ALL.unplaced / ALL.total)} rămân neîncadrate.`,
   'Emitentul e scris în sursă la 66% din acte; pentru legi, ordonanțe și decrete e derivat din tip și dată. Liniile de minister unesc denumiri succesive.',
   STOCK_TEXT,
   'Versiunile consolidate sunt ale Portalului, neoficiale, și doar pentru actele pe care Portalul le consolidează (LEG-X3AV).',
@@ -321,7 +325,7 @@ export function AnalysisPage() {
           />
           <p className="text-xs text-muted-foreground">
             {q.populatie === 'stoc'
-              ? t`Actele care stabilesc reguli și stau singure: ${fmt(POPULATION_SIZE.stoc)} acte (definiție provizorie).`
+              ? t`Actele care stabilesc reguli și stau singure, încadrate ferm: ${fmt(POPULATION_SIZE.stoc)} acte (definiție provizorie).`
               : t`Fiecare act publicat, la data lui: ${fmt(POPULATION_SIZE.flux)} acte.`}
           </p>
         </RuledFrame>
@@ -383,7 +387,14 @@ function Headline({ q, move, onOpen }: { readonly q: Query; readonly move: (q: Q
   const typeText = q.tip.length ? q.tip.map((i) => TYPE_LABEL[D.types[i] ?? ''] ?? '').join(', ') : t`de orice tip`
   const yearText = q.an ? (q.an.from === q.an.to ? t`din ${q.an.from}` : t`din ${q.an.from}–${q.an.to}`) : t`din ${YEAR_MIN}–${YEAR_MAX}`
   const issuerText = q.emitent === null ? t`de la orice emitent` : t`de la ${D.issuers[q.emitent]?.name ?? ''}`
-  const felulText = q.felul === null ? t`de orice fel` : t`care ${GROUP_LABEL[q.felul] ?? KIND_LABEL[q.felul] ?? q.felul}`
+  const felulText =
+    q.felul === null
+      ? t`de orice fel`
+      : q.felul === 'uncertain'
+        ? t`cu încadrare nesigură`
+        : q.felul === 'unplaced'
+          ? t`neîncadrate`
+          : t`care ${GROUP_LABEL[q.felul] ?? KIND_LABEL[q.felul] ?? q.felul}`
   const dynText = q.dinamica === null ? null : t`cu ${DYN_LABEL[q.dinamica]}`
   const phrase = (text: string, set: boolean, clear: () => void) =>
     set ? <HeadlinePhrase text={text} removeLabel={t`Scoate filtrul ${text}`} onOpen={onOpen} onRemove={clear} /> : <span role="button" tabIndex={0} onClick={onOpen} onKeyDown={(e) => e.key === 'Enter' && onOpen()} className="cursor-pointer underline decoration-muted-foreground/35 decoration-dotted decoration-2 underline-offset-[0.18em]">{text}</span>
@@ -580,8 +591,9 @@ function ActsBand({ q, move }: { readonly q: Query; readonly move: (q: Query) =>
     if (q.an && (a.y < q.an.from || a.y > q.an.to)) return false
     if (q.tip.length && !q.tip.includes(a.t)) return false
     if (q.emitent !== null && a.i !== q.emitent) return false
-    if (q.felul !== null && D.kinds[a.k]?.key !== q.felul && D.kinds[a.k]?.group !== q.felul) return false
+    if (q.felul !== null && !felulMatches(q.felul, a.k, a.w)) return false
     if (q.dinamica !== null && (a.v === 0 ? 0 : a.v <= 2 ? 1 : a.v <= 9 ? 2 : 3) !== q.dinamica) return false
+    if (q.populatie === 'stoc' && !inStock(a.k, a.w)) return false
     return true
   })
   const key = (a: (typeof rows)[number]) => (q.ordine === 'modificari' ? a.am : q.ordine === 'decizii' ? a.cc : q.ordine === 'versiuni' ? a.v : a.y)
@@ -640,7 +652,16 @@ function ActsBand({ q, move }: { readonly q: Query; readonly move: (q: Query) =>
                     {TYPE_LABEL[D.types[a.t] ?? ''] ?? ''} · {a.y || '—'} · {D.issuers[a.i]?.name ?? ''} · #{a.id}
                   </span>
                 </TableCell>
-                <TableCell className="hidden py-1.5 text-sm text-muted-foreground sm:table-cell">{KIND_LABEL[D.kinds[a.k]?.key ?? ''] ?? ''}</TableCell>
+                <TableCell className="hidden py-1.5 text-sm text-muted-foreground sm:table-cell">
+                  {a.w ? (
+                    <>
+                      {t`încadrare nesigură`}
+                      <span className="block text-xs">{t`probabil: ${KIND_LABEL[D.kinds[a.k]?.key ?? ''] ?? ''}`}</span>
+                    </>
+                  ) : (
+                    (KIND_LABEL[D.kinds[a.k]?.key ?? ''] ?? '')
+                  )}
+                </TableCell>
                 <TableCell className="py-1.5 text-right tabular-nums">{a.am || '—'}</TableCell>
                 <TableCell className="py-1.5 text-right tabular-nums">{a.cc || '—'}</TableCell>
                 <TableCell className="py-1.5 text-right tabular-nums">{a.v || '—'}</TableCell>

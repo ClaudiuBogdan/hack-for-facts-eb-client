@@ -41,14 +41,19 @@ export const GROUP_LABEL: Readonly<Record<string, string>> = {
   procedure: 'procedură',
   court: 'decizii ale instanțelor',
   'reports-notices': 'rapoarte și comunicări',
-  other: 'neîncadrate',
+  uncertain: 'încadrare nesigură',
+  unplaced: 'neîncadrate',
 }
-export const GROUP_ORDER = ['rule-making', 'individual', 'budget-property-organisation', 'procedure', 'court', 'reports-notices', 'other'] as const
+/** The seven groups' firm placements, then the weak placements as their own class, then the unplaced. */
+export const GROUP_ORDER = ['rule-making', 'individual', 'budget-property-organisation', 'procedure', 'court', 'reports-notices', 'uncertain', 'unplaced'] as const
 
 export const KIND_LABEL: Readonly<Record<string, string>> = {
   amendment: 'modificări',
   appointments: 'numiri și eliberări din funcție',
-  other: 'neîncadrate',
+  unplaced: 'neîncadrate',
+  uncertain: 'încadrare nesigură',
+  plans_and_programmes: 'strategii, planuri și programe',
+  administrative_territorial_and_electoral: 'organizare administrativ-teritorială și electorală',
   court: 'decizii ale instanțelor',
   application_rules: 'norme de aplicare',
   budget: 'buget și alocări',
@@ -80,10 +85,11 @@ export const bandOfType = (typeIndex: number) => BAND_OF[D.types[typeIndex] ?? '
 
 /**
  * Stock („legislația așa cum este"), the coordinator's provisional definition (24 November 2026, until the owner
- * reviews it): the acts that set rules and stand on their own. Everything else is in the flow only.
+ * reviews it): the acts that set rules and stand on their own, placed firmly. Weak placements are never in stock.
  */
 export const STOCK_KINDS = ['new_rules', 'application_rules', 'periodic_parameters', 'international_agreement', 'organisation'] as const
 export const STOCK_KIND = D.kinds.map((k) => (STOCK_KINDS as readonly string[]).includes(k.key))
+export const inStock = (k: number, w: number) => !w && STOCK_KIND[k] === true
 
 // ────────────────────────────────────────────────────────── query ──
 
@@ -239,7 +245,7 @@ export type CubeRow = {
   readonly i: number
   readonly d: number
   readonly u: number
-  /** 1 when the act's Felul came from a fallback rule (the anywhere regexes or the type). */
+  /** 1 when the act's Felul is a weak placement (the „încadrare nesigură" class). */
   readonly w: number
   readonly n: number
 }
@@ -253,18 +259,24 @@ export const CUBE: readonly CubeRow[] = (() => {
   return out
 })()
 
-export const groupOfKind = (k: number) => D.kinds[k]?.group ?? 'other'
+export const groupOfKind = (k: number) => D.kinds[k]?.group ?? 'unplaced'
+/** The class an act counts in: its group when placed firmly, „încadrare nesigură" when weakly. */
+export const classOf = (k: number, w: number) => (w ? 'uncertain' : groupOfKind(k))
+
+/** Whether an act (kind index, weak flag) answers the Felul filter: a group or a kind counts firm placements only. */
+export function felulMatches(felul: string, k: number, w: number): boolean {
+  if (felul === 'uncertain') return w === 1
+  if (w) return false
+  return felul === D.kinds[k]?.key || felul === groupOfKind(k)
+}
 
 /** Whether a cube row is in the question, leaving out one dimension when a breakdown must not filter itself. */
 export function inQuery(r: CubeRow, q: Query, skip?: 'tip' | 'emitent' | 'felul' | 'dinamica' | 'an'): boolean {
-  if (q.populatie === 'stoc' && !STOCK_KIND[r.k]) return false
+  if (q.populatie === 'stoc' && !inStock(r.k, r.w)) return false
   if (skip !== 'an' && q.an && (r.y < q.an.from || r.y > q.an.to)) return false
   if (skip !== 'tip' && q.tip.length && !q.tip.includes(r.t)) return false
   if (skip !== 'emitent' && q.emitent !== null && r.i !== q.emitent) return false
-  if (skip !== 'felul' && q.felul !== null) {
-    const kind = D.kinds[r.k]?.key
-    if (q.felul !== kind && q.felul !== groupOfKind(r.k)) return false
-  }
+  if (skip !== 'felul' && q.felul !== null && !felulMatches(q.felul, r.k, r.w)) return false
   if (skip !== 'dinamica' && q.dinamica !== null && r.d !== q.dinamica) return false
   return true
 }
@@ -273,7 +285,7 @@ export function inQuery(r: CubeRow, q: Query, skip?: 'tip' | 'emitent' | 'felul'
 export function valueOf(r: CubeRow, lens: Lens, fine = false): string {
   switch (lens) {
     case 'felul':
-      return fine ? (D.kinds[r.k]?.key ?? 'other') : groupOfKind(r.k)
+      return r.w ? 'uncertain' : fine ? (D.kinds[r.k]?.key ?? 'unplaced') : groupOfKind(r.k)
     case 'tip':
       return D.types[r.t] ?? ''
     case 'emitent':
@@ -288,7 +300,7 @@ export function valueOf(r: CubeRow, lens: Lens, fine = false): string {
 export function labelOf(lens: Lens, value: string, fine = false): string {
   switch (lens) {
     case 'felul':
-      return (fine ? KIND_LABEL[value] : GROUP_LABEL[value]) ?? value
+      return (fine ? KIND_LABEL[value] : GROUP_LABEL[value]) ?? GROUP_LABEL[value] ?? value
     case 'tip':
       return TYPE_LABEL[value] ?? value
     case 'emitent':
@@ -361,28 +373,27 @@ export function grid(q: Query, lens: Lens, cu: Lens) {
   return { rows, cols: [...cols.map((c) => c.label), 'altele'], cells }
 }
 
-/** The figures of the selection: acts, how many have text (can be placed on the map), the rule-making share. */
+/** The figures of the selection: acts, how many have text (can be placed on the map), the firm rule-making share. */
 export function figures(q: Query) {
   let total = 0
   let withText = 0
   let rules = 0
-  let rulesStrict = 0
+  let uncertain = 0
   let unplaced = 0
   let all = 0
   let versions = 0
   for (const r of CUBE) {
-    if (q.populatie === 'stoc' ? STOCK_KIND[r.k] : true) all += r.n
+    if (q.populatie === 'stoc' ? inStock(r.k, r.w) : true) all += r.n
     if (!inQuery(r, q)) continue
     total += r.n
     if (r.u) withText += r.n
     if (r.d > 0) versions += r.n
-    if (groupOfKind(r.k) === 'rule-making') {
-      rules += r.n
-      if (!r.w) rulesStrict += r.n
-    }
-    if (groupOfKind(r.k) === 'other') unplaced += r.n
+    const c = classOf(r.k, r.w)
+    if (c === 'rule-making') rules += r.n
+    else if (c === 'uncertain') uncertain += r.n
+    else if (c === 'unplaced') unplaced += r.n
   }
-  return { total, withText, rules, rulesStrict, unplaced, all, versions }
+  return { total, withText, rules, uncertain, unplaced, all, versions }
 }
 
 /** The two populations' sizes, for the switch's helper line and the caveats. */
@@ -391,17 +402,17 @@ export const POPULATION_SIZE = (() => {
   let stoc = 0
   for (const r of CUBE) {
     flux += r.n
-    if (STOCK_KIND[r.k]) stoc += r.n
+    if (inStock(r.k, r.w)) stoc += r.n
   }
   return { flux, stoc }
 })()
 
-/** „29,4% (26,9% fără încadrările slabe)": the rule-making share, said twice as the design asks. */
-export function rulesText(f: { readonly total: number; readonly rules: number; readonly rulesStrict: number; readonly unplaced: number }) {
+/** The firm rule-making share, with the uncertain and unplaced shares beside it (they are in no group's share). */
+export function rulesText(f: { readonly total: number; readonly rules: number; readonly uncertain: number; readonly unplaced: number }) {
   if (!f.total) return { main: 0, note: '' }
   return {
     main: (f.rules / f.total) * 100,
-    note: `${pct(f.rulesStrict / f.total)} fără încadrările slabe · ${pct(f.unplaced / f.total)} neîncadrate · din ${fmt(f.total)}`,
+    note: `${pct(f.uncertain / f.total)} încadrare nesigură · ${pct(f.unplaced / f.total)} neîncadrate · din ${fmt(f.total)}`,
   }
 }
 
