@@ -4,9 +4,16 @@ import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-c
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 
 export type LegislationRouteLoaderData = {
-  /** Server render only: `false` when the gazette band's read failed and the browser reads it. */
+  /** Server render only: `false` when the gazette band's or an analytics read failed and the browser reads it. */
   readonly seeded?: boolean
 }
+
+/** The front door's aggregate analytics reads, rendered on the server (the acts board is read in the browser). */
+const ANALYTICS_READS = [
+  ['head', {}],
+  ['summary', {}],
+  ['series', { lens: 'felul' }],
+] as const
 
 /**
  * The front door reads only its gazette band (the citation ranking is the
@@ -22,21 +29,47 @@ export type LegislationRouteLoaderData = {
  */
 export const Route = createFileRoute('/legislation/')({
   loader: async ({ context }): Promise<LegislationRouteLoaderData> => {
-    const { legislationFrontDoorQueryOptions } = await import('@/features/legal/hooks/use-legislation')
+    const [{ legislationFrontDoorQueryOptions }, { legalAnalyticsQueryOptions }] = await Promise.all([
+      import('@/features/legal/hooks/use-legislation'),
+      import('@/features/legal/hooks/use-legislation-analytics'),
+    ])
     const options = legislationFrontDoorQueryOptions()
     if (!shouldBlockLoaderForSsr()) {
       void context.queryClient.prefetchQuery(options).catch(() => undefined)
+      for (const [view, args] of ANALYTICS_READS) {
+        void context.queryClient.prefetchQuery(legalAnalyticsQueryOptions(view, args)).catch(() => undefined)
+      }
       return {}
     }
-    const { readLegislationFrontDoorForSsr } = await import('@/features/legal/api/legal-front-door-ssr')
+    const [{ readLegislationFrontDoorForSsr }, { readLegalAnalyticsForSsr }] = await Promise.all([
+      import('@/features/legal/api/legal-front-door-ssr'),
+      import('@/features/legal/api/legal-analytics-ssr'),
+    ])
+    let seeded = true
     try {
       await context.queryClient.ensureQueryData({ ...options, queryFn: () => readLegislationFrontDoorForSsr(), retry: false })
-      return { seeded: true }
     } catch {
       // Not dehydrated as a failure: the browser's query reads it afresh.
       context.queryClient.removeQueries({ queryKey: options.queryKey, exact: true })
-      return { seeded: false }
+      seeded = false
     }
+    // The analytics bands degrade on their own: a refused read (no layer published yet) is read in the browser.
+    const results = await Promise.allSettled(
+      ANALYTICS_READS.map(([view, args]) =>
+        context.queryClient.ensureQueryData({
+          ...legalAnalyticsQueryOptions(view, args),
+          queryFn: () => readLegalAnalyticsForSsr(view, args),
+          retry: false,
+        }),
+      ),
+    )
+    results.forEach((r, j) => {
+      if (r.status === 'fulfilled') return
+      seeded = false
+      const [view, args] = ANALYTICS_READS[j] ?? ANALYTICS_READS[0]
+      context.queryClient.removeQueries({ queryKey: legalAnalyticsQueryOptions(view, args).queryKey, exact: true })
+    })
+    return { seeded }
   },
   headers: ({ loaderData }) =>
     loaderData?.seeded === false

@@ -1,10 +1,8 @@
-import { Trans } from '@lingui/react/macro'
-import {
-  useLegislationFrontDoor,
-  useLegislationStatusCounts,
-} from '../hooks/use-legislation'
+import { useLegislationFrontDoor, useLegislationStatusCounts } from '../hooks/use-legislation'
 import { useLegislationFrontier } from '../hooks/use-legislation-frontier'
-import { LegislationDomainGrid } from './legislation-domain-grid'
+import { useLegalAnalytics } from '../hooks/use-legislation-analytics'
+import { AnalyticsCaveats } from './analytics/analytics-notes'
+import { LegislationFrontDoorBands } from './analytics/legislation-front-door-bands'
 import { LegislationGazetteBand } from './legislation-gazette-band'
 import { LegislationHonestyNotes } from './legislation-honesty-notes'
 import { LegislationOverviewSkeleton } from './legislation-overview-skeleton'
@@ -12,37 +10,19 @@ import { LegislationSearchBand } from './legislation-search-band'
 import { LegislationShell } from './legislation-shell'
 
 /**
- * `/legislation` — the module front door, and a finding aid rather than a
- * dashboard.
+ * `/legislation` — the module front door (analytics design §4.1, §11): find an act first, then the corpus counted.
  *
- * Every band here answers "where is the act I need": search it, browse it by
- * subject, or find the gazette issue that proves it was published. The headline
- * counts and the citation ranking moved to `/legislation/analytics` — they
- * describe the corpus rather than helping you get into it.
- *
- * The header still carries the three stat chips, so the page is not numberless;
- * the analysis is one tab away, not hidden.
- *
- * The search box is deliberately unframed and there is no coverage ribbon: both
- * were removed as noise above the fold. The trust label the ribbon carried moved
- * into the header meta line, and the coverage caveats it summarised are stated
- * in full — and in prose — by the honesty band at the bottom.
- *
- * There is no "recently changed acts" band: the server has no global,
- * date-ordered status-event query (§6.1), and a placeholder over 84 420 real
- * events would misrepresent the data. The gazette band runs full width instead.
- *
- * Its one read is the gazette band's (`useLegislationFrontDoor`), which the
- * route's loader fills on the server.
+ * Search comes first: the front door is a finding aid. Below it the analytics bands read the published insights
+ * layer (the corpus in four figures, the most amended acts, what was published each year, the ordinance laws,
+ * the themes to come), each degrading on its own; the Monitorul Oficial band is the gazette band it always was,
+ * filled on the server by the route loader. The old subject grid is gone: subjects (Domeniu) come back with the
+ * domain lens. The honesty notes stay, with the analytics notes beside them.
  */
 export function LegislationPage() {
   const { data, isLoading, isError } = useLegislationFrontDoor()
-  // The header chips ride the status-counts aggregate (shared query key with
-  // the analytics strip); `?? {}` keeps the chip row's space reserved while
-  // the counts are on the wire, so their arrival does not shift the tab nav.
   const { data: statusCounts } = useLegislationStatusCounts()
-  // "date până la" is the staler of the live gazette and changes frontiers.
   const { measuredAt } = useLegislationFrontier('corpus')
+  const head = useLegalAnalytics('head', {})
 
   return (
     <LegislationShell
@@ -51,20 +31,17 @@ export function LegislationPage() {
       measuredAt={measuredAt}
       dataStatus={data?.coverage.dataStatus}
     >
-      {isLoading ? (
-        <LegislationOverviewSkeleton />
-      ) : isError || !data ? (
-        <p className="text-[var(--pnrr-muted)]">
-          <Trans>Nu am putut încărca datele despre legislație.</Trans>
-        </p>
-      ) : (
-        <div className="flex flex-col gap-12">
-          <LegislationSearchBand />
-          <LegislationDomainGrid />
+      <div className="flex flex-col gap-12">
+        <LegislationSearchBand />
+        <LegislationFrontDoorBands />
+        {isLoading ? (
+          <LegislationOverviewSkeleton />
+        ) : isError || !data ? null : (
           <LegislationGazetteBand issues={data.latestGazetteIssues} />
-          <LegislationHonestyNotes />
-        </div>
-      )}
+        )}
+        <LegislationHonestyNotes />
+        <AnalyticsCaveats head={head.data?.data} />
+      </div>
     </LegislationShell>
   )
 }

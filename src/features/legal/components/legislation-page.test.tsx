@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen, within } from '@/test/test-utils'
+import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overview'
 import { legislationDomainCountsFixture } from '../mocks/fixtures/legislation-domain-counts'
@@ -8,6 +8,7 @@ import { LegislationPage } from './legislation-page'
 const navigateMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
+  useSearch: () => ({}),
   Link: ({
     children,
     to,
@@ -71,7 +72,8 @@ describe('LegislationPage', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'LegislațiaRomâniei',
     )
-    expect(screen.getByRole('region', { name: 'Domenii' })).toBeInTheDocument()
+    // the old subject grid is gone: subjects come back with the domain lens
+    expect(screen.queryByRole('region', { name: 'Domenii' })).not.toBeInTheDocument()
     expect(
       screen.getByRole('heading', {
         name: 'Ultimele numere din Monitorul Oficial',
@@ -117,7 +119,7 @@ describe('LegislationPage', () => {
         name: 'Actele pe care se sprijină restul legislației',
       }),
     ).not.toBeInTheDocument()
-    expect(screen.queryByText('Legea nr. 227/2015')).not.toBeInTheDocument()
+    // (the analytics board of the most amended acts is the front door's now; the citation ranking is not)
   })
 
   it('states that Constitutional Court decisions do not change act status', () => {
@@ -142,16 +144,16 @@ describe('LegislationPage', () => {
     ).toBeGreaterThan(0)
   })
 
-  it('renders all 16 domains, counted by the one aggregate query', () => {
+  it('counts the corpus from the published insights layer', async () => {
     render(<LegislationPage />)
 
-    const domains = screen.getByRole('region', { name: 'Domenii' })
-    expect(domains).toHaveTextContent('Fiscal și bugetar')
-    expect(domains).toHaveTextContent('Telecomunicații și digital')
-    // One `legalActCounts(groupBy: DOMAIN)` round-trip serves every cell —
-    // numbers are served, never invented client-side, and the grid's own
-    // tests pin that a failed aggregate degrades to label-only cells.
-    expect(within(domains).getByText('109,969')).toBeInTheDocument()
+    // the mock lane serves real answers of the server's usecase (fixture header)
+    expect(await screen.findByText('acte în corpus')).toBeInTheDocument()
+    expect(screen.getByText('au text citibil în Portal')).toBeInTheDocument()
+    expect(screen.getByText('acte în stoc')).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: 'Ce s-a publicat pe an' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Teme' })).toHaveTextContent('în curând')
+    expect(screen.getByText(/Citite independent 385 de acte: 94%/)).toBeInTheDocument()
   })
 
   it('shows the tab set with Prezentare and Analiză navigable', () => {
@@ -204,7 +206,7 @@ describe('LegislationPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders an error message when the overview fails', () => {
+  it('keeps the rest of the page when the gazette band fails', () => {
     vi.mocked(useLegislationFrontDoor).mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -214,7 +216,8 @@ describe('LegislationPage', () => {
     render(<LegislationPage />)
 
     expect(
-      screen.getByText('Nu am putut încărca datele despre legislație.'),
-    ).toBeInTheDocument()
+      screen.queryByRole('heading', { name: 'Ultimele numere din Monitorul Oficial' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText(/nu modifică statutul actelor pe care le vizează/)).toBeInTheDocument()
   })
 })

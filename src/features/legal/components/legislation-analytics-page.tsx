@@ -1,65 +1,19 @@
-import { Trans } from '@lingui/react/macro'
-import type { LegislationOverview } from '@/schemas/legal'
-import {
-  useLegislationOverview,
-  useLegislationStatusCounts,
-} from '../hooks/use-legislation'
+import { useLegislationStatusCounts } from '../hooks/use-legislation'
 import { useLegislationFrontier } from '../hooks/use-legislation-frontier'
-import { LegislationAnalyticsSkeleton } from './legislation-analytics-skeleton'
-import { LegislationHonestyNotes } from './legislation-honesty-notes'
-import { LegislationKpiStrip } from './legislation-kpi-strip'
+import { LegislationAnalysis } from './analytics/legislation-analysis'
 import { LegislationShell } from './legislation-shell'
-import { LegislationTopActs } from './legislation-top-acts'
-
-type Props = {
-  readonly initialOverview?: LegislationOverview
-}
 
 /**
- * `/legislation/analytics` — what the corpus looks like as a whole.
- *
- * The headline counts and the citation ranking live here rather than on the
- * landing page: they describe the corpus, they do not help you find an act, and
- * the front door's job is finding. Moved 2026-08-01.
- *
- * The honesty band repeats here rather than only on the landing page. This route
- * is independently linkable, and it makes the strongest quantitative claims in
- * the module — a reader who arrives from a shared link must see the
- * Constitutional Court caveat without navigating away.
- *
- * It shares `useLegislationOverview` with the landing page, so switching tabs
- * costs no request; the headline counts ride `useLegislationStatusCounts`
- * (one aggregate request, shared with the KPI strip via the query key), so a
- * failed aggregate degrades the chips and the tiles instead of this route.
+ * `/legislation/analytics` — the analysis page (analytics design §4.2, §11): the question as the headline, the
+ * population, the lens, the answer and the acts, every figure a count of the published insights layer. Promoted
+ * from the prototype `development/prototypes/legal` (analysis variant); the prototype keeps the theme page.
  */
-export function LegislationAnalyticsPage({ initialOverview }: Props) {
-  const { data, isLoading, isError } = useLegislationOverview(initialOverview)
-  // `?? {}` keeps the chip row's space reserved while the counts are on the
-  // wire, so their arrival does not shift the tab nav.
+export function LegislationAnalyticsPage() {
   const { data: statusCounts } = useLegislationStatusCounts()
-  // "date până la" is the staler live frontier — live or nothing.
   const { measuredAt } = useLegislationFrontier('corpus')
-
   return (
-    <LegislationShell
-      activeTab="analiza"
-      counts={statusCounts ?? {}}
-      measuredAt={measuredAt}
-      dataStatus={data?.coverage.dataStatus}
-    >
-      {isLoading ? (
-        <LegislationAnalyticsSkeleton />
-      ) : isError || !data ? (
-        <p className="text-[var(--pnrr-muted)]">
-          <Trans>Nu am putut încărca datele despre legislație.</Trans>
-        </p>
-      ) : (
-        <div className="flex flex-col gap-12">
-          <LegislationKpiStrip />
-          <LegislationTopActs acts={data.mostCitedActs} />
-          <LegislationHonestyNotes />
-        </div>
-      )}
+    <LegislationShell activeTab="analiza" counts={statusCounts ?? {}} measuredAt={measuredAt}>
+      <LegislationAnalysis />
     </LegislationShell>
   )
 }

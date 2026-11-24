@@ -69,7 +69,7 @@ const NOTES: readonly string[] = [
   STOCK_TEXT,
   'Versiunile consolidate sunt ale Portalului, neoficiale, și doar pentru actele pe care Portalul le consolidează (LEG-X3AV).',
   'Lanțurile (ordonanță → lege, decret → lege, act → actul pe care îl modifică, decizie CCR → act) sunt rezolvate din titluri; deciziile Curții sunt trimiteri, nu efecte.',
-  'Harta temelor și pagina de temă folosesc date de test până la potrivirea pe întregul corpus.',
+  'Harta temelor și pagina de temă sunt experimentale (potrivire din 24 noiembrie): 560 teme pe 61.119 acte care stabilesc reguli; 24% din acte fără temă; 138 din 560 teme stabile la repotriviri.',
 ]
 
 // ───────────────────────────────────────────────────── front door ──
@@ -807,6 +807,7 @@ export function TopicPage() {
           <MonoLabel className="mt-6 block text-primary">{t`Temă · ${theme.name}`}</MonoLabel>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{tp.name}</h1>
           <p className="mt-3 text-base text-muted-foreground">{t`Cuvinte-cheie (generate automat): ${tp.keywords.join(', ')}.`}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t`Potrivirea din 24 noiembrie: 560 teme pe 61.119 acte care stabilesc reguli; 24% din acte fără temă; 138 din 560 teme stabile la repotriviri.`}</p>
         </RuledFrame>
       </section>
       <section className="border-b">
@@ -814,14 +815,14 @@ export function TopicPage() {
           <HubFiguresBand
             locale="ro"
             facts={[
-              fact('size', tp.size, 0, '', t`acte în subiect`, t`date de test`, '#profil'),
-              fact('stab', tp.stability * 100, 0, '%', t`stabilitate la repotriviri`, t`date de test`, '#profil'),
+              fact('size', tp.size, 0, '', t`acte în subiect`, t`experimental · potrivire din 24 noiembrie`, '#profil'),
+              fact('stab', tp.stability * 100, 0, '%', t`stabilitate la repotriviri`, t`experimental · potrivire din 24 noiembrie`, '#profil'),
               fact('vecini', neighbours.length, 0, '', t`subiecte vecine`, t`cele mai apropiate`, '#vecini'),
             ]}
           />
         </RuledFrame>
       </section>
-      <Band id="profil" index={t`01 / Profil`} title={t`Tip și epocă`} lede={t`Cum se împart actele subiectului pe tipuri și pe decenii (date de test).`}>
+      <Band id="profil" index={t`01 / Profil`} title={t`Tip și epocă`} lede={t`Cum se împart actele subiectului pe tipuri și pe decenii (experimental · potrivire din 24 noiembrie).`}>
         <div className="grid gap-8 sm:grid-cols-2">
           <ProfileBars labels={[...BAND_LABEL]} values={bands} total={total} />
           <ProfileBars labels={['1990–1999', '2000–2009', '2010–2019', '2020–2026']} values={eras} total={eras.reduce((s, n) => s + n, 0) || 1} />

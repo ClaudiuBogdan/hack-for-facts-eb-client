@@ -24,7 +24,7 @@ export const prototype = {
       note: 'The question as the headline (filter phrases), Flux/Stoc, „Privește după" with six lenses, ranked bars, a series in time, a two-lens grid, the acts sample, the filter sheet. Every control writes the address.',
     },
     tema: {
-      title: 'Pagina unei teme (date de test)',
+      title: 'Pagina unei teme (experimental · potrivire din 24 noiembrie)',
       component: TopicPage,
       note: 'Name, keywords, size, stability, type and era profile, place on the map, neighbouring topics: all on the placeholder grid.',
     },
