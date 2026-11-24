@@ -130,7 +130,7 @@ msgstr ", iar rezultatul net a ajuns la zero"
 
 #: src/features/national-budget/home/components/home-head.tsx:171
 msgid "; ponderea în PIB nu e afișată: {deficitRefused}"
-msgstr ""
+msgstr "; ponderea în PIB nu e afișată: {deficitRefused}"
 
 #: src/features/ngos/organization/components/profile-parts.tsx:76
 #~ msgid ": ce înseamnă"
@@ -4699,7 +4699,7 @@ msgstr "Achiziția nu a fost găsită"
 
 #: src/features/procurement/components/direct-purchase/procurement-direct-purchase-page.tsx:119
 msgid "Achiziția nu este disponibilă încă"
-msgstr ""
+msgstr "Achiziția nu este disponibilă încă"
 
 #: src/features/private-companies/components/profile/company-money-band.tsx:466
 msgid "achiziție directă"
@@ -16424,7 +16424,7 @@ msgstr ""
 
 #: src/features/procurement/hooks/use-disclosure-watch.ts:233
 msgid "Datele achizițiilor publice nu sunt afișate acum: platforma nu poate verifica ce furnizori pot fi numiți. Revin singure când verificarea reușește."
-msgstr ""
+msgstr "Datele achizițiilor publice nu sunt afișate acum: platforma nu poate verifica ce furnizori pot fi numiți. Revin singure când verificarea reușește."
 
 #: src/features/elections/catalog/election-edition-page.tsx:115
 msgid "Datele alegerii nu s-au încărcat."
@@ -27956,7 +27956,7 @@ msgstr "La achizițiile directe, cei mai mulți bani merg pe {0} ({1})."
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:172
 msgid "La achizițiile directe, firma se alege după CUI."
-msgstr ""
+msgstr "La achizițiile directe, firma se alege după CUI."
 
 #: src/features/justice/components/case/justice-case-page.tsx:81
 msgid "La alte instanțe"
@@ -28795,7 +28795,7 @@ msgstr ""
 
 #: src/features/procurement/components/direct-purchase/procurement-direct-purchase-page.tsx:122
 msgid "Linkul duce la noua publicare a achizițiilor directe, pe care platforma nu o servește încă. Revino mai târziu."
-msgstr ""
+msgstr "Linkul duce la noua publicare a achizițiilor directe, pe care platforma nu o servește încă. Revino mai târziu."
 
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:141
 msgid "Linkul vechi indică această ședință, dar nu am putut dovedi care anume este intervenția din ea. Deschidem stenograma completă, fără să evidențiem un bloc ghicit."
@@ -37355,7 +37355,7 @@ msgstr "Telefon"
 #. placeholder {0}: view.year
 #: src/features/national-budget/home/components/home-head.tsx:300
 msgid "PIB {0} nu e afișat: {gdpRefused}"
-msgstr ""
+msgstr "PIB {0} nu e afișat: {gdpRefused}"
 
 #. placeholder {0}: view.year
 #. placeholder {1}: moneyText(gdp.gdp)
@@ -37658,7 +37658,7 @@ msgstr "poliție, protecție civilă și pompieri, instanțe, penitenciare"
 
 #: src/features/national-budget/home/components/home-head.tsx:282
 msgid "Ponderea în PIB nu e afișată: {deficitRefused}"
-msgstr ""
+msgstr "Ponderea în PIB nu e afișată: {deficitRefused}"
 
 #: src/features/statistics/lib/comparison-presets.ts:130
 msgid "Ponderea șomerilor înregistrați"
@@ -37675,7 +37675,7 @@ msgstr "Ponderea șomerilor înregistrați"
 #. placeholder {0}: view.text
 #: src/features/national-budget/home/components/home-head.tsx:315
 msgid "Ponderile în PIB pentru {0} nu sunt afișate: {spendingRefused}."
-msgstr ""
+msgstr "Ponderile în PIB pentru {0} nu sunt afișate: {spendingRefused}."
 
 #. placeholder {0}: view.text
 #: src/features/national-budget/home/components/home-head.tsx:315
@@ -49079,7 +49079,7 @@ msgstr "Unitate sanitară"
 
 #: src/features/national-budget/home/components/home-head.tsx:121
 msgid "unitatea tipărită nu e cea așteptată"
-msgstr ""
+msgstr "unitatea tipărită nu e cea așteptată"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:227
 #: src/components/entities/views/ins-stats-view.formatters.ts:40
@@ -49995,7 +49995,7 @@ msgstr ""
 
 #: src/features/national-budget/home/components/home-head.tsx:120
 msgid "valorile tipărite diferă"
-msgstr ""
+msgstr "valorile tipărite diferă"
 
 #: src/features/procurement/components/contract/contract-block.tsx:384
 msgid "Valorile, așa cum le-a raportat instituția."
