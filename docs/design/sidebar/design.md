@@ -119,6 +119,7 @@ STATISTICI ȘI INSTRUMENTE
   is translated („Temă”, was "Theme"); the chosen theme is a quiet fill like
   the settings, not the brand colour. The account button keeps one size and
   no padding open or collapsed, so no icon in the sidebar moves when it opens.
+  Its name and arrow fade in with the setting rows. Checked in dark mode too.
 - **Phone.** The sheet shows the same content in the same order.
 
 ## Open

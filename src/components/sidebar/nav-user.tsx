@@ -89,11 +89,12 @@ export function NavUser(_props: NavUserProps) {
               aria-label={t`Meniul contului`}
             >
               {avatar}
-              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+              {/* The name and arrow fade in as the rail opens, like the setting rows. */}
+              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight transition-opacity delay-100 duration-150 motion-reduce:transition-none group-data-[collapsible=icon]:invisible group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:delay-0">
                 <span className="truncate font-medium">{displayName}</span>
                 {email && <span className="truncate text-xs text-sidebar-foreground/70">{email}</span>}
               </div>
-              <ChevronsUpDown className="mr-2 ml-auto size-4 text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden" />
+              <ChevronsUpDown className="mr-2 ml-auto size-4 shrink-0 text-sidebar-foreground/60 transition-opacity delay-100 duration-150 motion-reduce:transition-none group-data-[collapsible=icon]:invisible group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:delay-0" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
