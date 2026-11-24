@@ -35,4 +35,31 @@ describe('cookie illustration', () => {
       }
     }
   })
+
+  it('gives each state its own face: looking and blinking, beaming, content', () => {
+    const faces = (state: CookieState) => {
+      const container = document.createElement('div')
+      container.innerHTML = renderCookie(state)
+      return {
+        label: container.querySelector('svg')?.getAttribute('aria-label') ?? '',
+        blink: container.querySelectorAll('.tpz-cookie-shut').length,
+      }
+    }
+    expect(faces('whole').blink).toBe(1)
+    expect(faces('bitten').blink).toBe(0)
+    expect(faces('plain').blink).toBe(0)
+    // Declining is as fine as accepting: the plain cookie is content, not sad.
+    expect(faces('plain').label).toMatch(/mulțumit/)
+    expect(faces('plain').label).not.toMatch(/trist/)
+  })
+
+  it('stops moving under reduced motion', () => {
+    const html = renderCookie('whole')
+    expect(html).toContain('prefers-reduced-motion: reduce')
+  })
+
+  it('hops in only where asked: the card, not the settings page', () => {
+    expect(renderCookie('whole')).not.toContain('class="tpz-cookie-hop"')
+    expect(renderToStaticMarkup(createElement(CookieIllustration, { state: 'whole', arrive: true }))).toContain('class="tpz-cookie-hop"')
+  })
 })

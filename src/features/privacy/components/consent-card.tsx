@@ -6,7 +6,6 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Switch } from '@/components/ui/switch'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import { useConsentDraft } from '@/features/privacy/hooks/use-consent-draft'
 import {
@@ -36,6 +35,8 @@ import { CookieIllustration } from './cookie-illustration'
  *   are. Then the card leaves.
  * - **One accent.** The filled button is the page's navy; everything else is
  *   the neutral scale.
+ * - **One voice.** Inter only, sentence case: no mono capitals for words
+ *   (DESIGN.md, Typography), no eyebrow over the title.
  */
 
 type CardView = 'ask' | 'choose' | 'saved'
@@ -99,17 +100,17 @@ function savedCopy(state: CookieState): { readonly title: string; readonly body:
   switch (state) {
     case 'bitten':
       return {
-        title: t`Mulțumim.`,
+        title: t`Mulțumim!`,
         body: t`Statisticile și rapoartele de erori sunt pornite. Le oprești oricând din Setări cookie-uri.`,
       }
     case 'plain':
       return {
         title: t`Doar esențialul.`,
-        body: t`Fără statistici, fără rapoarte detaliate de erori. Te răzgândești oricând din Setări cookie-uri.`,
+        body: t`Fără statistici și fără rapoarte detaliate de erori. Te poți răzgândi oricând din Setări cookie-uri.`,
       }
     default:
       return {
-        title: t`Notat.`,
+        title: t`Am notat.`,
         body: t`Pornești sau oprești fiecare opțiune oricând din Setări cookie-uri.`,
       }
   }
@@ -244,7 +245,6 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
         'rounded-lg border bg-background text-foreground shadow-lg focus-visible:outline-hidden',
       )}
     >
-      <CornerTicks />
       <div className="p-5 sm:p-6">
         <div className="flex items-start gap-4">
           {/* Grows a little once the decision is in — the picture is the
@@ -255,44 +255,36 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
               view === 'saved' && 'motion-safe:scale-110',
             )}
           >
-            <CookieIllustration state={cookieState} className="size-14 sm:size-16" />
+            <CookieIllustration state={cookieState} arrive className="size-16 sm:size-[4.5rem]" />
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <MonoLabel className="block pt-1 text-primary">
-                {view === 'saved' ? <Trans>Salvat</Trans> : <Trans>Confidențialitate</Trans>}
-              </MonoLabel>
-              {view === 'saved' ? null : (
-                <button
-                  type="button"
-                  onClick={() => setPhase('leaving')}
-                  aria-label={t`Nu acum — rămâne doar esențialul, întrebăm data viitoare`}
-                  className="-mr-2 -mt-2 flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <X className="size-4" aria-hidden="true" />
-                </button>
-              )}
-            </div>
-            <h2
-              id={titleId}
-              className="mt-1.5 text-lg font-semibold leading-tight tracking-tight text-balance sm:text-xl"
-            >
-              {view === 'saved' ? saved.title : <Trans>Fără urmărire pe ascuns</Trans>}
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-3 pt-1">
+            <h2 id={titleId} className="text-lg font-semibold leading-snug tracking-tight text-balance">
+              {view === 'saved' ? saved.title : <Trans>Cookie-uri puține, la vedere</Trans>}
             </h2>
+            {view === 'saved' ? null : (
+              <button
+                type="button"
+                onClick={() => setPhase('leaving')}
+                aria-label={t`Nu acum — rămâne doar esențialul, întrebăm data viitoare`}
+                className="-mr-2 -mt-1.5 flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            )}
           </div>
         </div>
 
         <p
           id={descriptionId}
           aria-live="polite"
-          className="mt-3 text-sm leading-relaxed text-muted-foreground"
+          className="mt-3 text-sm leading-relaxed text-pretty text-muted-foreground"
         >
           {view === 'saved' ? (
             saved.body
           ) : (
             <Trans>
-              Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare
-              și rapoartele de erori pornesc numai dacă le pornești tu.
+              Folosim doar ce e nevoie ca site-ul să meargă. Statisticile de utilizare și
+              rapoartele de erori pornesc numai dacă alegi tu.
             </Trans>
           )}
         </p>
@@ -307,7 +299,7 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
                   className="group mt-3 -ml-1 flex h-8 items-center gap-1 rounded-md px-1 text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span>
-                    <Trans>Alege tu ce pornești</Trans>
+                    <Trans>Alege ce pornești</Trans>
                   </span>
                   <ChevronDown
                     aria-hidden="true"
@@ -322,17 +314,14 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
                     style={{ ['--tpz-row' as string]: 0 }}
                   >
                     <div className="min-w-0">
-                      <div className="flex items-baseline gap-2">
-                        <MonoLabel className="text-muted-foreground/60">{ESSENTIAL_CATEGORY.index}</MonoLabel>
-                        <span className="text-sm font-medium">{i18n._(ESSENTIAL_CATEGORY.title)}</span>
-                      </div>
+                      <p className="text-sm font-medium">{i18n._(ESSENTIAL_CATEGORY.title)}</p>
                       <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
                         {i18n._(ESSENTIAL_CATEGORY.summary)}
                       </p>
                     </div>
-                    <MonoLabel className="shrink-0 text-muted-foreground">
-                      <Trans>Mereu</Trans>
-                    </MonoLabel>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      <Trans>Mereu pornite</Trans>
+                    </span>
                   </li>
                   {OPTIONAL_CATEGORIES.map((category, index) => {
                     const switchId = `${titleId}-${category.key}`
@@ -343,11 +332,8 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
                         style={{ ['--tpz-row' as string]: index + 1 }}
                       >
                         <label htmlFor={switchId} className="min-w-0 cursor-pointer">
-                          <span className="flex items-baseline gap-2">
-                            <MonoLabel className="text-muted-foreground/60">{category.index}</MonoLabel>
-                            <span className="text-sm font-medium">{i18n._(category.title)}</span>
-                            <MonoLabel className="text-muted-foreground">{i18n._(category.vendor)}</MonoLabel>
-                          </span>
+                          <span className="text-sm font-medium">{i18n._(category.title)}</span>{' '}
+                          <span className="text-xs text-muted-foreground">{i18n._(category.vendor)}</span>
                           <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
                             {i18n._(category.summary)}
                           </span>
@@ -387,16 +373,12 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
               )}
             </div>
 
-            <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5">
+            <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
               <Link to="/cookie-policy" className={FOOT_LINK_CLASS}>
-                <MonoLabel className="whitespace-nowrap">
-                  <Trans>Politica de cookie-uri</Trans>
-                </MonoLabel>
+                <Trans>Politica de cookie-uri</Trans>
               </Link>
               <Link to="/cookies" search={{ redirect }} className={FOOT_LINK_CLASS}>
-                <MonoLabel className="whitespace-nowrap">
-                  <Trans>Toate setările</Trans>
-                </MonoLabel>
+                <Trans>Toate setările</Trans>
               </Link>
             </p>
           </>
@@ -408,14 +390,3 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
 
 const FOOT_LINK_CLASS =
   'text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring rounded-sm'
-
-/** The landing's crosshairs, at the card's top corners. */
-function CornerTicks() {
-  const arm = 'absolute size-2 border-foreground/25'
-  return (
-    <span aria-hidden="true">
-      <span className={cn(arm, '-left-px -top-px rounded-tl-lg border-l border-t')} />
-      <span className={cn(arm, '-right-px -top-px rounded-tr-lg border-r border-t')} />
-    </span>
-  )
-}

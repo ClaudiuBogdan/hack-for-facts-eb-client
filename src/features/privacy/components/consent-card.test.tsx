@@ -46,7 +46,7 @@ describe('ConsentCard', () => {
     await user.click(screen.getByRole('button', { name: 'Acceptă tot' }))
 
     expect(getConsent()).toMatchObject({ analytics: true, sentry: true })
-    expect(screen.getByRole('heading', { name: 'Mulțumim.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mulțumim!' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /mușcat/ })).toBeInTheDocument()
     // Focus moves to the card so the confirmation is read out.
     expect(dialog).toHaveFocus()
@@ -81,7 +81,7 @@ describe('ConsentCard', () => {
     const user = userEvent.setup()
     render(<ConsentCard onGone={vi.fn()} />)
 
-    await user.click(screen.getByRole('button', { name: 'Alege tu ce pornești' }))
+    await user.click(screen.getByRole('button', { name: 'Alege ce pornești' }))
     // Accept-all gives way to save-the-choice once the disclosure is open.
     expect(screen.queryByRole('button', { name: 'Acceptă tot' })).not.toBeInTheDocument()
 
@@ -93,7 +93,7 @@ describe('ConsentCard', () => {
     await user.click(screen.getByRole('button', { name: 'Salvează alegerea' }))
 
     expect(getConsent()).toMatchObject({ analytics: true, sentry: false })
-    expect(screen.getByRole('heading', { name: 'Notat.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Am notat.' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /întreg/ })).toBeInTheDocument()
   })
 
@@ -101,7 +101,7 @@ describe('ConsentCard', () => {
     const user = userEvent.setup()
     const { dialog } = await renderOpen()
 
-    await user.click(screen.getByRole('button', { name: 'Alege tu ce pornești' }))
+    await user.click(screen.getByRole('button', { name: 'Alege ce pornești' }))
     expect(screen.getAllByRole('switch')).toHaveLength(2)
 
     // Focus is on a switch the collapse is about to remove.
@@ -110,7 +110,7 @@ describe('ConsentCard', () => {
     // The disclosure closed; the card stayed, and focus went back to the trigger.
     await waitFor(() => expect(screen.queryAllByRole('switch')).toHaveLength(0))
     expect(dialog).toHaveAttribute('data-phase', 'open')
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Alege tu ce pornești' })).toHaveFocus())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Alege ce pornești' })).toHaveFocus())
 
     await user.keyboard('{Escape}')
     expect(dialog).toHaveAttribute('data-phase', 'leaving')

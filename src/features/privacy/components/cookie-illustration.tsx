@@ -5,7 +5,10 @@ import type { CookieState } from '@/features/privacy/lib/consent-categories'
 
 /**
  * The cookie: whole while the question is open, bitten when everything is
- * accepted, plain when only the essentials are.
+ * accepted, plain when only the essentials are. It has a face: waiting, it
+ * looks at you and blinks once; bitten, it beams; plain, it is content. Never
+ * sad: declining is as fine as accepting (owner, 24 November 2026, prototype
+ * privacy/consent-card-v2, variant face-calm).
  *
  * The silhouette is drawn on a 24 × 24 grid; texture uses half-size pixels.
  * Integer geometry, a fixed palette and ordered dithering keep it pixel art at
@@ -63,9 +66,58 @@ function buildTexture() {
 }
 // Batch hundreds of texture pixels into seven static paths, not animated nodes.
 const TEXTURE = buildTexture()
-const CHIPS = [[28, 28], [60, 20], [76, 44], [48, 48], [20, 64], [64, 72], [40, 84]] as const
+// Around the rim, so the face has the middle.
+const CHIPS = [[20, 24], [56, 12], [84, 36], [12, 60], [36, 80], [68, 76]] as const
 const CHIP = 'M4 0H12V4H16V12H12V16H0V4H4Z'
 const BITE = 'M76 0H128V60H96V56H88V52H84V44H76V40H72V32H68V20H72V12H76Z'
+const FACE_INK = { E: COOKIE_COLORS.chocolateShadow, w: '#fffaf0', r: '#b4483c' } as const
+const FACE_X = 32
+/** Twelve 4-unit cells wide from x 32, eyes near y 48, mouth near y 72: clear of the bite. */
+const FACES = {
+  looking: { y: 44, rows: ['..wE....wE..', '..EE....EE..', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
+  blink: { y: 44, rows: ['............', '............', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
+  beaming: { y: 44, rows: ['..EE....EE..', '.E..E..E..E.', '............', '..EEEEEEEE..', '..ErrrrrrE..', '...ErrrrE...', '....EEEE....'] },
+  content: { y: 48, rows: ['.E..E..E..E.', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
+} as const
+
+/** One path per colour from rows of characters; `.` is empty. */
+function faceFill({ y, rows }: { readonly y: number; readonly rows: readonly string[] }) {
+  const paths: Partial<Record<keyof typeof FACE_INK, string>> = {}
+  rows.forEach((row, ry) => {
+    ;[...row].forEach((char, rx) => {
+      if (char in FACE_INK) paths[char as keyof typeof FACE_INK] = (paths[char as keyof typeof FACE_INK] ?? '') + pixel(FACE_X + rx * 4, y + ry * 4)
+    })
+  })
+  return Object.entries(paths).map(([char, d]) => ({ d, fill: FACE_INK[char as keyof typeof FACE_INK] }))
+}
+const FACE_PATHS = {
+  looking: faceFill(FACES.looking),
+  blink: faceFill(FACES.blink),
+  beaming: faceFill(FACES.beaming),
+  content: faceFill(FACES.content),
+} as const
+
+/** The hop in (only where the caller asks: the consent card, after it arrives) and one blink. Whole cells in `steps()`; nothing moves with reduced motion. */
+const MOTION_CSS = `
+@keyframes tpz-cookie-hop { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+@keyframes tpz-cookie-open { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes tpz-cookie-shut { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+.tpz-cookie-hop { animation: tpz-cookie-hop 320ms steps(3, end) 480ms backwards; }
+.tpz-cookie-open { animation: tpz-cookie-open 160ms steps(1, end) 1400ms; }
+.tpz-cookie-shut { opacity: 0; animation: tpz-cookie-shut 160ms steps(1, end) 1400ms; }
+@media (prefers-reduced-motion: reduce) {
+  .tpz-cookie-hop, .tpz-cookie-open, .tpz-cookie-shut { animation: none; }
+}
+`
+
+function FaceLayer({ face, className }: { readonly face: keyof typeof FACE_PATHS; readonly className?: string }) {
+  return (
+    <g className={className}>
+      {FACE_PATHS[face].map(({ d, fill }) => <path key={fill} d={d} fill={fill} />)}
+    </g>
+  )
+}
+
 const CRUMBS = [
   { x: 88, y: 20, dx: 16, dy: -12, size: 4 },
   { x: 92, y: 36, dx: 24, dy: 0, size: 4 },
@@ -74,15 +126,22 @@ const CRUMBS = [
 
 export function CookieIllustration({
   state,
+  arrive = false,
   className,
   ...rest
-}: Readonly<Omit<ComponentPropsWithoutRef<'svg'>, 'children'> & { readonly state: CookieState }>) {
+}: Readonly<
+  Omit<ComponentPropsWithoutRef<'svg'>, 'children'> & {
+    readonly state: CookieState
+    /** Hop in once, just after the consent card arrives. Off elsewhere, e.g. the settings page shows its cookie at once. */
+    readonly arrive?: boolean
+  }
+>) {
   const maskId = `${useId()}-bite`
   const label = state === 'bitten'
-    ? t`Un cookie mușcat, cu firimituri alături`
+    ? t`Un cookie mușcat, cu firimituri alături, care zâmbește larg`
     : state === 'plain'
-      ? t`Un biscuit simplu, fără bucăți de ciocolată`
-      : t`Un cookie întreg, cu bucăți de ciocolată`
+      ? t`Un biscuit simplu, fără bucăți de ciocolată, mulțumit`
+      : t`Un cookie întreg, cu bucăți de ciocolată, care se uită la tine`
 
   return (
     <svg
@@ -94,6 +153,7 @@ export function CookieIllustration({
       data-cookie={state}
       className={cn('group/cookie block overflow-visible', className)}
     >
+      <style>{MOTION_CSS}</style>
       <defs>
         <mask id={maskId} x="0" y="0" width="128" height="116" maskUnits="userSpaceOnUse" style={{ maskType: 'luminance' }}>
           <rect width="128" height="116" fill="white" />
@@ -106,6 +166,7 @@ export function CookieIllustration({
           />
         </mask>
       </defs>
+      <g className={arrive ? 'tpz-cookie-hop' : undefined}>
       <g mask={`url(#${maskId})`}>
         {TEXTURE.bands.map((d, index) => <path key={index} d={d} fill={TONES[index]} />)}
         <path d={TEXTURE.grain} fill={COOKIE_COLORS.pore} fillOpacity="0.4" />
@@ -124,6 +185,17 @@ export function CookieIllustration({
             </g>
           </g>
         ))}
+        {/* `key` swaps the face in one frame: pixel faces do not morph. */}
+        <g key={state}>
+          {state === 'whole' && (
+            <>
+              <FaceLayer face="looking" className="tpz-cookie-open" />
+              <FaceLayer face="blink" className="tpz-cookie-shut" />
+            </>
+          )}
+          {state === 'bitten' && <FaceLayer face="beaming" />}
+          {state === 'plain' && <FaceLayer face="content" />}
+        </g>
       </g>
       {CRUMBS.map(({ x, y, dx, dy, size }, index) => (
         <g key={`${x}-${y}`} transform={`translate(${x} ${y})`}>
@@ -140,6 +212,7 @@ export function CookieIllustration({
           </g>
         </g>
       ))}
+      </g>
     </svg>
   )
 }

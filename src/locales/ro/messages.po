@@ -4501,7 +4501,7 @@ msgstr "Acasă"
 msgid "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 msgstr "Acceptati termenii si conditiile pentru o entitate din campanie pentru a primi automat notificari cu actualizari."
 
-#: src/features/privacy/components/consent-card.tsx:385
+#: src/features/privacy/components/consent-card.tsx:371
 #: src/features/privacy/components/cookie-settings-page.tsx:232
 msgid "Acceptă tot"
 msgstr "Acceptă tot"
@@ -6129,7 +6129,7 @@ msgstr "Agricultură, vânătoare şi servicii anexe"
 msgid "Ai atins maximul de {MAX_COMPARISON_TERRITORIES} teritorii. Scoate unul ca să adaugi altul."
 msgstr "Ai atins maximul de {MAX_COMPARISON_TERRITORIES} teritorii. Scoate unul ca să adaugi altul."
 
-#: src/components/data-trust/page-notice.tsx:59
+#: src/components/data-trust/page-notice.tsx:66
 msgid "Ai găsit ceva greșit? Spune-ne și ne ajuți să verificăm mai repede."
 msgstr "Ai găsit ceva greșit? Spune-ne și ne ajuți să verificăm mai repede."
 
@@ -6266,6 +6266,10 @@ msgstr ""
 msgid "Alege ce arată seria"
 msgstr "Alege ce arată seria"
 
+#: src/features/privacy/components/consent-card.tsx:302
+msgid "Alege ce pornești"
+msgstr "Alege ce pornești"
+
 #: src/features/statistics/components/detail/detail-scope-prompt.tsx:26
 msgid "Alege ce vrei să vezi"
 msgstr "Alege ce vrei să vezi"
@@ -6322,8 +6326,8 @@ msgid "alege o versiune"
 msgstr ""
 
 #: src/features/privacy/components/consent-card.tsx:310
-msgid "Alege tu ce pornești"
-msgstr "Alege tu ce pornești"
+#~ msgid "Alege tu ce pornești"
+#~ msgstr "Alege tu ce pornești"
 
 #: src/features/procurement/components/buyer/buyer-charts.tsx:129
 #~ msgid "Alege un an: pagina îl descrie."
@@ -6807,9 +6811,13 @@ msgstr "Am exportat {rowCount} rânduri."
 msgid "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 msgstr "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 
-#: src/components/data-trust/page-notice.tsx:66
+#: src/components/data-trust/page-notice.tsx:73
 msgid "Am înțeles"
 msgstr "Am înțeles"
+
+#: src/features/privacy/components/consent-card.tsx:113
+msgid "Am notat."
+msgstr "Am notat."
 
 #: src/features/legal/components/reader/legal-reader-page.tsx:620
 msgid "Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum."
@@ -7924,8 +7932,8 @@ msgid "Aplică filtrele"
 msgstr "Aplică filtrele"
 
 #: src/features/privacy/components/consent-card.tsx:293
-msgid "Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare și rapoartele de erori pornesc numai dacă le pornești tu."
-msgstr "Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare și rapoartele de erori pornesc numai dacă le pornești tu."
+#~ msgid "Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare și rapoartele de erori pornesc numai dacă le pornești tu."
+#~ msgstr "Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare și rapoartele de erori pornesc numai dacă le pornești tu."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:462
 msgid "Apply"
@@ -13741,8 +13749,8 @@ msgstr "confidențial"
 #~ msgstr "Confidențial"
 
 #: src/features/privacy/components/consent-card.tsx:263
-msgid "Confidențialitate"
-msgstr "Confidențialitate"
+#~ msgid "Confidențialitate"
+#~ msgstr "Confidențialitate"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:41
 msgid "Config"
@@ -14495,6 +14503,10 @@ msgstr "Este necesar consimțământul pentru cookie-uri"
 #: src/routes/cookies.lazy.tsx:130
 #~ msgid "Cookie Settings"
 #~ msgstr "Setări cookie-uri"
+
+#: src/features/privacy/components/consent-card.tsx:262
+msgid "Cookie-uri puține, la vedere"
+msgstr "Cookie-uri puține, la vedere"
 
 #: src/features/statistics/components/detail/detail-observations-table.tsx:202
 #~ msgid "Coordonate geografice INS"
@@ -18537,13 +18549,13 @@ msgstr "doar coordonate de publicare"
 msgid "Doar deciziile preluate până acum, nu toate deciziile Curții; fără dată, doar anul."
 msgstr "Doar deciziile preluate până acum, nu toate deciziile Curții; fără dată, doar anul."
 
-#: src/features/privacy/components/consent-card.tsx:374
+#: src/features/privacy/components/consent-card.tsx:360
 #: src/features/privacy/components/cookie-settings-page.tsx:137
 #: src/features/privacy/components/cookie-settings-page.tsx:225
 msgid "Doar esențiale"
 msgstr "Doar esențiale"
 
-#: src/features/privacy/components/consent-card.tsx:107
+#: src/features/privacy/components/consent-card.tsx:108
 msgid "Doar esențialul."
 msgstr "Doar esențialul."
 
@@ -21740,9 +21752,13 @@ msgstr "Fără stare în sursă"
 msgid "Fără starea"
 msgstr "Fără starea"
 
+#: src/features/privacy/components/consent-card.tsx:109
+msgid "Fără statistici și fără rapoarte detaliate de erori. Te poți răzgândi oricând din Setări cookie-uri."
+msgstr "Fără statistici și fără rapoarte detaliate de erori. Te poți răzgândi oricând din Setări cookie-uri."
+
 #: src/features/privacy/components/consent-card.tsx:108
-msgid "Fără statistici, fără rapoarte detaliate de erori. Te răzgândești oricând din Setări cookie-uri."
-msgstr "Fără statistici, fără rapoarte detaliate de erori. Te răzgândești oricând din Setări cookie-uri."
+#~ msgid "Fără statistici, fără rapoarte detaliate de erori. Te răzgândești oricând din Setări cookie-uri."
+#~ msgstr "Fără statistici, fără rapoarte detaliate de erori. Te răzgândești oricând din Setări cookie-uri."
 
 #: src/features/procurement/lib/analytics-text.ts:117
 msgid "Fără tip de procedură"
@@ -21791,8 +21807,8 @@ msgstr "fără un județ comun ({reasons})"
 #~ msgstr ""
 
 #: src/features/privacy/components/consent-card.tsx:280
-msgid "Fără urmărire pe ascuns"
-msgstr "Fără urmărire pe ascuns"
+#~ msgid "Fără urmărire pe ascuns"
+#~ msgstr "Fără urmărire pe ascuns"
 
 #: src/features/ngos/registry/model.ts:330
 msgid "Fără utilitate publică"
@@ -23232,6 +23248,10 @@ msgstr "Folosește Ctrl + scroll pentru zoom pe hartă"
 #: src/features/landing/components/budget-map/budget-map.tsx:100
 msgid "Folosește două degete pentru a muta harta"
 msgstr "Folosește două degete pentru a muta harta"
+
+#: src/features/privacy/components/consent-card.tsx:285
+msgid "Folosim doar ce e nevoie ca site-ul să meargă. Statisticile de utilizare și rapoartele de erori pornesc numai dacă alegi tu."
+msgstr "Folosim doar ce e nevoie ca site-ul să meargă. Statisticile de utilizare și rapoartele de erori pornesc numai dacă alegi tu."
 
 #: src/features/statistics/lib/territory-derived.ts:163
 msgid "FOM104D / POP108D × 1.000"
@@ -29799,7 +29819,7 @@ msgstr ""
 msgid "Luări de cuvânt"
 msgstr ""
 
-#: src/components/data-trust/page-notice.tsx:50
+#: src/components/data-trust/page-notice.tsx:57
 msgid "Lucrăm încă la această pagină"
 msgstr "Lucrăm încă la această pagină"
 
@@ -30659,10 +30679,13 @@ msgstr "mentenanță"
 msgid "Menu"
 msgstr "Meniu"
 
-#: src/features/privacy/components/consent-card.tsx:334
 #: src/features/privacy/components/cookie-settings-page.tsx:172
 msgid "Mereu"
 msgstr "Mereu"
+
+#: src/features/privacy/components/consent-card.tsx:323
+msgid "Mereu pornite"
+msgstr "Mereu pornite"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4664
 msgid "Merge UATs in this workspace"
@@ -31434,9 +31457,13 @@ msgstr "Multiplicator"
 msgid "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 msgstr "Multiplicatorul 1.5 este standard; folosește 3.0 pentru detectarea mai strictă a valorilor extreme."
 
+#: src/features/privacy/components/consent-card.tsx:103
+msgid "Mulțumim!"
+msgstr "Mulțumim!"
+
 #: src/features/privacy/components/consent-card.tsx:102
-msgid "Mulțumim."
-msgstr "Mulțumim."
+#~ msgid "Mulțumim."
+#~ msgstr "Mulțumim."
 
 #: src/features/legal/lib/legal-domains.ts:43
 msgid "Muncă și protecție socială"
@@ -33507,8 +33534,8 @@ msgstr "Nu chiar!"
 #~ msgstr ""
 
 #: src/features/privacy/components/consent-card.tsx:112
-msgid "Notat."
-msgstr "Notat."
+#~ msgid "Notat."
+#~ msgstr "Notat."
 
 #: src/features/procurement/components/procurement-hub-dev-panel.tsx:66
 #~ msgid "Note"
@@ -33660,7 +33687,7 @@ msgstr "nu a răspuns la timp"
 msgid "Nu a vândut nimic instituțiilor publice prin SEAP în {year}."
 msgstr "Nu a vândut nimic instituțiilor publice prin SEAP în {year}."
 
-#: src/features/privacy/components/consent-card.tsx:269
+#: src/features/privacy/components/consent-card.tsx:268
 msgid "Nu acum — rămâne doar esențialul, întrebăm data viitoare"
 msgstr "Nu acum — rămâne doar esențialul, întrebăm data viitoare"
 
@@ -37645,7 +37672,7 @@ msgid "Politica de confidențialitate"
 msgstr "Politica de confidențialitate"
 
 #: src/components/footer/AppFooter.tsx:70
-#: src/features/privacy/components/consent-card.tsx:393
+#: src/features/privacy/components/consent-card.tsx:378
 #: src/features/privacy/components/cookie-settings-page.tsx:270
 msgid "Politica de cookie-uri"
 msgstr "Politica de cookie-uri"
@@ -37840,7 +37867,7 @@ msgstr "Anul populației"
 msgid "Population, its sorting and filters use the latest selected year's verified value. Per-capita amounts use each year's population before adding values."
 msgstr "Populația, sortarea și filtrele sale folosesc valoarea verificată din ultimul an selectat. Sumele per capita folosesc populația fiecărui an înainte de adunare."
 
-#: src/features/privacy/components/consent-card.tsx:113
+#: src/features/privacy/components/consent-card.tsx:114
 msgid "Pornești sau oprești fiecare opțiune oricând din Setări cookie-uri."
 msgstr "Pornești sau oprești fiecare opțiune oricând din Setări cookie-uri."
 
@@ -41678,12 +41705,11 @@ msgstr "Calcul Salariu"
 msgid "Salubrizare și deșeuri"
 msgstr "Salubrizare și deșeuri"
 
-#: src/features/privacy/components/consent-card.tsx:263
 #: src/features/privacy/components/cookie-settings-page.tsx:246
 msgid "Salvat"
 msgstr "Salvat"
 
-#: src/features/privacy/components/consent-card.tsx:381
+#: src/features/privacy/components/consent-card.tsx:367
 #: src/features/privacy/components/cookie-settings-page.tsx:238
 msgid "Salvează alegerea"
 msgstr "Salvează alegerea"
@@ -45133,7 +45159,7 @@ msgstr "Statistici și instrumente"
 msgid "Statistici teritoriu"
 msgstr "Statistici teritoriu"
 
-#: src/features/privacy/components/consent-card.tsx:103
+#: src/features/privacy/components/consent-card.tsx:104
 msgid "Statisticile și rapoartele de erori sunt pornite. Le oprești oricând din Setări cookie-uri."
 msgstr "Statisticile și rapoartele de erori sunt pornite. Le oprești oricând din Setări cookie-uri."
 
@@ -47698,7 +47724,7 @@ msgstr "Toate procedurile"
 msgid "Toate secțiunile"
 msgstr "Toate secțiunile"
 
-#: src/features/privacy/components/consent-card.tsx:398
+#: src/features/privacy/components/consent-card.tsx:381
 msgid "Toate setările"
 msgstr "Toate setările"
 
@@ -48283,7 +48309,7 @@ msgstr "Trimestru"
 msgid "Trimite cererea"
 msgstr "Trimite cererea"
 
-#: src/components/data-trust/page-notice.tsx:69
+#: src/components/data-trust/page-notice.tsx:76
 #: src/components/footer/AppFooter.tsx:131
 msgid "Trimite feedback"
 msgstr "Trimite feedback"
@@ -48679,8 +48705,12 @@ msgid "Un an"
 msgstr "Un an"
 
 #: src/features/privacy/components/cookie-illustration.tsx:84
-msgid "Un biscuit simplu, fără bucăți de ciocolată"
-msgstr "Un biscuit simplu, fără bucăți de ciocolată"
+#~ msgid "Un biscuit simplu, fără bucăți de ciocolată"
+#~ msgstr "Un biscuit simplu, fără bucăți de ciocolată"
+
+#: src/features/privacy/components/cookie-illustration.tsx:136
+msgid "Un biscuit simplu, fără bucăți de ciocolată, mulțumit"
+msgstr "Un biscuit simplu, fără bucăți de ciocolată, mulțumit"
 
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:171
 msgid "Un buget se deschide în timp; anii lui încep în 2019 (decembrie 2023 e un buletin PDF, fără coloane)."
@@ -48711,12 +48741,20 @@ msgid "Un contract din cele {all} atribuite în {year} a fost negociat fără an
 msgstr "Un contract din cele {all} atribuite în {year} a fost negociat fără anunț prealabil."
 
 #: src/features/privacy/components/cookie-illustration.tsx:85
-msgid "Un cookie întreg, cu bucăți de ciocolată"
-msgstr "Un cookie întreg, cu bucăți de ciocolată"
+#~ msgid "Un cookie întreg, cu bucăți de ciocolată"
+#~ msgstr "Un cookie întreg, cu bucăți de ciocolată"
+
+#: src/features/privacy/components/cookie-illustration.tsx:137
+msgid "Un cookie întreg, cu bucăți de ciocolată, care se uită la tine"
+msgstr "Un cookie întreg, cu bucăți de ciocolată, care se uită la tine"
 
 #: src/features/privacy/components/cookie-illustration.tsx:82
-msgid "Un cookie mușcat, cu firimituri alături"
-msgstr "Un cookie mușcat, cu firimituri alături"
+#~ msgid "Un cookie mușcat, cu firimituri alături"
+#~ msgstr "Un cookie mușcat, cu firimituri alături"
+
+#: src/features/privacy/components/cookie-illustration.tsx:134
+msgid "Un cookie mușcat, cu firimituri alături, care zâmbește larg"
+msgstr "Un cookie mușcat, cu firimituri alături, care zâmbește larg"
 
 #. placeholder {0}: sizeText(balance)
 #: src/features/national-budget/home/components/home-balance.tsx:45
@@ -50434,7 +50472,7 @@ msgstr ""
 msgid "Verifică și numărul și anul actului — de exemplu „Legea 53/2003”."
 msgstr "Verifică și numărul și anul actului — de exemplu „Legea 53/2003”."
 
-#: src/components/data-trust/page-notice.tsx:56
+#: src/components/data-trust/page-notice.tsx:63
 msgid "Verificăm datele, așa că unele cifre se pot schimba până terminăm."
 msgstr "Verificăm datele, așa că unele cifre se pot schimba până terminăm."
 

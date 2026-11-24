@@ -914,6 +914,46 @@ Measured in the browser (1440 / 820 / 390): the footer is 608 / 707 / 765px
 tall, down from 649 / 819 / 1,245px. No sideways scroll, no console errors.
 „Trimite feedback" under the tagline is unchanged (shown only with consent).
 
+## Consent card — 24 November 2026
+
+Owner: polish the type and the words, rethink the cookie as livelier pixel
+art, better motion. Prototype `/development/privacy/consent-card-v2`
+(`yarn dev` only).
+
+- **Round 1.** Three cookies tied to the platform: a budget pie whose slice
+  pulls out, an official stamp, a leu coin that flips. The owner chose
+  instead to polish today's cookie with a face.
+- **Round 2.** The face, with two endings for „Doar esențiale”: sad with a
+  tear (`face-sad`) or calm (`face-calm`). **Chosen: `face-calm`.** A sad
+  face for declining would steer people emotionally, and declining is meant
+  to be as easy as accepting.
+- **The cookie** (`cookie-illustration.tsx`):
+  - **Waiting:** it looks at you, with a highlight in each eye, and blinks
+    once.
+  - **„Acceptă tot”:** it beams, with closed eyes and an open smile, and keeps
+    its bite and crumbs.
+  - **„Doar esențiale”:** it drops its chips and is content, eyes closed and
+    smiling.
+  - **Drawing.** The face is 4-unit chocolate pixels, clear of the bite. The
+    chips moved to the rim. Faces swap in one frame; pixel faces do not morph.
+  - **Motion.** It hops in, in three steps, just after the card arrives, and
+    blinks at 1.4s. Both are dropped with reduced motion.
+  - **Where.** The settings page uses the same cookie and face, without the hop (`arrive` is the card's alone).
+- **The card** (`consent-card.tsx`):
+  - **Type.** Inter only: the mono capitals (the „Confidențialitate” eyebrow,
+    „01/02/03”, „Mereu”, the footer links) are gone (DESIGN.md: mono is for
+    codes, not words).
+  - **Text.** The title is „Cookie-uri puține, la vedere”. The body is
+    „Folosim doar ce e nevoie ca site-ul să meargă. Statisticile de
+    utilizare și rapoartele de erori pornesc numai dacă alegi tu.” The
+    disclosure reads „Alege ce pornești” and „Mereu pornite”. The
+    confirmations are „Mulțumim!”, „Doar esențialul.” and „Am notat.”
+  - **Size.** The cookie is 64px, 72px from `sm` up.
+  - **Corner marks gone.** They stuck 1px out of the scrolling card and gave
+    it a horizontal scrollbar.
+  - **Behaviour is unchanged:** non-modal, Escape, focus return, the ×, the
+    timings.
+
 ## Follow-ups
 
 - A real `/despre` page, and the band link back once it exists.

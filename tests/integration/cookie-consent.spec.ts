@@ -177,12 +177,12 @@ async function waitForPathname(
  * The card mounts ~500ms after hydration when no decision is stored.
  */
 async function waitForCard(page: Page, timeout = 5000): Promise<Locator> {
-  const card = page.getByRole('dialog', { name: /urmărire|tracking/i })
+  const card = page.getByRole('dialog', { name: /cookie-uri puține|few cookies/i })
   await expect(card).toBeVisible({ timeout })
   return card
 }
 
-const cardLocator = (page: Page) => page.getByRole('dialog', { name: /urmărire|tracking/i })
+const cardLocator = (page: Page) => page.getByRole('dialog', { name: /cookie-uri puține|few cookies/i })
 
 test.describe('Consent Card', () => {
   test.beforeEach(async ({ page }) => {
@@ -201,7 +201,7 @@ test.describe('Consent Card', () => {
     await expect(card).toHaveAttribute('aria-modal', 'false')
     await expect(card.getByRole('button', { name: /^(doar esențiale|essentials only)$/i })).toBeVisible()
     await expect(card.getByRole('button', { name: /acceptă tot|accept all/i })).toBeVisible()
-    await expect(card.getByRole('button', { name: /alege tu|choose/i })).toBeVisible()
+    await expect(card.getByRole('button', { name: /alege ce|choose/i })).toBeVisible()
     await expect(card.getByRole('button', { name: /nu acum|not now/i })).toBeVisible()
     await expect(card.getByRole('link', { name: /toate setările|all settings/i })).toHaveAttribute(
       'href',
@@ -211,6 +211,11 @@ test.describe('Consent Card', () => {
       'href',
       '/cookie-policy',
     )
+    // The cookie waits, whole, for the answer.
+    await expect(card.getByRole('img', { name: /întreg|whole/i })).toBeVisible()
+    // Nothing sticks out sideways: the card scrolls only vertically, if at all.
+    const overflow = await card.evaluate((element) => element.scrollWidth - element.clientWidth)
+    expect(overflow).toBeLessThanOrEqual(0)
   })
 
   test('hides the card when consent already exists', async ({ page }) => {
@@ -247,7 +252,9 @@ test.describe('Consent Card', () => {
     expect(consent?.updatedAt).toBeDefined()
 
     // The confirmation reads out the decision, then the card unmounts.
-    await expect(page.getByRole('dialog', { name: /mulțumim|thank/i })).toBeVisible({ timeout: 2000 })
+    const thanks = page.getByRole('dialog', { name: /mulțumim|thank/i })
+    await expect(thanks).toBeVisible({ timeout: 2000 })
+    await expect(thanks.getByRole('img', { name: /mușcat|bitten/i })).toBeVisible()
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 5000 })
   })
 
@@ -259,14 +266,15 @@ test.describe('Consent Card', () => {
     await essentialOnlyButton.click()
 
     await waitForCookieConsentState(page, { essential: true, analytics: false, sentry: false })
-    await expect(page.getByRole('dialog', { name: /doar esențialul|essentials/i })).toBeVisible({
-      timeout: 2000,
-    })
+    const essentials = page.getByRole('dialog', { name: /doar esențialul|essentials/i })
+    await expect(essentials).toBeVisible({ timeout: 2000 })
+    // Declining gets a content cookie, never a sad one.
+    await expect(essentials.getByRole('img', { name: /simplu.*mulțumit|plain.*content/i })).toBeVisible()
   })
 
   test('choosing per category saves exactly that', async ({ page }) => {
     const card = await waitForCard(page)
-    await card.getByRole('button', { name: /alege tu|choose/i }).click()
+    await card.getByRole('button', { name: /alege ce|choose/i }).click()
 
     const switches = card.getByRole('switch')
     await expect(switches).toHaveCount(2)
