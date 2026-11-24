@@ -87,7 +87,7 @@ const LINE_LABELS: Readonly<Record<string, () => string>> = {
   'proiecte cu finantare din sumele aferente componentei de imprumut a pnrr': () => t({ message: `Proiecte PNRR din împrumuturi`, context: 'national budget classification' }),
   'cheltuieli aferente programelor cu finantare rambursabila': () => t({ message: `Programe cu finanțare rambursabilă`, context: 'national budget classification' }),
   'cheltuieli de capital': () => t({ message: `Cheltuieli de capital`, context: 'national budget classification' }),
-  'active nefinanciare': () => t({ message: `Investiții (active nefinanciare)`, context: 'national budget classification' }),
+  'active nefinanciare': () => t({ message: `Active nefinanciare`, context: 'national budget classification' }),
   'active financiare': () => t({ message: `Active financiare`, context: 'national budget classification' }),
   imprumuturi: () => t({ message: `Împrumuturi acordate`, context: 'national budget classification' }),
   'rambursari de credite': () => t({ message: `Rambursări de credite`, context: 'national budget classification' }),

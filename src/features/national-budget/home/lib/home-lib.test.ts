@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { cellsOf } from '@/features/national-budget/analytics/lib/analytics-data'
+import { lineLabel } from '@/features/national-budget/analytics/lib/analytics-format'
 import type { BudgetApprovedRecord, BudgetNationalCatalog, BudgetNationalSeries, BudgetObservation } from '@/schemas/national-budget-api'
 import {
   ANAF_FIRST_YEAR,
@@ -193,6 +194,28 @@ describe('the parts of a whole', () => {
   it('ranks the lines by size and leaves the rest last', () => {
     const parts = whole({ 'mfin.bgc.expenditure.personnel': '50000000000', 'mfin.bgc.expenditure.interest': '100000000000' })
     expect(parts?.map((entry) => entry.key)).toEqual(['mfin.bgc.expenditure.interest', 'mfin.bgc.expenditure.personnel', 'rest'])
+  })
+
+  it('names non-financial assets consistently without changing the spending parts', () => {
+    const assets = 'mfin.bgc.expenditure.nonfinancial_assets'
+    const transfers = 'mfin.bgc.expenditure.other_transfers'
+    const amounts: Record<string, string> = { [assets]: '64000000000', [transfers]: '36600000000' }
+    const parts = partsOfWhole({
+      whole: '808700000000',
+      items: [assets, transfers],
+      now: (itemId) => amounts[itemId] ?? null,
+      before: () => null,
+      restLabel: () => 'rest',
+      restHint: () => '',
+    })
+
+    expect(parts).toMatchObject([
+      { key: assets, label: 'Active nefinanciare', amount: '64.0\u00a0mld. lei', shareLabel: '7.9%' },
+      { key: transfers, label: 'Alte transferuri', amount: '36.6\u00a0mld. lei' },
+      { key: 'rest', amount: '708.1\u00a0mld. lei' },
+    ])
+    expect(parts?.[1]?.hint).not.toContain('burse')
+    expect(lineLabel('active nefinanciare')).toBe('Active nefinanciare')
   })
 
   it('gives whole lei out of a hundred that always make a hundred', () => {

@@ -14,7 +14,7 @@ import { AnalyticsLink, SourceNote, type BandProps } from './home-shell'
 
 /**
  * „Pe ce se duc banii": the consolidated budget's spending by its nature —
- * pensions and benefits, salaries, goods and services, investments, interest,
+ * social assistance, personnel, goods and services, non-financial assets, interest,
  * EU and PNRR projects — and the rest of the printed total. Three designs.
  */
 

@@ -4173,10 +4173,6 @@ msgstr "10–49 employees"
 msgid "10.000–100.000"
 msgstr "10,000–100,000"
 
-#: src/features/national-budget/home/lib/home-format.ts:22
-msgid "10% din salarii, chirii, dividende"
-msgstr "10% of wages, rents, dividends"
-
 #: src/features/ngos/hub/ngo-hub-labels.ts:50
 msgid "100.000–1 mil."
 msgstr "100,000–1 M"
@@ -5224,14 +5220,15 @@ msgstr "Fixed assets"
 msgid "Active în lista ANAF"
 msgstr "Active on ANAF’s list"
 
-#: src/features/national-budget/analytics/lib/analytics-view.ts:327
-msgctxt "national budget classification"
-msgid "Active nefinanciare (investiții)"
-msgstr "Non-financial assets (investment)"
-
 #: src/features/procurement/components/procurement-hub-active-filters.tsx:62
 #~ msgid "Active procurement filters"
 #~ msgstr "Active procurement filters"
+
+#: src/features/national-budget/analytics/lib/analytics-format.ts:90
+#: src/features/national-budget/analytics/lib/analytics-view.ts:327
+msgctxt "national budget classification"
+msgid "Active nefinanciare"
+msgstr "Non-financial assets"
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:537
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:621
@@ -9550,10 +9547,6 @@ msgstr "Goods and services"
 #~ msgid "Bursă"
 #~ msgstr "Bursă"
 
-#: src/features/national-budget/home/lib/home-format.ts:39
-msgid "burse, sprijin, contribuții internaționale"
-msgstr "scholarships, support, international contributions"
-
 #: src/features/procurement/components/procurement-list-facets.tsx:88
 #~ msgid "Buyer county"
 #~ msgstr "Buyer county"
@@ -10079,10 +10072,6 @@ msgstr "Which"
 #: src/features/justice/lib/analysis-questions.ts:36
 msgid "Care sunt cele mai încărcate instanțe din județul Cluj?"
 msgstr "Which are the busiest courts in Cluj county?"
-
-#: src/features/national-budget/home/lib/home-format.ts:20
-msgid "CAS și CASS: pensii și sănătate, reținute din salarii"
-msgstr "CAS and CASS: pensions and health, withheld from wages"
 
 #: src/features/ngos/organization/components/years-matrix.tsx:19
 msgid "Casa și conturi la bănci"
@@ -11949,6 +11938,10 @@ msgstr "Current spending"
 msgctxt "national budget classification"
 msgid "Cheltuieli de capital"
 msgstr "Capital spending"
+
+#: src/features/national-budget/home/lib/home-format.ts:33
+msgid "cheltuieli de capital pentru clădiri, drumuri, echipamente și alte active"
+msgstr "capital expenditure on buildings, roads, equipment and other assets"
 
 #: src/features/national-budget/analytics/lib/analytics-format.ts:76
 #: src/features/national-budget/analytics/lib/analytics-view.ts:312
@@ -14451,6 +14444,10 @@ msgid "contribuția la sănătate (CASS) și sume de la bugetul de stat"
 msgstr "the health contribution (CASS) and amounts from the state budget"
 
 #: src/features/national-budget/home/lib/home-format.ts:20
+msgid "contribuții pentru pensii, sănătate și alte asigurări sociale"
+msgstr "contributions for pensions, health and other social insurance"
+
+#: src/features/national-budget/home/lib/home-format.ts:20
 msgid "Contribuții sociale"
 msgstr "Social contributions"
 
@@ -16700,6 +16697,10 @@ msgstr "on administrative and tax disputes"
 #: src/features/justice/lib/analysis-text.ts:115
 msgid "de drept maritim și fluvial"
 msgstr "on maritime and river law"
+
+#: src/features/national-budget/home/lib/home-format.ts:39
+msgid "de exemplu, transferuri către organizații internaționale și contribuția la bugetul UE"
+msgstr "for example, transfers to international organisations and contributions to the EU budget"
 
 #: src/features/justice/lib/analysis-text.ts:109
 msgid "de faliment"
@@ -19071,10 +19072,6 @@ msgstr "roads and bridges, railways"
 #: src/features/private-companies/lib/caen-divisions.ts:66
 msgid "Drumuri, căi ferate și rețele"
 msgstr "Roads, railways and utility networks"
-
-#: src/features/national-budget/home/lib/home-format.ts:33
-msgid "drumuri, clădiri, echipamente (active nefinanciare)"
-msgstr "roads, buildings, equipment (non-financial assets)"
 
 #: src/features/procurement/lib/home-categories.ts:28
 msgid "Drumuri, poduri și autostrăzi"
@@ -24703,9 +24700,9 @@ msgctxt "national budget classification"
 msgid "Impozite pe profit, salarii și venit"
 msgstr "Taxes on profit, wages and income"
 
-#: src/features/national-budget/home/lib/home-format.ts:29
-msgid "Impozite pe proprietate"
-msgstr "Property taxes"
+#: src/features/national-budget/home/lib/home-format.ts:22
+msgid "impozite pe salarii, chirii, dividende și alte venituri ale persoanelor fizice"
+msgstr "taxes on wages, rent, dividends and other personal income"
 
 #: src/features/national-budget/analytics/lib/analytics-format.ts:55
 #: src/features/national-budget/analytics/lib/analytics-view.ts:343
@@ -25693,6 +25690,10 @@ msgstr "Încărcat"
 msgid "Încărcate parțial: {0}. Sursele nu spun ce lipsește."
 msgstr "Loaded in part: {0}. The sources do not say what is missing."
 
+#: src/features/national-budget/home/lib/home-format.ts:21
+msgid "încasări nete din taxa pe valoarea adăugată"
+msgstr "net value added tax receipts"
+
 #. placeholder {0}: view.text
 #: src/features/national-budget/home/components/home-revenue.tsx:37
 msgid "Încasările bugetului general consolidat (toate bugetele publice, fără transferurile dintre ele), {0}. Sursa: buletinele lunare de execuție ale Ministerului Finanțelor. Variația, față de aceeași perioadă a anului trecut, în lei curenți."
@@ -25847,6 +25848,10 @@ msgstr "Includes empty and secondary dwellings. Recalculated after the 2021 Cens
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:82
 msgid "Includes EU money (PNRR) and profits from state-owned companies. Essential but smaller."
 msgstr "Includes EU money (PNRR) and profits from state-owned companies. Essential but smaller."
+
+#: src/features/national-budget/home/lib/home-format.ts:29
+msgid "inclusiv pentru clădiri, terenuri și mijloace de transport"
+msgstr "including taxes on buildings, land and vehicles"
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:65
 #: src/components/entities/EntityFinancialTrends.tsx:424
@@ -27316,15 +27321,6 @@ msgstr "Education"
 msgctxt "national budget classification"
 msgid "Învățământ"
 msgstr "Education"
-
-#: src/features/national-budget/home/lib/home-format.ts:33
-msgid "Investiții"
-msgstr "Investment"
-
-#: src/features/national-budget/analytics/lib/analytics-format.ts:90
-msgctxt "national budget classification"
-msgid "Investiții (active nefinanciare)"
-msgstr "Investment (non-financial assets)"
 
 #: src/features/landing/lib/landing-groups.ts:75
 #: src/routes/investitii-publice/route.tsx:57
@@ -36610,10 +36606,6 @@ msgstr "At which step the cases are"
 msgid "Pe cine privește"
 msgstr "Who it concerns"
 
-#: src/features/national-budget/home/lib/home-format.ts:29
-msgid "pe clădiri, terenuri, mașini"
-msgstr "on buildings, land, cars"
-
 #: src/features/procurement/lib/analytics-text.ts:271
 msgid "pe clase de categorii"
 msgstr "by category class"
@@ -36862,10 +36854,6 @@ msgstr "Pensions"
 #: src/features/national-budget/home/components/home-domains.tsx:38
 msgid "pensii plătite din bugetul de stat, alocații, indemnizații, ajutor social"
 msgstr "pensions paid from the state budget, child benefits, allowances, social assistance"
-
-#: src/features/national-budget/home/lib/home-format.ts:30
-msgid "Pensii și ajutoare sociale"
-msgstr "Pensions and social benefits"
 
 #: src/features/national-budget/home/lib/home-format.ts:30
 msgid "pensii, alocații, indemnizații"
@@ -41648,16 +41636,12 @@ msgid "Salariații: un număr mediu peste {0} sau sub zero e o greșeală de int
 msgstr "Employees: an average headcount above {0} or below zero is a keying error and is not added up; the analysis opened from here keeps the same limit."
 
 #: src/features/national-budget/home/lib/home-format.ts:31
-msgid "Salarii"
-msgstr "Wages"
+msgid "salarii, contribuții și alte cheltuieli de personal"
+msgstr "wages, contributions and other personnel expenditure"
 
 #: src/features/landing/lib/landing-groups.ts:170
 msgid "Salarii, prețuri, șomaj și populație, pentru țară, județe și localități."
 msgstr "Wages, prices, unemployment and population, for the country, counties and localities."
-
-#: src/features/national-budget/home/lib/home-format.ts:31
-msgid "salariile și contribuțiile angajaților statului"
-msgstr "the wages and contributions of state employees"
 
 #: src/features/statistics/components/hub/hub-dataset-search.tsx:23
 msgid "Salariu, inflație, populație sau cod INS..."
@@ -46186,10 +46170,6 @@ msgstr "Tap an answer to continue."
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:146
 msgid "țară"
 msgstr "country"
-
-#: src/features/national-budget/home/lib/home-format.ts:21
-msgid "taxa pe valoarea adăugată, din tot ce se cumpără"
-msgstr "value added tax, on everything that is bought"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:355
 msgctxt "national budget classification"

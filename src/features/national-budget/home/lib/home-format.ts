@@ -5,7 +5,7 @@
  */
 import { t } from '@lingui/core/macro'
 
-import { moneyText } from '@/features/national-budget/analytics/lib/analytics-format'
+import { lineLabel, moneyText } from '@/features/national-budget/analytics/lib/analytics-format'
 import { canonicalDecimal, exactPercent, isNegative, absDecimal } from '@/features/national-budget/analytics/lib/exact'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { decimalSign, sumDecimals } from '@/lib/exact-decimal'
@@ -17,26 +17,26 @@ const R = (key: string) => `mfin.bgc.revenue.${key}`
 
 /** A bulletin line in a reader's words, short enough for a chart's label; `hint` says what it holds. */
 const PART_WORDS: Readonly<Record<string, { readonly name: () => string; readonly hint: () => string }>> = {
-  [R('social_contributions')]: { name: () => t`Contribuții sociale`, hint: () => t`CAS și CASS: pensii și sănătate, reținute din salarii` },
-  [R('vat')]: { name: () => t`TVA`, hint: () => t`taxa pe valoarea adăugată, din tot ce se cumpără` },
-  [R('salary_income_tax')]: { name: () => t`Impozitul pe venit`, hint: () => t`10% din salarii, chirii, dividende` },
+  [R('social_contributions')]: { name: () => t`Contribuții sociale`, hint: () => t`contribuții pentru pensii, sănătate și alte asigurări sociale` },
+  [R('vat')]: { name: () => t`TVA`, hint: () => t`încasări nete din taxa pe valoarea adăugată` },
+  [R('salary_income_tax')]: { name: () => t`Impozitul pe venit`, hint: () => t`impozite pe salarii, chirii, dividende și alte venituri ale persoanelor fizice` },
   [R('excise')]: { name: () => t`Accize`, hint: () => t`pe carburanți, tutun, alcool, energie` },
   [R('profit_tax')]: { name: () => t`Impozitul pe profit`, hint: () => t`plătit de firme` },
   [R('non_tax')]: { name: () => t`Venituri nefiscale`, hint: () => t`dividende de la companiile statului, redevențe, amenzi` },
   [R('eu_other_donor_receipts')]: { name: () => t`Fonduri europene`, hint: () => t`rambursări și prefinanțări de la UE, în afara cadrului 2014–2020` },
   [R('eu_2014_2020_receipts')]: { name: () => t`Fonduri europene, cadrul 2014–2020`, hint: () => t`rambursări și prefinanțări de la UE pentru proiectele 2014–2020` },
   [R('pnrr_grants')]: { name: () => t`Granturi PNRR`, hint: () => t`partea nerambursabilă a PNRR` },
-  [R('property_tax')]: { name: () => t`Impozite pe proprietate`, hint: () => t`pe clădiri, terenuri, mașini` },
-  [E('social_assistance')]: { name: () => t`Pensii și ajutoare sociale`, hint: () => t`pensii, alocații, indemnizații` },
-  [E('personnel')]: { name: () => t`Salarii`, hint: () => t`salariile și contribuțiile angajaților statului` },
+  [R('property_tax')]: { name: () => lineLabel('impozite si taxe pe proprietate'), hint: () => t`inclusiv pentru clădiri, terenuri și mijloace de transport` },
+  [E('social_assistance')]: { name: () => lineLabel('asistenta sociala'), hint: () => t`pensii, alocații, indemnizații` },
+  [E('personnel')]: { name: () => lineLabel('cheltuieli de personal'), hint: () => t`salarii, contribuții și alte cheltuieli de personal` },
   [E('goods_services')]: { name: () => t`Bunuri și servicii`, hint: () => t`medicamente, utilități, întreținere, servicii` },
-  [E('nonfinancial_assets')]: { name: () => t`Investiții`, hint: () => t`drumuri, clădiri, echipamente (active nefinanciare)` },
+  [E('nonfinancial_assets')]: { name: () => lineLabel('active nefinanciare'), hint: () => t`cheltuieli de capital pentru clădiri, drumuri, echipamente și alte active` },
   [E('interest')]: { name: () => t`Dobânzi la datorie`, hint: () => t`dobânzile datoriei publice` },
   [E('external_grant_projects')]: { name: () => t`Proiecte cu fonduri UE`, hint: () => t`proiecte cu bani europeni nerambursabili, în afara cadrului 2014–2020` },
   [E('eu_2014_2020_projects')]: { name: () => t`Proiecte UE, cadrul 2014–2020`, hint: () => t`proiectele cu fonduri europene din cadrul 2014–2020` },
   [E('eu_2014_2020_modernisation_projects')]: { name: () => t`Proiecte UE 2014–2020 și Fondul de modernizare`, hint: () => t`proiectele cadrului 2014–2020 și ale Fondului de modernizare` },
   [E('pnrr_grant_projects')]: { name: () => t`Proiecte PNRR`, hint: () => t`din granturile PNRR` },
-  [E('other_transfers')]: { name: () => t`Alte transferuri`, hint: () => t`burse, sprijin, contribuții internaționale` },
+  [E('other_transfers')]: { name: () => t`Alte transferuri`, hint: () => t`de exemplu, transferuri către organizații internaționale și contribuția la bugetul UE` },
   [E('subsidies')]: { name: () => t`Subvenții`, hint: () => t`pentru agricultură, transport, energie` },
 }
 

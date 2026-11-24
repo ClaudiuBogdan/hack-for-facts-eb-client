@@ -324,7 +324,7 @@ const TITLES: Readonly<Record<string, () => string>> = {
   '61': () => t({ message: `Proiecte PNRR din împrumuturi`, context: 'national budget classification' }),
   '65': () => t({ message: `Programe cu finanțare rambursabilă`, context: 'national budget classification' }),
   '70': () => t({ message: `Cheltuieli de capital`, context: 'national budget classification' }),
-  '71': () => t({ message: `Active nefinanciare (investiții)`, context: 'national budget classification' }),
+  '71': () => t({ message: `Active nefinanciare`, context: 'national budget classification' }),
   '72': () => t({ message: `Active financiare`, context: 'national budget classification' }),
   '79': () => t({ message: `Operațiuni financiare`, context: 'national budget classification' }),
   '80': () => t({ message: `Împrumuturi`, context: 'national budget classification' }),
