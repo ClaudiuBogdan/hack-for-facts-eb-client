@@ -19,6 +19,11 @@ function years(values: Readonly<Record<number, number | null>>): SupplierYears['
   return [2019, 2020, 2021, 2022, 2023, 2024, 2025].map((year) => ({ year, value: values[year] ?? null }))
 }
 
+/** Otopeni's direct purchases by category, its own read. */
+export function buyerDirectCategories(): readonly CategoryFigure[] {
+  return [figure('constructii', 8_200_000, 13, 0.225), figure('proiectare', 5_600_000, 54, 0.154), figure('retele', 5_600_000, 13, 0.153)]
+}
+
 export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfile {
   return {
     identity: {
@@ -71,7 +76,6 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
       rows: [{ cui: '16634489', count: 2, value: 12_220_000, share: 0.167 }],
     },
     categories: {
-      direct: [figure('constructii', 8_200_000, 13, 0.225), figure('proiectare', 5_600_000, 54, 0.154), figure('retele', 5_600_000, 13, 0.153)],
       contract: [figure('constructii', 9_610_000, 2, 0.64)],
     },
     supplierCounties: [

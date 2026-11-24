@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { ProcurementBuyerSearch } from '@/schemas/procurement-buyer'
-import { buyerProfile, buyerRecords } from '../../lib/buyer.fixture'
+import { buyerDirectCategories, buyerProfile, buyerRecords } from '../../lib/buyer.fixture'
 import { ProcurementBuyerPage, type ProcurementBuyerInitialData } from './procurement-buyer-page'
 import { recentPeriod, yearPeriod } from '../../lib/profile-period.fixture'
 
@@ -47,10 +47,14 @@ vi.mock('@tanstack/react-router', () => ({
   useRouter: () => ({ routesById: {}, state: { matches: [] } }),
 }))
 
-// The page's reads never land here: what it shows is what the loader seeded.
+// The page's reads never land here: what it shows is what the loader seeded. The direct purchases by category are the
+// browser's own read, after the profile: each test says how it ends (by default, never).
+const directCategories = vi.hoisted(() => vi.fn())
+const profileRead = vi.hoisted(() => vi.fn())
 vi.mock('../../api/procurement-buyer-api', () => ({
-  fetchProcurementBuyer: vi.fn(() => new Promise(() => undefined)),
+  fetchProcurementBuyer: (...args: unknown[]) => profileRead(...args),
   fetchProcurementBuyerRecords: vi.fn(() => new Promise(() => undefined)),
+  fetchProcurementBuyerDirectCategories: (...args: unknown[]) => directCategories(...args),
 }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
@@ -75,6 +79,137 @@ function lastSearch(previous: Record<string, unknown> = {}): Record<string, unkn
 describe('ProcurementBuyerPage', () => {
   beforeEach(() => {
     navigate.mockReset()
+    directCategories.mockReset()
+    directCategories.mockImplementation(() => new Promise(() => undefined))
+    profileRead.mockReset()
+    profileRead.mockImplementation(() => new Promise(() => undefined))
+  })
+
+  it('renders the profile without the direct purchases by category: the band waits for its own read, never says „none"', () => {
+    const html = renderToStaticMarkup(page())
+    expect(html).toContain('id="ce"')
+    expect(html).not.toContain('Nicio achiziție directă în 2025.')
+    expect(html).not.toContain('Alte lucrări de construcții')
+    // The server never reads them: the API can take past the render's deadline.
+    expect(directCategories).not.toHaveBeenCalled()
+  })
+
+  it('shows the direct purchases by category once their read lands, for the profile’s own period', async () => {
+    directCategories.mockResolvedValue(buyerDirectCategories())
+    render(page())
+    const what = document.getElementById('ce')!
+    expect(await within(what).findByText('Alte lucrări de construcții')).toBeInTheDocument()
+    expect(within(what).getByText(/Categoria cu cei mai mulți bani ai achizițiilor directe din 2025/u)).toBeInTheDocument()
+    expect(directCategories).toHaveBeenCalledWith('4364446', INITIAL.profile!.period, expect.anything())
+  })
+
+  it('says the direct purchases by category unavailable when their read fails, offers it again, and keeps the rest of the page', async () => {
+    directCategories.mockRejectedValue(new Error('Internal server error @directCategories'))
+    render(page())
+    const what = document.getElementById('ce')!
+    const alert = await within(what).findByRole('alert')
+    expect(alert).toHaveTextContent('Cifrele nu s-au încărcat.')
+    expect(within(what).queryByText('Nicio achiziție directă în 2025.')).toBeNull()
+    expect(screen.getAllByText('Upper Level SRL').length).toBeGreaterThan(0)
+    directCategories.mockResolvedValue(buyerDirectCategories())
+    fireEvent.click(within(alert).getByRole('button', { name: 'Încearcă din nou' }))
+    expect(await within(what).findByText('Alte lucrări de construcții')).toBeInTheDocument()
+    expect(directCategories).toHaveBeenCalledTimes(2)
+  })
+
+  it('says a failed refresh unavailable, never the rows, or the „none", it read before', async () => {
+    const client = createTestQueryClient()
+    const at = (search: ProcurementBuyerSearch) => (
+      <QueryClientProvider client={client}>
+        <TooltipProvider>
+          <ProcurementBuyerPage cui="4364446" search={search} initial={INITIAL} />
+        </TooltipProvider>
+      </QueryClientProvider>
+    )
+    directCategories.mockResolvedValueOnce(buyerDirectCategories())
+    const view = render(at({}))
+    expect(await within(document.getElementById('ce')!).findByText('Alte lucrări de construcții')).toBeInTheDocument()
+    // To contracts and back: the band reads again, and that read fails.
+    view.rerender(at({ ce: 'contracte' }))
+    directCategories.mockRejectedValueOnce(new Error('statement timeout'))
+    view.rerender(at({}))
+    expect(await within(document.getElementById('ce')!).findByRole('alert')).toHaveTextContent('Cifrele nu s-au încărcat.')
+    expect(within(document.getElementById('ce')!).queryByText('Alte lucrări de construcții')).toBeNull()
+    expect(directCategories).toHaveBeenCalledTimes(2)
+  })
+
+  it('says „no direct purchase" only when the profile counts none, and an empty list against a count unread', async () => {
+    directCategories.mockResolvedValue([])
+    const view = render(page())
+    expect(await within(document.getElementById('ce')!).findByText('Categoriile achizițiilor nu s-au putut citi acum.')).toBeInTheDocument()
+    expect(within(document.getElementById('ce')!).queryByText('Nicio achiziție directă în 2025.')).toBeNull()
+    view.unmount()
+    const none = { count: 0, valued: 0, value: null, suppliers: 0 }
+    render(page({ ce: 'directe' }, { choice: 2025, profile: buyerProfile({ direct: none }) }))
+    expect(await within(document.getElementById('ce')!).findByText('Nicio achiziție directă în 2025.')).toBeInTheDocument()
+  })
+
+  it('keeps reading the categories of the profile shown while another period’s profile loads', async () => {
+    const client = createTestQueryClient()
+    const answers = new Map<number, (rows: ReturnType<typeof buyerDirectCategories>) => void>()
+    directCategories.mockImplementation((_cui: string, period: { readonly year: number }) => new Promise((resolve) => answers.set(period.year, resolve)))
+    let profile2024: (profile: ReturnType<typeof buyerProfile>) => void = () => undefined
+    profileRead.mockImplementation((_cui: string, choice: unknown) => (choice === 2024 ? new Promise((resolve) => (profile2024 = resolve)) : new Promise(() => undefined)))
+    const at = (initial: ProcurementBuyerInitialData) => (
+      <QueryClientProvider client={client}>
+        <TooltipProvider>
+          <ProcurementBuyerPage cui="4364446" search={{ year: initial.choice as number }} initial={initial} />
+        </TooltipProvider>
+      </QueryClientProvider>
+    )
+    const view = render(at(INITIAL))
+    await waitFor(() => expect(answers.has(2025)).toBe(true))
+    // Another year picked, its profile on its way: the page keeps 2025's, and its categories with it.
+    view.rerender(at({ choice: 2024 }))
+    await waitFor(() => expect(profileRead).toHaveBeenCalledWith('4364446', 2024, expect.anything()))
+    expect(answers.has(2024)).toBe(false)
+    answers.get(2025)!(buyerDirectCategories())
+    const what = document.getElementById('ce')!
+    expect(await within(what).findByText('Alte lucrări de construcții')).toBeInTheDocument()
+    // 2024's profile lands: its categories are read, and 2025's rows go.
+    profile2024(buyerProfile({ period: yearPeriod(2024) }))
+    await waitFor(() => expect(answers.has(2024)).toBe(true))
+    expect(within(document.getElementById('ce')!).queryByText('Alte lucrări de construcții')).toBeNull()
+    const [roads] = buyerDirectCategories()
+    answers.get(2024)!([{ ...roads!, value: 1_000, share: 1 }])
+    expect(await within(document.getElementById('ce')!).findByText('Alte lucrări de construcții')).toBeInTheDocument()
+  })
+
+  it('reads the categories for the profile shown: a late answer for another period never fills the band', async () => {
+    const client = createTestQueryClient()
+    const answers = new Map<number, (rows: ReturnType<typeof buyerDirectCategories>) => void>()
+    directCategories.mockImplementation((_cui: string, period: { readonly year: number }) => new Promise((resolve) => answers.set(period.year, resolve)))
+    const at = (initial: ProcurementBuyerInitialData) => (
+      <QueryClientProvider client={client}>
+        <TooltipProvider>
+          <ProcurementBuyerPage cui="4364446" search={{ year: initial.choice as number }} initial={initial} />
+        </TooltipProvider>
+      </QueryClientProvider>
+    )
+    const view = render(at(INITIAL))
+    await waitFor(() => expect(answers.has(2025)).toBe(true))
+    view.rerender(at({ choice: 2024, profile: buyerProfile({ period: yearPeriod(2024) }) }))
+    await waitFor(() => expect(answers.has(2024)).toBe(true))
+    const [roads] = buyerDirectCategories()
+    answers.get(2025)!(buyerDirectCategories())
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    const what = document.getElementById('ce')!
+    expect(within(what).queryByText('Alte lucrări de construcții')).toBeNull()
+    answers.get(2024)!([{ ...roads!, value: 1_000, share: 1 }])
+    expect(await within(what).findByText('Alte lucrări de construcții')).toBeInTheDocument()
+    expect(directCategories).toHaveBeenLastCalledWith('4364446', yearPeriod(2024), expect.anything())
+  })
+
+  it('reads no direct purchases by category while the band shows contracts', async () => {
+    render(page({ ce: 'contracte' }))
+    expect(within(document.getElementById('ce')!).getByText('Alte lucrări de construcții')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getAllByText('Upper Level SRL').length).toBeGreaterThan(0))
+    expect(directCategories).not.toHaveBeenCalled()
   })
 
   it('server-renders the buyer, its year and its firms from the loader’s read', () => {

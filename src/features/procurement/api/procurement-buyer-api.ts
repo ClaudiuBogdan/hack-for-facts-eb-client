@@ -33,9 +33,20 @@ import {
   type SupplierYears,
 } from '../lib/buyer-model'
 import { FRAMEWORKS_SCOPE } from '../lib/analytics-model'
-import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
+import { levelCpvLeaves, readerCategories, type CategoryFigure, type CpvBucket } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, homeYear, truncatePartYear, type YearPoint } from '../lib/home-model'
-import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
+import {
+  RECENT,
+  needsCutoff,
+  periodOf,
+  profilePeriodOf,
+  throughMonth,
+  type Cutoff,
+  type Period,
+  type PeriodChoice,
+  type PeriodScope,
+  type ProfilePeriod,
+} from '../lib/profile-period'
 import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
@@ -45,8 +56,8 @@ import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-
  *    request's fields one after another): the keys (the year's suppliers,
  *    the top sellers since 2019, the buyer's county on its records), the
  *    figures (the year's populations and the year before, the years since
- *    2019, the months, supplier counties, procedures), and the CPV levels
- *    for the reader's categories — and beside them the budget platform's
+ *    2019, the months, supplier counties, procedures), and the contract
+ *    awards' CPV levels for the reader's categories — and beside them the budget platform's
  *    identity record, which fails soft (`partial`), and SEAP's cutoff, the
  *    shared read (`procurement-cutoff.ts`). The year in progress waits for
  *    the cutoff, which bounds its reads (through its month, compared with
@@ -57,6 +68,11 @@ import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-
  *    left out (`partial`, `namesUnread`): the page shows CUIs rather than
  *    nothing.
  * 3. The year's largest records, beside the rest.
+ * 4. The direct purchases' CPV levels, in a request of their own once the
+ *    profile is shown (`fetchProcurementBuyerDirectCategories`): with no
+ *    rollup for them the API reads live rows, and a large buyer's run past
+ *    its statement timeout. The page neither waits for them nor fails with
+ *    them (owner, 23 November 2026).
  *
  * Measured on the dev API (2026-09-27): a large buyer's uncached profile took
  * ~2.4 s as one request with the front door's drilled CPV tree, and the
@@ -191,18 +207,46 @@ export function buyerProfileFields(cui: string, period: Period, latest: number, 
         ]
       : []),
   ]
-  for (const [grain, base] of [
-    ['direct', DIRECT],
-    ['awards', AWARDS],
-  ] as const) {
-    // One flat read per CPV level, not the front door's drilled tree: eight reads instead of sixteen, finer everywhere. Each
-    // level keeps what the next does not hold (`levelCpvLeaves`), so a large buyer's codes past the API's hundred stay with
-    // their parent code: a little precision lost, no money.
-    for (const [level, dimension] of CPV_LEVELS) {
-      fields.push({ alias: `${grain}${level}`, kind: 'breakdown', scope: { ...inPeriod, ...base }, args: `dimension: ${dimension}, topN: 100, rankBy: value` })
-    }
-  }
+  // The direct purchases' levels are a request of their own (`buyerDirectCategoryFields`): the profile does not wait for them.
+  fields.push(...cpvLevelFields('awards', inPeriod, AWARDS))
   return fields.map((field) => ({ ...field, group: groupOf(field.alias) }))
+}
+
+/**
+ * One flat read per CPV level, not the front door's drilled tree: fewer reads, finer everywhere. Each level
+ * keeps what the next does not hold (`levelCpvLeaves`), so a large buyer's codes past the API's hundred stay with their parent
+ * code: a little precision lost, no money.
+ */
+function cpvLevelFields(grain: 'direct' | 'awards', inPeriod: Readonly<Record<string, unknown>>, base: Readonly<Record<string, unknown>>): BuyerField[] {
+  return CPV_LEVELS.map(([level, dimension]) => ({ alias: `${grain}${level}`, kind: 'breakdown', scope: { ...inPeriod, ...base }, args: `dimension: ${dimension}, topN: 100, rankBy: value` }))
+}
+
+/** The verdicts that answer: `degraded` answers with a gap the API discloses; `abstained`, or none, does not. */
+const ANSWERED = new Set(['served', 'degraded'])
+
+/** A profile's period as its reads scoped it (`periodOf`): to SEAP's cutoff month when it stops there, else the calendar year. */
+function scopeOf(period: ProfilePeriod): PeriodScope {
+  return period.through ? { from: period.from, to: period.through } : { year: period.year }
+}
+
+/** The direct purchases' CPV levels for a profile's own period: the band never shows another period's categories. */
+export function buyerDirectCategoryFields(cui: string, period: ProfilePeriod): BuyerField[] {
+  return cpvLevelFields('direct', { authorityCui: cui, ...scopeOf(period) }, DIRECT).map((field) => ({ ...field, withVerdict: true }))
+}
+
+/** Whether every level answered: a level missing, abstained (the API's gate shut, its buckets empty) or with no verdict is no answer, never „none". */
+function answeredEveryLevel(raw: RawBuyerProfile, fields: readonly BuyerField[]): boolean {
+  return fields.every((field) => {
+    const blocks = buyerBreakdownSchema.safeParse(raw[field.alias] ?? null)
+    return blocks.success && blocks.data.length > 0 && blocks.data.every((block) => block.buckets !== null && ANSWERED.has(block.meta?.answerability ?? ''))
+  })
+}
+
+/** A grain's CPV levels, read flat, as the reader's categories; a level not read is no bucket. */
+function categoriesOf(raw: RawBuyerProfile, grain: 'direct' | 'awards'): readonly CategoryFigure[] {
+  const breakdown = (alias: string) => (raw[alias] === undefined ? [] : buyerBreakdownSchema.parse(raw[alias]))
+  const { leaves, unknown } = levelCpvLeaves(CPV_LEVELS.map(([level]) => cpvBuckets(breakdown(`${grain}${level}`))))
+  return readerCategories(leaves, unknown)
 }
 
 const KEY_ALIASES = new Set(['directSuppliers', 'awardSuppliers', 'spanSuppliers', 'buyerCounty'])
@@ -213,7 +257,7 @@ function groupOf(alias: string): BuyerFieldGroup {
   return 'figures'
 }
 
-/** The profile's three requests, merged and mapped with SEAP's cutoff; names, the matrix and the county share are the follow-up's. */
+/** The profile's three requests, merged and mapped with SEAP's cutoff; names, the matrix and the county share are the follow-up's; the direct purchases' categories are their own read. */
 export function mapBuyerProfile(
   raw: RawBuyerProfile,
   cui: string,
@@ -243,11 +287,6 @@ export function mapBuyerProfile(
     part,
     partThrough,
   )
-  const tree = (grain: 'direct' | 'awards') => {
-    const { leaves, unknown } = levelCpvLeaves(CPV_LEVELS.map(([level]) => cpvBuckets(breakdown(`${grain}${level}`))))
-    return readerCategories(leaves, unknown)
-  }
-
   const territory = entity?.territory ?? null
   const reference = entity?.reference ?? null
   const townHall = reference?.isTerritorialExecutive ?? false
@@ -298,7 +337,7 @@ export function mapBuyerProfile(
         isNamedDaSupplierBucket(bucket) && bucket.displayName?.trim() ? [[bucket.key, bucket.displayName.trim()] as const] : [],
       ),
     ),
-    categories: { direct: tree('direct'), contract: tree('awards') },
+    categories: { contract: categoriesOf(raw, 'awards') },
     supplierCounties: counties,
     supplierPlaces: raw.directCounties !== undefined,
     supplierCountiesRankedBy: supplierPlaces[0]?.rankedBy === 'count' ? 'count' : 'value',
@@ -507,4 +546,21 @@ export async function fetchProcurementBuyerRecords(cui: string, choice: PeriodCh
     readLargestDirect({ authorityCui: cui, ...period.scope }, limit, 'ProcurementBuyerDirect', signal),
   ])
   return { contracts, direct }
+}
+
+/**
+ * The direct purchases by category for a profile's period, in a request of
+ * their own (owner, 23 November 2026): the API reads them from live rows, and
+ * a large buyer's run past its statement timeout. Read once the profile is
+ * shown and for its period, so the page neither waits for them nor fails with
+ * them, and the band never shows another period's; a failed read is said
+ * unavailable, never „no purchases".
+ */
+export async function fetchProcurementBuyerDirectCategories(cui: string, period: ProfilePeriod, signal?: AbortSignal): Promise<readonly CategoryFigure[]> {
+  const fields = buyerDirectCategoryFields(cui, period)
+  const variables: Record<string, unknown> = Object.fromEntries(fields.map((field) => [field.alias, field.scope]))
+  const operationName = 'ProcurementBuyerDirectCategories'
+  const raw = await graphqlQuery<RawBuyerProfile>(procurementBuyerQuery(operationName, fields, false), variables, { operationName, signal })
+  if (!answeredEveryLevel(raw, fields)) throw new Error('The direct purchases by category were not answered')
+  return categoriesOf(raw, 'direct')
 }

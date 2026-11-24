@@ -32,6 +32,8 @@ export const buyerBreakdownSchema = z.array(
         z.object({ key: z.string().nullable(), kind: z.string(), displayKind: z.string().nullable().optional(), displayName: z.string().nullable().optional(), recordCount: decimal, withValueCount: decimal.optional(), valueSum: decimal, shareOfScope: decimal }),
       )
       .nullable(),
+    /** Read only where a field asks (`withVerdict`): `abstained` is no answer — its empty buckets are not „none". */
+    meta: z.object({ answerability: z.string().nullable().optional() }).nullish(),
   }),
 )
 
@@ -61,6 +63,7 @@ export type RawBuyerBreakdown = z.infer<typeof buyerBreakdownSchema>
 const STATS = 'blocks { recordCount withValueCount valueAwardedSum meta { disclosureKey } }'
 const SERIES = 'points { bucket value } meta { disclosureKey }'
 const BREAKDOWN = 'rankedBy buckets { key kind displayKind displayName recordCount withValueCount valueSum shareOfScope } meta { disclosureKey }'
+const BREAKDOWN_WITH_VERDICT = 'rankedBy buckets { key kind displayKind displayName recordCount withValueCount valueSum shareOfScope } meta { answerability disclosureKey }'
 
 /**
  * Which of the profile's requests a read goes in. The API resolves one
@@ -82,13 +85,15 @@ export interface BuyerField {
   readonly group?: BuyerFieldGroup
   /** Also read the analysis build the answer comes from (a series' `meta.buildId`). */
   readonly withBuild?: boolean
+  /** Also read whether the API answered (a breakdown's `meta.answerability`): an abstained one's empty buckets are no answer. */
+  readonly withVerdict?: boolean
 }
 
 function fieldOf(field: BuyerField): string {
   if (field.kind === 'stats') return `${field.alias}: procurementStats(scope: $${field.alias}) { ${STATS} }`
   if (field.kind === 'series') return `${field.alias}: procurementSeries(scope: $${field.alias}, ${field.args ?? ''}) { ${SERIES}${field.withBuild ? ' meta { buildId }' : ''} }`
   if (field.kind === 'concentration') return `${field.alias}: procurementConcentration(scope: $${field.alias}, basis: count) { supplierCount meta { disclosureKey } }`
-  return `${field.alias}: procurementBreakdown(scope: $${field.alias}, ${field.args ?? ''}) { ${BREAKDOWN} }`
+  return `${field.alias}: procurementBreakdown(scope: $${field.alias}, ${field.args ?? ''}) { ${field.withVerdict ? BREAKDOWN_WITH_VERDICT : BREAKDOWN} }`
 }
 
 const ENTITY =

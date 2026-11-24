@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen, within } from '@/test/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { createTestQueryClient, fireEvent, render, screen, within } from '@/test/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { companyProfile, financialYear } from '@/features/private-companies/lib/company-profile.fixture'
 import { buyerProfile } from '@/features/procurement/lib/buyer.fixture'
 import { READER_CATEGORIES } from '@/features/procurement/lib/home-categories'
@@ -8,6 +8,12 @@ import { recentPeriod } from '@/features/procurement/lib/profile-period.fixture'
 import { TURSIB_PROFILE, enterpriseReadFixture } from '../../lib/test/enterprise-fixture'
 import { PublicEnterprisePage } from './public-enterprise-page'
 
+// The direct purchases by category are the band's own read, in the browser: each test says how it ends.
+const directCategories = vi.hoisted(() => vi.fn())
+vi.mock('@/features/procurement/api/procurement-buyer-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/procurement/api/procurement-buyer-api')>()),
+  fetchProcurementBuyerDirectCategories: (...args: unknown[]) => directCategories(...args),
+}))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, params, hash, preload: _preload, ...props }: { readonly children: ReactNode; readonly to: string; readonly params?: Readonly<Record<string, string>>; readonly hash?: string; readonly preload?: string }) => (
@@ -32,19 +38,26 @@ const SEVEN = [7, 6, 5, 4, 3, 2, 1] as const
 const BUYER = buyerProfile({
   identity: { ...buyerProfile().identity, cui: '789401', name: 'Tursib SA' },
   period: recentPeriod('2026-05'),
-  categories: { direct: SEVEN.map((rank, index) => ({ category: READER_CATEGORIES[index]!, value: rank * 100_000, count: rank, share: rank / 28 })), contract: [] },
+  categories: { contract: [] },
   // DA-009: direct-purchase firms are named by the gated names on their own buckets.
   directSuppliers: { rankedBy: 'value', rows: SEVEN.map((rank) => ({ cui: `100${rank}`, count: rank, value: rank * 10_000, share: rank / 28, displayKind: 'company', displayName: `Firma ${rank} SRL` })) },
 })
+const SEVEN_CATEGORIES = SEVEN.map((rank, index) => ({ category: READER_CATEGORIES[index]!, value: rank * 100_000, count: rank, share: rank / 28 }))
 const ready = <T,>(value: T) => ({ status: 'ready', value }) as const
 
 const band = (id: string) => document.getElementById(id) as HTMLElement
 
 function renderPage(overrides: Partial<Parameters<typeof PublicEnterprisePage>[0]> = {}) {
-  return render(<PublicEnterprisePage read={enterpriseReadFixture()} company={ready(COMPANY)} buyer={ready(BUYER)} {...overrides} />)
+  // A client of its own: the categories' read is never another test's.
+  return render(<PublicEnterprisePage read={enterpriseReadFixture()} company={ready(COMPANY)} buyer={ready(BUYER)} {...overrides} />, { queryClient: createTestQueryClient() })
 }
 
 describe('PublicEnterprisePage', () => {
+  beforeEach(() => {
+    directCategories.mockReset()
+    directCategories.mockResolvedValue(SEVEN_CATEGORIES)
+  })
+
   it('names the enterprise, says who controls it, and gives each source’s status its own chip', () => {
     renderPage()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Tursib SA')
@@ -87,10 +100,13 @@ describe('PublicEnterprisePage', () => {
     expect(within(control).getByText(/o întreprindere în liste/iu)).toBeInTheDocument()
   })
 
-  it('says what it bought in twelve months, five categories and five firms, the rest on the procurement page', () => {
+  it('says what it bought in twelve months, five categories and five firms, the rest on the procurement page', async () => {
     renderPage()
     const money = band('bani')
     expect(within(money).getByText(/a făcut 293 de achiziții directe/u)).toBeInTheDocument()
+    // Read for the profile's own period, once the band is shown.
+    expect(await within(money).findByText(/Drumuri, poduri/u)).toBeInTheDocument()
+    expect(directCategories).toHaveBeenCalledWith('789401', BUYER.period, expect.anything())
     const [categories, firms] = within(money).getAllByRole('list').slice(0, 2)
     expect(within(categories!).getAllByRole('listitem')).toHaveLength(5)
     expect(within(firms!).getAllByRole('listitem').map((item) => item.textContent?.match(/Firma \d/u)?.[0])).toEqual(['Firma 7', 'Firma 6', 'Firma 5', 'Firma 4', 'Firma 3'])
@@ -165,15 +181,30 @@ describe('PublicEnterprisePage', () => {
     expect(within(control).getByRole('link', { name: 'Consiliul Local Municipiul Sibiu' })).toHaveAttribute('href', '/entities/4270740')
   })
 
-  it('says „no direct purchase" once, in the lede, and never reads an empty breakdown as none', () => {
+  it('says „no direct purchase" once, in the lede, and never reads an empty breakdown as none', async () => {
     const none = { count: 0, valued: 0, value: null, suppliers: 0 }
     renderPage({ buyer: ready({ ...BUYER, direct: none }) })
     expect(within(band('bani')).queryByText(/Nicio achiziție directă/u)).toBeNull()
     expect(within(band('bani')).getByRole('link', { name: /Achizițiile, pe pagina de achiziții/u })).toBeInTheDocument()
-    renderPage({ buyer: ready({ ...BUYER, categories: { direct: [], contract: [] }, directSuppliers: { rankedBy: 'value', rows: [] } }) })
+    // No direct purchase: no categories to read.
+    expect(directCategories).not.toHaveBeenCalled()
+    directCategories.mockResolvedValue([])
+    renderPage({ buyer: ready({ ...BUYER, directSuppliers: { rankedBy: 'value', rows: [] } }) })
     const money = document.querySelectorAll('section#bani')[1] as HTMLElement
-    expect(within(money).getByText('Categoriile achizițiilor nu s-au putut citi acum.')).toBeInTheDocument()
+    expect(await within(money).findByText('Categoriile achizițiilor nu s-au putut citi acum.')).toBeInTheDocument()
     expect(within(money).getByText('Firmele de la care a cumpărat nu s-au putut citi acum.')).toBeInTheDocument()
+  })
+
+  it('says the categories unavailable when their read fails, and shows the rest of the band meanwhile', async () => {
+    let fail: (error: Error) => void = () => undefined
+    directCategories.mockImplementation(() => new Promise((_resolve, reject) => (fail = reject)))
+    renderPage()
+    const money = band('bani')
+    // On their way: neither rows nor „not read", and the firms stand.
+    expect(within(money).queryByText('Categoriile achizițiilor nu s-au putut citi acum.')).toBeNull()
+    expect(within(money).getByText(/Firma 7 SRL/u)).toBeInTheDocument()
+    fail(new Error('statement timeout'))
+    expect(await within(money).findByText('Categoriile achizițiilor nu s-au putut citi acum.')).toBeInTheDocument()
   })
 
   it('says why the AMEPIP band has no answers to show', () => {

@@ -1,13 +1,14 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
-import { fetchProcurementBuyer, fetchProcurementBuyerRecords } from '../api/procurement-buyer-api'
+import { fetchProcurementBuyer, fetchProcurementBuyerDirectCategories, fetchProcurementBuyerRecords } from '../api/procurement-buyer-api'
 import type { BuyerProfile, BuyerRecords } from '../lib/buyer-model'
 import { procurementBuyerKeys } from '../lib/buyer-keys'
-import { answersChoice, type PeriodChoice } from '../lib/profile-period'
+import type { CategoryFigure } from '../lib/home-categories'
+import { answersChoice, type PeriodChoice, type ProfilePeriod } from '../lib/profile-period'
 
 /**
- * A buyer page's reads: the profile and the period's largest records, each
- * its own query so a failure stays in its band. The route loader reads both
+ * A buyer page's reads: the profile, the period's largest records and its
+ * direct purchases by category, each its own query so a failure stays in its band. The route loader reads both
  * on the server and seeds them here. Picking another period keeps the
  * profile shown until the new one arrives, instead of blanking the page.
  */
@@ -49,4 +50,20 @@ export function useProcurementBuyer(cui: string, choice: PeriodChoice, initialDa
 /** No placeholder: another period's largest records would be the wrong list, so the band waits for its own. */
 export function useProcurementBuyerRecords(cui: string, choice: PeriodChoice, initialData?: BuyerRecords) {
   return useQuery(procurementBuyerRecordsQueryOptions(cui, choice, initialData))
+}
+
+/**
+ * The direct purchases by category for the profile shown, read in the browser
+ * once the band needs them — never on the server: the API can take past the
+ * render's deadline for them (owner, 23 November 2026). No placeholder:
+ * another period's categories would be the wrong list.
+ */
+export function useProcurementBuyerDirectCategories(cui: string, period: ProfilePeriod, enabled: boolean) {
+  return useQuery<readonly CategoryFigure[]>({
+    queryKey: procurementBuyerKeys.directCategories(cui, period),
+    queryFn: ({ signal }) => fetchProcurementBuyerDirectCategories(cui, period, signal),
+    // D6: a direct-purchase read; never kept past its page.
+    ...DA_QUERY_CACHE,
+    enabled,
+  })
 }

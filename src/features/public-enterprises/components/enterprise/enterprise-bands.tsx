@@ -9,6 +9,7 @@ import { moneyText as companyMoneyText, yearRanges } from '@/features/private-co
 import type { CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
 import { moneyPeriod } from '@/features/private-companies/lib/company-profile-text'
 import { HomeBand } from '@/features/procurement/components/home/home-chrome'
+import { useProcurementBuyerDirectCategories } from '@/features/procurement/hooks/use-procurement-buyer'
 import { CategoryRows, PartyRows } from '@/features/procurement/components/home/home-rows'
 import { daRowName, hasAnyRecord, isEmptyYear, type BuyerProfile } from '@/features/procurement/lib/buyer-model'
 import { periodYear } from '@/features/procurement/lib/profile-period'
@@ -97,6 +98,8 @@ function Seller({ cui, company }: { readonly cui: string; readonly company: Read
 
 /** What it bought in the last twelve months: categories and firms by value, as the procurement page ranks them. */
 function Buying({ cui, profile }: { readonly cui: string; readonly profile: BuyerProfile }) {
+  // The categories are their own read, in the browser: the profile neither waits for them nor fails with them.
+  const directCategories = useProcurementBuyerDirectCategories(cui, profile.period, (profile.direct.count ?? 0) > 0)
   // A count not read is unknown: the lists would say „none" for it, so they are not drawn.
   if (profile.direct.count === null) {
     return (
@@ -120,7 +123,8 @@ function Buying({ cui, profile }: { readonly cui: string; readonly profile: Buye
       </OutLink>
     ) : null
   }
-  const categories = profile.categories.direct.slice(0, SHOWN)
+  // A failed read wins over rows kept from before it.
+  const categories = directCategories.isError ? undefined : directCategories.data?.slice(0, SHOWN)
   // D6: each row carries its kind, so PartyRows names only a supplier the API serves as a company; none read while D6 refuses the ranking.
   const suppliers = profile.directSuppliers
     ? {
@@ -134,8 +138,14 @@ function Buying({ cui, profile }: { readonly cui: string; readonly profile: Buye
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12" data-reveal>
         <div className="min-w-0">
           <MonoLabel className="block text-muted-foreground">{t`Ce cumpără direct, ${period}`}</MonoLabel>
-          {/* Direct purchases there are (the count is positive): an empty breakdown is one not read, never „none". */}
-          {categories.length > 0 ? <CategoryRows className="mt-3" rows={categories} grain="direct" /> : <p className="mt-3 border-y py-4 text-sm text-muted-foreground">{t`Categoriile achizițiilor nu s-au putut citi acum.`}</p>}
+          {/* Direct purchases there are (the count is positive): an empty breakdown, or a failed read, is one not read, never „none". */}
+          {categories === undefined && !directCategories.isError ? (
+            <HubPending className="mt-3" rows={5} />
+          ) : categories && categories.length > 0 ? (
+            <CategoryRows className="mt-3" rows={categories} grain="direct" />
+          ) : (
+            <p className="mt-3 border-y py-4 text-sm text-muted-foreground">{t`Categoriile achizițiilor nu s-au putut citi acum.`}</p>
+          )}
         </div>
         <div className="min-w-0">
           <MonoLabel className="block text-muted-foreground">{t`De la cine cumpără direct, ${period}`}</MonoLabel>

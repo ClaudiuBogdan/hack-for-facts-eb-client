@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { i18n } from '@lingui/core'
-import { buyerProfile } from './buyer.fixture'
+import { buyerDirectCategories, buyerProfile } from './buyer.fixture'
 import {
   balanceLede,
   buyerKind,
@@ -83,7 +83,7 @@ describe('what it buys', () => {
   it('names the leading category while it holds a fifth of the money and leads every bucket', () => {
     const profile = buyerProfile()
     // Under a half is the largest share, never „most".
-    expect(whatLede(profile.categories.direct, 'direct', '2025', i18n)).toBe(
+    expect(whatLede(buyerDirectCategories(), 'direct', '2025', i18n)).toBe(
       'Categoria cu cei mai mulți bani ai achizițiilor directe din 2025: alte lucrări de construcții, cu 23%. Urmează proiectare și inginerie, cu 15%.',
     )
     expect(whatLede(profile.categories.contract, 'contract', '2025', i18n)).toBe(
@@ -93,13 +93,13 @@ describe('what it buys', () => {
 
   it('keeps an acronym whole mid-sentence, and says a whole share as all of it', () => {
     const it = { category: { key: 'it', label: { id: 'IT și telecomunicații', message: 'IT și telecomunicații' }, prefixes: ['72'] }, value: 40, count: 4, share: 0.4 }
-    const roads = { ...buyerProfile().categories.direct[0]!, value: 60, share: 0.6 }
+    const roads = { ...buyerDirectCategories()[0]!, value: 60, share: 0.6 }
     expect(whatLede([it as never, { ...roads, share: 0.3, value: 30 }], 'direct', '2025', i18n)).toContain(': IT și telecomunicații, cu 40%.')
     expect(whatLede([{ ...roads, share: 1, value: 100 }], 'contract', '2025', i18n)).toBe('Toată valoarea contractelor atribuite în 2025 a mers pe alte lucrări de construcții.')
   })
 
   it('says nothing when no named category reaches a fifth', () => {
-    const [first] = buyerProfile().categories.direct
+    const [first] = buyerDirectCategories()
     expect(whatLede([{ ...first!, share: 0.15 }], 'direct', '2025', i18n)).toBeNull()
   })
 })

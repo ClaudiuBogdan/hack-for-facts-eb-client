@@ -117,7 +117,8 @@ export interface BuyerProfile {
   /** Null while D6 is enforced and the release is off: the API refuses direct purchases' supplier rankings (said, never blank). */
   readonly directSuppliers: SupplierRanking | null
   readonly awardSuppliers: SupplierRanking
-  readonly categories: { readonly direct: readonly CategoryFigure[]; readonly contract: readonly CategoryFigure[] }
+  /** The contract awards'; the direct purchases' are a read of their own (`useProcurementBuyerDirectCategories`). */
+  readonly categories: { readonly contract: readonly CategoryFigure[] }
   /** Direct purchases by the supplier's county. */
   readonly supplierCounties: readonly CountyShare[]
   /** Whether the firms' places were read: not with direct acquisitions release 1, which serves none (the band is then left out). */
