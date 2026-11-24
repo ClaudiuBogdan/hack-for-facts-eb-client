@@ -1,4 +1,4 @@
-import { daCompanyBucketName, isNamedDaSupplierBucket, isNaturalPersonKey, unnamedSupplierLabel } from '../../lib/withheld-party'
+import { daSupplierBucketName, isNaturalPersonKey, isShownDaSupplierBucket, unnamedSupplierLabel } from '../../lib/withheld-party'
 import { withoutLeadingZeros } from '../../lib/fiscal-code'
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
@@ -176,10 +176,10 @@ export function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly
     // An empty „Restul" or unknown bucket is no row: nothing is left out.
     .filter((bucket) => bucket.kind === 'top' || bucket.count > 0)
     .map((bucket) => {
-      const unnamed = bucket.kind === 'top' && group.axis === 'furnizor' && population.grain === 'direct_acquisition' && !isNamedDaSupplierBucket(bucket)
+      const unnamed = bucket.kind === 'top' && group.axis === 'furnizor' && population.grain === 'direct_acquisition' && !isShownDaSupplierBucket(bucket)
       const daCompany = bucket.kind === 'top' && group.axis === 'furnizor' && population.grain === 'direct_acquisition' && !unnamed
-      // DA-009: a direct-purchase company is named by the API's gated name on its bucket alone.
-      const label = bucket.kind === 'other' ? t`Restul` : bucket.kind === 'unknown' ? unknownLabel(group.axis) : unnamed ? unnamedSupplierLabel(bucket.key) : daCompany ? daCompanyBucketName(bucket) : keyLabel(group.axis, group.level, bucket.key ?? '', namer)
+      // DA-009: a direct-purchase supplier is said as the API serves it on its bucket alone.
+      const label = bucket.kind === 'other' ? t`Restul` : bucket.kind === 'unknown' ? unknownLabel(group.axis) : unnamed ? unnamedSupplierLabel(bucket.key) : daCompany ? daSupplierBucketName(bucket) : keyLabel(group.axis, group.level, bucket.key ?? '', namer)
       const sub = bucket.kind !== 'top' || !bucket.key || unnamed || isNaturalPersonKey(bucket.key) ? null : group.axis === 'cumparator' || group.axis === 'furnizor' ? `CUI ${bucket.key}` : group.axis === 'cpv' ? `CPV ${cpvPrefix(bucket.key, group.level)}` : null
       if (perResident && !bucket.key) {
         // No county, so no residents: the total, said as a total, never beside the rates.

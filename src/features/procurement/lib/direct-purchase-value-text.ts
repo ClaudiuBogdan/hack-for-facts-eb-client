@@ -94,6 +94,7 @@ export function symbolicText(): string {
 /** The supplier's name as the page writes it: a company's, as its own page names it; any other supplier is a natural person, never named. */
 export function supplierNameText(supplier: DpSupplierName): string {
   if (supplier.kind === 'company') return displayCompanyName(supplier.name)
+  if (supplier.kind === 'shown') return supplier.name
   return supplier.kind === 'natural-person' ? t`Persoană fizică` : t`Furnizor neindicat în SEAP`
 }
 

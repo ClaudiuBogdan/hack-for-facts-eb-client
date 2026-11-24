@@ -115,6 +115,12 @@ describe('supplierNameOf — D6', () => {
     expect(supplierNameOf(party)).toEqual({ kind: 'natural-person' })
   })
 
+  it('step 2: a masked person by the masked name and code, one the API does not name by its code alone', () => {
+    expect(supplierNameOf({ displayKind: 'person_masked', name: ' Ion P*** PFA ', cui: '30111222' })).toEqual({ kind: 'shown', name: 'Ion P*** PFA', cui: '30111222' })
+    expect(supplierNameOf({ displayKind: 'code_only', name: null, cui: '30111223' })).toEqual({ kind: 'shown', name: 'Nume nepublicat', cui: '30111223' })
+    expect(supplierNameOf({ displayKind: 'code_only', name: null, cui: null })).toEqual({ kind: 'natural-person' })
+  })
+
   it('the buyer kind on a supplier is not a company', () => {
     expect(supplierNameOf({ displayKind: 'authority', name: 'Primaria X', cui: '123' })).toEqual({ kind: 'natural-person' })
   })

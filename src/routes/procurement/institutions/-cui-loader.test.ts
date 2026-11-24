@@ -72,7 +72,7 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
   }
 }
 
-const PROFILE = { identity: { cui: '4291620', name: 'Comuna Surduc' }, partial: false, directYears: [{ year: 2025, value: 2_838_842, count: 145 }], awardYears: [] }
+const PROFILE = { identity: { cui: '4291620', name: 'Comuna Surduc' }, partial: false, directYears: [{ year: 2025, value: 2_838_842, count: 145 }], awardYears: [], awards: { count: 0 } }
 
 describe('/procurement/institutions/$cui', () => {
   beforeEach(() => {
@@ -151,6 +151,8 @@ describe('/procurement/institutions/$cui', () => {
         { choice: 2025, records: { contracts: [], direct: [] } },
         { choice: 2025, profile: PROFILE },
         { choice: 2025, profile: { ...PROFILE, partial: true }, records: { contracts: [], direct: [] } },
+        // The largest contracts not served (legacy procurement off at the API): a degraded render, kept nowhere.
+        { choice: 2025, profile: PROFILE, records: { contracts: null, direct: [] }, disclosure: 'v1' },
       ]) {
         const headers = route.headers({ loaderData })
         expect(headers['Cache-Control']).toBe('no-store')
@@ -183,5 +185,8 @@ describe('/procurement/institutions/$cui', () => {
     expect(route.head({ params: { cui: '14399840' }, loaderData: { choice: 2025, profile: empty }, match: { context } }).meta).toContainEqual({ name: 'robots', content: 'noindex' })
     const buying = { ...PROFILE, directYears: [{ year: 2025, value: 1, count: 1 }], awardYears: [] }
     expect(route.head({ params: { cui: '4291620' }, loaderData: { choice: 2025, profile: buying }, match: { context } }).meta).not.toContainEqual({ name: 'robots', content: 'noindex' })
+    // Contracts unread (the API abstaining while legacy procurement is off): unknown, never a reason to leave the index.
+    const unread = { ...empty, awards: { count: null } }
+    expect(route.head({ params: { cui: '14399840' }, loaderData: { choice: 2025, profile: unread }, match: { context } }).meta).not.toContainEqual({ name: 'robots', content: 'noindex' })
   })
 })

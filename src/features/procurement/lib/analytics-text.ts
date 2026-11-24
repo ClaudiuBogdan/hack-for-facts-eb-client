@@ -67,8 +67,17 @@ export function buyerFilterLabel(query: Pick<Query, 'tip' | 'filters'>, key: str
 export function supplierFilterLabel(query: Pick<Query, 'tip'>, key: string, namer: Namer): string {
   if (query.tip !== 'directe') return keyLabel('furnizor', 'cui', key, namer)
   if (isNaturalPersonKey(key)) return naturalPersonsLabel()
-  // D6 fails closed (root, 19 November 2026): a supplier the API does not serve as a company is not shown by the address's code either.
-  return namer.names?.daSuppliers.has(key) ? t`Firma cu CUI ${key}` : t`Furnizor`
+  // D6 fails closed (root, 19 November 2026): a supplier the API withholds is not shown by the address's code either.
+  const shown = namer.names?.daSuppliers.get(key)
+  if (shown === undefined) return t`Furnizor`
+  // Step 2: a masked person by the API's masked name and the code; one the API names by no one by the code alone.
+  const code = key
+  if (shown === '') return t`CUI ${code} (nume nepublicat)`
+  if (shown !== key) {
+    const name = shown
+    return t`${name} (CUI ${code})`
+  }
+  return t`Firma cu CUI ${key}`
 }
 
 /** What a key stands for, as a reader names it. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { cellsOf } from '@/features/national-budget/analytics/lib/analytics-data'
+import { lineLabel } from '@/features/national-budget/analytics/lib/analytics-format'
 import type { BudgetApprovedRecord, BudgetNationalCatalog, BudgetNationalSeries, BudgetObservation } from '@/schemas/national-budget-api'
 import {
   ANAF_FIRST_YEAR,
@@ -195,6 +196,28 @@ describe('the parts of a whole', () => {
     expect(parts?.map((entry) => entry.key)).toEqual(['mfin.bgc.expenditure.interest', 'mfin.bgc.expenditure.personnel', 'rest'])
   })
 
+  it('names non-financial assets consistently without changing the spending parts', () => {
+    const assets = 'mfin.bgc.expenditure.nonfinancial_assets'
+    const transfers = 'mfin.bgc.expenditure.other_transfers'
+    const amounts: Record<string, string> = { [assets]: '64000000000', [transfers]: '36600000000' }
+    const parts = partsOfWhole({
+      whole: '808700000000',
+      items: [assets, transfers],
+      now: (itemId) => amounts[itemId] ?? null,
+      before: () => null,
+      restLabel: () => 'rest',
+      restHint: () => '',
+    })
+
+    expect(parts).toMatchObject([
+      { key: assets, label: 'Active nefinanciare', amount: '64.0\u00a0mld. lei', shareLabel: '7.9%' },
+      { key: transfers, label: 'Alte transferuri', amount: '36.6\u00a0mld. lei' },
+      { key: 'rest', amount: '708.1\u00a0mld. lei' },
+    ])
+    expect(parts?.[1]?.hint).not.toContain('burse')
+    expect(lineLabel('active nefinanciare')).toBe('Active nefinanciare')
+  })
+
   it('gives whole lei out of a hundred that always make a hundred', () => {
     const counts = cellsOutOfHundred([part('a', 31.4), part('b', 20.2), part('c', 8.9), part('d', 33.33), part('rest', 6.17, true)])
     expect(counts.reduce((sum, value) => sum + value, 0)).toBe(100)
@@ -357,6 +380,14 @@ describe('the GDP figures, each from its own source', () => {
     expect(read([gdpRow('2056000000000')]).gdp).toBe('2056000000000')
     const both = read([gdpRow('2056000000000'), gdpRow('2056000000000.0', { input: 'SINTEZA' }), gdpRow('02056000000000.00')])
     expect([both.gdp, both.gdpStatus]).toEqual(['2056000000000', 'available'])
+  })
+
+  it('links the BGC workbook when both bulletins confirm GDP', () => {
+    const workbook = 'https://mfinante.gov.ro/bgc.xlsx'
+    const both = read([sinteza, gdpRow('2056000000000', { document: { url: workbook, sha256: 'b'.repeat(64) } })])
+    expect(both.gdpSourceUrl).toBe(workbook)
+    expect(read([sinteza]).gdpSourceUrl).toBe(sinteza.document.url)
+    expect(read([sinteza, gdpRow('2056100000000')]).gdpSourceUrl).toBeNull()
   })
 
   it('has no GDP for a foreign, missing or comparison year, a blank cell or a row that is not the current GDP', () => {

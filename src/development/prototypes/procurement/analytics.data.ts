@@ -526,7 +526,7 @@ async function readRecords(query: Query, period: ResolvedPeriod, sort: 'value_de
   const raw = await graphqlQuery<Record<string, unknown>>(
     `query AnalyticsRecords($f: ${type}) { l: ${root}(filter: $f, sort: ${sort}, page: ${page}, pageSize: 25) { total totalEstimated items { ${fields} } } }`,
     { f: listFilterOf(query, period) },
-    { operationName: 'AnalyticsRecords', signal: deadline },
+    { operationName: 'AnalyticsRecords', signal: deadline, legacy: true },
   )
   const list = listSchema.parse(raw.l)
   return {

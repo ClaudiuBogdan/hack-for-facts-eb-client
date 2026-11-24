@@ -214,7 +214,8 @@ describe('D6 on direct purchases, whatever the release flag', () => {
     const latest = (supplier: Record<string, unknown> | null) => ({ items: supplier ? [{ supplier }] : [], meta: { disclosureKey: 'off' } })
     graphql.query.mockResolvedValueOnce({
       // Each answer names the D6 state it was served under (API doc 10); 'v1' plans D6 off.
-      da0: latest({ cui: '14837428', displayKind: 'company' }),
+      // A company's served name is read but never kept: the page shows a company by its code alone.
+      da0: latest({ cui: '14837428', name: 'REGISTRY NAME SRL', displayKind: 'company' }),
       da1: latest({ cui: null, displayKind: 'natural_person' }),
       da2: latest(null),
       // Another code's record, or one with no kind, says nothing about this one.
@@ -228,10 +229,24 @@ describe('D6 on direct purchases, whatever the release flag', () => {
     const [query, variables] = graphql.query.mock.calls[graphql.query.mock.calls.length - 1] as [string, Record<string, unknown>]
     expect(query).not.toContain('organizationLabels(cuis: $cuis) @include(if: true)')
     expect(variables).toMatchObject({ withOrgs: false, da0: '14837428', da1: '9446547', da2: '1234', da3: '4305857' })
-    // Its latest record's kind alone: no name is asked (a supplier breakdown over a supplier scope is refused by the API).
-    expect(query).toContain('procurementRecords(scope: { grain: direct_acquisition, supplierCui: $da0 }, sort: date_desc, page: 1, pageSize: 1) { items { supplier { cui displayKind } }')
+    // Its latest record's kind, and the name it serves for a masked person (step 2) — a supplier breakdown over a supplier scope is refused by the API.
+    expect(query).toContain('procurementRecords(scope: { grain: direct_acquisition, supplierCui: $da0 }, sort: date_desc, page: 1, pageSize: 1) { items { supplier { cui name displayKind } }')
     expect(query).not.toContain('procurementDirectAcquisitions')
-    expect(query).not.toMatch(/da0:[^\n]*name/u)
+    expect(JSON.stringify([...names.daSuppliers])).not.toContain('REGISTRY NAME')
+  })
+
+  it('step 2: a masked person the address names keeps the API\'s masked name, one shown by its code alone keeps nothing more, an unknown kind nothing', async () => {
+    const latest = (supplier: Record<string, unknown>) => ({ items: [{ supplier }], meta: { disclosureKey: 'off' } })
+    graphql.query.mockResolvedValueOnce({
+      da0: latest({ cui: '30111222', name: 'Ion P*** PFA', displayKind: 'person_masked' }),
+      da1: latest({ cui: '30111223', name: 'SHOULD NOT SHOW', displayKind: 'code_only' }),
+      da2: latest({ cui: '30111224', name: 'SHOULD NOT SHOW', displayKind: 'mystery' }),
+    })
+    const names = await readNames([], [], new AbortController().signal, ['30111222', '30111223', '30111224'], 'v1')
+    expect([...names.daSuppliers.entries()]).toEqual([
+      ['30111222', 'Ion P*** PFA'],
+      ['30111223', ''],
+    ])
   })
 })
 

@@ -13,7 +13,7 @@ import { daSupplierReads } from './procurement-da-release-status'
 import { newestKey } from '@/lib/disclosure-key'
 import { readLargestDirect } from './procurement-direct-records'
 import { partyOf } from '../lib/home-party'
-import { daCompanyBucketName, isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
+import { daSupplierBucketName, isShownDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 import type { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -198,11 +198,11 @@ export function mapProcurementHomeNational(raw: RawProcurementHomeNational, year
     },
     buyers: { contract: ranking(raw.awardsBuyers, party('authority')), direct: ranking(raw.directBuyers, party('authority')) },
     // D6: an unclassified supplier's CUI never enters the read the page keeps and serialises.
-    // DA-009: a company is named by the API's gated name on its bucket, never by the registry's labels.
+    // DA-009: a supplier is said as the API serves it on its bucket, never by the registry's labels.
     directSellers: raw.directSellers
       ? ranking(
           raw.directSellers.map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null })),
-          (key, bucket) => (isNamedDaSupplierBucket(bucket) ? daCompanyBucketName(bucket) : key),
+          (key, bucket) => (isShownDaSupplierBucket(bucket) ? daSupplierBucketName(bucket) : key),
         )
       : null,
     procedures: ranking(raw.procedures, (key) => key),
@@ -341,7 +341,7 @@ export async function fetchGroupedContracts(filter: Record<string, unknown>, lim
   const rows: ContractRow[] = []
   for (let page = 1; page <= MAX_CONTRACT_PAGES; page += 1) {
     const raw = procurementHomeContractsResponseSchema.parse(
-      await graphqlQuery<unknown>(PROCUREMENT_HOME_CONTRACTS_QUERY, { filter, page, rows: rowsPerPage }, { operationName, signal }),
+      await graphqlQuery<unknown>(PROCUREMENT_HOME_CONTRACTS_QUERY, { filter, page, rows: rowsPerPage }, { operationName, signal, legacy: true }),
     )
     const items = raw.procurementContracts.items
     rows.push(...contractRows(items))

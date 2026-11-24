@@ -141,7 +141,7 @@ function useNavSections({
       nodes: [
         population('cheltuieli', t`Cheltuieli`, lineNodes(catalog, state, 'cheltuieli')),
         population('venituri', t`Venituri`, lineNodes(catalog, state, 'venituri')),
-        population('sold', t`Deficit`, []),
+        population('sold', t`Sold bugetar (cash)`, []),
         {
           id: 'bugete',
           label: t`Fiecare buget, alături`,

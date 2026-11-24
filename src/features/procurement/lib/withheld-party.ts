@@ -3,10 +3,16 @@ import { markDaSupplierNamed } from '@/lib/da-supplier-name-mark'
 
 /**
  * Decision D6 on every procurement surface that reads direct acquisitions:
- * a supplier is named only when the API serves it as a company. The API puts
- * every other supplier in one group under a reserved key — never a CUI, a
- * name or a per-person id — and the client never names it, links it, drills
- * into it or looks a name up for it.
+ * a supplier is shown only as the API serves it. The API puts every supplier
+ * it withholds in one group under a reserved key — never a CUI, a name or a
+ * per-person id — and the client never names it, links it, drills into it or
+ * looks a name up for it.
+ *
+ * Step 2 (owner, 24 November 2026: `20261124-name-suppliers-by-registry-legal-form-and-mask-persons`):
+ * a sole trader or a person the registry does not show as a legal person is
+ * served with a partly masked name (`person_masked`), and a supplier the API
+ * names by no one its code alone (`code_only`); both with their code. The
+ * client shows the API's name as given and never derives or unmasks one.
  */
 
 /** The reserved breakdown key for every supplier the API does not name. */
@@ -30,6 +36,71 @@ export function isNamedDaSupplier(party: { readonly displayKind?: string | null 
   return named(party?.displayKind === 'company')
 }
 
+/**
+ * A direct-purchase supplier as the page may show it (DA-009 step 2), from the
+ * API's kind, its name and its code: a company by its registry name, or by
+ * its code when the registry has none; a masked person by the masked name the
+ * API gives; one the API does not name by its code alone. Null — withheld,
+ * nothing shown — for a natural person, a missing code, and any kind the
+ * client does not know (fail closed: a code under an unknown kind is not
+ * known to be shown).
+ */
+export type DaSupplierShown =
+  | { readonly kind: 'company'; readonly name: string | null; readonly code: string | null }
+  | { readonly kind: 'masked'; readonly name: string; readonly code: string }
+  | { readonly kind: 'code'; readonly code: string }
+
+export function daSupplierShown(party: { readonly displayKind?: string | null; readonly name?: string | null; readonly code?: string | null } | null | undefined): DaSupplierShown | null {
+  if (!party || isNaturalPersonKey(party.code)) return null
+  const code = party.code?.trim() || null
+  const name = party.name?.trim() || null
+  const shown: DaSupplierShown | null = !code
+    ? // A company named without a code (SEAP gave none) is named, as ever; no one else is shown without one.
+      party.displayKind === 'company' && name
+      ? { kind: 'company', name, code: null }
+      : null
+    : party.displayKind === 'company'
+      ? { kind: 'company', name, code }
+      : party.displayKind === 'person_masked'
+        ? name
+          ? { kind: 'masked', name, code }
+          : { kind: 'code', code }
+        : party.displayKind === 'code_only'
+          ? { kind: 'code', code }
+          : null
+  // A name or a code shown is a decision a later publish can withdraw: the render that carries it is kept by no cache.
+  return named(shown !== null) ? shown : null
+}
+
+/** As a ranking or a sentence says it: a company's name, or its code where the registry has none; a masked name with its code; a code alone. */
+export function daSupplierLabel(shown: DaSupplierShown): string {
+  if (shown.kind === 'code') {
+    const code = shown.code
+    return t`CUI ${code} (nume nepublicat)`
+  }
+  if (shown.kind === 'masked') {
+    const { name, code } = shown
+    return t`${name} (CUI ${code})`
+  }
+  return daCompanyBucketName({ key: shown.code, displayName: shown.name })
+}
+
+/** A direct-purchase supplier bucket the page may show (its label, its code, a link to it): `daSupplierShown` on the bucket. */
+export function isShownDaSupplierBucket(bucket: { readonly key: string | null; readonly displayKind?: string | null; readonly displayName?: string | null }): boolean {
+  return bucket.key !== null && daSupplierShown({ displayKind: bucket.displayKind, name: bucket.displayName, code: bucket.key }) !== null
+}
+
+/** Where the page writes a shown supplier's code beside its name: the name of one the API does not name. */
+export function unpublishedNameText(): string {
+  return t`Nume nepublicat`
+}
+
+/** A shown supplier bucket's label (`daSupplierLabel`); the unnamed label for any other. */
+export function daSupplierBucketName(bucket: { readonly key: string | null; readonly displayKind?: string | null; readonly displayName?: string | null }): string {
+  const shown = bucket.key === null ? null : daSupplierShown({ displayKind: bucket.displayKind, name: bucket.displayName, code: bucket.key })
+  return shown ? daSupplierLabel(shown) : unnamedSupplierLabel(bucket.key)
+}
+
 /** A decision to name a DA supplier: a server render that makes one is kept by no cache (`da-supplier-name-mark.ts`). */
 function named(yes: boolean): boolean {
   if (yes) markDaSupplierNamed()
@@ -42,16 +113,6 @@ export function naturalPersonsLabel(): string {
 }
 
 /**
- * A direct-acquisition supplier bucket the page may name, link and look a
- * name up for: the API serves it as a company. Fail closed — no kind, or any
- * other kind, is not named (owner via root: D6 holds whatever the release
- * flag says, so a rollback never re-exposes a name).
- */
-export function isNamedDaSupplierBucket(bucket: { readonly key: string | null; readonly displayKind?: string | null }): boolean {
-  return named(bucket.key !== null && !isNaturalPersonKey(bucket.key) && bucket.displayKind === 'company')
-}
-
-/**
  * Where a page would rank direct purchases' suppliers while D6 is enforced
  * and the release is off: the API refuses them, and the page says so.
  */
@@ -60,14 +121,19 @@ export function daSuppliersUnavailableText(): string {
 }
 
 /**
- * A direct-purchase supplier bucket as the page may keep it: a company's as
- * served; any other's key replaced before it is cached or rendered — the
- * group keeps its reserved key, one unclassified supplier gets a neutral one
- * (`unnamed-3`), never its CUI.
+ * A direct-purchase supplier bucket as the page may keep it, before it is
+ * cached, serialised or rendered: a company's, or a masked person's, as
+ * served; a code alone with no name beside it; the group, and the unknown
+ * bucket, with no name; any other supplier's key replaced by a neutral one
+ * (`unnamed-3`) and its name dropped — never its CUI, nor a name the API
+ * served under a kind the client does not know.
  */
-export function scrubDaSupplierBucket<B extends { readonly key: string | null; readonly displayKind?: string | null }>(bucket: B, index: number): B {
-  if (bucket.key === null || isNamedDaSupplierBucket(bucket) || isNaturalPersonKey(bucket.key)) return bucket
-  return { ...bucket, key: `unnamed-${index}` }
+export function scrubDaSupplierBucket<B extends { readonly key: string | null; readonly displayKind?: string | null; readonly displayName?: string | null }>(bucket: B, index: number): B {
+  const withheldGroup = bucket.key === null || isNaturalPersonKey(bucket.key)
+  const shown = withheldGroup ? null : daSupplierShown({ displayKind: bucket.displayKind, name: bucket.displayName, code: bucket.key })
+  if (shown && shown.kind !== 'code') return bucket
+  const unnamed = bucket.displayName == null ? bucket : ({ ...bucket, displayName: null } as B)
+  return shown || withheldGroup ? unnamed : { ...unnamed, key: `unnamed-${index}` }
 }
 
 /**
@@ -85,7 +151,7 @@ export function daCompanyBucketName(bucket: { readonly key: string | null; reado
   return t`CUI ${code} (denumire indisponibilă în registrul firmelor)`
 }
 
-/** A direct-acquisition supplier bucket the page does not name: the group, or one supplier the API did not serve as a company. */
+/** A direct-acquisition supplier bucket the page does not show: the group, or one supplier the API did not serve as shown. */
 export function unnamedSupplierLabel(key: string | null): string {
   return isNaturalPersonKey(key) ? naturalPersonsLabel() : t`Furnizor nenumit`
 }

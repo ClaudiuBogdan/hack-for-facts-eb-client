@@ -1,4 +1,4 @@
-import { daCompanyBucketName, isNamedDaSupplierBucket } from './withheld-party'
+import { daSupplierBucketName, isShownDaSupplierBucket } from './withheld-party'
 import type { I18n } from '@lingui/core'
 import { plural, t } from '@lingui/core/macro'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
@@ -109,8 +109,10 @@ export function headSentence(profile: BuyerProfile): string {
           : t`${kind} din ${where}.`
         : `${kind}.`
   const direct = profile.direct.count ?? 0
-  const awards = profile.awards.count ?? 0
+  const awardsRead = profile.awards.count
+  const awards = awardsRead ?? 0
   const frameworks = profile.frameworks ?? 0
+  const period = year
   const bought =
     direct > 0
       ? profile.direct.value !== null
@@ -120,6 +122,11 @@ export function headSentence(profile: BuyerProfile): string {
   const awarded = awards > 0 ? contractsCount(awards) : null
   // Framework agreements are said when there are no awards to say: a year with only them is not a year with nothing.
   const signed = !awarded && frameworks > 0 ? frameworksCount(frameworks) : null
+  // Contracts unread (the API abstaining while legacy procurement is off): said so, never „only directly" or „none" — as the
+  // public enterprises' page says it.
+  if (awardsRead === null && !signed) {
+    return `${who} ${bought ? t`${bought}; contractele atribuite nu s-au putut citi acum.` : t`În ${period} nu are achiziții directe publicate în SEAP; contractele atribuite nu s-au putut citi acum.`}`
+  }
   const activity = bought
     ? awarded
       ? t`${bought}, și a atribuit ${awarded}.`
@@ -192,9 +199,9 @@ export function sellersLede(profile: BuyerProfile): string | null {
   const first = rows[0]
   if (!first || first.share === null || top5 <= 0) return null
   const lead = t`Cinci firme însumează ${percentText(top5, 0)} din valoarea achizițiilor directe din ${periodText(profile.period)}; au vândut ${firmsCount(firms)} în total.`
-  // D6: the largest is named only when the API serves it as a company.
-  const named = isNamedDaSupplierBucket({ key: first.cui, displayKind: first.displayKind })
-  const biggest = first.share >= 0.1 && named ? t`Cea mai mare parte, ${percentText(first.share, 0)}, e a firmei ${daCompanyBucketName({ key: first.cui, displayName: first.displayName })}.` : ''
+  // D6: the largest is said only as the API serves it (a company, a masked name, a code).
+  const bucket = { key: first.cui, displayKind: first.displayKind, displayName: first.displayName }
+  const biggest = first.share >= 0.1 && isShownDaSupplierBucket(bucket) ? t`Cea mai mare parte, ${percentText(first.share, 0)}, e a firmei ${daSupplierBucketName(bucket)}.` : ''
   return [lead, biggest].filter(Boolean).join(' ')
 }
 
@@ -295,7 +302,9 @@ export function procedureLede(profile: BuyerProfile): string | null {
 /** Direct purchases beside contract awards: counts side by side, never a sum across the two. */
 export function balanceLede(profile: BuyerProfile): string | null {
   const direct = profile.direct.count ?? 0
-  const awards = profile.awards.count ?? 0
+  // Contracts unread are unknown: no claim that it bought only directly.
+  if (profile.awards.count === null) return null
+  const awards = profile.awards.count
   if (direct === 0) return null
   if (awards === 0) {
     // With framework agreements signed, it did not buy only directly.

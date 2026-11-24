@@ -65,7 +65,8 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
   // cached for everyone. The document follows the locale and theme cookies.
   headers: ({ loaderData }) =>
     // D6: a render whose publication is unknown is kept nowhere.
-    !loaderData?.profile || loaderData.profile.partial || !loaderData.records || !loaderData.disclosure
+    // Records without their contracts (legacy procurement off at the API) are a degraded render too.
+    !loaderData?.profile || loaderData.profile.partial || !loaderData.records || loaderData.records.contracts === null || !loaderData.disclosure
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({
@@ -88,7 +89,8 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
     const found = profile?.identity.name ?? cached?.identity.name ?? null
     const name = found && found !== params.cui ? found : null
     // A CUI with no record since 2019 (a supplier's, a mistyped one) is not a page for a search engine.
-    const noRecords = profile ? ![...profile.directYears, ...profile.awardYears].some((point) => (point.count ?? 0) > 0) && !profile.frameworks : false
+    // Contracts unread (the API abstaining) are unknown: never a reason to keep the page from search engines.
+    const noRecords = profile ? profile.awards.count !== null && ![...profile.directYears, ...profile.awardYears].some((point) => (point.count ?? 0) > 0) && !profile.frameworks : false
     // The SSR loader resolved the buyer's name — a CUI-only title is a useless
     // search result. A client-side navigation corrects it once the read lands.
     const title = buildInstitutionDocumentTitle(translator, { cui: params.cui, authorityName: name })

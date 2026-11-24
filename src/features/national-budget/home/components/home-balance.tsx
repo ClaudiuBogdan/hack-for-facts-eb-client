@@ -42,7 +42,7 @@ function everyFifth(years: readonly number[]): readonly number[] {
 
 /** „deficit de 146,0 mld. lei" / „excedent de …": the balance in words, its sign the word's. */
 function balanceWords(balance: string): string {
-  return deficitOf(balance) ? t`un deficit de ${sizeText(balance)}` : t`un excedent de ${moneyText(balance)}`
+  return deficitOf(balance) ? t`un deficit bugetar (cash) de ${sizeText(balance)}` : t`un excedent de ${moneyText(balance)}`
 }
 
 function Sources({ note }: { readonly note?: string }) {
@@ -88,7 +88,7 @@ export function BalanceBand({ view, index, titleId }: BandProps) {
           title={t`Cât cheltuie statul peste ce încasează`}
           lede={
             row?.revenue && row.spending && row.balance
-              ? t`În ${row.year}, statul a încasat ${moneyText(row.revenue)} și a cheltuit ${moneyText(row.spending)}: ${balanceWords(row.balance)}, acoperit din împrumuturi.`
+              ? t`În ${row.year}, statul a încasat ${moneyText(row.revenue)} și a cheltuit ${moneyText(row.spending)}: ${balanceWords(row.balance)}.`
               : view.partial
                 ? t`Anul ${view.year} nu s-a încheiat: lunile lui sunt în secțiunea „Anul în curs".`
                 : null
@@ -96,7 +96,7 @@ export function BalanceBand({ view, index, titleId }: BandProps) {
         />
         {largest?.balance ? (
           <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
-            {t`Cel mai mare deficit, în lei: ${largest.year}, ${sizeText(largest.balance)}. Sumele sunt în lei ai fiecărui an, fără ajustare cu inflația.`}
+            {t`Cel mai mare deficit bugetar (cash), în lei: ${largest.year}, ${sizeText(largest.balance)}. Sumele sunt în lei ai fiecărui an, fără ajustare cu inflația.`}
           </p>
         ) : null}
         <Links />
@@ -113,7 +113,7 @@ export function BalanceBand({ view, index, titleId }: BandProps) {
               { key: 'revenue', label: t`Venituri`, tone: 'sky', values: rows.map((entry) => bn(entry.revenue)), texts: rows.map((entry) => (entry.revenue ? moneyText(entry.revenue) : entry.gap)) },
               { key: 'spending', label: t`Cheltuieli`, tone: 'navy', values: rows.map((entry) => bn(entry.spending)), texts: rows.map((entry) => (entry.spending ? moneyText(entry.spending) : entry.gap)) },
             ]}
-            shade={{ upper: 'revenue', lower: 'spending', above: t`Excedent`, below: t`Deficit` }}
+            shade={{ upper: 'revenue', lower: 'spending', above: t`Excedent`, below: t`Deficit bugetar (cash)` }}
             gaps={rows.map((entry) => entry.gap)}
             selected={at}
             onPick={(position) => {
@@ -122,7 +122,7 @@ export function BalanceBand({ view, index, titleId }: BandProps) {
             }}
             extra={(position) => {
               const balance = rows[position]?.balance ?? null
-              return balance ? <ReadingRow label={deficitOf(balance) ? t`Deficit` : t`Excedent`} value={sizeText(balance)} /> : null
+              return balance ? <ReadingRow label={deficitOf(balance) ? t`Deficit bugetar (cash)` : t`Excedent`} value={sizeText(balance)} /> : null
             }}
           />
         </div>

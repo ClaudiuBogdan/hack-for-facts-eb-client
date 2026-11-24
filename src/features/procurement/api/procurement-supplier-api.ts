@@ -238,7 +238,7 @@ async function readDirectNames(cui: string, buyers: readonly string[], signal?: 
   const answers = await Promise.all(
     chunks(buyers, SUPPLIER_DAYS_PER_REQUEST).map(async (batch) => {
       const variables = Object.fromEntries(batch.map((buyer, index) => [`n${index}`, { supplierCui: { eq: cui }, authorityCui: { eq: buyer } }]))
-      const raw = await graphqlQuery<Raw>(supplierDirectNamesQuery(batch.length), variables, { operationName: 'ProcurementSupplierDirectNames', signal })
+      const raw = await graphqlQuery<Raw>(supplierDirectNamesQuery(batch.length), variables, { operationName: 'ProcurementSupplierDirectNames', signal, legacy: true })
       return batch.map((buyer, index) => [buyer, supplierDirectNameSchema.parse(raw[`n${index}`]).items[0]?.authority] as const)
     }),
   )

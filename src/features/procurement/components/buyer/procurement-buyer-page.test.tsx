@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
@@ -210,6 +210,32 @@ describe('ProcurementBuyerPage', () => {
     expect(within(document.getElementById('ce')!).getByText('Alte lucrări de construcții')).toBeInTheDocument()
     await waitFor(() => expect(screen.getAllByText('Upper Level SRL').length).toBeGreaterThan(0))
     expect(directCategories).not.toHaveBeenCalled()
+  })
+
+  it('shows the largest direct purchases alone, without the toggle, while the API serves no contracts (legacy off)', () => {
+    // Asked for the contracts: there are none to list, so the band shows the direct purchases and offers no choice.
+    render(page({ mari: 'contracte' }, { ...INITIAL, records: buyerRecords({ contracts: null }) }))
+    const band = document.getElementById('cele-mai-mari')!
+    expect(within(band).getByText('Lucrări de amenajare parc')).toBeInTheDocument()
+    expect(within(band).queryByRole('radiogroup')).toBeNull()
+    expect(within(band).queryByText('Contracte')).toBeNull()
+    expect(within(band).queryByText('Cifrele nu s-au încărcat.')).toBeNull()
+    cleanup()
+    // With contracts served, the same band offers both.
+    render(page({ mari: 'contracte' }))
+    expect(within(document.getElementById('cele-mai-mari')!).getByText('Contracte')).toBeInTheDocument()
+  })
+
+  it('says the contracts unavailable, never „none" or „only directly", while the API does not count them (legacy off)', () => {
+    const unread = { count: null, valued: null, value: null, suppliers: null }
+    const profile = buyerProfile({ awards: unread, frameworks: null, procedures: [], proceduresUnlisted: 0, awardSuppliers: { rankedBy: 'count', rows: [] }, partial: true })
+    const html = renderToStaticMarkup(page({}, { ...INITIAL, profile, records: buyerRecords({ contracts: null }) }))
+    expect(html).not.toContain('Niciun contract atribuit')
+    expect(html).not.toContain('doar direct')
+    expect(html).toContain('contractele atribuite nu s-au putut citi acum')
+    expect(html).toContain('Cifrele nu s-au încărcat.')
+    // The direct purchases stay.
+    expect(html).toContain('Lucrări de amenajare parc')
   })
 
   it('server-renders the buyer, its year and its firms from the loader’s read', () => {

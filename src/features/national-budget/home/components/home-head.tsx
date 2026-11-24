@@ -132,7 +132,7 @@ export function BalanceBars({ view }: { readonly view: YearView }) {
   if (!revenue?.exact || !spending?.exact || !balance?.exact || revenue.value === null || spending.value === null) return <p className="text-sm text-muted-foreground">{t`Buletinul acestui an nu are totalurile.`}</p>
   const max = Math.max(revenue.value, spending.value)
   const deficit = deficitOf(balance.exact)
-  const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance))
+  const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance), 2)
   const deficitRefused = refusedText(gdp.shareStatus(TOTAL_ITEMS.balance))
   return (
     <div>
@@ -166,11 +166,19 @@ export function BalanceBars({ view }: { readonly view: YearView }) {
       </dl>
       <div className="mt-6 border-t pt-4">
         <p className="text-sm text-foreground">
-          {deficit ? t`Deficit: ${sizeText(balance.exact)}` : t`Excedent: ${moneyText(balance.exact)}`}
-          {deficitShare ? <span className="text-muted-foreground">{view.partial ? t`, ${deficitShare} din PIB-ul estimat pe tot anul` : t`, ${deficitShare} din PIB`}</span> : null}
+          {deficit ? t`Deficit bugetar (cash): ${sizeText(balance.exact)}` : t`Excedent: ${moneyText(balance.exact)}`}
+          {deficitShare ? <span className="text-muted-foreground">{view.partial ? t`, ${deficitShare} din PIB-ul estimat pe tot anul în buletinul MF` : t`, ${deficitShare} din PIB-ul de referință al buletinului MF`}</span> : null}
           {!deficitShare && deficitRefused ? <span className="text-muted-foreground">{t`; ponderea în PIB nu e afișată: ${deficitRefused}`}</span> : null}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t`Partea hașurată: ce s-a cheltuit peste ce s-a încasat, acoperit din împrumuturi.`}</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          {t`Soldul de casă reflectă încasările și plățile bugetare. Soldul ESA 2010 urmează regulile conturilor naționale.`}
+          {gdp.gdpSourceUrl ? (
+            <>
+              {' '}
+              <a href={gdp.gdpSourceUrl} className={SOURCE_LINK_CLASS}>{t`Buletinul de referință pentru PIB`}</a>
+            </>
+          ) : null}
+        </p>
       </div>
     </div>
   )
@@ -272,16 +280,16 @@ function Figures({ view }: { readonly view: YearView }) {
   money('cheltuieli', lines.now(TOTAL_ITEMS.spending)?.exact ?? null, t`Cheltuieli publice, ${view.text}`, changeNote(TOTAL_ITEMS.spending))
   money('venituri', lines.now(TOTAL_ITEMS.revenue)?.exact ?? null, t`Venituri publice, ${view.text}`, changeNote(TOTAL_ITEMS.revenue))
   const balance = lines.now(TOTAL_ITEMS.balance)?.exact ?? null
-  const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance))
+  const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance), 2)
   const deficitRefused = refusedText(gdp.shareStatus(TOTAL_ITEMS.balance))
   const deficitNote = deficitShare
     ? view.partial
-      ? t`${deficitShare} din PIB-ul estimat pe tot anul`
-      : t`${deficitShare} din PIB`
+      ? t`${deficitShare} din PIB-ul estimat pe tot anul în buletinul MF`
+      : t`${deficitShare} din PIB-ul de referință al buletinului MF`
     : deficitRefused
       ? t`Ponderea în PIB nu e afișată: ${deficitRefused}`
       : ''
-  money('deficit', balance, balance && deficitOf(balance) ? t`Deficit, ${view.text}` : t`Excedent, ${view.text}`, deficitNote)
+  money('deficit', balance, balance && deficitOf(balance) ? t`Deficit bugetar (cash), ${view.text}` : t`Excedent, ${view.text}`, deficitNote)
   const percent = gdpNumber(gdp.share(TOTAL_ITEMS.spending), 1)
   const spendingRefused = refusedText(gdp.shareStatus(TOTAL_ITEMS.spending))
   const gdpRefused = refusedText(gdp.gdpStatus)
@@ -295,7 +303,7 @@ function Figures({ view }: { readonly view: YearView }) {
       note: view.partial
         ? t`din PIB-ul estimat pe tot anul`
         : gdp.gdp
-          ? t`PIB ${view.year}: ${moneyText(gdp.gdp)}`
+          ? t`PIB ${view.year} din buletinul MF: ${moneyText(gdp.gdp)}`
           : gdpRefused
             ? t`PIB ${view.year} nu e afișat: ${gdpRefused}`
             : '',

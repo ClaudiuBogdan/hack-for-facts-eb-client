@@ -188,6 +188,17 @@ describe('where, when and how', () => {
     expect(balanceLede(buyerProfile({ direct: none }))).toBeNull()
   })
 
+  it('says unread contract counts unavailable, never „only directly" or „none" (the API abstaining while legacy procurement is off)', () => {
+    const unread = { count: null, valued: null, value: null, suppliers: null }
+    expect(balanceLede(buyerProfile({ awards: unread, frameworks: null }))).toBeNull()
+    expect(headSentence(buyerProfile({ awards: unread, frameworks: null }))).toBe(
+      'Oraș din județul Ilfov, cu 22.660 de locuitori. În 2025 a făcut 293 de achiziții directe, de 36,4\u00a0mil.\u00a0lei fără TVA; contractele atribuite nu s-au putut citi acum.',
+    )
+    expect(headSentence(buyerProfile({ direct: none, awards: unread, frameworks: null }))).toContain(
+      'În 2025 nu are achiziții directe publicate în SEAP; contractele atribuite nu s-au putut citi acum.',
+    )
+  })
+
   it('gives the county share from 1%', () => {
     expect(countyShareLede(buyerProfile())).toBe(
       'Instituția a făcut 6,5% din achizițiile directe ale tuturor cumpărătorilor publici din județul Ilfov în 2025, după valoare.',

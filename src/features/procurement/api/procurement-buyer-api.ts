@@ -1,7 +1,8 @@
 import { readLargestDirect } from './procurement-direct-records'
 import { newestKey } from '@/lib/disclosure-key'
 import { daSupplierReads, type DaSupplierReads } from './procurement-da-release-status'
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { graphqlQuery, GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, type GraphQLErrorEntry } from '@/lib/graphql/graphql-client'
+import { isLegacyOffAnswer } from '@/lib/graphql/legacy-procurement'
 import {
   buyerBreakdownSchema,
   buyerConcentrationSchema,
@@ -47,7 +48,7 @@ import {
   type PeriodScope,
   type ProfilePeriod,
 } from '../lib/profile-period'
-import { isNamedDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
+import { daSupplierBucketName, isShownDaSupplierBucket, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
  * One buyer's page, read as:
@@ -251,8 +252,17 @@ function categoriesOf(raw: RawBuyerProfile, grain: 'direct' | 'awards'): readonl
 
 const KEY_ALIASES = new Set(['directSuppliers', 'awardSuppliers', 'spanSuppliers', 'buyerCounty'])
 
+/**
+ * The framework agreements signed, in a request of their own: the API refuses
+ * a framework read while legacy procurement is off (`INVALID_INPUT` on the
+ * field naming `frameworkRole` today; an abstained block once the server is
+ * fixed), and that must not take the page with it.
+ */
+const FRAMEWORKS_ALIAS = 'frameworks'
+
 function groupOf(alias: string): BuyerFieldGroup {
   if (KEY_ALIASES.has(alias)) return 'keys'
+  if (alias === FRAMEWORKS_ALIAS) return 'frameworks'
   if (CPV_LEVELS.some(([level]) => alias.endsWith(level))) return 'categories'
   return 'figures'
 }
@@ -318,7 +328,8 @@ export function mapBuyerProfile(
     direct: figures(stats('direct'), sellers('directSellers')),
     directPrev: period.before ? figures(stats('directPrev'), undefined) : null,
     awards: figures(stats('awards'), undefined),
-    frameworks: stats('frameworks').blocks[0]?.recordCount ?? null,
+    // Not answered (the API's build has no framework roles): no figure, and the page leaves it out.
+    frameworks: raw[FRAMEWORKS_ALIAS] === undefined ? null : (stats(FRAMEWORKS_ALIAS).blocks[0]?.recordCount ?? null),
     directYears,
     awardYears,
     partYear: directYears.some((point) => point.year === part) || awardYears.some((point) => point.year === part) ? part : null,
@@ -330,13 +341,9 @@ export function mapBuyerProfile(
         ? null
         : supplierRanking(breakdown('directSuppliers').map((block) => ({ ...block, buckets: block.buckets?.map(scrubDaSupplierBucket) ?? null }))),
     awardSuppliers: supplierRanking(breakdown('awardSuppliers')),
-    // DA-009: the years' sellers are named by the gated name on their own buckets of that ranking; the period's ranking
+    // DA-009: the years' sellers are said as their own buckets of that ranking were served; the period's ranking
     // rows carry theirs. One ranking never names another's row: each is read on its own.
-    daNames: new Map(
-      topBuckets(breakdown('spanSuppliers')).flatMap((bucket) =>
-        isNamedDaSupplierBucket(bucket) && bucket.displayName?.trim() ? [[bucket.key, bucket.displayName.trim()] as const] : [],
-      ),
-    ),
+    daNames: new Map(topBuckets(breakdown('spanSuppliers')).flatMap((bucket) => (isShownDaSupplierBucket(bucket) ? [[bucket.key, daSupplierBucketName(bucket)] as const] : []))),
     categories: { contract: categoriesOf(raw, 'awards') },
     supplierCounties: counties,
     supplierPlaces: raw.directCounties !== undefined,
@@ -373,9 +380,9 @@ export function buyerExtrasFields(cui: string, period: Period, latest: number, s
 export function buyerKeysOf(raw: RawBuyerProfile): { readonly cuis: readonly string[]; readonly spanSuppliers: readonly string[]; readonly county: string | null } {
   // A read the switch state left out (D6 enforced, the release off) is absent, not malformed; one asked for parses strictly.
   const breakdown = (alias: string) => (raw[alias] === undefined ? [] : buyerBreakdownSchema.parse(raw[alias]))
-  // D6: only a direct-purchase supplier the API serves as a company has years of its own to read. DA-009: none is
-  // looked up by name — its bucket carries the API's gated name; only contract suppliers are named by the spine.
-  const spanSuppliers = topBuckets(breakdown('spanSuppliers')).filter(isNamedDaSupplierBucket).map((bucket) => bucket.key)
+  // D6: only a direct-purchase supplier the API shows has years of its own to read. DA-009: none is looked up by
+  // name — its bucket carries the API's own; only contract suppliers are named by the spine.
+  const spanSuppliers = topBuckets(breakdown('spanSuppliers')).filter(isShownDaSupplierBucket).map((bucket) => bucket.key)
   const listed = topBuckets(breakdown('awardSuppliers')).map((bucket) => bucket.key)
   const territory = buyerEntitySchema.parse(raw.entity ?? null)?.territory ?? null
   return {
@@ -420,6 +427,40 @@ const PROFILE_REQUESTS: readonly { readonly group: BuyerFieldGroup; readonly ope
   { group: 'figures', operationName: 'ProcurementBuyerFigures' },
   { group: 'categories', operationName: 'ProcurementBuyerCategories' },
 ]
+
+/** The API's refusal of a framework read while its build reports no framework roles (legacy procurement off): this code, on the field, naming the role. */
+const FRAMEWORK_ROLE = 'frameworkRole'
+
+/**
+ * The API refused the framework read itself, and for that reason only: every
+ * error on the field alone, either its capability refusal (`INVALID_INPUT`
+ * naming `frameworkRole`) or legacy procurement's own off answer — which is
+ * also what the transport replays for a legacy read it does not send. Any
+ * other answer (a busy analysis, an outage) stays a failure, read again.
+ */
+export function isFrameworksRefused(error: unknown): boolean {
+  if (!(error instanceof GraphQLRequestError) || error.status !== undefined) return false
+  const entries = error.graphQLErrors
+  if (entries.length === 0) return false
+  const onField = (entry: GraphQLErrorEntry) => entry.path === undefined || (entry.path.length === 1 && entry.path[0] === FRAMEWORKS_ALIAS)
+  const refused = (entry: GraphQLErrorEntry) =>
+    isLegacyOffAnswer([entry]) || (entry.extensions?.code === GRAPHQL_INVALID_INPUT_CODE && entry.path !== undefined && typeof entry.message === 'string' && entry.message.includes(FRAMEWORK_ROLE))
+  return entries.every((entry) => onField(entry) && refused(entry))
+}
+
+/** The framework agreements' read, a legacy one: refused, it is no figure (`FRAMEWORKS_ALIAS`); any other failure fails the profile, as before. */
+async function readFrameworks(fields: readonly BuyerField[], signal?: AbortSignal): Promise<RawBuyerProfile> {
+  const own = fields.filter((field) => field.group === 'frameworks')
+  if (own.length === 0) return {}
+  const operationName = 'ProcurementBuyerFrameworks'
+  const variables: Record<string, unknown> = Object.fromEntries(own.map((field) => [field.alias, field.scope]))
+  try {
+    return await graphqlQuery<RawBuyerProfile>(procurementBuyerQuery(operationName, own, false), variables, { operationName, signal, legacy: true })
+  } catch (error) {
+    if (!signal?.aborted && isFrameworksRefused(error)) return {}
+    throw error
+  }
+}
 
 /**
  * The budget platform's record of the buyer (type, place, population,
@@ -471,6 +512,7 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
     const variables: Record<string, unknown> = Object.fromEntries(own.map((field) => [field.alias, field.scope]))
     return graphqlQuery<RawBuyerProfile>(procurementBuyerQuery(operationName, own, false), variables, { operationName, signal })
   }) as [Promise<RawBuyerProfile>, Promise<RawBuyerProfile>, Promise<RawBuyerProfile>]
+  const frameworksRead = readFrameworks(fields, signal)
 
   // D6: the follow-up sends the keys' codes (the suppliers ranked); none is sent once a newer publication has been seen
   // since they were read — taken when the keys arrive, not after the identity, which can come later.
@@ -498,8 +540,11 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
     }
   })
 
-  const [keysRaw, figuresRaw, categoriesRaw, identity, extras, cutoff] = await Promise.all([keysRead, figuresRead, categoriesRead, identityRead, extrasRead, cutoffRead])
-  const mapped = mapBuyerProfile({ ...keysRaw, ...figuresRaw, ...categoriesRaw, ...identity.raw }, cui, period, latest, cutoff.cutoff)
+  const [keysRaw, figuresRaw, frameworksRaw, categoriesRaw, identity, extras, cutoff] = await Promise.all([keysRead, figuresRead, frameworksRead, categoriesRead, identityRead, extrasRead, cutoffRead])
+  const mapped = mapBuyerProfile({ ...keysRaw, ...figuresRaw, ...frameworksRaw, ...categoriesRaw, ...identity.raw }, cui, period, latest, cutoff.cutoff)
+  // The contract counts unread — the framework read refused, or the contract analysis abstaining (legacy procurement off at the
+  // API): the page says them unavailable, and the profile is served once and read again, never kept that way.
+  const contractsUnread = frameworksRaw[FRAMEWORKS_ALIAS] === undefined || mapped.awards.count === null
   // Places asked for, or not: the band follows the reads made, never an answer's stray field.
   // The reads made, never an answer's stray field: places and supplier figures follow what was asked.
   const placed = reads.places ? mapped : { ...mapped, supplierCounties: [], supplierPlaces: false }
@@ -519,7 +564,7 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
         : null,
     // The chart's year in progress and the data's date hang on the cutoff, whichever period the page shows.
     // The switch state unread too: what it gates is said unavailable, and the profile is never kept that way.
-    partial: identity.failed || cutoff.failed || fellBack || !reads.known,
+    partial: identity.failed || cutoff.failed || fellBack || !reads.known || contractsUnread,
     namesUnread: false,
   }
 }
@@ -541,7 +586,11 @@ export async function fetchProcurementBuyerRecords(cui: string, choice: PeriodCh
       limit,
       'ProcurementBuyerContracts',
       signal,
-    ),
+    ).catch((error: unknown) => {
+      // Legacy procurement switched off at the API: no contracts to list, and the direct purchases beside them stay.
+      if (!signal?.aborted && error instanceof GraphQLRequestError && isLegacyOffAnswer(error.graphQLErrors)) return null
+      throw error
+    }),
     // The analysis's own records of the period, by the value its figures sum (with release 1, the counted value).
     readLargestDirect({ authorityCui: cui, ...period.scope }, limit, 'ProcurementBuyerDirect', signal),
   ])

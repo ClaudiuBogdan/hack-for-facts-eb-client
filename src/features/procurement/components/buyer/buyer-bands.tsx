@@ -8,6 +8,7 @@ import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { cn } from '@/lib/utils'
 import type { ProcurementBuyerGrain } from '@/schemas/procurement-buyer'
 import { daSupplierName, perResident, type BuyerProfile, type BuyerRecords } from '../../lib/buyer-model'
 import {
@@ -50,6 +51,15 @@ const CATEGORIES_SHOWN = 8
 
 function grainOf(choice: ProcurementBuyerGrain): 'direct' | 'contract' {
   return choice === 'directe' ? 'direct' : 'contract'
+}
+
+/** Contracts the API does not count now (its contract analysis abstaining while legacy procurement is off): unavailable, never „none". */
+function ContractsUnread({ className }: { readonly className?: string }) {
+  return (
+    <p className={cn('border-y py-4 text-sm text-muted-foreground', className)}>
+      <Trans>Cifrele nu s-au încărcat.</Trans>
+    </p>
+  )
 }
 
 function GrainToggle({ value, onChange }: { readonly value: ProcurementBuyerGrain; readonly onChange: (value: ProcurementBuyerGrain) => void }) {
@@ -119,6 +129,8 @@ export function BuyerWhatBand({
           ) : (
             <HubPending rows={4} />
           )
+        ) : rows.length === 0 && grain === 'contract' && profile.awards.count === null ? (
+          <ContractsUnread />
         ) : rows.length === 0 && grain === 'direct' && (profile.direct.count ?? 0) > 0 ? (
           // Purchases there are (the profile counts them): an empty breakdown is one not read, never „none".
           <p className="border-y py-4 text-sm text-muted-foreground">{t`Categoriile achizițiilor nu s-au putut citi acum.`}</p>
@@ -175,7 +187,11 @@ export function BuyerWhoBand({ profile, index }: { readonly profile: BuyerProfil
           <MonoLabel className="block text-muted-foreground">
             <Trans>Contracte atribuite, după număr, {periodText(profile.period)}</Trans>
           </MonoLabel>
-          <SupplierRows className="mt-3" profile={profile} ranking={profile.awardSuppliers} grain="contract" />
+          {profile.awards.count === null && profile.awardSuppliers.rows.length === 0 ? (
+            <ContractsUnread className="mt-3" />
+          ) : (
+            <SupplierRows className="mt-3" profile={profile} ranking={profile.awardSuppliers} grain="contract" />
+          )}
         </div>
       </div>
       {matrix.length > 0 ? (
@@ -291,12 +307,16 @@ export function BuyerHowBand({ profile, index }: { readonly profile: BuyerProfil
           <MonoLabel className="block text-muted-foreground">
             <Trans>Contracte atribuite în {periodText(profile.period)}, după procedură</Trans>
           </MonoLabel>
-          <ProcedureRows
-            className="mt-3"
-            procedures={profile.procedures}
-            unlisted={profile.proceduresUnlisted}
-            empty={t`Niciun contract atribuit în ${periodText(profile.period)}.`}
-          />
+          {profile.awards.count === null && profile.procedures.length === 0 ? (
+            <ContractsUnread className="mt-3" />
+          ) : (
+            <ProcedureRows
+              className="mt-3"
+              procedures={profile.procedures}
+              unlisted={profile.proceduresUnlisted}
+              empty={t`Niciun contract atribuit în ${periodText(profile.period)}.`}
+            />
+          )}
           {(profile.awards.count ?? 0) > 0 ? (
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
               <Trans>SEAP numără un contract câștigat de o asociere de firme o dată pentru fiecare firmă.</Trans>
@@ -324,7 +344,10 @@ export function BuyerLargestBand({
   readonly onChoice: (choice: ProcurementBuyerGrain) => void
 }) {
   const { i18n } = useLingui()
-  const grain = grainOf(choice)
+  // No contracts served (legacy procurement off at the API): the direct purchases alone, without the toggle — also while another
+  // period's records are on their way, when the profile already says the contracts unread.
+  const contractsOff = records.data?.contracts === null || profile.awards.count === null
+  const grain = contractsOff ? 'direct' : grainOf(choice)
   const list = grain === 'contract' ? records.data?.contracts : records.data?.direct
   const fallbackTitle = (record: { readonly cpvCode: string | null }) => (record.cpvCode ? i18n._(categoryOfCode(record.cpvCode).label) : null)
   return (
@@ -340,7 +363,7 @@ export function BuyerLargestBand({
             <Trans>Achizițiile directe cu cea mai mare valoare, fără TVA.</Trans>
           )
         }
-        aside={<GrainToggle value={choice} onChange={onChoice} />}
+        aside={contractsOff ? undefined : <GrainToggle value={choice} onChange={onChoice} />}
       />
       <div className="mt-8" data-reveal>
         {records.isError && !records.data ? (

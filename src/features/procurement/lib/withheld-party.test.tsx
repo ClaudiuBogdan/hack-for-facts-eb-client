@@ -11,7 +11,7 @@ import { rowsOf } from '../components/analytics/analytics-view'
 import { PartyRows } from '../components/home/home-rows'
 import { keyLabel } from './analytics-text'
 import type { Ranking } from './home-model'
-import { isNaturalPersonKey, NATURAL_PERSON_KEY, nameableKeys } from './withheld-party'
+import { daSupplierBucketName, daSupplierShown, isNaturalPersonKey, isShownDaSupplierBucket, NATURAL_PERSON_KEY, nameableKeys, scrubDaSupplierBucket } from './withheld-party'
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, params }: { readonly children: ReactNode; readonly to: string; readonly params?: Record<string, string> }) => {
@@ -45,6 +45,70 @@ describe('the reserved key', () => {
 
   it('is never looked up for a name', () => {
     expect(nameableKeys(['14837428', 'natural_person', '361684'])).toEqual(['14837428', '361684'])
+  })
+})
+
+describe('step 2: a masked person and a code alone (owner, 24 November 2026)', () => {
+  it('shows each kind only as the API serves it, and nothing it does not know', () => {
+    expect(daSupplierShown({ displayKind: 'company', name: ' FLORARIA IRIS SRL ', code: '14837428' })).toEqual({ kind: 'company', name: 'FLORARIA IRIS SRL', code: '14837428' })
+    expect(daSupplierShown({ displayKind: 'company', name: null, code: '14837428' })).toEqual({ kind: 'company', name: null, code: '14837428' })
+    expect(daSupplierShown({ displayKind: 'company', name: 'FLORARIA IRIS SRL', code: null })).toEqual({ kind: 'company', name: 'FLORARIA IRIS SRL', code: null })
+    expect(daSupplierShown({ displayKind: 'person_masked', name: 'Ion P*** PFA', code: '30111222' })).toEqual({ kind: 'masked', name: 'Ion P*** PFA', code: '30111222' })
+    // A masked kind with no name to show: its code alone, never a name from elsewhere.
+    expect(daSupplierShown({ displayKind: 'person_masked', name: ' ', code: '30111222' })).toEqual({ kind: 'code', code: '30111222' })
+    expect(daSupplierShown({ displayKind: 'code_only', name: 'SHOULD NOT SHOW', code: '30111222' })).toEqual({ kind: 'code', code: '30111222' })
+    // Withheld: no code, the group, a natural person, an unknown or missing kind (fail closed, whatever came with it).
+    for (const party of [
+      { displayKind: 'code_only', name: null, code: null },
+      { displayKind: 'person_masked', name: 'Ion P*** PFA', code: null },
+      { displayKind: 'company', name: null, code: null },
+      { displayKind: 'company', name: 'X', code: NATURAL_PERSON_KEY },
+      { displayKind: 'natural_person', name: 'Ion Popescu', code: '1234567890123' },
+      { displayKind: 'some_future_kind', name: 'Ion Popescu', code: '30111222' },
+      { displayKind: null, name: 'Ion Popescu', code: '30111222' },
+    ]) {
+      expect(daSupplierShown(party)).toBeNull()
+    }
+  })
+
+  it('a ranking says a masked person by the masked name and code, a code alone as unpublished, and links both', () => {
+    expect(daSupplierBucketName({ key: '30111222', displayKind: 'person_masked', displayName: 'Ion P*** PFA' })).toBe('Ion P*** PFA (CUI 30111222)')
+    expect(daSupplierBucketName({ key: '30111223', displayKind: 'code_only', displayName: null })).toBe('CUI 30111223 (nume nepublicat)')
+    expect(daSupplierBucketName({ key: '30111224', displayKind: 'mystery', displayName: 'SHOULD NOT SHOW' })).toBe('Furnizor nenumit')
+    const rows: Ranking = {
+      rankedBy: 'value',
+      rows: [
+        { key: '30111222', label: 'Ion P*** PFA (CUI 30111222)', count: 3, value: 900, share: null, displayKind: 'person_masked' },
+        { key: '30111223', label: 'CUI 30111223 (nume nepublicat)', count: 2, value: 800, share: null, displayKind: 'code_only' },
+        { key: '30111224', label: 'SHOULD NOT SHOW', count: 1, value: 700, share: null, displayKind: 'mystery' },
+      ],
+    }
+    const page = html(<PartyRows ranking={rows} grain="direct" kind="supplier" year={2025} />)
+    expect(page).toContain('Ion P*** PFA (CUI 30111222)')
+    expect(page).toContain('href="/procurement/suppliers/30111222"')
+    expect(page).toContain('CUI 30111223 (nume nepublicat)')
+    expect(page).toContain('href="/procurement/suppliers/30111223"')
+    expect(page).not.toContain('SHOULD NOT SHOW')
+    expect(page).not.toContain('30111224')
+  })
+
+  it('the scrub keeps what is shown and drops every name that is not, before anything is kept or serialised', () => {
+    expect(scrubDaSupplierBucket({ key: '30111222', displayKind: 'person_masked', displayName: 'Ion P*** PFA' }, 0)).toEqual({ key: '30111222', displayKind: 'person_masked', displayName: 'Ion P*** PFA' })
+    expect(scrubDaSupplierBucket({ key: '30111223', displayKind: 'code_only', displayName: 'SHOULD NOT SHOW' }, 1)).toEqual({ key: '30111223', displayKind: 'code_only', displayName: null })
+    expect(scrubDaSupplierBucket({ key: '30111224', displayKind: 'mystery', displayName: 'SHOULD NOT SHOW' }, 2)).toEqual({ key: 'unnamed-2', displayKind: 'mystery', displayName: null })
+    expect(scrubDaSupplierBucket({ key: NATURAL_PERSON_KEY, displayKind: 'natural_person', displayName: 'SHOULD NOT SHOW' }, 3)).toEqual({ key: NATURAL_PERSON_KEY, displayKind: 'natural_person', displayName: null })
+    expect(scrubDaSupplierBucket({ key: '14837428', displayKind: 'company', displayName: 'FLORARIA IRIS SRL' }, 4)).toEqual({ key: '14837428', displayKind: 'company', displayName: 'FLORARIA IRIS SRL' })
+    expect(isShownDaSupplierBucket({ key: null, displayKind: 'company', displayName: 'X' })).toBe(false)
+  })
+
+  it('an analysis bucket and a record row carry the masked name or the code, never more', () => {
+    const bucket = (key: string, displayKind: string, displayName: string | null) => ({ key, kind: 'top', displayKind, displayName, recordCount: '4', withValueCount: '4', valueSum: '1000', shareOfScope: '0.5' })
+    const spine = new Map([['supplier:30111222', 'POPESCU ION PFA']])
+    expect(mapPartyBucket(bucket('30111222', 'person_masked', 'Ion P*** PFA') as never, 'direct_acquisition', 'supplier', spine).supplier).toEqual({ cui: '30111222', name: 'Ion P*** PFA (CUI 30111222)', displayName: null })
+    expect(mapPartyBucket(bucket('30111223', 'code_only', null) as never, 'direct_acquisition', 'supplier').supplier).toEqual({ cui: '30111223', name: 'CUI 30111223 (nume nepublicat)', displayName: null })
+    expect(daSupplierOf({ cui: '30111222', name: 'Ion P*** PFA', displayName: 'Ion P*** PFA', displayKind: 'person_masked' })).toEqual({ cui: '30111222', name: 'Ion P*** PFA (CUI 30111222)' })
+    expect(daSupplierOf({ cui: '30111223', name: null, displayName: '30111223', displayKind: 'code_only' })).toEqual({ cui: '30111223', name: 'CUI 30111223 (nume nepublicat)' })
+    expect(daSupplierOf({ cui: '30111224', name: 'Ion Popescu', displayName: 'Ion Popescu', displayKind: 'mystery' })).toEqual({ cui: null, name: '', withheld: true })
   })
 })
 
@@ -142,6 +206,9 @@ describe('a direct-purchase supplier the address names (D6 fails closed, root)',
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map()))).toBe('Furnizor')
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map()))).not.toContain('14837428')
     expect(supplierFilterLabel({ tip: 'directe' }, '14837428', namer(new Map([['14837428', '14837428']])))).toBe('Firma cu CUI 14837428')
+    // Step 2: a masked person by the API's masked name and the code, one the API names by no one by the code alone.
+    expect(supplierFilterLabel({ tip: 'directe' }, '30111222', namer(new Map([['30111222', 'Ion P*** PFA']])))).toBe('Ion P*** PFA (CUI 30111222)')
+    expect(supplierFilterLabel({ tip: 'directe' }, '30111223', namer(new Map([['30111223', '']])))).toBe('CUI 30111223 (nume nepublicat)')
   })
 })
 

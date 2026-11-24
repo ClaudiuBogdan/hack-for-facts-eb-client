@@ -18,7 +18,7 @@ import {
   type ResolvedPeriod,
 } from '../lib/analytics-model'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { isNamedDaSupplier, isNaturalPersonKey, scrubDaSupplierBucket } from '../lib/withheld-party'
+import { daSupplierLabel, daSupplierShown, isNaturalPersonKey, scrubDaSupplierBucket } from '../lib/withheld-party'
 
 /**
  * The analytics page's reads. A query compiles to independent reads, each
@@ -330,7 +330,7 @@ export async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'mon
 // ───────────────────────────────────────────────────────────────── names ──
 
 /** A DA supplier's latest record, read for its D6 kind alone: whether the API serves it as a company (DA-009). */
-const daSupplierKindSchema = z.object({ items: z.array(z.object({ supplier: z.object({ cui: z.string().nullable(), displayKind: z.string().nullable().optional() }) })), meta: z.object({ disclosureKey: z.string().nullable().optional() }).nullable().optional() })
+const daSupplierKindSchema = z.object({ items: z.array(z.object({ supplier: z.object({ cui: z.string().nullable(), name: z.string().nullable().optional(), displayKind: z.string().nullable().optional() }) })), meta: z.object({ disclosureKey: z.string().nullable().optional() }).nullable().optional() })
 
 const namesSchema = z.object({
   labels: z.array(z.object({ cui: z.string().nullable(), canonicalName: z.string().nullable(), status: z.string() })).optional(),
@@ -341,8 +341,9 @@ export interface Names {
   readonly orgs: ReadonlyMap<string, string>
   readonly cpv: ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>
   /**
-   * Direct-purchase suppliers the address names that the API serves as companies (D6), by code. Never named
-   * (DA-009): no read gives a single supplier's gated name, so the page shows the code of a company only.
+   * Direct-purchase suppliers the address names that the API shows (D6), by code: the code for a company (never
+   * named, DA-009: the page shows the code of a company only), the masked name the API serves for a masked person,
+   * and '' for a supplier the API shows by its code alone (step 2).
    */
   readonly daSuppliers: ReadonlyMap<string, string>
 }
@@ -382,7 +383,7 @@ export async function readNames(cuis: readonly string[], codes: readonly string[
     `query AnalyticsNames($cuis: [String!]!, $codes: [String!]!, $withOrgs: Boolean!, $withCpv: Boolean!${asked.map((_, index) => `, $da${index}: String!`).join('')}) {
       labels: organizationLabels(cuis: $cuis) @include(if: $withOrgs) { cui canonicalName status }
       cpv: procurementCpvCodes(codes: $codes) @include(if: $withCpv) { cpvCode labelRo labelEn }
-      ${asked.map((_, index) => `da${index}: procurementRecords(scope: { grain: direct_acquisition, supplierCui: $da${index} }, sort: date_desc, page: 1, pageSize: 1) { items { supplier { cui displayKind } } meta { disclosureKey } }`).join('\n      ')}
+      ${asked.map((_, index) => `da${index}: procurementRecords(scope: { grain: direct_acquisition, supplierCui: $da${index} }, sort: date_desc, page: 1, pageSize: 1) { items { supplier { cui name displayKind } } meta { disclosureKey } }`).join('\n      ')}
     }`,
     { cuis: cuis.slice(0, 250), codes: codes.slice(0, 200), withOrgs: cuis.length > 0, withCpv: codes.length > 0, ...Object.fromEntries(asked.map((cui, index) => [`da${index}`, cui])) },
     // D6: the ranked keys sent were read under the newest key the caller saw then; a newer one since, nothing is sent.
@@ -396,9 +397,10 @@ export async function readNames(cuis: readonly string[], codes: readonly string[
     const page = daSupplierKindSchema.safeParse(raw[`da${index}`] ?? { items: [] })
     // D6: only from an answer served under the planned publication (its own `meta.disclosureKey`, API doc 10).
     if (!page.success || !servedUnderPlan(disclosure, page.data.meta?.disclosureKey)) return
-    // A company by the API's own word on its record, by the API's code form (a supplier scope on a withheld code matches nothing).
+    // Shown by the API's own word on its record (a company, a masked name, a code), by the API's code form (a supplier scope on a withheld code matches nothing).
     const supplier = page.data.items[0]?.supplier
-    if (supplier?.cui && withoutLeadingZeros(supplier.cui) === withoutLeadingZeros(cui) && isNamedDaSupplier(supplier)) daSuppliersNamed.set(cui, cui)
+    const shown = supplier?.cui && withoutLeadingZeros(supplier.cui) === withoutLeadingZeros(cui) ? daSupplierShown({ displayKind: supplier.displayKind, name: supplier.name, code: supplier.cui }) : null
+    if (shown) daSuppliersNamed.set(cui, shown.kind === 'company' ? cui : shown.kind === 'masked' ? shown.name : '')
   })
   const cpv = new Map<string, { ro: string | null; en: string | null }>()
   for (const code of parsed.cpv ?? []) cpv.set(code.cpvCode, { ro: code.labelRo, en: code.labelEn })
@@ -513,16 +515,23 @@ async function readRecordsSorted(scope: Scope, build: string | null, sort: Recor
   return {
     total: list.total === null ? null : Number(list.total),
     abstained: list.meta.answerability === 'abstained',
-    rows: list.items.map((item) => ({
+    rows: list.items.map((item) => {
+      // D6, whatever the release flag says: a direct-purchase supplier is said only as the API serves it.
+      const shown = direct ? daSupplierShown({ displayKind: item.supplier.displayKind, name: item.supplier.name, code: item.supplier.cui }) : null
+      return {
       id: item.id,
       href: direct ? `/procurement/direct-acquisitions/${item.id}` : `/procurement/contracts/${item.id}`,
       title: textOf(item.title) ?? textOf(item.displayTitle?.text) ?? textOf(item.cpvLabel) ?? null,
       authority: { cui: item.authority.cui, name: item.authority.displayName ?? item.authority.name },
-      // D6, whatever the release flag says: a direct-purchase supplier is named only when the API serves it as a company.
-      supplier: direct && !isNamedDaSupplier(item.supplier) ? { cui: null, name: null, withheld: true } : { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name },
+      supplier: !direct
+        ? { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name }
+        : shown === null
+          ? { cui: null, name: null, withheld: true }
+          : { cui: shown.code, name: shown.kind === 'company' ? (item.supplier.displayName ?? item.supplier.name) : daSupplierLabel(shown) },
       value: item.valueRon === null ? null : Number(item.valueRon),
       date: item.date,
-    })),
+      }
+    }),
   }
 }
 

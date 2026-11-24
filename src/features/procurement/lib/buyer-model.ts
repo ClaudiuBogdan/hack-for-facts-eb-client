@@ -1,7 +1,7 @@
 import type { CategoryFigure } from './home-categories'
 import { DIRECT_COMPARABLE_FROM, tidyName, type RecentRecord, type YearPoint } from './home-model'
 import type { ProfilePeriod } from './profile-period'
-import { daCompanyBucketName } from './withheld-party'
+import { daCompanyBucketName, daSupplierBucketName } from './withheld-party'
 
 /**
  * One buyer's procurement page (`/procurement/institutions/$cui`): the shapes
@@ -151,8 +151,8 @@ export interface BuyerProfile {
 }
 
 export interface BuyerRecords {
-  /** The period's largest contract awards, a consortium on one row. */
-  readonly contracts: readonly RecentRecord[]
+  /** The period's largest contract awards, a consortium on one row; null while the API serves no legacy contracts (the band shows the direct purchases alone). */
+  readonly contracts: readonly RecentRecord[] | null
   /** The period's largest direct purchases. */
   readonly direct: readonly RecentRecord[]
 }
@@ -223,7 +223,8 @@ export function hasAnyRecord(profile: BuyerProfile): boolean {
 
 /** The period had no record at all: the page says so once instead of seven empty bands. */
 export function isEmptyYear(profile: BuyerProfile): boolean {
-  return (profile.direct.count ?? 0) === 0 && (profile.awards.count ?? 0) === 0 && (profile.frameworks ?? 0) === 0
+  // Contracts unread (the API abstaining) are unknown, not none: such a year is never said empty.
+  return (profile.direct.count ?? 0) === 0 && profile.awards.count === 0 && (profile.frameworks ?? 0) === 0
 }
 
 /**
@@ -241,12 +242,12 @@ export function supplierName(profile: Pick<BuyerProfile, 'names'>, cui: string):
   return profile.names.get(cui) ?? cui
 }
 
-/** A year-by-year seller's name: only the API's gated name on its bucket; its code, said as missing from the registry, without one (DA-009). */
+/** A year-by-year seller's label: only as its bucket was shown (`daNames`, DA-009); its code, said as missing from the registry, without one. */
 export function daSupplierName(profile: Pick<BuyerProfile, 'daNames'>, cui: string): string {
   return daCompanyBucketName({ key: cui, displayName: profile.daNames.get(cui) ?? null })
 }
 
-/** A direct-purchase ranking row's name: the gated name its own bucket carried, never another ranking's (DA-009). */
-export function daRowName(row: Pick<SupplierFigure, 'cui' | 'displayName'>): string {
-  return daCompanyBucketName({ key: row.cui, displayName: row.displayName ?? null })
+/** A direct-purchase ranking row's label: as its own bucket was served, never another ranking's (DA-009). */
+export function daRowName(row: Pick<SupplierFigure, 'cui' | 'displayName' | 'displayKind'>): string {
+  return daSupplierBucketName({ key: row.cui, displayKind: row.displayKind ?? null, displayName: row.displayName ?? null })
 }

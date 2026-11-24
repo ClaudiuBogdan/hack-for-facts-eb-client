@@ -324,7 +324,7 @@ const TITLES: Readonly<Record<string, () => string>> = {
   '61': () => t({ message: `Proiecte PNRR din împrumuturi`, context: 'national budget classification' }),
   '65': () => t({ message: `Programe cu finanțare rambursabilă`, context: 'national budget classification' }),
   '70': () => t({ message: `Cheltuieli de capital`, context: 'national budget classification' }),
-  '71': () => t({ message: `Active nefinanciare (investiții)`, context: 'national budget classification' }),
+  '71': () => t({ message: `Active nefinanciare`, context: 'national budget classification' }),
   '72': () => t({ message: `Active financiare`, context: 'national budget classification' }),
   '79': () => t({ message: `Operațiuni financiare`, context: 'national budget classification' }),
   '80': () => t({ message: `Împrumuturi`, context: 'national budget classification' }),
@@ -422,7 +422,7 @@ export function headlineParts({
     }
     return [{ text: spending ? t`Pe ce s-a cheltuit din ` : t`Din ce s-a încasat în ` }, scope, { text: `, ${when}?` }]
   }
-  if (budget && state.tip === 'sold' && state.dupa === 'timp') return [{ text: t`Cum a evoluat deficitul în ` }, { text: budget, role: 'budget' }, { text: `, ${step(state.pas)}?` }]
+  if (budget && state.tip === 'sold' && state.dupa === 'timp') return [{ text: t`Cum a evoluat soldul bugetar (cash) în ` }, { text: budget, role: 'budget' }, { text: `, ${step(state.pas)}?` }]
   if (state.tip === 'cheltuieli' || state.tip === 'venituri') {
     const spending = state.tip === 'cheltuieli'
     if (state.dupa === 'timp') {
@@ -439,7 +439,7 @@ export function headlineParts({
     return [{ text: spending ? t`Pe ce s-au cheltuit banii publici în ${when}?` : t`De unde au venit banii publici în ${when}?` }]
   }
   if (state.tip === 'sold') {
-    return state.dupa === 'bugete' ? [{ text: t`Ce deficit a avut fiecare buget în ${when}?` }] : [{ text: t`Cum a evoluat deficitul, ${step(state.pas)}?` }]
+    return state.dupa === 'bugete' ? [{ text: t`Ce sold bugetar (cash) a avut fiecare buget în ${when}?` }] : [{ text: t`Cum a evoluat soldul bugetar (cash), ${step(state.pas)}?` }]
   }
   const year = lawYear ?? 0
   if (state.tip === 'lege') {
@@ -471,7 +471,7 @@ export function populationLabel(tip: Tip): string {
     case 'venituri':
       return t`Venituri`
     case 'sold':
-      return t`Deficit`
+      return t`Sold bugetar (cash)`
     case 'lege':
       return t`Legea`
     case 'ministere':

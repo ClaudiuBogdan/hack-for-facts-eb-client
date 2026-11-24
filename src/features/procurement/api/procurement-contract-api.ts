@@ -135,7 +135,7 @@ async function readNotice(raw: RawContractPage, signal?: AbortSignal): Promise<C
   const { noticeNo, authority } = raw.contract
   if (!noticeNo || !authority.cui) return { rows: [], full: false, failed: false }
   const read = await soft(
-    graphqlQuery<unknown>(CONTRACT_NOTICE_QUERY, { authorityCui: authority.cui, noticeNo, pageSize: NOTICE_ROWS }, { operationName: 'ProcurementContractNotice', signal }).then((data) =>
+    graphqlQuery<unknown>(CONTRACT_NOTICE_QUERY, { authorityCui: authority.cui, noticeNo, pageSize: NOTICE_ROWS }, { operationName: 'ProcurementContractNotice', signal, legacy: true }).then((data) =>
       contractNoticeSchema.parse(data),
     ),
     signal,
@@ -147,7 +147,7 @@ async function readNotice(raw: RawContractPage, signal?: AbortSignal): Promise<C
 
 /** The contract: the record, then its notice, then everyone's names. `null` when SEAP has no such record. */
 export async function fetchContract(id: string, signal?: AbortSignal): Promise<ContractSheet | null> {
-  const data = await graphqlQuery<unknown>(CONTRACT_PAGE_QUERY, { id }, { operationName: 'ProcurementContractPage', signal })
+  const data = await graphqlQuery<unknown>(CONTRACT_PAGE_QUERY, { id }, { operationName: 'ProcurementContractPage', signal, legacy: true })
   const raw = contractPageSchema.parse(data).procurementContract
   if (!raw) return null
   const notice = await readNotice(raw, signal)
@@ -258,7 +258,7 @@ export async function fetchContractContext(input: CtContextInput, sheet: Contrac
         older: { ...both, contractDate: { lte: input.day } },
         perSide: AROUND_PER_SIDE,
       },
-      { operationName: 'ProcurementContractAround', signal },
+      { operationName: 'ProcurementContractAround', signal, legacy: true },
     ).then((raw) => contractAroundSchema.parse(raw)),
     signal,
   )

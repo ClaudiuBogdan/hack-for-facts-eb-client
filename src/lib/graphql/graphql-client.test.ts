@@ -234,3 +234,114 @@ describe('graphqlQuery and the disclosure key (D6, API doc 10)', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
+
+describe('graphqlQuery and legacy procurement switched off', () => {
+  const fetchMock = vi.fn()
+  const OFF = { message: 'legacy procurement data is not served by this API; use the direct-acquisition release (procurementDa*) or procurementTotals', path: ['procurementProcedure'], extensions: { code: 'SERVICE_UNAVAILABLE', type: 'ServiceUnavailable' } }
+  const offAnswer = () => jsonResponse({ data: { procurementProcedure: null }, errors: [OFF] })
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    vi.useRealTimers()
+    vi.stubGlobal('fetch', fetchMock)
+    vi.mocked(getAuthToken).mockResolvedValue(null)
+    const { resetLegacyOffForTests } = await import('./legacy-procurement')
+    resetLegacyOffForTests()
+  })
+
+  it('sends a legacy read as usual while the API has not answered legacy off', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ data: { procurementProcedure: { id: '1' } } }))
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).resolves.toEqual({ procurementProcedure: { id: '1' } })
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).resolves.toEqual({ procurementProcedure: { id: '1' } })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('after the switch’s answer, fails a legacy read as the API answers it, with no request; other reads still go', async () => {
+    fetchMock.mockResolvedValueOnce(offAnswer())
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    const gated = await graphqlQuery('{ procurementContract }', {}, { legacy: true }).catch((error: unknown) => error)
+    expect(gated).toBeInstanceOf(GraphQLRequestError)
+    // The API's own words, as its answer said them.
+    expect((gated as GraphQLRequestError).graphQLErrors).toEqual([{ message: OFF.message, extensions: { code: 'SERVICE_UNAVAILABLE' } }])
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { procurementDaRelease: { enabled: true } } }))
+    await expect(graphqlQuery('{ procurementDaRelease }')).resolves.toEqual({ procurementDaRelease: { enabled: true } })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('asks the API again a minute after its answer', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    fetchMock.mockResolvedValueOnce(offAnswer())
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    vi.advanceTimersByTime(59_999)
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(1)
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { procurementProcedure: { id: '1' } } }))
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).resolves.toEqual({ procurementProcedure: { id: '1' } })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
+  })
+
+  it('takes no other answer for the switch: another SERVICE_UNAVAILABLE, another message, an outage', async () => {
+    const answers = [
+      jsonResponse({ data: null, errors: [{ ...OFF, extensions: { code: 'INTERNAL_SERVER_ERROR' } }] }),
+      jsonResponse({ data: null, errors: [{ ...OFF, message: 'legacy procurement database unavailable' }] }),
+      jsonResponse({ data: null, errors: [{ ...OFF, message: 'the legacy direct-acquisition list is not served by this API; use procurementDaPurchases' }] }),
+      jsonResponse('upstream gone', { ok: false, status: 503, statusText: 'Service Unavailable' }),
+    ]
+    for (const answer of answers) {
+      fetchMock.mockResolvedValueOnce(answer)
+      await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    }
+    fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'))
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { procurementProcedure: { id: '1' } } }))
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).resolves.toEqual({ procurementProcedure: { id: '1' } })
+    expect(fetchMock).toHaveBeenCalledTimes(answers.length + 2)
+  })
+
+  it('reads the switch’s answer only from a well-formed error', async () => {
+    const { isLegacyOffAnswer } = await import('./legacy-procurement')
+    expect(isLegacyOffAnswer([OFF])).toBe(true)
+    expect(isLegacyOffAnswer([null, { message: 7, extensions: { code: 'SERVICE_UNAVAILABLE' } }, { message: OFF.message, extensions: null }])).toBe(false)
+    expect(isLegacyOffAnswer(null)).toBe(false)
+    expect(isLegacyOffAnswer({ 0: OFF })).toBe(false)
+  })
+
+  it('lets a read not marked legacy go while legacy is off, and takes the switch from its answer too', async () => {
+    fetchMock.mockResolvedValueOnce(offAnswer())
+    await expect(graphqlQuery('{ procurementBuyerProfile }')).rejects.toBeInstanceOf(GraphQLRequestError)
+    fetchMock.mockResolvedValueOnce(offAnswer())
+    await expect(graphqlQuery('{ procurementBuyerProfile }')).rejects.toBeInstanceOf(GraphQLRequestError)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    await expect(graphqlQuery('{ procurementContract }', {}, { legacy: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('lets a read cancelled or past its deadline fail as such, not as legacy off', async () => {
+    fetchMock.mockResolvedValueOnce(offAnswer())
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { legacy: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    fetchMock.mockImplementation(abortableFetch)
+    const late = await graphqlQuery('{ procurementContract }', {}, { legacy: true, signal: AbortSignal.abort(new DOMException('deadline', 'TimeoutError')) }).catch((error: unknown) => error)
+    expect(isGraphQLTimeout(late)).toBe(true)
+    const cancelled = new AbortController()
+    cancelled.abort()
+    await expect(graphqlQuery('{ procurementContract }', {}, { legacy: true, signal: cancelled.signal })).rejects.toBe(cancelled.signal.reason)
+    fetchMock.mockReset()
+  })
+
+  it('does not send a legacy read when the switch’s answer arrives while it waits for its token', async () => {
+    let releaseToken: (token: string | null) => void = () => {}
+    vi.mocked(getAuthToken).mockImplementationOnce(() => new Promise((resolve) => (releaseToken = resolve)))
+    const waiting = graphqlQuery('{ procurementContract }', {}, { legacy: true })
+    fetchMock.mockResolvedValueOnce(offAnswer())
+    await expect(graphqlQuery('{ procurementProcedure }', {}, { auth: 'none' })).rejects.toBeInstanceOf(GraphQLRequestError)
+    releaseToken(null)
+    await expect(waiting).rejects.toBeInstanceOf(GraphQLRequestError)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+})

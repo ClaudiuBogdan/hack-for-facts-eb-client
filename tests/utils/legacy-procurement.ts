@@ -11,10 +11,9 @@
  * decides, and the specs run.
  */
 
-export const LEGACY_PROCUREMENT_OFF = 'legacy procurement off on Chronos dev, 24 Nov CNP containment; re-enable with the flag'
+import { isLegacyOffAnswer } from '../../src/lib/graphql/legacy-procurement'
 
-/** The API's answer while the legacy flag is off. */
-const SWITCHED_OFF = 'legacy procurement data is not served by this API'
+export const LEGACY_PROCUREMENT_OFF = 'legacy procurement off on Chronos dev, 24 Nov CNP containment; re-enable with the flag'
 
 let answer: Promise<boolean> | undefined
 
@@ -30,9 +29,8 @@ async function probe(): Promise<boolean> {
   const body = (await response?.json().catch(() => null)) as {
     readonly errors?: unknown
   } | null
-  const errors = Array.isArray(body?.errors) ? (body.errors as readonly ({ readonly message?: unknown; readonly extensions?: { readonly code?: unknown } | null } | null)[]) : []
-  // The switch's own answer, word for word: a legacy outage that says something else is not „off".
-  return errors.some((error) => error?.extensions?.code === 'SERVICE_UNAVAILABLE' && typeof error.message === 'string' && error.message.startsWith(SWITCHED_OFF))
+  // The switch's own answer, the client's breaker's signature: a legacy outage that says something else is not „off".
+  return isLegacyOffAnswer(body?.errors)
 }
 
 /** Asked once per worker. */
