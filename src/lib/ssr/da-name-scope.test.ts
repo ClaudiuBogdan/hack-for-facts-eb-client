@@ -101,6 +101,50 @@ describe('a render that names a direct-purchase supplier (root ruling 2026-11-22
     write.mockRestore()
   })
 
+  it('says a late name once a request, and not at all for a response no cache keeps', async () => {
+    const write = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+    const late = (response: () => Response) =>
+      withDaNameScope(() => {
+        // A deferred render naming several suppliers after the response was built.
+        setTimeout(() => {
+          markDaSupplierNamed()
+          markDaSupplierNamed()
+          markDaSupplierNamed()
+        }, 5)
+        return response()
+      })
+    await late(cacheable)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(write.mock.calls.filter(([text]) => String(text).includes('named after the response was built'))).toHaveLength(1)
+    write.mockClear()
+    // Each request says its own: a second keepable one is said again.
+    await late(cacheable)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(write.mock.calls.filter(([text]) => String(text).includes('named after the response was built'))).toHaveLength(1)
+    write.mockClear()
+    // Responses no cache keeps — the buyer page's route sends no-store itself; `no-store` among other directives, in any case,
+    // with validators beside it: nothing to say.
+    for (const headers of <Record<string, string>[]>[
+      { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' },
+      { 'Cache-Control': 'private, No-Store', ETag: '"x"', 'Last-Modified': 'Mon, 23 Nov 2026 10:00:00 GMT', Expires: '0' },
+    ]) {
+      await late(() => new Response('<html></html>', { status: 200, headers: { ...headers, 'Content-Type': 'text/html' } }))
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(write.mock.calls.filter(([text]) => String(text).includes('named after the response was built'))).toHaveLength(0)
+    // A cache could keep these: said, each.
+    for (const headers of <Record<string, string>[]>[
+      { 'Cache-Control': 'public, max-age=600, no-storex' },
+      { 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'max-age=600, ext="no-store"' },
+      { 'Cache-Control': 'no-store', 'Surrogate-Control': 'max-age=600' },
+    ]) {
+      await late(() => new Response('<html></html>', { status: 200, headers }))
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(write.mock.calls.filter(([text]) => String(text).includes('named after the response was built'))).toHaveLength(3)
+    write.mockRestore()
+  })
+
   it('copies a response whose headers are immutable', () => {
     const immutable = Response.redirect('https://example.test/', 302)
     const copy = asNoStore(immutable)
