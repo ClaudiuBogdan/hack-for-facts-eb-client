@@ -74,8 +74,8 @@ const FACE_INK = { E: COOKIE_COLORS.chocolateShadow, w: '#fffaf0', r: '#b4483c' 
 const FACE_X = 32
 /** Twelve 4-unit cells wide from x 32, eyes near y 48, mouth near y 72: clear of the bite. */
 const FACES = {
-  // The eyes apart from the mouth, so they can follow the pointer.
-  eyes: { y: 44, rows: ['..wE....wE..', '..EE....EE..', '..EE....EE..'] },
+  // The eyes apart from their glints, which follow the pointer (`Glints`).
+  eyes: { y: 44, rows: ['..EE....EE..', '..EE....EE..', '..EE....EE..'] },
   smile: { y: 60, rows: ['...E....E...', '....EEEE....'] },
   blink: { y: 44, rows: ['............', '............', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
   beaming: { y: 44, rows: ['..EE....EE..', '.E..E..E..E.', '............', '..EEEEEEEE..', '..ErrrrrrE..', '...ErrrrE...', '....EEEE....'] },
@@ -113,22 +113,22 @@ const MOTION_CSS = `
 }
 `
 
-function FaceLayer({ face, className, shift }: { readonly face: keyof typeof FACE_PATHS; readonly className?: string; readonly shift?: { readonly x: number; readonly y: number } }) {
+function FaceLayer({ face, className }: { readonly face: keyof typeof FACE_PATHS; readonly className?: string }) {
   return (
-    <g className={className} transform={shift && (shift.x || shift.y) ? `translate(${shift.x} ${shift.y})` : undefined}>
+    <g className={className}>
       {FACE_PATHS[face].map(({ d, fill }) => <path key={fill} d={d} fill={fill} />)}
     </g>
   )
 }
 
 /**
- * Where the eyes look: toward the pointer, in whole 2-unit pixels (up to two
- * sideways, one up or down). Desktop only (a fine pointer that hovers), and not
- * with reduced motion; elsewhere the eyes look straight out. State changes only
- * when the gaze crosses a pixel, not on every pointer move.
+ * Where the eyes look, as the glint's cell inside each 2 × 3 eye: right or
+ * left, top or middle. The eyes stay put; only the glint moves, one pixel.
+ * Desktop only (a fine pointer that hovers), and not with reduced motion;
+ * elsewhere the glint stays top-left. State changes only when the cell does.
  */
 function useGaze(target: RefObject<SVGSVGElement | null>, enabled: boolean) {
-  const [gaze, setGaze] = useState({ x: 0, y: 0 })
+  const [gaze, setGaze] = useState({ col: 0, row: 0 })
   useEffect(() => {
     if (!enabled) return
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
@@ -138,17 +138,21 @@ function useGaze(target: RefObject<SVGSVGElement | null>, enabled: boolean) {
       if (!box) return
       const dx = event.clientX - (box.left + box.width / 2)
       const dy = event.clientY - (box.top + box.height / 2)
-      const distance = Math.hypot(dx, dy) || 1
-      // Close in, the eyes stay centred; from 160px away they look all the way.
-      const reach = Math.min(1, distance / 160)
-      const x = Math.round((dx / distance) * reach * 2) * 2
-      const y = Math.round((dy / distance) * reach) * 2
-      setGaze((current) => (current.x === x && current.y === y ? current : { x, y }))
+      // Within the cookie's own width the glint rests; beyond it, it turns.
+      const col = dx > box.width ? 1 : 0
+      const row = dy > box.height ? 1 : 0
+      setGaze((current) => (current.col === col && current.row === row ? current : { col, row }))
     }
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
   }, [target, enabled])
-  return enabled ? gaze : { x: 0, y: 0 }
+  return enabled ? gaze : { col: 0, row: 0 }
+}
+
+/** The glint in each eye, at the cell the gaze picks. */
+function Glints({ col, row }: { readonly col: number; readonly row: number }) {
+  const y = 44 + row * 4
+  return <path data-cookie-glint="" d={pixel(40 + col * 4, y) + pixel(64 + col * 4, y)} fill={FACE_INK.w} />
 }
 
 const CRUMBS = [
@@ -226,7 +230,8 @@ export function CookieIllustration({
           {state === 'whole' && (
             <>
               <g className="tpz-cookie-open">
-                <FaceLayer face="eyes" shift={gaze} />
+                <FaceLayer face="eyes" />
+                <Glints col={gaze.col} row={gaze.row} />
                 <FaceLayer face="smile" />
               </g>
               <FaceLayer face="blink" className="tpz-cookie-shut" />

@@ -940,8 +940,9 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     mounts, it fades in, rises 14 units and scales up from 0.82 over 560ms,
     with a slight overshoot. It blinks at 1.4s.
   - **Eyes.** On a desktop (a fine pointer that hovers), the waiting cookie's
-    eyes follow the pointer, in whole 2-unit pixels: up to two sideways, one
-    up or down. Phones and reduced motion keep them still.
+    eyes watch the pointer. The eyes stay put and only the white glint in
+    each moves, one pixel to the right or down (owner: moving the whole eye
+    was too much). Phones and reduced motion keep the glint top-left.
   - Reduced motion drops all of this (owner, 24 November).
   - **Where.** The settings page uses the same cookie and face, without the hop (`arrive` is the card's alone).
 - **The card** (`consent-card.tsx`):

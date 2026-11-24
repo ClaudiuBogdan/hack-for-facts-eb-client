@@ -10,31 +10,35 @@ const movePointer = (x: number, y: number) =>
     window.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y }))
   })
 
-// jsdom lays nothing out: the cookie's box is at 0,0, so the pointer's position is its direction.
-const eyeShift = (container: HTMLElement) => container.querySelector('.tpz-cookie-open g[transform]')?.getAttribute('transform') ?? null
+// jsdom lays nothing out: the cookie's box is at 0,0 and 0 wide, so any offset is "beyond it".
+const glint = (container: HTMLElement) => container.querySelector('[data-cookie-glint]')?.getAttribute('d')
+const TOP_LEFT = 'M40 44h4v4h-4ZM64 44h4v4h-4Z'
 
 describe('cookie eyes', () => {
   afterEach(() => vi.restoreAllMocks())
 
-  it('follow the pointer on a desktop, a whole pixel at a time', () => {
+  it('turn their glint toward the pointer on a desktop; the eyes stay put', () => {
     media({ '(hover: hover) and (pointer: fine)': true })
     const { container } = render(<CookieIllustration state="whole" />)
+    expect(glint(container)).toBe(TOP_LEFT)
     movePointer(500, 0)
-    expect(eyeShift(container)).toBe('translate(4 0)')
-    movePointer(0, -500)
-    expect(eyeShift(container)).toBe('translate(0 -2)')
+    expect(glint(container)).toBe('M44 44h4v4h-4ZM68 44h4v4h-4Z')
+    movePointer(500, 500)
+    expect(glint(container)).toBe('M44 48h4v4h-4ZM68 48h4v4h-4Z')
+    movePointer(-500, -500)
+    expect(glint(container)).toBe(TOP_LEFT)
   })
 
-  it('stay put on touch screens and with reduced motion', () => {
+  it('keep the glint top-left on touch screens and with reduced motion', () => {
     media({ '(hover: hover) and (pointer: fine)': false })
     const touch = render(<CookieIllustration state="whole" />)
-    movePointer(500, 0)
-    expect(eyeShift(touch.container)).toBeNull()
+    movePointer(500, 500)
+    expect(glint(touch.container)).toBe(TOP_LEFT)
 
     vi.restoreAllMocks()
     media({ '(hover: hover) and (pointer: fine)': true, '(prefers-reduced-motion: reduce)': true })
     const calm = render(<CookieIllustration state="whole" />)
-    movePointer(500, 0)
-    expect(eyeShift(calm.container)).toBeNull()
+    movePointer(500, 500)
+    expect(glint(calm.container)).toBe(TOP_LEFT)
   })
 })
