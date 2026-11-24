@@ -936,8 +936,13 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     smiling.
   - **Drawing.** The face is 4-unit chocolate pixels, clear of the bite. The
     chips moved to the rim. Faces swap in one frame; pixel faces do not morph.
-  - **Motion.** It hops in, in three steps, just after the card arrives, and
-    blinks at 1.4s. Both are dropped with reduced motion.
+  - **Motion.** Arrival is only in the card (`arrive`): 420ms after the card
+    mounts, it fades in, rises 14 units and scales up from 0.82 over 560ms,
+    with a slight overshoot. It blinks at 1.4s.
+  - **Eyes.** On a desktop (a fine pointer that hovers), the waiting cookie's
+    eyes follow the pointer, in whole 2-unit pixels: up to two sideways, one
+    up or down. Phones and reduced motion keep them still.
+  - Reduced motion drops all of this (owner, 24 November).
   - **Where.** The settings page uses the same cookie and face, without the hop (`arrive` is the card's alone).
 - **The card** (`consent-card.tsx`):
   - **Type.** Inter only: the mono capitals (the „Confidențialitate” eyebrow,
@@ -949,6 +954,8 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     disclosure reads „Alege ce pornești” and „Mereu pornite”. The
     confirmations are „Mulțumim!”, „Doar esențialul.” and „Am notat.”
   - **Size.** The cookie is 64px, 72px from `sm` up.
+  - **Title.** It sits on the cookie's baseline, right above the body, and the
+    × is in the card's corner (owner: less gap between title and text).
   - **Corner marks gone.** They stuck 1px out of the scrolling card and gave
     it a horizontal scrollbar.
   - **Behaviour is unchanged:** non-modal, Escape, focus return, the ×, the

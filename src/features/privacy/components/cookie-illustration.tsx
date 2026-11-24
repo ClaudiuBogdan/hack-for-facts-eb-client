@@ -1,4 +1,4 @@
-import { useId, type ComponentPropsWithoutRef } from 'react'
+import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type RefObject } from 'react'
 import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
 import type { CookieState } from '@/features/privacy/lib/consent-categories'
@@ -74,7 +74,9 @@ const FACE_INK = { E: COOKIE_COLORS.chocolateShadow, w: '#fffaf0', r: '#b4483c' 
 const FACE_X = 32
 /** Twelve 4-unit cells wide from x 32, eyes near y 48, mouth near y 72: clear of the bite. */
 const FACES = {
-  looking: { y: 44, rows: ['..wE....wE..', '..EE....EE..', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
+  // The eyes apart from the mouth, so they can follow the pointer.
+  eyes: { y: 44, rows: ['..wE....wE..', '..EE....EE..', '..EE....EE..'] },
+  smile: { y: 60, rows: ['...E....E...', '....EEEE....'] },
   blink: { y: 44, rows: ['............', '............', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
   beaming: { y: 44, rows: ['..EE....EE..', '.E..E..E..E.', '............', '..EEEEEEEE..', '..ErrrrrrE..', '...ErrrrE...', '....EEEE....'] },
   content: { y: 48, rows: ['.E..E..E..E.', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
@@ -91,18 +93,19 @@ function faceFill({ y, rows }: { readonly y: number; readonly rows: readonly str
   return Object.entries(paths).map(([char, d]) => ({ d, fill: FACE_INK[char as keyof typeof FACE_INK] }))
 }
 const FACE_PATHS = {
-  looking: faceFill(FACES.looking),
+  eyes: faceFill(FACES.eyes),
+  smile: faceFill(FACES.smile),
   blink: faceFill(FACES.blink),
   beaming: faceFill(FACES.beaming),
   content: faceFill(FACES.content),
 } as const
 
-/** The hop in (only where the caller asks: the consent card, after it arrives) and one blink. Whole cells in `steps()`; nothing moves with reduced motion. */
+/** The arrival (only where the caller asks: the consent card, just after it lands) and one blink. Whole cells in `steps()`; nothing moves with reduced motion. */
 const MOTION_CSS = `
-@keyframes tpz-cookie-hop { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+@keyframes tpz-cookie-hop { from { opacity: 0; transform: translateY(14px) scale(0.82); } to { opacity: 1; transform: none; } }
 @keyframes tpz-cookie-open { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes tpz-cookie-shut { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-.tpz-cookie-hop { animation: tpz-cookie-hop 320ms steps(3, end) 480ms backwards; }
+.tpz-cookie-hop { transform-box: fill-box; transform-origin: 50% 100%; animation: tpz-cookie-hop 560ms cubic-bezier(0.34, 1.4, 0.64, 1) 420ms backwards; }
 .tpz-cookie-open { animation: tpz-cookie-open 160ms steps(1, end) 1400ms; }
 .tpz-cookie-shut { opacity: 0; animation: tpz-cookie-shut 160ms steps(1, end) 1400ms; }
 @media (prefers-reduced-motion: reduce) {
@@ -110,12 +113,42 @@ const MOTION_CSS = `
 }
 `
 
-function FaceLayer({ face, className }: { readonly face: keyof typeof FACE_PATHS; readonly className?: string }) {
+function FaceLayer({ face, className, shift }: { readonly face: keyof typeof FACE_PATHS; readonly className?: string; readonly shift?: { readonly x: number; readonly y: number } }) {
   return (
-    <g className={className}>
+    <g className={className} transform={shift && (shift.x || shift.y) ? `translate(${shift.x} ${shift.y})` : undefined}>
       {FACE_PATHS[face].map(({ d, fill }) => <path key={fill} d={d} fill={fill} />)}
     </g>
   )
+}
+
+/**
+ * Where the eyes look: toward the pointer, in whole 2-unit pixels (up to two
+ * sideways, one up or down). Desktop only (a fine pointer that hovers), and not
+ * with reduced motion; elsewhere the eyes look straight out. State changes only
+ * when the gaze crosses a pixel, not on every pointer move.
+ */
+function useGaze(target: RefObject<SVGSVGElement | null>, enabled: boolean) {
+  const [gaze, setGaze] = useState({ x: 0, y: 0 })
+  useEffect(() => {
+    if (!enabled) return
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const onMove = (event: PointerEvent) => {
+      const box = target.current?.getBoundingClientRect()
+      if (!box) return
+      const dx = event.clientX - (box.left + box.width / 2)
+      const dy = event.clientY - (box.top + box.height / 2)
+      const distance = Math.hypot(dx, dy) || 1
+      // Close in, the eyes stay centred; from 160px away they look all the way.
+      const reach = Math.min(1, distance / 160)
+      const x = Math.round((dx / distance) * reach * 2) * 2
+      const y = Math.round((dy / distance) * reach) * 2
+      setGaze((current) => (current.x === x && current.y === y ? current : { x, y }))
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [target, enabled])
+  return enabled ? gaze : { x: 0, y: 0 }
 }
 
 const CRUMBS = [
@@ -137,6 +170,8 @@ export function CookieIllustration({
   }
 >) {
   const maskId = `${useId()}-bite`
+  const svgRef = useRef<SVGSVGElement>(null)
+  const gaze = useGaze(svgRef, state === 'whole')
   const label = state === 'bitten'
     ? t`Un cookie mușcat, cu firimituri alături, care zâmbește larg`
     : state === 'plain'
@@ -146,6 +181,7 @@ export function CookieIllustration({
   return (
     <svg
       {...rest}
+      ref={svgRef}
       viewBox="0 0 128 116"
       role="img"
       aria-label={label}
@@ -189,7 +225,10 @@ export function CookieIllustration({
         <g key={state}>
           {state === 'whole' && (
             <>
-              <FaceLayer face="looking" className="tpz-cookie-open" />
+              <g className="tpz-cookie-open">
+                <FaceLayer face="eyes" shift={gaze} />
+                <FaceLayer face="smile" />
+              </g>
               <FaceLayer face="blink" className="tpz-cookie-shut" />
             </>
           )}

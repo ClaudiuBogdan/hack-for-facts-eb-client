@@ -245,8 +245,19 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
         'rounded-lg border bg-background text-foreground shadow-lg focus-visible:outline-hidden',
       )}
     >
+      {view === 'saved' ? null : (
+        <button
+          type="button"
+          onClick={() => setPhase('leaving')}
+          aria-label={t`Nu acum — rămâne doar esențialul, întrebăm data viitoare`}
+          className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <X className="size-4" aria-hidden="true" />
+        </button>
+      )}
       <div className="p-5 sm:p-6">
-        <div className="flex items-start gap-4">
+        {/* The title sits on the cookie's baseline, right above the text it introduces. */}
+        <div className="flex items-end gap-4">
           {/* Grows a little once the decision is in — the picture is the
               answer now, and the answer is the thing to look at. */}
           <div
@@ -257,27 +268,15 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
           >
             <CookieIllustration state={cookieState} arrive className="size-16 sm:size-[4.5rem]" />
           </div>
-          <div className="flex min-w-0 flex-1 items-start justify-between gap-3 pt-1">
-            <h2 id={titleId} className="text-lg font-semibold leading-snug tracking-tight text-balance">
-              {view === 'saved' ? saved.title : <Trans>Cookie-uri puține, la vedere</Trans>}
-            </h2>
-            {view === 'saved' ? null : (
-              <button
-                type="button"
-                onClick={() => setPhase('leaving')}
-                aria-label={t`Nu acum — rămâne doar esențialul, întrebăm data viitoare`}
-                className="-mr-2 -mt-1.5 flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <X className="size-4" aria-hidden="true" />
-              </button>
-            )}
-          </div>
+          <h2 id={titleId} className="min-w-0 flex-1 pr-6 pb-0.5 text-lg font-semibold leading-snug tracking-tight text-balance">
+            {view === 'saved' ? saved.title : <Trans>Cookie-uri puține, la vedere</Trans>}
+          </h2>
         </div>
 
         <p
           id={descriptionId}
           aria-live="polite"
-          className="mt-3 text-sm leading-relaxed text-pretty text-muted-foreground"
+          className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground"
         >
           {view === 'saved' ? (
             saved.body
