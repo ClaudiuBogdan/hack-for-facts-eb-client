@@ -1,4 +1,4 @@
-import { readCookieValue, readRequestCookie } from '@/lib/user-preferences'
+import { readCookieValue, readRequestCookie, setPreferenceCookie } from '@/lib/user-preferences'
 
 /**
  * The pages whose notice the visitor dismissed, as one session cookie: no
@@ -39,9 +39,5 @@ export function readBrowserDismissedNotices(): readonly string[] {
 
 /** Records a dismissal in the session cookie. Browser only. */
 export function rememberDismissedNotice(id: string): void {
-  if (typeof document === 'undefined') return
-  const next = addDismissedNotice(parseDismissedNotices(readCookieValue(PAGE_NOTICE_COOKIE)), id)
-  const parts = [`${PAGE_NOTICE_COOKIE}=${next.join(',')}`, 'Path=/', 'SameSite=Lax']
-  if (window.location.protocol === 'https:') parts.push('Secure')
-  document.cookie = parts.join('; ')
+  setPreferenceCookie(PAGE_NOTICE_COOKIE, addDismissedNotice(readBrowserDismissedNotices(), id).join(','), { session: true })
 }

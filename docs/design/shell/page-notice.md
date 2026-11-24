@@ -43,24 +43,18 @@ Owner, 24 November 2026: on every page for now, except the landing page.
     `/alerts`, `/share`
   - `/admin`, `/development` and `/test-error`
 - **Once the data is verified,** drop the section's id from the shell: return
-  null for it in `pageNoticeScope`. A page can also render its own
-  `PageNotice` with its own words.
+  null for it in `pageNoticeScope`.
 
 ## The component
 
-`PageNotice` in `src/components/data-trust/page-notice.tsx`, exported from
-`@/components/data-trust`.
+`PageNotice` in `src/components/data-trust/page-notice.tsx` (imported from
+that file, not the `data-trust` barrel, which stays free of router hooks).
 
 ```tsx
-import { PageNotice } from '@/components/data-trust'
+import { PageNotice } from '@/components/data-trust/page-notice'
 
 // First thing in the page, outside the page's padded container:
 <PageNotice id="public-enterprises" contentClassName="mx-auto max-w-6xl px-4 md:px-6" />
-
-// With the page's own words:
-<PageNotice id="ngos" title={<Trans>…</Trans>}>
-  <p><Trans>…</Trans></p>
-</PageNotice>
 ```
 
 - **`id`** names the notice; lowercase words joined by hyphens. Dismissing it
@@ -69,7 +63,7 @@ import { PageNotice } from '@/components/data-trust'
 - **`contentClassName`** is the inner column. Set it to the page's own
   container, so the text lines up with the page title. The default is the
   reading width, `mx-auto max-w-5xl px-6`.
-- **`title`** and **`children`** replace the default copy:
+- **Copy** is fixed (no props for it until a page needs its own words):
   - Title: „Lucrăm încă la această pagină”.
   - Text: „Verificăm datele, așa că unele cifre se pot schimba până terminăm.”
     and „Ai găsit ceva greșit? Spune-ne și ne ajuți să verificăm mai repede.”

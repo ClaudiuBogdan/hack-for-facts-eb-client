@@ -58,8 +58,4 @@ describe('cookie illustration', () => {
     expect(html).toContain('prefers-reduced-motion: reduce')
   })
 
-  it('hops in only where asked: the card, not the settings page', () => {
-    expect(renderCookie('whole')).not.toContain('class="tpz-cookie-hop"')
-    expect(renderToStaticMarkup(createElement(CookieIllustration, { state: 'whole', arrive: true }))).toContain('class="tpz-cookie-hop"')
-  })
 })

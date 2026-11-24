@@ -26,7 +26,7 @@ export function nationalRead(overrides: Partial<NationalRead> = {}): NationalRea
         rows: [row('1590120', 'Regia Națională a Pădurilor Romsilva', 7_293, 93_900_000, 0.005), row('4204003', 'Institutul Clinic Fundeni', 3_647, 66_500_000, 0.004)],
       },
     },
-    directSellers: { rankedBy: 'value', rows: [{ ...row('11805367', 'Selgros Cash & Carry SRL', 44_181, 68_800_000, 0.004), displayKind: 'company' }] },
+    directSellers: { rankedBy: 'value', rows: [{ ...row('11805367', 'Selgros Cash & Carry SRL', 44_181, 68_800_000, 0.004), displayKind: 'company', displayName: 'Selgros Cash & Carry SRL' }] },
     procedures: {
       rankedBy: 'count',
       rows: [

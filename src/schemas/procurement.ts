@@ -49,6 +49,12 @@ export const partySchema = z.object({
    * has no CUI and no name, and is never named.
    */
   displayKind: z.string().nullable().optional(),
+  /**
+   * A direct-purchase supplier on a ranking row: whether it may link to its
+   * supplier page — a company the API names only (PROC-KR9T). Absent
+   * elsewhere.
+   */
+  linked: z.boolean().optional(),
 })
 
 export type Party = z.infer<typeof partySchema>

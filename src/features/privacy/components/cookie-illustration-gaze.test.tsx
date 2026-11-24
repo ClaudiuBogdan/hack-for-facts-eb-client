@@ -3,7 +3,9 @@ import { act, render } from '@/test/test-utils'
 import { CookieIllustration } from './cookie-illustration'
 
 const media = (matches: Record<string, boolean>) =>
-  vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({ matches: matches[query] ?? false }) as MediaQueryList)
+  vi
+    .spyOn(window, 'matchMedia')
+    .mockImplementation((query: string) => ({ matches: matches[query] ?? false, addEventListener: () => {}, removeEventListener: () => {} }) as unknown as MediaQueryList)
 
 const movePointer = (x: number, y: number) =>
   act(() => {

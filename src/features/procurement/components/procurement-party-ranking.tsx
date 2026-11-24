@@ -274,7 +274,9 @@ function resolvePartyRowLink(
     })
     if (pair) return { mode: 'pair', link: pair }
   }
-  const profile = partyProcurementLink(party, kind)
+  // Root, 24 November 2026 (PROC-KR9T): a direct-purchase supplier's page only for a company the API names — the page names a sole trader in full.
+  const unlinked = kind === 'supplier' && grain === 'direct_acquisition' && party?.linked !== true
+  const profile = unlinked ? null : partyProcurementLink(party, kind)
   if (profile) return { mode: 'party', link: profile }
   return null
 }

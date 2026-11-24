@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import { readCookieValue } from '@/lib/user-preferences'
 import { addDismissedNotice, PAGE_NOTICE_COOKIE, parseDismissedNotices, rememberDismissedNotice } from './page-notice-cookie'
 
 describe('page notice cookie', () => {
@@ -25,6 +26,6 @@ describe('page notice cookie', () => {
   it('writes a session cookie (no expiry) that accumulates dismissals', () => {
     rememberDismissedNotice('public-enterprises')
     rememberDismissedNotice('ngos')
-    expect(document.cookie).toContain(`${PAGE_NOTICE_COOKIE}=public-enterprises,ngos`)
+    expect(parseDismissedNotices(readCookieValue(PAGE_NOTICE_COOKIE))).toEqual(['public-enterprises', 'ngos'])
   })
 })

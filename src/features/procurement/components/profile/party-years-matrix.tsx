@@ -28,6 +28,7 @@ export function PartyYearsMatrix({
   year,
   kind,
   nameOf,
+  linked,
   caption,
   className,
 }: {
@@ -37,6 +38,8 @@ export function PartyYearsMatrix({
   /** What the rows are: firms (a buyer's page) or institutions (a firm's page). */
   readonly kind: 'supplier' | 'authority'
   readonly nameOf: (cui: string) => string
+  /** Whether a row's name links to its page; every row when absent. A masked or code-only seller is plain text (PROC-KR9T). */
+  readonly linked?: (cui: string) => boolean
   /** What the cells count, said above the table until a cell is pointed at. */
   readonly caption: string
   readonly className?: string
@@ -88,7 +91,9 @@ export function PartyYearsMatrix({
           {rows.map((row) => (
             <tr key={row.cui}>
               <th scope="row" className="py-1.5 pr-2 text-left font-normal">
-                {kind === 'supplier' ? (
+                {linked && !linked(row.cui) ? (
+                  <span className="block truncate text-foreground">{nameOf(row.cui)}</span>
+                ) : kind === 'supplier' ? (
                   <Link to="/procurement/suppliers/$cui" params={{ cui: row.cui }} className={linkClass}>
                     {nameOf(row.cui)}
                   </Link>

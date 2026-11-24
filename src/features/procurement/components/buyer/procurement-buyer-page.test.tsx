@@ -416,6 +416,24 @@ describe('ProcurementBuyerPage', () => {
     expect(screen.getAllByText(/YEARS NAME/iu).length).toBeGreaterThan(0)
   })
 
+  it('links a year-by-year seller to its page only when it was served as a company (root, 24 November 2026; PROC-KR9T)', () => {
+    const profile = buyerProfile({
+      daNames: new Map([
+        ['9813902', 'Costalex Construct SRL'],
+        ['17046193', 'Ion P*** PFA (CUI 17046193)'],
+      ]),
+      daLinked: new Set(['9813902']),
+    })
+    render(page({}, { choice: 2025, profile }))
+    const matrix = screen.getByRole('table')
+    const hrefs = within(matrix)
+      .queryAllByRole('link')
+      .map((link) => link.getAttribute('href'))
+    expect(hrefs.some((href) => href?.startsWith('/procurement/suppliers/9813902'))).toBe(true)
+    expect(hrefs.some((href) => href?.includes('17046193'))).toBe(false)
+    expect(within(matrix).getAllByText('Ion P*** PFA (CUI 17046193)').length).toBeGreaterThan(0)
+  })
+
   it('says when the last twelve months could not be read, shows the last complete year, and holds the records back', () => {
     // The profile fell back (no cutoff); the records, read for the last twelve months, are not the year's.
     render(page({}, { choice: 'recent', profile: buyerProfile({ partial: true }), records: buyerRecords() }))

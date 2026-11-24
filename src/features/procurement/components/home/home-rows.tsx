@@ -8,7 +8,7 @@ import type { CategoryFigure } from '../../lib/home-categories'
 import { countText, dayText, firmsCount, moneyText, percentText, unitCount } from '../../lib/home-format'
 import type { HomeGrain, RankedRow, Ranking, RecentRecord } from '../../lib/home-model'
 import { Bone } from './home-chrome'
-import { isShownDaSupplierBucket, unnamedSupplierLabel } from '../../lib/withheld-party'
+import { isLinkedDaSupplierBucket, isShownDaSupplierBucket, unnamedSupplierLabel } from '../../lib/withheld-party'
 
 /**
  * The front door's rows. A row keeps its name on the left with what it
@@ -67,6 +67,8 @@ export function PartyRows({
         // D6: a direct-purchase supplier the API withholds — the group, or one — is never named or linked.
         const withheld = kind === 'supplier' && grain === 'direct' && !isShownDaSupplierBucket({ key: row.key, displayKind: row.displayKind })
         const label = withheld ? unnamedSupplierLabel(row.key) : row.label
+        // Root, 24 November 2026 (PROC-KR9T): a masked or code-only supplier is shown, never linked — its pages name a sole trader in full.
+        const unlinked = withheld || (kind === 'supplier' && grain === 'direct' && !isLinkedDaSupplierBucket({ key: row.key, displayKind: row.displayKind, displayName: row.displayName }))
         const body = (
           <>
             <span className="grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
@@ -87,7 +89,7 @@ export function PartyRows({
         const className = cn(ROW, ROW_LINK, dense ? 'py-2' : 'py-2.5')
         return (
           <li key={row.key}>
-            {withheld ? (
+            {unlinked ? (
               <div className={cn(ROW, dense ? 'py-2' : 'py-2.5')}>{body}</div>
             ) : kind === 'authority' ? (
               <Link to="/procurement/institutions/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} className={className}>

@@ -129,7 +129,7 @@ function Buying({ cui, profile }: { readonly cui: string; readonly profile: Buye
   const suppliers = profile.directSuppliers
     ? {
         rankedBy: profile.directSuppliers.rankedBy,
-        rows: profile.directSuppliers.rows.map((row) => ({ key: row.cui, label: daRowName(row), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null })),
+        rows: profile.directSuppliers.rows.map((row) => ({ key: row.cui, label: daRowName(row), count: row.count, value: row.value, share: row.share, displayKind: row.displayKind ?? null, displayName: row.displayName ?? null })),
       }
     : null
   const period = periodText(profile.period)

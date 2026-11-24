@@ -63,6 +63,19 @@ export interface DpParty {
    * empty and the page names it only as this says, never from another read.
    */
   readonly withheld?: 'natural-person' | 'none'
+  /**
+   * A release supplier said as plain text, never a link to its supplier or
+   * company page (root, 24 November 2026; PROC-KR9T): anyone but a company
+   * with a party id. Those pages name a sole trader in full, so a link would
+   * undo a masked name.
+   */
+  readonly unlinked?: boolean
+  /**
+   * A release supplier the API lists by its code with no party id (naming
+   * step 2b): never counted, ranked or filterable, so there is no history
+   * between it and the buyer to read, and the page reads none.
+   */
+  readonly listedOnly?: boolean
 }
 
 /**
@@ -539,16 +552,20 @@ export interface DpContextInput {
  * date at all, or a date before 2019 (the legacy rows cannot tell a purchase
  * from a refused offer). Null when it has one.
  */
-export type DpContextGap = 'withheld' | 'no-cui' | 'no-date' | 'before-comparable'
+export type DpContextGap = 'withheld' | 'listed-only' | 'no-cui' | 'no-date' | 'before-comparable'
 
 /**
  * Release 1 adds one: a supplier D6 does not name (`withheld`: its purchases
- * are never gathered). A release purchase's context is read from the
- * analysis, which serves the release when the API does, and its neighbours
- * from the release itself.
+ * are never gathered). Naming step 2b another: a supplier listed by its code
+ * with no party id (`listed-only`: never counted or filterable, so a read
+ * between the two would find nothing and say none happened; root, 24
+ * November 2026). A release purchase's context is read from the analysis,
+ * which serves the release when the API does, and its neighbours from the
+ * release itself.
  */
 export function contextGapOf(purchase: DirectPurchase): DpContextGap | null {
   if (purchase.supplier.withheld) return 'withheld'
+  if (purchase.supplier.listedOnly) return 'listed-only'
   if (!purchase.authority.cui || !purchase.supplier.cui) return 'no-cui'
   const yearDay = dayOf(purchase)
   if (!yearDay) return 'no-date'

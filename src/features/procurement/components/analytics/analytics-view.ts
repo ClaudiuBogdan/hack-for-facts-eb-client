@@ -1,4 +1,4 @@
-import { daSupplierBucketName, isNaturalPersonKey, isShownDaSupplierBucket, unnamedSupplierLabel } from '../../lib/withheld-party'
+import { daSupplierBucketName, isLinkedDaSupplierBucket, isNaturalPersonKey, isShownDaSupplierBucket, unnamedSupplierLabel } from '../../lib/withheld-party'
 import { withoutLeadingZeros } from '../../lib/fiscal-code'
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
@@ -155,6 +155,8 @@ export interface Row {
   readonly kind: 'top' | 'other' | 'unknown' | 'withheld'
   /** D6: a direct-purchase supplier the API does not serve as a company — never named, linked or drilled into. */
   readonly unnamed?: boolean
+  /** A direct-purchase supplier shown masked or by its code alone: drilled into like any row, never linked to its pages (PROC-KR9T). */
+  readonly unlinked?: boolean
   readonly label: string
   readonly sub: string | null
   /** What the row is ranked and drawn by. */
@@ -178,6 +180,8 @@ export function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly
     .map((bucket) => {
       const unnamed = bucket.kind === 'top' && group.axis === 'furnizor' && population.grain === 'direct_acquisition' && !isShownDaSupplierBucket(bucket)
       const daCompany = bucket.kind === 'top' && group.axis === 'furnizor' && population.grain === 'direct_acquisition' && !unnamed
+      // Root, 24 November 2026 (PROC-KR9T): a masked or code-only supplier's pages name a sole trader in full.
+      const unlinked = daCompany && !isLinkedDaSupplierBucket(bucket)
       // DA-009: a direct-purchase supplier is said as the API serves it on its bucket alone.
       const label = bucket.kind === 'other' ? t`Restul` : bucket.kind === 'unknown' ? unknownLabel(group.axis) : unnamed ? unnamedSupplierLabel(bucket.key) : daCompany ? daSupplierBucketName(bucket) : keyLabel(group.axis, group.level, bucket.key ?? '', namer)
       const sub = bucket.kind !== 'top' || !bucket.key || unnamed || isNaturalPersonKey(bucket.key) ? null : group.axis === 'cumparator' || group.axis === 'furnizor' ? `CUI ${bucket.key}` : group.axis === 'cpv' ? `CPV ${cpvPrefix(bucket.key, group.level)}` : null
@@ -206,6 +210,7 @@ export function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly
         key: bucket.key,
         kind: bucket.kind,
         ...(unnamed ? { unnamed: true } : {}),
+        ...(unlinked ? { unlinked: true } : {}),
         label,
         sub,
         figure,

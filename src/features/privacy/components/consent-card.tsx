@@ -84,10 +84,22 @@ const CSS = `
   animation-delay: calc(var(--tpz-row) * 60ms);
 }
 
+/* The cookie rises in just after the card lands: a fade, a lift from below and
+   a scale with a slight overshoot. On transform, so it composes with the
+   saved state's scale-110. */
+@keyframes tpz-consent-cookie-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.82); }
+  to { opacity: 1; transform: none; }
+}
+.tpz-consent-cookie {
+  transform-origin: 50% 100%;
+  animation: tpz-consent-cookie-in 560ms cubic-bezier(0.34, 1.4, 0.64, 1) 420ms backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [${PHASE_ATTR}] { opacity: 1; translate: none; transition: none; }
   [${PHASE_ATTR}='leaving'] { opacity: 0; }
-  .tpz-consent-row { animation: none; }
+  .tpz-consent-row, .tpz-consent-cookie { animation: none; }
 }
 `
 
@@ -256,19 +268,20 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
         </button>
       )}
       <div className="p-5 sm:p-6">
-        {/* The title sits on the cookie's baseline, right above the text it introduces. */}
-        <div className="flex items-end gap-4">
+        {/* The title beside the cookie's top. The drawing keeps empty room on its
+            right for the crumbs, so the gap itself is small. */}
+        <div className="flex items-start gap-1.5">
           {/* Grows a little once the decision is in — the picture is the
               answer now, and the answer is the thing to look at. */}
           <div
             className={cn(
-              'shrink-0 transition-transform duration-500 ease-out motion-reduce:transition-none',
+              'tpz-consent-cookie shrink-0 transition-transform duration-500 ease-out motion-reduce:transition-none',
               view === 'saved' && 'motion-safe:scale-110',
             )}
           >
-            <CookieIllustration state={cookieState} arrive className="size-16 sm:size-[4.5rem]" />
+            <CookieIllustration state={cookieState} className="size-16 sm:size-[4.5rem]" />
           </div>
-          <h2 id={titleId} className="min-w-0 flex-1 pr-6 pb-0.5 text-lg font-semibold leading-snug tracking-tight text-balance">
+          <h2 id={titleId} className="min-w-0 flex-1 pt-1.5 pr-6 text-lg font-semibold leading-snug tracking-tight text-balance">
             {view === 'saved' ? saved.title : <Trans>Cookie-uri puține, la vedere</Trans>}
           </h2>
         </div>

@@ -11,7 +11,7 @@ import { rowsOf } from '../components/analytics/analytics-view'
 import { PartyRows } from '../components/home/home-rows'
 import { keyLabel } from './analytics-text'
 import type { Ranking } from './home-model'
-import { daSupplierBucketName, daSupplierShown, isNaturalPersonKey, isShownDaSupplierBucket, NATURAL_PERSON_KEY, nameableKeys, scrubDaSupplierBucket } from './withheld-party'
+import { daSupplierBucketName, daSupplierShown, isLinkedDaSupplier, isLinkedDaSupplierBucket, isNaturalPersonKey, isShownDaSupplierBucket, NATURAL_PERSON_KEY, nameableKeys, scrubDaSupplierBucket } from './withheld-party'
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, params }: { readonly children: ReactNode; readonly to: string; readonly params?: Record<string, string> }) => {
@@ -31,7 +31,7 @@ vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typ
 /** A ranking whose rows carry the API's D6 kind: `company` for a CUI, the group's for its key, unless a test says otherwise. */
 const ranking = (keys: readonly string[], kinds: Readonly<Record<string, string | null>> = {}): Ranking => ({
   rankedBy: 'value',
-  rows: keys.map((key, index) => ({ key, label: `Firma cu CUI ${key}`, count: 3, value: 1000 - index, share: null, displayKind: key in kinds ? kinds[key] : key === 'natural_person' ? 'natural_person' : 'company' })),
+  rows: keys.map((key, index) => ({ key, label: `Firma cu CUI ${key}`, count: 3, value: 1000 - index, share: null, displayKind: key in kinds ? kinds[key] : key === 'natural_person' ? 'natural_person' : 'company', displayName: `Firma cu CUI ${key}` })),
 })
 
 const html = (node: ReactNode) => renderToStaticMarkup(<>{node}</>).replace(/<!-- -->/g, '')
@@ -71,7 +71,7 @@ describe('step 2: a masked person and a code alone (owner, 24 November 2026)', (
     }
   })
 
-  it('a ranking says a masked person by the masked name and code, a code alone as unpublished, and links both', () => {
+  it('a ranking says a masked person by the masked name and code, a code alone as unpublished, and links neither (PROC-KR9T)', () => {
     expect(daSupplierBucketName({ key: '30111222', displayKind: 'person_masked', displayName: 'Ion P*** PFA' })).toBe('Ion P*** PFA (CUI 30111222)')
     expect(daSupplierBucketName({ key: '30111223', displayKind: 'code_only', displayName: null })).toBe('CUI 30111223 (nume nepublicat)')
     expect(daSupplierBucketName({ key: '30111224', displayKind: 'mystery', displayName: 'SHOULD NOT SHOW' })).toBe('Furnizor nenumit')
@@ -81,15 +81,39 @@ describe('step 2: a masked person and a code alone (owner, 24 November 2026)', (
         { key: '30111222', label: 'Ion P*** PFA (CUI 30111222)', count: 3, value: 900, share: null, displayKind: 'person_masked' },
         { key: '30111223', label: 'CUI 30111223 (nume nepublicat)', count: 2, value: 800, share: null, displayKind: 'code_only' },
         { key: '30111224', label: 'SHOULD NOT SHOW', count: 1, value: 700, share: null, displayKind: 'mystery' },
+        { key: '14837428', label: 'FLORARIA IRIS SRL', count: 1, value: 600, share: null, displayKind: 'company', displayName: 'FLORARIA IRIS SRL' },
+        { key: '4305857', label: 'CUI 4305857 (denumire indisponibilă în registrul firmelor)', count: 1, value: 500, share: null, displayKind: 'company', displayName: null },
       ],
     }
     const page = html(<PartyRows ranking={rows} grain="direct" kind="supplier" year={2025} />)
     expect(page).toContain('Ion P*** PFA (CUI 30111222)')
-    expect(page).toContain('href="/procurement/suppliers/30111222"')
+    expect(page).not.toContain('href="/procurement/suppliers/30111222')
     expect(page).toContain('CUI 30111223 (nume nepublicat)')
-    expect(page).toContain('href="/procurement/suppliers/30111223"')
+    expect(page).not.toContain('href="/procurement/suppliers/30111223')
+    // A company the API names is linked, as ever; one it served with no name is not.
+    expect(page).toContain('href="/procurement/suppliers/14837428')
+    expect(page).toContain('CUI 4305857 (denumire indisponibilă în registrul firmelor)')
+    expect(page).not.toContain('href="/procurement/suppliers/4305857')
     expect(page).not.toContain('SHOULD NOT SHOW')
     expect(page).not.toContain('30111224')
+  })
+
+  it('links a direct-purchase supplier to its pages only as a company (root, 24 November 2026; PROC-KR9T)', () => {
+    expect(isLinkedDaSupplier(daSupplierShown({ displayKind: 'company', name: 'FLORARIA IRIS SRL', code: '14837428' }))).toBe(true)
+    // A company the API served with no name: its code, never a link to a page that would name it.
+    expect(isLinkedDaSupplier(daSupplierShown({ displayKind: 'company', name: null, code: '14837428' }))).toBe(false)
+    expect(isLinkedDaSupplier(daSupplierShown({ displayKind: 'company', name: ' ', code: '14837428' }))).toBe(false)
+    expect(isLinkedDaSupplier(daSupplierShown({ displayKind: 'person_masked', name: 'Ion P*** PFA', code: '30111222' }))).toBe(false)
+    expect(isLinkedDaSupplier(daSupplierShown({ displayKind: 'person_masked', name: null, code: '30111222' }))).toBe(false)
+    expect(isLinkedDaSupplier(daSupplierShown({ displayKind: 'code_only', name: null, code: '30111223' }))).toBe(false)
+    expect(isLinkedDaSupplier(daSupplierShown({ displayKind: 'natural_person', name: null, code: null }))).toBe(false)
+    expect(isLinkedDaSupplier(null)).toBe(false)
+    expect(isLinkedDaSupplierBucket({ key: '14837428', displayKind: 'company', displayName: 'FLORARIA IRIS SRL' })).toBe(true)
+    expect(isLinkedDaSupplierBucket({ key: '14837428', displayKind: 'company', displayName: null })).toBe(false)
+    expect(isLinkedDaSupplierBucket({ key: '30111222', displayKind: 'person_masked', displayName: 'Ion P*** PFA' })).toBe(false)
+    expect(isLinkedDaSupplierBucket({ key: '30111223', displayKind: 'code_only', displayName: null })).toBe(false)
+    expect(isLinkedDaSupplierBucket({ key: NATURAL_PERSON_KEY, displayKind: 'natural_person', displayName: null })).toBe(false)
+    expect(isLinkedDaSupplierBucket({ key: null, displayKind: 'company', displayName: 'X' })).toBe(false)
   })
 
   it('the scrub keeps what is shown and drops every name that is not, before anything is kept or serialised', () => {
@@ -104,8 +128,8 @@ describe('step 2: a masked person and a code alone (owner, 24 November 2026)', (
   it('an analysis bucket and a record row carry the masked name or the code, never more', () => {
     const bucket = (key: string, displayKind: string, displayName: string | null) => ({ key, kind: 'top', displayKind, displayName, recordCount: '4', withValueCount: '4', valueSum: '1000', shareOfScope: '0.5' })
     const spine = new Map([['supplier:30111222', 'POPESCU ION PFA']])
-    expect(mapPartyBucket(bucket('30111222', 'person_masked', 'Ion P*** PFA') as never, 'direct_acquisition', 'supplier', spine).supplier).toEqual({ cui: '30111222', name: 'Ion P*** PFA (CUI 30111222)', displayName: null })
-    expect(mapPartyBucket(bucket('30111223', 'code_only', null) as never, 'direct_acquisition', 'supplier').supplier).toEqual({ cui: '30111223', name: 'CUI 30111223 (nume nepublicat)', displayName: null })
+    expect(mapPartyBucket(bucket('30111222', 'person_masked', 'Ion P*** PFA') as never, 'direct_acquisition', 'supplier', spine).supplier).toEqual({ cui: '30111222', name: 'Ion P*** PFA (CUI 30111222)', displayName: null, displayKind: 'person_masked', linked: false })
+    expect(mapPartyBucket(bucket('30111223', 'code_only', null) as never, 'direct_acquisition', 'supplier').supplier).toEqual({ cui: '30111223', name: 'CUI 30111223 (nume nepublicat)', displayName: null, displayKind: 'code_only', linked: false })
     expect(daSupplierOf({ cui: '30111222', name: 'Ion P*** PFA', displayName: 'Ion P*** PFA', displayKind: 'person_masked' })).toEqual({ cui: '30111222', name: 'Ion P*** PFA (CUI 30111222)' })
     expect(daSupplierOf({ cui: '30111223', name: null, displayName: '30111223', displayKind: 'code_only' })).toEqual({ cui: '30111223', name: 'CUI 30111223 (nume nepublicat)' })
     expect(daSupplierOf({ cui: '30111224', name: 'Ion Popescu', displayName: 'Ion Popescu', displayKind: 'mystery' })).toEqual({ cui: null, name: '', withheld: true })
@@ -235,12 +259,17 @@ describe('mapPartyBucket (entity and company slices)', () => {
       cui: '14837428',
       name: 'FLORARIA IRIS SRL',
       displayName: null,
+      displayKind: 'company',
+      linked: true,
     })
     // A disclosed code with no public registry name: its code, said as missing from the registry, never private.
     expect(mapPartyBucket(bucket('14837428') as never, 'direct_acquisition', 'supplier', spine).supplier).toEqual({
       cui: '14837428',
       name: 'CUI 14837428 (denumire indisponibilă în registrul firmelor)',
       displayName: null,
+      displayKind: 'company',
+      // PROC-KR9T: no name served, so no link to a page that would name it.
+      linked: false,
     })
   })
 })

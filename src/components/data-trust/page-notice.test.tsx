@@ -34,17 +34,6 @@ describe('PageNotice', () => {
     expect(screen.getByText(/unele cifre se pot schimba/)).toBeInTheDocument()
   })
 
-  it('takes a page’s own title and text', () => {
-    render(
-      <PageNotice id="ngos" title="Registrul ONG e în lucru">
-        <p>Text propriu.</p>
-      </PageNotice>,
-    )
-    expect(screen.getByRole('heading', { name: 'Registrul ONG e în lucru' })).toBeInTheDocument()
-    expect(screen.getByText('Text propriu.')).toBeInTheDocument()
-    expect(screen.queryByText(/unele cifre se pot schimba/)).not.toBeInTheDocument()
-  })
-
   it('renders nothing once this page’s notice was dismissed this session', () => {
     dismissed = ['public-enterprises']
     const { container } = render(<PageNotice id="public-enterprises" />)

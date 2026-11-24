@@ -936,15 +936,16 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     smiling.
   - **Drawing.** The face is 4-unit chocolate pixels, clear of the bite. The
     chips moved to the rim. Faces swap in one frame; pixel faces do not morph.
-  - **Motion.** Arrival is only in the card (`arrive`): 420ms after the card
+  - **Motion.** Arrival belongs to the card (its CSS, on the cookie's wrapper): 420ms after the card
     mounts, it fades in, rises 14 units and scales up from 0.82 over 560ms,
-    with a slight overshoot. It blinks at 1.4s.
+    with a slight overshoot. While waiting it blinks every 5s, first at 1.4s
+    (owner: blink from time to time).
   - **Eyes.** On a desktop (a fine pointer that hovers), the waiting cookie's
     eyes watch the pointer. The eyes stay put and only the white glint in
     each moves, one pixel to the right or down (owner: moving the whole eye
     was too much). Phones and reduced motion keep the glint top-left.
   - Reduced motion drops all of this (owner, 24 November).
-  - **Where.** The settings page uses the same cookie and face, without the hop (`arrive` is the card's alone).
+  - **Where.** The settings page uses the same cookie and face; the arrival is the card's alone.
 - **The card** (`consent-card.tsx`):
   - **Type.** Inter only: the mono capitals (the „Confidențialitate” eyebrow,
     „01/02/03”, „Mereu”, the footer links) are gone (DESIGN.md: mono is for
@@ -955,8 +956,9 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     disclosure reads „Alege ce pornești” and „Mereu pornite”. The
     confirmations are „Mulțumim!”, „Doar esențialul.” and „Am notat.”
   - **Size.** The cookie is 64px, 72px from `sm` up.
-  - **Title.** It sits on the cookie's baseline, right above the body, and the
-    × is in the card's corner (owner: less gap between title and text).
+  - **Title.** Beside the top of the cookie, 6px from the drawing, whose own
+    right margin holds the crumbs. The × is in the card's corner (owner, after
+    trying it on the cookie's baseline: back up, closer to the cookie).
   - **Corner marks gone.** They stuck 1px out of the scrolling card and gave
     it a horizontal scrollbar.
   - **Behaviour is unchanged:** non-modal, Escape, focus return, the ×, the
