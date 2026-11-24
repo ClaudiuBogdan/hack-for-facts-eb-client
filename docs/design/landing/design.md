@@ -938,7 +938,8 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     chips moved to the rim. Faces swap in one frame; pixel faces do not morph.
   - **Motion.** Arrival belongs to the card (its CSS, on the cookie's wrapper): 420ms after the card
     mounts, it fades in, rises 14 units and scales up from 0.82 over 560ms,
-    with a slight overshoot. It blinks at 1.4s.
+    with a slight overshoot. While waiting it blinks every 5s, first at 1.4s
+    (owner: blink from time to time).
   - **Eyes.** On a desktop (a fine pointer that hovers), the waiting cookie's
     eyes watch the pointer. The eyes stay put and only the white glint in
     each moves, one pixel to the right or down (owner: moving the whole eye

@@ -101,12 +101,15 @@ const CONTENT = face(48, ['.E..E..E..E.', '..EE....EE..', '............', '...E.
 /** The left column of each eye. */
 const GLINT_X = [FACE_X + 2 * 4, FACE_X + 8 * 4] as const
 
-/** One blink while waiting. Nothing moves with reduced motion. */
+/**
+ * The waiting cookie blinks every 5s, for 160ms; a negative delay puts the
+ * first blink 1.4s in. Nothing moves with reduced motion.
+ */
 const MOTION_CSS = `
-@keyframes tpz-cookie-open { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-@keyframes tpz-cookie-shut { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-.tpz-cookie-open { animation: tpz-cookie-open 160ms steps(1, end) 1400ms; }
-.tpz-cookie-shut { opacity: 0; animation: tpz-cookie-shut 160ms steps(1, end) 1400ms; }
+@keyframes tpz-cookie-open { 0%, 96.8% { opacity: 1; } 96.81%, 99.99% { opacity: 0; } }
+@keyframes tpz-cookie-shut { 0%, 96.8% { opacity: 0; } 96.81%, 99.99% { opacity: 1; } }
+.tpz-cookie-open { animation: tpz-cookie-open 5s linear -3.44s infinite; }
+.tpz-cookie-shut { opacity: 0; animation: tpz-cookie-shut 5s linear -3.44s infinite; }
 @media (prefers-reduced-motion: reduce) {
   .tpz-cookie-open, .tpz-cookie-shut { animation: none; }
 }
