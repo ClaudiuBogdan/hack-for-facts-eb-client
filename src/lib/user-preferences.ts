@@ -91,13 +91,14 @@ export async function readUserInflationAdjustedPreference(): Promise<boolean> {
   return clientValue ?? DEFAULT_INFLATION_ADJUSTED;
 }
 
-export function setPreferenceCookie(name: string, value: string): void {
+/** A year by default; `{ session: true }` leaves out the expiry, so the browser drops it when it closes. */
+export function setPreferenceCookie(name: string, value: string, { session = false } = {}): void {
   if (typeof document === 'undefined') return;
   const maxAgeSeconds = PREFERENCE_COOKIE_MAX_AGE_DAYS * 24 * 60 * 60;
   const cookieParts = [
     `${name}=${encodeURIComponent(value)}`,
     'Path=/',
-    `Max-Age=${maxAgeSeconds}`,
+    ...(session ? [] : [`Max-Age=${maxAgeSeconds}`]),
     'SameSite=Lax',
   ];
   if (window.location.protocol === 'https:') {

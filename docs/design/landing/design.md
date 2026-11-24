@@ -936,7 +936,7 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     smiling.
   - **Drawing.** The face is 4-unit chocolate pixels, clear of the bite. The
     chips moved to the rim. Faces swap in one frame; pixel faces do not morph.
-  - **Motion.** Arrival is only in the card (`arrive`): 420ms after the card
+  - **Motion.** Arrival belongs to the card (its CSS, on the cookie's wrapper): 420ms after the card
     mounts, it fades in, rises 14 units and scales up from 0.82 over 560ms,
     with a slight overshoot. It blinks at 1.4s.
   - **Eyes.** On a desktop (a fine pointer that hovers), the waiting cookie's
@@ -944,7 +944,7 @@ art, better motion. Prototype `/development/privacy/consent-card-v2`
     each moves, one pixel to the right or down (owner: moving the whole eye
     was too much). Phones and reduced motion keep the glint top-left.
   - Reduced motion drops all of this (owner, 24 November).
-  - **Where.** The settings page uses the same cookie and face, without the hop (`arrive` is the card's alone).
+  - **Where.** The settings page uses the same cookie and face; the arrival is the card's alone.
 - **The card** (`consent-card.tsx`):
   - **Type.** Inter only: the mono capitals (the „Confidențialitate” eyebrow,
     „01/02/03”, „Mereu”, the footer links) are gone (DESIGN.md: mono is for

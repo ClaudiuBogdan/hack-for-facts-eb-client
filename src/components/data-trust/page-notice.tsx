@@ -1,9 +1,8 @@
-import { useEffect, useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import { useSendFeedback } from '@/hooks/useSendFeedback'
-import { cn } from '@/lib/utils'
 import { readBrowserDismissedNotices, rememberDismissedNotice } from './page-notice-cookie'
 
 type PageNoticeProps = {
@@ -12,13 +11,8 @@ type PageNoticeProps = {
    * id until the browser closes. Lowercase words joined by hyphens.
    */
   readonly id: string
-  /** Replaces the default title („Lucrăm încă la această pagină”). */
-  readonly title?: ReactNode
-  /** Replaces the default two sentences. Pass `<p>` elements. */
-  readonly children?: ReactNode
   /** The inner column; match the page's own width so the text lines up with it. */
   readonly contentClassName?: string
-  readonly className?: string
 }
 
 /**
@@ -29,8 +23,7 @@ type PageNoticeProps = {
  * not be cached shared or in the browser: keep it no-store, or `Vary: Cookie` with a
  * browser max-age of 0. Design: docs/design/shell/page-notice.md.
  */
-export function PageNotice({ id, title, children, contentClassName = 'mx-auto max-w-5xl px-6', className }: PageNoticeProps) {
-  // Looked up here, not at module load: modules that import the data-trust barrel stay free of router calls.
+export function PageNotice({ id, contentClassName = 'mx-auto max-w-5xl px-6' }: PageNoticeProps) {
   const dismissedNotices = getRouteApi('__root__').useRouteContext({ select: (context) => context.dismissedNotices })
   // The id, not a flag: a page that changes `id` without remounting shows the next notice.
   const [dismissedNow, setDismissedNow] = useState<string | null>(null)
@@ -50,23 +43,19 @@ export function PageNotice({ id, title, children, contentClassName = 'mx-auto ma
   }
 
   return (
-    <section aria-labelledby={titleId} className={cn('border-b border-primary/15 bg-primary/5 py-6 md:py-7 print:hidden', className)}>
+    <section aria-labelledby={titleId} className="border-b border-primary/15 bg-primary/5 py-6 md:py-7 print:hidden">
       <div className={contentClassName}>
         <div className="max-w-2xl">
           <h2 id={titleId} className="text-lg font-semibold text-balance">
-            {title ?? <Trans>Lucrăm încă la această pagină</Trans>}
+            <Trans>Lucrăm încă la această pagină</Trans>
           </h2>
           <div className="mt-2 space-y-2 text-base text-pretty text-foreground/90">
-            {children ?? (
-              <>
-                <p>
-                  <Trans>Verificăm datele, așa că unele cifre se pot schimba până terminăm.</Trans>
-                </p>
-                <p>
-                  <Trans>Ai găsit ceva greșit? Spune-ne și ne ajuți să verificăm mai repede.</Trans>
-                </p>
-              </>
-            )}
+            <p>
+              <Trans>Verificăm datele, așa că unele cifre se pot schimba până terminăm.</Trans>
+            </p>
+            <p>
+              <Trans>Ai găsit ceva greșit? Spune-ne și ne ajuți să verificăm mai repede.</Trans>
+            </p>
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Button onClick={acknowledge} className="h-10 px-5">

@@ -3,7 +3,6 @@ import {
   Link,
   Scripts,
 } from "@tanstack/react-router";
-import { createIsomorphicFn } from "@tanstack/react-start";
 import GlobalErrorPage from "@/components/errors/GlobalErrorPage";
 import { Button } from "@/components/ui/button";
 import { Home, FileQuestion } from "lucide-react";
@@ -30,6 +29,8 @@ import {
 } from "@/components/theme/theme-provider";
 import { createNoStoreHeaders } from "@/lib/http-cache";
 import {
+  readCookieValue,
+  readRequestCookie,
   readUserCurrencyPreference,
   readUserInflationAdjustedPreference,
 } from "@/lib/user-preferences";
@@ -274,13 +275,6 @@ function getGlobalHead() {
   };
 }
 
-const readRequestCookie = createIsomorphicFn()
-  .client(async (_name: string): Promise<string | null> => null)
-  .server(async (name: string): Promise<string | null> => {
-    const { getCookie } = await import("@tanstack/react-start/server");
-    return getCookie(name) ?? null;
-  });
-
 // In the browser, the same reading `browserLocaleFor` makes (lib/i18n): a
 // hover's preload runs this `beforeLoad` too, and is skipped when it would
 // switch the page's language.
@@ -293,11 +287,7 @@ async function readLocaleCookie(): Promise<string | null> {
 async function readThemeCookie(): Promise<string | null> {
   const requestCookieValue = await readRequestCookie(THEME_COOKIE_NAME);
   if (requestCookieValue !== null) return requestCookieValue;
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${THEME_COOKIE_NAME}=([^;]*)`),
-  );
-  return match ? decodeURIComponent(match[1]) : null;
+  return readCookieValue(THEME_COOKIE_NAME);
 }
 
 /**

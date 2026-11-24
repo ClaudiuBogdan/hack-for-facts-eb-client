@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type RefObject } from 'react'
 import { t } from '@lingui/core/macro'
+import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import type { CookieState } from '@/features/privacy/lib/consent-categories'
 
@@ -71,55 +72,55 @@ const CHIPS = [[20, 24], [56, 12], [84, 36], [12, 60], [36, 80], [68, 76]] as co
 const CHIP = 'M4 0H12V4H16V12H12V16H0V4H4Z'
 const BITE = 'M76 0H128V60H96V56H88V52H84V44H76V40H72V32H68V20H72V12H76Z'
 const FACE_INK = { E: COOKIE_COLORS.chocolateShadow, w: '#fffaf0', r: '#b4483c' } as const
+type Ink = keyof typeof FACE_INK
+type FacePaths = readonly { readonly d: string; readonly fill: string }[]
+
+/** Faces are rows of 4-unit cells from x 32, twelve wide: eyes from y 44, mouth by y 72, clear of the bite. */
 const FACE_X = 32
-/** Twelve 4-unit cells wide from x 32, eyes near y 48, mouth near y 72: clear of the bite. */
-const FACES = {
-  // The eyes apart from their glints, which follow the pointer (`Glints`).
-  eyes: { y: 44, rows: ['..EE....EE..', '..EE....EE..', '..EE....EE..'] },
-  smile: { y: 60, rows: ['...E....E...', '....EEEE....'] },
-  blink: { y: 44, rows: ['............', '............', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
-  beaming: { y: 44, rows: ['..EE....EE..', '.E..E..E..E.', '............', '..EEEEEEEE..', '..ErrrrrrE..', '...ErrrrE...', '....EEEE....'] },
-  content: { y: 48, rows: ['.E..E..E..E.', '..EE....EE..', '............', '...E....E...', '....EEEE....'] },
-} as const
+const EYES_Y = 44
 
 /** One path per colour from rows of characters; `.` is empty. */
-function faceFill({ y, rows }: { readonly y: number; readonly rows: readonly string[] }) {
-  const paths: Partial<Record<keyof typeof FACE_INK, string>> = {}
+function face(y: number, rows: readonly string[]): FacePaths {
+  const paths: Partial<Record<Ink, string>> = {}
   rows.forEach((row, ry) => {
     ;[...row].forEach((char, rx) => {
-      if (char in FACE_INK) paths[char as keyof typeof FACE_INK] = (paths[char as keyof typeof FACE_INK] ?? '') + pixel(FACE_X + rx * 4, y + ry * 4)
+      if (!(char in FACE_INK)) return
+      const ink = char as Ink
+      paths[ink] = (paths[ink] ?? '') + pixel(FACE_X + rx * 4, y + ry * 4)
     })
   })
-  return Object.entries(paths).map(([char, d]) => ({ d, fill: FACE_INK[char as keyof typeof FACE_INK] }))
+  return Object.entries(paths).map(([ink, d]) => ({ d, fill: FACE_INK[ink as Ink] }))
 }
-const FACE_PATHS = {
-  eyes: faceFill(FACES.eyes),
-  smile: faceFill(FACES.smile),
-  blink: faceFill(FACES.blink),
-  beaming: faceFill(FACES.beaming),
-  content: faceFill(FACES.content),
-} as const
 
-/** The arrival (only where the caller asks: the consent card, just after it lands) and one blink. Whole cells in `steps()`; nothing moves with reduced motion. */
+// Waiting: open eyes (their glints are drawn apart, to follow the pointer), a smile, and the blink frame.
+const EYES = face(EYES_Y, ['..EE....EE..', '..EE....EE..', '..EE....EE..'])
+const SMILE = face(60, ['...E....E...', '....EEEE....'])
+const BLINK = face(EYES_Y, ['............', '............', '..EE....EE..', '............', '...E....E...', '....EEEE....'])
+const BEAMING = face(EYES_Y, ['..EE....EE..', '.E..E..E..E.', '............', '..EEEEEEEE..', '..ErrrrrrE..', '...ErrrrE...', '....EEEE....'])
+const CONTENT = face(48, ['.E..E..E..E.', '..EE....EE..', '............', '...E....E...', '....EEEE....'])
+/** The left column of each eye. */
+const GLINT_X = [FACE_X + 2 * 4, FACE_X + 8 * 4] as const
+
+/** One blink while waiting. Nothing moves with reduced motion. */
 const MOTION_CSS = `
-@keyframes tpz-cookie-hop { from { opacity: 0; transform: translateY(14px) scale(0.82); } to { opacity: 1; transform: none; } }
 @keyframes tpz-cookie-open { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes tpz-cookie-shut { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-.tpz-cookie-hop { transform-box: fill-box; transform-origin: 50% 100%; animation: tpz-cookie-hop 560ms cubic-bezier(0.34, 1.4, 0.64, 1) 420ms backwards; }
 .tpz-cookie-open { animation: tpz-cookie-open 160ms steps(1, end) 1400ms; }
 .tpz-cookie-shut { opacity: 0; animation: tpz-cookie-shut 160ms steps(1, end) 1400ms; }
 @media (prefers-reduced-motion: reduce) {
-  .tpz-cookie-hop, .tpz-cookie-open, .tpz-cookie-shut { animation: none; }
+  .tpz-cookie-open, .tpz-cookie-shut { animation: none; }
 }
 `
 
-function FaceLayer({ face, className }: { readonly face: keyof typeof FACE_PATHS; readonly className?: string }) {
+function FaceLayer({ paths, className }: { readonly paths: FacePaths; readonly className?: string }) {
   return (
     <g className={className}>
-      {FACE_PATHS[face].map(({ d, fill }) => <path key={fill} d={d} fill={fill} />)}
+      {paths.map(({ d, fill }) => <path key={fill} d={d} fill={fill} />)}
     </g>
   )
 }
+
+const REST = { col: 0, row: 0 } as const
 
 /**
  * Where the eyes look, as the glint's cell inside each 2 × 3 eye: right or
@@ -128,31 +129,30 @@ function FaceLayer({ face, className }: { readonly face: keyof typeof FACE_PATHS
  * elsewhere the glint stays top-left. State changes only when the cell does.
  */
 function useGaze(target: RefObject<SVGSVGElement | null>, enabled: boolean) {
-  const [gaze, setGaze] = useState({ col: 0, row: 0 })
+  const finePointer = useMediaQuery('(hover: hover) and (pointer: fine)')
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const active = enabled && finePointer && !reducedMotion
+  const [gaze, setGaze] = useState<{ readonly col: number; readonly row: number }>(REST)
   useEffect(() => {
-    if (!enabled) return
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!active) return
     const onMove = (event: PointerEvent) => {
       const box = target.current?.getBoundingClientRect()
       if (!box) return
-      const dx = event.clientX - (box.left + box.width / 2)
-      const dy = event.clientY - (box.top + box.height / 2)
-      // Within the cookie's own width the glint rests; beyond it, it turns.
-      const col = dx > box.width ? 1 : 0
-      const row = dy > box.height ? 1 : 0
+      // Within the cookie's own size the glint rests; beyond it, it turns.
+      const col = event.clientX - (box.left + box.width / 2) > box.width ? 1 : 0
+      const row = event.clientY - (box.top + box.height / 2) > box.height ? 1 : 0
       setGaze((current) => (current.col === col && current.row === row ? current : { col, row }))
     }
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
-  }, [target, enabled])
-  return enabled ? gaze : { col: 0, row: 0 }
+  }, [target, active])
+  return active ? gaze : REST
 }
 
 /** The glint in each eye, at the cell the gaze picks. */
 function Glints({ col, row }: { readonly col: number; readonly row: number }) {
-  const y = 44 + row * 4
-  return <path data-cookie-glint="" d={pixel(40 + col * 4, y) + pixel(64 + col * 4, y)} fill={FACE_INK.w} />
+  const y = EYES_Y + row * 4
+  return <path data-cookie-glint="" d={GLINT_X.map((x) => pixel(x + col * 4, y)).join('')} fill={FACE_INK.w} />
 }
 
 const CRUMBS = [
@@ -163,16 +163,9 @@ const CRUMBS = [
 
 export function CookieIllustration({
   state,
-  arrive = false,
   className,
   ...rest
-}: Readonly<
-  Omit<ComponentPropsWithoutRef<'svg'>, 'children'> & {
-    readonly state: CookieState
-    /** Hop in once, just after the consent card arrives. Off elsewhere, e.g. the settings page shows its cookie at once. */
-    readonly arrive?: boolean
-  }
->) {
+}: Readonly<Omit<ComponentPropsWithoutRef<'svg'>, 'children'> & { readonly state: CookieState }>) {
   const maskId = `${useId()}-bite`
   const svgRef = useRef<SVGSVGElement>(null)
   const gaze = useGaze(svgRef, state === 'whole')
@@ -206,7 +199,6 @@ export function CookieIllustration({
           />
         </mask>
       </defs>
-      <g className={arrive ? 'tpz-cookie-hop' : undefined}>
       <g mask={`url(#${maskId})`}>
         {TEXTURE.bands.map((d, index) => <path key={index} d={d} fill={TONES[index]} />)}
         <path d={TEXTURE.grain} fill={COOKIE_COLORS.pore} fillOpacity="0.4" />
@@ -227,18 +219,18 @@ export function CookieIllustration({
         ))}
         {/* `key` swaps the face in one frame: pixel faces do not morph. */}
         <g key={state}>
-          {state === 'whole' && (
+          {state === 'whole' ? (
             <>
               <g className="tpz-cookie-open">
-                <FaceLayer face="eyes" />
+                <FaceLayer paths={EYES} />
                 <Glints col={gaze.col} row={gaze.row} />
-                <FaceLayer face="smile" />
+                <FaceLayer paths={SMILE} />
               </g>
-              <FaceLayer face="blink" className="tpz-cookie-shut" />
+              <FaceLayer paths={BLINK} className="tpz-cookie-shut" />
             </>
+          ) : (
+            <FaceLayer paths={state === 'bitten' ? BEAMING : CONTENT} />
           )}
-          {state === 'bitten' && <FaceLayer face="beaming" />}
-          {state === 'plain' && <FaceLayer face="content" />}
         </g>
       </g>
       {CRUMBS.map(({ x, y, dx, dy, size }, index) => (
@@ -256,7 +248,6 @@ export function CookieIllustration({
           </g>
         </g>
       ))}
-      </g>
     </svg>
   )
 }
