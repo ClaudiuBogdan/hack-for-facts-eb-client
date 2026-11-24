@@ -14,6 +14,12 @@
 
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
+import { LEGACY_PROCUREMENT_OFF, legacyProcurementOff } from '../utils/legacy-procurement'
+
+// Every procedure is a legacy read: with legacy procurement off, the page has no record to render.
+test.beforeAll(async () => {
+  test.skip(await legacyProcurementOff(), LEGACY_PROCUREMENT_OFF)
+})
 
 test.describe('Procurement procedure page', () => {
   test('the first release’s address leads to the procedure, rendered on the server', async ({ page }) => {
