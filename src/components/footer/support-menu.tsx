@@ -28,6 +28,8 @@ type SupportMenuProps = {
   readonly contentSide?: ComponentProps<typeof DropdownMenuContent>["side"];
   readonly contentSideOffset?: number;
   readonly contentClassName?: string;
+  /** Off where the trigger sits next to its own feedback button. */
+  readonly includeFeedback?: boolean;
 };
 
 const openMailClient = () => {
@@ -55,6 +57,7 @@ export function SupportMenu({
   contentSide,
   contentSideOffset = 10,
   contentClassName,
+  includeFeedback = true,
 }: SupportMenuProps) {
   return (
     <DropdownMenu>
@@ -73,7 +76,7 @@ export function SupportMenu({
           {t`Find resources, report issues, or get in touch.`}
         </p>
         <DropdownMenuGroup>
-          <SendFeedbackAction />
+          {includeFeedback && <SendFeedbackAction />}
           <SendErrorAction />
           <DropdownMenuSeparator />
           <DropdownMenuItem
