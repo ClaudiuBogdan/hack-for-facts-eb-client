@@ -33,11 +33,12 @@ vi.mock('../hooks/use-home-data', async (original) => ({
 }))
 
 /** A GDP read as the selector returns it: each figure with how it stands. */
-const gdpRead = (shares: Readonly<Record<string, [string | null, GdpStatus]>>, gdp: [string | null, GdpStatus]): GdpRead => ({
+const gdpRead = (shares: Readonly<Record<string, [string | null, GdpStatus]>>, gdp: [string | null, GdpStatus], gdpSourceUrl: string | null = null): GdpRead => ({
   share: (itemId) => shares[itemId]?.[0] ?? null,
   shareStatus: (itemId) => shares[itemId]?.[1] ?? 'absent',
   gdp: gdp[0],
   gdpStatus: gdp[1],
+  gdpSourceUrl,
 })
 
 const band = (year: number, gdp: GdpRead) => {
@@ -51,12 +52,12 @@ describe('the figures band says why a GDP figure is not shown', () => {
     band(
       2025,
       gdpRead(
-        { [TOTAL_ITEMS.spending]: ['0.3', 'available'], [TOTAL_ITEMS.balance]: ['-0.0865', 'available'] },
-        ['1916404900000', 'available'],
+        { [TOTAL_ITEMS.spending]: ['0.42364139075961226', 'available'], [TOTAL_ITEMS.balance]: ['-0.07649724560437396', 'available'] },
+        ['1909000000000', 'available'],
       ),
     )
-    expect(await screen.findByText(/PIB 2025:/u)).toBeInTheDocument()
-    expect(screen.getByText(/8,7% din PIB|8\.7% din PIB/u)).toBeInTheDocument()
+    expect(await screen.findByText(/PIB 2025 din buletinul MF:/u)).toBeInTheDocument()
+    expect(screen.getByText(/7[,.]65% din PIB-ul de referință al buletinului MF/u)).toBeInTheDocument()
     expect(screen.queryByText(/nu sunt (afișate|disponibile)/u)).not.toBeInTheDocument()
   })
 
@@ -72,7 +73,7 @@ describe('the figures band says why a GDP figure is not shown', () => {
     expect(screen.getByText('Ponderea în PIB nu e afișată: valorile tipărite diferă')).toBeInTheDocument()
     expect(screen.queryByText(/nu sunt disponibile/u)).not.toBeInTheDocument()
     // The deficit itself is still shown.
-    expect(screen.getByText(/Deficit, 2025/u)).toBeInTheDocument()
+    expect(screen.getByText(/Deficit bugetar \(cash\), 2025/u)).toBeInTheDocument()
   })
 
   it('says a GDP printed in an unexpected unit, apart from the shares it does show', async () => {
@@ -92,10 +93,19 @@ describe('the figures band says why a GDP figure is not shown', () => {
     expect(screen.queryByText(/PIB 2026:/u)).not.toBeInTheDocument()
   })
 
+  it('links the GDP workbook and explains the cash basis beside the balance', () => {
+    const workbook = 'https://mfinante.gov.ro/static/10/Mfp/buletin/executii/bgc31122025.xlsx'
+    reads.gdp = gdpRead({ [TOTAL_ITEMS.balance]: ['-0.07649724560437396', 'available'] }, ['1909000000000', 'available'], workbook)
+    render(<BalanceBars view={viewOfYear(catalog, 2025)} />)
+    expect(screen.getByText(/7[,.]65% din PIB-ul de referință/u)).toBeInTheDocument()
+    expect(screen.getByText(/Soldul ESA 2010 urmează regulile conturilor naționale/u)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Buletinul de referință pentru PIB' })).toHaveAttribute('href', workbook)
+  })
+
   it('says it beside the balance too, and keeps the deficit', () => {
     reads.gdp = gdpRead({ [TOTAL_ITEMS.balance]: [null, 'conflicting'] }, [null, 'absent'])
     render(<BalanceBars view={viewOfYear(catalog, 2025)} />)
     expect(screen.getByText('; ponderea în PIB nu e afișată: valorile tipărite diferă')).toBeInTheDocument()
-    expect(screen.getByText(/^Deficit:/u)).toBeInTheDocument()
+    expect(screen.getByText(/^Deficit bugetar \(cash\):/u)).toBeInTheDocument()
   })
 })

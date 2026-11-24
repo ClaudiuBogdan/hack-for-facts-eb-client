@@ -382,6 +382,14 @@ describe('the GDP figures, each from its own source', () => {
     expect([both.gdp, both.gdpStatus]).toEqual(['2056000000000', 'available'])
   })
 
+  it('links the BGC workbook when both bulletins confirm GDP', () => {
+    const workbook = 'https://mfinante.gov.ro/bgc.xlsx'
+    const both = read([sinteza, gdpRow('2056000000000', { document: { url: workbook, sha256: 'b'.repeat(64) } })])
+    expect(both.gdpSourceUrl).toBe(workbook)
+    expect(read([sinteza]).gdpSourceUrl).toBe(sinteza.document.url)
+    expect(read([sinteza, gdpRow('2056100000000')]).gdpSourceUrl).toBeNull()
+  })
+
   it('has no GDP for a foreign, missing or comparison year, a blank cell or a row that is not the current GDP', () => {
     for (const denominators of [
       [],

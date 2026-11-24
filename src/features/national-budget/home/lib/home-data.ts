@@ -193,6 +193,7 @@ export type GdpRead = {
   /** The year's GDP in lei; null unless available. */
   readonly gdp: string | null
   readonly gdpStatus: GdpStatus
+  readonly gdpSourceUrl: string | null
 }
 
 /** One figure from its candidate printed values: the one value, or why there is none. */
@@ -233,25 +234,26 @@ export function gdpOf({
     byItem.set(item.itemId, [...(byItem.get(item.itemId) ?? []), { value: row.value ?? '', unit: row.unit }])
   }
   const shareOf = new Map([...byItem].map(([itemId, rows]) => [itemId, standing(rows, 'FRACTION')]))
-  const gdp = standing(
-    denominators
-      .filter(
-        (row) =>
-          (row.input === 'BGC' || row.input === 'SINTEZA') &&
-          row.measure === 'GDP_DENOMINATOR' &&
-          row.component === 'gdp' &&
-          row.lineItem === 'pib' &&
-          row.referenceYear === year &&
-          printed(row),
-      )
-      .map((row) => ({ value: row.value ?? '', unit: row.unit })),
-    'RON',
+  const gdpRows = denominators.filter(
+    (row) =>
+      (row.input === 'BGC' || row.input === 'SINTEZA') &&
+      row.measure === 'GDP_DENOMINATOR' &&
+      row.component === 'gdp' &&
+      row.lineItem === 'pib' &&
+      row.referenceYear === year &&
+      printed(row),
   )
+  const gdp = standing(gdpRows.map((row) => ({ value: row.value ?? '', unit: row.unit })), 'RON')
+  // Link the workbook that also reports the shares when both bulletins confirm the same GDP.
+  const bgcRows = gdpRows.filter((row) => row.input === 'BGC')
+  const documents = new Set((bgcRows.length ? bgcRows : gdpRows).map((row) => row.document?.url ?? null))
+  const [sourceUrl] = documents
   return {
     share: (itemId) => shareOf.get(itemId)?.value ?? null,
     shareStatus: (itemId) => shareOf.get(itemId)?.status ?? 'absent',
     gdp: gdp.value,
     gdpStatus: gdp.status,
+    gdpSourceUrl: gdp.status === 'available' && documents.size === 1 && sourceUrl?.startsWith('https://') ? sourceUrl : null,
   }
 }
 

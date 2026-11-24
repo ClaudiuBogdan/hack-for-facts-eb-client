@@ -72,14 +72,6 @@ msgstr "— the Official Gazette (Monitorul Oficial), Romania’s official publi
 msgid "— Portalul Legislativ, cu formele consolidate neoficiale ale actelor;"
 msgstr "— Portalul Legislativ, cu formele consolidate neoficiale ale actelor;"
 
-#: src/features/national-budget/home/components/home-head.tsx:170
-msgid ", {deficitShare} din PIB"
-msgstr ", {deficitShare} of GDP"
-
-#: src/features/national-budget/home/components/home-head.tsx:170
-msgid ", {deficitShare} din PIB-ul estimat pe tot anul"
-msgstr ", {deficitShare} of the full-year GDP estimate"
-
 #. placeholder {0}: formatSourceDate(sourceLastUpdate)
 #: src/features/statistics/components/detail-source-line.tsx:55
 msgid ", actualizată {0}"
@@ -147,6 +139,14 @@ msgstr ": why"
 #: src/features/ngos/organization/components/years-matrix.tsx:73
 #~ msgid ": nicio situație în fișierele publicate"
 #~ msgstr ": no statement in the published files"
+
+#: src/features/national-budget/home/components/home-head.tsx:170
+msgid ", {deficitShare} din PIB-ul de referință al buletinului MF"
+msgstr ", {deficitShare} of GDP as published in the Finance Ministry bulletin"
+
+#: src/features/national-budget/home/components/home-head.tsx:170
+msgid ", {deficitShare} din PIB-ul estimat pe tot anul în buletinul MF"
+msgstr ", {deficitShare} of estimated full-year GDP in the Finance Ministry bulletin"
 
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:77
 msgid ".csv, .tsv, .xlsx, .xls"
@@ -2588,17 +2588,17 @@ msgstr "{days, plural, one {the day after the contract} other {# days after the 
 msgid "{days, plural, one {după # zi} few {după # zile} other {după # de zile}}"
 msgstr "{days, plural, one {# day later} other {# days later}}"
 
-#: src/features/national-budget/home/components/home-head.tsx:280
-msgid "{deficitShare} din PIB"
-msgstr "{deficitShare} of GDP"
-
-#: src/features/national-budget/home/components/home-head.tsx:279
-msgid "{deficitShare} din PIB-ul estimat pe tot anul"
-msgstr "{deficitShare} of the full-year GDP estimate"
-
 #: src/features/statistics/lib/change.ts:60
 msgid "{delta} {word} față de România"
 msgstr "{delta} {word} compared with Romania"
+
+#: src/features/national-budget/home/components/home-head.tsx:288
+msgid "{deficitShare} din PIB-ul de referință al buletinului MF"
+msgstr "{deficitShare} of GDP as published in the Finance Ministry bulletin"
+
+#: src/features/national-budget/home/components/home-head.tsx:287
+msgid "{deficitShare} din PIB-ul estimat pe tot anul în buletinul MF"
+msgstr "{deficitShare} of estimated full-year GDP in the Finance Ministry bulletin"
 
 #: src/features/statistics/lib/change.ts:60
 msgid "{delta} față de România"
@@ -9428,7 +9428,7 @@ msgstr "The City of Bucharest's own budget is not shown: the map shows its six s
 #~ msgid "Bugetul propriu al Municipiului București nu are un contur pe hartă și nu apare: harta arată cele șase sectoare."
 #~ msgstr "The City of Bucharest's own budget has no shape on the map and is not shown: the map shows its six sectors."
 
-#: src/features/national-budget/home/components/home-head.tsx:235
+#: src/features/national-budget/home/components/home-head.tsx:243
 msgid "Bugetul României pe înțelesul tuturor: cât încasează statul, cât cheltuie, cine cheltuie și cât se împrumută."
 msgstr "Romania's budget for everyone: how much the state collects, how much it spends, who spends it and how much it borrows."
 
@@ -9490,6 +9490,10 @@ msgstr "This year's bulletin has no totals."
 #: src/features/national-budget/analytics/lib/analytics-view.ts:102
 msgid "buletinul acoperă altă perioadă"
 msgstr "the bulletin covers a different period"
+
+#: src/features/national-budget/home/components/home-head.tsx:178
+msgid "Buletinul de referință pentru PIB"
+msgstr "GDP source bulletin"
 
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:71
 msgid "Buletinul din {month} nu are în date coloanele bugetelor (doar consolidatul, în fila „Pe categorii\")."
@@ -10994,10 +10998,6 @@ msgstr "What the state buys<0/>and from whom"
 #~ msgid "Ce date avem"
 #~ msgstr "Available data"
 
-#: src/features/national-budget/analytics/lib/analytics-view.ts:442
-msgid "Ce deficit a avut fiecare buget în {when}?"
-msgstr "What deficit did each budget run in {when}?"
-
 #: src/features/legal/components/legislation-guide.tsx:55
 msgid "Ce este acest corpus"
 msgstr "What this corpus is"
@@ -11211,6 +11211,10 @@ msgstr "What the courts are hearing, by matter and county."
 msgid "Ce se judecă în România?"
 msgstr "What is judged in Romania?"
 
+#: src/features/national-budget/analytics/lib/analytics-view.ts:442
+msgid "Ce sold bugetar (cash) a avut fiecare buget în {when}?"
+msgstr "What was each budget’s cash balance in {when}?"
+
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:274
 msgid "Ce spun ANAF și registrul"
 msgstr "What ANAF and the registry say"
@@ -11345,8 +11349,8 @@ msgstr "Most often with {0}: {1}."
 #. placeholder {0}: largest.year
 #. placeholder {1}: sizeText(largest.balance)
 #: src/features/national-budget/home/components/home-balance.tsx:99
-msgid "Cel mai mare deficit, în lei: {0}, {1}. Sumele sunt în lei ai fiecărui an, fără ajustare cu inflația."
-msgstr "The largest deficit in lei: {0}, {1}. Amounts are in each year's lei, not adjusted for inflation."
+msgid "Cel mai mare deficit bugetar (cash), în lei: {0}, {1}. Sumele sunt în lei ai fiecărui an, fără ajustare cu inflația."
+msgstr "Largest cash budget deficit in lei: {0}, {1}. Amounts are in each year’s lei, with no inflation adjustment."
 
 #. placeholder {0}: percentText(weight.share, 0)
 #: src/features/procurement/components/supplier/supplier-rows.tsx:63
@@ -11958,7 +11962,7 @@ msgid "Cheltuieli publice"
 msgstr "Public spending"
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:272
+#: src/features/national-budget/home/components/home-head.tsx:280
 msgid "Cheltuieli publice, {0}"
 msgstr "Public spending, {0}"
 
@@ -12017,7 +12021,7 @@ msgstr "public spending"
 msgid "Cheltuielile totale"
 msgstr "Total expenses"
 
-#: src/features/national-budget/home/components/home-head.tsx:294
+#: src/features/national-budget/home/components/home-head.tsx:302
 msgid "Cheltuielile, din PIB"
 msgstr "Spending, as a share of GDP"
 
@@ -12185,7 +12189,7 @@ msgstr "Figures published on the platform"
 #: src/features/justice/components/echr/echr-head.tsx:101
 #: src/features/justice/components/hub/justice-hub-bands.tsx:98
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:682
-#: src/features/national-budget/home/components/home-head.tsx:324
+#: src/features/national-budget/home/components/home-head.tsx:332
 #: src/features/ngos/hub/ngo-hub-page.tsx:96
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:183
 #: src/features/ngos/registry/components/registry-answer.tsx:77
@@ -15566,18 +15570,18 @@ msgstr "Culture, sport, religious affairs"
 msgid "Cum"
 msgstr "How"
 
-#: src/features/national-budget/analytics/lib/analytics-view.ts:425
-msgid "Cum a evoluat deficitul în "
-msgstr "How has the deficit evolved in the "
-
 #: src/features/national-budget/analytics/lib/analytics-view.ts:506
 msgid "Cum a evoluat deficitul lună de lună?"
 msgstr "How has the deficit evolved month by month?"
 
+#: src/features/national-budget/analytics/lib/analytics-view.ts:425
+msgid "Cum a evoluat soldul bugetar (cash) în "
+msgstr "How did the cash budget balance change in "
+
 #. placeholder {0}: step(state.pas)
 #: src/features/national-budget/analytics/lib/analytics-view.ts:442
-msgid "Cum a evoluat deficitul, {0}?"
-msgstr "How has the deficit evolved, {0}?"
+msgid "Cum a evoluat soldul bugetar (cash), {0}?"
+msgstr "How did the cash budget balance change, {0}?"
 
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:574
 #: src/features/private-companies/components/profile/company-activities-band.tsx:155
@@ -16852,7 +16856,7 @@ msgstr "Where they sell from"
 msgid "De unde vin banii"
 msgstr "Where the money comes from"
 
-#: src/features/national-budget/home/components/home-head.tsx:230
+#: src/features/national-budget/home/components/home-head.tsx:238
 #: src/features/national-budget/home/components/home-revenue.tsx:47
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:39
 msgid "De unde vin banii publici"
@@ -17109,12 +17113,6 @@ msgstr "known defect"
 
 #: src/features/landing/lib/budget-map-measures.ts:134
 #: src/features/learning/components/interactive/RectificationHistory.tsx:50
-#: src/features/national-budget/analytics/components/analytics-contents.tsx:144
-#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:755
-#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:810
-#: src/features/national-budget/analytics/lib/analytics-view.ts:474
-#: src/features/national-budget/home/components/home-balance.tsx:116
-#: src/features/national-budget/home/components/home-balance.tsx:125
 #: src/features/ngos/organization/components/years-matrix.tsx:18
 msgid "Deficit"
 msgstr "Deficit"
@@ -17125,30 +17123,34 @@ msgid "Deficit"
 msgstr "Deficit"
 
 #: src/features/landing/lib/national-facts.ts:109
+#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:755
+#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:810
+#: src/features/national-budget/home/components/home-balance.tsx:116
+#: src/features/national-budget/home/components/home-balance.tsx:125
 msgid "Deficit bugetar (cash)"
 msgstr "Budget deficit (cash)"
+
+#. placeholder {0}: previousText(period)
+#. placeholder {0}: view.text
+#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:756
+#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:813
+#: src/features/national-budget/home/components/home-head.tsx:292
+msgid "Deficit bugetar (cash), {0}"
+msgstr "Budget deficit (cash), {0}"
+
+#. placeholder {0}: sizeText(balance.exact)
+#: src/features/national-budget/home/components/home-head.tsx:169
+msgid "Deficit bugetar (cash): {0}"
+msgstr "Budget deficit (cash): {0}"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:849
 #: src/features/national-budget/home/components/home-law.tsx:158
 msgid "Deficit prevăzut"
 msgstr "Planned deficit"
 
-#. placeholder {0}: previousText(period)
-#. placeholder {0}: view.text
-#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:756
-#: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:813
-#: src/features/national-budget/home/components/home-head.tsx:284
-msgid "Deficit, {0}"
-msgstr "Deficit, {0}"
-
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:363
 msgid "Deficit, {year}"
 msgstr "Deficit, {year}"
-
-#. placeholder {0}: sizeText(balance.exact)
-#: src/features/national-budget/home/components/home-head.tsx:169
-msgid "Deficit: {0}"
-msgstr "Deficit: {0}"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:390
 msgid "deficitul"
@@ -18174,7 +18176,7 @@ msgstr "from some of the entries; the rest have no value"
 msgid "Din PIB"
 msgstr "Of GDP"
 
-#: src/features/national-budget/home/components/home-head.tsx:296
+#: src/features/national-budget/home/components/home-head.tsx:304
 msgid "din PIB-ul estimat pe tot anul"
 msgstr "of the GDP estimated for the full year"
 
@@ -20399,7 +20401,7 @@ msgstr "Surplus"
 #. placeholder {0}: view.text
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:756
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:813
-#: src/features/national-budget/home/components/home-head.tsx:284
+#: src/features/national-budget/home/components/home-head.tsx:292
 msgid "Excedent, {0}"
 msgstr "Surplus, {0}"
 
@@ -21894,7 +21896,7 @@ msgstr "since"
 #. placeholder {0}: before.fiscalYear
 #. placeholder {0}: monthsText(answer.period.previous)
 #. placeholder {0}: view.year - 1
-#: src/features/national-budget/home/components/home-head.tsx:250
+#: src/features/national-budget/home/components/home-head.tsx:258
 #: src/features/private-companies/components/profile/company-business-band.tsx:271
 #: src/features/procurement/components/analytics/analytics-head.tsx:334
 msgid "față de {0}"
@@ -21915,7 +21917,7 @@ msgstr "vs {0}"
 #~ msgstr "față de {0} atribuit inițial"
 
 #. placeholder {0}: view.previous.slice(0, 4)
-#: src/features/national-budget/home/components/home-head.tsx:250
+#: src/features/national-budget/home/components/home-head.tsx:258
 msgid "față de {0}, aceleași luni"
 msgstr "vs {0}, same months"
 
@@ -24821,20 +24823,20 @@ msgstr "in {0}, through {1}"
 msgid "În {0}, statul a cheltuit {1}."
 msgstr "In {0}, the state spent {1}."
 
-#. placeholder {0}: row.year
-#. placeholder {1}: moneyText(row.revenue)
-#. placeholder {2}: moneyText(row.spending)
-#. placeholder {3}: balanceWords(row.balance)
-#: src/features/national-budget/home/components/home-balance.tsx:91
-msgid "În {0}, statul a încasat {1} și a cheltuit {2}: {3}, acoperit din împrumuturi."
-msgstr "In {0}, the state collected {1} and spent {2}: {3}, covered by borrowing."
-
 #. placeholder {0}: months.nowText
 #. placeholder {1}: moneyText(revenue.exact)
 #. placeholder {2}: moneyText(spending.exact)
 #: src/features/national-budget/home/components/home-now.tsx:105
 msgid "În {0}, statul a încasat {1} și a cheltuit {2}."
 msgstr "In {0}, the state collected {1} and spent {2}."
+
+#. placeholder {0}: row.year
+#. placeholder {1}: moneyText(row.revenue)
+#. placeholder {2}: moneyText(row.spending)
+#. placeholder {3}: balanceWords(row.balance)
+#: src/features/national-budget/home/components/home-balance.tsx:91
+msgid "În {0}, statul a încasat {1} și a cheltuit {2}: {3}."
+msgstr "In {0}, the state collected {1} and spent {2}: {3}."
 
 #. placeholder {0}: view.text
 #. placeholder {1}: moneyText(whole)
@@ -28513,8 +28515,8 @@ msgstr "Legislation"
 
 #: src/features/national-budget/analytics/components/analytics-period-bars.tsx:15
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:636
+#: src/features/national-budget/home/components/home-head.tsx:266
 #: src/features/national-budget/analytics/lib/analytics-format.ts:26
-#: src/features/national-budget/home/components/home-head.tsx:258
 #: src/features/ngos/hub/ngo-format.ts:37
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:340
 #: src/features/ngos/organization/head.ts:53
@@ -30792,8 +30794,8 @@ msgstr "M"
 
 #: src/features/national-budget/analytics/components/analytics-period-bars.tsx:14
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:636
+#: src/features/national-budget/home/components/home-head.tsx:266
 #: src/features/national-budget/analytics/lib/analytics-format.ts:26
-#: src/features/national-budget/home/components/home-head.tsx:258
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:339
 #: src/features/ngos/organization/head.ts:53
 #: src/features/private-companies/components/analytics/analytics-maps.tsx:106
@@ -31037,8 +31039,8 @@ msgstr "bn"
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:578
 #: src/features/national-budget/analytics/components/analytics-period-bars.tsx:13
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:636
+#: src/features/national-budget/home/components/home-head.tsx:266
 #: src/features/national-budget/analytics/lib/analytics-format.ts:26
-#: src/features/national-budget/home/components/home-head.tsx:258
 #: src/features/ngos/hub/ngo-hub-page.tsx:225
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:338
 #: src/features/private-companies/components/analytics/analytics-maps.tsx:105
@@ -36227,10 +36229,6 @@ msgstr "The company part of the search is not current."
 msgid "Partea din județ: achizițiile directe ale instituției împărțite la cele ale tuturor cumpărătorilor publici din județ, calculat de Transparenta.eu."
 msgstr "Share of the county: the institution's direct purchases divided by those of every public buyer in the county, computed by Transparenta.eu."
 
-#: src/features/national-budget/home/components/home-head.tsx:173
-msgid "Partea hașurată: ce s-a cheltuit peste ce s-a încasat, acoperit din împrumuturi."
-msgstr "The hatched part: what was spent beyond what was collected, covered by borrowing."
-
 #: src/features/legal/lib/legal-vocabulary.ts:254
 msgid "Partea I"
 msgstr "Part I"
@@ -37345,15 +37343,15 @@ msgid "Phone"
 msgstr "Phone"
 
 #. placeholder {0}: view.year
-#: src/features/national-budget/home/components/home-head.tsx:300
-msgid "PIB {0} nu e afișat: {gdpRefused}"
-msgstr "GDP {0} not shown: {gdpRefused}"
+#. placeholder {1}: moneyText(gdp.gdp)
+#: src/features/national-budget/home/components/home-head.tsx:306
+msgid "PIB {0} din buletinul MF: {1}"
+msgstr "{0} GDP in the Finance Ministry bulletin: {1}"
 
 #. placeholder {0}: view.year
-#. placeholder {1}: moneyText(gdp.gdp)
-#: src/features/national-budget/home/components/home-head.tsx:298
-msgid "PIB {0}: {1}"
-msgstr "GDP {0}: {1}"
+#: src/features/national-budget/home/components/home-head.tsx:308
+msgid "PIB {0} nu e afișat: {gdpRefused}"
+msgstr "GDP {0} not shown: {gdpRefused}"
 
 #: src/features/statistics/lib/landing-constants.ts:154
 msgid "PIB pe locuitor"
@@ -37648,7 +37646,7 @@ msgstr "police, civil protection and firefighters, courts, prisons"
 #~ msgid "Pondere judeteana"
 #~ msgstr "Pondere judeteana"
 
-#: src/features/national-budget/home/components/home-head.tsx:282
+#: src/features/national-budget/home/components/home-head.tsx:290
 msgid "Ponderea în PIB nu e afișată: {deficitRefused}"
 msgstr "GDP share not shown: {deficitRefused}"
 
@@ -37665,12 +37663,12 @@ msgstr "Registered unemployed share"
 #~ msgstr "Ponderea șomerilor înregistrați din 2016 încoace, la nivel național și pe județe."
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:315
+#: src/features/national-budget/home/components/home-head.tsx:323
 msgid "Ponderile în PIB pentru {0} nu sunt afișate: {spendingRefused}."
 msgstr "GDP shares for {0} aren't shown: {spendingRefused}."
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:315
+#: src/features/national-budget/home/components/home-head.tsx:323
 msgid "Ponderile în PIB pentru {0} nu sunt disponibile în datele noastre."
 msgstr "GDP shares for {0} aren't available in our data."
 
@@ -44043,7 +44041,7 @@ msgstr "and {rest} more"
 msgid "și încă un produs"
 msgstr "and one more product"
 
-#: src/features/national-budget/home/components/home-head.tsx:232
+#: src/features/national-budget/home/components/home-head.tsx:240
 msgid "și pe ce se duc"
 msgstr "and where it goes"
 
@@ -44455,6 +44453,15 @@ msgstr "Budget balance"
 #: src/features/landing/lib/budget-map-measures.ts:137
 #~ msgid "Soldul este diferența dintre venituri și cheltuieli, raportată la venituri."
 #~ msgstr "The balance is revenue minus spending, as a share of revenue."
+
+#: src/features/national-budget/analytics/components/analytics-contents.tsx:144
+#: src/features/national-budget/analytics/lib/analytics-view.ts:474
+msgid "Sold bugetar (cash)"
+msgstr "Budget balance (cash basis)"
+
+#: src/features/national-budget/home/components/home-head.tsx:174
+msgid "Soldul de casă reflectă încasările și plățile bugetare. Soldul ESA 2010 urmează regulile conturilor naționale."
+msgstr "The cash balance reflects budget receipts and payments. The ESA 2010 balance follows national accounts rules."
 
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:169
 msgid "Soldul fiecărui buget, cum îl tipărește buletinul; transferurile dintre bugete se compensează în consolidat."
@@ -48702,8 +48709,8 @@ msgstr "A bitten cookie, with crumbs beside it"
 
 #. placeholder {0}: sizeText(balance)
 #: src/features/national-budget/home/components/home-balance.tsx:45
-msgid "un deficit de {0}"
-msgstr "a deficit of {0}"
+msgid "un deficit bugetar (cash) de {0}"
+msgstr "a cash budget deficit of {0}"
 
 #: src/features/justice/components/court/justice-case-lookup.tsx:68
 msgid "Un dosar al acestei instanțe, după numărul lui de pe portal."
@@ -50264,7 +50271,7 @@ msgid "Venituri publice"
 msgstr "Public revenue"
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/home-head.tsx:273
+#: src/features/national-budget/home/components/home-head.tsx:281
 msgid "Venituri publice, {0}"
 msgstr "Public revenue, {0}"
 

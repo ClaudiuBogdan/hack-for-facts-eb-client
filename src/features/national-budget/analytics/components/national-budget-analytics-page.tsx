@@ -752,8 +752,8 @@ function BudgetFigures({ catalog, period, state }: { readonly catalog: BudgetNat
   const name = componentLabel(component)
   const facts: HubFact[] = []
   if (state.tip === 'sold') {
-    if (now?.exact) add(facts, money('balance', absDecimal(now.exact), isNegative(now.exact) ? t`Deficit` : t`Excedent`, t`${name}, ${when}`))
-    if (before?.exact) add(facts, money('before', absDecimal(before.exact), isNegative(before.exact) ? t`Deficit, ${previousText(period)}` : t`Excedent, ${previousText(period)}`, name))
+    if (now?.exact) add(facts, money('balance', absDecimal(now.exact), isNegative(now.exact) ? t`Deficit bugetar (cash)` : t`Excedent`, t`${name}, ${when}`))
+    if (before?.exact) add(facts, money('before', absDecimal(before.exact), isNegative(before.exact) ? t`Deficit bugetar (cash), ${previousText(period)}` : t`Excedent, ${previousText(period)}`, name))
     return <Band facts={facts} empty={t`Buletinul nu tipărește coloana acestui buget pentru ${when}.`} />
   }
   const tip = state.tip as 'cheltuieli' | 'venituri'
@@ -807,10 +807,10 @@ function BalanceFigures({ catalog, period }: { readonly catalog: BudgetNationalC
   const spending = at('mfin.bgc.expenditure.total', period.label)
   const when = periodText(period.label, period.basis)
   const facts: HubFact[] = []
-  if (balance !== null) add(facts, money('balance', absDecimal(balance), isNegative(balance) ? t`Deficit` : t`Excedent`, t`${when}, bugetul general consolidat`))
+  if (balance !== null) add(facts, money('balance', absDecimal(balance), isNegative(balance) ? t`Deficit bugetar (cash)` : t`Excedent`, t`${when}, bugetul general consolidat`))
   const share = gdpShares(catalog, gdp.rows).get('mfin.bgc.balance.surplus_deficit')
   if (period.cumulative && share !== undefined) facts.push(percent('gdp', Math.abs(share), t`Din PIB`, t`cum îl tipărește buletinul`))
-  if (earlier !== null) add(facts, money('before', absDecimal(earlier), isNegative(earlier) ? t`Deficit, ${previousText(period)}` : t`Excedent, ${previousText(period)}`, t`aceeași perioadă, un an înainte`))
+  if (earlier !== null) add(facts, money('before', absDecimal(earlier), isNegative(earlier) ? t`Deficit bugetar (cash), ${previousText(period)}` : t`Excedent, ${previousText(period)}`, t`aceeași perioadă, un an înainte`))
   const cover = revenue !== null && spending !== null ? shareOf(revenue, spending) : null
   if (cover !== null) facts.push(percent('cover', cover, t`Veniturile acoperă`, t`din cheltuieli`, 1))
   return <Band facts={facts} empty={t`Buletinele nu au o valoare pentru ${when}.`} />
