@@ -26,13 +26,19 @@ export interface ProcurementSupplierServerRead {
   readonly notFound?: true
 }
 
+/** The API refused the supplier's code itself (`field: supplierCui`), not another part of the read (a sort it withholds). */
+function refusesCode(error: unknown): boolean {
+  return isGraphQLInvalidInput(error) && error.graphQLErrors.some((entry) => entry.extensions?.field === 'supplierCui')
+}
+
 /** The two reads side by side; a failed one is left out, and the other stands. */
 export async function readProcurementSupplierForSsr(cui: string, choice: PeriodChoice): Promise<ProcurementSupplierServerRead> {
   const [profileRead, directRead] = await Promise.allSettled([
     fetchProcurementSupplier(cui, choice, deadline()),
     fetchProcurementSupplierDirect(cui, choice, SUPPLIER_LARGEST_RECORDS, deadline()),
   ])
-  if (profileRead.status === 'rejected' && isGraphQLInvalidInput(profileRead.reason)) return { choice, notFound: true }
+  // The profile can fail first on another part (legacy procurement switched off): the direct read's refusal of the code itself is the same verdict.
+  if ((profileRead.status === 'rejected' && isGraphQLInvalidInput(profileRead.reason)) || (directRead.status === 'rejected' && refusesCode(directRead.reason))) return { choice, notFound: true }
   return {
     choice,
     ...(profileRead.status === 'fulfilled' ? { profile: profileRead.value } : {}),

@@ -297,7 +297,7 @@ async function fetchSearchRecords(
       const data = await graphqlQuery<unknown>(
         PROCUREMENT_PROCEDURES_QUERY,
         { ...variables, filter: buildProceduresFilter(params) },
-        { operationName: 'ProcurementProcedures' },
+        { operationName: 'ProcurementProcedures', legacy: true },
       )
       const page =
         procurementProceduresResponseSchema.parse(data).procurementProcedures
@@ -313,7 +313,7 @@ async function fetchSearchRecords(
       const data = await graphqlQuery<unknown>(
         PROCUREMENT_CONTRACTS_QUERY,
         { ...variables, filter: buildContractsFilter(params) },
-        { operationName: 'ProcurementContracts' },
+        { operationName: 'ProcurementContracts', legacy: true },
       )
       const page =
         procurementContractsResponseSchema.parse(data).procurementContracts
@@ -329,7 +329,7 @@ async function fetchSearchRecords(
       const data = await graphqlQuery<unknown>(
         PROCUREMENT_DIRECT_ACQUISITIONS_QUERY,
         { ...variables, filter: buildDirectAcquisitionsFilter(params) },
-        { operationName: 'ProcurementDirectAcquisitions' },
+        { operationName: 'ProcurementDirectAcquisitions', legacy: true },
       )
       const page = procurementDirectAcquisitionsResponseSchema.parse(data)
         .procurementDirectAcquisitions
@@ -345,7 +345,7 @@ async function fetchSearchRecords(
       const data = await graphqlQuery<unknown>(
         PROCUREMENT_MODIFICATIONS_QUERY,
         { ...variables, filter: buildModificationsFilter(params) },
-        { operationName: 'ProcurementModifications' },
+        { operationName: 'ProcurementModifications', legacy: true },
       )
       const page =
         procurementModificationsResponseSchema.parse(data)
@@ -389,7 +389,7 @@ export async function fetchSupplierRecordsLive(
       first: SUPPLIER_RECORDS_PAGE_SIZE,
       after: after ?? null,
     },
-    { operationName: 'ProcurementSupplierRecords' },
+    { operationName: 'ProcurementSupplierRecords', legacy: true },
   )
   return mapSupplierRecords(
     procurementSupplierRecordsResponseSchema.parse(data)

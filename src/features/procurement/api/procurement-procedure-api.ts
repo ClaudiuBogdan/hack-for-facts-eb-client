@@ -57,7 +57,7 @@ export function procedureReadOf(raw: RawProcedurePage, names: ProcedureRead['nam
 
 /** The procedure, then everyone's names. `null` when SEAP has no such notice. */
 export async function fetchProcedure(id: string, signal?: AbortSignal): Promise<ProcedureSheet | null> {
-  const data = await graphqlQuery<unknown>(PROCEDURE_PAGE_QUERY, { id }, { operationName: 'ProcurementProcedurePage', signal })
+  const data = await graphqlQuery<unknown>(PROCEDURE_PAGE_QUERY, { id }, { operationName: 'ProcurementProcedurePage', signal, legacy: true })
   const raw = procedurePageSchema.parse(data).procurementProcedure
   if (!raw) return null
   const parties = [raw.procedure.authority, ...raw.contracts.flatMap((contract) => [contract.authority, contract.supplier])]

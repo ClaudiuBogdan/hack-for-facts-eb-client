@@ -78,7 +78,7 @@ export async function resolveLegacyLink(legacyId: string, signal?: AbortSignal):
   try {
     const release = await readDaRelease()
     if (!release.enabled) return { kind: 'legacy' }
-    const legacy = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id: legacyId }, { operationName: 'ProcurementDirectAcquisitionRecord', signal })
+    const legacy = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id: legacyId }, { operationName: 'ProcurementDirectAcquisitionRecord', signal, legacy: true })
     const record = procurementDaRecordResponseSchema.parse(legacy).procurementDirectAcquisition?.directAcquisition
     const code = record?.sourceSystem === 'elicitatie_da' ? record.uniqueCode?.trim() : null
     if (!code) return { kind: 'legacy' }

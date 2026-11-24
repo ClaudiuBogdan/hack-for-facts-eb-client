@@ -341,7 +341,7 @@ export async function fetchGroupedContracts(filter: Record<string, unknown>, lim
   const rows: ContractRow[] = []
   for (let page = 1; page <= MAX_CONTRACT_PAGES; page += 1) {
     const raw = procurementHomeContractsResponseSchema.parse(
-      await graphqlQuery<unknown>(PROCUREMENT_HOME_CONTRACTS_QUERY, { filter, page, rows: rowsPerPage }, { operationName, signal }),
+      await graphqlQuery<unknown>(PROCUREMENT_HOME_CONTRACTS_QUERY, { filter, page, rows: rowsPerPage }, { operationName, signal, legacy: true }),
     )
     const items = raw.procurementContracts.items
     rows.push(...contractRows(items))

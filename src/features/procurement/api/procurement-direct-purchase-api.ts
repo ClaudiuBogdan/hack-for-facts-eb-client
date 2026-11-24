@@ -137,11 +137,11 @@ function isDetailError(error: unknown): boolean {
  */
 async function readRecord(id: string, signal?: AbortSignal): Promise<RawProcurementDaDetail | null> {
   try {
-    const data = await graphqlQuery<unknown>(PROCUREMENT_DA_DETAIL_QUERY, { id }, { operationName: 'ProcurementDirectAcquisitionDetail', signal })
+    const data = await graphqlQuery<unknown>(PROCUREMENT_DA_DETAIL_QUERY, { id }, { operationName: 'ProcurementDirectAcquisitionDetail', signal, legacy: true })
     return procurementDaDetailResponseSchema.parse(data).procurementDirectAcquisition
   } catch (error) {
     if (signal?.aborted || !isDetailError(error)) throw error
-    const data = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id }, { operationName: 'ProcurementDirectAcquisitionRecord', signal })
+    const data = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id }, { operationName: 'ProcurementDirectAcquisitionRecord', signal, legacy: true })
     const found = procurementDaRecordResponseSchema.parse(data).procurementDirectAcquisition
     return found ? { directAcquisition: found.directAcquisition, detail: null, detailAvailability: 'TEMPORARILY_UNAVAILABLE', duplicates: [] } : null
   }
@@ -280,7 +280,7 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
         older: { ...both, publicationDate: { lte: input.day } },
         perSide: AROUND_PER_SIDE,
       },
-      { operationName: 'ProcurementDirectPurchaseAround', signal, disclosureSeen: seen },
+      { operationName: 'ProcurementDirectPurchaseAround', signal, disclosureSeen: seen, legacy: true },
     ).then(
       (raw) => directPurchaseAroundSchema.parse(raw),
       (error: unknown) => {

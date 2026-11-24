@@ -124,7 +124,7 @@ export async function readSupplierRows(cui: string, period: Period, latest: numb
     variables[`m${index}`] = { ...own, contractDate: { gte: `${month}-01`, lte: lastDayOf(month) } }
   }
   const aliases = [...years.map((year) => `y${year}`), ...months.map((_, index) => `m${index + 1}`)]
-  const raw = await graphqlQuery<Raw>(supplierRowsQuery(SUPPLIER_ROWS_READ, aliases), variables, { operationName: 'ProcurementSupplierRows', signal })
+  const raw = await graphqlQuery<Raw>(supplierRowsQuery(SUPPLIER_ROWS_READ, aliases), variables, { operationName: 'ProcurementSupplierRows', signal, legacy: true })
   const list = supplierRowsListSchema.parse(raw.rows)
   return {
     total: list.total ?? list.items.length,
@@ -155,7 +155,7 @@ export async function readSupplierDays(rows: readonly SupplierRow[], signal?: Ab
           return [`d${index}`, { authorityCui: { eq: buyer }, contractDate: { gte: date, lte: date }, recordKind: { in: ['contract_award'] } }]
         }),
       )
-      const raw = await graphqlQuery<Raw>(supplierDaysQuery(batch.length), variables, { operationName: 'ProcurementSupplierPartners', signal })
+      const raw = await graphqlQuery<Raw>(supplierDaysQuery(batch.length), variables, { operationName: 'ProcurementSupplierPartners', signal, legacy: true })
       return batch.map((day, index) => [day, supplierDaySchema.parse(raw[`d${index}`])] as const)
     }),
   )

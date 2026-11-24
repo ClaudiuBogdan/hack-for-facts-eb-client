@@ -18,6 +18,7 @@ import { getAuthToken } from '@/lib/auth'
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options'
 import { createLogger } from '@/lib/logger'
 import { errorName, isTimeoutReason } from '@/lib/ssr/deadline-signal'
+import { isLegacyKnownOff, LEGACY_OFF_CODE, legacyOffMessage, noteLegacyAnswer } from './legacy-procurement'
 
 const logger = createLogger('graphql-client')
 
@@ -161,6 +162,12 @@ export interface GraphQLQueryOptions {
    * whenever one is available.
    */
   readonly auth?: 'optional' | 'none'
+  /**
+   * A legacy procurement read (`./legacy-procurement`): while the API has
+   * answered legacy off within the last minute, it is not sent and fails as
+   * the API answers it.
+   */
+  readonly legacy?: boolean
 }
 
 /**
@@ -191,6 +198,12 @@ export async function graphqlQuery<T>(
 
   // D6: checked last, just before sending, after any wait for a token.
   if (options.disclosureSeen !== undefined) assertNoAdvanceSince(options.disclosureSeen)
+  // Legacy answered off meanwhile, during the token wait included: not sent, and failed as the API answers it.
+  // A read already cancelled or past its deadline goes on to fail as such (the fetch below rejects at once).
+  if (options.legacy && isLegacyKnownOff() && !options.signal?.aborted) {
+    const message = legacyOffMessage()
+    throw new GraphQLRequestError(`GraphQL errors: ${message}`, { graphQLErrors: [{ message, extensions: { code: LEGACY_OFF_CODE } }], query })
+  }
 
   let response: Response
   let rawText: string
@@ -226,6 +239,7 @@ export async function graphqlQuery<T>(
   }
 
   const parsed = parseJsonSafely(rawText) as GraphQLResponseBody<T> | null
+  noteLegacyAnswer(parsed?.errors)
 
   if (!response.ok) {
     const errors = Array.isArray(parsed?.errors) ? parsed!.errors : []

@@ -264,7 +264,7 @@ interface PairOrder {
 
 async function readPairPage(record: RawDaFixture['record'], page: number, signal: AbortSignal) {
   const filter = { authorityCui: { eq: record.authority.cui }, supplierCui: { eq: record.supplier.cui } }
-  const raw = await graphqlQuery<unknown>(PAIR_ORDER_QUERY, { filter, page, pageSize: PAIR_PAGE }, { operationName: 'PrototypeDirectPurchasePairOrder', signal })
+  const raw = await graphqlQuery<unknown>(PAIR_ORDER_QUERY, { filter, page, pageSize: PAIR_PAGE }, { operationName: 'PrototypeDirectPurchasePairOrder', signal, legacy: true })
   return pairPageSchema.parse(raw).procurementDirectAcquisitions
 }
 
