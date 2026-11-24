@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import { BAND_LABEL, FX, fmt, pct, type Ranked } from './analytics.model'
-import { ERA_LABEL, FAMILY_LABEL, MAP, MAP_COLS, MAP_ROWS, type MapCell } from './analytics.map'
+import { ERA_LABEL, FAMILY_LABEL, MAP, MAP_COLS, MAP_IS_TEST, MAP_ROWS, type MapCell } from './analytics.map'
 
 // ───────────────────────────────────────────────────── colours ──
 
@@ -66,6 +66,7 @@ export function CaveatsMarker({ notes }: { readonly notes: readonly string[] }) 
 
 /** A „date de test" tag: every surface fed by the placeholder map carries it. */
 export function TestDataTag({ className }: { readonly className?: string }) {
+  if (!MAP_IS_TEST) return null
   return <MonoLabel className={cn('inline-block border border-status-partial-fg px-1.5 py-1 text-status-partial-fg', className)}>{t`date de test`}</MonoLabel>
 }
 

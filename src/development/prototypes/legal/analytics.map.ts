@@ -7,10 +7,12 @@ import { FX } from './analytics.model'
  * Nothing here describes real acts; every place that shows it says „date de test".
  */
 
+/** The map data is synthetic: every surface that shows it carries „date de test". The fit writer sets this false. */
+export const MAP_IS_TEST: boolean = true
 export const MAP_COLS = 64
 export const MAP_ROWS = 40
 export const ERA_LABEL = ['1990–1999', '2000–2009', '2010–2019', '2020–2026'] as const
-export const FAMILY_LABEL = ['Stat și administrație', 'Economie și finanțe', 'Social și sănătate', 'Justiție și ordine publică', 'Mediu, teritoriu, bunuri', 'Educație, cultură, cercetare'] as const
+export const FAMILY_LABEL: readonly string[] = ['Stat și administrație', 'Economie și finanțe', 'Social și sănătate', 'Justiție și ordine publică', 'Mediu, teritoriu, bunuri', 'Educație, cultură, cercetare']
 
 export type MapTheme = { readonly id: number; readonly name: string; readonly family: number; readonly x: number; readonly y: number }
 export type MapTopic = {
@@ -39,7 +41,7 @@ function rng(seed: number) {
 
 const WORDS = ['achiziții', 'pensii', 'fiscalitate', 'sănătate', 'învățământ', 'mediu', 'energie', 'transport', 'agricultură', 'justiție', 'poliție', 'apărare', 'cultură', 'muncă', 'asigurări', 'cadastru', 'ape', 'păduri', 'turism', 'comunicații', 'concurență', 'bănci', 'vamă', 'alegeri']
 
-export const MAP = (() => {
+export const MAP: { readonly themes: readonly MapTheme[]; readonly topics: readonly MapTopic[]; readonly cells: readonly MapCell[] } = (() => {
   const r = rng(20261124)
   const themes: MapTheme[] = Array.from({ length: 24 }, (_, id) => ({
     id,
