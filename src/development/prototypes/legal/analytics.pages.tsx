@@ -22,6 +22,9 @@ import {
   LENS_LABEL,
   LENS_READY,
   LENSES,
+  CUBE_LENSES,
+  POPULATION_SIZE,
+  rulesText,
   TYPE_LABEL,
   YEAR_MAX,
   YEAR_MIN,
@@ -53,13 +56,15 @@ function hrefOf(page: 'poarta' | 'analiza' | 'tema', q: Query = DEFAULT_QUERY): 
   return `/development/legal/analytics?${params.toString()}`
 }
 
+const STOCK_TEXT = `Stocul („legislația așa cum este"): actele care stabilesc reguli și stau singure — reguli noi, norme de aplicare, parametri periodici, acorduri internaționale, organizarea instituțiilor: ${fmt(POPULATION_SIZE.stoc)} acte. Fluxul („ce s-a publicat"): toate cele ${fmt(POPULATION_SIZE.flux)} de acte. Restul (modificări, abrogări, acte individuale, decizii ale instanțelor, procedură, buget și bunuri, rapoarte, neîncadrate) e doar în flux. Definiție provizorie, până la revizuirea proprietarului; starea (în vigoare/abrogat) nu e un filtru aici.`
+
 const NOTES: readonly string[] = [
   'Instantaneu: corpusul servit la 18 noiembrie 2026. Legile consolidate pe mai multe pagini, ordonanțele de urgență și o parte din ordine lipsesc mai des (21.593 de acte fără text în index: 40% din OUG, 38% din OG, 16% din ordine).',
-  'Felul actului e citit din titlu (reguli, v5): 12,4% din acte rămân neîncadrate; 6% sunt încadrate prin reguli de rezervă (marcate în date).',
+  'Felul actului e citit din titlu (reguli, v5): 12,4% din acte rămân neîncadrate; încadrările slabe (reguli de rezervă) sunt numărate separat.',
   'Emitentul e scris în sursă la 66% din acte; pentru legi, ordonanțe și decrete e derivat din tip și dată. Liniile de minister unesc denumiri succesive.',
-  'Stocul („legislația așa cum este") lasă deoparte actele care modifică, abrogă, rectifică sau promulgă: conținutul lor trăiește în textul consolidat. Definiție provizorie; starea (în vigoare/abrogat) nu e un filtru aici.',
+  STOCK_TEXT,
   'Versiunile consolidate sunt ale Portalului, neoficiale, și doar pentru actele pe care Portalul le consolidează (LEG-X3AV).',
-  'Lanțurile (ordonanță → lege, decret → lege, decizie CCR → act) sunt rezolvate din titluri; deciziile Curții sunt citări, nu efecte.',
+  'Lanțurile (ordonanță → lege, decret → lege, act → actul pe care îl modifică, decizie CCR → act) sunt rezolvate din titluri; deciziile Curții sunt trimiteri, nu efecte.',
   'Harta temelor și pagina de temă folosesc date de test până la potrivirea pe întregul corpus.',
 ]
 
@@ -72,19 +77,16 @@ export function FrontDoor() {
   const [board, setBoard] = useState<Board>('modificate')
   const all = figures(DEFAULT_QUERY)
   const older = all.total - series(DEFAULT_QUERY, 'felul', 1).years.reduce((s, y) => s + y.values.reduce((a, b) => a + b, 0), 0)
-  const ord = FX.ordinances
-  const neverApproved = ord.years.reduce((s, y) => s + (y.oug[2] ?? 0) + (y.og[2] ?? 0), 0)
-  const ordinances = ord.years.reduce((s, y) => s + (y.oug[0] ?? 0) + (y.oug[1] ?? 0) + (y.oug[2] ?? 0) + (y.og[0] ?? 0) + (y.og[1] ?? 0) + (y.og[2] ?? 0), 0)
   const facts: HubFact[] = [
     fact('acte', all.total, 0, '', t`acte în corpus`, t`servite la ${FX.stamp.snapshotDate}`, hrefOf('analiza')),
-    fact('reguli', (all.rules / all.total) * 100, 1, '%', t`stabilesc reguli`, t`din ${fmt(all.total)} de acte, după titlu`, hrefOf('analiza', { ...DEFAULT_QUERY, felul: 'rule-making' })),
-    fact('ordonante', (neverApproved / ordinances) * 100, 1, '%', t`ordonanțe fără lege de aprobare găsită`, t`din ${fmt(ordinances)} ordonanțe`, '#lanturi'),
-    fact('harta', (all.withText / all.total) * 100, 1, '%', t`acte cu text în index`, t`pot fi puse pe hartă`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'tema' })),
+    fact('forme', FX.stamp.forms, 0, '', t`forme publicate`, t`originale și versiuni consolidate`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'dinamica' })),
+    fact('versiuni', FX.stamp.actsWithVersions, 0, '', t`acte cu versiuni consolidate`, t`din ${fmt(all.total)}, consolidate de Portal`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'dinamica' })),
+    fact('text', all.withText, 0, '', t`acte cu text în index`, t`${pct(all.withText / all.total)} din ${fmt(all.total)}; pot fi puse pe hartă`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'tema' })),
   ]
   const boardRows = [...FX.acts]
     .sort((a, b) => (board === 'modificate' ? b.am - a.am : board === 'contestate' ? b.cc - a.cc : b.v - a.v))
     .slice(0, 8)
-  const byGroup = series({ ...DEFAULT_QUERY }, 'felul', 6)
+  const byGroup = series({ ...DEFAULT_QUERY }, 'felul', 5)
   const months = FX.months
   return (
     <div className="relative w-full overflow-x-clip bg-background">
@@ -152,7 +154,7 @@ export function FrontDoor() {
       <Band id="harta" index={t`01 / Teme`} title={t`Harta temelor`} lede={t`Actele care stabilesc reguli, grupate după textul lor. Celulele arată câte acte sunt într-un loc; numele temelor stau la centrul lor.`} aside={<a className={HUB_SHORTCUT_LINK_CLASS} href={hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'tema' })}>{t`Deschide harta`}</a>}>
         <TopicMap count={mapFilter(null, null)} selectedTopic={null} onSelectTopic={(topic) => topic !== null && window.location.assign(`${hrefOf('tema')}&tema=${topic}`)} compact />
       </Band>
-      <Band id="ani" index={t`02 / Timp`} title={t`Ce s-a publicat pe an`} lede={t`Actele fiecărui an, după felul lor. Anii fără dată (${fmt(byGroup.unknownYear)} acte) nu sunt pe grafic.`} aside={<a className={HUB_SHORTCUT_LINK_CLASS} href={hrefOf('analiza', { ...DEFAULT_QUERY, forma: 'timp' })}>{t`Analiza în timp`}</a>}>
+      <Band id="ani" index={t`02 / Timp`} title={t`Ce s-a publicat pe an`} lede={byGroup.unknownYear ? t`Actele fiecărui an, după felul lor. Actele fără an (${fmt(byGroup.unknownYear)}) nu sunt pe grafic.` : t`Actele fiecărui an, după felul lor: primele cinci feluri, restul în „altele”.`} aside={<a className={HUB_SHORTCUT_LINK_CLASS} href={hrefOf('analiza', { ...DEFAULT_QUERY, forma: 'timp' })}>{t`Analiza în timp`}</a>}>
         <StackedYears years={byGroup.years} labels={byGroup.labels} caption={t`acte pe an`} />
       </Band>
       <Band id="lanturi" index={t`03 / Legături`} title={t`Ordonanțe, legi și decrete`} lede={t`Ce lege a aprobat sau a respins fiecare ordonanță, cât a durat, și ce lege promulgă fiecare decret: citite din titluri.`}>
@@ -209,7 +211,9 @@ function ChainFigures() {
   const o = FX.ordinances
   const tot = (k: 'oug' | 'og', j: number) => o.years.reduce((s, y) => s + (y[k][j] ?? 0), 0)
   const rows = (['oug', 'og'] as const).map((k) => ({ k, approved: tot(k, 0), rejected: tot(k, 1), none: tot(k, 2) }))
-  const recent = o.years.filter((y) => y.year >= 2010)
+  const first = o.years.find((y) => [...y.oug, ...y.og].some((n) => n > 0))?.year ?? YEAR_MIN
+  const last = Math.max(...o.years.map((y) => y.year))
+  const shown = o.years.filter((y) => y.year >= first)
   const p = FX.promulgation
   return (
     <div className="space-y-8">
@@ -246,11 +250,15 @@ function ChainFigures() {
         </TableBody>
       </Table>
       <StackedYears
-        years={recent.map((y) => ({ year: y.year, values: [(y.oug[0] ?? 0) + (y.og[0] ?? 0), (y.oug[1] ?? 0) + (y.og[1] ?? 0), (y.oug[2] ?? 0) + (y.og[2] ?? 0)] }))}
+        years={shown.map((y) => ({ year: y.year, values: [(y.oug[0] ?? 0) + (y.og[0] ?? 0), (y.oug[1] ?? 0) + (y.og[1] ?? 0), (y.oug[2] ?? 0) + (y.og[2] ?? 0)] }))}
         labels={[t`aprobate`, t`respinse`, t`fără lege găsită`]}
-        caption={t`ordonanțe pe anul ordonanței, din 2010`}
+        caption={t`ordonanțe pe anul ordonanței, ${first}–${last}`}
+        pendingFrom={{ year: last - 2, label: t`aprobări posibil în curs (${last - 2}–${last})` }}
         footnote={t`${fmt(o.laws)} legi de aprobare sau respingere în corpus; ${fmt(o.resolved)} legate de ordonanța lor, ${fmt(o.notInCorpus)} numesc o ordonanță care lipsește din corpus. Zile între publicări: mediana ${fmt(o.days.median ?? 0)}, între ${fmt(o.days.p25 ?? 0)} și ${fmt(o.days.p75 ?? 0)}. Aprobarea cu modificări nu se vede în titlu.`}
       />
+      <p className="text-sm text-muted-foreground">
+        {t`„Fără lege găsită" nu înseamnă neaprobată: legea poate lipsi din corpus (${fmt(o.notInCorpus)} legi numesc o ordonanță pe care corpusul nu o are, deci și invers lipsesc legi), ordonanțele din 1992–1994 nu au legile lor în corpus, iar în ultimii trei ani aprobările pot fi încă în curs.`}
+      </p>
       <p className="text-sm text-muted-foreground">
         {t`Decrete de promulgare: ${fmt(p.status.resolved ?? 0)} din ${fmt(Object.values(p.status).reduce((s, n) => s + n, 0))} legate de legea lor, după titlul legii. De la decret la publicarea legii: mediana ${fmt(p.days.median ?? 0)} zile.`}
       </p>
@@ -313,8 +321,8 @@ export function AnalysisPage() {
           />
           <p className="text-xs text-muted-foreground">
             {q.populatie === 'stoc'
-              ? t`Un rând pe act de bază; modificările trăiesc în textul consolidat.`
-              : t`Fiecare act publicat, la data lui.`}
+              ? t`Actele care stabilesc reguli și stau singure: ${fmt(POPULATION_SIZE.stoc)} acte (definiție provizorie).`
+              : t`Fiecare act publicat, la data lui: ${fmt(POPULATION_SIZE.flux)} acte.`}
           </p>
         </RuledFrame>
       </nav>
@@ -324,7 +332,7 @@ export function AnalysisPage() {
             locale="ro"
             facts={[
               fact('sel', f.total, 0, '', t`acte în selecție`, t`din ${fmt(f.all)} (${population})`, '#raspuns'),
-              fact('reguli', f.total ? (f.rules / f.total) * 100 : 0, 1, '%', t`stabilesc reguli`, t`din ${fmt(f.total)}, după titlu`, '#raspuns'),
+              fact('reguli', rulesText(f).main, 1, '%', t`stabilesc reguli`, rulesText(f).note, '#raspuns'),
               fact('text', f.total ? (f.withText / f.total) * 100 : 0, 1, '%', t`au text în index`, t`${fmt(f.withText)} pot fi puse pe hartă`, '#raspuns'),
             ]}
           />
@@ -336,14 +344,14 @@ export function AnalysisPage() {
             <div>
               <MonoLabel className="block text-muted-foreground">{t`Privește după`}</MonoLabel>
               <IndicatorToggle<Lens>
-                className="mt-2 grid-flow-row grid-cols-3"
+                className="mt-2 grid-flow-row grid-cols-2 min-[400px]:grid-cols-3 lg:grid-cols-7"
                 label={t`Privește după`}
                 value={q.vedere}
                 onChange={(vedere) => move({ ...q, vedere, forma: vedere === 'tema' ? 'clasament' : q.forma })}
                 options={LENSES.map((key) => ({ key, label: LENS_READY[key] ? LENS_LABEL[key] : `${LENS_LABEL[key]} · ${t`în curând`}` }))}
               />
             </div>
-            {q.vedere !== 'tema' && LENS_READY[q.vedere] ? (
+            {(CUBE_LENSES as readonly Lens[]).includes(q.vedere) ? (
               <IndicatorToggle<Form>
                 label={t`Forma răspunsului`}
                 value={q.forma}
@@ -399,6 +407,7 @@ function Answer({ q, move, fine, setFine }: { readonly q: Query; readonly move: 
       </div>
     )
   }
+  if (q.vedere === 'legaturi') return <LinksView q={q} move={move} />
   if (q.vedere === 'tema') {
     const bands = q.tip.length ? [...new Set(q.tip.map(bandOfType))] : null
     const count = mapFilter(bands, q.an)
@@ -430,7 +439,7 @@ function Answer({ q, move, fine, setFine }: { readonly q: Query; readonly move: 
     return <StackedYears years={s.years} labels={s.labels} caption={t`acte pe an, după ${LENS_LABEL[q.vedere].toLowerCase()}`} footnote={s.unknownYear ? t`${fmt(s.unknownYear)} acte fără an nu sunt pe grafic.` : undefined} />
   }
   if (q.forma === 'grila') {
-    const other: Lens[] = (['felul', 'tip', 'emitent', 'dinamica'] as Lens[]).filter((l) => l !== q.vedere)
+    const other: Lens[] = (CUBE_LENSES as readonly Lens[]).filter((l) => l !== q.vedere)
     const cu = other.includes(q.cu) ? q.cu : other[0]!
     const g = grid(q, q.vedere, cu)
     return (
@@ -484,6 +493,87 @@ function Answer({ q, move, fine, setFine }: { readonly q: Query; readonly move: 
   )
 }
 
+
+const MATRIX_BANDS = ['legi', 'OUG', 'OG', 'hotărâri', 'ordine', 'decizii', 'altele'] as const
+const MATRIX_REST = ['un cod', 'țintă ambiguă', 'țintă în afara corpusului', 'fără țintă în titlu'] as const
+
+/** „Legături" (round 1, note 6): who amends what, the most amended, the most named by the court; independent of the lens. */
+function LinksView({ q, move }: { readonly q: Query; readonly move: (q: Query) => void }) {
+  const m = FX.links.matrix
+  const cell = (a: string, b: string) => m.find((x) => x[0] === a && x[1] === b)?.[2] ?? 0
+  const total = m.reduce((s, x) => s + x[2], 0)
+  const resolved = m.filter((x) => (MATRIX_BANDS as readonly string[]).includes(x[1])).reduce((s, x) => s + x[2], 0)
+  const open = (id: number) => {
+    move({ ...q, act: id })
+    window.setTimeout(() => document.getElementById('acte')?.scrollIntoView({ behavior: 'smooth' }), 50)
+  }
+  const title = (id: number) => FX.acts.find((a) => a.id === id)?.title ?? `#${id}`
+  return (
+    <div className="space-y-12">
+      <div>
+        <MonoLabel className="block text-muted-foreground">{t`cine modifică ce: actul care modifică (rând) × actul modificat (coloană)`}</MonoLabel>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[44rem] border-collapse text-sm">
+            <thead>
+              <tr>
+                <th />
+                {[...MATRIX_BANDS, ...MATRIX_REST].map((c) => (
+                  <th key={c} className={cn('px-1.5 py-2 text-right align-bottom font-normal', (MATRIX_REST as readonly string[]).includes(c) && 'text-muted-foreground')}>
+                    <MonoLabel>{c}</MonoLabel>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {MATRIX_BANDS.map((a) => (
+                <tr key={a} className="border-t">
+                  <th className="py-1.5 pr-3 text-left font-normal">{a}</th>
+                  {[...MATRIX_BANDS, ...MATRIX_REST].map((b) => {
+                    const n = cell(a, b)
+                    const rest = (MATRIX_REST as readonly string[]).includes(b)
+                    return (
+                      <td key={b} className={cn('px-1.5 py-1.5 text-right tabular-nums', rest ? 'text-muted-foreground' : n >= 1000 ? 'bg-primary/30' : n >= 200 ? 'bg-primary/15' : n > 0 ? 'bg-primary/5' : '')}>
+                        {n ? fmt(n) : '—'}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {t`${fmt(total)} acte care modifică, după titlu; ${fmt(resolved)} (${pct(resolved / total)}) legate de un singur act din corpus. Restul, în coloanele gri: un cod numit, o țintă cu același număr la mai mulți emitenți, o țintă care lipsește din corpus, sau niciun act numit în titlu. Departajarea între emitenți după cuvintele din titlu e o euristică, necitită încă.`}
+        </p>
+      </div>
+      <div className="grid gap-10 lg:grid-cols-2">
+        <LinkList title={t`Cele mai modificate`} note={t`De câte ori e numit ca țintă în titlul unui act care modifică.`} rows={FX.links.mostAmended} label={title} onOpen={open} />
+        <LinkList title={t`Cele mai numite de Curtea Constituțională`} note={t`Trimiteri ale deciziilor, nu efecte. Codurile (${fmt(FX.court.status.named_code ?? 0)} decizii) sunt numărate separat.`} rows={FX.links.mostChallenged} label={title} onOpen={open} />
+      </div>
+    </div>
+  )
+}
+
+function LinkList({ title, note, rows, label, onOpen }: { readonly title: string; readonly note: string; readonly rows: readonly (readonly [number, number])[]; readonly label: (id: number) => string; readonly onOpen: (id: number) => void }) {
+  return (
+    <div>
+      <MonoLabel className="block text-muted-foreground">{title}</MonoLabel>
+      <ol className="mt-3 divide-y border-y">
+        {rows.slice(0, 15).map(([id, n], j) => (
+          <li key={id}>
+            <button type="button" onClick={() => onOpen(id)} className="grid min-h-11 w-full grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 py-1.5 text-left text-sm hover:bg-muted/50">
+              <span className="font-mono text-xs tabular-nums text-muted-foreground">{j + 1}</span>
+              <span className="line-clamp-2">{label(id)}</span>
+              <span className="tabular-nums">{fmt(n)}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-3 text-xs text-muted-foreground">{t`Primele 15 din 30. ${note}`}</p>
+    </div>
+  )
+}
+
 /** The acts under the answer: a fixture sample, sortable, each row opening the act (not wired here). */
 function ActsBand({ q, move }: { readonly q: Query; readonly move: (q: Query) => void }) {
   const rows = FX.acts.filter((a) => {
@@ -495,10 +585,11 @@ function ActsBand({ q, move }: { readonly q: Query; readonly move: (q: Query) =>
     return true
   })
   const key = (a: (typeof rows)[number]) => (q.ordine === 'modificari' ? a.am : q.ordine === 'decizii' ? a.cc : q.ordine === 'versiuni' ? a.v : a.y)
-  const sorted = [...rows].sort((a, b) => key(b) - key(a)).slice(0, 25)
+  const focus = q.act === null ? null : (FX.acts.find((a) => a.id === q.act) ?? null)
+  const sorted = [...(focus ? [focus] : []), ...[...rows].filter((a) => a.id !== focus?.id).sort((a, b) => key(b) - key(a))].slice(0, 25)
   const f = figures(q)
   return (
-    <section className="border-b">
+    <section id="acte" className="border-b">
       <RuledFrame className="py-12 sm:py-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <HubSectionHead index={t`Actele`} title={t`Actele din selecție`} lede={t`Un eșantion de ${fmt(FX.acts.length)} acte (cele mai modificate, contestate, reemise și câte 40 din fiecare grupă), nu toată selecția de ${fmt(f.total)}.`} />
@@ -536,9 +627,15 @@ function ActsBand({ q, move }: { readonly q: Query; readonly move: (q: Query) =>
           </TableHeader>
           <TableBody>
             {sorted.map((a) => (
-              <TableRow key={a.id}>
+              <TableRow key={a.id} className={cn(focus?.id === a.id && 'bg-muted/70')}>
                 <TableCell className="py-1.5">
+                  {focus?.id === a.id ? (
+                    <button type="button" onClick={() => move({ ...q, act: null })} className="mb-1 block text-xs text-primary underline-offset-4 hover:underline">
+                      {t`deschis din Legături · închide`}
+                    </button>
+                  ) : null}
                   <span className="line-clamp-2">{a.title}</span>
+                  {a.ts === 'listing' || a.ts === 'listing_clean' ? <MonoLabel className="ml-1 text-status-partial-fg">{t`titlu din listă`}</MonoLabel> : null}
                   <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
                     {TYPE_LABEL[D.types[a.t] ?? ''] ?? ''} · {a.y || '—'} · {D.issuers[a.i]?.name ?? ''} · #{a.id}
                   </span>

@@ -78,13 +78,18 @@ export const BAND_LABEL = ['legi și ordonanțe', 'hotărâri', 'ordine', 'deciz
 const BAND_OF: Readonly<Record<string, number>> = { lege: 0, ordonanta: 0, 'ordonanta-urgenta': 0, 'decret-lege': 0, hotarare: 1, ordin: 2, decizie: 3, decret: 4 }
 export const bandOfType = (typeIndex: number) => BAND_OF[D.types[typeIndex] ?? ''] ?? 5
 
-/** Stock („legislația așa cum este"): base acts only; amending and procedure acts live in the consolidated text. */
-const NOT_IN_STOCK = new Set(['amendment', 'repeal', 'correction', 'promulgation', 'ordinance_approval', 'chamber_procedure'])
-export const STOCK_KIND = D.kinds.map((k) => !NOT_IN_STOCK.has(k.key))
+/**
+ * Stock („legislația așa cum este"), the coordinator's provisional definition (24 November 2026, until the owner
+ * reviews it): the acts that set rules and stand on their own. Everything else is in the flow only.
+ */
+export const STOCK_KINDS = ['new_rules', 'application_rules', 'periodic_parameters', 'international_agreement', 'organisation'] as const
+export const STOCK_KIND = D.kinds.map((k) => (STOCK_KINDS as readonly string[]).includes(k.key))
 
 // ────────────────────────────────────────────────────────── query ──
 
-export const LENSES = ['tema', 'domeniu', 'felul', 'emitent', 'tip', 'dinamica'] as const
+export const LENSES = ['tema', 'domeniu', 'felul', 'emitent', 'tip', 'dinamica', 'legaturi'] as const
+/** The lenses that are dimensions of the cube (rank, series, grid). */
+export const CUBE_LENSES = ['felul', 'emitent', 'tip', 'dinamica'] as const
 export type Lens = (typeof LENSES)[number]
 export const LENS_LABEL: Readonly<Record<Lens, string>> = {
   tema: 'Temă',
@@ -93,9 +98,10 @@ export const LENS_LABEL: Readonly<Record<Lens, string>> = {
   emitent: 'Emitent',
   tip: 'Tip',
   dinamica: 'Dinamică',
+  legaturi: 'Legături',
 }
 /** Lenses with data in this prototype; the rest say „în curând". */
-export const LENS_READY: Readonly<Record<Lens, boolean>> = { tema: true, domeniu: false, felul: true, emitent: true, tip: true, dinamica: true }
+export const LENS_READY: Readonly<Record<Lens, boolean>> = { tema: true, domeniu: false, felul: true, emitent: true, tip: true, dinamica: true, legaturi: true }
 
 export const FORMS = ['clasament', 'timp', 'grila'] as const
 export type Form = (typeof FORMS)[number]
@@ -114,6 +120,8 @@ export type Query = {
   readonly dinamica: number | null
   readonly tema: number | null
   readonly ordine: Order
+  /** An act opened in the acts table (`act=<id>`). */
+  readonly act: number | null
 }
 
 export const YEAR_MIN = 1990
@@ -131,6 +139,7 @@ export const DEFAULT_QUERY: Query = {
   dinamica: null,
   tema: null,
   ordine: 'modificari',
+  act: null,
 }
 
 const str = (v: unknown) => (typeof v === 'number' ? String(v) : typeof v === 'string' ? v : '')
@@ -169,6 +178,7 @@ export function readQuery(search: Record<string, unknown>): Query {
     dinamica: intIn(search.dinamica, 4),
     tema: intIn(search.tema, 64),
     ordine: oneOf(search.ordine, ORDERS, 'modificari'),
+    act: intIn(search.act, 10_000_000),
   }
 }
 
@@ -194,6 +204,7 @@ export function searchOf(q: Query): Record<string, string | undefined> {
     dinamica: q.dinamica === null ? undefined : String(q.dinamica),
     tema: q.tema === null ? undefined : String(q.tema),
     ordine: q.ordine === 'modificari' ? undefined : q.ordine,
+    act: q.act === null ? undefined : String(q.act),
   }
 }
 
@@ -221,13 +232,23 @@ export function useQuery(): readonly [Query, (next: Query) => void] {
 
 // ─────────────────────────────────────────────────────────── cube ──
 
-export type CubeRow = { readonly y: number; readonly t: number; readonly k: number; readonly i: number; readonly d: number; readonly u: number; readonly n: number }
+export type CubeRow = {
+  readonly y: number
+  readonly t: number
+  readonly k: number
+  readonly i: number
+  readonly d: number
+  readonly u: number
+  /** 1 when the act's Felul came from a fallback rule (the anywhere regexes or the type). */
+  readonly w: number
+  readonly n: number
+}
 
 export const CUBE: readonly CubeRow[] = (() => {
   const out: CubeRow[] = []
   const c = FX.cube
-  for (let j = 0; j + 6 < c.length; j += 7) {
-    out.push({ y: D.years[c[j]!]!, t: c[j + 1]!, k: c[j + 2]!, i: c[j + 3]!, d: c[j + 4]!, u: c[j + 5]!, n: c[j + 6]! })
+  for (let j = 0; j + 7 < c.length; j += 8) {
+    out.push({ y: D.years[c[j]!]!, t: c[j + 1]!, k: c[j + 2]!, i: c[j + 3]!, d: c[j + 4]!, u: c[j + 5]!, w: c[j + 6]!, n: c[j + 7]! })
   }
   return out
 })()
@@ -345,15 +366,43 @@ export function figures(q: Query) {
   let total = 0
   let withText = 0
   let rules = 0
+  let rulesStrict = 0
+  let unplaced = 0
   let all = 0
+  let versions = 0
   for (const r of CUBE) {
     if (q.populatie === 'stoc' ? STOCK_KIND[r.k] : true) all += r.n
     if (!inQuery(r, q)) continue
     total += r.n
     if (r.u) withText += r.n
-    if (groupOfKind(r.k) === 'rule-making') rules += r.n
+    if (r.d > 0) versions += r.n
+    if (groupOfKind(r.k) === 'rule-making') {
+      rules += r.n
+      if (!r.w) rulesStrict += r.n
+    }
+    if (groupOfKind(r.k) === 'other') unplaced += r.n
   }
-  return { total, withText, rules, all }
+  return { total, withText, rules, rulesStrict, unplaced, all, versions }
+}
+
+/** The two populations' sizes, for the switch's helper line and the caveats. */
+export const POPULATION_SIZE = (() => {
+  let flux = 0
+  let stoc = 0
+  for (const r of CUBE) {
+    flux += r.n
+    if (STOCK_KIND[r.k]) stoc += r.n
+  }
+  return { flux, stoc }
+})()
+
+/** „29,4% (26,9% fără încadrările slabe)": the rule-making share, said twice as the design asks. */
+export function rulesText(f: { readonly total: number; readonly rules: number; readonly rulesStrict: number; readonly unplaced: number }) {
+  if (!f.total) return { main: 0, note: '' }
+  return {
+    main: (f.rules / f.total) * 100,
+    note: `${pct(f.rulesStrict / f.total)} fără încadrările slabe · ${pct(f.unplaced / f.total)} neîncadrate · din ${fmt(f.total)}`,
+  }
 }
 
 export function isFiltered(q: Query): boolean {

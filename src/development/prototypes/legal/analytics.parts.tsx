@@ -11,9 +11,15 @@ import { ERA_LABEL, FAMILY_LABEL, MAP, MAP_COLS, MAP_ROWS, type MapCell } from '
 
 // ───────────────────────────────────────────────────── colours ──
 
-/** Series colours, navy first (G9); the last is „altele". Literal classes so Tailwind keeps them. */
-export const SERIES_BG = ['bg-chart-1', 'bg-chart-sky', 'bg-chart-2', 'bg-chart-3', 'bg-chart-4', 'bg-chart-5', 'bg-muted-foreground/25'] as const
-const SERIES_FILL = ['fill-chart-1', 'fill-chart-sky', 'fill-chart-2', 'fill-chart-3', 'fill-chart-4', 'fill-chart-5', 'fill-muted-foreground/25'] as const
+/**
+ * Stacked series (round 1, note 1): the leading values in five navy steps from the choropleth tokens, darkest at the
+ * bottom of the stack, and one grey for „altele". Steps differ in lightness, so they stay apart in dark mode and under
+ * a colour-vision deficiency. Literal classes so Tailwind keeps them.
+ */
+export const STACK_BG = ['bg-choropleth-5', 'bg-choropleth-4', 'bg-choropleth-3', 'bg-choropleth-2', 'bg-choropleth-1', 'bg-muted-foreground/30'] as const
+/** Categories without an order (the map's theme families, type bands, eras): six distinct tokens, navy first. */
+export const SERIES_BG = ['bg-chart-1', 'bg-chart-sky', 'bg-choropleth-2', 'bg-chart-2', 'bg-choropleth-4', 'bg-chart-4', 'bg-muted-foreground/25'] as const
+const SERIES_FILL = ['fill-chart-1', 'fill-chart-sky', 'fill-choropleth-2', 'fill-chart-2', 'fill-choropleth-4', 'fill-chart-4', 'fill-muted-foreground/25'] as const
 const DENSITY_FILL = ['fill-choropleth-1', 'fill-choropleth-2', 'fill-choropleth-3', 'fill-choropleth-4', 'fill-choropleth-5'] as const
 const DENSITY_BG = ['bg-choropleth-1', 'bg-choropleth-2', 'bg-choropleth-3', 'bg-choropleth-4', 'bg-choropleth-5'] as const
 const HEAT_BG = ['bg-primary/5', 'bg-primary/15', 'bg-primary/30', 'bg-primary/50', 'bg-primary/70'] as const
@@ -150,6 +156,7 @@ export function StackedYears({
   caption,
   footnote,
   axis,
+  pendingFrom,
 }: {
   readonly years: readonly { readonly year: number; readonly values: readonly number[] }[]
   readonly labels: readonly string[]
@@ -157,7 +164,10 @@ export function StackedYears({
   readonly footnote?: ReactNode
   /** The first and last column's names when the columns are not years (months). */
   readonly axis?: readonly [string, string]
+  /** Columns from this year on are drawn hollow and named in the legend (a figure that may still change). */
+  readonly pendingFrom?: { readonly year: number; readonly label: string }
 }) {
+  const colour = (j: number) => (j === labels.length - 1 && labels[j] === 'altele' ? STACK_BG[5] : STACK_BG[Math.min(j, 4)])
   const [active, setActive] = useState<number | null>(null)
   const max = Math.max(1, ...years.map((y) => y.values.reduce((s, v) => s + v, 0)))
   const shown = active === null ? null : years.find((y) => y.year === active)
@@ -189,9 +199,12 @@ export function StackedYears({
               onPointerEnter={() => setActive(y.year)}
               onFocus={() => setActive(y.year)}
             >
-              <div className={cn('flex flex-col-reverse', active === y.year && 'opacity-80')} style={{ height: `${(sum / max) * 100}%` }}>
+              <div
+                className={cn('flex flex-col-reverse', active === y.year && 'opacity-80', pendingFrom && y.year >= pendingFrom.year && 'opacity-45 outline-dashed outline-1 outline-foreground/60')}
+                style={{ height: `${(sum / max) * 100}%` }}
+              >
                 {y.values.map((v, j) => (
-                  <div key={j} className={SERIES_BG[Math.min(j, SERIES_BG.length - 1)]} style={{ height: sum ? `${(v / sum) * 100}%` : 0 }} />
+                  <div key={j} className={colour(j)} style={{ height: sum ? `${(v / sum) * 100}%` : 0 }} />
                 ))}
               </div>
             </li>
@@ -202,13 +215,22 @@ export function StackedYears({
         <span>{axis ? axis[0] : years[0]?.year}</span>
         <span>{axis ? axis[1] : years[years.length - 1]?.year}</span>
       </div>
-      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+      <ul className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        <li>
+          <MonoLabel>{t`de jos în sus`}</MonoLabel>
+        </li>
         {labels.map((l, j) => (
           <li key={l} className="flex items-center gap-1.5">
-            <span className={cn('size-2.5', SERIES_BG[Math.min(j, SERIES_BG.length - 1)])} aria-hidden="true" />
+            <span className={cn('size-2.5', colour(j))} aria-hidden="true" />
             {l}
           </li>
         ))}
+        {pendingFrom ? (
+          <li className="flex items-center gap-1.5">
+            <span className="size-2.5 bg-choropleth-5 opacity-45 outline-dashed outline-1 outline-foreground/60" aria-hidden="true" />
+            {pendingFrom.label}
+          </li>
+        ) : null}
       </ul>
       {footnote ? <figcaption className="mt-2 text-xs text-muted-foreground">{footnote}</figcaption> : null}
     </figure>
