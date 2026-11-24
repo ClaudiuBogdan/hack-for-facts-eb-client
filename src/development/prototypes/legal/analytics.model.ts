@@ -139,7 +139,9 @@ function oneOf<T extends string>(v: unknown, list: readonly T[], fallback: T): T
   return (list as readonly string[]).includes(s) ? (s as T) : fallback
 }
 const intIn = (v: unknown, max: number): number | null => {
-  const n = Number(str(v))
+  const s = str(v)
+  if (s === '') return null
+  const n = Number(s)
   return Number.isInteger(n) && n >= 0 && n < max ? n : null
 }
 

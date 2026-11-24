@@ -149,11 +149,14 @@ export function StackedYears({
   labels,
   caption,
   footnote,
+  axis,
 }: {
   readonly years: readonly { readonly year: number; readonly values: readonly number[] }[]
   readonly labels: readonly string[]
   readonly caption: string
   readonly footnote?: ReactNode
+  /** The first and last column's names when the columns are not years (months). */
+  readonly axis?: readonly [string, string]
 }) {
   const [active, setActive] = useState<number | null>(null)
   const max = Math.max(1, ...years.map((y) => y.values.reduce((s, v) => s + v, 0)))
@@ -164,7 +167,7 @@ export function StackedYears({
         <MonoLabel className="block text-muted-foreground">{caption}</MonoLabel>
         <p className="min-h-5 text-xs tabular-nums text-muted-foreground" aria-live="polite">
           {shown
-            ? `${shown.year}: ${fmt(shown.values.reduce((s, v) => s + v, 0))} ${t`acte`} · ${labels
+            ? `${axis ? '' : `${shown.year}: `}${fmt(shown.values.reduce((s, v) => s + v, 0))} ${t`acte`} · ${labels
                 .map((l, j) => `${l} ${fmt(shown.values[j] ?? 0)}`)
                 .join(' · ')}`
             : t`Indică un an pentru cifrele lui.`}
@@ -196,8 +199,8 @@ export function StackedYears({
         })}
       </ol>
       <div className="mt-1 flex justify-between text-[11px] tabular-nums text-muted-foreground">
-        <span>{years[0]?.year}</span>
-        <span>{years[years.length - 1]?.year}</span>
+        <span>{axis ? axis[0] : years[0]?.year}</span>
+        <span>{axis ? axis[1] : years[years.length - 1]?.year}</span>
       </div>
       <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
         {labels.map((l, j) => (

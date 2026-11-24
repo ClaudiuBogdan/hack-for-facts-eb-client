@@ -71,7 +71,7 @@ type Board = 'modificate' | 'contestate' | 'versiuni'
 export function FrontDoor() {
   const [board, setBoard] = useState<Board>('modificate')
   const all = figures(DEFAULT_QUERY)
-  const years = D.years.filter((y) => y > 0)
+  const older = all.total - series(DEFAULT_QUERY, 'felul', 1).years.reduce((s, y) => s + y.values.reduce((a, b) => a + b, 0), 0)
   const ord = FX.ordinances
   const neverApproved = ord.years.reduce((s, y) => s + (y.oug[2] ?? 0) + (y.og[2] ?? 0), 0)
   const ordinances = ord.years.reduce((s, y) => s + (y.oug[0] ?? 0) + (y.oug[1] ?? 0) + (y.oug[2] ?? 0) + (y.og[0] ?? 0) + (y.og[1] ?? 0) + (y.og[2] ?? 0), 0)
@@ -99,7 +99,7 @@ export function FrontDoor() {
                 {t`numărate și puse în ordine.`}
               </h1>
               <p className="mt-5 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                {t`${fmt(all.total)} de acte publicate între ${years[0]} și ${years[years.length - 1]}, așa cum le servea Portalul Legislativ la ${FX.stamp.snapshotDate}: ce fac, cine le emite, cum se leagă între ele.`}
+                {t`${fmt(all.total)} de acte, cele mai multe din ${YEAR_MIN}–${YEAR_MAX} (${fmt(older)} mai vechi sau fără an), așa cum le servea Portalul Legislativ la ${FX.stamp.snapshotDate}: ce fac, cine le emite, cum se leagă între ele.`}
               </p>
               <label className="mt-7 flex min-h-12 items-center gap-2 border bg-background px-3">
                 <Search className="size-4 text-muted-foreground" aria-hidden="true" />
@@ -163,6 +163,7 @@ export function FrontDoor() {
           years={months.map((m, j) => ({ year: j, values: m.bands }))}
           labels={[...BAND_LABEL]}
           caption={t`acte pe lună, ${months[0]?.month} – ${months[months.length - 1]?.month}`}
+          axis={[months[0]?.month ?? '', months[months.length - 1]?.month ?? '']}
           footnote={t`Luna instantaneului e incompletă.`}
         />
       </Band>
