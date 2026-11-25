@@ -13,4 +13,5 @@ export const procurementContractAwardKeys = {
   all: ['procurement', 'contract-award'] as const,
   award: (id: string) => [...procurementContractAwardKeys.all, id] as const,
   buyer: (cui: string, from: string, to: string, sort: string, page: number) => [...procurementContractAwardKeys.all, 'buyer', cui, from, to, sort, page] as const,
+  buyerTotals: (cui: string, from: string, to: string) => [...procurementContractAwardKeys.all, 'buyer-totals', cui, from, to] as const,
 }

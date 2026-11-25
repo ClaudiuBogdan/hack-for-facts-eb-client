@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro'
-import type { RawCaBuyer, RawCaRow, RawCaWinner, RawContractAward, RawContractAwards } from '../api/graphql/procurement-contract-award-queries'
+import type { RawCaBuyer, RawCaRow, RawCaWinner, RawContractAward, RawContractAwardTotal, RawContractAwards } from '../api/graphql/procurement-contract-award-queries'
 import { lastDayOf, type ProfilePeriod } from './profile-period'
 
 /**
@@ -318,4 +318,51 @@ export function caRecordNotes(record: Pick<CaRecordRow, 'flags' | 'underReview' 
 export function authorityNameOf(award: Pick<ContractAward, 'buyer'> | null | undefined): string | null {
   const buyer = award?.buyer
   return buyer && buyer.kind === 'company' && buyer.authority ? buyer.name : null
+}
+
+/**
+ * The value kinds a buyer's contract-award money is shown in, in this order
+ * (owner, 25 November 2026): what was awarded, the price changes after award,
+ * and the framework agreements' ceilings. One figure each, never added up: a
+ * ceiling is the most an agreement may spend, not an award.
+ */
+export const CA_TOTAL_KINDS = ['awarded', 'modification_change', 'framework_ceiling'] as const
+export type CaTotalKind = (typeof CA_TOTAL_KINDS)[number]
+
+/** Text in both languages, as the API's label table serves it. */
+export interface CaServedText {
+  readonly ro: string
+  readonly en: string
+}
+
+export interface CaTotalFigure {
+  readonly valueKind: CaTotalKind
+  readonly label: CaServedText
+  readonly sumLei: number
+  readonly recordCount: number
+}
+
+export interface BuyerContractAwardTotals {
+  readonly figures: readonly CaTotalFigure[]
+  /** Composed by the API from the filters it applied and its counts: shown verbatim. */
+  readonly explanation: CaServedText
+}
+
+/** One figure per asked kind, in `CA_TOTAL_KINDS` order; a kind the answer lacks is left out, never said as zero. */
+export function mapBuyerContractAwardTotals(raw: RawContractAwardTotal): BuyerContractAwardTotals {
+  const figures: CaTotalFigure[] = []
+  for (const valueKind of CA_TOTAL_KINDS) {
+    const figure = raw.totals.find((entry) => entry.valueKind === valueKind)
+    const sumLei = Number(figure?.sumLei)
+    if (!figure || !Number.isFinite(sumLei)) continue
+    const label = raw.included.valueKinds.find((entry) => entry.key === valueKind)
+    figures.push({
+      valueKind,
+      // A label the build lacks is shown as the API would: its key, never a guessed text.
+      label: { ro: label?.labelRo ?? valueKind, en: label?.labelEn ?? valueKind },
+      sumLei,
+      recordCount: Number(figure.recordCount) || 0,
+    })
+  }
+  return { figures, explanation: { ro: raw.explanation.textRo, en: raw.explanation.textEn } }
 }

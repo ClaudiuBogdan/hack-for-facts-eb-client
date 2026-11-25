@@ -5,15 +5,16 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { PROCUREMENT_BUYER_AWARD_MAX_PAGE, type ProcurementBuyerAwardOrder } from '@/schemas/procurement-buyer'
-import { CaRecordsOffError } from '../../api/procurement-contract-award-api'
-import { useBuyerContractAwards } from '../../hooks/use-procurement-contract-award'
-import { caWindowOf, type BuyerContractAwards, type CaRecordRow, type CaSort } from '../../lib/contract-award-model'
-import { beforeFloorText, caAmountText, caKindText, winnersUnnamedText } from '../../lib/contract-award-text'
+import { CaRecordsOffError, type BuyerContractAwardTotalsRequest } from '../../api/procurement-contract-award-api'
+import { useBuyerContractAwards, useBuyerContractAwardTotals } from '../../hooks/use-procurement-contract-award'
+import { caWindowOf, type BuyerContractAwards, type CaRecordRow, type CaServedText, type CaSort } from '../../lib/contract-award-model'
+import { beforeFloorText, caAmountText, caKindText, signedLeiShort, winnersUnnamedText } from '../../lib/contract-award-text'
 import type { BuyerProfile } from '../../lib/buyer-model'
 import { categoryOfCode } from '../../lib/home-categories'
-import { countText, dayText } from '../../lib/home-format'
+import { countText, dayText, moneyText } from '../../lib/home-format'
 import { periodYear } from '../../lib/profile-period'
 import { periodText } from '../../lib/profile-period-text'
+import { getUserLocale } from '@/lib/utils'
 import { HomeBand } from '../home/home-chrome'
 import { CaPartyName } from '../contract-award/contract-award-party'
 
@@ -22,8 +23,9 @@ import { CaPartyName } from '../contract-award/contract-award-party'
  * the period, served from procurement v3 — how many, how many with a value,
  * how many under identity review — and one page of them, newest, oldest or
  * largest first. Read in the browser only (every answer is no-store at the
- * API), so the server render stays free of winner codes. Counts only: no
- * contract money is summed until the owner decides one.
+ * API), so the server render stays free of winner codes. The money is the
+ * money build's, one figure per value kind and never added up (owner, 25
+ * November 2026).
  */
 
 const SORT_OF: Readonly<Record<ProcurementBuyerAwardOrder, CaSort>> = { noi: 'awardDayDesc', vechi: 'awardDayAsc', valoare: 'amountDesc' }
@@ -90,6 +92,7 @@ export function BuyerAwardsBand({
           <HubPending rows={6} />
         ) : (
           <div>
+            {data.total === 0 && data.page === 1 ? null : <AwardsTotals request={{ cui: profile.identity.cui, from: published.from, to: published.to }} />}
             {data.total === 0 && data.page === 1 ? (
               <p className="border-y py-4 text-sm text-muted-foreground">
                 <Trans>Niciun contract atribuit în {period}.</Trans>
@@ -219,6 +222,40 @@ function AwardsNotes({ data, clipped }: { readonly data: BuyerContractAwards | u
       }),
     )
   }
-  notes.push(t`Valoarea e a întregului contract, atribuită, nu plătită; la un acord-cadru, cea maximă. Contractele nu sunt adunate într-un total.`)
+  notes.push(t`Valoarea e a întregului contract, atribuită, nu plătită; la un acord-cadru, cea maximă.`)
   return <p className="mt-4 max-w-[70ch] text-xs leading-relaxed text-muted-foreground">{notes.join(' ')}</p>
+}
+
+/**
+ * The buyer's contract-award money in the window: awarded, price changes and
+ * framework ceilings, each with the API's own label, side by side and never
+ * added up. A failure here leaves the counts and the list as they are.
+ */
+function AwardsTotals({ request }: { readonly request: BuyerContractAwardTotalsRequest }) {
+  const query = useBuyerContractAwardTotals(request)
+  // In the page's language, as the label table serves it.
+  const served = (text: CaServedText) => (getUserLocale() === 'en' ? text.en : text.ro)
+  if (query.isPending) return <HubPending rows={1} className="mb-6" />
+  if (query.isError || query.data.figures.length === 0) {
+    return (
+      <p className="mb-6 text-sm text-muted-foreground">
+        <Trans>Sumele în lei nu sunt disponibile acum.</Trans>
+      </p>
+    )
+  }
+  return (
+    <div className="mb-6">
+      <dl className="grid grid-cols-1 gap-4 border-y py-4 sm:grid-cols-3">
+        {query.data.figures.map((figure) => (
+          <div key={figure.valueKind}>
+            <dt className="text-xs text-muted-foreground">{served(figure.label)}</dt>
+            <dd className="mt-1 font-semibold tabular-nums text-foreground">{figure.valueKind === 'modification_change' ? signedLeiShort(figure.sumLei) : moneyText(figure.sumLei)}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 max-w-[70ch] text-xs leading-relaxed text-muted-foreground">
+        <Trans>Sumele nu se adună: plafonul unui acord-cadru e cât poate cheltui cel mult, nu o valoare atribuită.</Trans> {served(query.data.explanation)}
+      </p>
+    </div>
+  )
 }

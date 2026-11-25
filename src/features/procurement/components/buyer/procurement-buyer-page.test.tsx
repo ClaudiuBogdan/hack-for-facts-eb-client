@@ -9,9 +9,9 @@ import type { ProcurementBuyerSearch } from '@/schemas/procurement-buyer'
 import { buyerDirectCategories, buyerProfile, buyerRecords } from '../../lib/buyer.fixture'
 import { ProcurementBuyerPage, type ProcurementBuyerInitialData } from './procurement-buyer-page'
 import { recentPeriod, yearPeriod } from '../../lib/profile-period.fixture'
-import { CaRecordsOffError } from '../../api/procurement-contract-award-api'
-import { mapBuyerContractAwards } from '../../lib/contract-award-model'
-import { rawAwards, rawRow } from '../../lib/contract-award.fixture'
+import { CaRecordsOffError, CaTotalsOffError } from '../../api/procurement-contract-award-api'
+import { mapBuyerContractAwards, mapBuyerContractAwardTotals } from '../../lib/contract-award-model'
+import { rawAwards, rawRow, rawTotals } from '../../lib/contract-award.fixture'
 
 /**
  * The buyer page's contract, as far as a unit test holds it: what the loader
@@ -61,9 +61,11 @@ vi.mock('../../api/procurement-buyer-api', () => ({
 }))
 // The contract awards (PROC-KB0Z step 1) are the browser's own read too: by default, never.
 const awardsRead = vi.hoisted(() => vi.fn())
+const totalsRead = vi.hoisted(() => vi.fn())
 vi.mock('../../api/procurement-contract-award-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../api/procurement-contract-award-api')>()),
   fetchBuyerContractAwards: (...args: unknown[]) => awardsRead(...args),
+  fetchBuyerContractAwardTotals: (...args: unknown[]) => totalsRead(...args),
 }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
@@ -94,6 +96,8 @@ describe('ProcurementBuyerPage', () => {
     profileRead.mockImplementation(() => new Promise(() => undefined))
     awardsRead.mockReset()
     awardsRead.mockImplementation(() => new Promise(() => undefined))
+    totalsRead.mockReset()
+    totalsRead.mockImplementation(() => new Promise(() => undefined))
   })
 
   it('renders the profile without the direct purchases by category: the band waits for its own read, never says „none"', () => {
@@ -508,6 +512,29 @@ describe('ProcurementBuyerPage', () => {
       expect(band).toHaveTextContent('Ion P*** PFA (CUI 30111222)')
       expect(band).toHaveTextContent('CUI 30111223 (nume nepublicat), Câștigător nepublicat')
       expect(band).toHaveTextContent('în verificare')
+    })
+
+    it('shows the money per kind with the API’s labels, never added up, from its own read of the same window', async () => {
+      awardsRead.mockResolvedValue(awards())
+      totalsRead.mockResolvedValue(mapBuyerContractAwardTotals(rawTotals().totals[0]!))
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Modificări de preț')).toBeInTheDocument()
+      expect(totalsRead.mock.calls[0]?.[0]).toEqual({ cui: '4364446', from: '2025-01-01', to: '2025-12-31' })
+      const figures = [...band.querySelectorAll('dl > div')].map((entry) => entry.textContent?.replace(/\u00a0/gu, ' '))
+      expect(figures).toEqual(['Valoare atribuită12,3 mil. lei', 'Modificări de preț−350.000 lei', 'Plafoane ale acordurilor-cadru45,0 mil. lei'])
+      expect(band).toHaveTextContent('Sumele nu se adună')
+      expect(band).toHaveTextContent('Include contractele atribuite din 2025; 3 fără dată sunt lăsate deoparte.')
+    })
+
+    it('keeps the counts and the list when the money is not served, and says only the money unavailable', async () => {
+      awardsRead.mockResolvedValue(awards())
+      totalsRead.mockRejectedValue(new CaTotalsOffError())
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Sumele în lei nu sunt disponibile acum.')).toBeInTheDocument()
+      expect(band).toHaveTextContent('Servicii de deszăpezire')
+      expect(band.querySelector('dl')).toBeNull()
     })
 
     it('says one award and one undated award in the singular', async () => {

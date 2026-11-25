@@ -1,4 +1,4 @@
-import type { RawCaRow, RawContractAward, RawContractAwards } from '../api/graphql/procurement-contract-award-queries'
+import type { RawCaRow, RawContractAward, RawContractAwardTotal, RawContractAwards } from '../api/graphql/procurement-contract-award-queries'
 
 /** Contract-award answers as the API serves them (server `ca-records-schema.ts`, 1503dd2c), for tests. */
 
@@ -79,5 +79,29 @@ export function rawAward(overrides: { readonly record?: Partial<RawContractAward
       },
       lots: overrides.lots ?? [{ lotOrder: 1, lotNumber: '1', title: 'Lucrări de reabilitare', cpvCode: '45214200-2', estimatedValue: '1300000', currency: 'RON', isEuFunded: true, cancelledStatus: null }],
     },
+  }
+}
+
+/** A buyer's contract-award money as `procurementTotals` answers it (server `totals-schema.ts`); labels as the label table might serve them. */
+export function rawTotals(overrides: { readonly totals?: RawContractAwardTotal['totals']; readonly id?: string } = {}): { readonly totals: RawContractAwardTotal[] } {
+  return {
+    totals: [
+      {
+        id: overrides.id ?? 'buyer-contract-awards',
+        totals: overrides.totals ?? [
+          { valueKind: 'framework_ceiling', sumLei: '45000000.00', recordCount: '2' },
+          { valueKind: 'awarded', sumLei: '12345678.90', recordCount: '118' },
+          { valueKind: 'modification_change', sumLei: '-350000.00', recordCount: '4' },
+        ],
+        included: {
+          valueKinds: [
+            { key: 'awarded', labelRo: 'Valoare atribuită', labelEn: 'Awarded value' },
+            { key: 'modification_change', labelRo: 'Modificări de preț', labelEn: 'Price changes' },
+            { key: 'framework_ceiling', labelRo: 'Plafoane ale acordurilor-cadru', labelEn: 'Framework ceilings' },
+          ],
+        },
+        explanation: { textRo: 'Include contractele atribuite din 2025; 3 fără dată sunt lăsate deoparte.', textEn: 'Includes contracts awarded in 2025; 3 undated are left out.' },
+      },
+    ],
   }
 }

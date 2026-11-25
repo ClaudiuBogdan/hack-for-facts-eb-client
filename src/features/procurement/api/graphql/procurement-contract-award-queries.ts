@@ -164,3 +164,36 @@ export type RawCaWinner = z.infer<typeof winnerSchema>
 export type RawCaRow = z.infer<typeof rowSchema>
 export type RawContractAwards = z.infer<typeof contractAwardsResponseSchema>
 export type RawContractAward = z.infer<typeof contractAwardResponseSchema>['award']
+
+/**
+ * A buyer's contract-award money (server `totals-schema.ts`, totals v2): one
+ * request over the money build, one figure per value kind, never summed
+ * across kinds. Labels and the explanation come from the API's label table
+ * and are shown as served. The field is nullable at the root: a totals error
+ * nulls it alone.
+ */
+export const PROCUREMENT_CONTRACT_AWARD_TOTALS_QUERY = /* GraphQL */ `
+  query ProcurementContractAwardTotals($requests: [ProcurementTotalRequestInput!]!) {
+    totals: procurementTotals(requests: $requests) {
+      id
+      totals { valueKind sumLei recordCount }
+      included { valueKinds { key labelRo labelEn } }
+      explanation { textRo textEn }
+    }
+  }
+`
+
+export const contractAwardTotalsResponseSchema = z.object({
+  totals: z
+    .array(
+      z.object({
+        id: z.string(),
+        totals: z.array(z.object({ valueKind: z.string(), sumLei: z.string(), recordCount: z.string() })),
+        included: z.object({ valueKinds: z.array(z.object({ key: z.string(), labelRo: z.string(), labelEn: z.string() })) }),
+        explanation: z.object({ textRo: z.string(), textEn: z.string() }),
+      }),
+    )
+    .nullable(),
+})
+
+export type RawContractAwardTotal = NonNullable<z.infer<typeof contractAwardTotalsResponseSchema>['totals']>[number]

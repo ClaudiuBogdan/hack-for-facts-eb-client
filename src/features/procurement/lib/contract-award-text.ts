@@ -50,6 +50,12 @@ export function signedLei(value: number): string {
   return `${sign}${leiExact(Math.abs(value))}`
 }
 
+/** A sum of changes in short lei with its sign: „+1,2 mil. lei", „−340.000 lei". */
+export function signedLeiShort(value: number): string {
+  const sign = value > 0 ? '+' : value < 0 ? '−' : ''
+  return `${sign}${moneyText(Math.abs(value))}`
+}
+
 /** The years a period asked for that the API does not publish yet: said once, never as „none". */
 export function beforeFloorText(): string {
   return t`Contractele atribuite înainte de 2021 nu sunt încă publicate.`

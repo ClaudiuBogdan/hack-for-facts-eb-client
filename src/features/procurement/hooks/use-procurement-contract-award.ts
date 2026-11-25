@@ -4,10 +4,13 @@ import {
   CaReadSpentError,
   CaRecordsOffError,
   CaSnapshotMismatchError,
+  CaTotalsOffError,
   fetchBuyerContractAwards,
+  fetchBuyerContractAwardTotals,
   fetchContractAward,
   isRepublished,
   type BuyerContractAwardsRequest,
+  type BuyerContractAwardTotalsRequest,
   type ContractAwardRead,
 } from '../api/procurement-contract-award-api'
 import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
@@ -27,7 +30,7 @@ export { procurementContractAwardKeys }
  * read twice already by the adapter: the read fails, and the reader's retry asks again.
  */
 const retry = (failureCount: number, error: unknown) =>
-  !(error instanceof CaRecordsOffError || error instanceof CaSnapshotMismatchError || error instanceof CaReadSpentError || isRepublished(error)) &&
+  !(error instanceof CaRecordsOffError || error instanceof CaTotalsOffError || error instanceof CaSnapshotMismatchError || error instanceof CaReadSpentError || isRepublished(error)) &&
   shouldRetryQuery(failureCount, error)
 
 export function contractAwardQueryOptions(id: string, initialData?: ContractAwardRead) {
@@ -57,6 +60,21 @@ export function useBuyerContractAwards(request: BuyerContractAwardsRequest | nul
   return useQuery({
     queryKey: request ? procurementContractAwardKeys.buyer(request.cui, request.from, request.to, request.sort, request.page) : [...procurementContractAwardKeys.all, 'buyer', 'none'],
     queryFn: ({ signal }) => fetchBuyerContractAwards(request!, signal),
+    retry,
+    ...DA_QUERY_CACHE,
+    enabled: request !== null,
+  })
+}
+
+/**
+ * The buyer's contract-award money for the band's window, read in the browser
+ * only, kept as the counts are (`DA_QUERY_CACHE`) and never from another
+ * window's answer. Null asks nothing.
+ */
+export function useBuyerContractAwardTotals(request: BuyerContractAwardTotalsRequest | null) {
+  return useQuery({
+    queryKey: request ? procurementContractAwardKeys.buyerTotals(request.cui, request.from, request.to) : [...procurementContractAwardKeys.all, 'buyer-totals', 'none'],
+    queryFn: ({ signal }) => fetchBuyerContractAwardTotals(request!, signal),
     retry,
     ...DA_QUERY_CACHE,
     enabled: request !== null,

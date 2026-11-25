@@ -7,8 +7,8 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({
 }))
 
 const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
-const { CaReadSpentError, CaRecordsOffError, CaSnapshotMismatchError, fetchBuyerContractAwards, fetchContractAward } = await import('./procurement-contract-award-api')
-const { rawAward, rawAwards, RECORD_ID } = await import('../lib/contract-award.fixture')
+const { CaReadSpentError, CaRecordsOffError, CaSnapshotMismatchError, CaTotalsOffError, fetchBuyerContractAwards, fetchBuyerContractAwardTotals, fetchContractAward } = await import('./procurement-contract-award-api')
+const { rawAward, rawAwards, rawTotals, RECORD_ID } = await import('../lib/contract-award.fixture')
 
 const refused = (code: string, reason?: string, message: string = code) =>
   new GraphQLRequestError(`GraphQL errors: ${message}`, { graphQLErrors: [{ message, path: ['award'], extensions: { code, ...(reason ? { reason } : {}) } }] })
@@ -104,5 +104,48 @@ describe('fetchContractAward', () => {
   it('asks nothing for an id that is no award’s', async () => {
     await expect(fetchContractAward('123456')).resolves.toEqual({ kind: 'missing' })
     expect(graphqlQuery).not.toHaveBeenCalled()
+  })
+})
+
+describe('fetchBuyerContractAwardTotals', () => {
+  beforeEach(() => graphqlQuery.mockReset())
+  const WINDOW = { cui: '4364446', from: '2025-01-01', to: '2025-12-31' }
+
+  it('asks the money build for the buyer’s contract awards in the window, one figure per kind, and keeps them apart', async () => {
+    graphqlQuery.mockResolvedValueOnce(rawTotals())
+    const read = await fetchBuyerContractAwardTotals(WINDOW)
+    expect(graphqlQuery.mock.calls[0]?.[1]).toEqual({
+      requests: [
+        {
+          id: 'buyer-contract-awards',
+          filters: { procurementKinds: ['contract_award'], buyerCode: '4364446', from: '2025-01-01', to: '2025-12-31' },
+          valueKinds: ['awarded', 'modification_change', 'framework_ceiling'],
+        },
+      ],
+    })
+    // In the band's order, whatever order the API answered in; no figure sums another.
+    expect(read.figures.map((figure) => [figure.valueKind, figure.sumLei, figure.label.ro])).toEqual([
+      ['awarded', 12345678.9, 'Valoare atribuită'],
+      ['modification_change', -350000, 'Modificări de preț'],
+      ['framework_ceiling', 45000000, 'Plafoane ale acordurilor-cadru'],
+    ])
+    expect(read.explanation.ro).toBe('Include contractele atribuite din 2025; 3 fără dată sunt lăsate deoparte.')
+  })
+
+  it('leaves out a kind the answer lacks rather than say it as zero', async () => {
+    graphqlQuery.mockResolvedValueOnce(rawTotals({ totals: [{ valueKind: 'awarded', sumLei: '100.00', recordCount: '1' }] }))
+    await expect(fetchBuyerContractAwardTotals(WINDOW)).resolves.toMatchObject({ figures: [{ valueKind: 'awarded', sumLei: 100 }] })
+  })
+
+  it('says the money unavailable when totals are off, the field is null, or the answer is for no request of ours', async () => {
+    graphqlQuery.mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE', undefined, 'procurement totals v2 is not enabled on this server'))
+    await expect(fetchBuyerContractAwardTotals(WINDOW)).rejects.toBeInstanceOf(CaTotalsOffError)
+    graphqlQuery.mockResolvedValueOnce({ totals: null })
+    await expect(fetchBuyerContractAwardTotals(WINDOW)).rejects.toBeInstanceOf(CaTotalsOffError)
+    graphqlQuery.mockResolvedValueOnce(rawTotals({ id: 'other' }))
+    await expect(fetchBuyerContractAwardTotals(WINDOW)).rejects.toBeInstanceOf(CaTotalsOffError)
+    // Any other failure stays itself: not the switch.
+    graphqlQuery.mockRejectedValueOnce(refused('INTERNAL_ERROR'))
+    await expect(fetchBuyerContractAwardTotals(WINDOW)).rejects.not.toBeInstanceOf(CaTotalsOffError)
   })
 })

@@ -2,15 +2,20 @@ import { graphqlQuery, GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import {
   contractAwardResponseSchema,
   contractAwardsResponseSchema,
+  contractAwardTotalsResponseSchema,
   PROCUREMENT_CONTRACT_AWARD_QUERY,
+  PROCUREMENT_CONTRACT_AWARD_TOTALS_QUERY,
   PROCUREMENT_CONTRACT_AWARDS_QUERY,
 } from './graphql/procurement-contract-award-queries'
 import {
   CA_PAGE_SIZE,
+  CA_TOTAL_KINDS,
   isContractAwardId,
   mapBuyerContractAwards,
+  mapBuyerContractAwardTotals,
   mapContractAward,
   type BuyerContractAwards,
+  type BuyerContractAwardTotals,
   type CaSort,
   type ContractAward,
 } from '../lib/contract-award-model'
@@ -26,6 +31,14 @@ export class CaRecordsOffError extends Error {
   constructor() {
     super('The API does not serve contract awards now.')
     this.name = 'CaRecordsOffError'
+  }
+}
+
+/** The API serves no contract-award money now (totals v2 off, busy, or its build not served): said as such, not as zero. */
+export class CaTotalsOffError extends Error {
+  constructor() {
+    super('The API does not serve contract-award totals now.')
+    this.name = 'CaTotalsOffError'
   }
 }
 
@@ -145,4 +158,39 @@ export async function fetchContractAward(id: string, signal?: AbortSignal): Prom
     throw error instanceof CaReadSpentError ? error : offOr(error, signal)
   }
   return { kind: 'found', award: mapContractAward(raw.award), reanchored: raw.award.reanchored || raw.award.record.recordId !== id }
+}
+
+export interface BuyerContractAwardTotalsRequest {
+  readonly cui: string
+  readonly from: string
+  readonly to: string
+}
+
+/** The one request's client key, echoed back by the API. */
+const TOTALS_REQUEST_ID = 'buyer-contract-awards'
+
+/**
+ * A buyer's contract-award money in the band's window (owner, 25 November
+ * 2026): the money build's awarded, price-change and framework-ceiling
+ * figures, each its own total. Its own read, apart from the counts and list,
+ * so a totals failure leaves those standing.
+ */
+export async function fetchBuyerContractAwardTotals(request: BuyerContractAwardTotalsRequest, signal?: AbortSignal): Promise<BuyerContractAwardTotals> {
+  const requests = [
+    {
+      id: TOTALS_REQUEST_ID,
+      filters: { procurementKinds: ['contract_award'], buyerCode: request.cui, from: request.from, to: request.to },
+      valueKinds: [...CA_TOTAL_KINDS],
+    },
+  ]
+  let raw
+  try {
+    raw = contractAwardTotalsResponseSchema.parse(await graphqlQuery<unknown>(PROCUREMENT_CONTRACT_AWARD_TOTALS_QUERY, { requests }, { operationName: 'ProcurementContractAwardTotals', signal }))
+  } catch (error) {
+    throw !signal?.aborted && hasCode(error, 'SERVICE_UNAVAILABLE') ? new CaTotalsOffError() : error
+  }
+  const answer = raw.totals?.find((entry) => entry.id === TOTALS_REQUEST_ID)
+  // A null field with no error, or no answer for the request: nothing to show, and never zero.
+  if (!answer) throw new CaTotalsOffError()
+  return mapBuyerContractAwardTotals(answer)
 }
