@@ -1,6 +1,6 @@
 # FIXTURE-001: Legislation test fixtures ship in the production build
 
-**Status:** open. **Owner:** client-legislation. **Priority:** P2; not a blocker for the search page push. **Related:** review
+**Status:** fixed (25 November 2026, see "Done" below). **Owner:** client-legislation. **Priority:** P2. **Related:** review
 `astra-client-7` finding 16 (25 November 2026), the guard pattern in `src/features/legal/api/legal-analytics-api.ts`,
 `legal-changes-api.ts`, `legal-gazette-api.ts`, `legal-freshness-api.ts`, and for search and the resolver `21106d2b6`.
 
@@ -37,3 +37,25 @@ change, grep `.output/public` and `.output/server` for one marker per fixture: z
 ## Who fixes it
 
 client-legislation, in a follow-up after the search page push.
+
+## Done
+
+All eight facades now carry the guard: `legal-act-api.ts` (the act-detail fixture), `legal-acts-api.ts`,
+`legal-api.ts`, `legal-domain-counts-api.ts`, `legal-outline-api.ts`, `legal-render-api.ts`,
+`legal-resolve-document-api.ts` and `legal-status-counts-api.ts`. Every function was already `async`, so no caller
+changed. No other production module imports a legislation mock or fixture.
+
+Markers on the production build, before (`8c2a7d2e5`) and after, as files in `.output/public` JS / `.output/server`:
+
+| Fixture | Marker | Before | After |
+|---|---|---|---|
+| legal-act-detail | „Directiva 2006/112/CE privind sistemul comun” | 1 / 1 | 0 / 0 |
+| legislation-overview | „Legea nr. 53/2003” | 1 / 1 | 0 / 0 |
+| legislation-status-counts | `194924` | 1 / 1 | 0 / 0 |
+| render mock (TLDF rows) | `render-rows-100019` | 1 / 3 | 0 / 0 |
+| render mock | `tldf-compiler-v3` | 3 / 3 | 0 / 0 |
+| legislation-domain-counts | `109969` | 0 / 0 | 0 / 0 |
+
+The domain counts were already out: no page uses their hook today, so the build drops them; the guard keeps them
+out once one does. The outline and resolve-document mocks hold no data of their own (the outline is derived from the
+render fixtures).
