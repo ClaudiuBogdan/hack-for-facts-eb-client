@@ -89,9 +89,17 @@ const countyLink = (name: RegExp) => within(screen.getByRole('group', { name: /F
 describe('CompanyCountyMap', () => {
   it('shows the country at rest, and the national rate on the legend', () => {
     render(<Harness layer={DENSITY} />)
-    expect(within(figure()).getByText('România')).toBeInTheDocument()
+    expect(within(figure()).getByText('România', { selector: 'p' })).toBeInTheDocument()
     expect(within(figure()).getByText('91,9', { selector: 'p' })).toBeInTheDocument()
-    expect(within(figure()).getByText('RO')).toBeInTheDocument()
+    // The national tick on the legend, named in words.
+    expect(within(figure()).getByText('România', { selector: 'span' })).toBeInTheDocument()
+  })
+
+  it('prints the values that part the colours, one under each join, and not the ends', () => {
+    render(<Harness layer={DENSITY} />)
+    const legend = within(figure()).getAllByText(/^\d+[.,]\d$/u, { selector: 'span' })
+    expect(legend).toHaveLength(4)
+    expect(legend.map((label) => label.getAttribute('style'))).toEqual(['left: 20%;', 'left: 40%;', 'left: 60%;', 'left: 80%;'])
   })
 
   it('reads out the county under the mouse: its rate, its place and its distance from the country', () => {
@@ -100,14 +108,14 @@ describe('CompanyCountyMap', () => {
     expect(within(figure()).getByText('Cluj · locul 2 din 3')).toBeInTheDocument()
     expect(within(figure()).getByText('+44,1 față de România')).toBeInTheDocument()
     fireEvent.pointerLeave(countyLink(/Cluj/), { pointerType: 'mouse' })
-    expect(within(figure()).getByText('România')).toBeInTheDocument()
+    expect(within(figure()).getByText('România', { selector: 'p' })).toBeInTheDocument()
   })
 
   it('reads a count as its share of the total, with no national tick on the legend', () => {
     render(<Harness layer={NEW_FIRMS} />)
     fireEvent.pointerEnter(countyLink(/Cluj/), { pointerType: 'mouse' })
     expect(within(figure()).getByText('5,0% din total')).toBeInTheDocument()
-    expect(within(figure()).queryByText('RO')).toBeNull()
+    expect(within(figure()).queryByText('România', { selector: 'span' })).toBeNull()
   })
 
   it('shows a county on the first tap and opens its companies on the second', () => {

@@ -41,7 +41,9 @@ export function CompanyHubHero({
       <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20">
         <CornerTicks />
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
-          <div className="min-w-0 lg:col-span-7">
+          {/* Centred against the leaders' card from a wide screen, where the card is the taller of the two: the
+              head no longer ends in an empty block under the shortcuts (owner, 25 November 2026). */}
+          <div className="min-w-0 lg:col-span-7 lg:self-center">
             {/* The title names the dataset: every company in the trade register, the state's own included, so
                 not „private". Nothing stands over it: a caption there said the same words. Two lines at every
                 width, the break written so no width decides it. Set as the landing's headline is: the tight

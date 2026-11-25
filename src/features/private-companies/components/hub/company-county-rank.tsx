@@ -116,23 +116,23 @@ export function CompanyCountyRank({
       )}
     >
       <div className="col-span-5 grid grid-cols-subgrid items-end border-b border-border/70 pb-2">
-        <MonoLabel className="col-span-3 pl-1 text-muted-foreground">
+        <span className="col-span-3 pl-1 text-xs text-muted-foreground">
           <Trans>Județ</Trans>
-        </MonoLabel>
-        <span className="relative h-2.5">
+        </span>
+        <span className="relative h-3">
           {additive ? null : (
-            <MonoLabel
+            <span
               className={cn(
-                'absolute top-0 whitespace-nowrap text-foreground',
+                'absolute top-0 whitespace-nowrap text-xs leading-none tabular-nums text-foreground',
                 base < 25 ? 'translate-x-0' : base > 75 ? '-translate-x-full' : '-translate-x-1/2',
               )}
               style={{ left: `${base.toFixed(2)}%` }}
             >
               <Trans>România {unit.value}</Trans>
-            </MonoLabel>
+            </span>
           )}
         </span>
-        <MonoLabel className="pr-1 text-right text-muted-foreground">{layer.unit === 'per-thousand' ? '' : unit.unit}</MonoLabel>
+        <span className="pr-1 text-right text-xs text-muted-foreground">{layer.unit === 'per-thousand' ? '' : unit.unit}</span>
       </div>
       <ol className="col-span-5 grid grid-cols-subgrid divide-y divide-border/70">
         {(hidden > 0 ? ranked.slice(0, edge) : ranked).map((county, index) => row(county, index + 1))}

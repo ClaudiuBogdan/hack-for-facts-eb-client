@@ -38,7 +38,7 @@ import { HubInfoNote } from './hub-info-note'
 import { HubCountyBand } from './hub-county-band'
 import { HubLeaders } from './hub-leaders'
 import { HubSearch } from './hub-search'
-import { HubActivities, HubSizeTable, type ActivityMeasure } from './hub-sectors'
+import { HubActivities, HubSizeBars, type ActivityMeasure } from './hub-sectors'
 
 /**
  * `/companies` — the companies hub, in the INS hub's composition: search in a
@@ -255,7 +255,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>
-          <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} plain />
+          <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} plain arrow />
         </RuledFrame>
       </section>
 
@@ -315,148 +315,138 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
       {/* Size has a band of its own (owner, 25 November 2026): under the activities' title its sentence and its table were about something else. */}
       <HomeBand id="marime" labelledBy="hub-sizes-title">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <HubSectionHead
-              titleId="hub-sizes-title"
-              title={<Trans>Firme mici și mari</Trans>}
-              lede={
-                largest
-                  ? plural(largest.firms, {
-                      one: `Singura firmă cu 250 de salariați sau mai mulți face ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
-                      few: `Cele # firme cu 250 de salariați sau mai mulți fac ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
-                      other: `Cele # de firme cu 250 de salariați sau mai mulți fac ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
-                    })
-                  : null
-              }
-            />
-          </div>
-          <div className="lg:col-span-6 lg:col-start-7" data-reveal>
-            <p className={CAPTION_CLASS}>
-              <Trans>Bilanțurile pe {YEAR}, după numărul de salariați</Trans>
-            </p>
-            <HubSizeTable className="mt-3" classes={SNAPSHOT.sizeClasses} />
-          </div>
+        <HubSectionHead
+          titleId="hub-sizes-title"
+          title={<Trans>Firme mici și mari</Trans>}
+          lede={
+            largest
+              ? plural(largest.firms, {
+                  one: `Singura firmă cu 250 de salariați sau mai mulți face ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
+                  few: `Cele # firme cu 250 de salariați sau mai mulți fac ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
+                  other: `Cele # de firme cu 250 de salariați sau mai mulți fac ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
+                })
+              : null
+          }
+        />
+        {/* Three bars, one whole each: how the firms, the employees and the turnover split by size (owner, 25 November 2026). */}
+        <div className="mt-8" data-reveal>
+          <p className={CAPTION_CLASS}>
+            <Trans>Bilanțurile pe {YEAR}, după numărul de salariați</Trans>
+          </p>
+          <HubSizeBars className="mt-4" classes={SNAPSHOT.sizeClasses} />
         </div>
       </HomeBand>
 
+      {/* One column, the chart across the band's width: beside the title, the chart left the column under the
+          title empty below its two figures (owner, 25 November 2026). */}
       <HomeBand id="economie" labelledBy="hub-economy-title">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <HubSectionHead
-              titleId="hub-economy-title"
-              title={<Trans>Evoluția pe ani</Trans>}
-              lede={economyLede(economyMeasure)}
+        <HubSectionHead
+          titleId="hub-economy-title"
+          title={<Trans>Evoluția pe ani</Trans>}
+          lede={economyLede(economyMeasure)}
+          aside={
+            <IndicatorToggle
+              label={t`Anii după`}
+              options={[
+                { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
+                { key: 'rezultat-net', label: t`Rezultatul net` },
+                { key: 'salariati', label: t`Salariați` },
+              ]}
+              value={yearMeasure}
+              onChange={(key: CompanyHubYearMeasure) => choose('evolutie', key, DEFAULT_YEAR_MEASURE)}
             />
-            <div className="mt-8" data-reveal>
-              <HubEconomySpan
-                years={SNAPSHOT.years}
-                measure={economyMeasure}
-                note={
-                  <>
-                    <p>
-                      <Trans>Fiecare an își numără firmele cu bilanț pe acel an.</Trans>
-                    </p>
-                    <p>
-                      <Trans>
-                        Analiza bilanțurilor, ediția {SNAPSHOT.yearsSource.releaseId}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile
-                        admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}.
-                      </Trans>
-                    </p>
-                    <p>
-                      <Trans>
-                        Cifrele-cheie de sus adună bilanțurile pe {YEAR} citite până acum de la ANAF, ale tuturor firmelor, deci diferă de anul {YEAR} de
-                        aici.
-                      </Trans>
-                    </p>
-                    <p>
-                      <Trans>
-                        Salariații: un număr mediu peste {formatHubNumber(HUB_EMPLOYEE_CEILING)} sau sub zero e o greșeală de introducere și nu e adunat;
-                        analiza deschisă de aici păstrează aceeași limită.
-                      </Trans>
-                    </p>
-                  </>
-                }
-              />
-            </div>
-          </div>
-          <div className="lg:col-span-6 lg:col-start-7" data-reveal>
-            <div className="sm:w-fit">
-              <IndicatorToggle
-                label={t`Anii după`}
-                options={[
-                  { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
-                  { key: 'rezultat-net', label: t`Rezultatul net` },
-                  { key: 'salariati', label: t`Salariați` },
-                ]}
-                value={yearMeasure}
-                onChange={(key: CompanyHubYearMeasure) => choose('evolutie', key, DEFAULT_YEAR_MEASURE)}
-              />
-            </div>
-            <div className="mt-5">
-              <HubEconomyChart years={SNAPSHOT.years} measure={economyMeasure} />
-            </div>
-            <Link
-              to="/companies/analytics"
-              search={hubAnalysisSearch(YEAR, {
-                mode: 'grafice',
-                panel: 'evolutie',
-                metric: ECONOMY_METRIC[economyMeasure],
-                cohort: 'EACH_YEAR',
-                // The chart's own headcounts: the analysis keeps the same ceiling.
-                scope: economyMeasure === 'employees' ? withHubHeadcounts({}) : {},
-              })}
-              className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9"
-            >
-              <Trans>Deschide în analiza bilanțurilor</Trans> →
-            </Link>
-          </div>
+          }
+        />
+        <div className="mt-8 max-w-md" data-reveal>
+          <HubEconomySpan
+            years={SNAPSHOT.years}
+            measure={economyMeasure}
+            note={
+              <>
+                <p>
+                  <Trans>Fiecare an își numără firmele cu bilanț pe acel an.</Trans>
+                </p>
+                <p>
+                  <Trans>
+                    Analiza bilanțurilor, ediția {SNAPSHOT.yearsSource.releaseId}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile
+                    admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}.
+                  </Trans>
+                </p>
+                <p>
+                  <Trans>
+                    Cifrele-cheie de sus adună bilanțurile pe {YEAR} citite până acum de la ANAF, ale tuturor firmelor, deci diferă de anul {YEAR} de
+                    aici.
+                  </Trans>
+                </p>
+                <p>
+                  <Trans>
+                    Salariații: un număr mediu peste {formatHubNumber(HUB_EMPLOYEE_CEILING)} sau sub zero e o greșeală de introducere și nu e adunat;
+                    analiza deschisă de aici păstrează aceeași limită.
+                  </Trans>
+                </p>
+              </>
+            }
+          />
+        </div>
+        <div className="mt-8" data-reveal>
+          <HubEconomyChart years={SNAPSHOT.years} measure={economyMeasure} />
+          <Link
+            to="/companies/analytics"
+            search={hubAnalysisSearch(YEAR, {
+              mode: 'grafice',
+              panel: 'evolutie',
+              metric: ECONOMY_METRIC[economyMeasure],
+              cohort: 'EACH_YEAR',
+              // The chart's own headcounts: the analysis keeps the same ceiling.
+              scope: economyMeasure === 'employees' ? withHubHeadcounts({}) : {},
+            })}
+            className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9"
+          >
+            <Trans>Deschide în analiza bilanțurilor</Trans> →
+          </Link>
         </div>
       </HomeBand>
 
+      {/* One column, as the years above: the chart across the band, under its title. */}
       <HomeBand id="infiintari" labelledBy="hub-registrations-title">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <HubSectionHead
-              titleId="hub-registrations-title"
-              title={<Trans>Firme înregistrate pe ani</Trans>}
-              lede={
-                survival !== null ? (
-                  <>
+        <HubSectionHead
+          titleId="hub-registrations-title"
+          title={<Trans>Firme înregistrate pe ani</Trans>}
+          lede={
+            survival !== null ? (
+              <>
+                <Trans>
+                  Din firmele înregistrate în {COHORT_YEAR}, {formatHubShare(survival, 1)} mai sunt în funcțiune.
+                </Trans>{' '}
+                <HubInfoNote label={t`Despre înregistrări`}>
+                  <p>
                     <Trans>
-                      Din firmele înregistrate în {COHORT_YEAR}, {formatHubShare(survival, 1)} mai sunt în funcțiune.
-                    </Trans>{' '}
-                    <HubInfoNote label={t`Despre înregistrări`}>
-                      <p>
-                        <Trans>
-                          Anul e cel în care firma a fost înregistrată la ONRC, din registru: nu neapărat anul înființării. Codurile compacte emise din
-                          septembrie 2024 nu poartă o dată: anul lor e cel din codul de înregistrare.
-                        </Trans>
-                      </p>
-                      <p>
-                        <Trans>„În funcțiune" e starea din registru în {month}.</Trans>
-                      </p>
-                    </HubInfoNote>
-                  </>
-                ) : null
-              }
+                      Anul e cel în care firma a fost înregistrată la ONRC, din registru: nu neapărat anul înființării. Codurile compacte emise din
+                      septembrie 2024 nu poartă o dată: anul lor e cel din codul de înregistrare.
+                    </Trans>
+                  </p>
+                  <p>
+                    <Trans>„În funcțiune" e starea din registru în {month}.</Trans>
+                  </p>
+                </HubInfoNote>
+              </>
+            ) : null
+          }
+        />
+        <div className="mt-8" data-reveal>
+          <p className={CAPTION_CLASS}>
+            <Trans>Firme înregistrate pe an, și câte mai sunt în funcțiune</Trans>
+          </p>
+          <div className="mt-3">
+            <HubTwoLineChart
+              a={{ label: t`Înregistrate`, points: series.registered }}
+              b={{ label: t`În funcțiune în ${month}`, points: series.active }}
+              gap={{
+                label: t`Ieșite din funcțiune`,
+                aAbove: t`Ieșite din funcțiune`,
+                bAbove: t`Mai multe în funcțiune decât înregistrate`,
+              }}
             />
-          </div>
-          <div className="lg:col-span-6 lg:col-start-7" data-reveal>
-            <p className={CAPTION_CLASS}>
-              <Trans>Firme înregistrate pe an, și câte mai sunt în funcțiune</Trans>
-            </p>
-            <div className="mt-3">
-              <HubTwoLineChart
-                a={{ label: t`Înregistrate`, points: series.registered }}
-                b={{ label: t`În funcțiune în ${month}`, points: series.active }}
-                gap={{
-                  label: t`Ieșite din funcțiune`,
-                  aAbove: t`Ieșite din funcțiune`,
-                  bAbove: t`Mai multe în funcțiune decât înregistrate`,
-                }}
-              />
-            </div>
           </div>
         </div>
       </HomeBand>
@@ -611,17 +601,18 @@ function HeroLeaders({ ranking, onRanking }: { readonly ranking: CompanyHubRanki
         />
       }
     >
-      <HubLeaders key={ranking} id="hub-leaders" className="mt-4" leaders={leaders} unit={ranking === 'salariati' ? 'persons' : 'lei'} limit={COMPANY_HUB_LEADERS_SHOWN} />
+      <HubLeaders
+        key={ranking}
+        id="hub-leaders"
+        className="mt-4"
+        leaders={leaders}
+        unit={ranking === 'salariati' ? 'persons' : 'lei'}
+        limit={COMPANY_HUB_LEADERS_SHOWN}
+        changeLabel={t`față de ${previousYear}`}
+      />
       <Link to="/companies/analytics" search={hubCompaniesSearch(YEAR, {}, ranking === 'salariati' ? 'EMPLOYEES' : 'TURNOVER')} className={LEADERS_MORE_CLASS}>
         <Trans>Toate firmele, în analiza bilanțurilor</Trans> →
       </Link>
-      <p className="mt-2 text-xs text-muted-foreground">
-        {ranking === 'salariati' ? (
-          <Trans>După numărul mediu de salariați din bilanțurile pe {YEAR} și variația față de {previousYear}.</Trans>
-        ) : (
-          <Trans>După cifra de afaceri din bilanțurile pe {YEAR} și variația față de {previousYear}.</Trans>
-        )}
-      </p>
     </CompanyLeadersFrame>
   )
 }

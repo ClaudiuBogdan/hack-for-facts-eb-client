@@ -1,7 +1,6 @@
 import { useRouterState } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
@@ -46,11 +45,6 @@ export function CompanyHubPending() {
             <span className={LEADERS_MORE_CLASS} aria-hidden="true">
               <PendingBar className="w-28" />
             </span>
-            {/* The footnote's lines: two on a phone and in the narrow card from lg, one between. */}
-            <p className="mt-2 text-xs" aria-hidden="true">
-              <PendingBar className="block w-full" />
-              <PendingBar className="block w-1/3 sm:hidden lg:block" />
-            </p>
           </CompanyLeadersFrame>
         }
       />
@@ -74,11 +68,10 @@ export function CompanyHubPending() {
                 <span className="text-2xl font-semibold sm:text-4xl">
                   <PendingBar className="w-28" />
                 </span>
-                <MonoLabel className="mt-2.5 block leading-relaxed">
+                {/* The label, in the plain text the page sets it in: one line at every width. */}
+                <span className="mt-2.5 block text-sm leading-snug">
                   <PendingBar className="block w-32" />
-                  {/* „Firme în funcțiune" takes two lines on a phone. */}
-                  {index === 0 ? <PendingBar className="block w-16 sm:hidden" /> : null}
-                </MonoLabel>
+                </span>
                 {/* The note, in the plain text the page sets it in: one line from `sm`, two on a phone. */}
                 <span className="mt-auto block pt-3 text-xs leading-relaxed">
                   <PendingBar className="block w-24" />

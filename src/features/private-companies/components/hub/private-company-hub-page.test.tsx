@@ -199,7 +199,7 @@ describe('PrivateCompanyHubPage', () => {
     expect(screen.getByText(leader.name).closest('a')?.textContent).toContain('Timiș · radiată · 4711 · Comerț cu amănuntul nespecializat · ONRC Rev.3')
   })
 
-  it('names a ranked company by the release’s selection, or why it has none — never by ANAF’s fiscal division', () => {
+  it('names a ranked company by the release’s selection, and by its county alone when there is none — never by ANAF’s fiscal division', () => {
     const [selected, unselected] = COMPANY_HUB_SNAPSHOT.leaders.turnover
     if (!selected || !unselected) throw new Error('the snapshot ranks no company')
     const none: CompanyAnalysisActivity = { basis: 'ONRC_MULTIPLE_CLASSES', source: null, code: null, revision: null, label: null, descriptionStatus: null, descriptions: [], derived: true }
@@ -207,7 +207,9 @@ describe('PrivateCompanyHubPage', () => {
     const [first, second] = within(screen.getByTestId('company-hub-leaders')).getAllByRole('link')
     // A company the release does not hold: its county alone.
     expect(first?.textContent).toMatch(/București(?!\s*·)/u)
-    expect(second?.textContent).toContain('București · Mai multe activități clasificate ONRC, niciuna selectată')
+    // No selection: the county alone, not a caveat the row would cut (the company's page says why).
+    expect(second?.textContent).toMatch(/București(?!\s*·)/u)
+    expect(second?.textContent).not.toContain('niciuna selectată')
   })
 
   it('draws the economy through the analysis release’s years, the last one possibly incomplete', () => {

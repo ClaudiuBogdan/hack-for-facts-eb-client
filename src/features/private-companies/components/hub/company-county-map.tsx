@@ -4,7 +4,6 @@ import { Link } from '@tanstack/react-router'
 import { useInView } from 'react-intersection-observer'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import {
   STEP_BG,
   STEP_FILL,
@@ -33,7 +32,7 @@ import { describeAgainstNational, formatHubValue, formatHubValueText, isAdditive
  *
  * The readout names the county under the pointer (the country, at rest): its
  * figure, its place among the 42 and how it compares with Romania. The legend
- * prints all six bounds of the five equal-count steps, the country as a
+ * prints the four values that part the five equal-count steps, the country as a
  * dashed tick for a rate and the active county as a solid one. A county with
  * no figure is hatched and named, never zero.
  *
@@ -347,9 +346,12 @@ function CountyReadout({
 }
 
 /**
- * Five equal-width steps with their bounds beneath, the country's rate as a
- * dashed tick and the active county as a solid one. Equal-count steps have
- * unequal ranges, so the bounds are printed, not implied.
+ * Five equal-width steps with the values that part them beneath, the
+ * country's rate as a dashed tick and the active county as a solid one.
+ * Equal-count steps have unequal ranges, so the boundaries are printed, not
+ * implied: as the landing's budget map prints them (owner, 25 November
+ * 2026), one value under each join between two colours, in the page's sans,
+ * without the ends — the ranking beside the map names the extremes.
  */
 function CountyLegend({
   layer,
@@ -364,9 +366,10 @@ function CountyLegend({
   readonly active: HubCountyValue | undefined
   readonly digits: number
 }) {
-  const bounds = [...scale.thresholds, scale.max]
-  const labels = bounds.map((value) => formatHubValue(value, layer.unit, { digits }).value)
-  // Seven-figure bounds collide on a phone; there every other one drops a line.
+  // The joins only: the first threshold opens step two, the last opens step five.
+  const joins = scale.thresholds.slice(-(STEP_BG.length - 1))
+  const labels = joins.map((value) => formatHubValue(value, layer.unit, { digits }).value)
+  // Seven-figure values collide on a phone; there every other one drops a line.
   const stagger = Math.max(...labels.map((label) => label.length)) > 6
   const national = isAdditiveUnit(layer.unit) ? null : scale.positionOf(layer.national)
   const activeAt = active ? scale.positionOf(active.value) : null
@@ -395,17 +398,17 @@ function CountyLegend({
       </div>
       <div className="max-w-lg" aria-hidden="true">
         {national !== null ? (
-          <div className="relative mb-1.5 h-2.5">
-            <MonoLabel
+          <div className="relative mb-1.5 h-3">
+            <span
               className={cn(
-                'absolute top-0 text-foreground',
+                'absolute top-0 whitespace-nowrap text-xs leading-none text-foreground',
                 // A national figure past the counties' range sits at an end; its label stays over the bar.
-                national < 0.03 ? 'translate-x-0' : national > 0.97 ? '-translate-x-full' : '-translate-x-1/2',
+                national < 0.1 ? 'translate-x-0' : national > 0.9 ? '-translate-x-full' : '-translate-x-1/2',
               )}
               style={{ left: `${(national * 100).toFixed(2)}%` }}
             >
-              RO
-            </MonoLabel>
+              {t`România`}
+            </span>
           </div>
         ) : null}
         <div className="relative">
@@ -424,20 +427,19 @@ function CountyLegend({
             />
           ) : null}
         </div>
-        <div className={cn('relative mt-2 h-3', stagger && 'max-sm:h-7')}>
+        <div className={cn('relative mt-2 h-4', stagger && 'max-sm:h-8')}>
           {labels.map((label, index) => (
-            <MonoLabel
+            <span
               key={index}
               className={cn(
-                // Normal tracking: six bounds share a phone's width.
-                'absolute top-0 whitespace-nowrap tabular-nums tracking-normal text-muted-foreground',
-                index === 0 ? 'translate-x-0' : index === labels.length - 1 ? '-translate-x-full' : '-translate-x-1/2',
+                // Centred under its join: the steps are equal, so join k sits at k/5 of the bar.
+                'absolute top-0 -translate-x-1/2 whitespace-nowrap text-xs leading-4 tabular-nums text-muted-foreground',
                 stagger && index % 2 === 1 && 'max-sm:top-4',
               )}
-              style={{ left: `${(index / (labels.length - 1)) * 100}%` }}
+              style={{ left: `${((index + 1) / STEP_BG.length) * 100}%` }}
             >
               {label}
-            </MonoLabel>
+            </span>
           ))}
         </div>
       </div>
