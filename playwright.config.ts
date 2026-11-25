@@ -4,6 +4,13 @@ import { defineConfig, devices } from '@playwright/test'
 // (default unchanged for CI).
 const APP_PORT = Number(process.env.PLAYWRIGHT_APP_PORT ?? 3000)
 
+// The API the app's server render reads (TEST-001, tests/utils/ssr-api/server.mjs): recorded fixtures, the rest passed
+// to VITE_API_URL and logged. Not for live runs, and an INTERNAL_API_URL the environment sets (CI's statistics step)
+// is kept.
+const SSR_API_PORT = Number(process.env.PLAYWRIGHT_SSR_API_PORT ?? 3199)
+const LIVE = process.env.E2E_MODE === 'live' || process.env.E2E_MODE === 'record'
+const INTERNAL_API_URL = process.env.INTERNAL_API_URL ?? (LIVE ? undefined : `http://127.0.0.1:${SSR_API_PORT}`)
+
 /**
  * Playwright Configuration
  *
@@ -46,11 +53,20 @@ export default defineConfig({
       timeout: 60000, // Longer timeout for live API
     },
   ],
-  webServer: {
-    command: `yarn build && PORT=${APP_PORT} yarn start`,
-    url: `http://localhost:${APP_PORT}`,
-    reuseExistingServer: !process.env.CI,
-    // yarn build alone runs several minutes; 120s guaranteed a dead run.
-    timeout: 420000,
-  },
+  webServer: [
+    {
+      command: 'node tests/utils/ssr-api/server.mjs',
+      url: `http://127.0.0.1:${SSR_API_PORT}/__ssr-api/health`,
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      timeout: 30000,
+    },
+    {
+      command: `yarn build && PORT=${APP_PORT}${INTERNAL_API_URL ? ` INTERNAL_API_URL=${INTERNAL_API_URL}` : ''} yarn start`,
+      url: `http://localhost:${APP_PORT}`,
+      reuseExistingServer: !process.env.CI,
+      // yarn build alone runs several minutes; 120s guaranteed a dead run.
+      timeout: 420000,
+    },
+  ],
 })
