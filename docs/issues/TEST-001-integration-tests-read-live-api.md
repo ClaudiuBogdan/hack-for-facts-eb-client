@@ -107,6 +107,18 @@ Why a fixture origin, rather than marking the server-render tests as live-depend
 
 Limit: one server serves every test, so a server render's answer cannot vary per test (it cannot today either).
 
+**Built (client-dev-polish, c50ebe292):** the national budget's two specs run on it (`tests/utils/ssr-api/test.ts`). Their reads are
+recorded in `tests/fixtures/ssr-api/*.json.gz`; national budget reads never pass through. After each test, a check fails on any browser
+read or national budget read not answered from a recording; each check starts where the previous one ended. `SSR_API_MODE=strict`
+forwards nothing; `SSR_API_MODE=record` saves. Every read prints `[ssr-api] <fixture|passthrough|missing|recorded|failed>
+<operation>-<hash> <server|browser>`, and a missing read also prints its variables.
+
+**A timing-dependent read to watch:** in one replay of the two specs (25 November 2026, before the chained check), the browser of
+`national-budget-analytics.spec.ts` › „the controls write the address" › „a change of question keeps the site's own keys" asked
+`BudgetExecutionObservations-a2e41d9bed50` with no recording, and the test passed, its check having run before the read landed. It
+did not recur in two record runs or two full runs. Its variables weren't logged then (the log line came after); if it recurs, the
+check now fails that test or the next one, and the log names the variables, to record it.
+
 **Ownership:** ssr-api (server reads) is client-dev-polish's; the API guard (browser reads) is client-entity-analytics'.
 
 ## Closure criterion
