@@ -121,6 +121,40 @@ check now fails that test or the next one, and the log names the variables, to r
 
 **Ownership:** ssr-api (server reads) is client-dev-polish's; the API guard (browser reads) is client-entity-analytics'.
 
+### Server reads by spec, ssr-api strict (2026-11-25)
+
+The whole suite in both CI steps on f172acba5 (dev fa8813c5f merged), one worker, no retries, `SSR_API_MODE=strict`.
+Each `[ssr-api]` line is given to the test result printed after it.
+
+- **Server reads with no recording: 288, in 11 specs.** From recordings: 55 server and 24 browser reads, all the national
+  budget's. None failed.
+- **Step 1:** 26 tests failed, 293 passed, 14 skipped, 11 did not run. **Step 2** (statistics, server API unreachable by design):
+  59 passed.
+
+| Spec | Server reads with no recording | Tests failed in strict |
+|---|---|---:|
+| `entity-analytics-comprehensive.spec.ts` | EntityAnalytics 62 | 0 |
+| `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 3 |
+| `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 |
+| `entity-analytics.spec.ts` | EntityAnalytics 42 | 1 |
+| `public-institutions.spec.ts` | EntityAnalytics 14, GetExecutionLineItemsAnalytics 14 | 0 |
+| `justice.spec.ts` | JusticeAnalysisCaseload 12, JudicialCourtPage 3, JudicialCasePage 2, JudicialCaseExists 1 | 5 |
+| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 |
+| `entity-details.spec.ts` | GetEntityMetadata 12 | 6 |
+| `entity-exploration.spec.ts` | GetEntityMetadata 8 | 2 |
+| `buget-routing.spec.ts` | GetEntityLineItems 4, GetEntityMetadata 2 | 1 |
+| `landing-page.spec.ts` | ElectionEvents 1 | 0 |
+
+Two cautions on reading this run:
+- A spec with no failures here still reads the live API in CI's default (passthrough) mode. Its page fell back to the browser's
+  mocked read when the server read failed.
+- In strict mode the guard also caught 200 browser requests, but most of them are this fallback (justice, procurement, the
+  public enterprise page read again in the browser when their server render failed). The browser list that counts is the one from
+  the default mode, above.
+
+Fix per spec: record its server reads (`SSR_API_MODE=record`, a run of that spec) and move it onto `tests/utils/ssr-api/test.ts`,
+by the spec's owner (the browser table's split; `justice.spec.ts` and `buget-routing.spec.ts` have none yet).
+
 ## Closure criterion
 
 1. A full integration run as CI does it (both steps, one worker, no retries) with zero browser requests caught by the guard, and
