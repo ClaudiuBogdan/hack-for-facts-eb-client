@@ -45,23 +45,21 @@ export function CompanyHubHero({
         <CornerTicks />
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           <div className="min-w-0 lg:col-span-7">
-            <MonoLabel className="text-muted-foreground">
-              <Trans>Firme / România</Trans>
-            </MonoLabel>
-            {/* Two lines at every width: each fits its line on a phone, so no word is left alone on a third.
-                Set as the landing's headline is: the tight tracking closes the gaps between words too, so they
-                are given back (`word-spacing`), and the lines sit far enough apart for the breve of „ă" to
-                clear the line above. */}
-            <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
+            {/* The title names the dataset: every company in the trade register, the state's own included, so
+                not „private". Nothing stands over it: a caption there said the same words. Two lines at every
+                width, the break written so no width decides it. Set as the landing's headline is: the tight
+                tracking closes the gaps between words too, so they are given back (`word-spacing`). */}
+            <h1 className="text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
               <Trans>
-                Economia,
+                Firmele din
                 <br />
-                firmă cu firmă
+                România
               </Trans>
             </h1>
-            {/* The site's tracking is set for 14px text: at 20px under a tight headline it reads loose. */}
+            {/* What is in it, then where it comes from. The site's tracking is set for 14px text: at 20px
+                under a tight headline it reads loose. */}
             <p className="mt-5 max-w-[46ch] text-balance text-lg leading-relaxed tracking-normal text-muted-foreground sm:text-xl">
-              <Trans>Din registrul comerțului și bilanțurile depuse la ANAF, pentru fiecare firmă, domeniu și județ.</Trans>
+              <Trans>Cifră de afaceri, profit și salariați, din registrul comerțului și bilanțurile anuale.</Trans>
             </p>
             <div className="mt-6 sm:mt-7">{search}</div>
             {/* The landing's shortcut row: the label is a sentence that runs into the links, so it is set in

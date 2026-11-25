@@ -12,7 +12,7 @@ vi.mock('@tanstack/react-router', () => ({
 describe('CompanyHubPending', () => {
   it('draws the page’s own head at once — title, search box, ranking switch, pinned bar, first band — and no figure', () => {
     render(<CompanyHubPending />)
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Economia,firmă cu firmă')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Firmele dinRomânia')
     expect(screen.getByText('Nume sau CUI...')).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Scurtături' })).toHaveTextContent('Toate firmele în funcțiune')
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
