@@ -1,166 +1,159 @@
 import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { useLingui } from '@lingui/react'
-import { cn } from '@/lib/utils'
+import { ArrowLeft } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust'
+import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { RuledFrame } from '@/components/landing-skin/ruled-frame'
+import { CruxMarks } from '@/features/landing/components/hero-chrome'
+import { cn } from '@/lib/utils'
 import type { DataStatus } from '@/schemas/elections'
-import type { LegalStatusActCounts } from '@/schemas/legal'
-import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
-import {
-  legislationHeaderDescriptionClassName,
-  legislationHeaderHeroClassName,
-  legislationHeaderMetaClassName,
-  legislationHeaderStatClassName,
-  legislationHeaderStatLabelClassName,
-  legislationHeaderStatValueClassName,
-  legislationHeaderTitleClassName,
-  legislationHeaderTitleLineClassName,
-  legislationHeaderTitleStyle,
-} from '../lib/legislation-theme'
-import { LegislationTabNav, type LegislationTab } from './legislation-tab-nav'
-import { LegislationHeaderVisual } from './legislation-header-visual'
+import { formatLegalDate } from '../lib/legal-format'
+
+export type LegislationTab = 'analiza' | 'cauta' | 'acte' | 'modificari' | 'monitorul' | 'ghid'
 
 type Props = {
   readonly activeTab: LegislationTab
-  /**
-   * The headline chips — each may be independently unknown (the aggregate
-   * behind them degrades rather than failing the page), and a chip whose
-   * number is unknown is OMITTED rather than given a placeholder: 0 and
-   * "unknown" are different claims, and a chip has no room to explain the
-   * difference. A true 0 still renders.
-   */
-  readonly counts?: LegalStatusActCounts
   readonly measuredAt?: string | null
   /**
-   * Trust state for the whole surface. Rendered in the meta line rather than in
-   * a coverage ribbon — the ribbon was removed as visual noise, but the
-   * mock/live label is a product requirement (DESIGN.md §Mock-First Contract),
-   * so it moved here rather than disappearing.
+   * Trust state for the whole page, in the source line under the lede: the mock/live label is a product
+   * requirement (DESIGN.md §Mock-First Contract).
    */
   readonly dataStatus?: DataStatus
   readonly children: ReactNode
 }
 
+type PageSpec = {
+  readonly id: LegislationTab
+  /** The short name in the pinned row and the trail. */
+  readonly label: string
+  readonly title: string
+  readonly lede: string
+  readonly to: '/legislation/search' | '/legislation/acts' | '/legislation/analytics' | '/legislation/changes' | '/legislation/gazette' | '/legislation/guide'
+}
+
+/** Built on render, so the strings follow the reader's language. */
+function legislationPages(): readonly PageSpec[] {
+  return [
+    {
+      id: 'cauta',
+      label: t`Caută`,
+      title: t`Caută în legislație`,
+      lede: t`Un act după număr sau după denumire, cu statutul lui actual.`,
+      to: '/legislation/search',
+    },
+    {
+      id: 'acte',
+      label: t`Acte`,
+      title: t`Actele`,
+      lede: t`Fiecare act din Portal Legislativ, cu tipul, anul și statutul lui.`,
+      to: '/legislation/acts',
+    },
+    {
+      id: 'analiza',
+      label: t`Analiză`,
+      title: t`Analiza legislației`,
+      lede: t`Actele numărate: ce fac, cine le emite, cum se schimbă și cum se leagă între ele.`,
+      to: '/legislation/analytics',
+    },
+    {
+      id: 'modificari',
+      label: t`Modificări`,
+      title: t`Modificările`,
+      lede: t`Ce act s-a schimbat, prin ce act, felul schimbării și data intrării în vigoare.`,
+      to: '/legislation/changes',
+    },
+    {
+      id: 'monitorul',
+      label: t`Monitorul Oficial`,
+      title: t`Monitorul Oficial`,
+      lede: t`Edițiile Monitorului Oficial: numărul, data, partea și PDF-ul oficial.`,
+      to: '/legislation/gazette',
+    },
+    {
+      id: 'ghid',
+      label: t`Ghid`,
+      title: t`Ghidul legislației`,
+      lede: t`Cum găsești o lege, cum îi citești statutul și ce nu îți pot spune aceste date.`,
+      to: '/legislation/guide',
+    },
+  ]
+}
+
 /**
- * Shared frame for `/legislation` — hero, stat chips, tab nav, content column.
- *
- * Structurally the same as `ParliamentShell`; the skin differs only in accent.
- * Lady Justice and the Palace of Justice provide a distinct legal allegory while
- * preserving Parliament's engraved, right-weighted header language.
+ * The slim head of the legislation pages other than `/legislation` (owner, 25 November 2026, the `?v=pagina`
+ * example): the way back to the landing and the page's place, its title and one sentence, the source line, then
+ * one pinned row of the sibling pages, where the landing pins its sections. No hero, no statue, no tab bar, no
+ * figures in the head.
  */
-export function LegislationShell({
-  activeTab,
-  counts,
-  measuredAt,
-  dataStatus,
-  children,
-}: Props) {
+export function LegislationShell({ activeTab, measuredAt, dataStatus, children }: Props) {
   const { i18n } = useLingui()
-  const formatCount = (value: number) => formatLegalNumber(value, i18n.locale)
-  const formatDate = (value: string) => formatLegalDate(value, i18n.locale)
+  const pages = legislationPages()
+  const current = pages.find((page) => page.id === activeTab) ?? pages[0]
 
   return (
-    <div className="min-h-screen min-w-0 bg-background">
-      <header className="border-b-2 border-[var(--pnrr-border)] bg-background">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div
-            className={cn(
-              legislationHeaderHeroClassName,
-              'relative min-w-0 overflow-hidden xl:min-h-[34rem]',
-            )}
-          >
-            <div className="absolute inset-y-0 right-0 hidden w-[70%] items-end justify-end xl:flex">
-              <LegislationHeaderVisual />
-            </div>
-
-            <div className="relative z-10 min-w-0 pr-12 xl:max-w-[52%] xl:pr-0">
-              <h1
-                className={legislationHeaderTitleClassName}
-                style={legislationHeaderTitleStyle}
-              >
-                <span className={legislationHeaderTitleLineClassName}>
-                  <Trans>Legislația</Trans>
-                </span>
-                <span className={legislationHeaderTitleLineClassName}>
-                  <Trans>României</Trans>
-                </span>
-              </h1>
-
-              <p
-                className={cn(
-                  legislationHeaderDescriptionClassName,
-                  'mt-6 sm:mt-8',
-                )}
-              >
-                <Trans>
-                  Fiecare lege, ordonanță și hotărâre publicată în România — cu
-                  statutul ei actual, ce a modificat, ce a modificat-o și
-                  numărul din Monitorul Oficial în care a apărut.
-                </Trans>
-              </p>
-
-              <div
-                className={cn(
-                  legislationHeaderMetaClassName,
-                  'mt-4 flex flex-wrap items-center gap-x-2 gap-y-1',
-                )}
-              >
-                <span>
-                  <Trans>Portal Legislativ și Monitorul Oficial</Trans>
-                  {measuredAt ? (
-                    <>
-                      {' · '}
-                      <Trans>date până la {formatDate(measuredAt)}</Trans>
-                    </>
-                  ) : null}
-                </span>
-                {dataStatus ? <DataStatusBadge status={dataStatus} /> : null}
-              </div>
-
-              {counts !== undefined ? (
-                // min-h reserves one chip row (border-2 + py-2 + text-base =
-                // 44px), so counts arriving after hydration do not shift the
-                // tab nav below. An unknown value simply has no chip.
-                <div className="mt-8 flex min-h-11 flex-wrap gap-3">
-                  {(
-                    [
-                      { key: 'total', value: counts.total, label: <Trans>acte</Trans> },
-                      {
-                        key: 'in-vigoare',
-                        value: counts.inVigoare,
-                        label: <Trans>în vigoare</Trans>,
-                      },
-                      {
-                        key: 'abrogat',
-                        value: counts.abrogat,
-                        label: <Trans>abrogate</Trans>,
-                      },
-                    ] as const
-                  ).map((chip) =>
-                    chip.value !== undefined ? (
-                      <div key={chip.key} className={legislationHeaderStatClassName}>
-                        <span className={legislationHeaderStatValueClassName}>
-                          {formatCount(chip.value)}
-                        </span>
-                        <span className={legislationHeaderStatLabelClassName}>
-                          {chip.label}
-                        </span>
-                      </div>
-                    ) : null,
-                  )}
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="border-t-2 border-[var(--pnrr-border)]">
-            <LegislationTabNav activeTab={activeTab} />
-          </div>
-        </div>
+    <div className="relative min-h-screen w-full min-w-0 overflow-x-clip bg-background">
+      <header className="relative border-b">
+        <RuledFrame className="py-8 sm:py-10">
+          <MonoLabel className="flex flex-wrap items-center gap-2 text-muted-foreground">
+            <Link to="/legislation" className="group inline-flex min-h-11 items-center gap-1.5 hover:text-foreground sm:min-h-0">
+              <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
+              <span>{t`Legislație`}</span>
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{current?.label}</span>
+          </MonoLabel>
+          <h1 className="mt-3 text-3xl font-extrabold leading-[1.02] tracking-tighter text-foreground sm:mt-4 sm:text-5xl">{current?.title}</h1>
+          <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{current?.lede}</p>
+          {measuredAt || dataStatus ? (
+            <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              <span>
+                <Trans>Portal Legislativ și Monitorul Oficial</Trans>
+                {measuredAt ? (
+                  <>
+                    {' · '}
+                    <Trans>date până la {formatLegalDate(measuredAt, i18n.locale)}</Trans>
+                  </>
+                ) : null}
+              </span>
+              {dataStatus ? <DataStatusBadge status={dataStatus} /> : null}
+            </p>
+          ) : null}
+          <span className="absolute inset-x-0 top-full z-30 mt-px" aria-hidden="true">
+            <CruxMarks />
+          </span>
+        </RuledFrame>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {children}
+      <nav aria-label={t`Paginile legislației`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
+        <RuledFrame className="overflow-x-auto py-0">
+          <ul className="flex shrink-0 gap-5 sm:gap-6">
+            {pages.map((page) => {
+              const isCurrent = page.id === activeTab
+              return (
+                <li key={page.id} className="shrink-0">
+                  <Link
+                    to={page.to}
+                    aria-current={isCurrent ? 'page' : undefined}
+                    className={cn(
+                      'relative inline-flex min-h-11 items-center whitespace-nowrap text-sm transition-colors hover:text-foreground',
+                      isCurrent ? 'font-semibold text-foreground' : 'text-muted-foreground',
+                    )}
+                  >
+                    {page.label}
+                    {isCurrent ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" aria-hidden="true" /> : null}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </RuledFrame>
+      </nav>
+
+      <main>
+        <RuledFrame className="py-8 sm:py-10">{children}</RuledFrame>
       </main>
     </div>
   )

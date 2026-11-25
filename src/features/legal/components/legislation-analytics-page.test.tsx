@@ -35,8 +35,10 @@ describe('LegislationAnalyticsPage', () => {
 
   it('marks Analiză as the current tab', () => {
     render(<LegislationAnalyticsPage />)
-    const nav = screen.getByRole('navigation', { name: 'Secțiuni Legislație' })
+    const nav = screen.getByRole('navigation', { name: 'Paginile legislației' })
     expect(within(nav).getByText('Analiză')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Analiza legislației')
+    expect(screen.getByRole('link', { name: 'Legislație' })).toHaveAttribute('href', '/legislation')
   })
 
   it('asks the question in the headline and answers it with counts and computed shares', async () => {
