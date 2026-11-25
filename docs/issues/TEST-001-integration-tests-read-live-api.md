@@ -31,13 +31,13 @@ files, including the no-mock tests and the REST map read the warnings never show
 |---|---|---|---|
 | `entity-analytics.spec.ts` | AggregatedLineItems 4 (CI run) | client-entity-analytics | fixed, f4a35474d |
 | `entity-analytics-comprehensive.spec.ts` | BudgetSectors 1 (CI run) | client-entity-analytics | fixed, 976d2ec14 |
-| `entity-details.spec.ts` | GetExecutionLineItemsAnalytics, MapPopulation (CI run); map grouped-series 10 | client-entity-analytics | GraphQL fixed, 64ce7e11; map open |
-| `landing-page.spec.ts` | ElectionEvents, GetEntityMetadata (CI run); map grouped-series 10 | client-entity-analytics | GraphQL fixed, 64ce7e11; map open |
+| `entity-details.spec.ts` | GetExecutionLineItemsAnalytics, MapPopulation (CI run); map grouped-series 10 | client-entity-analytics | GraphQL fixed, 64ce7e11; map fixed, e1f142c3 |
+| `landing-page.spec.ts` | ElectionEvents, GetEntityMetadata (CI run); map grouped-series 10 | client-entity-analytics | GraphQL fixed, 64ce7e11; map fixed, e1f142c3 |
 | `parliament-bills-search.spec.ts`, `parliament-speeches.spec.ts` | ParliamentGroups, ParliamentDataFreshness (CI run) | client-entity-analytics | fixed, 64ce7e11 |
 | `statistics-hub.spec.ts`, `statistics-dataset-explorer.spec.ts` | StatisticsDatasetTier0, StatisticsTerritoryHub (CI run) and the reads they lead to | client-entity-analytics | fixed, 64ce7e11 |
-| `cookie-consent.spec.ts` | map grouped-series 18 | client-entity-analytics | open |
-| `entity-exploration.spec.ts` | map grouped-series 4, MapPopulation 2 | client-entity-analytics | open |
-| `development-surface.spec.ts` | map grouped-series 1 | client-entity-analytics | open |
+| `cookie-consent.spec.ts` | map grouped-series 18 | client-entity-analytics | fixed, e1f142c3 |
+| `entity-exploration.spec.ts` | map grouped-series 4, MapPopulation 2 | client-entity-analytics | fixed, e1f142c3 |
+| `development-surface.spec.ts` | map grouped-series 1 | client-entity-analytics | fixed, e1f142c3 |
 | `companies-profile.spec.ts` | CompanyAnalysisRelease 7, ProcurementCutoff 7, ProcurementDaRelease 7 | client-companies | open |
 | `procurement-analytics.spec.ts` | AnalyticsFigures 26, ProcurementDaRelease 16, AnalyticsSeries 13, AnalyticsConcentration 9, AnalyticsRanking 8, AnalyticsRecords 5, ProcurementHomeContracts 2 | procurement-da-client | open |
 | `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open |
