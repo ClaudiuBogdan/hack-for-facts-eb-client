@@ -1,7 +1,7 @@
 # TEST-001: Integration tests read the live API
 
-**Status:** open (filed 2026-11-25). Browser side: fixes by spec owner (table below), then the API guard. Server side: measured,
-fix proposed, not started. **Priority:** P2: a test that reaches the live dev API depends on its data, its speed and its rate limit,
+**Status:** open (filed 2026-11-25). Browser side: fixes by spec owner (table below), then the API guard (client-entity-analytics).
+Server side: measured; the ssr-api fixture origin is client-dev-polish's. **Priority:** P2: a test that reaches the live dev API depends on its data, its speed and its rate limit,
 and sends traffic to it from every CI run. **Related:** `tests/utils/integration-base.ts` (the `mockApi` fixture),
 `tests/utils/api-guard.ts`, `tests/utils/map-mocks.ts`, `scripts/find-unmocked-graphql-reads.mjs`. Reported by root
 (refactor-architecture), after a flaky-spec report on `entity-analytics.spec.ts`.
@@ -54,8 +54,9 @@ the request's granularity and series ids.
 `tests/utils/api-guard.ts`, an auto fixture: `integration-base` builds on it, and the six specs that import Playwright directly import
 it instead (`charts-page`, `cookie-consent`, `ins-native-entity`, `ins-native-saved-chart`, `statistics-comparisons`,
 `statistics-ins-native-outcomes`).
-- It is a browser-context route, registered first, matching the configured API origins and any `/graphql` path (the app's own
+- It is a browser-context route, registered first, matching `VITE_API_URL`'s origin and any `/graphql` path (the app's own
   `/api/v1/graphql` proxy included). Context routes run after every page route, so it sees only what no mock answered.
+  `INTERNAL_API_URL` is the server's, not the browser's, so the guard does not watch it.
 - Under `CI` in mock mode it aborts the request and fails the test, naming each request. Locally it prints
   `[api-guard] no mock: …` with the spec and test and lets the request through.
 
@@ -82,32 +83,32 @@ CI's first integration step was run with the server render's API (`INTERNAL_API_
 | `entity-exploration.spec.ts` | 2 |
 | `buget-routing.spec.ts` | 1 |
 
-### Proposed fix: a record-and-replay API for the server render
+### Fix: the ssr-api fixture origin (client-dev-polish)
 
-- A small replay server (`tests/ssr-api/`) is started by Playwright's `webServer` list before the app. The app's `INTERNAL_API_URL`
-  points at it in the integration steps.
-- It answers from recordings under `tests/fixtures/ssr-api/`, keyed by GraphQL operation and canonical variables (REST by path and
-  body).
-- An unrecorded read answers 502 and is logged; under `CI` a global teardown fails the run and names each one.
-- `RECORD=1` forwards the reads to the dev API and writes the recordings, so a changed query is one command away. A recording is cut
-  by whole records where large, and checked like the browser fixtures (no 13-digit runs, nothing the API masks).
+The one server-side harness for TEST-001 (root, 2026-11-25), designed and built by client-dev-polish:
+- `tests/utils/ssr-api/server.mjs`, a local origin started as a second Playwright `webServer`. The app server's `INTERNAL_API_URL`
+  points at it, unless the environment sets one (the statistics step keeps `127.0.0.1:65534`).
+- It answers recorded operations, keyed by operation and a hash of the variables.
+- Anything unrecorded passes through to `VITE_API_URL`, logged `[ssr-api] passthrough <op>`. It is strict (no passthrough) for the
+  national budget's specs first, then for each spec as its recordings land.
 
-Why this one:
-- The 47 tests are the server-render tests of the pages readers reach first. The national budget's shared server cache makes the
-  server's read the main one.
-- Marking them as live-dependent (the third option) would leave the hole exactly where it matters.
-- A hand-written mock server would repeat, per operation, what a recording gives for free.
+Once it exists, client-entity-analytics runs it strict over the whole suite and lists every server read by spec, here.
 
-Limits:
-- One server serves every test, so a server render's answer cannot vary per test (it cannot today either).
-- The national budget's reads may be large: they are measured when first recorded.
+Why a fixture origin, rather than marking the server-render tests as live-dependent:
+- The 47 tests are the server-render tests of the pages readers reach first.
+- The national budget's shared server cache makes the server's read the main one.
+- Marking them would leave the hole exactly where it matters.
+
+Limit: one server serves every test, so a server render's answer cannot vary per test (it cannot today either).
+
+**Ownership:** ssr-api (server reads) is client-dev-polish's; the API guard (browser reads) is client-entity-analytics'.
 
 ## Closure criterion
 
 1. A full integration run as CI does it (both steps, one worker, no retries) with zero browser requests caught by the guard, and
    the guard on `dev`, failing a test under `CI`.
-2. The integration steps' server render reads only the replay server, and a run with zero unrecorded reads, the check on `dev`
-   failing the run under `CI`.
+2. The integration steps' server render reads only the ssr-api origin, strict for every spec (no passthrough), with a run listing zero
+   passthrough reads, on `dev`.
 
 ## How to find them
 
