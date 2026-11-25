@@ -8,10 +8,12 @@ import {
   fetchBuyerContractAwards,
   fetchBuyerContractAwardTotals,
   fetchContractAward,
+  fetchWinnerContractAwards,
   isRepublished,
   type BuyerContractAwardsRequest,
   type BuyerContractAwardTotalsRequest,
   type ContractAwardRead,
+  type WinnerContractAwardsRequest,
 } from '../api/procurement-contract-award-api'
 import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import { procurementContractAwardKeys } from '../lib/contract-award-keys'
@@ -78,5 +80,19 @@ export function useBuyerContractAwardTotals(request: BuyerContractAwardTotalsReq
     retry,
     ...DA_QUERY_CACHE,
     enabled: request !== null,
+  })
+}
+
+/**
+ * A winner code's counts and a page of its awards, read in the browser only,
+ * kept as the buyer's are (`DA_QUERY_CACHE`), with no placeholder: another
+ * year, order or page waits for its own read.
+ */
+export function useWinnerContractAwards(request: WinnerContractAwardsRequest) {
+  return useQuery({
+    queryKey: procurementContractAwardKeys.winner(request.code, request.year, request.sort, request.page),
+    queryFn: ({ signal }) => fetchWinnerContractAwards(request, signal),
+    retry,
+    ...DA_QUERY_CACHE,
   })
 }

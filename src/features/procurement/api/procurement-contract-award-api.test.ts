@@ -7,8 +7,8 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({
 }))
 
 const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
-const { CaReadSpentError, CaRecordsOffError, CaSnapshotMismatchError, CaTotalsOffError, fetchBuyerContractAwards, fetchBuyerContractAwardTotals, fetchContractAward } = await import('./procurement-contract-award-api')
-const { rawAward, rawAwards, rawTotals, RECORD_ID } = await import('../lib/contract-award.fixture')
+const { CaReadSpentError, CaRecordsOffError, CaSnapshotMismatchError, CaTotalsOffError, fetchBuyerContractAwards, fetchBuyerContractAwardTotals, fetchContractAward, fetchWinnerContractAwards } = await import('./procurement-contract-award-api')
+const { rawAward, rawAwards, rawTotals, rawWinnerAwards, RECORD_ID, WINNER_CODE } = await import('../lib/contract-award.fixture')
 
 const refused = (code: string, reason?: string, message: string = code) =>
   new GraphQLRequestError(`GraphQL errors: ${message}`, { graphQLErrors: [{ message, path: ['award'], extensions: { code, ...(reason ? { reason } : {}) } }] })
@@ -167,5 +167,51 @@ describe('the totals read’s document', () => {
     expect(compact).toContain('included { valueKinds { key labelRo labelEn } }')
     expect(compact).toContain('explanation { textRo textEn }')
     expect(options).toMatchObject({ operationName: 'ProcurementContractAwardTotals', signal })
+  })
+})
+
+describe('fetchWinnerContractAwards', () => {
+  beforeEach(() => graphqlQuery.mockReset())
+  const ALL = { code: WINNER_CODE, year: null, sort: 'awardDayDesc', page: 1 } as const
+
+  it('asks both winner fields in one request: every year published with no dates, one year with its own', async () => {
+    graphqlQuery.mockResolvedValueOnce(rawWinnerAwards())
+    const read = await fetchWinnerContractAwards(ALL)
+    expect(graphqlQuery.mock.calls[0]?.[1]).toEqual({ winnerFiscalCode: WINNER_CODE, sort: 'awardDayDesc', page: 1, pageSize: 20 })
+    expect(read).toMatchObject({ kind: 'found', awards: { recordCount: 2, winner: { disclosed: false, shown: { kind: 'company', name: 'CONSTRUCT TEST SRL' } } } })
+    expect(read.kind === 'found' ? read.awards.rows.map((row) => row.buyer?.kind) : []).toEqual(['company', 'masked'])
+    graphqlQuery.mockResolvedValueOnce(rawWinnerAwards())
+    await fetchWinnerContractAwards({ ...ALL, year: 2024, sort: 'amountDesc', page: 3 })
+    expect(graphqlQuery.mock.calls[1]?.[1]).toEqual({ winnerFiscalCode: WINNER_CODE, from: '2024-01-01', to: '2024-12-31', sort: 'amountDesc', page: 3, pageSize: 20 })
+    const document = graphqlQuery.mock.calls[0]?.[0] as string
+    expect(document.replace(/\s+/gu, ' ')).toContain('summary: procurementContractAwardWinnerSummary(winnerFiscalCode: $winnerFiscalCode, from: $from, to: $to)')
+    expect(document.replace(/\s+/gu, ' ')).toContain('records: procurementContractAwardsByWinner(winnerFiscalCode: $winnerFiscalCode, from: $from, to: $to, sort: $sort, page: $page, pageSize: $pageSize)')
+  })
+
+  it('says every refusal as one and the same „none", and asks nothing for a code the API does not take', async () => {
+    graphqlQuery.mockRejectedValueOnce(refused('NOT_FOUND'))
+    await expect(fetchWinnerContractAwards(ALL)).resolves.toEqual({ kind: 'missing' })
+    graphqlQuery.mockRejectedValueOnce(refused('INVALID_INPUT'))
+    await expect(fetchWinnerContractAwards(ALL)).resolves.toEqual({ kind: 'missing' })
+    expect(graphqlQuery).toHaveBeenCalledTimes(2)
+    for (const code of ['0123', '7', '12345678901', '1850101123456', 'RO123', '']) {
+      await expect(fetchWinnerContractAwards({ ...ALL, code })).resolves.toEqual({ kind: 'missing' })
+    }
+    expect(graphqlQuery).toHaveBeenCalledTimes(2)
+    graphqlQuery.mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE'))
+    await expect(fetchWinnerContractAwards(ALL)).rejects.toBeInstanceOf(CaRecordsOffError)
+  })
+
+  it('reads the pair again on a snapshot mismatch, and says „none" when the second read refuses the code', async () => {
+    const split = rawWinnerAwards({ records: { dataAsOf: '2026-11-25T02:00:00Z' } })
+    graphqlQuery.mockResolvedValueOnce(split).mockResolvedValueOnce(rawWinnerAwards())
+    await expect(fetchWinnerContractAwards(ALL)).resolves.toMatchObject({ kind: 'found' })
+    graphqlQuery.mockReset()
+    graphqlQuery.mockResolvedValueOnce(split).mockRejectedValueOnce(refused('NOT_FOUND'))
+    // The gate moved between the reads: none, never the first read's half.
+    await expect(fetchWinnerContractAwards(ALL)).resolves.toEqual({ kind: 'missing' })
+    graphqlQuery.mockReset()
+    graphqlQuery.mockResolvedValue(split)
+    await expect(fetchWinnerContractAwards(ALL)).rejects.toBeInstanceOf(CaSnapshotMismatchError)
   })
 })

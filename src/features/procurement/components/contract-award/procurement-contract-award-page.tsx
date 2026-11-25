@@ -175,7 +175,7 @@ function AwardSheet({ award }: { readonly award: ContractAward }) {
               <ul className="space-y-1">
                 {award.winners.map((winner, index) => (
                   <li key={`${winner.order ?? 'x'}-${index}`}>
-                    <CaPartyName shown={winner.shown} role="winner" year={year} />
+                    <CaPartyName shown={winner.shown} role="winner" disclosed={winner.disclosed} year={year} />
                   </li>
                 ))}
               </ul>

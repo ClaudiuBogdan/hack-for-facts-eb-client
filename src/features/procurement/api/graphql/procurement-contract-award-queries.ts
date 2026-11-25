@@ -44,6 +44,37 @@ export const PROCUREMENT_CONTRACT_AWARDS_QUERY = /* GraphQL */ `
   }
 `
 
+/**
+ * A winner code's counts and a page of the awards it won (a joint win
+ * included), each row with its buyer. Only a code the API shows and gates has
+ * them; any other is NOT_FOUND, the same whether or not it won anything.
+ */
+export const PROCUREMENT_WINNER_CONTRACT_AWARDS_QUERY = /* GraphQL */ `
+  query ProcurementWinnerContractAwards($winnerFiscalCode: String!, $from: Date, $to: Date, $sort: ProcurementCaListSort, $page: Int, $pageSize: Int) {
+    summary: procurementContractAwardWinnerSummary(winnerFiscalCode: $winnerFiscalCode, from: $from, to: $to) {
+      dataAsOf
+      disclosureKey
+      window { ${WINDOW_FIELDS} }
+      winner { ${WINNER_FIELDS} }
+      recordCount
+      valuedCount
+      identityReviewCount
+      undatedCount
+    }
+    records: procurementContractAwardsByWinner(winnerFiscalCode: $winnerFiscalCode, from: $from, to: $to, sort: $sort, page: $page, pageSize: $pageSize) {
+      dataAsOf
+      disclosureKey
+      window { ${WINDOW_FIELDS} }
+      items { ${ROW_FIELDS} buyer { ${BUYER_FIELDS} } }
+      page
+      pageSize
+      total
+      hasMore
+      depthLimited
+    }
+  }
+`
+
 export const PROCUREMENT_CONTRACT_AWARD_QUERY = /* GraphQL */ `
   query ProcurementContractAward($recordId: ID!) {
     award: procurementContractAward(recordId: $recordId) {
@@ -124,6 +155,34 @@ export const contractAwardsResponseSchema = z.object({
   }),
 })
 
+const countsSchema = {
+  dataAsOf: z.string(),
+  disclosureKey: z.string(),
+  window: windowSchema,
+  recordCount: z.number(),
+  valuedCount: z.number(),
+  identityReviewCount: z.number(),
+  undatedCount: z.number(),
+}
+
+const pageSchema = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    dataAsOf: z.string(),
+    disclosureKey: z.string(),
+    window: windowSchema,
+    items: z.array(item),
+    page: z.number(),
+    pageSize: z.number(),
+    total: z.number(),
+    hasMore: z.boolean(),
+    depthLimited: z.boolean(),
+  })
+
+export const winnerContractAwardsResponseSchema = z.object({
+  summary: z.object({ ...countsSchema, winner: winnerSchema }),
+  records: pageSchema(rowSchema.extend({ buyer: buyerSchema.nullable() })),
+})
+
 export const contractAwardResponseSchema = z.object({
   award: z.object({
     dataAsOf: z.string(),
@@ -163,6 +222,7 @@ export type RawCaBuyer = z.infer<typeof buyerSchema>
 export type RawCaWinner = z.infer<typeof winnerSchema>
 export type RawCaRow = z.infer<typeof rowSchema>
 export type RawContractAwards = z.infer<typeof contractAwardsResponseSchema>
+export type RawWinnerContractAwards = z.infer<typeof winnerContractAwardsResponseSchema>
 export type RawContractAward = z.infer<typeof contractAwardResponseSchema>['award']
 
 /**

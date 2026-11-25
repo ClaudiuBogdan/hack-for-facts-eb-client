@@ -64,6 +64,16 @@ export function buildContractAwardDocumentTitle(i18n: I18n, options: { readonly 
   return authority ? `${title} — ${authority} — ${suffix(i18n)}` : `${title} — ${suffix(i18n)}`
 }
 
+/**
+ * A winner's contract-award list (KB0Z) is named by the company the API names
+ * from the firms' register; a masked or unnamed winner's list keeps a plain
+ * title, never a masked name or a bare code.
+ */
+export function buildContractAwardWinnerDocumentTitle(i18n: I18n, options: { readonly companyName?: string | null }): string {
+  const name = options.companyName?.trim()
+  return name ? `${i18n._(msg`Contracte atribuite câștigate de ${name}`)} — ${suffix(i18n)}` : `${i18n._(msg`Contracte atribuite câștigate de o firmă`)} — ${suffix(i18n)}`
+}
+
 export function buildInstitutionDocumentTitle(i18n: I18n, options: { readonly cui: string; readonly authorityName?: string | null }): string {
   const name = options.authorityName?.trim()
   const cui = options.cui

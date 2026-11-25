@@ -6,18 +6,23 @@ import {
   PROCUREMENT_CONTRACT_AWARD_QUERY,
   PROCUREMENT_CONTRACT_AWARD_TOTALS_QUERY,
   PROCUREMENT_CONTRACT_AWARDS_QUERY,
+  PROCUREMENT_WINNER_CONTRACT_AWARDS_QUERY,
+  winnerContractAwardsResponseSchema,
 } from './graphql/procurement-contract-award-queries'
 import {
   CA_PAGE_SIZE,
   CA_TOTAL_KINDS,
+  isCaWinnerCode,
   isContractAwardId,
   mapBuyerContractAwards,
   mapBuyerContractAwardTotals,
   mapContractAward,
+  mapWinnerContractAwards,
   type BuyerContractAwards,
   type BuyerContractAwardTotals,
   type CaSort,
   type ContractAward,
+  type WinnerContractAwards,
 } from '../lib/contract-award-model'
 
 /**
@@ -116,17 +121,55 @@ export interface BuyerContractAwardsRequest {
 export async function fetchBuyerContractAwards(request: BuyerContractAwardsRequest, signal?: AbortSignal): Promise<BuyerContractAwards> {
   const variables = { buyerFiscalCode: request.cui, from: request.from, to: request.to, sort: request.sort, page: request.page, pageSize: CA_PAGE_SIZE }
   const read = () => graphqlQuery<unknown>(PROCUREMENT_CONTRACT_AWARDS_QUERY, variables, { operationName: 'ProcurementContractAwards', signal }).then((data) => contractAwardsResponseSchema.parse(data))
+  return mapBuyerContractAwards(await readPair(read, signal))
+}
+
+/** Counts and a page read together, both halves on one snapshot: read once more on a mismatch, then failed. */
+async function readPair<T extends { readonly summary: { readonly dataAsOf: string }; readonly records: { readonly dataAsOf: string } }>(read: () => Promise<T>, signal: AbortSignal | undefined): Promise<T> {
   let first
   try {
     first = await readOnceMore(read, signal)
   } catch (error) {
     throw error instanceof CaReadSpentError ? error : offOr(error, signal)
   }
-  if (first.summary.dataAsOf === first.records.dataAsOf) return mapBuyerContractAwards(first)
+  if (first.summary.dataAsOf === first.records.dataAsOf) return first
   // A mismatch: read once more, and that read is the last the adapter makes.
   const second = await secondRead(read, signal)
-  if (second.summary.dataAsOf === second.records.dataAsOf) return mapBuyerContractAwards(second)
+  if (second.summary.dataAsOf === second.records.dataAsOf) return second
   throw new CaSnapshotMismatchError()
+}
+
+export interface WinnerContractAwardsRequest {
+  readonly code: string
+  /** A year's window; none for every year published. */
+  readonly year: number | null
+  readonly sort: CaSort
+  readonly page: number
+}
+
+/** A winner's list as read: found, or none for the code — refused, unknown or not in the API's form, all alike. */
+export type WinnerContractAwardsRead = { readonly kind: 'found'; readonly awards: WinnerContractAwards } | { readonly kind: 'missing' }
+
+/**
+ * A winner code's contract awards (KB0Z, owner 25 November 2026): only a code
+ * the API shows and gates has them. Every refusal reads the same — the page
+ * cannot tell, and does not say, whether the code won anything.
+ */
+export async function fetchWinnerContractAwards(request: WinnerContractAwardsRequest, signal?: AbortSignal): Promise<WinnerContractAwardsRead> {
+  // Not a code the API takes: nothing is asked.
+  if (!isCaWinnerCode(request.code)) return { kind: 'missing' }
+  const window = request.year === null ? {} : { from: `${request.year}-01-01`, to: `${request.year}-12-31` }
+  const variables = { winnerFiscalCode: request.code, ...window, sort: request.sort, page: request.page, pageSize: CA_PAGE_SIZE }
+  const read = () =>
+    graphqlQuery<unknown>(PROCUREMENT_WINNER_CONTRACT_AWARDS_QUERY, variables, { operationName: 'ProcurementWinnerContractAwards', signal }).then((data) => winnerContractAwardsResponseSchema.parse(data))
+  try {
+    return { kind: 'found', awards: mapWinnerContractAwards(await readPair(read, signal)) }
+  } catch (error) {
+    // A refusal on the second read too (the gate moved between them): none, never the older half.
+    const cause = error instanceof CaReadSpentError ? error.cause : error
+    if (!signal?.aborted && (hasCode(cause, 'NOT_FOUND') || hasCode(cause, 'INVALID_INPUT'))) return { kind: 'missing' }
+    throw error
+  }
 }
 
 /**

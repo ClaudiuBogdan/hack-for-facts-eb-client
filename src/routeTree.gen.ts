@@ -194,6 +194,7 @@ import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cu
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
+import { Route as ProcurementContractAwardsWinnersCuiRouteImport } from './routes/procurement/contract-awards/winners/$cui'
 import { Route as PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRouteImport } from './routes/public-enterprises/authorities/$cui/portfolio[.]json'
 import { Route as LangLearningPathIdModuleIdLessonIdRouteImport } from './routes/$lang/learning/$pathId/$moduleId/$lessonId'
 import { Route as AdminCampaignsCampaignKeyEntitiesEntityCuiRouteImport } from './routes/admin/campaigns/$campaignKey/entities.$entityCui'
@@ -1475,6 +1476,16 @@ const PrimarieCuiBugetResurseRoute = PrimarieCuiBugetResurseRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/$cui/buget/resurse.lazy').then((d) => d.Route),
 )
+const ProcurementContractAwardsWinnersCuiRoute =
+  ProcurementContractAwardsWinnersCuiRouteImport.update({
+    id: '/contract-awards/winners/$cui',
+    path: '/contract-awards/winners/$cui',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/contract-awards/winners/$cui.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute =
   PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRouteImport.update({
     id: '/portfolio.json',
@@ -1725,6 +1736,7 @@ export interface FileRoutesByFullPath {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/procurement/contract-awards/winners/$cui': typeof ProcurementContractAwardsWinnersCuiRoute
   '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
@@ -1904,6 +1916,7 @@ export interface FileRoutesByTo {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/procurement/contract-awards/winners/$cui': typeof ProcurementContractAwardsWinnersCuiRoute
   '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyIndexRoute
@@ -2101,6 +2114,7 @@ export interface FileRoutesById {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/procurement/contract-awards/winners/$cui': typeof ProcurementContractAwardsWinnersCuiRoute
   '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
@@ -2299,6 +2313,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/procurement/contract-awards/winners/$cui'
     | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
@@ -2478,6 +2493,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/procurement/contract-awards/winners/$cui'
     | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId'
     | '/admin/campaigns/$campaignKey'
@@ -2674,6 +2690,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/procurement/contract-awards/winners/$cui'
     | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
@@ -4114,6 +4131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieCuiBugetResurseRouteImport
       parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
+    '/procurement/contract-awards/winners/$cui': {
+      id: '/procurement/contract-awards/winners/$cui'
+      path: '/contract-awards/winners/$cui'
+      fullPath: '/procurement/contract-awards/winners/$cui'
+      preLoaderRoute: typeof ProcurementContractAwardsWinnersCuiRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
     '/public-enterprises/authorities/$cui/portfolio.json': {
       id: '/public-enterprises/authorities/$cui/portfolio.json'
       path: '/portfolio.json'
@@ -4287,6 +4311,7 @@ interface ProcurementRouteRouteChildren {
   ProcurementInstitutionsCuiRoute: typeof ProcurementInstitutionsCuiRoute
   ProcurementProceduresIdRoute: typeof ProcurementProceduresIdRoute
   ProcurementSuppliersCuiRoute: typeof ProcurementSuppliersCuiRoute
+  ProcurementContractAwardsWinnersCuiRoute: typeof ProcurementContractAwardsWinnersCuiRoute
 }
 
 const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
@@ -4300,6 +4325,8 @@ const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
   ProcurementInstitutionsCuiRoute: ProcurementInstitutionsCuiRoute,
   ProcurementProceduresIdRoute: ProcurementProceduresIdRoute,
   ProcurementSuppliersCuiRoute: ProcurementSuppliersCuiRoute,
+  ProcurementContractAwardsWinnersCuiRoute:
+    ProcurementContractAwardsWinnersCuiRoute,
 }
 
 const ProcurementRouteRouteWithChildren =

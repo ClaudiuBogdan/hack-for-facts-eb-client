@@ -88,6 +88,13 @@ describe('ProcurementContractAwardPage', () => {
     expect(html).toContain('Câștigat de o asociere')
   })
 
+  it('links a registry-named company outside the direct purchases’ gate to its contract awards, never to a supplier’s page', () => {
+    const raw = rawAward({ record: { winners: [{ order: 1, displayKind: 'company', fiscalCode: '14837428', name: 'CONSTRUCT TEST SRL', disclosed: false }] } })
+    const html = renderToStaticMarkup(page({ id: RECORD_ID, read: found(raw) }))
+    expect(html).toContain('href="/procurement/contract-awards/winners/14837428"')
+    expect(html).not.toContain('/procurement/suppliers/')
+  })
+
   it('says a framework’s ceiling as the most it may spend, and a price change apart from the amount', () => {
     const raw = rawAward({ record: { valueKind: 'framework_ceiling', contractKind: 'framework_agreement', changeLei: '-3500', changePublicationDay: '2024-09-02' } })
     const html = renderToStaticMarkup(page({ id: RECORD_ID, read: found(raw) }))

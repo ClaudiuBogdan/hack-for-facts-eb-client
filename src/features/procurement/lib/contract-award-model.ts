@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro'
-import type { RawCaBuyer, RawCaRow, RawCaWinner, RawContractAward, RawContractAwardTotal, RawContractAwards } from '../api/graphql/procurement-contract-award-queries'
+import type { RawCaBuyer, RawCaRow, RawCaWinner, RawContractAward, RawContractAwardTotal, RawContractAwards, RawWinnerContractAwards } from '../api/graphql/procurement-contract-award-queries'
 import { lastDayOf, type ProfilePeriod } from './profile-period'
 
 /**
@@ -63,7 +63,7 @@ export function caWindowOf(period: Pick<ProfilePeriod, 'from' | 'through' | 'yea
 /**
  * A party as the page may say it:
  * - `company`: by its name (or its code where the API gives no name); a link
- *   only with both (`isLinkedCaParty`);
+ *   only as `caWinnerLinkOf` says;
  * - `masked`: a masked name the API gave, with its code when given;
  * - `code`: a code the API gives with no name;
  * - `withheld`: the API names no one and gives no code;
@@ -110,9 +110,27 @@ export function caBuyerShown(buyer: Pick<RawCaBuyer, 'displayKind' | 'fiscalCode
   return code ? { kind: 'code', code, authority: false } : { kind: 'withheld', authority: false }
 }
 
-/** A winner that may link to the supplier's pages: a company the API names, with its code (PROC-KR9T). */
-export function isLinkedCaParty(shown: CaPartyShown): shown is { readonly kind: 'company'; readonly name: string; readonly code: string } {
-  return shown.kind === 'company' && shown.name !== null && shown.code !== null && /^\d{1,12}$/u.test(shown.code)
+/** A winner code the API takes for a by-winner list: 2–10 digits, no leading zero (server `ca-records-usecases.ts`). */
+const WINNER_CODE = /^[1-9]\d{1,9}$/u
+
+export function isCaWinnerCode(code: string): boolean {
+  return WINNER_CODE.test(code)
+}
+
+/**
+ * Where a winner's name leads (root, 25 November 2026):
+ * - a company in the direct purchases' gate (`disclosed`), named, with its
+ *   code: the supplier's page, as before (PROC-KR9T);
+ * - a company outside it, which the API names from the firms' register: its
+ *   contract-award list, as the supplier's page has nothing for it;
+ * - anyone else: nowhere, plain text, with no lookup by code.
+ */
+export function caWinnerLinkOf(shown: CaPartyShown, disclosed: boolean | null): { readonly to: 'supplier' | 'winner'; readonly code: string } | null {
+  // Named, with its code: a company served with no name is in no list the API keeps (its gate is the register's name).
+  if (shown.kind !== 'company' || shown.code === null || shown.name === null) return null
+  if (disclosed === true && /^\d{1,12}$/u.test(shown.code)) return { to: 'supplier', code: shown.code }
+  if (disclosed === false && isCaWinnerCode(shown.code)) return { to: 'winner', code: shown.code }
+  return null
 }
 
 /** A party's label, as a list or a sentence says it. */
@@ -143,6 +161,8 @@ export function caPartyLabel(shown: CaPartyShown, role: 'winner' | 'buyer' = 'wi
 export interface CaWinner {
   readonly order: number | null
   readonly shown: CaPartyShown
+  /** In the direct purchases' gate (D6): true, false outside it, null when the API names no one. */
+  readonly disclosed: boolean | null
 }
 
 export interface CaRecordRow {
@@ -170,6 +190,8 @@ const amountOf = (text: string | null): number | null => {
   return Number.isFinite(value) ? value : null
 }
 
+const winnerOf = (winner: RawCaWinner): CaWinner => ({ order: winner.order, shown: caWinnerShown(winner), disclosed: winner.disclosed })
+
 function rowOf(raw: RawCaRow): CaRecordRow {
   return {
     recordId: raw.recordId,
@@ -184,7 +206,7 @@ function rowOf(raw: RawCaRow): CaRecordRow {
     title: clean(raw.title),
     cpvCode: clean(raw.cpvCode),
     winnerCount: raw.winnerCount,
-    winners: [...raw.winners].sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)).map((winner) => ({ order: winner.order, shown: caWinnerShown(winner) })),
+    winners: [...raw.winners].sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)).map(winnerOf),
   }
 }
 
@@ -209,7 +231,9 @@ export interface BuyerContractAwards {
   readonly depthLimited: boolean
 }
 
-export function mapBuyerContractAwards(raw: RawContractAwards): BuyerContractAwards {
+type RawCaPair = Pick<RawContractAwards, 'summary' | 'records'> | Pick<RawWinnerContractAwards, 'summary' | 'records'>
+
+function mapCaPair(raw: RawCaPair): BuyerContractAwards {
   const { summary, records } = raw
   return {
     dataAsOf: summary.dataAsOf,
@@ -225,6 +249,31 @@ export function mapBuyerContractAwards(raw: RawContractAwards): BuyerContractAwa
     total: records.total,
     hasMore: records.hasMore,
     depthLimited: records.depthLimited,
+  }
+}
+
+export function mapBuyerContractAwards(raw: RawContractAwards): BuyerContractAwards {
+  return mapCaPair(raw)
+}
+
+/** A row of a winner's list: the award, and who awarded it. */
+export interface CaWinnerRow extends CaRecordRow {
+  readonly buyer: (CaPartyShown & { readonly authority: boolean }) | null
+}
+
+/** A winner code's contract awards in a window: the winner as its records show it, its counts and one page. */
+export interface WinnerContractAwards extends Omit<BuyerContractAwards, 'rows'> {
+  readonly winner: CaWinner
+  readonly window: { readonly from: string; readonly to: string | null }
+  readonly rows: readonly CaWinnerRow[]
+}
+
+export function mapWinnerContractAwards(raw: RawWinnerContractAwards): WinnerContractAwards {
+  return {
+    ...mapCaPair(raw),
+    winner: winnerOf(raw.summary.winner),
+    window: { from: raw.summary.window.from, to: raw.summary.window.to },
+    rows: raw.records.items.map((item) => ({ ...rowOf(item), buyer: item.buyer ? caBuyerShown(item.buyer) : null })),
   }
 }
 

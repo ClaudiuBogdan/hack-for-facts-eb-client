@@ -164,7 +164,7 @@ function AwardRow({ row, year }: { readonly row: CaRecordRow; readonly year: num
               {row.winners.slice(0, WINNERS_SHOWN).map((winner, index) => (
                 <span key={`${winner.order ?? 'x'}-${index}`}>
                   {index > 0 ? ', ' : null}
-                  <CaPartyName shown={winner.shown} role="winner" year={year} />
+                  <CaPartyName shown={winner.shown} role="winner" disclosed={winner.disclosed} year={year} />
                 </span>
               ))}
               {more > 0 ? <> {plural(more, { one: 'și încă un câștigător', few: 'și încă # câștigători', other: 'și încă # de câștigători' })}</> : null}
@@ -185,7 +185,7 @@ function AwardRow({ row, year }: { readonly row: CaRecordRow; readonly year: num
 }
 
 /** Said from the answer shown: while another page is on its way, the rows kept are labelled as theirs. */
-function Pager({ data, onPage }: { readonly data: BuyerContractAwards; readonly onPage: (page: number) => void }) {
+export function Pager({ data, onPage }: { readonly data: Pick<BuyerContractAwards, 'page' | 'pageSize' | 'total' | 'hasMore'>; readonly onPage: (page: number) => void }) {
   const page = data.page
   const pages = Math.min(Math.ceil(Math.min(data.total, LIST_DEPTH) / data.pageSize), PROCUREMENT_BUYER_AWARD_MAX_PAGE)
   if (pages <= 1 && page === 1) return null

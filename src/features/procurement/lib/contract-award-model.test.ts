@@ -6,7 +6,7 @@ import {
   caWindowOf,
   caWinnerShown,
   isContractAwardId,
-  isLinkedCaParty,
+  caWinnerLinkOf,
   mapBuyerContractAwards,
   mapContractAward,
 } from './contract-award-model'
@@ -21,25 +21,34 @@ vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typ
  * links only as an authority, and the published window starts in 2021.
  */
 describe('contract-award parties', () => {
-  it('links a winner only when the API names it as a company, with its code', () => {
+  it('links a gated company to the supplier’s page, a registry-named company outside the gate to its awards, and no one else', () => {
     const company = caWinnerShown({ displayKind: 'company', fiscalCode: '14837428', name: 'CONSTRUCT TEST SRL' })
-    expect(isLinkedCaParty(company)).toBe(true)
+    expect(caWinnerLinkOf(company, true)).toEqual({ to: 'supplier', code: '14837428' })
     expect(caPartyLabel(company)).toBe('CONSTRUCT TEST SRL')
+    // Outside the direct purchases' gate, named from the register (KB0Z): the supplier's page has nothing for it.
+    expect(caWinnerLinkOf(company, false)).toEqual({ to: 'winner', code: '14837428' })
+    // A code the by-winner list does not take (a leading zero, too long): plain text, never a list that must refuse it.
+    expect(caWinnerLinkOf(caWinnerShown({ displayKind: 'company', fiscalCode: '01483742', name: 'FIRMA SRL' }), false)).toBeNull()
+    expect(caWinnerLinkOf(caWinnerShown({ displayKind: 'company', fiscalCode: '12345678901', name: 'FIRMA SRL' }), false)).toBeNull()
+    // `disclosed` absent: no link either way.
+    expect(caWinnerLinkOf(company, null)).toBeNull()
     // A company the API serves with no name: its code, said as missing from the registry, and no link.
     const unnamed = caWinnerShown({ displayKind: 'company', fiscalCode: '4305857', name: '  ' })
-    expect(isLinkedCaParty(unnamed)).toBe(false)
+    expect(caWinnerLinkOf(unnamed, true)).toBeNull()
+    expect(caWinnerLinkOf(unnamed, false)).toBeNull()
     expect(caPartyLabel(unnamed)).toBe('CUI 4305857 (denumire indisponibilă în registrul firmelor)')
     // A named company with no code: no page to link to.
-    expect(isLinkedCaParty(caWinnerShown({ displayKind: 'company', fiscalCode: null, name: 'FIRMA SRL' }))).toBe(false)
+    expect(caWinnerLinkOf(caWinnerShown({ displayKind: 'company', fiscalCode: null, name: 'FIRMA SRL' }), true)).toBeNull()
   })
 
   it('says a masked person, a code alone, a withheld and an unidentified winner as plain text, and an unknown kind as nothing', () => {
     const masked = caWinnerShown({ displayKind: 'person_masked', fiscalCode: '30111222', name: 'Ion P*** PFA' })
-    expect(isLinkedCaParty(masked)).toBe(false)
+    expect(caWinnerLinkOf(masked, true)).toBeNull()
+    expect(caWinnerLinkOf(masked, false)).toBeNull()
     expect(caPartyLabel(masked)).toBe('Ion P*** PFA (CUI 30111222)')
     expect(caPartyLabel(caWinnerShown({ displayKind: 'person_masked', fiscalCode: '30111222', name: null }))).toBe('CUI 30111222 (nume nepublicat)')
     const code = caWinnerShown({ displayKind: 'code_only', fiscalCode: '30111223', name: null })
-    expect(isLinkedCaParty(code)).toBe(false)
+    expect(caWinnerLinkOf(code, false)).toBeNull()
     expect(caPartyLabel(code)).toBe('CUI 30111223 (nume nepublicat)')
     // A code or a name under a withheld kind, or one the client does not know, is never shown.
     expect(caPartyLabel(caWinnerShown({ displayKind: 'withheld', fiscalCode: '1850101123456', name: 'Ion Popescu' }))).toBe('Câștigător nepublicat')

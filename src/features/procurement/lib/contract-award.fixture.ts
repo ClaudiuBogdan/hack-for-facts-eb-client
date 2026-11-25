@@ -1,4 +1,4 @@
-import type { RawCaRow, RawContractAward, RawContractAwardTotal, RawContractAwards } from '../api/graphql/procurement-contract-award-queries'
+import type { RawCaRow, RawContractAward, RawContractAwardTotal, RawContractAwards, RawWinnerContractAwards } from '../api/graphql/procurement-contract-award-queries'
 
 /** Contract-award answers as the API serves them (server `ca-records-schema.ts`, 1503dd2c), for tests. */
 
@@ -103,5 +103,46 @@ export function rawTotals(overrides: { readonly totals?: RawContractAwardTotal['
         explanation: { textRo: 'Include contractele atribuite din 2025; 3 fără dată sunt lăsate deoparte.', textEn: 'Includes contracts awarded in 2025; 3 undated are left out.' },
       },
     ],
+  }
+}
+
+export const WINNER_CODE = '14837428'
+
+/** A winner code's counts and one page, as the two winner fields answer them (server 09610b12): an off-gate registry-named company by default. */
+export function rawWinnerAwards(
+  overrides: {
+    readonly summary?: Partial<RawWinnerContractAwards['summary']>
+    readonly records?: Partial<RawWinnerContractAwards['records']>
+    readonly rows?: RawWinnerContractAwards['records']['items']
+  } = {},
+): RawWinnerContractAwards {
+  const window = { floor: '2021-01-01', from: '2021-01-01', to: null }
+  return {
+    summary: {
+      dataAsOf: '2026-11-25T01:00:00Z',
+      disclosureKey: '2026-11-25T01:00:00Z',
+      window,
+      winner: { order: null, displayKind: 'company', fiscalCode: WINNER_CODE, name: 'CONSTRUCT TEST SRL', disclosed: false },
+      recordCount: 2,
+      valuedCount: 2,
+      identityReviewCount: 0,
+      undatedCount: 0,
+      ...overrides.summary,
+    },
+    records: {
+      dataAsOf: '2026-11-25T01:00:00Z',
+      disclosureKey: '2026-11-25T01:00:00Z',
+      window,
+      items: overrides.rows ?? [
+        { ...rawRow(), buyer: { fiscalCode: '4364446', displayKind: 'authority', name: 'ORAȘUL OTOPENI' } },
+        { ...rawRow({ recordId: 'e_licitatie:ca:100240:550020', title: 'Servicii de deszăpezire', flags: ['joint_win'] }), buyer: { fiscalCode: '30111299', displayKind: 'person_masked', name: 'Maria I***' } },
+      ],
+      page: 1,
+      pageSize: 20,
+      total: 2,
+      hasMore: false,
+      depthLimited: false,
+      ...overrides.records,
+    },
   }
 }

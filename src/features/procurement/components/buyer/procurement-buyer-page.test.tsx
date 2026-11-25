@@ -514,6 +514,14 @@ describe('ProcurementBuyerPage', () => {
       expect(band).toHaveTextContent('în verificare')
     })
 
+    it('links a registry-named winner outside the direct purchases’ gate to its contract awards', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ rows: [rawRow({ winners: [{ order: 1, displayKind: 'company', fiscalCode: '14837428', name: 'CONSTRUCT TEST SRL', disclosed: false }] })] })))
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByRole('link', { name: 'CONSTRUCT TEST SRL' })).toHaveAttribute('href', '/procurement/contract-awards/winners/14837428')
+      expect(within(band).queryAllByRole('link').some((link) => link.getAttribute('href')?.includes('/procurement/suppliers/'))).toBe(false)
+    })
+
     it('shows the money per kind with the API’s labels, never added up, from its own read of the same window', async () => {
       awardsRead.mockResolvedValue(awards())
       totalsRead.mockResolvedValue(mapBuyerContractAwardTotals(rawTotals().totals[0]!))
