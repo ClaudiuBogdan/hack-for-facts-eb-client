@@ -281,7 +281,8 @@ function Headline({
 }
 
 const COVERAGE: Readonly<Record<DataLens, () => string>> = {
-  felul: () => READING_SENTENCE,
+  // The reading sentence is shown once, as its own paragraph under the table; not again in the table's footer.
+  felul: () => '',
   emitent: () =>
     t`Emitenții sunt linii (denumiri succesive unite); la legi, ordonanțe și decrete emitentul e derivat din tip și dată.`,
   dinamica: () =>
