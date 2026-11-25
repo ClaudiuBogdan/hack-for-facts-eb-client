@@ -1530,3 +1530,82 @@ page on its view for the page's year. The list is the live component's
 (`StartLinks`, exported from `home-start.tsx`; the live `StartBand` renders
 it unchanged), under the working version's own heading, without the hub's
 section number.
+
+### 12.12 A gallery of chart elements; the 3% line and the interest trend (25 November 2026)
+
+**Owner:** compare the budgets with something other than bars and prototype each option. Prototype elements from a list of chart types
+(treemap, waterfall, heatmap, stacked area, Sankey, …). Develop the chart additions and the share card.
+
+**The gallery** (`?v=grafice`, `persoana.grafice.tsx`): each candidate is a section on the page's data and year. The owner picks what moves
+into the working version.
+
+- **The budgets** (`persoana.budgets.tsx`): one read of the year's budget columns (2019 on; not December 2023). For each budget: what it
+  spent, and where its money came from. That is its own revenue, „subvenții" from other budgets, EU funds, and its deficit as borrowed.
+  The four large budgets are named; the rest share a line.
+  - *Mosaic:* one block per budget, as wide as its spending, split by source. On a phone the blocks lie down.
+  - *100 lei:* 100 squares of all budgets' spending, coloured by budget. The note says the budgets add up to more than public spending.
+  - *Flow:* a Sankey from the four sources to the budgets. **Who paid whom is not printed**, so no payer is linked to a receiver; the
+    note names the payers (the state budget, 93,2 mld. lei in 2025).
+- **Waterfall:** this year's spending against last year's, by kind of spending, the largest rise first; „Restul" is the total's change
+  minus the named lines.
+- **Heatmap:** spending in each month alone since 2006 (the server's `PERIOD_DIFFERENCE`), coloured against the same year's average
+  month. December stands out in nearly every year.
+- **Make-up over time:** stacked areas, as shares or in lei. Years whose December bulletin lacks the lines (2008, 2011, 2013) are skipped
+  and named.
+- **Revenue treemap:** the bulletin's revenue tree, opened at the top past „venituri curente"; a tile with „›" opens, a breadcrumb goes
+  back.
+- **Share card:** the reader's share of public spending as a 1200 × 630 picture. The live one would be server-made, like the entity share
+  images.
+
+**In the working version:** the borrowing chart's % view has the EU's 3% reference line, with a note that the EU applies it to the ESA
+deficit, not the cash one. The interest figure has interest per resident for every full year since 2006 (117 lei in 2006, 2.652 lei in
+2025).
+
+**Not built, and why:**
+- *Execution against the law (bullet charts):* the laws in the data are as first published, not as amended, so a percentage would
+  mislead (§ data lanes).
+- *Choropleth:* local budgets by county belong with the map's data.
+- *Donut:* the 100-lei grid already shows parts of a whole.
+- *A new chart library (ECharts):* `recharts` and `d3-sankey` are already in the app. A new library is a shared dependency and a heavier
+  bundle, so it is the owner's call.
+- *Inflation toggle:* needs a CPI series.
+
+**Colour (owner, 25 November 2026: more colour, still clean, the flow above all).** The gallery's charts use the data-viz reference
+palette in its validated order (`persoana.palette.ts`), each hue with its dark-mode step: blue, orange, aqua, yellow, magenta, green.
+The validator was run for each set used, in light and dark. The four sources and the six-hue stack pass the adjacent-pair checks in both
+modes (CVD ΔE ≥ 8.4, normal vision ≥ 19.3). Aqua, yellow and magenta are under 3:1 on the light page, so marks carry labels.
+- *Sources (mosaic, flow):* own revenue blue, other budgets orange, EU funds aqua, borrowed yellow and hatched (a second cue). Each flow
+  band takes its source's colour; the budgets stay neutral.
+- *Budgets (100 lei):* state blue, local orange, pensions aqua, health yellow, the rest grey.
+- *Waterfall:* rises blue, falls red (the palette's opposite pair).
+- *Stack:* six hues, „Altele" grey. *Treemap:* a hue per top tile; an opened tile's lines in shades of its hue; labels white or near-black
+  by hue.
+- *Heatmap:* one blue scale, as an amount should be.
+
+### 12.13 The budgets section in the working version (25 November 2026)
+
+`BudgetsSection` (`persoana.budgets.tsx`), anchor `#bugete`, between the 100-lei columns and the state budget, with a bar link
+„Bugetele" (icon `Layers`).
+- **Owner:** keep the 100-lei squares, with no „100 lei" in the title. Put the flow in the same section behind a switch like
+  „Ponderi | mld. lei". Give the flow a better design and a tooltip on hover.
+- **Title:** „Prin ce bugete trec banii". The switch is „Ponderi" (the squares, the default) or „Fluxul banilor". The caption above the
+  chart names the view and the period.
+- **One colour, one budget:** the flow's bands take the colour of the budget they feed (state blue, local orange, pensions aqua, health
+  yellow, others grey), the same as the squares. The sources are neutral bars, ordered so the bands cross least (borrowed, EU funds, own
+  revenue, other budgets). Borrowed money is hatched. Labels give each node's amount and its share of all.
+- **Tooltips:** a card by the pointer that flips near the right edge.
+  - *A square:* the budget's lei of 100, its amount, per resident, and what it pays for.
+  - *A band:* the source's amount, its share of the budget's money, per resident.
+  - *A source:* its total and what it is.
+  - *A budget:* its spending and its sources' shares.
+  The hovered band, budget or source lights its bands and dims the rest. On a phone a tap shows the card; a tap on the empty chart
+  closes it.
+- **Phone:** the flow's labels sit inside the chart, beside their bar, with a background halo.
+- **Years:** the section needs the budget columns (2019 on; not December 2023); other years say so.
+
+**Lists, compact (owner, 25 November 2026: cleaner, no bars, more compact).** Every 100-lei list row (`persoana.rows.tsx`) has two lines:
+- the lei of 100, the line's name and its official amount;
+- one quiet line with the change, the amount per resident and what the line holds. It is cut at the line's end, whole on hover.
+
+The state budget's bars are gone; its rows have no colour square, since no chart there needs a key. The first section keeps its squares.
+On a phone the name wraps instead of being cut. A row is 57 px on desktop (it was about 130 with the bar and a two-line description).
