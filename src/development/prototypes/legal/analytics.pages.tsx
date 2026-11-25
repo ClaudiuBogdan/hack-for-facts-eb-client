@@ -82,10 +82,11 @@ export function FrontDoor() {
   const all = figures(DEFAULT_QUERY)
   const older = all.total - series(DEFAULT_QUERY, 'felul', 1).years.reduce((s, y) => s + y.values.reduce((a, b) => a + b, 0), 0)
   const facts: HubFact[] = [
-    // the same four figures, labels and notes as the promoted page (legislation-front-door-bands.tsx)
+    // the promoted page's four figures (legislation-front-door-bands.tsx); the text figure here is the fixture's own:
+    // acts with a vector in the 11-18 search index, not the release's readable-text count the promoted page serves
     fact('acte', all.total, 0, '', t`acte în corpus`, t`publice, din corpusul servit de Portal`, hrefOf('analiza')),
     fact('versiuni', FX.stamp.actsWithVersions, 0, '', t`acte cu versiuni listate de Portal`, t`${pct(FX.stamp.actsWithVersions / all.total)} din acte; versiuni consolidate, neoficiale`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'dinamica' })),
-    fact('text', all.withText, 0, '', t`au text citibil în Portal`, t`${pct(all.withText / all.total)} din acte`, hrefOf('analiza')),
+    fact('text', all.withText, 0, '', t`au text în indexul de căutare din 18 noiembrie`, t`${pct(all.withText / all.total)} din acte`, hrefOf('analiza')),
     fact('stoc', POPULATION_SIZE.stoc, 0, '', t`acte în stoc`, t`stabilesc reguli și stau singure, încadrate ferm (provizoriu)`, hrefOf('analiza', { ...DEFAULT_QUERY, populatie: 'stoc' })),
   ]
   const boardRows = [...FX.acts]
@@ -338,7 +339,7 @@ export function AnalysisPage() {
             facts={[
               fact('sel', f.total, 0, '', t`acte în selecție`, t`din ${fmt(f.all)} (${population})`, '#raspuns'),
               fact('reguli', rulesText(f).main, 1, '%', t`stabilesc reguli`, rulesText(f).note, '#raspuns'),
-              fact('text', f.total ? (f.withText / f.total) * 100 : 0, 1, '%', t`au text citibil în Portal`, t`${fmt(f.withText)} din ${fmt(f.total)}`, '#raspuns'),
+              fact('text', f.total ? (f.withText / f.total) * 100 : 0, 1, '%', t`au text în indexul de căutare din 18 noiembrie`, t`${fmt(f.withText)} din ${fmt(f.total)}`, '#raspuns'),
             ]}
           />
         </RuledFrame>
@@ -778,7 +779,7 @@ function FilterSheet({ q, move, open, onOpenChange }: { readonly q: Query; reado
 
 // ───────────────────────────────────────────────────── topic page ──
 
-/** A topic's page (§4.3) on the placeholder map: every figure is test data and says so. */
+/** A topic's page (§4.3) on the fit of 24 November: experimental figures, labelled as such; names are automatic. */
 export function TopicPage() {
   const [q] = useQuery()
   const [selected, setSelected] = useState<number | null>(null)
