@@ -9,10 +9,9 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
 import { HomeBand, HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
 import { HubTwoLineChart } from '@/features/statistics/components/hub/hub-charts'
-import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
-import { cn } from '@/lib/utils'
 import type { CompanyAnalysisMetric, CompanyAnalysisRankBy, CompanyAnalysisScope } from '@/schemas/company-analytics'
 import {
   COMPANY_HUB_MAP_INDICATORS,
@@ -33,7 +32,7 @@ import type { HubActivityRow } from '../../lib/hub-snapshot-types'
 import { useHubFirstVisit } from '../../lib/hub-first-visit'
 import { hubCountyLayer, registrationSeries, survivalShare } from '../../lib/hub-view'
 import { CompanyHubHero, CompanyLeadersFrame } from './company-hub-hero'
-import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandIndex, companyHubSections } from './company-hub-sections'
+import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, companyHubSections } from './company-hub-sections'
 import { HubEconomyChart, HubEconomySpan } from './hub-economy-years'
 import { HubInfoNote } from './hub-info-note'
 import { HubCountyBand } from './hub-county-band'
@@ -251,18 +250,18 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
         leaders={<HeroLeaders ranking={ranking} onRanking={(key) => choose('clasament', key, DEFAULT_RANKING)} />}
       />
 
-      <HomeSectionNav title={t`Firmele din România`} sections={sections} />
+      {/* No running numbers on this page (owner, 25 November 2026), as on the landing: each band's title names it. */}
+      <HomeSectionNav title={t`Firmele din România`} sections={sections} numbered={false} />
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>
-          <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
+          <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} plainNotes />
         </RuledFrame>
       </section>
 
       <HomeBand id="judete" labelledBy="hub-counties-title">
         <HubSectionHead
           titleId="hub-counties-title"
-          index={bandIndex(sections, 'judete')}
           title={<Trans>Firmele pe județe</Trans>}
           aside={
             <IndicatorToggle
@@ -279,7 +278,6 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
       <HomeBand id="domenii" labelledBy="hub-sectors-title">
         <HubSectionHead
           titleId="hub-sectors-title"
-          index={bandIndex(sections, 'domenii')}
           title={<Trans>Domenii de activitate</Trans>}
           lede={activitiesLede(activityMeasure, ACTIVITIES[activityMeasure].rows.length)}
           aside={
@@ -321,7 +319,6 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
           <div className="lg:col-span-5">
             <HubSectionHead
               titleId="hub-sizes-title"
-              index={bandIndex(sections, 'marime')}
               title={<Trans>Firme mici și mari</Trans>}
               lede={
                 largest
@@ -334,7 +331,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
               }
             />
           </div>
-          <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
+          <div className="lg:col-span-6 lg:col-start-7" data-reveal>
             <p className={CAPTION_CLASS}>
               <Trans>Bilanțurile pe {YEAR}, după numărul de salariați</Trans>
             </p>
@@ -348,7 +345,6 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
           <div className="lg:col-span-5">
             <HubSectionHead
               titleId="hub-economy-title"
-              index={bandIndex(sections, 'economie')}
               title={<Trans>Evoluția pe ani</Trans>}
               lede={economyLede(economyMeasure)}
             />
@@ -384,7 +380,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
               />
             </div>
           </div>
-          <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
+          <div className="lg:col-span-6 lg:col-start-7" data-reveal>
             <div className="sm:w-fit">
               <IndicatorToggle
                 label={t`Anii după`}
@@ -423,7 +419,6 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
           <div className="lg:col-span-5">
             <HubSectionHead
               titleId="hub-registrations-title"
-              index={bandIndex(sections, 'infiintari')}
               title={<Trans>Firme înregistrate pe ani</Trans>}
               lede={
                 survival !== null ? (
@@ -447,7 +442,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
               }
             />
           </div>
-          <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
+          <div className="lg:col-span-6 lg:col-start-7" data-reveal>
             <p className={CAPTION_CLASS}>
               <Trans>Firme înregistrate pe an, și câte mai sunt în funcțiune</Trans>
             </p>
@@ -468,7 +463,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
       <section aria-labelledby="hub-start-title" className="border-b">
         <RuledFrame className="py-14 sm:py-20">
-          <HubSectionHead titleId="hub-start-title" index={t`Analize`} title={<Trans>Firme după stare</Trans>} />
+          <HubSectionHead titleId="hub-start-title" title={<Trans>Firme după stare</Trans>} />
           <div className="mt-8" data-reveal>
             {/* A card is its selection's name and its size: the count is the snapshot's, and the card opens the
                 same selection in the analysis, whose companies are one ONRC edition's, so its own count can differ. */}

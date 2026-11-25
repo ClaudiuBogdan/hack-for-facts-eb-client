@@ -7,7 +7,7 @@ import { HomeSectionNav } from '@/features/procurement/components/home/home-sect
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { CompanyHubHero, CompanyLeaderRowsPending, CompanyLeadersFrame, CompanySearchShell, PendingBar } from './company-hub-hero'
-import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandIndex, companyHubSections } from './company-hub-sections'
+import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, companyHubSections } from './company-hub-sections'
 
 /** `IndicatorToggle`'s option box, so the switch's place is its size at every width. */
 const SWITCH_OPTION_CLASS = 'min-h-9 bg-background px-2 py-1.5 text-sm leading-tight sm:px-3'
@@ -55,7 +55,7 @@ export function CompanyHubPending() {
         }
       />
 
-      <HomeSectionNav title={t`Firmele din România`} sections={sections} />
+      <HomeSectionNav title={t`Firmele din România`} sections={sections} numbered={false} />
 
       {/* The four figures' cells, as the figures band draws them. */}
       <section className="border-b bg-muted/20" aria-hidden="true">
@@ -79,12 +79,11 @@ export function CompanyHubPending() {
                   {/* „Firme în funcțiune" takes two lines on a phone. */}
                   {index === 0 ? <PendingBar className="block w-16 sm:hidden" /> : null}
                 </MonoLabel>
-                <MonoLabel className="block pt-3 leading-relaxed">
+                {/* The note, in the plain text the page sets it in: one line from `sm`, two on a phone. */}
+                <span className="mt-auto block pt-3 text-xs leading-relaxed">
                   <PendingBar className="block w-24" />
-                  {/* Every note but the new companies' („Înregistrate la ONRC în …") takes a second line; the first a third on a phone. */}
-                  {index === 1 ? null : <PendingBar className="block w-20" />}
-                  {index === 0 ? <PendingBar className="block w-12 sm:hidden" /> : null}
-                </MonoLabel>
+                  <PendingBar className="block w-20 sm:hidden" />
+                </span>
               </div>
             ))}
           </div>
@@ -95,7 +94,6 @@ export function CompanyHubPending() {
         <RuledFrame className="py-14 sm:py-20">
           <HubSectionHead
             titleId="company-hub-pending-counties"
-            index={bandIndex(sections, 'judete')}
             title={<Trans>Firmele pe județe</Trans>}
             // The map layer's switch, at its size.
             aside={<div className="h-9 w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none sm:w-96" aria-hidden="true" />}

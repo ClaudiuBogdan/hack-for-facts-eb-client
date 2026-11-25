@@ -4,7 +4,7 @@ import type { HomeSection } from '@/features/procurement/lib/home-links'
 /** The hub's layout constants, shared by the page and its loading state so the two draw the same head. */
 
 /**
- * The page's bands, in order: the pinned bar's links and each band's number. The counties first, as the
+ * The page's bands, in order: the pinned bar's links. The counties first, as the
  * procurement and NGO hubs open. Short names, so the bar holds all of them on a phone; each band's title
  * says the rest. The ids are the page's anchors (`#domenii`), kept as they were.
  */
@@ -16,16 +16,6 @@ export function companyHubSections(): readonly HomeSection[] {
     { id: 'economie', label: t({ message: 'Ani', context: 'companies hub section' }) },
     { id: 'infiintari', label: t({ message: 'Firme noi', context: 'companies hub section' }) },
   ]
-}
-
-/** A band's number in the pinned bar's order, as its index reads („02"). */
-export function bandNumber(sections: readonly HomeSection[], id: string): string {
-  return String(sections.findIndex((section) => section.id === id) + 1).padStart(2, '0')
-}
-
-/** A band's caption over its title: its number and its name in the pinned bar („02 / Domenii"). */
-export function bandIndex(sections: readonly HomeSection[], id: string): string {
-  return `${bandNumber(sections, id)} / ${sections.find((section) => section.id === id)?.label ?? ''}`
 }
 
 /**

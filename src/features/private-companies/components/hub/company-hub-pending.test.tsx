@@ -17,7 +17,10 @@ describe('CompanyHubPending', () => {
     expect(screen.getByRole('navigation', { name: 'Scurtături' })).toHaveTextContent('Toate firmele în funcțiune')
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
     // The counties first, as the procurement and NGO hubs open.
-    expect(bar).toHaveTextContent('01Județe02Domenii03Mărime04Ani05Firme noi')
+    expect(bar).toHaveTextContent('JudețeDomeniiMărimeAniFirme noi')
+    // No running numbers on this page: none in the bar, none over the first band's title.
+    expect(bar.textContent).not.toMatch(/\d/)
+    expect(screen.getByRole('heading', { level: 2, name: 'Firmele pe județe' }).previousElementSibling).toBeNull()
     expect(screen.getByRole('heading', { level: 2, name: 'Firmele pe județe' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: /^Cele mai mari firme/ })).toBeInTheDocument()
     // Nothing the snapshot says: no figure, no money, no year before the page's own.
