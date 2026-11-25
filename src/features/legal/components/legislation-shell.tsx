@@ -98,7 +98,8 @@ export function LegislationShell({ activeTab, measuredAt, dataStatus, children }
       <header className="relative border-b">
         <RuledFrame className="py-8 sm:py-10">
           <MonoLabel className="flex flex-wrap items-center gap-2 text-muted-foreground">
-            <Link to="/legislation" className="group inline-flex min-h-11 items-center gap-1.5 hover:text-foreground sm:min-h-0">
+            {/* exact: on /legislation/guide the way home is not the current page */}
+            <Link to="/legislation" activeOptions={{ exact: true }} className="group inline-flex min-h-11 items-center gap-1.5 hover:text-foreground sm:min-h-0">
               <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
               <span>{t`Legislație`}</span>
             </Link>
@@ -107,20 +108,20 @@ export function LegislationShell({ activeTab, measuredAt, dataStatus, children }
           </MonoLabel>
           <h1 className="mt-3 text-3xl font-extrabold leading-[1.02] tracking-tighter text-foreground sm:mt-4 sm:text-5xl">{current?.title}</h1>
           <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{current?.lede}</p>
-          {measuredAt || dataStatus ? (
-            <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-              <span>
-                <Trans>Portal Legislativ și Monitorul Oficial</Trans>
-                {measuredAt ? (
-                  <>
-                    {' · '}
-                    <Trans>date până la {formatLegalDate(measuredAt, i18n.locale)}</Trans>
-                  </>
-                ) : null}
-              </span>
-              {dataStatus ? <DataStatusBadge status={dataStatus} /> : null}
-            </p>
-          ) : null}
+          {/* A <div>, not a <p>: the badge renders a <div>, which a paragraph cannot hold (the HTML parser would
+              close it and hydration would differ). The sources always show; the date and badge when known. */}
+          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            <span>
+              <Trans>Portal Legislativ și Monitorul Oficial</Trans>
+              {measuredAt ? (
+                <>
+                  {' · '}
+                  <Trans>date până la {formatLegalDate(measuredAt, i18n.locale)}</Trans>
+                </>
+              ) : null}
+            </span>
+            {dataStatus ? <DataStatusBadge status={dataStatus} /> : null}
+          </div>
           <span className="absolute inset-x-0 top-full z-30 mt-px" aria-hidden="true">
             <CruxMarks />
           </span>
@@ -138,7 +139,8 @@ export function LegislationShell({ activeTab, measuredAt, dataStatus, children }
                     to={page.to}
                     aria-current={isCurrent ? 'page' : undefined}
                     className={cn(
-                      'relative inline-flex min-h-11 items-center whitespace-nowrap text-sm transition-colors hover:text-foreground',
+                      // the row scrolls sideways, so an outward focus outline would be clipped: draw it inside
+                      'relative inline-flex min-h-11 items-center whitespace-nowrap text-sm transition-colors hover:text-foreground focus-visible:-outline-offset-2',
                       isCurrent ? 'font-semibold text-foreground' : 'text-muted-foreground',
                     )}
                   >
@@ -152,9 +154,9 @@ export function LegislationShell({ activeTab, measuredAt, dataStatus, children }
         </RuledFrame>
       </nav>
 
-      <main>
-        <RuledFrame className="py-8 sm:py-10">{children}</RuledFrame>
-      </main>
+      {/* No <main> of its own: the app shell has the page's one. A fragment target (#raspuns, #acte) lands below the
+          pinned row. */}
+      <RuledFrame className="py-8 sm:py-10 [&_[id]]:scroll-mt-14">{children}</RuledFrame>
     </div>
   )
 }

@@ -81,7 +81,7 @@ describe('LegislationPage, the legislation hub', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('LegislațiaRomâniei')
     const here = screen.getByRole('navigation', { name: 'Ești aici' })
     expect(within(here).getByRole('link', { name: /Acasă/ })).toHaveAttribute('href', '/')
-    expect(screen.queryByRole('navigation', { name: 'Secțiuni Legislație' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Paginile legislației' })).not.toBeInTheDocument()
   })
 
   it('shows each headline figure from its own field of its own answer', async () => {
