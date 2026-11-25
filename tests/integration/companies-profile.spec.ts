@@ -99,15 +99,19 @@ test.describe('Company profile', () => {
     )
   })
 
-  test('writes the chart’s measure to the URL and leaves the default out', async ({ page }) => {
-    await page.goto(`/companies/${ABC}?masura=profit`)
+  // Owner, 25 November 2026: one chart, money and people at once — no measure switch; a year is read on asking.
+  test('reads a year of the chart from the keyboard, with no measure switch', async ({ page }) => {
+    await page.goto(`/companies/${ABC}`)
     await waitForHydration(page)
 
-    const chart = page.getByRole('radiogroup', { name: 'Graficul arată' })
-    await expect(chart.getByRole('radio', { name: 'Rezultat net' })).toHaveAttribute('aria-checked', 'true', { timeout: 30000 })
-    await chart.getByRole('radio', { name: 'Toate' }).click()
-    await expect(page).not.toHaveURL(/masura=/, { timeout: 30000 })
+    const band = page.locator('#afacerea')
+    await expect(band.getByRole('radiogroup', { name: 'Graficul arată' })).toHaveCount(0)
+    const years = band.getByRole('group', { name: /^Anii:/ })
+    await years.focus()
+    await years.press('End')
+    await expect(band.getByTestId('company-years-reading')).toContainText('Salariați', { timeout: 30000 })
   })
+
 
   test('jumps to a band from the section bar, clear of the bar', async ({ page }) => {
     await page.goto(`/companies/${ABC}`)

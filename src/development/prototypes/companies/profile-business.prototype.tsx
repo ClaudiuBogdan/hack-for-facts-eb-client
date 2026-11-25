@@ -23,7 +23,7 @@ export const prototype = {
   title: 'Firmă — cum merge afacerea, un grafic',
   spec: 'docs/design/companies/design.md',
   variants: {
-    azi: { title: 'Azi', component: () => <Frame>{(model) => <CompanyBusinessBand model={model} measure="toate" onMeasure={() => undefined} />}</Frame>, note: 'The band as it is: chart and switch beside the balance-sheet table.' },
+    azi: { title: 'Azi', component: () => <Frame>{(model) => <CompanyBusinessBand model={model} />}</Frame>, note: 'The page’s band now: version A, implemented.' },
     grafic: {
       title: 'A · Două panouri',
       component: () => <Frame>{(model) => <ProtoBusinessBand model={model} version="panouri" />}</Frame>,

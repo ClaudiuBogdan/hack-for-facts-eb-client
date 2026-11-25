@@ -51,12 +51,13 @@ import { CompanyYearsBand } from './company-years-band'
 
 type SectionId = 'afacerea' | 'bani-publici' | 'activitati' | 'litigii' | 'an-cu-an' | 'registru'
 
+// The owner's order (25 November 2026): what the company does and its statements right under its chart.
 const SECTIONS: readonly { readonly id: SectionId; readonly label: () => string }[] = [
   { id: 'afacerea', label: () => t`Afacerea` },
-  { id: 'bani-publici', label: () => t`Bani publici` },
   { id: 'activitati', label: () => t`Activități` },
-  { id: 'litigii', label: () => t`Litigii` },
   { id: 'an-cu-an', label: () => t`An cu an` },
+  { id: 'bani-publici', label: () => t`Bani publici` },
+  { id: 'litigii', label: () => t`Litigii` },
   { id: 'registru', label: () => t`Registru` },
 ]
 
@@ -163,16 +164,12 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
         </section>
       ) : null}
 
-      <CompanyBusinessBand
-        model={model}
-        measure={search.masura ?? 'toate'}
-        onMeasure={(measure) => choose({ masura: measure === 'toate' ? undefined : measure })}
-      />
+      <CompanyBusinessBand model={model} />
+      <CompanyActivitiesBand model={model} onCompanyGone={reportGone} onAnafWithdrawn={setAnafWithdrawnUnder} />
+      {years ? <CompanyYearsBand model={model} /> : null}
       {/* The money band numbers its head by `index`, which the page no longer sets: an empty caption draws none. */}
       <CompanyMoneyBand model={model} index="" procurement={procurement} onGrain={onGrain} />
-      <CompanyActivitiesBand model={model} onCompanyGone={reportGone} onAnafWithdrawn={setAnafWithdrawnUnder} />
       {litigation ? <CompanyLitigationBand cui={cui} litigation={litigation} /> : null}
-      {years ? <CompanyYearsBand model={model} /> : null}
       <CompanyRegistryBand model={model} procurement={read} diffText={diffText} courts={litigation !== null} last />
     </div>
   )

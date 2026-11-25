@@ -233,7 +233,8 @@ describe('CompanyProfilePage', () => {
   it('links the bands it has, unnumbered, computes no economy shares, and leaves out litigation it cannot read', async () => {
     render(page(builder()))
     await registryPinned()
-    expect(sectionLinks()).toEqual(['#afacerea', '#bani-publici', '#activitati', '#an-cu-an', '#registru'])
+    // The owner's order (25 November 2026): the chart, what the company does, its statements, public money, the registry.
+    expect(sectionLinks()).toEqual(['#afacerea', '#activitati', '#an-cu-an', '#bani-publici', '#registru'])
     // No running numbers (owner, 25 November 2026): each link and each band is named by its band alone.
     const bar = within(screen.getByRole('navigation', { name: 'Secțiunile paginii' }))
     for (const name of ['Afacerea', 'Bani publici', 'Activități', 'An cu an', 'Registru']) expect(bar.getByRole('link', { name })).toBeInTheDocument()
@@ -245,7 +246,7 @@ describe('CompanyProfilePage', () => {
     litigation.current = { cui: '123', caseCount: 3, courtLevels: [{ courtLevel: 'tribunal', count: 3 }], years: [{ year: 2025, count: 3 }], coverage: 1, caveats: [] }
     render(page(builder()))
     await registryPinned()
-    expect(sectionLinks()).toEqual(['#afacerea', '#bani-publici', '#activitati', '#litigii', '#an-cu-an', '#registru'])
+    expect(sectionLinks()).toEqual(['#afacerea', '#activitati', '#an-cu-an', '#bani-publici', '#litigii', '#registru'])
     const band = document.getElementById('litigii') as HTMLElement
     expect(within(band).getByText('litigation summary 3')).toBeInTheDocument()
     expect(within(band).getByText(/^litigation cases /)).toBeInTheDocument()
@@ -354,16 +355,17 @@ describe('CompanyProfilePage', () => {
     expect(refetch).toHaveBeenCalledTimes(1)
   })
 
-  it('writes the chart’s measure to the URL, and „Toate" as no measure at all', async () => {
-    render(page(builder(), { masura: 'profit' }))
+  // Owner, 25 November 2026 („Două panouri"): money and people at once, each on its own panel — no measure switch.
+  it('draws money and people at once, with no measure switch, and reads a year from the keyboard', async () => {
+    render(page(builder()))
     await registryPinned()
-    const toggle = screen.getByRole('radiogroup', { name: 'Graficul arată' })
-    expect(within(toggle).getByRole('radio', { name: 'Rezultat net' })).toHaveAttribute('aria-checked', 'true')
-    fireEvent.click(within(toggle).getByRole('radio', { name: 'Salariați' }))
-    expect(navigated({ masura: 'profit' })).toEqual({ masura: 'salariati' })
-    fireEvent.click(within(toggle).getByRole('radio', { name: 'Toate' }))
-    expect(navigated({ masura: 'salariati' })).toEqual({ masura: undefined })
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    expect(band.queryByRole('radiogroup', { name: 'Graficul arată' })).toBeNull()
+    expect(band.queryByText(/^Bilanț, \d{4}$/u)).toBeNull()
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    expect(within(band.getByTestId('company-years-reading')).getByText('Salariați')).toBeInTheDocument()
   })
+
 
   it('says in a line what a company with no statement and no public money does not have', async () => {
     render(page(companyProfile({ cui: '47387800', legalName: 'A & B IDEATICA S.R.L.' })))
@@ -1047,15 +1049,17 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
       employees: '6701',
       qualification: rawQualification({ turnover: 'REPORTED', employees: 'REPORTED', net_profit: 'REPORTED', net_result: 'HELD_PROFILE' }),
     })
-    render(page(mapped([fourSixFour(2025, '3067559914'), fourSixFour(2024, '4143914310')]), { masura: 'profit' }))
+    render(page(mapped([fourSixFour(2025, '3067559914'), fourSixFour(2024, '4143914310')])))
     await registryPinned()
     // The figure, its change between two admitted profits.
     expect(screen.getByText('Profit net, 2025')).toBeInTheDocument()
     expect(screen.getByText('-26,0% față de 2024')).toBeInTheDocument()
-    // The chart's measure says profit, never the result. (The head has no chart since 25 November 2026.)
-    const toggle = screen.getByRole('radiogroup', { name: 'Graficul arată' })
-    expect(within(toggle).getByRole('radio', { name: 'Profit net' })).toHaveAttribute('aria-checked', 'true')
-    expect(within(toggle).queryByRole('radio', { name: 'Rezultat net' })).toBeNull()
+    // The chart's year reads profit, never the result.
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    const reading = within(band.getByTestId('company-years-reading'))
+    expect(reading.getByText('Profit net')).toBeInTheDocument()
+    expect(reading.queryByText('Rezultat net')).toBeNull()
   })
 
   it('leaves a held result’s zero profit a gap and says why — never a break-even', async () => {
@@ -1070,13 +1074,14 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
       qualification: rawQualification({ turnover: 'REPORTED', employees: 'REPORTED', net_profit: 'REPORTED', net_result: 'HELD_PROFILE' }),
     })
     const profile = mapped([zero(2025), zero(2024)])
-    render(page(profile, { masura: 'profit' }))
+    render(page(profile))
     await registryPinned()
     for (const label of ['Profit net, 2025', 'Rezultat net, 2025', 'Pierdere netă, 2025']) expect(screen.queryByText(label)).toBeNull()
     expect(buildCompanyProfileModel(profile).series.net.every((point) => point.value === null)).toBe(true)
-    // The year's reading (the chart's spoken value) says why it is empty.
-    const chart = within(document.getElementById('afacerea') as HTMLElement).getByRole('slider')
-    expect(chart).toHaveAttribute('aria-valuetext', '2025, Profit net zero și nicio pierdere disponibilă aici: rezultatul net nu se știe')
+    // The year's reading says why the bottom line is empty.
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    expect(band.getByTestId('company-years-reading')).toHaveTextContent('Profit net zero și nicio pierdere disponibilă aici: rezultatul net nu se știe')
   })
 
   it('says a held result’s own reason when a loss WAS typed — never „no typed loss"', async () => {
@@ -1090,11 +1095,13 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
       employees: '3',
       qualification: rawQualification({ turnover: 'REPORTED', employees: 'REPORTED', net_profit: 'REPORTED', net_loss: 'REPORTED', net_result: 'HELD_QUALITY' }),
     }
-    render(page(mapped([lossTyped]), { masura: 'profit' }))
+    render(page(mapped([lossTyped])))
     await registryPinned()
-    const chart = within(document.getElementById('afacerea') as HTMLElement).getByRole('slider')
-    expect(chart).toHaveAttribute('aria-valuetext', '2025, Reținut pentru un semnal de calitate')
-    expect(chart.getAttribute('aria-valuetext')).not.toMatch(/nicio pierdere/u)
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    const reading = band.getByTestId('company-years-reading')
+    expect(reading).toHaveTextContent('Reținut pentru un semnal de calitate')
+    expect(reading.textContent).not.toMatch(/nicio pierdere/u)
   })
 
   it('names the statements on another basis instead of plotting them under the newest policy (D1-C03)', async () => {
