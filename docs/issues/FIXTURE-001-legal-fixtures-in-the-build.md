@@ -32,7 +32,9 @@ The pattern already used by six legislation facades: `const FIXTURE_BUILD = impo
 import.meta.env.MODE === 'test'`, and the mock loaded with `await import('./…mock')` behind `FIXTURE_BUILD &&
 isLegalMockEnabled()`. In production the condition is the constant `false`, so the mock module is never emitted.
 A facade whose function is synchronous today becomes `async` (its callers already await a query function). After the
-change, grep `.output/public` and `.output/server` for one marker per fixture: zero hits each.
+change, grep the JavaScript in `.output/public` (`--include=*.js`: other pages' Markdown cites some of the same
+acts, the budget's „Legea nr. 53/2003” among them) and all of `.output/server` for one marker per fixture: zero hits
+each.
 
 ## Who fixes it
 
@@ -59,3 +61,7 @@ Markers on the production build, before (`8c2a7d2e5`) and after, as files in `.o
 The domain counts were already out: no page uses their hook today, so the build drops them; the guard keeps them
 out once one does. The outline and resolve-document mocks hold no data of their own (the outline is derived from the
 render fixtures).
+
+`isLegalMockEnabled()` also answers `false` in a production build, whatever the flags say (review `astra-client-9`
+finding 1). The facades no longer serve fixtures there, so a mock flag set by mistake would otherwise put the mock
+badges and the act page's "copied on" provenance note over live data.
