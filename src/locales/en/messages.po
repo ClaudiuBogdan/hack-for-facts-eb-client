@@ -2753,7 +2753,7 @@ msgstr "{firstText}–{lastText} of {totalText}"
 msgid "{firstText}–{lastText} din cel puțin {atLeast}"
 msgstr "{firstText}–{lastText} of at least {atLeast}"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:127
+#: src/features/private-companies/components/hub/hub-sectors.tsx:134
 msgid "{folded, plural, one {Încă o activitate} few {Încă # activități} other {Încă # de activități}}"
 msgstr "{folded, plural, one {One more activity} other {# more activities}}"
 
@@ -2785,7 +2785,7 @@ msgstr "{gapCount} goluri cunoscute"
 #~ msgid "{groups, plural, one {O altă activitate selectată} few {Alte # activități selectate} other {Alte # de activități selectate}}"
 #~ msgstr "{groups, plural, one {One other selected activity} other {# other selected activities}}"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:75
+#: src/features/private-companies/components/hub/hub-sectors.tsx:77
 msgid "{groups, plural, one {O altă activitate} few {Alte # activități} other {Alte # de activități}}"
 msgstr "{groups, plural, one {One other activity} other {# other activities}}"
 
@@ -3289,7 +3289,7 @@ msgstr "{radiated, plural, one {At least one enterprise struck off the trade reg
 msgid "{radiated, plural, one {Registrul comerțului nu spune mereu la fel: cel puțin una e radiată, deși e activă în listă.} other {Registrul comerțului nu spune mereu la fel: cel puțin {0} sunt radiate, deși sunt active în listă.}}"
 msgstr "{radiated, plural, one {The trade register does not always agree: at least one is struck off, though active on the list.} other {The trade register does not always agree: at least {0} are struck off, though active on the list.}}"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:227
+#: src/features/private-companies/components/hub/hub-sectors.tsx:241
 msgid "{range} salariați"
 msgstr "{range} employees"
 
@@ -4288,7 +4288,7 @@ msgstr "100,000–1 M"
 #~ msgid "1234/3/2024"
 #~ msgstr "1234/3/2024"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:224
+#: src/features/private-companies/components/hub/hub-sectors.tsx:238
 #: src/features/private-companies/lib/company-analytics-text.ts:131
 msgid "250 de salariați sau mai mulți"
 msgstr "250 employees or more"
@@ -4297,8 +4297,8 @@ msgstr "250 employees or more"
 msgid "250 de salariați sau mai mulți, raportați în bilanțul pe {year}"
 msgstr "250 or more employees, reported in the {year} statement"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:173
-#: src/features/private-companies/components/hub/hub-sectors.tsx:212
+#: src/features/private-companies/components/hub/hub-sectors.tsx:180
+#: src/features/private-companies/components/hub/hub-sectors.tsx:226
 msgid "250 și peste"
 msgstr "250 and over"
 
@@ -12276,8 +12276,8 @@ msgid "cifra de afaceri"
 msgstr "turnover"
 
 #: src/features/private-companies/components/hub/company-hub-pending.tsx:39
-#: src/features/private-companies/components/hub/hub-sectors.tsx:187
-#: src/features/private-companies/components/hub/hub-sectors.tsx:255
+#: src/features/private-companies/components/hub/hub-sectors.tsx:194
+#: src/features/private-companies/components/hub/hub-sectors.tsx:269
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:202
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:232
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:287
@@ -13270,7 +13270,7 @@ msgstr "code {code}"
 msgid "Codul ANAF are trei cifre în sursă; normalizatorul îl completează cu un zero, iar interpretarea lui nu e calificată."
 msgstr "The ANAF code has three digits in the source; our normalizer pads it with a zero, and its interpretation is not qualified."
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:94
+#: src/features/private-companies/components/hub/hub-sectors.tsx:97
 #: src/features/private-companies/components/profile/company-activities-band.tsx:113
 #: src/features/private-companies/components/profile/company-activities-band.tsx:201
 #: src/features/private-companies/components/profile/company-activities-band.tsx:204
@@ -18370,7 +18370,7 @@ msgstr "Of the {0} on ANAF’s list. An authority’s kind is its budget record�
 msgid "din cheltuieli"
 msgstr "of spending"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:255
+#: src/features/private-companies/components/hub/hub-sectors.tsx:269
 msgid "din cifra de afaceri"
 msgstr "of turnover"
 
@@ -18423,7 +18423,7 @@ msgstr "Of every 100 lei collected"
 msgid "Din fiecare 100 de lei încasați în {0}, {one} au venit din {1} și {two} din {2}."
 msgstr "Of every 100 lei collected in {0}, {one} came from {1} and {two} from {2}."
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:253
+#: src/features/private-companies/components/hub/hub-sectors.tsx:267
 msgid "din firme"
 msgstr "of companies"
 
@@ -18492,7 +18492,7 @@ msgstr "From the quarterly report; SEAP does not give the steps."
 msgid "din regiunea {value}"
 msgstr "from the {value} region"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:254
+#: src/features/private-companies/components/hub/hub-sectors.tsx:268
 msgid "din salariați"
 msgstr "of employees"
 
@@ -21974,7 +21974,7 @@ msgstr "Fara rezultat publicat"
 msgid "Fără rol în sursă"
 msgstr "No role in the source"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:222
+#: src/features/private-companies/components/hub/hub-sectors.tsx:236
 msgid "fără salariați"
 msgstr "no employees"
 
@@ -23038,8 +23038,8 @@ msgstr "companies"
 #: src/features/private-companies/components/analytics/analytics-head.tsx:75
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:121
 #: src/features/private-companies/components/hub/hub-search.tsx:23
-#: src/features/private-companies/components/hub/hub-sectors.tsx:185
-#: src/features/private-companies/components/hub/hub-sectors.tsx:253
+#: src/features/private-companies/components/hub/hub-sectors.tsx:192
+#: src/features/private-companies/components/hub/hub-sectors.tsx:267
 #: src/features/private-companies/components/profile/company-profile-head.tsx:244
 #: src/features/private-companies/components/profile/company-profile-states.tsx:73
 #: src/features/procurement/components/analytics/analytics-filters.tsx:169
@@ -33089,8 +33089,8 @@ msgstr "Niciun vot nu corespunde filtrelor selectate."
 msgid "Niciuna."
 msgstr "None."
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:169
-#: src/features/private-companies/components/hub/hub-sectors.tsx:210
+#: src/features/private-companies/components/hub/hub-sectors.tsx:176
+#: src/features/private-companies/components/hub/hub-sectors.tsx:224
 msgid "niciunul"
 msgstr "none"
 
@@ -42096,8 +42096,8 @@ msgstr "employees"
 
 #: src/features/private-companies/components/analytics/analytics-records.tsx:58
 #: src/features/private-companies/components/hub/company-hub-pending.tsx:40
-#: src/features/private-companies/components/hub/hub-sectors.tsx:186
-#: src/features/private-companies/components/hub/hub-sectors.tsx:254
+#: src/features/private-companies/components/hub/hub-sectors.tsx:193
+#: src/features/private-companies/components/hub/hub-sectors.tsx:268
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:216
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:288
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:356
@@ -42122,7 +42122,7 @@ msgstr "Employees (average count)"
 msgid "Salariați la locul de muncă"
 msgstr "Employees at the workplace"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:337
+#: src/features/private-companies/components/hub/hub-sectors.tsx:349
 msgid "Salariați pe firmă:"
 msgstr "Employees per company:"
 
@@ -47979,7 +47979,7 @@ msgstr "All acts in Portal Legislativ: filter by type, year and status, ordered 
 #~ msgid "Toate activitățile selectate, în analiza bilanțurilor"
 #~ msgstr "Every selected activity, in the companies analysis"
 
-#: src/features/private-companies/components/hub/hub-sectors.tsx:148
+#: src/features/private-companies/components/hub/hub-sectors.tsx:155
 msgid "Toate activitățile, în analiza bilanțurilor"
 msgstr "Every activity, in the companies analysis"
 
