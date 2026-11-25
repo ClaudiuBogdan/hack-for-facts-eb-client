@@ -162,7 +162,8 @@ describe('the PostHog payload (D6, root)', () => {
     })
     expect(JSON.stringify(event)).not.toContain('14837428')
     expect(JSON.stringify(event)).not.toContain('4267117/')
-    expect(event?.properties?.$current_url).toBe('https://transparenta.eu/procurement/suppliers/_?year=2025')
+    // After the party marker every number is masked, the year too (`procurement-party-codes.ts`: no spelling gets past).
+    expect(event?.properties?.$current_url).toBe('https://transparenta.eu/procurement/suppliers/_?year=_')
     expect(event?.properties?.$prev_pageview_pathname).toBe('/procurement/institutions/_')
     expect(event?.properties?.other).toBe('/budget/4267117')
   })
