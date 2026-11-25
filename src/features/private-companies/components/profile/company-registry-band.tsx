@@ -31,7 +31,8 @@ export function CompanyRegistryBand({
   last = false,
 }: {
   readonly model: CompanyProfileModel
-  readonly index: string
+  /** The band's numbered caption; none on a page that numbers no band. */
+  readonly index?: string
   /** The SEAP read, once it has loaded: the sources line names its window. */
   readonly procurement: CompanyProcurementRead | null
   /** The comparison with the previous edition, in a sentence; null when not asked. */

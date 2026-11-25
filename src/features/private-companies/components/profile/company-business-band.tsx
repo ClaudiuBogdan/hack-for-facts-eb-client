@@ -32,7 +32,8 @@ export function CompanyBusinessBand({
   onMeasure,
 }: {
   readonly model: CompanyProfileModel
-  readonly index: string
+  /** The band's numbered caption; none on a page that numbers no band. */
+  readonly index?: string
   readonly measure: CompanyFinancialMeasure
   readonly onMeasure: (measure: CompanyFinancialMeasure) => void
 }) {
@@ -60,7 +61,7 @@ export function CompanyBusinessBand({
           </div>
           {notAssessed ? <p className="mt-8 max-w-[60ch] border-l-2 border-amber-500 py-0.5 pl-3 text-sm leading-relaxed text-foreground">{notAssessed}</p> : null}
         </div>
-        <div className={cn('min-w-0 lg:col-span-5', HUB_BESIDE_TITLE_CLASS)} data-reveal>
+        <div className={cn('min-w-0 lg:col-span-5', index && HUB_BESIDE_TITLE_CLASS)} data-reveal>
           <BalanceSheet model={model} />
           {debt ? <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{debt}</p> : null}
         </div>

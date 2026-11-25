@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
@@ -15,7 +14,7 @@ import { useCompanyLitigationShown } from '../../hooks/use-company-litigation-sh
 import { useDocumentBootstrap } from '../../hooks/use-document-bootstrap'
 import { useProfileRegistryScope } from '../../hooks/use-profile-registry-scope'
 import { effectiveGrain, paymentGrainsOf, toCompanyProcurementRead } from '../../lib/company-procurement-read'
-import { buildCompanyProfileModel } from '../../lib/company-profile-model'
+import { buildCompanyProfileModel, withAnafWithdrawnSeen } from '../../lib/company-profile-model'
 import { registrationDiffSaysSomething, registrationDiffText } from '../../lib/company-registry-text'
 import { buildPrivateCompanyDocumentTitle, buildPrivateCompanyNeutralTitle } from '../../seo/private-company-seo'
 import { CompanyRegistryScopeProvider } from '../registry/company-registry-scope-provider'
@@ -31,9 +30,9 @@ import { CompanyYearsBand } from './company-years-band'
 
 /**
  * `/companies/$cui` — one company in the `/companies` hub's rhythm: a compact
- * head that says who it is, its status and identifiers, and beside it its
- * last five years with a statement on one chart; the figures band with the
- * newest values; then one numbered band per question — how the business goes,
+ * head that says who it is, its status and identifiers; the figures band with
+ * the newest values, in plain text; then one band per question, unnumbered
+ * (owner, 25 November 2026) — how the business goes,
  * what it received from the state, what it does, its court cases (only when
  * published name-to-CUI links count one), every statement year by year, the
  * registry record. A bar pins under the head
@@ -104,13 +103,15 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   // The count-up driver is module state: an unmount mid-flight would leave it ticking.
   useEffect(() => () => stopCounting(), [])
   const litigation = useCompanyLitigationShown(cui)
+  // ANAF's source reported withdrawn by the activities band's history: the head drops the presumed activity at once too.
+  const [anafWithdrawnUnder, setAnafWithdrawnUnder] = useState<string | null>(null)
 
   // Nothing of the company — name, registry, finances — unless the verdict shows it.
   if (verdict.status === 'moved') return <CompanyProfileRegistryMoved onAccept={verdict.accept} />
   if (verdict.status === 'unreadable') return <CompanyProfileError onRetry={verdict.retry} />
   if (shown === null) return <CompanyProfileSkeleton />
   const profile = shown
-  const model = buildCompanyProfileModel(profile)
+  const model = withAnafWithdrawnSeen(buildCompanyProfileModel(profile), anafWithdrawnUnder)
   // A failed comparison read shows no comparison, not the one an earlier read left in the cache.
   // Only a comparison that says something about the company: not „unchanged", not „no earlier edition".
   const diffText = diff.data && !diff.isError && registrationDiffSaysSomething(diff.data) ? registrationDiffText(diff.data) : null
@@ -130,10 +131,6 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
 
   const years = model.qualification.statements.length > 0
   const sections = SECTIONS.filter((section) => (section.id !== 'litigii' || litigation) && (section.id !== 'an-cu-an' || years))
-  const indexOf = (id: SectionId) => {
-    const position = sections.findIndex((section) => section.id === id)
-    return `${String(position + 1).padStart(2, '0')} / ${SECTIONS.find((section) => section.id === id)?.label() ?? ''}`
-  }
   const figures = companyFigures(model, { business: 'afacerea', money: 'bani-publici' })
 
   return (
@@ -147,13 +144,9 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
         <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
           <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground md:block md:max-w-72">{model.displayName}</span>
           <ol className="flex shrink-0 gap-4 sm:gap-5 md:ml-auto">
-            {sections.map((section, position) => (
+            {sections.map((section) => (
               <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <MonoLabel className="text-primary" aria-hidden="true">{String(position + 1).padStart(2, '0')}</MonoLabel>
+                <a href={`#${section.id}`} className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground">
                   {section.label()}
                 </a>
               </li>
@@ -165,24 +158,22 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
       {figures.length > 0 ? (
         <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
           <RuledFrame>
-            <HubFiguresBand facts={figures} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
+            <HubFiguresBand facts={figures} locale={i18n.locale === 'en' ? 'en' : 'ro'} plain arrow />
           </RuledFrame>
         </section>
       ) : null}
 
       <CompanyBusinessBand
         model={model}
-        index={indexOf('afacerea')}
         measure={search.masura ?? 'toate'}
         onMeasure={(measure) => choose({ masura: measure === 'toate' ? undefined : measure })}
       />
-      <CompanyMoneyBand model={model} index={indexOf('bani-publici')} procurement={procurement} onGrain={onGrain} />
-      <CompanyActivitiesBand model={model} index={indexOf('activitati')} onCompanyGone={reportGone} />
-      {litigation ? (
-        <CompanyLitigationBand cui={cui} index={indexOf('litigii')} litigation={litigation} />
-      ) : null}
-      {years ? <CompanyYearsBand model={model} index={indexOf('an-cu-an')} /> : null}
-      <CompanyRegistryBand model={model} index={indexOf('registru')} procurement={read} diffText={diffText} courts={litigation !== null} last />
+      {/* The money band numbers its head by `index`, which the page no longer sets: an empty caption draws none. */}
+      <CompanyMoneyBand model={model} index="" procurement={procurement} onGrain={onGrain} />
+      <CompanyActivitiesBand model={model} onCompanyGone={reportGone} onAnafWithdrawn={setAnafWithdrawnUnder} />
+      {litigation ? <CompanyLitigationBand cui={cui} litigation={litigation} /> : null}
+      {years ? <CompanyYearsBand model={model} /> : null}
+      <CompanyRegistryBand model={model} procurement={read} diffText={diffText} courts={litigation !== null} last />
     </div>
   )
 }
