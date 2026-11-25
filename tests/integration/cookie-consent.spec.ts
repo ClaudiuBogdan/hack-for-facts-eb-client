@@ -13,6 +13,12 @@
 
 import { test, expect, type Locator, type Page } from '@playwright/test'
 import { waitForHydration } from '../utils/test-helpers'
+import { mockMapReads } from '../utils/map-mocks'
+
+// The map's grouped-series read, answered from the dev API's recorded answers (TEST-001).
+test.beforeEach(async ({ page }) => {
+  await mockMapReads(page)
+})
 
 const COOKIE_CONSENT_KEY = 'cookie-consent'
 const CONSENT_WAIT_TIMEOUT_MS = 5000

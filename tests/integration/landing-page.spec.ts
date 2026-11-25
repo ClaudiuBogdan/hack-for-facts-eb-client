@@ -10,6 +10,12 @@
 
 import { test, expect } from '../utils/integration-base'
 import { waitForHydration } from '../utils/test-helpers'
+import { mockMapReads } from '../utils/map-mocks'
+
+// The map's grouped-series read, answered from the dev API's recorded answers (TEST-001).
+test.beforeEach(async ({ page }) => {
+  await mockMapReads(page)
+})
 
 const HERO_HEADING = /pe înțeles|made clear/i
 // The field is named by its placeholder.
@@ -19,6 +25,10 @@ const LAW = /lege, justiție și alegeri|law, justice and elections/i
 test.describe('Landing Page', () => {
   test.beforeEach(async ({ page, mockApi }) => {
     await mockApi.mockGraphQL('SearchEntities', 'shared/search-cluj')
+    // Pages a test opens from the landing read these in the browser (TEST-001): the elections list (the dev
+    // API's answer of 2026-11-25) and the entity page's metadata (the entity details flow's fixture).
+    await mockApi.mockGraphQL('ElectionEvents', 'election-events')
+    await mockApi.mockGraphQL('GetEntityMetadata', 'entity-metadata')
     await page.goto('/')
     await expect(page.getByRole('heading', { name: HERO_HEADING, level: 1 })).toBeVisible({
       timeout: 10000,

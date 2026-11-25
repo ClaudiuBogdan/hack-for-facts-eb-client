@@ -1,0 +1,42 @@
+{
+  "data": {
+    "parliamentGroups": [
+      {
+        "groupId": "psd-senat",
+        "chamber": "senat",
+        "name": "PSD",
+        "memberCount": 37
+      },
+      {
+        "groupId": "aur-senat",
+        "chamber": "senat",
+        "name": "AUR",
+        "memberCount": 30
+      },
+      {
+        "groupId": "pnl-senat",
+        "chamber": "senat",
+        "name": "PNL",
+        "memberCount": 27
+      },
+      {
+        "groupId": "usr-senat",
+        "chamber": "senat",
+        "name": "USR",
+        "memberCount": 18
+      },
+      {
+        "groupId": "neafiliati-senat",
+        "chamber": "senat",
+        "name": "Neafiliati",
+        "memberCount": 15
+      },
+      {
+        "groupId": "udmr-senat",
+        "chamber": "senat",
+        "name": "UDMR",
+        "memberCount": 10
+      }
+    ]
+  }
+}

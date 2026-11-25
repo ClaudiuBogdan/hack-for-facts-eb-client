@@ -1,0 +1,60 @@
+{
+  "data": {
+    "parliamentGroups": [
+      {
+        "groupId": "psd-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "PSD",
+        "memberCount": 94
+      },
+      {
+        "groupId": "aur-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "AUR",
+        "memberCount": 63
+      },
+      {
+        "groupId": "pnl-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "PNL",
+        "memberCount": 56
+      },
+      {
+        "groupId": "usr-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "USR",
+        "memberCount": 41
+      },
+      {
+        "groupId": "udmr-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "UDMR",
+        "memberCount": 21
+      },
+      {
+        "groupId": "minoritati-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "Minoritati",
+        "memberCount": 18
+      },
+      {
+        "groupId": "neafiliati-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "Neafiliaţi",
+        "memberCount": 15
+      },
+      {
+        "groupId": "upr-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "UPR",
+        "memberCount": 15
+      },
+      {
+        "groupId": "sos-ro-camera_deputatilor",
+        "chamber": "camera_deputatilor",
+        "name": "SOS RO",
+        "memberCount": 13
+      }
+    ]
+  }
+}
