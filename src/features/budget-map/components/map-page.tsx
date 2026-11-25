@@ -47,7 +47,6 @@ const MapPageMap = lazy(loadMap)
 // The bar's look is /public-institutions': square, a quiet border, the chosen option filled in the text's colour.
 const SEGMENT =
   'h-10 gap-1.5 rounded-none border-foreground/25 bg-background px-3 text-sm font-normal text-muted-foreground shadow-none hover:bg-background hover:text-foreground data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:hover:bg-foreground data-[state=on]:hover:text-background'
-const CHOICE = 'h-10 rounded-none border-foreground/25 shadow-none'
 const MAP_PLACE = 'grid h-[62dvh] min-h-80 place-items-center bg-muted/30 text-sm text-muted-foreground md:h-auto md:min-h-0 md:flex-1'
 
 /**
@@ -87,12 +86,7 @@ function Segments<T extends string>({
   return (
     <ToggleGroup type="single" variant="outline" value={value} onValueChange={(next) => next && onChange(next as T)} aria-label={label} className={cn('gap-0', className)}>
       {options.map((option, i) => (
-        <ToggleGroupItem
-          key={option.value}
-          value={option.value}
-          aria-label={option.icon ? option.label : undefined}
-          className={cn(SEGMENT, i > 0 && '-ml-px')}
-        >
+        <ToggleGroupItem key={option.value} value={option.value} aria-label={option.icon ? option.label : undefined} className={cn(SEGMENT, i > 0 && '-ml-px')}>
           {option.icon}
           {/* With an icon, the word from `sm`: on a phone the icon carries it, named for assistive tech. */}
           <span className={option.icon ? 'hidden sm:inline' : undefined}>{option.label}</span>
@@ -140,11 +134,11 @@ export function MapPage() {
             groups={[{ options: YEARS.map((item) => ({ value: item, label: item })) }]}
             onChange={(next) => change({ year: next })}
             label={t`Anul`}
-            triggerClassName={cn(CHOICE, 'w-auto shrink-0 gap-2')}
+            triggerClassName="h-10 w-auto shrink-0 gap-2 rounded-none border-foreground/25 shadow-none"
           >
-            {/* The trigger clamps its span to one line (a box of inline text), so the words are spaced by a space. */}
+            {/* „Anul: 2025", the year alone on a phone (the map's name needs the room; the control is still named „Anul").
+                The trigger clamps its span to one line of inline text, so a space, not a gap, parts the words. */}
             <span className="whitespace-nowrap">
-              {/* On a phone the year alone: the map's name needs the room (the control is still named „Anul"). */}
               <span className="hidden text-muted-foreground sm:inline">{t`Anul`}: </span>
               <span className="font-semibold tabular-nums">{year}</span>
             </span>

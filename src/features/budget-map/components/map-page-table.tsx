@@ -22,8 +22,8 @@ import { amountFormat, type Basis, type Level } from '../lib/map-page-measures'
  * rows a page. On a phone two figures are shown beside the name: the sorted one
  * and the balance's percent (or, beside the percent, the balance in lei).
  * From `sm` a first column gives each row's place in the sort, among all rows.
- * Square and quiet, like the bar above it, its rows running the section's full
- * width between the frame's rules; the pager is one line under it.
+ * Square and quiet like the bar above it, in the site footer's frame, its rows
+ * running from rule to rule; the pager is one line under it.
  */
 
 type SortKey = 'name' | 'income' | 'expenses' | 'balance' | 'share'
@@ -44,14 +44,18 @@ interface Row {
 
 const PAGE_SIZE = 50
 const SORT_OF_MEASURE: Readonly<Record<MeasureId, SortKey>> = { balance: 'share', income: 'income', expenses: 'expenses' }
-// The place column, from `sm` (hidden on a phone, where the name starts at the frame's padding).
-// The places start on the search box's left edge (the frame's padding); the column is fixed to what a five-figure place
-// („3.186") needs beyond that, so the table spreads no spare width into it.
+
+// The rows run from rule to rule of the frame (`RuledFrame`, padded `px-5 sm:px-8`), their text on the frame's padding
+// like the search box and the pager: the table undoes the padding, its first and last cells put it back.
+const BLEED = '-mx-5 sm:-mx-8'
+const LAST = 'pr-5 sm:pr-8'
+// The place column, from `sm`: its numbers start on the search box's edge, and it is fixed to a five-figure place
+// („3.186"), so the table spreads no spare width into it. On a phone the name is the first column.
 const PLACE = 'hidden w-[4.25rem] whitespace-nowrap pl-8 pr-0 font-mono text-xs tabular-nums text-muted-foreground sm:table-cell'
 const NAME = 'pl-5 sm:pl-3'
-// While the figures load: rows shaped like the real ones (a name over its county, the figures), so nothing moves when they arrive.
+
+// While the rows load, placeholders shaped like them (a name over its county, the figures; narrower on a phone).
 const LOADING_ROWS = 10
-// Narrower on a phone, where the name and two figures share 320 px.
 const NAME_BARS = ['w-20 sm:w-28', 'w-24 sm:w-36', 'w-16 sm:w-24', 'w-24 sm:w-32', 'w-28 sm:w-40'] as const
 const PAGER =
   'inline-flex size-11 items-center justify-center border border-foreground/25 bg-background transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-40 sm:size-8'
@@ -83,7 +87,7 @@ export function MapPageTable({
   const sort = chosen && chosen.forMeasure === measureId ? chosen : { key: SORT_OF_MEASURE[measureId], descending: true }
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
-  const top = useRef<HTMLDivElement>(null)
+  const topRef = useRef<HTMLDivElement>(null)
   const rowsRef = useRef<HTMLDivElement>(null)
   const amount = amountFormat(basis)
   // The rows need the figures and the level's shapes; until both are here, placeholder rows.
@@ -133,8 +137,11 @@ export function MapPageTable({
     const needle = fold(query.trim())
     return needle ? sorted.filter((row) => row.folded.includes(needle)) : sorted
   }, [sorted, query])
-  // A row without the sorted figure has no place in it.
-  const place = (row: Row) => ((sort.key === 'name' ? row.name : row[sort.key]) === null ? '—' : count.format(placeOf.get(row.siruta) ?? 0))
+  // A row without the sorted figure has no place in that sort.
+  const place = (row: Row) => {
+    const sortedBy = sort.key === 'name' ? row.name : row[sort.key]
+    return sortedBy === null ? '—' : count.format(placeOf.get(row.siruta) ?? 0)
+  }
 
   const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE))
   const current = Math.min(page, pages)
@@ -148,11 +155,12 @@ export function MapPageTable({
   // and the keyboard's focus goes there with the view (the next Tab reaches the new page's first row).
   const turnTo = (next: number) => {
     setPage(next)
-    if (top.current && top.current.getBoundingClientRect().top < 0) {
-      top.current.scrollIntoView({ block: 'start' })
+    if (topRef.current && topRef.current.getBoundingClientRect().top < 0) {
+      topRef.current.scrollIntoView({ block: 'start' })
       rowsRef.current?.focus({ preventScroll: true })
     }
   }
+  const ariaSort = (key: SortKey) => (sort.key === key ? (sort.descending ? 'descending' : 'ascending') : 'none')
   const columns: readonly { readonly key: FigureKey; readonly label: string }[] = [
     { key: 'income', label: t`Venituri` },
     { key: 'expenses', label: t`Cheltuieli` },
@@ -160,11 +168,10 @@ export function MapPageTable({
     { key: 'share', label: t`Sold, % din venituri` },
   ]
   const phoneColumns = phoneColumnsFor(sort.key)
-  // The rows run from rule to rule; their text keeps to the frame's padding, as the search box and the pager do.
-  // The place column is the first from `sm` (a phone starts at the name); the percent is always the last.
-  const hidden = (key: FigureKey) => cn(!phoneColumns.includes(key) && 'hidden sm:table-cell', key === 'share' && 'pr-5 sm:pr-8')
+  // A figure's column: shown on a phone only if it is one of the two; the percent, always shown, is the last.
+  const figureColumn = (key: FigureKey) => cn(!phoneColumns.includes(key) && 'hidden sm:table-cell', key === 'share' && LAST)
   // A figure stays on one line; its header may wrap (a phone's „Sold, % din venituri").
-  const cell = (key: FigureKey) => cn('whitespace-nowrap text-right tabular-nums', hidden(key))
+  const cell = (key: FigureKey) => cn('whitespace-nowrap text-right tabular-nums', figureColumn(key))
   const first = (current - 1) * PAGE_SIZE + 1
 
   if (tableFailed) {
@@ -179,9 +186,9 @@ export function MapPageTable({
   }
 
   return (
-    // The site footer's frame (its width, padding and rules): the figures stay near their names (full width read badly; owner).
+    // In the site footer's frame: its width, padding and rules.
     <RuledFrame className="py-4">
-      <div ref={top} className="scroll-mt-2">
+      <div ref={topRef} className="scroll-mt-2">
         <div className="relative max-w-sm">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
@@ -196,7 +203,7 @@ export function MapPageTable({
             className="h-10 rounded-none border-foreground/25 pl-9 text-base shadow-none md:text-sm"
           />
         </div>
-        <div ref={rowsRef} tabIndex={-1} className="-mx-5 mt-3 border-y outline-none sm:-mx-8" aria-busy={loading}>
+        <div ref={rowsRef} tabIndex={-1} className={cn(BLEED, 'mt-3 border-y outline-none')} aria-busy={loading}>
           {/* The placeholder rows are hidden from assistive tech; this says what they mean. */}
           {loading ? (
             <span role="status" className="sr-only">
@@ -207,15 +214,11 @@ export function MapPageTable({
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className={PLACE}>#</TableHead>
-                <TableHead className={NAME} aria-sort={sort.key === 'name' ? (sort.descending ? 'descending' : 'ascending') : 'none'}>
+                <TableHead className={NAME} aria-sort={ariaSort('name')}>
                   <SortButton label={county ? t`Județ` : t`Localitate`} active={sort.key === 'name'} descending={sort.descending} onClick={() => sortBy('name')} />
                 </TableHead>
                 {columns.map((column) => (
-                  <TableHead
-                    key={column.key}
-                    className={cn('text-right', hidden(column.key))}
-                    aria-sort={sort.key === column.key ? (sort.descending ? 'descending' : 'ascending') : 'none'}
-                  >
+                  <TableHead key={column.key} className={cn('text-right', figureColumn(column.key))} aria-sort={ariaSort(column.key)}>
                     <SortButton label={column.label} active={sort.key === column.key} descending={sort.descending} onClick={() => sortBy(column.key)} alignEnd />
                   </TableHead>
                 ))}
@@ -252,7 +255,7 @@ export function MapPageTable({
                         <Skeleton className="mt-2 h-3 w-12 rounded-none sm:w-16" />
                       </TableCell>
                       {columns.map((column) => (
-                        <TableCell key={column.key} className={hidden(column.key)}>
+                        <TableCell key={column.key} className={figureColumn(column.key)}>
                           <Skeleton className="ml-auto h-4 w-12 rounded-none sm:w-20" />
                         </TableCell>
                       ))}
