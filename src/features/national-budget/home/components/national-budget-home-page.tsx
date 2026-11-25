@@ -1,48 +1,35 @@
-import { Suspense, useEffect } from 'react'
-import { t } from '@lingui/core/macro'
+import { useEffect, useRef } from 'react'
 
 import { RevealStyles } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, stopCounting } from '@/features/landing/components/count-up'
 import { BandRead } from '@/features/national-budget/analytics/components/analytics-parts'
-import { useHomePrefetch } from '../hooks/use-home-data'
+import { t } from '@lingui/core/macro'
+import { cn } from '@/lib/utils'
+import { useHomePrefetch, useUnfinishedYears } from '../hooks/use-home-data'
 import { useAskedYear, useHomeYear, useShownYear } from '../hooks/use-home-year'
-import type { YearView } from '../lib/home-data'
-import { BalanceBand } from './home-balance'
-import { BudgetsBand } from './home-budgets'
-import { DomainsBand } from './home-domains'
-import { FiguresBand, PageHead, PendingFiguresBand } from './home-head'
-import { LawBand } from './home-law'
-import { MinistriesBand } from './home-ministries'
-import { NowBand } from './home-now'
-import { RevenueBand } from './home-revenue'
-import { Band, PageBar, PendingBand, type BandEntry } from './home-shell'
-import { SpendingBand } from './home-spending'
-import { StartBand } from './home-start'
+import { useInView } from '../hooks/use-page-year'
+import { usePersonPrefetch } from '../hooks/use-person-data'
+import { VIZ_PALETTE } from '../lib/chart-palette'
+import { BudgetsSection } from './person-budgets'
+import { DebtSection } from './person-debt'
+import { FlowSection } from './person-flow'
+import { FiguresRegion, FurtherSection, Hero, SectionBar } from './person-head'
+import { DataNote, YearScope } from './person-shell'
+import { StateSection } from './person-state'
+import { YearSection } from './person-year'
 
 /**
- * `/national-budget`: the national budget for every reader, one year at a
- * time (chosen in the head and in the pinned bar), one band per question:
- * what the money is spent on, on which domains, by whom; where it comes
- * from; how much is borrowed; how the year in progress goes; the budgets it
- * passes through; what the law approved; and where to go next. Each band
- * reads, waits and fails on its own. The designs are the ones the owner
- * picked from the `national-budget/principal` prototype (7 October 2026).
+ * `/national-budget`: the national budget at one person's scale, one year
+ * at a time (from the address, `an`). The head gives the title per
+ * resident and the year's balance; the sections answer where the money
+ * came from and went (as 100 lei), which budgets it passed through, what
+ * the state budget paid on what and through whom, how much is borrowed
+ * year after year, how the year in progress goes, and where to go further.
+ * Each section reads, waits and fails on its own. Promoted from the
+ * prototype `national-budget/persoana`, variant `lucru` (owner, 25 November
+ * 2026; the prototype stays, as the owner keeps prototypes).
  */
-
-/** The bands in a reader's order; their words resolved at render, in the reader's language. */
-function bands(): readonly BandEntry[] {
-  return [
-    { id: 'cheltuieli', nav: t`Pe ce`, title: t`Pe ce se duc banii publici`, component: SpendingBand },
-    { id: 'domenii', nav: t`Pe domenii`, title: t`Pe ce domenii plătește bugetul de stat`, component: DomainsBand },
-    { id: 'ministere', nav: t`Cine`, title: t`Ministerele care cheltuie cel mai mult`, component: MinistriesBand },
-    { id: 'venituri', nav: t`De unde`, title: t`De unde vin banii publici`, component: RevenueBand },
-    { id: 'deficit', nav: t`Deficitul`, title: t`Cât cheltuie statul peste ce încasează`, component: BalanceBand },
-    { id: 'anul', nav: t`Anul în curs`, title: t`Anul în curs`, component: NowBand, yearless: true },
-    { id: 'bugete', nav: t`Bugetele`, title: t`Prin ce bugete trec banii`, component: BudgetsBand },
-    { id: 'lege', nav: t`Legea`, title: t`Ce a aprobat Parlamentul`, component: LawBand },
-  ]
-}
 
 /**
  * Why the page shows another year than the address asks for: a year the
@@ -69,60 +56,54 @@ function Notice() {
   )
 }
 
-/**
- * The page's reads, from the catalog on: every read of the address's year
- * starts at once, then the bands for the year shown.
- */
-function PageData({ bands }: { readonly bands: readonly BandEntry[] }) {
+/** The page's reads for the address's year, started at once (the live ones and the page's own); it draws nothing. */
+function Prefetch() {
   const asked = useHomeYear()
-  // Every read of the asked year, at once, before the year is checked: the bands below find theirs in flight.
   useHomePrefetch(asked.view)
-  const { view } = useShownYear()
-  return <PageBody bands={bands} view={view} />
-}
-
-function PageBody({ bands, view }: { readonly bands: readonly BandEntry[]; readonly view: YearView }) {
-  return (
-    <>
-      <FiguresBand view={view} />
-      {bands.map((band, position) => (
-        <Band key={band.id} band={band} view={view} position={position + 1} />
-      ))}
-      <StartBand view={view} index={`${String(bands.length + 1).padStart(2, '0')} / ${t`Analize`}`} />
-    </>
-  )
-}
-
-/** The bands before the catalog: as they stand while their reads wait, so nothing moves when it arrives and the footer stays below. */
-function PagePending({ bands }: { readonly bands: readonly BandEntry[] }) {
-  return (
-    <>
-      <PendingFiguresBand />
-      {bands.map((band, position) => (
-        <PendingBand key={band.id} band={band} position={position + 1} />
-      ))}
-    </>
-  )
+  usePersonPrefetch(asked.view)
+  // The years the bulletins don't finish, read once now: a year picked later is checked against them without a wait,
+  // so the sections keep their figures through the change instead of falling back to their skeletons.
+  useUnfinishedYears(asked.views)
+  return null
 }
 
 /**
- * The head and the pinned bar are the page's first paint; the year's menus,
- * its balance and its bands follow their reads.
+ * The head, the pinned bar and every section's title are the page's first
+ * paint; the year's menus, its balance, its figures and each section's body
+ * follow their own reads.
  */
 export function NationalBudgetHomePage() {
-  const entries = bands()
+  const heroRef = useRef<HTMLDivElement>(null)
+  const heroVisible = useInView(heroRef)
   // The count-up driver is module state; an unmount mid-flight would leave it ticking against nodes that are gone.
   useEffect(() => () => stopCounting(), [])
   return (
-    <div className="relative w-full overflow-x-clip bg-background">
+    <div className={cn("relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']", VIZ_PALETTE)}>
       <RevealStyles />
       <SmearFilters />
       <YearNotice />
-      <PageHead />
-      <PageBar title={t`Bugetul național`} bands={entries} />
-      <Suspense fallback={<PagePending bands={entries} />}>
-        <PageData bands={entries} />
-      </Suspense>
+      {/* A read that fails here fails quietly: the sections read again and say it themselves. */}
+      <BandRead fallback={null} quiet={null}>
+        <Prefetch />
+      </BandRead>
+      <div ref={heroRef}>
+        <Hero />
+      </div>
+      <SectionBar heroVisible={heroVisible} />
+      <FiguresRegion />
+      <FlowSection />
+      <BudgetsSection />
+      <StateSection />
+      <DebtSection />
+      <YearSection />
+      <FurtherSection />
+      <section className="border-b" aria-label={t`Despre date`}>
+        <RuledFrame className="py-6">
+          <YearScope fallback={null}>
+            <DataNote />
+          </YearScope>
+        </RuledFrame>
+      </section>
     </div>
   )
 }

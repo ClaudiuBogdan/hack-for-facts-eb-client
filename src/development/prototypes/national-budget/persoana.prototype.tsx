@@ -1,6 +1,7 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { PersonBonVariant } from './persoana.bon'
 import { PersonFluxVariant } from './persoana.flux'
+import { PersonChartsVariant } from './persoana.grafice'
 import { PersonWorkVariant } from './persoana.lucru'
 import { PersonLunaVariant } from './persoana.luna'
 
@@ -20,6 +21,11 @@ export const prototype = {
       title: 'Lucru — versiunea pe care o construim, începând cu hero-ul',
       component: PersonWorkVariant,
       note: 'The working version: the hero in the hubs’ language, design B (title „pe cap de locuitor”, the balance beside it) with the official amounts explained out of 100 lei; the pinned bar; the figures band. The sections follow from the three versions below and the owner’s notes.',
+    },
+    grafice: {
+      title: 'Grafice — galerie de elemente pentru pagină, pe datele ei',
+      component: PersonChartsVariant,
+      note: 'Chart candidates for the working version (owner, 25 November 2026): the budgets compared three ways (mosaic, 100 lei, flow), then elements from the owner’s list of chart types. Each section reads the page’s data for the chosen year.',
     },
     bon: {
       title: 'Bonul — cheltuielile unui locuitor, ca pe un bon',

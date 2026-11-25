@@ -369,21 +369,17 @@ function Head({
               <span>{t`Analize avansate`}</span>
             </span>
           </MonoLabel>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-xs text-muted-foreground sm:inline">{fresh}</span>
-            <span className="flex items-center gap-2">
-              <MonoLabel className="sr-only text-muted-foreground sm:not-sr-only">{execution ? t`Perioada` : t`Legea`}</MonoLabel>
-              {execution ? (
-                <PeriodMenu key={`${asked.label}-${asked.basis}`} catalog={catalog} tip={state.tip as 'cheltuieli' | 'venituri' | 'sold'} period={asked} budget={state.buget} onChange={onChange} />
-              ) : (
-                <LawYearMenu years={lawYears} value={lawYear} label={lawText(lawYear)} onChange={(an) => onChange({ an, rand: null })} />
-              )}
-            </span>
-          </div>
+          <span className="hidden text-xs text-muted-foreground sm:inline">{fresh}</span>
         </div>
         <p className="mt-2 text-right text-xs text-muted-foreground sm:hidden">{fresh}</p>
         <Headline state={state} catalog={catalog} period={execution ? period : null} edition={edition} lawYear={lawYear} onChange={onChange} onFilters={onFilters} />
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1">
+        {/* The period (or the law's year) opens the row under the question, as on the other analysis pages. */}
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
+          {execution ? (
+            <PeriodMenu key={`${asked.label}-${asked.basis}`} catalog={catalog} tip={state.tip as 'cheltuieli' | 'venituri' | 'sold'} period={asked} budget={state.buget} onChange={onChange} />
+          ) : (
+            <LawYearMenu years={lawYears} value={lawYear} label={String(lawYear)} onChange={(an) => onChange({ an, rand: null })} />
+          )}
           <FiltersButton state={state} onClick={onFilters} className={LINK} />
           <QuestionsMenu onPick={onChange} className={LINK} />
           <ShareIcon className={cn(LINK, 'size-11 justify-center sm:size-auto')} />
@@ -541,8 +537,9 @@ function PopulationNav({
   readonly onChange: (patch: Partial<AdvancedState>) => void
   readonly onSearch: () => void
 }) {
+  // Under the sidebar (z-40), which widens over the page on hover: at the same z-index the bar, later in the document, covered it.
   return (
-    <nav ref={barRef} aria-label={t`Ce citești`} className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
+    <nav ref={barRef} aria-label={t`Ce citești`} className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-2 py-0 sm:gap-6">
         <SearchButton onClick={onSearch} className="order-last border-l pl-1 sm:order-first sm:border-l-0" />
         <ol className="grid min-w-0 flex-1 grid-cols-5 sm:ml-auto sm:flex sm:flex-none sm:gap-6">

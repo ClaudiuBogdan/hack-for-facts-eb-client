@@ -14,6 +14,7 @@
 import { z } from 'zod'
 
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
+import { CATALOG, SNAPSHOT_BOUND, forgetShared, sharedRead } from './shared-read'
 import {
   budgetApprovedRecordConnectionSchema,
   budgetApprovedSeriesSchema,
@@ -88,7 +89,29 @@ export function isRetryable(error: unknown): boolean {
   return !(error instanceof NationalBudgetApiError) || error.kind === 'failed' || error.kind === 'unavailable'
 }
 
-async function read<S extends z.ZodTypeAny>(
+const CATALOG_ROOT = 'budgetNationalCatalog'
+
+/** A read's key in the server's shared copy: what it asks, in full (two documents can share a root and its variables). */
+const sharedKey = (document: string, variables: Record<string, unknown>) => `${document} ${JSON.stringify(variables)}`
+
+/**
+ * One read, through the server's shared copy (`shared-read.ts`): a read
+ * bound to a snapshot is kept for the snapshot, the catalog for a minute.
+ * A read that finds its snapshot moved drops the server's catalog,
+ * so the next render reads the new one.
+ */
+function read<S extends z.ZodTypeAny>(
+  document: string,
+  variables: Record<string, unknown>,
+  root: string,
+  schema: S,
+  signal: AbortSignal | undefined,
+): Promise<z.infer<S>> {
+  const policy = 'expectedSnapshot' in variables ? SNAPSHOT_BOUND : CATALOG
+  return sharedRead(sharedKey(document, variables), policy, (readSignal) => readNow(document, variables, root, schema, readSignal), signal)
+}
+
+async function readNow<S extends z.ZodTypeAny>(
   document: string,
   variables: Record<string, unknown>,
   root: string,
@@ -99,7 +122,9 @@ async function read<S extends z.ZodTypeAny>(
     const data = await graphqlQuery<Record<string, unknown>>(document, variables, { operationName: root, auth: 'none', signal })
     return schema.parse(data[root])
   } catch (error) {
-    throw classify(error)
+    const classified = classify(error)
+    if (classified instanceof NationalBudgetApiError && classified.kind === 'snapshot_changed') forgetShared(sharedKey(NATIONAL_CATALOG_QUERY, {}))
+    throw classified
   }
 }
 
@@ -119,7 +144,7 @@ function periodInput(period: PeriodSelection) {
 // ─────────────────────────────────────────────────────────────── catalog ──
 
 export function fetchNationalCatalog(signal?: AbortSignal): Promise<BudgetNationalCatalog> {
-  return read(NATIONAL_CATALOG_QUERY, {}, 'budgetNationalCatalog', budgetNationalCatalogSchema, signal)
+  return read(NATIONAL_CATALOG_QUERY, {}, CATALOG_ROOT, budgetNationalCatalogSchema, signal)
 }
 
 // ──────────────────────────────────────────────────────────── execution ──

@@ -7,6 +7,7 @@ import { useNationalCatalog } from '@/features/national-budget/analytics/hooks/u
 import { reasonText } from '@/features/national-budget/analytics/lib/analytics-view'
 import type { BudgetNationalCatalog } from '@/schemas/national-budget-api'
 import { defaultYear, viewOfYear, yearViews, type YearView } from '../lib/home-data'
+import { populationOf } from '../lib/per-resident'
 import { useUnfinishedYears } from './use-home-data'
 
 const route = getRouteApi('/national-budget/')
@@ -69,6 +70,11 @@ export function needsYearCheck(view: YearView, catalog: BudgetNationalCatalog): 
  */
 export function shownYearOf(catalog: BudgetNationalCatalog, year: HomeYear, unavailable: ReadonlyMap<number, string | null>): ShownYear {
   const asked = year.view.year
+  // A year without its 1 January population has no figure per resident (the menus don't offer it either).
+  if (populationOf(asked) === null && asked !== defaultYear(catalog)) {
+    const shown = viewOfYear(catalog, undefined)
+    return { ...year, view: shown, unavailable, notice: t`Pentru ${asked} nu avem încă populația de la 1 ianuarie, la care se împart sumele; arătăm ${shown.text}.` }
+  }
   if (!unavailable.has(asked)) return { ...year, unavailable, notice: null }
   const shown = viewOfYear(catalog, undefined)
   return { ...year, view: shown, unavailable, notice: t`Pentru ${asked} buletinele nu au anul întreg (${reasonText(unavailable.get(asked) ?? null)}); arătăm ${shown.text}.` }
@@ -85,9 +91,3 @@ export function useShownYear(): ShownYear {
   return shownYearOf(catalog, year, useUnfinishedYears(year.views, needsYearCheck(year.view, catalog)))
 }
 
-/** The year shown, always checked against the years the bulletins don't finish: for the year menus, which list them. */
-export function useCheckedYear(): ShownYear {
-  const catalog = useNationalCatalog()
-  const year = useHomeYear()
-  return shownYearOf(catalog, year, useUnfinishedYears(year.views))
-}

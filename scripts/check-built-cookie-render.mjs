@@ -68,6 +68,26 @@ try {
       else failures.push(`${said}, expected lang="${lang}"`);
     }
   }
+  // The national budget page renders from the reader's cookies: no shared cache may keep it. Its share image
+  // depends on the address only: the same picture with a cookie or without, and no cookie set (CACHE-001).
+  const page = await fetch(`${base}/national-budget`, { headers: { cookie: "user-locale=en" }, signal: AbortSignal.timeout(90_000) });
+  await page.arrayBuffer();
+  const pageCache = page.headers.get("cache-control") ?? "";
+  if (pageCache.includes("private") && pageCache.includes("no-store")) console.log(`ok  /national-budget: Cache-Control "${pageCache}"`);
+  else failures.push(`/national-budget: Cache-Control "${pageCache}", expected private, no-store`);
+  const image = async (cookie) => {
+    const response = await fetch(`${base}/national-budget/share-image.png?an=2025&lang=ro`, { headers: { accept: "image/png,text/html", ...(cookie ? { cookie } : {}) }, signal: AbortSignal.timeout(90_000) });
+    return { status: response.status, type: response.headers.get("content-type"), cache: response.headers.get("cache-control") ?? "", vary: response.headers.get("vary") ?? "", setCookie: response.headers.get("set-cookie"), bytes: Buffer.from(await response.arrayBuffer()) };
+  };
+  const plain = await image(null);
+  const withCookie = await image("user-locale=en; theme=dark");
+  // The bytes are compared only between two cards with figures (public): an API slow for one request draws the
+  // card without figures (no-store) for it, which says nothing about cookies.
+  const figures = plain.cache.startsWith("public") && withCookie.cache.startsWith("public");
+  const same = plain.status === withCookie.status && (!figures || plain.bytes.equals(withCookie.bytes));
+  const clean = !/cookie/iu.test(plain.vary) && !/cookie/iu.test(withCookie.vary) && !plain.setCookie && !withCookie.setCookie;
+  if (plain.status === 200 && plain.type === "image/png" && withCookie.type === "image/png" && same && clean) console.log(`ok  /national-budget/share-image.png: ${figures ? `the same ${plain.bytes.length} bytes` : "a card without figures (API unreadable)"} with a cookie or without, no Vary on cookies, no cookie set`);
+  else failures.push(`/national-budget/share-image.png: HTTP ${plain.status}/${withCookie.status}, ${plain.type}/${withCookie.type}, same bytes ${same}, vary "${plain.vary}", set-cookie ${Boolean(plain.setCookie || withCookie.setCookie)}`);
 } finally {
   server.kill();
 }
