@@ -1,6 +1,6 @@
 /**
  * The legislation analytics charts and notes, shared by the pages (`/legislation`, `/legislation/analytics`) and the
- * development prototype (`src/development/prototypes/legal/`): ranked rows with a share bar, acts per year stacked
+ * legal prototypes: ranked rows with a share bar, acts per year stacked
  * by a lens, two lenses crossed, and the caveats marker. Presentational only: every figure comes in as a prop.
  */
 import { useState, type ReactNode } from 'react'
