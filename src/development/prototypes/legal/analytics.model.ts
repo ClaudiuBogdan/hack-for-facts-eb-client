@@ -1,5 +1,6 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { LEGAL_FIXTURE } from './analytics.fixture'
+import { MAP } from './analytics.map'
 
 /**
  * The analysis page's question, read from and written to the address with Romanian keys (G7): the default view
@@ -182,7 +183,7 @@ export function readQuery(search: Record<string, unknown>): Query {
     emitent: emitent >= 0 ? emitent : null,
     felul: felul && (felul in GROUP_LABEL || felul in KIND_LABEL) ? felul : null,
     dinamica: intIn(search.dinamica, 4),
-    tema: intIn(search.tema, 64),
+    tema: intIn(search.tema, MAP.topics.length),
     ordine: oneOf(search.ordine, ORDERS, 'modificari'),
     act: intIn(search.act, 10_000_000),
   }
