@@ -1,5 +1,4 @@
-import { expect } from '@playwright/test'
-import { test } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 
 test.describe('Buget Routing', () => {
   test.describe.configure({ mode: 'serial' })
