@@ -76,6 +76,52 @@ describe('the purchase', () => {
     expect(graphqlQuery).toHaveBeenCalledTimes(1)
   })
 
+  it('answers null — the page’s not-found, never a failed read — when legacy procurement is switched off (PROC-001)', async () => {
+    answer({
+      ProcurementDirectAcquisitionDetail: () => {
+        throw new GraphQLRequestError('GraphQL errors', {
+          graphQLErrors: [{ message: 'legacy procurement data is not served by this API; use the direct-acquisition release (procurementDa*) or procurementTotals', path: ['procurementDirectAcquisition'], extensions: { code: 'SERVICE_UNAVAILABLE' } }],
+        })
+      },
+    })
+    await expect(fetchDirectPurchase('10120196')).resolves.toBeNull()
+    expect(graphqlQuery).toHaveBeenCalledTimes(1)
+  })
+
+  it('answers null too when legacy is switched off between the detail’s failure and the record-only read', async () => {
+    const legacyOff = new GraphQLRequestError('GraphQL errors', {
+      graphQLErrors: [{ message: 'legacy procurement data is not served by this API; use the direct-acquisition release (procurementDa*) or procurementTotals', extensions: { code: 'SERVICE_UNAVAILABLE' } }],
+    })
+    answer({
+      ProcurementDirectAcquisitionDetail: () => {
+        throw new GraphQLRequestError('GraphQL errors', { graphQLErrors: [{ message: 'Internal server error', path: ['procurementDirectAcquisition', 'detail', 'items', 0, 'id'] }] })
+      },
+      ProcurementDirectAcquisitionRecord: () => {
+        throw legacyOff
+      },
+    })
+    await expect(fetchDirectPurchase('10120196')).resolves.toBeNull()
+    // An ordinary outage of the record-only read still fails: it may answer on a retry.
+    answer({
+      ProcurementDirectAcquisitionDetail: () => {
+        throw new GraphQLRequestError('GraphQL errors', { graphQLErrors: [{ message: 'Internal server error', path: ['procurementDirectAcquisition', 'detail', 'items', 0, 'id'] }] })
+      },
+      ProcurementDirectAcquisitionRecord: () => {
+        throw new GraphQLRequestError('GraphQL errors', { graphQLErrors: [{ message: 'database busy', extensions: { code: 'SERVICE_UNAVAILABLE' } }] })
+      },
+    })
+    await expect(fetchDirectPurchase('10120196')).rejects.toThrow('GraphQL errors')
+  })
+
+  it('still fails on an outage that is not legacy-off: it may answer on a retry', async () => {
+    answer({
+      ProcurementDirectAcquisitionDetail: () => {
+        throw new GraphQLRequestError('GraphQL errors', { graphQLErrors: [{ message: 'database busy', path: ['procurementDirectAcquisition'], extensions: { code: 'SERVICE_UNAVAILABLE' } }] })
+      },
+    })
+    await expect(fetchDirectPurchase('10120196')).rejects.toThrow('GraphQL errors')
+  })
+
   it('stands on the record’s own names when the names fail, and says so', async () => {
     answer({
       ProcurementDirectAcquisitionDetail: () => ({ procurementDirectAcquisition: { directAcquisition: rawRecord(), detail: null, detailAvailability: 'NOT_CAPTURED', duplicates: [] } }),

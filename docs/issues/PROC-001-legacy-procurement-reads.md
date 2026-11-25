@@ -58,3 +58,12 @@ Chronos dev.
 ## Log
 - 2026-11-25 · opened · from the companies band failure (root); listed every reachable legacy read on client `dev` 5d93c166; dev API probes
   confirmed the refusals
+- 2026-11-25 · b and c done (commit 1, local): the legacy around read dropped; the supplier names fallback on `procurementDaPurchases`
+- 2026-11-25 · a, j and the d guard done (commit 2, local):
+  - a: a legacy direct-purchase id now shows the not-found state. The legacy record that held its portal code is refused, and its
+    internal id is not the release's `nativeId`, so no legacy link leads to a release purchase any more. Whether old links should
+    redirect needs a server lookup; that is an owner call, with e and f.
+  - j: the companies band reads the v3 direct-acquisition grain and the release's newest purchases, plus the contract awards by
+    winner, each part on its own.
+  - d guard: a refused contract-rows read leaves the supplier page on its direct purchases, with the contracts said unreadable,
+    never zero.

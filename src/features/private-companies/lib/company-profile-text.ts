@@ -429,7 +429,7 @@ export function grainCount(grain: CompanyPaymentGrain, value: number): string {
 }
 
 export function grainLabel(grain: CompanyPaymentGrain): string {
-  return grain === 'contracte' ? t`Contracte` : t`Achiziții directe`
+  return grain === 'contracte' ? t`Contracte atribuite` : t`Achiziții directe`
 }
 
 /** „a, b și c". */

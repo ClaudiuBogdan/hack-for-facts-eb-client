@@ -1,4 +1,5 @@
 import { daSupplierReads } from './procurement-da-release-status'
+import { newestKey } from '@/lib/disclosure-key'
 import { readLargestDirect } from './procurement-direct-records'
 import { fetchPrivateCompanyProfile } from '@/features/private-companies/api/private-company-api'
 import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
@@ -234,11 +235,11 @@ function placeFields(buyers: readonly string[]): BuyerField[] {
 }
 
 /** The names the release gives the firm's own direct purchases from institutions the spine cannot name, in requests of forty. */
-async function readDirectNames(cui: string, buyers: readonly string[], signal?: AbortSignal): Promise<ReadonlyMap<string, string>> {
+async function readDirectNames(cui: string, buyers: readonly string[], signal?: AbortSignal, disclosureSeen?: string | null): Promise<ReadonlyMap<string, string>> {
   const answers = await Promise.all(
     chunks(buyers, SUPPLIER_DAYS_PER_REQUEST).map(async (batch) => {
       const variables = Object.fromEntries(batch.map((buyer, index) => [`n${index}`, { supplierFiscalCode: cui, buyerFiscalCode: buyer }]))
-      const raw = await graphqlQuery<Raw>(supplierDirectNamesQuery(batch.length), variables, { operationName: 'ProcurementSupplierDirectNames', signal })
+      const raw = await graphqlQuery<Raw>(supplierDirectNamesQuery(batch.length), variables, { operationName: 'ProcurementSupplierDirectNames', signal, disclosureSeen })
       return batch.map((buyer, index) => [buyer, supplierDirectNameSchema.parse(raw[`n${index}`]).items[0]?.buyer] as const)
     }),
   )
@@ -411,6 +412,7 @@ export function mapSupplierProfile(cui: string, period: Period, latest: number, 
     proceduresUnlisted: (procedures[0]?.buckets ?? []).filter((bucket) => bucket.kind !== 'top' || bucket.key === null).reduce((sum, bucket) => sum + (bucket.recordCount ?? 0), 0),
     firstYear,
     names,
+    contractsUnavailable: read.unavailable === true,
     partial:
       reads.registry === undefined ||
       !reads.names.raw ||
@@ -462,6 +464,8 @@ export async function fetchProcurementSupplier(cui: string, choice: PeriodChoice
     return { places, failed: places === null }
   })
   const namesRead = Promise.all([keysRead, spanClients, rowsRead]).then(async ([keys, span, read]) => {
+    // D6: the publication the institutions' codes were read under; the release names fallback sends them, so it goes under it.
+    const seenWithKeys = newestKey()
     const listed = [...ranking(buyerBreakdownSchema.parse(keys.directClients)).rows, ...ranking(buyerBreakdownSchema.parse(keys.awardClients)).rows].map((row) => row.cui)
     const rowBuyers = read.rows.flatMap((row) => (row.authority.cui ? [row.authority.cui] : []))
     const cuis = [...new Set([cui, ...listed, ...span, ...rowBuyers])]
@@ -470,7 +474,7 @@ export async function fetchProcurementSupplier(cui: string, choice: PeriodChoice
     const labelled = new Set(raw ? buyerLabelsSchema.parse(raw.labels ?? []).flatMap((label, index) => (label.status === 'named' && label.canonicalName ? [cuis[index]] : [])) : [])
     const directCuis = new Set([...ranking(buyerBreakdownSchema.parse(keys.directClients)).rows.map((row) => row.cui), ...span])
     const unnamed = [...directCuis].filter((client) => !labelled.has(client) && !rowBuyers.includes(client))
-    const fallback = raw && unnamed.length > 0 ? await settle(() => readDirectNames(cui, unnamed, signal), signal) : null
+    const fallback = raw && unnamed.length > 0 ? await settle(() => readDirectNames(cui, unnamed, signal, seenWithKeys), signal) : null
     return { cuis, raw, fallback: fallback ?? new Map<string, string>() }
   })
 

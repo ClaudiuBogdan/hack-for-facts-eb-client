@@ -5,7 +5,10 @@ import { periodOf } from '../lib/profile-period'
 import type { SupplierDay, SupplierRow } from './graphql/procurement-supplier-queries'
 
 const graphqlQuery = vi.fn()
-vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
+vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/graphql/graphql-client')>()),
+  graphqlQuery: (...args: unknown[]) => graphqlQuery(...args),
+}))
 vi.mock('./procurement-da-release-status', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./procurement-da-release-status')>()),
   disclosureVersion: () => Promise.resolve('off:-:nod6:-'),
@@ -216,6 +219,34 @@ describe('supplierContractPicture', () => {
 })
 
 describe('fetchProcurementSupplier', () => {
+  it('stands on its direct purchases when legacy-off refuses the contract rows: contracts unknown, never zero (PROC-001)', async () => {
+    const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
+    answer({ analysis: { ProcurementSupplierFigures: { direct: { blocks: [{ recordCount: '7', withValueCount: '7', valueAwardedSum: '700' }] } } } })
+    const answered = graphqlQuery.getMockImplementation()
+    graphqlQuery.mockImplementation(async (query: string, variables: Raw, options: { readonly operationName: string }) => {
+      if (options.operationName === 'ProcurementSupplierRows') {
+        throw new GraphQLRequestError('GraphQL errors', {
+          graphQLErrors: [{ message: 'legacy procurement data is not served by this API; use the direct-acquisition release (procurementDa*) or procurementTotals', extensions: { code: 'SERVICE_UNAVAILABLE' } }],
+        })
+      }
+      return answered?.(query, variables, options)
+    })
+    const profile = await fetchProcurementSupplier('9813902', LATEST)
+    expect(profile.contractsUnavailable).toBe(true)
+    expect(profile.direct.count).toBe(7)
+    expect(profile.contracts.count).toBe(0)
+    // Every contract year unknown, never a zero bar.
+    expect(profile.contractYears.length).toBeGreaterThan(0)
+    expect(profile.contractYears.every((point) => point.count === null)).toBe(true)
+    // No rows: nothing more is asked of them.
+    expect(calls('ProcurementSupplierPartners')).toHaveLength(0)
+  })
+
+  it('still fails the profile on any other contract-rows failure', async () => {
+    answer({ failing: ['ProcurementSupplierRows'] })
+    await expect(fetchProcurementSupplier('9813902', LATEST)).rejects.toThrow('ProcurementSupplierRows failed')
+  })
+
   it('finds co-winners on their buyer’s day by notice and contract number, whatever their value', async () => {
     const own = row('r1', { noticeNo: 'CAN1136776', contractNo: '92/110645', value: { valueAccepted: true, valueRonComparable: '451166312.00' }, authority: { cui: '16054368', name: 'CNAIR', displayName: null } })
     answer({
@@ -291,6 +322,50 @@ describe('fetchProcurementSupplier', () => {
     expect(call('ProcurementSupplierDirectNames')?.[1]).toEqual({ n0: { supplierFiscalCode: '103029862', buyerFiscalCode: '4540054' } })
     expect(call('ProcurementSupplierDirectNames')?.[0]).toContain('procurementDaPurchases(filter: $n0')
     expect(call('ProcurementSupplierDirectNames')?.[2]).not.toHaveProperty('legacy')
+  })
+
+  it('sends the names fallback under the publication its codes were read under, a cold start included (D6)', async () => {
+    const { noteKey, resetNewestKeyForTests } = await import('@/lib/disclosure-key')
+    resetNewestKeyForTests()
+    try {
+      answer({
+        analysis: {
+          ProcurementSupplierKeys: { directClients: [{ rankedBy: 'value', buckets: [top('4540054', '2', '663935', '0.13')] }] },
+          ProcurementSupplierNames: { labels: [{ cui: '103029862', canonicalName: 'HYDROSTROY AD', status: 'named' }, { cui: '4540054', canonicalName: null, status: 'placeholder' }] },
+          ProcurementSupplierDirectNames: { n0: { items: [{ buyer: { fiscalCode: '4540054', name: 'LICEUL TEORETIC IOAN PETRUS OTOPENI' } }] } },
+        },
+      })
+      // The first answer with codes establishes the publication: the fallback goes under it, not under the nothing seen before.
+      const answered = graphqlQuery.getMockImplementation()
+      graphqlQuery.mockImplementation(async (query: string, variables: Raw, options: { readonly operationName: string }) => {
+        if (options.operationName === 'ProcurementSupplierKeys') noteKey('2026-11-19T03:10:00.123456Z')
+        return answered?.(query, variables, options)
+      })
+      const profile = await fetchProcurementSupplier('103029862', LATEST)
+      expect((call('ProcurementSupplierDirectNames')?.[2] as { readonly disclosureSeen?: string | null }).disclosureSeen).toBe('2026-11-19T03:10:00.123456Z')
+      expect(profile.names.get('4540054')).toBe('Liceul Teoretic Ioan Petrus Otopeni')
+    } finally {
+      resetNewestKeyForTests()
+    }
+  })
+
+  it('sends the names fallback under the publication seen before any code was read (D6)', async () => {
+    const { noteKey, resetNewestKeyForTests } = await import('@/lib/disclosure-key')
+    resetNewestKeyForTests()
+    noteKey('2026-11-19T03:10:00.123456Z')
+    try {
+      answer({
+        analysis: {
+          ProcurementSupplierKeys: { directClients: [{ rankedBy: 'value', buckets: [top('4540054', '2', '663935', '0.13')] }] },
+          ProcurementSupplierNames: { labels: [{ cui: '103029862', canonicalName: 'HYDROSTROY AD', status: 'named' }, { cui: '4540054', canonicalName: null, status: 'placeholder' }] },
+          ProcurementSupplierDirectNames: { n0: { items: [{ buyer: { fiscalCode: '4540054', name: 'LICEUL TEORETIC IOAN PETRUS OTOPENI' } }] } },
+        },
+      })
+      await fetchProcurementSupplier('103029862', LATEST)
+      expect((call('ProcurementSupplierDirectNames')?.[2] as { readonly disclosureSeen?: string | null }).disclosureSeen).toBe('2026-11-19T03:10:00.123456Z')
+    } finally {
+      resetNewestKeyForTests()
+    }
   })
 
   it('maps each institution to its own alias: two unnamed buyers, two filters, two names', async () => {

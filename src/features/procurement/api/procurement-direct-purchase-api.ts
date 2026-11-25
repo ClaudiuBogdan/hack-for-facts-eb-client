@@ -2,6 +2,7 @@ import { daSupplierReads } from './procurement-da-release-status'
 import { newestKey } from '@/lib/disclosure-key'
 import { fetchReleaseAround } from './procurement-da-release-around'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
+import { isLegacyRetired } from './procurement-legacy-retired'
 import { buyerName, tidyAddress } from '../lib/buyer-model'
 import {
   aroundOf,
@@ -115,14 +116,24 @@ function isDetailError(error: unknown): boolean {
 /**
  * The record with its detail; when the detail's own read errors, the record
  * alone, its detail said to be unavailable for now (`TEMPORARILY_UNAVAILABLE`).
+ * With legacy switched off there is no record to show: `null`, the page's
+ * not-found, never a failed read retried (PROC-001).
  */
 async function readRecord(id: string, signal?: AbortSignal): Promise<RawProcurementDaDetail | null> {
   try {
     const data = await graphqlQuery<unknown>(PROCUREMENT_DA_DETAIL_QUERY, { id }, { operationName: 'ProcurementDirectAcquisitionDetail', signal, legacy: true })
     return procurementDaDetailResponseSchema.parse(data).procurementDirectAcquisition
   } catch (error) {
+    if (!signal?.aborted && isLegacyRetired(error)) return null
     if (signal?.aborted || !isDetailError(error)) throw error
-    const data = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id }, { operationName: 'ProcurementDirectAcquisitionRecord', signal, legacy: true })
+    let data: unknown
+    try {
+      data = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id }, { operationName: 'ProcurementDirectAcquisitionRecord', signal, legacy: true })
+    } catch (fallbackError) {
+      // Switched off between the two reads (or known off by the transport since): no record, as for the first.
+      if (!signal?.aborted && isLegacyRetired(fallbackError)) return null
+      throw fallbackError
+    }
     const found = procurementDaRecordResponseSchema.parse(data).procurementDirectAcquisition
     return found ? { directAcquisition: found.directAcquisition, detail: null, detailAvailability: 'TEMPORARILY_UNAVAILABLE', duplicates: [] } : null
   }
