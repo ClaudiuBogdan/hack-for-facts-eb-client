@@ -1,4 +1,4 @@
-import { Suspense, useRef, useState, type ReactNode } from 'react'
+import { Suspense, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -7,14 +7,14 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { BandRead } from '@/features/national-budget/analytics/components/analytics-parts'
-import { siteKeys } from '@/features/national-budget/home/lib/home-data'
-import { moneyText } from '@/features/national-budget/home/lib/home-format'
+import { TOTAL_ITEMS, siteKeys } from '@/features/national-budget/home/lib/home-data'
+import { useGdp } from '@/features/national-budget/home/hooks/use-home-data'
+import { gdpSizeText, moneyText } from '@/features/national-budget/home/lib/home-format'
 import { HUB_SHORTCUT_LINK_CLASS } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
-import { usePageSearch } from './principal.data'
-import { changeOf, leiNumber, leiText, populationOf, populationText, type Unit, usePersonSpending, usePersonTotals } from './persoana.data'
-import { BORROWED_FILL, REST_FILL, toneOf } from './persoana.sections'
+import { populationText, useHundred, useOfficialTotals } from './persoana.data'
+import { BORROWED_FILL } from './persoana.sections'
 import { SourcesLine, YearProvider, YearSelect, useInView, usePersonYear } from './persoana.shell'
 
 /**
@@ -22,288 +22,85 @@ import { SourcesLine, YearProvider, YearSelect, useInView, usePersonYear } from 
  * part at a time, from the three per-person versions and the owner's notes.
  * First the hero, in the hubs' language — the lattice, the corner ticks, the
  * mono breadcrumb, a two-line title, the year, the shortcuts, a panel beside
- * them, the sources at the foot, then the pinned bar and the figures band —
- * with the title and the panel in three designs (`?erou=`).
+ * them, the sources at the foot, then the pinned bar and the figures band.
+ *
+ * Owner, on the hero's three designs: design B (the title „pe cap de
+ * locuitor", the balance beside it); and a figure per resident („42.468
+ * lei") is not intuitive. The head shows the official
+ * amounts and explains them out of 100 lei („18 din fiecare 100 cheltuiți");
+ * per-resident amounts stay for the sections' descriptions, where they help.
  */
 
-// ─────────────────────────────────────────────────────────── the designs ──
+// ────────────────────────────────────────────────────────────── the lede ──
 
-type HeroDesign = {
-  readonly key: string
-  readonly title: string
-  readonly note: string
-  readonly Heading: () => ReactNode
-  readonly Lede: () => ReactNode
-  readonly Panel: (props: { readonly unit: Unit }) => ReactNode
-}
-
-const DESIGNS: readonly HeroDesign[] = [
-  {
-    key: 'intrebare',
-    title: 'Întrebarea, partea unui locuitor alături',
-    note: 'The page’s question as the title (as today); the lede answers it per resident; the panel is the receipt: where one resident’s share went, per year or per month.',
-    Heading: () => (
-      <>
-        De unde vin banii publici
-        <br />
-        și pe ce se duc
-      </>
-    ),
-    Lede: QuestionLede,
-    Panel: ReceiptPanel,
-  },
-  {
-    key: 'locuitor',
-    title: 'Pe cap de locuitor, bilanțul alături',
-    note: 'The per-person idea as the title; the lede says what the page answers; the panel is one resident’s balance: collected plus borrowed against spent.',
-    Heading: () => (
-      <>
-        Bugetul țării,
-        <br />
-        pe cap de locuitor
-      </>
-    ),
-    Lede: PersonLede,
-    Panel: BalancePanel,
-  },
-  {
-    key: 'cifra',
-    title: 'Cifra ca titlu, pe ce s-au dus alături',
-    note: 'The year’s figure per resident as the title (it changes with the year); the lede is the month and the borrowed part; the panel ranks where the money went.',
-    Heading: FigureHeading,
-    Lede: FigureLede,
-    Panel: WherePanel,
-  },
-]
-
-function useDesign(): HeroDesign {
-  const { search } = usePageSearch()
-  return DESIGNS.find((design) => design.key === search.erou) ?? DESIGNS[0]!
-}
-
-function DesignRibbon() {
-  const current = useDesign()
-  const { set } = usePageSearch()
-  return (
-    <div className="border-b border-dashed border-amber-500/60 bg-amber-50/70 dark:bg-amber-950/20">
-      <RuledFrame className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2">
-        <MonoLabel className="text-amber-800 dark:text-amber-300">Hero · variante</MonoLabel>
-        {DESIGNS.map((design, position) => (
-          <button
-            key={design.key}
-            type="button"
-            aria-pressed={design.key === current.key}
-            onClick={() => set({ erou: position === 0 ? null : design.key })}
-            className={cn(
-              'rounded-sm border px-2 py-0.5 text-xs transition-colors',
-              design.key === current.key ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-600/40 text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40',
-            )}
-          >
-            {String.fromCharCode(65 + position)} · {design.title}
-          </button>
-        ))}
-        <span className="basis-full text-xs text-amber-900/80 dark:text-amber-200/80">{current.note}</span>
-      </RuledFrame>
-    </div>
-  )
-}
-
-// ───────────────────────────────────────────────────────────── the ledes ──
-
-const LEDE = 'mt-5 max-w-[50ch] text-lg leading-relaxed text-muted-foreground sm:text-xl'
-const STRONG = 'font-semibold text-foreground tabular-nums'
-
-function QuestionLede() {
+function Lede() {
   const { view } = usePersonYear()
-  const totals = usePersonTotals(view)
   return (
-    <p className={LEDE}>
-      {view.partial ? `Din ianuarie ${view.year}` : `În ${view.year}`}, statul a cheltuit <span className={STRONG}>{leiText(totals.spending)}</span> pentru fiecare locuitor. {leiText(totals.revenue)} au venit din taxe și contribuții, restul s-a
-      împrumutat.
+    <p className="mt-5 max-w-[50ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
+      Cât cheltuie statul pentru fiecare dintre cei {populationText(view.year)} de locuitori, pe ce, de unde vin banii și cât se împrumută.
     </p>
   )
 }
 
-function PersonLede() {
+// ───────────────────────────────────────────────────────────── the panel ──
+
+/**
+ * The year's balance as printed (design B, the owner's pick): what the state
+ * collected, with what it borrowed on top, against what it spent; the
+ * borrowed part said as lei out of every 100 spent.
+ */
+function BalancePanel() {
   const { view } = usePersonYear()
-  return <p className={LEDE}>Cât cheltuie statul pentru fiecare dintre cei {populationText(view.year)} de locuitori, pe ce, de unde vin banii și cât se împrumută.</p>
-}
-
-function FigureHeading() {
-  const { view } = usePersonYear()
-  const totals = usePersonTotals(view)
-  return (
-    <>
-      <span className="tabular-nums">{leiText(totals.spending)}</span>
-      <br />
-      pe locuitor
-    </>
-  )
-}
-
-function FigureLede() {
-  const { view } = usePersonYear()
-  const monthly = usePersonTotals(view, 'month')
-  return (
-    <p className={LEDE}>
-      Atât a cheltuit statul {view.partial ? `din ianuarie ${view.year}` : `în ${view.year}`}: <span className={STRONG}>{leiText(monthly.spending)} pe lună</span>, din care {leiText(monthly.balance === null ? null : -monthly.balance)} împrumutați.
-    </p>
-  )
-}
-
-// ──────────────────────────────────────────────────────────── the panels ──
-
-/** The panel's frame: its caption, a year/month switch, what it shows. */
-function PanelFrame({ caption, unit, onUnit, children }: { readonly caption: string; readonly unit: Unit; readonly onUnit: (unit: Unit) => void; readonly children: ReactNode }) {
+  const totals = useOfficialTotals(view)
+  if (!totals.spending || !totals.revenue) return <p className="text-sm text-muted-foreground">Buletinul acestui an nu are totalurile.</p>
+  const spent = Number(totals.spending)
+  const collected = Number(totals.revenue)
+  const borrowed = totals.deficit ? Number(totals.deficit) : 0
+  const max = Math.max(spent, collected + borrowed)
   return (
     <div className="border bg-background p-5 shadow-sm sm:p-6">
-      <div className="flex items-center justify-between gap-4">
-        <MonoLabel className="text-primary">{caption}</MonoLabel>
-        <div className="inline-flex shrink-0 rounded-md border p-0.5 text-sm" role="group" aria-label="Unitatea">
-          {(['year', 'month'] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={unit === value}
-              onClick={() => onUnit(value)}
-              className={cn('rounded-[5px] px-3 py-1 transition-colors', unit === value ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground')}
-            >
-              {value === 'year' ? 'Pe an' : 'Pe lună'}
-            </button>
-          ))}
+      <MonoLabel className="text-primary">Bilanțul, {view.partial ? `${view.text}` : view.year}</MonoLabel>
+      <dl className="mt-5 space-y-5">
+        <div>
+          <dt className="flex items-baseline justify-between text-sm">
+            <span>A încasat</span>
+            <span className="font-semibold tabular-nums">{moneyText(totals.revenue)}</span>
+          </dt>
+          <dd className="mt-2 flex h-8 bg-muted">
+            <span className="block h-full bg-chart-sky" style={{ width: `${(collected / max) * 100}%` }} />
+            {borrowed ? <span className={cn('block h-full', BORROWED_FILL)} style={{ width: `${(borrowed / max) * 100}%` }} /> : null}
+          </dd>
+          {totals.deficit ? (
+            <p className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className={cn('size-2.5 rounded-[2px]', BORROWED_FILL)} />
+              plus {moneyText(totals.deficit)} împrumutați
+            </p>
+          ) : null}
         </div>
-      </div>
-      <div className="mt-5">{children}</div>
+        <div>
+          <dt className="flex items-baseline justify-between text-sm">
+            <span>A cheltuit</span>
+            <span className="font-semibold tabular-nums">{moneyText(totals.spending)}</span>
+          </dt>
+          <dd className="mt-2 h-8 bg-muted">
+            <span className="block h-full bg-primary" style={{ width: `${(spent / max) * 100}%` }} />
+          </dd>
+        </div>
+      </dl>
+      {totals.deficit ? (
+        <div className="mt-6 border-t pt-4">
+          <p className="text-base">
+            Din fiecare <strong className="font-semibold">100 de lei</strong> cheltuiți, <strong className="font-semibold tabular-nums">{totals.fromRevenue}</strong> au venit din încasări și{' '}
+            <strong className="font-semibold tabular-nums">{totals.borrowed}</strong> din împrumut.
+          </p>
+          <div className="mt-3 flex h-2.5 overflow-hidden rounded-full" aria-hidden="true">
+            <span className="block h-full bg-chart-sky" style={{ width: `${totals.fromRevenue}%` }} />
+            <span className={cn('block h-full', BORROWED_FILL)} style={{ width: `${totals.borrowed}%` }} />
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">Bugetul general consolidat: toate bugetele publice, fără transferurile dintre ele. Cheltuielile: {totals.spendingChange ?? '—'} față de {view.partial ? `aceleași luni din ${view.year - 1}` : view.year - 1}.</p>
+        </div>
+      ) : null}
     </div>
-  )
-}
-
-function ReceiptPanel({ unit }: { readonly unit: Unit }) {
-  const { view } = usePersonYear()
-  const { whole, lines } = usePersonSpending(view, unit)
-  const totals = usePersonTotals(view, unit)
-  const borrowed = totals.balance !== null && totals.balance < 0 ? -totals.balance : null
-  const shown = lines.filter((line) => !line.rest).slice(0, 6)
-  const others = (whole ?? 0) - shown.reduce((sum, line) => sum + line.lei, 0)
-  const named = lines.filter((line) => !line.rest).length
-  return (
-    <div className="font-mono text-[13px]">
-      <ul className="space-y-2">
-        {shown.map((line, rank) => (
-          <li key={line.key} className="flex items-baseline gap-2">
-            <span aria-hidden="true" className="size-2 shrink-0 translate-y-[-1px] rounded-[2px]" style={toneOf(rank, named).style} />
-            <span className="min-w-0 truncate">{line.label}</span>
-            <span aria-hidden="true" className="min-w-4 flex-1 translate-y-[-3px] border-b border-dotted border-foreground/30" />
-            <span className="shrink-0 tabular-nums">{leiNumber(line.lei)}</span>
-          </li>
-        ))}
-        <li className="flex items-baseline gap-2 text-muted-foreground">
-          <span aria-hidden="true" className={cn('size-2 shrink-0 translate-y-[-1px] rounded-[2px]', REST_FILL)} />
-          <span>Restul</span>
-          <span aria-hidden="true" className="min-w-4 flex-1 translate-y-[-3px] border-b border-dotted border-foreground/20" />
-          <span className="tabular-nums">{leiNumber(others)}</span>
-        </li>
-      </ul>
-      <div className="my-4 border-t border-dashed border-foreground/30" />
-      <p className="flex items-baseline justify-between text-base font-semibold">
-        <span>Total</span>
-        <span className="tabular-nums">{leiText(whole)}</span>
-      </p>
-      <div className="mt-3 space-y-1 text-muted-foreground">
-        <p className="flex justify-between">
-          <span>din taxe și contribuții</span>
-          <span className="tabular-nums">{leiNumber(totals.revenue)}</span>
-        </p>
-        {borrowed ? (
-          <p className="flex justify-between">
-            <span className="inline-flex items-center gap-2">
-              <span className={cn('size-2 rounded-[2px]', BORROWED_FILL)} />
-              din împrumut
-            </span>
-            <span className="tabular-nums">{leiNumber(borrowed)}</span>
-          </p>
-        ) : null}
-      </div>
-    </div>
-  )
-}
-
-function BalancePanel({ unit }: { readonly unit: Unit }) {
-  const { view } = usePersonYear()
-  const totals = usePersonTotals(view, unit)
-  const borrowed = totals.balance !== null && totals.balance < 0 ? -totals.balance : 0
-  const max = Math.max(totals.spending ?? 0, (totals.revenue ?? 0) + borrowed, 1)
-  return (
-    <dl className="space-y-5">
-      <div>
-        <dt className="flex items-baseline justify-between text-sm">
-          <span>A încasat</span>
-          <span className="font-semibold tabular-nums">{leiText(totals.revenue)}</span>
-        </dt>
-        <dd className="mt-2 flex h-8 bg-muted">
-          <span className="block h-full bg-chart-sky" style={{ width: `${((totals.revenue ?? 0) / max) * 100}%` }} />
-          {borrowed ? <span className={cn('block h-full', BORROWED_FILL)} style={{ width: `${(borrowed / max) * 100}%` }} /> : null}
-        </dd>
-        {borrowed ? (
-          <p className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
-            <span className={cn('size-2.5 rounded-[2px]', BORROWED_FILL)} />
-            plus {leiText(borrowed)} împrumutați
-          </p>
-        ) : null}
-      </div>
-      <div>
-        <dt className="flex items-baseline justify-between text-sm">
-          <span>A cheltuit</span>
-          <span className="font-semibold tabular-nums">{leiText(totals.spending)}</span>
-        </dt>
-        <dd className="mt-2 h-8 bg-muted">
-          <span className="block h-full bg-primary" style={{ width: `${((totals.spending ?? 0) / max) * 100}%` }} />
-        </dd>
-      </div>
-      <p className="border-t pt-4 text-sm text-muted-foreground">
-        Pentru fiecare locuitor, {unit === 'month' ? 'pe lună' : view.partial ? 'de la 1 ianuarie' : `în ${view.year}`}. Cheltuielile: {changeOf(totals.spending, totals.spendingBefore) ?? '—'} față de {view.year - 1}.
-      </p>
-    </dl>
-  )
-}
-
-function WherePanel({ unit }: { readonly unit: Unit }) {
-  const { view } = usePersonYear()
-  const { lines } = usePersonSpending(view, unit)
-  const shown = lines.filter((line) => !line.rest).slice(0, 6)
-  const max = Math.max(...shown.map((line) => line.lei), 1)
-  const named = lines.filter((line) => !line.rest).length
-  return (
-    <ol className="divide-y">
-      {shown.map((line, rank) => (
-        <li key={line.key} className="py-2.5 first:pt-0">
-          <p className="flex items-baseline justify-between gap-4 text-sm">
-            <span className="min-w-0 truncate">{line.label}</span>
-            <span className="shrink-0 font-semibold tabular-nums">{leiText(line.lei)}</span>
-          </p>
-          <span className="mt-1.5 block h-1.5 rounded-full bg-muted">
-            <span className="block h-full rounded-full" style={{ width: `${(line.lei / max) * 100}%`, ...toneOf(rank, named).style }} />
-          </span>
-        </li>
-      ))}
-    </ol>
-  )
-}
-
-const PANEL_CAPTION: Readonly<Record<string, (year: string) => string>> = {
-  intrebare: (year) => `Partea unui locuitor, ${year}`,
-  locuitor: (year) => `Bilanțul unui locuitor, ${year}`,
-  cifra: (year) => `Pe ce s-au dus, ${year}`,
-}
-
-function Panel({ design }: { readonly design: HeroDesign }) {
-  const { view } = usePersonYear()
-  const [unit, setUnit] = useState<Unit>('year')
-  const { Panel: Body } = design
-  return (
-    <PanelFrame caption={PANEL_CAPTION[design.key]?.(view.partial ? `${view.year}, până acum` : String(view.year)) ?? ''} unit={unit} onUnit={setUnit}>
-      <Body unit={unit} />
-    </PanelFrame>
   )
 }
 
@@ -332,8 +129,7 @@ function Shortcuts() {
   )
 }
 
-function Hero({ design }: { readonly design: HeroDesign }) {
-  const { Heading, Lede } = design
+function Hero() {
   return (
     <section className="relative border-b">
       <TwoLayerLattice idPrefix="national-budget-person" />
@@ -344,7 +140,9 @@ function Hero({ design }: { readonly design: HeroDesign }) {
             <MonoLabel className="text-muted-foreground">Buget / Național</MonoLabel>
             <BandRead fallback={<TitlePending />}>
               <h1 className="mt-5 text-[clamp(2.2rem,8vw+0.6rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
-                <Heading />
+                Bugetul țării,
+                <br />
+                pe cap de locuitor
               </h1>
               <Lede />
             </BandRead>
@@ -356,7 +154,7 @@ function Hero({ design }: { readonly design: HeroDesign }) {
           </div>
           <div className="min-w-0 lg:col-span-5">
             <BandRead fallback={<div className="h-80 animate-pulse border bg-muted/40" />}>
-              <Panel design={design} />
+              <BalancePanel />
             </BandRead>
           </div>
           <BandRead fallback={null} quiet={null}>
@@ -418,20 +216,17 @@ function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
 
 function FiguresBand() {
   const { view } = usePersonYear()
-  const totals = usePersonTotals(view)
-  const spending = usePersonSpending(view)
+  const totals = useOfficialTotals(view)
+  const spending = useHundred(view, 'spending')
+  const gdp = useGdp(view)
   const interest = spending.lines.find((line) => line.key === 'mfin.bgc.expenditure.interest') ?? null
-  const borrowed = totals.balance === null ? null : -totals.balance
-  const borrowedBefore = totals.balanceBefore === null ? null : -totals.balanceBefore
-  const people = populationOf(view.year)
-  // Back to the whole purse, for the reader who wants the national figure beside the personal one.
-  const total = (lei: number | null) => (lei === null || people === null ? null : moneyText((lei * people).toFixed(2)))
   const previous = view.partial ? `aceleași luni din ${view.year - 1}` : String(view.year - 1)
-  const fact = (key: string, value: number | null, label: string, note: string): HubFact => ({
+  const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance), 2)
+  const fact = (key: string, exact: string | null, label: string, note: string): HubFact => ({
     key,
-    value: Math.round(value ?? 0),
-    digits: 0,
-    unit: 'lei',
+    value: exact ? Math.abs(Number(exact)) / 1e9 : 0,
+    digits: 1,
+    unit: 'mld. lei',
     label,
     note,
     link: (content, className) => (
@@ -441,10 +236,10 @@ function FiguresBand() {
     ),
   })
   const facts: HubFact[] = [
-    fact('cheltuieli', totals.spending, 'Cheltuit, pe locuitor', `${changeOf(totals.spending, totals.spendingBefore) ?? '—'} față de ${previous} · în total ${total(totals.spending) ?? '—'}`),
-    fact('venituri', totals.revenue, 'Încasat, pe locuitor', `${changeOf(totals.revenue, totals.revenueBefore) ?? '—'} față de ${previous} · în total ${total(totals.revenue) ?? '—'}`),
-    fact('imprumut', borrowed, 'Împrumutat, pe locuitor', `${changeOf(borrowed, borrowedBefore) ?? '—'} față de ${previous} · deficitul bugetar (cash)`),
-    fact('dobanzi', interest?.lei ?? null, 'Dobânzi la datorie, pe locuitor', `${interest?.change ?? '—'} față de ${previous}`),
+    fact('cheltuieli', totals.spending, 'Cheltuieli publice', `${totals.spendingChange ?? '—'} față de ${previous}`),
+    fact('venituri', totals.revenue, 'Venituri publice', `${totals.revenueChange ?? '—'} față de ${previous}`),
+    fact('imprumut', totals.deficit, 'Deficit bugetar (cash)', [`${totals.borrowed} lei din fiecare 100 cheltuiți`, deficitShare ? `${deficitShare} din PIB` : null].filter(Boolean).join(' · ')),
+    fact('dobanzi', interest?.exact ?? null, 'Dobânzi la datorie', `${interest?.lei ?? '—'} lei din fiecare 100 cheltuiți · ${interest?.change ?? '—'}`),
   ]
   return <HubFiguresBand facts={facts} locale="ro" />
 }
@@ -466,14 +261,12 @@ function FiguresPending() {
 // ────────────────────────────────────────────────────────────── the page ──
 
 function Page() {
-  const design = useDesign()
   const heroRef = useRef<HTMLDivElement>(null)
   const heroVisible = useInView(heroRef)
   return (
     <>
-      <DesignRibbon />
       <div ref={heroRef}>
-        <Hero design={design} />
+        <Hero />
       </div>
       <SectionBar heroVisible={heroVisible} />
       <section className="border-b bg-muted/20" aria-label="Cifre-cheie">

@@ -246,3 +246,74 @@ export function useNewestView(): YearView {
   const views = yearViews(catalog)
   return views[views.length - 1]!
 }
+
+// ─────────────────────────────────────────────────────── out of a hundred ──
+
+/** Whole lei out of 100 by the largest remainder, so they always make exactly 100. */
+export function outOfHundred(values: readonly number[]): readonly number[] {
+  const total = values.reduce((sum, value) => sum + Math.max(value, 0), 0) || 1
+  const exact = values.map((value) => (Math.max(value, 0) / total) * 100)
+  const floors = exact.map(Math.floor)
+  let left = 100 - floors.reduce((sum, value) => sum + value, 0)
+  const order = exact.map((value, index) => ({ index, remainder: value - Math.floor(value) })).sort((a, b) => b.remainder - a.remainder)
+  for (const { index } of order) {
+    if (left <= 0) break
+    floors[index]! += 1
+    left -= 1
+  }
+  return floors
+}
+
+export type HundredLine = { readonly key: string; readonly label: string; readonly hint: string | null; readonly exact: string; readonly lei: number; readonly change: string | null; readonly rest?: boolean }
+
+/**
+ * A printed total and its named lines as lei out of every 100: the official
+ * amounts (exact, for the figures), each line's whole lei of 100 (they make
+ * 100 with „the rest"), and the change on the same window a year earlier.
+ */
+export function useHundred(view: YearView, side: 'spending' | 'revenue') {
+  const total = side === 'spending' ? TOTAL_ITEMS.spending : TOTAL_ITEMS.revenue
+  const items: readonly string[] = side === 'spending' ? SPENDING_PARTS : REVENUE_PARTS
+  const lines = useYearLines(view, [total, ...items])
+  const whole = lines.now(total)?.exact ?? null
+  if (!whole) return { whole: null, before: null, lines: [] as readonly HundredLine[] }
+  const named = items
+    .flatMap((itemId) => {
+      const exact = lines.now(itemId)?.exact
+      if (!exact) return []
+      const before = lines.before(itemId)?.exact
+      return [{ key: itemId, label: partName(itemId), hint: partHint(itemId), exact, change: changeOf(Number(exact), before ? Number(before) : null) }]
+    })
+    .sort((a, b) => Number(b.exact) - Number(a.exact))
+  const restExact = (Number(whole) - named.reduce((sum, line) => sum + Number(line.exact), 0)).toFixed(2)
+  const withRest = Number(restExact) / Number(whole) > 0.005 ? [...named, { key: 'rest', label: side === 'spending' ? 'Alte cheltuieli' : 'Alte venituri', hint: null, exact: restExact, change: null, rest: true }] : named
+  const hundreds = outOfHundred(withRest.map((line) => Number(line.exact)))
+  return {
+    whole,
+    before: lines.before(total)?.exact ?? null,
+    lines: withRest.map((line, index): HundredLine => ({ ...line, lei: hundreds[index] ?? 0 })),
+  }
+}
+
+/** The year's totals as printed, and how many lei of every 100 spent were borrowed (and came from revenue). */
+export function useOfficialTotals(view: YearView) {
+  const lines = useYearLines(view, [TOTAL_ITEMS.revenue, TOTAL_ITEMS.spending, TOTAL_ITEMS.balance])
+  const spending = lines.now(TOTAL_ITEMS.spending)?.exact ?? null
+  const revenue = lines.now(TOTAL_ITEMS.revenue)?.exact ?? null
+  const balance = lines.now(TOTAL_ITEMS.balance)?.exact ?? null
+  const deficit = balance !== null && Number(balance) < 0 ? (-Number(balance)).toFixed(2) : null
+  const [fromRevenue, borrowed] = spending && revenue && deficit ? outOfHundred([Number(revenue), Number(deficit)]) : [100, 0]
+  const at = (itemId: string) => lines.now(itemId)?.exact ?? null
+  const was = (itemId: string) => lines.before(itemId)?.exact ?? null
+  return {
+    spending,
+    revenue,
+    balance,
+    deficit,
+    fromRevenue: fromRevenue ?? 100,
+    borrowed: borrowed ?? 0,
+    spendingChange: changeOf(Number(at(TOTAL_ITEMS.spending)), was(TOTAL_ITEMS.spending) ? Number(was(TOTAL_ITEMS.spending)) : null),
+    revenueChange: changeOf(Number(at(TOTAL_ITEMS.revenue)), was(TOTAL_ITEMS.revenue) ? Number(was(TOTAL_ITEMS.revenue)) : null),
+    deficitBefore: was(TOTAL_ITEMS.balance),
+  }
+}

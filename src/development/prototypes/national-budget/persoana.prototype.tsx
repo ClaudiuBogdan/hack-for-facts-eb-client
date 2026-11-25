@@ -19,7 +19,7 @@ export const prototype = {
     lucru: {
       title: 'Lucru — versiunea pe care o construim, începând cu hero-ul',
       component: PersonWorkVariant,
-      note: 'The working version: the hero in the hubs’ language with three designs of its title and panel (?erou=), the pinned bar, the figures band per resident. The sections follow from the three versions below and the owner’s notes.',
+      note: 'The working version: the hero in the hubs’ language, design B (title „pe cap de locuitor”, the balance beside it) with the official amounts explained out of 100 lei; the pinned bar; the figures band. The sections follow from the three versions below and the owner’s notes.',
     },
     bon: {
       title: 'Bonul — cheltuielile unui locuitor, ca pe un bon',

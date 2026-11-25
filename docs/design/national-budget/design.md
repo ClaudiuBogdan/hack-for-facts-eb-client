@@ -1296,3 +1296,36 @@ Prototype: `/development/national-budget/persoana` (`?v=bon`, `?v=flux`,
 - Per-person amounts are in current lei; an inflation-adjusted view would need
   a CPI series the page doesn't read yet.
 - The population table moves to a live INS read if the page is promoted.
+
+### 12.5 The working version and its hero (25 November 2026)
+
+**Owner:** „I want a header similar to the other pages … create a version we
+are going to work on and start with designing the hero." Then, on three
+designs of the title and the panel: „I don't like this number 42.468 lei. I
+prefer showing the official numbers and including descriptions in sections per
+capita if we need to … We can use a hundred as comparison", and „I like this
+hero: B · Pe cap de locuitor, bilanțul alături".
+
+Prototype: `?v=lucru` (`persoana.lucru.tsx`).
+
+- **The hubs' head:** the lattice, corner ticks, „Buget / Național", a
+  two-line extrabold title, the lede, the year („Anul"), „Sau mergi direct
+  la", a panel beside, the sources at the foot, the crux marks, the numbered
+  pinned bar (its year menu only once the hero has scrolled away), then the
+  figures band.
+- **Title and lede (design B):** „Bugetul țării, / pe cap de locuitor";
+  „Cât cheltuie statul pentru fiecare dintre cei 19,04 mil. de locuitori, pe
+  ce, de unde vin banii și cât se împrumută."
+- **No per-resident figure in the head.** The panel is the year's balance in
+  the official amounts (collected 662,7 mld. lei plus 146,0 borrowed, against
+  808,7 spent) and says the borrowed part out of 100: „Din fiecare 100 de lei
+  cheltuiți, 82 au venit din încasări și 18 din împrumut."
+- **The figures band, official:** spending, revenue, the deficit (its lei out
+  of 100 spent and its share of GDP) and the debt interest (6 lei out of 100,
+  +39%).
+- **Lei out of 100** are whole lei by the largest remainder, so they make
+  exactly 100. The hundred-lei card (a hundred cells and the receipt of the
+  largest lines, spending or revenue) is kept in `persoana.hundred.tsx` for
+  the sections.
+- Designs A (the page's question with the receipt) and C (the figure as the
+  title) were not picked.
