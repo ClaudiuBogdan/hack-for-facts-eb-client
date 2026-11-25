@@ -199,6 +199,11 @@ function sectionLinks() {
     .map((link) => link.getAttribute('href'))
 }
 
+/** The activity list's counts and naming notes sit behind its ⓘ (owner, 25 November 2026): open it, read in the popover. */
+function openListNote() {
+  fireEvent.click(within(document.getElementById('activitati') as HTMLElement).getByRole('button', { name: 'Despre lista activităților' }))
+}
+
 describe('CompanyProfilePage', () => {
   beforeEach(() => {
     seap.cutoff = SEAP_CUTOFF
@@ -639,7 +644,8 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     const rows = within(document.getElementById(unqualified.getAttribute('aria-controls') ?? '') as HTMLElement)
     expect(rows.getByText('5600')).toBeInTheDocument()
     expect(rows.getByText('cod scurt în sursă — clasă/grupă ambiguă')).toBeInTheDocument()
-    expect(activities.getByText(/O înscriere neclasificată/u)).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText(/O înscriere neclasificată/u)).toBeInTheDocument()
   })
 
   it('never heads short source codes with the division their padded digits name (the six-row short-token company)', async () => {
@@ -677,7 +683,8 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     expect(panel.getAllByText('cod scurt în sursă — clasă/grupă ambiguă')).toHaveLength(3)
     expect(panel.getByText('cod fără denumire în nomenclatorul CAEN')).toBeInTheDocument()
     // Every row counted, the classes' nomenclature kept.
-    expect(activities.getByText('6 activități autorizate în registrul comerțului (CAEN Rev.2).')).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText('6 activități autorizate în registrul comerțului (CAEN Rev.2).')).toBeInTheDocument()
   })
 
   it('never infers a class for an older API row without class state: Rev.1 0201 gets no division 02 and no forestry name', async () => {
@@ -735,7 +742,8 @@ describe('CompanyProfilePage — every registry revision (CD-23)', () => {
     const panel = document.getElementById(button.getAttribute('aria-controls') ?? '') as HTMLElement
     expect(within(panel).getByText('Cultivarea cerealelor')).toBeInTheDocument()
     expect(within(panel).getByText('Cultivarea legumelor')).toBeInTheDocument()
-    expect(activities().getByText('2 activități autorizate în registrul comerțului (CAEN Rev.0).')).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText('2 activități autorizate în registrul comerțului (CAEN Rev.0).')).toBeInTheDocument()
   })
 
   it('opens the same digits in Rev.3 and Rev.1 apart, names no row without a revision, and keeps ANAF’s code its own', async () => {
@@ -758,8 +766,9 @@ describe('CompanyProfilePage — every registry revision (CD-23)', () => {
     await registryPinned()
     // Each revision under its own name, every one of them on the page.
     for (const name of ['CAEN Rev.3', 'CAEN Rev.2', 'CAEN Rev.1', 'CAEN Rev.0', 'Fără revizie CAEN']) expect(activities().getByText(name)).toBeInTheDocument()
-    expect(activities().getByText('CAEN Rev.3: 2 · CAEN Rev.2: 1 · CAEN Rev.1: 1 · CAEN Rev.0: 1 · Fără revizie CAEN: 1')).toBeInTheDocument()
-    expect(activities().getByText(/^6 înscrieri de activități în registrul comerțului, pe revizii CAEN;/)).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText('CAEN Rev.3: 2 · CAEN Rev.2: 1 · CAEN Rev.1: 1 · CAEN Rev.0: 1 · Fără revizie CAEN: 1')).toBeInTheDocument()
+    expect(screen.getByText(/^6 înscrieri de activități în registrul comerțului, pe revizii CAEN;/)).toBeInTheDocument()
     // No single nomenclature for rows that use several.
     expect(activities().queryByText(/autorizate în registrul comerțului \(CAEN/)).toBeNull()
 
@@ -1110,20 +1119,14 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
   }
   const longForm = () => screen.queryByRole('region', { name: 'Bilanțuri doar în format lung' })
 
-  it('lists the long-format-only years under the statements: year, publisher, class as recorded and the recorded file — no value', async () => {
+  // Owner, 25 November 2026: the page shows nothing it cannot read — the statements held only in long format are
+  // not listed (they were years, classes and files, never values). The years they cover stay a gap, never a zero.
+  it('lists no long-format-only statement, and draws no column, figure or point for their years', async () => {
     render(page(mapped([ANAF_2024], LONG_FORM)))
     await registryPinned()
     const band = within(document.getElementById('an-cu-an') as HTMLElement)
-    const list = within(band.getByRole('region', { name: 'Bilanțuri doar în format lung' }))
-    expect(list.getByText(/^Bilanțurile pe 2012–2013 sunt înregistrate sub acest CUI doar în format lung/u)).toHaveTextContent('Nu sunt ani fără bilanț.')
-    expect(list.getByText('2013 · MF · clasa ir')).toBeInTheDocument()
-    expect(list.getByText('2012 · MF · clasa ir')).toBeInTheDocument()
-    // The recorded anchor file, exactly; none when none was recorded. The class is never read as a reporting basis.
-    expect(list.getByRole('link', { name: 'Fișierul bilanțului pe 2013, pe data.gov.ro' })).toHaveAttribute('href', OMV_2013_URL)
-    expect(list.queryByRole('link', { name: /2012/u })).toBeNull()
-    expect(list.getByText('Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere.')).toBeInTheDocument()
-    expect(document.body.textContent).not.toMatch(/IFRS|rândul|mfp:13dec119/u)
-    // No column, figure or point for those years: the matrix keeps only the typed statement.
+    expect(longForm()).toBeNull()
+    expect(document.body.textContent).not.toMatch(/format lung|data\.gov\.ro|IFRS|rândul|mfp:13dec119/u)
     expect(band.queryByRole('button', { name: /^Bilanțul pe 201[23]/u })).toBeNull()
     expect(buildCompanyProfileModel(mapped([ANAF_2024], LONG_FORM)).span).toEqual([2024])
   })
@@ -1204,16 +1207,17 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     expect(document.body.innerHTML).not.toContain('javascript:')
   })
 
-  it('discloses a long-format-only CUI where its figures would be, with no years band', async () => {
+  // Owner, 25 November 2026: nothing the page cannot read is listed. A CUI whose statements are all in long format
+  // says what the data here lacks — values, never a claim that it filed nothing — and lists no file.
+  it('says a long-format-only CUI has no values here, with no years band and no list of files', async () => {
     render(page(mapped([], [{ ...LONG_FORM[0]!, resourceUrl: 'javascript:alert(1)' }])))
     await registryPinned()
     expect(document.getElementById('an-cu-an')).toBeNull()
     const business = within(document.getElementById('afacerea') as HTMLElement)
     expect(business.getByText(/Nicio valoare din bilanțuri în datele de aici/u)).toBeInTheDocument()
-    const list = within(business.getByRole('region', { name: 'Bilanțuri doar în format lung' }))
-    expect(list.getByText(/^Bilanțul pe 2013 e înregistrat sub acest CUI doar în format lung/u)).toHaveTextContent('Nu e un an fără bilanț.')
-    // Only a web address is a link.
-    expect(list.queryByRole('link')).toBeNull()
+    expect(longForm()).toBeNull()
+    expect(business.queryByRole('link')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/Niciun bilanț publicat/u)
   })
 
   it('says nothing about long-format statements when the API cannot say, nor when it knows none', async () => {

@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
-import type {
-  CompanyMainActivity,
-  CompanyMainActivityEvidenceEntry,
-  CompanyMainActivityHistoryKind,
-  CompanyMainActivityOutcome,
+import { t } from '@lingui/core/macro'
+import { HubInfoNote } from '../hub/hub-info-note'
+import {
+  publicAnafToken,
+  type CompanyMainActivity,
+  type CompanyMainActivityEvidenceEntry,
+  type CompanyMainActivityHistoryKind,
+  type CompanyMainActivityOutcome,
 } from '@/schemas/private-company-main-activity'
 import { readCompanyAnalysisRelease } from '../../api/company-analytics-api'
 import { isMainActivityMovedError } from '../../api/private-company-api.live'
@@ -38,7 +40,6 @@ import {
   historyAnafWithdrawnText,
   historyMovedText,
   mainAnafOnlyHeadline,
-  mainAssumptionText,
   mainBasisNotes,
   mainCounterpartText,
   mainCurrentnessNote,
@@ -48,6 +49,7 @@ import {
   mainDatesText,
   mainDerivedText,
   mainHistoryNoteText,
+  mainDescriptionText,
   mainKickerText,
   mainNoAssignmentText,
   mainOutcomeStatusText,
@@ -64,6 +66,14 @@ import {
 import type { CompanyProfileModel } from '../../lib/company-profile-model'
 
 /**
+ * Drawn as what it is, a derivation (owner, 25 November 2026): the activity's
+ * name leads where ANAF's code has an ONRC counterpart — the full
+ * counterpart line kept for assistive technology — then one description
+ * that says what it is („Activitate principală (presupusă după ANAF).") and
+ * the assumption; how it was derived (ANAF's code, the ONRC key, the match),
+ * the dates and the evidence sit behind one ⓘ. Every other state leads with
+ * its own sentence. A state that changes how the lead reads stays in the open.
+ *
  * „Activitate principală (presupusă după ANAF)": ANAF's fiscal CAEN code,
  * assumed to be the main activity, with its ONRC counterpart when one
  * matches — the key's revision is ONRC's, its label frozen when derived — or
@@ -99,8 +109,8 @@ export function CompanyMainActivity({
     case 'unreadable':
     case 'no_assignment':
       return (
-        <div className={cn('border-l-2 border-muted-foreground pl-4', className)} data-testid="company-main-activity">
-          <MonoLabel className="block text-muted-foreground">{mainKickerText()}</MonoLabel>
+        <div className={className} data-testid="company-main-activity">
+          <span className="block text-xs text-muted-foreground">{mainKickerText()}</span>
           <p role={view.kind === 'unreadable' ? 'status' : undefined} className="mt-2 text-sm text-muted-foreground">
             {view.kind === 'unreadable' ? mainUnreadableText() : mainNoAssignmentText()}
           </p>
@@ -155,47 +165,65 @@ function AssignedMainActivity({
   const custody = mainCustodyText(activity.anaf?.evidenceCustody ?? null)
   // Marked as the current main activity only when CURRENT with an exact key: never a pending, withheld or withdrawn one.
   const current = mainShownAsCurrent(activity)
+  // The derivation, drawn, where it has both ends: ANAF's code as published, and the ONRC key it was matched to.
+  const token = publicAnafToken(activity.anaf?.originalToken, activity.anaf?.jsonType)
+  const counterpart = headline !== null && headline === mainCounterpartText(activity) ? activity.resolved : null
+  const chain = counterpart && token !== null ? { token, key: mainKeyText(counterpart), label: counterpart.label } : null
   return (
-    <div
-      className={cn('border-l-2 pl-4', current ? 'border-primary' : 'border-muted-foreground', className)}
-      data-testid="company-main-activity"
-      data-current={current ? 'true' : 'false'}
-    >
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <MonoLabel className={cn('block', current ? 'text-primary' : 'text-muted-foreground')}>{mainKickerText()}</MonoLabel>
-        {activity.currentness === 'PENDING_REFRESH' ? (
-          <span className="rounded-sm bg-status-partial-bg px-1.5 py-0.5 text-xs font-medium text-status-partial-fg" data-testid="company-main-activity-pending">
-            {mainPendingText()}
+    <div className={className} data-testid="company-main-activity" data-current={current ? 'true' : 'false'}>
+      {activity.currentness === 'PENDING_REFRESH' ? (
+        <span className="mb-2 inline-block rounded-sm bg-status-partial-bg px-1.5 py-0.5 text-xs font-medium text-status-partial-fg" data-testid="company-main-activity-pending">
+          {mainPendingText()}
+        </span>
+      ) : null}
+      {/* The lead: the activity's name where ANAF's code has an ONRC counterpart (the full counterpart line kept for
+          assistive technology and tests), else the state's own sentence. */}
+      {chain ? (
+        <p className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-[1.75rem]">
+          <span aria-hidden="true">{chain.label}</span>
+          <span className="sr-only" data-testid="company-main-activity-headline">
+            {headline}
           </span>
-        ) : null}
-      </div>
-      {headline ? (
-        <p className="mt-2 text-base font-semibold leading-snug text-foreground" data-testid="company-main-activity-headline">
+        </p>
+      ) : headline ? (
+        <p className="text-lg font-semibold leading-snug text-foreground" data-testid="company-main-activity-headline">
           {headline}
         </p>
       ) : null}
-      {basis.length > 0 ? (
-        <ul className="mt-1 space-y-0.5 text-sm text-muted-foreground" data-testid="company-main-activity-basis">
-          {basis.map((note) => (
-            <li key={note}>{note}</li>
-          ))}
-        </ul>
-      ) : null}
-      {status ? <p className="mt-1 text-sm text-muted-foreground">{status}</p> : null}
+      {/* A state that changes how the lead reads stays in the open: what a status means (a placeholder, a missing code),
+          pending, withheld, not current. */}
+      {status ? <p className="mt-2 text-sm text-muted-foreground">{status}</p> : null}
       {currentness ? (
         <p className="mt-2 text-sm text-foreground" data-testid="company-main-activity-currentness">
           {currentness}
         </p>
       ) : null}
-      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{mainAssumptionText()}</p>
-      {dates ? (
-        <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground" data-testid="company-main-activity-dates">
-          {dates}
-        </MonoLabel>
-      ) : null}
-      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-        {mainDerivedText(activity)}
-        {custody ? ` ${custody}` : ''}
+      {/* The one sentence in the open (owner, 25 November 2026); how it was derived, and when, behind its marker. */}
+      {/* What the lead is, said in the description (owner, 25 November 2026), then the assumption in its one sentence. */}
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        {mainDescriptionText()}{' '}
+        <HubInfoNote label={t`Cum a fost presupusă`}>
+          {chain ? (
+            <p>
+              <Trans>
+                Codul fiscal la ANAF: <span className="font-mono text-foreground">„{chain.token}”</span>. Activitatea din registrul ONRC:{' '}
+                <span className="font-mono text-foreground">{chain.key}</span>, {chain.label}.
+              </Trans>
+            </p>
+          ) : null}
+          {basis.length > 0 ? (
+            <ul className="space-y-0.5" data-testid="company-main-activity-basis">
+              {basis.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : null}
+          {dates ? <p data-testid="company-main-activity-dates">{dates}</p> : null}
+          <p>
+            {mainDerivedText(activity)}
+            {custody ? ` ${custody}` : ''}
+          </p>
+        </HubInfoNote>
       </p>
       <MainActivityAnalysisLink activity={activity} />
       {history && cui !== '' ? <MainActivityHistory cui={cui} activity={activity} scopeKey={scopeKey} onAnafWithdrawn={onAnafWithdrawn} onCompanyNotPublic={onCompanyNotPublic} /> : null}
@@ -430,7 +458,7 @@ function OutcomeRow({ outcome, anafHidden }: { readonly outcome: CompanyMainActi
   const key = hidden || outcome.onrcWithdrawn ? null : outcome.resolved
   return (
     <li className="text-sm" data-testid="company-main-activity-outcome">
-      <MonoLabel className="block text-muted-foreground">{derivedAtText(outcome.derivedAt)}</MonoLabel>
+      <span className="block text-xs text-muted-foreground">{derivedAtText(outcome.derivedAt)}</span>
       {/* The status interprets ANAF's code: said only while ANAF's fields are. */}
       {hidden ? null : <span className="text-foreground">{mainOutcomeStatusText(outcome.status)}</span>}
       {key ? <span className="text-muted-foreground"> · {`${mainKeyText(key)} — ${key.label}`}</span> : null}
@@ -446,7 +474,7 @@ function EvidenceRow({ entry, anafHidden }: { readonly entry: CompanyMainActivit
   const custody = mainCustodyText(anaf?.evidenceCustody ?? null)
   return (
     <li className="text-sm" data-testid="company-main-activity-evidence">
-      <MonoLabel className="block text-muted-foreground">{observedAtText(entry.evidenceAt)}</MonoLabel>
+      <span className="block text-xs text-muted-foreground">{observedAtText(entry.evidenceAt)}</span>
       {anaf ? (
         <span className="text-foreground">
           {statusDateText(anaf.statusDate)}

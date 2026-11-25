@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ArrowUpRight, TriangleAlert, X } from 'lucide-react'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import type { PrivateCompanyStatementPublisher } from '@/schemas/private-company'
@@ -10,7 +9,6 @@ import { count, moneyCell } from '../../lib/company-profile-format'
 import type { CompanyProfileModel, StatementValues } from '../../lib/company-profile-model'
 import {
   capitalised,
-  longFormNotice,
   metricLabel,
   metricStatusLabel,
   netResultStatusLabel,
@@ -20,6 +18,7 @@ import {
   statementStateLabel,
 } from '../../lib/company-profile-text'
 import { holdReasonText, yearsMatrix, type MatrixCell, type MatrixColumn, type MatrixGroup, type MatrixRowKey } from '../../lib/company-years-matrix'
+import { plural } from '@lingui/core/macro'
 import { exactDecimalText } from '../../lib/financial-qualification'
 import { hubNumberLocale } from '../../lib/hub-format'
 import { HubInfoNote } from '../hub/hub-info-note'
@@ -30,7 +29,21 @@ const DETAIL_ID = 'company-years-detail'
 /** A value the figures leave out, in the opened statement: readable, marked as its cell is in the table. */
 const HELD_VALUE = 'font-medium text-foreground underline decoration-amber-500 decoration-dotted decoration-2 underline-offset-4'
 
+/** The lines a reader compares first, shown until the reader asks for every line. */
+const KEY_ROWS: ReadonlySet<MatrixRowKey> = new Set(['turnover', 'total_revenue', 'total_expenses', 'net_profit', 'net_loss', 'fixed_assets', 'current_assets', 'debts', 'total_equity', 'employees'])
+
+/** The newest statements shown until the reader asks for every year: as many as a wide screen holds beside the names. */
+const RECENT_YEARS = 6
+
 /**
+ * „Bilanțurile, an cu an", with less at first (owner, 25 November 2026): the
+ * key lines — and any line with a value held or left out of the figures in
+ * the years shown, so no mark hides behind a button — and the newest six
+ * statements, each a button from the rest, which says what it would add. The
+ * statements held only in long format are not listed (owner: nothing the page
+ * cannot show); the shaded gap column marks those years, and its note says a
+ * gap is not a year without a statement.
+ *
  * „Bilanțurile, an cu an": every value every statement published, as one
  * matrix — an indicator a row, a statement a column, newest first — the way
  * the NGO page lays out its statements. The indicator names stay pinned while
@@ -42,12 +55,37 @@ const HELD_VALUE = 'font-medium text-foreground underline decoration-amber-500 d
  * figures and why, and where it was published. The admission policy and how
  * to read the cells sit behind the corner's info button.
  */
-export function CompanyYearsBand({ model, index, last = false }: { readonly model: CompanyProfileModel; readonly index: string; readonly last?: boolean }) {
+export function CompanyYearsBand({ model, index, last = false }: { readonly model: CompanyProfileModel; readonly index?: string; readonly last?: boolean }) {
   const [chosen, setChosen] = useState<number | null>(null)
+  const [allRows, setAllRows] = useState(false)
+  const [allYears, setAllYears] = useState(false)
   const { statements } = model.qualification
   if (statements.length === 0) return null
   const locale = hubNumberLocale() === 'ro-RO' ? 'ro' : 'en'
-  const matrix = yearsMatrix(statements)
+  const full = yearsMatrix(statements)
+  // The newest statements, with any gap column between two of them; the gap after the last shown goes with the rest.
+  const statementColumns = full.columns.filter((column) => column.kind === 'statement').length
+  const keep = (() => {
+    if (allYears) return full.columns.length
+    let seen = 0
+    let end = 0
+    full.columns.forEach((column, position) => {
+      if (column.kind === 'statement' && seen < RECENT_YEARS) {
+        seen += 1
+        end = position + 1
+      }
+    })
+    return end
+  })()
+  // A line with a held value, or one the figures leave out, in the years shown is never behind the button.
+  const marked = (row: (typeof full.rows)[number]) => row.cells.slice(0, keep).some((cell) => cell.kind === 'held' || (cell.kind === 'value' && !cell.counted))
+  const keyRows = full.rows.filter((row) => KEY_ROWS.has(row.spec.key) || marked(row))
+  const matrix = {
+    columns: full.columns.slice(0, keep),
+    rows: (allRows || keyRows.length === 0 ? full.rows : keyRows).map((row) => ({ ...row, cells: row.cells.slice(0, keep) })),
+  }
+  const hiddenRows = full.rows.length - matrix.rows.length
+  const hiddenYears = statementColumns - matrix.columns.filter((column) => column.kind === 'statement').length
   const open = statements.find((statement) => statement.year === chosen) ?? null
   const groups = (['results', 'balance', 'staff'] as const)
     .map((group) => ({ group, rows: matrix.rows.filter((row) => row.spec.group === group) }))
@@ -63,7 +101,12 @@ export function CompanyYearsBand({ model, index, last = false }: { readonly mode
 
   return (
     <ProfileBand id="an-cu-an" titleId={TITLE_ID} last={last}>
-      <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>Bilanțurile, an cu an</Trans>} />
+      <HubSectionHead
+        titleId={TITLE_ID}
+        index={index}
+        title={<Trans>Bilanțurile, an cu an</Trans>}
+        lede={plural(statementColumns, { one: 'Un bilanț cu valori.', few: '# bilanțuri cu valori, cel mai nou primul.', other: '# de bilanțuri cu valori, cel mai nou primul.' })}
+      />
       <div
         role="region"
         aria-label={t`Tabelul bilanțurilor`}
@@ -79,9 +122,9 @@ export function CompanyYearsBand({ model, index, last = false }: { readonly mode
             <tr>
               <th scope="col" className="sticky left-0 top-0 z-3 border-b border-border/70 bg-background pb-2 pr-3 text-left align-bottom font-normal">
                 <span className="inline-flex items-center gap-1">
-                  <MonoLabel className="text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     <Trans>Sume în lei</Trans>
-                  </MonoLabel>
+                  </span>
                   <HubInfoNote label={t`Despre aceste valori`}>
                     {lede ? <p>{lede}</p> : null}
                     {otherBasis ? <p>{otherBasis}</p> : null}
@@ -104,7 +147,7 @@ export function CompanyYearsBand({ model, index, last = false }: { readonly mode
             <tbody key={group}>
               <tr>
                 <th scope="rowgroup" className="sticky left-0 z-1 bg-background pb-1.5 pr-3 pt-5 text-left font-normal">
-                  <MonoLabel className="text-primary">{groupLabel(group)}</MonoLabel>
+                  <span className="text-xs font-medium text-primary">{groupLabel(group)}</span>
                 </th>
                 <td colSpan={matrix.columns.length} />
               </tr>
@@ -140,58 +183,24 @@ export function CompanyYearsBand({ model, index, last = false }: { readonly mode
           ))}
         </table>
       </div>
+      {/* Less at first, each a button away from the rest; the buttons say what they would add. */}
+      {hiddenRows > 0 || hiddenYears > 0 || allRows || allYears ? (
+        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1">
+          {hiddenRows > 0 || allRows ? (
+            <button type="button" aria-pressed={allRows} onClick={() => setAllRows((value) => !value)} className="inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline">
+              {allRows ? <Trans>Doar rândurile principale</Trans> : plural(hiddenRows, { one: 'Încă un rând', few: 'Încă # rânduri', other: 'Încă # de rânduri' })}
+            </button>
+          ) : null}
+          {hiddenYears > 0 || allYears ? (
+            <button type="button" aria-pressed={allYears} onClick={() => setAllYears((value) => !value)} className="inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline">
+              {allYears ? <Trans>Doar ultimii {RECENT_YEARS} ani</Trans> : plural(hiddenYears, { one: 'Încă un an', few: 'Încă # ani', other: 'Încă # de ani' })}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {open ? <StatementDetail statement={open} locale={locale} onClose={close} className="mt-6" /> : null}
-      <LongFormStatements model={model} className="mt-8" />
-    </ProfileBand>
-  )
-}
 
-/**
- * Statements under the CUI that the source holds only in long format: each
- * year with its publisher, the class it filed under as recorded and its file,
- * never a value. The file is the one the statement was read from; a statement
- * assembled from several copies has others. Nothing when none is known, nor
- * when this API cannot say (unknown is not „none").
- */
-export function LongFormStatements({ model, className }: { readonly model: CompanyProfileModel; readonly className?: string }) {
-  const notice = longFormNotice(model)
-  if (notice === null || model.longForm === null) return null
-  return (
-    <section aria-label={t`Bilanțuri doar în format lung`} className={cn('max-w-3xl text-sm', className)}>
-      <MonoLabel className="block text-muted-foreground">
-        <Trans>Doar în format lung, fără valori aici</Trans>
-      </MonoLabel>
-      <p className="mt-2 leading-relaxed text-muted-foreground">{notice}</p>
-      <ul className="mt-3 divide-y divide-border/60 border-y border-border/60">
-        {model.longForm.map((statement) => {
-          const year = statement.fiscalYear
-          const filerClass = statement.filerClass
-          return (
-            <li key={`${year}-${statement.sourceSnapshotId}`} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-1.5">
-              <span className="font-mono text-xs tabular-nums text-foreground">
-                {year} · {publisherShort(statement.publisher)}
-                {filerClass ? <> · {t`clasa ${filerClass}`}</> : null}
-              </span>
-              {statement.resourceUrl ? (
-                <a
-                  href={statement.resourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t`Fișierul bilanțului pe ${year}, pe data.gov.ro`}
-                  className="inline-flex min-h-11 items-center gap-1 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:min-h-0"
-                >
-                  <Trans>Fișierul pe data.gov.ro</Trans>
-                  <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                </a>
-              ) : null}
-            </li>
-          )
-        })}
-      </ul>
-      <p className="mt-2 text-xs text-muted-foreground">
-        <Trans>Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere.</Trans>
-      </p>
-    </section>
+    </ProfileBand>
   )
 }
 
@@ -220,10 +229,10 @@ function YearHeader({ column, chosen, onChoose }: { readonly column: MatrixColum
     const range = `${column.from}–${column.to}`
     return (
       <th scope="col" className="sticky top-0 z-2 border-b border-border/70 bg-muted px-2 pb-2 text-center align-bottom font-normal">
-        <MonoLabel className="flex flex-col items-center gap-0.5 text-muted-foreground" aria-hidden="true">
+        <span className="flex flex-col items-center gap-0.5 font-mono text-xs tabular-nums text-muted-foreground" aria-hidden="true">
           <span>{column.from}–</span>
           <span>{column.to}</span>
-        </MonoLabel>
+        </span>
         <span className="sr-only">{t`${range}: nicio valoare disponibilă aici`}</span>
       </th>
     )
@@ -390,9 +399,9 @@ function StatementDetail({
       className={cn('grid max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 border-l-2 border-border pl-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto_auto]', className)}
     >
       <div className="min-w-0">
-        <MonoLabel className="block text-primary">
+        <span className="block text-xs font-medium text-primary">
           <Trans>Bilanțul pe {year}</Trans> · {statementPublisherLabel(statement.publisher)}
-        </MonoLabel>
+        </span>
         <p className="mt-1.5 font-medium text-foreground">{capitalised(statementStateLabel(statement))}</p>
         {statement.holdReason ? (
           <p className="mt-1 text-muted-foreground">
