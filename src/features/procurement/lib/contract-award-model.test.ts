@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   caBuyerShown,
   caPartyLabel,
@@ -10,7 +10,10 @@ import {
   mapBuyerContractAwards,
   mapContractAward,
 } from './contract-award-model'
+import { caAmountText, lotEstimateText } from './contract-award-text'
 import { rawAward, rawAwards, rawRow, RECORD_ID } from './contract-award.fixture'
+
+vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
 /**
  * Contract awards from procurement v3 (PROC-KB0Z step 1): a winner is said as
@@ -102,6 +105,18 @@ describe('contract-award records', () => {
     expect(mapContractAward(rawAward().award).sourceUrl).toBe('https://www.e-licitatie.ro/pub/notices/contract-award-notices/view/100234')
     expect(mapContractAward(rawAward({ record: { sourceUrl: 'https://example.com/e-licitatie.ro' } }).award).sourceUrl).toBeNull()
     expect(mapContractAward(rawAward({ record: { sourceUrl: 'http://www.e-licitatie.ro/x' } }).award).sourceUrl).toBeNull()
+  })
+
+  it('cancels a lot only when the source says cancelled', () => {
+    const lot = (cancelledStatus: string | null) => mapContractAward(rawAward({ lots: [{ lotOrder: 1, lotNumber: '1', title: 'Lot', cpvCode: null, estimatedValue: null, currency: null, isEuFunded: null, cancelledStatus }] }).award).lots[0]?.cancelled
+    expect(['cancelled', 'not_cancelled', 'unknown', 'not_expected', null].map(lot)).toEqual([true, false, false, false, false])
+  })
+
+  it('says an amount with no lei as served, and a lot with no currency as such, never as lei or as no value', () => {
+    expect(caAmountText({ amountLei: null, nativeAmount: 100, currency: 'EUR' }, true)).toBe('100,00\u00a0EUR, fără echivalent în lei')
+    expect(caAmountText({ amountLei: null, nativeAmount: null, currency: null }, true)).toBe('fără valoare publicată')
+    expect(lotEstimateText({ estimatedValue: 1500, currency: null })).toBe('estimat 1.500,00, monedă nepublicată')
+    expect(lotEstimateText({ estimatedValue: 1500, currency: 'RON' })).toBe('estimat 1.500\u00a0lei')
   })
 
   it('says a joint win, a converted currency and a zero value, and nothing for a provenance flag', () => {

@@ -32,6 +32,9 @@ import { CaPartyName } from './contract-award-party'
  */
 
 export interface ProcurementContractAwardInitialData {
+  /** The direct acquisitions' publication a server render was read under; null: unknown. Absent: not a server render. */
+  readonly disclosure?: string | null
+  readonly disclosureReadAt?: number
   readonly id: string
   /** Absent: not read on the server (a client-side navigation, or a failed read). */
   readonly read?: ContractAwardRead

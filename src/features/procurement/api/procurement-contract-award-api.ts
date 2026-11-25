@@ -29,6 +29,17 @@ export class CaRecordsOffError extends Error {
   }
 }
 
+/**
+ * The adapter has already read once more (a snapshot mismatch, a republish) and the second read failed too: the read
+ * failed, and nothing reads it again on its own — the reader's retry asks afresh.
+ */
+export class CaReadSpentError extends Error {
+  constructor(readonly cause: unknown) {
+    super('The contract-award read failed after its second attempt.')
+    this.name = 'CaReadSpentError'
+  }
+}
+
 /** The two halves of one read stood on different snapshots twice running: the read failed, and is read again. */
 export class CaSnapshotMismatchError extends Error {
   constructor() {
@@ -60,7 +71,18 @@ async function readOnceMore<T>(read: () => Promise<T>, signal: AbortSignal | und
     return await read()
   } catch (error) {
     if (signal?.aborted || !isRepublished(error)) throw error
-    return read()
+  }
+  return secondRead(read, signal)
+}
+
+/** The adapter's second read: the switch off is said as such, an abort goes through, any other failure is spent. */
+async function secondRead<T>(read: () => Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+  try {
+    return await read()
+  } catch (error) {
+    if (signal?.aborted) throw error
+    const off = offOr(error, signal)
+    throw off instanceof CaRecordsOffError ? off : new CaReadSpentError(error)
   }
 }
 
@@ -80,17 +102,17 @@ export interface BuyerContractAwardsRequest {
  */
 export async function fetchBuyerContractAwards(request: BuyerContractAwardsRequest, signal?: AbortSignal): Promise<BuyerContractAwards> {
   const variables = { buyerFiscalCode: request.cui, from: request.from, to: request.to, sort: request.sort, page: request.page, pageSize: CA_PAGE_SIZE }
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    let raw
-    try {
-      raw = contractAwardsResponseSchema.parse(
-        await readOnceMore(() => graphqlQuery<unknown>(PROCUREMENT_CONTRACT_AWARDS_QUERY, variables, { operationName: 'ProcurementContractAwards', signal }), signal),
-      )
-    } catch (error) {
-      throw offOr(error, signal)
-    }
-    if (raw.summary.dataAsOf === raw.records.dataAsOf) return mapBuyerContractAwards(raw)
+  const read = () => graphqlQuery<unknown>(PROCUREMENT_CONTRACT_AWARDS_QUERY, variables, { operationName: 'ProcurementContractAwards', signal }).then((data) => contractAwardsResponseSchema.parse(data))
+  let first
+  try {
+    first = await readOnceMore(read, signal)
+  } catch (error) {
+    throw error instanceof CaReadSpentError ? error : offOr(error, signal)
   }
+  if (first.summary.dataAsOf === first.records.dataAsOf) return mapBuyerContractAwards(first)
+  // A mismatch: read once more, and that read is the last the adapter makes.
+  const second = await secondRead(read, signal)
+  if (second.summary.dataAsOf === second.records.dataAsOf) return mapBuyerContractAwards(second)
   throw new CaSnapshotMismatchError()
 }
 
@@ -120,7 +142,7 @@ export async function fetchContractAward(id: string, signal?: AbortSignal): Prom
   } catch (error) {
     if (!signal?.aborted && isOutsideWindow(error)) return { kind: 'outside' }
     if (!signal?.aborted && (hasCode(error, 'NOT_FOUND') || hasCode(error, 'INVALID_INPUT'))) return { kind: 'missing' }
-    throw offOr(error, signal)
+    throw error instanceof CaReadSpentError ? error : offOr(error, signal)
   }
   return { kind: 'found', award: mapContractAward(raw.award), reanchored: raw.award.reanchored || raw.award.record.recordId !== id }
 }

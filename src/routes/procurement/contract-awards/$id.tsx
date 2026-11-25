@@ -37,7 +37,10 @@ export const Route = createFileRoute('/procurement/contract-awards/$id')({
     // kept unshown, and a winner withdrawn meanwhile could still be shown. The page reads it when it mounts.
     if (!shouldBlockLoaderForSsr()) return { id: params.id }
     const { readContractAwardForSsr } = await import('@/features/procurement/api/procurement-contract-award-ssr')
-    const read = await readContractAwardForSsr(params.id)
+    // Read under the direct acquisitions' publication, which a winner's naming follows: a tab that has seen a newer one
+    // since does not seed from this render (`isSeedCurrent`), and reads the award afresh.
+    const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
+    const read = await seededUnder(() => readContractAwardForSsr(params.id))
     if (read.read?.kind === 'missing') throw notFound()
     if (read.read?.kind === 'found' && read.read.award.recordId !== params.id) {
       // The redirect leaves before the route's headers apply: it carries its own no-store (the id can move with a later build).

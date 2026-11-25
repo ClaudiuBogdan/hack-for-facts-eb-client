@@ -52,7 +52,8 @@ export function BuyerAwardsBand({
 }) {
   const published = caWindowOf(profile.period)
   const query = useBuyerContractAwards(published ? { cui: profile.identity.cui, from: published.from, to: published.to, sort: SORT_OF[order], page } : null)
-  const data = query.data
+  // A failed read shows nothing of an earlier answer: no rows, no counts, no notes.
+  const data = query.isError ? undefined : query.data
   const period = periodText(profile.period)
   return (
     <HomeBand id="contracte" labelledBy="buyer-awards-title">

@@ -25,9 +25,14 @@ export function caAmountLabel(record: Pick<CaRecordRow, 'ceiling'>): string {
  * such, never as zero.
  */
 export function caAmountText(record: Pick<CaRecordRow, 'amountLei' | 'nativeAmount' | 'currency'>, exact: boolean): string {
-  if (record.amountLei === null) return t`fără valoare publicată`
-  const lei = exact ? leiExact(record.amountLei) : moneyText(record.amountLei)
   const currency = record.currency?.toUpperCase()
+  if (record.amountLei === null) {
+    // An amount in its own currency with no lei beside it is said as served, never as no value.
+    if (record.nativeAmount === null) return t`fără valoare publicată`
+    const native = `${formatHubNumber(record.nativeAmount, { digits: 2 })}${NBSP}${currency ?? ''}`.trim()
+    return currency ? t`${native}, fără echivalent în lei` : t`${native}, monedă nepublicată`
+  }
+  const lei = exact ? leiExact(record.amountLei) : moneyText(record.amountLei)
   if (!currency || currency === 'RON' || record.nativeAmount === null) return lei
   return `${lei} (${formatHubNumber(record.nativeAmount, { digits: 2 })}${NBSP}${currency})`
 }
@@ -54,7 +59,12 @@ export function beforeFloorText(): string {
 export function lotEstimateText(lot: Pick<CaLot, 'estimatedValue' | 'currency'>): string | null {
   if (lot.estimatedValue === null) return null
   const currency = lot.currency?.toUpperCase()
-  const amount = !currency || currency === 'RON' ? leiExact(lot.estimatedValue) : `${formatHubNumber(lot.estimatedValue, { digits: 2 })}${NBSP}${currency}`
+  if (!currency) {
+    // No currency published: the figure alone, said as such, never assumed lei.
+    const figure = formatHubNumber(lot.estimatedValue, { digits: 2 })
+    return t`estimat ${figure}, monedă nepublicată`
+  }
+  const amount = currency === 'RON' ? leiExact(lot.estimatedValue) : `${formatHubNumber(lot.estimatedValue, { digits: 2 })}${NBSP}${currency}`
   return t`estimat ${amount}`
 }
 

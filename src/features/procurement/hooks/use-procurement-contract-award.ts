@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { shouldRetryQuery } from '@/lib/queryClient'
 import {
+  CaReadSpentError,
   CaRecordsOffError,
   CaSnapshotMismatchError,
   fetchBuyerContractAwards,
@@ -26,7 +27,8 @@ export { procurementContractAwardKeys }
  * read twice already by the adapter: the read fails, and the reader's retry asks again.
  */
 const retry = (failureCount: number, error: unknown) =>
-  !(error instanceof CaRecordsOffError || error instanceof CaSnapshotMismatchError || isRepublished(error)) && shouldRetryQuery(failureCount, error)
+  !(error instanceof CaRecordsOffError || error instanceof CaSnapshotMismatchError || error instanceof CaReadSpentError || isRepublished(error)) &&
+  shouldRetryQuery(failureCount, error)
 
 export function contractAwardQueryOptions(id: string, initialData?: ContractAwardRead) {
   return queryOptions({
@@ -55,10 +57,12 @@ export function useBuyerContractAwards(request: BuyerContractAwardsRequest | nul
     retry,
     ...DA_QUERY_CACHE,
     enabled: request !== null,
-    // The same buyer and period only: another buyer's or period's rows would be the wrong list.
+    // The same buyer and period only (another's rows would be the wrong list), and only from a read that stands: rows a
+    // failed read hid are never shown again as a placeholder.
     placeholderData: (previous, previousQuery) => {
       const key = previousQuery?.queryKey
-      return request && key && key[3] === request.cui && key[4] === request.from && key[5] === request.to ? previous : undefined
+      const stands = previousQuery?.state.status === 'success'
+      return stands && request && key && key[3] === request.cui && key[4] === request.from && key[5] === request.to ? previous : undefined
     },
   })
 }

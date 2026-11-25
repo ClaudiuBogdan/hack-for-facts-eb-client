@@ -7,7 +7,7 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => ({
 }))
 
 const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
-const { CaRecordsOffError, CaSnapshotMismatchError, fetchBuyerContractAwards, fetchContractAward } = await import('./procurement-contract-award-api')
+const { CaReadSpentError, CaRecordsOffError, CaSnapshotMismatchError, fetchBuyerContractAwards, fetchContractAward } = await import('./procurement-contract-award-api')
 const { rawAward, rawAwards, RECORD_ID } = await import('../lib/contract-award.fixture')
 
 const refused = (code: string, reason?: string, message: string = code) =>
@@ -45,12 +45,30 @@ describe('fetchBuyerContractAwards', () => {
     await expect(fetchBuyerContractAwards(REQUEST)).resolves.toMatchObject({ recordCount: 3 })
     graphqlQuery.mockReset()
     graphqlQuery.mockRejectedValue(refused('SERVICE_UNAVAILABLE', undefined, REPUBLISHED))
+    // Republished twice: the read is spent (no third read anywhere), and never said as the switch off.
     const failed = fetchBuyerContractAwards(REQUEST)
-    await expect(failed).rejects.toBeInstanceOf(GraphQLRequestError)
+    await expect(failed).rejects.toBeInstanceOf(CaReadSpentError)
     await expect(failed).rejects.not.toBeInstanceOf(CaRecordsOffError)
+    expect(graphqlQuery).toHaveBeenCalledTimes(2)
     graphqlQuery.mockReset()
     graphqlQuery.mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE', undefined, REPUBLISHED)).mockResolvedValueOnce(rawAward())
     await expect(fetchContractAward(RECORD_ID)).resolves.toMatchObject({ kind: 'found' })
+  })
+
+  it('makes no third read: a failure after its own second read is spent, and the switch off still said as such', async () => {
+    const timeout = new GraphQLRequestError('GraphQL request timed out', { timedOut: true })
+    graphqlQuery.mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE', undefined, REPUBLISHED)).mockRejectedValueOnce(timeout)
+    await expect(fetchBuyerContractAwards(REQUEST)).rejects.toBeInstanceOf(CaReadSpentError)
+    graphqlQuery.mockReset()
+    graphqlQuery.mockResolvedValueOnce(rawAwards({ records: { dataAsOf: '2026-11-25T02:00:00Z' } })).mockRejectedValueOnce(timeout)
+    await expect(fetchBuyerContractAwards(REQUEST)).rejects.toBeInstanceOf(CaReadSpentError)
+    graphqlQuery.mockReset()
+    graphqlQuery.mockResolvedValueOnce(rawAwards({ records: { dataAsOf: '2026-11-25T02:00:00Z' } })).mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE'))
+    await expect(fetchBuyerContractAwards(REQUEST)).rejects.toBeInstanceOf(CaRecordsOffError)
+    expect(graphqlQuery).toHaveBeenCalledTimes(2)
+    graphqlQuery.mockReset()
+    graphqlQuery.mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE', undefined, REPUBLISHED)).mockRejectedValueOnce(timeout)
+    await expect(fetchContractAward(RECORD_ID)).rejects.toBeInstanceOf(CaReadSpentError)
   })
 
   it('says the switch off as such, and lets any other failure through', async () => {

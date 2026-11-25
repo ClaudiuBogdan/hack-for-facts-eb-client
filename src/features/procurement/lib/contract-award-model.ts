@@ -280,7 +280,8 @@ export function mapContractAward(raw: RawContractAward): ContractAward {
       estimatedValue: amountOf(lot.estimatedValue),
       currency: clean(lot.currency),
       euFunded: lot.isEuFunded,
-      cancelled: lot.cancelledStatus !== null && lot.cancelledStatus.trim() !== '',
+      // `cancelled` | `not_cancelled` | `unknown` | `not_expected`: only the first is a cancelled lot.
+      cancelled: lot.cancelledStatus === 'cancelled',
     })),
   }
 }

@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mapContractAward } from '@/features/procurement/lib/contract-award-model'
 import { rawAward, RECORD_ID } from '@/features/procurement/lib/contract-award.fixture'
 
+// The publication a server render was read under (D6): known unless a test says otherwise.
+vi.mock('@/features/procurement/api/procurement-da-release-status', () => ({ seededUnder: async (read: () => Promise<object>) => ({ ...(await read()), disclosure: 'v1' }) }))
+
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const notFoundError = new Error('not-found')
 vi.mock('@tanstack/react-router', () => ({
@@ -54,7 +57,8 @@ describe('contract-award route', () => {
 
   it('serves a found award, and redirects an earlier build’s id to the current one', async () => {
     readForSsr.mockResolvedValueOnce(found())
-    await expect(asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: RECORD_ID } }))).resolves.toMatchObject({ id: RECORD_ID })
+    // Read under the direct acquisitions' publication: a tab that has seen a newer one does not seed from it.
+    await expect(asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: RECORD_ID } }))).resolves.toMatchObject({ id: RECORD_ID, disclosure: 'v1' })
     readForSsr.mockResolvedValueOnce(found('e_licitatie:ca:99:11'))
     await expect(asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: 'e_licitatie:ca:99:11' } }))).rejects.toEqual({
       redirect: { to: '/procurement/contract-awards/$id', params: { id: RECORD_ID }, replace: true, statusCode: 302, headers: { 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' } },
