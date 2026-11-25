@@ -53,12 +53,19 @@ function scrubWord(word: string): string {
   if (word.length === 0 || !MAYBE_IN_SCOPE.test(decoded(word))) return word
   const trailing = TRAILING_PUNCTUATION.exec(word)?.[0] ?? ''
   const core = word.slice(0, word.length - trailing.length)
+  // Matched as written first: an escaped delimiter (`/suppliers/%231850…`, `%2F`, `%3F`) is still part of the code's
+  // segment there, while read it would end the segment before the code.
+  const raw = scrubCore(core)
   const plain = decoded(core)
-  const scrubbed = plain
+  const scrubbed = scrubCore(decoded(raw))
+  return raw === core && scrubbed === plain ? word : `${scrubbed}${trailing}`
+}
+
+function scrubCore(text: string): string {
+  return text
     .replace(PROCUREMENT_PARTY, `$1${PARTY_CODE_MASK}`)
     .replace(COMPANY_PAGE, (match, before: string, path: string, code: string) => (COMPANY_PAGES.has(code.toLowerCase()) ? match : `${before}${path}${PARTY_CODE_MASK}`))
     .replace(PARTY_PARAM, `$1${PARTY_CODE_MASK}`)
-  return scrubbed === plain ? word : `${scrubbed}${trailing}`
 }
 
 /** Up to three layers of URL encoding read; an escape that is not valid is read where it can be and kept where not. */
