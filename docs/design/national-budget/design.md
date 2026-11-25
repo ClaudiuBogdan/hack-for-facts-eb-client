@@ -1228,3 +1228,305 @@ From the QA tracker (`qa-trackers/national-budget/ISSUES.md`, outside the repo):
   the opener away. The two ways out above move the focus to the new question.
 - Not here: the collapsed sidebar's link names (NB-005, fixed site-wide by the
   procurement session) and the nested `main` (NB-006, shared shell, no owner yet).
+
+## 12. The page at one person's scale (25 November 2026)
+
+**Owner:** „prototype better design of this page, rethinking how we explain the
+data, what visual elements we use"; „polish and redesign where necessary. The
+header needs a rewrite, remove and reorganize elements." Asked what a reader
+should take away, the owner chose **their share of it**: the budget at one
+person's scale, as **a new storyline**, not the nine bands redrawn. Of three
+storylines (per person with no input, a salary calculator, everyday
+comparisons) the owner kept **per person**, built as **two or three versions to
+pick from**.
+
+Prototype: `/development/national-budget/persoana` (`?v=bon`, `?v=flux`,
+`?v=luna`), files `src/development/prototypes/national-budget/persoana.*`.
+
+### 12.1 What was wrong with the page (read on :3012, 25 November)
+
+- The nine bands are one layout nine times (text left, a blue chart right),
+  the hundred squares twice and the treemap twice; ~10.500 px tall.
+- The amounts have no human scale: „808,7 mld. lei" means little to a reader.
+- Three overlapping cuts of spending (by nature, by domain, by ministry) with
+  totals that differ (808,7 against 499,4) and no reason given up front.
+- The head says its figures three times: the balance card, the four-figure
+  band, the pinned bar's year menu beside the head's own.
+
+### 12.2 Decisions in all three versions
+
+- **Every amount is divided by the resident population on 1 January of its
+  year** (INS POP105A; Eurostat `demo_gind` JAN, the same figures, kept as a
+  table in `persoana.data.ts`, 2006–2026, 2026 provisional). Said as „pentru
+  fiecare locuitor", never as what a person paid; the notes say it is an
+  average.
+- **The head is the answer.** No caption, no generic title, no balance card,
+  no four-figure band, no shortcut row: one sentence as the title, one line
+  under it (per month, what came from taxes and what was borrowed), the
+  sources in a few words with the population. One year menu on screen: the
+  head's, and the pinned bar's only once the head has scrolled away.
+- **Sections:** the version's opening figure, where the money came from
+  (except `flux`, which holds it), domains and ministries (ANAF, state budget,
+  per person, with why pensions and hospitals are mostly elsewhere),
+  borrowing year by year per person with the interest per person, the year in
+  progress against the same months, and „Mai departe".
+- **Cut to links:** the budgets' bridge („Prin ce bugete trec banii") and the
+  law („Ce a aprobat Parlamentul") — accountant views the analysis page
+  already has.
+- **No public debt figure:** none of the page's sources carries it; the
+  borrowing and the interest stand in for it, and say what they are.
+
+### 12.3 The three versions
+
+- **`bon`** — „În 2025, statul a cheltuit 42.468 lei pentru fiecare
+  locuitor." The spending lines as a printed receipt: each line, the total,
+  then what paid for it (taxes and contributions, then the borrowed part) and
+  the monthly figure; the four largest lines explained beside it.
+- **`flux`** — „Pentru fiecare locuitor, statul a încasat 34.800 lei și a
+  cheltuit 42.468 lei." Two columns of the same height: the revenue lines plus
+  the borrowed part (hatched) against the spending lines; small blocks listed
+  under the columns.
+- **`luna`** — „Statul cheltuie 3.539 lei pe lună pentru fiecare locuitor."
+  One month of spending as one bar, then each line as a large monthly amount
+  in a ruled grid; every section in lei per month.
+
+### 12.4 Open points
+
+- The owner picks a version (or parts of several).
+- Per-person amounts are in current lei; an inflation-adjusted view would need
+  a CPI series the page doesn't read yet.
+- The population table moves to a live INS read if the page is promoted.
+
+### 12.5 The working version and its hero (25 November 2026)
+
+**Owner:** „I want a header similar to the other pages … create a version we
+are going to work on and start with designing the hero." Then, on three
+designs of the title and the panel: „I don't like this number 42.468 lei. I
+prefer showing the official numbers and including descriptions in sections per
+capita if we need to … We can use a hundred as comparison", and „I like this
+hero: B · Pe cap de locuitor, bilanțul alături".
+
+Prototype: `?v=lucru` (`persoana.lucru.tsx`).
+
+- **The hubs' head:** the lattice, corner ticks, „Buget / Național", a
+  two-line extrabold title, the lede, the year („Anul"), „Sau mergi direct
+  la", a panel beside, the sources at the foot, the crux marks, the numbered
+  pinned bar (its year menu only once the hero has scrolled away), then the
+  figures band.
+- **Title and lede (design B):** „Bugetul țării, / pe cap de locuitor";
+  „Cât cheltuie statul pentru fiecare dintre cei 19,04 mil. de locuitori, pe
+  ce, de unde vin banii și cât se împrumută."
+- **No per-resident figure in the head.** The panel is the year's balance in
+  the official amounts (collected 662,7 mld. lei plus 146,0 borrowed, against
+  808,7 spent) and says the borrowed part out of 100: „Din fiecare 100 de lei
+  cheltuiți, 82 au venit din încasări și 18 din împrumut."
+- **The figures band, official:** spending, revenue, the deficit (its lei out
+  of 100 spent and its share of GDP) and the debt interest (6 lei out of 100,
+  +39%).
+- **Lei out of 100** are whole lei by the largest remainder, so they make
+  exactly 100. The hundred-lei card (a hundred cells and the receipt of the
+  largest lines, spending or revenue) is kept in `persoana.hundred.tsx` for
+  the sections.
+- Designs A (the page's question with the receipt) and C (the figure as the
+  title) were not picked.
+- **The year (owner: compact, same place, no side arrows, a polished
+  dropdown):** „Anul [2025 ▾]", one button the width of its year (the year in
+  progress adds „până în septembrie"), a hairline border and a soft focus
+  ring. Its menu is every year in one grid of four, newest first, the chosen year
+  filled; the year in progress is marked with a dot and named in a line under
+  the grid („2026: anul în curs, până în septembrie"). It first led the menu
+  on a row of its own; the owner found it read like a title. The pinned bar carries the same button, without the
+  label, once the hero has scrolled away.
+
+### 12.6 The working version's first section: 100 lei, two columns (25 November 2026)
+
+Owner: „Ok" to the recommendation. `persoana.flow.tsx`, anchor `#bani`.
+
+- **One section instead of two.** „De unde vin banii și pe ce se duc": the
+  „Fluxul" version's two columns of the same height, measured in the hero's
+  lei out of 100 instead of lei per resident. It replaces the two
+  hundred-squares sections (spending, revenue).
+- **Left, where 100 spent lei came from:** the revenue lines and, hatched,
+  the borrowed lei. The borrowed lei are the hero's figure (18 in 2025); the
+  revenue lines share the rest (82) by the largest remainder, so the section
+  can never contradict the head. **Right, what they went on:** the spending
+  lines, 100 by the largest remainder.
+- **Labels on the outer sides:** the lei and the name; the official amount
+  too when the block is tall enough (not on a phone). Blocks under 3 lei
+  carry no label; every line is in the lists below.
+- **Under the columns, every line:** its lei of 100, the name with its
+  colour, what it is and the change on the year before, the official amount,
+  and the amount per resident as a description („13.174 lei pe locuitor").
+  This is where per-resident amounts live (owner: descriptions in sections,
+  never the headline).
+- **Wording:** „1 leu"; a change that rounds to nothing is „0%".
+- **The head's top line is a real breadcrumb** (owner: a link back to the
+  homepage): „Acasă / Buget / Național", „Acasă" linked to `/`.
+- The pinned bar and the shortcuts name one section („De unde și pe ce");
+  the figures band's spending and revenue tiles link to it.
+- Still to come, in order: domains and ministries (one section, two tabs),
+  borrowing year by year with the interest, the year so far, „Mai departe".
+
+### 12.7 The landing's type on the working version; the bar and the figures band (25 November 2026)
+
+Owner: polish the font as on the landing page; polish the pinned bar and the
+figures band, keeping their structure and elements.
+
+- **Round commas** (`ss03`) on the page's root, as on the landing: „808,7",
+  „țării", every „ș" and „ț".
+- **Headline:** the landing's spacing: `-0.04em` tracking, `0.06em` word
+  spacing, line height 0.96 (was `tracking-tighter`, 0.92). Weight and sizes
+  unchanged. The lede is `tracking-normal`, balanced.
+- **Mono only where it is necessary** (DESIGN.md, 22 November): no spaced
+  mono capitals are left in the working version's head, bar or band.
+  - The breadcrumb is plain 14px text, „Acasă / Buget / Național", the page's
+    own name in the foreground colour.
+  - „Sau mergi direct la" is plain text on the links' baseline; the links are
+    medium weight, no underline, the accent colour on hover (the landing's
+    shortcut row).
+  - The panel's caption („Bilanțul, 2025") is a small semibold heading.
+- **Pinned bar:** same elements (the page's name, the numbered sections, the
+  year once the hero is gone). The numbers are Inter's tabular figures in the
+  accent colour, not mono. New: the section a reader is in is marked (the
+  foreground colour over a 2px accent rule, `aria-current="location"`), from
+  one IntersectionObserver on a line a quarter of the way down the window.
+  The bar is 48px tall.
+- **Figures band:** same four tiles and the same content, drawn in the
+  prototype (`FiguresBand` in `persoana.lucru.tsx`); the shared
+  `HubFiguresBand` is not changed. The amount with a smaller, quieter unit
+  (the landing's tile); the name in sentence case, 14px medium; the notes in
+  12px, each on its own line and leading with its figure in the foreground
+  colour („18 lei din fiecare 100 cheltuiți", „7,65% din PIB", „+39% față de
+  2024"). A down arrow in the tile's corner (on hover or focus; always on
+  touch) says the tile jumps to its section, where the landing's tiles carry
+  an up-right arrow for leaving the page.
+- Not done: the count-up and the entrances (the prototype never armed them);
+  the other three versions keep their type.
+- **Year button, flat (owner, the same day):** no shadow; a hairline border
+  that darkens on hover, on focus and while the menu is open; a 6px radius;
+  no background change. The menu is unchanged.
+
+### 12.8 The 100-lei lists open on their largest lines (25 November 2026)
+
+Owner: the two lists under the columns were too big; show the most relevant
+lines and an expand for the rest.
+
+- **Closed, each list is its five largest lines** by lei, in the column's
+  order. For 2025: left 26, 17, 7, 7 and the borrowed 18 (kept: it is the
+  second largest and the hero's subject); right 31, 21, 12, 8, 6.
+- **One button across the width, under both lists** (owner: one button, not
+  one per list, as first built): „Arată toate rândurile · încă 13" opens
+  both lists; open, it is „Arată mai puține rânduri" (`aria-expanded`). It is
+  flat, as the year button. Closing takes rows away above it, so the page is
+  moved by as much and the button stays under the pointer. On a phone the
+  lists are stacked, so the first list's extra rows open above the window.
+- **The columns above are unchanged**: they still draw every line.
+- **Wording:** whole lei take „de" from 20 („26 de lei", „17 lei", „1 leu");
+  the figures in a list share a right edge whatever word follows.
+- **The note on how to read the figures** (the consolidated budget, why the
+  columns are level, the rounding, the population) shows under the button
+  only while the lists are open (owner: keep the closed section clean, keep
+  the information).
+
+### 12.9 The working version's second section: the state budget (25 November 2026)
+
+`persoana.state.tsx`, anchor `#stat`; the lists are shared with the first
+section in `persoana.rows.tsx`.
+
+- **One section for two questions** („Bugetul de stat, pe domenii și pe
+  instituții"; the lists are „Pe domenii" and „Pe instituții". Owner: not
+  „și prin cine"), in the pattern the owner settled for the first section: two lists
+  side by side, each closed on its five largest lines, one full-width button
+  for the rest, the reading note shown with the full lists. Not tabs, as
+  first proposed: both answers are visible at once and the pattern repeats.
+- **The caveat is the lede**, always visible: only the state budget; most
+  pensions and the hospitals are paid from separate budgets.
+- **A sentence carries the total**: „Din bugetul de stat s-au plătit 499,4
+  mld. lei în 2025, +15% față de 2024. Din fiecare 100 de lei:". No share of
+  the consolidated total is said: the state budget also sends money to other
+  budgets, so the two totals are not parts of one whole.
+- **Lines:** lei of 100 by the largest remainder (each list makes 100;
+  „<1 leu" under one leu), the name, the official amount, a bar against the
+  list's largest (this section has no chart above the lists), the live
+  page's hint for a domain, the change, and the amount per resident („sub 1
+  leu" when it rounds to nothing). An institution's name opens its page.
+- **Years before 2016** say that ANAF's reports start in 2016.
+- The pinned bar has one entry for it („Bugetul de stat") in place of „Pe
+  domenii" and „Cine".
+
+### 12.10 The working version's third section: borrowing over time (25 November 2026)
+
+`persoana.debt.tsx`, anchor `#imprumut`.
+
+- **Owner:** not lei out of 100 here; the evolution over time matters most;
+  measure it against GDP, with a switch to the amounts. (First built as lei
+  borrowed of every 100 spent, a bar a year.)
+- **The chart is the section:** full width, one bar a year from 2006 to the
+  year in progress, the value over each bar (on a phone, over the chosen
+  year only). A switch at its top right: „% din PIB" (default) and „mld.
+  lei". A bar picks its year for the whole page; the chosen year is filled.
+  The year in progress carries the year menu's dot and its line.
+- **Under the chart, two figures for the chosen year:** the deficit (its
+  headline follows the switch; the other measure, the lei of 100 spent and
+  the amount per resident are its notes) and the debt interest (the official
+  amount; lei of 100, the change and per resident as notes).
+- **Share of GDP, where it comes from.** The bulletins print the deficit's
+  share only from 2019 on, and not in 2023's; they print no GDP for the other
+  years either (checked on the API, 25 November). For those years the share
+  is the printed deficit over the annual GDP (INS CON111B, read from Eurostat
+  `nama_10_gdp`, a table in the prototype). The note names the years
+  („pentru 2006–2018, 2023 … e deficitul împărțit la PIB-ul anual publicat
+  de INS"). The chosen year's figure and the hero's stay the bulletin's own
+  where it prints one (2025: 7,65%).
+  **Owner (25 November):** keep the printed share where the bulletin has
+  one, computed only for the other years (the two differ by about a tenth of
+  a point: 2025 is 7,65% printed, 7,56% computed). **Open:** the live page
+  needs the GDP series served with its vintage.
+- **Amounts** are current lei; the note says so in that view.
+- **A year change no longer shows skeletons.** The picked year reaches the
+  year menus at once and the figures through `useDeferredValue`, so every
+  section keeps its content until the new year is read; meanwhile the page
+  below the bar is a step fainter (`aria-busy`). The sections' read boundary
+  lost its per-year key for this.
+- **The chart holds its place.** Picking an early year shortens the section
+  above (no ANAF lists before 2016); the chart's position in the window is
+  noted on the press and restored when the year lands.
+
+### 12.11 The institutions list capped; the fourth section: the year in progress (25 November 2026)
+
+**State budget, institutions (§12.9).** Owner: the opened lists should end
+close together (21 domains against 55 institutions). The fifteen largest
+institutions are named and linked; the rest share one hatched line, „Alte
+instituții" (in 2025: 40 smaller ministries and institutions, 4 lei, 24,5
+mld. lei), so the list still adds up to 100.
+
+**The year in progress** (`persoana.year.tsx`, anchor `#anul`, title „Anul
+în curs, lună de lună").
+
+- **Owner:** month by month, one line for the year in progress and one for
+  the year before, with the borrowing chart's switch („% din PIB" / „mld.
+  lei"). Chosen over a table of totals.
+- **What a point is:** the consolidated budget's deficit from January to the
+  end of the month, as that month's bulletin prints it (component
+  `general_consolidated_budget`, row „excedent(+) / deficit(-)"; one read of
+  observations for both years' months). The share of GDP is the printed one:
+  the deficit so far over the GDP forecast for the whole year, so the line
+  climbs towards December; the note says so. A month whose bulletin prints
+  no share (May 2025) is passed over by the line and named in the note.
+- **The years are fixed:** the newest the bulletins cover and the one before
+  (2026 to September, against 2025), whatever year the menu holds; the
+  section's title and lede name them.
+- **Read-out as legend:** above the chart, „Până la sfârșitul lui
+  septembrie: 2026 3,81% · 2025 5,39%". The pointer (or a tap) reads any
+  month: a vertical rule, a dot on each line, the month's label in bold.
+- **Under the chart, three figures:** the deficit so far (headline follows
+  the switch; the other measure and the change on the same months, −24%,
+  with last year's amount, as notes), and the change of revenue (+12%) and
+  of spending (+5,5%) on the same months, with their amounts.
+
+**The page's end, „Mai departe"** (anchor `#departe`, not in the bar): the
+live page's six questions („De aici poți începe"), each opening the analysis
+page on its view for the page's year. The list is the live component's
+(`StartLinks`, exported from `home-start.tsx`; the live `StartBand` renders
+it unchanged), under the working version's own heading, without the hub's
+section number.
