@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { BookText, BriefcaseBusiness, ChartColumn, Landmark, Scale, Table2, type LucideIcon } from 'lucide-react'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
@@ -10,8 +9,6 @@ import { useProcurementSupplierSlice } from '@/features/procurement/hooks/use-pr
 import { HubFiguresBand } from '@/features/statistics/components/hub/hub-figures'
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import type { CompanyPaymentGrain, PrivateCompanyProfile, PrivateCompanySearchState } from '@/schemas/private-company'
-import { cn } from '@/lib/utils'
-import { useActiveSection } from '../../hooks/use-active-section'
 import { useCompanyRegistryScope } from '../../hooks/use-company-registry-scope'
 import { useCompanyLitigationShown } from '../../hooks/use-company-litigation-shown'
 import { useDocumentBootstrap } from '../../hooks/use-document-bootstrap'
@@ -29,6 +26,8 @@ import { CompanyMoneyBand, type ProcurementState } from './company-money-band'
 import { CompanyProfileHead } from './company-profile-head'
 import { CompanyProfileError, CompanyProfileRegistryMoved, CompanyProfileSkeleton } from './company-profile-states'
 import { CompanyRegistryBand } from './company-registry-band'
+import { PROFILE_SECTIONS } from './company-profile-sections'
+import { ProfileSectionBar } from './company-section-bar'
 import { CompanyYearsBand } from './company-years-band'
 
 /**
@@ -51,57 +50,6 @@ import { CompanyYearsBand } from './company-years-band'
  * cached from an earlier visit included. The SEAP names behind the public
  * money arrive after it, each with its own pending state.
  */
-
-type SectionId = 'afacerea' | 'bani-publici' | 'activitati' | 'litigii' | 'an-cu-an' | 'registru'
-
-// The owner's order (25 November 2026): what the company does and its statements right under its chart. Each with
-// an icon in the bar, as on the national budget page (owner, 25 November 2026).
-const SECTIONS: readonly { readonly id: SectionId; readonly label: () => string; readonly icon: LucideIcon }[] = [
-  { id: 'afacerea', label: () => t`Afacerea`, icon: ChartColumn },
-  { id: 'activitati', label: () => t`Activități`, icon: BriefcaseBusiness },
-  { id: 'an-cu-an', label: () => t`An cu an`, icon: Table2 },
-  { id: 'bani-publici', label: () => t`Bani publici`, icon: Landmark },
-  { id: 'litigii', label: () => t`Litigii`, icon: Scale },
-  { id: 'registru', label: () => t`Registru`, icon: BookText },
-]
-
-/**
- * The pinned bar, as on the national budget page (owner, 25 November 2026):
- * the company's name, then its bands, each with an icon, the one being read
- * underlined. Only the list scrolls sideways on a phone. Mounted with the
- * bands, so the sections it watches are there when it starts.
- */
-function SectionBar({ name, sections }: { readonly name: string; readonly sections: typeof SECTIONS }) {
-  const active = useActiveSection(sections.map((section) => section.id))
-  return (
-    <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
-      <RuledFrame className="flex items-center gap-6 py-0">
-        <span className="hidden min-w-0 truncate text-sm font-semibold tracking-tight text-foreground md:block md:max-w-72">{name}</span>
-        <ol className="-mx-2.5 flex min-w-0 overflow-x-auto md:ml-auto md:mr-0">
-          {sections.map((section) => {
-            const current = active === section.id
-            return (
-              <li key={section.id} className="shrink-0">
-                <a
-                  href={`#${section.id}`}
-                  aria-current={current ? 'location' : undefined}
-                  className={cn(
-                    'relative inline-flex h-12 items-center gap-2 px-2.5 text-sm transition-colors hover:text-foreground',
-                    'after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:bg-primary after:opacity-0 after:transition-opacity',
-                    current ? 'text-foreground after:opacity-100' : 'text-muted-foreground',
-                  )}
-                >
-                  <section.icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
-                  {section.label()}
-                </a>
-              </li>
-            )
-          })}
-        </ol>
-      </RuledFrame>
-    </nav>
-  )
-}
 
 function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
@@ -173,7 +121,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   const onGrain = (grain: CompanyPaymentGrain) => choose({ plati: grain === grains[0] ? undefined : grain })
 
   const years = model.qualification.statements.length > 0
-  const sections = SECTIONS.filter((section) => (section.id !== 'litigii' || litigation) && (section.id !== 'an-cu-an' || years))
+  const sections = PROFILE_SECTIONS.filter((section) => (section.id !== 'litigii' || litigation) && (section.id !== 'an-cu-an' || years))
   const figures = companyFigures(model, { business: 'afacerea', money: 'bani-publici' })
 
   return (
@@ -183,7 +131,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
 
       <CompanyProfileHead model={model} />
 
-      <SectionBar name={model.displayName} sections={sections} />
+      <ProfileSectionBar name={model.displayName} sections={sections} />
 
       {figures.length > 0 ? (
         <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
