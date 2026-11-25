@@ -8313,6 +8313,10 @@ msgstr "It appears in public contracts and payments with no published value."
 #~ msgid "apare si ca firma"
 #~ msgstr "apare si ca firma"
 
+#: src/features/legal/components/act-publication-band.tsx:60
+msgid "Apariția în Monitorul Oficial dovedește publicarea actului. Data de la care actul produce efecte e cea stabilită în act sau prin lege."
+msgstr "Its appearance in Monitorul Oficial proves the act was published. The date from which the act takes effect is the one set in the act or by law."
+
 #: src/components/provenance/source-provenance.tsx:432
 #~ msgid "Apartenență sectorială (RUEIS)"
 #~ msgstr "Apartenență sectorială (RUEIS)"
@@ -17596,8 +17600,8 @@ msgid "De la cine cumpără Municipiul Cluj-Napoca direct?"
 msgstr "Who does Cluj-Napoca municipality buy from directly?"
 
 #: src/features/legal/components/act-publication-band.tsx:58
-msgid "De la data apariției în Monitorul Oficial, un act produce efecte."
-msgstr "An act takes effect from the date it appears in the Official Gazette."
+#~ msgid "De la data apariției în Monitorul Oficial, un act produce efecte."
+#~ msgstr "An act takes effect from the date it appears in the Official Gazette."
 
 #: src/features/procurement/lib/analytics-text.ts:242
 msgid "de la firme {where}"
@@ -19489,7 +19493,7 @@ msgstr "Catalog only"
 #~ msgid "Doar companii și instituții publice, cu etichete de încredere."
 #~ msgstr "Doar companii și instituții publice, cu etichete de încredere."
 
-#: src/features/legal/components/act-publication-band.tsx:114
+#: src/features/legal/components/act-publication-band.tsx:116
 #: src/features/legal/components/legislation-gazette-directory.tsx:343
 msgid "doar coordonate de publicare"
 msgstr "publication details only"
@@ -31639,7 +31643,7 @@ msgstr "INS quality flags"
 #~ msgid "Marcaje din sursă"
 #~ msgstr "Source flags"
 
-#: src/features/legal/components/act-publication-band.tsx:60
+#: src/features/legal/components/act-publication-band.tsx:62
 msgid "Marcajul se referă doar la existența PDF-ului oficial pe monitoruloficial.ro, nu la disponibilitatea textului la noi."
 msgstr "The mark only says that the official PDF exists on monitoruloficial.ro, not that the text is available here."
 
@@ -32558,7 +32562,7 @@ msgid "Monitor this institution"
 msgstr "Monitor this institution"
 
 #: src/features/entity-search/lib/doc-type-meta.ts:80
-#: src/features/legal/components/act-publication-band.tsx:83
+#: src/features/legal/components/act-publication-band.tsx:85
 #: src/features/legal/components/act-timeline-band.tsx:124
 #: src/features/legal/components/hub/legislation-hub-lib.ts:162
 #: src/features/legal/components/hub/legislation-hub.tsx:154
@@ -34956,7 +34960,7 @@ msgstr "Now"
 #. placeholder {0}: issue.issueLabel
 #. placeholder {0}: publication.issueNumber
 #. placeholder {0}: row.no
-#: src/features/legal/components/act-publication-band.tsx:87
+#: src/features/legal/components/act-publication-band.tsx:89
 #: src/features/legal/components/legislation-gazette-directory.tsx:333
 #: src/features/procurement/components/procedure/procedure-block.tsx:660
 msgid "nr. {0}"
@@ -37892,7 +37896,7 @@ msgstr "Security and cleaning"
 msgid "Pază și protecție"
 msgstr "Security services"
 
-#: src/features/legal/components/act-publication-band.tsx:108
+#: src/features/legal/components/act-publication-band.tsx:110
 msgid "PDF oficial"
 msgstr "Official PDF"
 
@@ -39473,7 +39477,7 @@ msgstr "You can browse the acts in the <0>acts directory</0> and the Official Ga
 msgid "potrivire posibilă — nu am identificat actul exact"
 msgstr "possible match — we have not identified the exact act"
 
-#: src/features/legal/components/act-publication-band.tsx:120
+#: src/features/legal/components/act-publication-band.tsx:122
 msgid "potrivire probabilă cu acest număr"
 msgstr "probable match with this issue"
 
