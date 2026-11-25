@@ -1414,9 +1414,12 @@ lines and an expand for the rest.
 - **Closed, each list is its five largest lines** by lei, in the column's
   order. For 2025: left 26, 17, 7, 7 and the borrowed 18 (kept: it is the
   second largest and the hero's subject); right 31, 21, 12, 8, 6.
-- **The button under a list** says what is hidden: „Arată și celelalte 7 ·
-  25 de lei din 100"; open, it is „Arată mai puține". Each list opens on its
-  own (`aria-expanded`); nothing above the button moves.
+- **One button across the width, under both lists** (owner: one button, not
+  one per list, as first built): „Arată toate rândurile · încă 13" opens
+  both lists; open, it is „Arată mai puține rânduri" (`aria-expanded`). It is
+  flat, as the year button. Closing takes rows away above it, so the page is
+  moved by as much and the button stays under the pointer. On a phone the
+  lists are stacked, so the first list's extra rows open above the window.
 - **The columns above are unchanged**: they still draw every line.
 - **Wording:** whole lei take „de" from 20 („26 de lei", „17 lei", „1 leu");
   the figures in a list share a right edge whatever word follows.
