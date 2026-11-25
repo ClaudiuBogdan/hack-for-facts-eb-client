@@ -11,7 +11,7 @@ import { TOTAL_ITEMS, siteKeys } from '@/features/national-budget/home/lib/home-
 import { useGdp } from '@/features/national-budget/home/hooks/use-home-data'
 import { gdpSizeText, moneyText } from '@/features/national-budget/home/lib/home-format'
 import { cn } from '@/lib/utils'
-import { populationText, useHundred, useOfficialTotals } from './persoana.data'
+import { leiWord, populationText, useHundred, useOfficialTotals } from './persoana.data'
 import { FlowSection } from './persoana.flow'
 import { BORROWED_FILL } from './persoana.sections'
 import { DataNote, SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
@@ -294,7 +294,10 @@ function FiguresBand() {
     ) : null
   const ofHundred = (lei: number) => (
     <>
-      <Mark>{lei === 1 ? '1 leu' : `${lei} lei`}</Mark> din fiecare 100 cheltuiți
+      <Mark>
+        {lei} {leiWord(lei)}
+      </Mark>{' '}
+      din fiecare 100 cheltuiți
     </>
   )
   const figures: Figure[] = [

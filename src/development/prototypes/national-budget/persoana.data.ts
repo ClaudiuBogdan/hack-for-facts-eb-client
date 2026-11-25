@@ -70,6 +70,13 @@ export function leiText(lei: number | null): string {
   return lei === null ? '—' : `${formatHubNumber(Math.round(lei))}\u00a0lei`
 }
 
+/** The word after a whole number of lei: „1 leu", „18 lei", „21 de lei". */
+export function leiWord(lei: number): string {
+  if (lei === 1) return 'leu'
+  const tail = lei % 100
+  return lei === 0 || (tail >= 1 && tail <= 19) ? 'lei' : 'de lei'
+}
+
 /** The figure alone, whole lei: „42.467". */
 export function leiNumber(lei: number | null): string {
   return lei === null ? '—' : formatHubNumber(Math.round(lei))

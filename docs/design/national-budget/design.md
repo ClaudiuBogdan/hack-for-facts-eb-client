@@ -1405,3 +1405,18 @@ figures band, keeping their structure and elements.
 - **Year button, flat (owner, the same day):** no shadow; a hairline border
   that darkens on hover, on focus and while the menu is open; a 6px radius;
   no background change. The menu is unchanged.
+
+### 12.8 The 100-lei lists open on their largest lines (25 November 2026)
+
+Owner: the two lists under the columns were too big; show the most relevant
+lines and an expand for the rest.
+
+- **Closed, each list is its five largest lines** by lei, in the column's
+  order. For 2025: left 26, 17, 7, 7 and the borrowed 18 (kept: it is the
+  second largest and the hero's subject); right 31, 21, 12, 8, 6.
+- **The button under a list** says what is hidden: „Arată și celelalte 7 ·
+  25 de lei din 100"; open, it is „Arată mai puține". Each list opens on its
+  own (`aria-expanded`); nothing above the button moves.
+- **The columns above are unchanged**: they still draw every line.
+- **Wording:** whole lei take „de" from 20 („26 de lei", „17 lei", „1 leu");
+  the figures in a list share a right edge whatever word follows.

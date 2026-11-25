@@ -1,8 +1,9 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
+import { ChevronDown } from 'lucide-react'
 
 import { moneyText } from '@/features/national-budget/home/lib/home-format'
 import { cn } from '@/lib/utils'
-import { changeOf, type HundredLine, leiText, outOfHundred, perPerson, useHundred, useOfficialTotals } from './persoana.data'
+import { changeOf, type HundredLine, leiText, leiWord, outOfHundred, perPerson, useHundred, useOfficialTotals } from './persoana.data'
 import { BORROWED_FILL, REST_FILL, inPeriod, toneOf } from './persoana.sections'
 import { Note, Section, usePersonYear } from './persoana.shell'
 
@@ -11,8 +12,8 @@ import { Note, Section, usePersonYear } from './persoana.shell'
  * columns of the same height (the „Fluxul" version's object, in the hero's
  * measure). Left, where they came from: the revenue lines, and the borrowed
  * lei the hero names, hatched. Right, what they went on. Under the columns,
- * each line with its official amount and, as a description, its lei per
- * resident.
+ * the largest lines with their official amount and, as a description, their
+ * lei per resident; the rest open on request.
  */
 
 type Part = {
@@ -67,17 +68,37 @@ function Column({ parts, side }: { readonly parts: readonly Part[]; readonly sid
 
 // ──────────────────────────────────────────────────────────── the detail ──
 
-/** Every line of a column: its lei of 100, what it is, the official amount and the amount per resident. */
+/** How many lines a list shows before it is opened: the largest ones. */
+const SHOWN = 5
+
+/**
+ * A column's lines: its lei of 100, what it is, the official amount and the
+ * amount per resident. Closed, the list is its five largest lines (owner: the
+ * full lists were too big); the button under it says how many more there are
+ * and how many lei they make.
+ */
 function Rows({ title, parts, previous }: { readonly title: string; readonly parts: readonly Part[]; readonly previous: string }) {
   const { view } = usePersonYear()
+  const [open, setOpen] = useState(false)
+  // The largest lines, kept in the column's order (the borrowed lei stay last).
+  const largest = new Set(
+    [...parts]
+      .sort((a, b) => b.lei - a.lei)
+      .slice(0, SHOWN)
+      .map((part) => part.key),
+  )
+  const shown = open ? parts : parts.filter((part) => largest.has(part.key))
+  const hidden = parts.length - largest.size
+  const hiddenLei = parts.filter((part) => !largest.has(part.key)).reduce((sum, part) => sum + part.lei, 0)
   return (
     <div className="min-w-0">
       <h3 className="text-sm font-semibold">{title}</h3>
       <ul className="mt-3 divide-y border-y">
-        {parts.map((part) => (
-          <li key={part.key} className="grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5">
-            <span className="whitespace-nowrap text-right text-lg font-semibold tabular-nums">
-              {part.lei} <span className="text-xs font-normal text-muted-foreground">{part.lei === 1 ? 'leu' : 'lei'}</span>
+        {shown.map((part) => (
+          <li key={part.key} className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5">
+            {/* The figures share a right edge, whatever word follows them („lei", „de lei"). */}
+            <span className="whitespace-nowrap text-lg font-semibold tabular-nums">
+              <span className="inline-block w-7 text-right">{part.lei}</span> <span className="text-xs font-normal text-muted-foreground">{leiWord(part.lei)}</span>
             </span>
             <span className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className={cn('size-2.5 shrink-0 translate-y-px rounded-[2px]', part.fill.className)} style={part.fill.style} aria-hidden="true" />
@@ -92,6 +113,22 @@ function Rows({ title, parts, previous }: { readonly title: string; readonly par
           </li>
         ))}
       </ul>
+      {hidden > 0 ? (
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((was) => !was)}
+          className="mt-1 inline-flex min-h-11 items-center gap-1.5 rounded-sm text-sm font-medium text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          {open ? 'Arată mai puține' : `Arată și celelalte ${hidden}`}
+          {open ? null : (
+            <span className="font-normal text-muted-foreground">
+              {hiddenLei} {leiWord(hiddenLei)} din 100
+            </span>
+          )}
+          <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')} aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   )
 }
