@@ -38,7 +38,7 @@ files, including the no-mock tests and the REST map read the warnings never show
 | `cookie-consent.spec.ts` | map grouped-series 18 | client-entity-analytics | fixed, e1f142c3 |
 | `entity-exploration.spec.ts` | map grouped-series 4, MapPopulation 2 | client-entity-analytics | fixed, e1f142c3 |
 | `development-surface.spec.ts` | map grouped-series 1 | client-entity-analytics | fixed, e1f142c3 |
-| `companies-profile.spec.ts` | CompanyAnalysisRelease 7, ProcurementCutoff 7, ProcurementDaRelease 7 | client-companies | open |
+| `companies-profile.spec.ts` | CompanyAnalysisRelease 7, ProcurementCutoff 7, ProcurementDaRelease 7 | client-companies | fixed, 59820e871 (on dev in 9cdd0b55d) |
 | `procurement-analytics.spec.ts` | AnalyticsFigures 26, ProcurementDaRelease 16, AnalyticsSeries 13, AnalyticsConcentration 9, AnalyticsRanking 8, AnalyticsRecords 5, ProcurementHomeContracts 2 | procurement-da-client | open |
 | `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open |
 | `national-budget-home.spec.ts` | BudgetApprovedRecords 40, BudgetExecutionObservations 3, BudgetNationalExecutionSeries 3, AggregatedLineItems 2, EntityAnalytics 2, BudgetApprovedTotals 1 | client-dev-polish | open |
