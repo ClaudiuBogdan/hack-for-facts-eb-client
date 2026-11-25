@@ -24,15 +24,15 @@ type Entry = {
   readonly value: Promise<Answer>
   /** When the read resolved and was kept; `null` while it is in flight. */
   keptAt: number | null
-  /** A background refresh is in flight. */
-  refreshing: boolean
+  /** The background refresh in flight, if any: awaited, not started again, at the hard cutoff. */
+  refreshing: Promise<Answer> | null
 }
 
 const entries = new Map<string, Entry>()
 
 function start(key: string, read: () => Promise<Answer>, now: () => number): Promise<Answer> {
   const value = read()
-  const entry: Entry = { value, keptAt: null, refreshing: false }
+  const entry: Entry = { value, keptAt: null, refreshing: null }
   entries.set(key, entry)
   value.then(
     () => {
@@ -59,21 +59,36 @@ export function memoAnalyticsRead(key: string, read: () => Promise<Answer>, now:
   if (age < KEEP_MS) return hit.value
   if (age < 2 * KEEP_MS) {
     if (!hit.refreshing) {
-      hit.refreshing = true
       const fresh = read()
+      hit.refreshing = fresh
       fresh.then(
         () => {
-          if (entries.get(key) === hit) entries.set(key, { value: fresh, keptAt: now(), refreshing: false })
+          if (entries.get(key) === hit) entries.set(key, { value: fresh, keptAt: now(), refreshing: null })
         },
         () => {
-          hit.refreshing = false
+          if (hit.refreshing === fresh) hit.refreshing = null
         },
       )
     }
     return hit.value
   }
-  // Too old to serve: wait for a fresh read, and let its failure reach the loader.
+  // Too old to serve: wait for a fresh read (the refresh already in flight, if any), and let its failure reach
+  // the loader.
   entries.delete(key)
+  if (hit.refreshing) {
+    const pending = hit.refreshing
+    const entry: Entry = { value: pending, keptAt: null, refreshing: null }
+    entries.set(key, entry)
+    pending.then(
+      () => {
+        if (entries.get(key) === entry) entry.keptAt = now()
+      },
+      () => {
+        if (entries.get(key) === entry) entries.delete(key)
+      },
+    )
+    return pending
+  }
   return start(key, read, now)
 }
 

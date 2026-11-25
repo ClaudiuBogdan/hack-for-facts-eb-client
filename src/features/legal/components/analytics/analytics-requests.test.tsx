@@ -122,6 +122,29 @@ describe('the analysis page and its reads', () => {
     expect(screen.queryByText(/Întrebarea nu se potrivește/)).not.toBeInTheDocument()
   })
 
+  it('hides the listed acts when a refetch of the list fails', async () => {
+    const client = createTestQueryClient()
+    render(<LegislationAnalyticsPage />, { queryClient: client })
+    const acts = await screen.findByRole('region', { name: 'Actele din selecție' })
+    expect((await within(acts).findAllByRole('link')).length).toBeGreaterThan(0)
+    intercept = (view) => (view === 'acts' ? Promise.reject(new LegalAnalyticsError('failed', 'boom', 500)) : undefined)
+    await client.refetchQueries({ queryKey: ['legal', 'analytics', 'acts', 'paged'] }).catch(() => undefined)
+    await waitFor(() => expect(within(acts).queryAllByRole('link')).toHaveLength(0), { timeout: 8000 })
+    expect(within(acts).queryByRole('button', { name: 'Mai multe acte' })).not.toBeInTheDocument()
+    expect(within(acts).getByText('Nu am putut încărca această parte a analizei.')).toBeInTheDocument()
+  })
+
+  it('prints a share that rounds to 100% without being it as its bound', async () => {
+    intercept = (view, args) =>
+      view === 'summary'
+        ? fetchLegalAnalyticsMock('summary', args).then((answer) => ({ ...answer, data: { ...answer.data, total: 10_000, withText: 9_999 } }))
+        : undefined
+    render(<LegislationAnalyticsPage />, { queryClient: createTestQueryClient() })
+    const tile = await screen.findByTestId('analysis-figure-text')
+    expect(tile).toHaveTextContent('>99,9%')
+    expect(tile).not.toHaveTextContent('100')
+  })
+
   it('keeps the acts already listed when the next page fails', async () => {
     intercept = (view, args) => {
       if (view !== 'acts') return undefined

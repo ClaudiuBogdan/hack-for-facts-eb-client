@@ -7,7 +7,8 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 vi.mock('@/lib/http-cache', () => ({
   createNoStoreHeaders: () => ({ 'Cache-Control': 'no-store' }),
-  createPublicPageCacheHeaders: () => ({ 'Cache-Control': 'public' }),
+  // the policy's own Vary, as the real helper writes it, so the test sees what each route asks for
+  createPublicPageCacheHeaders: (policy: { readonly vary?: readonly string[] }) => ({ 'Cache-Control': 'public', Vary: (policy.vary ?? ['Accept-Encoding']).join(', ') }),
 }))
 
 type Headers = (input: { readonly loaderData?: { readonly seeded?: boolean }; readonly match?: { readonly status: string } }) => Record<string, string>
@@ -21,8 +22,9 @@ const routes: readonly (readonly [string, () => Promise<{ readonly Route: unknow
 describe.each(routes)('%s headers', (_name, load) => {
   const headersOf = async () => ((await load()).Route as { readonly headers: Headers }).headers
 
-  it('are public for a successful match whose server reads all answered', async () => {
-    expect((await headersOf())({ loaderData: { seeded: true }, match: { status: 'success' } })).toEqual({ 'Cache-Control': 'public' })
+  it('are public for a successful match whose server reads all answered, and vary on the reader\'s cookies', async () => {
+    // the page renders in the reader's language and consent, read from their cookies, as the other hubs do
+    expect((await headersOf())({ loaderData: { seeded: true }, match: { status: 'success' } })).toEqual({ 'Cache-Control': 'public', Vary: 'Accept-Encoding, Cookie' })
   })
 
   it('are no-store without loader data', async () => {

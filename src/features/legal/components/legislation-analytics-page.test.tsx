@@ -17,7 +17,8 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('../hooks/use-legislation', () => ({
-  useLegislationStatusCounts: vi.fn(() => ({ data: {}, isError: false })),
+  // counts the server would give: the analysis page must show none of them
+  useLegislationStatusCounts: vi.fn(() => ({ data: { total: 227_202, inVigoare: 196_121, abrogat: 22_767 }, isError: false })),
   useLegislationFreshness: vi.fn(() => ({ data: undefined, isError: false })),
 }))
 
@@ -77,6 +78,14 @@ describe('LegislationAnalyticsPage', () => {
     const call = navigateMock.mock.calls[0]?.[0] as { search: (p: Record<string, unknown>) => Record<string, unknown> }
     // the issuer goes, the family stays
     expect(call.search({ familie: 'guvern', emitent: 'Guvernul' })).toEqual({ familie: 'guvern' })
+  })
+
+  it('shows no in-force or repealed counts, even when the status read answers', async () => {
+    render(<LegislationAnalyticsPage />)
+    expect(await screen.findByText('acte în selecție')).toBeInTheDocument()
+    expect(screen.queryByText(/196\.121/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/22\.767/)).not.toBeInTheDocument()
+    expect(screen.queryByText('în vigoare')).not.toBeInTheDocument()
   })
 
   it('says under mock mode that the figures are a fixture', async () => {

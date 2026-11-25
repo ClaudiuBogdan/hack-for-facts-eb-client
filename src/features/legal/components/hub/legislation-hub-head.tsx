@@ -58,7 +58,8 @@ export function HubHeadActs({ ranking, onRanking }: { readonly ranking: HubRanki
   const cited = ranking === 'citate'
   const acts = useLegalAnalytics('acts', hubActsArgs(ranking))
   // Only an answer read since the card mounted names acts here (the server's privacy gate is asked on every read).
-  const fresh = acts.isFetchedAfterMount ? acts.data : undefined
+  // and only while it stands: a refetch that failed hides the names it showed
+  const fresh = acts.isFetchedAfterMount && !acts.isError ? acts.data : undefined
   const rows = (fresh?.data.rows ?? []).slice(0, HEAD_ACTS_SHOWN)
   const figure = (row: (typeof rows)[number]) => (cited ? row.cited : row.amended)
   const top = Math.max(1, ...rows.map(figure))

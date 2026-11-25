@@ -239,7 +239,7 @@ function StartCards() {
   const head = useLegalAnalytics('head', {}).data?.data
   const links = useLegalAnalytics('links', {})
   // counts only, from a read since mount (the links answer names acts)
-  const amends = links.isFetchedAfterMount && links.data ? linkCounts(links.data.data, 'amends').resolved : undefined
+  const amends = links.isFetchedAfterMount && !links.isError && links.data ? linkCounts(links.data.data, 'amends').resolved : undefined
   const ordinances = head?.types.find((row) => row.key === 'ordonanta-urgenta')?.acts
   const government = head?.issuers.find((row) => row.lineage === GOVERNMENT)?.acts
   return (

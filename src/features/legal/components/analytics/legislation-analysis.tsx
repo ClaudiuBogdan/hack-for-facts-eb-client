@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2, SlidersHorizontal } from 'lucide-react'
@@ -10,7 +10,6 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import type {
   LegalAnalyticsArgs,
@@ -50,34 +49,25 @@ import {
   type Order,
   type Question,
 } from '../../lib/analytics-question'
-import { fmt, pct, pctOf, shareFigure } from '../../lib/analytics-format'
+import { fmt, pct, pctOf } from '../../lib/analytics-format'
 import { readingSentence } from '../../lib/analytics-notes-text'
 import { labelOfKey, rankedOf, useQuestion } from '../../lib/analytics-view'
-import { everyYear } from '../../lib/analytics-years'
+import { everyYear, undrawnActs } from '../../lib/analytics-years'
 import { AnalyticsCaveats, AnalyticsProblem } from './analytics-notes'
+import { AnalysisFigures, type AnalysisFigure } from './analysis-figures'
 import { CrossGrid, RankedTable, StackedYears } from './analytics-charts'
 
-function fact(key: string, value: number, digits: number, unit: string, label: string, note: string, href: string): HubFact {
-  return {
-    key,
-    value,
-    digits,
-    unit: unit || undefined,
-    label,
-    note,
-    link: (children: ReactNode, className: string) => (
-      <a href={href} className={className}>
-        {children}
-      </a>
-    ),
-  }
+/** A share as a headline figure: it counts up, unless it is a bound („<0,1%", „>99,9%"), printed as it is. */
+function shareValue(n: number, total: number): AnalysisFigure['value'] {
+  const text = pctOf(n, total)
+  return text.startsWith('<') || text.startsWith('>') ? { kind: 'text', text } : { kind: 'number', value: (n / total) * 100, digits: 1, unit: '%' }
 }
 
 /** The firm rule-making share and the uncertain and unplaced remainders, from one summary. */
 function rulesOf(s: LegalAnalyticsSummary) {
   const rules = s.felul.find((r) => r.key === 'rule-making')?.acts ?? 0
   return {
-    main: shareFigure(rules, s.total),
+    main: shareValue(rules, s.total),
     note: s.total
       ? t`${pctOf(s.uncertain, s.total)} încadrare nesigură · ${pctOf(s.unplaced, s.total)} neîncadrate · din ${fmt(s.total)}`
       : '',
@@ -172,20 +162,11 @@ export function LegislationAnalysis({ unavailable = false }: { readonly unavaila
           {t`Niciun act nu se potrivește cu această întrebare. Scoate un filtru.`}
         </p>
       ) : s ? (
-        <HubFiguresBand
-          locale="ro"
-          facts={[
-            fact('sel', s.total, 0, '', t`acte în selecție`, t`din ${fmt(s.population)} (${population})`, '#raspuns'),
-            fact('reguli', rulesOf(s).main.value, rulesOf(s).main.digits, '%', t`stabilesc reguli (încadrate ferm)`, rulesOf(s).note, '#raspuns'),
-            fact(
-              'text',
-              shareFigure(s.withText, s.total).value,
-              shareFigure(s.withText, s.total).digits,
-              '%',
-              t`au text citibil în Portal`,
-              t`${fmt(s.withText)} acte`,
-              '#raspuns',
-            ),
+        <AnalysisFigures
+          figures={[
+            { key: 'sel', value: { kind: 'number', value: s.total, digits: 0 }, label: t`acte în selecție`, note: t`din ${fmt(s.population)} (${population})`, href: '#raspuns' },
+            { key: 'reguli', value: rulesOf(s).main, label: t`stabilesc reguli (încadrate ferm)`, note: rulesOf(s).note, href: '#raspuns' },
+            { key: 'text', value: shareValue(s.withText, s.total), label: t`au text citibil în Portal`, note: t`${fmt(s.withText)} acte`, href: '#raspuns' },
           ]}
         />
       ) : summary.error ? (
@@ -391,19 +372,26 @@ function SeriesAnswer({ q, base }: { readonly q: Question; readonly base: LegalA
   if (answer.error) return <AnalyticsProblem error={answer.error} />
   const s = answer.data?.data
   if (!s) return <div className="h-64 animate-pulse bg-muted/40" aria-hidden="true" />
+  const served = s.years.map((y) => ({ year: y.year, values: y.acts }))
+  // a column for every calendar year of the period (the API leaves out a year without acts); a chosen period is
+  // drawn whole, its empty years at either end included
+  const drawn = everyYear(served, s.keys.length + 1, q.an ? { from: q.an.from, to: q.an.to } : {})
+  // acts dated outside what is drawn (outside 1800–2100) are counted, never dropped in silence
+  const undrawn = undrawnActs(served, drawn)
   return (
     <StackedYears
-      // a column for every calendar year of the period: the API leaves out a year without acts
-      years={everyYear(
-        s.years.map((y) => ({ year: y.year, values: y.acts })),
-        s.keys.length + 1,
-        // a chosen period is drawn whole, its empty years at either end included
-        q.an ? { from: q.an.from, to: q.an.to } : {},
-      )}
+      years={drawn}
       labels={[...s.keys.map((k) => labelOfKey(s.lens, k)), t`altele`]}
       lastIsRest
       caption={t`acte pe an, după ${LENS_LABEL[vedere].toLowerCase()}`}
-      footnote={s.unknownYear ? t`${fmt(s.unknownYear)} acte fără an nu sunt pe grafic.` : undefined}
+      footnote={
+        s.unknownYear || undrawn ? (
+          <>
+            {s.unknownYear ? t`${fmt(s.unknownYear)} acte fără an nu sunt pe grafic.` : null}{' '}
+            {undrawn ? t`Nici ${fmt(undrawn)} acte cu un an în afara anilor 1800–2100.` : null}
+          </>
+        ) : undefined
+      }
     />
   )
 }
@@ -461,7 +449,8 @@ function LinksView({ base }: { readonly base: LegalAnalyticsArgs }) {
   if (answer.error) return <AnalyticsProblem error={answer.error} />
   // The view names acts: only an answer read since this view mounted is shown (the server's privacy gate is
   // asked on every read), never one another part of the page kept.
-  const l = answer.isFetchedAfterMount ? answer.data?.data : undefined
+  // and only while that read stands: a refetch that failed hides the names it showed
+  const l = answer.isFetchedAfterMount && !answer.isError ? answer.data?.data : undefined
   if (!l) return <div className="h-64 animate-pulse bg-muted/40" aria-hidden="true" />
   const cell = (a: string, b: string) => l.amends.find((x) => x.sourceBand === a && x.target === b)?.links ?? 0
   const total = l.amends.reduce((s, x) => s + x.links, 0)
@@ -651,7 +640,9 @@ function ActsBand({
   }, [cursorRefused, client])
   const first = pages.data?.pages[0]?.data
   // Only rows read since this list mounted: the view names acts (see LinksView).
-  const rows = pages.isFetchedAfterMount ? (pages.data?.pages.flatMap((p) => p.data.rows) ?? []) : []
+  // A refetch of the first page that failed hides them; a next page that failed after verified rows keeps them.
+  const verified = pages.isFetchedAfterMount && (!pages.isError || pages.isFetchNextPageError)
+  const rows = verified ? (pages.data?.pages.flatMap((p) => p.data.rows) ?? []) : []
   const hidden = first?.hidden ?? 0
   return (
     <section id="acte" aria-label={t`Actele din selecție`}>
@@ -674,7 +665,8 @@ function ActsBand({
           ]}
         />
       </div>
-      {pages.error && !pages.data ? (
+      {/* The list failed, or a refetch of it did: the failure, not rows kept from before. */}
+      {pages.error && !pages.isFetchNextPageError ? (
         <AnalyticsProblem error={pages.error} />
       ) : (
         <Table className="mt-6">
@@ -725,7 +717,7 @@ function ActsBand({
                 <TableCell className="py-1.5 text-right tabular-nums">{a.amended || '—'}</TableCell>
                 <TableCell className="py-1.5 text-right tabular-nums">{a.court || '—'}</TableCell>
                 <TableCell className="py-1.5 text-right tabular-nums">{a.versions || '—'}</TableCell>
-                <TableCell className="py-1.5 text-right tabular-nums">{a.cited || '—'}</TableCell>
+                <TableCell className="py-1.5 text-right tabular-nums">{fmt(a.cited)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -737,7 +729,7 @@ function ActsBand({
           {hidden ? t`${fmt(hidden)} acte ale selecției nu pot fi afișate (restricționate după calcul).` : null}{' '}
           {nextFailed && !cursorRefused ? <span role="status">{t`Următoarele acte nu s-au încărcat. Cele de mai sus rămân; încearcă din nou.`}</span> : null}
         </p>
-        {pages.hasNextPage ? (
+        {verified && pages.hasNextPage ? (
           <button
             type="button"
             className="min-h-11 border px-4 text-sm hover:bg-muted"

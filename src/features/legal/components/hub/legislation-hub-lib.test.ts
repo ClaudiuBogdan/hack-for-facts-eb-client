@@ -75,6 +75,12 @@ describe('yearsChart', () => {
     expect(chart.peak).toEqual({ year: YEARS_FROM + 2, acts: 15 })
   })
 
+  it('counts the acts dated past 2100 apart, never drawing them', () => {
+    const chart = yearsChart({ ...series, years: [...series.years, { year: 2200, acts: [1, 1, 1] }] })
+    expect(chart.later).toBe(3)
+    expect(chart.years[chart.years.length - 1]?.year).toBe(YEARS_FROM + 2)
+  })
+
   it('keeps every act the API counted with a year: drawn plus earlier', () => {
     const chart = yearsChart(series)
     const drawn = chart.years.reduce((sum, row) => sum + row.values.reduce((a, b) => a + b, 0), 0)

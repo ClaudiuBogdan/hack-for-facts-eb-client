@@ -65,6 +65,8 @@ export const Route = createFileRoute('/legislation/')({
       : createPublicPageCacheHeaders({
           sharedMaxAgeSeconds: 600,
           staleWhileRevalidateSeconds: 3600,
+          // the page renders in the reader's language and consent, from their cookies, as the other hubs
+          vary: ['Accept-Encoding', 'Cookie'],
         }),
   head: () => ({
     meta: [

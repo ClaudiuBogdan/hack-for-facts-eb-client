@@ -10,6 +10,15 @@ export type YearColumn = { readonly year: number; readonly values: readonly numb
 const YEAR_MIN = 1800
 const YEAR_MAX = 2100
 
+/** The acts of the years served that the axis does not draw: outside its bounds, or outside 1800–2100. */
+export function undrawnActs(years: readonly YearColumn[], drawn: readonly YearColumn[]): number {
+  const first = drawn[0]?.year
+  const last = drawn[drawn.length - 1]?.year
+  return years
+    .filter((row) => first === undefined || last === undefined || row.year < first || row.year > last)
+    .reduce((sum, row) => sum + row.values.reduce((a, b) => a + b, 0), 0)
+}
+
 /**
  * One column a year from `from` to `to` (by default the first and the last year served), each `width` values
  * wide. Years served outside the bounds are left out: the caller counts them.

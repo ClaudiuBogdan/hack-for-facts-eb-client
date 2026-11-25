@@ -91,14 +91,17 @@ export function ChangesBand() {
       </>
     )
   } else if (newest !== null) {
-    lede = (
-      <>
+    lede =
+      inWindow === 0 ? (
+        <Trans>
+          Cea mai recentă modificare înregistrată a intrat în vigoare pe <Figure>{formatLegalDate(newest, i18n.locale)}</Figure>; în ultimele{' '}
+          {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna.
+        </Trans>
+      ) : (
         <Trans>
           Cea mai recentă modificare înregistrată a intrat în vigoare pe <Figure>{formatLegalDate(newest, i18n.locale)}</Figure>.
-        </Trans>{' '}
-        {inWindow === 0 ? <Trans>În ultimele {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna.</Trans> : null}
-      </>
-    )
+        </Trans>
+      )
   } else if (feed.isPending || count.isPending) {
     lede = <PendingBar className="w-4/5" />
   } else {
@@ -335,7 +338,7 @@ export function YearsBand() {
   return (
     <Band
       id="ani"
-      title={<Trans>Acte publicate pe ani</Trans>}
+      title={<Trans>Acte după anul actului</Trans>}
       lede={
         chart?.peak ? (
           <>
@@ -371,6 +374,7 @@ export function YearsBand() {
                   other: `Nu sunt pe grafic: # de acte dinainte de ${YEARS_FROM}`,
                 })}{' '}
                 {plural(s.unknownYear, { one: 'și # act fără an.', few: 'și # acte fără an.', other: 'și # de acte fără an.' })}
+                {chart.later > 0 ? <> {plural(chart.later, { one: 'Nici # act cu un an după 2100.', few: 'Nici # acte cu un an după 2100.', other: 'Nici # de acte cu un an după 2100.' })}</> : null}
               </>
             }
           />
@@ -407,22 +411,28 @@ type Days = { readonly links: number; readonly p25: number | null; readonly medi
 
 /**
  * The days from an ordinance to the law that approves it, as the API measures them: from the first publication
- * in Monitorul Oficial of the one to that of the other, over links (a law can approve several ordinances). The
- * middle half is named as such; a quartile the API does not give is left out, never read as zero.
+ * in Monitorul Oficial of the one to the first publication in Monitorul Oficial of the other, over links (a law
+ * can approve several ordinances). Each statistic the API gives is said on its own; one it does not give is left
+ * out, never read as zero.
  */
-function OrdinanceDays({ days }: { readonly days: Days }) {
-  if (days.median === null) return null
+export function OrdinanceDays({ days }: { readonly days: Days }) {
   const span = (n: number) => plural(n, { one: '# zi', few: '# zile', other: '# de zile' })
+  const parts = [
+    days.median !== null ? <Trans key="median">mediana: {span(days.median)}</Trans> : null,
+    days.p25 !== null ? <Trans key="p25">un sfert dintre ele: cel mult {span(days.p25)}</Trans> : null,
+    days.p75 !== null ? <Trans key="p75">un sfert: cel puțin {span(days.p75)}</Trans> : null,
+  ].filter((part) => part !== null)
+  if (parts.length === 0) return null
   return (
     <>
-      <Trans>De la publicarea ordonanței la a legii, mediana e de</Trans> {span(days.median)}
-      {days.p25 !== null && days.p75 !== null ? (
-        <>
-          {' '}
-          (<Trans>jumătate dintre ele între</Trans> {fmt(days.p25)} <Trans>și</Trans> {span(days.p75)})
-        </>
-      ) : null}
-      , {plural(days.links, { one: 'măsurată pe o trimitere.', few: 'măsurată pe # trimiteri.', other: 'măsurată pe # de trimiteri.' })}
+      <Trans>De la prima publicare în Monitorul Oficial a ordonanței la prima publicare în Monitorul Oficial a legii</Trans>:{' '}
+      {parts.map((part, index) => (
+        <span key={index}>
+          {index > 0 ? '; ' : null}
+          {part}
+        </span>
+      ))}
+      ; {plural(days.links, { one: 'măsurate pe o trimitere.', few: 'măsurate pe # trimiteri.', other: 'măsurate pe # de trimiteri.' })}
     </>
   )
 }
@@ -434,7 +444,7 @@ function OrdinanceDays({ days }: { readonly days: Days }) {
 export function LinksBand() {
   const links = useLegalAnalytics('links', {})
   // The answer names acts (its top targets): this band shows only its counts, from a read since it mounted.
-  const l = links.isFetchedAfterMount ? links.data?.data : undefined
+  const l = links.isFetchedAfterMount && !links.isError ? links.data?.data : undefined
   const counts = l ? LINK_KINDS.map((kind) => ({ kind, ...linkCounts(l, kind) })) : []
   const resolved = counts.reduce((sum, row) => sum + row.resolved, 0)
   const approval = l?.days.find((row) => row.kind === 'approves_ordinance') ?? null
@@ -542,7 +552,7 @@ export function GazetteBand() {
         )
       }
       infoLabel={t`Despre Monitorul Oficial`}
-      info={<p>{t`Numerele din date, toate părțile. Un număr arată când a fost publicat un act; data de la care actul produce efecte poate fi alta, cea scrisă în act.`}</p>}
+      info={<p>{t`Numerele din date, toate părțile. Un număr arată când a fost publicat un act.`}</p>}
     >
       {issues.error ? (
         <BandNote error={issues.error} onRetry={() => void issues.refetch()} />

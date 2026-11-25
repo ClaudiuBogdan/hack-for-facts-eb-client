@@ -8,10 +8,13 @@ import {
   fetchGazetteIssueContentsLive,
   fetchGazetteIssuesPageLive,
 } from './legal-gazette-api.live'
-import {
-  fetchGazetteIssueContentsMock,
-  fetchGazetteIssuesPageMock,
-} from './legal-gazette-api.mock'
+
+/**
+ * The fixture is served only by the development server and the tests: it names real acts as they were when it
+ * was copied, so in production the condition is the constant `false` and the fixture's module is never emitted
+ * (the same guard as the analytics adapter's).
+ */
+const FIXTURE_BUILD = import.meta.env.DEV || import.meta.env.MODE === 'test'
 
 export { GAZETTE_CONTENTS_FIRST } from './legal-gazette-api.live'
 
@@ -24,7 +27,7 @@ export async function fetchGazetteIssuesPage(
     readonly signal?: AbortSignal
   } = {},
 ): Promise<GazetteIssuesPage> {
-  if (isLegalMockEnabled()) return fetchGazetteIssuesPageMock(filter)
+  if (FIXTURE_BUILD && isLegalMockEnabled()) return (await import('./legal-gazette-api.mock')).fetchGazetteIssuesPageMock(filter)
   return fetchGazetteIssuesPageLive(filter, options)
 }
 
@@ -33,6 +36,6 @@ export async function fetchGazetteIssueContents(
   moIssueId: string,
   options: { readonly signal?: AbortSignal } = {},
 ): Promise<GazetteIssueContents> {
-  if (isLegalMockEnabled()) return fetchGazetteIssueContentsMock(moIssueId)
+  if (FIXTURE_BUILD && isLegalMockEnabled()) return (await import('./legal-gazette-api.mock')).fetchGazetteIssueContentsMock(moIssueId)
   return fetchGazetteIssueContentsLive(moIssueId, options)
 }

@@ -46,6 +46,21 @@ describe('memoAnalyticsRead', () => {
     expect(next).toHaveBeenCalledTimes(1)
   })
 
+  it('waits for the refresh already in flight at the hard cutoff, not a second read', async () => {
+    await memoAnalyticsRead('k', () => Promise.resolve(answer('4')), now)
+    clock = 6 * MINUTE
+    let settle: (value: LegalAnalyticsAnswer<LegalAnalyticsView>) => void = () => undefined
+    const slow = vi.fn(() => new Promise<LegalAnalyticsAnswer<LegalAnalyticsView>>((resolve) => (settle = resolve)))
+    await expect(memoAnalyticsRead('k', slow, now)).resolves.toEqual(answer('4'))
+    clock = 11 * MINUTE
+    const other = vi.fn(() => Promise.resolve(answer('6')))
+    const waiting = memoAnalyticsRead('k', other, now)
+    settle(answer('5'))
+    await expect(waiting).resolves.toEqual(answer('5'))
+    expect(slow).toHaveBeenCalledTimes(1)
+    expect(other).not.toHaveBeenCalled()
+  })
+
   it('keeps no failed read', async () => {
     await expect(memoAnalyticsRead('k', refused, now)).rejects.toBeInstanceOf(LegalAnalyticsError)
     const read = vi.fn(() => Promise.resolve(answer('4')))

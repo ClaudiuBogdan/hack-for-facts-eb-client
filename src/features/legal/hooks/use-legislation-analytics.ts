@@ -43,6 +43,7 @@ export function legalAnalyticsQueryOptions<V extends LegalAnalyticsView>(view: V
     ...(NAMING_VIEWS.has(view) ? LEGAL_ANALYTICS_NAMING_CACHE : { staleTime: 5 * 60 * 1000 }),
     retry: retryLegalAnalytics,
     retryOnMount: retryLegalAnalyticsOnMount,
+    refetchOnMount: retryLegalAnalyticsOnMount,
   })
 }
 

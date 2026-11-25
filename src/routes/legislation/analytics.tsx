@@ -73,6 +73,8 @@ export const Route = createFileRoute('/legislation/analytics')({
       : createPublicPageCacheHeaders({
           sharedMaxAgeSeconds: 300,
           staleWhileRevalidateSeconds: 600,
+          // the page renders in the reader's language and consent, from their cookies, as the other hubs
+          vary: ['Accept-Encoding', 'Cookie'],
         }),
   head: () => ({
     meta: [

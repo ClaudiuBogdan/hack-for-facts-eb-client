@@ -57,8 +57,8 @@ const head = legislationAnalyticsFixture.head.data
 const summary = legislationAnalyticsFixture.summary.data
 const ro = (n: number) => n.toLocaleString('ro-RO')
 
-function renderPage() {
-  return render(<LegislationPage />, { queryClient: createTestQueryClient() })
+function renderPage(queryClient = createTestQueryClient()) {
+  return render(<LegislationPage />, { queryClient })
 }
 
 /** A figure tile's own figure, as a reader hears it (the count-up's readable copy). */
@@ -153,7 +153,7 @@ describe('LegislationPage, the legislation hub', () => {
 
   it('names the sections by their data, with no running numbers', async () => {
     renderPage()
-    for (const title of ['Ultimele modificări', 'Actele după fel', 'Actele după emitent', 'Acte publicate pe ani', 'Legături între acte', 'Numerele Monitorului Oficial']) {
+    for (const title of ['Ultimele modificări', 'Actele după fel', 'Actele după emitent', 'Acte după anul actului', 'Legături între acte', 'Numerele Monitorului Oficial']) {
       expect(await screen.findByRole('heading', { level: 2, name: title })).toBeInTheDocument()
     }
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
@@ -170,24 +170,61 @@ describe('LegislationPage, the legislation hub', () => {
     expect(within(felul).getByText('Procente din toate cele 227.202 acte publicate.')).toBeInTheDocument()
   })
 
-  it('gives the ordinance days as the API measures them: the median, the middle half, the links', async () => {
+  it('gives each ordinance statistic the API gives on its own, publication to publication', async () => {
     renderPage()
     const links = await screen.findByTestId('legal-hub-links')
-    expect(links).toHaveTextContent('De la publicarea ordonanței la a legii, mediana e de 198 de zile (jumătate dintre ele între 127 și 375 de zile), măsurată pe 4.132 de trimiteri.')
+    expect(links).toHaveTextContent(
+      'De la prima publicare în Monitorul Oficial a ordonanței la prima publicare în Monitorul Oficial a legii: mediana: 198 de zile; un sfert dintre ele: cel mult 127 de zile; un sfert: cel puțin 375 de zile; măsurate pe 4.132 de trimiteri.',
+    )
   })
 
-  it('leaves out a quartile the API does not give, never reading it as zero', async () => {
+  it('says a sole quartile alone, and leaves out what the API does not give, never reading it as zero', async () => {
     intercept = (view, args) =>
       view === 'links'
         ? fetchLegalAnalyticsMock('links', args).then((answer) => ({
             ...answer,
-            data: { ...answer.data, days: answer.data.days.map((d) => (d.kind === 'approves_ordinance' ? { ...d, p25: null } : d)) },
+            data: { ...answer.data, days: answer.data.days.map((d) => (d.kind === 'approves_ordinance' ? { ...d, median: null, p75: null } : d)) },
           }))
         : undefined
     renderPage()
     const links = await screen.findByTestId('legal-hub-links')
-    expect(links).toHaveTextContent('mediana e de 198 de zile, măsurată pe 4.132 de trimiteri.')
-    expect(links).not.toHaveTextContent('jumătate')
+    expect(links).toHaveTextContent('a legii: un sfert dintre ele: cel mult 127 de zile; măsurate pe 4.132 de trimiteri.')
+    expect(links).not.toHaveTextContent('mediana')
+    expect(links).not.toHaveTextContent('cel puțin')
+  })
+
+  it('hides the leading acts when a refetch of them fails, never keeping names the server no longer gave', async () => {
+    const client = createTestQueryClient()
+    renderPage(client)
+    expect(await screen.findByTestId('legal-hub-head-acts')).toBeInTheDocument()
+    intercept = (view) => (view === 'acts' ? Promise.reject(new LegalAnalyticsError('failed', 'boom', 500)) : undefined)
+    await client.refetchQueries({ queryKey: ['legal', 'analytics', 'acts'] }).catch(() => undefined)
+    await waitFor(() => expect(screen.queryByTestId('legal-hub-head-acts')).not.toBeInTheDocument(), { timeout: 8000 })
+    expect(screen.getByText('Această parte nu s-a încărcat.')).toBeInTheDocument()
+  })
+
+  it('dates the analysis by when the layer was built, not when it was published', async () => {
+    intercept = (view, args) =>
+      view === 'head'
+        ? fetchLegalAnalyticsMock('head', args).then((answer) => ({
+            ...answer,
+            layer: { ...answer.layer, builtAt: '2026-11-20T10:00:00Z', publishedAt: '2026-11-24T22:39:00Z' },
+          }))
+        : undefined
+    renderPage()
+    const sources = screen.getByTestId('legal-hub-sources')
+    // the build day (20), in whatever form the test locale writes a date, never the publication day (24)
+    await waitFor(() => expect(sources).toHaveTextContent(/generat pe (November 20, 2026|20 noiembrie 2026)/))
+    expect(sources).not.toHaveTextContent(/generat pe (November 24|24 noiembrie)/)
+  })
+
+  it('opens the Monitorul Oficial note on the publication alone', async () => {
+    renderPage()
+    const gazette = await screen.findByRole('region', { name: 'Numerele Monitorului Oficial' })
+    fireEvent.click(within(gazette).getByRole('button', { name: 'Despre Monitorul Oficial' }))
+    const note = await screen.findByRole('dialog', { name: 'Despre Monitorul Oficial' })
+    expect(note).toHaveTextContent('Numerele din date, toate părțile. Un număr arată când a fost publicat un act.')
+    expect(note).not.toHaveTextContent(/efecte|în vigoare|scrisă în act/)
   })
 
   it('makes each start card its name and its count, the stock with its provisional definition', async () => {

@@ -79,13 +79,16 @@ export type YearsChart = {
   readonly years: readonly { readonly year: number; readonly values: readonly number[] }[]
   /** Acts of the years before `YEARS_FROM`: counted by the API, not drawn. */
   readonly earlier: number
+  /** Acts dated after the last year drawn (past 2100, the API's bound): counted, not drawn. */
+  readonly later: number
   /** The year with the most acts among those drawn, and its acts. */
   readonly peak: { readonly year: number; readonly acts: number } | null
 }
 
 export function yearsChart(series: LegalAnalyticsSeries): YearsChart {
   const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0)
-  const last = Math.max(YEARS_FROM, ...series.years.map((row) => row.year))
+  // the last year served the API answers (to 2100): a stray later year is counted apart, never widens the axis
+  const last = Math.max(YEARS_FROM, ...series.years.map((row) => row.year).filter((year) => year <= 2100))
   const years = everyYear(
     series.years.map((row) => ({ year: row.year, values: row.acts })),
     series.keys.length + 1,
@@ -97,7 +100,9 @@ export function yearsChart(series: LegalAnalyticsSeries): YearsChart {
     if (acts > 0 && (peak === null || acts > peak.acts)) peak = { year: row.year, acts }
   }
   const earlier = series.years.filter((row) => row.year < YEARS_FROM).reduce((total, row) => total + sum(row.acts), 0)
-  return { years, earlier, peak }
+  const lastDrawn = years[years.length - 1]?.year ?? YEARS_FROM
+  const later = series.years.filter((row) => row.year > lastDrawn).reduce((total, row) => total + sum(row.acts), 0)
+  return { years, earlier, later, peak }
 }
 
 /** The kinds of link the band counts, in the order it shows them. */
