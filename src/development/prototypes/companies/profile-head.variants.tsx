@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link, useSearch } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ArrowLeft } from 'lucide-react'
@@ -17,22 +17,12 @@ import {
   StatusChips,
   StatusNotice,
 } from '@/features/private-companies/components/profile/company-profile-head'
-import { usePrivateCompanyProfile } from '@/features/private-companies/hooks/use-private-company-profile'
 import { companyFactSearch } from '@/features/private-companies/lib/hub-analysis-links'
-import { buildCompanyProfileModel, caenEdition, type CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
+import { caenEdition, type CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
 import { companySentenceFacts, headActivity, nameLength } from '@/features/private-companies/lib/company-profile-text'
-import {
-  anafNotFoundProfile,
-  bankruptProfile,
-  danteInternationalProfile,
-  insolventProfile,
-  pfaProfile,
-  sparseBilantProfile,
-  struckOffProfile,
-} from '@/features/private-companies/mocks/fixtures'
 import { HubFiguresBand } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
-import type { PrivateCompanyProfile } from '@/schemas/private-company'
+import { PROTOTYPE_MARKER, useProtoModel } from './profile.data'
 
 /**
  * The company page's head with less in it (owner, 25 November 2026: „Lighter
@@ -50,19 +40,6 @@ import type { PrivateCompanyProfile } from '@/schemas/private-company'
  * Every variant keeps the name, the status chip and the status notice.
  */
 
-/** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
-const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
-
-const FIXTURES: Readonly<Record<string, PrivateCompanyProfile>> = {
-  dante: danteInternationalProfile,
-  anaf: anafNotFoundProfile,
-  sparse: sparseBilantProfile,
-  struck: struckOffProfile,
-  insolvent: insolventProfile,
-  pfa: pfaProfile,
-  bankrupt: bankruptProfile,
-}
-
 /** The landing's headline set, at the profile's sizes for a name's length. */
 const HEADING: Record<ReturnType<typeof nameLength>, string> = {
   short: 'text-4xl sm:text-6xl lg:text-7xl',
@@ -78,16 +55,6 @@ const SECTIONS = [
   { id: 'an-cu-an', label: 'An cu an' },
   { id: 'registru', label: 'Registru' },
 ]
-
-function useProtoModel(): { readonly model: CompanyProfileModel | null; readonly state: string } {
-  const search = useSearch({ strict: false }) as { readonly cui?: unknown; readonly fixture?: unknown }
-  const fixture = typeof search.fixture === 'string' ? FIXTURES[search.fixture] : undefined
-  const cui = typeof search.cui === 'string' || typeof search.cui === 'number' ? String(search.cui) : '1590082'
-  const live = usePrivateCompanyProfile(fixture ? '' : cui)
-  const profile = fixture ?? live.data ?? null
-  if (!profile) return { model: null, state: live.isError ? 'Profilul nu s-a încărcat.' : 'Se încarcă…' }
-  return { model: buildCompanyProfileModel(profile), state: '' }
-}
 
 /** A head, then what follows it on the page: the pinned bar and the four figures. */
 function Page({ head }: { readonly head: (model: CompanyProfileModel) => ReactNode }) {
