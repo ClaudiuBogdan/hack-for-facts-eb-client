@@ -8,7 +8,8 @@
  * does. Prints, per spec file, the operations, how many reads, and in which tests.
  *
  * A lower bound: a test that never calls `mockGraphQL` has no GraphQL route, so its reads go out
- * without a warning and are not counted here.
+ * without a warning and are not counted here. Read a log, not a raw terminal capture: in a TTY the
+ * reporter's cursor controls can put two results on one line, and a title then takes the next one in.
  *
  * Usage:
  *   gh api repos/{owner}/{repo}/actions/jobs/<job id>/logs > shard.log
