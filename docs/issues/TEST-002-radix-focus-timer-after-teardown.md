@@ -41,16 +41,20 @@ a timer pending.
 
 `src/test/setup.ts`: the global `afterEach` calls `cleanup()` and then waits one real macrotask. The `setTimeout` it uses is taken
 when the setup module loads, before any test can install fake timers. Node runs timers of the same delay in the order they were set,
-so every focus timer scheduled during the test or by `cleanup()` runs before the wait ends: inside its own test, while jsdom is up.
-This covers every test file, not only the data-table one. It costs about one millisecond per test.
+so every focus timer queued on the real clock, during the test or by `cleanup()`, runs before the wait ends: inside its own test,
+while jsdom is up. This covers every test file, not only the data-table one. It costs about one millisecond per test.
+
+It does not cover a fake clock. If a test still has fake timers that include `setTimeout` when `cleanup()` runs, Radix queues its
+timer on that clock. It runs only if the clock is advanced, and `vi.useRealTimers()` drops it. Nothing fires late, so there is no
+error, but the focus cleanup may never run. A test that needs the cleanup leaves `setTimeout` real (as f478bfc55 did for the CSV export) or advances its clock after the
+unmount.
 
 ## Test
 
-`src/test/setup-focus-cleanup.test.tsx` runs two tests in order:
-1. The first leaves a dropdown menu open, for `cleanup()` to unmount.
-2. The second asserts that the menu's `onCloseAutoFocus` (FocusScope's unmount callback) has already run.
+`src/test/setup-focus-cleanup.test.tsx` leaves a dropdown menu open, for `cleanup()` to unmount. In `onTestFinished`, which runs
+after the `afterEach` hooks, it asserts that the menu's `onCloseAutoFocus` (FocusScope's unmount callback) has already run.
 
-Without the fix, the second test fails: "expected to be called 1 times, but got 0 times". With the fix, both pass. With the
+Without the fix, the test fails: "expected to be called 1 times, but got 0 times". With the fix, it passes. With the
 fix, the same probe finds nothing pending at the data-table file's `afterAll`.
 
 ## Verification

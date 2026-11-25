@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 /**
@@ -10,14 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
  * jsdom's `dispatchEvent` rejects it — an unhandled error that fails the whole
  * run (TEST-002). `setup.ts` now waits one macrotask after `cleanup()`, so the
  * timer runs inside the test that started it.
- *
- * The two tests run in order: the first leaves a menu open for `cleanup()` to
- * unmount, the second checks that its focus cleanup has already run.
  */
 describe('Radix focus cleanup after a test', () => {
-  const onCloseAutoFocus = vi.fn()
-
-  it('leaves a menu open for cleanup to unmount', () => {
+  it('has run by the end of the test that left a menu open for cleanup to unmount', () => {
+    const onCloseAutoFocus = vi.fn()
     render(
       <DropdownMenu open>
         <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
@@ -28,9 +24,9 @@ describe('Radix focus cleanup after a test', () => {
     )
     expect(screen.getByRole('menu')).toBeInTheDocument()
     expect(onCloseAutoFocus).not.toHaveBeenCalled()
-  })
-
-  it('has run that focus cleanup before the next test starts', () => {
-    expect(onCloseAutoFocus).toHaveBeenCalledTimes(1)
+    // Runs after the afterEach hooks, so after setup.ts's cleanup() and its wait.
+    onTestFinished(() => {
+      expect(onCloseAutoFocus).toHaveBeenCalledTimes(1)
+    })
   })
 })
