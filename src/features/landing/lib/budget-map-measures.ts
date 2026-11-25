@@ -102,6 +102,21 @@ const BALANCE_SCALE: MeasureScale = {
   classOf: (value) => classAmong(BALANCE_EDGES, value === null ? null : percentAsPrinted(value)),
 }
 
+/**
+ * A scale cut at the totals' percentiles, on the edges as the legend prints
+ * them (`printed`), so a colour never contradicts its words. Equal edges merge
+ * (no empty class); the strongest colours are the ones kept. The figure is
+ * classified as printed too: „14 mil. lei" is never coloured below the 14 mil. edge.
+ */
+export function percentileScale(values: readonly (number | null)[], ramp: readonly string[], printed: (value: number) => number): MeasureScale {
+  const edges = [...new Set(percentileEdges(values, TOTAL_PERCENTILES).map(printed))]
+  if (edges.length === 0) return { classes: [], classOf: () => null }
+  return {
+    classes: classesBetween(edges, ramp.slice(ramp.length - edges.length - 1)),
+    classOf: (value) => classAmong(edges, value === null ? null : printed(value)),
+  }
+}
+
 function totalMeasure(id: 'income' | 'expenses', fields: Pick<Measure, 'title' | 'description' | 'ramp'>): Measure {
   return {
     id,
@@ -111,17 +126,7 @@ function totalMeasure(id: 'income' | 'expenses', fields: Pick<Measure, 'title' |
     format: formatAmount,
     // „14 mil.": the legend's first line already says „în lei".
     tick: (value, locale) => joinParts(compactParts(value, locale), locale),
-    scale: (values) => {
-      // Classified on the edges as the legend prints them, so a colour never contradicts its words;
-      // equal edges merge (no empty class); the strongest colours are the ones kept.
-      const edges = [...new Set(percentileEdges(values, TOTAL_PERCENTILES).map(asPrinted))]
-      if (edges.length === 0) return { classes: [], classOf: () => null }
-      // The figure classified as printed too: „14 mil. lei" is never coloured below the 14 mil. edge.
-      return {
-        classes: classesBetween(edges, fields.ramp.slice(fields.ramp.length - edges.length - 1)),
-        classOf: (value) => classAmong(edges, value === null ? null : asPrinted(value)),
-      }
-    },
+    scale: (values) => percentileScale(values, fields.ramp, asPrinted),
   }
 }
 

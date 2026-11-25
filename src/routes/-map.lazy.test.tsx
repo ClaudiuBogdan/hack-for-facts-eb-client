@@ -1,208 +1,123 @@
-import { fireEvent, render, screen } from "@/test/test-utils";
-import type { ComponentType } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdvancedMapAnalyticsUrlState } from "@/schemas/advanced-map-analytics";
+import type { ComponentType, ReactNode } from 'react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { renderToStaticMarkup } from 'react-dom/server'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createTestQueryClient, render, screen } from '@/test/test-utils'
+import type { MapPageData } from '@/features/budget-map/hooks/use-map-page-data'
 
-const navigateMock = vi.fn();
-const workspaceMock = vi.fn();
-let search: Record<string, unknown> = {};
+/** The address the page reads, and the navigations it asks for. */
+const address = vi.hoisted(() => ({ search: {} as Record<string, unknown> }))
+const navigate = vi.hoisted(() => vi.fn())
 
-vi.mock("@tanstack/react-router", () => ({
-  createLazyFileRoute: () => (options: Record<string, unknown>) => ({
-    options,
-    useSearch: () => search,
-  }),
-  useNavigate: () => navigateMock,
-}));
-vi.mock("@/lib/hooks/useUserCurrency", () => ({
-  useUserCurrency: () => ["RON", vi.fn()],
-}));
-vi.mock("@/lib/hooks/useUserInflationAdjusted", () => ({
-  useUserInflationAdjusted: () => [true, vi.fn()],
-}));
-vi.mock("@/components/filters/MapFilter", () => ({
-  MapFilter: ({ presetMode }: { presetMode: boolean }) => (
-    <div>{presetMode ? "Preset scope filters" : "Custom budget filters"}</div>
+vi.mock('@tanstack/react-router', () => ({
+  createLazyFileRoute: () => (options: Record<string, unknown>) => ({ options }),
+  Link: ({ children, to, params: _params, ...props }: { readonly children: ReactNode; readonly to: string; readonly params?: unknown }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
   ),
-}));
-vi.mock(
-  "@/features/advanced-map-analytics/components/map-analytics-workspace",
-  () => ({
-    MapAnalyticsWorkspace: (props: {
-      mapState: AdvancedMapAnalyticsUrlState;
-      setMapState: (
-        updater: (
-          previous: AdvancedMapAnalyticsUrlState,
-        ) => AdvancedMapAnalyticsUrlState,
-      ) => void;
-      onMapViewportChange: (viewport: {
-        mapCenter: [number, number];
-        mapZoom: number;
-      }) => void;
-    }) => {
-      workspaceMock(props);
-      return (
-        <>
-          <button
-            onClick={() =>
-              props.setMapState((previous) => ({
-                ...previous,
-                activeView: "table",
-              }))
-            }
-          >
-            Table view
-          </button>
-          <button
-            onClick={() =>
-              props.setMapState((previous) => ({
-                ...previous,
-                activeView: "analytics",
-              }))
-            }
-          >
-            Analytics view
-          </button>
-          <button
-            onClick={() =>
-              props.onMapViewportChange({
-                mapCenter: [46.12346, 24.98765],
-                mapZoom: 7.3,
-              })
-            }
-          >
-            Move map
-          </button>
-        </>
-      );
-    },
-  }),
-);
+  useNavigate: () => navigate,
+  useSearch: () => address.search,
+}))
 
-async function renderMap() {
-  const { Route } = await import("./map.lazy");
-  const Component = Route.options.component as ComponentType;
-  return render(<Component />);
-}
-function latestWorkspace() {
-  return workspaceMock.mock.calls[workspaceMock.mock.calls.length - 1]?.[0];
-}
-function latestNavigation() {
-  return navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0];
+/** No figures yet: the bar and the places for the map or the table, as the server renders them. */
+const data: MapPageData = { uats: undefined, counties: undefined, labels: undefined, figures: undefined, outsideMap: 0, failed: false, tableFailed: false, retry: () => {}, retryTable: () => {} }
+vi.mock('@/features/budget-map/hooks/use-map-page-data', () => ({ useMapPageData: () => data }))
+// MapLibre needs WebGL; the map's own behaviour is checked in the browser.
+vi.mock('@/features/budget-map/components/map-page-map', () => ({ default: () => <div data-testid="map" /> }))
+
+async function page(): Promise<ComponentType> {
+  const { Route } = await import('./map.lazy')
+  return (Route as unknown as { options: { component: ComponentType } }).options.component
 }
 
-describe("standalone advanced map route", () => {
+/** The navigation's resulting search, from the previous address. */
+function lastSearch(previous: Record<string, unknown>) {
+  const call = navigate.mock.calls[navigate.mock.calls.length - 1]?.[0] as { search: (previous: Record<string, unknown>) => Record<string, unknown>; replace: boolean; resetScroll: boolean }
+  return { search: call.search(previous), replace: call.replace, resetScroll: call.resetScroll }
+}
+
+describe('the map page', () => {
   beforeEach(() => {
-    navigateMock.mockReset();
-    workspaceMock.mockReset();
-    search = {};
-  });
-  it("uses the full read-only workspace with exact legacy geometry and view", async () => {
-    search = {
-      activeView: "chart",
-      mapViewType: "County",
-      mapCenter: [46, 24],
-      mapZoom: 7,
-    };
-    await renderMap();
-    expect(latestWorkspace()).toMatchObject({
-      mode: "public",
-      capabilities: { readOnly: true },
-      mapState: { activeView: "analytics", mapViewType: "County" },
-      mapCenterOverride: [46, 24],
-      mapZoomOverride: 7,
-    });
-    expect(latestWorkspace().layout).toBe("standalone");
-    expect(navigateMock).not.toHaveBeenCalled();
-  });
-  it.each([
-    ["total_euro", "total"],
-    ["per_capita_euro", "per_capita"],
-  ] as const)(
-    "preserves legacy %s links and their EUR currency",
-    async (normalization, expected) => {
-      search = {
-        filters: { account_category: "ch", normalization, currency: "USD" },
-      };
-      await renderMap();
-      expect(latestWorkspace().mapState.series[0].filter).toMatchObject({
-        normalization: expected,
-        currency: "EUR",
-        inflation_adjusted: true,
-      });
-    },
-  );
-  it("respects explicit currency and disables inflation for GDP percentages", async () => {
-    search = {
-      filters: {
-        account_category: "ch",
-        normalization: "percent_gdp",
-        currency: "EUR",
-        inflation_adjusted: true,
-      },
-    };
-    await renderMap();
-    expect(latestWorkspace().mapState.series[0].filter).toMatchObject({
-      currency: "EUR",
-      inflation_adjusted: false,
-    });
-  });
-  it("applies changed global URL controls over stored filters without remounting the page", async () => {
-    search = { filters: { account_category: "ch", currency: "RON", inflation_adjusted: false } };
-    const view = await renderMap();
-    expect(latestWorkspace().mapState.series[0].filter).toMatchObject({currency: "RON", inflation_adjusted: false});
-    search = { ...search, currency: "EUR", inflation_adjusted: "true" };
-    const { Route } = await import("./map.lazy");
-    const Component = Route.options.component as ComponentType;
-    view.rerender(<Component />);
-    expect(latestWorkspace().mapState.series[0].filter).toMatchObject({currency: "EUR", inflation_adjusted: true});
-    search = { ...search, currency: "USD", inflation_adjusted: "false" };
-    view.rerender(<Component />);
-    expect(latestWorkspace().mapState.series[0].filter).toMatchObject({currency: "USD", inflation_adjusted: false});
-  });
-  it("writes table, legacy chart and viewport state without dropping scope or preset", async () => {
-    search = {
-      preset: "income",
-      filters: { account_category: "vn", county_codes: ["CJ"] },
-    };
-    await renderMap();
-    fireEvent.click(screen.getByRole("button", { name: "Table view" }));
-    expect(latestNavigation().search(search)).toEqual({
-      ...search,
-      activeView: "table",
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Analytics view" }));
-    expect(latestNavigation().search(search)).toEqual({
-      ...search,
-      activeView: "chart",
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Move map" }));
-    expect(latestNavigation()).toMatchObject({
-      replace: true,
-      resetScroll: false,
-    });
-    expect(latestNavigation().search(search)).toEqual({
-      ...search,
-      mapCenter: [46.12346, 24.98765],
-      mapZoom: 7.3,
-    });
-  });
-  it("persists the selected preset and keeps its shared filters accessible", async () => {
-    search = {
-      preset: "income",
-      mapCenter: [46, 24],
-      filters: { account_category: "vn", county_codes: ["CJ"] },
-    };
-    await renderMap();
-    fireEvent.change(
-      screen.getByRole("combobox", { name: "Map configuration" }),
-      { target: { value: "balance" } },
-    );
-    expect(latestNavigation().search(search)).toEqual({
-      ...search,
-      preset: "balance",
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
-    expect(screen.getByText("Preset scope filters")).toBeInTheDocument();
-  });
-});
+    navigate.mockReset()
+    address.search = {}
+  })
+
+  it('server-renders its title, its controls and the map\'s place', async () => {
+    const Page = await page()
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={createTestQueryClient()}>
+        <Page />
+      </QueryClientProvider>,
+    )
+    expect(html).toContain('<h1')
+    expect(html).toContain('Harta bugetelor locale')
+    expect(html).toContain('Sold bugetar')
+    expect(html).toContain('Pe locuitor')
+    expect(html).toContain('Județe')
+    expect(html).toContain('Se încarcă harta…')
+    expect(html).not.toContain('data-testid="map"')
+  })
+
+  it('opens the default view from an old link whose every parameter is junk, without an error', async () => {
+    address.search = {
+      filters: 'nimic',
+      preset: 'xyz',
+      activeView: 5,
+      mapViewType: [1],
+      mapCenter: 'abc',
+      mapZoom: 'zz',
+      entity_cuis: { nope: true },
+      harta: 'foo',
+      an: 1999,
+      pe: null,
+      nivel: {},
+      vedere: [],
+    }
+    const Page = await page()
+    render(<Page />)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Harta bugetelor locale')
+    expect(screen.getByRole('combobox', { name: /Harta afișată: Sold bugetar/ })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Total' })).toHaveAttribute('data-state', 'on')
+    expect(screen.getByRole('radio', { name: 'Primării' })).toHaveAttribute('data-state', 'on')
+    expect(screen.getByRole('radio', { name: 'Hartă' })).toHaveAttribute('data-state', 'on')
+    expect(await screen.findByTestId('map')).toBeInTheDocument()
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it('opens what an old link asks for that it can show: the map, the count, the level and the table', async () => {
+    address.search = {
+      filters: { account_category: 'vn', normalization: 'per_capita', report_period: { type: 'YEAR', selection: { interval: { start: '2020', end: '2020' } } }, functional_prefixes: ['65.'] },
+      mapViewType: 'County',
+      activeView: 'table',
+    }
+    const Page = await page()
+    render(<Page />)
+    expect(screen.getByRole('combobox', { name: /Harta afișată: Venituri pe locuitor/ })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Pe locuitor' })).toHaveAttribute('data-state', 'on')
+    expect(screen.getByRole('radio', { name: 'Județe' })).toHaveAttribute('data-state', 'on')
+    expect(screen.getByRole('searchbox', { name: 'Caută un județ' })).toBeInTheDocument()
+    expect(screen.queryByTestId('map')).not.toBeInTheDocument()
+  })
+
+  it('writes a change to the address in place, keeping the app\'s own keys and dropping the old page\'s', async () => {
+    address.search = { filters: { account_category: 'vn' }, mapViewType: 'County', currency: 'EUR' }
+    const Page = await page()
+    render(<Page />)
+    await userEvent.click(screen.getByRole('radio', { name: 'Pe locuitor' }))
+    const { search, replace, resetScroll } = lastSearch(address.search)
+    expect(replace).toBe(true)
+    expect(resetScroll).toBe(false)
+    expect(search).toMatchObject({ harta: 'venituri', pe: 'locuitor', nivel: 'judete', currency: 'EUR' })
+    expect(search.filters).toBeUndefined()
+    expect(search.mapViewType).toBeUndefined()
+  })
+
+  it('switches between the map and the table', async () => {
+    const Page = await page()
+    render(<Page />)
+    await userEvent.click(screen.getByRole('radio', { name: 'Tabel' }))
+    expect(lastSearch({}).search).toMatchObject({ vedere: 'tabel' })
+  })
+})
