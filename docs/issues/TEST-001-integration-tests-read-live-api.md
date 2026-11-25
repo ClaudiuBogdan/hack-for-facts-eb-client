@@ -131,19 +131,19 @@ Each `[ssr-api]` line is given to the test result printed after it.
 - **Step 1:** 26 tests failed, 293 passed, 14 skipped, 11 did not run. **Step 2** (statistics, server API unreachable by design):
   59 passed.
 
-| Spec | Server reads with no recording | Tests failed in strict |
-|---|---|---:|
-| `entity-analytics-comprehensive.spec.ts` | EntityAnalytics 62 | 0 |
-| `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 3 |
-| `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 |
-| `entity-analytics.spec.ts` | EntityAnalytics 42 | 1 |
-| `public-institutions.spec.ts` | EntityAnalytics 14, GetExecutionLineItemsAnalytics 14 | 0 |
-| `justice.spec.ts` | JusticeAnalysisCaseload 12, JudicialCourtPage 3, JudicialCasePage 2, JudicialCaseExists 1 | 5 |
-| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 |
-| `entity-details.spec.ts` | GetEntityMetadata 12 | 6 |
-| `entity-exploration.spec.ts` | GetEntityMetadata 8 | 2 |
-| `buget-routing.spec.ts` | GetEntityLineItems 4, GetEntityMetadata 2 | 1 |
-| `landing-page.spec.ts` | ElectionEvents 1 | 0 |
+| Spec | Server reads with no recording | Tests failed in strict | With | State |
+|---|---|---:|---|---|
+| `entity-analytics-comprehensive.spec.ts` | EntityAnalytics 62 | 0 | client-entity-analytics | recorded, 0710bfb58 |
+| `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 3 | procurement-da-client | open |
+| `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 | procurement-da-client | open |
+| `entity-analytics.spec.ts` | EntityAnalytics 42 | 1 | client-entity-analytics | recorded, 0710bfb58 |
+| `public-institutions.spec.ts` | EntityAnalytics 14, GetExecutionLineItemsAnalytics 14 | 0 | client-entity-analytics | recorded, ca1a1b75c |
+| `justice.spec.ts` | JusticeAnalysisCaseload 12, JudicialCourtPage 3, JudicialCasePage 2, JudicialCaseExists 1 | 5 | client-entity-analytics | recorded, 39a8f0f25 |
+| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies | open |
+| `entity-details.spec.ts` | GetEntityMetadata 12 | 6 | client-entity-analytics | recorded, 08cc11803 |
+| `entity-exploration.spec.ts` | GetEntityMetadata 8 | 2 | client-entity-analytics | recorded, 08cc11803 |
+| `buget-routing.spec.ts` | GetEntityLineItems 4, GetEntityMetadata 2 | 1 | client-entity-analytics | recorded, 050883290 |
+| `landing-page.spec.ts` | ElectionEvents 1 | 0 | client-entity-analytics | recorded, 9058876f3 |
 
 Two cautions on reading this run:
 - A spec with no failures here still reads the live API in CI's default (passthrough) mode. Its page fell back to the browser's
@@ -153,7 +153,9 @@ Two cautions on reading this run:
   the default mode, above.
 
 Fix per spec: record its server reads (`SSR_API_MODE=record`, a run of that spec) and move it onto `tests/utils/ssr-api/test.ts`,
-by the spec's owner (the browser table's split; `justice.spec.ts` and `buget-routing.spec.ts` have none yet).
+by the owner in the table (root, 2026-11-25). With one worker, as CI runs, the move makes the spec's server reads strict too
+(client-dev-polish, db855b3af). "Recorded" commits wait on `feat/test001-ssr-recordings` and land after the guard and the shared
+hydration wait (TEST-003). Each was proven with a record run, then a strict run of its specs: all served, 0 missing.
 
 ## Closure criterion
 
