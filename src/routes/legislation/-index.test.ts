@@ -16,10 +16,6 @@ vi.mock('@/features/legal/api/legal-analytics-api', async () => {
     fetchLegalAnalytics: fetchAnalyticsMock,
   }
 })
-vi.mock('@/lib/http-cache', () => ({
-  createNoStoreHeaders: () => ({ 'Cache-Control': 'no-store' }),
-  createPublicPageCacheHeaders: () => ({ 'Cache-Control': 'public' }),
-}))
 
 type LoaderData = { readonly seeded?: boolean; readonly analyticsUnavailable?: boolean }
 
@@ -60,7 +56,7 @@ describe('/legislation loader', () => {
     fetchAnalyticsMock.mockReset()
   })
 
-  it('renders the aggregate answers on the server, all started together, and goes out publicly cached', async () => {
+  it('renders the aggregate answers on the server, all started together', async () => {
     let started = 0
     const answers: (() => void)[] = []
     fetchAnalyticsMock.mockImplementation((view: LegalAnalyticsView, args: LegalAnalyticsArgs) => {
@@ -76,7 +72,6 @@ describe('/legislation loader', () => {
     const data = await pending
     expect(data).toEqual({ seeded: true, analyticsUnavailable: false })
     expect(viewsRead().sort()).toEqual(['breakdown', 'head', 'series', 'summary'])
-    expect(route.headers({ loaderData: data, match: { status: 'success' } })).toEqual({ 'Cache-Control': 'public' })
   })
 
   it('puts nothing that names an act into the server payload', async () => {
@@ -97,7 +92,7 @@ describe('/legislation loader', () => {
     expect(payload).not.toContain('actId')
   })
 
-  it('leaves a failed server read to the browser, uncached', async () => {
+  it('leaves a failed server read to the browser', async () => {
     fetchAnalyticsMock.mockImplementation((view: LegalAnalyticsView, args: LegalAnalyticsArgs) =>
       view === 'summary' ? Promise.reject(new Error('down')) : answerOf(view, args),
     )
@@ -107,7 +102,6 @@ describe('/legislation loader', () => {
     expect(data).toEqual({ seeded: false, analyticsUnavailable: false })
     expect(queryClient.getQueryState(['legal', 'analytics', 'summary', {}])).toBeUndefined()
     expect(queryClient.getQueryData(['legal', 'analytics', 'head', {}])).toBeDefined()
-    expect(route.headers({ loaderData: data, match: { status: 'success' } })).toEqual({ 'Cache-Control': 'no-store' })
   })
 
   it('says when no layer is published yet (503)', async () => {
@@ -118,7 +112,7 @@ describe('/legislation loader', () => {
     expect(data).toEqual({ seeded: false, analyticsUnavailable: true })
   })
 
-  it('never goes out public on an answer kept from before an outage', async () => {
+  it('never serves an answer kept from before an outage', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     try {
       vi.setSystemTime(new Date('2026-11-25T08:00:00Z'))
@@ -132,8 +126,7 @@ describe('/legislation loader', () => {
       fetchAnalyticsMock.mockRejectedValue(new LegalAnalyticsError('unavailable', 'busy', 503))
       const data = await asServerRender(() => route.loader({ context: { queryClient: new QueryClient() } }))
       expect(data).toEqual({ seeded: false, analyticsUnavailable: true })
-      expect(route.headers({ loaderData: data, match: { status: 'success' } })).toEqual({ 'Cache-Control': 'no-store' })
-    } finally {
+      } finally {
       vi.useRealTimers()
     }
   })

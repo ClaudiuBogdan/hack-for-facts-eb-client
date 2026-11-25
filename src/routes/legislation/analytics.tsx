@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { LegalAnalyticsArgs } from '@/schemas/legal-analytics'
 
@@ -17,10 +16,10 @@ export type LegislationAnalyticsRouteLoaderData = {
  * The analysis page renders its question's aggregate answers on the server: the head, the summary and the chart
  * the question asks for (a ranking's breakdown, a series or a grid, `chartRead`), all started together and read
  * from the analytics memo kept in the server process (`legal-analytics-ssr.ts`), then hydrated into the browser's
- * cache. The acts list is read in the browser (the API
- * serves it `no-store`). A failed or refused read (503 before the first layer is published) is left out of the
- * cache, the page reads it in the browser, and the render goes out `no-store`. The feature's modules are imported
- * inside the loader, so this file (which every page's route tree carries) stays thin.
+ * cache. The acts list is read in the browser (the API serves it `no-store`). A failed or refused read (503 before
+ * the first layer is published) is left out of the cache and the page reads it in the browser (`seeded: false`).
+ * The page is never stored by a shared cache (see `headers`). The feature's modules are imported inside the
+ * loader, so this file (which every page's route tree carries) stays thin.
  */
 export const Route = createFileRoute('/legislation/analytics')({
   loaderDeps: ({ search }) => ({ search: search as Record<string, unknown> }),
@@ -65,17 +64,10 @@ export const Route = createFileRoute('/legislation/analytics')({
     })
     return { seeded, analyticsUnavailable }
   },
-  // Public only for a render proven whole: the match succeeded and every server read answered. Anything else
-  // (no loader data, a failed loader or component, a refused read) goes out `no-store`.
-  headers: ({ loaderData, match }) =>
-    match?.status !== 'success' || loaderData?.seeded !== true
-      ? createNoStoreHeaders()
-      : createPublicPageCacheHeaders({
-          sharedMaxAgeSeconds: 300,
-          staleWhileRevalidateSeconds: 600,
-          // the page renders in the reader's language and consent, from their cookies, as the other hubs
-          vary: ['Accept-Encoding', 'Cookie'],
-        }),
+  // Never stored by a shared cache, on every path (root, 25 November 2026; CACHE-001): the page renders in the
+  // reader's language from their cookie, and the CDN does not key on `Vary: Cookie`. The server's own memo of
+  // the aggregate answers keeps the render fast.
+  headers: () => ({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' }),
   head: () => ({
     meta: [
       { title: `${t`Analiza legislației`} — Transparenta.eu` },
