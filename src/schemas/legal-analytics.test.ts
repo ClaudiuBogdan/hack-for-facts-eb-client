@@ -13,6 +13,19 @@ describe('legal analytics schemas', () => {
     }
   })
 
+  it('refuse an act id that is not decimal digits, in every view that names acts', () => {
+    const acts = legislationAnalyticsFixture.acts.data
+    const first = acts.rows[0]
+    expect(first).toBeDefined()
+    for (const actId of ['12/../x', '12?x=1', '', ' 12', '1e3']) {
+      expect(LEGAL_ANALYTICS_DATA_SCHEMAS.acts.safeParse({ ...acts, rows: [{ ...first, actId }] }).success, actId).toBe(false)
+    }
+    const links = legislationAnalyticsFixture.links.data
+    const target = links.topTargets[0]
+    expect(target).toBeDefined()
+    expect(LEGAL_ANALYTICS_DATA_SCHEMAS.links.safeParse({ ...links, topTargets: [{ ...target, target: { ...target?.target, actId: '5/6' } }] }).success).toBe(false)
+  })
+
   it('refuse a share where a count belongs', () => {
     const summary = { ...legislationAnalyticsFixture.summary.data, total: 0.5 }
     expect(LEGAL_ANALYTICS_DATA_SCHEMAS.summary.safeParse(summary).success).toBe(false)

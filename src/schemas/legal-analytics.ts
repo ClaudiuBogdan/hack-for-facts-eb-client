@@ -123,7 +123,9 @@ export const legalAnalyticsGridSchema = z.object({
 })
 export type LegalAnalyticsGrid = z.infer<typeof legalAnalyticsGridSchema>
 
-const actRef = z.object({ actId: z.string(), citation: z.string(), title: z.string().nullable() })
+/** An act id is the server's decimal bigint string. Links are built from it, so nothing else passes: a slash or a „?" would change where the link leads. */
+const actId = z.string().regex(/^\d+$/u)
+const actRef = z.object({ actId, citation: z.string(), title: z.string().nullable() })
 export type LegalAnalyticsActRef = z.infer<typeof actRef>
 
 export const legalAnalyticsLinksSchema = z.object({
