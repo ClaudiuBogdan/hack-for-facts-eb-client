@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import type * as maplibregl from 'maplibre-gl'
@@ -18,8 +18,11 @@ import { amountFormat, type Basis, type Level } from './page.measures'
 
 /**
  * The map page's map: the landing map's engine in a frame that fills what the
- * page gives it, the legend on its corner (under it on a phone). The wheel
- * zooms and one finger pans — here the map is the page, not a band of it.
+ * page gives it, the legend on its corner (under it on a phone). Under a mouse
+ * the wheel zooms — here the map is the page, not a band of it. Under a finger
+ * the landing's rule holds: on the whole country one finger scrolls the page
+ * (the map takes most of a phone's screen, and would trap the scroll), two
+ * move the map; zoomed in, one finger pans.
  * Never rendered on the server (MapLibre is imported with it).
  *
  * On the county level the counties are what is coloured, named and picked;
@@ -65,7 +68,9 @@ export default function PageMap({
     attributionToggle: t`Arată sursele hărții`,
     boundaries: t`Limite UAT: ANCPI, prin`,
   }
-  const { map, zoomed, status } = useMapInstance(containerRef, words, { cooperativeGestures: false })
+  // Read once, in the browser: this component is never rendered on the server.
+  const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+  const { map, zoomed, status } = useMapInstance(containerRef, words, { cooperativeGestures: touch })
 
   useEffect(() => {
     if (!map || !uats || !counties) return
