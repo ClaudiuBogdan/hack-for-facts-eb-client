@@ -5,7 +5,12 @@ import type { HubActivityRanking, HubSizeClass } from '../../lib/hub-snapshot-ty
 import { HubActivities, HubSizeBars } from './hub-sectors'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, search }: { readonly children: ReactNode; readonly search?: unknown }) => <a data-search={JSON.stringify(search ?? {})}>{children}</a>,
+  // An href, as the real link has: an anchor without one cannot take the focus.
+  Link: ({ children, search }: { readonly children: ReactNode; readonly search?: unknown }) => (
+    <a href="/companies/analytics" data-search={JSON.stringify(search ?? {})}>
+      {children}
+    </a>
+  ),
 }))
 
 /** A ranking whose rest reported no turnover at all, beside unselected companies whose turnover is a real zero. */
@@ -48,6 +53,8 @@ describe('HubActivities on a phone', () => {
     expect(rows.slice(5).every((row) => row.className.includes('max-sm:hidden'))).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: /Încă 5 activități/u }))
     expect(screen.queryByRole('button', { name: /Încă/u })).toBeNull()
+    // The focus goes on to the first row the button opened.
+    expect(document.activeElement).toBe(rows[5]?.querySelector('a'))
     expect(rows.some((row) => row.className.includes('max-sm:hidden'))).toBe(false)
   })
 })
@@ -95,5 +102,7 @@ describe('HubSizeBars', () => {
     const table = within(bars).getByRole('table')
     expect(table).toHaveClass('sr-only')
     expect(within(table).getAllByRole('row')).toHaveLength(6)
+    // Each share with the figure the bars' readings give.
+    expect(within(table).getAllByRole('row')[5]?.textContent).toMatch(/^250 și peste0[.,]2\s?% \(2 firme\).*\(340 salariați\).*\(410 lei\)$/u)
   })
 })

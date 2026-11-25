@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
 import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -56,6 +57,7 @@ export function HubActivities({
   const unit = MEASURE_UNIT[measure]
   // Every row is in the server's HTML; on a phone the ones past the first five wait behind a button.
   const [allShown, setAllShown] = useState(false)
+  const listRef = useRef<HTMLOListElement>(null)
   const folded = allShown ? 0 : Math.max(ranking.rows.length - PHONE_ROWS, 0)
   const max = Math.max(...ranking.rows.map((row) => row.value), 1)
   const figure = (value: number | null) => {
@@ -86,6 +88,7 @@ export function HubActivities({
       {/* Two columns from a wide screen, read down the first and then the second: ten rows in the height of
           five. Each row carries its own bottom rule, so both columns close on one. */}
       <ol
+        ref={listRef}
         className="border-t border-border/70 lg:grid lg:grid-flow-col lg:grid-cols-2 lg:gap-x-12"
         style={{ gridTemplateRows: `repeat(${Math.ceil(ranking.rows.length / 2)}, auto)` }}
       >
@@ -120,7 +123,11 @@ export function HubActivities({
       {folded > 0 ? (
         <button
           type="button"
-          onClick={() => setAllShown(true)}
+          // The button leaves with the fold: the focus goes on to the first row it opened, so Tab continues from there.
+          onClick={() => {
+            flushSync(() => setAllShown(true))
+            listRef.current?.querySelectorAll('a')[PHONE_ROWS]?.focus()
+          }}
           className="flex min-h-11 w-full items-center gap-3 border-b border-border/70 text-sm font-medium text-foreground transition-colors hover:bg-muted/50 sm:hidden"
         >
           <span className="h-px flex-1 border-t border-dashed border-border" aria-hidden="true" />
@@ -193,9 +200,16 @@ export function HubSizeTable({ classes, className }: { readonly classes: readonl
             <th scope="row" className="whitespace-nowrap py-2.5 pl-1 text-left font-normal text-foreground">
               {label[row.key]}
             </th>
-            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">{formatHubShare(row.firms, firms)}</td>
-            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">{formatHubShare(row.employees, employees)}</td>
-            <td className="py-2.5 pl-3 pr-1 text-right font-semibold tabular-nums text-foreground">{formatHubShare(row.turnover, turnover)}</td>
+            {/* The share, and the figure the bars' readings give: the table is what assistive technology reads. */}
+            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">
+              {formatHubShare(row.firms, firms)} <span className="sr-only">({formatHubValueText(row.firms, 'firms')})</span>
+            </td>
+            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">
+              {formatHubShare(row.employees, employees)} <span className="sr-only">({formatHubValueText(row.employees, 'persons')})</span>
+            </td>
+            <td className="py-2.5 pl-3 pr-1 text-right font-semibold tabular-nums text-foreground">
+              {formatHubShare(row.turnover, turnover)} <span className="sr-only">({formatHubValueText(row.turnover, 'lei')})</span>
+            </td>
           </tr>
         ))}
       </tbody>
@@ -313,12 +327,10 @@ export function HubSizeBars({ classes, className }: { readonly classes: readonly
                 {shown ? (
                   <div
                     data-size-reading
-                    // The charts' tooltip box (`ChartTooltip`), over the part's middle; near an end it keeps inside the bar.
-                    className={cn(
-                      'pointer-events-none absolute bottom-full z-10 mb-2 w-max min-w-40 max-w-72 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md',
-                      middle < 0.15 ? 'translate-x-0' : middle > 0.85 ? '-translate-x-full' : '-translate-x-1/2',
-                    )}
-                    style={{ left: `${(middle < 0.15 ? shown.start : middle > 0.85 ? shown.start + shown.share : middle) * 100}%` }}
+                    // The charts' tooltip box (`ChartTooltip`) at one width, over the part's middle and never past either
+                    // end of the bar, so a phone's 280px bar keeps it on the screen.
+                    className="pointer-events-none absolute bottom-full z-10 mb-2 w-48 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+                    style={{ left: `clamp(0px, calc(${(middle * 100).toFixed(2)}% - 6rem), calc(100% - 12rem))` }}
                   >
                     <span className="block text-muted-foreground">{sizeClassText(shown.row.key)}</span>
                     <span className="mt-1 block text-sm font-semibold tabular-nums text-foreground">{formatHubValueText(shown.value, measure.unit)}</span>

@@ -1017,3 +1017,60 @@ and chose, from a question dialog, all of the following.
   offers anchors (`#domenii`, `#marime`, …) whose bands arrive with the page;
   a click in that fraction of a second scrolls nowhere. As before the change
   for every band but the counties.
+
+## The second polish round (25 November 2026)
+
+The owner picked eight more changes from a question dialog, then asked for
+tooltips on the charts and a shorter years band.
+
+### Decisions
+
+- **A leader's line says the county, and the release's activity only when
+  one is selected.** Three of the five rows ended in a cut „Mai multe
+  activități clasificate…"; the company's page says why none is selected.
+  Supersedes, for the hub's card, „or why none is selected" in „The hub
+  rebuilt from the Zeus design". The card's footnote is gone; each change
+  says „față de 2024" on a pointer and to a screen reader.
+- **The head's columns are centred against each other** from `lg`.
+- **The four figures read as plain text, with the landing's corner arrow**
+  (`HubFiguresBand` `plain` and `arrow`, opt-in, approved by root; the arrow
+  only on a tile whose label is the link).
+- **On a phone the activities fold after five** („Încă 5 activități"); the
+  focus goes on to the first row opened. Every row is in the server's HTML.
+- **The county legend prints the values under the joins between its
+  colours, in plain text, without the ends**, as the landing's budget map
+  does (DESIGN.md, 2026-11-23, an exception to the 2026-10-02 rule, here by
+  the owner's choice again): a class holds its lower bound; the values are
+  rounded as the readout rounds them, and the readout and the ranking give
+  each county's figure. The national tick says „România", the ranking's
+  header is plain text.
+- **Activity names wrap to two lines from `sm`** (the whole name on a phone),
+  the code line and the shares in plain text.
+- **The years and registrations charts run across their bands**; the years'
+  first and last whole years sit beside the band's switch, and its chart is
+  lower from `lg` (owner). Their unit, publisher and year labels are plain
+  text; the tick figures stay mono.
+- **Company size is three stacked bars** (firms, employees, turnover), one
+  whole each, split by class in the county map's five steps of one hue; a
+  part wide enough carries its share. **Hover (a tap on a phone) opens a
+  reading** in the charts' tooltip box: the class, its figure, its share
+  (owner). The bars are `aria-hidden`; the table stays for assistive
+  technology, each share with its figure.
+
+### From the review (Codex `gpt-6.2-sol`, second round)
+
+Fixed: the size reading stays inside the bar on a 320px phone; the corner
+arrow needs the label to be the link (a link in a note does not count); the
+size table gives the figures as well as the shares; the fold's button hands
+the focus on.
+
+Left, and why:
+- The legend's values are rounded (15,8 mld. for a cutoff of
+  15.785.595.555 lei): as before this round, and as the landing's legend.
+- On a phone the change's „față de 2024" is not visible: the owner dropped
+  the footnote that said it; a pointer and a screen reader get it.
+- Sighted keyboard readers cannot open a size part's reading (the bars are a
+  picture); the shares wide enough are printed, and the analysis has the rest.
+- The size caption („Bilanțurile pe 2025") does not say that 85 statements
+  without a headcount are in no class: true before this round as well.
+
