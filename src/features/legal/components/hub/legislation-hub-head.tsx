@@ -64,7 +64,8 @@ export function HubHeadActs({ ranking, onRanking }: { readonly ranking: HubRanki
   const figure = (row: (typeof rows)[number]) => (cited ? row.cited : row.amended)
   const top = Math.max(1, ...rows.map(figure))
   return (
-    <section className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6" aria-labelledby="legal-hub-acts-title">
+    // The national budget page's hero card: solid, with a light shadow off the lattice.
+    <section className="border bg-background p-5 shadow-sm sm:p-6" aria-labelledby="legal-hub-acts-title">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 id="legal-hub-acts-title" className="text-sm font-semibold text-foreground">
           {cited ? <Trans>Cele mai citate acte</Trans> : <Trans>Cele mai modificate acte</Trans>}

@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Info } from 'lucide-react'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import type { HomeSection } from '@/features/procurement/lib/home-links'
+import { cn } from '@/lib/utils'
+import type { LegalHubSection } from './legislation-hub-lib'
 
 /**
  * The legislation hub's chrome without running numbers (owner, 25 November 2026: the sections as the companies
@@ -41,20 +42,58 @@ export function LegalSectionHead({
   )
 }
 
-/** The pinned bar: the page's name, then its sections by their short names, no numbers. */
-export function LegalSectionNav({ title, sections }: { readonly title: string; readonly sections: readonly HomeSection[] }) {
+/** The section whose top has passed a line a quarter of the way down the window: the one a reader is in. */
+function useActiveSection(ids: readonly string[]): string | null {
+  const [active, setActive] = useState<string | null>(null)
+  const key = ids.join(' ')
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) setActive((was) => (entry.isIntersecting ? entry.target.id : was === entry.target.id ? null : was))
+      },
+      { rootMargin: '-25% 0px -74% 0px' },
+    )
+    for (const id of key.split(' ')) {
+      const element = document.getElementById(id)
+      if (element) observer.observe(element)
+    }
+    return () => observer.disconnect()
+  }, [key])
+  return active
+}
+
+/**
+ * The pinned bar, as the national budget page draws it: the page's name, then its sections by their short names,
+ * each after its icon, no numbers; the section the reader is in is underlined.
+ */
+export function LegalSectionNav({ title, sections }: { readonly title: string; readonly sections: readonly LegalHubSection[] }) {
+  const active = useActiveSection(sections.map((section) => section.id))
   return (
     <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
-      <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
-        <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground md:block md:max-w-72">{title}</span>
-        <ol className="flex shrink-0 gap-4 sm:gap-5 md:ml-auto">
-          {sections.map((section) => (
-            <li key={section.id}>
-              <a href={`#${section.id}`} className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground">
-                {section.label}
-              </a>
-            </li>
-          ))}
+      <RuledFrame className="flex items-center gap-6 py-0">
+        <span className="hidden shrink-0 text-sm font-semibold tracking-tight text-foreground md:block">{title}</span>
+        <ol className="-mx-2.5 flex min-w-0 overflow-x-auto md:ml-auto md:mr-0">
+          {sections.map((section) => {
+            const current = active === section.id
+            return (
+              <li key={section.id} className="shrink-0">
+                <a
+                  href={`#${section.id}`}
+                  aria-current={current ? 'location' : undefined}
+                  className={cn(
+                    // the row scrolls sideways, so an outward focus outline would be clipped: drawn inside
+                    'relative inline-flex h-12 items-center gap-2 px-2.5 text-sm transition-colors hover:text-foreground focus-visible:-outline-offset-2',
+                    'after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:bg-primary after:opacity-0 after:transition-opacity',
+                    current ? 'text-foreground after:opacity-100' : 'text-muted-foreground',
+                  )}
+                >
+                  <section.icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+                  {section.label}
+                </a>
+              </li>
+            )
+          })}
         </ol>
       </RuledFrame>
     </nav>
