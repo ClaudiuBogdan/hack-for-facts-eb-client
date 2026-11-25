@@ -366,6 +366,8 @@ test.describe('Entity Analytics - Interactions', () => {
 test.describe('Native grouped analytics availability', () => {
   test('renders annual ratios without inventing missing per-capita values', async ({ page, mockApi }) => {
     await mockApi.mockGraphQL('EntityAnalytics', 'entity-analytics')
+    // The line-items view reads its classification in the browser; mocked, so the test never waits on the live API.
+    await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
     await page.route('**/api/v1/graphql', async (route) => {
       const body = route.request().postDataJSON()
       if (!body?.query?.includes('query EntityAnalytics')) return route.fallback()
@@ -395,6 +397,8 @@ test.describe('Native grouped analytics availability', () => {
 
   test('explains missing normalization coverage', async ({ page, mockApi }) => {
     await mockApi.mockGraphQL('EntityAnalytics', 'entity-analytics')
+    // The line-items view reads its classification in the browser; mocked, so the test never waits on the live API.
+    await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
     await page.route('**/api/v1/graphql', async (route) => {
       if (!route.request().postDataJSON()?.query?.includes('query EntityAnalytics')) return route.fallback()
       await route.fulfill({ json: { errors: [{ message: 'CPI is unavailable for 2025', extensions: { code: 'SERVICE_UNAVAILABLE' } }] } })

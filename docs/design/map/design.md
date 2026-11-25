@@ -10,8 +10,10 @@ Code: `src/features/budget-map/` and `src/routes/map.tsx`, `map.lazy.tsx`.
 5,000+ lines, shared with the map editor and public maps): a configuration
 select, a full filter dialog, map, table and chart tabs, and a yellow-to-red
 continuous ramp. It is now the landing's budget map (`docs/design/landing/design.md`
-§Budget map) laid out for a page of its own. The workspace, `MapFilter`,
-`useMapFilter` and `MapStateSchema` are untouched; their other users keep them.
+§Budget map) laid out for a page of its own. The workspace, `useMapFilter` and
+`MapStateSchema` are untouched; their other users keep them. `MapFilter` and
+`standalone-map-state`, which only the old page used, were deleted in the
+polish round below.
 
 ## Decisions (owner, 25 November 2026)
 
@@ -118,20 +120,65 @@ half-way value; the landing map's screenshots stay byte-identical. The table's
 retry now asks again only for what the table reads. Its other two findings: the
 Nitro route cache (turned off separately), and the label lag below.
 
+## Polish (owner, 25 November 2026, second round; written 2026-11-25 12:45 UTC)
+
+- **The bar looks like `/public-institutions`' controls:** square, a quiet
+  border (`foreground/25`), the chosen option filled in the text's colour
+  (`bg-foreground text-background`, inverted in dark), the others muted; the
+  year reads „Anul: 2025" (the year alone on a phone, where the map's name
+  needs the room). The landing's picker is squared from `/map`'s own frame;
+  the landing is untouched.
+- **The table sits in the site footer's frame** (`RuledFrame`: centred,
+  `max-w-6xl`, its side rules): the search box and the pager keep to the
+  frame's padding, the rows run the section's full width from rule to rule,
+  their text on the same edges; square like the bar, numbers on one line,
+  headers free to wrap. Tried on the way (owner): full width (the figures sat
+  too far from their names), then a narrower `max-w-4xl` on the bar's left
+  edge, then centred.
+- **A „#" column gives each row's place** in the sort shown, among all the
+  rows, so a search keeps each place (Cluj-Napoca keeps its rank); a row
+  without the sorted figure shows „—". Its numbers start on the search box's
+  left edge; the column is fixed to a five-figure place. Hidden on a phone.
+- **Loading shows placeholder rows** shaped like the real ones (a name over
+  its county, the figures, narrower on a phone), with a hidden status line
+  for assistive tech, until both the figures and the level's shapes are in;
+  „nothing matches" only after they are.
+- **The pager is one quiet line under the table**, as on
+  `/public-institutions`: „1–50 din 3.186" on the left, „Pagina 1 din 64" and
+  two square arrows on the right (44 px under a finger, 32 px under a mouse);
+  a turn that starts below the table's head brings the window, and the
+  keyboard's focus, back to it. At 320 px a long range wraps the pager onto
+  a second line. The shared `Pagination` card (first/last, numbered pages, „Mergi la") is
+  gone from this page.
+- **A phone shows two figures beside the name** (the round-1 residual): the
+  sorted figure and the balance's percent, or the balance in lei beside the
+  percent when the sort is by name, balance or percent.
+- **Tried and withdrawn: labels and colours in the same frame** (the round-2
+  residual). The attempt made the new fill wait for the labels' layout. Codex
+  (round 3, gpt-6.2-sol xhigh) showed why that cannot work: the fill's colour
+  is a data-driven `match` on each shape's code, so changing it makes MapLibre
+  rebuild the shapes' tiles in its worker too (`Style._updatePaintProperty` →
+  `requiresRelayout`), independently of the labels' rebuild; waiting for one
+  before starting the other only swapped which one trails. The map stays as
+  before. A real fix colours the shapes through feature state (no tile
+  rebuild), a change to the shared engine and so to the landing.
+
 ## Not done / open
 
-- On a phone the table shows the name and the sorted column only; the
-  balance in lei is not shown beside its percent there (Codex round 1, kept
-  for the compact phone table).
 - When the year changes while zoomed in, MapLibre may draw the previous
-  year's amount labels for a frame or two after the grey fill appears, until
-  its worker has the new label data (Codex round 2; not worth a second
-  layer).
+  year's amount labels for a frame or two after the new fill appears, until
+  its worker has the new label data (Codex round 2; see the withdrawn attempt
+  above).
+
 - Individual primării are reachable by pointer and by the table, not by
   keyboard on the map (as on the landing).
 - The landing's „Hartă" blurb (`landing-groups.ts`) still says „Cheltuielile
   fiecărei primării și ale fiecărui județ"; the page now opens on the balance.
 - The unused heatmap hooks (`useHeatmapData`, the heatmap documents in
-  `dataDiscovery.ts`) are left for a later cleanup.
+  `dataDiscovery.ts`) are left for a later cleanup, with the components no
+  route reached even before the rewrite: `HeatmapDataTable`, the six
+  `components/maps/charts/Uat*` charts, the Leaflet renderer and label code,
+  and `useMapFilter`, which only they import (about 8,000 lines; the owner
+  kept that cleanup out of this round).
 - The shared map engine lives under `features/landing/`; moving it to a
   neutral folder is a separate change.

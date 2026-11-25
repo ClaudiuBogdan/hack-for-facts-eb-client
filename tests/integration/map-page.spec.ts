@@ -108,9 +108,40 @@ test.describe('Map page', () => {
     const row = page.getByRole('row').filter({ has: page.getByRole('link', { name: 'Cluj-Napoca' }) })
     await expect(row).toBeVisible({ timeout: 20000 })
     await expect(row.getByRole('link', { name: 'Cluj-Napoca' })).toHaveAttribute('href', '/entities/4305857')
+    // Its place among all the primării by income, kept through the search: the fixture's largest.
+    await expect(row.getByRole('cell').first()).toHaveText('1')
     await expect(row).toContainText(/10\smil\. lei/)
     await expect(row).toContainText(/−2\smil\. lei/)
     await expect(row).toContainText('−20%')
+  })
+
+  test('pages the table from one quiet line under it, back to the table\'s head', async ({ page }) => {
+    await mockFigures(page)
+    await page.goto('/map?vedere=tabel')
+    // Every primărie on the map is a row (the shapes are the app's own file); 50 a page.
+    await expect(page.getByText(/^1–50 din \d/)).toBeVisible({ timeout: 20000 })
+    await expect(page.getByText(/^Pagina 1 din \d+$/)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Pagina anterioară' })).toBeDisabled()
+    await page.getByRole('button', { name: 'Pagina următoare' }).click()
+    await expect(page.getByText(/^51–100 din \d/)).toBeVisible()
+    await expect(page.getByText(/^Pagina 2 din \d+$/)).toBeVisible()
+    await expect(page.getByRole('searchbox', { name: 'Caută o localitate' })).toBeInViewport()
+    // The keyboard's focus came up with the view: the next Tab reaches the new page's rows.
+    await expect(page.locator('[data-map-page] [aria-busy]')).toBeFocused()
+  })
+
+  test('shows two figures beside the name on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 780 })
+    await mockFigures(page)
+    await page.goto('/map?vedere=tabel')
+    await expect(page.getByRole('columnheader', { name: 'Sold, % din venituri' })).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('columnheader', { name: 'Sold', exact: true })).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: 'Venituri', exact: true })).toBeHidden()
+    // The income map's table is sorted by income: the income comes in beside the percent.
+    await page.goto('/map?vedere=tabel&harta=venituri')
+    await expect(page.getByRole('columnheader', { name: 'Venituri', exact: true })).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('columnheader', { name: 'Sold, % din venituri' })).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: 'Sold', exact: true })).toBeHidden()
   })
 
   test('opens an old link with what it can show, and drops the old keys at the first change', async ({ page }) => {

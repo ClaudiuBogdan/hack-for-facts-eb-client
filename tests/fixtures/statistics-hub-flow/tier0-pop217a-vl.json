@@ -1,0 +1,351 @@
+{
+  "data": {
+    "dataset": {
+      "id": "POP217A",
+      "code": "POP217A",
+      "name_ro": "Durata medie a vietii pe medii de rezidenta, sexe, pe macroregiuni, regiuni de dezvoltare si judete",
+      "name_en": "Life expectancy by urban/ rural area, sex, macroregions, development regions and counties",
+      "definition_ro": "Durata medie a vietii reprezinta numarul mediu de ani pe care ii are de trait un nou nascut, daca ar trai tot restul vietii in conditiile mortalitatii pe varste din perioada de referinta.",
+      "definition_en": "Life expectancy represents average number of years an infant would live, if he / she lived all his / her life, under the conditions of mortality by age in the reference period.",
+      "periodicity": [
+        "ANNUAL"
+      ],
+      "year_range": [
+        1990,
+        2025
+      ],
+      "dimension_count": 5,
+      "has_uat_data": false,
+      "has_county_data": true,
+      "has_siruta": false,
+      "sync_status": "SYNCED",
+      "data_status": "AVAILABLE",
+      "last_sync_at": "2026-10-06 14:14:44.971673+00",
+      "context_code": "1150",
+      "context_name_ro": "5. SPOR NATURAL",
+      "context_name_en": "5. NATURAL INCREASE",
+      "context_path": "A. STATISTICA SOCIALA > MISCAREA NATURALA A POPULATIEI Comunicate de presa > SPOR NATURAL",
+      "metadata": {
+        "methodology_ro": "Speranta de viata la nastere se calculeaza pe baza datelor referitoare la numarul populatiei dupa domiciliu la 1 ianuarie si 1 iulie, al deceselor si migratiei interne cu schimbarea domiciliului.\r\nIndicatorii tabelei de mortalitate au urmatoarea semnificatie:\r\nL(x) - numarul supravietuitorilor de varsta x - cate persoane din generatia ipotetica de 100000 nascuti - vii mai sunt in viata la implinirea varstei exacte de x ani;\r\nD(x) - numarul decedatilor intre varstele x si x+1 ani - arata cati din supravietuitorii varstei x ani mor inainte de a implini varsta x+1 ani;\r\nQ(x) - probabilitatea de deces intre varstele x si x+1 ani - arata riscul la care este expusa o persoana care a implinit x ani si moare inainte de a implini x+1 ani;\r\nP(x) - probabilitatea de supravietuire intre varstele x si x+1 ani - arata sansele pe care le are o persoana care a implinit varsta x ani sa fie in viata la implinirea varstei x+1 ani;\r\nLM(x) - numarul mediu al supravietuitorilor in intervalul de varsta x la x+1 ani;\r\nE(x) - speranta de viata la varsta x - indica numarul mediu de ani ramasi de trait pentru o persoana care supravietuieste varstei x si se determina prin insumarea numarului mediu al supravietuitorilor L(x) de la varsta x pana la varsta maxima din tabela si impartirea la numarul supravietuitorilor varstei x.\r\nSperanta de viata la nastere  este denumita durata medie de viata  e(o).\r\nE(o) - indica numarul mediu de ani pe care poate sa-i traiasca un nou nascut in conditiile intensitatii mortalitatii pe varste din perioada de referinta a tabelei de mortalitate.\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Statistica-demografica.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+        "data_sources_ro": "Cercetarea statistica privind speranta de viata <<1313>>",
+        "source_year_range": [
+          1990,
+          2025
+        ],
+        "source_last_update": "2026-09-09",
+        "observation_count": 15150,
+        "has_region_data": true,
+        "has_national_data": true,
+        "custody_sha256": "9f10439a90ec8c8930c5e1799a26d82e29d9bb402122a5c9ab2c4f5c3d4f3217",
+        "revision_id": "2498",
+        "transform_contract_sha256": "29ad0ebc66c833f3afd6a01b74c6c5e56544ce09d8d23b40e1af007990e45b03",
+        "published_at": "2026-10-06 14:14:44.971673+00",
+        "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/POP217A?lang=ro"
+      },
+      "methodology_ro": "Speranta de viata la nastere se calculeaza pe baza datelor referitoare la numarul populatiei dupa domiciliu la 1 ianuarie si 1 iulie, al deceselor si migratiei interne cu schimbarea domiciliului.\r\nIndicatorii tabelei de mortalitate au urmatoarea semnificatie:\r\nL(x) - numarul supravietuitorilor de varsta x - cate persoane din generatia ipotetica de 100000 nascuti - vii mai sunt in viata la implinirea varstei exacte de x ani;\r\nD(x) - numarul decedatilor intre varstele x si x+1 ani - arata cati din supravietuitorii varstei x ani mor inainte de a implini varsta x+1 ani;\r\nQ(x) - probabilitatea de deces intre varstele x si x+1 ani - arata riscul la care este expusa o persoana care a implinit x ani si moare inainte de a implini x+1 ani;\r\nP(x) - probabilitatea de supravietuire intre varstele x si x+1 ani - arata sansele pe care le are o persoana care a implinit varsta x ani sa fie in viata la implinirea varstei x+1 ani;\r\nLM(x) - numarul mediu al supravietuitorilor in intervalul de varsta x la x+1 ani;\r\nE(x) - speranta de viata la varsta x - indica numarul mediu de ani ramasi de trait pentru o persoana care supravietuieste varstei x si se determina prin insumarea numarului mediu al supravietuitorilor L(x) de la varsta x pana la varsta maxima din tabela si impartirea la numarul supravietuitorilor varstei x.\r\nSperanta de viata la nastere  este denumita durata medie de viata  e(o).\r\nE(o) - indica numarul mediu de ani pe care poate sa-i traiasca un nou nascut in conditiile intensitatii mortalitatii pe varste din perioada de referinta a tabelei de mortalitate.\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Statistica-demografica.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+      "methodology_en": "Life expectancy is computed based on the number of permanent resident population at January 1st and July 1st, the number of deaths and  internal migration due to change of domicile.\r\nThe figures in the mortality table have the following meaning:\r\nL(x) - number of survivors at a certain exact age (x) from a hypothetical generation of 100.000 live-births.\r\nD(x) - number of deaths between exact age of (x) years and next age (x+1).\r\nQ(x) - probability of death between exact age of (x) years and next age (x+1) years.\r\nP(x) - probability of survival between exact age of (x) years and next age (x+1) years.\r\nLM(x) - average number of survivors in age interval of (x) to (x+1) years.\r\nE(x) - life expectancy at age (x) represents the average number of years that a person of a certain age (x) has to live, if that person would live all her life under the conditions of mortality by age during the reference period of the mortality table.\r\nE(0) - life expectancy at birth is referred to as mean life expectancy.\r\nE(0) - represents the average number of years a newborn might live in the conditions of the intensity of the mortality by age from the reference period of the mortality table.\r\n\r\n<a href=\"https://insse.ro/cms/files/Quality-reports/Population/Vital-statistics.pdf\" target=\"_blank\"> Metadata and quality report </a>\r\n",
+      "data_sources_ro": "Cercetarea statistica privind speranta de viata <<1313>>",
+      "data_sources_en": "Statistical survey on life expectancy <<1313>>",
+      "data_sources": [
+        {
+          "name": "Cercetarea statistica privind speranta de viata <<1313>>",
+          "type": "Surse statistice (INS)",
+          "type_code": 1,
+          "link_number": 1313
+        }
+      ],
+      "observations_ro": "Pana in anul 2011 in numarul decedatilor au fost inclusi decedatii care aveau domiciliul in Romania.\r\nIncepand cu anul 2012 sunt inclusi decedatii care aveau domiciliul sau resedinta obisnuita in Romania.\r\nPopulatia dupa domiciliu la 1 iulie a anului de referinta reprezinta numarul persoanelor cu cetatenie romana si domiciliu pe teritoriul Romaniei, delimitat dupa criterii administrativ-teritoriale.\r\nDomiciliul persoanei este adresa la care aceasta declara ca are locuinta principala, trecuta in actul de identitate (CI, BI), asa cum este luata in evidenta organelor administrative ale statului.\r\nIn stabilirea sferei de cuprindere a acestui indicator nu se tine cont de resedinta obisnuita a persoanei sau de perioada si/sau motivul absentei de la domiciliu.\r\nDatele statistice sunt revizuite in mod constant, conform politicii INS de revizuire a datelor.\nAstfel, datele aferente anului 2023 au fost modificate si sunt de tip \"revizuit\".\nDatele anterioare anului 2023 nu vor mai fi revizuite.\nDatele revizuite privind decedatii aferente lunilor din anul T reprezinta datele absolute definitive aferente fenomenelor demografice (deceselor) inregistrate in anul T, la care s-au adaugat decesele inregistrate tardiv in anii T+1, T+2 si primele patru luni din anul T+3, dar care s-au petrecut in anul T.",
+      "observations_en": "Until 2011 the number of deaths included deceased that had their permanent residence in Romania.\r\nBeginning with 2012 there are included deceased that had either their permanent residence or their usual residence in Romania.\r\nPermanent resident population  at July 1st in the reference year represents the number of persons with Romanian citizenship and permanent residence in territory of Romania, delimited by territorial administrative criteria.\r\nThe person's permanent residence is the address where he/she declares to have the main dwelling, printed as such on its identity card and registered by the administrative bodies of the State.\r\nTo set up the value of this indicator, the usual residence is not taken into account as well as the period and/or reason of absence from permanent residence.\r\nThe statistical data are constantly revised, according to the Revision Policy of NIS.\nThus, the data for 2023 have been modified and are of \"revised\".\nData prior to 2023 will not be revised.\r\nThe revised data on vital events ( deaths) for the year T represents the absolute final data related to vital events (deaths) recorded in year T, to which were added vital events (deaths) belatedly recorded in years (T+1), (T+2) and the first four months of (T+3), but that occurred in year T.",
+      "discontinued_after_ro": null,
+      "discontinued_after_en": null,
+      "successor_dataset_code": null,
+      "continues_from": [],
+      "source_last_update": "2026-09-09",
+      "dimensions": [
+        {
+          "index": 0,
+          "type": "CLASSIFICATION",
+          "label_ro": "Medii de rezidenta",
+          "label_en": "Urban and rural areas",
+          "is_hierarchical": false,
+          "option_count": 3,
+          "classification_type": {
+            "code": "D0",
+            "name_ro": "Medii de rezidenta",
+            "name_en": "Urban and rural areas",
+            "is_hierarchical": false
+          }
+        },
+        {
+          "index": 1,
+          "type": "CLASSIFICATION",
+          "label_ro": "Sexe",
+          "label_en": "Sex",
+          "is_hierarchical": false,
+          "option_count": 3,
+          "classification_type": {
+            "code": "D1",
+            "name_ro": "Sexe",
+            "name_en": "Sex",
+            "is_hierarchical": false
+          }
+        },
+        {
+          "index": 2,
+          "type": "TERRITORIAL",
+          "label_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+          "label_en": "Macroregions, development regions and counties",
+          "is_hierarchical": false,
+          "option_count": 55,
+          "classification_type": {
+            "code": "D2",
+            "name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+            "name_en": "Macroregions, development regions and counties",
+            "is_hierarchical": false
+          }
+        },
+        {
+          "index": 3,
+          "type": "TEMPORAL",
+          "label_ro": "Ani",
+          "label_en": "Years",
+          "is_hierarchical": false,
+          "option_count": 36,
+          "classification_type": null
+        },
+        {
+          "index": 4,
+          "type": "UNIT_OF_MEASURE",
+          "label_ro": "UM: Ani",
+          "label_en": "MU: Years",
+          "is_hierarchical": false,
+          "option_count": 1,
+          "classification_type": null
+        }
+      ]
+    },
+    "latest": [
+      {
+        "latestPeriod": "2025",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "POP217A",
+          "code": "POP217A",
+          "name_ro": "Durata medie a vietii pe medii de rezidenta, sexe, pe macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Life expectancy by urban/ rural area, sex, macroregions, development regions and counties",
+          "definition_ro": "Durata medie a vietii reprezinta numarul mediu de ani pe care ii are de trait un nou nascut, daca ar trai tot restul vietii in conditiile mortalitatii pe varste din perioada de referinta.",
+          "definition_en": "Life expectancy represents average number of years an infant would live, if he / she lived all his / her life, under the conditions of mortality by age in the reference period.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2025
+          ],
+          "dimension_count": 5,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-10-06 14:14:44.971673+00",
+          "context_code": "1150",
+          "context_name_ro": "5. SPOR NATURAL",
+          "context_name_en": "5. NATURAL INCREASE",
+          "context_path": "A. STATISTICA SOCIALA > MISCAREA NATURALA A POPULATIEI Comunicate de presa > SPOR NATURAL",
+          "metadata": {
+            "methodology_ro": "Speranta de viata la nastere se calculeaza pe baza datelor referitoare la numarul populatiei dupa domiciliu la 1 ianuarie si 1 iulie, al deceselor si migratiei interne cu schimbarea domiciliului.\r\nIndicatorii tabelei de mortalitate au urmatoarea semnificatie:\r\nL(x) - numarul supravietuitorilor de varsta x - cate persoane din generatia ipotetica de 100000 nascuti - vii mai sunt in viata la implinirea varstei exacte de x ani;\r\nD(x) - numarul decedatilor intre varstele x si x+1 ani - arata cati din supravietuitorii varstei x ani mor inainte de a implini varsta x+1 ani;\r\nQ(x) - probabilitatea de deces intre varstele x si x+1 ani - arata riscul la care este expusa o persoana care a implinit x ani si moare inainte de a implini x+1 ani;\r\nP(x) - probabilitatea de supravietuire intre varstele x si x+1 ani - arata sansele pe care le are o persoana care a implinit varsta x ani sa fie in viata la implinirea varstei x+1 ani;\r\nLM(x) - numarul mediu al supravietuitorilor in intervalul de varsta x la x+1 ani;\r\nE(x) - speranta de viata la varsta x - indica numarul mediu de ani ramasi de trait pentru o persoana care supravietuieste varstei x si se determina prin insumarea numarului mediu al supravietuitorilor L(x) de la varsta x pana la varsta maxima din tabela si impartirea la numarul supravietuitorilor varstei x.\r\nSperanta de viata la nastere  este denumita durata medie de viata  e(o).\r\nE(o) - indica numarul mediu de ani pe care poate sa-i traiasca un nou nascut in conditiile intensitatii mortalitatii pe varste din perioada de referinta a tabelei de mortalitate.\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Statistica-demografica.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+            "data_sources_ro": "Cercetarea statistica privind speranta de viata <<1313>>",
+            "source_year_range": [
+              1990,
+              2025
+            ],
+            "source_last_update": "2026-09-09",
+            "observation_count": 15150,
+            "has_region_data": true,
+            "has_national_data": true,
+            "custody_sha256": "9f10439a90ec8c8930c5e1799a26d82e29d9bb402122a5c9ab2c4f5c3d4f3217",
+            "revision_id": "2498",
+            "transform_contract_sha256": "29ad0ebc66c833f3afd6a01b74c6c5e56544ce09d8d23b40e1af007990e45b03",
+            "published_at": "2026-10-06 14:14:44.971673+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/POP217A?lang=ro"
+          },
+          "methodology_ro": "Speranta de viata la nastere se calculeaza pe baza datelor referitoare la numarul populatiei dupa domiciliu la 1 ianuarie si 1 iulie, al deceselor si migratiei interne cu schimbarea domiciliului.\r\nIndicatorii tabelei de mortalitate au urmatoarea semnificatie:\r\nL(x) - numarul supravietuitorilor de varsta x - cate persoane din generatia ipotetica de 100000 nascuti - vii mai sunt in viata la implinirea varstei exacte de x ani;\r\nD(x) - numarul decedatilor intre varstele x si x+1 ani - arata cati din supravietuitorii varstei x ani mor inainte de a implini varsta x+1 ani;\r\nQ(x) - probabilitatea de deces intre varstele x si x+1 ani - arata riscul la care este expusa o persoana care a implinit x ani si moare inainte de a implini x+1 ani;\r\nP(x) - probabilitatea de supravietuire intre varstele x si x+1 ani - arata sansele pe care le are o persoana care a implinit varsta x ani sa fie in viata la implinirea varstei x+1 ani;\r\nLM(x) - numarul mediu al supravietuitorilor in intervalul de varsta x la x+1 ani;\r\nE(x) - speranta de viata la varsta x - indica numarul mediu de ani ramasi de trait pentru o persoana care supravietuieste varstei x si se determina prin insumarea numarului mediu al supravietuitorilor L(x) de la varsta x pana la varsta maxima din tabela si impartirea la numarul supravietuitorilor varstei x.\r\nSperanta de viata la nastere  este denumita durata medie de viata  e(o).\r\nE(o) - indica numarul mediu de ani pe care poate sa-i traiasca un nou nascut in conditiile intensitatii mortalitatii pe varste din perioada de referinta a tabelei de mortalitate.\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Statistica-demografica.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+          "methodology_en": "Life expectancy is computed based on the number of permanent resident population at January 1st and July 1st, the number of deaths and  internal migration due to change of domicile.\r\nThe figures in the mortality table have the following meaning:\r\nL(x) - number of survivors at a certain exact age (x) from a hypothetical generation of 100.000 live-births.\r\nD(x) - number of deaths between exact age of (x) years and next age (x+1).\r\nQ(x) - probability of death between exact age of (x) years and next age (x+1) years.\r\nP(x) - probability of survival between exact age of (x) years and next age (x+1) years.\r\nLM(x) - average number of survivors in age interval of (x) to (x+1) years.\r\nE(x) - life expectancy at age (x) represents the average number of years that a person of a certain age (x) has to live, if that person would live all her life under the conditions of mortality by age during the reference period of the mortality table.\r\nE(0) - life expectancy at birth is referred to as mean life expectancy.\r\nE(0) - represents the average number of years a newborn might live in the conditions of the intensity of the mortality by age from the reference period of the mortality table.\r\n\r\n<a href=\"https://insse.ro/cms/files/Quality-reports/Population/Vital-statistics.pdf\" target=\"_blank\"> Metadata and quality report </a>\r\n",
+          "data_sources_ro": "Cercetarea statistica privind speranta de viata <<1313>>",
+          "data_sources_en": "Statistical survey on life expectancy <<1313>>",
+          "data_sources": [
+            {
+              "name": "Cercetarea statistica privind speranta de viata <<1313>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 1313
+            }
+          ],
+          "observations_ro": "Pana in anul 2011 in numarul decedatilor au fost inclusi decedatii care aveau domiciliul in Romania.\r\nIncepand cu anul 2012 sunt inclusi decedatii care aveau domiciliul sau resedinta obisnuita in Romania.\r\nPopulatia dupa domiciliu la 1 iulie a anului de referinta reprezinta numarul persoanelor cu cetatenie romana si domiciliu pe teritoriul Romaniei, delimitat dupa criterii administrativ-teritoriale.\r\nDomiciliul persoanei este adresa la care aceasta declara ca are locuinta principala, trecuta in actul de identitate (CI, BI), asa cum este luata in evidenta organelor administrative ale statului.\r\nIn stabilirea sferei de cuprindere a acestui indicator nu se tine cont de resedinta obisnuita a persoanei sau de perioada si/sau motivul absentei de la domiciliu.\r\nDatele statistice sunt revizuite in mod constant, conform politicii INS de revizuire a datelor.\nAstfel, datele aferente anului 2023 au fost modificate si sunt de tip \"revizuit\".\nDatele anterioare anului 2023 nu vor mai fi revizuite.\nDatele revizuite privind decedatii aferente lunilor din anul T reprezinta datele absolute definitive aferente fenomenelor demografice (deceselor) inregistrate in anul T, la care s-au adaugat decesele inregistrate tardiv in anii T+1, T+2 si primele patru luni din anul T+3, dar care s-au petrecut in anul T.",
+          "observations_en": "Until 2011 the number of deaths included deceased that had their permanent residence in Romania.\r\nBeginning with 2012 there are included deceased that had either their permanent residence or their usual residence in Romania.\r\nPermanent resident population  at July 1st in the reference year represents the number of persons with Romanian citizenship and permanent residence in territory of Romania, delimited by territorial administrative criteria.\r\nThe person's permanent residence is the address where he/she declares to have the main dwelling, printed as such on its identity card and registered by the administrative bodies of the State.\r\nTo set up the value of this indicator, the usual residence is not taken into account as well as the period and/or reason of absence from permanent residence.\r\nThe statistical data are constantly revised, according to the Revision Policy of NIS.\nThus, the data for 2023 have been modified and are of \"revised\".\nData prior to 2023 will not be revised.\r\nThe revised data on vital events ( deaths) for the year T represents the absolute final data related to vital events (deaths) recorded in year T, to which were added vital events (deaths) belatedly recorded in years (T+1), (T+2) and the first four months of (T+3), but that occurred in year T.",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2026-09-09",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Medii de rezidenta",
+              "label_en": "Urban and rural areas",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Medii de rezidenta",
+                "name_en": "Urban and rural areas",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "Sexe",
+              "label_en": "Sex",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Sexe",
+                "name_en": "Sex",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "label_en": "Macroregions, development regions and counties",
+              "is_hierarchical": false,
+              "option_count": 55,
+              "classification_type": {
+                "code": "D2",
+                "name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+                "name_en": "Macroregions, development regions and counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "label_en": "Years",
+              "is_hierarchical": false,
+              "option_count": 36,
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Ani",
+              "label_en": "MU: Years",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:POP217A:108:105:3101:4912:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2025",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "82.01",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "mapAnnualPopulation": [
+      {
+        "territoryCode": "54975",
+        "territoryId": 1373,
+        "year": 2025,
+        "population": "325408",
+        "metadata": {
+          "sourceYearMin": 2025,
+          "sourceYearMax": 2025,
+          "maxCarryAge": 0,
+          "carriedCount": 0,
+          "provisionalCount": 0,
+          "sourceUrl": "http://statistici.insse.ro:8077/tempo-ins/matrix/POP107D?lang=ro"
+        }
+      }
+    ]
+  }
+}

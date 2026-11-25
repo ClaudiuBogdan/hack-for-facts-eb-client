@@ -13,6 +13,12 @@
 
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
+import { mockMapReads } from '../utils/map-mocks'
+
+// The map's grouped-series read, answered from the dev API's recorded answers (TEST-001).
+test.beforeEach(async ({ page }) => {
+  await mockMapReads(page)
+})
 
 const PATHS = [
   '/development',
