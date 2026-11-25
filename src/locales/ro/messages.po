@@ -189,7 +189,7 @@ msgstr "„6201\""
 msgid "„Abrogat parțial” NU înseamnă că legea nu mai e în vigoare. Este statutul firesc al unei legi modificate ani la rând: unele articole au fost abrogate, restul produc efecte în continuare. Printre cele mai citate acte din corpus, Codul de procedură penală — aplicat zi de zi în instanțe — poartă exact acest statut."
 msgstr "„Abrogat parțial” NU înseamnă că legea nu mai e în vigoare. Este statutul firesc al unei legi modificate ani la rând: unele articole au fost abrogate, restul produc efecte în continuare. Printre cele mai citate acte din corpus, Codul de procedură penală — aplicat zi de zi în instanțe — poartă exact acest statut."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:367
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:370
 msgid "„Altele\": clasele din afara legendei, împreună."
 msgstr "„Altele\": clasele din afara legendei, împreună."
 
@@ -627,8 +627,8 @@ msgstr "{0, plural, one {Cel puțin # dosar} few {Cel puțin # dosare} other {Ce
 
 #. placeholder {0}: b.total
 #. placeholder {0}: s.total
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:200
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:278
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:203
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:281
 msgid "{0, plural, one {din # act} few {din # acte} other {din # de acte}}"
 msgstr "{0, plural, one {din # act} few {din # acte} other {din # de acte}}"
 
@@ -672,8 +672,18 @@ msgstr "{0, plural, one {Încă un grup} few {Alte # grupuri} other {Alte # de g
 
 #. placeholder {0}: days.links
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:425
-msgid "{0, plural, one {măsurată pe o trimitere.} few {măsurată pe # trimiteri.} other {măsurată pe # de trimiteri.}}"
-msgstr "{0, plural, one {măsurată pe o trimitere.} few {măsurată pe # trimiteri.} other {măsurată pe # de trimiteri.}}"
+#~ msgid "{0, plural, one {măsurată pe o trimitere.} few {măsurată pe # trimiteri.} other {măsurată pe # de trimiteri.}}"
+#~ msgstr "{0, plural, one {măsurată pe o trimitere.} few {măsurată pe # trimiteri.} other {măsurată pe # de trimiteri.}}"
+
+#. placeholder {0}: days.links
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:435
+msgid "{0, plural, one {măsurate pe o trimitere.} few {măsurate pe # trimiteri.} other {măsurate pe # de trimiteri.}}"
+msgstr "{0, plural, one {măsurate pe o trimitere.} few {măsurate pe # trimiteri.} other {măsurate pe # de trimiteri.}}"
+
+#. placeholder {0}: chart.later
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:377
+msgid "{0, plural, one {Nici # act cu un an după 2100.} few {Nici # acte cu un an după 2100.} other {Nici # de acte cu un an după 2100.}}"
+msgstr "{0, plural, one {Nici # act cu un an după 2100.} few {Nici # acte cu un an după 2100.} other {Nici # de acte cu un an după 2100.}}"
 
 #. placeholder {0}: undated.count
 #. placeholder {1}: moneyText(undated.total)
@@ -689,7 +699,7 @@ msgid "{0, plural, one {Nu apare pe grafic o înregistrare fără an și fără 
 msgstr "{0, plural, one {Nu apare pe grafic o înregistrare fără an și fără valoare publicată.} few {Nu apar pe grafic # înregistrări fără an și fără valoare publicată.} other {Nu apar pe grafic # de înregistrări fără an și fără valoare publicată.}}"
 
 #. placeholder {0}: chart.earlier
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:368
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:371
 msgid "{0, plural, one {Nu sunt pe grafic: # act dinainte de {YEARS_FROM}} few {Nu sunt pe grafic: # acte dinainte de {YEARS_FROM}} other {Nu sunt pe grafic: # de acte dinainte de {YEARS_FROM}}}"
 msgstr "{0, plural, one {Nu sunt pe grafic: # act dinainte de {YEARS_FROM}} few {Nu sunt pe grafic: # acte dinainte de {YEARS_FROM}} other {Nu sunt pe grafic: # de acte dinainte de {YEARS_FROM}}}"
 
@@ -814,8 +824,8 @@ msgstr "{0, plural, one {O referință de modificare sau completare înregistrat
 
 #. placeholder {0}: b.total
 #. placeholder {0}: s.total
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:226
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:307
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:229
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:310
 msgid "{0, plural, one {Procente din tot # act publicat.} few {Procente din toate cele # acte publicate.} other {Procente din toate cele # de acte publicate.}}"
 msgstr "{0, plural, one {Procente din tot # act publicat.} few {Procente din toate cele # acte publicate.} other {Procente din toate cele # de acte publicate.}}"
 
@@ -833,7 +843,7 @@ msgid "{0, plural, one {Raportat de {reported} dintr-o firmă cu bilanț} few {R
 msgstr "{0, plural, one {Raportat de {reported} dintr-o firmă cu bilanț} few {Raportat de {reported} din # firme cu bilanț} other {Raportat de {reported} din # de firme cu bilanț}}"
 
 #. placeholder {0}: s.unknownYear
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:373
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:376
 msgid "{0, plural, one {și # act fără an.} few {și # acte fără an.} other {și # de acte fără an.}}"
 msgstr "{0, plural, one {și # act fără an.} few {și # acte fără an.} other {și # de acte fără an.}}"
 
@@ -1052,12 +1062,12 @@ msgid "{0} +{extraMemberCount}"
 msgstr "{0} +{extraMemberCount}"
 
 #. placeholder {0}: fmt(s.withText)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:186
+#: src/features/legal/components/analytics/legislation-analysis.tsx:169
 msgid "{0} acte"
 msgstr "{0} acte"
 
 #. placeholder {0}: fmt(hidden)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:737
+#: src/features/legal/components/analytics/legislation-analysis.tsx:729
 msgid "{0} acte ale selecției nu pot fi afișate (restricționate după calcul)."
 msgstr "{0} acte ale selecției nu pot fi afișate (restricționate după calcul)."
 
@@ -1069,7 +1079,7 @@ msgstr "{0} acte ale selecției nu pot fi afișate (restricționate după calcul
 #~ msgstr "{0} acte care modifică, după titlu; {1} ({2}) legate de un singur act din corpus. Restul, în coloanele gri: un cod numit, o țintă cu același număr la mai mulți emitenți, o țintă care lipsește din corpus, sau niciun act numit în titlu. Legile și ordonanțele sunt o singură bandă."
 
 #. placeholder {0}: fmt(s.unknownYear)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:406
+#: src/features/legal/components/analytics/legislation-analysis.tsx:390
 msgid "{0} acte fără an nu sunt pe grafic."
 msgstr "{0} acte fără an nu sunt pe grafic."
 
@@ -1079,7 +1089,7 @@ msgid "{0} acte găsite"
 msgstr "{0} acte găsite"
 
 #. placeholder {0}: fmt(first.total)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:662
+#: src/features/legal/components/analytics/legislation-analysis.tsx:653
 msgid "{0} acte în selecție, ordonate."
 msgstr "{0} acte în selecție, ordonate."
 
@@ -1257,19 +1267,19 @@ msgstr "{0} de locuitori"
 
 #. placeholder {0}: pctOf(s.withText, s.total)
 #. placeholder {1}: fmt(s.total)
-#: src/features/legal/components/hub/legislation-hub-head.tsx:255
+#: src/features/legal/components/hub/legislation-hub-head.tsx:256
 msgid "{0} din {1} acte"
 msgstr "{0} din {1} acte"
 
 #. placeholder {0}: pctOf(s.withVersions, s.total)
 #. placeholder {1}: fmt(s.total)
-#: src/features/legal/components/hub/legislation-hub-head.tsx:286
+#: src/features/legal/components/hub/legislation-hub-head.tsx:287
 msgid "{0} din {1} acte; listate de Portal, neoficiale"
 msgstr "{0} din {1} acte; listate de Portal, neoficiale"
 
 #. placeholder {0}: fmt(rows.length)
 #. placeholder {1}: fmt(first.total)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:736
+#: src/features/legal/components/analytics/legislation-analysis.tsx:728
 msgid "{0} din {1} acte."
 msgstr "{0} din {1} acte."
 
@@ -1389,7 +1399,7 @@ msgid "{0} ediții în {year}"
 msgstr "{0} ediții în {year}"
 
 #. placeholder {0}: fmt(head.issuerCount)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:935
+#: src/features/legal/components/analytics/legislation-analysis.tsx:927
 msgid "{0} emitenți; caută unul după nume."
 msgstr "{0} emitenți; caută unul după nume."
 
@@ -1531,7 +1541,7 @@ msgstr "{0} în total, din preluarea portalului"
 #. placeholder {0}: pctOf(s.uncertain, s.total)
 #. placeholder {1}: pctOf(s.unplaced, s.total)
 #. placeholder {2}: fmt(s.total)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:82
+#: src/features/legal/components/analytics/legislation-analysis.tsx:72
 msgid "{0} încadrare nesigură · {1} neîncadrate · din {2}"
 msgstr "{0} încadrare nesigură · {1} neîncadrate · din {2}"
 
@@ -1927,7 +1937,7 @@ msgstr "{0} și încă {1}"
 #. placeholder {0}: fmt(total)
 #. placeholder {1}: fmt(resolved)
 #. placeholder {2}: pct(resolved / total)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:519
+#: src/features/legal/components/analytics/legislation-analysis.tsx:508
 msgid "{0} trimiteri de modificare, citite din titluri; {1} ({2}) duc la un singur act din corpus. Restul, în coloanele gri: un cod numit, o țintă cu același număr la mai mulți emitenți, o țintă care lipsește din corpus, sau niciun act numit în titlu. Legile și ordonanțele sunt o singură bandă."
 msgstr "{0} trimiteri de modificare, citite din titluri; {1} ({2}) duc la un singur act din corpus. Restul, în coloanele gri: un cod numit, o țintă cu același număr la mai mulți emitenți, o țintă care lipsește din corpus, sau niciun act numit în titlu. Legile și ordonanțele sunt o singură bandă."
 
@@ -3282,7 +3292,7 @@ msgstr "{more, plural, one {și încă un câștigător} few {și încă # câș
 msgid "{moved} față de {0}"
 msgstr "{moved} față de {0}"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:415
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:419
 msgid "{n, plural, one {# zi} few {# zile} other {# de zile}}"
 msgstr "{n, plural, one {# zi} few {# zile} other {# de zile}}"
 
@@ -3408,7 +3418,7 @@ msgstr "{option} · parțial"
 msgid "{ordinances, plural, one {# ordonanță de urgență} few {# ordonanțe de urgență} other {# de ordonanțe de urgență}}"
 msgstr "{ordinances, plural, one {# ordonanță de urgență} few {# ordonanțe de urgență} other {# de ordonanțe de urgență}}"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:309
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:312
 msgid "{others, plural, one {# act.} few {# acte.} other {# de acte.}}"
 msgstr "{others, plural, one {# act.} few {# acte.} other {# de acte.}}"
 
@@ -3524,7 +3534,7 @@ msgstr "{repeated} rânduri repetate scoase"
 #~ msgid "{representativeCount} representatives · {euBranchCount} EU branches"
 #~ msgstr "{representativeCount} reprezentanți · {euBranchCount} sucursale UE"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:449
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:459
 msgid "{resolved, plural, one {trimitere de la un act la alt act din corpus.} few {trimiteri de la un act la alt act din corpus.} other {de trimiteri de la un act la alt act din corpus.}}"
 msgstr "{resolved, plural, one {trimitere de la un act la alt act din corpus.} few {trimiteri de la un act la alt act din corpus.} other {de trimiteri de la un act la alt act din corpus.}}"
 
@@ -3684,7 +3694,7 @@ msgstr "{total, plural, one {# alegere} few {# alegeri} other {# de alegeri}}"
 msgid "{total, plural, one {# scrutin} few {# scrutine} other {# de scrutine}}"
 msgstr "{total, plural, one {# scrutin} few {# scrutine} other {# de scrutine}}"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:530
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:540
 msgid "{total, plural, one {număr apărut în {year}} few {numere apărute în {year}} other {de numere apărute în {year}}}"
 msgstr "{total, plural, one {număr apărut în {year}} few {numere apărute în {year}} other {de numere apărute în {year}}}"
 
@@ -4175,7 +4185,7 @@ msgstr "‰"
 #~ msgid "+ {0} in other values"
 #~ msgstr "+ {0} în alte valori"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:130
+#: src/features/legal/components/analytics/legislation-analysis.tsx:120
 msgid "+ Adaugă un filtru"
 msgstr "+ Adaugă un filtru"
 
@@ -4572,7 +4582,7 @@ msgstr "a crescut cu {0}"
 msgid "a crescut de {0} ori"
 msgstr "a crescut de {0} ori"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:432
+#: src/features/legal/components/analytics/legislation-analysis.tsx:420
 msgid "A doua privire"
 msgstr "A doua privire"
 
@@ -5335,7 +5345,7 @@ msgstr "Acordurile-cadru, încheiate"
 #~ msgid "Acreditari"
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:684
+#: src/features/legal/components/analytics/legislation-analysis.tsx:676
 msgid "act"
 msgstr "act"
 
@@ -5347,7 +5357,7 @@ msgstr "Act adițional"
 msgid "act din afara corpusului — fără pagină la noi"
 msgstr "act din afara corpusului — fără pagină la noi"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:584
+#: src/features/legal/components/analytics/legislation-analysis.tsx:573
 msgid "act găsit"
 msgstr "act găsit"
 
@@ -5367,14 +5377,14 @@ msgstr "Act normativ"
 msgid "acte"
 msgstr "acte"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:282
+#: src/features/legal/components/analytics/legislation-analysis.tsx:263
 #: src/features/legal/components/hub/legislation-hub.tsx:145
 #: src/features/legal/components/legislation-acts-directory.tsx:389
 #: src/features/legal/components/legislation-tab-nav.tsx:50
 msgid "Acte"
 msgstr "Acte"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:394
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:398
 msgid "Acte care numesc în titlu actul pe care îl modifică sau îl completează."
 msgstr "Acte care numesc în titlu actul pe care îl modifică sau îl completează."
 
@@ -5386,6 +5396,10 @@ msgstr "Acte care numesc în titlu actul pe care îl modifică sau îl completea
 #: src/features/legal/components/analytics/legislation-front-door-bands.tsx:56
 #~ msgid "acte cu versiuni listate de Portal"
 #~ msgstr ""
+
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:341
+msgid "Acte după anul actului"
+msgstr "Acte după anul actului"
 
 #: src/features/legal/components/legislation-acts-directory.tsx:493
 msgid "Acte găsite"
@@ -5399,7 +5413,7 @@ msgstr "Acte identificate"
 #~ msgid "acte în corpus"
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:178
+#: src/features/legal/components/analytics/legislation-analysis.tsx:167
 msgid "acte în selecție"
 msgstr "acte în selecție"
 
@@ -5423,24 +5437,24 @@ msgstr "Acte normative"
 #~ msgid "acte pe an, din {YEARS_FROM}"
 #~ msgstr "acte pe an, din {YEARS_FROM}"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:362
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:365
 msgid "Acte pe an, din {YEARS_FROM}"
 msgstr "Acte pe an, din {YEARS_FROM}"
 
 #. placeholder {0}: LENS_LABEL[vedere].toLowerCase()
-#: src/features/legal/components/analytics/legislation-analysis.tsx:405
+#: src/features/legal/components/analytics/legislation-analysis.tsx:386
 msgid "acte pe an, după {0}"
 msgstr "acte pe an, după {0}"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:230
+#: src/features/legal/components/hub/legislation-hub-head.tsx:231
 msgid "Acte publicate"
 msgstr "Acte publicate"
 
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:338
-msgid "Acte publicate pe ani"
-msgstr "Acte publicate pe ani"
+#~ msgid "Acte publicate pe ani"
+#~ msgstr "Acte publicate pe ani"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:660
+#: src/features/legal/components/analytics/legislation-analysis.tsx:651
 msgid "Actele"
 msgstr "Actele"
 
@@ -5457,7 +5471,7 @@ msgid "Actele care fac trimitere la acesta."
 msgstr "Actele care fac trimitere la acesta."
 
 #. placeholder {0}: fmt(h.totals.inStock)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:161
+#: src/features/legal/components/analytics/legislation-analysis.tsx:151
 msgid "Actele care stabilesc reguli și stau singure, încadrate ferm: {0} acte (definiție provizorie)."
 msgstr "Actele care stabilesc reguli și stau singure, încadrate ferm: {0} acte (definiție provizorie)."
 
@@ -5465,16 +5479,16 @@ msgstr "Actele care stabilesc reguli și stau singure, încadrate ferm: {0} acte
 #~ msgid "Actele care stabilesc reguli și stau singure, pe feluri."
 #~ msgstr "Actele care stabilesc reguli și stau singure, pe feluri."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:657
-#: src/features/legal/components/analytics/legislation-analysis.tsx:661
+#: src/features/legal/components/analytics/legislation-analysis.tsx:648
+#: src/features/legal/components/analytics/legislation-analysis.tsx:652
 msgid "Actele din selecție"
 msgstr "Actele din selecție"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:273
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:276
 msgid "Actele după emitent"
 msgstr "Actele după emitent"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:195
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:198
 msgid "Actele după fel"
 msgstr "Actele după fel"
 
@@ -5486,7 +5500,7 @@ msgstr "Actele după fel"
 msgid "Actele fără an nu intră când alegi o perioadă; fiecare grafic în timp spune câte sunt."
 msgstr "Actele fără an nu intră când alegi o perioadă; fiecare grafic în timp spune câte sunt."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:345
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:348
 msgid "Actele fiecărui an, după felul lor."
 msgstr "Actele fiecărui an, după felul lor."
 
@@ -5511,11 +5525,11 @@ msgstr "Actele pe care acesta le modifică, abrogă, aprobă sau la care face re
 msgid "Actele pe care se sprijină restul legislației"
 msgstr "Actele pe care se sprijină restul legislației"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:662
+#: src/features/legal/components/analytics/legislation-analysis.tsx:653
 msgid "Actele selecției, ordonate."
 msgstr "Actele selecției, ordonate."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:281
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:284
 msgid "Actele, după cine le-a emis."
 msgstr "Actele, după cine le-a emis."
 
@@ -7178,8 +7192,8 @@ msgstr "Alte transferuri"
 msgid "Alte venituri"
 msgstr "Alte venituri"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:403
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:359
+#: src/features/legal/components/analytics/legislation-analysis.tsx:384
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:362
 msgid "altele"
 msgstr "altele"
 
@@ -7194,7 +7208,7 @@ msgctxt "portfolio rows by ANAF list"
 msgid "Altele"
 msgstr "Altele"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:587
+#: src/features/legal/components/analytics/legislation-analysis.tsx:576
 msgid "altfel"
 msgstr "altfel"
 
@@ -7359,7 +7373,7 @@ msgid "an"
 msgstr "an"
 
 #: src/features/elections/catalog/election-edition-page.tsx:132
-#: src/features/legal/components/analytics/legislation-analysis.tsx:673
+#: src/features/legal/components/analytics/legislation-analysis.tsx:664
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:148
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:309
 #: src/features/statistics/components/detail/detail-observations-table.tsx:271
@@ -7405,7 +7419,7 @@ msgstr "An de sfârșit"
 
 #: src/features/justice/components/hub/justice-hub-bands.tsx:430
 #: src/features/justice/components/justice-years-chart.tsx:51
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:363
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:366
 #: src/features/procurement/components/home/home-context-bands.tsx:247
 #: src/features/procurement/components/profile/profile-years-chart.tsx:140
 msgid "an în curs"
@@ -7589,7 +7603,7 @@ msgstr "ANAF: situația la {0}"
 msgid "ANAF: situații între {0} și {1}"
 msgstr "ANAF: situații între {0} și {1}"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:123
+#: src/features/legal/components/analytics/legislation-analysis.tsx:113
 #: src/features/legal/components/hub/legislation-hub.tsx:148
 #: src/features/legal/components/legislation-tab-nav.tsx:48
 msgid "Analiză"
@@ -7629,7 +7643,7 @@ msgstr "Analiza firmelor: cifra de afaceri, profitul și salariații, pe județe
 #~ msgid "Analiza în timp"
 #~ msgstr ""
 
-#: src/routes/legislation/analytics.tsx:79
+#: src/routes/legislation/analytics.tsx:81
 msgid "Analiza legislației"
 msgstr "Analiza legislației"
 
@@ -7781,7 +7795,7 @@ msgid "ani"
 msgstr "ani"
 
 #: src/features/justice/components/echr/echr-answer.tsx:109
-#: src/features/legal/components/hub/legislation-hub-lib.ts:160
+#: src/features/legal/components/hub/legislation-hub-lib.ts:165
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:352
 msgid "Ani"
 msgstr "Ani"
@@ -7945,7 +7959,7 @@ msgstr "Anul {0} nu s-a încheiat: lunile lui sunt în secțiunea „Anul în cu
 msgid "Anul ales"
 msgstr "Anul ales"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:342
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:345
 msgid "Anul cu cele mai multe acte din {YEARS_FROM} încoace e"
 msgstr "Anul cu cele mai multe acte din {YEARS_FROM} încoace e"
 
@@ -7966,7 +7980,7 @@ msgstr "Anul descris"
 msgid "Anul dinainte"
 msgstr "Anul dinainte"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:351
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:354
 msgid "Anul e cel al actului. Un an recent crește încă, pe măsură ce actele lui ajung în date."
 msgstr "Anul e cel al actului. Un an recent crește încă, pe măsură ce actele lui ajung în date."
 
@@ -8940,7 +8954,7 @@ msgstr "au depus situații financiare"
 msgid "Au raportat"
 msgstr "Au raportat"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:185
+#: src/features/legal/components/analytics/legislation-analysis.tsx:169
 msgid "au text citibil în Portal"
 msgstr "au text citibil în Portal"
 
@@ -10383,7 +10397,7 @@ msgstr "Anulat"
 msgid "Cancelled or refused — the purchase did not go ahead, so no spending is counted."
 msgstr "Anulat sau refuzat — achiziția nu a mai avut loc, deci nu este contabilizată nicio cheltuială."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:797
+#: src/features/legal/components/analytics/legislation-analysis.tsx:789
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:262
 #: src/features/procurement/lib/analytics-questions.ts:37
 msgid "Când"
@@ -10551,7 +10565,7 @@ msgid "Care"
 msgstr "Care"
 
 #. placeholder {0}: GROUP_LABEL[q.felul] ?? KIND_LABEL[q.felul] ?? q.felul
-#: src/features/legal/components/analytics/legislation-analysis.tsx:262
+#: src/features/legal/components/analytics/legislation-analysis.tsx:243
 msgid "care {0}"
 msgstr "care {0}"
 
@@ -10797,7 +10811,7 @@ msgstr "Catalogul SEAP listează fișiere de export pentru {family} până în {
 msgid "Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019."
 msgstr "Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:162
+#: src/features/legal/components/hub/legislation-hub-head.tsx:163
 msgid "Câte alte acte din corpus îl citează."
 msgstr "Câte alte acte din corpus îl citează."
 
@@ -11207,7 +11221,7 @@ msgstr "Caută seturi de date"
 msgid "Caută și în actele abrogate sau ieșite din vigoare"
 msgstr "Caută și în actele abrogate sau ieșite din vigoare"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:918
+#: src/features/legal/components/analytics/legislation-analysis.tsx:910
 msgid "Caută un emitent"
 msgstr "Caută un emitent"
 
@@ -11404,7 +11418,7 @@ msgstr "Cauzele comunicate sunt cererile trimise Guvernului pentru observații: 
 msgid "CC"
 msgstr "CC"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:832
+#: src/features/legal/components/analytics/legislation-analysis.tsx:824
 msgid "Ce"
 msgstr "Ce"
 
@@ -11449,7 +11463,7 @@ msgstr "Ce a prevăzut fiecare lege pentru fiecare an, din 2016."
 msgid "Ce a primit de la stat"
 msgstr "Ce a primit de la stat"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:126
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:129
 msgid "Ce act s-a schimbat, prin ce act și de când. Data e cea a intrării în vigoare, așa cum o înregistrează sursa."
 msgstr "Ce act s-a schimbat, prin ce act și de când. Data e cea a intrării în vigoare, așa cum o înregistrează sursa."
 
@@ -11706,7 +11720,7 @@ msgstr "Ce s-a cumpărat"
 msgid "Ce s-a întâmplat cu acest act"
 msgstr "Ce s-a întâmplat cu acest act"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:118
+#: src/features/legal/components/analytics/legislation-analysis.tsx:108
 msgid "ce s-a publicat"
 msgstr "ce s-a publicat"
 
@@ -11820,7 +11834,7 @@ msgstr "Ce vrei să compari? Alege unul dintre indicatorii de mai jos sau caută
 msgid "Cea mai mare cifră de afaceri în {year}: {0}, {1}."
 msgstr "Cea mai mare cifră de afaceri în {year}: {0}, {1}."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:199
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:202
 msgid "Cea mai mare grupă"
 msgstr "Cea mai mare grupă"
 
@@ -11847,6 +11861,11 @@ msgstr "Cea mai recentă ediție din corpus a apărut pe {0}. Preluarea edițiil
 
 #. placeholder {0}: formatLegalDate(newest, i18n.locale)
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:96
+msgid "Cea mai recentă modificare înregistrată a intrat în vigoare pe <0>{0}</0>; în ultimele {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna."
+msgstr "Cea mai recentă modificare înregistrată a intrat în vigoare pe <0>{0}</0>; în ultimele {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna."
+
+#. placeholder {0}: formatLegalDate(newest, i18n.locale)
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:101
 msgid "Cea mai recentă modificare înregistrată a intrat în vigoare pe <0>{0}</0>."
 msgstr "Cea mai recentă modificare înregistrată a intrat în vigoare pe <0>{0}</0>."
 
@@ -11875,11 +11894,11 @@ msgstr "CEDO"
 msgid "Cei mai mari angajatori"
 msgstr "Cei mai mari angajatori"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:308
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:311
 msgid "Ceilalți emitenți și actele fără emitent:"
 msgstr "Ceilalți emitenți și actele fără emitent:"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:308
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:311
 msgid "Ceilalți emitenți:"
 msgstr "Ceilalți emitenți:"
 
@@ -11935,7 +11954,7 @@ msgstr "Cel mai nou an din buletine, {year}, față de anul dinainte; oricare ar
 #~ msgstr "Cel mai recent an cu valori numerice pentru toate cele trei teritorii:"
 
 #. placeholder {0}: formatLegalDate(newest, i18n.locale)
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:533
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:543
 msgid "cel mai recent pe {0}"
 msgstr "cel mai recent pe {0}"
 
@@ -12020,7 +12039,7 @@ msgstr "Cele 16 domenii pe care le acoperă corpusul."
 msgid "Cele 17 obiective ONU, până în 2030"
 msgstr "Cele 17 obiective ONU, până în 2030"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:69
+#: src/features/legal/components/hub/legislation-hub-head.tsx:70
 msgid "Cele mai citate acte"
 msgstr "Cele mai citate acte"
 
@@ -12114,16 +12133,16 @@ msgstr "Cele mai mari valori"
 msgid "Cele mai mici valori"
 msgstr "Cele mai mici valori"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:525
+#: src/features/legal/components/analytics/legislation-analysis.tsx:514
 msgid "Cele mai modificate"
 msgstr "Cele mai modificate"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:69
+#: src/features/legal/components/hub/legislation-hub-head.tsx:70
 #: src/features/legal/components/hub/legislation-hub.tsx:276
 msgid "Cele mai modificate acte"
 msgstr "Cele mai modificate acte"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:277
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:280
 msgid "Cele mai multe acte le-a emis"
 msgstr "Cele mai multe acte le-a emis"
 
@@ -12168,7 +12187,7 @@ msgstr "Cele mai multe sunt în grupa {group}: {0}."
 msgid "Cele mai noi"
 msgstr "Cele mai noi"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:530
+#: src/features/legal/components/analytics/legislation-analysis.tsx:519
 msgid "Cele mai numite în decizii ale instanțelor"
 msgstr "Cele mai numite în decizii ale instanțelor"
 
@@ -12766,7 +12785,7 @@ msgstr "Cifra de afaceri, rezultatul net și salariații"
 msgid "Cifra de afaceri, rezultatul sau profitul net și salariații"
 msgstr "Cifra de afaceri, rezultatul sau profitul net și salariații"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:327
+#: src/features/legal/components/hub/legislation-hub-head.tsx:328
 msgid "Cifra nu s-a încărcat."
 msgstr "Cifra nu s-a încărcat."
 
@@ -12836,7 +12855,7 @@ msgstr "Cifrele contractelor nu sunt calculate încă."
 msgid "Cifrele de context au fost calculate pe alt export decât cel citit acum; nu le arătăm."
 msgstr "Cifrele de context au fost calculate pe alt export decât cel citit acum; nu le arătăm."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:794
+#: src/features/legal/components/analytics/legislation-analysis.tsx:786
 msgid "Cifrele de lângă opțiuni: acte din tot ce s-a publicat, fără filtre."
 msgstr "Cifrele de lângă opțiuni: acte din tot ce s-a publicat, fără filtre."
 
@@ -12957,7 +12976,7 @@ msgstr "Cifrele, graficele și comparațiile folosesc doar valorile admise de po
 msgid "Cinci firme însumează {0} din valoarea achizițiilor directe din {1}; au vândut {2} în total."
 msgstr "Cinci firme însumează {0} din valoarea achizițiilor directe din {1}; au vândut {2} în total."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:891
+#: src/features/legal/components/analytics/legislation-analysis.tsx:883
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:38
 #: src/features/private-companies/components/analytics/analytics-head.tsx:238
 #: src/features/private-companies/components/analytics/analytics-head.tsx:239
@@ -13028,7 +13047,7 @@ msgstr "Cine le <0/>controlează"
 msgid "Cine le controlează"
 msgstr "Cine le controlează"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:473
+#: src/features/legal/components/analytics/legislation-analysis.tsx:462
 msgid "cine modifică ce: actul care modifică (rând) × actul modificat (coloană)"
 msgstr "cine modifică ce: actul care modifică (rând) × actul modificat (coloană)"
 
@@ -13062,13 +13081,13 @@ msgstr "Circulară"
 msgid "Citare sau nume uzual"
 msgstr "Citare sau nume uzual"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:700
-#: src/features/legal/components/hub/legislation-hub-head.tsx:113
+#: src/features/legal/components/analytics/legislation-analysis.tsx:692
+#: src/features/legal/components/hub/legislation-hub-head.tsx:114
 msgid "citări"
 msgstr "citări"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:672
-#: src/features/legal/components/hub/legislation-hub-head.tsx:76
+#: src/features/legal/components/analytics/legislation-analysis.tsx:663
+#: src/features/legal/components/hub/legislation-hub-head.tsx:77
 msgid "Citări"
 msgstr "Citări"
 
@@ -13183,7 +13202,7 @@ msgstr "clasa {filerClass}"
 msgid "clasă CAEN calificată {codes}"
 msgstr "clasă CAEN calificată {codes}"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:217
+#: src/features/legal/components/analytics/legislation-analysis.tsx:198
 msgid "Clasament"
 msgstr "Clasament"
 
@@ -13209,7 +13228,7 @@ msgstr "Clasamente"
 #~ msgid "Clasamentul acoperă {0} din {1} atribuit. Alte {2} provin din contracte încredințate unor asocieri cu mai mulți membri, unde repartiția pe furnizori nu este publicată."
 #~ msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:73
+#: src/features/legal/components/hub/legislation-hub-head.tsx:74
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:572
 #: src/features/procurement/components/home/procurement-home-page.tsx:289
 msgid "Clasamentul după"
@@ -13231,7 +13250,7 @@ msgstr ""
 msgid "Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări."
 msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:154
+#: src/features/legal/components/hub/legislation-hub-head.tsx:155
 msgid "Clasamentul se încarcă cu JavaScript. Toate actele, în director"
 msgstr "Clasamentul se încarcă cu JavaScript. Toate actele, în director"
 
@@ -15248,8 +15267,8 @@ msgstr "Copiat"
 msgid "Copiază"
 msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:139
-#: src/features/legal/components/analytics/legislation-analysis.tsx:140
+#: src/features/legal/components/analytics/legislation-analysis.tsx:129
+#: src/features/legal/components/analytics/legislation-analysis.tsx:130
 msgid "Copiază adresa întrebării"
 msgstr "Copiază adresa întrebării"
 
@@ -15951,7 +15970,7 @@ msgstr "cu „{words}” în nume"
 
 #. placeholder {0}: VERSIONS_LABEL[q.dinamica] ?? ''
 #. placeholder {0}: partners.join(', ')
-#: src/features/legal/components/analytics/legislation-analysis.tsx:263
+#: src/features/legal/components/analytics/legislation-analysis.tsx:244
 #: src/features/procurement/components/supplier/supplier-rows.tsx:154
 msgid "cu {0}"
 msgstr "cu {0}"
@@ -16077,7 +16096,7 @@ msgstr "cu efect de la {0}"
 msgid "cu firme {where}"
 msgstr "cu firme {where}"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:259
+#: src/features/legal/components/analytics/legislation-analysis.tsx:240
 msgid "cu încadrare nesigură"
 msgstr "cu încadrare nesigură"
 
@@ -16139,7 +16158,7 @@ msgstr "cu starea {0}"
 msgid "cu statut „modificat”"
 msgstr "cu statut „modificat”"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:252
+#: src/features/legal/components/hub/legislation-hub-head.tsx:253
 msgid "Cu text de citit"
 msgstr "Cu text de citit"
 
@@ -16151,7 +16170,7 @@ msgstr "cu TVA"
 msgid "cu ultima etapă în această zi"
 msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:283
+#: src/features/legal/components/hub/legislation-hub-head.tsx:284
 msgid "Cu versiuni consolidate"
 msgstr "Cu versiuni consolidate"
 
@@ -17466,7 +17485,7 @@ msgstr "de asigurări sociale"
 #~ msgid "De câte ori actul e citat de alte acte din corpus."
 #~ msgstr "De câte ori actul e citat de alte acte din corpus."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:164
+#: src/features/legal/components/hub/legislation-hub-head.tsx:165
 msgid "De câte ori actul e numit ca țintă în titlul unui act care îl modifică."
 msgstr "De câte ori actul e numit ca țintă în titlul unui act care îl modifică."
 
@@ -17474,7 +17493,7 @@ msgstr "De câte ori actul e numit ca țintă în titlul unui act care îl modif
 #~ msgid "De câte ori actul e numit în titlul unei decizii a unei instanțe: trimiteri, nu efecte."
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:526
+#: src/features/legal/components/analytics/legislation-analysis.tsx:515
 msgid "De câte ori e numit ca țintă în titlul unui act care modifică."
 msgstr "De câte ori e numit ca țintă în titlul unui act care modifică."
 
@@ -17533,7 +17552,7 @@ msgstr "De jos în sus:"
 msgid "de la"
 msgstr "de la"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:798
+#: src/features/legal/components/analytics/legislation-analysis.tsx:790
 #: src/features/legal/components/legislation-changes-feed.tsx:333
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:171
 #: src/features/procurement/components/analytics/analytics-controls.tsx:100
@@ -17543,7 +17562,7 @@ msgstr "De la"
 
 #. placeholder {0}: q.emitent
 #. placeholder {0}: sumText(bound)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:253
+#: src/features/legal/components/analytics/legislation-analysis.tsx:234
 #: src/features/private-companies/components/analytics/analytics-maps.tsx:294
 msgid "de la {0}"
 msgstr "de la {0}"
@@ -17623,17 +17642,21 @@ msgstr "de la firme {where}"
 #~ msgid "De la ordonanță la legea care o aprobă: mediana {0} zile (între {1} și {2}), din {3} legi. Zilele: de la prima publicare în Monitorul Oficial a ordonanței la a legii."
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:287
+#: src/features/legal/components/analytics/legislation-analysis.tsx:268
 msgid "de la orice emitent"
 msgstr "de la orice emitent"
+
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:428
+msgid "De la prima publicare în Monitorul Oficial a ordonanței la prima publicare în Monitorul Oficial a legii"
+msgstr "De la prima publicare în Monitorul Oficial a ordonanței la prima publicare în Monitorul Oficial a legii"
 
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:125
 msgid "De la primul client"
 msgstr "De la primul client"
 
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:418
-msgid "De la publicarea ordonanței la a legii, mediana e de"
-msgstr "De la publicarea ordonanței la a legii, mediana e de"
+#~ msgid "De la publicarea ordonanței la a legii, mediana e de"
+#~ msgstr "De la publicarea ordonanței la a legii, mediana e de"
 
 #: src/features/procurement/lib/contract-text.ts:70
 msgid "de la un IMM"
@@ -17651,11 +17674,11 @@ msgstr "de litigii de muncă"
 msgid "de minori și familie"
 msgstr "de minori și familie"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:257
+#: src/features/legal/components/analytics/legislation-analysis.tsx:238
 msgid "de orice fel"
 msgstr "de orice fel"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:245
+#: src/features/legal/components/analytics/legislation-analysis.tsx:226
 msgid "de orice tip"
 msgstr "de orice tip"
 
@@ -17834,21 +17857,21 @@ msgstr "decizia {number}"
 msgid "Decizie"
 msgstr "Decizie"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:693
+#: src/features/legal/components/analytics/legislation-analysis.tsx:685
 msgid "decizii"
 msgstr "decizii"
 
 #: src/features/justice/lib/echr-text.ts:38
 #: src/features/justice/lib/echr-text.ts:38
-#: src/features/legal/components/analytics/legislation-analysis.tsx:670
+#: src/features/legal/components/analytics/legislation-analysis.tsx:661
 msgid "Decizii"
 msgstr "Decizii"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:396
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:400
 msgid "Decizii ale instanțelor"
 msgstr "Decizii ale instanțelor"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:396
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:400
 msgid "Decizii care numesc în titlu actul asupra căruia se pronunță."
 msgstr "Decizii care numesc în titlu actul asupra căruia se pronunță."
 
@@ -17936,7 +17959,7 @@ msgstr "scădere"
 msgid "Decret"
 msgstr "Decret"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:398
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:402
 msgid "Decrete care promulgă o lege."
 msgstr "Decrete care promulgă o lege."
 
@@ -18318,19 +18341,19 @@ msgstr "Deschide în analiza bilanțurilor"
 #~ msgid "Deschide în analiza bilanțurilor →"
 #~ msgstr "Deschide în analiza bilanțurilor →"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:316
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:319
 msgid "Deschide în analiză, după emitent"
 msgstr "Deschide în analiză, după emitent"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:233
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:236
 msgid "Deschide în analiză, după felul actului"
 msgstr "Deschide în analiză, după felul actului"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:382
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:386
 msgid "Deschide în analiză, în timp"
 msgstr "Deschide în analiză, în timp"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:492
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:502
 msgid "Deschide în analiză, legăturile"
 msgstr "Deschide în analiză, legăturile"
 
@@ -18512,19 +18535,19 @@ msgstr "Despre aceste valori"
 msgid "Despre activitatea selectată"
 msgstr "Despre activitatea selectată"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:350
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:353
 msgid "Despre ani"
 msgstr "Despre ani"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:941
+#: src/features/legal/components/analytics/legislation-analysis.tsx:933
 msgid "Despre ce"
 msgstr "Despre ce"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:286
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:289
 msgid "Despre emitenți"
 msgstr "Despre emitenți"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:208
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:211
 msgid "Despre felul actului"
 msgstr "Despre felul actului"
 
@@ -18532,15 +18555,15 @@ msgstr "Despre felul actului"
 msgid "Despre înregistrări"
 msgstr "Despre înregistrări"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:461
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:471
 msgid "Despre legături"
 msgstr "Despre legături"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:125
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:128
 msgid "Despre modificări"
 msgstr "Despre modificări"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:544
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:554
 msgid "Despre Monitorul Oficial"
 msgstr "Despre Monitorul Oficial"
 
@@ -18717,13 +18740,13 @@ msgstr "Dimensiuni"
 
 #. placeholder {0}: String(q.an.from)
 #. placeholder {0}: formatDate(saved.updatedAt, 'long')
-#: src/features/legal/components/analytics/legislation-analysis.tsx:250
+#: src/features/legal/components/analytics/legislation-analysis.tsx:231
 #: src/features/privacy/components/cookie-settings-page.tsx:144
 msgid "din {0}"
 msgstr "din {0}"
 
 #. placeholder {0}: fmt(s.population)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:178
+#: src/features/legal/components/analytics/legislation-analysis.tsx:167
 msgid "din {0} ({population})"
 msgstr "din {0} ({population})"
 
@@ -18737,7 +18760,7 @@ msgid "Din {0} aprobați pentru bugetul de stat, cei mai mulți au mers la {1} (
 msgstr "Din {0} aprobați pentru bugetul de stat, cei mai mulți au mers la {1} ({2}) și la {3} ({4})."
 
 #. placeholder {0}: fmt(row.read)
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:478
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:488
 msgid "din {0} citite în titluri"
 msgstr "din {0} citite în titluri"
 
@@ -18794,7 +18817,7 @@ msgstr "din {0} sau {none}"
 
 #. placeholder {0}: String(q.an.from)
 #. placeholder {1}: String(q.an.to)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:251
+#: src/features/legal/components/analytics/legislation-analysis.tsx:232
 msgid "din {0}–{1}"
 msgstr "din {0}–{1}"
 
@@ -19041,7 +19064,7 @@ msgid "Din ediția ONRC afișată. Denumirile sunt din nomenclatorul CAEN curent
 msgstr "Din ediția ONRC afișată. Denumirile sunt din nomenclatorul CAEN curent al platformei, pe revizia fiecărei înscrieri; o înscriere fără revizie cunoscută nu are denumire."
 
 #. placeholder {0}: FAMILY_LABEL[q.familie] ?? q.familie
-#: src/features/legal/components/analytics/legislation-analysis.tsx:254
+#: src/features/legal/components/analytics/legislation-analysis.tsx:235
 msgid "din familia {0}"
 msgstr "din familia {0}"
 
@@ -19108,7 +19131,7 @@ msgstr "din numărul de registru; cel mai vechi {oldest}"
 msgid "din o parte a înscrierilor; restul nu au valoare"
 msgstr "din o parte a înscrierilor; restul nu au valoare"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:252
+#: src/features/legal/components/analytics/legislation-analysis.tsx:233
 msgid "din orice an"
 msgstr "din orice an"
 
@@ -19705,7 +19728,7 @@ msgstr "Domenii"
 msgid "Domeniile după"
 msgstr "Domeniile după"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:322
+#: src/features/legal/components/analytics/legislation-analysis.tsx:303
 msgid "Domeniile intră aici după ce le măsurăm acoperirea pe corpusul nou. În curând."
 msgstr "Domeniile intră aici după ce le măsurăm acoperirea pe corpusul nou. În curând."
 
@@ -19724,7 +19747,7 @@ msgstr "Domeniu"
 msgid "Domeniu necunoscut"
 msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:942
+#: src/features/legal/components/analytics/legislation-analysis.tsx:934
 msgid "Domeniul și tema vin după potrivirea pe tot corpusul (în curând)."
 msgstr "Domeniul și tema vin după potrivirea pe tot corpusul (în curând)."
 
@@ -20799,19 +20822,19 @@ msgstr "Actualizari prin email pentru toate entitatile din aceasta campanie"
 msgid "Emigrants (POP309E)"
 msgstr "Emigranți (POP309E)"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:910
+#: src/features/legal/components/analytics/legislation-analysis.tsx:902
 msgid "Emitent"
 msgstr "Emitent"
 
-#: src/features/legal/components/hub/legislation-hub-lib.ts:159
+#: src/features/legal/components/hub/legislation-hub-lib.ts:164
 msgid "Emitenți"
 msgstr "Emitenți"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:300
+#: src/features/legal/components/analytics/legislation-analysis.tsx:281
 msgid "Emitenții sunt linii (denumiri succesive unite); la legi, ordonanțe și decrete emitentul e derivat din tip și dată."
 msgstr "Emitenții sunt linii (denumiri succesive unite); la legi, ordonanțe și decrete emitentul e derivat din tip și dată."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:289
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:292
 msgid "Emitentul e cel scris în sursă; pentru legi, ordonanțe și decrete fără emitent scris e derivat din tip și dată. O linie de minister unește denumirile lui succesive."
 msgstr "Emitentul e cel scris în sursă; pentru legi, ordonanțe și decrete fără emitent scris e derivat din tip și dată. O linie de minister unește denumirile lui succesive."
 
@@ -22102,7 +22125,7 @@ msgstr "Faliment"
 msgid "Fallback:"
 msgstr "Alternativ:"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:892
+#: src/features/legal/components/analytics/legislation-analysis.tsx:884
 msgid "Familia"
 msgstr "Familia"
 
@@ -22381,8 +22404,8 @@ msgstr "Fără denumire publică"
 msgid "Fără domeniu precis"
 msgstr "Fără domeniu precis"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:712
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:303
+#: src/features/legal/components/analytics/legislation-analysis.tsx:704
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:306
 #: src/features/legal/lib/analytics-view.ts:38
 #: src/features/legal/lib/analytics-view.ts:40
 msgid "fără emitent"
@@ -23014,15 +23037,15 @@ msgstr "Feedback"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback-ul este indisponibil momentan."
 
-#: src/features/legal/components/hub/legislation-hub-lib.ts:158
+#: src/features/legal/components/hub/legislation-hub-lib.ts:163
 msgid "Fel"
 msgstr "Fel"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:687
+#: src/features/legal/components/analytics/legislation-analysis.tsx:679
 msgid "felul"
 msgstr "felul"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:854
+#: src/features/legal/components/analytics/legislation-analysis.tsx:846
 msgid "Felul"
 msgstr "Felul"
 
@@ -23042,7 +23065,7 @@ msgstr "Felul actului e citit din titlu, de reguli (v6). Citite independent 385 
 msgid "Felul actului e citit din titlu, de reguli. Încadrările nesigure (reguli de rezervă) sunt o clasă separată, numărată în nicio grupă și nici în stoc."
 msgstr "Felul actului e citit din titlu, de reguli. Încadrările nesigure (reguli de rezervă) sunt o clasă separată, numărată în nicio grupă și nici în stoc."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:209
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:212
 msgid "Felul actului e citit din titlu, de reguli. Un act încadrat nesigur sau neîncadrat nu e numărat în nicio grupă."
 msgstr "Felul actului e citit din titlu, de reguli. Un act încadrat nesigur sau neîncadrat nu e numărat în nicio grupă."
 
@@ -23050,21 +23073,21 @@ msgstr "Felul actului e citit din titlu, de reguli. Un act încadrat nesigur sau
 msgid "Felul modificării"
 msgstr "Felul modificării"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:363
+#: src/features/legal/components/analytics/legislation-analysis.tsx:344
 msgid "Feluri"
 msgstr "Feluri"
 
 #. placeholder {0}: String(kindCount)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:363
+#: src/features/legal/components/analytics/legislation-analysis.tsx:344
 msgid "Feluri ({0})"
 msgstr "Feluri ({0})"
 
 #. placeholder {0}: fmt(h.totals.acts)
-#: src/features/legal/components/analytics/legislation-analysis.tsx:163
+#: src/features/legal/components/analytics/legislation-analysis.tsx:153
 msgid "Fiecare act publicat, la data lui: {0} acte."
 msgstr "Fiecare act publicat, la data lui: {0} acte."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:203
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:206
 msgid "Fiecare act, după ce face: stabilește reguli, numește, alocă, judecă."
 msgstr "Fiecare act, după ce face: stabilește reguli, numește, alocă, judecă."
 
@@ -23338,8 +23361,8 @@ msgstr "Filtrat"
 #: src/features/justice/components/analysis/analysis-controls.tsx:82
 #: src/features/justice/components/analysis/analysis-filters.tsx:163
 #: src/features/justice/components/analysis/analysis-head.tsx:140
-#: src/features/legal/components/analytics/legislation-analysis.tsx:134
-#: src/features/legal/components/analytics/legislation-analysis.tsx:791
+#: src/features/legal/components/analytics/legislation-analysis.tsx:124
+#: src/features/legal/components/analytics/legislation-analysis.tsx:783
 #: src/features/legal/components/legislation-acts-directory.tsx:209
 #: src/features/legal/components/legislation-changes-feed.tsx:304
 #: src/features/legal/components/legislation-gazette-directory.tsx:223
@@ -24249,7 +24272,7 @@ msgstr ""
 msgid "Flow"
 msgstr "Flux"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:152
+#: src/features/legal/components/analytics/legislation-analysis.tsx:142
 msgid "Flux · ce s-a publicat"
 msgstr "Flux · ce s-a publicat"
 
@@ -24461,7 +24484,7 @@ msgstr "Formă juridică"
 msgid "formă juridică: {0}"
 msgstr "formă juridică: {0}"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:213
+#: src/features/legal/components/analytics/legislation-analysis.tsx:194
 msgid "Forma răspunsului"
 msgstr "Forma răspunsului"
 
@@ -24831,7 +24854,7 @@ msgstr "Ghid"
 msgid "Ghidul legislației"
 msgstr "Ghidul legislației"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:236
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:239
 msgid "Ghidul legislației: cum citești corect aceste date"
 msgstr "Ghidul legislației: cum citești corect aceste date"
 
@@ -25059,7 +25082,7 @@ msgstr "Mai mare decât"
 msgid "Grid view"
 msgstr "Vizualizare grilă"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:219
+#: src/features/legal/components/analytics/legislation-analysis.tsx:200
 msgid "Grilă"
 msgstr "Grilă"
 
@@ -25159,7 +25182,7 @@ msgstr "Gruparea descrie firma la data ediției, nu în anul fiscal."
 msgid "grupe"
 msgstr "grupe"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:362
+#: src/features/legal/components/analytics/legislation-analysis.tsx:343
 msgid "Grupe"
 msgstr "Grupe"
 
@@ -26261,7 +26284,7 @@ msgstr "în contestație"
 msgid "În context"
 msgstr "În context"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:207
+#: src/features/legal/components/analytics/legislation-analysis.tsx:188
 msgid "în curând"
 msgstr "în curând"
 
@@ -26469,13 +26492,13 @@ msgstr "În nume"
 msgid "In one year, you will pay"
 msgstr "Într-un an, vei plăti"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:238
+#: src/features/legal/components/hub/legislation-hub-head.tsx:239
 msgid "În Portalul Legislativ"
 msgstr "În Portalul Legislativ"
 
 #. placeholder {0}: h.years.min
 #. placeholder {1}: h.years.max
-#: src/features/legal/components/hub/legislation-hub-head.tsx:234
+#: src/features/legal/components/hub/legislation-hub-head.tsx:235
 msgid "În Portalul Legislativ, {0}–{1}"
 msgstr "În Portalul Legislativ, {0}–{1}"
 
@@ -26545,7 +26568,7 @@ msgid "În textul din registru, semnul <0>{token}</0> ține locul unuia sau mai 
 msgstr "În textul din registru, semnul <0>{token}</0> ține locul unuia sau mai multor cuvinte, ascunse ca date personale. Semnul nu spune ce a înlocuit: uneori e un cuvânt obișnuit. Textul ascuns nu se poate citi pe platformă."
 
 #: src/features/justice/components/hub/justice-hub-page.tsx:80
-#: src/features/legal/components/analytics/legislation-analysis.tsx:218
+#: src/features/legal/components/analytics/legislation-analysis.tsx:199
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:108
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:337
 #: src/features/national-budget/analytics/lib/analytics-view.ts:489
@@ -26568,8 +26591,8 @@ msgid "În ultimele {CHANGES_WINDOW_DAYS} de zile"
 msgstr "În ultimele {CHANGES_WINDOW_DAYS} de zile"
 
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:99
-msgid "În ultimele {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna."
-msgstr "În ultimele {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna."
+#~ msgid "În ultimele {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna."
+#~ msgstr "În ultimele {CHANGES_WINDOW_DAYS} de zile nu e înregistrată niciuna."
 
 #: src/features/procurement/components/buyer/buyer-awards-band.tsx:178
 #: src/features/procurement/components/contract-award/procurement-contract-award-page.tsx:159
@@ -26811,7 +26834,7 @@ msgstr "încă fără date"
 #~ msgid "Încă un caracter pentru a căuta."
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:718
+#: src/features/legal/components/analytics/legislation-analysis.tsx:710
 msgid "încadrare nesigură"
 msgstr "încadrare nesigură"
 
@@ -27078,7 +27101,7 @@ msgstr ""
 #~ msgid "Încredere scăzută"
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:430
+#: src/features/legal/components/analytics/legislation-analysis.tsx:418
 msgid "încrucișat cu"
 msgstr "încrucișat cu"
 
@@ -28273,7 +28296,7 @@ msgstr "Între ele, pe ani, lei"
 msgid "Între timp, o negociere fără anunț"
 msgstr "Între timp, o negociere fără anunț"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:121
+#: src/features/legal/components/analytics/legislation-analysis.tsx:111
 msgid "Întrebarea"
 msgstr "Întrebarea"
 
@@ -28959,8 +28982,8 @@ msgid "July"
 msgstr "Iulie"
 
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:422
-msgid "jumătate dintre ele între"
-msgstr "jumătate dintre ele între"
+#~ msgid "jumătate dintre ele între"
+#~ msgstr "jumătate dintre ele între"
 
 #: src/components/commitments/commitments-trends.tsx:196
 #: src/components/entities/EntityFinancialTrends.tsx:187
@@ -29429,7 +29452,7 @@ msgstr "Funcția reprezentantului legal"
 #~ msgid "legat prin compatibilitatea cu un import mai vechi"
 #~ msgstr "legat prin compatibilitatea cu un import mai vechi"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:581
+#: src/features/legal/components/analytics/legislation-analysis.tsx:570
 msgid "legătura"
 msgstr "legătura"
 
@@ -29458,7 +29481,7 @@ msgstr "Legătura îi cere acum ANAF-ului bilanțul pe {year} al acestui CUI; AN
 msgid "legătura sursei: în așteptare · SHA-256 {0}…"
 msgstr "legătura sursei: în așteptare · SHA-256 {0}…"
 
-#: src/features/legal/components/hub/legislation-hub-lib.ts:161
+#: src/features/legal/components/hub/legislation-hub-lib.ts:166
 msgid "Legături"
 msgstr "Legături"
 
@@ -29466,7 +29489,7 @@ msgstr "Legături"
 msgid "Legături către fiecare secțiune a platformei."
 msgstr "Legături către fiecare secțiune a platformei."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:576
+#: src/features/legal/components/analytics/legislation-analysis.tsx:565
 msgid "legături citite din titluri, după fel"
 msgstr "legături citite din titluri, după fel"
 
@@ -29482,7 +29505,7 @@ msgstr ""
 #~ msgid "Legături indisponibile pentru acest nivel."
 #~ msgstr "Legături indisponibile pentru acest nivel."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:444
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:454
 msgid "Legături între acte"
 msgstr "Legături între acte"
 
@@ -29510,7 +29533,7 @@ msgstr "Legăturile documentelor legii sunt în așteptare; fiecare document are
 msgid "Legăturile nu sunt disponibile pentru acest act."
 msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:462
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:472
 msgid "Legăturile sunt citite din titluri: trimiteri, nu efecte. Sunt numărate doar cele a căror țintă e un act din corpus."
 msgstr "Legăturile sunt citite din titluri: trimiteri, nu efecte. Sunt numărate doar cele a căror țintă e un act din corpus."
 
@@ -29674,7 +29697,7 @@ msgstr ""
 #~ msgid "legi care aprobă o ordonanță din corpus"
 #~ msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:400
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:404
 msgid "Legi care aprobă o ordonanță."
 msgstr "Legi care aprobă o ordonanță."
 
@@ -29686,7 +29709,7 @@ msgstr "Legi care aprobă o ordonanță."
 #~ msgid "legi care resping o ordonanță din corpus"
 #~ msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:402
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:406
 msgid "Legi care resping o ordonanță."
 msgstr "Legi care resping o ordonanță."
 
@@ -29703,7 +29726,7 @@ msgstr "Legi, ordonanțe și hotărâri din Monitorul Oficial, cu modificările 
 #~ msgstr "Legi, ordonanțe și hotărâri din Portal Legislativ, cu statutul lor și dovada publicării în Monitorul Oficial."
 
 #: src/features/legal/components/hub/legislation-hub.tsx:132
-#: src/routes/legislation/index.tsx:74
+#: src/routes/legislation/index.tsx:76
 msgid "Legi, ordonanțe și hotărâri din Portalul Legislativ: textul lor, cine le emite și cum se schimbă."
 msgstr "Legi, ordonanțe și hotărâri din Portalul Legislativ: textul lor, cine le emite și cum se schimbă."
 
@@ -29727,7 +29750,7 @@ msgstr "Legile {0}–{1}"
 msgid "Legile invocate"
 msgstr "Legile invocate"
 
-#: src/routes/legislation/analytics.tsx:82
+#: src/routes/legislation/analytics.tsx:84
 msgid "Legile României numărate: ce fac actele, cine le emite, cum se schimbă și cum se leagă între ele."
 msgstr "Legile României numărate: ce fac actele, cine le emite, cum se schimbă și cum se leagă între ele."
 
@@ -29739,11 +29762,11 @@ msgstr "Legile și anii lor"
 msgid "Legislația"
 msgstr "Legislația"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:118
+#: src/features/legal/components/analytics/legislation-analysis.tsx:108
 msgid "legislația așa cum este"
 msgstr "legislația așa cum este"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:272
+#: src/features/legal/components/hub/legislation-hub-head.tsx:273
 msgid "Legislația de bază"
 msgstr "Legislația de bază"
 
@@ -29753,7 +29776,7 @@ msgstr "Legislația de bază, după felul actului"
 
 #: src/features/legal/components/act-detail-header.tsx:121
 #: src/features/legal/components/hub/legislation-hub.tsx:174
-#: src/routes/legislation/index.tsx:71
+#: src/routes/legislation/index.tsx:73
 msgid "Legislația României"
 msgstr "Legislația României"
 
@@ -31228,7 +31251,7 @@ msgstr "Mai mult decât în {0}"
 msgid "Mai multe"
 msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:747
+#: src/features/legal/components/analytics/legislation-analysis.tsx:739
 msgid "Mai multe acte"
 msgstr "Mai multe acte"
 
@@ -31859,6 +31882,11 @@ msgstr "Comparare mediană"
 msgid "mediană, din anul depunerii cererii"
 msgstr "mediană, din anul depunerii cererii"
 
+#. placeholder {0}: span(days.median)
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:421
+msgid "mediana: {0}"
+msgstr "mediana: {0}"
+
 #: src/features/procurement/lib/home-categories.ts:34
 msgid "Medicamente"
 msgstr "Medicamente"
@@ -32408,7 +32436,7 @@ msgstr "Mod"
 #~ msgid "modelate după AMEPIP"
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:690
+#: src/features/legal/components/analytics/legislation-analysis.tsx:682
 msgid "modif."
 msgstr "modif."
 
@@ -32428,14 +32456,14 @@ msgstr "modificare"
 msgid "Modificare de preț"
 msgstr "Modificare de preț"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:113
+#: src/features/legal/components/hub/legislation-hub-head.tsx:114
 msgid "modificări"
 msgstr "modificări"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:669
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:394
-#: src/features/legal/components/hub/legislation-hub-head.tsx:75
-#: src/features/legal/components/hub/legislation-hub-lib.ts:157
+#: src/features/legal/components/analytics/legislation-analysis.tsx:660
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:398
+#: src/features/legal/components/hub/legislation-hub-head.tsx:76
+#: src/features/legal/components/hub/legislation-hub-lib.ts:162
 #: src/features/legal/components/hub/legislation-hub.tsx:151
 #: src/features/legal/components/legislation-changes-feed.tsx:476
 #: src/features/legal/components/legislation-tab-nav.tsx:51
@@ -32460,7 +32488,7 @@ msgstr "Modificări, completări, abrogări și alte evenimente de statut."
 #~ msgid "Modificările citite din titluri, pe actele pe care le schimbă."
 #~ msgstr "Modificările citite din titluri, pe actele pe care le schimbă."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:105
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:108
 msgid "Modificările, abrogările și republicările, după data intrării în vigoare."
 msgstr "Modificările, abrogările și republicările, după data intrării în vigoare."
 
@@ -32560,7 +32588,7 @@ msgstr "Monitorizează această instituție"
 #: src/features/entity-search/lib/doc-type-meta.ts:80
 #: src/features/legal/components/act-publication-band.tsx:85
 #: src/features/legal/components/act-timeline-band.tsx:124
-#: src/features/legal/components/hub/legislation-hub-lib.ts:162
+#: src/features/legal/components/hub/legislation-hub-lib.ts:167
 #: src/features/legal/components/hub/legislation-hub.tsx:154
 #: src/features/legal/components/legislation-tab-nav.tsx:52
 #: src/features/legal/lib/legal-vocabulary.ts:324
@@ -33116,8 +33144,8 @@ msgstr "Negociere fără anunț prealabil"
 msgid "negociere fără anunț prealabil: motivul, mai jos"
 msgstr "negociere fără anunț prealabil: motivul, mai jos"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:261
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:177
+#: src/features/legal/components/analytics/legislation-analysis.tsx:242
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:180
 #: src/features/legal/lib/analytics-view.ts:34
 #: src/features/legal/lib/analytics-view.ts:36
 msgid "neîncadrate"
@@ -33312,6 +33340,11 @@ msgstr "Observațiile următoare"
 #: src/features/ngos/registry/components/registry-unavailable.tsx:12
 msgid "NGO registry unavailable"
 msgstr "Registrul ONG nu este disponibil"
+
+#. placeholder {0}: fmt(undrawn)
+#: src/features/legal/components/analytics/legislation-analysis.tsx:391
+msgid "Nici {0} acte cu un an în afara anilor 1800–2100."
+msgstr "Nici {0} acte cu un an în afara anilor 1800–2100."
 
 #: src/features/public-enterprises/components/authority/authority-states.tsx:30
 msgid "Nici lista ANAF, nici anunțurile de selecție AMEPIP nu pun vreo întreprindere publică sub CUI-ul {cui}, în copia pe care o are pagina."
@@ -33724,7 +33757,7 @@ msgstr "Nicio vânzare către stat în SEAP"
 msgid "Nicio vânzare în {0}."
 msgstr "Nicio vânzare în {0}."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:520
+#: src/features/legal/components/analytics/legislation-analysis.tsx:509
 msgid "Niciun act care modifică în selecție."
 msgstr "Niciun act care modifică în selecție."
 
@@ -33740,7 +33773,7 @@ msgstr "Niciun act găsit pentru citarea „{q}”."
 msgid "Niciun act nu corespunde filtrelor."
 msgstr "Niciun act nu corespunde filtrelor."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:172
+#: src/features/legal/components/analytics/legislation-analysis.tsx:162
 msgid "Niciun act nu se potrivește cu această întrebare. Scoate un filtru."
 msgstr "Niciun act nu se potrivește cu această întrebare. Scoate un filtru."
 
@@ -34052,7 +34085,7 @@ msgstr "nivel local"
 msgid "Nivel necunoscut"
 msgstr "Nivel necunoscut"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:358
+#: src/features/legal/components/analytics/legislation-analysis.tsx:339
 #: src/features/procurement/components/analytics/analytics-controls.tsx:357
 msgid "Nivelul"
 msgstr "Nivelul"
@@ -34963,7 +34996,7 @@ msgid "nr. {0}"
 msgstr "nr. {0}"
 
 #. placeholder {0}: issue.issueLabel
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:559
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:569
 msgid "Nr. {0}"
 msgstr "Nr. {0}"
 
@@ -35799,8 +35832,8 @@ msgstr "Numărăm doar dosarele în care numele unei părți a fost potrivit cu 
 msgid "Numărăm rânduri: o asociere sau un lot contează de mai multe ori."
 msgstr "Numărăm rânduri: o asociere sau un lot contează de mai multe ori."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:219
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:301
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:222
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:304
 msgid "Numărate separat"
 msgstr "Numărate separat"
 
@@ -36115,14 +36148,18 @@ msgstr "Numerar și conturi la bănci"
 #~ msgstr "Numerele din date, toate părțile. De la data apariției în Monitor, un act produce efecte."
 
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:545
-msgid "Numerele din date, toate părțile. Un număr arată când a fost publicat un act; data de la care actul produce efecte poate fi alta, cea scrisă în act."
-msgstr "Numerele din date, toate părțile. Un număr arată când a fost publicat un act; data de la care actul produce efecte poate fi alta, cea scrisă în act."
+#~ msgid "Numerele din date, toate părțile. Un număr arată când a fost publicat un act; data de la care actul produce efecte poate fi alta, cea scrisă în act."
+#~ msgstr "Numerele din date, toate părțile. Un număr arată când a fost publicat un act; data de la care actul produce efecte poate fi alta, cea scrisă în act."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:526
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:555
+msgid "Numerele din date, toate părțile. Un număr arată când a fost publicat un act."
+msgstr "Numerele din date, toate părțile. Un număr arată când a fost publicat un act."
+
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:536
 msgid "Numerele Monitorului Oficial"
 msgstr "Numerele Monitorului Oficial"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:539
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:549
 msgid "Numerele Monitorului Oficial din date: dovada publicării actelor."
 msgstr "Numerele Monitorului Oficial din date: dovada publicării actelor."
 
@@ -36261,7 +36298,7 @@ msgstr "O parte din aceste cifre nu s-a putut citi acum; reîncarcă pagina pent
 msgid "O parte nu are valoare publicată: suma e o limită de jos."
 msgstr "O parte nu are valoare publicată: suma e o limită de jos."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:829
+#: src/features/legal/components/analytics/legislation-analysis.tsx:821
 msgid "O perioadă lasă deoparte actele fără an."
 msgstr "O perioadă lasă deoparte actele fără an."
 
@@ -37122,11 +37159,11 @@ msgstr "Ordonanță"
 msgid "Ordonanță de urgență"
 msgstr "Ordonanță de urgență"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:400
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:404
 msgid "Ordonanțe aprobate"
 msgstr "Ordonanțe aprobate"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:402
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:406
 msgid "Ordonanțe respinse"
 msgstr "Ordonanțe respinse"
 
@@ -37181,7 +37218,7 @@ msgstr "ordonatorul cu codul {0}"
 msgid "Ordonatorul principal"
 msgstr "Ordonatorul principal"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:665
+#: src/features/legal/components/analytics/legislation-analysis.tsx:656
 msgid "Ordonează după"
 msgstr "Ordonează după"
 
@@ -37577,7 +37614,7 @@ msgstr "până în {partMonth}"
 msgid "până la"
 msgstr "până la"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:813
+#: src/features/legal/components/analytics/legislation-analysis.tsx:805
 #: src/features/legal/components/legislation-changes-feed.tsx:354
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:188
 #: src/features/procurement/components/analytics/analytics-controls.tsx:101
@@ -39143,7 +39180,7 @@ msgstr "Ponderile în PIB pentru {0} nu sunt disponibile în datele noastre."
 msgid "Poor"
 msgstr "Slab"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:148
+#: src/features/legal/components/analytics/legislation-analysis.tsx:138
 msgid "Populația"
 msgstr "Populația"
 
@@ -39946,7 +39983,7 @@ msgid "Primele {0}; alte {1} acte la ceilalți."
 msgstr "Primele {0}; alte {1} acte la ceilalți."
 
 #. placeholder {0}: String(Math.min(15, rows.length))
-#: src/features/legal/components/analytics/legislation-analysis.tsx:566
+#: src/features/legal/components/analytics/legislation-analysis.tsx:555
 msgid "Primele {0}. {note}"
 msgstr "Primele {0}. {note}"
 
@@ -40005,7 +40042,7 @@ msgstr "Primul la voturi: necalculat"
 msgid "Primul rezultat publicat de sursa"
 msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:114
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:117
 #: src/features/legal/components/legislation-changes-feed.tsx:502
 msgid "prin"
 msgstr "prin"
@@ -40051,8 +40088,8 @@ msgstr ""
 msgid "Private"
 msgstr "Privată"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:199
-#: src/features/legal/components/analytics/legislation-analysis.tsx:202
+#: src/features/legal/components/analytics/legislation-analysis.tsx:180
+#: src/features/legal/components/analytics/legislation-analysis.tsx:183
 msgid "Privește după"
 msgstr "Privește după"
 
@@ -40065,7 +40102,7 @@ msgid "Pro Tip"
 msgstr "Sfat Pro"
 
 #. placeholder {0}: KIND_LABEL[a.guess.kind] ?? a.guess.kind
-#: src/features/legal/components/analytics/legislation-analysis.tsx:719
+#: src/features/legal/components/analytics/legislation-analysis.tsx:711
 msgid "probabil: {0}"
 msgstr "probabil: {0}"
 
@@ -40492,7 +40529,7 @@ msgstr ""
 msgid "promulgare"
 msgstr "promulgare"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:398
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:402
 msgid "Promulgări"
 msgstr "Promulgări"
 
@@ -41243,7 +41280,7 @@ msgstr "Răspuns parțial: sursa nu acoperă toată selecția."
 
 #: src/features/justice/components/analysis/justice-analysis-page.tsx:62
 #: src/features/justice/components/echr/echr-answer.tsx:44
-#: src/features/legal/components/analytics/legislation-analysis.tsx:196
+#: src/features/legal/components/analytics/legislation-analysis.tsx:177
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:194
 #: src/features/ngos/registry/components/registry-list-page.tsx:110
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:178
@@ -43376,11 +43413,11 @@ msgstr "Scoate {label}"
 #~ msgid "Scoate {label} din comparație"
 #~ msgstr "Scoate {label} din comparație"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:266
+#: src/features/legal/components/analytics/legislation-analysis.tsx:247
 msgid "Scoate filtrul {text}"
 msgstr "Scoate filtrul {text}"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:951
+#: src/features/legal/components/analytics/legislation-analysis.tsx:943
 msgid "Scoate toate filtrele"
 msgstr "Scoate toate filtrele"
 
@@ -45511,7 +45548,6 @@ msgstr "Afișează doar cheltuielile directe ale acestei entități. Exclude fon
 msgid "Shows only the funds transferred to other public administration units."
 msgstr "Afișează doar fondurile transferate către alte unități ale administrației publice."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:422
 #: src/features/ngos/hub/ngo-hub-page.tsx:329
 #: src/features/ngos/organization/components/profile-parts.tsx:408
 #: src/features/private-companies/lib/company-profile-text.ts:438
@@ -46296,11 +46332,11 @@ msgstr "Sport și recreere"
 msgid "Sporul natural la 1.000 de locuitori, {year}"
 msgstr "Sporul natural la 1.000 de locuitori, {year}"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:179
+#: src/features/legal/components/analytics/legislation-analysis.tsx:168
 msgid "stabilesc reguli (încadrate ferm)"
 msgstr "stabilesc reguli (încadrate ferm)"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:273
+#: src/features/legal/components/hub/legislation-hub-head.tsx:274
 msgid "Stabilesc reguli de sine stătătoare; definiție provizorie"
 msgstr "Stabilesc reguli de sine stătătoare; definiție provizorie"
 
@@ -46873,7 +46909,7 @@ msgstr "Șterge tot"
 msgid "Șterge unitatea invalidă"
 msgstr "Șterge unitatea invalidă"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:153
+#: src/features/legal/components/analytics/legislation-analysis.tsx:143
 msgid "Stoc · legislația așa cum este"
 msgstr "Stoc · legislația așa cum este"
 
@@ -47538,7 +47574,7 @@ msgstr ""
 msgid "Surse:"
 msgstr "Surse:"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:179
+#: src/features/legal/components/hub/legislation-hub-head.tsx:180
 msgid "Surse: <0>Portalul Legislativ</0>, <1>Monitorul Oficial</1>"
 msgstr "Surse: <0>Portalul Legislativ</0>, <1>Monitorul Oficial</1>"
 
@@ -47830,7 +47866,7 @@ msgstr "Temă"
 #~ msgid "Teme · în curând"
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:321
+#: src/features/legal/components/analytics/legislation-analysis.tsx:302
 msgid "Temele (grupări ale actelor după textul lor) intră aici după ce potrivirea pe tot corpusul e verificată. În curând."
 msgstr "Temele (grupări ale actelor după textul lor) intră aici după ce potrivirea pe tot corpusul e verificată. În curând."
 
@@ -48800,7 +48836,7 @@ msgid "Ținut"
 msgstr "Ținut"
 
 #: src/features/elections/catalog/election-edition-page.tsx:131
-#: src/features/legal/components/analytics/legislation-analysis.tsx:833
+#: src/features/legal/components/analytics/legislation-analysis.tsx:825
 msgid "Tip"
 msgstr "Tip"
 
@@ -48874,7 +48910,7 @@ msgstr "Sfaturi și trucuri"
 msgid "Tipul"
 msgstr "Tipul"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:303
+#: src/features/legal/components/analytics/legislation-analysis.tsx:284
 msgid "Tipul normalizat al actului."
 msgstr "Tipul normalizat al actului."
 
@@ -49052,11 +49088,11 @@ msgstr "Toate actele selecției sunt în aceste rânduri."
 #~ msgid "Toate actele, de filtrat după tip, an și statut."
 #~ msgstr "Toate actele, de filtrat după tip, an și statut."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:158
+#: src/features/legal/components/hub/legislation-hub-head.tsx:159
 msgid "Toate actele, după citări"
 msgstr "Toate actele, după citări"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:158
+#: src/features/legal/components/hub/legislation-hub-head.tsx:159
 msgid "Toate actele, după modificări"
 msgstr "Toate actele, după modificări"
 
@@ -49190,7 +49226,7 @@ msgstr "Toate domeniile"
 #~ msgid "Toate domeniile →"
 #~ msgstr "Toate domeniile →"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:291
+#: src/features/legal/components/analytics/legislation-analysis.tsx:272
 msgid "toate domeniile, toate temele"
 msgstr "toate domeniile, toate temele"
 
@@ -49289,11 +49325,11 @@ msgstr "Toate întreprinderile publice"
 msgid "Toate liniile buletinului, cu ponderea, variația și evoluția din 2006."
 msgstr "Toate liniile buletinului, cu ponderea, variația și evoluția din 2006."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:156
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:159
 msgid "Toate modificările"
 msgstr "Toate modificările"
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:574
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:584
 msgid "Toate numerele"
 msgstr "Toate numerele"
 
@@ -49943,7 +49979,7 @@ msgstr "Trimiteri afirmate de portal"
 #~ msgid "Trimiteri bazate pe CUI sau SIRUTA, fara reclasificare."
 #~ msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:531
+#: src/features/legal/components/analytics/legislation-analysis.tsx:520
 msgid "Trimiteri din titlul deciziilor, nu efecte."
 msgstr "Trimiteri din titlul deciziilor, nu efecte."
 
@@ -49951,7 +49987,7 @@ msgstr "Trimiteri din titlul deciziilor, nu efecte."
 msgid "Trimiterile afirmate de portal nu sunt disponibile pentru acest act."
 msgstr ""
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:456
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:466
 msgid "Trimiterile de la un act la altul, citite din titluri."
 msgstr "Trimiterile de la un act la altul, citite din titluri."
 
@@ -50272,7 +50308,7 @@ msgstr "Ultimele 12 luni cu date disponibile în SEAP (până în {0})."
 msgid "Ultimele 12 luni nu s-au putut citi acum; pagina arată {year}."
 msgstr "Ultimele 12 luni nu s-au putut citi acum; pagina arată {year}."
 
-#: src/features/legal/components/hub/legislation-hub-bands.tsx:123
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:126
 msgid "Ultimele modificări"
 msgstr "Ultimele modificări"
 
@@ -50475,9 +50511,19 @@ msgstr "un semnal de calitate"
 msgid "Un semnal de verificare, nu o eroare confirmată; valorile sunt cele publicate."
 msgstr "Un semnal de verificare, nu o eroare confirmată; valorile sunt cele publicate."
 
+#. placeholder {0}: span(days.p25)
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:422
+msgid "un sfert dintre ele: cel mult {0}"
+msgstr "un sfert dintre ele: cel mult {0}"
+
 #: src/features/legal/components/legislation-changes-feed.tsx:295
 msgid "Un sfert dintre evenimente nu au dată de intrare în vigoare înregistrată — le găsești sub „fără dată”. Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 msgstr "Un sfert dintre evenimente nu au dată de intrare în vigoare înregistrată — le găsești sub „fără dată”. Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
+
+#. placeholder {0}: span(days.p75)
+#: src/features/legal/components/hub/legislation-hub-bands.tsx:423
+msgid "un sfert: cel puțin {0}"
+msgstr "un sfert: cel puțin {0}"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:312
 msgid "Un singur buget: coloana lui, tipărită doar de buletinele Excel (din 2019; până în 2023 unele luni, și decembrie 2023, sunt PDF); fără % din PIB. Bugetele nu se adună la consolidat."
@@ -51017,7 +51063,7 @@ msgstr ""
 msgid "Următoarea"
 msgstr "Următoarea"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:738
+#: src/features/legal/components/analytics/legislation-analysis.tsx:730
 msgid "Următoarele acte nu s-au încărcat. Cele de mai sus rămân; încearcă din nou."
 msgstr "Următoarele acte nu s-au încărcat. Cele de mai sus rămân; încearcă din nou."
 
@@ -52184,7 +52230,7 @@ msgstr "Valorile verificate nu sunt disponibile pentru perioada sau normalizarea
 msgid "Verify a learning certificate (proof of concept)."
 msgstr "Verifică un certificat de învățare (proof of concept)."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:696
+#: src/features/legal/components/analytics/legislation-analysis.tsx:688
 msgid "vers."
 msgstr "vers."
 
@@ -52213,8 +52259,8 @@ msgstr ""
 msgid "Versiunea textului"
 msgstr ""
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:671
-#: src/features/legal/components/analytics/legislation-analysis.tsx:872
+#: src/features/legal/components/analytics/legislation-analysis.tsx:662
+#: src/features/legal/components/analytics/legislation-analysis.tsx:864
 msgid "Versiuni"
 msgstr "Versiuni"
 
@@ -52222,7 +52268,7 @@ msgstr "Versiuni"
 msgid "Versiuni listate de Portal: datele distincte la care Portalul a listat o versiune consolidată (neoficială), doar pentru actele pe care le consolidează."
 msgstr "Versiuni listate de Portal: datele distincte la care Portalul a listat o versiune consolidată (neoficială), doar pentru actele pe care le consolidează."
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:302
+#: src/features/legal/components/analytics/legislation-analysis.tsx:283
 msgid "Versiuni listate de Portal: datele distincte la care Portalul a listat o versiune consolidată (neoficială)."
 msgstr "Versiuni listate de Portal: datele distincte la care Portalul a listat o versiune consolidată (neoficială)."
 
@@ -53194,7 +53240,7 @@ msgstr "Varianță zero"
 msgid "zi verificată după încheiere: nicio divizare publicată (fără ședință sau fără vot electronic)"
 msgstr "zi verificată după încheiere: nicio divizare publicată (fără ședință sau fără vot electronic)"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:590
+#: src/features/legal/components/analytics/legislation-analysis.tsx:579
 msgid "zile (mediana)"
 msgstr "zile (mediana)"
 
@@ -53202,7 +53248,7 @@ msgstr "zile (mediana)"
 msgid "Zilele de vot"
 msgstr "Zilele de vot"
 
-#: src/features/legal/components/analytics/legislation-analysis.tsx:611
+#: src/features/legal/components/analytics/legislation-analysis.tsx:600
 msgid "Zilele: de la prima publicare în Monitorul Oficial a actului numit la a actului care îl numește. Pentru promulgări nu sunt date: data decretului nu e în strat."
 msgstr "Zilele: de la prima publicare în Monitorul Oficial a actului numit la a actului care îl numește. Pentru promulgări nu sunt date: data decretului nu e în strat."
 
