@@ -57,9 +57,14 @@ export async function waitForHydration(page: Page): Promise<void> {
     const controls = [...document.querySelectorAll('input, textarea, select, button')].filter((element) => !element.closest('.leaflet-container, .maplibregl-map'))
     return owned(document.body) && controls.every(owned)
   }, undefined, { timeout: 15000 }).catch(async (error: unknown) => {
+    // A page that failed outright also lands here; its own error is the cause.
     const stray = await page.evaluate(unhydratedControls).catch(() => [])
     throw new Error(`React has not hydrated the page within 15 s (TEST-003); not yet React's: ${stray.slice(0, 8).join(', ') || 'unknown'}`, { cause: error })
   })
+
+  // React writes the props key while it renders a boundary and commits it after; listeners added in effects (a
+  // keyboard shortcut, say) come later still. Two frames and a task give the last boundary its commit and effects.
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0)))))
 }
 
 /**
@@ -68,7 +73,8 @@ export async function waitForHydration(page: Page): Promise<void> {
  */
 export async function waitForElementHydration(locator: Locator, timeout = 15000): Promise<void> {
   await expect
-    .poll(() => locator.evaluate((element, key) => Object.keys(element).some((name) => name.startsWith(key)), HYDRATED_KEY), { timeout })
+    // A reload or a re-render between polls can detach the element: not hydrated yet, poll again.
+    .poll(() => locator.evaluate((element, key) => Object.keys(element).some((name) => name.startsWith(key)), HYDRATED_KEY).catch(() => false), { timeout })
     .toBe(true)
 }
 
