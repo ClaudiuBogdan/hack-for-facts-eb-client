@@ -36,6 +36,19 @@ describe('HubFiguresBand', () => {
     expect(band([fact('a'), fact('b'), fact('c')]).className).toContain('lg:grid-cols-3')
   })
 
+  it('sets the notes as mono capitals unless the page asks for plain text; the labels stay mono either way', () => {
+    const { unmount } = render(<HubFiguresBand facts={[fact('a')]} locale="ro" />)
+    expect(screen.getByText('note a')).toHaveClass('font-mono', 'uppercase')
+    unmount()
+
+    render(<HubFiguresBand facts={[fact('a')]} locale="ro" plainNotes />)
+    const note = screen.getByText('note a')
+    expect(note).toHaveClass('text-xs')
+    expect(note).not.toHaveClass('font-mono')
+    expect(note).not.toHaveClass('uppercase')
+    expect(screen.getByText('label a')).toHaveClass('font-mono', 'uppercase')
+  })
+
   it('leaves out an empty note rather than drawing an empty line', () => {
     band([fact('a', null), fact('b')])
     expect(screen.queryByText('note a')).toBeNull()

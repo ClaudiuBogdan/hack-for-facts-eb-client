@@ -44,10 +44,13 @@ export function HubFiguresBand({
   facts,
   locale,
   className,
+  plainNotes = false,
 }: {
   readonly facts: readonly HubFact[]
   readonly locale: NumberLocale
   readonly className?: string
+  /** A page whose notes are sentences sets them as plain text in their own casing, not as mono capitals; the labels stay mono. */
+  readonly plainNotes?: boolean
 }) {
   return (
     <dl className={cn('grid', FIGURE_COLUMNS[facts.length] ?? 'grid-cols-2 lg:grid-cols-4', className)}>
@@ -67,7 +70,13 @@ export function HubFiguresBand({
               <MonoLabel className="block leading-relaxed text-foreground">{fact.label}</MonoLabel>,
               'after:absolute after:inset-0 after:content-[""] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring',
             )}
-            {fact.note ? <MonoLabel className="mt-auto block pt-3 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel> : null}
+            {fact.note ? (
+              plainNotes ? (
+                <span className="mt-auto block pt-3 text-xs leading-relaxed text-muted-foreground">{fact.note}</span>
+              ) : (
+                <MonoLabel className="mt-auto block pt-3 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel>
+              )
+            ) : null}
           </dt>
           <dd className="order-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
             <CountUpValue value={fact.value} digits={fact.digits} locale={locale} />
