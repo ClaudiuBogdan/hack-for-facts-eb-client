@@ -1,6 +1,6 @@
 /**
  * Integration tests for the company profile, `/companies/:cui`: the page
- * renders the company in one scroll of numbered bands, names who paid it once
+ * renders the company in one scroll of bands, names who paid it once
  * the SEAP read answers, writes each choice to the URL and reads it back, and
  * fits a phone.
  *
@@ -13,8 +13,9 @@
  * server-rendered profile here; it stands only until the page's own registry
  * read answers. The page then pins the mocked registry scope and shows the
  * mocked profile under it, so every browser read the page makes is mocked:
- * the registry, the profile, its registration diff, the SEAP slice and the
- * court-litigation summary (no link published, so no litigation band).
+ * the registry, the profile, its registration diff, the SEAP slice, the
+ * court-litigation summary (no link published, so no litigation band), the
+ * analysis release, the procurement release's status and SEAP's cutoff.
  */
 
 import type { Page } from '@playwright/test'
@@ -56,6 +57,11 @@ test.describe('Company profile', () => {
   test.beforeEach(async ({ mockApi }) => {
     // The page's registry pin: one read, no variables, the scope every profile fixture answers under.
     await mockApi.mockGraphQL('CompanyRegistry', 'company-registry')
+    // The reads beside the company's own: the analysis release (the main activity's analysis link), the
+    // procurement release's status and SEAP's national cutoff (any range the page asks for). No read reaches the API.
+    await mockApi.mockGraphQL('CompanyAnalysisRelease', 'company-analysis-release')
+    await mockApi.mockGraphQL('ProcurementDaRelease', 'procurement-da-release')
+    await mockApi.mockGraphQL('ProcurementCutoff', 'procurement-cutoff')
     await mockCompany(mockApi, 'abc', ABC)
     await mockCompany(mockApi, 'ideatica', IDEATICA)
   })

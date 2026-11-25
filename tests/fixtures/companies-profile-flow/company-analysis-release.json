@@ -1,0 +1,6368 @@
+{
+  "data": {
+    "companyAnalysisRelease": {
+      "release": {
+        "releaseId": "17",
+        "publishedAt": "2026-11-22T18:32:41.604Z",
+        "active": true,
+        "source": {
+          "editionId": "1",
+          "publicationEpoch": "1",
+          "sourceSnapshotId": "onrc:937617a7-6070-4edc-9d39-e790596dca37",
+          "sourcePublishedAt": "2026-09-02",
+          "interpretationVersion": "onrc-edition-v1",
+          "privacyPolicyVersion": "onrc-privacy-v1",
+          "dimensionPolicyVersion": "onrc-dimensions-v1",
+          "eligibilityPolicyVersion": "public-legal-person-v1"
+        }
+      },
+      "publicationId": "15",
+      "schemaVersion": "companies-analytics-ch-v3",
+      "populationPolicyVersion": "public-onrc-edition-legal-person-v2",
+      "admissionPolicyVersion": "companies-analytics-admission-2026-10-02-q1",
+      "admissionPolicySha256": "aad99ef8cb1744ab45b001e3e179ad4b2f8e5a5880e219ba4770b2b5449d4de2",
+      "inputSnapshotAt": "2026-11-22T14:45:01.148042Z",
+      "companies": "2726725",
+      "companyYears": "13709889",
+      "fiscalYears": [
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "years": [
+        {
+          "fiscalYear": 2008,
+          "statements": "661974",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "506089",
+                "missing": "155885",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "303817",
+                "missing": "358157",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "289266",
+                "missing": "372708",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "436401",
+                "missing": "225573",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "536478",
+                "missing": "125496",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "593057",
+                "missing": "68917",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "307664",
+                "missing": "354310",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "285413",
+                "missing": "376561",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "543807",
+                "missing": "118167",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "655455",
+                "missing": "6519",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "492096",
+                "missing": "169878",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "636737",
+                "missing": "25237",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "148327",
+                "missing": "513647",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "27795",
+                "missing": "634179",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "656967",
+                "missing": "5007",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "420005",
+                "missing": "241969",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "661974",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "6166",
+                "missing": "655808",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "661230",
+                "missing": "744",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "303",
+                "missing": "661671",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "592890",
+                "missing": "69084",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "225573"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "71"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "375592"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "49259"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "9664"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1815"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2009,
+          "statements": "613241",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "474855",
+                "missing": "138386",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "238235",
+                "missing": "375006",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "352050",
+                "missing": "261191",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "397888",
+                "missing": "215353",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "503237",
+                "missing": "110004",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "563950",
+                "missing": "49291",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "260179",
+                "missing": "353062",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "307448",
+                "missing": "305793",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "499709",
+                "missing": "113532",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "605019",
+                "missing": "8222",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "454402",
+                "missing": "158839",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "585059",
+                "missing": "28182",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "136139",
+                "missing": "477102",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "30053",
+                "missing": "583188",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "607889",
+                "missing": "5352",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "387505",
+                "missing": "225736",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "613241",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "9139",
+                "missing": "604102",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "612450",
+                "missing": "791",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "3323",
+                "missing": "609918",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "587166",
+                "missing": "26075",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "215353"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "1543"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "344054"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "42546"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8169"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1576"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2010,
+          "statements": "613334",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "444868",
+                "missing": "168466",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "223534",
+                "missing": "389800",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "322765",
+                "missing": "290569",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "375449",
+                "missing": "237885",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "470460",
+                "missing": "142874",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "528863",
+                "missing": "84471",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "246364",
+                "missing": "366970",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "285080",
+                "missing": "328254",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "499572",
+                "missing": "113762",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "602473",
+                "missing": "10861",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "445837",
+                "missing": "167497",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "577790",
+                "missing": "35544",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "129162",
+                "missing": "484172",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "30615",
+                "missing": "582719",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "608185",
+                "missing": "5149",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "382331",
+                "missing": "231003",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "613334",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "8400",
+                "missing": "604934",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "612170",
+                "missing": "1164",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "2288",
+                "missing": "611046",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "544265",
+                "missing": "69069",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "237885"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "1265"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "322680"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "42058"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "7903"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1543"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2011,
+          "statements": "652479",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "651428",
+                "missing": "1051",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "649790",
+                "missing": "2689",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "649676",
+                "missing": "2803",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "419723",
+                "missing": "232754",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "2",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "651517",
+                "missing": "962",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "532792",
+                "missing": "119687",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "649806",
+                "missing": "2673",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "649660",
+                "missing": "2819",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "525971",
+                "missing": "126508",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "629395",
+                "missing": "23084",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "474904",
+                "missing": "177575",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "602687",
+                "missing": "49792",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "157994",
+                "missing": "494485",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "73908",
+                "missing": "578571",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "629683",
+                "missing": "22796",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "412849",
+                "missing": "239630",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "652479",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "50604",
+                "missing": "601875",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "649664",
+                "missing": "2815",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "43478",
+                "missing": "609001",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "651821",
+                "missing": "658",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "232756"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "54861"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "308731"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "46083"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8448"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1600"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2012,
+          "statements": "657998",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "656639",
+                "missing": "1359",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "654589",
+                "missing": "3409",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "654492",
+                "missing": "3506",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "406882",
+                "missing": "251112",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "4",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "656791",
+                "missing": "1207",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "572920",
+                "missing": "85078",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "654613",
+                "missing": "3385",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "654467",
+                "missing": "3531",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "525103",
+                "missing": "132895",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "635938",
+                "missing": "22060",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "471405",
+                "missing": "186593",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "609615",
+                "missing": "48383",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "154225",
+                "missing": "503773",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "74987",
+                "missing": "583011",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "636594",
+                "missing": "21404",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "410530",
+                "missing": "247468",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "657998",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "49289",
+                "missing": "608709",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "655394",
+                "missing": "2604",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "42652",
+                "missing": "615346",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "657215",
+                "missing": "783",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "251116"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "48617"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "301889"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "46486"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8339"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1551"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2013,
+          "statements": "663749",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "662227",
+                "missing": "1522",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "659957",
+                "missing": "3792",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "660015",
+                "missing": "3734",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "406888",
+                "missing": "256856",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "5",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "662359",
+                "missing": "1390",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "584200",
+                "missing": "79549",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "660080",
+                "missing": "3669",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "659891",
+                "missing": "3858",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "526039",
+                "missing": "137710",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "641408",
+                "missing": "22341",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "466300",
+                "missing": "197449",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "616077",
+                "missing": "47672",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "155264",
+                "missing": "508485",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "78581",
+                "missing": "585168",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "640725",
+                "missing": "23024",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "409912",
+                "missing": "253837",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "663749",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "52159",
+                "missing": "611590",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "660753",
+                "missing": "2996",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "45473",
+                "missing": "618276",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "662838",
+                "missing": "911",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "256861"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "48606"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "302287"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "46253"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8192"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1550"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2014,
+          "statements": "674334",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "672629",
+                "missing": "1705",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "670540",
+                "missing": "3794",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "669985",
+                "missing": "4349",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "413826",
+                "missing": "260506",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "2",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "672771",
+                "missing": "1563",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "595553",
+                "missing": "78781",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "670679",
+                "missing": "3655",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "669844",
+                "missing": "4490",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "531403",
+                "missing": "142931",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "651841",
+                "missing": "22493",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "463827",
+                "missing": "210507",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "625982",
+                "missing": "48352",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "156174",
+                "missing": "518160",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "81113",
+                "missing": "593221",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "651179",
+                "missing": "23155",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "412230",
+                "missing": "262104",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "674334",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "51815",
+                "missing": "622519",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "671549",
+                "missing": "2785",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "44914",
+                "missing": "629420",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "673280",
+                "missing": "1054",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "260508"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "48046"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "310045"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "45938"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8202"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1595"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2015,
+          "statements": "679296",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "536535",
+                "missing": "142761",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "675659",
+                "missing": "3637",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "674282",
+                "missing": "5014",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "427245",
+                "missing": "252050",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "677629",
+                "missing": "1667",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "572131",
+                "missing": "107165",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "675798",
+                "missing": "3498",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "674130",
+                "missing": "5166",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "530244",
+                "missing": "149052",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "656908",
+                "missing": "22388",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "459897",
+                "missing": "219399",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "632356",
+                "missing": "46940",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "161800",
+                "missing": "517496",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "85128",
+                "missing": "594168",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "126388",
+                "missing": "552908",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "409238",
+                "missing": "270058",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "679296",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "51996",
+                "missing": "627300",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "675631",
+                "missing": "3665",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "7584",
+                "missing": "671712",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "678137",
+                "missing": "1159",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "252051"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "48402"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "322040"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "46799"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8392"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1612"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2016,
+          "statements": "697652",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "548913",
+                "missing": "148739",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "694060",
+                "missing": "3592",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "692427",
+                "missing": "5225",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "442420",
+                "missing": "255232",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "695879",
+                "missing": "1773",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "594601",
+                "missing": "103051",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "694137",
+                "missing": "3515",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "692338",
+                "missing": "5314",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "539468",
+                "missing": "158184",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "676792",
+                "missing": "20860",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "466731",
+                "missing": "230921",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "653828",
+                "missing": "43824",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "164262",
+                "missing": "533390",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "84264",
+                "missing": "613388",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "686967",
+                "missing": "10685",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "414337",
+                "missing": "283315",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "697652",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "52644",
+                "missing": "645008",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "697578",
+                "missing": "74",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "45838",
+                "missing": "651814",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "696461",
+                "missing": "1191",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "255232"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "46434"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "338601"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "47265"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8478"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1642"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2017,
+          "statements": "729296",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "567722",
+                "missing": "161574",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "725086",
+                "missing": "4210",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "722822",
+                "missing": "6474",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "453745",
+                "missing": "275550",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "727243",
+                "missing": "2053",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "626955",
+                "missing": "102341",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "725182",
+                "missing": "4114",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "722727",
+                "missing": "6569",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "554308",
+                "missing": "174988",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "708158",
+                "missing": "21138",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "474524",
+                "missing": "254772",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "686380",
+                "missing": "42916",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "160422",
+                "missing": "568874",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "80183",
+                "missing": "649113",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "717395",
+                "missing": "11901",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "420188",
+                "missing": "309108",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "729296",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "46689",
+                "missing": "682607",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "729218",
+                "missing": "78",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "39749",
+                "missing": "689547",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "727924",
+                "missing": "1372",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "275551"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "42097"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "354917"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "46688"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8387"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1656"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2018,
+          "statements": "754236",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "588424",
+                "missing": "165812",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "750153",
+                "missing": "4083",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "747778",
+                "missing": "6458",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "464932",
+                "missing": "289301",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "3",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "752223",
+                "missing": "2013",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "652918",
+                "missing": "101318",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "750248",
+                "missing": "3988",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "747682",
+                "missing": "6554",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "573204",
+                "missing": "181032",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "732909",
+                "missing": "21327",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "487434",
+                "missing": "266802",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "712190",
+                "missing": "42046",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "163802",
+                "missing": "590434",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "88361",
+                "missing": "665875",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "741510",
+                "missing": "12726",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "428657",
+                "missing": "325579",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "754236",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "48679",
+                "missing": "705557",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "754161",
+                "missing": "75",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "41626",
+                "missing": "712610",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "752859",
+                "missing": "1377",
+                "notAdmitted": "0",
+                "heldProfile": "0",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "289304"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "45235"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "362652"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "47158"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8222"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1665"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2019,
+          "statements": "805604",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "804816",
+                "missing": "109",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "804923",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "2",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "804816",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "788",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "804925",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "679",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "804816",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "788",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "681"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "363407"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "383122"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "48472"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "8200"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1722"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2020,
+          "statements": "839468",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "838733",
+                "missing": "97",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "838828",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "3",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "838733",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "734",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "838830",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "637",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "838733",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "734",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "1"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "640"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "379667"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "403248"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "46663"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "7649"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1601"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2021,
+          "statements": "879871",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "879140",
+                "missing": "110",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "879249",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "2",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "879140",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "730",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "879250",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "620",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "879140",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "730",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "1"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "622"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "400960"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "421623"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "47426"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "7624"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1616"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2022,
+          "statements": "922469",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "921796",
+                "missing": "103",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "921898",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "2",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "921796",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "672",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "921899",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "569",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "921796",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "672",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "1"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "571"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "381601"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "482811"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "48150"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "7696"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1640"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2023,
+          "statements": "952463",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "951751",
+                "missing": "106",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "951856",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "2",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "951751",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "711",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "951857",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "605",
+                "heldObservation": "1",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "951751",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "711",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "1"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "607"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "381413"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "513258"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "47833"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "7703"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1649"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2024,
+          "statements": "962362",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "961655",
+                "missing": "107",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "961655",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "707",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "961762",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "600",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "961655",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "707",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "600"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "392212"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "513740"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "46537"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "7610"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1663"
+            }
+          ]
+        },
+        {
+          "fiscalYear": 2025,
+          "statements": "950063",
+          "metrics": [
+            {
+              "metric": "TURNOVER",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "949943",
+                "missing": "104",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "EMPLOYEES",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_REVENUE",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_PROFIT",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "GROSS_LOSS",
+              "offered": true,
+              "coverage": {
+                "reported": "949943",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "120",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "RECEIVABLES",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CURRENT_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "FIXED_ASSETS",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "CASH_AND_BANK",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PREPAID_EXPENSES",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEFERRED_INCOME",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "SUBSCRIBED_CAPITAL",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "INVENTORIES",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "DEBTS",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PROVISIONS",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "TOTAL_EQUITY",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "PATRIMONY_REGIE",
+              "offered": true,
+              "coverage": {
+                "reported": "950047",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "16",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            },
+            {
+              "metric": "NET_RESULT",
+              "offered": true,
+              "coverage": {
+                "reported": "949943",
+                "missing": "0",
+                "notAdmitted": "0",
+                "heldProfile": "120",
+                "heldObservation": "0",
+                "heldQuality": "0",
+                "heldComponent": "0"
+              }
+            }
+          ],
+          "sizeBands": [
+            {
+              "band": "UNAVAILABLE",
+              "statements": "16"
+            },
+            {
+              "band": "NEGATIVE",
+              "statements": "0"
+            },
+            {
+              "band": "ZERO",
+              "statements": "399145"
+            },
+            {
+              "band": "FROM_1_TO_9",
+              "statements": "496625"
+            },
+            {
+              "band": "FROM_10_TO_49",
+              "statements": "45150"
+            },
+            {
+              "band": "FROM_50_TO_249",
+              "statements": "7490"
+            },
+            {
+              "band": "FROM_250",
+              "statements": "1637"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "metric": "TURNOVER",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "NET_PROFIT",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "NET_LOSS",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "EMPLOYEES",
+          "unit": "HEADCOUNT",
+          "kind": "HEADCOUNT",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "TOTAL_REVENUE",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "TOTAL_EXPENSES",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "GROSS_PROFIT",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "GROSS_LOSS",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "RECEIVABLES",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "CURRENT_ASSETS",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "FIXED_ASSETS",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "CASH_AND_BANK",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "PREPAID_EXPENSES",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "DEFERRED_INCOME",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "SUBSCRIBED_CAPITAL",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "INVENTORIES",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "DEBTS",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "PROVISIONS",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "TOTAL_EQUITY",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "PATRIMONY_REGIE",
+          "unit": "RON",
+          "kind": "STOCK",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        },
+        {
+          "metric": "NET_RESULT",
+          "unit": "RON",
+          "kind": "FLOW",
+          "offeredYears": [
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ]
+        }
+      ],
+      "dimensions": [
+        {
+          "dimension": "COUNTY",
+          "yearScoped": false,
+          "labelSource": "territory_hub: current public core.territories county name by county_code; basis buckets have no label"
+        },
+        {
+          "dimension": "UAT",
+          "yearScoped": false,
+          "labelSource": "territory_hub: current public core.territories name by SIRUTA; basis buckets have no label"
+        },
+        {
+          "dimension": "MAIN_CAEN",
+          "yearScoped": false,
+          "labelSource": "current_db_catalog: core.classification_codes candidates of the ANAF fiscal CAEN code; ANAF TVA publishes no revision, so a label only when every catalog revision has the same text (CONSENSUS) and an exact label only for a revision the source itself recorded; never an inferred revision"
+        },
+        {
+          "dimension": "LEGAL_FORM",
+          "yearScoped": false,
+          "labelSource": "none: the ONRC legal-form code is shown"
+        },
+        {
+          "dimension": "OBSERVED_STATUS",
+          "yearScoped": false,
+          "labelSource": "api_nomenclature: the API status nomenclature by code (never a source-observed label); basis buckets have no label"
+        },
+        {
+          "dimension": "VAT_PAYER",
+          "yearScoped": false,
+          "labelSource": "none: YES / NO / UNKNOWN"
+        },
+        {
+          "dimension": "FISCALLY_INACTIVE",
+          "yearScoped": false,
+          "labelSource": "none: YES / NO / UNKNOWN"
+        },
+        {
+          "dimension": "EMPLOYEE_SIZE",
+          "yearScoped": true,
+          "labelSource": "none: EU headcount band"
+        },
+        {
+          "dimension": "ACTIVITY",
+          "yearScoped": false,
+          "labelSource": "current_db_catalog: an ONRC bucket carries the exact catalog label of its (revision, code); an ANAF bucket a CONSENSUS candidate label or none (ANAF publishes no revision); unclassified buckets have no label"
+        }
+      ],
+      "defaults": {
+        "fiscalYear": 2024,
+        "metric": "TURNOVER",
+        "cohortMode": "EACH_YEAR",
+        "rankBy": "METRIC_SUM",
+        "topN": 10,
+        "recordSort": "METRIC",
+        "direction": "DESC",
+        "pageSize": 25
+      },
+      "asOf": [
+        {
+          "kind": "onrc_edition",
+          "id": "1",
+          "published": "2026-09-02",
+          "retrieved": null,
+          "rows": "3909574"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2008:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "664251"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2009:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "615109"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2010:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "615403"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2011:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "654815"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2012:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "660453"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2013:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "666219"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2014:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "676852"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2015:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "681800"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2016:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "700207"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2017:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "731947"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2018:mfp",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "756959"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2019:anaf",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "807455"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2020:anaf",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "841408"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2021:anaf",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "882296"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2022:anaf",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "925141"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2023:anaf",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "955241"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2024:anaf",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "965213"
+        },
+        {
+          "kind": "financials_year",
+          "id": "2025:anaf",
+          "published": "anaf-bilant-metric-v1",
+          "retrieved": "2026-11-22T14:17:22.658769Z",
+          "rows": "952740"
+        },
+        {
+          "kind": "fiscal_retrieved",
+          "id": null,
+          "published": null,
+          "retrieved": "2026-05-19T08:28:19.157717Z/2026-09-28T08:56:36.432272Z",
+          "rows": "3939000"
+        }
+      ],
+      "nameFilter": false,
+      "limits": {
+        "maxSelectedCuis": 500,
+        "maxCounties": 60,
+        "maxUats": 500,
+        "maxLegalForms": 30,
+        "maxObservedStatuses": 60,
+        "maxCaenCodes": 200,
+        "maxFinancialRanges": 6,
+        "maxMetrics": 21,
+        "maxRecordMetrics": 8,
+        "defaultTopN": 10,
+        "maxTopN": 100,
+        "defaultPageSize": 25,
+        "maxPageSize": 100
+      },
+      "caveats": [
+        "County, UAT, observed status and legal form are the consensus of ONE published ONRC edition (see release.source), with an explicit basis when there is none; ANAF fiscal attributes describe the release snapshot. None of them is fiscal-year history.",
+        "Observed status is the complete status consensus of that edition; a public 1048 observation does not by itself mean \"currently active\", and the observation filter (scope.onrc) is a different question from the consensus bucket.",
+        "onrcRecordedDate is the date ONRC recorded, never a founding date or an age.",
+        "Coverage counts observed filings; a recent year with fewer statements is partial, never labelled complete.",
+        "Employee figures are sums of reported average headcounts, not unique people; balances and headcounts are single-year values.",
+        "Company names are current public core-directory names, not registry or edition names, and not pinned to the release.",
+        "MAIN_CAEN (legacy name) groups companies by the ANAF fiscal CAEN code, a source observation, never a published principal or main activity. ANAF TVA publishes no revision and none is inferred: a label is shown only when every catalog revision carries the same text for the code (CONSENSUS), otherwise the revision-qualified candidates are listed (CONFLICT) or there is none (MISSING).",
+        "ACTIVITY is a derived selection per company, never a published principal or main activity: the only classified ONRC observation of the edition (not an exclusive authorization), one of several classified ONRC observations selected because the usable ANAF fiscal code has the same digits, or the ANAF fiscal code when the edition has no classified observation (ANAF publishes no revision).",
+        "Multiple classified observations without a unique ANAF match, uncatalogued ANAF codes and companies without a qualified selection are unclassified buckets, never ranked as sectors; no qualified selection is not \"no activity\".",
+        "ONRC CAEN filters (onrc.caenCode, onrc.onrcCaen and their exclusion) match classified observations only in this release: short tokens, unknown revisions and unlabeled keys stay evidence."
+      ],
+      "mainCaen": null
+    }
+  }
+}
