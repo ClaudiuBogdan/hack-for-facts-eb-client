@@ -1,8 +1,54 @@
 # TEL-001: Keep party codes out of telemetry
 
-**Status:** fixed (2026-11-20, on `dev`; Chronos dev with the next pin, production with the next release). **Priority:** P1. Found by the
-D6 leak reviews (12–14, gpt-6.2-sol xhigh); ruled by root on 19 November 2026. Separate from the direct-acquisitions
-release so it can be reviewed and reverted on its own.
+**Status:** reopened (2026-11-25): partly fixed, and the rest is approved and not built yet (see *Reopened*). **Priority:** P2, gate: before
+the public switch. **Related:** PRJ-HX7G (scrapper docs: personal codes in stored share links). First fixed on 2026-11-20 on `dev`. Found
+by the D6 leak reviews (12–14, gpt-6.2-sol xhigh); ruled by root on 19 November 2026. Separate from the direct-acquisitions release so it
+can be reviewed and reverted on its own.
+
+## Reopened (25 November 2026)
+
+**What broke.** The contract-award winner list (`/procurement/contract-awards/winners/$cui`, branch
+`feat/procurement-ca-awards-20261125`) put a new party path in URLs, and the reviews of that branch tested the scrub hard. Three runs
+(gpt-6.2-sol xhigh, local only) found 26 spellings of a party address that kept the code:
+- 199be7c4 round 2: an escaped delimiter (`/winners/%23<code>`) ended the code's segment once read;
+- confirmation 1 on 199be7c4, 16 inputs: a fourth escape layer, an escaped path word (`supplier%73`), backslashes, doubled slashes,
+  `.` and `..` segments, `;` parameters, `[` before `/companies/`, quotes inside the segment;
+- confirmation 2 on c2ce1501, 10 inputs (still open):
+  - a raw tab, newline or CR inside the address, which browsers strip but the scrub splits words on (`/procurement/suppli<TAB>ers/<code>`);
+  - an escaped tab inside a path word (`%2Fprocurement%2Fsuppli%09ers%2F<code>` in a redirect, nested too);
+  - an escaped `?` or `#` setting off the hub exception (`/companies/analytics%3F<code>`, `/companies/search%23<code>`, and under
+    `/procurement/procedures/companies/`).
+
+A deny-list over raw URLs can only chase encodings (root).
+
+**Interim, shipping with the contract-award push (c2ce1501).** Each word is read through every escape layer (a chain over twelve is
+masked whole), with backslashes read as slashes. After its first party marker (`suppliers`, `institutions`, `companies`, `winners` as a
+word of their own, or a party filter followed by `=`), every run of letters and digits holding a digit becomes `_`. Numbers after the
+marker go too (`?year=2025` → `?year=_`). `/companies/analytics` and `/companies/search` are no marker when only a query or fragment with
+no further path follows.
+
+It is no regression: dev at 8f4fc5c1 is weaker on every one of the 26 inputs. It covers every address ordinary navigation produces. The
+10 open inputs need a hand-crafted URL with control characters or escaped delimiters.
+
+**The fix (approved by root, 25 November 2026; built by procurement-da-client after the contract-award push, on its own branch off `dev`).**
+- One function, `telemetryAddress(url)`, is the only way an address leaves for PostHog or Sentry. It never throws: on any error it returns
+  the origin plus `/(error)`.
+- A same-origin URL becomes its origin, the router's matched route template (for example `/procurement/suppliers/$cui`; an unmatched path
+  is `/(unmatched)`), and an allowlisted query. A foreign URL becomes its origin only. No raw path, fragment or unlisted parameter passes.
+- The query allowlist is name plus value shape (for example `year` as four digits). A parameter that doesn't fit is dropped. It starts as
+  the smallest list, and names are added when someone asks for one.
+- Wiring: PostHog `before_send` and the request guard (`$current_url`, `$pathname`, the referrer, every `$initial_*` and previous-page
+  field); Sentry `beforeSend`, `beforeSendTransaction`, `beforeBreadcrumb` and the transport (request URL, navigation from/to, transaction
+  names, fetch and xhr breadcrumb URLs).
+- The scrubs below stay only as a second layer, for free text (error messages, titles).
+- Test: a property test. A party code is placed anywhere in a URL under every encoding class found so far (the 26 inputs, plus generated
+  ones), and the output never contains the code's digits.
+- Shared files (`src/lib/analytics.ts`, the Sentry setup, `src/lib/privacy`): the file list goes to root and every client session before
+  the first commit. At most two Sol rounds.
+- It changes what the owner sees in product analytics (route patterns instead of addresses). Root is telling the owner.
+
+Closure: the template function wired into every path above, its property test passing, and deployed to Chronos dev before the public
+switch.
 
 ## Summary
 
@@ -31,7 +77,8 @@ processors the client uses, PostHog and Sentry, in normal operation:
     page's code (`/companies/<cui>`, but not `/companies/analytics` or `/companies/search`), and any `furnizor` or
     `cumparator` query value, with or without its `?`;
   - case-insensitive, after reading up to three layers of URL encoding, word by word so prose and punctuation stay.
-    A word that changes is sent decoded;
+    A word that changes is sent decoded. (Superseded on 25 November 2026 by the interim rule in *Reopened*, and to be replaced by the
+    route templates.);
   - text naming a code — „CUI", „CIF", „tax ID" or „VAT ID", then digits with an optional country prefix or quotes —
     becomes `_` (`withoutNamedCodes`) in any telemetry string: page titles, and an element's label or title a click
     breadcrumb copies („Copiază CUI …"). The justice title heuristic stays PostHog's alone;

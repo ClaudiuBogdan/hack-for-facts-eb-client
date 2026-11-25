@@ -153,6 +153,7 @@ import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cu
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
 import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
 import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
+import { Route as ProcurementContractAwardsIdRouteImport } from './routes/procurement/contract-awards/$id'
 import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
 import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/procurement/direct-acquisitions/$id'
 import { Route as ProcurementInstitutionsCuiRouteImport } from './routes/procurement/institutions/$cui'
@@ -193,6 +194,7 @@ import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cu
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
+import { Route as ProcurementContractAwardsWinnersCuiRouteImport } from './routes/procurement/contract-awards/winners/$cui'
 import { Route as PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRouteImport } from './routes/public-enterprises/authorities/$cui/portfolio[.]json'
 import { Route as LangLearningPathIdModuleIdLessonIdRouteImport } from './routes/$lang/learning/$pathId/$moduleId/$lessonId'
 import { Route as AdminCampaignsCampaignKeyEntitiesEntityCuiRouteImport } from './routes/admin/campaigns/$campaignKey/entities.$entityCui'
@@ -1118,6 +1120,16 @@ const ProcurementCategoriesCodeRoute =
   } as any).lazy(() =>
     import('./routes/procurement/categories/$code.lazy').then((d) => d.Route),
   )
+const ProcurementContractAwardsIdRoute =
+  ProcurementContractAwardsIdRouteImport.update({
+    id: '/contract-awards/$id',
+    path: '/contract-awards/$id',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/contract-awards/$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const ProcurementContractsIdRoute = ProcurementContractsIdRouteImport.update({
   id: '/contracts/$id',
   path: '/contracts/$id',
@@ -1464,6 +1476,16 @@ const PrimarieCuiBugetResurseRoute = PrimarieCuiBugetResurseRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/$cui/buget/resurse.lazy').then((d) => d.Route),
 )
+const ProcurementContractAwardsWinnersCuiRoute =
+  ProcurementContractAwardsWinnersCuiRouteImport.update({
+    id: '/contract-awards/winners/$cui',
+    path: '/contract-awards/winners/$cui',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/contract-awards/winners/$cui.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute =
   PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRouteImport.update({
     id: '/portfolio.json',
@@ -1658,6 +1680,7 @@ export interface FileRoutesByFullPath {
   '/pnrr/proiecte/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contract-awards/$id': typeof ProcurementContractAwardsIdRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
@@ -1713,6 +1736,7 @@ export interface FileRoutesByFullPath {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/procurement/contract-awards/winners/$cui': typeof ProcurementContractAwardsWinnersCuiRoute
   '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
@@ -1837,6 +1861,7 @@ export interface FileRoutesByTo {
   '/pnrr/proiecte/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contract-awards/$id': typeof ProcurementContractAwardsIdRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
@@ -1891,6 +1916,7 @@ export interface FileRoutesByTo {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/procurement/contract-awards/winners/$cui': typeof ProcurementContractAwardsWinnersCuiRoute
   '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyIndexRoute
@@ -2032,6 +2058,7 @@ export interface FileRoutesById {
   '/pnrr_/proiecte_/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contract-awards/$id': typeof ProcurementContractAwardsIdRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
@@ -2087,6 +2114,7 @@ export interface FileRoutesById {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/procurement/contract-awards/winners/$cui': typeof ProcurementContractAwardsWinnersCuiRoute
   '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
@@ -2229,6 +2257,7 @@ export interface FileRouteTypes {
     | '/pnrr/proiecte/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
+    | '/procurement/contract-awards/$id'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/institutions/$cui'
@@ -2284,6 +2313,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/procurement/contract-awards/winners/$cui'
     | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
@@ -2408,6 +2438,7 @@ export interface FileRouteTypes {
     | '/pnrr/proiecte/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
+    | '/procurement/contract-awards/$id'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/institutions/$cui'
@@ -2462,6 +2493,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/procurement/contract-awards/winners/$cui'
     | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId'
     | '/admin/campaigns/$campaignKey'
@@ -2602,6 +2634,7 @@ export interface FileRouteTypes {
     | '/pnrr_/proiecte_/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
+    | '/procurement/contract-awards/$id'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/institutions/$cui'
@@ -2657,6 +2690,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/procurement/contract-awards/winners/$cui'
     | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
@@ -3810,6 +3844,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProcurementCategoriesCodeRouteImport
       parentRoute: typeof ProcurementRouteRoute
     }
+    '/procurement/contract-awards/$id': {
+      id: '/procurement/contract-awards/$id'
+      path: '/contract-awards/$id'
+      fullPath: '/procurement/contract-awards/$id'
+      preLoaderRoute: typeof ProcurementContractAwardsIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
     '/procurement/contracts/$id': {
       id: '/procurement/contracts/$id'
       path: '/contracts/$id'
@@ -4090,6 +4131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieCuiBugetResurseRouteImport
       parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
+    '/procurement/contract-awards/winners/$cui': {
+      id: '/procurement/contract-awards/winners/$cui'
+      path: '/contract-awards/winners/$cui'
+      fullPath: '/procurement/contract-awards/winners/$cui'
+      preLoaderRoute: typeof ProcurementContractAwardsWinnersCuiRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
     '/public-enterprises/authorities/$cui/portfolio.json': {
       id: '/public-enterprises/authorities/$cui/portfolio.json'
       path: '/portfolio.json'
@@ -4257,11 +4305,13 @@ interface ProcurementRouteRouteChildren {
   ProcurementSearchRoute: typeof ProcurementSearchRoute
   ProcurementIndexRoute: typeof ProcurementIndexRoute
   ProcurementCategoriesCodeRoute: typeof ProcurementCategoriesCodeRoute
+  ProcurementContractAwardsIdRoute: typeof ProcurementContractAwardsIdRoute
   ProcurementContractsIdRoute: typeof ProcurementContractsIdRoute
   ProcurementDirectAcquisitionsIdRoute: typeof ProcurementDirectAcquisitionsIdRoute
   ProcurementInstitutionsCuiRoute: typeof ProcurementInstitutionsCuiRoute
   ProcurementProceduresIdRoute: typeof ProcurementProceduresIdRoute
   ProcurementSuppliersCuiRoute: typeof ProcurementSuppliersCuiRoute
+  ProcurementContractAwardsWinnersCuiRoute: typeof ProcurementContractAwardsWinnersCuiRoute
 }
 
 const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
@@ -4269,11 +4319,14 @@ const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
   ProcurementSearchRoute: ProcurementSearchRoute,
   ProcurementIndexRoute: ProcurementIndexRoute,
   ProcurementCategoriesCodeRoute: ProcurementCategoriesCodeRoute,
+  ProcurementContractAwardsIdRoute: ProcurementContractAwardsIdRoute,
   ProcurementContractsIdRoute: ProcurementContractsIdRoute,
   ProcurementDirectAcquisitionsIdRoute: ProcurementDirectAcquisitionsIdRoute,
   ProcurementInstitutionsCuiRoute: ProcurementInstitutionsCuiRoute,
   ProcurementProceduresIdRoute: ProcurementProceduresIdRoute,
   ProcurementSuppliersCuiRoute: ProcurementSuppliersCuiRoute,
+  ProcurementContractAwardsWinnersCuiRoute:
+    ProcurementContractAwardsWinnersCuiRoute,
 }
 
 const ProcurementRouteRouteWithChildren =
@@ -4701,3 +4754,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
