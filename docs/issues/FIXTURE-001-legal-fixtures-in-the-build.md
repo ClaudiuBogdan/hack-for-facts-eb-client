@@ -7,7 +7,8 @@
 ## What happens
 
 A legislation API facade that imports its mock module statically puts the mock and its fixture into the production
-JavaScript, even though production never takes the mock branch. The fixtures name real acts as they were when copied,
+JavaScript. Production defaults to the live API (an explicit mock override exists, and without the guard below it
+would serve these fixtures there). The fixtures name real acts as they were when copied,
 so the public bundle carries stale legal data that no page shows, and the server bundle carries it too.
 
 Confirmed on the build of `c6126ce8f` (25 November 2026): `legal-act-api.ts` imports `legalActDetailById` from
