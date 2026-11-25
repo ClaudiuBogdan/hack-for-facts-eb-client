@@ -1,0 +1,54 @@
+{
+  "data": {
+    "entity": {
+      "cui": "4305857",
+      "organization": {
+        "name": "MUNICIPIUL CLUJ-NAPOCA"
+      },
+      "territory": {
+        "name": "MUNICIPIUL CLUJ-NAPOCA",
+        "countyCode": "CJ",
+        "countyName": "CLUJ",
+        "sirutaCode": "54975",
+        "population": 286598,
+        "id": 1373,
+        "level": "uat",
+        "kind": "municipality",
+        "territoryKey": "siruta:54975",
+        "parentId": 1294,
+        "nutsCode": null
+      },
+      "reference": {
+        "name": "MUNICIPIUL CLUJ-NAPOCA",
+        "address": "Cluj, Municipiul Cluj-Napoca, Strada Motilor 1-3",
+        "entityType": "admin_municipality",
+        "isUat": true,
+        "defaultReportType": "Executie bugetara agregata la nivel de ordonator principal",
+        "territory": {
+          "name": "MUNICIPIUL CLUJ-NAPOCA",
+          "countyCode": "CJ",
+          "countyName": "CLUJ",
+          "sirutaCode": "54975",
+          "population": 286598,
+          "id": 1373,
+          "level": "uat",
+          "kind": "municipality",
+          "territoryKey": "siruta:54975",
+          "parentId": 1294,
+          "nutsCode": null
+        },
+        "isTerritorialExecutive": true
+      },
+      "budget": {
+        "presence": true,
+        "reportType": "EXECUTION_AGG_PRINCIPAL"
+      },
+      "annualPopulation": {
+        "territoryId": 1373,
+        "year": 2025,
+        "population": "286598",
+        "metadata": null
+      }
+    }
+  }
+}

@@ -23,6 +23,10 @@ async function mockEntityDetailsOperations(mockApi: MockApiFixture) {
   await mockApi.mockGraphQL('EntitySubordinateRanking', 'entity-subordinate-ranking')
   await mockApi.mockGraphQL('GetEntityReports', 'entity-reports')
   await mockApi.mockGraphQL('GetReports', 'get-reports')
+  // Read in the browser (TEST-001): the dev API's answers of 2026-11-25, the functional chapter 51 series of
+  // 2016–2026 and the 2025 UAT population, cut to Cluj-Napoca's cell (the country's 3,186 cells are 845 KB).
+  await mockApi.mockGraphQL('GetExecutionLineItemsAnalytics', 'execution-analytics-fn51')
+  await mockApi.mockGraphQL('MapPopulation', 'map-population-uat-2025')
 }
 
 async function openEntityDetails(page: Page) {

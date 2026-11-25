@@ -1,0 +1,3353 @@
+{
+  "data": {
+    "descriptor": {
+      "code": "POP217A",
+      "dimension_count": 5,
+      "metadata": {
+        "methodology_ro": "Speranta de viata la nastere se calculeaza pe baza datelor referitoare la numarul populatiei dupa domiciliu la 1 ianuarie si 1 iulie, al deceselor si migratiei interne cu schimbarea domiciliului.\r\nIndicatorii tabelei de mortalitate au urmatoarea semnificatie:\r\nL(x) - numarul supravietuitorilor de varsta x - cate persoane din generatia ipotetica de 100000 nascuti - vii mai sunt in viata la implinirea varstei exacte de x ani;\r\nD(x) - numarul decedatilor intre varstele x si x+1 ani - arata cati din supravietuitorii varstei x ani mor inainte de a implini varsta x+1 ani;\r\nQ(x) - probabilitatea de deces intre varstele x si x+1 ani - arata riscul la care este expusa o persoana care a implinit x ani si moare inainte de a implini x+1 ani;\r\nP(x) - probabilitatea de supravietuire intre varstele x si x+1 ani - arata sansele pe care le are o persoana care a implinit varsta x ani sa fie in viata la implinirea varstei x+1 ani;\r\nLM(x) - numarul mediu al supravietuitorilor in intervalul de varsta x la x+1 ani;\r\nE(x) - speranta de viata la varsta x - indica numarul mediu de ani ramasi de trait pentru o persoana care supravietuieste varstei x si se determina prin insumarea numarului mediu al supravietuitorilor L(x) de la varsta x pana la varsta maxima din tabela si impartirea la numarul supravietuitorilor varstei x.\r\nSperanta de viata la nastere  este denumita durata medie de viata  e(o).\r\nE(o) - indica numarul mediu de ani pe care poate sa-i traiasca un nou nascut in conditiile intensitatii mortalitatii pe varste din perioada de referinta a tabelei de mortalitate.\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Statistica-demografica.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+        "data_sources_ro": "Cercetarea statistica privind speranta de viata <<1313>>",
+        "source_year_range": [
+          1990,
+          2025
+        ],
+        "source_last_update": "2026-09-09",
+        "observation_count": 15150,
+        "has_region_data": true,
+        "has_national_data": true,
+        "custody_sha256": "9f10439a90ec8c8930c5e1799a26d82e29d9bb402122a5c9ab2c4f5c3d4f3217",
+        "revision_id": "2498",
+        "transform_contract_sha256": "29ad0ebc66c833f3afd6a01b74c6c5e56544ce09d8d23b40e1af007990e45b03",
+        "published_at": "2026-10-06 14:14:44.971673+00",
+        "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/POP217A?lang=ro"
+      },
+      "dimensions": [
+        {
+          "index": 0,
+          "type": "CLASSIFICATION",
+          "label_ro": "Medii de rezidenta",
+          "label_en": "Urban and rural areas",
+          "classification_type": {
+            "code": "D0"
+          }
+        },
+        {
+          "index": 1,
+          "type": "CLASSIFICATION",
+          "label_ro": "Sexe",
+          "label_en": "Sex",
+          "classification_type": {
+            "code": "D1"
+          }
+        },
+        {
+          "index": 2,
+          "type": "TERRITORIAL",
+          "label_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+          "label_en": "Macroregions, development regions and counties",
+          "classification_type": {
+            "code": "D2"
+          }
+        },
+        {
+          "index": 3,
+          "type": "TEMPORAL",
+          "label_ro": "Ani",
+          "label_en": "Years",
+          "classification_type": null
+        },
+        {
+          "index": 4,
+          "type": "UNIT_OF_MEASURE",
+          "label_ro": "UM: Ani",
+          "label_en": "MU: Years",
+          "classification_type": null
+        }
+      ]
+    },
+    "insObservations": {
+      "nodes": [
+        {
+          "id": "v1:POP217A:108:105:3101:4912:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2025",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "82.01",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4893:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2024",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "83.02",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4874:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2023",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "81.12",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4855:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2022",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "79.51",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4836:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2021",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "80.67",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4817:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2020",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "81.17",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4798:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2019",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "80.82",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4779:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2018",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "80.05",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4760:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2017",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "79.37",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4741:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2016",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "78.18",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4722:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2015",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "77.51",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2015",
+            "year": 2015,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4703:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2014",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "77.89",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2014",
+            "year": 2014,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4684:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2013",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "77.44",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2013",
+            "year": 2013,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4665:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2012",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "76.37",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2012",
+            "year": 2012,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4646:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2011",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "75.56",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2011",
+            "year": 2011,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4627:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2010",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "75.16",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2010",
+            "year": 2010,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4608:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2009",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "74.77",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2009",
+            "year": 2009,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4589:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2008",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "74.22",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2008",
+            "year": 2008,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4570:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2007",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "73.84",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2007",
+            "year": 2007,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4551:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2006",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "73.25",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2006",
+            "year": 2006,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4532:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2005",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "72.85",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2005",
+            "year": 2005,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4513:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2004",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "72.49",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2004",
+            "year": 2004,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4494:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2003",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "72.22",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2003",
+            "year": 2003,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4475:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2002",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "72.65",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2002",
+            "year": 2002,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4456:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2001",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "72.68",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2001",
+            "year": 2001,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4437:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "2000",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "71.91",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2000",
+            "year": 2000,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4418:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1999",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70.56",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1999",
+            "year": 1999,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4399:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1998",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1998",
+            "year": 1998,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4380:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1997",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70.44",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1997",
+            "year": 1997,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4361:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1996",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70.79",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1996",
+            "year": 1996,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4342:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1995",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70.92",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1995",
+            "year": 1995,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4323:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1994",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "71.07",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1994",
+            "year": 1994,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4304:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1993",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "71.19",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1993",
+            "year": 1993,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4285:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1992",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70.98",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1992",
+            "year": 1992,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4266:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1991",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70.86",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1991",
+            "year": 1991,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        },
+        {
+          "id": "v1:POP217A:108:105:3101:4247:9361",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3101
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 54,
+                "code": "VL",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Vâlcea",
+                "parentId": 12,
+                "parentCode": "RO41",
+                "parentNameRo": "Sud-Vest Oltenia",
+                "coreTerritoryId": 272
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "VL",
+            "period": "1990",
+            "unit_code": "9361",
+            "classifications": {
+              "D0": "108",
+              "D1": "105",
+              "D2": "3101"
+            }
+          },
+          "dataset_code": "POP217A",
+          "value": "70.45",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "1990",
+            "year": 1990,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani",
+            "name_en": "Years"
+          },
+          "classifications": [
+            {
+              "id": "POP217A:D0:108",
+              "type_code": "D0",
+              "type_name_ro": "Medii de rezidenta",
+              "type_name_en": "Urban and rural areas",
+              "code": "108",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP217A:D2:3101",
+              "type_code": "D2",
+              "type_name_ro": "Macroregiuni, regiuni de dezvoltare si judete",
+              "type_name_en": "Macroregions, development regions and counties",
+              "code": "3101",
+              "name_ro": "Valcea",
+              "name_en": "Valcea",
+              "sort_order": null
+            }
+          ]
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 36,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}
