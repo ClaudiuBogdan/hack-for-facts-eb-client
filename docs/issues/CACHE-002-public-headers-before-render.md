@@ -29,8 +29,7 @@ no-store`. Several hubs instead send public headers with `Vary: Accept-Encoding,
 `/entity-analytics`). Root confirmed the CACHE-001 rule when the legislation pages asked: Cloudflare answers `cf-cache-status:
 DYNAMIC` for HTML on dev-chronos, so public headers gain no speed today, and Cloudflare does not key on `Vary: Cookie`, so the day HTML
 caching is enabled a public page would serve one reader's language to another. `/legislation` and `/legislation/analytics` follow it;
-per root, `/public-institutions` and `/map` already do on their own work (the `/map` route on `dev` at `2a6e9426a` still sends public
-headers).
+per root, `/public-institutions` and `/map` already do on their own work.
 
 ## Who fixes it
 
