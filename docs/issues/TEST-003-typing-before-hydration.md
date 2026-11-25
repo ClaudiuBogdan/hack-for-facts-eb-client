@@ -55,6 +55,19 @@ shows that the fix holds under the spec's own timing.
 
 Any spec that types into a server-rendered input right after `waitForPageReady` or `waitForHydration` has the same
 gap. Those helpers wait for the network and the skeletons, not for React. Candidates include the landing page's
-search and the companies hub's search. A shared helper in `tests/utils/test-helpers.ts`, for example "wait until this
-element is hydrated", would close it for all of them. That is a shared file, so it belongs to whoever owns the test
-utilities.
+search and the companies hub's search.
+
+## Follow-ups
+
+- **A shared helper for the tests.** A shared "wait until this element is hydrated" in `tests/utils/test-helpers.ts`
+  would close the gap for every spec. Root has given it to client-entity-analytics, which owns the integration test
+  infrastructure, after its API guard.
+- **A product fix: the same gap hits readers.** The proof above is not only about tests. A reader on a slow phone
+  who types before the page hydrates gets the same silence: the text stays in the box and no search runs.
+  - **What exists now.** On `/legislation/search` the search input has no `name`, so pressing Enter before
+    hydration submits the form natively with no `q`. The entity-search box has no form at all.
+  - **Fix (1), suggested by the legislation session for later.** Give the search inputs `name="q"`. A pre-hydration
+    Enter then submits `GET …?q=…` natively, and the server renders the answer.
+  - **Fix (2), same source.** On mount, if the input's DOM value differs from its draft, take the DOM value, so text
+    typed before hydration is searched once React takes over.
+  - **Owners.** The legislation search is client-legislation's. The entity search belongs to its owner.
