@@ -1366,3 +1366,39 @@ Owner: „Ok" to the recommendation. `persoana.flow.tsx`, anchor `#bani`.
   the figures band's spending and revenue tiles link to it.
 - Still to come, in order: domains and ministries (one section, two tabs),
   borrowing year by year with the interest, the year so far, „Mai departe".
+
+### 12.7 The landing's type on the working version; the bar and the figures band (25 November 2026)
+
+Owner: polish the font as on the landing page; polish the pinned bar and the
+figures band, keeping their structure and elements.
+
+- **Round commas** (`ss03`) on the page's root, as on the landing: „808,7",
+  „țării", every „ș" and „ț".
+- **Headline:** the landing's spacing: `-0.04em` tracking, `0.06em` word
+  spacing, line height 0.96 (was `tracking-tighter`, 0.92). Weight and sizes
+  unchanged. The lede is `tracking-normal`, balanced.
+- **Mono only where it is necessary** (DESIGN.md, 22 November): no spaced
+  mono capitals are left in the working version's head, bar or band.
+  - The breadcrumb is plain 14px text, „Acasă / Buget / Național", the page's
+    own name in the foreground colour.
+  - „Sau mergi direct la" is plain text on the links' baseline; the links are
+    medium weight, no underline, the accent colour on hover (the landing's
+    shortcut row).
+  - The panel's caption („Bilanțul, 2025") is a small semibold heading.
+- **Pinned bar:** same elements (the page's name, the numbered sections, the
+  year once the hero is gone). The numbers are Inter's tabular figures in the
+  accent colour, not mono. New: the section a reader is in is marked (the
+  foreground colour over a 2px accent rule, `aria-current="location"`), from
+  one IntersectionObserver on a line a quarter of the way down the window.
+  The bar is 48px tall.
+- **Figures band:** same four tiles and the same content, drawn in the
+  prototype (`FiguresBand` in `persoana.lucru.tsx`); the shared
+  `HubFiguresBand` is not changed. The amount with a smaller, quieter unit
+  (the landing's tile); the name in sentence case, 14px medium; the notes in
+  12px, each on its own line and leading with its figure in the foreground
+  colour („18 lei din fiecare 100 cheltuiți", „7,65% din PIB", „+39% față de
+  2024"). A down arrow in the tile's corner (on hover or focus; always on
+  touch) says the tile jumps to its section, where the landing's tiles carry
+  an up-right arrow for leaving the page.
+- Not done: the count-up and the entrances (the prototype never armed them);
+  the other three versions keep their type.

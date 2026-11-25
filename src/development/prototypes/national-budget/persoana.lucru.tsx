@@ -1,17 +1,15 @@
-import { Suspense, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
+import { ArrowDown } from 'lucide-react'
 
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { SmearFilters } from '@/features/landing/components/count-up'
+import { CountUpValue, SmearFilters } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { BandRead } from '@/features/national-budget/analytics/components/analytics-parts'
 import { TOTAL_ITEMS, siteKeys } from '@/features/national-budget/home/lib/home-data'
 import { useGdp } from '@/features/national-budget/home/hooks/use-home-data'
 import { gdpSizeText, moneyText } from '@/features/national-budget/home/lib/home-format'
-import { HUB_SHORTCUT_LINK_CLASS } from '@/features/statistics/components/hub/hub-chrome'
-import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import { populationText, useHundred, useOfficialTotals } from './persoana.data'
 import { FlowSection } from './persoana.flow'
@@ -30,6 +28,12 @@ import { DataNote, SourcesLine, YearPicker, YearProvider, useInView, usePersonYe
  * lei") is not intuitive. The head shows the official
  * amounts and explains them out of 100 lei („18 din fiecare 100 cheltuiți");
  * per-resident amounts stay for the sections' descriptions, where they help.
+ *
+ * The type is the landing page's (owner, 25 November 2026): Inter's round
+ * commas on the whole page, the headline's spacing, and words set in Inter in
+ * sentence case, never as spaced mono capitals (DESIGN.md: mono only where it
+ * is necessary). The pinned bar and the figures band are drawn here in that
+ * voice, with the hubs' structure and elements kept.
  */
 
 // ────────────────────────────────────────────────────────────── the lede ──
@@ -37,7 +41,7 @@ import { DataNote, SourcesLine, YearPicker, YearProvider, useInView, usePersonYe
 function Lede() {
   const { view } = usePersonYear()
   return (
-    <p className="mt-5 max-w-[50ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
+    <p className="mt-5 max-w-[50ch] text-balance text-lg leading-relaxed tracking-normal text-muted-foreground sm:text-xl">
       Cât cheltuie statul pentru fiecare dintre cei {populationText(view.year)} de locuitori, pe ce, de unde vin banii și cât se împrumută.
     </p>
   )
@@ -60,7 +64,7 @@ function BalancePanel() {
   const max = Math.max(spent, collected + borrowed)
   return (
     <div className="border bg-background p-5 shadow-sm sm:p-6">
-      <MonoLabel className="text-primary">Bilanțul, {view.partial ? `${view.text}` : view.year}</MonoLabel>
+      <h2 className="text-sm font-semibold tracking-tight">Bilanțul, {view.partial ? view.text : view.year}</h2>
       <dl className="mt-5 space-y-5">
         <div>
           <dt className="flex items-baseline justify-between text-sm">
@@ -107,21 +111,24 @@ function BalancePanel() {
 
 // ────────────────────────────────────────────────────────────── the hero ──
 
+/** The landing's shortcut row: a plain-text label on the links' baseline, links without underlines. */
+const SHORTCUT_LINK = 'inline-flex min-h-11 items-center text-sm font-medium text-foreground transition-colors hover:text-primary sm:min-h-0'
+
 function Shortcuts() {
   const links = [
     { label: 'De unde vin și pe ce se duc', hash: 'bani' },
     { label: 'Împrumutul', hash: 'imprumut' },
   ]
   return (
-    <nav aria-label="Scurtături" className="mt-5">
-      <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">Sau mergi direct la</MonoLabel>
-      <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
+    <nav aria-label="Scurtături" className="mt-4 sm:flex sm:items-baseline sm:gap-x-4">
+      <span className="block text-sm text-muted-foreground">Sau mergi direct la</span>
+      <span className="flex flex-wrap gap-x-4 sm:gap-x-5 sm:gap-y-1.5">
         {links.map((link) => (
-          <a key={link.hash} href={`#${link.hash}`} className={HUB_SHORTCUT_LINK_CLASS}>
+          <a key={link.hash} href={`#${link.hash}`} className={SHORTCUT_LINK}>
             {link.label}
           </a>
         ))}
-        <Link to="/national-budget/analytics" search={((previous: Record<string, unknown>) => siteKeys(previous)) as never} className={HUB_SHORTCUT_LINK_CLASS}>
+        <Link to="/national-budget/analytics" search={((previous: Record<string, unknown>) => siteKeys(previous)) as never} className={SHORTCUT_LINK}>
           Analize avansate
         </Link>
       </span>
@@ -137,16 +144,21 @@ function Hero() {
         <CornerTicks />
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8 lg:pb-10">
           <div className="min-w-0 lg:col-span-7">
-            <nav aria-label="Ești aici">
-              <MonoLabel className="text-muted-foreground">
-                <Link to="/" search={((previous: Record<string, unknown>) => siteKeys(previous)) as never} className="-my-3 inline-block py-3 underline-offset-4 transition-colors hover:text-foreground hover:underline">
-                  Acasă
-                </Link>{' '}
-                / Buget / Național
-              </MonoLabel>
+            <nav aria-label="Ești aici" className="text-sm text-muted-foreground">
+              <Link to="/" search={((previous: Record<string, unknown>) => siteKeys(previous)) as never} className="-my-3 inline-block py-3 transition-colors hover:text-foreground">
+                Acasă
+              </Link>
+              <span aria-hidden="true" className="mx-2 text-muted-foreground/50">
+                /
+              </span>
+              Buget
+              <span aria-hidden="true" className="mx-2 text-muted-foreground/50">
+                /
+              </span>
+              <span className="text-foreground">Național</span>
             </nav>
             <BandRead fallback={<TitlePending />}>
-              <h1 className="mt-5 text-[clamp(2.2rem,8vw+0.6rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+              <h1 className="mt-5 text-[clamp(2.2rem,8vw+0.6rem,2.75rem)] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
                 Bugetul țării,
                 <br />
                 pe cap de locuitor
@@ -193,23 +205,60 @@ const SECTIONS = [
   { id: 'anul', label: 'Anul în curs' },
 ]
 
-/** The hubs' pinned bar: the page's name, its numbered sections, and the year once the hero's menu has scrolled away. */
+/** The section whose top has passed under the pinned bar: the one a reader is in. */
+function useActiveSection(): string | null {
+  const [active, setActive] = useState<string | null>(null)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) setActive((was) => (entry.isIntersecting ? entry.target.id : was === entry.target.id ? null : was))
+      },
+      // A thin line a quarter of the way down the window: the section crossing it is the current one.
+      { rootMargin: '-25% 0px -74% 0px' },
+    )
+    for (const section of SECTIONS) {
+      const element = document.getElementById(section.id)
+      if (element) observer.observe(element)
+    }
+    return () => observer.disconnect()
+  }, [])
+  return active
+}
+
+/**
+ * The hubs' pinned bar, in the landing's type: the page's name, its numbered
+ * sections (the numbers in Inter's tabular figures, the current section in
+ * the foreground colour over a short rule), and the year once the hero's menu
+ * has scrolled away.
+ */
 function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
+  const active = useActiveSection()
   return (
     <nav aria-label="Secțiunile paginii" className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-6 py-0">
-        <span className="hidden min-w-0 truncate py-3 text-sm font-semibold md:block">Bugetul național</span>
-        <ol className="flex min-w-0 gap-4 overflow-x-auto sm:gap-5 md:ml-auto">
-          {SECTIONS.map((section, position) => (
-            <li key={section.id} className="shrink-0">
-              <a href={`#${section.id}`} className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-                <MonoLabel className="text-primary" aria-hidden="true">
-                  {String(position + 1).padStart(2, '0')}
-                </MonoLabel>
-                {section.label}
-              </a>
-            </li>
-          ))}
+        <span className="hidden min-w-0 truncate text-sm font-semibold tracking-tight md:block">Bugetul național</span>
+        <ol className="-mx-2.5 flex min-w-0 overflow-x-auto md:ml-auto md:mr-0">
+          {SECTIONS.map((section, position) => {
+            const current = active === section.id
+            return (
+              <li key={section.id} className="shrink-0">
+                <a
+                  href={`#${section.id}`}
+                  aria-current={current ? 'location' : undefined}
+                  className={cn(
+                    'relative inline-flex h-12 items-baseline gap-1.5 px-2.5 text-sm leading-[3rem] transition-colors hover:text-foreground',
+                    'after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:bg-primary after:opacity-0 after:transition-opacity',
+                    current ? 'text-foreground after:opacity-100' : 'text-muted-foreground',
+                  )}
+                >
+                  <span aria-hidden="true" className="text-xs font-medium tabular-nums text-primary">
+                    {String(position + 1).padStart(2, '0')}
+                  </span>
+                  {section.label}
+                </a>
+              </li>
+            )
+          })}
         </ol>
         <YearPicker label={false} className={cn('shrink-0', heroVisible && 'hidden')} />
       </RuledFrame>
@@ -217,6 +266,18 @@ function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
   )
 }
 
+type Figure = { readonly key: string; readonly hash: string; readonly exact: string | null; readonly label: string; readonly notes: readonly ReactNode[] }
+
+/** A figure inside a tile's note: the number in the foreground, its words after it. */
+function Mark({ children }: { readonly children: ReactNode }) {
+  return <span className="font-medium tabular-nums text-foreground">{children}</span>
+}
+
+/**
+ * The hubs' figures band, in the landing's type: the official amount, its
+ * name in sentence case, and one or two short notes that lead with their
+ * figure. Each tile jumps to its section; the arrow says so.
+ */
 function FiguresBand() {
   const { view } = usePersonYear()
   const totals = useOfficialTotals(view)
@@ -225,35 +286,77 @@ function FiguresBand() {
   const interest = spending.lines.find((line) => line.key === 'mfin.bgc.expenditure.interest') ?? null
   const previous = view.partial ? `aceleași luni din ${view.year - 1}` : String(view.year - 1)
   const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance), 2)
-  const fact = (key: string, hash: string, exact: string | null, label: string, note: string): HubFact => ({
-    key,
-    value: exact ? Math.abs(Number(exact)) / 1e9 : 0,
-    digits: 1,
-    unit: 'mld. lei',
-    label,
-    note,
-    link: (content, className) => (
-      <a href={`#${hash}`} className={className}>
-        {content}
-      </a>
-    ),
-  })
-  const facts: HubFact[] = [
-    fact('cheltuieli', 'bani', totals.spending, 'Cheltuieli publice', `${totals.spendingChange ?? '—'} față de ${previous}`),
-    fact('venituri', 'bani', totals.revenue, 'Venituri publice', `${totals.revenueChange ?? '—'} față de ${previous}`),
-    fact('imprumut', 'imprumut', totals.deficit, 'Deficit bugetar (cash)', [`${totals.borrowed} lei din fiecare 100 cheltuiți`, deficitShare ? `${deficitShare} din PIB` : null].filter(Boolean).join(' · ')),
-    fact('dobanzi', 'imprumut', interest?.exact ?? null, 'Dobânzi la datorie', `${interest?.lei ?? '—'} lei din fiecare 100 cheltuiți · ${interest?.change ?? '—'}`),
+  const change = (text: string | null) =>
+    text ? (
+      <>
+        <Mark>{text}</Mark> față de {previous}
+      </>
+    ) : null
+  const ofHundred = (lei: number) => (
+    <>
+      <Mark>{lei === 1 ? '1 leu' : `${lei} lei`}</Mark> din fiecare 100 cheltuiți
+    </>
+  )
+  const figures: Figure[] = [
+    { key: 'cheltuieli', hash: 'bani', exact: totals.spending, label: 'Cheltuieli publice', notes: [change(totals.spendingChange)] },
+    { key: 'venituri', hash: 'bani', exact: totals.revenue, label: 'Venituri publice', notes: [change(totals.revenueChange)] },
+    {
+      key: 'deficit',
+      hash: 'imprumut',
+      exact: totals.deficit,
+      label: 'Deficit bugetar (cash)',
+      notes: [
+        ofHundred(totals.borrowed),
+        deficitShare ? (
+          <>
+            <Mark>{deficitShare}</Mark> din PIB
+          </>
+        ) : null,
+      ],
+    },
+    { key: 'dobanzi', hash: 'imprumut', exact: interest?.exact ?? null, label: 'Dobânzi la datorie', notes: [interest ? ofHundred(interest.lei) : null, change(interest?.change ?? null)] },
   ]
-  return <HubFiguresBand facts={facts} locale="ro" />
+  return (
+    <dl className="grid grid-cols-2 lg:grid-cols-4">
+      {figures.map((figure, index) => (
+        <div
+          key={figure.key}
+          className={cn('group relative flex flex-col px-5 py-6 transition-colors hover:bg-muted/50 sm:py-7', index % 2 === 1 && 'border-l', index >= 2 && 'border-t lg:border-t-0', index >= 1 && 'lg:border-l')}
+        >
+          {/* The term first, as a description list asks; the tile shows the amount above it. */}
+          <dt className="order-2 mt-2 flex flex-1 flex-col">
+            <a href={`#${figure.hash}`} className="text-sm font-medium text-foreground after:absolute after:inset-0 focus-visible:outline-hidden focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-ring">
+              {figure.label}
+            </a>
+            <span className="mt-auto block pt-4 text-xs leading-relaxed text-muted-foreground">
+              {figure.notes.filter(Boolean).map((note, line) => (
+                <span key={line} className="block">
+                  {note}
+                </span>
+              ))}
+            </span>
+            <ArrowDown
+              aria-hidden="true"
+              className="pointer-events-none absolute right-2 top-2 size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100"
+            />
+          </dt>
+          <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
+            {figure.exact ? <CountUpValue value={Math.abs(Number(figure.exact)) / 1e9} digits={1} locale="ro" /> : '—'}
+            <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">mld. lei</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  )
 }
 
 function FiguresPending() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4" aria-hidden="true">
       {[0, 1, 2, 3].map((cell) => (
-        <div key={cell} className={cn('px-5 py-7', cell > 0 && 'lg:border-l')}>
-          <div className="h-9 w-32 animate-pulse rounded bg-muted" />
-          <div className="mt-4 h-3 w-40 animate-pulse rounded bg-muted/70" />
+        <div key={cell} className={cn('px-5 py-6 sm:py-7', cell % 2 === 1 && 'border-l', cell >= 2 && 'border-t lg:border-t-0', cell >= 1 && 'lg:border-l')}>
+          <div className="h-10 w-36 animate-pulse rounded bg-muted" />
+          <div className="mt-3 h-4 w-40 animate-pulse rounded bg-muted/70" />
           <div className="mt-6 h-3 w-48 animate-pulse rounded bg-muted/60" />
         </div>
       ))}
@@ -297,7 +400,7 @@ function Page() {
 
 export function PersonWorkVariant() {
   return (
-    <div className="relative w-full overflow-x-clip bg-background">
+    <div className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']">
       <RevealStyles />
       <SmearFilters />
       <Suspense fallback={<div className="h-[36rem] animate-pulse bg-muted/30" />}>
