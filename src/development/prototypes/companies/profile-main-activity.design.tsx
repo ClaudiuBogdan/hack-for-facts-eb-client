@@ -40,7 +40,6 @@ import {
   historyAnafWithdrawnText,
   historyMovedText,
   mainAnafOnlyHeadline,
-  mainAssumptionText,
   mainBasisNotes,
   mainCounterpartText,
   mainCurrentnessNote,
@@ -172,25 +171,22 @@ function AssignedMainActivity({
   const chain = counterpart && token !== null ? { token, key: mainKeyText(counterpart), label: counterpart.label } : null
   return (
     <div className={className} data-testid="company-main-activity" data-current={current ? 'true' : 'false'}>
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="text-xs text-muted-foreground">{mainKickerText()}</span>
-        {activity.currentness === 'PENDING_REFRESH' ? (
-          <span className="rounded-sm bg-status-partial-bg px-1.5 py-0.5 text-xs font-medium text-status-partial-fg" data-testid="company-main-activity-pending">
-            {mainPendingText()}
-          </span>
-        ) : null}
-      </div>
+      {activity.currentness === 'PENDING_REFRESH' ? (
+        <span className="mb-2 inline-block rounded-sm bg-status-partial-bg px-1.5 py-0.5 text-xs font-medium text-status-partial-fg" data-testid="company-main-activity-pending">
+          {mainPendingText()}
+        </span>
+      ) : null}
       {/* The lead: the activity's name where ANAF's code has an ONRC counterpart (the full counterpart line kept for
           assistive technology and tests), else the state's own sentence. */}
       {chain ? (
-        <p className="mt-2 text-xl font-semibold leading-snug tracking-tight text-foreground">
+        <p className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-[1.75rem]">
           <span aria-hidden="true">{chain.label}</span>
           <span className="sr-only" data-testid="company-main-activity-headline">
             {headline}
           </span>
         </p>
       ) : headline ? (
-        <p className="mt-2 text-base font-semibold leading-snug text-foreground" data-testid="company-main-activity-headline">
+        <p className="text-lg font-semibold leading-snug text-foreground" data-testid="company-main-activity-headline">
           {headline}
         </p>
       ) : null}
@@ -201,8 +197,10 @@ function AssignedMainActivity({
         </p>
       ) : null}
       {/* The one sentence in the open (owner, 25 November 2026); how it was derived, and when, behind its marker. */}
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {mainAssumptionText()}{' '}
+      {/* What the lead is, said in the description (owner, 25 November 2026), then the assumption in its one sentence. */}
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        {/* „O presupunere:" left out: the label's brackets already say it (owner, 25 November 2026). */}
+        {mainKickerText()}. {t`Codul CAEN din datele fiscale ANAF, potrivit cu activitățile din ediția ONRC. Nu e o informație publicată de ONRC.`}{' '}
         <HubInfoNote label={t`Cum a fost presupusă`}>
           {chain ? (
             <p>
