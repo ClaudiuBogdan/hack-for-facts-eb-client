@@ -55,6 +55,40 @@ redirected, or is removed, and some of these need the owner's call. The closure 
 reachable from a served route; every page above shows only v3 figures or its own not-found or none state; tests cover each. Deployed to
 Chronos dev.
 
+### Also blocking closure (root, 25 November 2026)
+
+Deferred from the reviews of commit 2 (gpt-6.2-sol xhigh, round 2). Each goes into d, the commit after commit 2, and d lands before
+the public switch:
+
+1. **The supplier page infers absence from missing figures.** Three cases:
+   - a period with direct purchases (count > 0) but no named buyer or county rows: the clients and counties bands say there were
+     none;
+   - a year with purchases but no published value: the year selector labels it as empty;
+   - a contract-only supplier whose contracts cannot be read gets `noindex`, as if it had nothing.
+
+   Fix: empty texts per ranking, the selector by the purchase count, and indexing that needs a known contract history before it
+   infers absence.
+2. **The company band is one query.** A stalled winner read keeps the direct-purchase tab pending, and the other way round. Fix: one
+   query per tab, each with its own pending, failed and retry state.
+3. **The shared cutoff needs the contract block's own `buildId`** (`procurement-cutoff.ts`). On Chronos dev the abstaining contract
+   block carries the same buildId as the direct block (checked on 25 November 2026), so nothing fails today. Fix: take the contract
+   block's own buildId when it has one, and let a direct-only reader's cutoff succeed without it.
+
+### Must land before the release-2 publish (root, 25 November 2026)
+
+The owner decided on 25 November 2026 (main aa9d21c0a) that the 2018–2020 contract awards load before the public launch, in release
+2. That supersedes "launch from 2021". The contract-award pages already on dev (d32fb35b) hard-code a 2021 floor:
+- `CA_FLOOR_YEAR` and `CA_FLOOR_DAY` in `src/features/procurement/lib/contract-award-model.ts`: `caWindowOf` clips the buyer band's
+  window to 2021;
+- `PROCUREMENT_CONTRACT_AWARD_FIRST_YEAR` in `src/schemas/procurement-contract-award-winner.ts`: the winner page's `?year=` and its
+  year list start at 2021;
+- page and doc text that says "din 2021".
+
+Fix, as its own commit after d: take the floor from the served `summary.window.floor`, clip to it, and build the year list and the
+`?year=` range from it. No 2021 is left in code or page text. Tests use a served floor of 2018 as well as 2021, so a constant
+coming back fails them. The fix depends on procurement-da-api serving the floor from the data; until then `window.floor` is
+`2021-01-01`, and nothing visible changes.
+
 ## Log
 - 2026-11-25 · opened · from the companies band failure (root); listed every reachable legacy read on client `dev` 5d93c166; dev API probes
   confirmed the refusals
@@ -67,3 +101,7 @@ Chronos dev.
     winner, each part on its own.
   - d guard: a refused contract-rows read leaves the supplier page on its direct purchases, with the contracts said unreadable,
     never zero.
+- 2026-11-25 · commit 2 reviewed (two Sol rounds; 5 P1 fixed in round 1, 4 P2 fixed after round 2). Three items deferred to d and
+  recorded above as blocking closure (root)
+- 2026-11-25 · the contract-award 2021 floor added as an item that must land before the release-2 publish (owner decision
+  aa9d21c0a, root)
