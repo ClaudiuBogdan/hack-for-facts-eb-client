@@ -1,6 +1,7 @@
 import { isSeedCurrent } from '@/features/procurement/lib/disclosure-seed'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { ProcurementBuyerPage } from '@/features/procurement/components/buyer/procurement-buyer-page'
+import { parseProcurementBuyerSearch } from '@/schemas/procurement-buyer'
 
 export const Route = createLazyFileRoute('/procurement/institutions/$cui')({
   component: InstitutionRoutePage,
@@ -8,7 +9,8 @@ export const Route = createLazyFileRoute('/procurement/institutions/$cui')({
 
 function InstitutionRoutePage() {
   const { cui } = Route.useParams()
-  const search = Route.useSearch()
+  // Read through the parser again: whatever the router kept of the URL, the page sends the API only what it takes.
+  const search = parseProcurementBuyerSearch(Route.useSearch())
   // Only the year on a client-side navigation — the loader reads while rendering HTML only (see `lib/ssr/loader-blocking`).
   const initial = Route.useLoaderData()
   // D6: a seed of another publication than the one the browser read is never used (`disclosure-seed.ts`).

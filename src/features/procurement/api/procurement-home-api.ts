@@ -136,6 +136,7 @@ function ranking(blocks: readonly RawBreakdown[], label: (key: string, bucket: R
         value: bucket.valueSum,
         share: bucket.shareOfScope,
         displayKind: bucket.displayKind ?? null,
+        displayName: bucket.displayName ?? null,
       })),
   }
 }

@@ -66,3 +66,36 @@ describe('AnswerTable', () => {
     expect(buttons.some((text) => /Altele|Other/u.test(text ?? ''))).toBe(false)
   })
 })
+
+/**
+ * A direct-purchase supplier ranking (root, 24 November 2026; PROC-KR9T): a
+ * supplier's page names a sole trader by the registry's full name, so only a
+ * company's row links to it. A masked or code-only row drills like any other.
+ */
+describe('AnswerTable — direct-purchase suppliers', () => {
+  const suppliers: Ranking = {
+    dimension: 'supplier',
+    rankedBy: 'count',
+    withheld: null,
+    buckets: [
+      { key: '14837428', kind: 'top', displayKind: 'company', displayName: 'FLORARIA IRIS SRL', count: 3, valued: null, money: null, share: null },
+      { key: '30111222', kind: 'top', displayKind: 'person_masked', displayName: 'Ion P*** PFA', count: 2, valued: null, money: null, share: null },
+      { key: '30111223', kind: 'top', displayKind: 'code_only', displayName: null, count: 1, valued: null, money: null, share: null },
+      { key: '4305857', kind: 'top', displayKind: 'company', displayName: null, count: 1, valued: null, money: null, share: null },
+    ],
+  } as Ranking
+  const supplierAnswer = { ranking: { data: suppliers, isError: false, isFetching: false, retry: vi.fn() } } as unknown as Answer
+  const query = queryOf({ tip: 'directe', dupa: 'firma' })
+
+  it('links a company to its page and no masked or code-only supplier, and drills into each', () => {
+    const onChange = vi.fn()
+    render(<AnswerTable query={query} answer={supplierAnswer} namer={namer} onChange={onChange} expanded={false} onExpand={vi.fn()} />)
+    expect(screen.getByRole('link', { name: /FLORARIA IRIS SRL/u }).getAttribute('href')).toBe('/procurement/suppliers/$cui')
+    expect(screen.queryByRole('link', { name: /Ion P\*\*\* PFA/u })).toBeNull()
+    expect(screen.queryByRole('link', { name: /30111223/u })).toBeNull()
+    expect(screen.queryByRole('link', { name: /4305857/u })).toBeNull()
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: /Ion P\*\*\* PFA \(CUI 30111222\)/u }))
+    expect((onChange.mock.calls[0]![0] as Query).filters.furnizor?.values).toEqual(['30111222'])
+  })
+})

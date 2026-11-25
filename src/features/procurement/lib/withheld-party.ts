@@ -85,7 +85,24 @@ export function daSupplierLabel(shown: DaSupplierShown): string {
   return daCompanyBucketName({ key: shown.code, displayName: shown.name })
 }
 
-/** A direct-purchase supplier bucket the page may show (its label, its code, a link to it): `daSupplierShown` on the bucket. */
+/**
+ * Whether a shown direct-purchase supplier may link to its supplier and
+ * company pages (root, 24 November 2026; PROC-KR9T): a company the API names
+ * only. Those pages name a sole trader by the registry's full name, so a link
+ * from a masked name, from a code shown with no name, or from a company the
+ * API served with no name would say more than the API did. Any of those is
+ * said as plain text.
+ */
+export function isLinkedDaSupplier(shown: DaSupplierShown | null): boolean {
+  return shown?.kind === 'company' && Boolean(shown.name?.trim())
+}
+
+/** A direct-purchase supplier bucket whose row may link to the supplier's pages (`isLinkedDaSupplier`). */
+export function isLinkedDaSupplierBucket(bucket: { readonly key: string | null; readonly displayKind?: string | null; readonly displayName?: string | null }): boolean {
+  return bucket.key !== null && isLinkedDaSupplier(daSupplierShown({ displayKind: bucket.displayKind, name: bucket.displayName, code: bucket.key }))
+}
+
+/** A direct-purchase supplier bucket the page may show (its label, its code; a link only as `isLinkedDaSupplierBucket` says): `daSupplierShown` on the bucket. */
 export function isShownDaSupplierBucket(bucket: { readonly key: string | null; readonly displayKind?: string | null; readonly displayName?: string | null }): boolean {
   return bucket.key !== null && daSupplierShown({ displayKind: bucket.displayKind, name: bucket.displayName, code: bucket.key }) !== null
 }

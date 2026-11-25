@@ -153,7 +153,8 @@ export function populationGloss(tip: PopulationId): string {
 /** Said where a window reaches before the population compares with itself. */
 export function beforeComparableNote(tip: PopulationId): string {
   if (tip === 'directe') return t`Înainte de 2019, achizițiile directe din SEAP le cuprind și pe cele refuzate: numărul și banii acelor ani nu se compară cu anii de după.`
-  return t`Înainte de 2019, sursele cuprind mai puține contracte: anii aceia nu se compară cu cei de după.`
+  // The owner's published window for contracts and frameworks starts in 2021 (24 November 2026; PROC-KB0Z): the records before it exist, unpublished.
+  return t`Contractele atribuite înainte de 2021 nu sunt încă publicate: anii aceia nu se compară cu cei de după.`
 }
 
 /** The API's own verdict on an answer it gives with a gap: „degraded" said as what the gap is. */

@@ -247,7 +247,7 @@ export function AnswerTable({
             const top = row.kind === 'top' && row.key !== null
             // D6: the group of suppliers the platform does not name ranks like any row, but opens nothing.
             const drillable = top && !row.unnamed && !isNaturalPersonKey(row.key)
-            const link = drillable ? profileLink(group.axis, row.key!) : null
+            const link = drillable && !row.unlinked ? profileLink(group.axis, row.key!) : null
             const count = bucket?.count ?? null
             const lei = row.kind === 'withheld' ? row.figure : (bucket?.money ?? null)
             const residents = perResident && row.key ? (COUNTY_POPULATION.get(row.key) ?? null) : null

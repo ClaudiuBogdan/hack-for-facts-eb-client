@@ -39,13 +39,18 @@ vi.mock('../../api/procurement-direct-purchase-api', () => ({
 }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
-function html(purchase: DirectPurchase | null, context?: DpContext | null): string {
+/** The page's markup, tags and all: where its links go. */
+function markup(purchase: DirectPurchase | null, context?: DpContext | null): string {
   const id = purchase?.id ?? 'missing'
   return renderToStaticMarkup(
     <QueryClientProvider client={createTestQueryClient()}>
       <ProcurementDirectPurchasePage id={id} initialData={{ id, purchase, context }} />
     </QueryClientProvider>,
   )
+}
+
+function html(purchase: DirectPurchase | null, context?: DpContext | null): string {
+  return markup(purchase, context)
     .replace(/<!-- -->/g, '')
     .replace(/<[^>]+>/g, ' ')
     // Every white space, the no-break space between a figure and its unit included.
@@ -353,8 +358,10 @@ describe('direct acquisitions release 1 — D6', () => {
     expect(page).toContain('Furnizorul este o persoană fizică: Transparenta nu îi arată numele și nu îi adună achizițiile.')
     expect(page).not.toContain('fără CUI în SEAP')
     expect(page).not.toContain('Floraria')
-    expect(page).not.toContain('/procurement/suppliers/')
-    expect(page).not.toContain('/companies/')
+    // On the markup, where a link would be.
+    const tags = markup(mapReleasePurchase(RELEASE_CASES.naturalPerson(), NO_NAMES), null)
+    expect(tags).not.toContain('/procurement/suppliers/')
+    expect(tags).not.toContain('/companies/')
   })
 
   it('a name or code served beside the natural-person kind never reaches the page, nor does a label read for the code', () => {
@@ -371,6 +378,53 @@ describe('direct acquisitions release 1 — D6', () => {
   })
 })
 
+describe('direct acquisitions release 1 — suppliers shown masked or by code (root, 24 November 2026; PROC-KR9T)', () => {
+  const supplierHrefs = (page: string) => [...page.matchAll(/href="(\/(?:procurement\/suppliers|companies)\/[^"]*)"/gu)].map((match) => match[1])
+
+  it('a company with a party id: its name links to its procurement page and its company page, and its history is read', () => {
+    const purchase = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
+    const page = markup(purchase, dpContext())
+    expect(supplierHrefs(page)).toEqual(expect.arrayContaining(['/procurement/suppliers/14837428', '/companies/14837428']))
+    expect(html(purchase, dpContext())).toContain('Din 2019 încoace, au fost 17 achiziții directe între ele')
+  })
+
+  it('a masked person and a code alone, with a party id: said with the code, never linked; their history with the buyer is read', () => {
+    for (const supplier of [
+      { displayKind: 'person_masked', partyId: 'p-m', name: 'Ion P*** PFA', fiscalCode: '30111222' },
+      { displayKind: 'code_only', partyId: 'p-c', name: null, fiscalCode: '30111223' },
+    ]) {
+      const purchase = mapReleasePurchase(rawReleaseDetail({ supplier }), NO_NAMES)
+      const page = markup(purchase, dpContext())
+      const text = html(purchase, dpContext())
+      expect(text).toContain(supplier.name ?? 'Nume nepublicat')
+      expect(text).toContain(`CUI ${supplier.fiscalCode}`)
+      expect(supplierHrefs(page)).toEqual([])
+      expect(text).not.toContain('Vânzările firmei')
+      expect(text).toContain('Ce a mai cumpărat')
+      expect(text).toContain('Din 2019 încoace, au fost 17 achiziții directe între ele')
+    }
+  })
+
+  it('one listed by its code with no party id: said with the code, never linked, and no history between the two is read or claimed', () => {
+    for (const supplier of [
+      { displayKind: 'person_masked', partyId: null, name: 'Ion P*** PFA', fiscalCode: '30111222' },
+      { displayKind: 'code_only', partyId: null, name: null, fiscalCode: '30111223' },
+    ]) {
+      const purchase = mapReleasePurchase(rawReleaseDetail({ supplier }), NO_NAMES)
+      // Even a context handed to the page is not shown: there is none to read for it.
+      const page = markup(purchase, dpContext())
+      const text = html(purchase, dpContext())
+      expect(text).toContain(supplier.name ?? 'Nume nepublicat')
+      expect(text).toContain(`CUI ${supplier.fiscalCode}`)
+      expect(supplierHrefs(page)).toEqual([])
+      expect(text).toContain('Transparenta nu adună achizițiile acestui furnizor, așa că achiziția nu are cu ce să fie comparată.')
+      expect(text).not.toContain('Ce a mai cumpărat')
+      expect(text).not.toContain('achiziții directe între ele')
+      expect(text).not.toContain('nicio achiziție')
+    }
+  })
+})
+
 describe('a legacy record, D6 and withheld free text (flag on)', () => {
   it('a supplier not served as a company is a natural person: never named, no code, no link, no context', () => {
     const purchase = directPurchase({ supplier: { cui: null, name: null, displayName: null, displayKind: 'natural_person' } })
@@ -378,7 +432,7 @@ describe('a legacy record, D6 and withheld free text (flag on)', () => {
     expect(page).toContain('a cumpărat direct de la Persoană fizică')
     expect(page).toContain('Furnizorul este o persoană fizică')
     expect(page).not.toMatch(/Floraria|FLORARIA|9446547/u)
-    expect(page).not.toContain('/procurement/suppliers/')
+    expect(markup(purchase, null)).not.toContain('/procurement/suppliers/')
   })
 
   it('a supplier with a name but no company kind is withheld too', () => {

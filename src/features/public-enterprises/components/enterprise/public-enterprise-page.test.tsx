@@ -111,6 +111,8 @@ describe('PublicEnterprisePage', () => {
     expect(within(categories!).getAllByRole('listitem')).toHaveLength(5)
     expect(within(firms!).getAllByRole('listitem').map((item) => item.textContent?.match(/Firma \d/u)?.[0])).toEqual(['Firma 7', 'Firma 6', 'Firma 5', 'Firma 4', 'Firma 3'])
     expect(within(money).queryByText(/Firma 2 SRL/u)).toBeNull()
+    // A company the API names links to its procurement page (PROC-KR9T: only such a supplier does).
+    expect(within(firms!).getAllByRole('link')).toHaveLength(5)
     expect(within(money).getByRole('link', { name: /Toate achizițiile, pe pagina de achiziții/u })).toHaveAttribute('href', '/procurement/institutions/789401')
     expect(within(money).getByText('Nu apare ca furnizor plătit din bani publici.')).toBeInTheDocument()
   })

@@ -9,6 +9,9 @@ import type { ProcurementBuyerSearch } from '@/schemas/procurement-buyer'
 import { buyerDirectCategories, buyerProfile, buyerRecords } from '../../lib/buyer.fixture'
 import { ProcurementBuyerPage, type ProcurementBuyerInitialData } from './procurement-buyer-page'
 import { recentPeriod, yearPeriod } from '../../lib/profile-period.fixture'
+import { CaRecordsOffError, CaTotalsOffError } from '../../api/procurement-contract-award-api'
+import { mapBuyerContractAwards, mapBuyerContractAwardTotals } from '../../lib/contract-award-model'
+import { rawAwards, rawRow, rawTotals } from '../../lib/contract-award.fixture'
 
 /**
  * The buyer page's contract, as far as a unit test holds it: what the loader
@@ -56,6 +59,14 @@ vi.mock('../../api/procurement-buyer-api', () => ({
   fetchProcurementBuyerRecords: vi.fn(() => new Promise(() => undefined)),
   fetchProcurementBuyerDirectCategories: (...args: unknown[]) => directCategories(...args),
 }))
+// The contract awards (PROC-KB0Z step 1) are the browser's own read too: by default, never.
+const awardsRead = vi.hoisted(() => vi.fn())
+const totalsRead = vi.hoisted(() => vi.fn())
+vi.mock('../../api/procurement-contract-award-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../api/procurement-contract-award-api')>()),
+  fetchBuyerContractAwards: (...args: unknown[]) => awardsRead(...args),
+  fetchBuyerContractAwardTotals: (...args: unknown[]) => totalsRead(...args),
+}))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
 const INITIAL: ProcurementBuyerInitialData = { choice: 2025, profile: buyerProfile(), records: buyerRecords() }
@@ -83,6 +94,10 @@ describe('ProcurementBuyerPage', () => {
     directCategories.mockImplementation(() => new Promise(() => undefined))
     profileRead.mockReset()
     profileRead.mockImplementation(() => new Promise(() => undefined))
+    awardsRead.mockReset()
+    awardsRead.mockImplementation(() => new Promise(() => undefined))
+    totalsRead.mockReset()
+    totalsRead.mockImplementation(() => new Promise(() => undefined))
   })
 
   it('renders the profile without the direct purchases by category: the band waits for its own read, never says „none"', () => {
@@ -226,14 +241,17 @@ describe('ProcurementBuyerPage', () => {
     expect(within(document.getElementById('cele-mai-mari')!).getByText('Contracte')).toBeInTheDocument()
   })
 
-  it('says the contracts unavailable, never „none" or „only directly", while the API does not count them (legacy off)', () => {
+  it('says the contract figures not computed yet, never „none" or „only directly", while the API does not count them (PROC-KB0Z step 1)', () => {
     const unread = { count: null, valued: null, value: null, suppliers: null }
     const profile = buyerProfile({ awards: unread, frameworks: null, procedures: [], proceduresUnlisted: 0, awardSuppliers: { rankedBy: 'count', rows: [] }, partial: true })
     const html = renderToStaticMarkup(page({}, { ...INITIAL, profile, records: buyerRecords({ contracts: null }) }))
     expect(html).not.toContain('Niciun contract atribuit')
     expect(html).not.toContain('doar direct')
     expect(html).toContain('contractele atribuite nu s-au putut citi acum')
-    expect(html).toContain('Cifrele nu s-au încărcat.')
+    // Not computed yet, pointing to the contracts listed in their own band: never a failed read.
+    expect(html).toContain('Cifrele contractelor nu sunt calculate încă.')
+    expect(html).toContain('href="#contracte"')
+    expect(html).not.toContain('Cifrele nu s-au încărcat.')
     // The direct purchases stay.
     expect(html).toContain('Lucrări de amenajare parc')
   })
@@ -267,6 +285,7 @@ describe('ProcurementBuyerPage', () => {
       '#de-unde',
       '#cand',
       '#cum',
+      '#contracte',
       '#cele-mai-mari',
       '#context',
     ])
@@ -416,6 +435,24 @@ describe('ProcurementBuyerPage', () => {
     expect(screen.getAllByText(/YEARS NAME/iu).length).toBeGreaterThan(0)
   })
 
+  it('links a year-by-year seller to its page only when it was served as a company (root, 24 November 2026; PROC-KR9T)', () => {
+    const profile = buyerProfile({
+      daNames: new Map([
+        ['9813902', 'Costalex Construct SRL'],
+        ['17046193', 'Ion P*** PFA (CUI 17046193)'],
+      ]),
+      daLinked: new Set(['9813902']),
+    })
+    render(page({}, { choice: 2025, profile }))
+    const matrix = screen.getByRole('table')
+    const hrefs = within(matrix)
+      .queryAllByRole('link')
+      .map((link) => link.getAttribute('href'))
+    expect(hrefs.some((href) => href?.startsWith('/procurement/suppliers/9813902'))).toBe(true)
+    expect(hrefs.some((href) => href?.includes('17046193'))).toBe(false)
+    expect(within(matrix).getAllByText('Ion P*** PFA (CUI 17046193)').length).toBeGreaterThan(0)
+  })
+
   it('says when the last twelve months could not be read, shows the last complete year, and holds the records back', () => {
     // The profile fell back (no cutoff); the records, read for the last twelve months, are not the year's.
     render(page({}, { choice: 'recent', profile: buyerProfile({ partial: true }), records: buyerRecords() }))
@@ -430,5 +467,151 @@ describe('ProcurementBuyerPage', () => {
     expect(screen.getByRole('combobox', { name: 'Perioada' })).toHaveTextContent('2023')
     expect(screen.getByText('4364446')).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Secțiunile paginii' })).toBeNull()
+  })
+
+  describe('„Contractele atribuite" (PROC-KB0Z step 1)', () => {
+    const awards = (total = 3) =>
+      mapBuyerContractAwards(
+        rawAwards({
+          rows: [
+            rawRow(),
+            rawRow({
+              recordId: 'e_licitatie:ca:100235:550012',
+              title: 'Servicii de deszăpezire',
+              winners: [{ order: 1, displayKind: 'person_masked', fiscalCode: '30111222', name: 'Ion P*** PFA', disclosed: true }],
+            }),
+            rawRow({
+              recordId: 'e_licitatie:ca:100236:550013',
+              title: 'Furnituri de birou',
+              status: 'identity_review',
+              additive: false,
+              winners: [
+                { order: 1, displayKind: 'code_only', fiscalCode: '30111223', name: null, disclosed: false },
+                { order: 2, displayKind: 'withheld', fiscalCode: null, name: null, disclosed: null },
+              ],
+              winnerCount: 2,
+            }),
+          ],
+          records: { total, hasMore: total > 20 },
+        }),
+      )
+
+    it('reads the period’s awards in the browser and links only a winner the API names as a company', async () => {
+      awardsRead.mockResolvedValue(awards())
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Servicii de deszăpezire')).toBeInTheDocument()
+      expect(awardsRead.mock.calls[0]?.[0]).toEqual({ cui: '4364446', from: '2025-01-01', to: '2025-12-31', sort: 'awardDayDesc', page: 1 })
+      expect(band).toHaveTextContent('3 contracte atribuite în 2025, 2 cu valoare publicată; 1 în verificare, cu valoarea în afara totalurilor.')
+      const hrefs = within(band)
+        .getAllByRole('link')
+        .map((link) => link.getAttribute('href'))
+      expect(hrefs).toContain('/procurement/contract-awards/e_licitatie:ca:100234:550011')
+      expect(hrefs).toContain('/procurement/suppliers/14837428')
+      expect(hrefs.some((href) => href?.includes('30111222') || href?.includes('30111223'))).toBe(false)
+      expect(band).toHaveTextContent('Ion P*** PFA (CUI 30111222)')
+      expect(band).toHaveTextContent('CUI 30111223 (nume nepublicat), Câștigător nepublicat')
+      expect(band).toHaveTextContent('în verificare')
+    })
+
+    it('links a registry-named winner outside the direct purchases’ gate to its contract awards', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ rows: [rawRow({ winners: [{ order: 1, displayKind: 'company', fiscalCode: '14837428', name: 'CONSTRUCT TEST SRL', disclosed: false }] })] })))
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByRole('link', { name: 'CONSTRUCT TEST SRL' })).toHaveAttribute('href', '/procurement/contract-awards/winners/14837428')
+      expect(within(band).queryAllByRole('link').some((link) => link.getAttribute('href')?.includes('/procurement/suppliers/'))).toBe(false)
+    })
+
+    it('shows the money per kind with the API’s labels, never added up, from its own read of the same window', async () => {
+      awardsRead.mockResolvedValue(awards())
+      totalsRead.mockResolvedValue(mapBuyerContractAwardTotals(rawTotals().totals[0]!))
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Modificări de preț')).toBeInTheDocument()
+      expect(totalsRead.mock.calls[0]?.[0]).toEqual({ cui: '4364446', from: '2025-01-01', to: '2025-12-31' })
+      const figures = [...band.querySelectorAll('dl > div')].map((entry) => entry.textContent?.replace(/\u00a0/gu, ' '))
+      expect(figures).toEqual(['Valoare atribuită12,3 mil. lei', 'Modificări de preț−350.000 lei', 'Plafoane ale acordurilor-cadru45,0 mil. lei'])
+      expect(band).toHaveTextContent('Cele trei valori nu se adună între ele: plafonul unui acord-cadru este o valoare maximă, nu o sumă atribuită.')
+      expect(band).toHaveTextContent('Include contractele atribuite din 2025; 3 fără dată sunt lăsate deoparte.')
+    })
+
+    it('shows the window’s money on an empty first page too, and nothing beside „none" when the window has no record of any kind', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ rows: [], summary: { recordCount: 0, valuedCount: 0, identityReviewCount: 0, undatedCount: 0 }, records: { total: 0, hasMore: false } })))
+      totalsRead.mockResolvedValue(mapBuyerContractAwardTotals(rawTotals().totals[0]!))
+      render(page())
+      const band = document.getElementById('contracte')!
+      // The money build may count an award the records release has not caught up with: said, not hidden.
+      expect(await within(band).findByText('Modificări de preț')).toBeInTheDocument()
+      expect(band).toHaveTextContent('Niciun contract atribuit în 2025.')
+      cleanup()
+      const none = [
+        { valueKind: 'awarded', sumLei: '0.00', recordCount: '0' },
+        { valueKind: 'modification_change', sumLei: '0.00', recordCount: '0' },
+        { valueKind: 'framework_ceiling', sumLei: '0.00', recordCount: '0' },
+      ]
+      totalsRead.mockResolvedValue(mapBuyerContractAwardTotals(rawTotals({ totals: none }).totals[0]!))
+      render(page())
+      const empty = document.getElementById('contracte')!
+      expect(await within(empty).findByText('Niciun contract atribuit în 2025.')).toBeInTheDocument()
+      await waitFor(() => expect(totalsRead).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(empty.querySelector('.animate-pulse')).toBeNull())
+      expect(empty.querySelector('dl')).toBeNull()
+      expect(empty).not.toHaveTextContent('Sumele în lei nu sunt disponibile acum.')
+    })
+
+    it('keeps the counts and the list when the money is not served, and says only the money unavailable', async () => {
+      awardsRead.mockResolvedValue(awards())
+      totalsRead.mockRejectedValue(new CaTotalsOffError())
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Sumele în lei nu sunt disponibile acum.')).toBeInTheDocument()
+      expect(band).toHaveTextContent('Servicii de deszăpezire')
+      expect(band.querySelector('dl')).toBeNull()
+    })
+
+    it('says one award and one undated award in the singular', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ summary: { recordCount: 1, valuedCount: 1, identityReviewCount: 0, undatedCount: 1 } })))
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('1 contract atribuit în 2025, 1 cu valoare publicată.')).toBeInTheDocument()
+      expect(band).toHaveTextContent('Încă un contract al instituției nu are dată de atribuire, așa că nu apare în nicio perioadă.')
+    })
+
+    it('offers the first page for a page past the list’s end, with no pager to contradict it', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ rows: [], records: { page: 500, total: 3, hasMore: false } })))
+      render(page({ pagina: 500 }))
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Pagina aceasta nu are contracte.')).toBeInTheDocument()
+      expect(within(band).queryByText(/Pagina 500/)).toBeNull()
+      fireEvent.click(within(band).getByRole('button', { name: 'Înapoi la prima pagină' }))
+      expect(lastSearch({ pagina: 500 })).toEqual({})
+    })
+
+    it('asks nothing for a year before 2021, and says it is not published yet', () => {
+      const html = renderToStaticMarkup(page({}, { choice: 2020, profile: buyerProfile({ period: yearPeriod(2020), directPrev: null }) }))
+      expect(html).toContain('Contractele atribuite înainte de 2021 nu sunt încă publicate.')
+      expect(awardsRead).not.toHaveBeenCalled()
+    })
+
+    it('says the awards unavailable while the API serves none, never „none"', async () => {
+      awardsRead.mockRejectedValue(new CaRecordsOffError())
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Contractele atribuite nu sunt disponibile acum.')).toBeInTheDocument()
+      expect(band).not.toHaveTextContent('Niciun contract atribuit')
+    })
+
+    it('writes the order and the page to the URL, the defaults left out, and starts another order on its first page', async () => {
+      awardsRead.mockResolvedValue(awards(45))
+      render(page({ pagina: 1 }))
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Pagina 1 din 3')).toBeInTheDocument()
+      fireEvent.click(within(band).getByRole('button', { name: /Înainte/ }))
+      expect(lastSearch({ year: 2025 })).toEqual({ year: 2025, pagina: 2 })
+      fireEvent.click(within(band).getByRole('radio', { name: 'Cele mai mari' }))
+      expect(lastSearch({ pagina: 3 })).toEqual({ ordine: 'valoare' })
+      fireEvent.click(within(band).getByRole('radio', { name: 'Cele mai noi' }))
+      expect(lastSearch({ ordine: 'valoare', pagina: 2 })).toEqual({})
+    })
   })
 })

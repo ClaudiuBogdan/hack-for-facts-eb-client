@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contextGapOf, NO_NAMES, type DpNames } from './direct-purchase-model'
+import { contextGapOf, contextInputOf, NO_NAMES, type DpNames } from './direct-purchase-model'
 import { mapReleasePurchase, releaseOutcomeOf } from './direct-purchase-release'
 import { COMPANY, RELEASE_CASES, RELEASE_ID, SERVED_TEXT, rawReleaseDetail, rawReleaseItem, servedItemText } from './direct-purchase-release.fixture'
 
@@ -66,14 +66,32 @@ describe('mapReleasePurchase — the contract example rows', () => {
 describe('mapReleasePurchase — D6', () => {
   it('a company is named and keeps its code', () => {
     const purchase = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
-    expect(purchase.supplier).toEqual({ cui: '14837428', name: 'Floraria Iris SRL', identity: null, hasBudget: false })
+    expect(purchase.supplier).toEqual({ cui: '14837428', name: 'Floraria Iris SRL', identity: null, hasBudget: false, unlinked: false, listedOnly: false })
   })
 
   it('step 2: a masked person keeps the masked name and code, a code-only supplier its code, neither tidied as a firm', () => {
     const masked = mapReleasePurchase(rawReleaseDetail({ supplier: { displayKind: 'person_masked', partyId: 'p-m', name: 'Ion P*** PFA', fiscalCode: '30111222' } }), NO_NAMES)
-    expect(masked.supplier).toEqual({ cui: '30111222', name: 'Ion P*** PFA', identity: null, hasBudget: false })
+    // PROC-KR9T: shown, never linked (its pages name a sole trader in full); with a party id, its history with the buyer is read.
+    expect(masked.supplier).toEqual({ cui: '30111222', name: 'Ion P*** PFA', identity: null, hasBudget: false, unlinked: true, listedOnly: false })
+    expect(contextGapOf(masked)).toBeNull()
     const codeOnly = mapReleasePurchase(rawReleaseDetail({ supplier: { displayKind: 'code_only', partyId: 'p-c', name: null, fiscalCode: '30111223' } }), NO_NAMES)
-    expect(codeOnly.supplier).toEqual({ cui: '30111223', name: 'Nume nepublicat', identity: null, hasBudget: false })
+    expect(codeOnly.supplier).toEqual({ cui: '30111223', name: 'Nume nepublicat', identity: null, hasBudget: false, unlinked: true, listedOnly: false })
+    expect(contextGapOf(codeOnly)).toBeNull()
+  })
+
+  it('step 2b: a supplier listed by its code with no party id is shown, never linked, and has no history read with the buyer', () => {
+    for (const supplier of [
+      { displayKind: 'person_masked', partyId: null, name: 'Ion P*** PFA', fiscalCode: '30111222' },
+      { displayKind: 'code_only', partyId: null, name: null, fiscalCode: '30111223' },
+      // Not served so today; a company with no party id fails closed the same way.
+      { displayKind: 'company', partyId: null, name: 'FLORARIA IRIS SRL', fiscalCode: '14837428' },
+      { displayKind: 'code_only', partyId: ' ', name: null, fiscalCode: '30111223' },
+    ]) {
+      const purchase = mapReleasePurchase(rawReleaseDetail({ supplier }), NO_NAMES)
+      expect(purchase.supplier).toMatchObject({ cui: supplier.fiscalCode, unlinked: true, listedOnly: true })
+      expect(contextGapOf(purchase)).toBe('listed-only')
+      expect(contextInputOf(purchase)).toBeNull()
+    }
   })
 
   it('a natural person has no name, no code, and no context', () => {

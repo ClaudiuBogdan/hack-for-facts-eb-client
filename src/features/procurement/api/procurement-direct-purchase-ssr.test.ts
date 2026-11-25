@@ -14,10 +14,15 @@ vi.mock('./procurement-da-release-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./procurement-da-release-api')>()),
   fetchPurchaseForPage: release.fetchPurchaseForPage,
 }))
-vi.mock('../lib/direct-purchase-model', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../lib/direct-purchase-model')>()),
-  contextInputOf: (purchase: DirectPurchase) => ({ id: purchase.id, authorityCui: '4267117', supplierCui: '14837428', day: '2025-03-04', yearDay: '2025-03-04' }),
-}))
+vi.mock('../lib/direct-purchase-model', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../lib/direct-purchase-model')>()
+  return {
+    ...real,
+    // A stand-in purchase has a context to read; a full one (its supplier marked) goes through the real gate.
+    contextInputOf: (purchase: DirectPurchase) =>
+      'listedOnly' in purchase.supplier ? real.contextInputOf(purchase) : { id: purchase.id, authorityCui: '4267117', supplierCui: '14837428', day: '2025-03-04', yearDay: '2025-03-04' },
+  }
+})
 
 const { readProcurementDirectPurchaseForSsr } = await import('./procurement-direct-purchase-ssr')
 const { DaReleaseOffError } = await import('./procurement-da-release-api')
@@ -41,6 +46,24 @@ describe('readProcurementDirectPurchaseForSsr (D6: nothing kept in the server pr
     expect(api.fetchDirectPurchaseContext).toHaveBeenCalledTimes(2)
     // The status is not consulted: nothing is keyed by it.
     expect(status.disclosureVersion).not.toHaveBeenCalled()
+  })
+
+  it('a purchase whose supplier is listed by its code with no party id: no context read (naming step 2b, root 24 November 2026)', async () => {
+    const { mapReleasePurchase } = await import('../lib/direct-purchase-release')
+    const { NO_NAMES } = await import('../lib/direct-purchase-model')
+    const { rawReleaseDetail } = await import('../lib/direct-purchase-release.fixture')
+    for (const supplier of [
+      { displayKind: 'person_masked', partyId: null, name: 'Ion P*** PFA', fiscalCode: '30111222' },
+      { displayKind: 'code_only', partyId: null, name: null, fiscalCode: '30111223' },
+    ]) {
+      const purchase = mapReleasePurchase(rawReleaseDetail({ supplier }), NO_NAMES)
+      api.fetchDirectPurchase.mockResolvedValue(purchase)
+      release.fetchPurchaseForPage.mockResolvedValue(purchase)
+      const read = await readProcurementDirectPurchaseForSsr(purchase.id)
+      // The page has no context, said as such: never one read for the pair.
+      expect(read).toEqual({ id: purchase.id, purchase, context: null })
+    }
+    expect(api.fetchDirectPurchaseContext).not.toHaveBeenCalled()
   })
 
   it('a failed purchase read leaves the page to the browser, with no context lookup', async () => {
