@@ -42,13 +42,18 @@ export function CaveatsMarker({ notes }: { readonly notes: readonly string[] }) 
 
 // ───────────────────────────────────────────────────── ranked ──
 
-/** Ranked rows with an inline share bar (G8), how many of how many, the denominator under the list. */
+/**
+ * Ranked rows with an inline share bar (G8): the bar is the row's share of the selection, the figure printed
+ * beside it, never its length against the first row. Under the list: how many rows are shown and how many acts
+ * the selection holds outside them, then the denominator.
+ */
 export function RankedTable({
   rows,
   total,
   limit,
   caption,
   denominator,
+  truncated = false,
   onPick,
   pickedKey,
 }: {
@@ -57,11 +62,15 @@ export function RankedTable({
   readonly limit: number
   readonly caption: string
   readonly denominator: string
+  /** The API cut the list at its limit: there are values beyond `rows`, their number not known. */
+  readonly truncated?: boolean
   readonly onPick?: (key: string) => void
   readonly pickedKey?: string | null
 }) {
   const shown = rows.slice(0, limit)
-  const max = Math.max(1, ...shown.map((r) => r.n))
+  // The acts of the selection outside the rows shown: what the page left out and what the API did.
+  const outside = Math.max(0, total - shown.reduce((sum, r) => sum + r.n, 0))
+  const cut = truncated || rows.length > shown.length
   return (
     <div>
       <Table>
@@ -102,7 +111,7 @@ export function RankedTable({
               <TableCell className="hidden py-1.5 sm:table-cell">
                 <div className="flex items-center gap-2">
                   <div className="h-2 flex-1 bg-muted">
-                    <div className="h-2 bg-chart-1" style={{ width: `${(r.n / max) * 100}%` }} />
+                    <div className="h-2 bg-chart-1" style={{ width: `${(Math.min(Math.max(r.share, 0), 1) * 100).toFixed(1)}%` }} />
                   </div>
                   <span className="w-14 text-right text-xs tabular-nums text-muted-foreground">{pct(r.share)}</span>
                 </div>
@@ -112,7 +121,7 @@ export function RankedTable({
         </TableBody>
       </Table>
       <p className="mt-3 text-xs text-muted-foreground">
-        {t`Primele ${Math.min(limit, rows.length)} din ${rows.length}.`} {denominator} {t`Total: ${fmt(total)} acte.`}
+        {cut ? t`Primele ${shown.length}; alte ${fmt(outside)} acte la ceilalți.` : t`Toate cele ${shown.length}.`} {denominator} {t`Total: ${fmt(total)} acte.`}
       </p>
     </div>
   )

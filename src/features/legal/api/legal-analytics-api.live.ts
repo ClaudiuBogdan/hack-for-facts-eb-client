@@ -30,11 +30,14 @@ export type LegalAnalyticsErrorKind = 'unavailable' | 'invalid' | 'failed'
 export class LegalAnalyticsError extends Error {
   readonly kind: LegalAnalyticsErrorKind
   readonly status: number | null
-  constructor(kind: LegalAnalyticsErrorKind, message: string, status: number | null = null) {
+  /** The argument the server refused (a 400's `field`: „cursor", „from"…), when it names one. */
+  readonly field: string | null
+  constructor(kind: LegalAnalyticsErrorKind, message: string, status: number | null = null, field: string | null = null) {
     super(message)
     this.name = 'LegalAnalyticsError'
     this.kind = kind
     this.status = status
+    this.field = field
   }
 }
 
@@ -90,13 +93,13 @@ export async function fetchLegalAnalyticsLive<V extends LegalAnalyticsView>(
     logger.error('Analytics transport error', { view, message })
     throw new LegalAnalyticsError('failed', 'Analytics request failed')
   }
-  const body = parseJsonSafely(await response.text()) as { data?: unknown; meta?: unknown; message?: unknown } | null
+  const body = parseJsonSafely(await response.text()) as { data?: unknown; meta?: unknown; message?: unknown; field?: unknown } | null
   if (!response.ok) {
     const kind: LegalAnalyticsErrorKind =
       response.status === 503 ? 'unavailable' : response.status === 400 ? 'invalid' : 'failed'
     const message = typeof body?.message === 'string' ? body.message : `HTTP ${String(response.status)}`
     logger.warn('Analytics read refused', { view, status: response.status, kind })
-    throw new LegalAnalyticsError(kind, message, response.status)
+    throw new LegalAnalyticsError(kind, message, response.status, typeof body?.field === 'string' ? body.field : null)
   }
   const data = LEGAL_ANALYTICS_DATA_SCHEMAS[view].safeParse(body?.data)
   const meta = legalAnalyticsMetaSchema.safeParse(body?.meta)

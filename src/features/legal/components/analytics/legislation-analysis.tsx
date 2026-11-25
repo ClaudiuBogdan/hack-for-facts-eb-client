@@ -17,8 +17,8 @@ import type {
   LegalAnalyticsLinks,
   LegalAnalyticsSummary,
 } from '@/schemas/legal-analytics'
-import { fetchLegalAnalytics, LEGAL_ANALYTICS_UNAVAILABLE } from '../../api/legal-analytics-api'
-import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
+import { fetchLegalAnalytics, LEGAL_ANALYTICS_UNAVAILABLE, LegalAnalyticsError } from '../../api/legal-analytics-api'
+import { LEGAL_ANALYTICS_NAMING_CACHE, retryLegalAnalytics, useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import {
   FAMILY_LABEL,
   GROUP_LABEL,
@@ -50,6 +50,7 @@ import {
 import { fmt, pct } from '../../lib/analytics-format'
 import { READING_SENTENCE } from '../../lib/analytics-notes-text'
 import { labelOfKey, rankedOf, useQuestion } from '../../lib/analytics-view'
+import { everyYear } from '../../lib/analytics-years'
 import { AnalyticsCaveats, AnalyticsProblem } from './analytics-notes'
 import { CrossGrid, RankedTable, StackedYears } from './analytics-charts'
 
@@ -356,6 +357,7 @@ function RankAnswer({
         limit={vedere === 'emitent' ? 50 : 30}
         caption={LENS_LABEL[vedere]}
         denominator={COVERAGE[vedere]()}
+        truncated={b.truncated}
         pickedKey={vedere === 'felul' ? q.felul : vedere === 'emitent' ? q.emitent : null}
         onPick={(key) => {
           if (vedere === 'felul') move({ ...q, felul: q.felul === key ? null : key })
@@ -378,7 +380,11 @@ function SeriesAnswer({ q, base }: { readonly q: Question; readonly base: LegalA
   if (!s) return <div className="h-64 animate-pulse bg-muted/40" aria-hidden="true" />
   return (
     <StackedYears
-      years={s.years.map((y) => ({ year: y.year, values: y.acts }))}
+      // a column for every calendar year of the period: the API leaves out a year without acts
+      years={everyYear(
+        s.years.map((y) => ({ year: y.year, values: y.acts })),
+        s.keys.length + 1,
+      )}
       labels={[...s.keys.map((k) => labelOfKey(s.lens, k)), 'altele']}
       caption={t`acte pe an, după ${LENS_LABEL[vedere].toLowerCase()}`}
       footnote={s.unknownYear ? t`${fmt(s.unknownYear)} acte fără an nu sunt pe grafic.` : undefined}
@@ -587,6 +593,9 @@ export function LinkCounts({ links }: { readonly links: LegalAnalyticsLinks }) {
   )
 }
 
+/** The paged acts lists' keys start here: one list is mounted at a time, and none outlives its view. */
+const PAGED_ACTS_KEY = ['legal', 'analytics', 'acts', 'paged'] as const
+
 /** The acts of the selection, ordered, each opening its act; more on demand. */
 function ActsBand({
   q,
@@ -598,14 +607,26 @@ function ActsBand({
   readonly base: LegalAnalyticsArgs
 }) {
   const args = { ...base, order: API_ORDER[q.ordine] }
+  const client = useQueryClient()
   const pages = useInfiniteQuery({
-    queryKey: ['legal', 'analytics', 'acts', args] as const,
+    // A key of its own („paged"): the acts view read once, with a limit, is another query (the front door's).
+    queryKey: [...PAGED_ACTS_KEY, args] as const,
     queryFn: ({ pageParam, signal }) =>
       fetchLegalAnalytics('acts', pageParam === null ? args : { ...args, cursor: pageParam }, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.data.next,
-    staleTime: 60 * 1000,
+    // The view names acts: nothing of it is kept (see the hook).
+    ...LEGAL_ANALYTICS_NAMING_CACHE,
+    retry: retryLegalAnalytics,
   })
+  // A next page that failed leaves the pages already read on screen. One failure is not a failure of the list:
+  // the server refuses a cursor issued by an earlier layer (400, field „cursor") once a new layer is published,
+  // and then the list starts again from its first page, under the new layer.
+  const nextFailed = pages.isFetchNextPageError
+  const cursorRefused = nextFailed && pages.error instanceof LegalAnalyticsError && pages.error.kind === 'invalid' && pages.error.field === 'cursor'
+  useEffect(() => {
+    if (cursorRefused) void client.resetQueries({ queryKey: PAGED_ACTS_KEY })
+  }, [cursorRefused, client])
   const first = pages.data?.pages[0]?.data
   const rows = pages.data?.pages.flatMap((p) => p.data.rows) ?? []
   const hidden = first?.hidden ?? 0
@@ -630,7 +651,7 @@ function ActsBand({
           ]}
         />
       </div>
-      {pages.error ? (
+      {pages.error && !pages.data ? (
         <AnalyticsProblem error={pages.error} />
       ) : (
         <Table className="mt-6">
@@ -685,7 +706,8 @@ function ActsBand({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <p>
           {first ? t`${fmt(rows.length)} din ${fmt(first.total)} acte.` : null}{' '}
-          {hidden ? t`${fmt(hidden)} acte ale selecției nu pot fi afișate (restricționate după calcul).` : null}
+          {hidden ? t`${fmt(hidden)} acte ale selecției nu pot fi afișate (restricționate după calcul).` : null}{' '}
+          {nextFailed && !cursorRefused ? <span role="status">{t`Următoarele acte nu s-au încărcat. Cele de mai sus rămân; încearcă din nou.`}</span> : null}
         </p>
         {pages.hasNextPage ? (
           <button
