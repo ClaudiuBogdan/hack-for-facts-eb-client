@@ -223,7 +223,7 @@ function SectionPending() {
 const SOURCE_LINK = 'font-medium text-foreground underline-offset-4 hover:underline'
 
 /** The head's few words of sources: the bulletins, ANAF, the population. */
-export function SourcesLine({ className }: { readonly className?: string }) {
+export function SourcesLine({ className, details = true }: { readonly className?: string; readonly details?: boolean }) {
   const { view } = usePersonYear()
   const catalog = useNationalCatalog()
   const newest = catalog.execution.coverage.lastMonth
@@ -242,7 +242,24 @@ export function SourcesLine({ className }: { readonly className?: string }) {
       <a href="http://statistici.insse.ro:8077/tempo-online/#/pages/tables/insse-table" target="_blank" rel="noreferrer" className={SOURCE_LINK}>
         INS
       </a>
-      {people ? ` (${people} locuitori la 1 ianuarie ${view.year})` : null}. Date până în {monthName(newest)} {newest.slice(0, 4)}.
+      {details ? (
+        <>
+          {people ? ` (${people} locuitori la 1 ianuarie ${view.year})` : null}. Date până în {monthName(newest)} {newest.slice(0, 4)}.
+        </>
+      ) : null}
+    </p>
+  )
+}
+
+/** The population the page divides by and how recent the bulletins are: said once, at the page's foot (owner, 25 November 2026). */
+export function DataNote({ className }: { readonly className?: string }) {
+  const { view } = usePersonYear()
+  const catalog = useNationalCatalog()
+  const newest = catalog.execution.coverage.lastMonth
+  const people = populationText(view.year)
+  return (
+    <p className={cn('text-sm text-muted-foreground', className)}>
+      {people ? `${people} locuitori la 1 ianuarie ${view.year}, populația rezidentă după INS. ` : null}Date până în {monthName(newest)} {newest.slice(0, 4)}.
     </p>
   )
 }

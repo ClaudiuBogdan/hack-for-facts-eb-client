@@ -15,7 +15,7 @@ import { HubFiguresBand, type HubFact } from '@/features/statistics/components/h
 import { cn } from '@/lib/utils'
 import { populationText, useHundred, useOfficialTotals } from './persoana.data'
 import { BORROWED_FILL } from './persoana.sections'
-import { SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
+import { DataNote, SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
 
 /**
  * The working version (owner, 25 November 2026): the page we build on, one
@@ -155,7 +155,7 @@ function Hero() {
             </BandRead>
           </div>
           <BandRead fallback={null} quiet={null}>
-            <SourcesLine className="min-w-0 lg:absolute lg:inset-x-8 lg:bottom-6" />
+            <SourcesLine details={false} className="min-w-0 lg:absolute lg:inset-x-8 lg:bottom-6" />
           </BandRead>
         </div>
         <span className="absolute inset-x-0 top-full z-30 mt-px">
@@ -276,6 +276,14 @@ function Page() {
       <section className="border-b">
         <RuledFrame className="py-16 text-sm text-muted-foreground">
           Secțiunile urmează, din cele trei versiuni și din notele tale: pe ce se duc banii, de unde vin, pe domenii, cine îi cheltuie, împrumutul, anul în curs, mai departe.
+        </RuledFrame>
+      </section>
+      {/* The population and the data's date close the page, above the site footer. */}
+      <section className="border-b" aria-label="Despre date">
+        <RuledFrame className="py-6">
+          <BandRead fallback={null} quiet={null}>
+            <DataNote />
+          </BandRead>
         </RuledFrame>
       </section>
     </>
