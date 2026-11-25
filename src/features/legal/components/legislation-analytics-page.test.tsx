@@ -1,110 +1,106 @@
 import type { ReactNode } from 'react'
-import { render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overview'
 import { LegislationAnalyticsPage } from './legislation-analytics-page'
 
+const navigateMock = vi.fn()
+let search: Record<string, unknown> = {}
+
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    to,
-    ...props
-  }: {
-    readonly children: ReactNode
-    readonly to: string
-  }) => (
+  Link: ({ children, to, ...props }: { readonly children: ReactNode; readonly to: string }) => (
     <a href={to} {...props}>
       {children}
     </a>
   ),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigateMock,
+  useSearch: () => search,
 }))
 
 vi.mock('../hooks/use-legislation', () => ({
-  useLegislationOverview: vi.fn(),
-  useLegislationStatusCounts: vi.fn(),
-  useLegislationFreshness: vi.fn(),
+  // counts the server would give: the analysis page must show none of them
+  useLegislationStatusCounts: vi.fn(() => ({ data: { total: 227_202, inVigoare: 196_121, abrogat: 22_767 }, isError: false })),
+  useLegislationFreshness: vi.fn(() => ({ data: undefined, isError: false })),
 }))
 
-import {
-  useLegislationOverview,
-  useLegislationFreshness,
-  useLegislationStatusCounts,
-} from '../hooks/use-legislation'
-import { legislationFreshnessFixture } from '../mocks/fixtures/legislation-freshness'
-import { legislationStatusCountsFixture } from '../mocks/fixtures/legislation-status-counts'
-
+/**
+ * The analysis page over the mock lane, which serves real answers of the server's usecase over a local copy of
+ * the insights layer (the fixture's header): the question, the figures computed from the counts, the Felul
+ * ranking with the reading sentence, the soon lenses and the acts.
+ */
 describe('LegislationAnalyticsPage', () => {
   beforeEach(() => {
-    vi.mocked(useLegislationOverview).mockReturnValue({
-      data: legislationOverviewFixture,
-      isLoading: false,
-      isError: false,
-    } as unknown as ReturnType<typeof useLegislationOverview>)
-    vi.mocked(useLegislationStatusCounts).mockReturnValue({
-      data: legislationStatusCountsFixture,
-      isError: false,
-    } as unknown as ReturnType<typeof useLegislationStatusCounts>)
-  vi.mocked(useLegislationFreshness).mockReturnValue({
-    data: legislationFreshnessFixture,
-    isError: false,
-  } as unknown as ReturnType<typeof useLegislationFreshness>)
-  })
-
-  it('renders the headline counts and the most-cited acts', () => {
-    render(<LegislationAnalyticsPage />)
-
-    expect(screen.getByText('Acte normative')).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', {
-        name: 'Actele pe care se sprijină restul legislației',
-      }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('Legea nr. 227/2015')).toBeInTheDocument()
+    navigateMock.mockReset()
+    search = {}
   })
 
   it('marks Analiză as the current tab', () => {
     render(<LegislationAnalyticsPage />)
-
-    expect(screen.getByText('Analiză')).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByText('Prezentare')).not.toHaveAttribute('aria-current')
+    const nav = screen.getByRole('navigation', { name: 'Paginile legislației' })
+    expect(within(nav).getByText('Analiză')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Analiza legislației')
+    expect(screen.getByRole('link', { name: 'Legislație' })).toHaveAttribute('href', '/legislation')
   })
 
-  it('repeats the Constitutional Court caveat on this route', () => {
+  it('asks the question in the headline and answers it with counts and computed shares', async () => {
     render(<LegislationAnalyticsPage />)
-
-    // This route is independently linkable and carries the strongest numeric
-    // claims in the module — the caveat may not live only on the landing page.
-    expect(
-      screen.getByText(/nu modifică statutul actelor pe care le vizează/),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('acte în selecție')).toBeInTheDocument()
+    expect(screen.getByText('stabilesc reguli (încadrate ferm)')).toBeInTheDocument()
+    // the shares the page computes from the fixture's counts: 18.661 and 6.307 of 227.202
+    expect(screen.getByText('8,2% încadrare nesigură · 2,8% neîncadrate · din 227.202')).toBeInTheDocument()
+    // 72.995 rule-making acts of 227.202: 32,1%, in its own tile (the figure's readable copy)
+    const tile = screen.getByText('stabilesc reguli (încadrate ferm)').closest('div')
+    expect(tile).not.toBeNull()
+    expect(within(tile as HTMLElement).getByText('32,1')).toBeInTheDocument()
+    expect(await screen.findByText(/Citite independent 385 de acte: 94%/, { selector: 'p.text-foreground' })).toBeInTheDocument()
   })
 
-  it('renders a skeleton while loading', () => {
-    vi.mocked(useLegislationOverview).mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      isError: false,
-    } as unknown as ReturnType<typeof useLegislationOverview>)
-
+  it('says „în curând" for the lenses the first build does not serve', async () => {
+    search = { vedere: 'tema' }
     render(<LegislationAnalyticsPage />)
-
-    expect(
-      screen.getByLabelText('Se încarcă analiza legislației'),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/Temele .* În curând\./)).toBeInTheDocument()
   })
 
-  it('renders an error message when the overview fails', () => {
-    vi.mocked(useLegislationOverview).mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      isError: true,
-    } as unknown as ReturnType<typeof useLegislationOverview>)
-
+  it('lists the acts of the selection, naming a weak placement as uncertain', async () => {
     render(<LegislationAnalyticsPage />)
+    const acts = await screen.findByRole('region', { name: 'Actele din selecție' })
+    // HG nr. 1359/2001 is a weak placement in the fixture: uncertain, with the rules' guess under it
+    const link = await within(acts).findByRole('link', { name: 'HG nr. 1359/2001' })
+    const row = link.closest('tr')
+    expect(row).not.toBeNull()
+    expect(within(row as HTMLElement).getByText('încadrare nesigură')).toBeInTheDocument()
+    expect(within(row as HTMLElement).getByText('probabil: reguli noi')).toBeInTheDocument()
+  })
 
-    expect(
-      screen.getByText('Nu am putut încărca datele despre legislație.'),
-    ).toBeInTheDocument()
+  it('reads an unrestricted period as „din orice an", and family and issuer as two phrases', async () => {
+    search = { familie: 'guvern', emitent: 'Guvernul' }
+    render(<LegislationAnalyticsPage />)
+    const headline = await screen.findByRole('heading', { level: 2, name: /^Acte / })
+    expect(headline).toHaveTextContent('din orice an')
+    fireEvent.click(within(headline).getByRole('button', { name: 'Scoate filtrul de la Guvernul' }))
+    const call = navigateMock.mock.calls[0]?.[0] as { search: (p: Record<string, unknown>) => Record<string, unknown> }
+    // the issuer goes, the family stays
+    expect(call.search({ familie: 'guvern', emitent: 'Guvernul' })).toEqual({ familie: 'guvern' })
+  })
+
+  it('shows no in-force or repealed counts, even when the status read answers', async () => {
+    render(<LegislationAnalyticsPage />)
+    expect(await screen.findByText('acte în selecție')).toBeInTheDocument()
+    expect(screen.queryByText(/196\.121/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/22\.767/)).not.toBeInTheDocument()
+    expect(screen.queryByText('în vigoare')).not.toBeInTheDocument()
+  })
+
+  it('says under mock mode that the figures are a fixture', async () => {
+    render(<LegislationAnalyticsPage />)
+    expect(await screen.findByText('Date demonstrative (mock)')).toBeInTheDocument()
+  })
+
+  it('writes a picked Felul group into the address', async () => {
+    render(<LegislationAnalyticsPage />)
+    const row = await screen.findByRole('button', { name: 'stabilesc reguli' })
+    fireEvent.click(row)
+    expect(navigateMock).toHaveBeenCalled()
+    const call = navigateMock.mock.calls[0]?.[0] as { search: (p: Record<string, unknown>) => Record<string, unknown> }
+    expect(call.search({})).toEqual({ felul: 'rule-making' })
   })
 })
