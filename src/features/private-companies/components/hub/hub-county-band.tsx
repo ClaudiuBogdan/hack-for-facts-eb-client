@@ -18,7 +18,7 @@ export function HubCountyBand({ layer, legend, countyLink }: { readonly layer: H
         <CompanyCountyMap key={legend} layer={layer} legend={legend} countyLink={countyLink} activeCode={activeCounty} onActiveChange={setActiveCounty} />
       </div>
       <div className="lg:col-span-5 lg:col-start-8" data-reveal>
-        <CompanyCountyRank layer={layer} countyLink={countyLink} activeCode={activeCounty} onActiveChange={setActiveCounty} />
+        <CompanyCountyRank layer={layer} countyLink={countyLink} phoneEdge={3} activeCode={activeCounty} onActiveChange={setActiveCounty} />
       </div>
     </div>
   )

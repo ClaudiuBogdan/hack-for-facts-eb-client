@@ -269,7 +269,7 @@ export function ChallengeEntitySubordinatesSection({
 
             {showAllSearch ? (
               <Button asChild variant="outline" className="rounded-full">
-                <Link to="/entity-analytics" search={showAllSearch as Record<string, unknown>}>
+                <Link to="/public-institutions" search={showAllSearch as Record<string, unknown>}>
                   {showAllLabel}
                 </Link>
               </Button>

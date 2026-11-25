@@ -1,6 +1,5 @@
 import { useId, type ReactNode } from 'react'
 import { plural, t } from '@lingui/core/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { ChartGridLines, ChartPeriodAxis, ChartTooltip, ChartValueTicks } from '@/features/statistics/components/charts/period-chart-parts'
 import { useChartReading } from '@/features/statistics/hooks/use-chart-reading'
 import { CHART_HEIGHT, CHART_PLOT_CLASS, CHART_WIDTH, niceScale, yearTickIndices } from '@/features/statistics/lib/period-chart'
@@ -107,7 +106,8 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
 
   return (
     <figure data-testid="company-hub-economy-chart">
-      <MonoLabel className="block text-muted-foreground">{axis.label}</MonoLabel>
+      {/* The unit as words, in the page's sans („mld. lei"): mono stays for the ticks' figures. */}
+      <span className="block text-xs text-muted-foreground">{axis.label}</span>
       <div className="mt-3 pl-14">
         <div
           ref={plotRef}
@@ -120,7 +120,7 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
           aria-valuemax={count - 1}
           aria-valuenow={shown}
           aria-valuetext={spoken(shown)}
-          className={cn(CHART_PLOT_CLASS, 'h-56 sm:h-64 lg:h-[22.5rem]')}
+          className={cn(CHART_PLOT_CLASS, 'h-56 sm:h-64 lg:h-72')}
           {...handlers}
         >
           <span id={hintId} className="sr-only">
@@ -132,12 +132,12 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
           {/* The publishers: the Ministry of Finance's years, then ANAF's, at the top of their bars. */}
           {breakAt > 0 ? (
             <>
-              <MonoLabel className="pointer-events-none absolute top-0 hidden -translate-x-full whitespace-nowrap pr-2 text-[10px] text-muted-foreground sm:block" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
+              <span className="pointer-events-none absolute top-0 hidden -translate-x-full whitespace-nowrap pr-2 text-xs leading-none text-muted-foreground sm:block" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
                 {t`Ministerul Finanțelor`}
-              </MonoLabel>
-              <MonoLabel className="pointer-events-none absolute top-0 whitespace-nowrap pl-2 text-[10px] text-muted-foreground" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
+              </span>
+              <span className="pointer-events-none absolute top-0 whitespace-nowrap pl-2 text-xs leading-none text-muted-foreground" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
                 {t`ANAF`}
-              </MonoLabel>
+              </span>
             </>
           ) : null}
 
@@ -192,10 +192,10 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
 
           {reading && reading.year ? (
             <ChartTooltip tooltipRef={tooltipRef} left={tooltipLeft}>
-              <MonoLabel className="block text-muted-foreground">
+              <span className="block text-xs tabular-nums text-muted-foreground">
                 {reading.year.year}
                 {reading.year.year === partial ? ` · ${t`posibil incomplet`}` : ''}
-              </MonoLabel>
+              </span>
               {reading.value === null ? (
                 <p className="mt-1.5 text-sm text-muted-foreground">{reading.year[measure].gap ? gapReasonLabel(reading.year[measure].gap) : t`Nicio valoare raportată`}</p>
               ) : (
@@ -280,7 +280,7 @@ export function HubEconomySpan({
     // The unit under the figure: two figures and an arrow fit a phone and the band's narrow column.
     return (
       <div className="min-w-0">
-        <MonoLabel className="block text-muted-foreground">{year.year}</MonoLabel>
+        <span className="block text-xs tabular-nums text-muted-foreground">{year.year}</span>
         <p className="mt-1 text-xl font-semibold tabular-nums tracking-tight text-foreground sm:text-2xl lg:text-xl xl:text-3xl">{value.value}</p>
         <p className="text-sm text-muted-foreground">{value.unit}</p>
       </div>

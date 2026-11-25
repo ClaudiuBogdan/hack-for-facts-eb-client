@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseFiguresCsv } from '../api/budget-map'
-import { asPrinted, compactParts, formatAmount, formatPercent, joinParts } from './budget-map-format'
-import { coverageOf, measureById, measureValues, percentileEdges, positionOnScale, type BudgetFigures } from './budget-map-measures'
+import { asPrinted, compactParts, formatAmount, formatPercent, joinParts, percentAsPrinted } from './budget-map-format'
+import { coverageOf, measureById, measureValues, percentileEdges, percentileScale, positionOnScale, type BudgetFigures } from './budget-map-measures'
 
 const NB = ' '
 
@@ -120,3 +120,56 @@ describe('classified as printed', () => {
     expect(income.classOf(13_952_229)).toBe(1)
   })
 })
+
+describe('a percentile scale in another unit', () => {
+  const RAMP = ['#1', '#2', '#3', '#4', '#5']
+
+  it('cuts at the totals\' percentiles on the edges as that unit prints them', () => {
+    // Whole lei per inhabitant: 100 values, 1.4 … 100.4.
+    const values = Array.from({ length: 100 }, (_, i) => i + 1.4)
+    const scale = percentileScale(values, RAMP, Math.round)
+    expect(scale.classes.map((item) => item.from)).toEqual([null, 51, 76, 91, 98])
+    expect(scale.classes.map((item) => item.color)).toEqual(RAMP)
+    // 50.6 prints as 51, so it is coloured with the class that starts at 51.
+    expect(scale.classOf(50.6)).toBe(1)
+    expect(scale.classOf(50.4)).toBe(0)
+    expect(scale.classOf(null)).toBeNull()
+  })
+
+  it('is the totals\' own scale when the unit is theirs', () => {
+    const values = [1_200_000, 14_000_000, 2_500_000_000, null, 480_000, 96_000_000]
+    const own = measureById('income').scale(values)
+    const built = percentileScale(values, measureById('income').ramp, asPrinted)
+    expect(built.classes).toEqual(own.classes)
+    for (const value of values) expect(built.classOf(value)).toBe(own.classOf(value))
+  })
+
+  it('has no classes without figures', () => {
+    expect(percentileScale([null, null], RAMP, Math.round).classes).toEqual([])
+  })
+})
+
+describe('a figure half-way between two printed values', () => {
+  it('rounds as the printed figure does, though binary division lands just below the half', () => {
+    // 0.95 / 0.1 is 9.4999… in binary; Intl prints 0.95 as „+1%".
+    const share = ((10_000 - 9_905) / 10_000) * 100
+    expect(formatPercent(share, 'ro')).toBe('+1%')
+    expect(percentAsPrinted(share)).toBe(1)
+    expect(percentAsPrinted(-2.95)).toBeCloseTo(-3, 10)
+    expect(formatPercent(-2.95, 'ro')).toBe('−3%')
+    expect(asPrinted(14_250_000)).toBe(14_300_000)
+    expect(joinParts(compactParts(14_250_000, 'ro'), 'ro')).toBe('14,3\u00a0mil.')
+  })
+
+  it('and just below a half-way value, rounds down as the printed figure does', () => {
+    // 10,000 lei in, 9,705 out: 2.9499999999999997%, printed „+2,9%" — the class below 3, not the one from 3.
+    const share = ((10_000 - 9_705) / 10_000) * 100
+    expect(formatPercent(share, 'ro')).toBe('+2,9%')
+    expect(percentAsPrinted(share)).toBe(2.9)
+    expect(formatAmount(10_049_999_999.99, 'ro')).toBe('10\u00a0mld. lei')
+    expect(asPrinted(10_049_999_999.99)).toBe(10_000_000_000)
+    expect(asPrinted(-412.36)).toBe(-412.4)
+    expect(asPrinted(999.96)).toBe(1000)
+  })
+})
+

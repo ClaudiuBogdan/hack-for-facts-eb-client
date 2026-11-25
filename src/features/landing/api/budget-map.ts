@@ -33,6 +33,20 @@ export interface BudgetMapFigures {
 }
 
 /**
+ * What the figures are counted over; the defaults are the landing's map.
+ *
+ * - `per_capita`: lei per inhabitant, divided by the server with its own
+ *   population series.
+ * - `County`: one row per county code, summing every territorial executive in
+ *   it — the primării and the county council (in București, the sectors and
+ *   the capital's own budget).
+ */
+export interface BudgetFiguresOptions {
+  readonly normalization?: 'total' | 'per_capita'
+  readonly granularity?: 'UAT' | 'County'
+}
+
+/**
  * The series' timestamps, fixed: the schema stamps `createdAt`/`updatedAt` with
  * the current time, the server keeps them, and its grouped-series cache hashes
  * the whole series — so a fresh stamp made every landing visitor miss it
@@ -55,7 +69,7 @@ const STABLE_STAMP = '2026-01-01T00:00:00.000Z'
  * 3, 57, 58: https://legislatie.just.ro/Public/DetaliiDocumentAfis/257231
  * Method, legal basis and checks: `docs/budget-balance-methodology.md`.
  */
-export async function fetchBudgetFigures(year: string): Promise<BudgetMapFigures> {
+export async function fetchBudgetFigures(year: string, { normalization = 'total', granularity = 'UAT' }: BudgetFiguresOptions = {}): Promise<BudgetMapFigures> {
   const series = (id: 'income' | 'expenses', account: 'vn' | 'ch') =>
     SeriesConfigurationSchema.parse({
       id,
@@ -68,13 +82,13 @@ export async function fetchBudgetFigures(year: string): Promise<BudgetMapFigures
         account_category: account,
         report_type: REPORT_TYPE,
         is_territorial_executive: true,
-        normalization: 'total',
+        normalization,
         currency: 'RON',
         inflation_adjusted: false,
         show_period_growth: false,
       } satisfies AnalyticsFilterType,
     }) as SeriesConfiguration
-  const response = await fetchGroupedSeriesData({ granularity: 'UAT', series: [series('income', 'vn'), series('expenses', 'ch')] })
+  const response = await fetchGroupedSeriesData({ granularity, series: [series('income', 'vn'), series('expenses', 'ch')] })
   const outsideMap = Math.max(
     0,
     ...(response.warnings ?? []).map((warning) => {

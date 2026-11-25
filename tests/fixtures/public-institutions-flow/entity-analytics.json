@@ -1,0 +1,133 @@
+{
+  "data": {
+    "entityAnalytics": {
+      "nodes": [
+        {
+          "entity_cui": "4267117",
+          "entity_name": "MUNICIPIUL BUCUREȘTI",
+          "entity_type": "admin_city_hall",
+          "uat_id": "179132",
+          "county_code": "B",
+          "county_name": "București",
+          "population": 1883425,
+          "amount": 15234567890,
+          "total_amount": 15234567890,
+          "per_capita_amount": 8088.45
+        },
+        {
+          "entity_cui": "4305857",
+          "entity_name": "MUNICIPIUL CLUJ-NAPOCA",
+          "entity_type": "admin_city_hall",
+          "uat_id": "54984",
+          "county_code": "CJ",
+          "county_name": "Cluj",
+          "population": 324576,
+          "amount": 2567890123,
+          "total_amount": 2567890123,
+          "per_capita_amount": 7911.23
+        },
+        {
+          "entity_cui": "4270740",
+          "entity_name": "MUNICIPIUL SIBIU",
+          "entity_type": "admin_city_hall",
+          "uat_id": "143619",
+          "county_code": "SB",
+          "county_name": "Sibiu",
+          "population": 169611,
+          "amount": 1234567890,
+          "total_amount": 1234567890,
+          "per_capita_amount": 7278.45
+        },
+        {
+          "entity_cui": "4283398",
+          "entity_name": "MUNICIPIUL TIMIȘOARA",
+          "entity_type": "admin_city_hall",
+          "uat_id": "155241",
+          "county_code": "TM",
+          "county_name": "Timiș",
+          "population": 319279,
+          "amount": 2123456789,
+          "total_amount": 2123456789,
+          "per_capita_amount": 6650.12
+        },
+        {
+          "entity_cui": "4314341",
+          "entity_name": "MUNICIPIUL IAȘI",
+          "entity_type": "admin_city_hall",
+          "uat_id": "96416",
+          "county_code": "IS",
+          "county_name": "Iași",
+          "population": 382484,
+          "amount": 2456789012,
+          "total_amount": 2456789012,
+          "per_capita_amount": 6423.67
+        },
+        {
+          "entity_cui": "4316252",
+          "entity_name": "MUNICIPIUL BRAȘOV",
+          "entity_type": "admin_city_hall",
+          "uat_id": "40198",
+          "county_code": "BV",
+          "county_name": "Brașov",
+          "population": 253200,
+          "amount": 1567890123,
+          "total_amount": 1567890123,
+          "per_capita_amount": 6193.09
+        },
+        {
+          "entity_cui": "4296390",
+          "entity_name": "MUNICIPIUL CONSTANȚA",
+          "entity_type": "admin_city_hall",
+          "uat_id": "60452",
+          "county_code": "CT",
+          "county_name": "Constanța",
+          "population": 283872,
+          "amount": 1678901234,
+          "total_amount": 1678901234,
+          "per_capita_amount": 5914.56
+        },
+        {
+          "entity_cui": "4344372",
+          "entity_name": "MUNICIPIUL CRAIOVA",
+          "entity_type": "admin_city_hall",
+          "uat_id": "66937",
+          "county_code": "DJ",
+          "county_name": "Dolj",
+          "population": 269506,
+          "amount": 1456789012,
+          "total_amount": 1456789012,
+          "per_capita_amount": 5405.78
+        },
+        {
+          "entity_cui": "4340418",
+          "entity_name": "MUNICIPIUL GALAȚI",
+          "entity_type": "admin_city_hall",
+          "uat_id": "80680",
+          "county_code": "GL",
+          "county_name": "Galați",
+          "population": 249432,
+          "amount": 1345678901,
+          "total_amount": 1345678901,
+          "per_capita_amount": 5395.23
+        },
+        {
+          "entity_cui": "4340508",
+          "entity_name": "MUNICIPIUL PLOIEȘTI",
+          "entity_type": "admin_city_hall",
+          "uat_id": "128699",
+          "county_code": "PH",
+          "county_name": "Prahova",
+          "population": 209945,
+          "amount": 1123456789,
+          "total_amount": 1123456789,
+          "per_capita_amount": 5351.12
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 3181,
+        "hasNextPage": true,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

@@ -37,8 +37,6 @@ export function MapLegend({
   readonly locale: NumberLocale
 }) {
   const { i18n } = useLingui()
-  const classes = scale?.classes ?? []
-  const at = scale && classes.length > 0 ? positionOnScale(scale, active) : null
   const missing = coverage ? coverage.total - coverage.withData : 0
   const year = BUDGET_YEAR
 
@@ -49,34 +47,7 @@ export function MapLegend({
           <span className="text-sm font-medium text-foreground">{i18n._(measure.title)}</span>
           <span className="text-sm text-muted-foreground">{i18n._(measure.description)}</span>
         </p>
-        {measure.ends ? (
-          <p className="mt-3 flex justify-between text-xs text-muted-foreground">
-            <span>{i18n._(measure.ends.below)}</span>{' '}
-            <span>{i18n._(measure.ends.above)}</span>
-          </p>
-        ) : null}
-        <div className={measure.ends ? 'relative mt-1.5' : 'relative mt-3'} aria-hidden="true">
-          {classes.length > 0 ? (
-            <div className="flex h-2.5 gap-px">
-              {classes.map((item, i) => (
-                <span key={i} className="flex-1" style={{ background: item.color }} />
-              ))}
-            </div>
-          ) : (
-            <div className="h-2.5 rounded-[2px] bg-muted" />
-          )}
-          {at !== null ? <span className="absolute -inset-y-1.5 w-0.5 -translate-x-1/2 bg-foreground" style={{ left: `${(at * 100).toFixed(2)}%` }} /> : null}
-        </div>
-        {/* The boundaries, each centred under the join it names: classes 1..n−1 start there. */}
-        <ul className="relative mt-1.5 h-4 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
-          {classes.map((item, k) =>
-            k === 0 || item.from === null ? null : (
-              <li key={k} className="absolute top-0 -translate-x-1/2 whitespace-nowrap" style={{ left: `${((k / classes.length) * 100).toFixed(2)}%` }}>
-                {measure.tick(item.from, locale)}
-              </li>
-            ),
-          )}
-        </ul>
+        <LegendScale measure={measure} scale={scale} active={active} locale={locale} />
       </div>
       {missing > 0 ? (
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -89,5 +60,57 @@ export function MapLegend({
         {outsideMap > 0 ? ` ${t`Bugetul propriu al Municipiului București nu apare: harta arată cele șase sectoare.`}` : null}
       </p>
     </div>
+  )
+}
+
+/**
+ * The scale alone, for a legend with its own frame: the balance's two ends,
+ * the colour bar with the marked figure, the values under the joins.
+ */
+export function LegendScale({
+  measure,
+  scale,
+  active,
+  locale,
+}: {
+  readonly measure: Measure
+  readonly scale: MeasureScale | null
+  readonly active: number | null
+  readonly locale: NumberLocale
+}) {
+  const { i18n } = useLingui()
+  const classes = scale?.classes ?? []
+  const at = scale && classes.length > 0 ? positionOnScale(scale, active) : null
+  return (
+    <>
+      {measure.ends ? (
+        <p className="mt-3 flex justify-between text-xs text-muted-foreground">
+          <span>{i18n._(measure.ends.below)}</span>{' '}
+          <span>{i18n._(measure.ends.above)}</span>
+        </p>
+      ) : null}
+      <div className={measure.ends ? 'relative mt-1.5' : 'relative mt-3'} aria-hidden="true">
+        {classes.length > 0 ? (
+          <div className="flex h-2.5 gap-px">
+            {classes.map((item, i) => (
+              <span key={i} className="flex-1" style={{ background: item.color }} />
+            ))}
+          </div>
+        ) : (
+          <div className="h-2.5 rounded-[2px] bg-muted" />
+        )}
+        {at !== null ? <span className="absolute -inset-y-1.5 w-0.5 -translate-x-1/2 bg-foreground" style={{ left: `${(at * 100).toFixed(2)}%` }} /> : null}
+      </div>
+      {/* The boundaries, each centred under the join it names: classes 1..n−1 start there. */}
+      <ul className="relative mt-1.5 h-4 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
+        {classes.map((item, k) =>
+          k === 0 || item.from === null ? null : (
+            <li key={k} className="absolute top-0 -translate-x-1/2 whitespace-nowrap" style={{ left: `${((k / classes.length) * 100).toFixed(2)}%` }}>
+              {measure.tick(item.from, locale)}
+            </li>
+          ),
+        )}
+      </ul>
+    </>
   )
 }

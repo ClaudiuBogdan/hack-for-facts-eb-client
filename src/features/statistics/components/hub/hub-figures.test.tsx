@@ -36,6 +36,35 @@ describe('HubFiguresBand', () => {
     expect(band([fact('a'), fact('b'), fact('c')]).className).toContain('lg:grid-cols-3')
   })
 
+  it('sets labels and notes as mono capitals unless the page asks for plain text', () => {
+    const { unmount } = render(<HubFiguresBand facts={[fact('a')]} locale="ro" />)
+    expect(screen.getByText('note a')).toHaveClass('font-mono', 'uppercase')
+    expect(screen.getByText('label a')).toHaveClass('font-mono', 'uppercase')
+    unmount()
+
+    render(<HubFiguresBand facts={[fact('a')]} locale="ro" plain />)
+    for (const text of ['note a', 'label a']) {
+      expect(screen.getByText(text)).not.toHaveClass('font-mono')
+      expect(screen.getByText(text)).not.toHaveClass('uppercase')
+    }
+    expect(screen.getByText('note a')).toHaveClass('text-xs')
+    expect(screen.getByText('label a')).toHaveClass('text-sm', 'font-medium')
+  })
+
+  it('draws the corner arrow only when asked, decorative, and only where the tile holds a link', () => {
+    const { container, unmount } = render(<HubFiguresBand facts={[fact('a')]} locale="ro" />)
+    expect(container.querySelector('svg')).toBeNull()
+    unmount()
+
+    const band = render(<HubFiguresBand facts={[fact('a')]} locale="ro" arrow />)
+    const svg = band.container.querySelector('dt svg')
+    expect(svg).toHaveAttribute('aria-hidden', 'true')
+    // Hidden unless the label is a link (a link in the note does not count); then the landing's rule: hover or focus, always on touch.
+    expect(svg).toHaveClass('hidden', 'group-has-[dt>a:first-child]:block', 'opacity-0', 'group-hover:opacity-100', 'group-focus-within:opacity-100')
+    // The tile's link keeps the label alone as its name.
+    expect(screen.getByRole('link')).toHaveAccessibleName('label a')
+  })
+
   it('leaves out an empty note rather than drawing an empty line', () => {
     band([fact('a', null), fact('b')])
     expect(screen.queryByText('note a')).toBeNull()

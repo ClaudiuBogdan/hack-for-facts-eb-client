@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Entity Analytics Parameters (Derived from Zod)",
-  "description": "Machine-readable description of supported query parameters for /entity-analytics",
+  "description": "Machine-readable description of supported query parameters for /public-institutions",
   "type": "object",
   "additionalProperties": true,
   "properties": {

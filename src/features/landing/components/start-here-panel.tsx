@@ -251,7 +251,7 @@ export function StartHerePanel({
               <WindowLight tone={WINDOW_LIGHTS.minimise} icon={Minus} />
             </button>
             <Link
-              to="/entity-analytics"
+              to="/public-institutions"
               preload="intent"
               aria-label={t`Deschide analiza entităților`}
               className={LIGHT_TARGET_CLASS}
@@ -297,7 +297,7 @@ export function StartHerePanel({
             goes to the same page, but only a reader who tries the lights finds
             that, and a phone has no lights. */}
         <Link
-          to="/entity-analytics"
+          to="/public-institutions"
           preload="intent"
           className="group flex items-center justify-between gap-3 border-t bg-muted/40 px-4 py-2.5 text-sm font-medium text-card-foreground transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
         >
