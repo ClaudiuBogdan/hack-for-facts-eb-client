@@ -1,4 +1,5 @@
 import { createContext, Suspense, use, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
@@ -55,6 +56,59 @@ export function YearSelect({ className }: { readonly className?: string }) {
       </select>
       <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
     </span>
+  )
+}
+
+/**
+ * The year as the hero sets it (owner, 25 November 2026: compact, in the same
+ * place, no side arrows, a polished menu): „Anul [2025 ▾]" as one button the
+ * width of its year; the menu leads with the year in progress, then every
+ * full year in a grid of four, newest first, the chosen one marked.
+ */
+export function YearPicker({ className, label = true }: { readonly className?: string; readonly label?: boolean }) {
+  const { view, views, setYear } = usePersonYear()
+  const running = views.filter((entry) => entry.partial)
+  const full = views.filter((entry) => !entry.partial)
+  const item = 'relative flex cursor-pointer select-none items-center justify-center rounded-md text-sm tabular-nums outline-none transition-colors data-[highlighted]:bg-muted data-[state=checked]:bg-primary data-[state=checked]:font-semibold data-[state=checked]:text-primary-foreground'
+  return (
+    <DropdownMenu.Root modal={false}>
+      <div className={cn('inline-flex items-center gap-2.5', className)}>
+        {label ? <span className="text-sm text-muted-foreground">Anul</span> : null}
+        <DropdownMenu.Trigger
+          aria-label={`Anul: ${yearLabel(view)}`}
+          className="group inline-flex h-10 items-center gap-2 rounded-lg border border-border/80 bg-background pl-3.5 pr-2.5 text-base font-semibold tabular-nums shadow-xs outline-none transition-colors hover:border-foreground/25 hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:border-foreground/30 data-[state=open]:bg-muted/40"
+        >
+          {view.year}
+          {view.partial ? <span className="text-sm font-normal text-muted-foreground">până în {monthName(view.month)}</span> : null}
+          <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
+        </DropdownMenu.Trigger>
+      </div>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align={label ? 'start' : 'end'}
+          sideOffset={6}
+          className="z-50 w-72 rounded-lg border bg-popover p-2 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[side=bottom]:slide-in-from-top-1"
+        >
+          <DropdownMenu.RadioGroup value={String(view.year)} onValueChange={(value) => setYear(Number(value))}>
+            {running.map((entry) => (
+              <DropdownMenu.RadioItem key={entry.year} value={String(entry.year)} className={cn(item, 'h-10 justify-between px-3')}>
+                <span>{entry.year}</span>
+                <span className="text-xs font-normal opacity-80">în curs, până în {monthName(entry.month)}</span>
+              </DropdownMenu.RadioItem>
+            ))}
+            {running.length ? <DropdownMenu.Separator className="my-2 h-px bg-border" /> : null}
+            <DropdownMenu.Label className="px-1 pb-1.5 text-xs text-muted-foreground">Ani încheiați</DropdownMenu.Label>
+            <div className="grid grid-cols-4 gap-1">
+              {full.map((entry) => (
+                <DropdownMenu.RadioItem key={entry.year} value={String(entry.year)} className={cn(item, 'h-9')}>
+                  {entry.year}
+                </DropdownMenu.RadioItem>
+              ))}
+            </div>
+          </DropdownMenu.RadioGroup>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   )
 }
 

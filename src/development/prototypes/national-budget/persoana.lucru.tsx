@@ -15,7 +15,7 @@ import { HubFiguresBand, type HubFact } from '@/features/statistics/components/h
 import { cn } from '@/lib/utils'
 import { populationText, useHundred, useOfficialTotals } from './persoana.data'
 import { BORROWED_FILL } from './persoana.sections'
-import { SourcesLine, YearProvider, YearSelect, useInView, usePersonYear } from './persoana.shell'
+import { SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
 
 /**
  * The working version (owner, 25 November 2026): the page we build on, one
@@ -146,10 +146,7 @@ function Hero() {
               </h1>
               <Lede />
             </BandRead>
-            <label className="mt-6 inline-flex items-center gap-3">
-              <MonoLabel className="text-muted-foreground/70">Anul</MonoLabel>
-              <YearSelect className="min-w-56" />
-            </label>
+            <YearPicker className="mt-6" />
             <Shortcuts />
           </div>
           <div className="min-w-0 lg:col-span-5">
@@ -208,7 +205,7 @@ function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
             </li>
           ))}
         </ol>
-        <YearSelect className={cn('w-auto shrink-0 transition-opacity', heroVisible && 'pointer-events-none hidden opacity-0')} />
+        <YearPicker label={false} className={cn('shrink-0', heroVisible && 'hidden')} />
       </RuledFrame>
     </nav>
   )
