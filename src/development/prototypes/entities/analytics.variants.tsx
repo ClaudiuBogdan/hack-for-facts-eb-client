@@ -1,17 +1,21 @@
 import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { PanelLeftClose, SlidersHorizontal } from 'lucide-react'
-import { RuledFrame } from '@/components/landing-skin/ruled-frame'
+import { PublicInstitutionsPage } from '@/features/public-institutions/components/public-institutions-page'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
+import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted'
 import { cn } from '@/lib/utils'
 import { Breakdown } from './analytics.breakdown'
-import { Bar, Figures, FiltersPanel, FiltersSheet, HarnessAddress, Head, PROTOTYPE_MARKER, Ranking, SourceLine, useAnalyticsPage } from './analytics.parts'
+import { Bar, FiltersPanel, FiltersSheet, HarnessAddress, Head, PROTOTYPE_MARKER, Ranking, useAnalyticsPage } from './analytics.parts'
 
 /**
  * Three layouts of one page, same parts and same reads:
  *
  * - `coloana`: one column — the ranking, then the breakdown under it; every
- *   filter in a sheet behind one button.
+ *   filter in a sheet behind one button. Chosen by the owner and promoted to
+ *   `/public-institutions` (25 November 2026): the variant renders the
+ *   feature's page, so the two cannot drift.
  * - `alaturi`: the ranking and the breakdown side by side on a wide screen,
  *   stacked below it; filters in the same sheet.
  * - `panou`: the filters stay a left column, closed to a rail until asked for;
@@ -20,23 +24,13 @@ import { Bar, Figures, FiltersPanel, FiltersSheet, HarnessAddress, Head, PROTOTY
 
 const SHELL = 'relative w-full overflow-x-clip bg-background'
 
+/** The promoted page itself, on the harness's address, in the reader's saved currency and inflation setting. */
 function Coloana() {
-  const page = useAnalyticsPage()
+  const [currency] = useUserCurrency()
+  const [inflationAdjusted] = useUserInflationAdjusted()
   return (
-    <div className={SHELL} data-dev-marker={PROTOTYPE_MARKER}>
-      <Head page={page} onFilters={() => page.setFiltersOpen(true)} />
-      <Bar page={page} />
-      <Figures page={page} />
-      <RuledFrame className="py-6 sm:py-8">
-        <Ranking page={page} />
-      </RuledFrame>
-      <div className="border-t">
-        <RuledFrame className="py-8 sm:py-10">
-          <Breakdown page={page} />
-        </RuledFrame>
-      </div>
-      <SourceLine page={page} />
-      <FiltersSheet page={page} />
+    <div data-dev-marker={PROTOTYPE_MARKER}>
+      <PublicInstitutionsPage preferences={{ currency, inflationAdjusted }} />
     </div>
   )
 }
