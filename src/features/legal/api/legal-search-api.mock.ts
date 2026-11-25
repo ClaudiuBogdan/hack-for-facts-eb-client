@@ -5,6 +5,7 @@ import {
   type LegalSearchResultData,
 } from '@/schemas/legal'
 import { parseLegalCitationShape } from '../lib/legal-citation'
+import type { LegalSearchFilter } from './legal-search-api.live'
 import {
   legislationFinderFixture,
   type LegislationFinderFixtureRow,
@@ -52,7 +53,8 @@ const toHit = (
   score: number,
 ): LegalSearchActHit => {
   const { searchAliases: _aliases, description, ...act } = row
-  return { score, act, description }
+  // the fixture's citations already name their acts: no Portal name to stand in for a bare „Doc nr."
+  return { score, act, description, name: null }
 }
 
 /** Byte-format-identical to the server's `historicalCaveats` lines. */
@@ -68,11 +70,21 @@ const statusCaveats = (
 
 export async function fetchLegalSearchMock(
   q: string,
-  options: { readonly historical?: boolean } = {},
+  options: { readonly historical?: boolean; readonly filter?: LegalSearchFilter } = {},
 ): Promise<LegalSearchResultData> {
   const historical = options.historical === true
+  const filter = options.filter ?? {}
+  // The filter as the server applies it to the fixture's own fields. The fixture carries no AI summaries, so a
+  // domain, category or penalties filter leaves every row out, as it does any act without a summary.
+  const summaryFilter = (filter.domain?.length ?? 0) > 0 || (filter.category?.length ?? 0) > 0 || filter.penaltiesMentioned !== undefined
+  const narrowed = (row: LegislationFinderFixtureRow): boolean =>
+    !summaryFilter &&
+    (!filter.actType?.length || filter.actType.includes(row.actType)) &&
+    (!filter.status?.length || (row.status !== null && filter.status.includes(row.status))) &&
+    (filter.yearFrom === undefined || (row.actYear !== null && row.actYear >= filter.yearFrom)) &&
+    (filter.yearTo === undefined || (row.actYear !== null && row.actYear <= filter.yearTo))
   const gate = (row: LegislationFinderFixtureRow): boolean =>
-    historical || (row.status !== null && LIVE_STATUSES.includes(row.status))
+    narrowed(row) && (historical || (row.status !== null && LIVE_STATUSES.includes(row.status)))
 
   // Citation shortcut — no status caveats (the server's early return skips
   // them; its version-provenance caveat is not fabricated here).

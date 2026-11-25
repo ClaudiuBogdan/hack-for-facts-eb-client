@@ -736,6 +736,11 @@ export const legalSearchActHitSchema = z.object({
   score: z.number(),
   act: legalActListItemSchema,
   description: z.string().nullable(),
+  /**
+   * The Portal's name of the act's canonical document (`canonical.den`, else `canonical.title`), as written —
+   * often in capitals. The page uses it only where the citation names nothing („Doc nr. 41627", LEG-PDYY).
+   */
+  name: z.string().nullable(),
 })
 export type LegalSearchActHit = z.infer<typeof legalSearchActHitSchema>
 

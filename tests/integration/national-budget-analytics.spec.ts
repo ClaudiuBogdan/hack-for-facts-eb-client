@@ -6,7 +6,7 @@
  * bulletin would change. A control writes the address: a question is a link.
  */
 
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { Page } from '@playwright/test'
 
