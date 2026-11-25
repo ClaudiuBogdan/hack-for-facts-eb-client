@@ -113,15 +113,13 @@ describe('/procurement/direct-acquisitions/$id', () => {
     expect(client.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(procurementDirectPurchaseKeys.purchase('10120196'))
   })
 
-  it('caches only a whole render: purchase and context read', () => {
+  it('keeps no render in a shared cache: a whole one private, a failed one no-store (CACHE-002)', () => {
     vi.stubEnv('DEV', false)
     try {
       const whole = route.headers({ loaderData: { id: '1', purchase: directPurchase(), context: dpContext(), disclosure: 'v1' } })
       // D6: a render whose publication is unknown is kept nowhere.
       expect(route.headers({ loaderData: { id: '1', purchase: directPurchase(), context: dpContext(), disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
-      expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
-      // D6: never served stale across a publish.
-      expect(whole['CDN-Cache-Control']).toContain('stale-while-revalidate=0')
+      expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
       for (const loaderData of [
         { id: '1' },
         { id: '1', purchase: { ...directPurchase(), partial: true }, context: dpContext() },
@@ -132,7 +130,7 @@ describe('/procurement/direct-acquisitions/$id', () => {
       }
       // With no context to read (no CUI for a side, no date, before 2019) the server says so — `null` — and the purchase alone is whole.
       const noContext = { ...directPurchase(), authority: { ...directPurchase().authority, cui: null } }
-      expect(route.headers({ loaderData: { id: '1', purchase: noContext, context: null, disclosure: 'v1' } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(route.headers({ loaderData: { id: '1', purchase: noContext, context: null, disclosure: 'v1' } })).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
     } finally {
       vi.unstubAllEnvs()
     }

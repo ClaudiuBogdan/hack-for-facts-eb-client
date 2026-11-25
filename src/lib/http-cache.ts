@@ -1,3 +1,7 @@
+/**
+ * The cache policy a page route asks for. Kept for the call sites; since
+ * CACHE-002 the answer no longer depends on it (see below).
+ */
 type PublicPageCachePolicy = {
   browserMaxAgeSeconds?: number;
   sharedMaxAgeSeconds: number;
@@ -5,35 +9,26 @@ type PublicPageCachePolicy = {
   vary?: readonly string[];
 };
 
-const DEFAULT_BROWSER_MAX_AGE_SECONDS = 0;
-const DEFAULT_CACHE_VARY_HEADER = "Accept-Encoding";
-
-function buildSharedCacheControl(policy: PublicPageCachePolicy): string {
-  return [
-    `s-maxage=${policy.sharedMaxAgeSeconds}`,
-    `stale-while-revalidate=${policy.staleWhileRevalidateSeconds}`,
-  ].join(", ");
-}
-
+/**
+ * The headers of an HTML page: `private, no-store`, never a shared cache.
+ *
+ * The name is historical (CACHE-002, 25 November 2026). Every page renders from
+ * the reader's cookies through the root route (the language, the theme, the
+ * currency and inflation preferences, dismissed notices), so a shared copy
+ * would serve one reader's page to another; `Vary: Cookie` wouldn't help, as
+ * Cloudflare does not key on it. A render that fails after its loader also
+ * kept the public header it had already been given (a 500 cached for its
+ * window). Nothing caches HTML at the edge today, so this costs nothing now;
+ * edge caching would need its own design (a cookie-free variant of the page).
+ * Not renamed, to keep the 67 call sites in every hub untouched; images and
+ * data that don't read cookies (the share images) set their own headers.
+ */
 export function createPublicPageCacheHeaders(
-  policy: PublicPageCachePolicy,
+  _policy: PublicPageCachePolicy,
 ): Record<string, string> {
-  if (import.meta.env.DEV) {
-    // Avoid stale SSR HTML during local development/HMR, which can trigger hydration mismatches.
-    return createNoStoreHeaders();
-  }
-
-  // IMPORTANT: Use only for fully public SSR responses.
-  // If SSR includes auth/session/personalized/sensitive data, do not use this.
-  // Use `createNoStoreHeaders()` and disable Nitro route cache for that route.
-  const browserMaxAgeSeconds =
-    policy.browserMaxAgeSeconds ?? DEFAULT_BROWSER_MAX_AGE_SECONDS;
-  const sharedCacheControl = buildSharedCacheControl(policy);
-
   return {
-    "Cache-Control": `public, max-age=${browserMaxAgeSeconds}, ${sharedCacheControl}`,
-    "CDN-Cache-Control": sharedCacheControl,
-    Vary: (policy.vary ?? [DEFAULT_CACHE_VARY_HEADER]).join(", "),
+    "Cache-Control": "private, no-store",
+    "CDN-Cache-Control": "no-store",
   };
 }
 

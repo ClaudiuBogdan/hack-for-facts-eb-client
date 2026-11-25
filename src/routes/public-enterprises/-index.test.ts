@@ -42,15 +42,14 @@ describe('/public-enterprises route', () => {
     fetchSpy.mockRestore()
   })
 
-  it('caches publicly, the shared cache keyed on the language and theme cookies', () => {
+  it('is private: its render follows the language and theme cookies (CACHE-002)', () => {
     // The dev server sends no-store; this is the production policy.
     vi.stubEnv('DEV', false)
     const headers = options.headers()
     vi.unstubAllEnvs()
     const cacheControl = headers['Cache-Control'] ?? headers['cache-control'] ?? ''
-    expect(cacheControl).toContain('public')
-    expect(cacheControl).toContain('s-maxage=3600')
-    expect(headers.Vary ?? headers.vary).toContain('Cookie')
+    expect(cacheControl).toBe('private, no-store')
+    expect(headers.Vary ?? headers.vary).toBeUndefined()
   })
 
   it('titles the page and makes it canonical at its own address', async () => {
