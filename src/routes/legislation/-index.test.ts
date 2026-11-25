@@ -1,29 +1,29 @@
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, dehydrate } from '@tanstack/react-query'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { LegislationFrontDoor } from '@/schemas/legal'
+import type { LegalAnalyticsArgs, LegalAnalyticsView } from '@/schemas/legal-analytics'
 
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
-const fetchFrontDoorMock = vi.fn()
+const fetchAnalyticsMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
 }))
-vi.mock('@/features/legal/api/legal-api', () => ({
-  fetchLegislationFrontDoor: fetchFrontDoorMock,
-  fetchLegislationOverview: vi.fn(),
-}))
-vi.mock('@/lib/http-cache', () => ({
-  createNoStoreHeaders: () => ({ 'Cache-Control': 'no-store' }),
-  createPublicPageCacheHeaders: () => ({ 'Cache-Control': 'public' }),
-}))
+vi.mock('@/features/legal/api/legal-analytics-api', async () => {
+  const live = await vi.importActual<typeof import('@/features/legal/api/legal-analytics-api.live')>('@/features/legal/api/legal-analytics-api.live')
+  return {
+    LegalAnalyticsError: live.LegalAnalyticsError,
+    LEGAL_ANALYTICS_UNAVAILABLE: live.LEGAL_ANALYTICS_UNAVAILABLE,
+    fetchLegalAnalytics: fetchAnalyticsMock,
+  }
+})
 
-type LoaderData = { readonly seeded?: boolean }
+type LoaderData = { readonly seeded?: boolean; readonly analyticsUnavailable?: boolean }
 
 async function importRoute() {
   const { Route } = await import('./index')
   return Route as unknown as {
     loader: (input: { readonly context: { readonly queryClient: QueryClient } }) => Promise<LoaderData>
-    headers: (input: { readonly loaderData?: LoaderData }) => Record<string, string>
+    headers: (input: { readonly loaderData?: LoaderData; readonly match?: { readonly status: string } }) => Record<string, string>
   }
 }
 
@@ -38,82 +38,104 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
   }
 }
 
-const frontDoor = (id: string): LegislationFrontDoor => ({
-  latestGazetteIssues: [
-    { moIssueId: id, partCode: 'I', issueLabel: `MO ${id}`, issueNumber: 1, issueYear: 2026, issueDate: '2026-07-09', pdfUrl: null, hasEmonitorLink: false },
-  ],
-  coverage: {
-    authorities: ['Portal Legislativ', 'Monitorul Oficial'],
-    yearsRange: [1990, 2026],
-    retrievedAt: '2026-07-09',
-    publishedAt: null,
-    knownGaps: [],
-    inaccessibleCount: 0,
-    dataStatus: 'live',
-  },
-})
+const { legislationAnalyticsFixture } = await import('@/features/legal/mocks/fixtures/legislation-analytics')
 
-const FRONT_DOOR_KEY = ['legal', 'front-door']
+/** The committed server answer of a view (the mock lane's), as the live adapter returns it. */
+function answerOf(view: LegalAnalyticsView, args: LegalAnalyticsArgs) {
+  const name = view === 'breakdown' && args.lens === 'issuer' ? 'breakdown-issuer' : view
+  const fixture = legislationAnalyticsFixture[name as keyof typeof legislationAnalyticsFixture]
+  return Promise.resolve({ data: fixture.data, layer: fixture.layer, args: fixture.args })
+}
+
+const viewsRead = () => fetchAnalyticsMock.mock.calls.map((call) => call[0] as LegalAnalyticsView)
 
 describe('/legislation loader', () => {
   beforeEach(() => {
     vi.resetModules()
     routeStub.mockClear()
-    fetchFrontDoorMock.mockReset()
+    fetchAnalyticsMock.mockReset()
   })
 
-  it('fills the page’s query on the server from a read kept for the next render', async () => {
-    fetchFrontDoorMock.mockResolvedValue(frontDoor('a'))
-    const route = await importRoute()
-
-    const first = new QueryClient()
-    const data = await asServerRender(() => route.loader({ context: { queryClient: first } }))
-    expect(data).toEqual({ seeded: true })
-    expect(first.getQueryData(FRONT_DOOR_KEY)).toEqual(frontDoor('a'))
-    expect(route.headers({ loaderData: data })).toEqual({ 'Cache-Control': 'public' })
-
-    // A new request, a new query client: the server's kept read answers.
-    const second = new QueryClient()
-    await asServerRender(() => route.loader({ context: { queryClient: second } }))
-    expect(second.getQueryData(FRONT_DOOR_KEY)).toEqual(frontDoor('a'))
-    expect(fetchFrontDoorMock).toHaveBeenCalledTimes(1)
-    // Under its own deadline, not a request's signal: the read is shared.
-    expect(fetchFrontDoorMock).toHaveBeenCalledWith(expect.any(AbortSignal))
-  })
-
-  it('leaves a failed server read to the browser, uncached, and does not keep it', async () => {
-    fetchFrontDoorMock.mockRejectedValueOnce(new Error('down')).mockResolvedValueOnce(frontDoor('b'))
-    const route = await importRoute()
-
-    const failed = new QueryClient()
-    const data = await asServerRender(() => route.loader({ context: { queryClient: failed } }))
-    expect(data).toEqual({ seeded: false })
-    // Nothing dehydrated for it, a failure included: the browser's query reads it.
-    expect(failed.getQueryState(FRONT_DOOR_KEY)).toBeUndefined()
-    expect(route.headers({ loaderData: data })).toEqual({ 'Cache-Control': 'no-store' })
-
-    const next = new QueryClient()
-    await asServerRender(() => route.loader({ context: { queryClient: next } }))
-    expect(next.getQueryData(FRONT_DOOR_KEY)).toEqual(frontDoor('b'))
-    expect(fetchFrontDoorMock).toHaveBeenCalledTimes(2)
-  })
-
-  it('starts the query’s read in the browser and returns at once', async () => {
-    fetchFrontDoorMock.mockImplementation(() => new Promise(() => {}))
+  it('renders the aggregate answers on the server, all started together', async () => {
+    let started = 0
+    const answers: (() => void)[] = []
+    fetchAnalyticsMock.mockImplementation((view: LegalAnalyticsView, args: LegalAnalyticsArgs) => {
+      started += 1
+      return new Promise((resolve) => answers.push(() => resolve(answerOf(view, args))))
+    })
     const route = await importRoute()
     const queryClient = new QueryClient()
+    const pending = asServerRender(() => route.loader({ context: { queryClient } }))
+    // every read is in flight before any answers: one first-paint budget, not four in a row
+    await vi.waitFor(() => expect(started).toBe(4))
+    answers.forEach((answer) => answer())
+    const data = await pending
+    expect(data).toEqual({ seeded: true, analyticsUnavailable: false })
+    expect(viewsRead().sort()).toEqual(['breakdown', 'head', 'series', 'summary'])
+  })
 
+  it('puts nothing that names an act into the server payload', async () => {
+    fetchAnalyticsMock.mockImplementation(answerOf)
+    const route = await importRoute()
+    const queryClient = new QueryClient()
+    await asServerRender(() => route.loader({ context: { queryClient } }))
+    expect(viewsRead()).not.toContain('acts')
+    expect(viewsRead()).not.toContain('links')
+    const payload = JSON.stringify(dehydrate(queryClient))
+    // no act id, citation or title from the views that name acts
+    const named = [...legislationAnalyticsFixture.acts.data.rows.slice(0, 5), ...legislationAnalyticsFixture.links.data.topTargets.slice(0, 5).map((row) => row.target)]
+    for (const act of named) {
+      expect(payload).not.toContain(`"actId":"${act.actId}"`)
+      expect(payload).not.toContain(act.citation)
+      if (act.title) expect(payload).not.toContain(act.title)
+    }
+    expect(payload).not.toContain('actId')
+  })
+
+  it('leaves a failed server read to the browser', async () => {
+    fetchAnalyticsMock.mockImplementation((view: LegalAnalyticsView, args: LegalAnalyticsArgs) =>
+      view === 'summary' ? Promise.reject(new Error('down')) : answerOf(view, args),
+    )
+    const route = await importRoute()
+    const queryClient = new QueryClient()
+    const data = await asServerRender(() => route.loader({ context: { queryClient } }))
+    expect(data).toEqual({ seeded: false, analyticsUnavailable: false })
+    expect(queryClient.getQueryState(['legal', 'analytics', 'summary', {}])).toBeUndefined()
+    expect(queryClient.getQueryData(['legal', 'analytics', 'head', {}])).toBeDefined()
+  })
+
+  it('says when no layer is published yet (503)', async () => {
+    const { LegalAnalyticsError } = await import('@/features/legal/api/legal-analytics-api')
+    fetchAnalyticsMock.mockRejectedValue(new LegalAnalyticsError('unavailable', 'no layer', 503))
+    const route = await importRoute()
+    const data = await asServerRender(() => route.loader({ context: { queryClient: new QueryClient() } }))
+    expect(data).toEqual({ seeded: false, analyticsUnavailable: true })
+  })
+
+  it('never serves an answer kept from before an outage', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      vi.setSystemTime(new Date('2026-11-25T08:00:00Z'))
+      fetchAnalyticsMock.mockImplementation(answerOf)
+      const route = await importRoute()
+      const warm = await asServerRender(() => route.loader({ context: { queryClient: new QueryClient() } }))
+      expect(warm).toEqual({ seeded: true, analyticsUnavailable: false })
+      // eleven minutes on, the API refuses every read: the kept answers are too old to serve
+      vi.setSystemTime(new Date('2026-11-25T08:11:00Z'))
+      const { LegalAnalyticsError } = await import('@/features/legal/api/legal-analytics-api')
+      fetchAnalyticsMock.mockRejectedValue(new LegalAnalyticsError('unavailable', 'busy', 503))
+      const data = await asServerRender(() => route.loader({ context: { queryClient: new QueryClient() } }))
+      expect(data).toEqual({ seeded: false, analyticsUnavailable: true })
+      } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('starts the reads in the browser and returns at once', async () => {
+    fetchAnalyticsMock.mockImplementation(() => new Promise(() => {}))
+    const route = await importRoute()
+    const queryClient = new QueryClient()
     await expect(route.loader({ context: { queryClient } })).resolves.toEqual({})
-    expect(fetchFrontDoorMock).toHaveBeenCalledTimes(1)
-    expect(queryClient.getQueryState(FRONT_DOOR_KEY)?.fetchStatus).toBe('fetching')
-  })
-
-  it('does not read again in the browser when the cache holds the band', async () => {
-    const route = await importRoute()
-    const queryClient = new QueryClient()
-    queryClient.setQueryData(FRONT_DOOR_KEY, frontDoor('c'))
-
-    await route.loader({ context: { queryClient } })
-    expect(fetchFrontDoorMock).not.toHaveBeenCalled()
+    expect(viewsRead().sort()).toEqual(['breakdown', 'head', 'series', 'summary'])
   })
 })

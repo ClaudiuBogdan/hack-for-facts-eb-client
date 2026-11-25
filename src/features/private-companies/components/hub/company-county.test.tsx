@@ -89,9 +89,17 @@ const countyLink = (name: RegExp) => within(screen.getByRole('group', { name: /F
 describe('CompanyCountyMap', () => {
   it('shows the country at rest, and the national rate on the legend', () => {
     render(<Harness layer={DENSITY} />)
-    expect(within(figure()).getByText('România')).toBeInTheDocument()
+    expect(within(figure()).getByText('România', { selector: 'p' })).toBeInTheDocument()
     expect(within(figure()).getByText('91,9', { selector: 'p' })).toBeInTheDocument()
-    expect(within(figure()).getByText('RO')).toBeInTheDocument()
+    // The national tick on the legend, named in words.
+    expect(within(figure()).getByText('România', { selector: 'span' })).toBeInTheDocument()
+  })
+
+  it('prints the values that part the colours, one under each join, and not the ends', () => {
+    render(<Harness layer={DENSITY} />)
+    const legend = within(figure()).getAllByText(/^\d+[.,]\d$/u, { selector: 'span' })
+    expect(legend).toHaveLength(4)
+    expect(legend.map((label) => label.getAttribute('style'))).toEqual(['left: 20%;', 'left: 40%;', 'left: 60%;', 'left: 80%;'])
   })
 
   it('reads out the county under the mouse: its rate, its place and its distance from the country', () => {
@@ -100,14 +108,14 @@ describe('CompanyCountyMap', () => {
     expect(within(figure()).getByText('Cluj · locul 2 din 3')).toBeInTheDocument()
     expect(within(figure()).getByText('+44,1 față de România')).toBeInTheDocument()
     fireEvent.pointerLeave(countyLink(/Cluj/), { pointerType: 'mouse' })
-    expect(within(figure()).getByText('România')).toBeInTheDocument()
+    expect(within(figure()).getByText('România', { selector: 'p' })).toBeInTheDocument()
   })
 
   it('reads a count as its share of the total, with no national tick on the legend', () => {
     render(<Harness layer={NEW_FIRMS} />)
     fireEvent.pointerEnter(countyLink(/Cluj/), { pointerType: 'mouse' })
     expect(within(figure()).getByText('5,0% din total')).toBeInTheDocument()
-    expect(within(figure()).queryByText('RO')).toBeNull()
+    expect(within(figure()).queryByText('România', { selector: 'span' })).toBeNull()
   })
 
   it('shows a county on the first tap and opens its companies on the second', () => {
@@ -176,5 +184,35 @@ describe('CompanyCountyRank', () => {
     expect(screen.getAllByRole('list').flatMap((list) => within(list).getAllByRole('link'))).toHaveLength(10)
     fireEvent.click(screen.getByRole('button', { name: /Încă 2 județe/ }))
     expect(screen.getAllByRole('list').flatMap((list) => within(list).getAllByRole('link'))).toHaveLength(12)
+  })
+
+  it('shows three at each end on a phone, by CSS, the same list sent for every width', () => {
+    const many: HubCountyLayer = {
+      unit: 'firms',
+      national: 1000,
+      values: ['AB', 'AR', 'AG', 'BC', 'BH', 'BN', 'BT', 'BV', 'BR', 'BZ', 'CS', 'CL'].map((code, index) => ({ code, value: 100 - index })),
+    }
+    render(<CompanyCountyRank layer={many} countyLink={analysisLink} phoneEdge={3} />)
+    const items = screen.getAllByRole('list').flatMap((list) => within(list).getAllByRole('listitem'))
+    // 1–5 and 8–12 sent; 4, 5, 8 and 9 hidden below `sm`.
+    expect(items).toHaveLength(10)
+    expect(items.map((item) => item.className.includes('max-sm:hidden'))).toEqual([false, false, false, true, true, true, true, false, false, false])
+    // The button counts what each width hides.
+    const button = screen.getByRole('button')
+    expect(within(button).getByText('Încă 6 județe')).toHaveClass('sm:hidden')
+    expect(within(button).getByText('Încă 2 județe')).toHaveClass('max-sm:hidden')
+  })
+
+  it('never shows more on a phone than on a wider screen', () => {
+    const many: HubCountyLayer = {
+      unit: 'firms',
+      national: 1000,
+      values: ['AB', 'AR', 'AG', 'BC', 'BH', 'BN', 'BT', 'BV', 'BR', 'BZ', 'CS', 'CL'].map((code, index) => ({ code, value: 100 - index })),
+    }
+    render(<CompanyCountyRank layer={many} countyLink={analysisLink} phoneEdge={7} />)
+    const items = screen.getAllByRole('list').flatMap((list) => within(list).getAllByRole('listitem'))
+    expect(items).toHaveLength(10)
+    expect(items.some((item) => item.className.includes('max-sm:hidden'))).toBe(false)
+    expect(screen.getByRole('button', { name: 'Încă 2 județe' })).toBeInTheDocument()
   })
 })

@@ -7,13 +7,6 @@ export const Route = createLazyFileRoute('/legislation/analytics')({
 })
 
 function LegislationAnalyticsRoutePage() {
-  const loaderData = Route.useLoaderData() as
-    | LegislationAnalyticsRouteLoaderData
-    | undefined
-
-  return (
-    <LegislationAnalyticsPage
-      initialOverview={loaderData?.overview ?? undefined}
-    />
-  )
+  const loaderData = Route.useLoaderData() as LegislationAnalyticsRouteLoaderData | undefined
+  return <LegislationAnalyticsPage analyticsUnavailable={loaderData?.analyticsUnavailable === true} />
 }

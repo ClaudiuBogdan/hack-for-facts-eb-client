@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { legalActsBrowseSearchSchema } from '@/schemas/legal-search'
 
 /**
@@ -10,11 +9,9 @@ import { legalActsBrowseSearchSchema } from '@/schemas/legal-search'
  */
 export const Route = createFileRoute('/legislation/acts/')({
   validateSearch: legalActsBrowseSearchSchema,
-  headers: () =>
-    createPublicPageCacheHeaders({
-      sharedMaxAgeSeconds: 600,
-      staleWhileRevalidateSeconds: 3600,
-    }),
+  // Never stored by a shared cache, on every path (root, 25 November 2026; CACHE-001): the page renders in the
+  // reader's language from their cookie, and the CDN does not key on `Vary: Cookie`.
+  headers: () => ({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' }),
   head: () => ({
     meta: [
       { title: `${t`Directorul actelor`} — Transparenta.eu` },
