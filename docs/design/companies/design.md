@@ -906,3 +906,57 @@ filter sheet, list query (`companies(filter, q, …)`), county options
   front door.
 - **The profile's "not found" state** links „Caută în firme" to the front
   door, whose search box finds a company by name or CUI.
+
+## The hub polished as the landing was (25 November 2026)
+
+The owner asked for the front door to be polished the way the main landing
+was (`docs/design/landing/design.md`, 22–24 November). Only the hub's own
+components changed; the chrome the hubs share (`HubSectionHead`,
+`HubFiguresBand`, `HomeSectionNav`, `MonoLabel`) is untouched.
+
+### Decisions
+
+- **The title names the dataset: „Firmele din România"** (owner's choice of
+  four), replacing „Economia, firmă cu firmă". „Firme private" was the owner's
+  first wording and was not used: the page counts every company in the trade
+  register, the state's own included (CFR, Poșta Română), and those have their
+  own section. The caption over the title („Firme / România") is gone: it said
+  the same words.
+- **The description says what is in it, then where it comes from**: „Cifră de
+  afaceri, profit și salariați, din registrul comerțului și bilanțurile
+  anuale." (owner's choice of three). No „pentru fiecare firmă", as the landing
+  dropped „toate / fiecare".
+- **The headline is set as the landing's**: tracking `-0.04em`, word spacing
+  `0.06em`, line height 0.96, Inter's round commas (`ss03`) on the page's
+  root; the subtitle at normal tracking, balanced. The hub keeps its own fluid
+  size. Two lines at every width, the break written.
+- **The shortcut row is the landing's**: the label in plain `text-sm` on the
+  links' baseline, the links without an underline, the accent on hover. On a
+  phone the label has its own line and each shortcut is a 44px row.
+- **The leaders' card shows five companies, not ten** (owner, from the
+  prototype `/development/companies/hub-head`, variant `cinci`). With ten
+  the head was about 1,045px tall at 1440 with half a column empty under the
+  shortcuts, and about 1,450px on a phone; with five, about 720 and 1,110.
+  Turned down: one-line rows (`simplu`), the landing's institutions panel
+  without the switch (`panou`), the four figures in place of the ranking
+  (`cifre`), nothing beside the search (`fara`). The prototype is kept.
+- **Words are plain text, mono stays for codes and figures** (DESIGN.md, „Mono
+  only where it is necessary"): the card's heading, each leader's county,
+  activity and change, the size table's caption, the registrations chart's
+  caption, the activities' note, the map's readout and legend title, the
+  sources label. Still mono: ranks, shares, CAEN codes with their source tag,
+  the legend's bounds, column heads over figures.
+- **Entrances play once per page load** (`lib/hub-first-visit.ts`), the
+  landing's rule with a flag of the hub's own: coming back from a company or
+  the analysis shows the page as rendered. The landing's flag is not shared,
+  so neither page switches the other's entrances off.
+- **The three starting points carry an arrow at rest**, as the landing's
+  index tiles do.
+
+### Open, the owner's to decide
+
+- The section numbers („01 / Pe județe", the pinned bar's „01 02 03 04") and
+  the mono capital notes under the four figures come from the shared hub
+  chrome. The landing dropped its running numbers; changing them here needs a
+  switch in the shared components, through root.
+- The English shortcut row wraps onto a second line on a desktop.

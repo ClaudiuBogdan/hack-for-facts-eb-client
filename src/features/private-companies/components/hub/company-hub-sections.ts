@@ -18,8 +18,12 @@ export function bandNumber(sections: readonly HomeSection[], id: string): string
   return String(sections.findIndex((section) => section.id === id) + 1).padStart(2, '0')
 }
 
-/** The rows the leaders' card shows — the year's ten largest, the rest in the analysis: the page's and its loading state's. */
-export const COMPANY_HUB_LEADERS_SHOWN = 10
+/**
+ * The rows the leaders' card shows — the year's five largest, the rest in the analysis: the page's and its
+ * loading state's. Five, not the ten the snapshot holds (owner, 25 November 2026): with ten the head was a
+ * screen and a half tall on a phone and left half a column empty beside it on a desktop.
+ */
+export const COMPANY_HUB_LEADERS_SHOWN = 5
 
 /** A leader's row: place, name, bar and meta, figure and change. The loading state's rows are the same grid. */
 export const LEADER_ROW_CLASS = 'group grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2'

@@ -166,15 +166,15 @@ describe('PrivateCompanyHubPage', () => {
     }
   })
 
-  it('ranks the ten largest companies of each list, and opens the rest in the analysis', () => {
+  it('ranks the five largest companies of each list, and opens the rest in the analysis', () => {
     const { rerender } = render(page())
     const leaders = () => within(screen.getByTestId('company-hub-leaders')).getAllByRole('link')
     const more = () => screen.getByRole('link', { name: /Toate firmele, în analiza bilanțurilor/ })
-    expect(leaders()).toHaveLength(10)
+    expect(leaders()).toHaveLength(5)
     expect(linkOf(more())).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover' } })
     rerender(page({ clasament: 'salariati' }))
-    expect(leaders()).toHaveLength(10)
-    // Within the hub's headcounts: the keying error the ten leave out stays out there too.
+    expect(leaders()).toHaveLength(5)
+    // Within the hub's headcounts: the keying error the ranking leaves out stays out there too.
     expect(linkOf(more()).search).toEqual({ an: 2025, indicator: 'employees', interval: 'employees:0~50000' })
   })
 

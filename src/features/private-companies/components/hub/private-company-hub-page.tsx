@@ -573,7 +573,7 @@ function ActivitiesCaption({ measure }: { readonly measure: ActivityMeasure }) {
 
 // ──────────────────────────────────────────────────────────── the hero ──
 
-/** The year's ten largest companies by the ranking chosen, what they are ranked by, and the rest in the analysis. */
+/** The year's largest companies by the ranking chosen (`COMPANY_HUB_LEADERS_SHOWN` of them), what they are ranked by, and the rest in the analysis. */
 function HeroLeaders({ ranking, onRanking }: { readonly ranking: CompanyHubRanking; readonly onRanking: (key: CompanyHubRanking) => void }) {
   const leaders = ranking === 'salariati' ? SNAPSHOT.leaders.employees : SNAPSHOT.leaders.turnover
   const previousYear = YEAR - 1
