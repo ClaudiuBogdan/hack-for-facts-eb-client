@@ -1,12 +1,6 @@
-import {
-  createRootRouteWithContext,
-  Link,
-  Scripts,
-} from "@tanstack/react-router";
+import { createRootRouteWithContext, Scripts } from "@tanstack/react-router";
 import GlobalErrorPage from "@/components/errors/GlobalErrorPage";
-import { Button } from "@/components/ui/button";
-import { Home, FileQuestion } from "lucide-react";
-import { t } from "@lingui/core/macro";
+import { NotFoundPage } from "@/components/errors/not-found-page";
 import { i18n } from "@lingui/core";
 import { z } from "zod";
 import type { RouterContext } from "@/router-context";
@@ -112,32 +106,6 @@ function RootComponent() {
         <Scripts />
       </body>
     </html>
-  );
-}
-
-function NotFoundPage() {
-  return (
-    <div className="min-h-[60vh] flex items-center justify-center p-6">
-      <div className="w-full max-w-md text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-          <FileQuestion className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {t`Page not found`}
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          {t`The page you are looking for doesn't exist or has been moved.`}
-        </p>
-        <div className="mt-6">
-          <Link to="/">
-            <Button>
-              <Home className="mr-2 h-4 w-4" />
-              {t`Go to homepage`}
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
   );
 }
 

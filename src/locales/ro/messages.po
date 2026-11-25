@@ -4841,6 +4841,10 @@ msgstr "a expirat înainte să fie acceptată de ambele părți."
 msgid "A fost negociat fără anunț public."
 msgstr "A fost negociat fără anunț public."
 
+#: src/components/errors/GlobalErrorPage.tsx:151
+msgid "A ieșit o ediție nouă"
+msgstr "A ieșit o ediție nouă"
+
 #: src/features/national-budget/home/components/person-head.tsx:60
 msgid "A încasat"
 msgstr "A încasat"
@@ -5337,6 +5341,7 @@ msgstr "achiziții directe, până în {0}"
 msgid "Achiziții în timp"
 msgstr ""
 
+#: src/components/errors/not-found-page.tsx:12
 #: src/components/sidebar/nav-main.tsx:59
 #: src/features/landing/components/landing-page.tsx:71
 #: src/features/landing/lib/landing-groups.ts:69
@@ -6636,6 +6641,14 @@ msgstr "admis: profitul minus pierderea, cum le-a calculat evaluatorul"
 msgid "admisă"
 msgstr "admisă"
 
+#: src/components/errors/not-found-page.tsx:32
+msgid "Adresa <0/> nu duce la nicio pagină. Poate s-a mutat, sau adresa are o greșeală."
+msgstr "Adresa <0/> nu duce la nicio pagină. Poate s-a mutat, sau adresa are o greșeală."
+
+#: src/components/errors/GlobalErrorPage.tsx:145
+msgid "Adresa are un parametru pe care nu-l putem citi. Deschide pagina dintr-un link bun, sau pornește de la prima pagină."
+msgstr "Adresa are un parametru pe care nu-l putem citi. Deschide pagina dintr-un link bun, sau pornește de la prima pagină."
+
 #. placeholder {0}: unusedPeriods.map(formatHubPeriod).join(', ')
 #. placeholder {1}: formatHubPeriod(from)
 #. placeholder {2}: formatHubPeriod(to)
@@ -7530,6 +7543,10 @@ msgstr "Am înțeles"
 #: src/features/privacy/components/consent-card.tsx:125
 msgid "Am notat."
 msgstr "Am notat."
+
+#: src/components/errors/GlobalErrorPage.tsx:143
+msgid "Am publicat o versiune nouă a site-ului cât timp citeai. Reîncarcă pagina ca s-o primești."
+msgstr "Am publicat o versiune nouă a site-ului cât timp citeai. Reîncarcă pagina ca s-o primești."
 
 #: src/features/legal/components/reader/legal-reader-page.tsx:620
 msgid "Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum."
@@ -10270,6 +10287,7 @@ msgstr "Bugetul general consolidat: toate bugetele publice, fără transferurile
 msgid "Bugetul instituției"
 msgstr "Bugetul instituției"
 
+#: src/components/errors/not-found-page.tsx:11
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:365
 #: src/features/national-budget/home/components/person-head.tsx:231
 msgid "Bugetul național"
@@ -14639,6 +14657,10 @@ msgstr "Firmele din serie"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:162
 #~ msgid "Companies under proceedings — useful when checking the suppliers of a public institution."
 #~ msgstr "Firmele aflate în procedură, utile pentru a verifica furnizorii unei instituții publice."
+
+#: src/components/errors/not-found-page.tsx:13
+msgid "Companii"
+msgstr "Companii"
 
 #: src/features/landing/lib/search-filters.ts:93
 msgid "Companii de stat"
@@ -24099,6 +24121,10 @@ msgstr "Indicator"
 #~ msgid "Figures computed on {0}"
 #~ msgstr "Cifre calculate la {0}"
 
+#: src/components/errors/not-found-page.tsx:30
+msgid "Fila asta lipsește din dosar"
+msgstr "Fila asta lipsește din dosar"
+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:812
 msgid "File imported"
 msgstr "Fișier importat"
@@ -25781,7 +25807,6 @@ msgstr "Vezi Grafic"
 msgid "Go to Entity Table"
 msgstr "Vezi Tabel"
 
-#: src/routes/__root.tsx:135
 #: src/routes/unsubscribe.$token.tsx:48
 #: src/routes/unsubscribe.$token.tsx:81
 msgid "Go to homepage"
@@ -26112,6 +26137,7 @@ msgstr "Activitate practică"
 msgid "Hang tight while we resolve and redirect you to the destination."
 msgstr "Te rugăm să aștepți cât timp te redirecționăm către destinație."
 
+#: src/components/errors/not-found-page.tsx:15
 #: src/features/elections/components/contest-result-explorer-page.tsx:127
 #: src/features/landing/components/budget-map/map-picker.tsx:159
 msgid "Harta"
@@ -27673,6 +27699,7 @@ msgstr "Înalta Curte (toată țara)"
 msgid "Înalta Curte de Casație și Justiție"
 msgstr "Înalta Curte de Casație și Justiție"
 
+#: src/components/errors/not-found-page.tsx:47
 #: src/features/procurement/components/buyer/buyer-awards-band.tsx:197
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:260
 msgid "Înapoi"
@@ -30768,6 +30795,7 @@ msgstr "Legislația României"
 msgid "Legislația<0/>României"
 msgstr "Legislația<0/>României"
 
+#: src/components/errors/not-found-page.tsx:14
 #: src/components/sidebar/nav-main.tsx:78
 #: src/features/entity-search/lib/doc-type-meta.ts:68
 #: src/features/landing/components/landing-page.tsx:73
@@ -32981,6 +33009,8 @@ msgstr "Mergi la"
 msgid "Mergi la pagina"
 msgstr "Mergi la pagina"
 
+#: src/components/errors/GlobalErrorPage.tsx:168
+#: src/components/errors/not-found-page.tsx:42
 #: src/features/elections/catalog/catalog-parts.tsx:245
 #: src/features/procurement/components/analytics/analytics-answer.tsx:368
 msgid "Mergi la prima pagină"
@@ -36691,6 +36721,10 @@ msgstr "Nu s-a efectuat nicio căutare pentru aceste filtre."
 msgid "Nu s-a plătit: achiziția nu s-a făcut."
 msgstr "Nu s-a plătit: achiziția nu s-a făcut."
 
+#: src/components/errors/GlobalErrorPage.tsx:146
+msgid "Nu s-a putut afișa. De obicei o reîncărcare o lipește la loc; dacă nu, pornește de la prima pagină."
+msgstr "Nu s-a putut afișa. De obicei o reîncărcare o lipește la loc; dacă nu, pornește de la prima pagină."
+
 #: src/features/public-enterprises/components/enterprise/enterprise-parts.tsx:244
 #: src/features/public-enterprises/components/enterprise/enterprise-parts.tsx:246
 msgid "nu s-a putut citi acum"
@@ -37260,6 +37294,18 @@ msgstr ""
 #: src/features/parliament/components/parliament-hub-bills-section.tsx:48
 msgid "O eroare de citire nu înseamnă că nu există proiecte de lege în lucru. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă."
 msgstr ""
+
+#: src/components/errors/not-found-page.tsx:36
+msgid "O filă desenată în pixeli care caută cu o lupă"
+msgstr "O filă desenată în pixeli care caută cu o lupă"
+
+#: src/components/errors/GlobalErrorPage.tsx:155
+msgid "O filă desenată în pixeli, proaspăt scrisă, care face cu mâna"
+msgstr "O filă desenată în pixeli, proaspăt scrisă, care face cu mâna"
+
+#: src/components/errors/GlobalErrorPage.tsx:157
+msgid "O filă desenată în pixeli, ruptă în două, care strânge ochii"
+msgstr "O filă desenată în pixeli, ruptă în două, care strânge ochii"
 
 #: src/routes/procurement/suppliers/$cui.tsx:97
 msgid "O firmă ca furnizor al statului: ce instituții cumpără de la ea, ce vinde, unde, cum câștigă și cu cine, din SEAP."
@@ -38443,8 +38489,8 @@ msgid "error.pageRenderErrorTitle"
 msgstr "Eroare la încărcarea paginii"
 
 #: src/routes/__root.tsx:126
-msgid "Page not found"
-msgstr "Pagina nu a fost găsită"
+#~ msgid "Page not found"
+#~ msgstr "Pagina nu a fost găsită"
 
 #: src/features/procurement/components/procurement-ranking-table.tsx:230
 #~ msgid "Page size"
@@ -38579,6 +38625,10 @@ msgstr "Pagina instanței {label}"
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:308
 msgid "Pagina localității"
 msgstr "Pagina localității"
+
+#: src/components/errors/GlobalErrorPage.tsx:151
+msgid "Pagina s-a rupt"
+msgstr "Pagina s-a rupt"
 
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:47
 msgid "Pagina unui ONG există când registrul național ONG are o intrare curentă legată de CUI. Nu e o dovadă că organizația nu e un ONG: în registru o poți găsi după nume."
@@ -43261,6 +43311,10 @@ msgstr ""
 msgid "Regulile: populație {0}, admitere {1}, schemă {2}."
 msgstr "Regulile: populație {0}, admitere {1}, schemă {2}."
 
+#: src/components/errors/GlobalErrorPage.tsx:164
+msgid "Reîncarcă pagina"
+msgstr "Reîncarcă pagina"
+
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:526
 #~ msgid "Reîncarcă pagina pentru a încerca din nou."
 #~ msgstr ""
@@ -44526,6 +44580,7 @@ msgstr "sau atinge-o încă o dată pe hartă"
 #~ msgid "Sau localitatea ta"
 #~ msgstr ""
 
+#: src/components/errors/not-found-page.tsx:53
 #: src/features/justice/components/hub/justice-hub-hero.tsx:53
 #: src/features/landing/components/landing-page.tsx:317
 #: src/features/legal/components/hub/legislation-hub.tsx:142
@@ -45719,6 +45774,10 @@ msgstr "secțiune"
 #: src/features/procurement/components/home/home-section-nav.tsx:11
 msgid "Secțiunile paginii"
 msgstr "Secțiunile paginii"
+
+#: src/components/errors/not-found-page.tsx:52
+msgid "Secțiunile site-ului"
+msgstr "Secțiunile site-ului"
 
 #: src/features/public-enterprises/lib/hub-text.ts:39
 msgid "Sectoarele Bucureștiului"
@@ -49732,8 +49791,8 @@ msgstr "Noua realitate fiscală care îți afectează portofelul."
 #~ msgstr "Analitica din Prezentare generală este filtrată după locația autorității. Lista de înregistrări nu aplică încă geografia — treci la Listă ca să vezi înregistrările fără a elimina silențios acest filtru din URL."
 
 #: src/routes/__root.tsx:129
-msgid "The page you are looking for doesn't exist or has been moved."
-msgstr "Pagina pe care o căutați nu există sau a fost mutată."
+#~ msgid "The page you are looking for doesn't exist or has been moved."
+#~ msgstr "Pagina pe care o căutați nu există sau a fost mutată."
 
 #: src/features/learning/components/interactive/PromiseTracker.tsx:403
 msgid "The Pattern"

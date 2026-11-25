@@ -879,6 +879,19 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-11-25 — The not-found and error pages stand on the landing's skin,
+  with a page character.** One band (lattice, ruled frame, crossing marks), the
+  words on the left, a pixel-art sheet with a cat face on the right
+  (`src/components/errors/`): on the 404 it searches with a magnifier and the
+  page names the address asked for, offers home, back and one row of the main
+  sections; on an error it is torn in two and rejoins while reload is pointed
+  at; for a new deploy it waves. The error page has no technical details;
+  reload and home stay hard navigations. The character keeps the consent
+  cookie's pixel vocabulary (whole cells, `steps()`, nothing moving under
+  reduced motion) but has a face of its own. *Why:* the owner asked for
+  playful pages in the new style, picked the page character over the cookie
+  and the cat face over googly eyes (prototype `errors/pages`, kept).
+
 - **2026-11-25 — `/national-budget`'s categorical charts use the data-viz
   reference palette, not navy-then-grey.** The budgets' squares and flow, and
   only that page's categorical charts, draw in blue, orange, aqua and yellow,
