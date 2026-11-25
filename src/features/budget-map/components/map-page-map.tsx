@@ -110,10 +110,10 @@ export default function MapPageMap({
     const measureTitle = i18n._(measure.title)
     if (!county) return buildInfo(code, uatProps.get(code), figures, measure, valueOf(code), measureTitle, locale)
     const capital = code === 'B'
-    const name = countyNameRo(code) ?? code
+    const countyName = countyNameRo(code) ?? code
     return {
       siruta: code,
-      name: capital ? t`Municipiul București` : t`Județul ${name}`,
+      name: capital ? t`Municipiul București` : t`Județul ${countyName}`,
       kind: null,
       county: null,
       place: capital ? t`Sectoarele și bugetul propriu al capitalei` : t`Primăriile și consiliul județean`,
