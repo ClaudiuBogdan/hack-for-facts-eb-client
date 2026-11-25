@@ -1,7 +1,6 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import {
@@ -256,20 +255,20 @@ function BalanceSheet({ model }: { readonly model: CompanyProfileModel }) {
       <thead>
         <tr className="border-b border-border/70">
           <th scope="col" className="pb-2 text-left font-normal">
-            <MonoLabel className="text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               <Trans>Bilanț, {latest.fiscalYear}</Trans>
-            </MonoLabel>
+            </span>
           </th>
           <th scope="col" className="pb-2 pl-3 text-right font-normal">
-            <MonoLabel className="text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               <Trans>lei</Trans>
-            </MonoLabel>
+            </span>
           </th>
           {before ? (
             <th scope="col" className="pb-2 pl-3 text-right font-normal">
-              <MonoLabel className="text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 <Trans>față de {before.fiscalYear}</Trans>
-              </MonoLabel>
+              </span>
             </th>
           ) : null}
         </tr>
