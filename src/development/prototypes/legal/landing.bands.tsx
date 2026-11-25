@@ -16,7 +16,7 @@ import { GROUP_LABEL, labelOf } from '@/features/legal/lib/analytics-labels'
 import { labelOfKey } from '@/features/legal/lib/analytics-view'
 import { formatLegalDate, localIsoDate } from '@/features/legal/lib/legal-format'
 import { legalEventKindLabel, legalGazettePartLabel } from '@/features/legal/lib/legal-vocabulary'
-import { LEADER_ROW_CLASS } from '@/features/private-companies/components/hub/company-hub-sections'
+import { LEADER_ROW_CLASS } from '@/features/legal/components/hub/legislation-hub-lib'
 import type { HomeSection } from '@/features/procurement/lib/home-links'
 import { cn } from '@/lib/utils'
 import {

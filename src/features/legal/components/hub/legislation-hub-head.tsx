@@ -7,12 +7,11 @@ import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { CountUpValue, countUpWithin } from '@/features/landing/components/count-up'
 import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
-import { LEADERS_MORE_CLASS, LEADER_ROW_CLASS } from '@/features/private-companies/components/hub/company-hub-sections'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import { fmt, pct } from '../../lib/analytics-format'
-import { GAZETTE_URL, HEAD_ACTS_SHOWN, PORTAL_URL, actName, analysisSearch, hubActsArgs, type HubRanking } from './legislation-hub-lib'
+import { GAZETTE_URL, HEAD_ACTS_SHOWN, LEADERS_MORE_CLASS, LEADER_ROW_CLASS, PORTAL_URL, actName, analysisSearch, hubActsArgs, type HubRanking } from './legislation-hub-lib'
 import { BandNote, PendingBar } from './legislation-hub-parts'
 
 /**

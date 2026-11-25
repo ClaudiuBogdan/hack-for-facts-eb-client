@@ -132,6 +132,17 @@ export function hubActsArgs(ranking: HubRanking): LegalAnalyticsArgs {
   return { order: ranking === 'citate' ? 'cited' : 'amended', limit: HEAD_ACTS_SHOWN }
 }
 
+/** A band's number in the pinned bar's order, as its index reads („02"). The legislation hub's own copy: the hubs stay independent. */
+export function bandNumber(sections: readonly HomeSection[], id: string): string {
+  return String(sections.findIndex((section) => section.id === id) + 1).padStart(2, '0')
+}
+
+/** A row of the head's acts card: place, name, bar and quiet line, figure. The hubs' leaders' row, copied so the hubs stay independent. */
+export const LEADER_ROW_CLASS = 'group grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2'
+
+/** The link under the acts card to the rest, in the analysis: the hubs' „more" link. */
+export const LEADERS_MORE_CLASS = 'mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline'
+
 /** The page's bands, in order: the pinned bar's links and each band's number. */
 export function legalHubSections(): readonly HomeSection[] {
   return [

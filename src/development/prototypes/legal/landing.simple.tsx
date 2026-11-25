@@ -13,7 +13,7 @@ import { DeferredLandingSearch } from '@/features/landing/components/search/defe
 import { useLegalAnalytics } from '@/features/legal/hooks/use-legislation-analytics'
 import { fmt, pct } from '@/features/legal/lib/analytics-format'
 import { READING_SENTENCE } from '@/features/legal/lib/analytics-notes-text'
-import { LEADERS_MORE_CLASS, LEADER_ROW_CLASS } from '@/features/private-companies/components/hub/company-hub-sections'
+import { LEADERS_MORE_CLASS, LEADER_ROW_CLASS } from '@/features/legal/components/hub/legislation-hub-lib'
 import { HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { useIsMobile } from '@/hooks/use-mobile'

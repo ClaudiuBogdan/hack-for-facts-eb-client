@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { bandNumber } from '@/features/private-companies/components/hub/company-hub-sections'
 import { HomeBand } from '@/features/procurement/components/home/home-section-nav'
 import type { HomeSection } from '@/features/procurement/lib/home-links'
 import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { LegalAnalyticsError } from '../../api/legal-analytics-api'
 import { fmt, pct } from '../../lib/analytics-format'
+import { bandNumber } from './legislation-hub-lib'
 
 /**
  * The legislation hub's shared pieces, in the hubs' language (companies, procurement, NGOs): a numbered band
