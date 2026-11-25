@@ -82,15 +82,6 @@ export function viewOfYear(catalog: BudgetNationalCatalog, asked: number | undef
   return views.find((entry) => entry.year === asked) ?? views.find((entry) => entry.year === fallback) ?? views[views.length - 1]!
 }
 
-/**
- * What a band's read answers for: its year and the lanes' loads. A read
- * boundary keyed by it starts afresh for a new year, or after a lane moved
- * (the catalog read again), instead of keeping an error that belongs to
- * another question.
- */
-export function readKey(view: YearView | null, catalog: BudgetNationalCatalog): string {
-  return `${view?.label ?? 'every-year'}|${catalog.snapshots.execution}|${catalog.snapshots.approved}`
-}
 
 /** The address's keys that are the site's, not this page's (`lang`): carried into the pages it links to. */
 export function siteKeys(search: Record<string, unknown>): Record<string, unknown> {

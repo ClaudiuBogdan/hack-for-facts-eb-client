@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
 import { cellsOf } from '@/features/national-budget/analytics/lib/analytics-data'
-import { lineLabel } from '@/features/national-budget/analytics/lib/analytics-format'
 import type { BudgetApprovedRecord, BudgetNationalCatalog, BudgetNationalSeries, BudgetObservation } from '@/schemas/national-budget-api'
 import {
   ANAF_FIRST_YEAR,
@@ -13,7 +12,6 @@ import {
   gdpOf,
   lawEditionOf,
   previousView,
-  readKey,
   siteKeys,
   unfinishedYearsOf,
   viewOfYear,
@@ -21,8 +19,7 @@ import {
   yearViews,
 } from './home-data'
 import { comparableWithAnaf } from '../hooks/use-home-data'
-import { partsOfWhole } from '../hooks/use-whole-of'
-import { authorityName, budgetsLede, gdpNumber, gdpSizeText, moneyText, restOf, shareNumber, shareOf } from './home-format'
+import { authorityName, gdpNumber, gdpSizeText, restOf, shareNumber, shareOf } from './home-format'
 import { cellsOutOfHundred, namedCount, squarify, toneOf, type Part } from './home-geometry'
 import { lawChaptersOf, planTotalsInput, previousEdition } from './home-law'
 
@@ -148,11 +145,6 @@ describe('ANAF over the bulletin window', () => {
     expect(comparableWithAnaf(viewOfYear(catalog, 2026))).toBe(true)
   })
 
-  it('keys a read by its year and the lanes’ loads, so a new year or a moved lane is read afresh', () => {
-    expect(readKey(viewOfYear(catalog, 2024), catalog)).toBe('2024|e1|a1')
-    expect(readKey(viewOfYear(catalog, 2026), catalog)).toBe('2026-07|e1|a1')
-    expect(readKey(null, catalog)).toBe('every-year|e1|a1')
-  })
 
   it('reads the state budget: sector 1, source 1, the principal authorities, payments', () => {
     expect(anafFilter(viewOfYear(catalog, 2025))).toMatchObject({ budget_sector_ids: ['1'], funding_source_ids: ['1'], account_category: 'ch' })
@@ -176,48 +168,6 @@ describe('ANAF over the bulletin window', () => {
 })
 
 describe('the parts of a whole', () => {
-  const ITEMS = ['mfin.bgc.expenditure.personnel', 'mfin.bgc.expenditure.interest']
-  const whole = (now: Record<string, string | null>) =>
-    partsOfWhole({ whole: '215816900000', items: ITEMS, now: (itemId) => now[itemId] ?? null, before: () => null, restLabel: () => 'rest', restHint: () => '' })
-
-  it('has no breakdown when no line has a value for the year (2013): not a whole that is all „rest"', () => {
-    expect(whole({})).toBeNull()
-  })
-
-  it('counts a line of exactly zero as a value, and the rest as what the lines leave', () => {
-    const parts = whole({ 'mfin.bgc.expenditure.interest': '0' })
-    expect(parts?.map((entry) => entry.key)).toEqual(['mfin.bgc.expenditure.interest', 'rest'])
-    expect(parts?.find((entry) => entry.key === 'mfin.bgc.expenditure.interest')?.share).toBe(0)
-    expect(parts?.find((entry) => entry.rest)?.share).toBe(100)
-  })
-
-  it('ranks the lines by size and leaves the rest last', () => {
-    const parts = whole({ 'mfin.bgc.expenditure.personnel': '50000000000', 'mfin.bgc.expenditure.interest': '100000000000' })
-    expect(parts?.map((entry) => entry.key)).toEqual(['mfin.bgc.expenditure.interest', 'mfin.bgc.expenditure.personnel', 'rest'])
-  })
-
-  it('names non-financial assets consistently without changing the spending parts', () => {
-    const assets = 'mfin.bgc.expenditure.nonfinancial_assets'
-    const transfers = 'mfin.bgc.expenditure.other_transfers'
-    const amounts: Record<string, string> = { [assets]: '64000000000', [transfers]: '36600000000' }
-    const parts = partsOfWhole({
-      whole: '808700000000',
-      items: [assets, transfers],
-      now: (itemId) => amounts[itemId] ?? null,
-      before: () => null,
-      restLabel: () => 'rest',
-      restHint: () => '',
-    })
-
-    expect(parts).toMatchObject([
-      { key: assets, label: 'Active nefinanciare', amount: '64.0\u00a0mld. lei', shareLabel: '7.9%' },
-      { key: transfers, label: 'Alte transferuri', amount: '36.6\u00a0mld. lei' },
-      { key: 'rest', amount: '708.1\u00a0mld. lei' },
-    ])
-    expect(parts?.[1]?.hint).not.toContain('burse')
-    expect(lineLabel('active nefinanciare')).toBe('Active nefinanciare')
-  })
-
   it('gives whole lei out of a hundred that always make a hundred', () => {
     const counts = cellsOutOfHundred([part('a', 31.4), part('b', 20.2), part('c', 8.9), part('d', 33.33), part('rest', 6.17, true)])
     expect(counts.reduce((sum, value) => sum + value, 0)).toBe(100)
@@ -446,40 +396,5 @@ describe('the GDP figures, each from its own source', () => {
     expect([others.share(TOTAL_ITEMS.spending), others.shareStatus(TOTAL_ITEMS.spending)]).toEqual([null, 'absent'])
     expect([others.share(TOTAL_ITEMS.revenue), others.shareStatus(TOTAL_ITEMS.revenue)]).toEqual(['0', 'available'])
     expect([others.share(TOTAL_ITEMS.balance), others.shareStatus(TOTAL_ITEMS.balance)]).toEqual([null, 'unqualified'])
-  })
-})
-
-describe('the budgets band\'s sentence', () => {
-  // December 2025, BGC, as the API prints the columns (snapshot e1.b5701dc5…).
-  const spending = {
-    year: '2025',
-    side: 'EXPENDITURE' as const,
-    before: '1003066412649.9998',
-    transfers: '-185073582515.90002',
-    operations: '-9261415173.9999998',
-    consolidated: '808731414960.09985',
-  }
-
-  it('names the financial operations, so the transfers alone are not the whole step to the consolidated budget', () => {
-    const text = budgetsLede(spending) ?? ''
-    for (const amount of [moneyText(spending.before), moneyText('185073582515.90002'), moneyText('9261415173.9999998'), moneyText(spending.consolidated)]) expect(text).toContain(amount)
-    expect(text).toContain('operațiuni financiare')
-    expect(text).toContain('fără')
-    const revenue = budgetsLede({ ...spending, side: 'REVENUE', before: '849769998617.25001', operations: '-1998242999.9999999', consolidated: '662698173101.34997' }) ?? ''
-    expect(revenue).toContain(moneyText('1998242999.9999999'))
-    expect(revenue).toContain('operațiuni financiare')
-  })
-
-  it('leaves the financial operations out only when they are zero, adds them when they add, and has no sentence when a step is missing', () => {
-    for (const side of ['EXPENDITURE', 'REVENUE'] as const) {
-      const zero = budgetsLede({ ...spending, side, operations: '-0.00' })
-      expect(zero).toContain(moneyText(spending.consolidated))
-      expect(zero).not.toContain('operațiuni financiare')
-      const adding = budgetsLede({ ...spending, side, operations: '9261415173.9999998' })
-      expect(adding).toContain('adăugând cele')
-      expect(adding).not.toContain('fără cele')
-      expect(budgetsLede({ ...spending, side, operations: null })).toBeNull()
-      expect(budgetsLede({ ...spending, side, transfers: null })).toBeNull()
-    }
   })
 })

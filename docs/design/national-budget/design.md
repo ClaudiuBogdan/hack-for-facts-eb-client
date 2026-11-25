@@ -1622,3 +1622,77 @@ spending line. Now:
 - *Notes:* they use the bulletin's own bridge. 185,1 mld. lei passed between budgets and are netted once in public spending (808,7),
   157,8 of them as „subvenții". The budgets' deficits are 156,9 together; the consolidated deficit is 146,0 after the other budgets'
   surpluses and financial operations. Who paid whom is not printed and is never drawn.
+
+## 13. Promoting the per-person working version to `/national-budget` (plan, 25 November 2026)
+
+**Owner's decisions:**
+- The working version replaces the live page's bands. No gallery chart joins it.
+- The law band goes; „Mai departe" links the law views.
+- Population and GDP ship as static tables, labelled with source and vintage. The API ask is filed in `docs/issues`.
+- The share card becomes the page's real preview image in this integration.
+- The prototypes stay (owner's standing rule; this overrides `prototyping.md`'s „git rm the prototype").
+
+**Before the port (done):** the budgets on printed columns (§12.13), the checkpoint commits, `origin/dev` merged.
+
+**The port, in order:**
+1. *Data.* The tables and the per-resident division move to the feature's `lib/` with source, vintage and unit tests. Shares and changes
+   use `exactPercent`/`exactChange`/`shareOf`/`restOf`; floats only to plot and for whole-lei apportionment. The new reads join
+   `useHomePrefetch`.
+2. *Year.* The live `an` search param, `useHomeYear`/`useShownYear`, the year notice and the noindex rule stay. The prototype's
+   `YearProvider` does not move.
+3. *Components.* Hero, pinned bar (icons, year beside the name), figures band, and the sections: 100 lei, budgets, state budget,
+   borrowing, year in progress, further. They go into `src/features/national-budget/home/components/`, built on the live shell. The
+   chart palette is checked against `DESIGN.md` first.
+4. *Language.* Every string through Lingui, resolved at render: whole sentences, plurals for leu/lei/de lei. Both catalogs are filled and
+   each English msgstr is checked against its msgid; root gets a note first.
+5. *Share image.* `/national-budget/share-image.png` per year and locale, on the PNRR handler's pattern, with `og:image`/`twitter:image`
+   in the route head. Its figure must equal the hero's.
+6. *Head and anchors.* The route's title and description are rewritten. Old anchors (`#cheltuieli`, `#venituri`, `#deficit`, `#domenii`,
+   `#ministere`, `#lege`) are checked for inbound links.
+7. *Tests.* Unit tests for the data lib. `national-budget-home.spec.ts` and the home unit tests are rewritten. The landing spec, the build
+   with `build:validate` and the cookie check, `?lang=en` and dark mode are all run.
+8. *Removal.* The live bands no longer used are deleted last, with what readers lose listed for the owner.
+9. *Gates.* Opus 5.5 xhigh plus Codex `gpt-6.1-sol` xhigh review, then one commit; the push waits for the owner's word and root's OK.
+
+### 13.1 Review round 1 (25 November 2026)
+
+Codex `gpt-6.2-sol` xhigh and Opus 5.5 xhigh read the port. What changed:
+- **The budgets' bridge names every printed step again (NB-001).** „Toate bugetele, înainte de transferuri" less the transfers and the
+  signed financial operations is the consolidated budget (2025: 1.003,1 − 185,1 − 9,3 = 808,7 mld. lei). The sentence is said only when
+  the printed steps add up to within a leu (the cells carry the spreadsheet's float noise: 0,00007 lei in 2025); otherwise no sum is said.
+- **„Fonduri UE" in the budgets section takes the four EU lines** under total revenue: payments for both financial frameworks, „alte sume
+  primite de la UE" and the PNRR grants. The state budget's 2025 EU money is 68,7 mld. lei, not 43,3; the PNRR grants (22,8) had been
+  counted as its own revenue. This amends §12.13.
+- **A budget whose sources don't add up to its spending is not drawn as flows**; the squares stay. A release missing one of the four named
+  budgets has no comparison (it would hide inside „Alte bugete").
+- **A total printed without its lines has no breakdown** (2008, 2011, 2013): the totals, and a sentence, never 100 lei of „Alte cheltuieli"
+  (§11.5, lost in the port; `hundredOf` is now tested).
+- **The share card's figure is on the page**: spending per resident under „A cheltuit", rounded as the card rounds it.
+- **One year rule for the page, the menus and the card**: a year without its 1 January population opens the default year, with a notice
+  (the menus don't offer it); the years the bulletins don't finish are listed in the menu but disabled, as the old page did.
+- **Reads:** the prefetch no longer starts the law's and the old budget columns' reads, nor the monthly totals no section reads, nor the GDP
+  denominator; it warms the newest bulletin's totals, which two sections read whatever the year. A failed prefetch fails quietly, and a section
+  whose read failed reads again when the reader picks another year.
+- **Smaller:** the year-in-progress headline takes the GDP share of the amount's month; a printed surplus is never drawn as a deficit; shares
+  are kept at four decimals and rounded once for display; „Alte instituții" is summed from its own rows; „pe locuitor" has the page's own
+  id („per resident"); „față de" reads „vs" in English.
+
+**Residuals, judged acceptable:** the share card's URL is cached an hour (and served stale a day) like the site's other cards, so after a new
+bulletin a shared `?an=` of the year in progress can show the previous month for up to a day; the 100-lei columns are drawn equal although
+2013's printed balance differs from revenue less spending by 0,1 mil. lei; the flows and the monthly chart are read by pointer (the lists and
+notes carry the figures); the old band anchors (`#cheltuieli`, `#deficit`, …) are gone, with no inbound link in the repo.
+
+### 13.2 Review round 2 (25 November 2026)
+
+Codex `gpt-6.2-sol` xhigh and Opus 5.5 xhigh read the fixes; the last round root allows. What changed:
+- **The budgets' comparison needs public spending printed**, like the four named budgets; „received as subsidies" is said only when printed.
+- **„Alte instituții" is one line of the hundred**: whole lei apportioned once over the fifteen named and it, not its small rows' lei added up.
+- **A failed section reads again on a new catalog** (a bulletin landed under it), not only on a new year.
+- The last three English comparisons say „vs"; the built check wants a PNG from both image requests.
+
+**Residuals, judged acceptable (rounding at exact half-units, rare paths):** a per-resident amount at an exact half leu, a GDP share at an exact
+half of its last digit, and the figures band's billions are rounded through floats; „the rest" under half a percent is left out before the hundred
+is apportioned (a line can gain a leu); an address asking for a year the page won't show prefetches that year's reads; ANAF's chapters and
+authorities can come from two refreshes for up to five minutes after a correction. The population table must get the new year's row before that
+year's December bulletin lands (NB-002), or the bare page opens a year without its figures per resident.
+

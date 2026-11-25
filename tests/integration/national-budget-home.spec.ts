@@ -2,7 +2,7 @@
  * Integration tests for the national budget page (`/national-budget`). The
  * page renders on the server: in CI the server reads the dev API and the
  * browser cannot (the API answers no CORS preflight), so these tests hold the
- * page to its structure and its address — the bands it draws, the year it
+ * page to its structure and its address — the sections it draws, the year it
  * reads, the way back and forth to the analysis page — never to a number the
  * next bulletin would change, and never to a read the browser makes.
  */
@@ -33,96 +33,122 @@ test.beforeAll(async () => {
   test.skip(missing, `${api} does not serve the national budget API`)
 })
 
-const BANDS = ['cheltuieli', 'domenii', 'ministere', 'venituri', 'deficit', 'anul', 'bugete', 'lege'] as const
+const SECTIONS = ['bani', 'bugete', 'stat', 'imprumut', 'anul'] as const
 
 const bar = (page: Page) => page.getByRole('navigation', { name: 'Secțiunile paginii' })
 const params = (page: Page) => Object.fromEntries(new URL(page.url()).searchParams)
+/** The head's year button: „Anul: 2025" (or „Anul: 2026, până în …" for the year in progress). */
+const yearButton = (page: Page) => page.getByRole('button', { name: /^Anul: \d{4}/u }).first()
+
+/** Opens the head's year menu (again until the page has hydrated and it opens) and picks a year. */
+async function pickYear(page: Page, year: string) {
+  const item = page.getByRole('menuitemradio', { name: new RegExp(`^${year}`, 'u') })
+  await expect(async () => {
+    await yearButton(page).click()
+    await expect(item).toBeVisible({ timeout: 2000 })
+  }).toPass({ timeout: 30000 })
+  await item.click()
+}
 
 test.describe('National budget — the server render', () => {
-  test('the bare page draws its head, its figures and every band, in a reader’s order', async ({ page }) => {
+  test('the bare page draws its head, its figures and every section, in a reader’s order', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
     await expect(page).toHaveTitle(/^Bugetul național/u)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('De unde vin banii publici')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Bugetul țării')
     await expect(page.getByRole('region', { name: 'Cifre-cheie' })).toContainText('mld. lei')
-    // The pinned bar: one link per band, in order, and the year.
-    await expect(bar(page).getByRole('link')).toHaveCount(BANDS.length)
-    for (const [position, id] of BANDS.entries()) {
+    // The pinned bar: one link per section, in order.
+    await expect(bar(page).getByRole('link')).toHaveCount(SECTIONS.length)
+    for (const [position, id] of SECTIONS.entries()) {
       await expect(bar(page).getByRole('link').nth(position)).toHaveAttribute('href', `#${id}`)
-      // Each band, drawn by the server with its own heading.
+      // Each section, drawn by the server with its own heading.
       await expect(page.locator(`section#${id} h2`).first()).toBeVisible()
     }
-    // The way into the analysis page, from the head and from the last band.
+    // The way into the analysis page, from the head and from the page's end.
     await expect(page.getByRole('link', { name: 'Analize avansate' })).toHaveAttribute('href', '/national-budget/analytics')
-    await expect(page.locator('section[aria-labelledby="start-title"] a[href^="/national-budget/analytics"]')).toHaveCount(6)
+    await expect(page.locator('section#departe a[href^="/national-budget/analytics"]')).toHaveCount(6)
   })
 
-  test('the ministries are listed, each opening on what it paid for; the sources name their last month', async ({ page }) => {
+  test('the state budget names its institutions, each opening its page; the data note names its last month', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
-    const first = page.locator('section#ministere button[aria-expanded]').first()
-    await expect(first).toBeVisible()
-    // The sources' line names its data's last month.
-    await expect(page.getByText(/date până în/u).first()).toBeVisible()
+    await expect(page.locator('section#stat a[href^="/entities/"]').first()).toBeVisible()
+    // The lists open on request, from one button for both.
+    const more = page.locator('section#stat button[aria-expanded]')
+    await expect(more).toHaveAttribute('aria-expanded', 'false')
+    await more.click()
+    await expect(more).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByText(/Date până în/u).first()).toBeVisible()
   })
 
-  test('the year is the page’s: chosen in the bar, it is written in the address', async ({ page }) => {
+  test('the budgets section switches between its squares and the flow of money', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
-    const select = bar(page).getByRole('combobox', { name: 'Anul' })
-    const current = await select.inputValue()
+    const section = page.locator('section#bugete')
+    await expect(section.getByRole('img').first()).toBeVisible()
+    await section.getByRole('radio', { name: 'Fluxul banilor' }).click()
+    await expect(section.locator('svg[role="img"]')).toBeVisible()
+  })
+
+  test('the year is the page’s: chosen in the head, it is written in the address', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    // The bare page shows the default year, which stays out of the address.
+    expect(params(page).an).toBeUndefined()
+    const current = ((await yearButton(page).getAttribute('aria-label')) ?? '').match(/\d{4}/u)?.[0] ?? ''
     const earlier = String(Number(current) - 3)
-    await select.selectOption(earlier)
+    await pickYear(page, earlier)
     await expect.poll(() => params(page).an).toBe(earlier)
-    // The head's dropdown follows: one year for the whole page.
-    await expect(page.getByRole('combobox', { name: 'Anul' }).first()).toHaveValue(earlier)
-    // The default year stays out of the address.
-    await select.selectOption(current)
+    await expect(yearButton(page)).toHaveAttribute('aria-label', `Anul: ${earlier}`)
+    // A change is a step in the history: Back returns to the default year and the bare address.
+    await page.goBack()
     await expect.poll(() => params(page).an).toBeUndefined()
+    await expect(yearButton(page)).toHaveAttribute('aria-label', `Anul: ${current}`)
   })
 
   test('a year in the address is read as asked; one it cannot read opens the default', async ({ page }) => {
     await page.goto(`${ROUTE}?an=2019`)
     await waitForPageReady(page)
-    await expect(bar(page).getByRole('combobox', { name: 'Anul' })).toHaveValue('2019')
-    await expect(page.getByRole('region', { name: 'Cifre-cheie' })).toContainText('2019')
+    await expect(yearButton(page)).toHaveAttribute('aria-label', 'Anul: 2019')
+    await expect(page.getByRole('heading', { name: 'Bilanțul, 2019' })).toBeVisible({ timeout: 30000 })
 
     await page.goto(`${ROUTE}?an=ieri`)
     await waitForPageReady(page)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('De unde vin banii publici')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Bugetul țării')
   })
 
-  test('a year before ANAF’s reports says so in its bands, and the rest of the page stands', async ({ page }) => {
+  test('a year before the sources says so in its sections, and the rest of the page stands', async ({ page }) => {
     await page.goto(`${ROUTE}?an=2012`)
     await waitForPageReady(page)
 
-    await expect(page.locator('section#domenii')).toContainText('2016')
-    await expect(page.locator('section#ministere')).toContainText('2016')
-    await expect(page.locator('section#cheltuieli h2')).toBeVisible()
+    await expect(page.locator('section#stat')).toContainText('2016')
+    await expect(page.locator('section#bugete')).toContainText('2019')
+    await expect(page.locator('section#bani h2')).toBeVisible()
   })
 
-  test('the server’s heading and a band’s heading survive hydration', async ({ page }) => {
+  test('the server’s heading and a section’s heading survive hydration', async ({ page }) => {
     // Every heading the server puts in the page is recorded as it lands, before React has touched it; React's own
     // nodes carry its fiber from the start. A mismatch makes React drop the server's node and draw its own — silently.
     await page.addInitScript(() => {
       const server = new Set<Element>()
       ;(window as unknown as { serverNodes: Set<Element> }).serverNodes = server
       new MutationObserver(() => {
-        for (const node of document.querySelectorAll('h1, #cheltuieli-title, #ministere-title')) {
+        for (const node of document.querySelectorAll('h1, #bani-title, #stat-title')) {
           if (!node.closest('[hidden]') && !Object.keys(node).some((key) => key.startsWith('__reactFiber$'))) server.add(node)
         }
       }).observe(document, { childList: true, subtree: true, characterData: true })
     })
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await expect(page.locator('#ministere-title')).toBeVisible()
+    await expect(page.locator('#stat-title')).toBeVisible()
     expect(
       await page.evaluate(() => {
         const server = (window as unknown as { serverNodes: Set<Element> }).serverNodes
-        return ['h1', '#cheltuieli-title', '#ministere-title'].map((selector) => {
+        return ['h1', '#bani-title', '#stat-title'].map((selector) => {
           const node = document.querySelector(selector)
           return node !== null && server.has(node)
         })

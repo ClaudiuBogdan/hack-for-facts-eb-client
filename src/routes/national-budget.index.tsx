@@ -18,10 +18,10 @@ export function validateNationalBudgetHomeSearch(search: Record<string, unknown>
 }
 
 /**
- * `/national-budget`: the national budget for every reader — how big it is,
- * what it is spent on and by whom, where it comes from, how much is borrowed,
- * how the year in progress goes, the budgets it passes through and what the
- * law approved; one year at a time. Its questions open `/national-budget/analytics`.
+ * `/national-budget`: the national budget at one person's scale — where the
+ * money comes from and what it goes on, the budgets it passes through, what
+ * the state budget pays and through whom, how much is borrowed year by year
+ * and how the year in progress goes; one year at a time. Its questions open `/national-budget/analytics`.
  * Rendered on the server: the bands' suspense reads run there and reach the
  * browser through the router's query integration.
  *
@@ -32,17 +32,23 @@ export function validateNationalBudgetHomeSearch(search: Record<string, unknown>
 export const Route = createFileRoute('/national-budget/')({
   ssr: true,
   validateSearch: validateNationalBudgetHomeSearch,
-  // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
-  headers: () => ({ ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }),
+  // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one. Private: the
+  // render reads the reader's cookies (language, currency, theme), so no shared cache may keep it (CACHE-001).
+  headers: () => ({ ...createNoStoreHeaders(), 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' }),
   // In the request's own language. The bare page is indexed; a chosen year is a view of it.
   head: ({ match }) => {
     const translator = translatorFor(match.context.locale)
-    const bare = (match.search as NationalBudgetHomeSearch).an === undefined
+    const an = (match.search as NationalBudgetHomeSearch).an
+    const bare = an === undefined
     const title = translator._(msg`Bugetul național: de unde vin banii publici și pe ce se duc — Transparenta.eu`)
     const description = translator._(
-      msg`Cât încasează și cât cheltuie statul român, pe ce, prin ce ministere și cât se împrumută, an de an din 2006. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetară raportată la ANAF și legile bugetului.`,
+      msg`Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât se împrumută an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS.`,
     )
     const canonical = `${getSiteUrl()}/national-budget`
+    // The share card for the year and language shown (server-made, `/national-budget/share-image.png`).
+    const locale = match.context.locale === 'en' ? 'en' : 'ro'
+    const image = `${getSiteUrl()}/national-budget/share-image.png?${an === undefined ? '' : `an=${an}&`}lang=${locale}`
+    const imageAlt = translator._(msg`Partea fiecărui locuitor din cheltuielile publice ale anului`)
     return {
       meta: [
         { title },
@@ -51,8 +57,14 @@ export const Route = createFileRoute('/national-budget/')({
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },
         ...(bare ? [{ property: 'og:url', content: canonical }] : []),
+        { property: 'og:image', content: image },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: imageAlt },
         { name: 'twitter:title', content: title },
         { name: 'twitter:description', content: description },
+        { name: 'twitter:image', content: image },
+        { name: 'twitter:image:alt', content: imageAlt },
       ],
       links: bare ? [{ rel: 'canonical', href: canonical }] : [],
     }
