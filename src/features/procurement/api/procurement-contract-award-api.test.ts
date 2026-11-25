@@ -149,3 +149,23 @@ describe('fetchBuyerContractAwardTotals', () => {
     await expect(fetchBuyerContractAwardTotals(WINDOW)).rejects.not.toBeInstanceOf(CaTotalsOffError)
   })
 })
+
+describe('the totals read’s document', () => {
+  beforeEach(() => graphqlQuery.mockReset())
+
+  it('selects the figures, labels and explanation under one aliased root, and passes the read’s signal on', async () => {
+    const { PROCUREMENT_CONTRACT_AWARD_TOTALS_QUERY } = await import('./graphql/procurement-contract-award-queries')
+    graphqlQuery.mockResolvedValueOnce(rawTotals())
+    const signal = new AbortController().signal
+    await fetchBuyerContractAwardTotals({ cui: '4364446', from: '2025-01-01', to: '2025-12-31' }, signal)
+    const [document, , options] = graphqlQuery.mock.calls[0] as [string, unknown, { readonly signal?: AbortSignal; readonly operationName?: string }]
+    expect(document).toBe(PROCUREMENT_CONTRACT_AWARD_TOTALS_QUERY)
+    const compact = document.replace(/\s+/gu, ' ')
+    expect(compact).toContain('query ProcurementContractAwardTotals($requests: [ProcurementTotalRequestInput!]!)')
+    expect(compact).toContain('totals: procurementTotals(requests: $requests)')
+    expect(compact).toContain('totals { valueKind sumLei recordCount }')
+    expect(compact).toContain('included { valueKinds { key labelRo labelEn } }')
+    expect(compact).toContain('explanation { textRo textEn }')
+    expect(options).toMatchObject({ operationName: 'ProcurementContractAwardTotals', signal })
+  })
+})

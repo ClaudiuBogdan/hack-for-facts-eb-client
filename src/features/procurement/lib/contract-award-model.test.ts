@@ -10,7 +10,7 @@ import {
   mapBuyerContractAwards,
   mapContractAward,
 } from './contract-award-model'
-import { caAmountText, lotEstimateText } from './contract-award-text'
+import { caAmountText, caTotalText, lotEstimateText } from './contract-award-text'
 import { rawAward, rawAwards, rawRow, RECORD_ID } from './contract-award.fixture'
 
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
@@ -72,7 +72,8 @@ describe('contract-award ids and the published window', () => {
     expect(caWindowOf({ from: '2020-01', through: null, year: 2020 })).toBeNull()
     expect(caWindowOf({ from: '2024-01', through: null, year: 2024 })).toEqual({ from: '2024-01-01', to: '2024-12-31', clipped: false })
     expect(caWindowOf({ from: '2025-06', through: '2026-05', year: 2026 })).toEqual({ from: '2025-06-01', to: '2026-05-31', clipped: false })
-    expect(caWindowOf({ from: '2020-06', through: '2021-05', year: 2021 })).toEqual({ from: '2020-06-01', to: '2021-05-31', clipped: true })
+    // Raised to the floor here, not left to the API: the money's totals take a start as given.
+    expect(caWindowOf({ from: '2020-06', through: '2021-05', year: 2021 })).toEqual({ from: '2021-01-01', to: '2021-05-31', clipped: true })
   })
 })
 
@@ -131,5 +132,18 @@ describe('contract-award records', () => {
     const notes = caRecordNotes({ flags: ['joint_win', 'foreign_equivalent', 'zero'], underReview: false, currency: 'EUR', winnerCount: 2 })
     expect(notes).toHaveLength(3)
     expect(notes[1]).toContain('EUR')
+  })
+})
+
+describe('contract-award money', () => {
+  const plain = (text: string) => text.replace(/\u00a0/gu, ' ')
+
+  it('says a sum under a thousand lei exactly, so a nonzero sum is never „0 lei", and a change with its sign', () => {
+    expect(plain(caTotalText(0.01, false))).toBe('0,01 lei')
+    expect(plain(caTotalText(-0.05, true))).toBe('−0,05 lei')
+    expect(plain(caTotalText(0.4, true))).toBe('+0,40 lei')
+    expect(plain(caTotalText(0, true))).toBe('0 lei')
+    expect(plain(caTotalText(84_512_330.15, false))).toBe('84,5 mil. lei')
+    expect(plain(caTotalText(-1_350_000, true))).toBe('−1,4 mil. lei')
   })
 })

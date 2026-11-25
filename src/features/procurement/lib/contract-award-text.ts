@@ -50,10 +50,16 @@ export function signedLei(value: number): string {
   return `${sign}${leiExact(Math.abs(value))}`
 }
 
-/** A sum of changes in short lei with its sign: „+1,2 mil. lei", „−340.000 lei". */
-export function signedLeiShort(value: number): string {
-  const sign = value > 0 ? '+' : value < 0 ? '−' : ''
-  return `${sign}${moneyText(Math.abs(value))}`
+/**
+ * A sum of many records in lei: short („84,5 mil. lei"), and exact under a
+ * thousand lei so that a nonzero sum is never said as „0 lei"; a change with
+ * its sign („−1,4 mil. lei", „+0,05 lei").
+ */
+export function caTotalText(value: number, signed: boolean): string {
+  const abs = Math.abs(value)
+  const figure = abs < 1000 ? leiExact(abs) : moneyText(abs)
+  if (signed) return `${value > 0 ? '+' : value < 0 ? '−' : ''}${figure}`
+  return value < 0 ? `−${figure}` : figure
 }
 
 /** The years a period asked for that the API does not publish yet: said once, never as „none". */

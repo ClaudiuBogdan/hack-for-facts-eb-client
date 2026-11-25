@@ -43,17 +43,19 @@ export function isContractAwardId(id: string): boolean {
 }
 
 /**
- * The days of a profile period the API publishes: from its first day (the API
- * raises it to the floor) to its last. Null for a period that ends before the
- * floor: nothing in it is published yet, and nothing is asked. `clipped`: the
- * period starts before the floor, and the page says its first part is not
- * published yet.
+ * The days of a profile period the API publishes: from its first day, raised
+ * to the floor, to its last. The counts, the list and the money all read this
+ * one window (the totals do not raise a start themselves). Null for a period
+ * that ends before the floor: nothing in it is published yet, and nothing is
+ * asked. `clipped`: the period starts before the floor, and the page says its
+ * first part is not published yet.
  */
 export function caWindowOf(period: Pick<ProfilePeriod, 'from' | 'through' | 'year'>): { readonly from: string; readonly to: string; readonly clipped: boolean } | null {
-  const from = `${period.from}-01`
+  const start = `${period.from}-01`
   const to = period.through ? lastDayOf(period.through) : `${period.year}-12-31`
   if (to < CA_FLOOR_DAY) return null
-  return { from, to, clipped: from < CA_FLOOR_DAY }
+  const clipped = start < CA_FLOOR_DAY
+  return { from: clipped ? CA_FLOOR_DAY : start, to, clipped }
 }
 
 // ─────────────────────────────────────────────────────────── parties ──

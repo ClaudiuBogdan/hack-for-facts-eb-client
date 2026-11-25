@@ -8,10 +8,10 @@ import { PROCUREMENT_BUYER_AWARD_MAX_PAGE, type ProcurementBuyerAwardOrder } fro
 import { CaRecordsOffError, type BuyerContractAwardTotalsRequest } from '../../api/procurement-contract-award-api'
 import { useBuyerContractAwards, useBuyerContractAwardTotals } from '../../hooks/use-procurement-contract-award'
 import { caWindowOf, type BuyerContractAwards, type CaRecordRow, type CaServedText, type CaSort } from '../../lib/contract-award-model'
-import { beforeFloorText, caAmountText, caKindText, signedLeiShort, winnersUnnamedText } from '../../lib/contract-award-text'
+import { beforeFloorText, caAmountText, caKindText, caTotalText, winnersUnnamedText } from '../../lib/contract-award-text'
 import type { BuyerProfile } from '../../lib/buyer-model'
 import { categoryOfCode } from '../../lib/home-categories'
-import { countText, dayText, moneyText } from '../../lib/home-format'
+import { countText, dayText } from '../../lib/home-format'
 import { periodYear } from '../../lib/profile-period'
 import { periodText } from '../../lib/profile-period-text'
 import { getUserLocale } from '@/lib/utils'
@@ -92,7 +92,8 @@ export function BuyerAwardsBand({
           <HubPending rows={6} />
         ) : (
           <div>
-            {data.total === 0 && data.page === 1 ? null : <AwardsTotals request={{ cui: profile.identity.cui, from: published.from, to: published.to }} />}
+            {/* The window's money, whatever page of the list is shown. */}
+            <AwardsTotals request={{ cui: profile.identity.cui, from: published.from, to: published.to }} />
             {data.total === 0 && data.page === 1 ? (
               <p className="border-y py-4 text-sm text-muted-foreground">
                 <Trans>Niciun contract atribuit în {period}.</Trans>
@@ -243,18 +244,20 @@ function AwardsTotals({ request }: { readonly request: BuyerContractAwardTotalsR
       </p>
     )
   }
+  // No record of any kind in the window: the money has nothing to say beside „none".
+  if (query.data.figures.every((figure) => figure.recordCount === 0 && figure.sumLei === 0)) return null
   return (
     <div className="mb-6">
       <dl className="grid grid-cols-1 gap-4 border-y py-4 sm:grid-cols-3">
         {query.data.figures.map((figure) => (
           <div key={figure.valueKind}>
             <dt className="text-xs text-muted-foreground">{served(figure.label)}</dt>
-            <dd className="mt-1 font-semibold tabular-nums text-foreground">{figure.valueKind === 'modification_change' ? signedLeiShort(figure.sumLei) : moneyText(figure.sumLei)}</dd>
+            <dd className="mt-1 font-semibold tabular-nums text-foreground">{caTotalText(figure.sumLei, figure.valueKind === 'modification_change')}</dd>
           </div>
         ))}
       </dl>
       <p className="mt-2 max-w-[70ch] text-xs leading-relaxed text-muted-foreground">
-        <Trans>Sumele nu se adună: plafonul unui acord-cadru e cât poate cheltui cel mult, nu o valoare atribuită.</Trans> {served(query.data.explanation)}
+        <Trans>Cele trei valori nu se adună între ele: plafonul unui acord-cadru este o valoare maximă, nu o sumă atribuită.</Trans> {served(query.data.explanation)}
       </p>
     </div>
   )

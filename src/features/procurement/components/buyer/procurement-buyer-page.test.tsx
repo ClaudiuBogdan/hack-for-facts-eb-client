@@ -523,8 +523,32 @@ describe('ProcurementBuyerPage', () => {
       expect(totalsRead.mock.calls[0]?.[0]).toEqual({ cui: '4364446', from: '2025-01-01', to: '2025-12-31' })
       const figures = [...band.querySelectorAll('dl > div')].map((entry) => entry.textContent?.replace(/\u00a0/gu, ' '))
       expect(figures).toEqual(['Valoare atribuită12,3 mil. lei', 'Modificări de preț−350.000 lei', 'Plafoane ale acordurilor-cadru45,0 mil. lei'])
-      expect(band).toHaveTextContent('Sumele nu se adună')
+      expect(band).toHaveTextContent('Cele trei valori nu se adună între ele: plafonul unui acord-cadru este o valoare maximă, nu o sumă atribuită.')
       expect(band).toHaveTextContent('Include contractele atribuite din 2025; 3 fără dată sunt lăsate deoparte.')
+    })
+
+    it('shows the window’s money on an empty first page too, and nothing beside „none" when the window has no record of any kind', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ rows: [], summary: { recordCount: 0, valuedCount: 0, identityReviewCount: 0, undatedCount: 0 }, records: { total: 0, hasMore: false } })))
+      totalsRead.mockResolvedValue(mapBuyerContractAwardTotals(rawTotals().totals[0]!))
+      render(page())
+      const band = document.getElementById('contracte')!
+      // The money build may count an award the records release has not caught up with: said, not hidden.
+      expect(await within(band).findByText('Modificări de preț')).toBeInTheDocument()
+      expect(band).toHaveTextContent('Niciun contract atribuit în 2025.')
+      cleanup()
+      const none = [
+        { valueKind: 'awarded', sumLei: '0.00', recordCount: '0' },
+        { valueKind: 'modification_change', sumLei: '0.00', recordCount: '0' },
+        { valueKind: 'framework_ceiling', sumLei: '0.00', recordCount: '0' },
+      ]
+      totalsRead.mockResolvedValue(mapBuyerContractAwardTotals(rawTotals({ totals: none }).totals[0]!))
+      render(page())
+      const empty = document.getElementById('contracte')!
+      expect(await within(empty).findByText('Niciun contract atribuit în 2025.')).toBeInTheDocument()
+      await waitFor(() => expect(totalsRead).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(empty.querySelector('.animate-pulse')).toBeNull())
+      expect(empty.querySelector('dl')).toBeNull()
+      expect(empty).not.toHaveTextContent('Sumele în lei nu sunt disponibile acum.')
     })
 
     it('keeps the counts and the list when the money is not served, and says only the money unavailable', async () => {
