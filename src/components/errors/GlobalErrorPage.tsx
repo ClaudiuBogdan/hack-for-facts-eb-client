@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { i18n } from "@lingui/core";
 import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { classifyError, getTechnicalMessage, isUpdateAvailableError } from "@/lib/errors-utils";
@@ -56,6 +57,11 @@ const hardReloadPage = () => window.location.reload();
 /** Forces a full navigation to the homepage. */
 const navigateHomeAndReload = () => window.location.assign("/");
 
+/**
+ * The descriptors are rendered through Lingui's global `i18n`, never by their
+ * `.message`: a production build keeps only their ids (ERR-001). Global, not
+ * `useLingui`, since a root error renders outside the app's I18nProvider.
+ */
 export function GlobalErrorPage({ error }: GlobalErrorPageProps) {
     // Classify the error to get user-friendly, translatable messages
     const classifiedError = useMemo(() => classifyError(error), [error]);
@@ -145,11 +151,11 @@ export function GlobalErrorPage({ error }: GlobalErrorPageProps) {
                 </div>
 
                 <h1 id="error-title" className="text-3xl font-bold tracking-tight">
-                    {classifiedError.title.message}
+                    {i18n._(classifiedError.title)}
                 </h1>
 
                 <p className="mt-4 text-lg text-muted-foreground">
-                    {classifiedError.friendlyMessage.message}
+                    {i18n._(classifiedError.friendlyMessage)}
                 </p>
 
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
