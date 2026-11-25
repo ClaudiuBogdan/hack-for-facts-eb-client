@@ -61,19 +61,20 @@ export function CompanyHubHero({
             <div className="mt-6 sm:mt-7">{search}</div>
             {/* The landing's shortcut row: the label is a sentence that runs into the links, so it is set in
                 their voice (plain text, not a mono caption) and shares their baseline; on a phone it has its
-                own line and each shortcut is a 44px row. */}
+                own line and each shortcut is a 44px row. The links carry a context of their own: their English
+                is shorter than the same words elsewhere, so the row holds one line on a desktop. */}
             <nav aria-label={t`Scurtături`} className="mt-4 flex flex-wrap items-baseline gap-x-4 sm:gap-x-5 sm:gap-y-1.5">
               <span className="basis-full text-sm text-muted-foreground sm:basis-auto">
                 <Trans>Sau mergi direct la</Trans>
               </span>
               <Link to="/companies/analytics" search={inBusiness ?? IN_BUSINESS} preload="intent" className={SHORTCUT_LINK_CLASS}>
-                <Trans>Toate firmele în funcțiune</Trans>
+                <Trans context="companies hub shortcut">Toate firmele în funcțiune</Trans>
               </Link>
               <Link to="/companies/analytics" preload="intent" className={SHORTCUT_LINK_CLASS}>
-                <Trans>Analiza bilanțurilor</Trans>
+                <Trans context="companies hub shortcut">Analiza bilanțurilor</Trans>
               </Link>
               <Link to="/procurement" preload="intent" className={SHORTCUT_LINK_CLASS}>
-                <Trans>Achiziții publice</Trans>
+                <Trans context="companies hub shortcut">Achiziții publice</Trans>
               </Link>
             </nav>
           </div>
