@@ -8,6 +8,50 @@
 > Structural reference: `/parlament` (`src/features/parliament/`), per DESIGN.md
 > §Reference Patterns. Product reference: parliament.uk + legislation.gov.uk.
 
+> **2026-11-25: `/legislation` is a hub (§0).** §2 (the „Parliament twin" header), §3 (tabs) and §4
+> (Prezentare) no longer describe `/legislation`. They still describe the six dedicated pages (search,
+> acts, analytics, changes, gazette, guide), which keep the old head and tab bar until the owner settles
+> their slim head (prototype `/development/legal/landing?v=pagina`).
+
+---
+
+## 0. The hub (owner, 25 November 2026)
+
+The owner's direction: no old hero, no tabs on the front door; a hub like the companies one, with a
+summary of the key information and links to the dedicated pages. It was prototyped as
+`/development/legal/landing?v=simplu` („Pornire, runda 2: antet curățat"), approved for implementation
+the same day, and built in `src/features/legal/components/hub/`. Round 1 (`?v=hub`) stays as the
+„before".
+
+**Head.** The way home (`← Acasă / Legislație`), the title, one lede, the site's search scoped to
+legislation (`DeferredLandingSearch`, `docTypes: ['legal_act']`, the hubs' search), one row of four
+shortcuts (Acte, Analiză, Modificări, Monitorul Oficial), and the five leading acts in the companies
+hub's leaders' card („Cele mai modificate acte" / „Cele mai citate acte", the ranking in the address
+as `clasament`). The sources under the head are their names alone, as on the national budget page.
+Type follows the site's landing (`docs/design/landing/design.md`): headline tracking and leading, round
+commas, mono capitals only on short labels.
+
+**Pinned bar.** The hubs' `HomeSectionNav`, no home button (owner).
+
+**Figures band.** Four figures, each one field of one answer: Acte publicate (`head.total`), Cu text de
+citit (`summary.withText`), Legislația de bază (`head.totals.inStock`, the analysis's stock, a
+provisional definition), Cu versiuni consolidate (`summary.withVersions`). No status figure and no
+status word beside the stock („în vigoare", „azi", „valabile"): status never feeds a headline figure
+until the status redesign lands (analytics design §4; I-27, I-28, I-29).
+
+**Bands.** Ce s-a schimbat · Ce fac actele (Felul groups; uncertain and unplaced counted apart, never
+inside a group) · Cine emite · Legislația, an de an (from 1990, a column every year) · Cum se leagă
+actele · Ce a apărut în Monitorul Oficial. Each band's bar is its row's share of all acts, the same
+number printed beside it (owner, 25 November: the shorter bars). Then six places to start, how the
+Felul reading is read, and the full sources line with when the analysis was generated.
+
+**Reads.** The aggregate answers (head, summary, the Felul series, the issuer breakdown) are rendered by
+the server: the loader starts them together and the page goes out publicly cached. Nothing that names
+an act is in the server's HTML: the leading acts, the links and the changes are read in the browser,
+and the acts card holds five empty rows until they arrive (without JavaScript it offers the directory).
+A band whose read fails says so in one line; the rest of the page stays. Under mock mode the head
+carries the mock badge.
+
 ---
 
 ## 1. Route — `/legislation` (decided, overrides the Romanian-slug convention)

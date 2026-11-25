@@ -12,12 +12,16 @@ vi.mock('@tanstack/react-router', () => ({
   ),
   useNavigate: () => vi.fn(),
   useSearch: () => ({}),
+  useLocation: () => ({ hash: '', pathname: '/legislation' }),
+}))
+
+vi.mock('@/features/landing/components/search/deferred-landing-search', () => ({
+  DeferredLandingSearch: () => null,
 }))
 
 vi.mock('../../hooks/use-legislation', () => ({
   useLegislationStatusCounts: vi.fn(() => ({ data: {}, isError: false })),
-  useLegislationFreshness: vi.fn(() => ({ data: undefined, isError: false })),
-  useLegislationFrontDoor: vi.fn(() => ({ data: undefined, isLoading: false, isError: true })),
+  useLegislationFreshness: vi.fn(() => ({ data: undefined, isPending: false, isError: true })),
 }))
 
 // Every analytics read is refused as the API refuses it before the first layer is published (503).
@@ -68,10 +72,10 @@ describe('the analytics „not published yet" panel', () => {
     expect(screen.queryByText('acte în selecție')).not.toBeInTheDocument()
   })
 
-  it('keeps the front door usable: search and notes stay, the analytics bands say they are being prepared', async () => {
+  it('keeps the hub usable: the head and the bands stay, the figures say the analysis is being prepared', async () => {
     render(<LegislationPage />, { queryClient: createTestQueryClient() })
     await waitFor(() => expect(screen.getAllByText('Analiza se pregătește').length).toBeGreaterThan(0))
-    expect(screen.getByText(/nu modifică statutul actelor pe care le vizează/)).toBeInTheDocument()
-    expect(screen.queryByText('acte în corpus')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('LegislațiaRomâniei')
+    expect(screen.queryByTestId('legal-hub-figures')).not.toBeInTheDocument()
   })
 })

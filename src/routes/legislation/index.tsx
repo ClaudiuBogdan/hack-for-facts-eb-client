@@ -4,61 +4,41 @@ import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-c
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 
 export type LegislationRouteLoaderData = {
-  /** Server render only: `false` when the gazette band's or an analytics read failed and the browser reads it. */
+  /** Server render only: `false` when an analytics read failed and the browser reads it. */
   readonly seeded?: boolean
   /** Server render only: an analytics read was refused with 503 (no layer published yet): render the panel. */
   readonly analyticsUnavailable?: boolean
 }
 
-/** The front door's aggregate analytics reads, rendered on the server (the acts board is read in the browser). */
-const ANALYTICS_READS = [
-  ['head', {}],
-  ['summary', {}],
-  ['series', { lens: 'felul' }],
-] as const
-
 /**
- * The front door reads only its gazette band (the citation ranking is the
- * analytics tab's), through the page's query. On the server the loader fills
- * that query from the read kept in the server process
- * (`legal-front-door-ssr.ts`), and the router hydrates it into the browser's
- * cache. A failed server read is left out of the cache: the page reads it in
- * the browser, and the render goes out `no-store`. On a client-side
- * navigation the loader starts the query's read and returns at once, so the
- * page frame paints and the band fills in; a read the cache already holds is
- * not made again. The feature's modules are imported inside the loader, so
+ * The hub's aggregate analytics answers (its figures, the Felul and issuers bands, the years chart:
+ * `LEGAL_HUB_SERVER_READS`) are rendered on the server: the loader starts them together, fills the page's
+ * queries from the reads kept in the server process (`legal-analytics-ssr.ts`), and the router hydrates them
+ * into the browser's cache. Nothing that names an act is read here: the page goes out publicly cached, and the
+ * leading acts, the links, the changes and the gazette band are read in the browser. A failed server read is
+ * left out of the cache: the page reads it in the browser, and the render goes out `no-store`. On a client-side
+ * navigation the loader starts the reads and returns at once, so the page frame paints and the bands fill in; a
+ * read the cache already holds is not made again. The feature's modules are imported inside the loader, so
  * this file (which every page's route tree carries) stays thin.
  */
 export const Route = createFileRoute('/legislation/')({
   loader: async ({ context }): Promise<LegislationRouteLoaderData> => {
-    const [{ legislationFrontDoorQueryOptions }, { legalAnalyticsQueryOptions }] = await Promise.all([
-      import('@/features/legal/hooks/use-legislation'),
+    const [{ LEGAL_HUB_SERVER_READS }, { legalAnalyticsQueryOptions }] = await Promise.all([
+      import('@/features/legal/components/hub/legislation-hub-lib'),
       import('@/features/legal/hooks/use-legislation-analytics'),
     ])
-    const options = legislationFrontDoorQueryOptions()
     if (!shouldBlockLoaderForSsr()) {
-      void context.queryClient.prefetchQuery(options).catch(() => undefined)
-      for (const [view, args] of ANALYTICS_READS) {
+      for (const [view, args] of LEGAL_HUB_SERVER_READS) {
         void context.queryClient.prefetchQuery(legalAnalyticsQueryOptions(view, args)).catch(() => undefined)
       }
       return {}
     }
-    const [{ readLegislationFrontDoorForSsr }, { readLegalAnalyticsForSsr }] = await Promise.all([
-      import('@/features/legal/api/legal-front-door-ssr'),
-      import('@/features/legal/api/legal-analytics-ssr'),
-    ])
+    const { readLegalAnalyticsForSsr } = await import('@/features/legal/api/legal-analytics-ssr')
     let seeded = true
     let analyticsUnavailable = false
-    try {
-      await context.queryClient.ensureQueryData({ ...options, queryFn: () => readLegislationFrontDoorForSsr(), retry: false })
-    } catch {
-      // Not dehydrated as a failure: the browser's query reads it afresh.
-      context.queryClient.removeQueries({ queryKey: options.queryKey, exact: true })
-      seeded = false
-    }
-    // The analytics bands degrade on their own: a refused read (no layer published yet) is read in the browser.
+    // The bands degrade on their own: a refused read (no layer published yet) is read in the browser.
     const results = await Promise.allSettled(
-      ANALYTICS_READS.map(([view, args]) =>
+      LEGAL_HUB_SERVER_READS.map(([view, args]) =>
         context.queryClient.ensureQueryData({
           ...legalAnalyticsQueryOptions(view, args),
           queryFn: () => readLegalAnalyticsForSsr(view, args),
@@ -66,13 +46,14 @@ export const Route = createFileRoute('/legislation/')({
         }),
       ),
     )
-    results.forEach((r, j) => {
-      if (r.status === 'fulfilled') return
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') return
       seeded = false
-      // a 503 (no layer published yet, or busy): the page renders the calm panel on the server
-      if ((r.reason as { kind?: unknown } | null)?.kind === 'unavailable') analyticsUnavailable = true
-      const [view, args] = ANALYTICS_READS[j] ?? ANALYTICS_READS[0]
-      context.queryClient.removeQueries({ queryKey: legalAnalyticsQueryOptions(view, args).queryKey, exact: true })
+      // a 503 (no layer published yet, or busy): the page says so calmly, on the server too
+      if ((result.reason as { kind?: unknown } | null)?.kind === 'unavailable') analyticsUnavailable = true
+      const read = LEGAL_HUB_SERVER_READS[index]
+      // Not dehydrated as a failure: the browser's query reads it afresh.
+      if (read) context.queryClient.removeQueries({ queryKey: legalAnalyticsQueryOptions(read[0], read[1]).queryKey, exact: true })
     })
     return { seeded, analyticsUnavailable }
   },
@@ -88,7 +69,7 @@ export const Route = createFileRoute('/legislation/')({
       { title: `${t`Legislația României`} — Transparenta.eu` },
       {
         name: 'description',
-        content: t`Legi, ordonanțe și hotărâri din Portal Legislativ, cu statutul lor și dovada publicării în Monitorul Oficial.`,
+        content: t`Legi, ordonanțe și hotărâri din Portalul Legislativ: textul lor, cine le emite și cum se schimbă.`,
       },
     ],
   }),

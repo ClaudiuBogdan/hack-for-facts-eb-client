@@ -137,6 +137,7 @@ export function StackedYears({
   footnote,
   axis,
   pendingFrom,
+  lastIsRest,
 }: {
   readonly years: readonly { readonly year: number; readonly values: readonly number[] }[]
   readonly labels: readonly string[]
@@ -146,8 +147,11 @@ export function StackedYears({
   readonly axis?: readonly [string, string]
   /** Columns from this year on are drawn hollow and named in the legend (a figure that may still change). */
   readonly pendingFrom?: { readonly year: number; readonly label: string }
+  /** The last label is the rest („altele"), drawn grey. Unset: read from the label, as the first callers wrote it. */
+  readonly lastIsRest?: boolean
 }) {
-  const colour = (j: number) => (j === labels.length - 1 && labels[j] === 'altele' ? STACK_BG[5] : STACK_BG[Math.min(j, 4)])
+  const rest = lastIsRest ?? labels[labels.length - 1] === 'altele'
+  const colour = (j: number) => (rest && j === labels.length - 1 ? STACK_BG[5] : STACK_BG[Math.min(j, 4)])
   const [active, setActive] = useState<number | null>(null)
   const max = Math.max(1, ...years.map((y) => y.values.reduce((s, v) => s + v, 0)))
   const shown = active === null ? null : years.find((y) => y.year === active)

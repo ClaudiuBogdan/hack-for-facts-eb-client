@@ -385,7 +385,8 @@ function SeriesAnswer({ q, base }: { readonly q: Question; readonly base: LegalA
         s.years.map((y) => ({ year: y.year, values: y.acts })),
         s.keys.length + 1,
       )}
-      labels={[...s.keys.map((k) => labelOfKey(s.lens, k)), 'altele']}
+      labels={[...s.keys.map((k) => labelOfKey(s.lens, k)), t`altele`]}
+      lastIsRest
       caption={t`acte pe an, după ${LENS_LABEL[vedere].toLowerCase()}`}
       footnote={s.unknownYear ? t`${fmt(s.unknownYear)} acte fără an nu sunt pe grafic.` : undefined}
     />

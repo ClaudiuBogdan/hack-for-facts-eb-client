@@ -1,223 +1,158 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@/test/test-utils'
+import { createTestQueryClient, fireEvent, render, screen, waitFor, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overview'
-import { legislationDomainCountsFixture } from '../mocks/fixtures/legislation-domain-counts'
-import { LegislationPage } from './legislation-page'
+import type { LegalAnalyticsArgs, LegalAnalyticsView } from '@/schemas/legal-analytics'
+import { legislationAnalyticsFixture } from '../mocks/fixtures/legislation-analytics'
+import { legislationFreshnessFixture } from '../mocks/fixtures/legislation-freshness'
 
+let search: Record<string, unknown> = {}
 const navigateMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-  useSearch: () => ({}),
-  Link: ({
-    children,
-    to,
-    ...props
-  }: {
-    readonly children: ReactNode
-    readonly to: string
-  }) => (
+  Link: ({ children, to, search: _search, params: _params, hash: _hash, preload: _preload, ...props }: Record<string, unknown> & { readonly children: ReactNode; readonly to: string }) => (
     <a href={to} {...props}>
       {children}
     </a>
   ),
   useNavigate: () => navigateMock,
+  useSearch: () => search,
+  useLocation: () => ({ hash: '', pathname: '/legislation' }),
 }))
 
 vi.mock('../hooks/use-legislation', () => ({
-  useLegislationFrontDoor: vi.fn(),
-  useLegislationDomainCounts: vi.fn(),
-  useLegislationStatusCounts: vi.fn(),
-  useLegislationFreshness: vi.fn(),
+  useLegislationFreshness: vi.fn(() => ({ data: legislationFreshnessFixture, isPending: false, isError: false })),
 }))
 
-import {
-  useLegislationDomainCounts,
-  useLegislationFrontDoor,
-  useLegislationFreshness,
-  useLegislationStatusCounts,
-} from '../hooks/use-legislation'
-import { legislationFreshnessFixture } from '../mocks/fixtures/legislation-freshness'
-import { legislationStatusCountsFixture } from '../mocks/fixtures/legislation-status-counts'
+// The site's search loads its own module after the page: not what these tests are about.
+vi.mock('@/features/landing/components/search/deferred-landing-search', () => ({
+  DeferredLandingSearch: () => <input aria-label="Caută" />,
+}))
 
-function mockOverviewReady() {
-  vi.mocked(useLegislationFrontDoor).mockReturnValue({
-    data: legislationOverviewFixture,
-    isLoading: false,
-    isError: false,
-  } as unknown as ReturnType<typeof useLegislationFrontDoor>)
-  vi.mocked(useLegislationDomainCounts).mockReturnValue({
-    data: legislationDomainCountsFixture,
-    isError: false,
-  } as unknown as ReturnType<typeof useLegislationDomainCounts>)
-  vi.mocked(useLegislationStatusCounts).mockReturnValue({
-    data: legislationStatusCountsFixture,
-    isError: false,
-  } as unknown as ReturnType<typeof useLegislationStatusCounts>)
-  vi.mocked(useLegislationFreshness).mockReturnValue({
-    data: legislationFreshnessFixture,
-    isError: false,
-  } as unknown as ReturnType<typeof useLegislationFreshness>)
+type Read = (view: LegalAnalyticsView, args: LegalAnalyticsArgs) => Promise<unknown> | undefined
+
+/** What a test answers itself; any other read is the mock lane's (the committed server answers). */
+let intercept: Read = () => undefined
+const calls: { readonly view: LegalAnalyticsView; readonly args: LegalAnalyticsArgs }[] = []
+
+vi.mock('../api/legal-analytics-api', async () => {
+  const live = await vi.importActual<typeof import('../api/legal-analytics-api.live')>('../api/legal-analytics-api.live')
+  const mock = await vi.importActual<typeof import('../api/legal-analytics-api.mock')>('../api/legal-analytics-api.mock')
+  return {
+    LegalAnalyticsError: live.LegalAnalyticsError,
+    LEGAL_ANALYTICS_UNAVAILABLE: live.LEGAL_ANALYTICS_UNAVAILABLE,
+    fetchLegalAnalytics: vi.fn((view: LegalAnalyticsView, args: LegalAnalyticsArgs) => {
+      calls.push({ view, args })
+      return intercept(view, args) ?? mock.fetchLegalAnalyticsMock(view, args)
+    }),
+  }
+})
+
+const { LegalAnalyticsError } = await import('../api/legal-analytics-api')
+const { fetchLegalAnalyticsMock } = await import('../api/legal-analytics-api.mock')
+const { LegislationPage } = await import('./legislation-page')
+
+const head = legislationAnalyticsFixture.head.data
+const summary = legislationAnalyticsFixture.summary.data
+const ro = (n: number) => n.toLocaleString('ro-RO')
+
+function renderPage() {
+  return render(<LegislationPage />, { queryClient: createTestQueryClient() })
 }
 
-describe('LegislationPage', () => {
+/** A figure tile's own figure, as a reader hears it (the count-up's readable copy). */
+async function figureOf(key: string): Promise<string> {
+  const tile = await screen.findByTestId(`legal-hub-figure-${key}`)
+  await waitFor(() => expect(tile.querySelector('dd .sr-only')).not.toBeNull())
+  return tile.querySelector('dd .sr-only')?.textContent ?? ''
+}
+
+describe('LegislationPage, the legislation hub', () => {
   beforeEach(() => {
+    search = {}
+    calls.length = 0
+    intercept = () => undefined
     navigateMock.mockReset()
-    mockOverviewReady()
   })
 
-  it('renders the hero and the bands that help you find an act', () => {
-    render(<LegislationPage />)
-
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'LegislațiaRomâniei',
-    )
-    // the old subject grid is gone: subjects come back with the domain lens
-    expect(screen.queryByRole('region', { name: 'Domenii' })).not.toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', {
-        name: 'Ultimele numere din Monitorul Oficial',
-      }),
-    ).toBeInTheDocument()
+  it('opens with the way home, the title and no tab bar', () => {
+    renderPage()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('LegislațiaRomâniei')
+    const here = screen.getByRole('navigation', { name: 'Ești aici' })
+    expect(within(here).getByRole('link', { name: /Acasă/ })).toHaveAttribute('href', '/')
+    expect(screen.queryByRole('navigation', { name: 'Secțiuni Legislație' })).not.toBeInTheDocument()
   })
 
-  it('keeps the digital header canvas off page load until a reader engages', () => {
-    const { container } = render(<LegislationPage />)
-
-    const playButton = screen.getByRole('button', {
-      name: 'Redă din nou efectul digital al imaginii',
-    })
-
-    expect(container.querySelector('canvas')).not.toBeInTheDocument()
-    fireEvent.click(playButton)
-    expect(container.querySelector('canvas')).toBeInTheDocument()
+  it('shows each headline figure from its own field of its own answer', async () => {
+    // distinct numbers, so a figure read from the wrong field cannot pass
+    const expected = { acts: head.total, text: summary.withText, rules: head.totals.inStock, versions: summary.withVersions }
+    expect(new Set(Object.values(expected)).size).toBe(4)
+    renderPage()
+    for (const [key, value] of Object.entries(expected)) expect(await figureOf(key)).toBe(ro(value))
+    expect(screen.getByText('Legislația de bază')).toBeInTheDocument()
   })
 
-  it('warms the digital header up on pointer intent, before the click', () => {
-    const { container } = render(<LegislationPage />)
-
-    const playButton = screen.getByRole('button', {
-      name: 'Redă din nou efectul digital al imaginii',
-    })
-
-    // Building the renderer inside the click handler cost ~234ms before the
-    // first pixel moved, so the click read as a no-op. Hovering has to be what
-    // pays for it, leaving the click with a renderer that is already live.
-    expect(container.querySelector('canvas')).not.toBeInTheDocument()
-    fireEvent.pointerEnter(playButton)
-    expect(container.querySelector('canvas')).toBeInTheDocument()
+  it('never puts a status figure or a status word beside the stock', async () => {
+    renderPage()
+    await figureOf('rules')
+    const figures = screen.getByTestId('legal-hub-figures')
+    expect(figures).not.toHaveTextContent(/în vigoare|valabil|azi\b|abrogat/i)
   })
 
-  it('leaves the corpus figures to the analytics tab', () => {
-    render(<LegislationPage />)
-
-    // The KPI strip and the citation ranking moved to `/legislation/analytics`.
-    // The front door is a finding aid; guard against them drifting back.
-    expect(screen.queryByText('Acte normative')).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('heading', {
-        name: 'Actele pe care se sprijină restul legislației',
-      }),
-    ).not.toBeInTheDocument()
-    // (the analytics board of the most amended acts is the front door's now; the citation ranking is not)
+  it('ranks the top five acts in the head, whatever the answer holds', async () => {
+    expect(legislationAnalyticsFixture.acts.data.rows.length).toBeGreaterThan(5)
+    renderPage()
+    const card = await screen.findByTestId('legal-hub-head-acts')
+    expect(within(card).getAllByRole('link')).toHaveLength(5)
+    expect(calls.find((call) => call.view === 'acts')?.args).toEqual({ order: 'amended', limit: 5 })
   })
 
-  it('states that Constitutional Court decisions do not change act status', () => {
-    render(<LegislationPage />)
-
-    expect(
-      screen.getByText(/nu modifică statutul actelor pe care le vizează/),
-    ).toBeInTheDocument()
+  it('never shows the other ranking\'s acts under a new title while it loads', async () => {
+    let answerCited: (value: unknown) => void = () => undefined
+    intercept = (view, args) => (view === 'acts' && args.order === 'cited' ? new Promise((resolve) => (answerCited = resolve)) : undefined)
+    const page = renderPage()
+    expect(await screen.findByTestId('legal-hub-head-acts')).toBeInTheDocument()
+    search = { clasament: 'citate' }
+    page.rerender(<LegislationPage />)
+    expect(await screen.findByRole('heading', { name: 'Cele mai citate acte' })).toBeInTheDocument()
+    expect(screen.queryByTestId('legal-hub-head-acts')).not.toBeInTheDocument()
+    expect(screen.getByTestId('legal-hub-head-acts-pending')).toBeInTheDocument()
+    answerCited(await fetchLegalAnalyticsMock('acts', { order: 'cited', limit: 5 }))
+    expect(await screen.findByTestId('legal-hub-head-acts')).toBeInTheDocument()
   })
 
-  it('never claims gazette full text is available', () => {
-    render(<LegislationPage />)
-
-    // `MoIssue` carries no `hasFullText`, so the only sayable claim is that an
-    // official PDF exists. Guard the copy so a future edit cannot overclaim.
-    expect(screen.queryByText(/text disponibil/i)).not.toBeInTheDocument()
-    expect(screen.getAllByText('PDF oficial disponibil').length).toBeGreaterThan(
-      0,
-    )
-    expect(
-      screen.getAllByText('doar coordonate de publicare').length,
-    ).toBeGreaterThan(0)
+  it('writes the ranking into the address', async () => {
+    renderPage()
+    fireEvent.click(await screen.findByRole('radio', { name: 'Citări' }))
+    const call = navigateMock.mock.calls[0]?.[0] as { search: (p: Record<string, unknown>) => Record<string, unknown> }
+    expect(call.search({})).toEqual({ clasament: 'citate' })
   })
 
-  it('counts the corpus from the published insights layer', async () => {
-    render(<LegislationPage />)
-
-    // the mock lane serves real answers of the server's usecase (fixture header)
-    expect(await screen.findByText('acte în corpus')).toBeInTheDocument()
-    expect(screen.getByText('au text citibil în Portal')).toBeInTheDocument()
-    expect(screen.getByText('acte în stoc')).toBeInTheDocument()
-    expect(await screen.findByRole('region', { name: 'Ce s-a publicat pe an' })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'Teme' })).toHaveTextContent('în curând')
-    expect(screen.getByText(/Citite independent 385 de acte: 94%/)).toBeInTheDocument()
+  it('keeps the rest of the page when one band fails', async () => {
+    intercept = (view) => (view === 'breakdown' ? Promise.reject(new LegalAnalyticsError('failed', 'boom', 500)) : undefined)
+    renderPage()
+    const issuers = await screen.findByRole('region', { name: 'Cine emite' })
+    expect(await within(issuers).findByText('Această parte nu s-a încărcat.')).toBeInTheDocument()
+    expect(await screen.findByTestId('legal-hub-felul')).toBeInTheDocument()
+    expect(await figureOf('acts')).toBe(ro(head.total))
   })
 
-  it('shows the tab set with Prezentare and Analiză navigable', () => {
-    render(<LegislationPage />)
-
-    const nav = screen.getByRole('navigation', { name: 'Secțiuni Legislație' })
-    expect(nav).toHaveTextContent('Prezentare')
-    expect(nav).toHaveTextContent('Monitorul Oficial')
-    expect(screen.getByText('Analiză')).toHaveAttribute(
-      'href',
-      '/legislation/analytics',
-    )
-    // Live since the server shipped the global feed — a regression back to
-    // an inert span would silently unship the tab.
-    expect(screen.getByText('Modificări')).toHaveAttribute(
-      'href',
-      '/legislation/changes',
-    )
-    // The last inert tab went live 2026-08-26 — every tab is a link now.
-    expect(screen.getByText('Ghid')).toHaveAttribute(
-      'href',
-      '/legislation/guide',
-    )
-    expect(screen.getByText('Ghid')).not.toHaveAttribute('aria-disabled')
+  it('says a figure did not load, never a zero', async () => {
+    intercept = (view) => (view === 'summary' ? Promise.reject(new LegalAnalyticsError('failed', 'boom', 500)) : undefined)
+    renderPage()
+    const tile = await screen.findByTestId('legal-hub-figure-text')
+    expect(await within(tile).findByText('Cifra nu s-a încărcat.')).toBeInTheDocument()
+    expect(within(tile).getByText('—')).toBeInTheDocument()
   })
 
-  it('does not scroll the tab navigation when it mounts', () => {
-    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView')
-
-    try {
-      render(<LegislationPage />)
-
-      expect(scrollIntoView).not.toHaveBeenCalled()
-    } finally {
-      scrollIntoView.mockRestore()
-    }
+  it('says under mock mode that the data is a fixture', () => {
+    // the unit tests run on the mock lane (VITE_LEGAL_USE_LIVE_API=false)
+    renderPage()
+    expect(screen.getByText('Date demonstrative (mock)')).toBeInTheDocument()
   })
 
-  it('renders a skeleton while loading', () => {
-    vi.mocked(useLegislationFrontDoor).mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      isError: false,
-    } as unknown as ReturnType<typeof useLegislationFrontDoor>)
-
-    render(<LegislationPage />)
-
-    expect(
-      screen.getByLabelText('Se încarcă prezentarea legislației'),
-    ).toBeInTheDocument()
-  })
-
-  it('keeps the rest of the page when the gazette band fails', () => {
-    vi.mocked(useLegislationFrontDoor).mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      isError: true,
-    } as unknown as ReturnType<typeof useLegislationFrontDoor>)
-
-    render(<LegislationPage />)
-
-    expect(
-      screen.queryByRole('heading', { name: 'Ultimele numere din Monitorul Oficial' }),
-    ).not.toBeInTheDocument()
-    expect(screen.getByText(/nu modifică statutul actelor pe care le vizează/)).toBeInTheDocument()
+  it('says when the analysis was generated, in the sources line', async () => {
+    renderPage()
+    const sources = screen.getByTestId('legal-hub-sources')
+    await waitFor(() => expect(sources).toHaveTextContent(`Analiza: stratul ${legislationAnalyticsFixture.head.layer.layerId}, generat pe`))
   })
 })
