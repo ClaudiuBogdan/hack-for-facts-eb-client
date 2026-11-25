@@ -82,10 +82,11 @@ export function FrontDoor() {
   const all = figures(DEFAULT_QUERY)
   const older = all.total - series(DEFAULT_QUERY, 'felul', 1).years.reduce((s, y) => s + y.values.reduce((a, b) => a + b, 0), 0)
   const facts: HubFact[] = [
-    fact('acte', all.total, 0, '', t`acte în corpus`, t`servite la ${FX.stamp.snapshotDate}`, hrefOf('analiza')),
-    fact('forme', FX.stamp.forms, 0, '', t`forme publicate`, t`originale și versiuni consolidate`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'dinamica' })),
-    fact('versiuni', FX.stamp.actsWithVersions, 0, '', t`acte cu versiuni consolidate`, t`din ${fmt(all.total)}, consolidate de Portal`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'dinamica' })),
-    fact('text', all.withText, 0, '', t`acte cu text în index`, t`${pct(all.withText / all.total)} din ${fmt(all.total)}; pot fi puse pe hartă`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'tema' })),
+    // the same four figures, labels and notes as the promoted page (legislation-front-door-bands.tsx)
+    fact('acte', all.total, 0, '', t`acte în corpus`, t`publice, din corpusul servit de Portal`, hrefOf('analiza')),
+    fact('versiuni', FX.stamp.actsWithVersions, 0, '', t`acte cu versiuni listate de Portal`, t`${pct(FX.stamp.actsWithVersions / all.total)} din acte; versiuni consolidate, neoficiale`, hrefOf('analiza', { ...DEFAULT_QUERY, vedere: 'dinamica' })),
+    fact('text', all.withText, 0, '', t`au text citibil în Portal`, t`${pct(all.withText / all.total)} din acte`, hrefOf('analiza')),
+    fact('stoc', POPULATION_SIZE.stoc, 0, '', t`acte în stoc`, t`stabilesc reguli și stau singure, încadrate ferm (provizoriu)`, hrefOf('analiza', { ...DEFAULT_QUERY, populatie: 'stoc' })),
   ]
   const boardRows = [...FX.acts]
     .sort((a, b) => (board === 'modificate' ? b.am - a.am : board === 'contestate' ? b.cc - a.cc : b.v - a.v))
@@ -337,7 +338,7 @@ export function AnalysisPage() {
             facts={[
               fact('sel', f.total, 0, '', t`acte în selecție`, t`din ${fmt(f.all)} (${population})`, '#raspuns'),
               fact('reguli', rulesText(f).main, 1, '%', t`stabilesc reguli`, rulesText(f).note, '#raspuns'),
-              fact('text', f.total ? (f.withText / f.total) * 100 : 0, 1, '%', t`au text în index`, t`${fmt(f.withText)} pot fi puse pe hartă`, '#raspuns'),
+              fact('text', f.total ? (f.withText / f.total) * 100 : 0, 1, '%', t`au text citibil în Portal`, t`${fmt(f.withText)} din ${fmt(f.total)}`, '#raspuns'),
             ]}
           />
         </RuledFrame>

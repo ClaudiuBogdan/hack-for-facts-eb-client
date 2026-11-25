@@ -14,7 +14,7 @@ import {
 } from '@/features/legal/lib/analytics-format'
 import { BAND_LABEL, FX, fmt } from './analytics.model'
 
-import { ERA_LABEL, FAMILY_LABEL, MAP, MAP_COLS, MAP_IS_TEST, MAP_ROWS, type MapCell } from './analytics.map'
+import { ERA_LABEL, FAMILY_LABEL, MAP, MAP_COLS, MAP_IS_TEST, MAP_PLACED, MAP_POPULATION, MAP_ROWS, type MapCell } from './analytics.map'
 
 // Moved to the feature folder (the promoted pages share them); re-exported for the prototype's pages.
 export { CaveatsMarker, CrossGrid, RankedTable, StackedYears, STACK_BG, SERIES_BG }
@@ -64,7 +64,8 @@ function argmax(xs: readonly number[]) {
  * The topic map, drawn from cells, never from acts (§5): density in navy steps by default, or each cell's
  * leading theme family, type band or era (≤ 6 hues plus grey). A filter repaints the same cells counted over
  * the selection, the rest ghosted. Theme names sit at their centres; a selected topic outlines its cells.
- * Fed by the placeholder grid until the fit lands (`analytics.map.ts`).
+ * Fed by the fit of 24 November (`analytics.map.ts`): only the acts the fit put in a topic, out of its population
+ * (the rule-making acts placed firmly); the caption states both.
  */
 export function TopicMap({
   count,
@@ -81,7 +82,6 @@ export function TopicMap({
   const counts = MAP.cells.map(count)
   const max = Math.max(1, ...counts)
   const inSelection = counts.reduce((s, n) => s + n, 0)
-  const all = MAP.cells.reduce((s, c) => s + c.bands.reduce((a, b) => a + b, 0), 0)
   const cellClass = (cell: MapCell, n: number) => {
     if (n === 0) return 'fill-muted'
     switch (colourBy) {
@@ -110,7 +110,9 @@ export function TopicMap({
         <div className="flex items-center gap-2">
           <TestDataTag />
           <MonoLabel className="text-muted-foreground">
-            {t`${fmt(inSelection)} acte pe hartă din ${fmt(all)}`}
+            {inSelection === MAP_PLACED
+              ? t`${fmt(MAP_PLACED)} acte pe hartă din ${fmt(MAP_POPULATION)} care stabilesc reguli`
+              : t`${fmt(inSelection)} în selecție · ${fmt(MAP_PLACED)} acte pe hartă din ${fmt(MAP_POPULATION)} care stabilesc reguli`}
           </MonoLabel>
         </div>
         {compact ? null : <IndicatorToggle<ColourBy> label={t`Colorează după`} value={colourBy} onChange={setColourBy} options={COLOUR_OPTIONS} />}
