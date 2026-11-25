@@ -202,9 +202,13 @@ export type LegalChangesSearch = LazyOutput<typeof legalChangesSearchSchema>
  * exact-citation lookup of a repealed law). Only `true` is a stored value:
  * the default is URL-absence, so `?historical=false` and junk both drop.
  */
-/** One of the finder's filter keys: short text, a number read as text, anything else dropped. Built on use. */
+/**
+ * One of the finder's filter keys: text, a number read as text, anything else dropped. Built on use. The bound
+ * holds every value of the longest vocabulary at once (the 16 domains join to 228 characters), so choosing them
+ * all never drops the key and widens the search (review astra-client-7, F6).
+ */
 const finderKey = () =>
-  z.preprocess((value) => (typeof value === 'number' ? String(value) : value), z.string().min(1).max(200).optional()).catch(undefined)
+  z.preprocess((value) => (typeof value === 'number' ? String(value) : value), z.string().min(1).max(1000).optional()).catch(undefined)
 
 export const legalFinderSearchSchema = lazySchema(() =>
   z.object({

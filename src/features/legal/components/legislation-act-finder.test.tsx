@@ -1,4 +1,4 @@
-import { act, createTestQueryClient, fireEvent, render as renderShared, screen, within } from '@/test/test-utils'
+import { act, createTestQueryClient, fireEvent, render as renderShared, screen, waitFor, within } from '@/test/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import type { LegalSearchResultData } from '@/schemas/legal'
@@ -199,7 +199,7 @@ describe('LegislationActFinder', () => {
     expect(chips).toHaveTextContent('În vigoare')
     expect(chips).toHaveTextContent('din 2015')
     // A summary-based filter says what it leaves out.
-    expect(screen.getByText('Cu domeniul, categoria sau sancțiunile, actele fără rezumat nu apar.')).toBeInTheDocument()
+    expect(screen.getByText('Domeniul, categoria și sancțiunile vin din rezumate făcute automat: actele fără rezumat nu apar.')).toBeInTheDocument()
     // The button counts them; removing one keeps the query and the others.
     expect(screen.getByRole('button', { name: 'Filtre, 4 active' })).toBeInTheDocument()
     fireEvent.click(within(chips).getByRole('button', { name: 'Scoate Lege' }))
@@ -210,6 +210,76 @@ describe('LegislationActFinder', () => {
         resetScroll: false,
       }),
     )
+  })
+
+  describe('as the address moves (review astra-client-7)', () => {
+    it('sends the filters the address holds when the pause ends, not those of the keystroke (F1a)', () => {
+      vi.useFakeTimers()
+      const { rerender } = render(<LegislationActFinder search={{ q: 'codul', tip: 'lege' }} />)
+      fireEvent.change(screen.getByRole('textbox', { name: /Caută în legislație/ }), { target: { value: 'codul m' } })
+      // the chip is removed (or Back taken) while the pause runs: the address loses `tip`
+      rerender(<LegislationActFinder search={{ q: 'codul' }} />)
+      act(() => {
+        vi.advanceTimersByTime(300)
+      })
+      expect(navigateMock).toHaveBeenCalledTimes(1)
+      expect(navigateMock.mock.calls[0]?.[0]).toMatchObject({ search: { q: 'codul m', ...NO_KEYS }, replace: true })
+    })
+
+    it('keeps the keys typed while the page’s own query travels (F1b)', () => {
+      vi.useFakeTimers()
+      const { rerender } = render(<LegislationActFinder search={{}} />)
+      const box = screen.getByRole('textbox', { name: /Caută în legislație/ })
+      fireEvent.change(box, { target: { value: 'codul m' } })
+      act(() => {
+        vi.advanceTimersByTime(300)
+      })
+      expect(navigateMock).toHaveBeenCalledTimes(1)
+      // a key typed before the navigation lands…
+      fireEvent.change(box, { target: { value: 'codul mu' } })
+      // …then the address catches up with the query the page sent
+      rerender(<LegislationActFinder search={{ q: 'codul m' }} />)
+      expect(box).toHaveValue('codul mu')
+      // a query the page did not send (Back, a link) is still mirrored into the box
+      rerender(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
+      expect(box).toHaveValue('Legea 53/2003')
+    })
+
+    it('says it is searching over the last empty answer, never its sentence for the new query (F2)', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      const { rerender } = render(<LegislationActFinder search={{ q: 'Legea 9999/2020' }} />)
+      await screen.findByRole('heading', { name: 'Niciun act găsit pentru citarea „Legea 9999/2020"' })
+      // the next answer does not come yet
+      vi.mocked(fetchLegalSearch).mockImplementationOnce(() => new Promise(() => {}))
+      rerender(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
+      expect(await screen.findByText('Se caută…')).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /Niciun act găsit pentru citarea „Legea 53\/2003"/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /Legea 9999\/2020/ })).not.toBeInTheDocument()
+    })
+  })
+
+  it('offers no act from the resolver while a filter narrows the search (F3)', async () => {
+    const { resolveLegalActs } = await import('../api/legal-resolve-api')
+    // the resolver, which knows no filter, names the law the filter leaves out
+    let resolved = false
+    vi.mocked(resolveLegalActs).mockImplementationOnce(async () => {
+      resolved = true
+      return [{ kind: 'act', value: '30412', label: 'Legea nr. 53/2003', score: 1, hint: 'modificat' }]
+    })
+    render(<LegislationActFinder search={{ q: 'Legea 53/2003', tip: 'decret' }} />)
+
+    expect(await screen.findByRole('heading', { name: 'Niciun act găsit pentru citarea „Legea 53/2003"' })).toBeInTheDocument()
+    await waitFor(() => expect(resolved).toBe(true))
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(screen.queryByRole('heading', { name: /Un act corespunde acestei căutări|alege actul/ })).not.toBeInTheDocument()
+    expect(screen.getByText('Filtrele alese pot fi motivul: scoate-le pe rând.')).toBeInTheDocument()
+  })
+
+  it('says the summary-based filters come from automatic summaries, above the results (F4)', async () => {
+    render(<LegislationActFinder search={{ q: 'codul muncii', domeniu: 'sanatate' }} />)
+    expect(await screen.findByText('Domeniul, categoria și sancțiunile vin din rezumate făcute automat: actele fără rezumat nu apar.')).toBeInTheDocument()
   })
 
   describe('on the legal-v2 OpenSearch engine', () => {
@@ -295,6 +365,26 @@ describe('LegislationActFinder', () => {
       const labels = screen.getAllByText(/Dintr-o formă consolidată neoficială/)
       expect(labels).toHaveLength(1)
       expect(labels[0]).toHaveTextContent(/Portalul Legislativ indică „consolidarea din .*2024/)
+    })
+
+    it('claims no text search when the answer is degraded', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce({ ...v2Answer([]), degraded: true })
+      render(<LegislationActFinder search={{ q: 'concediu de odihna' }} />)
+
+      const heading = await screen.findByRole('heading', { name: /Niciun act pentru „concediu de odihna"/ })
+      const section = heading.closest('section') as HTMLElement
+      expect(section).not.toHaveTextContent(/Am căutat cuvintele în numele, titlul și textul actelor/)
+      expect(section).toHaveTextContent('Răspuns parțial: o parte din căutare nu a rulat.')
+    })
+
+    it('says matches it could not show are matches, not an absence', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce({ ...v2Answer([]), unhydratedHits: 3 })
+      render(<LegislationActFinder search={{ q: 'codul muncii' }} />)
+
+      expect(await screen.findByRole('heading', { name: 'Am găsit potriviri, dar nu le-am putut afișa' })).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /Niciun act/ })).not.toBeInTheDocument()
     })
 
     it('does not deny text search when a words query finds nothing', async () => {

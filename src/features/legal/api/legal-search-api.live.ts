@@ -91,6 +91,12 @@ const rec = (value: unknown): Raw =>
 const str = (value: unknown): string | null =>
   typeof value === 'string' && value.length > 0 ? value : null
 
+/** A name with something in it, trimmed: a blank `den` gives way to the title. */
+const nonblank = (value: unknown): string | null => {
+  const text = typeof value === 'string' ? value.trim() : ''
+  return text.length > 0 ? text : null
+}
+
 /**
  * The search's filters, each one the engine expresses (measured on the dev API, 25 November 2026: act type,
  * status, a year range, domain, category and penalties narrow the answer; `exclude` and `fiscalImpactNull` are
@@ -176,7 +182,7 @@ export async function fetchLegalSearchLive(
       },
       description: str(summary.description),
       // The Portal's name, for an act whose citation names nothing (LEG-PDYY): its `den`, else its short title.
-      name: str(rec(act.canonical).den) ?? str(rec(act.canonical).title),
+      name: nonblank(rec(act.canonical).den) ?? nonblank(rec(act.canonical).title),
     }
   })
 

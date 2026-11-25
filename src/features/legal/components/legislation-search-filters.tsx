@@ -1,3 +1,4 @@
+import type { Ref } from 'react'
 import { t } from '@lingui/core/macro'
 import { SlidersHorizontal } from 'lucide-react'
 import { CELL, Chip, FIELD, Group, Row, SHEET_CLOSE } from '@/components/filters/filter-sheet/filter-sheet-parts'
@@ -38,10 +39,19 @@ function yearOptions(): readonly number[] {
 const toggled = (list: readonly string[], key: string) => (list.includes(key) ? list.filter((x) => x !== key) : [...list, key])
 
 /** Beside the field: as tall as it, with its border and radius, so the two read as one control; on a phone the icon. */
-export function LegislationFilterButton({ filters, onOpen }: { readonly filters: SearchFilters; readonly onOpen: () => void }) {
+export function LegislationFilterButton({
+  filters,
+  onOpen,
+  ref,
+}: {
+  readonly filters: SearchFilters
+  readonly onOpen: () => void
+  readonly ref?: Ref<HTMLButtonElement>
+}) {
   const on = activeFilterCount(filters)
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onOpen}
       aria-haspopup="dialog"
@@ -105,16 +115,28 @@ export function LegislationFilterPanel({
   onChange,
   open,
   onOpenChange,
+  returnFocus,
 }: {
   readonly filters: SearchFilters
   readonly onChange: (next: SearchFilters) => void
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
+  /** Where the focus goes when the panel closes: the button that opened it (the panel has no trigger of its own). */
+  readonly returnFocus?: () => void
 }) {
   const years = yearOptions()
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" closeClassName={SHEET_CLOSE} className="w-full overflow-y-auto sm:max-w-md">
+      <SheetContent
+        side="right"
+        closeClassName={SHEET_CLOSE}
+        className="w-full overflow-y-auto sm:max-w-md"
+        onCloseAutoFocus={(event) => {
+          if (!returnFocus) return
+          event.preventDefault()
+          returnFocus()
+        }}
+      >
         <SheetHeader>
           <SheetTitle>{t`Filtre`}</SheetTitle>
         </SheetHeader>
@@ -141,7 +163,7 @@ export function LegislationFilterPanel({
           </Group>
           <Group title={t`Când`}>
             <Row label={t`De la`}>
-              <select className={FIELD} value={filters.from ?? ''} onChange={(event) => onChange(withSearchYears(filters, event.target.value === '' ? null : Number(event.target.value), filters.to))}>
+              <select aria-label={t`De la anul`} className={FIELD} value={filters.from ?? ''} onChange={(event) => onChange(withSearchYears(filters, event.target.value === '' ? null : Number(event.target.value), filters.to))}>
                 <option value="">{t`orice an`}</option>
                 {years.map((year) => (
                   <option key={year} value={year}>
@@ -151,7 +173,7 @@ export function LegislationFilterPanel({
               </select>
             </Row>
             <Row label={t`Până la`}>
-              <select className={FIELD} value={filters.to ?? ''} onChange={(event) => onChange(withSearchYears(filters, filters.from, event.target.value === '' ? null : Number(event.target.value)))}>
+              <select aria-label={t`Până în anul`} className={FIELD} value={filters.to ?? ''} onChange={(event) => onChange(withSearchYears(filters, filters.from, event.target.value === '' ? null : Number(event.target.value)))}>
                 <option value="">{t`azi`}</option>
                 {years.map((year) => (
                   <option key={year} value={year}>

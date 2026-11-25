@@ -58,17 +58,29 @@ export function LegislationActFinder({ search }: Props) {
   const q = search.q?.trim() ?? ''
   const filters = readSearchFilters(search)
   const [panel, setPanel] = useState(false)
+  const filterButton = useRef<HTMLButtonElement>(null)
 
   // The box mirrors the address (back and forward, a shared link), but only where it says something else: while
-  // the reader types, the address follows the box, not the other way.
+  // the reader types, the address follows the box, not the other way. A query the page itself just sent is not
+  // mirrored back when it lands: keys typed while it travelled would be lost (review astra-client-7, F1b).
   const [draft, setDraft] = useState(q)
   const typed = useRef(draft)
   typed.current = draft
+  const sent = useRef<string | null>(null)
   useEffect(() => {
+    if (q === sent.current) {
+      sent.current = null
+      return
+    }
     if (typed.current.trim() !== q) setDraft(q)
   }, [q])
+  // The filters as the address holds them now, for the typing pause: a chip removed (or a step Back) while it ran
+  // must not come back with the query (F1a).
+  const latestFilters = useRef(filters)
+  latestFilters.current = filters
 
   const go = (next: { readonly q: string; readonly filters: SearchFilters }, options: { readonly replace: boolean }) => {
+    if (next.q !== q) sent.current = next.q
     void navigate({
       to: '/legislation/search',
       search: { q: next.q.length > 0 ? next.q : undefined, ...searchOfFilters(next.filters) },
@@ -81,9 +93,9 @@ export function LegislationActFinder({ search }: Props) {
   useEffect(() => {
     const next = draft.trim()
     if (next === q || (next.length > 0 && next.length < TYPED_MIN)) return
-    const timer = window.setTimeout(() => go({ q: next, filters }, { replace: true }), TYPING_PAUSE_MS)
+    const timer = window.setTimeout(() => go({ q: next, filters: latestFilters.current }, { replace: true }), TYPING_PAUSE_MS)
     return () => window.clearTimeout(timer)
-    // `go` and `filters` are rebuilt each render from the address; the pause restarts only when the box changes
+    // `go` is rebuilt each render and the filters are read when the pause ends; it restarts only when the box changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, q])
 
@@ -104,7 +116,7 @@ export function LegislationActFinder({ search }: Props) {
         <div className="flex items-start gap-2">
           <SearchField draft={draft} onDraft={setDraft} />
           {/* Beside the field (owner, 25 November 2026): the filters are part of the question. */}
-          <LegislationFilterButton filters={filters} onOpen={() => setPanel(true)} />
+          <LegislationFilterButton ref={filterButton} filters={filters} onOpen={() => setPanel(true)} />
         </div>
         {q.length > 0 ? null : (
           <nav aria-label={t`Exemple`} className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
@@ -119,7 +131,7 @@ export function LegislationActFinder({ search }: Props) {
       </form>
 
       {q.length > 0 ? <Answer q={q} filters={filters} onFilters={setFilters} /> : <WhatToSearch onExample={run} />}
-      <LegislationFilterPanel filters={filters} onChange={setFilters} open={panel} onOpenChange={setPanel} />
+      <LegislationFilterPanel filters={filters} onChange={setFilters} open={panel} onOpenChange={setPanel} returnFocus={() => filterButton.current?.focus()} />
     </div>
   )
 }
@@ -235,7 +247,9 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
   const result = search.data
   const stale = search.isPlaceholderData
   const acts = result.acts
-  const textSearched = result.engine === 'opensearch'
+  // The acts' text is searched on the OpenSearch engine, and only when the answer came whole (a degraded one may
+  // have lost that leg).
+  const textSearched = result.engine === 'opensearch' && !result.degraded
   const semanticUnavailable = result.caveats.includes(LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
   // Every other caveat is shown verbatim: the sentinel alone is a machine marker, said in our words.
   const verbatim = result.caveats.filter((caveat) => caveat !== LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
@@ -243,7 +257,9 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
   const resolveHits = resolve.data ?? []
   // Several acts for one name is a choice the reader makes; one act on a zeroed search is a rescue. Never over the
   // last query's faded answer: the resolver already answers the new one.
-  const choose = !stale && (resolveHits.length >= 2 || (resolveHits.length > 0 && empty))
+  // The resolver knows no filter: under one its act may be the very act the filter left out (F3), so no card then.
+  const unfiltered = Object.keys(filter).length === 0
+  const choose = !stale && unfiltered && (resolveHits.length >= 2 || (resolveHits.length > 0 && empty))
   const widen =
     filters.stare !== 'implicit' ? null : (
       <button type="button" onClick={() => onFilters({ ...filters, stare: 'toate' })} className={MORE_LINK}>
@@ -291,12 +307,30 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
       {filtered ? (
         <div className="space-y-2">
           <LegislationActiveFilters filters={filters} onChange={onFilters} />
-          {usesSummaries(filters) ? <p className="text-xs text-muted-foreground">{t`Cu domeniul, categoria sau sancțiunile, actele fără rezumat nu apar.`}</p> : null}
+          {usesSummaries(filters) ? (
+            <p className="text-xs text-muted-foreground">{t`Domeniul, categoria și sancțiunile vin din rezumate făcute automat: actele fără rezumat nu apar.`}</p>
+          ) : null}
         </div>
       ) : null}
       {choose ? <ChooseAct hits={resolveHits} several={resolveHits.length >= 2} /> : null}
 
-      {empty ? (
+      {empty && stale ? (
+        // The last query's empty answer, faded: its sentence would speak of a query no longer asked (F2).
+        <section className="border-t pt-8" aria-busy="true">
+          <p className="text-base text-muted-foreground">{t`Se caută…`}</p>
+        </section>
+      ) : empty && result.unhydratedHits > 0 ? (
+        // The engine matched acts it could not load: an answer, not an absence.
+        <section aria-labelledby="search-empty-title" className="border-t pt-8">
+          <h2 id="search-empty-title" className="text-2xl font-semibold tracking-tight text-foreground">
+            {t`Am găsit potriviri, dar nu le-am putut afișa`}
+          </h2>
+          <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{t`Serverul a găsit acte pentru această căutare, dar nu le-a putut încărca acum. Încearcă din nou peste puțin timp.`}</p>
+          <Button variant="outline" className="mt-4" onClick={() => void search.refetch()}>
+            {t`Încearcă din nou`}
+          </Button>
+        </section>
+      ) : empty ? (
         <section aria-labelledby="search-empty-title" className="border-t pt-8">
           {choose ? (
             <p id="search-empty-title" className="max-w-[60ch] text-base leading-relaxed text-muted-foreground">

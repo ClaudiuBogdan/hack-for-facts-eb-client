@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { legalFinderSearchSchema } from '@/schemas/legal-search'
+import { LEGAL_DOMAIN_SLUGS } from './legal-domains'
 import {
   NO_SEARCH_FILTERS,
   activeFilterCount,
@@ -48,7 +50,8 @@ describe('readSearchFilters', () => {
 
 describe('searchOfFilters', () => {
   it('names every key, undefined when off, so a merged search drops what was removed', () => {
-    expect(searchOfFilters(NO_SEARCH_FILTERS)).toEqual({
+    // strict: a key left out (rather than named undefined) would survive the router's merge
+    expect(searchOfFilters(NO_SEARCH_FILTERS)).toStrictEqual({
       historical: undefined,
       stare: undefined,
       tip: undefined,
@@ -123,5 +126,15 @@ describe('the act name', () => {
     expect(searchHitName({ act: { displayCitation: 'Doc nr. 96765' }, name: 'AMENDAMENTE din 8 decembrie 2006' })).toBe('Amendamente din 8 decembrie 2006')
     expect(searchHitName({ act: { displayCitation: 'Doc nr. 41627' }, name: null })).toBe('Doc nr. 41627')
     expect(searchHitName({ act: { displayCitation: 'Legea nr. 53/2003' }, name: 'CODUL MUNCII' })).toBe('Legea nr. 53/2003')
+  })
+})
+
+describe('the address through the route schema', () => {
+  it('keeps every domain chosen at once: the key is not dropped and the search not widened (F6)', () => {
+    const domeniu = [...LEGAL_DOMAIN_SLUGS].sort().join(',')
+    expect(domeniu.length).toBeGreaterThan(200)
+    const parsed = legalFinderSearchSchema.parse({ q: 'codul muncii', domeniu })
+    expect(parsed.domeniu).toBe(domeniu)
+    expect(readSearchFilters(parsed).domeniu).toHaveLength(16)
   })
 })

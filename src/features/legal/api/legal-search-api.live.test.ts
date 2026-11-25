@@ -90,6 +90,11 @@ describe('fetchLegalSearchLive', () => {
       includeHistorical: true,
     })
     expect(graphqlQueryMock.mock.calls[1]?.[1]).toMatchObject({ filter: null })
+    // the document binds the filter and asks for the canonical document's name
+    const document = String(graphqlQueryMock.mock.calls[0]?.[0])
+    expect(document).toMatch(/\$filter: LegalActsFilter/)
+    expect(document).toMatch(/legalSearch\(q: \$q, filter: \$filter,/)
+    expect(document).toMatch(/canonical \{\s*den\s+title\s*\}/)
   })
 
   it('widens to historical acts only when asked', async () => {
@@ -180,8 +185,8 @@ describe('fetchLegalSearchLive', () => {
               issuerSlug: null,
               status: 'ABROGAT',
               inDegree: 1154,
-              // no den: the short title stands in
-              canonical: { den: null, title: 'COD FISCAL 22/12/2003' },
+              // a blank den: the short title stands in
+              canonical: { den: '   ', title: ' COD FISCAL 22/12/2003 ' },
             },
             summary: null,
           }),
