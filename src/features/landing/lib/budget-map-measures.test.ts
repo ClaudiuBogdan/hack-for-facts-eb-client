@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseFiguresCsv } from '../api/budget-map'
 import { asPrinted, compactParts, formatAmount, formatPercent, joinParts } from './budget-map-format'
-import { coverageOf, measureById, measureValues, percentileEdges, positionOnScale, type BudgetFigures } from './budget-map-measures'
+import { coverageOf, measureById, measureValues, percentileEdges, percentileScale, positionOnScale, type BudgetFigures } from './budget-map-measures'
 
 const NB = ' '
 
@@ -118,5 +118,33 @@ describe('classified as printed', () => {
     // 13,952,229 prints „14 mil. lei": coloured from 14 mil., not „sub 14 mil.".
     expect(formatAmount(13_952_229, 'ro')).toBe(`14${NB}mil. lei`)
     expect(income.classOf(13_952_229)).toBe(1)
+  })
+})
+
+describe('a percentile scale in another unit', () => {
+  const RAMP = ['#1', '#2', '#3', '#4', '#5']
+
+  it('cuts at the totals\' percentiles on the edges as that unit prints them', () => {
+    // Whole lei per inhabitant: 100 values, 1.4 … 100.4.
+    const values = Array.from({ length: 100 }, (_, i) => i + 1.4)
+    const scale = percentileScale(values, RAMP, Math.round)
+    expect(scale.classes.map((item) => item.from)).toEqual([null, 51, 76, 91, 98])
+    expect(scale.classes.map((item) => item.color)).toEqual(RAMP)
+    // 50.6 prints as 51, so it is coloured with the class that starts at 51.
+    expect(scale.classOf(50.6)).toBe(1)
+    expect(scale.classOf(50.4)).toBe(0)
+    expect(scale.classOf(null)).toBeNull()
+  })
+
+  it('is the totals\' own scale when the unit is theirs', () => {
+    const values = [1_200_000, 14_000_000, 2_500_000_000, null, 480_000, 96_000_000]
+    const own = measureById('income').scale(values)
+    const built = percentileScale(values, measureById('income').ramp, asPrinted)
+    expect(built.classes).toEqual(own.classes)
+    for (const value of values) expect(built.classOf(value)).toBe(own.classOf(value))
+  })
+
+  it('has no classes without figures', () => {
+    expect(percentileScale([null, null], RAMP, Math.round).classes).toEqual([])
   })
 })

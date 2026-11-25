@@ -143,6 +143,9 @@ export function countyLabelPoints(labels: LabelPoints, nameOf: (code: string) =>
 }
 
 const HALO = 1.5
+/** The county level's names sit on the fills, not on the page: one pair of colours for both themes. */
+const COUNTY_VALUE_TEXT = '#1c1917'
+const COUNTY_VALUE_HALO = 'rgba(255, 255, 255, 0.85)'
 
 /** The theme's colours on a map already drawn: a switch of theme re-paints what `mapLayers` set. */
 export function applyTheme(map: Pick<MapLibreMap, 'getLayer' | 'setPaintProperty'>, theme: MapTheme): void {
@@ -153,8 +156,6 @@ export function applyTheme(map: Pick<MapLibreMap, 'getLayer' | 'setPaintProperty
     ['county-active', 'line-color', theme.foreground],
     ['county-labels', 'text-color', theme.muted],
     ['county-labels', 'text-halo-color', theme.background],
-    ['county-value-labels', 'text-color', theme.foreground],
-    ['county-value-labels', 'text-halo-color', theme.background],
     ['uat-labels', 'text-color', theme.foreground],
     ['uat-labels', 'text-halo-color', theme.background],
   ]
@@ -232,7 +233,8 @@ export function mapLayers(theme: MapTheme): LayerSpecification[] {
         'symbol-sort-key': ['-', 0, ['get', 'room']],
         'text-padding': 2,
       },
-      paint: { 'text-color': theme.foreground, 'text-halo-color': theme.background, 'text-halo-width': HALO },
+      // On the fills, which are the same in both themes: dark on a light halo reads on every class.
+      paint: { 'text-color': COUNTY_VALUE_TEXT, 'text-halo-color': COUNTY_VALUE_HALO, 'text-halo-width': HALO },
     },
     {
       id: 'county-labels',
