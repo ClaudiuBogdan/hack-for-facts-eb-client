@@ -113,8 +113,10 @@ type RenderStatus = 'pending' | 'ready' | 'unsupported' | 'failed'
  *   follows a resize, which `zoomed` and the touch rule are measured from.
  * - On a touch screen, `zoomed` decides whether one finger pans the map or
  *   scrolls the page.
+ * - `cooperativeGestures: false` is for a page the map fills: the wheel zooms
+ *   and one finger pans at any zoom. Read once, at creation.
  */
-export function useMapInstance(containerRef: React.RefObject<HTMLDivElement | null>, words: MapWords) {
+export function useMapInstance(containerRef: React.RefObject<HTMLDivElement | null>, words: MapWords, options: { readonly cooperativeGestures?: boolean } = {}) {
   const [map, setMap] = useState<maplibregl.Map | null>(null)
   const [zoomed, setZoomed] = useState(false)
   const [unsupported] = useState(() => !supportsWebGl2())
@@ -122,6 +124,7 @@ export function useMapInstance(containerRef: React.RefObject<HTMLDivElement | nu
   // The words at creation: MapLibre reads its locale once.
   const locale = useRef(mapLocale(words))
   const attribution = useRef(mapAttribution(words))
+  const cooperative = useRef(options.cooperativeGestures ?? true)
   useEffect(() => {
     const container = containerRef.current
     if (!container || unsupported) return
@@ -141,7 +144,7 @@ export function useMapInstance(containerRef: React.RefObject<HTMLDivElement | nu
         dragRotate: false,
         pitchWithRotate: false,
         touchPitch: false,
-        cooperativeGestures: true,
+        cooperativeGestures: cooperative.current,
         // The credits, bottom right; folded behind an „i" on a narrow map (MapLibre's default).
         attributionControl: { customAttribution: attribution.current },
         renderWorldCopies: false,
@@ -166,7 +169,7 @@ export function useMapInstance(containerRef: React.RefObject<HTMLDivElement | nu
       built.setMinZoom(fitZoom - 0.25)
       const isZoomed = built.getZoom() > fitZoom + ONE_FINGER_FROM
       setZoomed(isZoomed)
-      if (!coarse) return
+      if (!coarse || !cooperative.current) return
       if (isZoomed) built.cooperativeGestures.disable()
       else built.cooperativeGestures.enable()
     }
@@ -178,7 +181,7 @@ export function useMapInstance(containerRef: React.RefObject<HTMLDivElement | nu
       ])
       const empty = { type: 'FeatureCollection' as const, features: [] }
       built.addSource(SOURCE.uats, { type: 'geojson', data: empty, promoteId: 'natcode' })
-      built.addSource(SOURCE.counties, { type: 'geojson', data: empty })
+      built.addSource(SOURCE.counties, { type: 'geojson', data: empty, promoteId: 'mnemonic' })
       built.addSource(SOURCE.uatLabels, { type: 'geojson', data: empty })
       built.addSource(SOURCE.countyLabels, { type: 'geojson', data: empty })
       for (const layer of mapLayers(readTheme(container))) built.addLayer(layer)
@@ -207,22 +210,37 @@ export function useMapInstance(containerRef: React.RefObject<HTMLDivElement | nu
   return { map, zoomed, status: unsupported ? ('unsupported' as const) : status }
 }
 
+/** What the pointer picks: a fill layer, its source and the shape property holding the code. */
+export interface PointerTarget {
+  readonly layer: string
+  readonly source: string
+  readonly key: string
+}
+
+export const UAT_TARGET: PointerTarget = { layer: 'uat-fill', source: SOURCE.uats, key: 'natcode' }
+export const COUNTY_TARGET: PointerTarget = { layer: 'county-fill', source: SOURCE.counties, key: 'mnemonic' }
+
 /**
  * Under a mouse: the primărie outlined and a tooltip at the pointer; a click
  * opens its page. Under a finger: a tap outlines it and opens a popover; the
  * popover and the outline go when the map moves.
+ *
+ * `target` is the primării unless the counties are what is coloured. A tooltip
+ * or popover made for one target is not handed out for the other.
  */
-export function useUatPointer(map: maplibregl.Map | null, frameRef: React.RefObject<HTMLDivElement | null>) {
+export function useUatPointer(map: maplibregl.Map | null, frameRef: React.RefObject<HTMLDivElement | null>, target: PointerTarget = UAT_TARGET) {
   const navigate = useNavigate()
-  const [tooltip, setTooltip] = useState<{ siruta: string; x: number; y: number; frame: { width: number; height: number } } | null>(null)
-  const [popover, setPopover] = useState<{ siruta: string; at: { x: number; y: number } } | null>(null)
-  const active = useRef<string | null>(null)
+  const { layer, source, key } = target
+  const [tooltip, setTooltip] = useState<{ siruta: string; source: string; x: number; y: number; frame: { width: number; height: number } } | null>(null)
+  const [popover, setPopover] = useState<{ siruta: string; source: string; at: { x: number; y: number } } | null>(null)
+  const active = useRef<{ readonly source: string; readonly code: string } | null>(null)
 
   const outline = (code: string | null) => {
-    if (!map || active.current === code) return
-    if (active.current) map.setFeatureState({ source: SOURCE.uats, id: active.current }, { active: false })
-    active.current = code
-    if (code) map.setFeatureState({ source: SOURCE.uats, id: code }, { active: true })
+    const current = active.current
+    if (!map || (current === null ? code === null : current.code === code && current.source === source)) return
+    if (current) map.setFeatureState({ source: current.source, id: current.code }, { active: false })
+    active.current = code ? { source, code } : null
+    if (code) map.setFeatureState({ source, id: code }, { active: true })
   }
   const outlineRef = useRef(outline)
   useEffect(() => {
@@ -231,9 +249,11 @@ export function useUatPointer(map: maplibregl.Map | null, frameRef: React.RefObj
 
   useEffect(() => {
     if (!map) return
+    // An outline left by the other target goes with it.
+    outlineRef.current(null)
     const uatAt = (point: maplibregl.PointLike) => {
-      const feature = map.queryRenderedFeatures(point, { layers: ['uat-fill'] })[0]
-      return feature ? { siruta: String(feature.properties?.natcode ?? feature.id), cui: typeof feature.properties?.cui === 'string' ? feature.properties.cui : '' } : null
+      const feature = map.queryRenderedFeatures(point, { layers: [layer] })[0]
+      return feature ? { siruta: String(feature.properties?.[key] ?? feature.id), cui: typeof feature.properties?.cui === 'string' ? feature.properties.cui : '' } : null
     }
     // The kind of pointer last used: a touch laptop's mouse brings the tooltips back on its first move.
     let pointerType = 'mouse'
@@ -245,7 +265,7 @@ export function useUatPointer(map: maplibregl.Map | null, frameRef: React.RefObj
       const uat = uatAt(event.point)
       outlineRef.current(uat?.siruta ?? null)
       const frame = frameRef.current
-      setTooltip(uat && frame ? { siruta: uat.siruta, x: event.point.x, y: event.point.y, frame: { width: frame.clientWidth, height: frame.clientHeight } } : null)
+      setTooltip(uat && frame ? { siruta: uat.siruta, source, x: event.point.x, y: event.point.y, frame: { width: frame.clientWidth, height: frame.clientHeight } } : null)
     }
     const onLeave = () => {
       if (pointerType !== 'mouse') return
@@ -259,7 +279,7 @@ export function useUatPointer(map: maplibregl.Map | null, frameRef: React.RefObj
         return
       }
       outlineRef.current(uat?.siruta ?? null)
-      setPopover(uat ? { siruta: uat.siruta, at: { x: event.originalEvent.clientX, y: event.originalEvent.clientY } } : null)
+      setPopover(uat ? { siruta: uat.siruta, source, at: { x: event.originalEvent.clientX, y: event.originalEvent.clientY } } : null)
     }
     // The popover and its outline belong to where the map was.
     const onMoveStart = () => {
@@ -282,11 +302,11 @@ export function useUatPointer(map: maplibregl.Map | null, frameRef: React.RefObj
       map.off('click', onClick)
       map.off('movestart', onMoveStart)
     }
-  }, [map, frameRef, navigate])
+  }, [map, frameRef, navigate, layer, source, key])
 
   return {
-    tooltip,
-    popover,
+    tooltip: tooltip?.source === source ? tooltip : null,
+    popover: popover?.source === source ? popover : null,
     closePopover: () => {
       setPopover(null)
       outline(null)

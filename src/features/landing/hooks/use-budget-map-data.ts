@@ -1,5 +1,5 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query'
-import { COUNTY_SHAPES_URL, LABEL_POINTS_URL, UAT_SHAPES_URL, fetchBudgetFigures, fetchStaticJson, type LabelPoints, type ShapeCollection } from '../api/budget-map'
+import { COUNTY_SHAPES_URL, LABEL_POINTS_URL, UAT_SHAPES_URL, fetchBudgetFigures, fetchStaticJson, type BudgetFiguresOptions, type LabelPoints, type ShapeCollection } from '../api/budget-map'
 import { BUDGET_YEAR } from '../lib/budget-map-measures'
 
 /**
@@ -19,17 +19,34 @@ const fileQuery = <T,>(url: string) => ({
   staleTime: Infinity,
 })
 
-const figuresQuery = (year: string) => ({
-  queryKey: ['landing', 'budget-map', 'figures', year] as const,
-  queryFn: () => fetchBudgetFigures(year),
-  staleTime: 60 * 60 * 1000,
-  gcTime: 60 * 60 * 1000,
-})
+/**
+ * A year's figures. The landing's own (totals per primărie) keep their key, so
+ * the map page finds what the landing fetched; any other count adds to it.
+ */
+export const budgetFiguresQuery = (year: string, options: BudgetFiguresOptions = {}) => {
+  const normalization = options.normalization ?? 'total'
+  const granularity = options.granularity ?? 'UAT'
+  const landing = normalization === 'total' && granularity === 'UAT'
+  return {
+    queryKey: landing ? (['landing', 'budget-map', 'figures', year] as const) : (['landing', 'budget-map', 'figures', year, granularity, normalization] as const),
+    queryFn: () => fetchBudgetFigures(year, { normalization, granularity }),
+    staleTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  }
+}
 
-export function useBudgetMapData() {
+const figuresQuery = (year: string) => budgetFiguresQuery(year)
+
+/** The shapes and the label points: the same files, and cache entries, wherever the map is drawn. */
+export function useBudgetMapShapes() {
   const uats = useQuery(fileQuery<ShapeCollection>(UAT_SHAPES_URL))
   const counties = useQuery(fileQuery<ShapeCollection>(COUNTY_SHAPES_URL))
   const labels = useQuery(fileQuery<LabelPoints>(LABEL_POINTS_URL))
+  return { uats, counties, labels }
+}
+
+export function useBudgetMapData() {
+  const { uats, counties, labels } = useBudgetMapShapes()
   const figures = useQuery(figuresQuery(BUDGET_YEAR))
   const queries = [uats, counties, labels, figures]
   return {
