@@ -44,7 +44,9 @@ const loadMap = () =>
   })
 const MapPageMap = lazy(loadMap)
 
-const SEGMENT = 'h-9 gap-1.5 px-3 text-sm data-[state=on]:bg-secondary data-[state=on]:text-foreground'
+// The bar's look is /public-institutions': square, a quiet border, the chosen option filled in the text's colour.
+const SEGMENT =
+  'h-10 gap-1.5 rounded-none border-foreground/25 bg-background px-3 text-sm font-normal text-muted-foreground shadow-none hover:bg-background hover:text-foreground data-[state=on]:bg-foreground data-[state=on]:text-background data-[state=on]:hover:bg-foreground data-[state=on]:hover:text-background'
 const MAP_PLACE = 'grid h-[62dvh] min-h-80 place-items-center bg-muted/30 text-sm text-muted-foreground md:h-auto md:min-h-0 md:flex-1'
 
 /**
@@ -82,14 +84,9 @@ function Segments<T extends string>({
   readonly className?: string
 }) {
   return (
-    <ToggleGroup type="single" variant="outline" value={value} onValueChange={(next) => next && onChange(next as T)} aria-label={label} className={cn('gap-0 rounded-md', className)}>
+    <ToggleGroup type="single" variant="outline" value={value} onValueChange={(next) => next && onChange(next as T)} aria-label={label} className={cn('gap-0', className)}>
       {options.map((option, i) => (
-        <ToggleGroupItem
-          key={option.value}
-          value={option.value}
-          aria-label={option.icon ? option.label : undefined}
-          className={cn(SEGMENT, i === 0 ? 'rounded-r-none' : '-ml-px rounded-l-none')}
-        >
+        <ToggleGroupItem key={option.value} value={option.value} aria-label={option.icon ? option.label : undefined} className={cn(SEGMENT, i > 0 && '-ml-px')}>
           {option.icon}
           {/* With an icon, the word from `sm`: on a phone the icon carries it, named for assistive tech. */}
           <span className={option.icon ? 'hidden sm:inline' : undefined}>{option.label}</span>
@@ -128,7 +125,8 @@ export function MapPage() {
           ]}
         />
         <div className="order-2 flex w-full items-center gap-2 sm:w-auto sm:gap-3">
-          <div className="min-w-0 flex-1 sm:w-72 sm:flex-none">
+          {/* The landing's picker, squared to the bar (its menu is portalled, out of this frame's reach). */}
+          <div className="min-w-0 flex-1 sm:w-64 sm:flex-none [&_button]:rounded-none [&_button]:border-foreground/25 [&_button]:shadow-none sm:[&_button]:w-full">
             <MapPicker value={measureId} onChange={(id) => change({ measureId: id })} measures={measures} />
           </div>
           <ChoiceSelect
@@ -136,8 +134,15 @@ export function MapPage() {
             groups={[{ options: YEARS.map((item) => ({ value: item, label: item })) }]}
             onChange={(next) => change({ year: next })}
             label={t`Anul`}
-            triggerClassName="h-10 w-24 shrink-0 tabular-nums"
-          />
+            triggerClassName="h-10 w-auto shrink-0 gap-2 rounded-none border-foreground/25 shadow-none"
+          >
+            {/* „Anul: 2025", the year alone on a phone (the map's name needs the room; the control is still named „Anul").
+                The trigger clamps its span to one line of inline text, so a space, not a gap, parts the words. */}
+            <span className="whitespace-nowrap">
+              <span className="hidden text-muted-foreground sm:inline">{t`Anul`}: </span>
+              <span className="font-semibold tabular-nums">{year}</span>
+            </span>
+          </ChoiceSelect>
         </div>
         <div className="order-3 flex items-center gap-2 sm:gap-3">
           <Segments<Basis>
