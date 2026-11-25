@@ -62,7 +62,7 @@ search and the companies hub's search.
 - **A shared helper for the tests.** A shared "wait until this element is hydrated" in `tests/utils/test-helpers.ts`
   would close the gap for every spec. Root has given it to client-entity-analytics, which owns the integration test
   infrastructure, after its API guard.
-- **A product fix: the same gap hits readers.** The proof above is not only about tests. A reader on a slow phone
+- **A product fix: the same gap hits readers**, filed as SEARCH-001. The proof above is not only about tests. A reader on a slow phone
   who types before the page hydrates gets the same silence: the text stays in the box and no search runs.
   - **What exists now.** On `/legislation/search` the search input has no `name`, so pressing Enter before
     hydration submits the form natively with no `q`. The entity-search box has no form at all.
