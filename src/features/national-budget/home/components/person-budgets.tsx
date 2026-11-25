@@ -67,7 +67,7 @@ function partName(part: Part): string {
     case 'eu':
       return t`Fonduri UE`
     case 'borrowed':
-      return t`Împrumutat`
+      return t`Deficite înainte de consolidare`
   }
 }
 
@@ -80,7 +80,7 @@ function partHint(part: Part): string {
     case 'eu':
       return t`sume primite de la Uniunea Europeană și alți donatori, granturile PNRR incluse`
     case 'borrowed':
-      return t`deficitul bugetului: ce a cheltuit peste încasări`
+      return t`deficitul fiecărui buget înainte de consolidare: ce a cheltuit peste încasări`
   }
 }
 
@@ -392,8 +392,8 @@ function BudgetsFlow({ rows, bridge, caption }: { readonly rows: readonly Budget
           ? t`Din banii trecuți de la un buget la altul, ${moneyText(bridge.received)} apar ca subvenții primite („De la alte bugete"), restul în alte linii de venit ale celor care îi primesc. Cine a dat cui nu e tipărit, de aceea nu legăm bugetele între ele.`
           : t`Cine a dat cui nu e tipărit, de aceea nu legăm bugetele între ele.`}{' '}
         {bridge.deficit
-          ? t`Împrumutat: deficitele bugetelor (celelalte bugete socotite împreună), ${moneyText(borrowed)} adunate; cu excedentele bugetelor și operațiunile financiare, deficitul bugetului general consolidat e ${moneyText(bridge.deficit)}.`
-          : t`Împrumutat: deficitele bugetelor (celelalte bugete socotite împreună), ${moneyText(borrowed)} adunate.`}
+          ? t`Deficite înainte de consolidare: ale bugetelor (celelalte bugete socotite împreună), ${moneyText(borrowed)} adunate; cu excedentele bugetelor și operațiunile financiare, deficitul bugetar (cash) al bugetului general consolidat e ${moneyText(bridge.deficit)}.`
+          : t`Deficite înainte de consolidare: ale bugetelor (celelalte bugete socotite împreună), ${moneyText(borrowed)} adunate.`}
       </Note>
     </figure>
   )

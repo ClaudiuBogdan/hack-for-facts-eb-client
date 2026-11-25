@@ -101,6 +101,25 @@ function Chart({ years, chosen, onPick, measure, onMeasure }: { readonly years: 
   )
 }
 
+/**
+ * Why a year has no interest (scrapper decision 2026-10-07, „execution-gap corrections"): 2008's annual table is loaded
+ * for its three totals only; the 2011 and 2013 December bulletins give the year as an estimate, kept out of the
+ * executed series. Any other missing year is said plainly.
+ */
+function interestGapsText(years: readonly number[]): string | null {
+  if (!years.length) return null
+  const totalsOnly: readonly number[] = years.filter((year) => year === 2008)
+  const estimates: readonly number[] = years.filter((year) => year === 2011 || year === 2013)
+  const other = years.filter((year) => !totalsOnly.includes(year) && !estimates.includes(year))
+  return [
+    totalsOnly.length ? t`Pentru ${spansText(totalsOnly)} lipsesc dobânzile: din raportul anual sunt încărcate doar totalurile.` : null,
+    estimates.length ? t`Pentru ${spansText(estimates)} lipsesc dobânzile: buletinul de decembrie dă anul ca estimare, nu ca execuție.` : null,
+    other.length ? t`Pentru ${spansText(other)} lipsesc dobânzile.` : null,
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
 /** Interest on the debt per resident, every full year since 2006: what past borrowing costs each year. */
 function InterestTrend({ chosen }: { readonly chosen: number }) {
   const points = useInterestTrend().map((point) => ({ year: point.year, lei: perResident(point.exact, point.year) }))
@@ -111,6 +130,7 @@ function InterestTrend({ chosen }: { readonly chosen: number }) {
   if (!first || !last) return null
   const from = leiText(first.lei)
   const to = leiText(last.lei)
+  const gaps = interestGapsText(points.filter((point) => point.lei === null).map((point) => point.year))
   return (
     <div className="mt-5">
       <p className="text-xs text-muted-foreground">{t`Dobânzi pe locuitor: ${from} în ${first.year}, ${to} în ${last.year}`}</p>
@@ -124,6 +144,7 @@ function InterestTrend({ chosen }: { readonly chosen: number }) {
           />
         ))}
       </div>
+      {gaps ? <p className="mt-2 text-xs text-muted-foreground">{gaps}</p> : null}
     </div>
   )
 }
@@ -187,7 +208,7 @@ function Debt() {
                   <Mark>{share}</Mark> {t`din PIB`}
                 </>
               ) : null,
-              year.lei !== null ? ofHundred(year.lei, t`din fiecare 100 cheltuiți, împrumutați`) : null,
+              year.lei !== null ? ofHundred(year.lei, t`din fiecare 100 cheltuiți, peste încasări`) : null,
               <>
                 <Mark>{leiText(perResident(year.deficit, view.year))}</Mark> {perResidentWords()}
               </>,
@@ -224,7 +245,7 @@ function Debt() {
         {measure === 'lei' ? `${t`Sumele sunt în lei curenți, neajustați cu inflația.`} ` : ''}
         {measure === 'pib' && running ? `${t`Pentru ${running.year}, deficitul de până în ${monthName(running.month)} e împărțit la PIB-ul estimat pentru tot anul.`} ` : ''}
         {computed
-          ? t`Ponderea în PIB e cea tipărită în buletinul anului; pentru ${computed}, unde buletinul nu o tipărește, e deficitul împărțit la PIB-ul anual publicat de INS (Tempo CON111B; 2025, provizoriu).`
+          ? t`Ponderea în PIB e cea tipărită în buletinul anului; pentru ${computed}, unde datele încărcate nu au ponderea tipărită, e deficitul împărțit la PIB-ul anual publicat de INS (Tempo CON111B; 2025, provizoriu), deci poate diferi de cea publicată de minister.`
           : t`Ponderea în PIB e cea tipărită în buletinul fiecărui an.`}
       </Note>
     </div>

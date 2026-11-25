@@ -1718,3 +1718,19 @@ is apportioned (a line can gain a leu); an address asking for a year the page wo
 authorities can come from two refreshes for up to five minutes after a correction. The population table must get the new year's row before that
 year's December bulletin lands (NB-002), or the bare page opens a year without its figures per resident.
 
+
+### 13.4 The owner's independent reviewers (25 November 2026)
+
+Four read-only reviewers of the preview, forwarded by the owner; each finding checked against the code, the dev API and the sources:
+- **The cash deficit is not borrowing.** 146,03 mld. lei is the consolidated cash deficit (Ministry, 27 January 2026: „deficit cash de
+  146,03 mld lei, respectiv 7,65% din PIB"). The page called it borrowed in the head, the 100 lei and the borrowing section; it is
+  „Deficit bugetar (cash)" again there and on the share card. The budgets flow's 156,9 mld. lei sums the budgets' own balances before
+  consolidation: „Deficite înainte de consolidare".
+- **ANAF's chapter 55 is not interest alone.** 2025: 50,10 mld. lei, of which 48,84 interest (economic code 30) and 1,27 loan
+  repayments and fees (codes 81, 20), as the dev API's line items add up. The row takes the chapter's name, „Tranzacții privind datoria
+  publică și împrumuturi"; the bulletin's interest (50,5 mld. lei) stays „Dobânzi la datorie".
+- **The GDP notes said the bulletins don't print shares they do print.** May 2025 (3,39%) and December 2023 (5,68%) are missing from the
+  served series, not from the bulletins; the notes say so, and that each month's share is the one first published (the September 2026
+  bulletin restates September 2025 at 5,31%, the page shows 5,39%). The data asks are NB-009.
+- **The interest chart says why 2008, 2011 and 2013 are empty**: 2008's annual table is loaded for its totals only (a backfill candidate,
+  NB-009); the 2011 and 2013 December bulletins give the year as an estimate, kept out of the executed series.

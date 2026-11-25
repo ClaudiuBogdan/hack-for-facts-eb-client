@@ -77,8 +77,9 @@ function Flow() {
     ? [
         {
           key: 'borrowed',
-          label: t`Împrumut`,
-          hint: t`deficitul: ce s-a cheltuit peste încasări`,
+          // The consolidated cash deficit, as the Ministry names it: what was spent beyond revenue, not the year's borrowing.
+          label: t`Deficit bugetar (cash)`,
+          hint: t`ce s-a cheltuit peste încasări`,
           exact: totals.deficit,
           lei: totals.borrowed,
           change: changeText(totals.deficit, totals.deficitBefore),
@@ -100,7 +101,7 @@ function Flow() {
         <div className="grid grid-cols-2 gap-1.5">
           <div className="pb-3 pr-2 text-right">
             <p className="text-sm font-semibold">{t`De unde au venit`}</p>
-            <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">{deficit ? t`${received} încasați, ${deficit} împrumutați` : t`${received} încasați`}</p>
+            <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">{deficit ? t`${received} încasați, ${deficit} deficit` : t`${received} încasați`}</p>
           </div>
           <div className="pb-3 pl-2">
             <p className="text-sm font-semibold">{t`Pe ce s-au dus`}</p>
@@ -117,7 +118,7 @@ function Flow() {
         left={{ title: t`De unde au venit cei 100 de lei`, parts: left }}
         right={{ title: t`Pe ce s-au dus`, parts: right }}
         previous={previous}
-        note={t`Bugetul general consolidat ${inPeriod(view.text)}. Încasările plus împrumutul fac cheltuielile, de aceea coloanele au aceeași înălțime. Leii din 100 sunt rotunjiți la întreg. Pe locuitor: suma împărțită la populația rezidentă de la 1 ianuarie.`}
+        note={t`Bugetul general consolidat ${inPeriod(view.text)}. Încasările plus deficitul fac cheltuielile, de aceea coloanele au aceeași înălțime. Leii din 100 sunt rotunjiți la întreg. Pe locuitor: suma împărțită la populația rezidentă de la 1 ianuarie.`}
       />
     </div>
   )

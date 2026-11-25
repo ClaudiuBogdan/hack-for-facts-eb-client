@@ -53,7 +53,8 @@ const CHAPTERS: Readonly<Record<string, () => string>> = {
   '51': () => t`Autorități publice și relații externe`,
   '53': () => t`Cercetare fundamentală`,
   '54': () => t`Alte servicii publice generale`,
-  '55': () => t`Datoria publică (dobânzi)`,
+  // The chapter's own name: it holds the interest and also fees and loan repayments (2025: 48,8 of 50,1 mld. lei are interest).
+  '55': () => t`Tranzacții privind datoria publică și împrumuturi`,
   '56': () => t`Transferuri către alte bugete`,
   '57': () => t`Asigurări și asistență socială (transferuri)`,
   '59': () => t`Alte cheltuieli`,
@@ -81,7 +82,7 @@ const CHAPTERS: Readonly<Record<string, () => string>> = {
 const CHAPTER_HINTS: Readonly<Record<string, () => string>> = {
   '51': () => t`Guvernul și ministerele, contribuția României la bugetul UE, cofinanțarea proiectelor europene`,
   '54': () => t`alte servicii ale statului, garanții plătite din bugetul de stat`,
-  '55': () => t`dobânzile la datoria publică: banii împrumutați în anii trecuți`,
+  '55': () => t`mai ales dobânzi la datoria publică; și comisioane, rambursări de împrumuturi`,
   '56': () => t`bani trimiși altor bugete, mai ales celui de pensii, ca să-și acopere plățile`,
   '60': () => t`armata`,
   '61': () => t`poliție, protecție civilă și pompieri, instanțe, penitenciare`,

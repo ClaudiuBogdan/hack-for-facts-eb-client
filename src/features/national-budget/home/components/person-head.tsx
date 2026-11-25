@@ -67,7 +67,7 @@ function BalancePanel() {
           {totals.deficit ? (
             <p className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
               <span className={cn('size-2.5 rounded-[2px]', BORROWED_FILL)} />
-              {t`plus ${moneyText(totals.deficit)} împrumutați`}
+              {t`plus ${moneyText(totals.deficit)} deficit bugetar (cash)`}
             </p>
           ) : null}
         </div>
@@ -89,7 +89,7 @@ function BalancePanel() {
       </dl>
       {totals.deficit ? (
         <div className="mt-6 border-t pt-4">
-          <p className="text-base">{t`Din fiecare 100 de lei cheltuiți, ${totals.fromRevenue} au venit din încasări și ${totals.borrowed} din împrumut.`}</p>
+          <p className="text-base">{t`Din fiecare 100 de lei cheltuiți, ${totals.fromRevenue} au venit din încasări și ${totals.borrowed} sunt deficit.`}</p>
           <div className="mt-3 flex h-2.5 overflow-hidden rounded-full" aria-hidden="true">
             <span className="block h-full bg-chart-sky" style={{ width: `${totals.fromRevenue}%` }} />
             <span className={cn('block h-full', BORROWED_FILL)} style={{ width: `${totals.borrowed}%` }} />

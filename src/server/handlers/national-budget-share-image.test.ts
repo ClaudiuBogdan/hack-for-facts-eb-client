@@ -176,7 +176,7 @@ describe('buildNationalBudgetShareImageViewModel', () => {
       period: '2025',
       headline: 'Partea ta din cheltuielile statului',
       figure: `42.468${NBSP}lei`,
-      note: `pe locuitor, din care 7.669${NBSP}lei împrumutați`,
+      note: `pe locuitor, din care 7.669${NBSP}lei deficit bugetar (cash)`,
       lines: [
         { label: 'Asistență socială', value: `13.174${NBSP}lei` },
         { label: 'Cheltuieli de personal', value: `8.807${NBSP}lei` },
@@ -193,7 +193,7 @@ describe('buildNationalBudgetShareImageViewModel', () => {
       period: '2025',
       headline: 'Your share of public spending',
       figure: `42,468${NBSP}lei`,
-      note: `per resident, of which 7,669${NBSP}lei borrowed`,
+      note: `per resident, of which 7,669${NBSP}lei cash budget deficit`,
       lines: [
         { label: 'Social assistance', value: `13,174${NBSP}lei` },
         { label: 'Staff costs', value: `8,807${NBSP}lei` },

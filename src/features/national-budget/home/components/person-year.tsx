@@ -201,8 +201,8 @@ function YearSoFar() {
         {measure === 'lei'
           ? t`Sumele sunt în lei curenți.`
           : unprinted.length
-            ? t`Ponderea în PIB e cea tipărită: deficitul de până atunci împărțit la PIB-ul estimat pentru tot anul, de aceea urcă spre decembrie. Buletinul din ${unprinted.join(', ')} nu o tipărește; linia trece peste.`
-            : t`Ponderea în PIB e cea tipărită: deficitul de până atunci împărțit la PIB-ul estimat pentru tot anul, de aceea urcă spre decembrie.`}
+            ? t`Ponderea în PIB e cea tipărită în buletinul fiecărei luni, la publicare: deficitul de până atunci împărțit la PIB-ul estimat atunci pentru tot anul, de aceea urcă spre decembrie. Un buletin mai nou poate recalcula o lună cu PIB-ul revizuit. Datele încărcate nu au ponderea pentru ${unprinted.join(', ')}; linia trece peste.`
+            : t`Ponderea în PIB e cea tipărită în buletinul fiecărei luni, la publicare: deficitul de până atunci împărțit la PIB-ul estimat atunci pentru tot anul, de aceea urcă spre decembrie. Un buletin mai nou poate recalcula o lună cu PIB-ul revizuit.`}
       </Note>
     </div>
   )

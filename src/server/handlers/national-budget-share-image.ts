@@ -33,7 +33,7 @@ const SHARE_IMAGE_CACHE_CONTROL = `public, max-age=${SHARE_IMAGE_CACHE_SECONDS},
 const SHARE_IMAGE_CDN_CACHE_CONTROL = `max-age=${SHARE_IMAGE_CACHE_SECONDS}, stale-while-revalidate=${SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS}`
 // Every year the bulletins cover (2006 on), in both languages.
 const SHARE_IMAGE_MEMORY_CACHE_MAX_ENTRIES = 64
-const SHARE_IMAGE_CACHE_VERSION = '20261125-per-resident'
+const SHARE_IMAGE_CACHE_VERSION = '20261125-cash-deficit'
 /**
  * The catalog, then the year's lines (two requests at once), and for a year
  * the bulletins don't finish the default year's: one deadline for them all.
@@ -76,14 +76,14 @@ const WORDS = {
     brand: 'Transparenta.eu · Bugetul național',
     headline: 'Partea ta din cheltuielile statului',
     perResident: 'pe locuitor',
-    borrowed: (lei: string) => `pe locuitor, din care ${lei} împrumutați`,
+    borrowed: (lei: string) => `pe locuitor, din care ${lei} deficit bugetar (cash)`,
     unavailable: 'Date indisponibile momentan',
   },
   en: {
     brand: 'Transparenta.eu · National budget',
     headline: 'Your share of public spending',
     perResident: 'per resident',
-    borrowed: (lei: string) => `per resident, of which ${lei} borrowed`,
+    borrowed: (lei: string) => `per resident, of which ${lei} cash budget deficit`,
     unavailable: 'Data unavailable right now',
   },
 } as const
