@@ -255,7 +255,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>
-          <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} plainNotes />
+          <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} plain />
         </RuledFrame>
       </section>
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
+import { ArrowUpRight } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { CountUpValue } from '@/features/landing/components/count-up'
 import type { NumberLocale } from '@/features/landing/lib/national-facts'
@@ -44,13 +45,20 @@ export function HubFiguresBand({
   facts,
   locale,
   className,
-  plainNotes = false,
+  plain = false,
+  arrow = false,
 }: {
   readonly facts: readonly HubFact[]
   readonly locale: NumberLocale
   readonly className?: string
-  /** A page whose notes are sentences sets them as plain text in their own casing, not as mono capitals; the labels stay mono. */
-  readonly plainNotes?: boolean
+  /** A page whose labels and notes are words sets them as plain text in their own casing, not as mono capitals. */
+  readonly plain?: boolean
+  /**
+   * The landing's cue that a tile leads somewhere: an arrow in its corner, decorative, drawn only on a tile
+   * whose label is a link (`group-has-[a]`), with the landing's rule for when it shows
+   * (`national-facts-band.tsx`): on hover or focus where a pointer hovers, always on a touch screen.
+   */
+  readonly arrow?: boolean
 }) {
   return (
     <dl className={cn('grid', FIGURE_COLUMNS[facts.length] ?? 'grid-cols-2 lg:grid-cols-4', className)}>
@@ -67,15 +75,25 @@ export function HubFiguresBand({
         >
           <dt className="order-2 mt-2.5 flex flex-1 flex-col">
             {fact.link(
-              <MonoLabel className="block leading-relaxed text-foreground">{fact.label}</MonoLabel>,
+              plain ? (
+                <span className="block text-sm font-medium leading-snug text-foreground">{fact.label}</span>
+              ) : (
+                <MonoLabel className="block leading-relaxed text-foreground">{fact.label}</MonoLabel>
+              ),
               'after:absolute after:inset-0 after:content-[""] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring',
             )}
             {fact.note ? (
-              plainNotes ? (
+              plain ? (
                 <span className="mt-auto block pt-3 text-xs leading-relaxed text-muted-foreground">{fact.note}</span>
               ) : (
                 <MonoLabel className="mt-auto block pt-3 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel>
               )
+            ) : null}
+            {arrow ? (
+              <ArrowUpRight
+                aria-hidden="true"
+                className="pointer-events-none absolute right-2 top-2 hidden size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 group-has-[a]:block motion-reduce:transition-none [@media(hover:none)]:opacity-100"
+              />
             ) : null}
           </dt>
           <dd className="order-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
