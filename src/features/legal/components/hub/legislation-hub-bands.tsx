@@ -4,14 +4,13 @@ import { useQuery } from '@tanstack/react-query'
 import { useLingui } from '@lingui/react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
-import type { HomeSection } from '@/features/procurement/lib/home-links'
 import { fetchRecentChangesCount, fetchRecentChangesPage } from '../../api/legal-changes-api'
 import { fetchGazetteIssuesPage } from '../../api/legal-gazette-api'
 import { useLegislationFreshness } from '../../hooks/use-legislation'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
-import { fmt, pct } from '../../lib/analytics-format'
+import { fmt, pctOf } from '../../lib/analytics-format'
 import { GROUP_LABEL, labelOf } from '../../lib/analytics-labels'
+import { readingSentence } from '../../lib/analytics-notes-text'
 import { labelOfKey } from '../../lib/analytics-view'
 import { formatLegalDate, localIsoDate } from '../../lib/legal-format'
 import { legalEventKindLabel, legalGazettePartLabel } from '../../lib/legal-vocabulary'
@@ -25,18 +24,22 @@ import {
   LINK_KINDS,
   YEARS_FROM,
   analysisSearch,
-  isoDaysBefore,
+  changesWindow,
   linkCounts,
   yearsChart,
   type LinkKind,
 } from './legislation-hub-lib'
-import { Band, BandNote, BarRows, Figure, MORE_LINK_CLASS, PendingBar, PendingRows, type BarRow } from './legislation-hub-parts'
+import { Band, BandNote, BarRows, CAPTION_CLASS, Figure, MORE_LINK_CLASS, PendingBar, PendingRows, TwoColumns, type BarRow } from './legislation-hub-parts'
 
 /**
- * The legislation hub's bands. Each reads through the feature's own hooks and modules, keeps a skeleton its own
- * size while it loads, and says in one line when its read failed; the rest of the page stays. Each leads to the
- * page that holds the rest. The summary, the issuers and the years arrive rendered by the server; the changes,
- * the links and the gazette are read in the browser.
+ * The legislation hub's sections, drawn as the companies hub draws its own (owner, 25 November 2026): no
+ * running numbers, each titled by its data, one sentence with the rest behind its ⓘ, the list or chart across
+ * the band (a list in two columns from a wide screen). What the figures need to be read right stays in the
+ * open: the Felul reading and what is counted apart, what the years chart leaves out, the share's total.
+ *
+ * Each reads through the feature's own hooks and modules, keeps a skeleton its own size while it loads, and
+ * says in one line when its read failed; the rest of the page stays. The summary, the issuers and the years
+ * arrive rendered by the server; the changes, the links and the gazette are read in the browser.
  */
 
 /** A day as a list writes it („25 sept. 2026"): the source's civil date, never the viewer's timezone. */
@@ -46,25 +49,33 @@ function shortDay(value: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(parsed)
 }
 
-// ───────────────────────────────────────────────────── 01 changes ──
+/** An act id the act page reads: the server's decimal id. A row with anything else is shown without a link. */
+const ACT_ID = /^\d+$/u
+
+/** A list's frame: rules between the rows, the band's border above and below. */
+const LIST_CLASS = 'divide-y divide-border/70 border-y border-border/70'
+
+// ───────────────────────────────────────────────────── changes ──
+
+type ChangeRow = Awaited<ReturnType<typeof fetchRecentChangesPage>>['items'][number]
 
 /**
- * What changed last: the newest changes already in force and how many came into force in the last thirty
- * days. The count is its own read (the server scans for it), so its failure leaves the list. When the newest
- * change is older than the window the count is zero by construction: the sentence says the date instead.
+ * The newest changes already in force, and how many came into force in the last thirty days (today and the
+ * twenty-nine before it). The count is its own read (the server scans for it), so its failure leaves the list.
+ * When the newest change is older than the window the count is zero by construction: the sentence says the
+ * date instead.
  */
-export function ChangesBand({ sections }: { readonly sections: readonly HomeSection[] }) {
+export function ChangesBand() {
   const { i18n } = useLingui()
-  const today = localIsoDate()
-  const since = isoDaysBefore(today, CHANGES_WINDOW_DAYS)
+  const { since, until } = changesWindow(localIsoDate())
   const feed = useQuery({
-    queryKey: ['legal', 'landing', 'changes', today] as const,
-    queryFn: ({ signal }) => fetchRecentChangesPage({ until: today }, { first: CHANGES_SHOWN, signal }),
+    queryKey: ['legal', 'landing', 'changes', until] as const,
+    queryFn: ({ signal }) => fetchRecentChangesPage({ until }, { first: CHANGES_SHOWN, signal }),
     staleTime: 5 * 60 * 1000,
   })
   const count = useQuery({
-    queryKey: ['legal', 'landing', 'changes-count', since, today] as const,
-    queryFn: ({ signal }) => fetchRecentChangesCount({ since, until: today }, { signal }),
+    queryKey: ['legal', 'landing', 'changes-count', since, until] as const,
+    queryFn: ({ signal }) => fetchRecentChangesCount({ since, until }, { signal }),
     staleTime: 5 * 60 * 1000,
   })
   const rows = feed.data?.items ?? []
@@ -93,39 +104,53 @@ export function ChangesBand({ sections }: { readonly sections: readonly HomeSect
   } else {
     lede = <Trans>Modificările, abrogările și republicările, după data intrării în vigoare.</Trans>
   }
+  const line = (row: ChangeRow) => (
+    <>
+      <span className="whitespace-nowrap pl-1 text-xs tabular-nums text-muted-foreground">{row.effectiveDate ? shortDay(row.effectiveDate, i18n.locale) : '—'}</span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-medium text-foreground">{row.displayCitation}</span>
+        <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+          {legalEventKindLabel(row.eventKind)}
+          {row.sourceAct ? ` ${t`prin`} ${row.sourceAct.displayCitation}` : null}
+        </span>
+      </span>
+    </>
+  )
+  const rowClass = 'grid grid-cols-[6.5rem_minmax(0,1fr)] items-baseline gap-x-3 py-2'
   return (
     <Band
       id="schimbari"
-      sections={sections}
-      title={<Trans>Ce s-a schimbat</Trans>}
+      title={<Trans>Ultimele modificări</Trans>}
       lede={lede}
-      note={<Trans>Ce act s-a schimbat, prin ce act și de când. Data e cea a intrării în vigoare, așa cum o înregistrează sursa.</Trans>}
+      infoLabel={t`Despre modificări`}
+      info={<p>{t`Ce act s-a schimbat, prin ce act și de când. Data e cea a intrării în vigoare, așa cum o înregistrează sursa.`}</p>}
     >
       {feed.error ? (
         <BandNote error={feed.error} onRetry={() => void feed.refetch()} />
       ) : feed.data ? (
-        <ol className="divide-y divide-border/70 border-y border-border/70" data-testid="legal-hub-changes">
-          {rows.map((row) => (
-            <li key={row.eventId}>
-              <Link
-                to="/legislation/acts/$actId"
-                params={{ actId: row.actId }}
-                className="grid grid-cols-[6.5rem_minmax(0,1fr)] items-baseline gap-x-3 py-2 transition-colors hover:bg-muted/40"
-              >
-                <MonoLabel className="whitespace-nowrap pl-1 tabular-nums text-muted-foreground">{row.effectiveDate ? shortDay(row.effectiveDate, i18n.locale) : '—'}</MonoLabel>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-foreground">{row.displayCitation}</span>
-                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                    {legalEventKindLabel(row.eventKind)}
-                    {row.sourceAct ? ` ${t`prin`} ${row.sourceAct.displayCitation}` : null}
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ol>
+        <div data-testid="legal-hub-changes">
+          <TwoColumns
+            items={rows}
+            render={(part) => (
+              <ol className={LIST_CLASS}>
+                {part.map((row) => (
+                  <li key={row.eventId}>
+                    {/* A link only to an act id the act page reads; anything else stays plain text. */}
+                    {ACT_ID.test(row.actId) ? (
+                      <Link to="/legislation/acts/$actId" params={{ actId: row.actId }} className={`${rowClass} transition-colors hover:bg-muted/40`}>
+                        {line(row)}
+                      </Link>
+                    ) : (
+                      <div className={rowClass}>{line(row)}</div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
+          />
+        </div>
       ) : (
-        <PendingRows rows={CHANGES_SHOWN} />
+        <PendingRows rows={CHANGES_SHOWN / 2} />
       )}
       <Link to="/legislation/changes" className={MORE_LINK_CLASS}>
         <Trans>Toate modificările</Trans> →
@@ -134,21 +159,18 @@ export function ChangesBand({ sections }: { readonly sections: readonly HomeSect
   )
 }
 
-// ───────────────────────────────────────────────────── 02 Felul ──
-
-/** The issuers read, by the arguments the server rendered it with: one query, one cache entry. */
-const ISSUERS_ARGS = LEGAL_HUB_SERVER_READS[3][1]
+// ───────────────────────────────────────────────────── Felul ──
 
 /** The classes that are not groups: weak placements and acts no rule places. Shown apart, never inside a group. */
 const APART = new Set(['uncertain', 'unplaced'])
 
 /**
- * What the acts do: the six groups of the Felul reading as ranked rows, each a share of all acts, then the
- * uncertain and the unplaced apart, on the same ruler (a bar is its row's share of all acts). Read from the
- * summary the figures band already holds.
+ * What the acts do: the groups of the Felul reading as ranked rows, each a share of all acts, then the uncertain
+ * and the unplaced counted apart, on the same track; how the reading is made, under them, in the open.
  */
-export function FelulBand({ sections }: { readonly sections: readonly HomeSection[] }) {
+export function FelulBand() {
   const summary = useLegalAnalytics('summary', {})
+  const head = useLegalAnalytics('head', {})
   const s = summary.data?.data
   const row = (key: string | null, acts: number): BarRow => ({
     key: key ?? '',
@@ -170,13 +192,12 @@ export function FelulBand({ sections }: { readonly sections: readonly HomeSectio
   return (
     <Band
       id="feluri"
-      sections={sections}
-      title={<Trans>Ce fac actele</Trans>}
+      title={<Trans>Actele după fel</Trans>}
       lede={
         s && lead ? (
           <>
             <Trans>Cea mai mare grupă</Trans>, „{labelOf(GROUP_LABEL, lead.key, '')}": <Figure>{fmt(lead.acts)}</Figure>{' '}
-            {plural(s.total, { one: 'din # act', few: 'din # acte', other: 'din # de acte' })} ({pct(lead.acts / Math.max(1, s.total))}).
+            {plural(s.total, { one: 'din # act', few: 'din # acte', other: 'din # de acte' })} ({pctOf(lead.acts, s.total)}).
           </>
         ) : summary.error ? (
           <Trans>Fiecare act, după ce face: stabilește reguli, numește, alocă, judecă.</Trans>
@@ -184,53 +205,77 @@ export function FelulBand({ sections }: { readonly sections: readonly HomeSectio
           <PendingBar className="w-4/5" />
         )
       }
-      note={<Trans>Felul actului e citit din titlu, de reguli. Un act încadrat nesigur sau neîncadrat nu e numărat în nicio grupă.</Trans>}
+      infoLabel={t`Despre felul actului`}
+      info={<p>{t`Felul actului e citit din titlu, de reguli. Un act încadrat nesigur sau neîncadrat nu e numărat în nicio grupă.`}</p>}
     >
       {summary.error ? (
         <BandNote error={summary.error} onRetry={() => void summary.refetch()} />
       ) : s ? (
         <div data-testid="legal-hub-felul">
-          <BarRows rows={groups.map((r) => row(r.key, r.acts))} total={s.total} />
-          <MonoLabel className="mt-5 block text-muted-foreground">
-            <Trans>Numărate separat</Trans>
-          </MonoLabel>
-          <BarRows className="mt-2" rows={apart} total={s.total} quiet />
-          <p className="mt-3 text-xs text-muted-foreground">{plural(s.total, { one: 'Procente din # act.', few: 'Procente din # acte.', other: 'Procente din # de acte.' })}</p>
+          <div className="grid gap-x-10 gap-y-6 lg:grid-cols-2">
+            <BarRows rows={groups.map((r) => row(r.key, r.acts))} total={s.total} />
+            <div>
+              <p className={CAPTION_CLASS}>
+                <Trans>Numărate separat</Trans>
+              </p>
+              <BarRows className="mt-2" rows={apart} total={s.total} quiet />
+              {/* How the reading is made, by its figures: the audit for the rules it audited (design §11). */}
+              <p className="mt-4 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">{readingSentence(head.data?.data.rules['felul'])}</p>
+            </div>
+          </div>
+          <p className={`mt-3 ${CAPTION_CLASS}`}>{plural(s.total, { one: 'Procente din tot # act publicat.', few: 'Procente din toate cele # acte publicate.', other: 'Procente din toate cele # de acte publicate.' })}</p>
         </div>
       ) : (
-        <PendingRows rows={8} />
+        <PendingRows rows={6} />
       )}
-      <Link to="/legislation/analytics" search={analysisSearch({ vedere: 'felul' })} className={MORE_LINK_CLASS}>
-        <Trans>Deschide în analiză, după felul actului</Trans> →
-      </Link>
+      <div className="flex flex-wrap gap-x-6">
+        <Link to="/legislation/analytics" search={analysisSearch({ vedere: 'felul' })} className={MORE_LINK_CLASS}>
+          <Trans>Deschide în analiză, după felul actului</Trans> →
+        </Link>
+        <Link to="/legislation/guide" className={MORE_LINK_CLASS}>
+          <Trans>Ghidul legislației: cum citești corect aceste date</Trans> →
+        </Link>
+      </div>
     </Band>
   )
 }
 
-// ───────────────────────────────────────────────────── 03 issuers ──
+// ───────────────────────────────────────────────────── issuers ──
+
+/** The issuers read, by the arguments the server rendered it with: one query, one cache entry. */
+const ISSUERS_ARGS = LEGAL_HUB_SERVER_READS[3][1]
 
 /**
  * Who issues: the leading issuer lineages as ranked rows. One row more than shown is asked for, because the
  * acts without an issuer rank among the first: they are drawn apart, and what the rows leave out is stated.
  */
-export function IssuersBand({ sections }: { readonly sections: readonly HomeSection[] }) {
+export function IssuersBand() {
   const breakdown = useLegalAnalytics('breakdown', ISSUERS_ARGS)
   const b = breakdown.data?.data
   const named = b ? b.rows.filter((r): r is { key: string; acts: number } => r.key !== null).slice(0, ISSUERS_SHOWN) : []
   const none = b?.rows.find((r) => r.key === null) ?? null
   const shown = named.reduce((sum, r) => sum + r.acts, 0) + (none?.acts ?? 0)
-  const others = b ? b.total - shown : 0
+  const others = b ? Math.max(0, b.total - shown) : 0
   const lead = named[0]
+  const rows: BarRow[] = named.map((r) => ({
+    key: r.key,
+    label: r.key,
+    acts: r.acts,
+    link: (children, className) => (
+      <Link to="/legislation/analytics" search={analysisSearch({ emitent: r.key })} className={className}>
+        {children}
+      </Link>
+    ),
+  }))
   return (
     <Band
       id="emitenti"
-      sections={sections}
-      title={<Trans>Cine emite</Trans>}
+      title={<Trans>Actele după emitent</Trans>}
       lede={
         b && lead ? (
           <>
             <Trans>Cele mai multe acte le-a emis</Trans> {lead.key}: <Figure>{fmt(lead.acts)}</Figure>{' '}
-            {plural(b.total, { one: 'din # act', few: 'din # acte', other: 'din # de acte' })} ({pct(lead.acts / Math.max(1, b.total))}).
+            {plural(b.total, { one: 'din # act', few: 'din # acte', other: 'din # de acte' })} ({pctOf(lead.acts, b.total)}).
           </>
         ) : breakdown.error ? (
           <Trans>Actele, după cine le-a emis.</Trans>
@@ -238,43 +283,34 @@ export function IssuersBand({ sections }: { readonly sections: readonly HomeSect
           <PendingBar className="w-4/5" />
         )
       }
-      note={
-        <Trans>Emitentul e cel scris în sursă; pentru legi, ordonanțe și decrete fără emitent scris e derivat din tip și dată. O linie de minister unește denumirile lui succesive.</Trans>
+      infoLabel={t`Despre emitenți`}
+      info={
+        <p>
+          {t`Emitentul e cel scris în sursă; pentru legi, ordonanțe și decrete fără emitent scris e derivat din tip și dată. O linie de minister unește denumirile lui succesive.`}
+        </p>
       }
     >
       {breakdown.error ? (
         <BandNote error={breakdown.error} onRetry={() => void breakdown.refetch()} />
       ) : b ? (
         <div data-testid="legal-hub-issuers">
-          <BarRows
-            rows={named.map((r) => ({
-              key: r.key,
-              label: r.key,
-              acts: r.acts,
-              link: (children, className) => (
-                <Link to="/legislation/analytics" search={analysisSearch({ emitent: r.key })} className={className}>
-                  {children}
-                </Link>
-              ),
-            }))}
-            total={b.total}
-          />
+          <TwoColumns items={rows} render={(part) => <BarRows rows={part} total={b.total} />} />
           {none ? (
-            <>
-              <MonoLabel className="mt-5 block text-muted-foreground">
+            <div className="mt-6 lg:w-1/2 lg:pr-5">
+              <p className={CAPTION_CLASS}>
                 <Trans>Numărate separat</Trans>
-              </MonoLabel>
+              </p>
               <BarRows className="mt-2" rows={[{ key: 'none', label: t`fără emitent`, acts: none.acts }]} total={b.total} quiet />
-            </>
+            </div>
           ) : null}
-          <p className="mt-3 text-xs text-muted-foreground">
-            {plural(b.total, { one: 'Procente din # act.', few: 'Procente din # acte.', other: 'Procente din # de acte.' })}{' '}
+          <p className={`mt-3 ${CAPTION_CLASS}`}>
+            {plural(b.total, { one: 'Procente din tot # act publicat.', few: 'Procente din toate cele # acte publicate.', other: 'Procente din toate cele # de acte publicate.' })}{' '}
             {none ? <Trans>Ceilalți emitenți:</Trans> : <Trans>Ceilalți emitenți și actele fără emitent:</Trans>}{' '}
             {plural(others, { one: '# act.', few: '# acte.', other: '# de acte.' })}
           </p>
         </div>
       ) : (
-        <PendingRows rows={ISSUERS_SHOWN + 1} />
+        <PendingRows rows={ISSUERS_SHOWN / 2} />
       )}
       <Link to="/legislation/analytics" search={analysisSearch({ vedere: 'emitent' })} className={MORE_LINK_CLASS}>
         <Trans>Deschide în analiză, după emitent</Trans> →
@@ -283,14 +319,14 @@ export function IssuersBand({ sections }: { readonly sections: readonly HomeSect
   )
 }
 
-// ───────────────────────────────────────────────────── 04 years ──
+// ───────────────────────────────────────────────────── years ──
 
 /**
- * Acts per year, stacked by Felul group, from `YEARS_FROM` on, a column a year (the API leaves out a year
- * without acts; the chart draws it empty). The acts before the first column and the acts without a year are
- * counted in the footnote. The year the corpus was built in is drawn hollow: it is not over.
+ * Acts per year, stacked by Felul group, from `YEARS_FROM` on, a column a year across the band (the API leaves
+ * out a year without acts; the chart draws it empty). The acts before the first column and the acts without a
+ * year are counted under it, in the open. The year the corpus was built in is drawn hollow: it is not over.
  */
-export function YearsBand({ sections }: { readonly sections: readonly HomeSection[] }) {
+export function YearsBand() {
   const series = useLegalAnalytics('series', { lens: 'felul' })
   const s = series.data?.data
   const chart = s ? yearsChart(s) : null
@@ -299,8 +335,7 @@ export function YearsBand({ sections }: { readonly sections: readonly HomeSectio
   return (
     <Band
       id="ani"
-      sections={sections}
-      title={<Trans>Legislația, an de an</Trans>}
+      title={<Trans>Acte publicate pe ani</Trans>}
       lede={
         chart?.peak ? (
           <>
@@ -312,7 +347,8 @@ export function YearsBand({ sections }: { readonly sections: readonly HomeSectio
           <PendingBar className="w-4/5" />
         )
       }
-      note={<Trans>Anul e cel al actului. Un an recent crește încă, pe măsură ce actele lui ajung în date.</Trans>}
+      infoLabel={t`Despre ani`}
+      info={<p>{t`Anul e cel al actului. Un an recent crește încă, pe măsură ce actele lui ajung în date.`}</p>}
     >
       {series.error ? (
         <BandNote error={series.error} onRetry={() => void series.refetch()} />
@@ -322,11 +358,13 @@ export function YearsBand({ sections }: { readonly sections: readonly HomeSectio
             years={chart.years}
             labels={[...s.keys.map((key) => labelOfKey(s.lens, key)), t`altele`]}
             lastIsRest
-            caption={t`acte pe an, din ${YEARS_FROM}`}
+            plain
+            caption={t`Acte pe an, din ${YEARS_FROM}`}
             pendingFrom={builtYear !== null && lastYear !== null && builtYear <= lastYear ? { year: builtYear, label: t`an în curs` } : undefined}
             footnote={
               <>
-                <Trans>„Altele": rapoarte și comunicări, încadrări nesigure și acte neîncadrate, împreună.</Trans>{' '}
+                {/* The API picks the leading classes of each layer: the rest is named by what it is, not listed. */}
+                <Trans>„Altele": clasele din afara legendei, împreună.</Trans>{' '}
                 {plural(chart.earlier, {
                   one: `Nu sunt pe grafic: # act dinainte de ${YEARS_FROM}`,
                   few: `Nu sunt pe grafic: # acte dinainte de ${YEARS_FROM}`,
@@ -347,7 +385,7 @@ export function YearsBand({ sections }: { readonly sections: readonly HomeSectio
   )
 }
 
-// ───────────────────────────────────────────────────── 05 links ──
+// ───────────────────────────────────────────────────── links ──
 
 /** What one kind of link is, in the page's words: who names whom. */
 function linkText(kind: LinkKind): { readonly label: string; readonly text: string } {
@@ -365,21 +403,45 @@ function linkText(kind: LinkKind): { readonly label: string; readonly text: stri
   }
 }
 
+type Days = { readonly links: number; readonly p25: number | null; readonly median: number | null; readonly p75: number | null }
+
+/**
+ * The days from an ordinance to the law that approves it, as the API measures them: from the first publication
+ * in Monitorul Oficial of the one to that of the other, over links (a law can approve several ordinances). The
+ * middle half is named as such; a quartile the API does not give is left out, never read as zero.
+ */
+function OrdinanceDays({ days }: { readonly days: Days }) {
+  if (days.median === null) return null
+  const span = (n: number) => plural(n, { one: '# zi', few: '# zile', other: '# de zile' })
+  return (
+    <>
+      <Trans>De la publicarea ordonanței la a legii, mediana e de</Trans> {span(days.median)}
+      {days.p25 !== null && days.p75 !== null ? (
+        <>
+          {' '}
+          (<Trans>jumătate dintre ele între</Trans> {fmt(days.p25)} <Trans>și</Trans> {span(days.p75)})
+        </>
+      ) : null}
+      , {plural(days.links, { one: 'măsurată pe o trimitere.', few: 'măsurată pe # trimiteri.', other: 'măsurată pe # de trimiteri.' })}
+    </>
+  )
+}
+
 /**
  * How the acts link: per kind, the links read in titles whose target is an act of the corpus, as plain counts,
  * each with what it is and how many of that kind were read in all. References, not effects.
  */
-export function LinksBand({ sections }: { readonly sections: readonly HomeSection[] }) {
+export function LinksBand() {
   const links = useLegalAnalytics('links', {})
-  const l = links.data?.data
+  // The answer names acts (its top targets): this band shows only its counts, from a read since it mounted.
+  const l = links.isFetchedAfterMount ? links.data?.data : undefined
   const counts = l ? LINK_KINDS.map((kind) => ({ kind, ...linkCounts(l, kind) })) : []
   const resolved = counts.reduce((sum, row) => sum + row.resolved, 0)
   const approval = l?.days.find((row) => row.kind === 'approves_ordinance') ?? null
   return (
     <Band
       id="legaturi"
-      sections={sections}
-      title={<Trans>Cum se leagă actele</Trans>}
+      title={<Trans>Legături între acte</Trans>}
       lede={
         l ? (
           <>
@@ -396,39 +458,35 @@ export function LinksBand({ sections }: { readonly sections: readonly HomeSectio
           <PendingBar className="w-4/5" />
         )
       }
-      note={<Trans>Legăturile sunt citite din titluri: trimiteri, nu efecte. Sunt numărate doar cele a căror țintă e un act din corpus.</Trans>}
+      infoLabel={t`Despre legături`}
+      info={<p>{t`Legăturile sunt citite din titluri: trimiteri, nu efecte. Sunt numărate doar cele a căror țintă e un act din corpus.`}</p>}
     >
       {links.error ? (
         <BandNote error={links.error} onRetry={() => void links.refetch()} />
       ) : l ? (
-        <dl className="divide-y divide-border/70 border-y border-border/70" data-testid="legal-hub-links">
+        <dl className="grid gap-px border-y border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3" data-testid="legal-hub-links">
           {counts.map((row) => {
             const text = linkText(row.kind)
             return (
-              <div key={row.kind} className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 py-3 sm:grid-cols-[6.5rem_minmax(0,1fr)]">
-                <dd className="order-1 text-right text-xl font-semibold tabular-nums tracking-tight text-foreground sm:text-2xl">{fmt(row.resolved)}</dd>
-                <dt className="order-2 min-w-0">
+              <div key={row.kind} className="flex flex-col bg-background py-4 sm:px-4">
+                <dt className="order-2 mt-1 min-w-0">
                   <span className="block text-sm font-medium text-foreground">{text.label}</span>
                   <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-                    {text.text}{' '}
-                    {row.kind === 'approves_ordinance' && approval?.median != null ? (
-                      <>
-                        <Trans>De la ordonanță la lege, mediana e de</Trans> {plural(approval.median, { one: '# zi', few: '# zile', other: '# de zile' })},{' '}
-                        {/* `days.links` counts links (a law can approve several ordinances), not laws */}
-                        {plural(approval.links, { one: 'măsurată pe o trimitere.', few: 'măsurată pe # trimiteri.', other: 'măsurată pe # de trimiteri.' })}
-                      </>
-                    ) : null}
+                    {text.text} {row.kind === 'approves_ordinance' && approval ? <OrdinanceDays days={approval} /> : null}
                   </span>
-                  <MonoLabel className="mt-1.5 block leading-relaxed tabular-nums text-muted-foreground">
+                  <span className="mt-1.5 block text-xs tabular-nums text-muted-foreground">
                     <Trans>din {fmt(row.read)} citite în titluri</Trans>
-                  </MonoLabel>
+                  </span>
                 </dt>
+                <dd className="order-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground">{fmt(row.resolved)}</dd>
               </div>
             )
           })}
+          {/* Five kinds in a grid of two, then three: one empty cell closes the last row in the page's colour. */}
+          <div className="hidden bg-background sm:block" aria-hidden="true" />
         </dl>
       ) : (
-        <PendingRows rows={LINK_KINDS.length} />
+        <PendingRows rows={3} />
       )}
       <Link to="/legislation/analytics" search={analysisSearch({ vedere: 'legaturi' })} className={MORE_LINK_CLASS}>
         <Trans>Deschide în analiză, legăturile</Trans> →
@@ -437,14 +495,15 @@ export function LinksBand({ sections }: { readonly sections: readonly HomeSectio
   )
 }
 
-// ───────────────────────────────────────────────────── 06 gazette ──
+// ───────────────────────────────────────────────────── gazette ──
 
 /**
  * The newest Monitorul Oficial issues. The server browses the gazette a year at a time, so the year is the
- * newest issue's (the freshness read the head already makes), or the clock's when that read failed. The band
- * says an issue exists, its part and its day: nothing about its text.
+ * newest issue's (the freshness read the page already makes), or the clock's when that read failed. The section
+ * says an issue exists, its part and its day: nothing about its text, and nothing about when its acts take
+ * effect (an act can name a later date).
  */
-export function GazetteBand({ sections }: { readonly sections: readonly HomeSection[] }) {
+export function GazetteBand() {
   const { i18n } = useLingui()
   const freshness = useLegislationFreshness()
   const latest = freshness.data?.latestIssueDate ?? null
@@ -464,8 +523,7 @@ export function GazetteBand({ sections }: { readonly sections: readonly HomeSect
   return (
     <Band
       id="monitor"
-      sections={sections}
-      title={<Trans>Ce a apărut în Monitorul Oficial</Trans>}
+      title={<Trans>Numerele Monitorului Oficial</Trans>}
       lede={
         issues.data && total !== null && total > 0 && year !== null ? (
           <>
@@ -478,31 +536,39 @@ export function GazetteBand({ sections }: { readonly sections: readonly HomeSect
             .
           </>
         ) : issues.error || issues.data ? (
-          <Trans>Dovada publicării: de la apariția în Monitor, un act produce efecte.</Trans>
+          <Trans>Numerele Monitorului Oficial din date: dovada publicării actelor.</Trans>
         ) : (
           <PendingBar className="w-4/5" />
         )
       }
-      note={<Trans>Numerele din date, toate părțile. De la data apariției în Monitor, un act produce efecte.</Trans>}
+      infoLabel={t`Despre Monitorul Oficial`}
+      info={<p>{t`Numerele din date, toate părțile. Un număr arată când a fost publicat un act; data de la care actul produce efecte poate fi alta, cea scrisă în act.`}</p>}
     >
       {issues.error ? (
         <BandNote error={issues.error} onRetry={() => void issues.refetch()} />
       ) : issues.data ? (
-        <ol className="divide-y divide-border/70 border-y border-border/70" data-testid="legal-hub-gazette">
-          {rows.map((issue) => (
-            <li key={issue.moIssueId} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 py-2">
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium tabular-nums text-foreground">
-                  <Trans>Nr. {issue.issueLabel}</Trans>
-                </span>
-                <MonoLabel className="mt-1 block truncate text-muted-foreground">{legalGazettePartLabel(issue.partCode)}</MonoLabel>
-              </span>
-              <span className="text-sm tabular-nums text-muted-foreground">{issue.issueDate ? shortDay(issue.issueDate, i18n.locale) : issue.issueYear}</span>
-            </li>
-          ))}
-        </ol>
+        <div data-testid="legal-hub-gazette">
+          <TwoColumns
+            items={rows}
+            render={(part) => (
+              <ol className={LIST_CLASS}>
+                {part.map((issue) => (
+                  <li key={issue.moIssueId} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 py-2">
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium tabular-nums text-foreground">
+                        <Trans>Nr. {issue.issueLabel}</Trans>
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">{legalGazettePartLabel(issue.partCode)}</span>
+                    </span>
+                    <span className="text-sm tabular-nums text-muted-foreground">{issue.issueDate ? shortDay(issue.issueDate, i18n.locale) : issue.issueYear}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          />
+        </div>
       ) : (
-        <PendingRows rows={GAZETTE_SHOWN} />
+        <PendingRows rows={GAZETTE_SHOWN / 2} />
       )}
       <Link to="/legislation/gazette" className={MORE_LINK_CLASS}>
         <Trans>Toate numerele</Trans> →

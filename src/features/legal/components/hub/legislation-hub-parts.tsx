@@ -2,17 +2,15 @@ import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HomeBand } from '@/features/procurement/components/home/home-section-nav'
-import type { HomeSection } from '@/features/procurement/lib/home-links'
-import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { LegalInfoNote, LegalSectionHead } from './legislation-hub-chrome'
 import { cn } from '@/lib/utils'
 import { LegalAnalyticsError } from '../../api/legal-analytics-api'
 import { fmt, pct } from '../../lib/analytics-format'
-import { bandNumber } from './legislation-hub-lib'
 
 /**
- * The legislation hub's shared pieces, in the hubs' language (companies, procurement, NGOs): a numbered band
- * with its sentence beside its chart, ranked rows with a bar, a line's place while it loads, and the one-line
- * note of a read that failed. Presentational: every figure comes in as a prop.
+ * The legislation hub's shared pieces, in the hubs' language (companies, procurement, NGOs): a section with its
+ * sentence over its list or chart, ranked rows with a bar, a line's place while it loads, and the one-line note
+ * of a read that failed. Presentational: every figure comes in as a prop.
  */
 
 /** A link under a band or a list to the page that holds the rest: the hubs' `SHOW_MORE_CLASS`. */
@@ -56,46 +54,69 @@ export function BandNote({ error, onRetry }: { readonly error: unknown; readonly
 }
 
 /**
- * One numbered band: on the left its place in the pinned bar, its title and the sentence that carries its
- * figure; on the right its chart or list, then the link to its page.
+ * One section, as the companies hub draws its own (owner, 25 November 2026): its title, named by its data, and
+ * one sentence with the rest behind its ⓘ; a switch or a link beside the title; then its list or chart across
+ * the band. No running number.
  */
 export function Band({
   id,
-  sections,
   title,
   lede,
-  note,
+  info,
+  infoLabel,
+  aside,
   children,
 }: {
   readonly id: string
-  readonly sections: readonly HomeSection[]
   readonly title: ReactNode
-  /** The band's sentence, with its one figure; a pulse while the figure loads. */
+  /** The section's one sentence, with its figure; a pulse while the figure loads. */
   readonly lede: ReactNode
-  /** What qualifies the figures, in small type under the sentence. */
-  readonly note?: ReactNode
+  /** What qualifies the figures, behind the ⓘ at the end of the sentence. */
+  readonly info?: ReactNode
+  /** The ⓘ's name („Despre modificări"). */
+  readonly infoLabel?: string
+  readonly aside?: ReactNode
   readonly children: ReactNode
 }) {
   const titleId = `legal-hub-${id}-title`
-  const label = sections.find((section) => section.id === id)?.label ?? ''
   return (
     <HomeBand id={id} labelledBy={titleId}>
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        <div className="lg:col-span-5">
-          <HubSectionHead titleId={titleId} index={`${bandNumber(sections, id)} / ${label}`} title={title} lede={lede} />
-          {note ? (
-            <p className="mt-4 max-w-[56ch] text-xs leading-relaxed text-muted-foreground" data-reveal>
-              {note}
-            </p>
-          ) : null}
-        </div>
-        <div className={cn('min-w-0 lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-          {children}
-        </div>
+      <LegalSectionHead
+        titleId={titleId}
+        title={title}
+        lede={
+          <>
+            {lede}
+            {info ? (
+              <>
+                {' '}
+                <LegalInfoNote label={infoLabel ?? t`Despre aceste cifre`}>{info}</LegalInfoNote>
+              </>
+            ) : null}
+          </>
+        }
+        aside={aside}
+      />
+      <div className="mt-8" data-reveal>
+        {children}
       </div>
     </HomeBand>
   )
 }
+
+/** A list split in two columns from a wide screen, read down the first, then the second. */
+export function TwoColumns<T>({ items, render, className }: { readonly items: readonly T[]; readonly render: (items: readonly T[]) => ReactNode; readonly className?: string }) {
+  const half = Math.ceil(items.length / 2)
+  return (
+    <div className={cn('grid gap-x-10 lg:grid-cols-2', className)}>
+      {render(items.slice(0, half))}
+      {items.length > half ? <div className="max-lg:-mt-px">{render(items.slice(half))}</div> : null}
+    </div>
+  )
+}
+
+/** A caption under a chart or a list: a sentence, so plain text. */
+export const CAPTION_CLASS = 'text-xs leading-relaxed text-muted-foreground'
 
 /** The figure a band's sentence carries: the page's ink, not the sentence's grey. */
 export function Figure({ children }: { readonly children: ReactNode }) {

@@ -40,6 +40,8 @@ vi.mock('../api/legal-analytics-api', async () => {
   return {
     LegalAnalyticsError: live.LegalAnalyticsError,
     LEGAL_ANALYTICS_UNAVAILABLE: live.LEGAL_ANALYTICS_UNAVAILABLE,
+    // the unit tests run on the mock lane
+    isLegalAnalyticsMock: () => true,
     fetchLegalAnalytics: vi.fn((view: LegalAnalyticsView, args: LegalAnalyticsArgs) => {
       calls.push({ view, args })
       return intercept(view, args) ?? mock.fetchLegalAnalyticsMock(view, args)
@@ -83,9 +85,14 @@ describe('LegislationPage, the legislation hub', () => {
   })
 
   it('shows each headline figure from its own field of its own answer', async () => {
-    // distinct numbers, so a figure read from the wrong field cannot pass
-    const expected = { acts: head.total, text: summary.withText, rules: head.totals.inStock, versions: summary.withVersions }
-    expect(new Set(Object.values(expected)).size).toBe(4)
+    // The fixture's head and summary agree on their totals; the head here is told apart from the summary, so a
+    // figure read from the competing field (summary.total, head.totals.actsWithText) cannot pass.
+    intercept = (view, args) =>
+      view === 'head'
+        ? fetchLegalAnalyticsMock('head', args).then((answer) => ({ ...answer, data: { ...answer.data, total: 230_001, totals: { ...answer.data.totals, actsWithText: 1_234 } } }))
+        : undefined
+    const expected = { acts: 230_001, text: summary.withText, rules: head.totals.inStock, versions: summary.withVersions }
+    expect(new Set([...Object.values(expected), summary.total, 1_234]).size).toBe(6)
     renderPage()
     for (const [key, value] of Object.entries(expected)) expect(await figureOf(key)).toBe(ro(value))
     expect(screen.getByText('Legislația de bază')).toBeInTheDocument()
@@ -130,7 +137,7 @@ describe('LegislationPage, the legislation hub', () => {
   it('keeps the rest of the page when one band fails', async () => {
     intercept = (view) => (view === 'breakdown' ? Promise.reject(new LegalAnalyticsError('failed', 'boom', 500)) : undefined)
     renderPage()
-    const issuers = await screen.findByRole('region', { name: 'Cine emite' })
+    const issuers = await screen.findByRole('region', { name: 'Actele după emitent' })
     expect(await within(issuers).findByText('Această parte nu s-a încărcat.')).toBeInTheDocument()
     expect(await screen.findByTestId('legal-hub-felul')).toBeInTheDocument()
     expect(await figureOf('acts')).toBe(ro(head.total))
@@ -142,6 +149,58 @@ describe('LegislationPage, the legislation hub', () => {
     const tile = await screen.findByTestId('legal-hub-figure-text')
     expect(await within(tile).findByText('Cifra nu s-a încărcat.')).toBeInTheDocument()
     expect(within(tile).getByText('—')).toBeInTheDocument()
+  })
+
+  it('names the sections by their data, with no running numbers', async () => {
+    renderPage()
+    for (const title of ['Ultimele modificări', 'Actele după fel', 'Actele după emitent', 'Acte publicate pe ani', 'Legături între acte', 'Numerele Monitorului Oficial']) {
+      expect(await screen.findByRole('heading', { level: 2, name: title })).toBeInTheDocument()
+    }
+    const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
+    expect(bar).not.toHaveTextContent(/0\d/)
+    expect(within(bar).getByRole('link', { name: 'Fel' })).toHaveAttribute('href', '#feluri')
+  })
+
+  it('keeps the reading of the kind of act in the open, by its figures', async () => {
+    renderPage()
+    const felul = await screen.findByTestId('legal-hub-felul')
+    expect(within(felul).getByText('Numărate separat')).toBeInTheDocument()
+    expect(within(felul).getByText(/Citite independent 385 de acte/)).toBeInTheDocument()
+    // a share of all acts, said in the open (227.202 takes the „few" form in Romanian: „227.202 acte")
+    expect(within(felul).getByText('Procente din toate cele 227.202 acte publicate.')).toBeInTheDocument()
+  })
+
+  it('gives the ordinance days as the API measures them: the median, the middle half, the links', async () => {
+    renderPage()
+    const links = await screen.findByTestId('legal-hub-links')
+    expect(links).toHaveTextContent('De la publicarea ordonanței la a legii, mediana e de 198 de zile (jumătate dintre ele între 127 și 375 de zile), măsurată pe 4.132 de trimiteri.')
+  })
+
+  it('leaves out a quartile the API does not give, never reading it as zero', async () => {
+    intercept = (view, args) =>
+      view === 'links'
+        ? fetchLegalAnalyticsMock('links', args).then((answer) => ({
+            ...answer,
+            data: { ...answer.data, days: answer.data.days.map((d) => (d.kind === 'approves_ordinance' ? { ...d, p25: null } : d)) },
+          }))
+        : undefined
+    renderPage()
+    const links = await screen.findByTestId('legal-hub-links')
+    expect(links).toHaveTextContent('mediana e de 198 de zile, măsurată pe 4.132 de trimiteri.')
+    expect(links).not.toHaveTextContent('jumătate')
+  })
+
+  it('makes each start card its name and its count, the stock with its provisional definition', async () => {
+    renderPage()
+    const start = await screen.findByTestId('legal-hub-start')
+    await waitFor(() => expect(start).toHaveTextContent(`${ro(head.totals.inStock)} de acte, definiție provizorie`))
+    expect(start).not.toHaveTextContent('Analiză')
+  })
+
+  it('never says a Monitorul Oficial issue makes its acts take effect', async () => {
+    renderPage()
+    const gazette = await screen.findByRole('region', { name: 'Numerele Monitorului Oficial' })
+    expect(gazette).not.toHaveTextContent(/produce efecte/)
   })
 
   it('says under mock mode that the data is a fixture', () => {

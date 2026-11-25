@@ -10,7 +10,7 @@ import { DeferredLandingSearch } from '@/features/landing/components/search/defe
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
-import { fmt, pct } from '../../lib/analytics-format'
+import { fmt, pctOf } from '../../lib/analytics-format'
 import { GAZETTE_URL, HEAD_ACTS_SHOWN, LEADERS_MORE_CLASS, LEADER_ROW_CLASS, PORTAL_URL, actName, analysisSearch, hubActsArgs, type HubRanking } from './legislation-hub-lib'
 import { BandNote, PendingBar } from './legislation-hub-parts'
 
@@ -57,7 +57,9 @@ export function HubHeadSearch() {
 export function HubHeadActs({ ranking, onRanking }: { readonly ranking: HubRanking; readonly onRanking: (key: HubRanking) => void }) {
   const cited = ranking === 'citate'
   const acts = useLegalAnalytics('acts', hubActsArgs(ranking))
-  const rows = (acts.data?.data.rows ?? []).slice(0, HEAD_ACTS_SHOWN)
+  // Only an answer read since the card mounted names acts here (the server's privacy gate is asked on every read).
+  const fresh = acts.isFetchedAfterMount ? acts.data : undefined
+  const rows = (fresh?.data.rows ?? []).slice(0, HEAD_ACTS_SHOWN)
   const figure = (row: (typeof rows)[number]) => (cited ? row.cited : row.amended)
   const top = Math.max(1, ...rows.map(figure))
   return (
@@ -81,7 +83,7 @@ export function HubHeadActs({ ranking, onRanking }: { readonly ranking: HubRanki
         <div className="mt-4">
           <BandNote error={acts.error} onRetry={() => void acts.refetch()} />
         </div>
-      ) : acts.data ? (
+      ) : fresh ? (
         <ol className="mt-4 divide-y divide-border/70 border-y border-border/70" data-testid="legal-hub-head-acts">
           {rows.map((row, index) => {
             const act = actName(row)
@@ -92,11 +94,14 @@ export function HubHeadActs({ ranking, onRanking }: { readonly ranking: HubRanki
                   <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium text-foreground">{act.name}</span>
+                    {/* A ranking: the bar is the act's figure against the first's; an act at zero has no bar. */}
                     <span className="mt-1 block h-1 bg-muted" aria-hidden="true">
-                      <span
-                        className="block h-1 bg-primary/70 transition-colors group-hover:bg-primary"
-                        style={{ width: `${Math.min(Math.max((figure(row) / top) * 100, 0.8), 100).toFixed(1)}%` }}
-                      />
+                      {figure(row) > 0 ? (
+                        <span
+                          className="block h-1 bg-primary/70 transition-colors group-hover:bg-primary"
+                          style={{ width: `${Math.min((figure(row) / top) * 100, 100).toFixed(1)}%` }}
+                        />
+                      ) : null}
                     </span>
                     {/* The line is kept under an act with nothing to say there, so the rows share one height. */}
                     <span className={cn('mt-1 block truncate', META_CLASS)} title={under === '' ? undefined : under}>
@@ -154,7 +159,7 @@ export function HubHeadActs({ ranking, onRanking }: { readonly ranking: HubRanki
       </Link>
       <p className="mt-2 text-xs text-muted-foreground">
         {cited ? (
-          <Trans>De câte ori actul e citat de alte acte din corpus.</Trans>
+          <Trans>Câte alte acte din corpus îl citează.</Trans>
         ) : (
           <Trans>De câte ori actul e numit ca țintă în titlul unui act care îl modifică.</Trans>
         )}
@@ -248,7 +253,7 @@ export function HubFiguresBand() {
       note: noteOf(
         s ? (
           <Trans>
-            {pct(s.withText / Math.max(1, s.total))} din {fmt(s.total)} acte
+            {pctOf(s.withText, s.total)} din {fmt(s.total)} acte
           </Trans>
         ) : undefined,
         summary,
@@ -279,7 +284,7 @@ export function HubFiguresBand() {
       note: noteOf(
         s ? (
           <Trans>
-            {pct(s.withVersions / Math.max(1, s.total))} din {fmt(s.total)} acte; listate de Portal, neoficiale
+            {pctOf(s.withVersions, s.total)} din {fmt(s.total)} acte; listate de Portal, neoficiale
           </Trans>
         ) : undefined,
         summary,
@@ -316,7 +321,8 @@ export function HubFiguresBand() {
               saying otherwise. The label keeps the landing's short mono capitals; the line under it is a
               sentence, so plain text. */}
           <dt className="order-2 mt-2.5 flex flex-1 flex-col">
-            <MonoLabel className="block leading-relaxed text-foreground">{fact.link(fact.label, FACT_LINK_CLASS)}</MonoLabel>
+            {/* The label is words, so plain text, as on the companies hub (owner, 25 November 2026). */}
+            <span className="block text-sm font-medium leading-snug text-foreground">{fact.link(fact.label, FACT_LINK_CLASS)}</span>
             <span className={cn('mt-auto block pt-4', META_CLASS)}>
               {fact.note === undefined ? <PendingBar className="w-24" /> : fact.note === null ? <Trans>Cifra nu s-a încărcat.</Trans> : fact.note}
             </span>

@@ -4,23 +4,19 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useLingui } from '@lingui/react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
-import { HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
-import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import { LEGAL_ANALYTICS_UNAVAILABLE, LegalAnalyticsError } from '../../api/legal-analytics-api'
+import { LEGAL_ANALYTICS_UNAVAILABLE, LegalAnalyticsError, isLegalAnalyticsMock } from '../../api/legal-analytics-api'
 import { useLegislationFreshness } from '../../hooks/use-legislation'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
-import { readingSentence } from '../../lib/analytics-notes-text'
 import { formatLegalDate } from '../../lib/legal-format'
-import { isLegalMockEnabled } from '../../lib/mock-mode'
 import { AnalyticsProblem } from '../analytics/analytics-notes'
 import { ChangesBand, FelulBand, GazetteBand, IssuersBand, LinksBand, YearsBand } from './legislation-hub-bands'
+import { LegalSectionHead, LegalSectionNav } from './legislation-hub-chrome'
 import { HubFiguresBand, HubHeadActs, HubHeadSearch, HubHeadSources } from './legislation-hub-head'
 import {
   DEFAULT_HUB_RANKING,
@@ -41,7 +37,7 @@ import {
  *
  * - The head: the way home, the title, the site's search scoped to legislation with one row of shortcuts, and
  *   the five leading acts in the hubs' leaders' card. Its sources are their names alone.
- * - The pinned bar is the hubs' own (`HomeSectionNav`), then four figures in their own band.
+ * - The pinned bar without running numbers (`LegalSectionNav`), then four figures in their own band.
  * - Six bands, each a summary with the link to the page that holds the rest: what changed, what the acts do,
  *   who issues them, the acts year by year, how they link, what appeared in Monitorul Oficial.
  * - Six places to start, how the Felul reading is to be read, and the full sources line.
@@ -119,7 +115,7 @@ export function LegislationHub({
                   </span>
                 </nav>
                 {/* Under mock mode every figure and act on the page is a fixture: said at the top (data-trust contract). */}
-                {isLegalMockEnabled() ? <DataStatusBadge status="mock" /> : null}
+                {isLegalAnalyticsMock() ? <DataStatusBadge status="mock" /> : null}
               </div>
               {/* The landing's headline: extra-bold and tightly tracked; the tracking closes the gaps between
                   words too, so they are given back, and the lines sit far enough apart for the circumflex of
@@ -174,7 +170,8 @@ export function LegislationHub({
         </RuledFrame>
       </section>
 
-      <HomeSectionNav title={t`Legislația României`} sections={sections} />
+      {/* No running numbers on this page (owner, 25 November 2026), as on the companies hub: each section's title names it. */}
+      <LegalSectionNav title={t`Legislația României`} sections={sections} />
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>
@@ -188,33 +185,22 @@ export function LegislationHub({
         </RuledFrame>
       </section>
 
-      <ChangesBand sections={sections} />
-      <FelulBand sections={sections} />
-      <IssuersBand sections={sections} />
-      <YearsBand sections={sections} />
-      <LinksBand sections={sections} />
-      <GazetteBand sections={sections} />
+      <ChangesBand />
+      <FelulBand />
+      <IssuersBand />
+      <YearsBand />
+      <LinksBand />
+      <GazetteBand />
 
       <section aria-labelledby="legal-hub-start-title" className="border-b">
         <RuledFrame className="py-14 sm:py-20">
-          <HubSectionHead titleId="legal-hub-start-title" index={t`Începe de aici`} title={<Trans>De aici poți începe</Trans>} />
+          <LegalSectionHead titleId="legal-hub-start-title" title={<Trans>De aici poți începe</Trans>} />
           <div className="mt-8" data-reveal>
             <StartCards />
           </div>
         </RuledFrame>
       </section>
 
-      <section aria-labelledby="legal-hub-reading-title" className="border-b">
-        <RuledFrame className="py-10">
-          <h2 id="legal-hub-reading-title" className="text-sm font-semibold text-foreground">
-            <Trans>Cum citim felul actului</Trans>
-          </h2>
-          <p className="mt-2 max-w-[80ch] text-sm leading-relaxed text-muted-foreground">{readingSentence(head.data?.data.rules['felul'])}</p>
-          <Link to="/legislation/guide" className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9">
-            <Trans>Ghidul legislației: cum citești corect aceste date</Trans> →
-          </Link>
-        </RuledFrame>
-      </section>
 
       <SourcesLine />
     </div>
@@ -244,30 +230,23 @@ function useOneLayer(ranking: HubRanking) {
 // ───────────────────────────────────────────────────── start cards ──
 
 /**
- * Six places to start: four questions the analysis page answers as they are (each address is written by the
- * page's own writer, so it carries only filters its parser reads), the acts directory and the guide. A card
- * says its size from an answer the page already holds; without the answer it says the question alone.
+ * Six places to start, each its name and its count (owner, 25 November 2026, as the companies hub's): four
+ * questions the analysis page answers as they are (each address written by the page's own writer), the acts
+ * directory and the guide. A count keeps its unit and its population, from an answer the page already holds;
+ * without the answer the card is its name alone.
  */
 function StartCards() {
   const head = useLegalAnalytics('head', {}).data?.data
-  const links = useLegalAnalytics('links', {}).data?.data
+  const links = useLegalAnalytics('links', {})
+  // counts only, from a read since mount (the links answer names acts)
+  const amends = links.isFetchedAfterMount && links.data ? linkCounts(links.data.data, 'amends').resolved : undefined
   const ordinances = head?.types.find((row) => row.key === 'ordonanta-urgenta')?.acts
   const government = head?.issuers.find((row) => row.lineage === GOVERNMENT)?.acts
-  const amends = links ? linkCounts(links, 'amends').resolved : undefined
   return (
     <ul className="grid gap-px border bg-border/70 sm:grid-cols-2 lg:grid-cols-3" data-testid="legal-hub-start">
       <StartCard
-        kicker={t`Analiză`}
         title={<Trans>Ordonanțele de urgență, an de an</Trans>}
-        body={
-          ordinances !== undefined
-            ? plural(ordinances, {
-                one: '# ordonanță de urgență, pe anul ei și după ce face.',
-                few: '# ordonanțe de urgență, pe anii lor și după ce fac.',
-                other: '# de ordonanțe de urgență, pe anii lor și după ce fac.',
-              })
-            : t`Ordonanțele de urgență, pe anii lor și după ce fac.`
-        }
+        count={ordinances !== undefined ? plural(ordinances, { one: '# ordonanță de urgență', few: '# ordonanțe de urgență', other: '# de ordonanțe de urgență' }) : null}
         link={(children, className) => (
           <Link to="/legislation/analytics" search={analysisSearch({ tip: ['ordonanta-urgenta'], forma: 'timp' })} className={className}>
             {children}
@@ -275,17 +254,9 @@ function StartCards() {
         )}
       />
       <StartCard
-        kicker={t`Analiză`}
         title={<Trans>Legislația de bază, după felul actului</Trans>}
-        body={
-          head
-            ? plural(head.totals.inStock, {
-                one: '# act care stabilește reguli și stă singur, pe feluri.',
-                few: '# acte care stabilesc reguli și stau singure, pe feluri.',
-                other: '# de acte care stabilesc reguli și stau singure, pe feluri.',
-              })
-            : t`Actele care stabilesc reguli și stau singure, pe feluri.`
-        }
+        // the stock: never without its provisional definition
+        count={head ? plural(head.totals.inStock, { one: '# act, definiție provizorie', few: '# acte, definiție provizorie', other: '# de acte, definiție provizorie' }) : null}
         link={(children, className) => (
           <Link to="/legislation/analytics" search={analysisSearch({ populatie: 'stoc', fin: true })} className={className}>
             {children}
@@ -293,17 +264,8 @@ function StartCards() {
         )}
       />
       <StartCard
-        kicker={t`Analiză`}
         title={<Trans>Actele Guvernului, după fel</Trans>}
-        body={
-          government !== undefined
-            ? plural(government, {
-                one: '# act emis de Guvern: ce face.',
-                few: '# acte emise de Guvern: ce fac.',
-                other: '# de acte emise de Guvern: ce fac.',
-              })
-            : t`Actele emise de Guvern: ce fac.`
-        }
+        count={government !== undefined ? plural(government, { one: '# act publicat', few: '# acte publicate', other: '# de acte publicate' }) : null}
         link={(children, className) => (
           <Link to="/legislation/analytics" search={analysisSearch({ emitent: GOVERNMENT })} className={className}>
             {children}
@@ -311,17 +273,8 @@ function StartCards() {
         )}
       />
       <StartCard
-        kicker={t`Analiză`}
         title={<Trans>Cele mai modificate acte</Trans>}
-        body={
-          amends !== undefined
-            ? plural(amends, {
-                one: '# modificare citită din titluri, pe actul pe care îl schimbă.',
-                few: '# modificări citite din titluri, pe actele pe care le schimbă.',
-                other: '# de modificări citite din titluri, pe actele pe care le schimbă.',
-              })
-            : t`Modificările citite din titluri, pe actele pe care le schimbă.`
-        }
+        count={amends !== undefined ? plural(amends, { one: '# modificare citită din titluri', few: '# modificări citite din titluri', other: '# de modificări citite din titluri' }) : null}
         link={(children, className) => (
           <Link to="/legislation/analytics" search={analysisSearch({ ordine: 'modificari' })} hash="acte" className={className}>
             {children}
@@ -329,17 +282,8 @@ function StartCards() {
         )}
       />
       <StartCard
-        kicker={t`Director`}
         title={<Trans>Directorul actelor</Trans>}
-        body={
-          head
-            ? plural(head.total, {
-                one: '# act, de filtrat după tip, an și statut.',
-                few: '# acte, de filtrat după tip, an și statut.',
-                other: '# de acte, de filtrat după tip, an și statut.',
-              })
-            : t`Toate actele, de filtrat după tip, an și statut.`
-        }
+        count={head ? plural(head.total, { one: '# act publicat', few: '# acte publicate', other: '# de acte publicate' }) : null}
         link={(children, className) => (
           <Link to="/legislation/acts" search={{ status: 'toate' }} className={className}>
             {children}
@@ -347,9 +291,8 @@ function StartCards() {
         )}
       />
       <StartCard
-        kicker={t`Ghid`}
         title={<Trans>Ghidul legislației</Trans>}
-        body={t`Cum găsești o lege, cum îi citești statutul și ce nu îți pot spune aceste date.`}
+        count={null}
         link={(children, className) => (
           <Link to="/legislation/guide" className={className}>
             {children}
@@ -360,27 +303,25 @@ function StartCards() {
   )
 }
 
-/** One place to start: where it leads, the question, and its size when the page holds it. */
+/** One place to start: its name and its count, and the arrow that says it leads on (as the landing's tiles). */
 function StartCard({
-  kicker,
   title,
-  body,
+  count,
   link,
 }: {
-  readonly kicker: string
   readonly title: ReactNode
-  readonly body: ReactNode
+  readonly count: ReactNode
   readonly link: (children: ReactNode, className: string) => ReactNode
 }) {
   return (
     <li>
       {link(
         <>
-          <MonoLabel className="block text-muted-foreground">{kicker}</MonoLabel>
-          <span className="mt-2.5 block text-base font-semibold tracking-tight text-foreground">{title}</span>
-          <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{body}</span>
+          <span className="block pr-6 text-base font-semibold tracking-tight text-foreground">{title}</span>
+          {count ? <span className="mt-1.5 block text-sm tabular-nums text-muted-foreground">{count}</span> : null}
+          <ArrowUpRight aria-hidden="true" className="absolute right-4 top-5 size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
         </>,
-        'block h-full bg-background p-5 transition-colors hover:bg-muted/40',
+        'group relative block h-full bg-background p-5 transition-colors hover:bg-muted/40',
       )}
     </li>
   )
@@ -399,9 +340,9 @@ function SourcesLine() {
     <footer className="border-b bg-muted/20">
       <RuledFrame className="py-6">
         <p className="text-sm leading-relaxed text-muted-foreground" data-testid="legal-hub-sources">
-          <MonoLabel className="mr-3 text-foreground">
+          <span className="mr-3 font-medium text-foreground">
             <Trans>Surse</Trans>
-          </MonoLabel>
+          </span>
           <Trans>
             <a href={PORTAL_URL} target="_blank" rel="noreferrer" className={link}>
               Portalul Legislativ
@@ -428,7 +369,7 @@ function SourcesLine() {
             <>
               {' · '}
               <Trans>
-                Analiza: stratul {layer.layerId}, generat pe {day(layer.publishedAt)}, pe corpusul din {day(layer.releaseBuiltAt)}
+                Analiza: stratul {layer.layerId}, generat pe {day(layer.builtAt)}, pe corpusul din {day(layer.releaseBuiltAt)}
               </Trans>
             </>
           ) : null}

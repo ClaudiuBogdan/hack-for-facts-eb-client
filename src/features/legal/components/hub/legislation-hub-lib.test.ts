@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_QUESTION, readQuestion } from '../../lib/analytics-question'
 import type { LegalAnalyticsLinks, LegalAnalyticsSeries } from '@/schemas/legal-analytics'
-import { HEAD_ACTS_SHOWN, LEGAL_HUB_SERVER_READS, YEARS_FROM, actName, analysisSearch, hubActsArgs, isoDaysBefore, linkCounts, yearsChart } from './legislation-hub-lib'
+import { HEAD_ACTS_SHOWN, LEGAL_HUB_SERVER_READS, YEARS_FROM, actName, analysisSearch, changesWindow, hubActsArgs, isoDaysBefore, linkCounts, yearsChart } from './legislation-hub-lib'
 
 const denominators = { total: 100, population: 100, uncertain: 0, unplaced: 0 }
 
@@ -124,5 +124,13 @@ describe('the hub\'s reads', () => {
     expect(HEAD_ACTS_SHOWN).toBe(5)
     expect(hubActsArgs('modificate')).toEqual({ order: 'amended', limit: 5 })
     expect(hubActsArgs('citate')).toEqual({ order: 'cited', limit: 5 })
+  })
+})
+
+describe('changesWindow', () => {
+  it('counts thirty calendar days, today included', () => {
+    expect(changesWindow('2026-11-25')).toEqual({ since: '2026-10-27', until: '2026-11-25' })
+    const days = (Date.parse('2026-11-25') - Date.parse('2026-10-27')) / 86_400_000 + 1
+    expect(days).toBe(30)
   })
 })

@@ -34,6 +34,11 @@ export function isoDaysBefore(day: string, days: number): string {
 
 /** The window the changes band counts: this many days, ending today. */
 export const CHANGES_WINDOW_DAYS = 30
+
+/** The changes band's window: `CHANGES_WINDOW_DAYS` calendar days, today included (both bounds are inclusive). */
+export function changesWindow(today: string): { readonly since: string; readonly until: string } {
+  return { since: isoDaysBefore(today, CHANGES_WINDOW_DAYS - 1), until: today }
+}
 export const CHANGES_SHOWN = 8
 /** The acts the head's card ranks: five, so the head stays compact (owner, 25 November 2026). */
 export const HEAD_ACTS_SHOWN = 5
@@ -143,13 +148,16 @@ export const LEADER_ROW_CLASS = 'group grid grid-cols-[1.5rem_minmax(0,1fr)_auto
 /** The link under the acts card to the rest, in the analysis: the hubs' „more" link. */
 export const LEADERS_MORE_CLASS = 'mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline'
 
-/** The page's bands, in order: the pinned bar's links and each band's number. */
+/**
+ * The page's sections, in order: the pinned bar's links, each a short name of its data (owner, 25 November
+ * 2026: no numbers, names as the companies hub's), short enough that all fit at 390px. The anchors are kept.
+ */
 export function legalHubSections(): readonly HomeSection[] {
   return [
-    { id: 'schimbari', label: t`Schimbări` },
-    { id: 'feluri', label: t`Felul actelor` },
+    { id: 'schimbari', label: t`Modificări` },
+    { id: 'feluri', label: t`Fel` },
     { id: 'emitenti', label: t`Emitenți` },
-    { id: 'ani', label: t`An de an` },
+    { id: 'ani', label: t`Ani` },
     { id: 'legaturi', label: t`Legături` },
     { id: 'monitor', label: t`Monitorul Oficial` },
   ]
