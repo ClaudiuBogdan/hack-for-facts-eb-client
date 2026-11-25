@@ -82,6 +82,31 @@ describe('ProcurementContractAwardWinnerPage', () => {
     expect(read.mock.calls[0]?.[0]).toMatchObject({ year: 2024 })
   })
 
+  it('shows nothing of one company on the way to another code, nor of a year on the way to the next', async () => {
+    const client = createTestQueryClient()
+    const at = (cui: string, search: ProcurementContractAwardWinnerSearch = {}) => (
+      <QueryClientProvider client={client}>
+        <TooltipProvider>
+          <ProcurementContractAwardWinnerPage cui={cui} search={search} />
+        </TooltipProvider>
+      </QueryClientProvider>
+    )
+    read.mockResolvedValueOnce(found())
+    const { rerender } = render(at(WINNER_CODE))
+    expect(await screen.findByRole('heading', { name: 'CONSTRUCT TEST SRL' })).toBeInTheDocument()
+    read.mockImplementation(() => new Promise(() => undefined))
+    rerender(at('30111222'))
+    expect(read).toHaveBeenLastCalledWith({ code: '30111222', year: null, sort: 'awardDayDesc', page: 1 }, expect.anything())
+    expect(screen.queryByText('CONSTRUCT TEST SRL')).toBeNull()
+    expect(screen.queryByText('Reabilitare școala gimnazială nr. 2')).toBeNull()
+    rerender(at(WINNER_CODE, { year: 2024 }))
+    expect(screen.queryByText('CONSTRUCT TEST SRL')).toBeNull()
+    read.mockResolvedValueOnce({ kind: 'missing' })
+    rerender(at('30111223'))
+    expect(await screen.findByText('Nu sunt contracte atribuite de arătat')).toBeInTheDocument()
+    expect(screen.queryByText('CONSTRUCT TEST SRL')).toBeNull()
+  })
+
   it('says one „none" for any code the API refuses, and the switch off apart from it', async () => {
     read.mockResolvedValue({ kind: 'missing' })
     render(page({}, '30111222'))

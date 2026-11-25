@@ -202,6 +202,17 @@ describe('fetchWinnerContractAwards', () => {
     await expect(fetchWinnerContractAwards(ALL)).rejects.toBeInstanceOf(CaRecordsOffError)
   })
 
+  it('makes two reads at most: a republish then a mismatch fails the read, never a third request', async () => {
+    const split = rawWinnerAwards({ records: { dataAsOf: '2026-11-25T02:00:00Z' } })
+    graphqlQuery.mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE', undefined, REPUBLISHED)).mockResolvedValueOnce(split).mockResolvedValue(rawWinnerAwards())
+    await expect(fetchWinnerContractAwards(ALL)).rejects.toBeInstanceOf(CaSnapshotMismatchError)
+    expect(graphqlQuery).toHaveBeenCalledTimes(2)
+    graphqlQuery.mockReset()
+    graphqlQuery.mockRejectedValueOnce(refused('SERVICE_UNAVAILABLE', undefined, REPUBLISHED)).mockResolvedValueOnce(rawAwards({ records: { dataAsOf: '2026-11-25T02:00:00Z' } })).mockResolvedValue(rawAwards())
+    await expect(fetchBuyerContractAwards(REQUEST)).rejects.toBeInstanceOf(CaSnapshotMismatchError)
+    expect(graphqlQuery).toHaveBeenCalledTimes(2)
+  })
+
   it('reads the pair again on a snapshot mismatch, and says „none" when the second read refuses the code', async () => {
     const split = rawWinnerAwards({ records: { dataAsOf: '2026-11-25T02:00:00Z' } })
     graphqlQuery.mockResolvedValueOnce(split).mockResolvedValueOnce(rawWinnerAwards())

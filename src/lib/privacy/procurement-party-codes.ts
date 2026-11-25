@@ -5,8 +5,9 @@
  * A direct-purchase supplier the API withholds may be a person, and its code
  * must not reach a third-party processor (PostHog, Sentry). In any telemetry
  * string:
- * - under `/procurement`, the segment after `/suppliers/`, `/institutions/` or
- *   `/companies/` becomes `_`;
+ * - under `/procurement`, the segment after `/suppliers/`, `/institutions/`,
+ *   `/companies/` or `/winners/` (a contract-award winner's list, KB0Z)
+ *   becomes `_`;
  * - on the company page (`/companies/<cui>`, at the root of a path), the code
  *   becomes `_` (its own `/companies/analytics` and `/companies/search` are
  *   not codes);
@@ -29,7 +30,7 @@ const TRAILING_PUNCTUATION = /[).,;:!\]}]+$/u
 const COMPANY_PAGES = new Set(['analytics', 'search'])
 
 /** Under `/procurement`, the code after a party's segment. */
-const PROCUREMENT_PARTY = /(\/procurement(?:\/[^/?#]+)*?\/(?:suppliers|institutions|companies)\/)[^/?#]+/giu
+const PROCUREMENT_PARTY = /(\/procurement(?:\/[^/?#]+)*?\/(?:suppliers|institutions|companies|winners)\/)[^/?#]+/giu
 /** The company page's code: `/companies/` at the root of a path (string start, after a host, after `=`, `(` or `,`, or after an escape left unread). */
 const COMPANY_PAGE = /((?:^|[=(,]|%[0-9A-F]{2}|:\/\/[^/?#]*))(\/companies\/)([^/?#]+)/giu
 /** A party filter whose value is quoted. */

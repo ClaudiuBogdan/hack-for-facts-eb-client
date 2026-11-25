@@ -23,11 +23,16 @@ const schema = z.object({
   pagina: z.coerce.number().int().min(1).max(PROCUREMENT_BUYER_AWARD_MAX_PAGE).optional().catch(undefined),
 })
 
+/**
+ * Every key is returned, a dropped one as undefined: the router merges this
+ * result over the search it was given, so a key left out would keep the
+ * unusable value (`?pagina=501`, which the API refuses).
+ */
 export function parseProcurementContractAwardWinnerSearch(raw: Record<string, unknown>): ProcurementContractAwardWinnerSearch {
   const parsed = schema.parse(raw)
   return {
-    ...(parsed.year !== undefined ? { year: parsed.year } : {}),
-    ...(parsed.ordine && parsed.ordine !== 'noi' ? { ordine: parsed.ordine } : {}),
-    ...(parsed.pagina !== undefined && parsed.pagina > 1 ? { pagina: parsed.pagina } : {}),
+    year: parsed.year,
+    ordine: parsed.ordine && parsed.ordine !== 'noi' ? parsed.ordine : undefined,
+    pagina: parsed.pagina !== undefined && parsed.pagina > 1 ? parsed.pagina : undefined,
   }
 }

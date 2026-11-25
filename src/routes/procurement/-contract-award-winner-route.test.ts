@@ -29,5 +29,8 @@ describe('contract-award winner route', () => {
     expect(parseProcurementContractAwardWinnerSearch({ year: '2024', ordine: 'valoare', pagina: '3' })).toEqual({ year: 2024, ordine: 'valoare', pagina: 3 })
     expect(parseProcurementContractAwardWinnerSearch({ year: '2020', ordine: 'noi', pagina: '1' })).toEqual({})
     expect(parseProcurementContractAwardWinnerSearch({ year: 'x', ordine: 'oricare', pagina: '501' })).toEqual({})
+    // Merged over the URL by the router, a dropped key clears the value the API would refuse.
+    const raw = { year: '2020', ordine: 'oricare', pagina: '501' }
+    expect({ ...raw, ...parseProcurementContractAwardWinnerSearch(raw) }).toMatchObject({ year: undefined, ordine: undefined, pagina: undefined })
   })
 })

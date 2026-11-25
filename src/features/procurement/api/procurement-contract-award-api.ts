@@ -124,15 +124,25 @@ export async function fetchBuyerContractAwards(request: BuyerContractAwardsReque
   return mapBuyerContractAwards(await readPair(read, signal))
 }
 
-/** Counts and a page read together, both halves on one snapshot: read once more on a mismatch, then failed. */
+/**
+ * Counts and a page read together, both halves on one snapshot: read once
+ * more on a mismatch, then failed. Two reads at most, whatever made the
+ * first one repeat: a republish already spent the second read.
+ */
 async function readPair<T extends { readonly summary: { readonly dataAsOf: string }; readonly records: { readonly dataAsOf: string } }>(read: () => Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+  let reads = 0
+  const counted = () => {
+    reads += 1
+    return read()
+  }
   let first
   try {
-    first = await readOnceMore(read, signal)
+    first = await readOnceMore(counted, signal)
   } catch (error) {
     throw error instanceof CaReadSpentError ? error : offOr(error, signal)
   }
   if (first.summary.dataAsOf === first.records.dataAsOf) return first
+  if (reads > 1) throw new CaSnapshotMismatchError()
   // A mismatch: read once more, and that read is the last the adapter makes.
   const second = await secondRead(read, signal)
   if (second.summary.dataAsOf === second.records.dataAsOf) return second

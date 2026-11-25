@@ -6,6 +6,11 @@ describe('withoutProcurementPartyCodes (D6, root; TEL-001)', () => {
     expect(scrub('/procurement/analytics?tip=directe&furnizor=14837428&cumparator=4267117&perioada=2025')).toBe('/procurement/analytics?tip=directe&furnizor=_&cumparator=_&perioada=2025')
     expect(scrub('https://transparenta.eu/procurement/suppliers/14837428?year=2025#top')).toBe('https://transparenta.eu/procurement/suppliers/_?year=2025#top')
     expect(scrub('/procurement/institutions/4267117')).toBe('/procurement/institutions/_')
+    // A contract-award winner's list (KB0Z): a code typed or linked there may be a person's.
+    expect(scrub('https://transparenta.eu/procurement/contract-awards/winners/1850101123456?year=2024')).toBe('https://transparenta.eu/procurement/contract-awards/winners/_?year=2024')
+    expect(scrub('/procurement/contract-awards/winners/14837428')).toBe('/procurement/contract-awards/winners/_')
+    // An award's own id is no party code.
+    expect(scrub('/procurement/contract-awards/e_licitatie:ca:100234:550011')).toBe('/procurement/contract-awards/e_licitatie:ca:100234:550011')
     expect(scrub('/procurement/procedures/companies/14837428')).toBe('/procurement/procedures/companies/_')
     expect(scrub('/companies/14837428?tab=bani')).toBe('/companies/_?tab=bani')
     expect(scrub('https://transparenta.eu/companies/RO14837428')).toBe('https://transparenta.eu/companies/_')
