@@ -61,30 +61,40 @@ export function LegislationActFinder({ search }: Props) {
   const filterButton = useRef<HTMLButtonElement>(null)
 
   // The box mirrors the address (back and forward, a shared link), but only where it says something else: while
-  // the reader types, the address follows the box, not the other way. A query the page itself just sent is not
-  // mirrored back when it lands: keys typed while it travelled would be lost (review astra-client-7, F1b).
+  // the reader types, the address follows the box, not the other way. A query the page itself sent is not mirrored
+  // back when it lands, so keys typed while it travelled stay (review astra-client-7, F1b); the mark lives only
+  // until the next query lands, whichever it is, so a send that never landed (Back pressed first) cannot stop a
+  // later one from being mirrored (astra-client-8).
   const [draft, setDraft] = useState(q)
   const typed = useRef(draft)
   typed.current = draft
   const sent = useRef<string | null>(null)
   useEffect(() => {
-    if (q === sent.current) {
-      sent.current = null
-      return
-    }
+    const own = sent.current
+    sent.current = null
+    if (own !== null && q === own) return
     if (typed.current.trim() !== q) setDraft(q)
   }, [q])
-  // The filters as the address holds them now, for the typing pause: a chip removed (or a step Back) while it ran
-  // must not come back with the query (F1a).
-  const latestFilters = useRef(filters)
-  latestFilters.current = filters
 
-  const go = (next: { readonly q: string; readonly filters: SearchFilters }, options: { readonly replace: boolean }) => {
-    if (next.q !== q) sent.current = next.q
+  /**
+   * The query alone, written over the address as the router holds it when the navigation runs: the filters are
+   * whatever is there then, never a copy taken when the reader began to type (astra-client-8).
+   */
+  const sendQuery = (next: string, options: { readonly replace: boolean }) => {
+    if (next !== q) sent.current = next
     void navigate({
       to: '/legislation/search',
-      search: { q: next.q.length > 0 ? next.q : undefined, ...searchOfFilters(next.filters) },
+      search: (previous: LegalFinderSearch) => ({ ...previous, q: next.length > 0 ? next : undefined }),
       replace: options.replace,
+      resetScroll: false,
+    })
+  }
+  /** The filters, chosen by the reader: every filter key named, the query as it stands. */
+  const setFilters = (next: SearchFilters) => {
+    void navigate({
+      to: '/legislation/search',
+      search: { q: q.length > 0 ? q : undefined, ...searchOfFilters(next) },
+      replace: false,
       resetScroll: false,
     })
   }
@@ -93,22 +103,21 @@ export function LegislationActFinder({ search }: Props) {
   useEffect(() => {
     const next = draft.trim()
     if (next === q || (next.length > 0 && next.length < TYPED_MIN)) return
-    const timer = window.setTimeout(() => go({ q: next, filters: latestFilters.current }, { replace: true }), TYPING_PAUSE_MS)
+    const timer = window.setTimeout(() => sendQuery(next, { replace: true }), TYPING_PAUSE_MS)
     return () => window.clearTimeout(timer)
-    // `go` is rebuilt each render and the filters are read when the pause ends; it restarts only when the box changes
+    // `sendQuery` is rebuilt each render and reads nothing captured but `q`; the pause restarts when the box changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, q])
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const next = draft.trim()
-    if (next.length > 0) go({ q: next, filters }, { replace: true })
+    if (next.length > 0) sendQuery(next, { replace: true })
   }
   const run = (example: string) => {
     setDraft(example)
-    go({ q: example, filters }, { replace: false })
+    sendQuery(example, { replace: false })
   }
-  const setFilters = (next: SearchFilters) => go({ q, filters: next }, { replace: false })
 
   return (
     <div className="space-y-10">
@@ -237,7 +246,7 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
     return (
       <section className="border-t pt-8">
         <p className="text-base text-foreground">{t`Nu am putut căuta în legislație.`}</p>
-        <Button variant="outline" className="mt-4" onClick={() => void search.refetch()}>
+        <Button variant="outline" className="mt-4" disabled={search.isFetching} onClick={() => void search.refetch()}>
           {t`Încearcă din nou`}
         </Button>
       </section>
@@ -247,9 +256,10 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
   const result = search.data
   const stale = search.isPlaceholderData
   const acts = result.acts
-  // The acts' text is searched on the OpenSearch engine, and only when the answer came whole (a degraded one may
-  // have lost that leg).
-  const textSearched = result.engine === 'opensearch' && !result.degraded
+  // What the copy may claim (astra-client-8): the OpenSearch engine, whole, searched the acts' text; the Postgres
+  // path only numbers and names; a degraded OpenSearch answer lost a leg it does not name (often only the meaning
+  // one), so it claims neither.
+  const reach: 'text' | 'names' | 'partial' = result.engine === 'opensearch' ? (result.degraded ? 'partial' : 'text') : 'names'
   const semanticUnavailable = result.caveats.includes(LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
   // Every other caveat is shown verbatim: the sentinel alone is a machine marker, said in our words.
   const verbatim = result.caveats.filter((caveat) => caveat !== LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
@@ -278,9 +288,11 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
 
   const notes: ReactNode = (
     <>
-      {semanticUnavailable ? (
+      {reach === 'partial' ? (
+        <p>{t`O parte din căutare nu a rulat, iar căutarea după sens nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici.`}</p>
+      ) : semanticUnavailable ? (
         <p>
-          {textSearched
+          {reach === 'text'
             ? t`Potriviri după cuvintele din numele, titlul și textul actelor. Căutarea după sens nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici.`
             : t`Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici.`}
         </p>
@@ -301,6 +313,13 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
   )
   // A degraded answer is said where it is read, not only behind the ⓘ.
   const degraded = result.degraded ? <p className="text-sm text-muted-foreground">{t`Răspuns parțial: o parte din căutare nu a rulat.`}</p> : null
+  // Under an answer with no rows, the way to the engine, the caveats and what was searched.
+  const how = (
+    <div className="mt-4 flex items-center gap-1 text-sm text-muted-foreground">
+      {t`Cum s-a căutat`}
+      <LegalInfoNote label={t`Cum se caută`}>{notes}</LegalInfoNote>
+    </div>
+  )
 
   return (
     <div className={cn('space-y-10 transition-opacity', stale && 'opacity-60')} aria-busy={stale}>
@@ -325,18 +344,23 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
           <h2 id="search-empty-title" className="text-2xl font-semibold tracking-tight text-foreground">
             {t`Am găsit potriviri, dar nu le-am putut afișa`}
           </h2>
-          <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{t`Serverul a găsit acte pentru această căutare, dar nu le-a putut încărca acum. Încearcă din nou peste puțin timp.`}</p>
-          <Button variant="outline" className="mt-4" onClick={() => void search.refetch()}>
+          {/* „potriviri": the count can be of provisions, not only acts */}
+          <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{t`Serverul a găsit potriviri pentru această căutare, dar nu le-a putut încărca acum. Încearcă din nou peste puțin timp.`}</p>
+          {degraded ? <div className="mt-3">{degraded}</div> : null}
+          <Button variant="outline" className="mt-4" disabled={search.isFetching} onClick={() => void search.refetch()}>
             {t`Încearcă din nou`}
           </Button>
+          {how}
         </section>
       ) : empty ? (
         <section aria-labelledby="search-empty-title" className="border-t pt-8">
           {choose ? (
             <p id="search-empty-title" className="max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-              {textSearched
+              {reach === 'text'
                 ? t`Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă.`
-                : t`Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea în textul legilor nu este încă disponibilă.`}
+                : reach === 'names'
+                  ? t`Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea în textul legilor nu este încă disponibilă.`
+                  : t`Căutarea directă nu a găsit nimic, iar o parte din ea nu a rulat: actele de mai sus sunt potriviri după denumirea sau numărul actului.`}
             </p>
           ) : parseLegalCitationShape(q) !== null ? (
             <>
@@ -354,19 +378,18 @@ function Answer({ q, filters, onFilters }: { readonly q: string; readonly filter
                 {t`Niciun act pentru „${q}", dar asta nu înseamnă că prevederea nu există`}
               </h2>
               <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                {textSearched
+                {reach === 'text'
                   ? t`Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens: o prevedere formulată cu alte cuvinte nu apare.`
-                  : t`Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 53/2003") și după denumire (de exemplu „Codul muncii"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă", nu este încă disponibilă.`}
+                  : reach === 'names'
+                    ? t`Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 53/2003") și după denumire (de exemplu „Codul muncii"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă", nu este încă disponibilă.`
+                    : t`O parte din căutare nu a rulat, iar căutarea după sens nu este încă disponibilă: o prevedere formulată cu alte cuvinte poate lipsi de aici.`}
               </p>
             </>
           )}
           {filtered ? <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{t`Filtrele alese pot fi motivul: scoate-le pe rând.`}</p> : null}
           {degraded ? <div className="mt-3">{degraded}</div> : null}
           {widen ? <div className="mt-4">{widen}</div> : null}
-          <div className="mt-4 flex items-center gap-1 text-sm text-muted-foreground">
-            {t`Cum s-a căutat`}
-            <LegalInfoNote label={t`Cum se caută`}>{notes}</LegalInfoNote>
-          </div>
+          {how}
         </section>
       ) : (
         <section aria-labelledby="search-results-title" className="border-t pt-8">

@@ -163,7 +163,7 @@ export function LegislationFilterPanel({
           </Group>
           <Group title={t`Când`}>
             <Row label={t`De la`}>
-              <select aria-label={t`De la anul`} className={FIELD} value={filters.from ?? ''} onChange={(event) => onChange(withSearchYears(filters, event.target.value === '' ? null : Number(event.target.value), filters.to))}>
+              <select aria-label={t`De la`} className={FIELD} value={filters.from ?? ''} onChange={(event) => onChange(withSearchYears(filters, event.target.value === '' ? null : Number(event.target.value), filters.to))}>
                 <option value="">{t`orice an`}</option>
                 {years.map((year) => (
                   <option key={year} value={year}>
@@ -173,7 +173,7 @@ export function LegislationFilterPanel({
               </select>
             </Row>
             <Row label={t`Până la`}>
-              <select aria-label={t`Până în anul`} className={FIELD} value={filters.to ?? ''} onChange={(event) => onChange(withSearchYears(filters, filters.from, event.target.value === '' ? null : Number(event.target.value)))}>
+              <select aria-label={t`Până la`} className={FIELD} value={filters.to ?? ''} onChange={(event) => onChange(withSearchYears(filters, filters.from, event.target.value === '' ? null : Number(event.target.value)))}>
                 <option value="">{t`azi`}</option>
                 {years.map((year) => (
                   <option key={year} value={year}>

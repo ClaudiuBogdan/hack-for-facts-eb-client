@@ -27,6 +27,13 @@ const render = (ui: Parameters<typeof renderShared>[0]) => renderShared(ui, { qu
 /** Every filter key, absent: what a navigation without filters carries (the router merges, so each key is named). */
 const NO_KEYS = { historical: undefined, stare: undefined, tip: undefined, an: undefined, domeniu: undefined, categorie: undefined, sanctiuni: undefined }
 
+/** The query navigation's search: an updater over the address as the router holds it, applied here to `address`. */
+function sentSearch(call: number, address: Record<string, unknown> = {}): unknown {
+  const options = navigateMock.mock.calls[call]?.[0] as { readonly search: (previous: Record<string, unknown>) => unknown }
+  expect(typeof options.search).toBe('function')
+  return options.search(address)
+}
+
 /** The notes behind the results' ⓘ: the engine, the caveats verbatim, what was and was not searched. */
 async function openNotes() {
   fireEvent.click(await screen.findByRole('button', { name: 'Cum se caută' }))
@@ -146,7 +153,8 @@ describe('LegislationActFinder', () => {
     fireEvent.change(screen.getByRole('textbox', { name: /Caută în legislație/ }), { target: { value: '  codul muncii  ' } })
     fireEvent.submit(screen.getByRole('search', { name: /Caută în legislație/ }))
 
-    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/legislation/search', search: { q: 'codul muncii', ...NO_KEYS }, replace: true }))
+    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/legislation/search', replace: true }))
+    expect(sentSearch(0)).toEqual({ q: 'codul muncii' })
   })
 
   it('searches as the reader types, once they pause, from three letters', async () => {
@@ -172,14 +180,17 @@ describe('LegislationActFinder', () => {
     })
     // One search for the pause, the history entry replaced.
     expect(navigateMock).toHaveBeenCalledTimes(1)
-    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ search: { q: 'codul m', ...NO_KEYS }, replace: true }))
+    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ replace: true }))
+    expect(sentSearch(0)).toEqual({ q: 'codul m' })
   })
 
   it('runs an example as a search', async () => {
     render(<LegislationActFinder search={{}} />)
 
     fireEvent.click(within(screen.getByRole('navigation', { name: 'Exemple' })).getByRole('button', { name: 'Legea 53/2003' }))
-    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/legislation/search', search: { q: 'Legea 53/2003', ...NO_KEYS } }))
+    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/legislation/search', replace: false }))
+    // the example keeps whatever filters the address holds
+    expect(sentSearch(0, { tip: 'lege' })).toEqual({ tip: 'lege', q: 'Legea 53/2003' })
   })
 
   it('reads the filters from the address into the search and shows them as removable chips', async () => {
@@ -223,7 +234,32 @@ describe('LegislationActFinder', () => {
         vi.advanceTimersByTime(300)
       })
       expect(navigateMock).toHaveBeenCalledTimes(1)
-      expect(navigateMock.mock.calls[0]?.[0]).toMatchObject({ search: { q: 'codul m', ...NO_KEYS }, replace: true })
+      expect(navigateMock.mock.calls[0]?.[0]).toMatchObject({ replace: true })
+      // the query alone, over the address the router holds when it runs: without `tip` there, none comes back
+      expect(sentSearch(0, { q: 'codul' })).toEqual({ q: 'codul m' })
+      expect(sentSearch(0, { q: 'codul', stare: 'abrogat' })).toEqual({ q: 'codul m', stare: 'abrogat' })
+    })
+
+    it('mirrors a later query after a send that never landed, and does not replace its entry (astra-client-8)', () => {
+      vi.useFakeTimers()
+      const { rerender } = render(<LegislationActFinder search={{ q: 'codul' }} />)
+      const box = screen.getByRole('textbox', { name: /Caută în legislație/ })
+      fireEvent.change(box, { target: { value: 'codul m' } })
+      act(() => {
+        vi.advanceTimersByTime(300)
+      })
+      expect(navigateMock).toHaveBeenCalledTimes(1)
+      // Back before the send lands: the address goes to another entry, the send never arrives
+      rerender(<LegislationActFinder search={{ q: 'legea 1' }} />)
+      expect(box).toHaveValue('legea 1')
+      // a second Back, to an entry whose query is the one that was sent: it is mirrored
+      rerender(<LegislationActFinder search={{ q: 'codul m' }} />)
+      expect(box).toHaveValue('codul m')
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      // nothing sent over that entry
+      expect(navigateMock).toHaveBeenCalledTimes(1)
     })
 
     it('keeps the keys typed while the page’s own query travels (F1b)', () => {
@@ -374,17 +410,25 @@ describe('LegislationActFinder', () => {
 
       const heading = await screen.findByRole('heading', { name: /Niciun act pentru „concediu de odihna"/ })
       const section = heading.closest('section') as HTMLElement
+      // neither the text claim nor the number-and-name copy: the answer lost a leg it does not name
       expect(section).not.toHaveTextContent(/Am căutat cuvintele în numele, titlul și textul actelor/)
+      expect(section).not.toHaveTextContent(/Căutarea după expresii din textul legilor/)
+      expect(section).toHaveTextContent(/O parte din căutare nu a rulat, iar căutarea după sens nu este încă disponibilă/)
       expect(section).toHaveTextContent('Răspuns parțial: o parte din căutare nu a rulat.')
     })
 
     it('says matches it could not show are matches, not an absence', async () => {
       const { fetchLegalSearch } = await import('../api/legal-search-api')
-      vi.mocked(fetchLegalSearch).mockResolvedValueOnce({ ...v2Answer([]), unhydratedHits: 3 })
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce({ ...v2Answer([]), unhydratedHits: 3, degraded: true })
       render(<LegislationActFinder search={{ q: 'codul muncii' }} />)
 
-      expect(await screen.findByRole('heading', { name: 'Am găsit potriviri, dar nu le-am putut afișa' })).toBeInTheDocument()
+      const heading = await screen.findByRole('heading', { name: 'Am găsit potriviri, dar nu le-am putut afișa' })
       expect(screen.queryByRole('heading', { name: /Niciun act/ })).not.toBeInTheDocument()
+      // the partial answer and the server's caveats stay with it
+      const section = heading.closest('section') as HTMLElement
+      expect(section).toHaveTextContent('Răspuns parțial: o parte din căutare nu a rulat.')
+      const notes = await openNotes()
+      expect(within(notes).getByText(/Formele consolidate sunt neoficiale/)).toBeInTheDocument()
     })
 
     it('does not deny text search when a words query finds nothing', async () => {
