@@ -17,8 +17,8 @@ import {
 import { formatHubValue, isAdditiveUnit } from '../../lib/hub-format'
 
 /**
- * The counties of one layer, highest first: the first and last five, the
- * rest a click away. Each row carries the map's colour for the county, so the
+ * The counties of one layer, highest first: the first and last five (three
+ * on a phone, `phoneEdge`), the rest a click away. Each row carries the map's colour for the county, so the
  * list is the map's key, and shares its highlight.
  *
  * A rate runs from the national rate — the dashed line — to the county's,
@@ -29,6 +29,7 @@ export function CompanyCountyRank({
   layer,
   countyLink,
   edge = 5,
+  phoneEdge: phoneEdgeAsked = edge,
   activeCode,
   onActiveChange,
   className,
@@ -38,11 +39,15 @@ export function CompanyCountyRank({
   readonly countyLink: (code: string) => Record<string, unknown>
   /** How many counties each end of the collapsed list shows. */
   readonly edge?: number
+  /** As many on a phone, where the band is a screen and a half without it (owner, 25 November 2026); at most `edge`. */
+  readonly phoneEdge?: number
   readonly activeCode?: string
   readonly onActiveChange?: (code: string | undefined) => void
   readonly className?: string
 }) {
   const [expanded, setExpanded] = useState(false)
+  // Never more than the wider screens show: the phone's ends are a shorter cut of the same list.
+  const phoneEdge = Math.min(phoneEdgeAsked, edge)
   const listRef = useRef<HTMLDivElement>(null)
   const scale = hubLayerScale(layer)
   const ranked = rankCounties(layer.values)
@@ -55,6 +60,9 @@ export function CompanyCountyRank({
   const base = at(reference)
   const collapsible = ranked.length > edge * 2 + 1
   const hidden = collapsible && !expanded ? ranked.length - edge * 2 : 0
+  // On a phone the collapsed ends are shorter: the rows between hide there by CSS, so the server sends one list for every width.
+  const phoneFolds = hidden > 0 && phoneEdge < edge
+  const phoneHidden = ranked.length - phoneEdge * 2
   const unit = formatHubValue(layer.national, layer.unit, { digits })
   const hoverOnly = (event: PointerEvent, code: string | undefined) => {
     if (event.pointerType !== 'touch') onActiveChange?.(code)
@@ -64,19 +72,22 @@ export function CompanyCountyRank({
   const toggle = (next: boolean, keyboard: boolean) => {
     setExpanded(next)
     if (!keyboard) return
+    // The first county the list opened: past the phone's shorter ends there. The query is Tailwind's own
+    // `max-sm` (`width < 40rem`), so it agrees with the CSS that hid the rows at every font size.
+    const opened = window.matchMedia('(width < 40rem)').matches ? phoneEdge : edge
     requestAnimationFrame(() => {
       const target = next
-        ? listRef.current?.querySelectorAll<HTMLElement>('ol a')[edge]
+        ? listRef.current?.querySelectorAll<HTMLElement>('ol a')[opened]
         : listRef.current?.querySelector<HTMLElement>('[data-county-expander]')
       target?.focus()
     })
   }
 
-  const row = (county: HubCountyValue, rank: number) => {
+  const row = (county: HubCountyValue, rank: number, phoneOnly = false) => {
     const active = activeCode === county.code
     const value = at(county.value)
     return (
-      <li key={county.code} value={rank} className="col-span-5 grid grid-cols-subgrid">
+      <li key={county.code} value={rank} className={cn('col-span-5 grid grid-cols-subgrid', phoneOnly && 'max-sm:hidden')}>
         <Link
           to="/companies/analytics"
           search={countyLink(county.code)}
@@ -116,26 +127,26 @@ export function CompanyCountyRank({
       )}
     >
       <div className="col-span-5 grid grid-cols-subgrid items-end border-b border-border/70 pb-2">
-        <MonoLabel className="col-span-3 pl-1 text-muted-foreground">
+        <span className="col-span-3 pl-1 text-xs text-muted-foreground">
           <Trans>Județ</Trans>
-        </MonoLabel>
-        <span className="relative h-2.5">
+        </span>
+        <span className="relative h-3">
           {additive ? null : (
-            <MonoLabel
+            <span
               className={cn(
-                'absolute top-0 whitespace-nowrap text-foreground',
+                'absolute top-0 whitespace-nowrap text-xs leading-none tabular-nums text-foreground',
                 base < 25 ? 'translate-x-0' : base > 75 ? '-translate-x-full' : '-translate-x-1/2',
               )}
               style={{ left: `${base.toFixed(2)}%` }}
             >
               <Trans>România {unit.value}</Trans>
-            </MonoLabel>
+            </span>
           )}
         </span>
-        <MonoLabel className="pr-1 text-right text-muted-foreground">{layer.unit === 'per-thousand' ? '' : unit.unit}</MonoLabel>
+        <span className="pr-1 text-right text-xs text-muted-foreground">{layer.unit === 'per-thousand' ? '' : unit.unit}</span>
       </div>
       <ol className="col-span-5 grid grid-cols-subgrid divide-y divide-border/70">
-        {(hidden > 0 ? ranked.slice(0, edge) : ranked).map((county, index) => row(county, index + 1))}
+        {(hidden > 0 ? ranked.slice(0, edge) : ranked).map((county, index) => row(county, index + 1, phoneFolds && index >= phoneEdge))}
       </ol>
       {hidden > 0 ? (
         <>
@@ -144,14 +155,25 @@ export function CompanyCountyRank({
             type="button"
             data-county-expander
             onClick={(event) => toggle(true, event.detail === 0)}
-            className="col-span-5 flex min-h-11 w-full items-center gap-3 border-y border-border/70 text-sm font-medium text-foreground transition-colors hover:bg-muted/50"
+            className={cn(
+              'col-span-5 flex min-h-11 w-full items-center gap-3 border-y border-border/70 text-sm font-medium text-foreground transition-colors hover:bg-muted/50',
+              // On a phone the row above is not the list's last, so it already draws the rule.
+              phoneFolds && 'max-sm:border-t-0',
+            )}
           >
             <span className="h-px flex-1 border-t border-dashed border-border" aria-hidden="true" />
-            {plural(hidden, { one: 'Încă un județ', few: 'Încă # județe', other: 'Încă # de județe' })}
+            {phoneFolds ? (
+              <>
+                <span className="sm:hidden">{plural(phoneHidden, { one: 'Încă un județ', few: 'Încă # județe', other: 'Încă # de județe' })}</span>
+                <span className="max-sm:hidden">{plural(hidden, { one: 'Încă un județ', few: 'Încă # județe', other: 'Încă # de județe' })}</span>
+              </>
+            ) : (
+              plural(hidden, { one: 'Încă un județ', few: 'Încă # județe', other: 'Încă # de județe' })
+            )}
             <span className="h-px flex-1 border-t border-dashed border-border" aria-hidden="true" />
           </button>
           <ol start={ranked.length - edge + 1} className="col-span-5 grid grid-cols-subgrid divide-y divide-border/70">
-            {ranked.slice(-edge).map((county, index) => row(county, ranked.length - edge + index + 1))}
+            {ranked.slice(-edge).map((county, index) => row(county, ranked.length - edge + index + 1, phoneFolds && index < edge - phoneEdge))}
           </ol>
         </>
       ) : null}
@@ -161,7 +183,18 @@ export function CompanyCountyRank({
           onClick={(event) => toggle(false, event.detail === 0)}
           className="col-span-5 mt-3 inline-flex min-h-9 items-center justify-self-start text-sm font-medium text-foreground underline-offset-4 hover:underline"
         >
-          <Trans>Doar primele și ultimele {edge}</Trans>
+          {phoneEdge < edge ? (
+            <>
+              <span className="sm:hidden">
+                <Trans>Doar primele și ultimele {phoneEdge}</Trans>
+              </span>
+              <span className="max-sm:hidden">
+                <Trans>Doar primele și ultimele {edge}</Trans>
+              </span>
+            </>
+          ) : (
+            <Trans>Doar primele și ultimele {edge}</Trans>
+          )}
         </button>
       ) : null}
     </div>

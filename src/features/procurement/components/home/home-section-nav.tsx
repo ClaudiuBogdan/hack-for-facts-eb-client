@@ -5,8 +5,8 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { cn } from '@/lib/utils'
 import type { HomeSection } from '../../lib/home-links'
 
-/** The company profile's pinned bar: the page's name, then its numbered bands. */
-export function HomeSectionNav({ title, sections }: { readonly title: string; readonly sections: readonly HomeSection[] }) {
+/** The company profile's pinned bar: the page's name, then its bands, numbered unless the page numbers none of them (`numbered={false}`). */
+export function HomeSectionNav({ title, sections, numbered = true }: { readonly title: string; readonly sections: readonly HomeSection[]; readonly numbered?: boolean }) {
   return (
     <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
@@ -18,9 +18,11 @@ export function HomeSectionNav({ title, sections }: { readonly title: string; re
                 href={`#${section.id}`}
                 className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                <MonoLabel className="text-primary" aria-hidden="true">
-                  {String(position + 1).padStart(2, '0')}
-                </MonoLabel>
+                {numbered ? (
+                  <MonoLabel className="text-primary" aria-hidden="true">
+                    {String(position + 1).padStart(2, '0')}
+                  </MonoLabel>
+                ) : null}
                 {section.label}
               </a>
             </li>

@@ -563,7 +563,7 @@ function UATDetailCard({ uat, locale, text, isLoading, dataYear, onClose }: UATD
 
                 <div className="flex gap-3 flex-1">
                   <Link
-                    to="/entity-analytics"
+                    to="/public-institutions"
                     search={{ filter: { entity_cuis: [uat.cui] } }}
                     className="flex-1"
                   >

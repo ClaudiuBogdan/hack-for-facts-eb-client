@@ -3,7 +3,11 @@ import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 
-/** The numbered caption, the title and the sentence that qualifies a band's numbers. */
+/**
+ * The numbered caption, the title and the sentence that qualifies a band's
+ * numbers. A page whose titles already name their bands leaves the caption
+ * out (no `index`): the title then starts the head.
+ */
 export function HubSectionHead({
   index,
   title,
@@ -11,7 +15,7 @@ export function HubSectionHead({
   aside,
   titleId,
 }: {
-  readonly index: string
+  readonly index?: string
   readonly title: ReactNode
   readonly lede?: ReactNode
   readonly aside?: ReactNode
@@ -20,10 +24,12 @@ export function HubSectionHead({
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
       <div className="min-w-0">
-        <MonoLabel className="block text-primary" data-reveal>
-          {index}
-        </MonoLabel>
-        <h2 id={titleId} data-reveal className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        {index ? (
+          <MonoLabel className="block text-primary" data-reveal>
+            {index}
+          </MonoLabel>
+        ) : null}
+        <h2 id={titleId} data-reveal className={cn(index && 'mt-3', 'text-2xl font-semibold tracking-tight text-foreground sm:text-3xl')}>
           {title}
         </h2>
         {lede ? (

@@ -10,7 +10,7 @@ import { SelectContent, SelectGroup, SelectLabel, SelectSeparator } from '@/comp
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
-import { MEASURES, measureById, type Measure, type MeasureId } from '../../lib/budget-map-measures'
+import { MEASURES, type Measure, type MeasureId } from '../../lib/budget-map-measures'
 
 /**
  * The budget map's picker. Each map is shown with its name, what it is in one line,
@@ -26,10 +26,12 @@ import { MEASURES, measureById, type Measure, type MeasureId } from '../../lib/b
  * keyboard goes away — cannot happen here: nothing in it types.
  */
 
+type Groups = readonly (readonly [string, readonly Measure[]])[]
+
 /** The maps under their headings (by the heading's message id), in the order the measures are listed. */
-const GROUPS: readonly (readonly [string, readonly Measure[]])[] = [...new Set(MEASURES.map((measure) => measure.group.id))].map(
-  (group) => [group, MEASURES.filter((measure) => measure.group.id === group)] as const,
-)
+function groupsOf(measures: readonly Measure[]): Groups {
+  return [...new Set(measures.map((measure) => measure.group.id))].map((group) => [group, measures.filter((measure) => measure.group.id === group)] as const)
+}
 
 /** A measure's colours as a strip: its preview in the picker. */
 function RampStrip({ ramp, className }: { readonly ramp: readonly string[]; readonly className?: string }) {
@@ -78,13 +80,29 @@ function RowBody({ measure, name }: { readonly measure: Measure; readonly name?:
   )
 }
 
-export function MapPicker({ value, onChange }: { readonly value: MeasureId; readonly onChange: (id: MeasureId) => void }) {
+/** `measures`: the maps offered, the landing's by default; a page whose maps say other words (another year) passes its own. */
+export function MapPicker({
+  value,
+  onChange,
+  measures = MEASURES,
+}: {
+  readonly value: MeasureId
+  readonly onChange: (id: MeasureId) => void
+  readonly measures?: readonly Measure[]
+}) {
   const coarse = useMediaQuery('(pointer: coarse)')
-  const measure = measureById(value)
-  return coarse ? <SheetPicker measure={measure} onChange={onChange} /> : <ListPicker measure={measure} onChange={onChange} />
+  const measure = measures.find((item) => item.id === value) ?? measures[0]!
+  const groups = groupsOf(measures)
+  return coarse ? <SheetPicker measure={measure} groups={groups} onChange={onChange} /> : <ListPicker measure={measure} groups={groups} onChange={onChange} />
 }
 
-function ListPicker({ measure, onChange }: { readonly measure: Measure; readonly onChange: (id: MeasureId) => void }) {
+interface PickerProps {
+  readonly measure: Measure
+  readonly groups: Groups
+  readonly onChange: (id: MeasureId) => void
+}
+
+function ListPicker({ measure, groups: GROUPS, onChange }: PickerProps) {
   const { i18n } = useLingui()
   const title = i18n._(measure.title)
   return (
@@ -120,7 +138,7 @@ function ListPicker({ measure, onChange }: { readonly measure: Measure; readonly
   )
 }
 
-function SheetPicker({ measure, onChange }: { readonly measure: Measure; readonly onChange: (id: MeasureId) => void }) {
+function SheetPicker({ measure, groups: GROUPS, onChange }: PickerProps) {
   const { i18n } = useLingui()
   const [open, setOpen] = useState(false)
   const title = i18n._(measure.title)

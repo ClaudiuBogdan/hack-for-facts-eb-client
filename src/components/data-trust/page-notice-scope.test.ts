@@ -15,6 +15,12 @@ describe('pageNoticeScope', () => {
     }
   })
 
+  it('skips the map page, whose map fills the window (owner, 25 November 2026), but not the map editor', () => {
+    expect(pageNoticeScope('/map')).toBeNull()
+    expect(pageNoticeScope('/ro/map')).toBeNull()
+    expect(pageNoticeScope('/maps/editor')).toBe('maps')
+  })
+
   it('reads past a language prefix and makes a valid id', () => {
     expect(pageNoticeScope('/ro/learning/x')).toBe('learning')
     expect(pageNoticeScope('/en/unsubscribe/tok')).toBeNull()

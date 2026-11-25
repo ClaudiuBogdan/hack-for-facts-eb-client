@@ -4,18 +4,13 @@ import { getSiteUrl } from '@/config/env'
 import { translatorFor } from '@/lib/i18n'
 import { buildPageHead } from '@/lib/page-head'
 import { readUserCurrencyPreference, readUserInflationAdjustedPreference } from '@/lib/user-preferences'
-import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 
 export type { EntityAnalyticsUrlState } from '@/lib/entity-analytics-query'
 
 export const Route = createFileRoute('/entity-analytics')({
-  headers: () =>
-    createPublicPageCacheHeaders({
-      vary: ['Accept-Encoding', 'Cookie'],
-      sharedMaxAgeSeconds: 300,
-      staleWhileRevalidateSeconds: 86400,
-    }),
+  // Rendered from the reader's cookies (currency, inflation, language), so kept by no browser or CDN (CACHE-001).
+  headers: () => ({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' }),
   beforeLoad: async ({ context, search }) => {
     const { queryClient } = context
     // Imported here, not at the top: the URL schema is built on the chart
@@ -45,7 +40,8 @@ export const Route = createFileRoute('/entity-analytics')({
     return buildPageHead({
       title: translator._(msg`Entity analytics – Transparenta.eu`),
       description: translator._(msg`Analyze aggregated values per entity and explore top entities by amount and per capita.`),
-      canonical: `${getSiteUrl()}/entity-analytics`,
+      // The page stays for its links and its full filter panel; /public-institutions is the one to index (owner, 25 November 2026).
+      canonical: `${getSiteUrl()}/public-institutions`,
     })
   },
 })

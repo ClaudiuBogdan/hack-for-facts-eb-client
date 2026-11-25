@@ -64,16 +64,24 @@ export function formatPercent(value: number | null, locale: NumberLocale): strin
   return `${minus(formatter(locale, { maximumFractionDigits: 1, signDisplay: 'exceptZero' }).format(value))}%`
 }
 
-/** Rounded to `step` as `Intl` rounds: half away from zero. */
-const roundTo = (value: number, step: number) => Math.sign(value) * Math.round(Math.abs(value) / step) * step
+/** One decimal, as the formatters above round (half away from zero), in a form `Number` reads back. */
+const ONE_DECIMAL = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1, useGrouping: false })
+
+/**
+ * `value` in `unit`s, rounded to one decimal by `Intl` itself and back in the
+ * value's own unit. `Intl` rounds the decimal the number reads as: 0.95 prints
+ * „1" and 2.9499999999999997 prints „2,9", where arithmetic on the binary value
+ * (`Math.round(0.95 / 0.1)`) gets the first wrong and digit tricks the second.
+ */
+const roundTo = (value: number, unit: number) => Number(ONE_DECIMAL.format(value / unit)) * unit
 
 /** An amount rounded as `compactParts` prints it: one decimal of its thousands, millions or billions. */
 export function asPrinted(value: number): number {
   const size = Math.abs(value)
-  return roundTo(value, size < 1e3 ? 0.1 : size < 1e6 ? 1e2 : size < 1e9 ? 1e5 : 1e8)
+  return roundTo(value, size < 1e3 ? 1 : size < 1e6 ? 1e3 : size < 1e9 ? 1e6 : 1e9)
 }
 
 /** A percent rounded as `formatPercent` prints it: one decimal. */
 export function percentAsPrinted(value: number): number {
-  return roundTo(value, 0.1)
+  return roundTo(value, 1)
 }

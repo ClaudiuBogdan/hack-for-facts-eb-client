@@ -6,6 +6,8 @@
 const NO_NOTICE = new Set([
   // The landing page (owner, 24 November 2026).
   '',
+  // The map page (owner, 25 November 2026).
+  'map',
   // Legal, account and utility pages.
   'privacy', 'terms', 'cookie-policy', 'cookies', 'sign-in', 'sign-up', 'settings', 'unsubscribe', 'alerts', 'share',
   // Internal: admin, local prototypes, the error test page.
