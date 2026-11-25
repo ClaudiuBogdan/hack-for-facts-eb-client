@@ -25,10 +25,30 @@ export const prototype = {
   variants: {
     azi: { title: 'Azi', component: () => <Frame>{(model) => <CompanyBusinessBand model={model} measure="toate" onMeasure={() => undefined} />}</Frame>, note: 'The band as it is: chart and switch beside the balance-sheet table.' },
     grafic: {
-      title: 'Un grafic',
-      component: () => <Frame>{(model) => <ProtoBusinessBand model={model} />}</Frame>,
-      note: 'One chart across the band: money above, people below, each its own scale; empty years collapsed into one hatched column; no table, no switch.',
+      title: 'A · Două panouri',
+      component: () => <Frame>{(model) => <ProtoBusinessBand model={model} version="panouri" />}</Frame>,
+      note: 'Money above (turnover pale, the bottom line solid, losses red), people in a short panel below, each its own scale; empty years one hatched column.',
+    },
+    trei: {
+      title: 'B · Trei panouri',
+      component: () => <Frame>{(model) => <ProtoBusinessBand model={model} version="trei" />}</Frame>,
+      note: 'Three panels, one scale each: turnover, the bottom line, people. A small result next to a large turnover still reads.',
+    },
+    bani: {
+      title: 'C · Doar bani',
+      component: () => <Frame>{(model) => <ProtoBusinessBand model={model} version="bani" />}</Frame>,
+      note: 'One panel: turnover and the bottom line. People only in each year’s reading (hover or tap).',
+    },
+    arie: {
+      title: 'D · Arie și bare',
+      component: () => <Frame>{(model) => <ProtoBusinessBand model={model} version="arie" />}</Frame>,
+      note: 'One panel: turnover as a shaded area, the bottom line as bars from zero. People in each year’s reading.',
+    },
+    comutator: {
+      title: 'E · Cu comutator',
+      component: () => <Frame>{(model) => <ProtoBusinessBand model={model} version="comutator" />}</Frame>,
+      note: 'One panel at a time — turnover, the bottom line or people — each on its own scale, chosen by a switch.',
     },
   },
-  compare: ['azi', 'grafic'],
+  compare: ['grafic', 'trei', 'bani', 'arie', 'comutator'],
 } satisfies PrototypeDefinition

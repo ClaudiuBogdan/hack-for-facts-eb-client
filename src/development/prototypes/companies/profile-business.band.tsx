@@ -4,7 +4,7 @@ import { yearRanges } from '@/features/private-companies/lib/company-profile-for
 import type { CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
 import { financialLede, notAssessedNotice } from '@/features/private-companies/lib/company-profile-text'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import { CompanyYearsChart } from './profile-business.chart'
+import { CompanyYearsChart, type YearsChartVersion } from './profile-business.chart'
 
 const TITLE_ID = 'company-business-title'
 
@@ -15,7 +15,7 @@ const TITLE_ID = 'company-business-title'
  * in „Bilanțurile, an cu an", now right under it) and no measure switch — the
  * chart shows money and people at once, each on its own panel and scale.
  */
-export function ProtoBusinessBand({ model }: { readonly model: CompanyProfileModel }) {
+export function ProtoBusinessBand({ model, version = 'panouri' }: { readonly model: CompanyProfileModel; readonly version?: YearsChartVersion }) {
   const title = <Trans>Cum merge afacerea</Trans>
   if (!model.latest) {
     return (
@@ -32,7 +32,7 @@ export function ProtoBusinessBand({ model }: { readonly model: CompanyProfileMod
   return (
     <ProfileBand id="afacerea" titleId={TITLE_ID}>
       <HubSectionHead titleId={TITLE_ID} title={title} lede={financialLede(model)} />
-      <CompanyYearsChart model={model} className="mt-8" />
+      <CompanyYearsChart model={model} version={version} className="mt-8" />
       {gaps ? (
         <p className="mt-3 text-xs text-muted-foreground">
           <Trans>Fără valori comparabile pentru {gaps}.</Trans>
