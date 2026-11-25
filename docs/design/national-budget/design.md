@@ -1427,3 +1427,106 @@ lines and an expand for the rest.
   columns are level, the rounding, the population) shows under the button
   only while the lists are open (owner: keep the closed section clean, keep
   the information).
+
+### 12.9 The working version's second section: the state budget (25 November 2026)
+
+`persoana.state.tsx`, anchor `#stat`; the lists are shared with the first
+section in `persoana.rows.tsx`.
+
+- **One section for two questions** („Bugetul de stat, pe domenii și pe
+  instituții"; the lists are „Pe domenii" and „Pe instituții". Owner: not
+  „și prin cine"), in the pattern the owner settled for the first section: two lists
+  side by side, each closed on its five largest lines, one full-width button
+  for the rest, the reading note shown with the full lists. Not tabs, as
+  first proposed: both answers are visible at once and the pattern repeats.
+- **The caveat is the lede**, always visible: only the state budget; most
+  pensions and the hospitals are paid from separate budgets.
+- **A sentence carries the total**: „Din bugetul de stat s-au plătit 499,4
+  mld. lei în 2025, +15% față de 2024. Din fiecare 100 de lei:". No share of
+  the consolidated total is said: the state budget also sends money to other
+  budgets, so the two totals are not parts of one whole.
+- **Lines:** lei of 100 by the largest remainder (each list makes 100;
+  „<1 leu" under one leu), the name, the official amount, a bar against the
+  list's largest (this section has no chart above the lists), the live
+  page's hint for a domain, the change, and the amount per resident („sub 1
+  leu" when it rounds to nothing). An institution's name opens its page.
+- **Years before 2016** say that ANAF's reports start in 2016.
+- The pinned bar has one entry for it („Bugetul de stat") in place of „Pe
+  domenii" and „Cine".
+
+### 12.10 The working version's third section: borrowing over time (25 November 2026)
+
+`persoana.debt.tsx`, anchor `#imprumut`.
+
+- **Owner:** not lei out of 100 here; the evolution over time matters most;
+  measure it against GDP, with a switch to the amounts. (First built as lei
+  borrowed of every 100 spent, a bar a year.)
+- **The chart is the section:** full width, one bar a year from 2006 to the
+  year in progress, the value over each bar (on a phone, over the chosen
+  year only). A switch at its top right: „% din PIB" (default) and „mld.
+  lei". A bar picks its year for the whole page; the chosen year is filled.
+  The year in progress carries the year menu's dot and its line.
+- **Under the chart, two figures for the chosen year:** the deficit (its
+  headline follows the switch; the other measure, the lei of 100 spent and
+  the amount per resident are its notes) and the debt interest (the official
+  amount; lei of 100, the change and per resident as notes).
+- **Share of GDP, where it comes from.** The bulletins print the deficit's
+  share only from 2019 on, and not in 2023's; they print no GDP for the other
+  years either (checked on the API, 25 November). For those years the share
+  is the printed deficit over the annual GDP (INS CON111B, read from Eurostat
+  `nama_10_gdp`, a table in the prototype). The note names the years
+  („pentru 2006–2018, 2023 … e deficitul împărțit la PIB-ul anual publicat
+  de INS"). The chosen year's figure and the hero's stay the bulletin's own
+  where it prints one (2025: 7,65%).
+  **Owner (25 November):** keep the printed share where the bulletin has
+  one, computed only for the other years (the two differ by about a tenth of
+  a point: 2025 is 7,65% printed, 7,56% computed). **Open:** the live page
+  needs the GDP series served with its vintage.
+- **Amounts** are current lei; the note says so in that view.
+- **A year change no longer shows skeletons.** The picked year reaches the
+  year menus at once and the figures through `useDeferredValue`, so every
+  section keeps its content until the new year is read; meanwhile the page
+  below the bar is a step fainter (`aria-busy`). The sections' read boundary
+  lost its per-year key for this.
+- **The chart holds its place.** Picking an early year shortens the section
+  above (no ANAF lists before 2016); the chart's position in the window is
+  noted on the press and restored when the year lands.
+
+### 12.11 The institutions list capped; the fourth section: the year in progress (25 November 2026)
+
+**State budget, institutions (§12.9).** Owner: the opened lists should end
+close together (21 domains against 55 institutions). The fifteen largest
+institutions are named and linked; the rest share one hatched line, „Alte
+instituții" (in 2025: 40 smaller ministries and institutions, 4 lei, 24,5
+mld. lei), so the list still adds up to 100.
+
+**The year in progress** (`persoana.year.tsx`, anchor `#anul`, title „Anul
+în curs, lună de lună").
+
+- **Owner:** month by month, one line for the year in progress and one for
+  the year before, with the borrowing chart's switch („% din PIB" / „mld.
+  lei"). Chosen over a table of totals.
+- **What a point is:** the consolidated budget's deficit from January to the
+  end of the month, as that month's bulletin prints it (component
+  `general_consolidated_budget`, row „excedent(+) / deficit(-)"; one read of
+  observations for both years' months). The share of GDP is the printed one:
+  the deficit so far over the GDP forecast for the whole year, so the line
+  climbs towards December; the note says so. A month whose bulletin prints
+  no share (May 2025) is passed over by the line and named in the note.
+- **The years are fixed:** the newest the bulletins cover and the one before
+  (2026 to September, against 2025), whatever year the menu holds; the
+  section's title and lede name them.
+- **Read-out as legend:** above the chart, „Până la sfârșitul lui
+  septembrie: 2026 3,81% · 2025 5,39%". The pointer (or a tap) reads any
+  month: a vertical rule, a dot on each line, the month's label in bold.
+- **Under the chart, three figures:** the deficit so far (headline follows
+  the switch; the other measure and the change on the same months, −24%,
+  with last year's amount, as notes), and the change of revenue (+12%) and
+  of spending (+5,5%) on the same months, with their amounts.
+
+**The page's end, „Mai departe"** (anchor `#departe`, not in the bar): the
+live page's six questions („De aici poți începe"), each opening the analysis
+page on its view for the page's year. The list is the live component's
+(`StartLinks`, exported from `home-start.tsx`; the live `StartBand` renders
+it unchanged), under the working version's own heading, without the hub's
+section number.

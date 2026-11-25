@@ -1,4 +1,4 @@
-import { createContext, Suspense, use, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { createContext, Suspense, use, useDeferredValue, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 
@@ -15,7 +15,16 @@ import { populationText, usePersonYears } from './persoana.data'
  * the site's ruled column, each reading and failing on its own.
  */
 
-type PersonYear = { readonly view: YearView; readonly views: readonly YearView[]; readonly setYear: (year: number) => void }
+type PersonYear = {
+  /** The year the page's figures are read for. It follows `picked` once that year's data is in, so the page never falls back to its skeletons on a year change. */
+  readonly view: YearView
+  /** The year as picked, at once: what the year menus show. */
+  readonly picked: YearView
+  /** A year was picked and its figures are still being read. */
+  readonly pending: boolean
+  readonly views: readonly YearView[]
+  readonly setYear: (year: number) => void
+}
 
 const YearContext = createContext<PersonYear | null>(null)
 
@@ -29,8 +38,9 @@ export function YearProvider({ children }: { readonly children: ReactNode }) {
   const catalog = useNationalCatalog()
   const views = usePersonYears()
   const [year, setYear] = useState(() => defaultYear(catalog))
-  const view = views.find((entry) => entry.year === year) ?? views[0]!
-  return <YearContext value={{ view, views, setYear }}>{children}</YearContext>
+  const shownYear = useDeferredValue(year)
+  const viewOf = (wanted: number) => views.find((entry) => entry.year === wanted) ?? views[0]!
+  return <YearContext value={{ view: viewOf(shownYear), picked: viewOf(year), pending: shownYear !== year, views, setYear }}>{children}</YearContext>
 }
 
 /** A year as the menu names it: „2025", „2026, până în septembrie". */
@@ -39,7 +49,7 @@ export function yearLabel(view: YearView): string {
 }
 
 export function YearSelect({ className }: { readonly className?: string }) {
-  const { view, views, setYear } = usePersonYear()
+  const { picked: view, views, setYear } = usePersonYear()
   return (
     <span className={cn('relative inline-flex', className)}>
       <select
@@ -68,7 +78,7 @@ export function YearSelect({ className }: { readonly className?: string }) {
  * named in a line under the grid (owner: 2026 sat apart like a title).
  */
 export function YearPicker({ className, label = true }: { readonly className?: string; readonly label?: boolean }) {
-  const { view, views, setYear } = usePersonYear()
+  const { picked: view, views, setYear } = usePersonYear()
   const running = views.filter((entry) => entry.partial)
   const item = 'relative flex cursor-pointer select-none items-center justify-center rounded-md text-sm tabular-nums outline-none transition-colors data-[highlighted]:bg-muted data-[state=checked]:bg-primary data-[state=checked]:font-semibold data-[state=checked]:text-primary-foreground'
   return (
@@ -190,7 +200,6 @@ export function Section({
   readonly children: ReactNode
   readonly tone?: 'plain' | 'muted'
 }) {
-  const { view } = usePersonYear()
   return (
     <section id={id} aria-labelledby={`${id}-title`} className={cn('scroll-mt-16 border-b', tone === 'muted' && 'bg-muted/30')}>
       <RuledFrame className="py-14 sm:py-16">
@@ -199,7 +208,8 @@ export function Section({
         </h2>
         {lede ? <div className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{lede}</div> : null}
         <div className="mt-8">
-          <BandRead key={view.label} fallback={<SectionPending />}>
+          {/* No key on the year: the year arrives deferred, so the section keeps its figures on screen until the new year's are read. */}
+          <BandRead fallback={<SectionPending />}>
             {children}
           </BandRead>
         </div>
@@ -268,7 +278,31 @@ export function monthName(month: string): string {
   return MONTHS[Number(month.slice(5, 7)) - 1] ?? month
 }
 
-/** A small source note under a section's figure. */
+/** A figure inside a note or a sentence: the number in the foreground, its words after it. */
+export function Mark({ children }: { readonly children: ReactNode }) {
+  return <span className="font-medium tabular-nums text-foreground">{children}</span>
+}
+
 export function Note({ children, className }: { readonly children: ReactNode; readonly className?: string }) {
   return <p className={cn('mt-6 max-w-[80ch] text-xs leading-relaxed text-muted-foreground', className)}>{children}</p>
+}
+
+/** A section's figure: the amount, what it is, and short notes that lead with their figure. */
+export function Stat({ value, unit, label, notes }: { readonly value: string; readonly unit: string; readonly label: string; readonly notes: readonly ReactNode[] }) {
+  return (
+    <div>
+      <p className="flex items-baseline gap-1.5 text-4xl font-semibold tabular-nums tracking-tight">
+        {value}
+        <span className="whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">{unit}</span>
+      </p>
+      <p className="mt-2 text-sm font-medium">{label}</p>
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+        {notes.filter(Boolean).map((note, line) => (
+          <span key={line} className="block">
+            {note}
+          </span>
+        ))}
+      </p>
+    </div>
+  )
 }

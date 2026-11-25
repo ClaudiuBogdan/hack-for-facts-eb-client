@@ -1,12 +1,9 @@
-import { useState, type CSSProperties } from 'react'
-import { flushSync } from 'react-dom'
-import { ChevronDown } from 'lucide-react'
-
 import { moneyText } from '@/features/national-budget/home/lib/home-format'
 import { cn } from '@/lib/utils'
-import { changeOf, type HundredLine, leiText, leiWord, outOfHundred, perPerson, useHundred, useOfficialTotals } from './persoana.data'
+import { changeOf, type HundredLine, outOfHundred, useHundred, useOfficialTotals } from './persoana.data'
+import { TwoLists, type HundredPart } from './persoana.rows'
 import { BORROWED_FILL, REST_FILL, inPeriod, toneOf } from './persoana.sections'
-import { Note, Section, usePersonYear } from './persoana.shell'
+import { Section, usePersonYear } from './persoana.shell'
 
 /**
  * The working version's first section: every 100 lei the state spent, as two
@@ -17,17 +14,7 @@ import { Note, Section, usePersonYear } from './persoana.shell'
  * lei per resident; the rest open on request.
  */
 
-type Part = {
-  readonly key: string
-  readonly label: string
-  readonly hint: string | null
-  readonly exact: string
-  /** Whole lei of every 100 spent. */
-  readonly lei: number
-  readonly change: string | null
-  readonly fill: { readonly className?: string; readonly style?: CSSProperties }
-  readonly strong?: boolean
-}
+type Part = HundredPart
 
 function partsOf(lines: readonly HundredLine[], lei: readonly number[]): Part[] {
   const named = lines.filter((line) => !line.rest).length
@@ -63,99 +50,6 @@ function Column({ parts, side }: { readonly parts: readonly Part[]; readonly sid
           </div>
         )
       })}
-    </div>
-  )
-}
-
-// ──────────────────────────────────────────────────────────── the detail ──
-
-/** How many lines a list shows before the lists are opened: the largest ones. */
-const SHOWN = 5
-
-/** The largest lines of a column, kept in the column's order (the borrowed lei stay last). */
-function largestOf(parts: readonly Part[]): readonly Part[] {
-  const keys = new Set(
-    [...parts]
-      .sort((a, b) => b.lei - a.lei)
-      .slice(0, SHOWN)
-      .map((part) => part.key),
-  )
-  return parts.filter((part) => keys.has(part.key))
-}
-
-/** A column's lines: its lei of 100, what it is, the official amount and the amount per resident. */
-function Rows({ title, parts, previous }: { readonly title: string; readonly parts: readonly Part[]; readonly previous: string }) {
-  const { view } = usePersonYear()
-  return (
-    <div className="min-w-0">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <ul className="mt-3 divide-y border-y">
-        {parts.map((part) => (
-          <li key={part.key} className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5">
-            {/* The figures share a right edge, whatever word follows them („lei", „de lei"). */}
-            <span className="whitespace-nowrap text-lg font-semibold tabular-nums">
-              <span className="inline-block w-7 text-right">{part.lei}</span> <span className="text-xs font-normal text-muted-foreground">{leiWord(part.lei)}</span>
-            </span>
-            <span className="flex min-w-0 items-baseline gap-2 text-sm">
-              <span className={cn('size-2.5 shrink-0 translate-y-px rounded-[2px]', part.fill.className)} style={part.fill.style} aria-hidden="true" />
-              <span className={cn(part.strong && 'font-semibold')}>{part.label}</span>
-            </span>
-            <span className="text-right text-sm tabular-nums">{moneyText(part.exact)}</span>
-            {/* What the line is and how it moved; the amount per resident beside it, under it on a phone. */}
-            <span className="col-span-2 col-start-2 mt-0.5 grid gap-x-4 text-xs leading-snug text-muted-foreground sm:grid-cols-[minmax(0,1fr)_auto]">
-              <span>{[part.hint, part.change ? `${part.change} față de ${previous}` : null].filter(Boolean).join(' · ')}</span>
-              <span className="tabular-nums sm:text-right">{leiText(perPerson(part.exact, view))} pe locuitor</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-/**
- * The two lists under the columns. Closed, each is its five largest lines
- * (owner: the full lists were too big); one button across the width opens
- * both and closes them again (owner: one button, not one per list). The note
- * on how to read the figures shows with the full lists only.
- */
-function Detail({ left, right, previous }: { readonly left: readonly Part[]; readonly right: readonly Part[]; readonly previous: string }) {
-  const { view } = usePersonYear()
-  const [open, setOpen] = useState(false)
-  const shownLeft = open ? left : largestOf(left)
-  const shownRight = open ? right : largestOf(right)
-  const hidden = left.length + right.length - largestOf(left).length - largestOf(right).length
-  // Closing takes rows away above the button; the page is moved by as much, so the button stays under the pointer.
-  const toggle = (button: HTMLButtonElement) => {
-    const before = button.getBoundingClientRect().top
-    flushSync(() => setOpen((was) => !was))
-    if (open) window.scrollBy(0, button.getBoundingClientRect().top - before)
-  }
-  return (
-    <div className="mt-12">
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-2">
-        <Rows title="De unde au venit cei 100 de lei" parts={shownLeft} previous={previous} />
-        <Rows title="Pe ce s-au dus" parts={shownRight} previous={previous} />
-      </div>
-      {hidden > 0 ? (
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={(event) => toggle(event.currentTarget)}
-          className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-md border border-border text-sm font-medium outline-none transition-colors [overflow-anchor:none] hover:border-foreground/30 focus-visible:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring/30"
-        >
-          {open ? 'Arată mai puține rânduri' : 'Arată toate rândurile'}
-          {open ? null : <span className="font-normal text-muted-foreground">încă {hidden}</span>}
-          <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')} aria-hidden="true" />
-        </button>
-      ) : null}
-      {/* How to read the figures, kept with the full lists so the closed section stays clean (owner). */}
-      {open || hidden === 0 ? (
-        <Note>
-          Bugetul general consolidat {inPeriod(view.text)}. Încasările plus împrumutul fac cheltuielile, de aceea coloanele au aceeași înălțime. Leii din 100 sunt rotunjiți la întreg. Pe locuitor: suma împărțită la populația rezidentă de la 1
-          ianuarie.
-        </Note>
-      ) : null}
     </div>
   )
 }
@@ -211,7 +105,13 @@ function Flow() {
           <Column parts={right} side="right" />
         </div>
       </div>
-      <Detail left={left} right={right} previous={previous} />
+      <TwoLists
+        className="mt-12"
+        left={{ title: 'De unde au venit cei 100 de lei', parts: left }}
+        right={{ title: 'Pe ce s-au dus', parts: right }}
+        previous={previous}
+        note={`Bugetul general consolidat ${inPeriod(view.text)}. Încasările plus împrumutul fac cheltuielile, de aceea coloanele au aceeași înălțime. Leii din 100 sunt rotunjiți la întreg. Pe locuitor: suma împărțită la populația rezidentă de la 1 ianuarie.`}
+      />
     </div>
   )
 }

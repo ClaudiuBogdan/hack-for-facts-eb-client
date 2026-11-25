@@ -4,9 +4,11 @@
  * reads are the page's own (the MF bulletins for the whole public purse, ANAF
  * for the state budget's domains and ministries); only the division is new.
  */
-import { useNationalCatalog } from '@/features/national-budget/analytics/hooks/use-national-budget-analytics'
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+
+import { observationsOptions, useNationalCatalog } from '@/features/national-budget/analytics/hooks/use-national-budget-analytics'
 import { useAnafAuthorities, useAnafChapterYears, useTotalsHistory, useYearLines } from '@/features/national-budget/home/hooks/use-home-data'
-import { REVENUE_PARTS, SPENDING_PARTS, TOTAL_ITEMS, anafTotal, yearTotalsOf, yearViews, type YearView } from '@/features/national-budget/home/lib/home-data'
+import { REVENUE_PARTS, SPENDING_PARTS, TOTAL_ITEMS, anafTotal, gdpOf, yearTotalsOf, yearViews, type YearView } from '@/features/national-budget/home/lib/home-data'
 import { authorityName, chapterName, partHint, partName } from '@/features/national-budget/home/lib/home-format'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 
@@ -330,4 +332,171 @@ export function useOfficialTotals(view: YearView) {
     revenueChange: changeOf(Number(at(TOTAL_ITEMS.revenue)), was(TOTAL_ITEMS.revenue) ? Number(was(TOTAL_ITEMS.revenue)) : null),
     deficitBefore: was(TOTAL_ITEMS.balance),
   }
+}
+
+// ───────────────────────────────────────────────────── the state budget ──
+
+export type StateLine = { readonly key: string; readonly label: string; readonly exact: string; readonly lei: number; readonly change: string | null }
+
+/** Rows of the state budget's payments as lei out of every 100 paid, the largest first, each with its change on the year before. */
+function stateLines(rows: readonly { readonly key: string; readonly label: string; readonly exact: string }[], before: ReadonlyMap<string, string>): readonly StateLine[] {
+  const sorted = [...rows].sort((a, b) => Number(b.exact) - Number(a.exact))
+  const hundreds = outOfHundred(sorted.map((row) => Number(row.exact)))
+  return sorted.map((row, index) => {
+    const was = before.get(row.key)
+    return { ...row, lei: hundreds[index] ?? 0, change: changeOf(Number(row.exact), was ? Number(was) : null) }
+  })
+}
+
+/** The state budget's payments (ANAF) by functional chapter and by principal authority; only for a year ANAF covers. */
+export function useStateBudget(view: YearView) {
+  const chapters = useAnafChapterYears(view)
+  const authorities = useAnafAuthorities(view)
+  const whole = anafTotal(chapters.now)
+  const wholeBefore = chapters.before ? anafTotal(chapters.before) : null
+  return {
+    whole,
+    change: changeOf(Number(whole), wholeBefore ? Number(wholeBefore) : null),
+    domains: stateLines(
+      chapters.now.map((chapter) => ({ key: chapter.code, label: chapterName(chapter.code), exact: chapter.lei })),
+      new Map((chapters.before ?? []).map((chapter) => [chapter.code, chapter.lei])),
+    ),
+    authorities: stateLines(
+      authorities.now.map((row) => ({ key: row.cui, label: authorityName(row.cui, row.name), exact: row.lei })),
+      new Map((authorities.before ?? []).map((row) => [row.cui, row.lei])),
+    ),
+  }
+}
+
+// ─────────────────────────────────────────────────── borrowing, by year ──
+
+/**
+ * Annual GDP at current prices, million lei (INS, Tempo CON111B; read from
+ * Eurostat `nama_10_gdp`, B1GQ, CP_MNAC, updated 24 November 2026; 2025 is
+ * provisional and is the landing page's figure). A prototype's table: the
+ * live page needs this series served, with its vintage.
+ */
+const GDP_MILLION_LEI: Readonly<Record<number, number>> = {
+  2006: 342_762.6,
+  2007: 425_691.1,
+  2008: 539_831.4,
+  2009: 530_919.6,
+  2010: 540_447.5,
+  2011: 587_235.0,
+  2012: 621_214.7,
+  2013: 631_634.0,
+  2014: 668_905.0,
+  2015: 712_548.6,
+  2016: 752_129.1,
+  2017: 851_620.6,
+  2018: 952_385.3,
+  2019: 1_053_192.3,
+  2020: 1_056_302.0,
+  2021: 1_179_828.6,
+  2022: 1_378_461.4,
+  2023: 1_587_956.5,
+  2024: 1_767_517.1,
+  2025: 1_929_930.0,
+}
+
+export type BorrowedYear = {
+  readonly year: number
+  /** The year in progress: January to the newest bulletin. */
+  readonly partial: boolean
+  /** The deficit as printed, positive; null in a surplus or without an answer. */
+  readonly deficit: string | null
+  /** The deficit's share of GDP, a fraction without its sign; null where neither the share nor the GDP is printed. */
+  readonly gdpShare: string | null
+  /** Where the share comes from: printed in the year's bulletin, or the printed deficit over the year's GDP (INS). */
+  readonly gdpShareFrom: 'printed' | 'computed' | null
+  /** Whole lei of every 100 spent that were borrowed (the hero's figure for the year). */
+  readonly lei: number | null
+}
+
+/**
+ * Every year the page offers, oldest first, and the year in progress: the
+ * deficit as printed, and its share of GDP. The share is the one the year's
+ * own bulletin prints (one read for all the years); the bulletins before
+ * 2019, and 2023's, print none, and neither do they print the GDP, so for
+ * those years it is the printed deficit over the annual GDP below, and the
+ * page says which years those are.
+ */
+export function useBorrowedYears(): readonly BorrowedYear[] {
+  const { yearCells, complete } = useTotalsHistory()
+  const catalog = useNationalCatalog()
+  const client = useQueryClient()
+  const views = yearViews(catalog).filter((view) => populationOf(view.year) !== null)
+  const { data: shares } = useSuspenseQuery(
+    observationsOptions(client, catalog.snapshots.execution, { months: views.map((view) => view.month), measures: ['GDP_SHARE'], lineItems: ['excedent(+) / deficit(-)'] }),
+  )
+  const first = Number(catalog.execution.coverage.firstMonth.slice(0, 4))
+  // The year in progress has no finished year's totals: its own are read (the newest view is it, or the newest full year).
+  const running = useOfficialTotals(views[views.length - 1]!)
+  const totals = new Map(yearTotalsOf(yearCells, first, complete).map((row) => [row.year, row]))
+  return views.map((view): BorrowedYear => {
+    const row = view.partial ? { revenue: running.revenue, spending: running.spending, balance: running.balance } : totals.get(view.year)
+    const printed = gdpOf({ catalog, shares: shares.rows.filter((entry) => entry.month === view.month), denominators: [], year: view.year }).share(TOTAL_ITEMS.balance)
+    const known = row?.revenue && row.spending && row.balance !== null ? row : null
+    const deficit = known ? Math.max(0, -Number(known.balance)) : null
+    // The bulletin's own share where it prints one; else, for a finished year, the printed deficit over the year's GDP.
+    const gdp = view.partial ? undefined : GDP_MILLION_LEI[view.year]
+    const computed = printed === null && deficit !== null && gdp ? (deficit / (gdp * 1e6)).toFixed(6) : null
+    return {
+      year: view.year,
+      partial: view.partial,
+      deficit: deficit ? deficit.toFixed(2) : null,
+      gdpShare: printed !== null ? printed.replace(/^-/u, '') : computed,
+      gdpShareFrom: printed !== null ? 'printed' : computed !== null ? 'computed' : null,
+      lei: known && deficit !== null ? (outOfHundred([Number(known.revenue), deficit])[1] ?? 0) : null,
+    }
+  })
+}
+
+// ──────────────────────────────────────────────── the year, month by month ──
+
+/** The deficit from January to the end of a month, as that month's bulletin prints it; null where it prints none. */
+export type MonthPoint = {
+  /** 1 to 12. */
+  readonly month: number
+  /** Lei, positive for a deficit, negative for a surplus. */
+  readonly deficit: number | null
+  /** The bulletin's share of the year's GDP, a fraction, signed as `deficit`. */
+  readonly gdpShare: number | null
+}
+
+export type RunningYear = { readonly year: number; readonly points: readonly MonthPoint[] }
+
+/**
+ * The newest year the bulletins cover (the year in progress, to its newest
+ * month) and the year before it, whole: the consolidated budget's deficit
+ * from January to each month, in lei and as the share of GDP each bulletin
+ * prints. One read for both years.
+ */
+export function useYearSoFar(newest: YearView): { readonly now: RunningYear; readonly before: RunningYear } {
+  const catalog = useNationalCatalog()
+  const client = useQueryClient()
+  const monthsOfYear = (year: number, count: number) => Array.from({ length: count }, (_, index) => `${year}-${String(index + 1).padStart(2, '0')}`)
+  const { data } = useSuspenseQuery(
+    observationsOptions(client, catalog.snapshots.execution, {
+      months: [...monthsOfYear(newest.year - 1, 12), ...monthsOfYear(newest.year, monthsOf(newest))],
+      components: ['general_consolidated_budget'],
+      sections: ['BALANCE'],
+      lineItems: ['excedent(+) / deficit(-)'],
+      measures: ['AMOUNT', 'GDP_SHARE'],
+    }),
+  )
+  const printed = new Map<string, number>()
+  for (const row of data.rows) {
+    if (row.disposition !== 'FACT' || row.value === null) continue
+    printed.set(`${row.month} ${row.measure}`, -Number(row.value))
+  }
+  const yearOf = (year: number, count: number): RunningYear => ({
+    year,
+    points: monthsOfYear(year, count).map((month, index) => ({
+      month: index + 1,
+      deficit: printed.get(`${month} AMOUNT`) ?? null,
+      gdpShare: printed.get(`${month} GDP_SHARE`) ?? null,
+    })),
+  })
+  return { now: yearOf(newest.year, monthsOf(newest)), before: yearOf(newest.year - 1, 12) }
 }

@@ -7,14 +7,18 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CountUpValue, SmearFilters } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { BandRead } from '@/features/national-budget/analytics/components/analytics-parts'
+import { StartLinks } from '@/features/national-budget/home/components/home-start'
 import { TOTAL_ITEMS, siteKeys } from '@/features/national-budget/home/lib/home-data'
 import { useGdp } from '@/features/national-budget/home/hooks/use-home-data'
 import { gdpSizeText, moneyText } from '@/features/national-budget/home/lib/home-format'
 import { cn } from '@/lib/utils'
 import { leiWord, populationText, useHundred, useOfficialTotals } from './persoana.data'
+import { DebtSection } from './persoana.debt'
 import { FlowSection } from './persoana.flow'
+import { StateSection } from './persoana.state'
 import { BORROWED_FILL } from './persoana.sections'
-import { DataNote, SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
+import { DataNote, Mark, Section, SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
+import { YearSection } from './persoana.year'
 
 /**
  * The working version (owner, 25 November 2026): the page we build on, one
@@ -199,8 +203,7 @@ function TitlePending() {
 
 const SECTIONS = [
   { id: 'bani', label: 'De unde și pe ce' },
-  { id: 'domenii', label: 'Pe domenii' },
-  { id: 'ministere', label: 'Cine' },
+  { id: 'stat', label: 'Bugetul de stat' },
   { id: 'imprumut', label: 'Împrumutul' },
   { id: 'anul', label: 'Anul în curs' },
 ]
@@ -267,11 +270,6 @@ function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
 }
 
 type Figure = { readonly key: string; readonly hash: string; readonly exact: string | null; readonly label: string; readonly notes: readonly ReactNode[] }
-
-/** A figure inside a tile's note: the number in the foreground, its words after it. */
-function Mark({ children }: { readonly children: ReactNode }) {
-  return <span className="font-medium tabular-nums text-foreground">{children}</span>
-}
 
 /**
  * The hubs' figures band, in the landing's type: the official amount, its
@@ -369,15 +367,28 @@ function FiguresPending() {
 
 // ────────────────────────────────────────────────────────────── the page ──
 
+/** The page's end: the live page's questions, each opening the analysis page for the page's year. */
+function Further() {
+  const { view } = usePersonYear()
+  return (
+    <Section id="departe" title="Mai departe" lede="Fiecare întrebare deschide pagina de analize avansate, cu toate cifrele.">
+      <StartLinks view={view} />
+    </Section>
+  )
+}
+
 function Page() {
   const heroRef = useRef<HTMLDivElement>(null)
   const heroVisible = useInView(heroRef)
+  const { pending } = usePersonYear()
   return (
     <>
       <div ref={heroRef}>
         <Hero />
       </div>
       <SectionBar heroVisible={heroVisible} />
+      {/* While a picked year is read, the page keeps the year it shows, a step fainter. */}
+      <div aria-busy={pending} className={cn('transition-opacity duration-200', pending && 'opacity-60')}>
       <section className="border-b bg-muted/20" aria-label="Cifre-cheie">
         <RuledFrame>
           <BandRead fallback={<FiguresPending />}>
@@ -386,9 +397,10 @@ function Page() {
         </RuledFrame>
       </section>
       <FlowSection />
-      <section className="border-b">
-        <RuledFrame className="py-16 text-sm text-muted-foreground">Secțiunile următoare, din cele trei versiuni și din notele tale: pe domenii și cine cheltuie, împrumutul, anul în curs, mai departe.</RuledFrame>
-      </section>
+      <StateSection />
+      <DebtSection />
+      <YearSection />
+      <Further />
       {/* The population and the data's date close the page, above the site footer. */}
       <section className="border-b" aria-label="Despre date">
         <RuledFrame className="py-6">
@@ -397,6 +409,7 @@ function Page() {
           </BandRead>
         </RuledFrame>
       </section>
+      </div>
     </>
   )
 }
