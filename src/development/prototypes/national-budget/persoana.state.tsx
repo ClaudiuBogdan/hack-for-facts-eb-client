@@ -75,7 +75,7 @@ function StateBudget() {
       </p>
       <TwoLists
         className="mt-8"
-        bars
+        swatches={false}
         left={{ title: 'Pe domenii', parts: partsOf(state.domains, (line) => ({ hint: CHAPTER_HINTS[line.key] ?? null })) }}
         right={{ title: 'Pe instituții', parts: institutionsOf(state.authorities) }}
         previous={previous}

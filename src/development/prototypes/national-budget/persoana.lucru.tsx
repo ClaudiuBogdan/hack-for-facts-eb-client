@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ArrowDown } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, CalendarDays, HandCoins, Landmark, Layers } from 'lucide-react'
 
 import { RevealStyles } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
@@ -13,9 +13,11 @@ import { useGdp } from '@/features/national-budget/home/hooks/use-home-data'
 import { gdpSizeText, moneyText } from '@/features/national-budget/home/lib/home-format'
 import { cn } from '@/lib/utils'
 import { leiWord, populationText, useHundred, useOfficialTotals } from './persoana.data'
+import { BudgetsSection } from './persoana.budgets'
 import { DebtSection } from './persoana.debt'
 import { FlowSection } from './persoana.flow'
 import { StateSection } from './persoana.state'
+import { VIZ_PALETTE } from './persoana.palette'
 import { BORROWED_FILL } from './persoana.sections'
 import { DataNote, Mark, Section, SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
 import { YearSection } from './persoana.year'
@@ -118,24 +120,14 @@ function BalancePanel() {
 /** The landing's shortcut row: a plain-text label on the links' baseline, links without underlines. */
 const SHORTCUT_LINK = 'inline-flex min-h-11 items-center text-sm font-medium text-foreground transition-colors hover:text-primary sm:min-h-0'
 
+/** The analysis page only: the sections are already the pinned bar's links (owner). */
 function Shortcuts() {
-  const links = [
-    { label: 'De unde vin și pe ce se duc', hash: 'bani' },
-    { label: 'Împrumutul', hash: 'imprumut' },
-  ]
   return (
     <nav aria-label="Scurtături" className="mt-4 sm:flex sm:items-baseline sm:gap-x-4">
       <span className="block text-sm text-muted-foreground">Sau mergi direct la</span>
-      <span className="flex flex-wrap gap-x-4 sm:gap-x-5 sm:gap-y-1.5">
-        {links.map((link) => (
-          <a key={link.hash} href={`#${link.hash}`} className={SHORTCUT_LINK}>
-            {link.label}
-          </a>
-        ))}
-        <Link to="/national-budget/analytics" search={((previous: Record<string, unknown>) => siteKeys(previous)) as never} className={SHORTCUT_LINK}>
-          Analize avansate
-        </Link>
-      </span>
+      <Link to="/national-budget/analytics" search={((previous: Record<string, unknown>) => siteKeys(previous)) as never} className={SHORTCUT_LINK}>
+        Analize avansate
+      </Link>
     </nav>
   )
 }
@@ -201,11 +193,13 @@ function TitlePending() {
 
 // ──────────────────────────────────────────────────── bar and figures band ──
 
+/** The page's sections, each with an icon in the bar (owner: icons, not numbers). */
 const SECTIONS = [
-  { id: 'bani', label: 'De unde și pe ce' },
-  { id: 'stat', label: 'Bugetul de stat' },
-  { id: 'imprumut', label: 'Împrumutul' },
-  { id: 'anul', label: 'Anul în curs' },
+  { id: 'bani', label: 'De unde și pe ce', icon: ArrowLeftRight },
+  { id: 'bugete', label: 'Bugetele', icon: Layers },
+  { id: 'stat', label: 'Bugetul de stat', icon: Landmark },
+  { id: 'imprumut', label: 'Împrumutul', icon: HandCoins },
+  { id: 'anul', label: 'Anul în curs', icon: CalendarDays },
 ]
 
 /** The section whose top has passed under the pinned bar: the one a reader is in. */
@@ -239,9 +233,13 @@ function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
   return (
     <nav aria-label="Secțiunile paginii" className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-6 py-0">
-        <span className="hidden min-w-0 truncate text-sm font-semibold tracking-tight md:block">Bugetul național</span>
+        {/* The page's name, then its year (owner: the year beside the name); the year shows once the hero's menu is out of view. */}
+        <div className="flex shrink-0 items-center gap-4">
+          <span className="hidden text-sm font-semibold tracking-tight md:block">Bugetul național</span>
+          <YearPicker label={false} className={cn('shrink-0', heroVisible && 'hidden')} />
+        </div>
         <ol className="-mx-2.5 flex min-w-0 overflow-x-auto md:ml-auto md:mr-0">
-          {SECTIONS.map((section, position) => {
+          {SECTIONS.map((section) => {
             const current = active === section.id
             return (
               <li key={section.id} className="shrink-0">
@@ -249,21 +247,18 @@ function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
                   href={`#${section.id}`}
                   aria-current={current ? 'location' : undefined}
                   className={cn(
-                    'relative inline-flex h-12 items-baseline gap-1.5 px-2.5 text-sm leading-[3rem] transition-colors hover:text-foreground',
+                    'relative inline-flex h-12 items-center gap-2 px-2.5 text-sm transition-colors hover:text-foreground',
                     'after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:bg-primary after:opacity-0 after:transition-opacity',
                     current ? 'text-foreground after:opacity-100' : 'text-muted-foreground',
                   )}
                 >
-                  <span aria-hidden="true" className="text-xs font-medium tabular-nums text-primary">
-                    {String(position + 1).padStart(2, '0')}
-                  </span>
+                  <section.icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
                   {section.label}
                 </a>
               </li>
             )
           })}
         </ol>
-        <YearPicker label={false} className={cn('shrink-0', heroVisible && 'hidden')} />
       </RuledFrame>
     </nav>
   )
@@ -397,6 +392,7 @@ function Page() {
         </RuledFrame>
       </section>
       <FlowSection />
+      <BudgetsSection />
       <StateSection />
       <DebtSection />
       <YearSection />
@@ -416,7 +412,7 @@ function Page() {
 
 export function PersonWorkVariant() {
   return (
-    <div className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']">
+    <div className={cn("relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']", VIZ_PALETTE)}>
       <RevealStyles />
       <SmearFilters />
       <Suspense fallback={<div className="h-[36rem] animate-pulse bg-muted/30" />}>

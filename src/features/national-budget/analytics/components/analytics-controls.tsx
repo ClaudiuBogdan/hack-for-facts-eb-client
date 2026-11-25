@@ -76,6 +76,15 @@ function YearCells({
   )
 }
 
+/** A menu's value with its name before it, quieter (the companies analysis head's „Anul fiscal: 2024"). */
+function MenuText({ name, children }: { readonly name: string; readonly children: ReactNode }) {
+  return (
+    <span>
+      <span className="font-normal text-muted-foreground">{name}:</span> {children}
+    </span>
+  )
+}
+
 /** The bulletins' period: a year, a quarter, or a month from 1 January or alone; what no bulletin answers is dimmed. */
 export function PeriodMenu({
   catalog,
@@ -136,10 +145,10 @@ export function PeriodMenu({
   return (
     <Popover open={open} onOpenChange={toggle}>
       <PopoverTrigger className={TRIGGER}>
-        {periodText(period.label, period.basis)}
+        <MenuText name={t`Perioada`}>{periodText(period.label, period.basis)}</MenuText>
         <ChevronDown className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-2">
+      <PopoverContent align="start" className="w-80 p-2">
         <IndicatorToggle<Pas>
           label={t`Pasul`}
           value={step}
@@ -231,10 +240,10 @@ export function LawYearMenu({ years, value, label, onChange }: { readonly years:
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger className={TRIGGER}>
-        {label}
+        <MenuText name={t`Legea bugetului`}>{label}</MenuText>
         <ChevronDown className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-64 p-2">
+      <PopoverContent align="start" className="w-64 p-2">
         <div className="grid grid-cols-3 gap-1 px-1">
           {years.map((year) => (
             <button
