@@ -22,7 +22,7 @@ describe('HubActivities', () => {
   it('keeps a remainder with no reported value a gap, and a real zero a zero', () => {
     render(<HubActivities ranking={RANKING} measure="turnover" rowLink={() => ({})} analysis={{}} caption="—" />)
     const rest = within(screen.getByTestId('company-hub-activities-rest')).getAllByRole('listitem')
-    const other = rest.find((row) => /activități selectate/u.test(row.textContent ?? ''))
+    const other = rest.find((row) => /^(O altă activitate|Alte .*activități)/u.test(row.textContent ?? ''))
     const none = rest.find((row) => /Fără selecție calificată/u.test(row.textContent ?? ''))
     // No contributor: no share, no figure — never „0".
     expect(other?.textContent).toMatch(/——$/u)

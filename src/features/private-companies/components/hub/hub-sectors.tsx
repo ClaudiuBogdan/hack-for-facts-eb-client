@@ -65,7 +65,7 @@ export function HubActivities({
   const rest = [
     {
       key: 'other',
-      label: plural(groups, { one: 'O altă activitate selectată', few: 'Alte # activități selectate', other: 'Alte # de activități selectate' }),
+      label: plural(groups, { one: 'O altă activitate', few: 'Alte # activități', other: 'Alte # de activități' }),
       value: ranking.other.value,
     },
     ...ranking.unclassified.map((entry) => ({
@@ -76,14 +76,19 @@ export function HubActivities({
   ]
   return (
     <div className={className} data-testid="company-hub-activities">
-      <ol className="divide-y divide-border/70 border-y border-border/70">
+      {/* Two columns from a wide screen, read down the first and then the second: ten rows in the height of
+          five. Each row carries its own bottom rule, so both columns close on one. */}
+      <ol
+        className="border-t border-border/70 lg:grid lg:grid-flow-col lg:grid-cols-2 lg:gap-x-12"
+        style={{ gridTemplateRows: `repeat(${Math.ceil(ranking.rows.length / 2)}, auto)` }}
+      >
         {ranking.rows.map((row, index) => {
           const { code } = row
           const label = row.label ?? t`Codul CAEN ${code}`
           const tag = `${code} · ${activitySourceTag(row) ?? ''}`
           return (
-            <li key={row.key}>
-              <Link to="/companies/analytics" search={rowLink(row)} className={cn(ROW_CLASS, 'transition-colors hover:bg-muted/40')}>
+            <li key={row.key} className="border-b border-border/70">
+              <Link to="/companies/analytics" search={rowLink(row)} className={cn(ROW_CLASS, 'h-full transition-colors hover:bg-muted/40')}>
                 <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
                 <span className="min-w-0">
                   <span className="flex items-baseline justify-between gap-3">
@@ -103,24 +108,29 @@ export function HubActivities({
           )
         })}
       </ol>
-      {/* Never ranked, always counted: the rest of the groups, and the companies the selection names no activity for. */}
-      <ul className="divide-y divide-border/70 border-b border-border/70" data-testid="company-hub-activities-rest">
-        {rest.map((entry) => (
-          <li key={entry.key} className={ROW_CLASS}>
-            <span aria-hidden="true" />
-            <span className="flex min-w-0 items-baseline justify-between gap-3">
-              <span className="text-sm text-muted-foreground">{entry.label}</span>
-              <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{entry.value === null ? '—' : formatHubShare(entry.value, ranking.total)}</MonoLabel>
-            </span>
-            <span className="w-24 text-right text-sm tabular-nums text-muted-foreground sm:w-28">{figure(entry.value)}</span>
-          </li>
-        ))}
-      </ul>
-      <Link to="/companies/analytics" search={analysis} className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9">
-        <Trans>Toate activitățile selectate, în analiza bilanțurilor</Trans> →
-      </Link>
-      {/* A sentence, so plain text: what the shares are of, and the note behind its marker. */}
-      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{caption}</p>
+      {/* Never ranked, always counted: the rest of the groups, and the companies the selection names no activity
+          for. Beside them from a wide screen, where the list leads and what its shares are of. */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
+        <ul className="divide-y divide-border/70 border-b border-border/70" data-testid="company-hub-activities-rest">
+          {rest.map((entry) => (
+            <li key={entry.key} className={ROW_CLASS}>
+              <span aria-hidden="true" />
+              <span className="flex min-w-0 items-baseline justify-between gap-3">
+                <span className="text-sm text-muted-foreground">{entry.label}</span>
+                <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{entry.value === null ? '—' : formatHubShare(entry.value, ranking.total)}</MonoLabel>
+              </span>
+              <span className="w-24 text-right text-sm tabular-nums text-muted-foreground sm:w-28">{figure(entry.value)}</span>
+            </li>
+          ))}
+        </ul>
+        <div>
+          <Link to="/companies/analytics" search={analysis} className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9">
+            <Trans>Toate activitățile, în analiza bilanțurilor</Trans> →
+          </Link>
+          {/* A sentence, so plain text: what the shares are of, and the note behind its marker. */}
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{caption}</p>
+        </div>
+      </div>
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { HomeSectionNav } from '@/features/procurement/components/home/home-sect
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { CompanyHubHero, CompanyLeaderRowsPending, CompanyLeadersFrame, CompanySearchShell, PendingBar } from './company-hub-hero'
-import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandNumber, companyHubSections } from './company-hub-sections'
+import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandIndex, companyHubSections } from './company-hub-sections'
 
 /** `IndicatorToggle`'s option box, so the switch's place is its size at every width. */
 const SWITCH_OPTION_CLASS = 'min-h-9 bg-background px-2 py-1.5 text-sm leading-tight sm:px-3'
@@ -53,12 +53,6 @@ export function CompanyHubPending() {
             </p>
           </CompanyLeadersFrame>
         }
-        source={
-          <p className="text-sm text-muted-foreground" aria-hidden="true">
-            {/* One line; two on a phone. */}
-            <Trans>Surse:</Trans> <PendingBar className="w-2/3" /> <PendingBar className="w-1/2 sm:hidden" />
-          </p>
-        }
       />
 
       <HomeSectionNav title={t`Firmele din România`} sections={sections} />
@@ -101,8 +95,8 @@ export function CompanyHubPending() {
         <RuledFrame className="py-14 sm:py-20">
           <HubSectionHead
             titleId="company-hub-pending-counties"
-            index={`${bandNumber(sections, 'judete')} / ${sections.find((section) => section.id === 'judete')?.label ?? ''}`}
-            title={<Trans>Unde stă județul tău</Trans>}
+            index={bandIndex(sections, 'judete')}
+            title={<Trans>Firmele pe județe</Trans>}
             // The map layer's switch, at its size.
             aside={<div className="h-9 w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none sm:w-96" aria-hidden="true" />}
           />

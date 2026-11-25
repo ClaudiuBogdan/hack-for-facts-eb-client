@@ -953,10 +953,47 @@ components changed; the chrome the hubs share (`HubSectionHead`,
 - **The three starting points carry an arrow at rest**, as the landing's
   index tiles do.
 
-### Open, the owner's to decide
+### The sections and their words (same day)
 
-- The section numbers („01 / Pe județe", the pinned bar's „01 02 03 04") and
-  the mono capital notes under the four figures come from the shared hub
-  chrome. The landing dropped its running numbers; changing them here needs a
-  switch in the shared components, through root.
+The owner asked for the sections, their text and their titles to be rethought,
+and chose, from a question dialog, all of the following.
+
+- **A section is named by its data, as the page is.** „Firmele pe județe" (was
+  „Unde stă județul tău"), „Domenii de activitate" („Din ce trăiește
+  economia"), „Firme mici și mari" (new), „Evoluția pe ani" („Economia, an de
+  an"), „Firme înregistrate pe ani" („Câte firme apar în fiecare an"), „Firme
+  după stare" („De aici poți începe"). The pinned bar says them short:
+  Județe · Domenii · Mărime · Ani · Firme noi. The anchors are unchanged
+  (`#judete`, `#domenii`, `#economie`, `#infiintari`), with `#marime` added.
+- **Size has its own section.** The size table and its sentence („Cele 1.641
+  de firme cu 250 de salariați sau mai mulți fac 40,7%…") sat under the
+  activities' title. The activities band is now its ranking alone, in two
+  columns from a wide screen (read down the first, then the second), with the
+  rest of the groups, the link to the analysis and the note under it.
+- **One sentence per section, the rest behind its ⓘ.** The activities say what
+  they are ranked by („Primele 10 activități după cifra de afaceri din
+  2025.", the count from the ranking itself). Their note is „Procente din
+  totalul pe 2025: 2.780,3 mld. lei." and its ⓘ says what that total is and
+  why it is not the 2.841,2 at the top of the page (one registry edition's
+  companies with the admitted values, against every statement read) before
+  the two paragraphs on how an activity is selected. The years' sentence lost
+  „Fiecare an își numără firmele cu bilanț", now the first line behind its ⓘ.
+  „Alte 3.162 de activități selectate" is „Alte 3.162 de activități", and the
+  link „Toate activitățile, în analiza bilanțurilor".
+- **Kept in the open, because the data needs it:** „posibil incomplet" on the
+  last year, nominal lei, „înregistrate" (never founded), the CAEN revision on
+  each activity row, and the three kinds of companies with no selected
+  activity as three rows (merging them was offered and declined by default:
+  it is a change to the figures, not to the words).
+- **A status card is its name and its count** („21.420 de firme"): the line
+  under each title repeated the title.
+- **The sources are said once, at the foot of the page.** The line at the
+  head's foot is gone; each of the four figures names its source under it.
+- **No section numbers on this page, and the notes under the four figures in
+  plain text** (owner: „Drop on companies only"). They come from the shared hub
+  chrome, so they are opt-in switches there, approved by root; the other hubs
+  are unchanged.
+
+### Open
+
 - The English shortcut row wraps onto a second line on a desktop.

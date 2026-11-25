@@ -29,14 +29,11 @@ export function CompanyHubHero({
   search,
   inBusiness,
   leaders,
-  source,
 }: {
   readonly search: ReactNode
   /** The companies in business in the analysis, on the hub's year; the loading state, before the snapshot, has none and opens the analysis's own. */
   readonly inBusiness?: Record<string, unknown>
   readonly leaders: ReactNode
-  /** The sources in a line, at the head's foot, as the procurement and NGO hubs say theirs; the full line closes the page. */
-  readonly source: ReactNode
 }) {
   return (
     <section className="relative border-b">
@@ -80,9 +77,8 @@ export function CompanyHubHero({
               </Link>
             </nav>
           </div>
+          {/* No sources line here: each figure under the head names its source, and the full line closes the page. */}
           <div className="min-w-0 lg:col-span-5">{leaders}</div>
-          {/* The sources close the head, apart from what it says: under the leaders on a phone; from a wide screen, at the head's foot, just above its bottom rule, however tall the leaders' card is. */}
-          <div className="min-w-0 lg:absolute lg:inset-x-8 lg:bottom-6">{source}</div>
         </div>
         {/* The crux on the head's bottom rule, where the pinned bar begins; above the bar, which would cover its lower half. */}
         <span className="absolute inset-x-0 top-full z-30 mt-px" aria-hidden="true">

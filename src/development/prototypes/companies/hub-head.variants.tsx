@@ -22,9 +22,11 @@ import { cn } from '@/lib/utils'
 /**
  * The companies hub's head with less in it (owner, 25 November 2026: the
  * head's card is too tall and says too much). Each variant is the real head
- * (`CompanyHubHero`: title, description, search, shortcuts, sources) with a
+ * (`CompanyHubHero`: title, description, search, shortcuts) with a
  * different right-hand side, over the pinned bar and the four figures, so the
  * fold shows what each one buys. The figures are the page's own snapshot.
+ * The head's sources line, drawn here when the variants were compared, left
+ * the page's head later the same day, and these with it.
  */
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
@@ -59,17 +61,6 @@ function Figure({ leader, ranking }: { readonly leader: HubLeader; readonly rank
       {figure.value}
       {ranking === 'salariati' ? null : <span className="ml-1 font-normal text-muted-foreground">{figure.unit}</span>}
     </span>
-  )
-}
-
-function HeadSources() {
-  const month = formatHubMonth(SNAPSHOT.registryPeriod)
-  return (
-    <p className="text-sm text-muted-foreground">
-      <Trans>
-        Surse: <span className="font-medium text-foreground">Registrul comerțului</span>, {month} · bilanțurile depuse la ANAF pe {YEAR}
-      </Trans>
-    </p>
   )
 }
 
@@ -108,7 +99,6 @@ function Head({ leaders }: { readonly leaders: ReactNode }) {
         search={<HubSearch />}
         inBusiness={hubCompaniesSearch(YEAR, { observedStatus: { in: [STATUS_ACTIVE] } })}
         leaders={leaders}
-        source={<HeadSources />}
       />
       <HomeSectionNav title={t`Firmele din România`} sections={companyHubSections()} />
       <Figures />
@@ -288,7 +278,6 @@ export function HeadCifre() {
             ))}
           </dl>
         }
-        source={<HeadSources />}
       />
       <HomeSectionNav title={t`Firmele din România`} sections={companyHubSections()} />
     </div>

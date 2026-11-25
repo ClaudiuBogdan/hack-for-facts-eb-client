@@ -126,7 +126,7 @@ describe('PrivateCompanyHubPage', () => {
     expect(rows.filter((row) => /4941 · ONRC Rev\.[23]/u.test(row.textContent ?? ''))).toHaveLength(2)
     // The rest and the companies with no selection, counted apart from the ranking. (The test's numbers are English.)
     const rest = within(screen.getByTestId('company-hub-activities-rest')).getAllByRole('listitem').map((row) => row.textContent ?? '')
-    expect(rest.some((text) => /^Alte 2[.,]?577 de activități selectate/u.test(text))).toBe(true)
+    expect(rest.some((text) => /^Alte 2[.,]?577 de activități/u.test(text))).toBe(true)
     expect(rest.some((text) => text.startsWith('Mai multe activități clasificate ONRC, niciuna selectată'))).toBe(true)
     // No division, no Rev.2 sector name borrowed for an ANAF code.
     expect(activities.textContent).not.toMatch(/Software și servicii IT|Comerț cu ridicata\b(?! al)/u)
@@ -137,7 +137,7 @@ describe('PrivateCompanyHubPage', () => {
     const activities = screen.getByTestId('company-hub-activities')
     // Rev.3 4711: 92,0 mld. of the 2.780,3 mld. lei admitted — not of the raw 2.841,2 mld. in the figures band.
     expect(within(activities).getAllByRole('listitem')[0]?.textContent).toMatch(/3[.,]3\s?%/u)
-    expect(activities.textContent).toMatch(/Procente din 2[.,]780[.,]3\smld\.\slei, cifra de afaceri admisă pe 2025 în analiza bilanțurilor, ediția 7\./u)
+    expect(activities.textContent).toMatch(/Procente din totalul pe 2025: 2[.,]780[.,]3\smld\.\slei\./u)
     // The unselected keep their share: several ONRC classes and no selection hold 21,2% of the turnover.
     expect(within(screen.getByTestId('company-hub-activities-rest')).getByText('Mai multe activități clasificate ONRC, niciuna selectată').parentElement?.textContent).toMatch(/21[.,]2\s?%/u)
   })
