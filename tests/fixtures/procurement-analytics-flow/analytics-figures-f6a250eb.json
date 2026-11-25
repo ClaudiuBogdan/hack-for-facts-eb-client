@@ -1,0 +1,46 @@
+{
+  "data": {
+    "now": {
+      "blocks": [
+        {
+          "recordCount": null,
+          "withValueCount": null,
+          "valueAwardedSum": null,
+          "avgValueAwarded": null,
+          "meta": {
+            "answerability": "abstained",
+            "provisional": true,
+            "caveats": [
+              "this grain is unavailable: the analytics build could not be read",
+              "no quality verdict for grain 'contract' — time answers abstain",
+              "no quality verdict for grain 'contract' — geo answers abstain",
+              "no quality verdict for grain 'contract' — spend answers abstain",
+              "q filters on record titles (case-insensitive substring); title coverage is partial per grain, so untitled records are excluded from every figure. The record list reads the same q as a full-text search over titles, party names and identifiers, so its result count legitimately differs from these figures",
+              "direct acquisitions (release 1): money is the counted value, lei excluding VAT — a corrected value where an approved correction applies; purchases the data platform does not count (refused or expired, removed from the portal, value not confirmed (currency and VAT basis), reviewed entry errors) are in recordCount and add no money; every withheld (natural-person) supplier is one supplier, key natural_person"
+            ],
+            "undatedInScope": null,
+            "disclosureKey": null
+          },
+          "moneyVerdicts": [
+            {
+              "measure": "valueAwardedSum",
+              "answerability": "abstained"
+            },
+            {
+              "measure": "valueEstimatedSum",
+              "answerability": "abstained"
+            },
+            {
+              "measure": "valueModAdjustedSum",
+              "answerability": "abstained"
+            },
+            {
+              "measure": "valueAwardedMatchedSum",
+              "answerability": "abstained"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
