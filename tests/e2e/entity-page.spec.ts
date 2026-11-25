@@ -196,9 +196,9 @@ test.describe('Map Page', () => {
   test('loads map visualization', async ({ page }) => {
     await page.goto('/map')
 
-    // Verify the page heading and rendered map surface both load.
-    const mapContainer = page.getByRole('region', { name: /^map$/i }).first()
-    const mapHeading = page.getByRole('heading', { name: /map|hartă/i }).first()
+    // Verify the page heading and rendered map surface both load. MapLibre names its region after the page's map.
+    const mapContainer = page.getByRole('region', { name: /harta bugetelor locale|local budgets map/i }).first()
+    const mapHeading = page.getByRole('heading', { level: 1, name: /harta bugetelor locale|local budgets map/i })
 
     await expect(mapHeading).toBeVisible({ timeout: 15000 })
     await expect(mapContainer).toBeVisible({ timeout: 15000 })
