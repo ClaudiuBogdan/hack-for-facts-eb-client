@@ -10,6 +10,12 @@
 
 import { test, expect } from '../utils/integration-base'
 import { waitForHydration } from '../utils/test-helpers'
+import { mockMapReads } from '../utils/map-mocks'
+
+// The map's grouped-series read, answered from the dev API's recorded answers (TEST-001).
+test.beforeEach(async ({ page }) => {
+  await mockMapReads(page)
+})
 
 const HERO_HEADING = /pe înțeles|made clear/i
 // The field is named by its placeholder.
