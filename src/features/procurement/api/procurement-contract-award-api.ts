@@ -45,7 +45,7 @@ const hasCode = (error: unknown, code: string): boolean => codesOf(error).includ
  * The data was republished while the API read it (server `ca-records-repo.ts`: SERVICE_UNAVAILABLE, „repeat the
  * request"): not the switch, and read once more at once.
  */
-function isRepublished(error: unknown): boolean {
+export function isRepublished(error: unknown): boolean {
   return error instanceof GraphQLRequestError && error.graphQLErrors.some((entry) => entry.extensions?.code === 'SERVICE_UNAVAILABLE' && /republished|repeat the request/iu.test(entry.message))
 }
 

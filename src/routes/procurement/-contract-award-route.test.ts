@@ -57,8 +57,15 @@ describe('contract-award route', () => {
     await expect(asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: RECORD_ID } }))).resolves.toMatchObject({ id: RECORD_ID })
     readForSsr.mockResolvedValueOnce(found('e_licitatie:ca:99:11'))
     await expect(asServerRender(() => route.loader({ context: { queryClient: queryClient() }, params: { id: 'e_licitatie:ca:99:11' } }))).rejects.toEqual({
-      redirect: { to: '/procurement/contract-awards/$id', params: { id: RECORD_ID }, replace: true, statusCode: 302 },
+      redirect: { to: '/procurement/contract-awards/$id', params: { id: RECORD_ID }, replace: true, statusCode: 302, headers: { 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' } },
     })
+  })
+
+  it('reads nothing ahead in the browser: the page reads its award when it mounts', async () => {
+    const client = queryClient()
+    await expect(route.loader({ context: { queryClient: client }, params: { id: RECORD_ID } })).resolves.toEqual({ id: RECORD_ID })
+    expect(client.prefetchQuery).not.toHaveBeenCalled()
+    expect(readForSsr).not.toHaveBeenCalled()
   })
 
   it('is a 404 for no such award only: an award before 2021 and the switch off are pages of their own', async () => {

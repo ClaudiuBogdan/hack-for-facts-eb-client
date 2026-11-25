@@ -12,7 +12,7 @@ import { caWindowOf, type BuyerContractAwards, type CaRecordRow, type CaSort } f
 import { beforeFloorText, caAmountText, caKindText } from '../../lib/contract-award-text'
 import type { BuyerProfile } from '../../lib/buyer-model'
 import { categoryOfCode } from '../../lib/home-categories'
-import { contractsCount, countText, dayText } from '../../lib/home-format'
+import { countText, dayText } from '../../lib/home-format'
 import { periodYear } from '../../lib/profile-period'
 import { periodText } from '../../lib/profile-period-text'
 import { HomeBand } from '../home/home-chrome'
@@ -83,13 +83,14 @@ export function BuyerAwardsBand({
           <p className="border-y py-4 text-sm text-muted-foreground">
             <Trans>Contractele atribuite nu sunt disponibile acum.</Trans>
           </p>
-        ) : query.isError && !data ? (
+        ) : query.isError ? (
+          // A failed read wins over rows kept from before it.
           <HubLoadError onRetry={() => void query.refetch()} />
         ) : !data ? (
           <HubPending rows={6} />
         ) : (
           <div aria-busy={query.isPlaceholderData} className={cn('transition-opacity duration-300 motion-reduce:transition-none', query.isPlaceholderData && 'opacity-50')}>
-            {data.total === 0 && page === 1 ? (
+            {data.total === 0 && data.page === 1 ? (
               <p className="border-y py-4 text-sm text-muted-foreground">
                 <Trans>Niciun contract atribuit în {period}.</Trans>
               </p>
@@ -107,7 +108,8 @@ export function BuyerAwardsBand({
                 ))}
               </ol>
             )}
-            <Pager data={data} page={page} onPage={onPage} />
+            {/* A page past the list's end offers the first page instead. */}
+            {data.rows.length > 0 ? <Pager data={data} onPage={onPage} /> : null}
           </div>
         )}
         <AwardsNotes data={data} clipped={published?.clipped ?? false} />
@@ -116,10 +118,15 @@ export function BuyerAwardsBand({
   )
 }
 
-/** „124 de contracte atribuite în 2024, 118 cu valoare publicată; 3 în verificare, în niciun total." */
+/** „124 de contracte atribuite în 2024, 118 cu valoare publicată; 3 în verificare, cu valoarea în afara totalurilor." */
 function awardsLede(data: BuyerContractAwards, period: string): string {
-  const count = contractsCount(data.recordCount)
-  const parts = [t`${count} atribuite în ${period}`]
+  const parts = [
+    plural(data.recordCount, {
+      one: `# contract atribuit în ${period}`,
+      few: `# contracte atribuite în ${period}`,
+      other: `# de contracte atribuite în ${period}`,
+    }),
+  ]
   if (data.recordCount > 0) {
     const valued = countText(data.valuedCount)
     parts.push(t`${valued} cu valoare publicată`)
@@ -127,7 +134,8 @@ function awardsLede(data: BuyerContractAwards, period: string): string {
   const head = parts.join(', ')
   if (data.identityReviewCount === 0) return `${head}.`
   const review = countText(data.identityReviewCount)
-  return `${head}; ${t`${review} în verificare, în niciun total`}.`
+  // Counted among the records; only their value stays out of any total (the API's `additive`).
+  return `${head}; ${t`${review} în verificare, cu valoarea în afara totalurilor`}.`
 }
 
 function AwardRow({ row, year }: { readonly row: CaRecordRow; readonly year: number | undefined }) {
@@ -172,7 +180,9 @@ function AwardRow({ row, year }: { readonly row: CaRecordRow; readonly year: num
   )
 }
 
-function Pager({ data, page, onPage }: { readonly data: BuyerContractAwards; readonly page: number; readonly onPage: (page: number) => void }) {
+/** Said from the answer shown: while another page is on its way, the rows kept are labelled as theirs. */
+function Pager({ data, onPage }: { readonly data: BuyerContractAwards; readonly onPage: (page: number) => void }) {
+  const page = data.page
   const pages = Math.min(Math.ceil(Math.min(data.total, LIST_DEPTH) / data.pageSize), PROCUREMENT_BUYER_AWARD_MAX_PAGE)
   if (pages <= 1 && page === 1) return null
   const button = 'inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-40 sm:min-h-0'
@@ -200,8 +210,13 @@ function AwardsNotes({ data, clipped }: { readonly data: BuyerContractAwards | u
   if (clipped) notes.push(beforeFloorText())
   if (data && data.depthLimited) notes.push(t`Lista ajunge până la al 10.000-lea contract: alege un an ca s-o restrângi.`)
   if (data && data.undatedCount > 0) {
-    const undated = contractsCount(data.undatedCount)
-    notes.push(t`Încă ${undated} ale instituției nu au dată de atribuire, așa că nu apar în nicio perioadă.`)
+    notes.push(
+      plural(data.undatedCount, {
+        one: 'Încă un contract al instituției nu are dată de atribuire, așa că nu apare în nicio perioadă.',
+        few: 'Încă # contracte ale instituției nu au dată de atribuire, așa că nu apar în nicio perioadă.',
+        other: 'Încă # de contracte ale instituției nu au dată de atribuire, așa că nu apar în nicio perioadă.',
+      }),
+    )
   }
   notes.push(t`Valoarea e a întregului contract, atribuită, nu plătită; la un acord-cadru, cea maximă. Contractele nu sunt adunate într-un total.`)
   return <p className="mt-4 max-w-[70ch] text-xs leading-relaxed text-muted-foreground">{notes.join(' ')}</p>

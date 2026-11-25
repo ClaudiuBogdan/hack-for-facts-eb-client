@@ -288,7 +288,7 @@ export function mapContractAward(raw: RawContractAward): ContractAward {
 /** What a record's flags and status mean for a reader; a flag the page has no words for says nothing. */
 export function caRecordNotes(record: Pick<CaRecordRow, 'flags' | 'underReview' | 'currency' | 'winnerCount'>): readonly string[] {
   const notes: string[] = []
-  if (record.underReview) notes.push(t`Identitatea contractului e în verificare: contractul nu intră în niciun total.`)
+  if (record.underReview) notes.push(t`Identitatea contractului e în verificare: valoarea lui nu intră în niciun total.`)
   const flags = new Set(record.flags)
   if (flags.has('joint_win') || record.winnerCount > 1) notes.push(t`Câștigat de o asociere: valoarea e a întregului contract; SEAP nu publică partea fiecărei firme.`)
   if (flags.has('foreign_equivalent') && record.currency) {

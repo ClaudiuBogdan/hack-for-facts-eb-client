@@ -1,6 +1,14 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { shouldRetryQuery } from '@/lib/queryClient'
-import { CaRecordsOffError, fetchBuyerContractAwards, fetchContractAward, type BuyerContractAwardsRequest, type ContractAwardRead } from '../api/procurement-contract-award-api'
+import {
+  CaRecordsOffError,
+  CaSnapshotMismatchError,
+  fetchBuyerContractAwards,
+  fetchContractAward,
+  isRepublished,
+  type BuyerContractAwardsRequest,
+  type ContractAwardRead,
+} from '../api/procurement-contract-award-api'
 import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import { procurementContractAwardKeys } from '../lib/contract-award-keys'
 
@@ -13,8 +21,12 @@ import { procurementContractAwardKeys } from '../lib/contract-award-keys'
 
 export { procurementContractAwardKeys }
 
-/** The switch off is the API's current state: asking again changes nothing. */
-const retry = (failureCount: number, error: unknown) => !(error instanceof CaRecordsOffError) && shouldRetryQuery(failureCount, error)
+/**
+ * The switch off is the API's current state: asking again changes nothing. A snapshot mismatch or a republish has been
+ * read twice already by the adapter: the read fails, and the reader's retry asks again.
+ */
+const retry = (failureCount: number, error: unknown) =>
+  !(error instanceof CaRecordsOffError || error instanceof CaSnapshotMismatchError || isRepublished(error)) && shouldRetryQuery(failureCount, error)
 
 export function contractAwardQueryOptions(id: string, initialData?: ContractAwardRead) {
   return queryOptions({

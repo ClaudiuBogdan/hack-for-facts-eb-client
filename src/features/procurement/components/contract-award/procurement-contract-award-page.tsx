@@ -42,7 +42,9 @@ export interface ProcurementContractAwardInitialData {
 export function ProcurementContractAwardPage({ id, initialData }: { readonly id: string; readonly initialData?: ProcurementContractAwardInitialData }) {
   const own = initialData?.id === id ? initialData : undefined
   const query = useContractAward(id, own?.read)
-  const read = query.data
+  // A failed read wins over an answer kept from before it: a winner withdrawn since, or the switch turned off, is never
+  // shown from an older read.
+  const read = query.isError ? undefined : query.data
   const { i18n } = useLingui()
   const award = read?.kind === 'found' ? read.award : null
   useClientDocumentTitle(buildContractAwardDocumentTitle(i18n, { title: award?.title ?? null, authorityName: authorityNameOf(award) }))
@@ -214,7 +216,11 @@ function AwardSheet({ award }: { readonly award: ContractAward }) {
         ) : null}
         {award.lots.length > 0 ? <AwardLots award={award} /> : null}
         <p className="mt-10 max-w-[80ch] text-xs leading-relaxed text-muted-foreground">
-          <Trans>Sursa: SEAP și e-licitatie.ro. Valoarea e cea atribuită, nu o plată. Contractele atribuite înainte de 2021 nu sunt încă publicate.</Trans>
+          {award.ceiling ? (
+            <Trans>Sursa: SEAP și e-licitatie.ro. Valoarea e cea maximă a acordului-cadru, nu o plată. Contractele atribuite înainte de 2021 nu sunt încă publicate.</Trans>
+          ) : (
+            <Trans>Sursa: SEAP și e-licitatie.ro. Valoarea e cea atribuită, nu o plată. Contractele atribuite înainte de 2021 nu sunt încă publicate.</Trans>
+          )}
         </p>
       </RuledFrame>
     </>

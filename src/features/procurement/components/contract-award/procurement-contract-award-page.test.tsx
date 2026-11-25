@@ -105,6 +105,27 @@ describe('ProcurementContractAwardPage', () => {
     expect(await screen.findByText('Contractul nu este disponibil acum')).toBeInTheDocument()
   })
 
+  it('never shows a kept award once a read fails: the switch off is said, not the older answer', async () => {
+    read.mockRejectedValue(new CaRecordsOffError())
+    const client = createTestQueryClient()
+    client.setQueryData(['procurement', 'contract-award', RECORD_ID], found())
+    render(
+      <QueryClientProvider client={client}>
+        <TooltipProvider>
+          <ProcurementContractAwardPage id={RECORD_ID} />
+        </TooltipProvider>
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByText('Contractul nu este disponibil acum')).toBeInTheDocument()
+    expect(screen.queryByText('CONSTRUCT TEST SRL')).toBeNull()
+  })
+
+  it('says a framework’s footer as its maximum, not an award', () => {
+    const html = renderToStaticMarkup(page({ id: RECORD_ID, read: found(rawAward({ record: { valueKind: 'framework_ceiling', contractKind: 'framework_agreement' } })) }))
+    expect(html).toContain('Valoarea e cea maximă a acordului-cadru, nu o plată.')
+    expect(html).not.toContain('Valoarea e cea atribuită, nu o plată.')
+  })
+
   it('moves an earlier build’s id to the current one, the history entry replaced', async () => {
     render(page({ id: 'e_licitatie:ca:99:11', read: { ...found(), reanchored: true } }, 'e_licitatie:ca:99:11'))
     await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: '/procurement/contract-awards/$id', params: { id: RECORD_ID }, replace: true }))

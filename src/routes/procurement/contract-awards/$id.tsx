@@ -25,26 +25,27 @@ import { buildContractAwardDocumentTitle } from '@/features/procurement/lib/proc
  *
  * Every render is no-store: the API marks every contract-award answer so.
  */
+// The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
+const NO_STORE = { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
+
 export const Route = createFileRoute('/procurement/contract-awards/$id')({
   ssr: true,
   // Its winners' codes are kept by no router cache once the page is left.
   ...DA_ROUTE_CACHE,
-  loader: async ({ context, params }): Promise<ProcurementContractAwardInitialData> => {
-    if (!shouldBlockLoaderForSsr()) {
-      const hooks = await import('@/features/procurement/hooks/use-procurement-contract-award')
-      void context.queryClient.prefetchQuery(hooks.contractAwardQueryOptions(params.id)).catch(() => undefined)
-      return { id: params.id }
-    }
+  loader: async ({ params }): Promise<ProcurementContractAwardInitialData> => {
+    // In the browser nothing is read ahead (a hover preloads the route): an award read before its page shows it would be
+    // kept unshown, and a winner withdrawn meanwhile could still be shown. The page reads it when it mounts.
+    if (!shouldBlockLoaderForSsr()) return { id: params.id }
     const { readContractAwardForSsr } = await import('@/features/procurement/api/procurement-contract-award-ssr')
     const read = await readContractAwardForSsr(params.id)
     if (read.read?.kind === 'missing') throw notFound()
     if (read.read?.kind === 'found' && read.read.award.recordId !== params.id) {
-      throw redirect({ to: '/procurement/contract-awards/$id', params: { id: read.read.award.recordId }, replace: true, statusCode: 302 })
+      // The redirect leaves before the route's headers apply: it carries its own no-store (the id can move with a later build).
+      throw redirect({ to: '/procurement/contract-awards/$id', params: { id: read.read.award.recordId }, replace: true, statusCode: 302, headers: NO_STORE })
     }
     return read
   },
-  // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
-  headers: () => ({ ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }),
+  headers: () => NO_STORE,
   head: ({ params, loaderData, match }) => {
     const translator = translatorFor(match.context.locale)
     const canonical = `${getSiteUrl()}/procurement/contract-awards/${encodeURIComponent(params.id)}`

@@ -498,7 +498,7 @@ describe('ProcurementBuyerPage', () => {
       const band = document.getElementById('contracte')!
       expect(await within(band).findByText('Servicii de deszăpezire')).toBeInTheDocument()
       expect(awardsRead.mock.calls[0]?.[0]).toEqual({ cui: '4364446', from: '2025-01-01', to: '2025-12-31', sort: 'awardDayDesc', page: 1 })
-      expect(band).toHaveTextContent('3 contracte atribuite în 2025, 2 cu valoare publicată; 1 în verificare, în niciun total.')
+      expect(band).toHaveTextContent('3 contracte atribuite în 2025, 2 cu valoare publicată; 1 în verificare, cu valoarea în afara totalurilor.')
       const hrefs = within(band)
         .getAllByRole('link')
         .map((link) => link.getAttribute('href'))
@@ -508,6 +508,24 @@ describe('ProcurementBuyerPage', () => {
       expect(band).toHaveTextContent('Ion P*** PFA (CUI 30111222)')
       expect(band).toHaveTextContent('CUI 30111223 (nume nepublicat), Câștigător nepublicat')
       expect(band).toHaveTextContent('în verificare')
+    })
+
+    it('says one award and one undated award in the singular', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ summary: { recordCount: 1, valuedCount: 1, identityReviewCount: 0, undatedCount: 1 } })))
+      render(page())
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('1 contract atribuit în 2025, 1 cu valoare publicată.')).toBeInTheDocument()
+      expect(band).toHaveTextContent('Încă un contract al instituției nu are dată de atribuire, așa că nu apare în nicio perioadă.')
+    })
+
+    it('offers the first page for a page past the list’s end, with no pager to contradict it', async () => {
+      awardsRead.mockResolvedValue(mapBuyerContractAwards(rawAwards({ rows: [], records: { page: 500, total: 3, hasMore: false } })))
+      render(page({ pagina: 500 }))
+      const band = document.getElementById('contracte')!
+      expect(await within(band).findByText('Pagina aceasta nu are contracte.')).toBeInTheDocument()
+      expect(within(band).queryByText(/Pagina 500/)).toBeNull()
+      fireEvent.click(within(band).getByRole('button', { name: 'Înapoi la prima pagină' }))
+      expect(lastSearch({ pagina: 500 })).toEqual({})
     })
 
     it('asks nothing for a year before 2021, and says it is not published yet', () => {
