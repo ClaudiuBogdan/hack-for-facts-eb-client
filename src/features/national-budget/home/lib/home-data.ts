@@ -19,6 +19,7 @@ import { queryOptions } from '@tanstack/react-query'
 
 import { cellsOf, type Cell } from '@/features/national-budget/analytics/lib/analytics-data'
 import { lastCompleteYear, periodText } from '@/features/national-budget/analytics/lib/analytics-view'
+import { CURRENT_STATE, sharedRead } from '@/features/national-budget/analytics/api/shared-read'
 import { canonicalDecimal } from '@/features/national-budget/analytics/lib/exact'
 import { yearOf } from '@/features/national-budget/analytics/lib/series'
 import { fetchCompleteAggregatedLineItems, fetchEntityAnalytics } from '@/lib/api/entity-analytics'
@@ -304,12 +305,14 @@ export type AnafAuthority = { readonly cui: string; readonly name: string; reado
 export function anafAuthoritiesOptions(view: YearView) {
   return queryOptions({
     queryKey: [ANAF_ROOT, 'authorities', view.year, view.month] as const,
-    queryFn: async ({ signal }) => {
-      const page = await fetchEntityAnalytics({ filter: anafFilter(view), sort: { by: 'amount', order: 'DESC' }, limit: AUTHORITIES_LIMIT, signal })
-      // Every authority or none: a cut list would understate the state budget it is summed into, and inflate every share.
-      if (page.pageInfo.hasNextPage || page.nodes.length < page.pageInfo.totalCount) throw new Error(`ANAF listed ${page.nodes.length} of ${page.pageInfo.totalCount} authorities`)
-      return page.nodes.map((node): AnafAuthority => ({ cui: node.entity_cui, name: node.entity_name, lei: leiOf(node.amount) }))
-    },
+    // Through the server's shared copy (`shared-read.ts`): ANAF's reports are the current state, kept a few minutes.
+    queryFn: ({ signal }) =>
+      sharedRead(`${ANAF_ROOT} authorities ${view.year} ${view.month}`, CURRENT_STATE, async (readSignal) => {
+        const page = await fetchEntityAnalytics({ filter: anafFilter(view), sort: { by: 'amount', order: 'DESC' }, limit: AUTHORITIES_LIMIT, signal: readSignal })
+        // Every authority or none: a cut list would understate the state budget it is summed into, and inflate every share.
+        if (page.pageInfo.hasNextPage || page.nodes.length < page.pageInfo.totalCount) throw new Error(`ANAF listed ${page.nodes.length} of ${page.pageInfo.totalCount} authorities`)
+        return page.nodes.map((node): AnafAuthority => ({ cui: node.entity_cui, name: node.entity_name, lei: leiOf(node.amount) }))
+      }, signal),
     staleTime: ANAF_STALE,
     retry: 1,
   })
@@ -335,11 +338,12 @@ export function chaptersOf(nodes: readonly { readonly fn_c?: string | null; read
 export function anafChaptersOptions(view: YearView, cui: string | null = null) {
   return queryOptions({
     queryKey: [ANAF_ROOT, 'chapters', view.year, view.month, cui] as const,
-    queryFn: async ({ signal }) => {
-      // The whole list or an error: the explorer's reader refuses a cut page.
-      const page = await fetchCompleteAggregatedLineItems(anafFilter(view, cui ? { entity_cuis: [cui] } : {}), signal)
-      return chaptersOf(page.nodes)
-    },
+    queryFn: ({ signal }) =>
+      sharedRead(`${ANAF_ROOT} chapters ${view.year} ${view.month} ${cui ?? ''}`, CURRENT_STATE, async (readSignal) => {
+        // The whole list or an error: the explorer's reader refuses a cut page.
+        const page = await fetchCompleteAggregatedLineItems(anafFilter(view, cui ? { entity_cuis: [cui] } : {}), readSignal)
+        return chaptersOf(page.nodes)
+      }, signal),
     staleTime: ANAF_STALE,
     retry: 1,
   })

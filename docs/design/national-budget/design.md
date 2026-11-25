@@ -1682,9 +1682,31 @@ bulletin a shared `?an=` of the year in progress can show the previous month for
 2013's printed balance differs from revenue less spending by 0,1 mil. lei; the flows and the monthly chart are read by pointer (the lists and
 notes carry the figures); the old band anchors (`#cheltuieli`, `#deficit`, …) are gone, with no inbound link in the repo.
 
-### 13.2 Review round 2 (25 November 2026)
+### 13.2 The server keeps the API's answers (owner, 25 November 2026)
 
-Codex `gpt-6.2-sol` xhigh and Opus 5.5 xhigh read the fixes; the last round root allows. What changed:
+Owner: the pages render on the server for search engines and agents, and must load fast. Astra (`gpt-6-astra` xhigh, read-only) compared a
+server data cache, a committed snapshot, a shared HTML cache and browser persistence; a shared HTML cache conflicts with CACHE-001 (the render
+reads the reader's cookies), a snapshot makes every monthly bulletin a commit, browser persistence doesn't help a first visit.
+
+**What is built** (`analytics/api/shared-read.ts`): the web server keeps the national budget API's answers and ANAF's in memory, shared by every
+reader's render; the HTML is still rendered per request, `private, no-store`. A read bound to a bulletin snapshot is kept for a day (it never
+changes; a new bulletin brings a new snapshot, hence new keys, and the December bulletin moves the default year by itself). The catalog and ANAF
+are fresh (the catalog a minute, ANAF five), then served while a single read replaces them, up to a day. A failed read keeps nothing; a read that finds its snapshot
+moved drops the catalog. At most 300 answers (an observations page is some 100 kB). In the browser nothing changes: a picked year reads live.
+
+**Measured** (dev server, `curl`, full HTML): a year's first render 0,8–0,9 s, then 0,10–0,14 s.
+
+**Limits:** a restarted process starts empty; after an API outage the catalog and ANAF can be served up to a day old, without a sign on the
+page (the figures stay those of the snapshot the catalog names, so the page never mixes two bulletins). Astra's fuller design (a generation
+swapped whole, seven days' retention, a JSON endpoint for the browser, the copy's time in the data note) stays on file if these limits bite.
+
+### 13.3 Review round 2 (25 November 2026)
+
+Codex `gpt-6.2-sol` xhigh and Opus 5.5 xhigh read the fixes and the cache; the last round root allows. What changed:
+- **The cache:** a reader already gone starts no read (an unobserved failure would be an unhandled rejection); a read forgotten or replaced while it
+  ran writes nothing (a slow September catalog can't land over October's); the least recently used copies go first, never a read in flight; the key
+  is the whole GraphQL document and its variables; the catalog is fresh one minute (it names the snapshot the browser reads after it). Its server
+  path is tested.
 - **The budgets' comparison needs public spending printed**, like the four named budgets; „received as subsidies" is said only when printed.
 - **„Alte instituții" is one line of the hundred**: whole lei apportioned once over the fifteen named and it, not its small rows' lei added up.
 - **A failed section reads again on a new catalog** (a bulletin landed under it), not only on a new year.
