@@ -1,0 +1,47 @@
+{
+  "data": {
+    "related": {
+      "pageInfo": {
+        "totalCount": 6
+      },
+      "nodes": [
+        {
+          "code": "POP214A",
+          "name_ro": "Sporul natural al populatiei pe medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Natural increase of the population, by urban/ rural area, macroregions, development regions and counties",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP214B",
+          "name_ro": "Sporul natural al populatiei rezidente pe medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Natural increase of the usual resident population, by urban/ rural area, by macroregions, development regions and counties",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP215A",
+          "name_ro": "Rata sporului natural al populatiei pe medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Rate of natural increase of  the population, by urban/ rural area, macroregions, development regions and counties",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP215B",
+          "name_ro": "Rata sporului natural al populatiei rezidente pe medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Rate of natural increase of the usual resident population, by urban/ rural area, macroregions, development regions and counties",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP217A",
+          "name_ro": "Durata medie a vietii pe medii de rezidenta, sexe, pe macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Life expectancy by urban/ rural area, sex, macroregions, development regions and counties",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP217B",
+          "name_ro": "Durata medie a vietii pe varste, sexe si regiuni de dezvoltare",
+          "name_en": "Life expectancy by ages, sex and development regions",
+          "data_status": "AVAILABLE"
+        }
+      ]
+    }
+  }
+}

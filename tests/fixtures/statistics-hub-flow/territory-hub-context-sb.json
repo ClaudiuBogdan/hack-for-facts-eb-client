@@ -1,0 +1,1810 @@
+{
+  "data": {
+    "county": [
+      {
+        "latestPeriod": "2026",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "POP107D",
+          "code": "POP107D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+          "name_en": "LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.",
+          "definition_ro": "Populatia dupa domiciliu la data de 1 ianuarie a anului de referinta reprezinta numarul persoanelor cu cetatenie romana si domiciliu pe teritoriul Romaniei, delimitat dupa criterii administrativ-teritoriale.\r\nDomiciliul persoanei este adresa la care aceasta declara ca are locuinta principala, trecuta in actul de identitate (CI, BI), asa cum este luata in evidenta organelor administrative ale statului.\r\nIn stabilirea valorii acestui indicator nu se tine cont de resedinta obisnuita, de perioada si/sau motivul absentei de la domiciliu.",
+          "definition_en": "Legally resident population represents the number of persons with Romanian citizenship and legal residence on the territory of Romania, delimited by territorial-administrative criteria.\r\nThe person's legal residence is the address where he/she declares to have the main dwelling, printed as such on its identity card and registered by the administrative bodies of the State.\r\nTo set up the value of this indicator, the usual residence is not taken into account as well as the period and/or reason of absence from domicile.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1992,
+            2026
+          ],
+          "dimension_count": 6,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-09-06 13:18:44.842571+00",
+          "context_code": "1012",
+          "context_name_ro": "2. POPULATIA DUPA DOMICILIU",
+          "context_name_en": "2. LEGALLY RESIDENT POPULATION",
+          "context_path": "A. STATISTICA SOCIALA > POPULATIE SI STRUCTURA DEMOGRAFICA Comunicate de presa > POPULATIA DUPA DOMICILIU",
+          "metadata": {
+            "methodology_ro": "Metoda utilizata pentru calculul indicatorului ''populatia dupa domiciliu'' este metoda componentelor:\r\na) la nivel de total tara, in functie de soldul sporului natural si soldul migratiei internationale definitive:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n\r\nb) in profil teritorial, la diferite niveluri administrativ-teritoriale pentru care se calculeaza, in functie de soldul sporului natural, soldul migratiei internationale definitive si soldul migratiei interne cu schimbarea domiciliului:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + dm(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\ndm(t,t+1) - soldul migratiei interne cu schimbarea domiciliului (sositi - plecati), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n \r\nVarsta este exprimata in ani impliniti (de exemplu, o persoana avand varsta de 24 ani si 11 luni este considerata ca avand varsta de 24 ani).\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Populatia-dupa-domiciliu-la-1ianuarie.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+            "data_sources_ro": "Populatia dupa domiciliu a Romaniei (la 1 ianuarie si 1 iulie) <<4058>>",
+            "source_year_range": [
+              1992,
+              2026
+            ],
+            "source_last_update": "2026-04-02",
+            "observation_count": 34199128,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "429008f7bdb642aff655a0b1c93cdf6db54f0a04433eb0a2db6fed0183555ad6",
+            "revision_id": "1051",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/POP107D?lang=ro"
+          },
+          "methodology_ro": "Metoda utilizata pentru calculul indicatorului ''populatia dupa domiciliu'' este metoda componentelor:\r\na) la nivel de total tara, in functie de soldul sporului natural si soldul migratiei internationale definitive:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n\r\nb) in profil teritorial, la diferite niveluri administrativ-teritoriale pentru care se calculeaza, in functie de soldul sporului natural, soldul migratiei internationale definitive si soldul migratiei interne cu schimbarea domiciliului:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + dm(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\ndm(t,t+1) - soldul migratiei interne cu schimbarea domiciliului (sositi - plecati), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n \r\nVarsta este exprimata in ani impliniti (de exemplu, o persoana avand varsta de 24 ani si 11 luni este considerata ca avand varsta de 24 ani).\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Populatia-dupa-domiciliu-la-1ianuarie.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+          "methodology_en": "The method used to calculate the indicator ''legally resident population'' is the components method:\r\na) at national level, depending on the balance of natural increase and definitive international migration balance:\r\nP(t+1)= P(t) + N(t,t+1) - D(t,t+1) + Internat def mig balance(t,t+1) + Cv\r\nunde:\r\nP(t+1) - population having domicile in the country at the moment t+1;\r\nP(t) - population having domicile in the country at the moment t;\r\nN(t,t+1) - the number of live-births during the (t, t+1) period, whose mothers have had their domicile in Romania at the time of birth;\r\nD(t,t+1) - the number of deceased persons during the (t, t+1) period, who have had their domicile in Romania at the time of death; \r\nInternat def mig balance(t,t+1) - International definitive migration balance (immigrants - emigrants), during the (t, t+1) period;\r\nCv - adjustment coefficient ages.\r\n\r\nb) at territorial level, at various administrative-territorial levels, depending on the balance of natural increase, the balance of definitive international migration and the balance of internal migration with domicile change:\r\nP(t+1)= P(t) + N(t,t+1) - D(t,t+1) + Internat def mig balance(t,t+1) + Int def mig balance(t,t+1) + Cv\r\nunde:\r\nP(t+1) - population having domicile in the country at the moment t+1;\r\nP(t) - population having domicile in the country at the moment t;\r\nN(t,t+1) - the number of live-births during the (t, t+1) period, whose mothers have had their domicile in Romania at the time of birth;\r\nD(t,t+1) - the number of deceased persons during the (t, t+1) period, who have had their domicile in Romania at the time of death;\r\nInternat def mig balance(t,t+1) - International definitive migration balance (immigrants - emigrants), during the (t, t+1) period;\r\nInt def mig balance(t,t+1) - Internal migration balance with domicile change (in-migrants minus out-migrants), during the (t, t+1) period;\r\nCv - adjustment coefficient ages.\r\n\r\nAge is expressed in the years reached during the year (for instance, a person of 24 years old and 11 months at July 1st, is considered to be of 24 years old).\r\n\r\n<a href=\"https://insse.ro/cms/files/Quality-reports/Population/Permanent-population-at-1st-of-January.pdf\" target=\"_blank\"> Metadata and quality report </a>\r\n",
+          "data_sources_ro": "Populatia dupa domiciliu a Romaniei (la 1 ianuarie si 1 iulie) <<4058>>",
+          "data_sources_en": "Legally resident population of Romania (on January 1 and July 1) <<4058>>",
+          "data_sources": [
+            {
+              "name": "Populatia dupa domiciliu a Romaniei (la 1 ianuarie si 1 iulie) <<4058>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 4058
+            }
+          ],
+          "observations_ro": "Datele utilizate pentru determinarea populatiei dupa domiciliu provin din doua tipuri de surse de date:\r\n1. surse administrative\r\nDirectia pentru Evidenta Persoanelor si Administrarea Bazelor de Date - Registrul National de Evidenta a Persoanelor:\r\n- date referitoare la migratia interna, date semestriale;\r\n- date referitoare la migratia internationala definitiva cu stabilirea domiciliului in Romania - imigranti, date semestriale;\r\n- primiri si renuntari la cetatenia romana, date semestriale.\r\nDirectia Generala de Pasapoarte:\r\n- date referitoare la migratia internationala definitiva cu schimbarea domiciliului in alta tara - emigranti, date semestriale.\r\n2. surse statistice - rezultatele cercetarilor statistice exhaustive privind natalitatea si mortalitatea, pentru numarul nascutilor-vii si al deceselor survenite in intervalul de timp studiat (bazate, la randul lor, pe surse administrative).\r\nIn scopul realizarii de comparatii internationale, se va utiliza numai populatia rezidenta care se calculeaza conform regulamentelor europene (Regulamentul nr. 1260/2013 al Parlamentului European si al Consiliului privind statisticile europene pe demografie si Regulamentul nr. 205/2014 al Comisiei de implementare a Regulamentului nr. 1260/2013 privind statisticile europene pe demografie  referitor la defalcare date, termene, revizuiri de date).\r\nIn scopuri nationale, se poate utiliza populatia dupa domiciliu, aceasta fiind necesara in special pentru cerintele impuse de legislatia nationala (Legea nr. 273/ 2006, OUG nr. 63/2010, Hotararea nr. 410/1991).\r\nDenumirile localitatilor Romaniei sunt in concordanta cu impartirea administrativ - teritoriala actuala.\r\nPentru localitatile Ripiceni (SIRUTA 38731) si Scanteia (SIRUTA 98916) cresterea numarului de locuitori este datorata imigratiei persoanelor nascute in Republica Moldova.\r\nDatele statistice sunt revizuite in mod constant, conform politicii de revizuire a datelor.",
+          "observations_en": "The data used to determine legally resident population comes from two types of data sources:\r\n1. administrative sources\r\nDirectorate for Personal Records and Database Administration (DEPABD) - National Registry for Persons Evidence:\r\n- data on internal migration, biannual data;\r\n- data on definitive international migration - immigrants, biannual data;\r\n- acquiring and withdrawing of Romanian citizenship, biannual data.\r\nPassports General Directorate:\r\n- definitive international migration data with domicile change to another country - immigrants, biannual data.\r\n2. statistical sources- exhaustive statistical researches on natality and mortality for the number of live births and deceased in the studied period (based on administrative sources).\r\nIn order to carry out international comparisons, it will be used only the usually resident population, calculated according to European regulations (Regulation no. 1260/2013 of the European Parliament and of the Council on European demographic statistics and Regulation no. 205/2014 laying down uniformed conditions for the implementation  of Regulation no. 1260/2013 on European demographic statistics as regards breakdowns of data, deadlines and data revisions).\r\nFor national purposes may be used legally resident population, this one being especially useful for the requirements of national legislation (Law no. 273/2006, Act no. 63/2010, Decision no. 410/1991).\r\nThe name of localities are in accordance with administrative territorial structure updated for current year.\r\nFor the localities Ripiceni (SIRUTA 38731) and Scanteia (SIRUTA 98916), the increase in the number of inhabitants is due to the immigration of people born in the Republic of Moldova.\r\nThe statistical data are revised constantly, according to the Revision Policy of INS.",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2026-04-02",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Varste si grupe de varsta",
+              "label_en": "Age group and ages",
+              "is_hierarchical": false,
+              "option_count": 104,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Varste si grupe de varsta",
+                "name_en": "Age group and ages",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "Sexe",
+              "label_en": "Sex",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Sexe",
+                "name_en": "Sex",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D2",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 3,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3182,
+              "classification_type": {
+                "code": "D3",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 4,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "label_en": "Years",
+              "is_hierarchical": false,
+              "option_count": 35,
+              "classification_type": null
+            },
+            {
+              "index": 5,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar persoane",
+              "label_en": "MU: Persons",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:POP107D:1:105:3095:112:4931:9685",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  3095
+                ],
+                [
+                  3,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 48,
+                "code": "SB",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Sibiu",
+                "parentId": 7,
+                "parentCode": "RO12",
+                "parentNameRo": "Centru",
+                "coreTerritoryId": 1811
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "SB",
+            "period": "2026",
+            "unit_code": "9685",
+            "classifications": {
+              "D0": "1",
+              "D1": "105",
+              "D2": "3095",
+              "D3": "112"
+            }
+          },
+          "dataset_code": "POP107D",
+          "value": "468013",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2026",
+            "year": 2026,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "SB",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Sibiu"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane",
+            "name_en": "Number of persons"
+          },
+          "classifications": [
+            {
+              "id": "POP107D:D0:1",
+              "type_code": "D0",
+              "type_name_ro": "Varste si grupe de varsta",
+              "type_name_en": "Age group and ages",
+              "code": "1",
+              "name_ro": "Total",
+              "name_en": "Total",
+              "sort_order": null
+            },
+            {
+              "id": "POP107D:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP107D:D2:3095",
+              "type_code": "D2",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "3095",
+              "name_ro": "Sibiu",
+              "name_en": "Sibiu",
+              "sort_order": null
+            },
+            {
+              "id": "POP107D:D3:112",
+              "type_code": "D3",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2024",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "FOM104D",
+          "code": "FOM104D",
+          "name_ro": "Numarul mediu al salariatilor pe judete si localitati",
+          "name_en": "Average number of employees by counties and localities",
+          "definition_ro": "Numarul mediu al salariatilor cuprinde persoanele angajate cu contract de munca/raport de serviciu pe durata determinata sau nedeterminata (inclusiv lucratorii sezonieri, managerul sau administratorul), al caror contract de munca/raport de serviciu nu a fost suspendat in perioada de referinta.\nNumarul mediu al salariatilor se calculeaza ca medie aritmetica simpla rezultata din suma efectivelor zilnice de salariati (exclusiv cei al caror contract de munca/raport de serviciu a fost suspendat), din perioada de referinta, inclusiv din zilele de repaus saptamanal, sarbatori legale si alte zile nelucratoare, impartita la numarul total al zilelor calendaristice.\nIn efectivul zilnic al salariatilor luat in calculul numarului mediu se cuprind urmatoarele categorii:\n- salariatii cu contract de munca/raport de serviciu pe durata determinata sau nedeterminata, inclusiv salariatii detasati la lucru in strainatate (daca unitatea care i-a detasat le-a asigurat o remuneratie in tara, pentru care a virat contributii sociale obligatorii si impozit);\n- salariatii al caror contract de munca/raport de serviciu a fost suspendat din initiativa angajatorului (in cazul intreruperii temporare a activitatii) si au beneficiat de o indemnizatie din salariul de baza corespunzator locului de munca ocupat;\n- salariatii aflati in incapacitate temporara de munca (concediu medical, carantina/izolare la domiciliu) pe perioada cand acestia sunt platiti de angajator din fonduri proprii;\n- salariatii parinti, in timpul zilelor libere acordate pentru supravegherea copiilor, in situatia inchiderii temporare a unitatilor de invatamant, indiferent din ce fonduri sunt platiti;\n- salariatii al caror timp de lucru a fost redus temporar, indiferent din ce fonduri sunt platiti. \nDin efectivul zilnic al salariatilor luat in calculul numarului mediu se exclud: salariatii aflati in concedii fara plata, in greva, patronii care isi desfasoara activitatea in propria unitate si pentru care sursa de venit o constituie numai dividendele si profitul unitatii, lucratorii familiali (persoanele care-si exercita activitatea intr-o unitate economica apartinand familiei sau unei rude, pe care o ajuta si pentru care nu primesc remuneratie sub forma de salariu; plata se realizeaza in natura (hrana, haine, locuinta) sau ocazional, cu titlu exceptional, si in bani, fara a figura pe statul de salarii), membrii consiliilor judetene si locale, zilierii (persoane fizice care desfasoara activitati necalificate cu caracter ocazional, conform prevederilor legale in vigoare). In zilele de repaus saptamanal, sarbatori legale si alte zile nelucratoare se ia in calcul ca efectiv zilnic numarul salariatilor din ziua precedenta, cu exceptia celor al caror contract de munca/raport de serviciu a incetat in aceasta zi. In cazul cand unitatea a fost infiintata sau si-a incetat activitatea in cursul perioadei de referinta, se iau in calcul efectivele zilnice numai pentru perioada in care a functionat, iar suma rezultata se imparte la numarul total al zilelor calendaristice din perioada de referinta.\nSalariatii angajati cu norma partiala se includ in numarul mediu proportional cu timpul de lucru prevazut in contractul de munca/ raport de serviciu. In efectivul salariatilor luat in calculul numarului mediu se includ numai persoanele care au fost platite.\nIn mod exceptional, pentru cazurile cand, in cursul perioadei de referinta, se platesc sume corespunzatoare perioadelor anterioare (sume platite retroactiv ca urmare a castigarii in instanta a drepturilor banesti aferente anilor anteriori), numarul beneficiarilor (fosti salariati sau salariati cu contract de munca/raport de serviciu suspendat) se include in numarul mediu al salariatilor proportional cu perioadele pentru care se realizeaza platile respective, astfel incat sa existe o corespondenta directa intre sumele brute platite si numarul mediu al salariatilor.\nIncepand cu anul 2003, din efectivele zilnice luate in calculul numarului mediu au fost exclusi salariatii al caror contract de munca/raport de serviciu a fost suspendat, conform prevederilor legale in vigoare.",
+          "definition_en": "The average number of employees comprises the persons employed under a labour contract/agreement on a definite or indefinite duration (including seasonal workers, the manager or the administrator), whose labour contract/agreement  relationship was not suspended during the reference period.\nThe average number of employees is calculated as a simple arithmetic mean of the sum of the daily number of employees (those with suspended labour contract/agreement excluded), over the reference period, including the week-ends, legal holidays and other non-working days, divided by the total number of calendar days. \nIn the total daily number of employees considered for the calculation of the average number are included the following categories:\n- the employees with labour contract/agreement for a definite or indefinite period of time, including the employees detached to work abroad (if the unit that detached them provided remuneration in the country, for which it transferred compulsory social contributions and tax);\n- the employees whose labour contract/agreement has been suspended at the initiative of the employer (in case of temporary interruption of activity) and have received an allowance from the basic salary corresponding to the job;\n- the employees who are temporarily in work incapacity (medical leave, quarantine/home isolation) during the time period in which they are paid from the employer own funds; \n- the employees parents, during the days off granted to them in order to supervise their children, in cases of temporary closure of educational institutions, irrespective of the funds from which they are paid;\n- the employees whose working hours has been temporarily reduced, irrespective of the funds from which they are paid.\nIn the daily number of employees taken into consideration when calculating the average number, the following are not included: employees on leaves without pay, on strike, owners who carry out their activity within their own enterprises and for whom the income source is solely represented by unit dividends and profits, unpaid family workers (persons who are carrying out their activity within an economic unit belonging to the family or to a relative, by helping it and for which they do not receive a compensation as wages and salaries; the payment is done in kind (food, clothing, housing) or occasionally or exceptionally in cash, without being included on payrolls), members of local and county councils, day labourers (persons who carry out unskilled activities on an occasional basis, in accordance with the legal provisions in force). During the week-ends, legal holidays and other non-working days, the number of employees from the previous day is taken into consideration as daily number of employees, except the number of those employees whose labour contract/agreement ceased that day. If the unit established or ceased its activity during the reference period, the daily number of employees is taking into account only for the period in which it operated, and the resulting amount is divided by the total number of calendar days from the reference period.\nPart-time employees are included in the average number proportional with the working time included in the labour contract/agreement. In the number of employees taken into consideration in the average number only the paid persons are included.\nExceptionally, in the cases when amounts for prior periods are paid (backdated paid arrears as consequence of wining the lawsuits involving the money rights for the previous years), the number of beneficiaries (former employees or employees with suspended labour contract/agreement) are included in the average number of employees proportionally with the periods for which respective payments are done, so that a direct correlation between gross amounts paid and the average number of employees exists.\nBeginning with 2003, the daily number of employees taken into account for the calculation of the average number no longer include the employees whose labour contract/agreement was suspended according to the legal provisions in force.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2024
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-09-06 13:18:44.842571+00",
+          "context_code": "1513",
+          "context_name_ro": "9. SALARIATI",
+          "context_name_en": "9. EMPLOYEES",
+          "context_path": "A. STATISTICA SOCIALA > FORTA DE MUNCA Forta de munca si castiguri salariale-Comunicate de presa ; Ocuparea si somajul-Comunicate de presa > SALARIATI",
+          "metadata": {
+            "methodology_ro": "Repartizarea salariatilor pe judete s-a realizat in functie de localitatea in care acestia isi desfasoara activitatea.",
+            "data_sources_ro": "Cercetarea statistica privind costul fortei de munca <<6263>>",
+            "source_year_range": [
+              1990,
+              2024
+            ],
+            "source_last_update": "2025-11-20",
+            "observation_count": 106606,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "a56c09b205b5bf147515ca3d2f92712aa7bfada7d9ea8c01db0258b35fba11dd",
+            "revision_id": "674",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/FOM104D?lang=ro"
+          },
+          "methodology_ro": "Repartizarea salariatilor pe judete s-a realizat in functie de localitatea in care acestia isi desfasoara activitatea.",
+          "methodology_en": "The breakdown of employees by county was carried out according to the locality where they work.",
+          "data_sources_ro": "Cercetarea statistica privind costul fortei de munca <<6263>>",
+          "data_sources_en": "Labour cost survey <<6263>>",
+          "data_sources": [
+            {
+              "name": "Cercetarea statistica privind costul fortei de munca <<6263>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 6263
+            }
+          ],
+          "observations_ro": "Datele la nivel de localitati au fost recalculate pe baza datelor din surse administrative disponibile la nivelul judetului.\nNumarul si denumirile localitatilor Romaniei sunt in concordanta cu impartirea administrativ - teritoriala revizuita in anul curent.\nDatele pentru anul 1990 sunt disponibile numai la nivel de total judet. \n",
+          "observations_en": "The number and name of localities are in accordance with administrative territorial structure updated for current year. \nDates of localities were recalculated in accordance with administrative sources.\nThe data for 1990, are available only by counties.",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2025-11-20",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3183,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "label_en": "Years",
+              "is_hierarchical": false,
+              "option_count": 35,
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar persoane",
+              "label_en": "MU: Persons",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:FOM104D:3095:112:4893:9685",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  0,
+                  3095
+                ],
+                [
+                  1,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 48,
+                "code": "SB",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Sibiu",
+                "parentId": 7,
+                "parentCode": "RO12",
+                "parentNameRo": "Centru",
+                "coreTerritoryId": 1811
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "SB",
+            "period": "2024",
+            "unit_code": "9685",
+            "classifications": {
+              "D0": "3095",
+              "D1": "112"
+            }
+          },
+          "dataset_code": "FOM104D",
+          "value": "138452",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "SB",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Sibiu"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane",
+            "name_en": "Number of persons"
+          },
+          "classifications": [
+            {
+              "id": "FOM104D:D0:3095",
+              "type_code": "D0",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "3095",
+              "name_ro": "Sibiu",
+              "name_en": "Sibiu",
+              "sort_order": null
+            },
+            {
+              "id": "FOM104D:D1:112",
+              "type_code": "D1",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2026-07",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "SOM101F",
+          "code": "SOM101F",
+          "name_ro": "Ponderea somerilor inregistrati la sfarsitul lunii in totalul resurselor de munca, pe sexe, judete si localitati",
+          "name_en": "Share of registered unemployed at the end of the month in the total labor resources, by gender, counties and localities, at the end of the month\r\n",
+          "definition_ro": "Incepand cu 1 martie 2002 a intrat in vigoare Legea nr. 76/2002 privind sistemul asigurarilor pentru somaj si stimularea ocuparii fortei de munca. In sensul prevederilor noii legi, somer inregistrat este persoana care indeplineste cumulativ urmatoarele conditii:\r\na) este in cautarea unui loc de munca de la varsta de minimum 16 ani si pana la indeplinirea conditiilor de pensionare;\r\nb) starea de sanatate si capacitatile fizice si psihice o fac apta pentru prestarea unei munci;\r\nc) nu are loc de munca, nu realizeaza venituri sau realizeaza din activitati autorizate potrivit legii, venituri mai mici decat valoarea indicatorului social de referinta al asigurarilor pentru somaj si stimularii ocuparii fortei de munca, in vigoare;\r\nd) este disponibila sa inceapa lucrul in perioada imediat urmatoare daca s-ar gasi un loc de munca;\r\ne) este inregistrata la Agentia Nationala pentru Ocuparea Fortei de Munca.\r\nPersoanele inregistrate ca someri la agentiile pentru ocuparea fortei de munca si care se incadreaza in munca, potrivit legii, intr-o localitate situata la o distanta mai mare de 15 km de localitatea in care isi au domiciliul sau resedinsa, pot beneficia de o prima de incadrare, neimpozabila pe o perioada de 12 luni. Persoanele inregistrate ca someri la agentiile pentru ocuparea fortei de munca care se incadreaza in munca, potrivit legii, intr-o alta localitate situata la o distanta mai mare de 50 km fata de localitatea in care isi au domiciliul sau resedinta si, ca urmare a acestui fapt, isi schimba domiciliul ori isi stabilesc resedinta in localitatea respectiva sau in localitatile invecinate acesteia pot beneficia de o prima de instalare, neimpozabila in cuantum diferentiat.\r\nAsimilatii somerilor sunt:\r\n- absolventii institutiilor de invatamant si absolventii scolilor speciale pentru persoane cu handicap, in varsta de minim 16 ani, care, intr-o perioada de 60 de zile de la absolvire, nu au reusit sa se incadreze in munca potrivit pregatirii profesionale.\r\nTanar cu risc de marginalizare sociala este persoana cu varsta cuprinsa intre 16-26 ani,care indeplineste conditiile prevazute la calitatea de somer, se inregistreaza la agentia pentru ocuparea fortei de munca in a carei raza teritoriala isi are domiciliu sau,dupa caz, resedinta si se incadreaza in una dintre urmatoarele categorii:\r\na) se afla in sistemul de protectie a copilului sau provine din acest sistem;\r\nb) are dizabilitati;\r\nc) nu are familie sau a carui familie nu ii poate asigura intretinerea;\r\nd) are copii in intretinere;\r\ne) a executat una sau mai multe pedepse privative de libertate;\r\nf) este victima a traficului de persoane.\r\nAgentia pentru ocuparea fortei de munca incheie un contract de solidaritate cu tanarul cu risc de marginalizare sociala pe o durata de pana la 3 ani, dar nu mai putin de un an, in conditiile in care, la data incheierii contractului de solidaritate, tanarul nu a implinit varsta de 26 ani.\r\nTanar NEET - tanar cu varsta cuprinsa intre 16 si 24 de ani care nu are loc de munca, nu urmeaza o forma de invatamant si nu participa la activitati de formare profesionala.",
+          "definition_en": "Starting with 1st of March 2002, the Law no.76/2002 regarding the unemployment insurance system and the employment stimulation came into force. According to the new law provisions, the registered unemployed  is the person who cumulatively fulfills the following conditions:\r\na) looks for a job since the age of at least 16 years until the retiring age;\r\nb) his/her health and physical and psychical capacities render him/her able to work;\r\nc) has no job, gets no income or gets one, from legal activities according to the law, lower than the value of reference social indicator of unemployment insurance and stimulation of employment, in force;\r\nd) is available to start work immediately if there was a vacancy;\r\ne) is registered at the National Agency for Employment\r\nThe persons registered as unemployed at the agencies for employment and who hire, according to the law, in a locality at a distance longer than 15 km from their domicile, can receive an installation allowance, not taxable, for a 12 months period.\nThe persons registered as unemployed at the agencies for employment who hire, according to the law, into another locality located at a distance longer than 50 km from their domicile or residence town and, as a result of this, they are changing their domicile or residence in the respective locality or in the neighboring localities are entitled to receive a relocation (mobility) allowance, not taxable, and the amount  is granted differently.\r\nSimilar to unemployed are:\r\n- graduates of educational institutions and of special schools for persons with disabilities, aged at least 16 years, who, in a period of 60 days since their graduation, did not find a job according to their professional training.\r\nYoung at risk of social exclusion is the person aged 16-26 years old, which meets the requirements of the unemployed quality, registers at the employment agency in whose jurisdiction has the domicile or, as applicable, he resides and falls into one of these categories:\r\na) is in the child protection system or comes from this system;\r\nb) has disabilities;\r\nc) has no family or whose family can't provide livelihood;\r\nd) has dependent children;\r\ne) executed one or more custodial sentences;\r\nf) is victim of human trafficking.\r\nThe Agency for Employment conclude a contract of solidarity with the young at risk of social exclusion for a period of up to 3 years, but no less than a year, given that, when concluding the solidarity contract, the young man did not reach the age of 26 years.\r\nNEET young - young aged between 16 and 24 who does not have a job, is not enrolled in an education system and does not participate in vocational training activities.",
+          "periodicity": [
+            "ANNUAL",
+            "MONTHLY"
+          ],
+          "year_range": [
+            2010,
+            2026
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-10-06 14:58:00.241498+00",
+          "context_code": "1508",
+          "context_name_ro": "4. SOMERI INREGISTRATI",
+          "context_name_en": "4. REGISTERED UNEMPLOYED",
+          "context_path": "A. STATISTICA SOCIALA > FORTA DE MUNCA Forta de munca si castiguri salariale-Comunicate de presa ; Ocuparea si somajul-Comunicate de presa > SOMERI INREGISTRATI",
+          "metadata": {
+            "methodology_ro": "Ponderea somerilor in totalul resurselor de munca este un indicator statistic, calculat lunar, exprimat in procente si determinat prin raportarea numarului somerilor inregistrati la totalul populatiei dupa domiciliu cu varsta cuprinsa intre 18-62 ani la 1 ianuarie si 1 iulie a fiecarui an.\nAcest indicator statistic reprezinta rata somajului la nivel de localitate in sensul O.U.G. nr.75/2000 privind regimul zonelor defavorizate.\nPSOM.inreg.=SOMinreg. / Pdom*100\nunde:\nPSOM.inreg  = ponderea somerilor  (%)\nSOMinreg. = numarul total de someri inregistrati\nPdom = populatia dupa domiciliu 18-62 ani\nNota: rata somajului la nivel de localitate nu se poate calcula decat la 10 ani, cu ocazia recensamintelor de populatie si locuinte. Nu se poate calcula pentru ca nu exista informatii asa de detaliate la nivel de localitate in cadrul surselor administrative, insa, INS a dezvoltat un indicator proxy (ponderea somerilor in totalul resurselor de munca), chiar daca nu corespunde pe deplin modului de calcul al ratei somajului.",
+            "data_sources_ro": "Cercetarea statistica privind numarul somerilor inregistrati si rata somajului inregistrat  <<1914>>",
+            "source_year_range": [
+              2010,
+              2026
+            ],
+            "source_last_update": "2026-09-14",
+            "observation_count": 2078093,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "6a39ebeb836e284fd305bdf0febc7b2b8f5607865cd0d0adac1eac48f2672adc",
+            "revision_id": "2600",
+            "transform_contract_sha256": "29ad0ebc66c833f3afd6a01b74c6c5e56544ce09d8d23b40e1af007990e45b03",
+            "published_at": "2026-10-06 14:58:00.241498+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/SOM101F?lang=ro"
+          },
+          "methodology_ro": "Ponderea somerilor in totalul resurselor de munca este un indicator statistic, calculat lunar, exprimat in procente si determinat prin raportarea numarului somerilor inregistrati la totalul populatiei dupa domiciliu cu varsta cuprinsa intre 18-62 ani la 1 ianuarie si 1 iulie a fiecarui an.\nAcest indicator statistic reprezinta rata somajului la nivel de localitate in sensul O.U.G. nr.75/2000 privind regimul zonelor defavorizate.\nPSOM.inreg.=SOMinreg. / Pdom*100\nunde:\nPSOM.inreg  = ponderea somerilor  (%)\nSOMinreg. = numarul total de someri inregistrati\nPdom = populatia dupa domiciliu 18-62 ani\nNota: rata somajului la nivel de localitate nu se poate calcula decat la 10 ani, cu ocazia recensamintelor de populatie si locuinte. Nu se poate calcula pentru ca nu exista informatii asa de detaliate la nivel de localitate in cadrul surselor administrative, insa, INS a dezvoltat un indicator proxy (ponderea somerilor in totalul resurselor de munca), chiar daca nu corespunde pe deplin modului de calcul al ratei somajului.",
+          "methodology_en": "The share of unemployed in the total labor resources is a statistical indicator, calculated monthly as a percentage between the total number of registered unemployed and the permanent resident population aged 18-62 years on 1 January and 1 July of each year. \r\nThis statistical indicator is the unemployment rate to localities level in the sense of E.G.O. No.75 / 2000 on the deprived areas.\r\nSRegUnempl. =RegUnempl./Prpop*100\nwhere:\nSRegUnempl = share of registered unemployed (%)\nRegUnempl = number of registered unemployed\nPrpop = permanent resident population aged 18-62\r\nNote: the unemployment rate at locality level can only be calculated after 10 years, during the population and housing censuses. It cannot be calculated because there is no detailed information in the details of the locality level within the administrative sources, however, the INS has developed a proxy indicator (the share of the unemployed in the total labor resources), even if it does not fully correspond to the way of calculating the unemployment rate.",
+          "data_sources_ro": "Cercetarea statistica privind numarul somerilor inregistrati si rata somajului inregistrat  <<1914>>",
+          "data_sources_en": "Statistical survey on registred unemployed and registered unemployment rate <<1914>>",
+          "data_sources": [
+            {
+              "name": "Cercetarea statistica privind numarul somerilor inregistrati si rata somajului inregistrat  <<1914>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 1914
+            }
+          ],
+          "observations_ro": "Datele de an sunt cele de la luna decembrie.\nDatele sunt disponibile incepand cu anul 2010.\r\nDatele au regimul datelor de populatie dupa domiciliu, respectiv : provizorie(t+5 luni),definitiva(t+13 luni) si revizuita(t+29 luni).",
+          "observations_en": "The year dates are those from december.\nThe starting year for the data series is 2010.\r\nThe data have the same character of the population data: based on domicile, namely: provisional (t + 5 months), final (t + 13 months) and revised (t + 29 months).\r\n",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2026-09-14",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Sexe",
+              "label_en": "Sex",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Sexe",
+                "name_en": "Sex",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3182,
+              "classification_type": {
+                "code": "D2",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "is_hierarchical": false,
+              "option_count": 215,
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Procente",
+              "label_en": "MU: Percentage",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:SOM101F:105:3095:112:4944:10225",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  3095
+                ],
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 48,
+                "code": "SB",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Sibiu",
+                "parentId": 7,
+                "parentCode": "RO12",
+                "parentNameRo": "Centru",
+                "coreTerritoryId": 1811
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "SB",
+            "period": "2026-07",
+            "unit_code": "10225",
+            "classifications": {
+              "D0": "105",
+              "D1": "3095",
+              "D2": "112"
+            }
+          },
+          "dataset_code": "SOM101F",
+          "value": "2.1",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2026-07",
+            "year": 2026,
+            "quarter": 3,
+            "month": 7,
+            "periodicity": "MONTHLY"
+          },
+          "territory": {
+            "code": "SB",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Sibiu"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente",
+            "name_en": "Percentage"
+          },
+          "classifications": [
+            {
+              "id": "SOM101F:D0:105",
+              "type_code": "D0",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "SOM101F:D1:3095",
+              "type_code": "D1",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "3095",
+              "name_ro": "Sibiu",
+              "name_en": "Sibiu",
+              "sort_order": null
+            },
+            {
+              "id": "SOM101F:D2:112",
+              "type_code": "D2",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2025",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "LOC101B",
+          "code": "LOC101B",
+          "name_ro": "Locuinte existente la sfarsitul anului pe forme de proprietate, judete si localitati",
+          "name_en": "Dwellings stock at the end of the year by type of ownership, counties and localities",
+          "definition_ro": "Locuinta (apartamentul) este constructia formata din una sau mai multe camere de locuit situate la acelasi nivel al cladirii sau la niveluri diferite, prevazuta in general cu dependinte (bucatarie, baie etc.) sau alte spatii de deservire, independenta din punct de vedere functional, avand intrare separata din casa scarii, curte sau strada si care a fost construita, transformata sau amenajata in scopul de a fi folosita, in principiu, de o singura gospodarie.\nSe evidentiaza numarul locuintelor existente la sfarsitul anului. \n",
+          "definition_en": "A dwelling (an apartment) is the built unit made up of one or more habitable rooms situated at the same floor  of  the building or at different floors, generally fitted with outhouses  (kitchen,  bathroom  a.s.o.)  or  with  other serving  spaces, which is functionally  independent and has a separate entrance from the staircase hall, yard or street and which has been built, transformed or arranged with a view to being used, in theory, by one household.\r\nThe number of dwellings at the end of the year is pointed out.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2025
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-09-06 13:18:44.842571+00",
+          "context_code": "5030",
+          "context_name_ro": "1. LOCUINTE",
+          "context_name_en": "1. DWELLINGS",
+          "context_path": "B. STATISTICA ECONOMICA > LOCUINTE Comunicate de presa > LOCUINTE",
+          "metadata": {
+            "methodology_ro": "Fondul de locuinte se detemina pe baza datelor obtinute la recensamintul populatiei si locuintelor tinind seama de modificarile intervenite in cursul fiecarui an:\n -intrarile prin constructii de locuinte noi, prin schimbarea unorspatii cu alta destinatie in locuinte;\n -iesirile prin demolari, respectiv prin schimbarea din locuinte in spatii cu alta destinatie.\n\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/LOC/Modificari-ale-fondului-de-locuinte.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>",
+            "data_sources_ro": "Cercetarea statistica privind modificarile fondului de locuinte <<3071>>",
+            "source_year_range": [
+              1990,
+              2025
+            ],
+            "source_last_update": "2026-07-21",
+            "observation_count": 301925,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "e722918eb65a03734128b30f8bdc1de19b414605a387ec56fc622a050f280211",
+            "revision_id": "996",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/LOC101B?lang=ro"
+          },
+          "methodology_ro": "Fondul de locuinte se detemina pe baza datelor obtinute la recensamintul populatiei si locuintelor tinind seama de modificarile intervenite in cursul fiecarui an:\n -intrarile prin constructii de locuinte noi, prin schimbarea unorspatii cu alta destinatie in locuinte;\n -iesirile prin demolari, respectiv prin schimbarea din locuinte in spatii cu alta destinatie.\n\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/LOC/Modificari-ale-fondului-de-locuinte.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>",
+          "methodology_en": "Dwellings stock is determined based on data obtained from Population and Housing Censuses and on changes occurred each year, namely:\n- inputs, representing dwellings in use (new dwellings and spaces with another destination changed into dwellings);\n- outputs, representing demolitions and change of dwellings into spaces with another destination.\n\n<a href=\"https://insse.ro/cms/files/Quality-reports/Dwellings/Changes-to-the-housing-stock.pdf\" target=\"_blank\"> Metadata and quality report </a>",
+          "data_sources_ro": "Cercetarea statistica privind modificarile fondului de locuinte <<3071>>",
+          "data_sources_en": "Statistical survey on the changes in dwellings stock <<3071>>",
+          "data_sources": [
+            {
+              "name": "Cercetarea statistica privind modificarile fondului de locuinte <<3071>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 3071
+            }
+          ],
+          "observations_ro": "Numarul si denumirile localitatilor Romaniei sunt in concordanta cu impartirea administrativ - teritoriala revizuita in anul curent.\r\nPentru perioada 1990 - 1992 datele pe forme de proprietate nu sunt disponibile.\r\nPentru perioada 1993-1998 randul de total cuprinde si ''alte forme de proprietate''.\r\nDatele referitoare la fondul de locuinte (numarul de locuinte, camerele de locuit si suprafata locuibila) pentru anii 2021, 2022 si 2023 sunt recalculate ca urmare a definitivarii rezultatelor RPL 2021.",
+          "observations_en": "The number and name of localities are in accordance with administrative territorial structure updated for current year.\r\nThe data by ownership are not available for the period 1990 - 1992.\r\nFor the period 1993-1998 the total row include ''other forms of ownership''.\r\nData on the dwellings stock (number of dwellings, rooms and living area) for the years 2021, 2022 and 2023 have been recalculated as a result of the finalisation of the 2021 Census of Population and Housing.",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2026-07-21",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Forme de proprietate",
+              "label_en": "Type of ownership",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Forme de proprietate",
+                "name_en": "Type of ownership",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3183,
+              "classification_type": {
+                "code": "D2",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "label_en": "Years",
+              "is_hierarchical": false,
+              "option_count": 36,
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar",
+              "label_en": "MU: Number",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:LOC101B:7388:3095:112:4912:9669",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  3095
+                ],
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 48,
+                "code": "SB",
+                "sirutaCode": null,
+                "level": "NUTS3",
+                "nameRo": "Sibiu",
+                "parentId": 7,
+                "parentCode": "RO12",
+                "parentNameRo": "Centru",
+                "coreTerritoryId": 1811
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "SB",
+            "period": "2025",
+            "unit_code": "9669",
+            "classifications": {
+              "D0": "7388",
+              "D1": "3095",
+              "D2": "112"
+            }
+          },
+          "dataset_code": "LOC101B",
+          "value": "211601",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "SB",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Sibiu"
+          },
+          "unit": {
+            "code": "9669",
+            "symbol": "count",
+            "name_ro": "Numar",
+            "name_en": "Number"
+          },
+          "classifications": [
+            {
+              "id": "LOC101B:D0:7388",
+              "type_code": "D0",
+              "type_name_ro": "Forme de proprietate",
+              "type_name_en": "Type of ownership",
+              "code": "7388",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "LOC101B:D1:3095",
+              "type_code": "D1",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "3095",
+              "name_ro": "Sibiu",
+              "name_en": "Sibiu",
+              "sort_order": null
+            },
+            {
+              "id": "LOC101B:D2:112",
+              "type_code": "D2",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      }
+    ],
+    "national": [
+      {
+        "latestPeriod": "2026",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "POP107D",
+          "code": "POP107D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+          "name_en": "LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.",
+          "definition_ro": "Populatia dupa domiciliu la data de 1 ianuarie a anului de referinta reprezinta numarul persoanelor cu cetatenie romana si domiciliu pe teritoriul Romaniei, delimitat dupa criterii administrativ-teritoriale.\r\nDomiciliul persoanei este adresa la care aceasta declara ca are locuinta principala, trecuta in actul de identitate (CI, BI), asa cum este luata in evidenta organelor administrative ale statului.\r\nIn stabilirea valorii acestui indicator nu se tine cont de resedinta obisnuita, de perioada si/sau motivul absentei de la domiciliu.",
+          "definition_en": "Legally resident population represents the number of persons with Romanian citizenship and legal residence on the territory of Romania, delimited by territorial-administrative criteria.\r\nThe person's legal residence is the address where he/she declares to have the main dwelling, printed as such on its identity card and registered by the administrative bodies of the State.\r\nTo set up the value of this indicator, the usual residence is not taken into account as well as the period and/or reason of absence from domicile.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1992,
+            2026
+          ],
+          "dimension_count": 6,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-09-06 13:18:44.842571+00",
+          "context_code": "1012",
+          "context_name_ro": "2. POPULATIA DUPA DOMICILIU",
+          "context_name_en": "2. LEGALLY RESIDENT POPULATION",
+          "context_path": "A. STATISTICA SOCIALA > POPULATIE SI STRUCTURA DEMOGRAFICA Comunicate de presa > POPULATIA DUPA DOMICILIU",
+          "metadata": {
+            "methodology_ro": "Metoda utilizata pentru calculul indicatorului ''populatia dupa domiciliu'' este metoda componentelor:\r\na) la nivel de total tara, in functie de soldul sporului natural si soldul migratiei internationale definitive:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n\r\nb) in profil teritorial, la diferite niveluri administrativ-teritoriale pentru care se calculeaza, in functie de soldul sporului natural, soldul migratiei internationale definitive si soldul migratiei interne cu schimbarea domiciliului:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + dm(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\ndm(t,t+1) - soldul migratiei interne cu schimbarea domiciliului (sositi - plecati), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n \r\nVarsta este exprimata in ani impliniti (de exemplu, o persoana avand varsta de 24 ani si 11 luni este considerata ca avand varsta de 24 ani).\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Populatia-dupa-domiciliu-la-1ianuarie.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+            "data_sources_ro": "Populatia dupa domiciliu a Romaniei (la 1 ianuarie si 1 iulie) <<4058>>",
+            "source_year_range": [
+              1992,
+              2026
+            ],
+            "source_last_update": "2026-04-02",
+            "observation_count": 34199128,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "429008f7bdb642aff655a0b1c93cdf6db54f0a04433eb0a2db6fed0183555ad6",
+            "revision_id": "1051",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/POP107D?lang=ro"
+          },
+          "methodology_ro": "Metoda utilizata pentru calculul indicatorului ''populatia dupa domiciliu'' este metoda componentelor:\r\na) la nivel de total tara, in functie de soldul sporului natural si soldul migratiei internationale definitive:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n\r\nb) in profil teritorial, la diferite niveluri administrativ-teritoriale pentru care se calculeaza, in functie de soldul sporului natural, soldul migratiei internationale definitive si soldul migratiei interne cu schimbarea domiciliului:\r\nP(t+1) = P(t) + N(t,t+1) - D(t,t+1) + dM(t,t+1) + dm(t,t+1) + Cv\r\nunde:\r\nP(t+1) - populatia cu domiciliul in tara la momentul t+1;\r\nP(t) - populatia cu domiciliul in tara la momentul t;\r\nN(t,t+1) - numarul de nascuti-vii in perioada (t, t+1), ai caror mame au avut domiciliul in Romania la data nasterii;\r\nD(t,t+1) - numarul de persoane care au decedat in perioada (t, t+1), care aveau domiciliul in Romania la data decesului;\r\ndM(t,t+1) - soldul migratiei internationale definitive (imigranti - emigranti), in perioada (t, t+1);\r\ndm(t,t+1) - soldul migratiei interne cu schimbarea domiciliului (sositi - plecati), in perioada (t, t+1);\r\nCv - coeficient de ajustare a varstelor.\r\n \r\nVarsta este exprimata in ani impliniti (de exemplu, o persoana avand varsta de 24 ani si 11 luni este considerata ca avand varsta de 24 ani).\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Populatia-dupa-domiciliu-la-1ianuarie.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+          "methodology_en": "The method used to calculate the indicator ''legally resident population'' is the components method:\r\na) at national level, depending on the balance of natural increase and definitive international migration balance:\r\nP(t+1)= P(t) + N(t,t+1) - D(t,t+1) + Internat def mig balance(t,t+1) + Cv\r\nunde:\r\nP(t+1) - population having domicile in the country at the moment t+1;\r\nP(t) - population having domicile in the country at the moment t;\r\nN(t,t+1) - the number of live-births during the (t, t+1) period, whose mothers have had their domicile in Romania at the time of birth;\r\nD(t,t+1) - the number of deceased persons during the (t, t+1) period, who have had their domicile in Romania at the time of death; \r\nInternat def mig balance(t,t+1) - International definitive migration balance (immigrants - emigrants), during the (t, t+1) period;\r\nCv - adjustment coefficient ages.\r\n\r\nb) at territorial level, at various administrative-territorial levels, depending on the balance of natural increase, the balance of definitive international migration and the balance of internal migration with domicile change:\r\nP(t+1)= P(t) + N(t,t+1) - D(t,t+1) + Internat def mig balance(t,t+1) + Int def mig balance(t,t+1) + Cv\r\nunde:\r\nP(t+1) - population having domicile in the country at the moment t+1;\r\nP(t) - population having domicile in the country at the moment t;\r\nN(t,t+1) - the number of live-births during the (t, t+1) period, whose mothers have had their domicile in Romania at the time of birth;\r\nD(t,t+1) - the number of deceased persons during the (t, t+1) period, who have had their domicile in Romania at the time of death;\r\nInternat def mig balance(t,t+1) - International definitive migration balance (immigrants - emigrants), during the (t, t+1) period;\r\nInt def mig balance(t,t+1) - Internal migration balance with domicile change (in-migrants minus out-migrants), during the (t, t+1) period;\r\nCv - adjustment coefficient ages.\r\n\r\nAge is expressed in the years reached during the year (for instance, a person of 24 years old and 11 months at July 1st, is considered to be of 24 years old).\r\n\r\n<a href=\"https://insse.ro/cms/files/Quality-reports/Population/Permanent-population-at-1st-of-January.pdf\" target=\"_blank\"> Metadata and quality report </a>\r\n",
+          "data_sources_ro": "Populatia dupa domiciliu a Romaniei (la 1 ianuarie si 1 iulie) <<4058>>",
+          "data_sources_en": "Legally resident population of Romania (on January 1 and July 1) <<4058>>",
+          "data_sources": [
+            {
+              "name": "Populatia dupa domiciliu a Romaniei (la 1 ianuarie si 1 iulie) <<4058>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 4058
+            }
+          ],
+          "observations_ro": "Datele utilizate pentru determinarea populatiei dupa domiciliu provin din doua tipuri de surse de date:\r\n1. surse administrative\r\nDirectia pentru Evidenta Persoanelor si Administrarea Bazelor de Date - Registrul National de Evidenta a Persoanelor:\r\n- date referitoare la migratia interna, date semestriale;\r\n- date referitoare la migratia internationala definitiva cu stabilirea domiciliului in Romania - imigranti, date semestriale;\r\n- primiri si renuntari la cetatenia romana, date semestriale.\r\nDirectia Generala de Pasapoarte:\r\n- date referitoare la migratia internationala definitiva cu schimbarea domiciliului in alta tara - emigranti, date semestriale.\r\n2. surse statistice - rezultatele cercetarilor statistice exhaustive privind natalitatea si mortalitatea, pentru numarul nascutilor-vii si al deceselor survenite in intervalul de timp studiat (bazate, la randul lor, pe surse administrative).\r\nIn scopul realizarii de comparatii internationale, se va utiliza numai populatia rezidenta care se calculeaza conform regulamentelor europene (Regulamentul nr. 1260/2013 al Parlamentului European si al Consiliului privind statisticile europene pe demografie si Regulamentul nr. 205/2014 al Comisiei de implementare a Regulamentului nr. 1260/2013 privind statisticile europene pe demografie  referitor la defalcare date, termene, revizuiri de date).\r\nIn scopuri nationale, se poate utiliza populatia dupa domiciliu, aceasta fiind necesara in special pentru cerintele impuse de legislatia nationala (Legea nr. 273/ 2006, OUG nr. 63/2010, Hotararea nr. 410/1991).\r\nDenumirile localitatilor Romaniei sunt in concordanta cu impartirea administrativ - teritoriala actuala.\r\nPentru localitatile Ripiceni (SIRUTA 38731) si Scanteia (SIRUTA 98916) cresterea numarului de locuitori este datorata imigratiei persoanelor nascute in Republica Moldova.\r\nDatele statistice sunt revizuite in mod constant, conform politicii de revizuire a datelor.",
+          "observations_en": "The data used to determine legally resident population comes from two types of data sources:\r\n1. administrative sources\r\nDirectorate for Personal Records and Database Administration (DEPABD) - National Registry for Persons Evidence:\r\n- data on internal migration, biannual data;\r\n- data on definitive international migration - immigrants, biannual data;\r\n- acquiring and withdrawing of Romanian citizenship, biannual data.\r\nPassports General Directorate:\r\n- definitive international migration data with domicile change to another country - immigrants, biannual data.\r\n2. statistical sources- exhaustive statistical researches on natality and mortality for the number of live births and deceased in the studied period (based on administrative sources).\r\nIn order to carry out international comparisons, it will be used only the usually resident population, calculated according to European regulations (Regulation no. 1260/2013 of the European Parliament and of the Council on European demographic statistics and Regulation no. 205/2014 laying down uniformed conditions for the implementation  of Regulation no. 1260/2013 on European demographic statistics as regards breakdowns of data, deadlines and data revisions).\r\nFor national purposes may be used legally resident population, this one being especially useful for the requirements of national legislation (Law no. 273/2006, Act no. 63/2010, Decision no. 410/1991).\r\nThe name of localities are in accordance with administrative territorial structure updated for current year.\r\nFor the localities Ripiceni (SIRUTA 38731) and Scanteia (SIRUTA 98916), the increase in the number of inhabitants is due to the immigration of people born in the Republic of Moldova.\r\nThe statistical data are revised constantly, according to the Revision Policy of INS.",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2026-04-02",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Varste si grupe de varsta",
+              "label_en": "Age group and ages",
+              "is_hierarchical": false,
+              "option_count": 104,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Varste si grupe de varsta",
+                "name_en": "Age group and ages",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "Sexe",
+              "label_en": "Sex",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Sexe",
+                "name_en": "Sex",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D2",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 3,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3182,
+              "classification_type": {
+                "code": "D3",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 4,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "label_en": "Years",
+              "is_hierarchical": false,
+              "option_count": 35,
+              "classification_type": null
+            },
+            {
+              "index": 5,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar persoane",
+              "label_en": "MU: Persons",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:POP107D:1:105:112:112:4931:9685",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  112
+                ],
+                [
+                  3,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 1,
+                "code": "RO",
+                "sirutaCode": null,
+                "level": "NATIONAL",
+                "nameRo": "TOTAL",
+                "parentId": null,
+                "parentCode": null,
+                "parentNameRo": null,
+                "coreTerritoryId": 9699
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "RO",
+            "period": "2026",
+            "unit_code": "9685",
+            "classifications": {
+              "D0": "1",
+              "D1": "105",
+              "D2": "112",
+              "D3": "112"
+            }
+          },
+          "dataset_code": "POP107D",
+          "value": "21646220",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2026",
+            "year": 2026,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane",
+            "name_en": "Number of persons"
+          },
+          "classifications": [
+            {
+              "id": "POP107D:D0:1",
+              "type_code": "D0",
+              "type_name_ro": "Varste si grupe de varsta",
+              "type_name_en": "Age group and ages",
+              "code": "1",
+              "name_ro": "Total",
+              "name_en": "Total",
+              "sort_order": null
+            },
+            {
+              "id": "POP107D:D1:105",
+              "type_code": "D1",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "POP107D:D2:112",
+              "type_code": "D2",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            },
+            {
+              "id": "POP107D:D3:112",
+              "type_code": "D3",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2024",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "FOM104D",
+          "code": "FOM104D",
+          "name_ro": "Numarul mediu al salariatilor pe judete si localitati",
+          "name_en": "Average number of employees by counties and localities",
+          "definition_ro": "Numarul mediu al salariatilor cuprinde persoanele angajate cu contract de munca/raport de serviciu pe durata determinata sau nedeterminata (inclusiv lucratorii sezonieri, managerul sau administratorul), al caror contract de munca/raport de serviciu nu a fost suspendat in perioada de referinta.\nNumarul mediu al salariatilor se calculeaza ca medie aritmetica simpla rezultata din suma efectivelor zilnice de salariati (exclusiv cei al caror contract de munca/raport de serviciu a fost suspendat), din perioada de referinta, inclusiv din zilele de repaus saptamanal, sarbatori legale si alte zile nelucratoare, impartita la numarul total al zilelor calendaristice.\nIn efectivul zilnic al salariatilor luat in calculul numarului mediu se cuprind urmatoarele categorii:\n- salariatii cu contract de munca/raport de serviciu pe durata determinata sau nedeterminata, inclusiv salariatii detasati la lucru in strainatate (daca unitatea care i-a detasat le-a asigurat o remuneratie in tara, pentru care a virat contributii sociale obligatorii si impozit);\n- salariatii al caror contract de munca/raport de serviciu a fost suspendat din initiativa angajatorului (in cazul intreruperii temporare a activitatii) si au beneficiat de o indemnizatie din salariul de baza corespunzator locului de munca ocupat;\n- salariatii aflati in incapacitate temporara de munca (concediu medical, carantina/izolare la domiciliu) pe perioada cand acestia sunt platiti de angajator din fonduri proprii;\n- salariatii parinti, in timpul zilelor libere acordate pentru supravegherea copiilor, in situatia inchiderii temporare a unitatilor de invatamant, indiferent din ce fonduri sunt platiti;\n- salariatii al caror timp de lucru a fost redus temporar, indiferent din ce fonduri sunt platiti. \nDin efectivul zilnic al salariatilor luat in calculul numarului mediu se exclud: salariatii aflati in concedii fara plata, in greva, patronii care isi desfasoara activitatea in propria unitate si pentru care sursa de venit o constituie numai dividendele si profitul unitatii, lucratorii familiali (persoanele care-si exercita activitatea intr-o unitate economica apartinand familiei sau unei rude, pe care o ajuta si pentru care nu primesc remuneratie sub forma de salariu; plata se realizeaza in natura (hrana, haine, locuinta) sau ocazional, cu titlu exceptional, si in bani, fara a figura pe statul de salarii), membrii consiliilor judetene si locale, zilierii (persoane fizice care desfasoara activitati necalificate cu caracter ocazional, conform prevederilor legale in vigoare). In zilele de repaus saptamanal, sarbatori legale si alte zile nelucratoare se ia in calcul ca efectiv zilnic numarul salariatilor din ziua precedenta, cu exceptia celor al caror contract de munca/raport de serviciu a incetat in aceasta zi. In cazul cand unitatea a fost infiintata sau si-a incetat activitatea in cursul perioadei de referinta, se iau in calcul efectivele zilnice numai pentru perioada in care a functionat, iar suma rezultata se imparte la numarul total al zilelor calendaristice din perioada de referinta.\nSalariatii angajati cu norma partiala se includ in numarul mediu proportional cu timpul de lucru prevazut in contractul de munca/ raport de serviciu. In efectivul salariatilor luat in calculul numarului mediu se includ numai persoanele care au fost platite.\nIn mod exceptional, pentru cazurile cand, in cursul perioadei de referinta, se platesc sume corespunzatoare perioadelor anterioare (sume platite retroactiv ca urmare a castigarii in instanta a drepturilor banesti aferente anilor anteriori), numarul beneficiarilor (fosti salariati sau salariati cu contract de munca/raport de serviciu suspendat) se include in numarul mediu al salariatilor proportional cu perioadele pentru care se realizeaza platile respective, astfel incat sa existe o corespondenta directa intre sumele brute platite si numarul mediu al salariatilor.\nIncepand cu anul 2003, din efectivele zilnice luate in calculul numarului mediu au fost exclusi salariatii al caror contract de munca/raport de serviciu a fost suspendat, conform prevederilor legale in vigoare.",
+          "definition_en": "The average number of employees comprises the persons employed under a labour contract/agreement on a definite or indefinite duration (including seasonal workers, the manager or the administrator), whose labour contract/agreement  relationship was not suspended during the reference period.\nThe average number of employees is calculated as a simple arithmetic mean of the sum of the daily number of employees (those with suspended labour contract/agreement excluded), over the reference period, including the week-ends, legal holidays and other non-working days, divided by the total number of calendar days. \nIn the total daily number of employees considered for the calculation of the average number are included the following categories:\n- the employees with labour contract/agreement for a definite or indefinite period of time, including the employees detached to work abroad (if the unit that detached them provided remuneration in the country, for which it transferred compulsory social contributions and tax);\n- the employees whose labour contract/agreement has been suspended at the initiative of the employer (in case of temporary interruption of activity) and have received an allowance from the basic salary corresponding to the job;\n- the employees who are temporarily in work incapacity (medical leave, quarantine/home isolation) during the time period in which they are paid from the employer own funds; \n- the employees parents, during the days off granted to them in order to supervise their children, in cases of temporary closure of educational institutions, irrespective of the funds from which they are paid;\n- the employees whose working hours has been temporarily reduced, irrespective of the funds from which they are paid.\nIn the daily number of employees taken into consideration when calculating the average number, the following are not included: employees on leaves without pay, on strike, owners who carry out their activity within their own enterprises and for whom the income source is solely represented by unit dividends and profits, unpaid family workers (persons who are carrying out their activity within an economic unit belonging to the family or to a relative, by helping it and for which they do not receive a compensation as wages and salaries; the payment is done in kind (food, clothing, housing) or occasionally or exceptionally in cash, without being included on payrolls), members of local and county councils, day labourers (persons who carry out unskilled activities on an occasional basis, in accordance with the legal provisions in force). During the week-ends, legal holidays and other non-working days, the number of employees from the previous day is taken into consideration as daily number of employees, except the number of those employees whose labour contract/agreement ceased that day. If the unit established or ceased its activity during the reference period, the daily number of employees is taking into account only for the period in which it operated, and the resulting amount is divided by the total number of calendar days from the reference period.\nPart-time employees are included in the average number proportional with the working time included in the labour contract/agreement. In the number of employees taken into consideration in the average number only the paid persons are included.\nExceptionally, in the cases when amounts for prior periods are paid (backdated paid arrears as consequence of wining the lawsuits involving the money rights for the previous years), the number of beneficiaries (former employees or employees with suspended labour contract/agreement) are included in the average number of employees proportionally with the periods for which respective payments are done, so that a direct correlation between gross amounts paid and the average number of employees exists.\nBeginning with 2003, the daily number of employees taken into account for the calculation of the average number no longer include the employees whose labour contract/agreement was suspended according to the legal provisions in force.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2024
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-09-06 13:18:44.842571+00",
+          "context_code": "1513",
+          "context_name_ro": "9. SALARIATI",
+          "context_name_en": "9. EMPLOYEES",
+          "context_path": "A. STATISTICA SOCIALA > FORTA DE MUNCA Forta de munca si castiguri salariale-Comunicate de presa ; Ocuparea si somajul-Comunicate de presa > SALARIATI",
+          "metadata": {
+            "methodology_ro": "Repartizarea salariatilor pe judete s-a realizat in functie de localitatea in care acestia isi desfasoara activitatea.",
+            "data_sources_ro": "Cercetarea statistica privind costul fortei de munca <<6263>>",
+            "source_year_range": [
+              1990,
+              2024
+            ],
+            "source_last_update": "2025-11-20",
+            "observation_count": 106606,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "a56c09b205b5bf147515ca3d2f92712aa7bfada7d9ea8c01db0258b35fba11dd",
+            "revision_id": "674",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/FOM104D?lang=ro"
+          },
+          "methodology_ro": "Repartizarea salariatilor pe judete s-a realizat in functie de localitatea in care acestia isi desfasoara activitatea.",
+          "methodology_en": "The breakdown of employees by county was carried out according to the locality where they work.",
+          "data_sources_ro": "Cercetarea statistica privind costul fortei de munca <<6263>>",
+          "data_sources_en": "Labour cost survey <<6263>>",
+          "data_sources": [
+            {
+              "name": "Cercetarea statistica privind costul fortei de munca <<6263>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 6263
+            }
+          ],
+          "observations_ro": "Datele la nivel de localitati au fost recalculate pe baza datelor din surse administrative disponibile la nivelul judetului.\nNumarul si denumirile localitatilor Romaniei sunt in concordanta cu impartirea administrativ - teritoriala revizuita in anul curent.\nDatele pentru anul 1990 sunt disponibile numai la nivel de total judet. \n",
+          "observations_en": "The number and name of localities are in accordance with administrative territorial structure updated for current year. \nDates of localities were recalculated in accordance with administrative sources.\nThe data for 1990, are available only by counties.",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2025-11-20",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3183,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "label_en": "Years",
+              "is_hierarchical": false,
+              "option_count": 35,
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar persoane",
+              "label_en": "MU: Persons",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:FOM104D:112:112:4893:9685",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  0,
+                  112
+                ],
+                [
+                  1,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 1,
+                "code": "RO",
+                "sirutaCode": null,
+                "level": "NATIONAL",
+                "nameRo": "TOTAL",
+                "parentId": null,
+                "parentCode": null,
+                "parentNameRo": null,
+                "coreTerritoryId": 9699
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "RO",
+            "period": "2024",
+            "unit_code": "9685",
+            "classifications": {
+              "D0": "112",
+              "D1": "112"
+            }
+          },
+          "dataset_code": "FOM104D",
+          "value": "5453155",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane",
+            "name_en": "Number of persons"
+          },
+          "classifications": [
+            {
+              "id": "FOM104D:D0:112",
+              "type_code": "D0",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            },
+            {
+              "id": "FOM104D:D1:112",
+              "type_code": "D1",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2026-07",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "SOM101F",
+          "code": "SOM101F",
+          "name_ro": "Ponderea somerilor inregistrati la sfarsitul lunii in totalul resurselor de munca, pe sexe, judete si localitati",
+          "name_en": "Share of registered unemployed at the end of the month in the total labor resources, by gender, counties and localities, at the end of the month\r\n",
+          "definition_ro": "Incepand cu 1 martie 2002 a intrat in vigoare Legea nr. 76/2002 privind sistemul asigurarilor pentru somaj si stimularea ocuparii fortei de munca. In sensul prevederilor noii legi, somer inregistrat este persoana care indeplineste cumulativ urmatoarele conditii:\r\na) este in cautarea unui loc de munca de la varsta de minimum 16 ani si pana la indeplinirea conditiilor de pensionare;\r\nb) starea de sanatate si capacitatile fizice si psihice o fac apta pentru prestarea unei munci;\r\nc) nu are loc de munca, nu realizeaza venituri sau realizeaza din activitati autorizate potrivit legii, venituri mai mici decat valoarea indicatorului social de referinta al asigurarilor pentru somaj si stimularii ocuparii fortei de munca, in vigoare;\r\nd) este disponibila sa inceapa lucrul in perioada imediat urmatoare daca s-ar gasi un loc de munca;\r\ne) este inregistrata la Agentia Nationala pentru Ocuparea Fortei de Munca.\r\nPersoanele inregistrate ca someri la agentiile pentru ocuparea fortei de munca si care se incadreaza in munca, potrivit legii, intr-o localitate situata la o distanta mai mare de 15 km de localitatea in care isi au domiciliul sau resedinsa, pot beneficia de o prima de incadrare, neimpozabila pe o perioada de 12 luni. Persoanele inregistrate ca someri la agentiile pentru ocuparea fortei de munca care se incadreaza in munca, potrivit legii, intr-o alta localitate situata la o distanta mai mare de 50 km fata de localitatea in care isi au domiciliul sau resedinta si, ca urmare a acestui fapt, isi schimba domiciliul ori isi stabilesc resedinta in localitatea respectiva sau in localitatile invecinate acesteia pot beneficia de o prima de instalare, neimpozabila in cuantum diferentiat.\r\nAsimilatii somerilor sunt:\r\n- absolventii institutiilor de invatamant si absolventii scolilor speciale pentru persoane cu handicap, in varsta de minim 16 ani, care, intr-o perioada de 60 de zile de la absolvire, nu au reusit sa se incadreze in munca potrivit pregatirii profesionale.\r\nTanar cu risc de marginalizare sociala este persoana cu varsta cuprinsa intre 16-26 ani,care indeplineste conditiile prevazute la calitatea de somer, se inregistreaza la agentia pentru ocuparea fortei de munca in a carei raza teritoriala isi are domiciliu sau,dupa caz, resedinta si se incadreaza in una dintre urmatoarele categorii:\r\na) se afla in sistemul de protectie a copilului sau provine din acest sistem;\r\nb) are dizabilitati;\r\nc) nu are familie sau a carui familie nu ii poate asigura intretinerea;\r\nd) are copii in intretinere;\r\ne) a executat una sau mai multe pedepse privative de libertate;\r\nf) este victima a traficului de persoane.\r\nAgentia pentru ocuparea fortei de munca incheie un contract de solidaritate cu tanarul cu risc de marginalizare sociala pe o durata de pana la 3 ani, dar nu mai putin de un an, in conditiile in care, la data incheierii contractului de solidaritate, tanarul nu a implinit varsta de 26 ani.\r\nTanar NEET - tanar cu varsta cuprinsa intre 16 si 24 de ani care nu are loc de munca, nu urmeaza o forma de invatamant si nu participa la activitati de formare profesionala.",
+          "definition_en": "Starting with 1st of March 2002, the Law no.76/2002 regarding the unemployment insurance system and the employment stimulation came into force. According to the new law provisions, the registered unemployed  is the person who cumulatively fulfills the following conditions:\r\na) looks for a job since the age of at least 16 years until the retiring age;\r\nb) his/her health and physical and psychical capacities render him/her able to work;\r\nc) has no job, gets no income or gets one, from legal activities according to the law, lower than the value of reference social indicator of unemployment insurance and stimulation of employment, in force;\r\nd) is available to start work immediately if there was a vacancy;\r\ne) is registered at the National Agency for Employment\r\nThe persons registered as unemployed at the agencies for employment and who hire, according to the law, in a locality at a distance longer than 15 km from their domicile, can receive an installation allowance, not taxable, for a 12 months period.\nThe persons registered as unemployed at the agencies for employment who hire, according to the law, into another locality located at a distance longer than 50 km from their domicile or residence town and, as a result of this, they are changing their domicile or residence in the respective locality or in the neighboring localities are entitled to receive a relocation (mobility) allowance, not taxable, and the amount  is granted differently.\r\nSimilar to unemployed are:\r\n- graduates of educational institutions and of special schools for persons with disabilities, aged at least 16 years, who, in a period of 60 days since their graduation, did not find a job according to their professional training.\r\nYoung at risk of social exclusion is the person aged 16-26 years old, which meets the requirements of the unemployed quality, registers at the employment agency in whose jurisdiction has the domicile or, as applicable, he resides and falls into one of these categories:\r\na) is in the child protection system or comes from this system;\r\nb) has disabilities;\r\nc) has no family or whose family can't provide livelihood;\r\nd) has dependent children;\r\ne) executed one or more custodial sentences;\r\nf) is victim of human trafficking.\r\nThe Agency for Employment conclude a contract of solidarity with the young at risk of social exclusion for a period of up to 3 years, but no less than a year, given that, when concluding the solidarity contract, the young man did not reach the age of 26 years.\r\nNEET young - young aged between 16 and 24 who does not have a job, is not enrolled in an education system and does not participate in vocational training activities.",
+          "periodicity": [
+            "ANNUAL",
+            "MONTHLY"
+          ],
+          "year_range": [
+            2010,
+            2026
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-10-06 14:58:00.241498+00",
+          "context_code": "1508",
+          "context_name_ro": "4. SOMERI INREGISTRATI",
+          "context_name_en": "4. REGISTERED UNEMPLOYED",
+          "context_path": "A. STATISTICA SOCIALA > FORTA DE MUNCA Forta de munca si castiguri salariale-Comunicate de presa ; Ocuparea si somajul-Comunicate de presa > SOMERI INREGISTRATI",
+          "metadata": {
+            "methodology_ro": "Ponderea somerilor in totalul resurselor de munca este un indicator statistic, calculat lunar, exprimat in procente si determinat prin raportarea numarului somerilor inregistrati la totalul populatiei dupa domiciliu cu varsta cuprinsa intre 18-62 ani la 1 ianuarie si 1 iulie a fiecarui an.\nAcest indicator statistic reprezinta rata somajului la nivel de localitate in sensul O.U.G. nr.75/2000 privind regimul zonelor defavorizate.\nPSOM.inreg.=SOMinreg. / Pdom*100\nunde:\nPSOM.inreg  = ponderea somerilor  (%)\nSOMinreg. = numarul total de someri inregistrati\nPdom = populatia dupa domiciliu 18-62 ani\nNota: rata somajului la nivel de localitate nu se poate calcula decat la 10 ani, cu ocazia recensamintelor de populatie si locuinte. Nu se poate calcula pentru ca nu exista informatii asa de detaliate la nivel de localitate in cadrul surselor administrative, insa, INS a dezvoltat un indicator proxy (ponderea somerilor in totalul resurselor de munca), chiar daca nu corespunde pe deplin modului de calcul al ratei somajului.",
+            "data_sources_ro": "Cercetarea statistica privind numarul somerilor inregistrati si rata somajului inregistrat  <<1914>>",
+            "source_year_range": [
+              2010,
+              2026
+            ],
+            "source_last_update": "2026-09-14",
+            "observation_count": 2078093,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "6a39ebeb836e284fd305bdf0febc7b2b8f5607865cd0d0adac1eac48f2672adc",
+            "revision_id": "2600",
+            "transform_contract_sha256": "29ad0ebc66c833f3afd6a01b74c6c5e56544ce09d8d23b40e1af007990e45b03",
+            "published_at": "2026-10-06 14:58:00.241498+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/SOM101F?lang=ro"
+          },
+          "methodology_ro": "Ponderea somerilor in totalul resurselor de munca este un indicator statistic, calculat lunar, exprimat in procente si determinat prin raportarea numarului somerilor inregistrati la totalul populatiei dupa domiciliu cu varsta cuprinsa intre 18-62 ani la 1 ianuarie si 1 iulie a fiecarui an.\nAcest indicator statistic reprezinta rata somajului la nivel de localitate in sensul O.U.G. nr.75/2000 privind regimul zonelor defavorizate.\nPSOM.inreg.=SOMinreg. / Pdom*100\nunde:\nPSOM.inreg  = ponderea somerilor  (%)\nSOMinreg. = numarul total de someri inregistrati\nPdom = populatia dupa domiciliu 18-62 ani\nNota: rata somajului la nivel de localitate nu se poate calcula decat la 10 ani, cu ocazia recensamintelor de populatie si locuinte. Nu se poate calcula pentru ca nu exista informatii asa de detaliate la nivel de localitate in cadrul surselor administrative, insa, INS a dezvoltat un indicator proxy (ponderea somerilor in totalul resurselor de munca), chiar daca nu corespunde pe deplin modului de calcul al ratei somajului.",
+          "methodology_en": "The share of unemployed in the total labor resources is a statistical indicator, calculated monthly as a percentage between the total number of registered unemployed and the permanent resident population aged 18-62 years on 1 January and 1 July of each year. \r\nThis statistical indicator is the unemployment rate to localities level in the sense of E.G.O. No.75 / 2000 on the deprived areas.\r\nSRegUnempl. =RegUnempl./Prpop*100\nwhere:\nSRegUnempl = share of registered unemployed (%)\nRegUnempl = number of registered unemployed\nPrpop = permanent resident population aged 18-62\r\nNote: the unemployment rate at locality level can only be calculated after 10 years, during the population and housing censuses. It cannot be calculated because there is no detailed information in the details of the locality level within the administrative sources, however, the INS has developed a proxy indicator (the share of the unemployed in the total labor resources), even if it does not fully correspond to the way of calculating the unemployment rate.",
+          "data_sources_ro": "Cercetarea statistica privind numarul somerilor inregistrati si rata somajului inregistrat  <<1914>>",
+          "data_sources_en": "Statistical survey on registred unemployed and registered unemployment rate <<1914>>",
+          "data_sources": [
+            {
+              "name": "Cercetarea statistica privind numarul somerilor inregistrati si rata somajului inregistrat  <<1914>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 1914
+            }
+          ],
+          "observations_ro": "Datele de an sunt cele de la luna decembrie.\nDatele sunt disponibile incepand cu anul 2010.\r\nDatele au regimul datelor de populatie dupa domiciliu, respectiv : provizorie(t+5 luni),definitiva(t+13 luni) si revizuita(t+29 luni).",
+          "observations_en": "The year dates are those from december.\nThe starting year for the data series is 2010.\r\nThe data have the same character of the population data: based on domicile, namely: provisional (t + 5 months), final (t + 13 months) and revised (t + 29 months).\r\n",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2026-09-14",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Sexe",
+              "label_en": "Sex",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Sexe",
+                "name_en": "Sex",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3182,
+              "classification_type": {
+                "code": "D2",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "is_hierarchical": false,
+              "option_count": 215,
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Procente",
+              "label_en": "MU: Percentage",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:SOM101F:105:112:112:4944:10225",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  112
+                ],
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 1,
+                "code": "RO",
+                "sirutaCode": null,
+                "level": "NATIONAL",
+                "nameRo": "TOTAL",
+                "parentId": null,
+                "parentCode": null,
+                "parentNameRo": null,
+                "coreTerritoryId": 9699
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "RO",
+            "period": "2026-07",
+            "unit_code": "10225",
+            "classifications": {
+              "D0": "105",
+              "D1": "112",
+              "D2": "112"
+            }
+          },
+          "dataset_code": "SOM101F",
+          "value": "1.9",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2026-07",
+            "year": 2026,
+            "quarter": 3,
+            "month": 7,
+            "periodicity": "MONTHLY"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente",
+            "name_en": "Percentage"
+          },
+          "classifications": [
+            {
+              "id": "SOM101F:D0:105",
+              "type_code": "D0",
+              "type_name_ro": "Sexe",
+              "type_name_en": "Sex",
+              "code": "105",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "SOM101F:D1:112",
+              "type_code": "D1",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            },
+            {
+              "id": "SOM101F:D2:112",
+              "type_code": "D2",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2025",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "LOC101B",
+          "code": "LOC101B",
+          "name_ro": "Locuinte existente la sfarsitul anului pe forme de proprietate, judete si localitati",
+          "name_en": "Dwellings stock at the end of the year by type of ownership, counties and localities",
+          "definition_ro": "Locuinta (apartamentul) este constructia formata din una sau mai multe camere de locuit situate la acelasi nivel al cladirii sau la niveluri diferite, prevazuta in general cu dependinte (bucatarie, baie etc.) sau alte spatii de deservire, independenta din punct de vedere functional, avand intrare separata din casa scarii, curte sau strada si care a fost construita, transformata sau amenajata in scopul de a fi folosita, in principiu, de o singura gospodarie.\nSe evidentiaza numarul locuintelor existente la sfarsitul anului. \n",
+          "definition_en": "A dwelling (an apartment) is the built unit made up of one or more habitable rooms situated at the same floor  of  the building or at different floors, generally fitted with outhouses  (kitchen,  bathroom  a.s.o.)  or  with  other serving  spaces, which is functionally  independent and has a separate entrance from the staircase hall, yard or street and which has been built, transformed or arranged with a view to being used, in theory, by one household.\r\nThe number of dwellings at the end of the year is pointed out.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2025
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-09-06 13:18:44.842571+00",
+          "context_code": "5030",
+          "context_name_ro": "1. LOCUINTE",
+          "context_name_en": "1. DWELLINGS",
+          "context_path": "B. STATISTICA ECONOMICA > LOCUINTE Comunicate de presa > LOCUINTE",
+          "metadata": {
+            "methodology_ro": "Fondul de locuinte se detemina pe baza datelor obtinute la recensamintul populatiei si locuintelor tinind seama de modificarile intervenite in cursul fiecarui an:\n -intrarile prin constructii de locuinte noi, prin schimbarea unorspatii cu alta destinatie in locuinte;\n -iesirile prin demolari, respectiv prin schimbarea din locuinte in spatii cu alta destinatie.\n\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/LOC/Modificari-ale-fondului-de-locuinte.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>",
+            "data_sources_ro": "Cercetarea statistica privind modificarile fondului de locuinte <<3071>>",
+            "source_year_range": [
+              1990,
+              2025
+            ],
+            "source_last_update": "2026-07-21",
+            "observation_count": 301925,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "e722918eb65a03734128b30f8bdc1de19b414605a387ec56fc622a050f280211",
+            "revision_id": "996",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/LOC101B?lang=ro"
+          },
+          "methodology_ro": "Fondul de locuinte se detemina pe baza datelor obtinute la recensamintul populatiei si locuintelor tinind seama de modificarile intervenite in cursul fiecarui an:\n -intrarile prin constructii de locuinte noi, prin schimbarea unorspatii cu alta destinatie in locuinte;\n -iesirile prin demolari, respectiv prin schimbarea din locuinte in spatii cu alta destinatie.\n\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/LOC/Modificari-ale-fondului-de-locuinte.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>",
+          "methodology_en": "Dwellings stock is determined based on data obtained from Population and Housing Censuses and on changes occurred each year, namely:\n- inputs, representing dwellings in use (new dwellings and spaces with another destination changed into dwellings);\n- outputs, representing demolitions and change of dwellings into spaces with another destination.\n\n<a href=\"https://insse.ro/cms/files/Quality-reports/Dwellings/Changes-to-the-housing-stock.pdf\" target=\"_blank\"> Metadata and quality report </a>",
+          "data_sources_ro": "Cercetarea statistica privind modificarile fondului de locuinte <<3071>>",
+          "data_sources_en": "Statistical survey on the changes in dwellings stock <<3071>>",
+          "data_sources": [
+            {
+              "name": "Cercetarea statistica privind modificarile fondului de locuinte <<3071>>",
+              "type": "Surse statistice (INS)",
+              "type_code": 1,
+              "link_number": 3071
+            }
+          ],
+          "observations_ro": "Numarul si denumirile localitatilor Romaniei sunt in concordanta cu impartirea administrativ - teritoriala revizuita in anul curent.\r\nPentru perioada 1990 - 1992 datele pe forme de proprietate nu sunt disponibile.\r\nPentru perioada 1993-1998 randul de total cuprinde si ''alte forme de proprietate''.\r\nDatele referitoare la fondul de locuinte (numarul de locuinte, camerele de locuit si suprafata locuibila) pentru anii 2021, 2022 si 2023 sunt recalculate ca urmare a definitivarii rezultatelor RPL 2021.",
+          "observations_en": "The number and name of localities are in accordance with administrative territorial structure updated for current year.\r\nThe data by ownership are not available for the period 1990 - 1992.\r\nFor the period 1993-1998 the total row include ''other forms of ownership''.\r\nData on the dwellings stock (number of dwellings, rooms and living area) for the years 2021, 2022 and 2023 have been recalculated as a result of the finalisation of the 2021 Census of Population and Housing.",
+          "discontinued_after_ro": null,
+          "discontinued_after_en": null,
+          "successor_dataset_code": null,
+          "continues_from": [],
+          "source_last_update": "2026-07-21",
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Forme de proprietate",
+              "label_en": "Type of ownership",
+              "is_hierarchical": false,
+              "option_count": 3,
+              "classification_type": {
+                "code": "D0",
+                "name_ro": "Forme de proprietate",
+                "name_en": "Type of ownership",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "label_en": "Counties",
+              "is_hierarchical": false,
+              "option_count": 43,
+              "classification_type": {
+                "code": "D1",
+                "name_ro": "Judete",
+                "name_en": "Counties",
+                "is_hierarchical": false
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "label_en": "Localities",
+              "is_hierarchical": true,
+              "option_count": 3183,
+              "classification_type": {
+                "code": "D2",
+                "name_ro": "Localitati ",
+                "name_en": "Localities",
+                "is_hierarchical": true
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "label_en": "Years",
+              "is_hierarchical": false,
+              "option_count": 36,
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar",
+              "label_en": "MU: Number",
+              "is_hierarchical": false,
+              "option_count": 1,
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "v1:LOC101B:7388:112:112:4912:9669",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  112
+                ],
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "resolvedTerritory": {
+                "territoryId": 1,
+                "code": "RO",
+                "sirutaCode": null,
+                "level": "NATIONAL",
+                "nameRo": "TOTAL",
+                "parentId": null,
+                "parentCode": null,
+                "parentNameRo": null,
+                "coreTerritoryId": 9699
+              },
+              "contextTerritory": null,
+              "applicableRules": [],
+              "qualified": false
+            },
+            "territory_code": "RO",
+            "period": "2025",
+            "unit_code": "9669",
+            "classifications": {
+              "D0": "7388",
+              "D1": "112",
+              "D2": "112"
+            }
+          },
+          "dataset_code": "LOC101B",
+          "value": "10177161",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "9669",
+            "symbol": "count",
+            "name_ro": "Numar",
+            "name_en": "Number"
+          },
+          "classifications": [
+            {
+              "id": "LOC101B:D0:7388",
+              "type_code": "D0",
+              "type_name_ro": "Forme de proprietate",
+              "type_name_en": "Type of ownership",
+              "code": "7388",
+              "name_ro": "Total ",
+              "name_en": "Total ",
+              "sort_order": null
+            },
+            {
+              "id": "LOC101B:D1:112",
+              "type_code": "D1",
+              "type_name_ro": "Judete",
+              "type_name_en": "Counties",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            },
+            {
+              "id": "LOC101B:D2:112",
+              "type_code": "D2",
+              "type_name_ro": "Localitati ",
+              "type_name_en": "Localities",
+              "code": "112",
+              "name_ro": "TOTAL",
+              "name_en": "TOTAL",
+              "sort_order": null
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

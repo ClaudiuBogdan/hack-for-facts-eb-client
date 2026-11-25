@@ -44,6 +44,14 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('ParliamentSpeech', 'speech-detail')
   await mockApi.mockGraphQL('ParliamentMembers', 'members')
   await mockApi.mockGraphQL('ParliamentMember', 'member')
+
+  // The filters' groups and the data's date (TEST-001): the dev API's answers of 2026-11-25. The current
+  // groups first: the matcher compares only the keys it is given.
+  for (const [chamber, name] of [['camera_deputatilor', 'cdep'], ['senat', 'senat']] as const) {
+    await mockApi.mockGraphQL('ParliamentGroups', `groups-${name}-current`, { variables: { legislature: '2024', chamber, current: true } })
+    await mockApi.mockGraphQL('ParliamentGroups', `groups-${name}`, { variables: { legislature: '2024', chamber } })
+  }
+  await mockApi.mockGraphQL('ParliamentDataFreshness', 'data-freshness')
 }
 
 test.describe('Global stenograme — heatmap + filters + honest search', () => {

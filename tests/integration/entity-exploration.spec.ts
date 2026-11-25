@@ -7,6 +7,12 @@
 
 import { test, expect } from '../utils/integration-base'
 import { waitForHydration } from '../utils/test-helpers'
+import { mockMapReads } from '../utils/map-mocks'
+
+// The map's grouped-series read, answered from the dev API's recorded answers (TEST-001).
+test.beforeEach(async ({ page }) => {
+  await mockMapReads(page)
+})
 
 test.describe('Entity Exploration Flow', () => {
   test.beforeEach(async ({ mockApi }) => {
@@ -42,6 +48,8 @@ test.describe('Entity Exploration Flow', () => {
       'GetExecutionLineItemsAnalytics',
       'challenge-category-evolution',
     )
+    // The entity page's 2025 UAT population (TEST-001): the dev API's answer of 2026-11-25, cut to Cluj-Napoca's cell.
+    await mockApi.mockGraphQL('MapPopulation', 'map-population-uat-2025')
   })
 
   test('user can search for an entity and view its details', async ({ page, mockApi }) => {
