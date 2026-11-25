@@ -3,11 +3,13 @@ import { withoutProcurementPartyCodes as scrub } from './procurement-party-codes
 
 describe('withoutProcurementPartyCodes (D6, root; TEL-001)', () => {
   it('masks party codes in procurement and company addresses, paths and filters', () => {
-    expect(scrub('/procurement/analytics?tip=directe&furnizor=14837428&cumparator=4267117&perioada=2025')).toBe('/procurement/analytics?tip=directe&furnizor=_&cumparator=_&perioada=2025')
-    expect(scrub('https://transparenta.eu/procurement/suppliers/14837428?year=2025#top')).toBe('https://transparenta.eu/procurement/suppliers/_?year=2025#top')
+    // After a party marker every number in the word is masked, a year included: the blunt rule no spelling gets past.
+    expect(scrub('/procurement/analytics?tip=directe&perioada=2025&furnizor=14837428&cumparator=4267117')).toBe('/procurement/analytics?tip=directe&perioada=2025&furnizor=_&cumparator=_')
+    expect(scrub('/procurement/analytics?tip=directe&furnizor=14837428&cumparator=4267117&perioada=2025')).toBe('/procurement/analytics?tip=directe&furnizor=_&cumparator=_&perioada=_')
+    expect(scrub('https://transparenta.eu/procurement/suppliers/14837428?year=2025#top')).toBe('https://transparenta.eu/procurement/suppliers/_?year=_#top')
     expect(scrub('/procurement/institutions/4267117')).toBe('/procurement/institutions/_')
     // A contract-award winner's list (KB0Z): a code typed or linked there may be a person's.
-    expect(scrub('https://transparenta.eu/procurement/contract-awards/winners/1850101123456?year=2024')).toBe('https://transparenta.eu/procurement/contract-awards/winners/_?year=2024')
+    expect(scrub('https://transparenta.eu/procurement/contract-awards/winners/1850101123456?year=2024')).toBe('https://transparenta.eu/procurement/contract-awards/winners/_?year=_')
     expect(scrub('/procurement/contract-awards/winners/14837428')).toBe('/procurement/contract-awards/winners/_')
     // An escaped delimiter before the code: read, it would end the segment and leave the code after it.
     for (const escape of ['%23', '%3F', '%2F', '%2523']) {
@@ -82,5 +84,57 @@ describe('foreign and quoted codes (TEL-001)', () => {
     expect(withoutNamedCodes('button[title="CUI 4267117"]')).toBe('button[title="CUI _"]')
     expect(withoutNamedCodes('CUI "4267117"')).toBe('CUI "_"')
     expect(scrub('/procurement/analytics?furnizor="4267117"&tip=directe')).toBe('/procurement/analytics?furnizor="_"&tip=directe')
+  })
+})
+
+/** Every counterexample of the confirmation run on 199be7c4 (Sol, 25 November 2026), and their kin: none may keep the code. */
+describe('no spelling of a party address keeps its code (TEL-001)', () => {
+  const CODE = '1850101123456'
+  const leaks = (out: string) => out.includes(CODE) || /\d{6,}/u.test(out.replace(/[^0-9]/gu, ''))
+
+  it.each([
+    // An escaped path word, delimiter or slash, at any depth.
+    '/procurement/supplier%73/%231850101123456',
+    '/companie%73/%3F1850101123456',
+    '/cookies?redirect=%2Fprocurement%2Fsuppliers%2F%252f1850101123456',
+    '/cookies?redirect=%252Fprocurement%252Fcontract-awards%252Fwinners%252F%252523%252531%252538%252535%252530%252531%252530%252531%252531%252532%252533%252534%252535%252536',
+    '/cookies?redirect=%2Fprocurement%2Fsuppliers%2F18%253F50101123456',
+    '/cookies?redirect=%2525252Fprocurement%2525252Fsuppliers%2525252F1850101123456',
+    '/procurement/suppliers/%2f1850101123456',
+    '/procurement/suppliers/%2F1850101123456',
+    // Path variants a browser resolves to the same page.
+    '/procurement/suppliers;x=1/1850101123456',
+    '/procurement/suppliers/1850101123456;v=1',
+    'https://example.test\\procurement\\suppliers\\1850101123456',
+    '/procurement/suppliers%5C1850101123456',
+    '/procurement//suppliers/1850101123456',
+    '/procurement/suppliers//1850101123456',
+    '/procurement/suppliers/./1850101123456',
+    '/procurement/suppliers/other/../1850101123456',
+    '/procurement/suppliers/%2e/1850101123456',
+    '/procurement/suppliers/1850101123456.',
+    // The company page wherever it stands.
+    '/other/../companies/1850101123456',
+    '//example.test/companies/1850101123456',
+    'Navigation failed [/companies/1850101123456].',
+    '/companies/analytics/../1850101123456',
+    '/companies/analytics%3F/../1850101123456',
+    '/companies/search#/../1850101123456',
+    // Quotes, split digits, other digits.
+    "https://example.test/procurement/suppliers/'1850101123456'",
+    '/procurement/suppliers/185-0101-123456',
+    '/procurement/suppliers/１８５０１０１１２３４５６',
+    '/procurement/analytics?furnizor%20=%201850101123456',
+    'https://user:pw@example.test:8443/PROCUREMENT/Winners/1850101123456',
+  ])('masks %s', (input) => {
+    const out = scrub(input)
+    expect(out).not.toContain(CODE)
+    expect(leaks(out)).toBe(false)
+  })
+
+  it('masks a chain of escapes longer than any reader stacks, whole', () => {
+    let deep = '/procurement/suppliers/1850101123456'
+    for (let layer = 0; layer < 14; layer += 1) deep = encodeURIComponent(deep)
+    expect(scrub(deep)).not.toMatch(/\d{3,}/u)
   })
 })

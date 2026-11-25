@@ -3,75 +3,76 @@
  * TEL-001, "Keep party codes out of telemetry").
  *
  * A direct-purchase supplier the API withholds may be a person, and its code
- * must not reach a third-party processor (PostHog, Sentry). In any telemetry
- * string:
- * - under `/procurement`, the segment after `/suppliers/`, `/institutions/`,
- *   `/companies/` or `/winners/` (a contract-award winner's list, KB0Z)
- *   becomes `_`;
- * - on the company page (`/companies/<cui>`, at the root of a path), the code
- *   becomes `_` (its own `/companies/analytics` and `/companies/search` are
- *   not codes);
- * - the analytics page's party filters (`furnizor`, `cumparator`) become `_`
- *   wherever a query string carries them.
+ * must not reach a third-party processor (PostHog, Sentry). The rule is
+ * deliberately blunt, so that no spelling of an address gets past it:
  *
- * Matched without regard to case (the router matches `/Procurement/…`), after
- * reading up to three layers of URL encoding (a query value carrying an address,
- * an escaped digit). A string that changes is returned decoded; one that does
- * not is returned as it was. Words are scrubbed one at a time, so prose around
- * an address and its closing punctuation stay. Pure; over-scrubbing telemetry
- * is the safe direction.
+ * 1. Each whitespace-separated word is read through every layer of URL
+ *    encoding, and a backslash is read as a slash (browsers do both before
+ *    routing).
+ * 2. The word's first party marker is found: a party path word (`suppliers`,
+ *    `institutions`, `companies`, `winners`, standing as a word of its own) or
+ *    a party filter (`furnizor=`, `cumparator=`, `supplier_cui=`,
+ *    `authority_cui=`).
+ * 3. After it, every run of letters and digits that holds a digit becomes `_`:
+ *    the code, however it is escaped, split, dotted or parameterised, and with
+ *    it any other number in the rest of the word (`?year=2025` → `?year=_`).
+ *
+ * The company hub's own pages (`/companies/analytics`, `/companies/search`)
+ * are no marker when nothing but a query or a fragment follows them. Matched
+ * without regard to case. A word with no marker is returned as it was; one
+ * with a marker is returned read. Pure; over-scrubbing telemetry is the safe
+ * direction.
  */
 
 export const PARTY_CODE_MASK = '_'
 
-const MAYBE_IN_SCOPE = /procurement|companies|furnizor|cumparator|supplier_cui|authority_cui/iu
-const SEPARATORS = /(\s+|["'`<>])/u
-const TRAILING_PUNCTUATION = /[).,;:!\]}]+$/u
-const COMPANY_PAGES = new Set(['analytics', 'search'])
-
-/** Under `/procurement`, the code after a party's segment. */
-const PROCUREMENT_PARTY = /(\/procurement(?:\/[^/?#]+)*?\/(?:suppliers|institutions|companies|winners)\/)[^/?#]+/giu
-/** The company page's code: `/companies/` at the root of a path (string start, after a host, after `=`, `(` or `,`, or after an escape left unread). */
-const COMPANY_PAGE = /((?:^|[=(,]|%[0-9A-F]{2}|:\/\/[^/?#]*))(\/companies\/)([^/?#]+)/giu
-/** A party filter whose value is quoted. */
-const QUOTED_PARTY_PARAM = /((?:^|[?&])(?:furnizor|cumparator|supplier_cui|authority_cui)=)(["'])[^"'&#]*\2/giu
-/** The analytics page's party filters (and their legacy names), in any query string, with or without its `?`. */
-const PARTY_PARAM = /((?:^|[?&])(?:furnizor|cumparator|supplier_cui|authority_cui)=)[^&#]+/giu
+/** Party path words and filters, each a word of its own (no letter, digit or underscore on either side). */
+const MARKER = /(?<![\p{L}\p{N}_])(?:(suppliers|institutions|companies|winners)(?![\p{L}\p{N}_])|(furnizor|cumparator|supplier_cui|authority_cui)\s*=)/giu
+/** The company hub's own pages, when only a query or a fragment with no further path follows. */
+const COMPANY_HUB_PAGE = /^\/(?:analytics|search)(?:[?#][^/]*)?$/iu
+/** A run of letters and digits holding a digit: a code, however written. */
+const CODE_LIKE = /[\p{L}\p{N}]*\p{N}[\p{L}\p{N}]*/gu
+/** Enough layers for any escape a person or a tool would stack; a longer chain is masked whole. */
+const MAX_LAYERS = 12
 
 /** A string with every procurement party code in it replaced; any other string unchanged. */
 export function withoutProcurementPartyCodes(value: string): string {
-  if (value.length === 0 || !MAYBE_IN_SCOPE.test(decoded(value))) return value
+  if (value.length === 0) return value
   return value
-    // A quoted filter value in text (`?furnizor="4267117"`): its quotes would split it from its name below.
-    .replace(QUOTED_PARTY_PARAM, `$1$2${PARTY_CODE_MASK}$2`)
-    .split(SEPARATORS)
-    .map((word) => scrubWord(word))
+    .split(/(\s+)/u)
+    .map((word) => (/^\s*$/u.test(word) ? word : scrubWord(word)))
     .join('')
 }
 
 function scrubWord(word: string): string {
-  if (word.length === 0 || !MAYBE_IN_SCOPE.test(decoded(word))) return word
-  const trailing = TRAILING_PUNCTUATION.exec(word)?.[0] ?? ''
-  const core = word.slice(0, word.length - trailing.length)
-  // Matched as written first: an escaped delimiter (`/suppliers/%231850…`, `%2F`, `%3F`) is still part of the code's
-  // segment there, while read it would end the segment before the code.
-  const raw = scrubCore(core)
-  const plain = decoded(core)
-  const scrubbed = scrubCore(decoded(raw))
-  return raw === core && scrubbed === plain ? word : `${scrubbed}${trailing}`
+  const read = decoded(word)
+  if (read === null) return word.replace(CODE_LIKE, PARTY_CODE_MASK)
+  const plain = read.replace(/\\/gu, '/')
+  const at = markerEnd(plain)
+  if (at === null) return word
+  return `${plain.slice(0, at)}${plain.slice(at).replace(CODE_LIKE, PARTY_CODE_MASK)}`
 }
 
-function scrubCore(text: string): string {
-  return text
-    .replace(PROCUREMENT_PARTY, `$1${PARTY_CODE_MASK}`)
-    .replace(COMPANY_PAGE, (match, before: string, path: string, code: string) => (COMPANY_PAGES.has(code.toLowerCase()) ? match : `${before}${path}${PARTY_CODE_MASK}`))
-    .replace(PARTY_PARAM, `$1${PARTY_CODE_MASK}`)
+/** Where the word's first party marker ends, or null when it has none. */
+function markerEnd(text: string): number | null {
+  for (const match of text.matchAll(MARKER)) {
+    const end = (match.index ?? 0) + match[0].length
+    // The company hub's own pages, and nothing after them that could lead elsewhere.
+    if (match[1]?.toLowerCase() === 'companies' && COMPANY_HUB_PAGE.test(text.slice(end))) continue
+    return end
+  }
+  return null
 }
 
-/** Up to three layers of URL encoding read; an escape that is not valid is read where it can be and kept where not. */
-function decoded(text: string): string {
+/**
+ * Every layer of URL encoding read; an escape that is not valid is read where
+ * it can be and kept where not. Null when the chain is longer than any reader
+ * would stack: the caller masks the word whole.
+ */
+function decoded(text: string): string | null {
   let out = text
-  for (let layer = 0; layer < 3 && out.includes('%'); layer += 1) {
+  for (let layer = 0; out.includes('%'); layer += 1) {
+    if (layer >= MAX_LAYERS) return null
     const next = out.replace(/(?:%[0-9A-F]{2})+/giu, (run) => {
       try {
         return decodeURIComponent(run)
