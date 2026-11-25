@@ -7,7 +7,6 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin } from '@/features/landing/components/count-up'
 import { useProcurementSupplierSlice } from '@/features/procurement/hooks/use-procurement-data'
 import { HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
-import { CompanyBusinessBand } from '@/features/private-companies/components/profile/company-business-band'
 import { companyFigures } from '@/features/private-companies/components/profile/company-figures'
 import { CompanyLitigationBand } from '@/features/private-companies/components/profile/company-litigation-band'
 import { CompanyMoneyBand, type ProcurementState } from '@/features/private-companies/components/profile/company-money-band'
@@ -26,6 +25,7 @@ import { HubFiguresBand } from '@/features/statistics/components/hub/hub-figures
 import type { CompanyPaymentGrain, PrivateCompanyProfile } from '@/schemas/private-company'
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { DesignActivitiesBand } from './profile-activities.band'
+import { ProtoBusinessBand } from './profile-business.band'
 import { ChosenHead } from './profile-head.variants'
 import { ProtoYearsBand } from './profile-years.band'
 import { PROTOTYPE_MARKER } from './profile.data'
@@ -42,12 +42,13 @@ import { PROTOTYPE_MARKER } from './profile.data'
  * litigation, registry) are today's, mono captions and all.
  */
 
+// The owner's order (25 November 2026): what the company does and its statements right under its chart.
 const SECTIONS = [
   { id: 'afacerea', label: () => t`Afacerea` },
-  { id: 'bani-publici', label: () => t`Bani publici` },
   { id: 'activitati', label: () => t`Activități` },
-  { id: 'litigii', label: () => t`Litigii` },
   { id: 'an-cu-an', label: () => t`An cu an` },
+  { id: 'bani-publici', label: () => t`Bani publici` },
+  { id: 'litigii', label: () => t`Litigii` },
   { id: 'registru', label: () => t`Registru` },
 ] as const
 
@@ -75,7 +76,6 @@ function AssembledPage() {
 
 function Body({ answer, cui }: { readonly answer: PrivateCompanyProfile; readonly cui: string }) {
   const { i18n } = useLingui()
-  const [masura, setMasura] = useState<string | undefined>(undefined)
   const [plati, setPlati] = useState<CompanyPaymentGrain | undefined>(undefined)
   const rootRef = useRef<HTMLDivElement>(null)
   const slice = useProcurementSupplierSlice(cui)
@@ -119,16 +119,11 @@ function Body({ answer, cui }: { readonly answer: PrivateCompanyProfile; readonl
           </RuledFrame>
         </section>
       ) : null}
-      <CompanyBusinessBand
-        model={model}
-        index=""
-        measure={(masura ?? 'toate') as never}
-        onMeasure={(measure) => setMasura(measure === 'toate' ? undefined : measure)}
-      />
-      <CompanyMoneyBand model={model} index="" procurement={procurement} onGrain={onGrain} />
+      <ProtoBusinessBand model={model} />
       <DesignActivitiesBand model={model} designedMain onCompanyGone={reportGone} />
-      {litigation ? <CompanyLitigationBand cui={cui} index="" litigation={litigation} /> : null}
       {years ? <ProtoYearsBand model={model} /> : null}
+      <CompanyMoneyBand model={model} index="" procurement={procurement} onGrain={onGrain} />
+      {litigation ? <CompanyLitigationBand cui={cui} index="" litigation={litigation} /> : null}
       <CompanyRegistryBand model={model} index="" procurement={read} diffText={diffText} courts={litigation !== null} last />
     </div>
   )
