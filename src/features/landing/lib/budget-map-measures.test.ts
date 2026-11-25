@@ -160,5 +160,16 @@ describe('a figure half-way between two printed values', () => {
     expect(asPrinted(14_250_000)).toBe(14_300_000)
     expect(joinParts(compactParts(14_250_000, 'ro'), 'ro')).toBe('14,3\u00a0mil.')
   })
+
+  it('and just below a half-way value, rounds down as the printed figure does', () => {
+    // 10,000 lei in, 9,705 out: 2.9499999999999997%, printed „+2,9%" — the class below 3, not the one from 3.
+    const share = ((10_000 - 9_705) / 10_000) * 100
+    expect(formatPercent(share, 'ro')).toBe('+2,9%')
+    expect(percentAsPrinted(share)).toBe(2.9)
+    expect(formatAmount(10_049_999_999.99, 'ro')).toBe('10\u00a0mld. lei')
+    expect(asPrinted(10_049_999_999.99)).toBe(10_000_000_000)
+    expect(asPrinted(-412.36)).toBe(-412.4)
+    expect(asPrinted(999.96)).toBe(1000)
+  })
 })
 

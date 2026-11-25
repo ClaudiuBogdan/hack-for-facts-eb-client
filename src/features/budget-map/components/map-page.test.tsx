@@ -9,7 +9,7 @@ vi.mock('@tanstack/react-router', () => ({
   useSearch: () => ({}),
 }))
 
-const data: MapPageData = { uats: undefined, counties: undefined, labels: undefined, figures: undefined, outsideMap: 0, failed: false, tableFailed: false, retry: () => {} }
+const data: MapPageData = { uats: undefined, counties: undefined, labels: undefined, figures: undefined, outsideMap: 0, failed: false, tableFailed: false, retry: () => {}, retryTable: () => {} }
 vi.mock('../hooks/use-map-page-data', () => ({ useMapPageData: () => data }))
 // The map's code fails to arrive, as a stylesheet Vite could not preload does.
 vi.mock('./map-page-map', () => {

@@ -7561,7 +7561,7 @@ msgstr "anual"
 #~ msgid "Anual"
 #~ msgstr "Anual"
 
-#: src/features/budget-map/components/map-page.tsx:124
+#: src/features/budget-map/components/map-page.tsx:138
 #: src/features/justice/components/analysis/analysis-head.tsx:112
 #: src/features/justice/components/echr/echr-answer.tsx:101
 #: src/features/justice/components/echr/echr-head.tsx:79
@@ -8105,7 +8105,7 @@ msgstr "aprobat"
 msgid "Aprobat în lege"
 msgstr "Aprobat în lege"
 
-#: src/features/budget-map/components/map-page-map.tsx:138
+#: src/features/budget-map/components/map-page-map.tsx:140
 #: src/features/landing/components/budget-map/budget-map.tsx:111
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:233
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:233
@@ -8218,7 +8218,7 @@ msgstr "Arată primele {0}"
 msgid "Arată stenograma integrală"
 msgstr ""
 
-#: src/features/budget-map/components/map-page-map.tsx:68
+#: src/features/budget-map/components/map-page-map.tsx:69
 #: src/features/landing/components/budget-map/budget-map.tsx:62
 msgid "Arată sursele hărții"
 msgstr "Arată sursele hărții"
@@ -11157,7 +11157,7 @@ msgstr "Ce cumpără statul<0/>și de la cine"
 msgid "Ce este acest corpus"
 msgstr "Ce este acest corpus"
 
-#: src/features/budget-map/components/map-page.tsx:141
+#: src/features/budget-map/components/map-page.tsx:155
 msgid "Ce este colorat pe hartă"
 msgstr "Ce este colorat pe hartă"
 
@@ -15944,7 +15944,7 @@ msgstr "Cum se împart dosarele pe niveluri de instanță?"
 #~ msgid "Cum sunt calculate sumele"
 #~ msgstr ""
 
-#: src/features/budget-map/components/map-page.tsx:132
+#: src/features/budget-map/components/map-page.tsx:146
 msgid "Cum sunt numărate sumele"
 msgstr "Cum sunt numărate sumele"
 
@@ -17626,7 +17626,7 @@ msgstr "Denumirile stărilor sunt din nomenclatorul aplicației, nu etichete pub
 msgid "Deocamdată căutarea funcționează după numărul actului (de exemplu „Legea 53/2003”) și după denumirea lui (de exemplu „Codul muncii”). Căutarea după expresii din textul legilor — cum ar fi „concediu de odihnă” — nu este încă disponibilă, așa că lipsa rezultatelor nu spune nimic despre existența prevederii."
 msgstr "Deocamdată căutarea funcționează după numărul actului (de exemplu „Legea 53/2003”) și după denumirea lui (de exemplu „Codul muncii”). Căutarea după expresii din textul legilor — cum ar fi „concediu de odihnă” — nu este încă disponibilă, așa că lipsa rezultatelor nu spune nimic despre existența prevederii."
 
-#: src/features/budget-map/components/map-page-map.tsx:141
+#: src/features/budget-map/components/map-page-map.tsx:143
 #: src/features/landing/components/budget-map/budget-map.tsx:114
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:236
 #: src/features/statistics/components/uat-map/uat-map-band.tsx:236
@@ -24404,7 +24404,7 @@ msgid "Harta"
 msgstr "Harta"
 
 #: src/components/sidebar/nav-main.tsx:88
-#: src/features/budget-map/components/map-page.tsx:112
+#: src/features/budget-map/components/map-page.tsx:126
 #: src/features/landing/lib/landing-groups.ts:157
 #: src/features/ngos/registry/components/registry-county-map.tsx:22
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:42
@@ -24420,11 +24420,12 @@ msgstr "Harta afișată: {title}"
 msgid "Harta afișată: {title}. Schimbă harta"
 msgstr "Harta afișată: {title}. Schimbă harta"
 
-#: src/features/budget-map/components/map-page.tsx:104
+#: src/features/budget-map/components/map-page-map.tsx:68
+#: src/features/budget-map/components/map-page.tsx:118
 msgid "Harta bugetelor locale"
 msgstr "Harta bugetelor locale"
 
-#: src/routes/map.tsx:23
+#: src/routes/map.tsx:26
 msgid "Harta bugetelor locale - Transparenta.eu"
 msgstr "Harta bugetelor locale - Transparenta.eu"
 
@@ -24440,21 +24441,20 @@ msgstr ""
 msgid "Hartă investiții"
 msgstr ""
 
-#: src/features/budget-map/components/map-page-map.tsx:103
-#: src/features/budget-map/components/map-page.tsx:46
+#: src/features/budget-map/components/map-page-map.tsx:105
+#: src/features/budget-map/components/map-page.tsx:60
 #: src/features/landing/components/budget-map/budget-map-section.tsx:72
 #: src/features/landing/components/budget-map/budget-map.tsx:93
 msgid "Harta nu poate fi afișată în acest browser."
 msgstr "Harta nu poate fi afișată în acest browser."
 
-#: src/features/budget-map/components/map-page-map.tsx:103
-#: src/features/budget-map/components/map-page.tsx:46
+#: src/features/budget-map/components/map-page-map.tsx:105
+#: src/features/budget-map/components/map-page.tsx:60
 #: src/features/landing/components/budget-map/budget-map-section.tsx:72
 #: src/features/landing/components/budget-map/budget-map.tsx:93
 msgid "Harta nu s-a putut încărca."
 msgstr "Harta nu s-a putut încărca."
 
-#: src/features/budget-map/components/map-page-map.tsx:67
 #: src/features/landing/components/budget-map/budget-map.tsx:61
 msgid "Harta primăriilor"
 msgstr "Harta primăriilor"
@@ -26048,9 +26048,9 @@ msgstr "Încasările bugetului general consolidat (toate bugetele publice, făr�
 
 #: src/components/entities/FloatingEntitySearch.tsx:136
 #: src/components/filters/filter-sheet/filter-sheet-parts.tsx:137
-#: src/features/budget-map/components/map-page-map.tsx:155
+#: src/features/budget-map/components/map-page-map.tsx:157
 #: src/features/budget-map/components/map-page-table.tsx:133
-#: src/features/budget-map/components/map-page.tsx:49
+#: src/features/budget-map/components/map-page.tsx:63
 #: src/features/elections/catalog/catalog-parts.tsx:132
 #: src/features/elections/catalog/catalog-parts.tsx:150
 #: src/features/entity-search/components/entity-empty-state.tsx:48
@@ -27967,7 +27967,7 @@ msgstr "Județ: nume sau cod („CJ”)"
 msgid "județe"
 msgstr "județe"
 
-#: src/features/budget-map/components/map-page.tsx:144
+#: src/features/budget-map/components/map-page.tsx:158
 #: src/features/justice/components/analysis/analysis-controls.tsx:105
 #: src/features/justice/lib/analysis-text.ts:23
 #: src/features/ngos/registry/components/registry-filters.tsx:222
@@ -28064,7 +28064,7 @@ msgstr "Județul {0}"
 msgid "Județul {county}"
 msgstr "Județul {county}"
 
-#: src/features/budget-map/components/map-page-map.tsx:116
+#: src/features/budget-map/components/map-page-map.tsx:118
 #: src/features/statistics/components/territory/territory-derived-section.tsx:254
 #: src/features/statistics/components/territory/territory-derived-trend.tsx:325
 #: src/features/statistics/components/territory/territory-indicator-row.tsx:212
@@ -29038,7 +29038,7 @@ msgstr "Limbă: română"
 #~ msgid "Limite cunoscute"
 #~ msgstr ""
 
-#: src/features/budget-map/components/map-page-map.tsx:69
+#: src/features/budget-map/components/map-page-map.tsx:70
 #: src/features/landing/components/budget-map/budget-map.tsx:63
 msgid "Limite UAT: ANCPI, prin"
 msgstr "Limite UAT: ANCPI, prin"
@@ -31866,7 +31866,7 @@ msgstr "Municipiul {name}"
 #~ msgid "Municipiul {name} (instituțiile municipiului)"
 #~ msgstr "Municipiul {name} (instituțiile municipiului)"
 
-#: src/features/budget-map/components/map-page-map.tsx:116
+#: src/features/budget-map/components/map-page-map.tsx:118
 #: src/features/landing/components/budget-map/uat-info.tsx:46
 #: src/features/statistics/components/uat-map/uat-map-series.ts:42
 msgid "Municipiul București"
@@ -37156,7 +37156,7 @@ msgstr "pe localitățile firmelor"
 msgid "pe locuitor"
 msgstr "pe locuitor"
 
-#: src/features/budget-map/components/map-page.tsx:135
+#: src/features/budget-map/components/map-page.tsx:149
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:130
 msgid "Pe locuitor"
 msgstr "Pe locuitor"
@@ -38877,7 +38877,7 @@ msgstr "Primărie"
 msgid "Primărie de sector"
 msgstr "Primărie de sector"
 
-#: src/features/budget-map/components/map-page.tsx:143
+#: src/features/budget-map/components/map-page.tsx:157
 #: src/features/entity-search/components/entity-search-page.tsx:313
 #: src/features/landing/lib/search-filters.ts:54
 msgid "Primării"
@@ -38891,7 +38891,7 @@ msgstr "Primării, ministere, școli și spitale, comparate după venituri și c
 msgid "primăriile și consiliile județene: școli, străzi, transport local, ajutoare sociale"
 msgstr "primăriile și consiliile județene: școli, străzi, transport local, ajutoare sociale"
 
-#: src/features/budget-map/components/map-page-map.tsx:119
+#: src/features/budget-map/components/map-page-map.tsx:121
 #: src/features/budget-map/components/map-page-table.tsx:86
 msgid "Primăriile și consiliul județean"
 msgstr "Primăriile și consiliul județean"
@@ -42672,9 +42672,9 @@ msgstr "Se încarcă cuprinsul…"
 msgid "Se încarcă edițiile Monitorului Oficial"
 msgstr "Se încarcă edițiile Monitorului Oficial"
 
-#: src/features/budget-map/components/map-page-map.tsx:103
-#: src/features/budget-map/components/map-page.tsx:153
-#: src/features/budget-map/components/map-page.tsx:158
+#: src/features/budget-map/components/map-page-map.tsx:105
+#: src/features/budget-map/components/map-page.tsx:167
+#: src/features/budget-map/components/map-page.tsx:172
 #: src/features/landing/components/budget-map/budget-map.tsx:93
 msgid "Se încarcă harta…"
 msgstr "Se încarcă harta…"
@@ -43346,7 +43346,7 @@ msgstr "Secțiunile paginii"
 msgid "Sectoarele Bucureștiului"
 msgstr "Sectoarele Bucureștiului"
 
-#: src/features/budget-map/components/map-page-map.tsx:119
+#: src/features/budget-map/components/map-page-map.tsx:121
 #: src/features/budget-map/components/map-page-table.tsx:86
 msgid "Sectoarele și bugetul propriu al capitalei"
 msgstr "Sectoarele și bugetul propriu al capitalei"
@@ -46597,7 +46597,7 @@ msgctxt "CAEN Rev.3 division"
 msgid "Tăbăcirea şi finisarea pieilor; fabricarea articolelor de voiaj şi marochinărie, harnaşamentelor şi încălţămintei; prepararea şi vopsirea blănurilor"
 msgstr "Tăbăcirea şi finisarea pieilor; fabricarea articolelor de voiaj şi marochinărie, harnaşamentelor şi încălţămintei; prepararea şi vopsirea blănurilor"
 
-#: src/features/budget-map/components/map-page.tsx:113
+#: src/features/budget-map/components/map-page.tsx:127
 #: src/features/elections/components/contest-result-explorer-page.tsx:127
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:41
 #: src/features/public-investments/components/SourceProvenanceDrawer.tsx:86
@@ -47883,7 +47883,7 @@ msgstr "De Plată"
 #~ msgid "Toată lista"
 #~ msgstr "Toată lista"
 
-#: src/features/budget-map/components/map-page-map.tsx:144
+#: src/features/budget-map/components/map-page-map.tsx:146
 #: src/features/landing/components/budget-map/budget-map.tsx:117
 msgid "Toată țara"
 msgstr "Toată țara"
@@ -48445,7 +48445,7 @@ msgstr "total"
 #: src/components/entities/views/ins-stats-view.formatters.ts:103
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:13
 #: src/components/normalization/normalization-mode-select.tsx:40
-#: src/features/budget-map/components/map-page.tsx:134
+#: src/features/budget-map/components/map-page.tsx:148
 #: src/features/justice/components/analysis/analysis-table.tsx:203
 #: src/features/justice/components/hub/justice-hub-bands.tsx:240
 #: src/features/national-budget/analytics/components/analytics-law.tsx:368
@@ -50753,7 +50753,7 @@ msgstr "TVA, Venit, Profit"
 #~ msgid "vechi"
 #~ msgstr ""
 
-#: src/features/budget-map/components/map-page.tsx:109
+#: src/features/budget-map/components/map-page.tsx:123
 msgid "Vedere"
 msgstr "Vedere"
 
@@ -51001,7 +51001,7 @@ msgstr "veniturile totale (I38) {said}."
 msgid "veniturile totale (I38), {amount}, {said}."
 msgstr "veniturile totale (I38), {amount}, {said}."
 
-#: src/routes/map.tsx:24
+#: src/routes/map.tsx:27
 msgid "Veniturile, cheltuielile și soldul fiecărei primării și al fiecărui județ, pe hartă și în tabel, din execuția bugetară raportată."
 msgstr "Veniturile, cheltuielile și soldul fiecărei primării și al fiecărui județ, pe hartă și în tabel, din execuția bugetară raportată."
 

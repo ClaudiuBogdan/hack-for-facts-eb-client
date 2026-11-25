@@ -92,8 +92,41 @@ census residents. The methodology note is behind the legend's „i".
 The dev API answers 2016–2026; 2015 and earlier answer with no values. 2026 is
 a year in progress and is left out of the picker.
 
+## Caching
+
+`/map` is sent `Cache-Control: private, no-store` and `CDN-Cache-Control:
+no-store` (root, 25 November 2026), and its Nitro route cache is turned off in
+`nitro.config.ts` (a separate change). The route cache stripped the cookie from
+the request that rendered the page, so the server never saw the reader's
+language or theme; the page's server render is only the bar and the map's
+frame, so a shared copy saved little.
+
+## Review (Codex gpt-6.2-sol, xhigh, 25 November 2026)
+
+Round 1 found eight issues; seven were fixed (a malformed `?an=` crashed the
+page; a new year's legend sat over the previous year's colours while it loaded
+or failed; a label-points failure blocked the table; a failed stylesheet read
+as „this browser cannot draw the map", with no retry; a stale tooltip after a
+level switch; 0.95% printed „+1%" but coloured neutral; the canvas named
+„Harta primăriilor" over the counties). The eighth is a residual below.
+
+Round 2 checked the fixes. It found the half-way rounding fix overshooting
+(2.9499…% printed „+2,9%" but coloured from 3): a figure is now classified
+through `Intl` itself, on the same one-decimal rounding as the printed figure
+(`roundTo` in `landing/lib/budget-map-format.ts`), tested on both sides of a
+half-way value; the landing map's screenshots stay byte-identical. The table's
+retry now asks again only for what the table reads. Its other two findings: the
+Nitro route cache (turned off separately), and the label lag below.
+
 ## Not done / open
 
+- On a phone the table shows the name and the sorted column only; the
+  balance in lei is not shown beside its percent there (Codex round 1, kept
+  for the compact phone table).
+- When the year changes while zoomed in, MapLibre may draw the previous
+  year's amount labels for a frame or two after the grey fill appears, until
+  its worker has the new label data (Codex round 2; not worth a second
+  layer).
 - Individual primării are reachable by pointer and by the table, not by
   keyboard on the map (as on the landing).
 - The landing's „Hartă" blurb (`landing-groups.ts`) still says „Cheltuielile

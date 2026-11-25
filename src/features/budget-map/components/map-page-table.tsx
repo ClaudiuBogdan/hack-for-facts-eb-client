@@ -58,7 +58,7 @@ export function MapPageTable({
   readonly level: Level
   readonly locale: NumberLocale
 }) {
-  const { uats, counties, figures, tableFailed, retry } = data
+  const { uats, counties, figures, tableFailed, retryTable } = data
   const county = level === 'county'
   // The picked map decides the opening sort; a header the reader clicks holds until the map changes.
   const [chosen, setChosen] = useState<{ readonly forMeasure: MeasureId; readonly key: SortKey; readonly descending: boolean } | null>(null)
@@ -129,7 +129,7 @@ export function MapPageTable({
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-3 px-4 py-6 text-sm text-muted-foreground md:px-6">
         {t`Tabelul nu s-a putut încărca.`}
-        <Button size="sm" variant="outline" onClick={retry}>
+        <Button size="sm" variant="outline" onClick={retryTable}>
           {t`Încearcă din nou`}
         </Button>
       </div>

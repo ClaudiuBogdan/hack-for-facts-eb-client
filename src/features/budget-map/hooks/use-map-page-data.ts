@@ -28,12 +28,15 @@ export interface MapPageData {
   readonly tableFailed: boolean
   /** Asks again for whatever failed. */
   readonly retry: () => void
+  /** Asks again for what the table reads, if it failed: not the map's other files (the UAT shapes are ~2 MB). */
+  readonly retryTable: () => void
 }
 
 export function useMapPageData(year: string, basis: Basis, level: Level): MapPageData {
   const { uats, counties, labels } = useBudgetMapShapes()
   const figures = useQuery(budgetFiguresQuery(year, { normalization: basis, granularity: level === 'county' ? 'County' : 'UAT' }))
   const queries = [uats, counties, labels, figures]
+  const tableQueries = [figures, level === 'county' ? counties : uats]
   return {
     uats: uats.data,
     counties: counties.data,
@@ -41,9 +44,12 @@ export function useMapPageData(year: string, basis: Basis, level: Level): MapPag
     figures: figures.data?.byUat,
     outsideMap: figures.data?.outsideMap ?? 0,
     failed: queries.some((query) => query.isError),
-    tableFailed: figures.isError || (level === 'county' ? counties.isError : uats.isError),
+    tableFailed: tableQueries.some((query) => query.isError),
     retry: () => {
       for (const query of queries) if (query.isError) void query.refetch()
+    },
+    retryTable: () => {
+      for (const query of tableQueries) if (query.isError) void query.refetch()
     },
   }
 }
