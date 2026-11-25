@@ -4,7 +4,7 @@ import { sankey, sankeyLinkHorizontal, type SankeyLink, type SankeyNode } from '
 
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { observationsOptions, useNationalCatalog } from '@/features/national-budget/analytics/hooks/use-national-budget-analytics'
-import { BUDGET_COLUMNS, type YearView } from '@/features/national-budget/home/lib/home-data'
+import type { YearView } from '@/features/national-budget/home/lib/home-data'
 import { moneyText } from '@/features/national-budget/home/lib/home-format'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { cn } from '@/lib/utils'
@@ -29,7 +29,6 @@ const LINE = {
   euPrevious: 'sume primite de la ue/alti donatori in contul platilor efectuate si prefinantari aferente cadrului financiar 2014-2020',
   spending: 'cheltuieli totale',
   balance: 'excedent(+) / deficit(-)',
-  transfersOut: 'transferuri intre unitati ale administratiei publice',
 } as const
 
 /** The four budgets named on their own; the others share one line. */
@@ -67,17 +66,65 @@ export type BudgetRow = {
   readonly label: string
   /** Lei, as printed. */
   readonly spending: number
+  /** Where the spending came from; the four add up to the spending. */
   readonly parts: Readonly<Record<Part, number>>
-  /** What the budget paid to other budgets, as printed. */
-  readonly transfersOut: number
+  /** Revenue the budget kept unspent (its surplus), as printed; 0 in a deficit. */
+  readonly surplus: number
 }
 
-/** The year's budgets as printed, the four large ones and the rest together; null when the release prints no budget columns. */
-export function useBudgets(view: YearView): readonly BudgetRow[] | null {
+/** The bulletin's own bridge from the budgets to the consolidated budget, as printed. */
+export type BudgetBridge = {
+  /** All budgets' spending before transfers (the printed column). */
+  readonly before: number
+  /** Money passed from one budget to another, netted once in the consolidated total. */
+  readonly passed: number
+  /** Of it, what the receivers book as „subvenții". */
+  readonly received: number
+  /** Public spending: the consolidated budget. */
+  readonly consolidated: number
+  /** The consolidated budget's deficit. */
+  readonly deficit: number
+}
+
+const BEFORE = 'budget_total_before_transfers'
+const TRANSFERS = 'signed_interbudget_transfers'
+const CONSOLIDATED = 'general_consolidated_budget'
+
+type Column = { readonly spending: number; readonly others: number; readonly eu: number; readonly balance: number }
+
+/**
+ * Each part of a budget's spending: what came from other budgets, from EU
+ * funds, what it borrowed (its deficit), and its own revenue for the rest.
+ * A budget in surplus kept that much of its own revenue, so its parts still
+ * add up to what it spent.
+ */
+function rowOf(key: string, label: string, column: Column): BudgetRow {
+  const borrowed = Math.max(0, -column.balance)
+  return {
+    key,
+    label,
+    spending: column.spending,
+    parts: { own: Math.max(0, column.spending - column.others - column.eu - borrowed), others: column.others, eu: column.eu, borrowed },
+    surplus: Math.max(0, column.balance),
+  }
+}
+
+/**
+ * The year's budgets as the release prints them: the four large ones by
+ * name, and the rest as the printed total before transfers minus those four
+ * (as the live page does: nothing is added up but that remainder). Null when
+ * the release prints no budget columns.
+ */
+export function useBudgets(view: YearView): { readonly rows: readonly BudgetRow[]; readonly bridge: BudgetBridge } | null {
   const catalog = useNationalCatalog()
   const client = useQueryClient()
   const { data } = useSuspenseQuery(
-    observationsOptions(client, catalog.snapshots.execution, { months: [view.month], components: [...BUDGET_COLUMNS], measures: ['AMOUNT'], lineItems: Object.values(LINE) }),
+    observationsOptions(client, catalog.snapshots.execution, {
+      months: [view.month],
+      components: [...NAMED.map((entry) => entry.component), BEFORE, TRANSFERS, CONSOLIDATED],
+      measures: ['AMOUNT'],
+      lineItems: Object.values(LINE),
+    }),
   )
   const cells = new Map<string, number>()
   for (const row of data.rows) {
@@ -85,31 +132,27 @@ export function useBudgets(view: YearView): readonly BudgetRow[] | null {
     cells.set(`${row.component}|${row.section}|${row.lineItem}`, Number(row.value))
   }
   const at = (component: string, section: string, line: string) => cells.get(`${component}|${section}|${line}`) ?? 0
-  const rowOf = (component: string, label: string): BudgetRow => {
-    const revenue = at(component, 'REVENUE', LINE.revenue)
-    const others = at(component, 'REVENUE', LINE.fromOthers)
-    const eu = at(component, 'REVENUE', LINE.euCurrent) + at(component, 'REVENUE', LINE.euPrevious)
-    const balance = at(component, 'BALANCE', LINE.balance)
-    return {
-      key: component,
-      label,
-      spending: at(component, 'EXPENDITURE', LINE.spending),
-      parts: { own: Math.max(0, revenue - others - eu), others, eu, borrowed: Math.max(0, -balance) },
-      transfersOut: at(component, 'EXPENDITURE', LINE.transfersOut),
-    }
+  const columnOf = (component: string): Column => ({
+    spending: at(component, 'EXPENDITURE', LINE.spending),
+    others: at(component, 'REVENUE', LINE.fromOthers),
+    eu: at(component, 'REVENUE', LINE.euCurrent) + at(component, 'REVENUE', LINE.euPrevious),
+    balance: at(component, 'BALANCE', LINE.balance),
+  })
+  const named = NAMED.map(({ component }) => columnOf(component))
+  const before = columnOf(BEFORE)
+  if (!before.spending || named.every((column) => !column.spending)) return null
+  const minus = (pick: (column: Column) => number) => pick(before) - named.reduce((sum, column) => sum + pick(column), 0)
+  const rest: Column = { spending: minus((c) => c.spending), others: minus((c) => c.others), eu: minus((c) => c.eu), balance: minus((c) => c.balance) }
+  return {
+    rows: [...NAMED.map(({ component, label }, index) => rowOf(component, label, named[index]!)), rowOf('rest', 'Alte bugete', rest)],
+    bridge: {
+      before: before.spending,
+      passed: -at(TRANSFERS, 'EXPENDITURE', LINE.spending),
+      received: before.others,
+      consolidated: at(CONSOLIDATED, 'EXPENDITURE', LINE.spending),
+      deficit: Math.max(0, -at(CONSOLIDATED, 'BALANCE', LINE.balance)),
+    },
   }
-  const named = NAMED.map(({ component, label }) => rowOf(component, label))
-  if (named.every((row) => row.spending === 0)) return null
-  const rest = BUDGET_COLUMNS.filter((component) => !NAMED.some((entry) => entry.component === component)).map((component) => rowOf(component, component))
-  const sum = (pick: (row: BudgetRow) => number) => rest.reduce((total, row) => total + pick(row), 0)
-  const other: BudgetRow = {
-    key: 'rest',
-    label: 'Alte bugete',
-    spending: sum((row) => row.spending),
-    parts: { own: sum((row) => row.parts.own), others: sum((row) => row.parts.others), eu: sum((row) => row.parts.eu), borrowed: sum((row) => row.parts.borrowed) },
-    transfersOut: sum((row) => row.transfersOut),
-  }
-  return [...named, other]
 }
 
 const bn = (lei: number) => moneyText(lei.toFixed(2))
@@ -255,13 +298,12 @@ const BUDGET_HINT: Readonly<Record<string, string>> = {
 }
 
 /** A hundred squares, one per leu of every 100 the budgets spent, coloured by the budget that spent it. */
-export function BudgetsWaffle({ rows, caption }: { readonly rows: readonly BudgetRow[]; readonly caption: ReactNode }) {
+export function BudgetsWaffle({ rows, bridge, caption }: { readonly rows: readonly BudgetRow[]; readonly bridge: BudgetBridge; readonly caption: ReactNode }) {
   const { view } = usePersonYear()
   const [hover, setHover] = useState<{ readonly key: string; readonly at: Point | null } | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const lei = outOfHundred(rows.map((row) => row.spending))
   const squares = rows.flatMap((row, rank) => Array.from({ length: lei[rank] ?? 0 }, () => ({ row, rank })))
-  const all = rows.reduce((sum, row) => sum + row.spending, 0)
   const tip = hover ? rows.findIndex((row) => row.key === hover.key) : -1
   const tipRow = rows[tip]
   return (
@@ -325,8 +367,8 @@ export function BudgetsWaffle({ rows, caption }: { readonly rows: readonly Budge
             ))}
           </ul>
           <Note className="mt-3">
-            Bugetele au cheltuit împreună {bn(all)}, mai mult decât cheltuielile publice: banii pe care un buget îi dă altuia (de pildă bugetul de stat, pensiilor) apar la
-            amândouă. Fiecare pătrat e un leu din 100.
+            Bugetele au cheltuit împreună {bn(bridge.before)} înainte de transferuri, mai mult decât cheltuielile publice ({bn(bridge.consolidated)}): {bn(bridge.passed)} au trecut de la
+            un buget la altul și apar la amândouă. Fiecare pătrat e un leu din 100.
           </Note>
         </div>
       </div>
@@ -364,9 +406,10 @@ type FlowHover = FlowTarget & { readonly at: Point | null }
  * the budgets on the right, each band in the colour of the budget it feeds
  * (the colours of the 100-lei squares). Only printed amounts are drawn: the
  * money one budget passed to another enters its receiver as „De la alte
- * bugete", and the payers are named in the note, never linked as pairs.
+ * bugete", and who paid whom (not printed) is never drawn. Each budget's
+ * sources add up to what it spent.
  */
-export function BudgetsFlow({ rows, caption }: { readonly rows: readonly BudgetRow[]; readonly caption: ReactNode }) {
+export function BudgetsFlow({ rows, bridge, caption }: { readonly rows: readonly BudgetRow[]; readonly bridge: BudgetBridge; readonly caption: ReactNode }) {
   const { view } = usePersonYear()
   const { ref, width } = useWidth()
   const [hover, setHover] = useState<FlowHover | null>(null)
@@ -391,11 +434,11 @@ export function BudgetsFlow({ rows, caption }: { readonly rows: readonly BudgetR
             [width - labelRoom, height - 6],
           ])({ nodes: nodes.map((node) => ({ ...node })), links: links.map((link) => ({ ...link })) })
       : null
-  const all = rows.reduce((sum, row) => sum + totalOf(row), 0)
+  const all = bridge.before
   const lit = (link: FlowLink) =>
     !hover || (hover.kind === 'link' ? hover.part === link.part && hover.rank === link.rank : hover.kind === 'source' ? hover.part === link.part : hover.rank === link.rank)
   const touch = (next: FlowTarget) => (event: React.PointerEvent) => setHover({ ...next, at: pointIn(event, ref.current) })
-  const payers = rows.filter((row) => row.transfersOut > 0.5e9).sort((a, b) => b.transfersOut - a.transfersOut)
+  const borrowed = rows.reduce((sum, row) => sum + row.parts.borrowed, 0)
   const tip = (() => {
     if (!hover) return null
     if (hover.kind === 'link') {
@@ -441,6 +484,7 @@ export function BudgetsFlow({ rows, caption }: { readonly rows: readonly BudgetR
             <Mark>{percent(row.parts[key], totalOf(row))}</Mark>
           </p>
         ))}
+        {row.surplus >= 0.05e9 ? <p className="mt-1 text-muted-foreground">Excedent: {bn(row.surplus)}, încasați și necheltuiți.</p> : null}
       </>
     )
   })()
@@ -513,12 +557,12 @@ export function BudgetsFlow({ rows, caption }: { readonly rows: readonly BudgetR
           {tip}
         </Tooltip>
       </div>
-      {payers.length ? (
-        <Note>
-          Banii „de la alte bugete" sunt plătiți de {payers.map((row, index) => `${index ? ', ' : ''}${row.label.toLowerCase()} (${bn(row.transfersOut)})`).join('')}. Buletinul nu
-          spune cât a dat fiecare plătitor fiecărui buget, de aceea nu le legăm. Împrumutat: deficitul fiecărui buget.
-        </Note>
-      ) : null}
+      <Note>
+        Între bugete au trecut {bn(bridge.passed)}: un buget îi plătește, altul îi primește, de aceea buletinul îi scade o dată în cheltuielile publice ({bn(bridge.consolidated)}).{' '}
+        {bn(bridge.received)} dintre ei apar ca subvenții primite („De la alte bugete"), restul în alte linii de venit ale celor care îi primesc. Cine a dat cui nu e tipărit, de
+        aceea nu legăm bugetele între ele. Împrumutat: deficitul fiecărui buget, {bn(borrowed)} adunate; cu excedentele celorlalte bugete și operațiunile financiare, deficitul
+        bugetului general consolidat e {bn(bridge.deficit)}.
+      </Note>
     </figure>
   )
 }
@@ -534,16 +578,16 @@ const VIEWS: readonly { readonly key: BudgetsView; readonly label: string }[] = 
 
 function Budgets() {
   const { view } = usePersonYear()
-  const rows = useBudgets(view)
+  const budgets = useBudgets(view)
   const [shown, setShown] = useState<BudgetsView>('shares')
-  if (!rows) return <NoBudgets view={view} />
+  if (!budgets) return <NoBudgets view={view} />
   const caption = (
     <span className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
       <span className="text-sm font-semibold">{shown === 'shares' ? `Din fiecare 100 de lei cheltuiți de toate bugetele, ${inPeriod(view.text)}` : `De unde și-a luat banii fiecare buget, ${inPeriod(view.text)}`}</span>
       <IndicatorToggle label="Arată" options={VIEWS} value={shown} onChange={setShown} />
     </span>
   )
-  return shown === 'shares' ? <BudgetsWaffle rows={rows} caption={caption} /> : <BudgetsFlow rows={rows} caption={caption} />
+  return shown === 'shares' ? <BudgetsWaffle {...budgets} caption={caption} /> : <BudgetsFlow {...budgets} caption={caption} />
 }
 
 /** The working version's section on the budgets the money passes through (owner, 25 November 2026: the squares, the flow behind a switch). */

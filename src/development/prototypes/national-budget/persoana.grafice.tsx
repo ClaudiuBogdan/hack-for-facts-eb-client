@@ -17,11 +17,11 @@ import { Section, YearPicker, YearProvider, usePersonYear } from './persoana.she
 
 function Budgets({ visual }: { readonly visual: 'mosaic' | 'waffle' | 'flow' }) {
   const { view } = usePersonYear()
-  const rows = useBudgets(view)
-  if (!rows) return <NoBudgets view={view} />
-  if (visual === 'mosaic') return <BudgetsMosaic rows={rows} />
-  if (visual === 'waffle') return <BudgetsWaffle rows={rows} caption={<span className="text-sm font-semibold">Din fiecare 100 de lei cheltuiți de toate bugetele</span>} />
-  return <BudgetsFlow rows={rows} caption={<span className="text-sm font-semibold">De unde și-a luat banii fiecare buget</span>} />
+  const budgets = useBudgets(view)
+  if (!budgets) return <NoBudgets view={view} />
+  if (visual === 'mosaic') return <BudgetsMosaic rows={budgets.rows} />
+  if (visual === 'waffle') return <BudgetsWaffle {...budgets} caption={<span className="text-sm font-semibold">Din fiecare 100 de lei cheltuiți de toate bugetele</span>} />
+  return <BudgetsFlow {...budgets} caption={<span className="text-sm font-semibold">De unde și-a luat banii fiecare buget</span>} />
 }
 
 const CANDIDATES: readonly { readonly id: string; readonly title: string; readonly lede: string; readonly body: ReactNode }[] = [

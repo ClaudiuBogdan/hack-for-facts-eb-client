@@ -1609,3 +1609,16 @@ modes (CVD ΔE ≥ 8.4, normal vision ≥ 19.3). Aqua, yellow and magenta are un
 
 The state budget's bars are gone; its rows have no colour square, since no chart there needs a key. The first section keeps its squares.
 On a phone the name wraps instead of being cut. A row is 57 px on desktop (it was about 130 with the bar and a two-line description).
+
+**Budgets on printed figures (25 November 2026, from the pre-integration review).** The first build mixed two bases: the flow showed each
+budget's sources summed (Pensii 158,2), the squares its spending (158,1). The payers note compared 157,8 received with 112,7 from one
+spending line. Now:
+- *Rows:* the four named budgets are printed columns. „Alte bugete" is the printed „total before transfers" minus those four, never a sum
+  of the small columns.
+- *Sources:* a budget's money from other budgets is its revenue „subvenții"; the bulletin's transfers column nets all of it (−157,8 in
+  2025). EU funds are its „sume primite de la UE" lines; borrowed is its deficit. Own revenue is the rest of its spending, so a budget in
+  surplus shows the surplus apart (pensions, 164,9 mil. lei in 2025). Every budget's sources add up to its spending. The four sources add
+  up to the printed 1.003,1.
+- *Notes:* they use the bulletin's own bridge. 185,1 mld. lei passed between budgets and are netted once in public spending (808,7),
+  157,8 of them as „subvenții". The budgets' deficits are 156,9 together; the consolidated deficit is 146,0 after the other budgets'
+  surpluses and financial operations. Who paid whom is not printed and is never drawn.
