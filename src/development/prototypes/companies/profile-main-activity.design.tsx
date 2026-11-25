@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
-import { ArrowRight } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { HubInfoNote } from '@/features/private-companies/components/hub/hub-info-note'
 import {
@@ -181,51 +180,46 @@ function AssignedMainActivity({
           </span>
         ) : null}
       </div>
+      {/* The lead: the activity's name where ANAF's code has an ONRC counterpart (the full counterpart line kept for
+          assistive technology and tests), else the state's own sentence. */}
       {chain ? (
-        <>
-          {/* The activity's name leads; the full counterpart line stays for assistive technology and the tests' reading. */}
-          <p className="mt-2 text-xl font-semibold leading-snug tracking-tight text-foreground">
-            <span aria-hidden="true">{chain.label}</span>
-            <span className="sr-only" data-testid="company-main-activity-headline">
-              {headline}
-            </span>
-          </p>
-          <ol className="mt-4 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-2" aria-label={t`Cum a fost presupusă`}>
-            <li className="rounded-md border border-dashed px-3 py-2">
-              <span className="block text-xs text-muted-foreground">{t`Codul fiscal la ANAF`}</span>
-              <span className="mt-0.5 block font-mono text-sm tabular-nums text-foreground">„{chain.token}”</span>
-            </li>
-            <li className="flex items-center text-muted-foreground" aria-hidden="true">
-              <ArrowRight className="size-4" />
-            </li>
-            <li className={cn('rounded-md border px-3 py-2', current ? 'border-primary/50' : '')}>
-              <span className="block text-xs text-muted-foreground">{t`Activitatea în registrul ONRC`}</span>
-              <span className="mt-0.5 block font-mono text-sm tabular-nums text-foreground">{chain.key}</span>
-            </li>
-          </ol>
-        </>
+        <p className="mt-2 text-xl font-semibold leading-snug tracking-tight text-foreground">
+          <span aria-hidden="true">{chain.label}</span>
+          <span className="sr-only" data-testid="company-main-activity-headline">
+            {headline}
+          </span>
+        </p>
       ) : headline ? (
         <p className="mt-2 text-base font-semibold leading-snug text-foreground" data-testid="company-main-activity-headline">
           {headline}
         </p>
       ) : null}
-      {basis.length > 0 ? (
-        <ul className="mt-2 space-y-0.5 text-xs leading-relaxed text-muted-foreground" data-testid="company-main-activity-basis">
-          {basis.map((note) => (
-            <li key={note}>{note}</li>
-          ))}
-        </ul>
-      ) : null}
-      {status ? <p className="mt-2 text-sm text-muted-foreground">{status}</p> : null}
+      {/* A state that changes how the lead reads stays in the open: pending, withheld, not current. */}
       {currentness ? (
         <p className="mt-2 text-sm text-foreground" data-testid="company-main-activity-currentness">
           {currentness}
         </p>
       ) : null}
-      {/* The assumption in its one line; the dates and the evidence behind the marker. */}
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+      {/* The one sentence in the open (owner, 25 November 2026); how it was derived, and when, behind its marker. */}
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {mainAssumptionText()}{' '}
-        <HubInfoNote label={t`Datele presupunerii`}>
+        <HubInfoNote label={t`Cum a fost presupusă`}>
+          {chain ? (
+            <p>
+              <Trans>
+                Codul fiscal la ANAF: <span className="font-mono text-foreground">„{chain.token}”</span>. Activitatea din registrul ONRC:{' '}
+                <span className="font-mono text-foreground">{chain.key}</span>, {chain.label}.
+              </Trans>
+            </p>
+          ) : null}
+          {basis.length > 0 ? (
+            <ul className="space-y-0.5" data-testid="company-main-activity-basis">
+              {basis.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : null}
+          {status ? <p>{status}</p> : null}
           {dates ? <p data-testid="company-main-activity-dates">{dates}</p> : null}
           <p>
             {mainDerivedText(activity)}

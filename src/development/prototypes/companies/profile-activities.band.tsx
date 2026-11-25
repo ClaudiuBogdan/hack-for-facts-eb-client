@@ -432,12 +432,25 @@ function Fold({ label, children, className }: { readonly label: ReactNode; reado
 const SPREAD_STEPS = ['bg-choropleth-5', 'bg-choropleth-4', 'bg-choropleth-3', 'bg-choropleth-2', 'bg-choropleth-1'] as const
 const SPREAD_REST = 'bg-muted-foreground/25'
 
-/** The division the selection's class sits in, in the selection's own revision; null when nothing is selected or the source is ANAF. */
-function selectedGroupKey(model: CompanyProfileModel): string | null {
+/** The division an ONRC key sits in, in its own revision; null without a key. */
+function groupKeyOf(model: CompanyProfileModel, key: { readonly code: string | null; readonly revision: string | null } | null): string | null {
+  if (!key || key.code === null) return null
+  const division = key.code.slice(0, 2)
+  return model.activities.groups.find((group) => group.division === division && group.revision === key.revision)?.key ?? null
+}
+
+/**
+ * The domain the band's answer sits in, and what to call it: the presumed main activity's ONRC counterpart where
+ * the band leads with it (`presumedFirst`), else the selection's class (ONRC only).
+ */
+function markedGroup(model: CompanyProfileModel, presumedFirst: boolean): { readonly key: string | null; readonly presumed: boolean } {
+  const view = model.assumedMain
+  if (presumedFirst && view.kind === 'assigned' && view.activity.resolved) {
+    return { key: groupKeyOf(model, view.activity.resolved), presumed: true }
+  }
   const { selection } = model
-  if (!selection || selection.source !== 'onrc' || selection.code === null) return null
-  const division = selection.code.slice(0, 2)
-  return model.activities.groups.find((group) => group.division === division && group.revision === selection.revision)?.key ?? null
+  if (!selection || selection.source !== 'onrc') return { key: null, presumed: false }
+  return { key: groupKeyOf(model, selection), presumed: false }
 }
 
 /**
@@ -484,6 +497,11 @@ export function DesignActivitiesBand({
     <ProfileBand id="activitati" titleId={TITLE_ID}>
       <HubSectionHead titleId={TITLE_ID} title={<Trans>Ce face firma</Trans>} />
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+        {designedMain ? (
+          <div className="min-w-0 lg:col-span-5">
+            <PresumedFirst model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} />
+          </div>
+        ) : (
         <div className="min-w-0 lg:col-span-5">
           {model.selection ? (
             <ActivitySelection selection={model.selection} lead />
@@ -496,18 +514,15 @@ export function DesignActivitiesBand({
           )}
           {/* Mounted whether shown or not: it reads on load. Hidden when it would draw nothing. */}
           <div className={cn('mt-8 border-t border-border/70 pt-5', !anafShown && 'hidden')}>
-            {designedMain ? (
-              <DesignMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} />
-            ) : (
-              <Fold label={<Trans>Activitatea principală presupusă după ANAF</Trans>}>
-                <CompanyMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} />
-              </Fold>
-            )}
+            <Fold label={<Trans>Activitatea principală presupusă după ANAF</Trans>}>
+              <CompanyMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} />
+            </Fold>
           </div>
         </div>
+        )}
         {model.activities.total > 0 ? (
           <div className="min-w-0 lg:col-span-7">
-            <ActivitySpread model={model} strip={strip} />
+            <ActivitySpread model={model} strip={strip} presumedFirst={designedMain} />
           </div>
         ) : null}
       </div>
@@ -516,16 +531,30 @@ export function DesignActivitiesBand({
 }
 
 /** How widely the company is registered: a sentence, the strip, the ranked domains, the notes. */
-function ActivitySpread({ model, strip, limit = 6 }: { readonly model: CompanyProfileModel; readonly strip: boolean; readonly limit?: number }) {
+function ActivitySpread({
+  model,
+  strip,
+  presumedFirst = false,
+  limit = 6,
+}: {
+  readonly model: CompanyProfileModel
+  readonly strip: boolean
+  readonly presumedFirst?: boolean
+  readonly limit?: number
+}) {
   const [open, setOpen] = useState<string | null>(null)
   const [all, setAll] = useState(false)
   const { groups: served, total, revision, byRevision } = model.activities
   // Largest first, across revisions: a division in two revisions is two domains, as the registry lists them.
   const groups = [...served].sort((a, b) => b.activities.length - a.activities.length)
   const largest = groups[0]?.activities.length ?? 1
-  const selected = selectedGroupKey(model)
+  const marked = markedGroup(model, presumedFirst)
+  const selected = marked.key
   const tone = (index: number) => SPREAD_STEPS[index] ?? SPREAD_REST
-  const shown = all ? groups : groups.slice(0, limit)
+  // The answer's domain is always in the list: under the largest ones, in its rank, when it is not among them.
+  const top = groups.slice(0, limit)
+  const pinned = selected !== null && !top.some((group) => group.key === selected) ? groups.find((group) => group.key === selected) : undefined
+  const shown = all ? groups : pinned ? [...top, pinned] : top
   const nomenclature = revision ? ` (CAEN ${caenEdition(revision)})` : ''
   const headed = revision === null
   const domainCount = groups.length
@@ -549,7 +578,8 @@ function ActivitySpread({ model, strip, limit = 6 }: { readonly model: CompanyPr
         </div>
       ) : null}
       <ul className="mt-5 divide-y divide-border/70 border-y border-border/70">
-        {shown.map((group, index) => {
+        {shown.map((group) => {
+          const index = groups.indexOf(group)
           const expanded = open === group.key
           const panelId = `company-activity-domain-${String(index)}`
           const count = group.activities.length
@@ -568,7 +598,7 @@ function ActivitySpread({ model, strip, limit = 6 }: { readonly model: CompanyPr
                   <span className="text-sm leading-snug text-foreground">{group.label}</span>
                   {group.key === selected ? (
                     <span className="ml-2 inline-block rounded-sm border border-primary/40 px-1.5 text-xs font-medium text-primary">
-                      <Trans>aici e activitatea selectată</Trans>
+                      {marked.presumed ? <Trans>aici e activitatea principală presupusă</Trans> : <Trans>aici e activitatea selectată</Trans>}
                     </span>
                   ) : null}
                   {headed ? <span className="ml-2 text-xs text-muted-foreground">{revisionName(group.revision)}</span> : null}
@@ -653,5 +683,69 @@ function ActivitySpread({ model, strip, limit = 6 }: { readonly model: CompanyPr
         </HubInfoNote>
       </p>
     </div>
+  )
+}
+
+/**
+ * One activity as the band's answer (owner, 25 November 2026: „Only the
+ * presumed main"): ANAF's presumed main activity, redrawn. The analysis's
+ * own grouping (the derived selection the hub and the analysis use) is said
+ * in one quiet line only where it differs from it. Where ANAF gives no
+ * presumed activity, the selection is the answer instead, as before. The
+ * presumed block stays mounted in every case: it reads on load.
+ */
+function PresumedFirst({
+  model,
+  onAnafWithdrawn,
+  onCompanyNotPublic,
+}: {
+  readonly model: CompanyProfileModel
+  readonly onAnafWithdrawn: (identity: string) => void
+  readonly onCompanyNotPublic: () => void
+}) {
+  const view = model.assumedMain
+  const presumed = view.kind === 'assigned' ? view.activity : null
+  const presumedBlock = <DesignMainActivity model={model} onAnafWithdrawn={onAnafWithdrawn} onCompanyNotPublic={onCompanyNotPublic} />
+  if (!presumed) {
+    return (
+      <>
+        {model.selection ? (
+          <ActivitySelection selection={model.selection} lead />
+        ) : model.selectionUnavailable ? (
+          <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="company-activity-selection-unavailable">
+            <Trans>Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos.</Trans>
+          </p>
+        ) : (
+          <MainActivity model={model} />
+        )}
+        {/* Mounted for its reads, drawn only when it has something to say (no assignment, unreadable). */}
+        <div className={cn('mt-8 border-t border-border/70 pt-5', (view.kind === 'not_served' || view.kind === 'unavailable' || view.kind === 'refused') && 'hidden')}>
+          {presumedBlock}
+        </div>
+      </>
+    )
+  }
+  const { selection } = model
+  const key = presumed.resolved
+  const same = selection !== null && selection.code !== null && key !== null && selection.code === key.code && selection.revision === key.revision
+  const grouping = selection === null || same ? null : selection.code !== null ? (selection.label ?? selection.code) : null
+  return (
+    <>
+      {presumedBlock}
+      {selection && !same ? (
+        <p className="mt-5 border-t border-border/70 pt-4 text-sm text-muted-foreground" data-testid="company-activity-grouping">
+          {grouping !== null ? (
+            <Trans>
+              În analiza bilanțurilor e grupată la: <span className="text-foreground">{grouping}</span>
+              {selection.code ? ` (${selection.code})` : ''}.
+            </Trans>
+          ) : selection.basis === 'onrc_multiple_classes' ? (
+            <Trans>În analiza bilanțurilor nu e grupată la o activitate: are mai multe activități clasificate.</Trans>
+          ) : (
+            <Trans>În analiza bilanțurilor nu e grupată la o activitate.</Trans>
+          )}
+        </p>
+      ) : null}
+    </>
   )
 }
