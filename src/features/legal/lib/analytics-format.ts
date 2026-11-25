@@ -7,8 +7,23 @@
 export type Ranked = { readonly key: string; readonly label: string; readonly n: number; readonly share: number }
 
 export const fmt = (n: number) => n.toLocaleString('ro-RO')
-export const pct = (x: number, digits = 1) =>
-  `${(x * 100).toLocaleString('ro-RO', { minimumFractionDigits: digits, maximumFractionDigits: digits })}%`
+
+/**
+ * A share as a percentage. A share that rounds to 0% or 100% without being it says so („<0,1%", „>99,9%"); a
+ * share that is not a number (a count over an empty selection) is a dash.
+ */
+export const pct = (x: number, digits = 1) => {
+  if (!Number.isFinite(x)) return '—'
+  const format = (value: number) => value.toLocaleString('ro-RO', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+  const step = 10 ** -digits
+  const rounded = Number((x * 100).toFixed(digits))
+  if (x > 0 && rounded === 0) return `<${format(step)}%`
+  if (x < 1 && rounded === 100) return `>${format(100 - step)}%`
+  return `${format(x * 100)}%`
+}
+
+/** `n` as a share of `total`, or a dash when there is nothing to share (an empty selection). */
+export const pctOf = (n: number, total: number, digits = 1) => (total > 0 ? pct(n / total, digits) : '—')
 
 // ───────────────────────────────────────────────────── colours ──
 

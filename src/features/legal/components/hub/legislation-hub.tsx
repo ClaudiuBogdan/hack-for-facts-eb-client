@@ -16,7 +16,7 @@ import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { LEGAL_ANALYTICS_UNAVAILABLE, LegalAnalyticsError } from '../../api/legal-analytics-api'
 import { useLegislationFreshness } from '../../hooks/use-legislation'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
-import { READING_SENTENCE } from '../../lib/analytics-notes-text'
+import { readingSentence } from '../../lib/analytics-notes-text'
 import { formatLegalDate } from '../../lib/legal-format'
 import { isLegalMockEnabled } from '../../lib/mock-mode'
 import { AnalyticsProblem } from '../analytics/analytics-notes'
@@ -209,7 +209,7 @@ export function LegislationHub({
           <h2 id="legal-hub-reading-title" className="text-sm font-semibold text-foreground">
             <Trans>Cum citim felul actului</Trans>
           </h2>
-          <p className="mt-2 max-w-[80ch] text-sm leading-relaxed text-muted-foreground">{READING_SENTENCE}</p>
+          <p className="mt-2 max-w-[80ch] text-sm leading-relaxed text-muted-foreground">{readingSentence(head.data?.data.rules['felul'])}</p>
           <Link to="/legislation/guide" className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9">
             <Trans>Ghidul legislației: cum citești corect aceste date</Trans> →
           </Link>

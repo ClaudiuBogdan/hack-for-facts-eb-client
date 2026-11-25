@@ -42,8 +42,10 @@ describe('LegislationAnalyticsPage', () => {
     render(<LegislationAnalyticsPage />)
     expect(await screen.findByText('acte în selecție')).toBeInTheDocument()
     expect(screen.getByText('stabilesc reguli (încadrate ferm)')).toBeInTheDocument()
-    // the share line: uncertain and unplaced remainders over the denominator, computed on the page
-    expect(screen.getByText(/încadrare nesigură · .* neîncadrate · din 227\.202/)).toBeInTheDocument()
+    // the shares the page computes from the fixture's counts: 18.661 and 6.307 of 227.202
+    expect(screen.getByText('8,2% încadrare nesigură · 2,8% neîncadrate · din 227.202')).toBeInTheDocument()
+    // 72.995 rule-making acts of 227.202: 32,1% (the figure's readable copy)
+    expect(screen.getByText('32,1%')).toBeInTheDocument()
     expect(await screen.findByText(/Citite independent 385 de acte: 94%/, { selector: 'p.text-foreground' })).toBeInTheDocument()
   })
 
@@ -56,7 +58,28 @@ describe('LegislationAnalyticsPage', () => {
   it('lists the acts of the selection, naming a weak placement as uncertain', async () => {
     render(<LegislationAnalyticsPage />)
     const acts = await screen.findByRole('region', { name: 'Actele din selecție' })
-    expect(await within(acts).findAllByRole('link')).not.toHaveLength(0)
+    // HG nr. 1359/2001 is a weak placement in the fixture: uncertain, with the rules' guess under it
+    const link = await within(acts).findByRole('link', { name: 'HG nr. 1359/2001' })
+    const row = link.closest('tr')
+    expect(row).not.toBeNull()
+    expect(within(row as HTMLElement).getByText('încadrare nesigură')).toBeInTheDocument()
+    expect(within(row as HTMLElement).getByText('probabil: reguli noi')).toBeInTheDocument()
+  })
+
+  it('reads an unrestricted period as „din orice an", and family and issuer as two phrases', async () => {
+    search = { familie: 'guvern', emitent: 'Guvernul' }
+    render(<LegislationAnalyticsPage />)
+    const headline = await screen.findByRole('heading', { level: 2, name: /^Acte / })
+    expect(headline).toHaveTextContent('din orice an')
+    fireEvent.click(within(headline).getByRole('button', { name: 'Scoate filtrul de la Guvernul' }))
+    const call = navigateMock.mock.calls[0]?.[0] as { search: (p: Record<string, unknown>) => Record<string, unknown> }
+    // the issuer goes, the family stays
+    expect(call.search({ familie: 'guvern', emitent: 'Guvernul' })).toEqual({ familie: 'guvern' })
+  })
+
+  it('says under mock mode that the figures are a fixture', async () => {
+    render(<LegislationAnalyticsPage />)
+    expect(await screen.findByText('Date demonstrative (mock)')).toBeInTheDocument()
   })
 
   it('writes a picked Felul group into the address', async () => {

@@ -64,6 +64,28 @@ export function analyticsUrl(view: LegalAnalyticsView, args: LegalAnalyticsArgs)
   return `${getApiBaseUrl()}${LEGAL_ANALYTICS_ENDPOINT}/${view}${query ? `?${query}` : ''}`
 }
 
+/** The filter arguments, the ones that change which acts an answer counts. */
+const FILTER_KEYS = ['population', 'from', 'to', 'type', 'issuer', 'family', 'felul', 'versions'] as const
+
+/** An argument as the server's canonical form writes it: lists sorted, the default population dropped. */
+function canonicalValue(key: string, value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined
+  if (key === 'population' && value === 'flow') return undefined
+  if (Array.isArray(value)) return value.length ? JSON.stringify([...(value as unknown[])].map(String).sort()) : undefined
+  return JSON.stringify(String(value))
+}
+
+/**
+ * Whether an answer is the answer to the question asked: the server echoes the view and its canonical filter
+ * (`meta.view`, `meta.args`). An answer for another view or another filter (a flow answer for a stock question)
+ * is refused rather than cached under the question's key.
+ */
+export function answersQuestion(view: LegalAnalyticsView, args: LegalAnalyticsArgs, meta: { readonly view: string; readonly args: Readonly<Record<string, unknown>> }): boolean {
+  if (meta.view !== view) return false
+  const asked = args as Readonly<Record<string, unknown>>
+  return FILTER_KEYS.every((key) => canonicalValue(key, asked[key]) === canonicalValue(key, meta.args[key]))
+}
+
 function parseJsonSafely(text: string): unknown {
   if (!text) return null
   try {
@@ -93,7 +115,7 @@ export async function fetchLegalAnalyticsLive<V extends LegalAnalyticsView>(
     logger.error('Analytics transport error', { view, message })
     throw new LegalAnalyticsError('failed', 'Analytics request failed')
   }
-  const body = parseJsonSafely(await response.text()) as { data?: unknown; meta?: unknown; message?: unknown; field?: unknown } | null
+  const body = parseJsonSafely(await response.text()) as { ok?: unknown; data?: unknown; meta?: unknown; message?: unknown; field?: unknown } | null
   if (!response.ok) {
     const kind: LegalAnalyticsErrorKind =
       response.status === 503 ? 'unavailable' : response.status === 400 ? 'invalid' : 'failed'
@@ -103,12 +125,16 @@ export async function fetchLegalAnalyticsLive<V extends LegalAnalyticsView>(
   }
   const data = LEGAL_ANALYTICS_DATA_SCHEMAS[view].safeParse(body?.data)
   const meta = legalAnalyticsMetaSchema.safeParse(body?.meta)
-  if (!data.success || !meta.success) {
+  if (body?.ok !== true || !data.success || !meta.success) {
     logger.error('Analytics payload failed validation', {
       view,
       issues: (data.error ?? meta.error)?.issues.slice(0, 3),
     })
     throw new LegalAnalyticsError('failed', 'Analytics response did not match the contract', response.status)
+  }
+  if (!answersQuestion(view, args, meta.data)) {
+    logger.error('Analytics answer is for another question', { view, asked: args, answered: meta.data.args, answeredView: meta.data.view })
+    throw new LegalAnalyticsError('failed', 'Analytics response answers another question', response.status)
   }
   return {
     data: data.data as LegalAnalyticsAnswer<V>['data'],

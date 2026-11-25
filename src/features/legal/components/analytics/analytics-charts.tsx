@@ -228,13 +228,17 @@ export function CrossGrid({
   rows,
   cols,
   cells,
+  total,
   rowCaption,
 }: {
   readonly rows: readonly Ranked[]
   readonly cols: readonly string[]
   readonly cells: readonly (readonly number[])[]
+  /** The selection's acts: those of the rows not shown are stated in acts. Unset, the footer leaves them out. */
+  readonly total?: number
   readonly rowCaption: string
 }) {
+  const outside = total === undefined ? null : Math.max(0, total - rows.reduce((sum, r) => sum + r.n, 0))
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[40rem] border-collapse text-sm">
@@ -275,7 +279,10 @@ export function CrossGrid({
           })}
         </tbody>
       </table>
-      <p className="mt-3 text-xs text-muted-foreground">{t`Nuanța: ponderea celulei în rândul ei. Primele 10 rânduri și 6 coloane; restul în „altele".`}</p>
+      <p className="mt-3 text-xs text-muted-foreground">
+        {t`Nuanța: ponderea celulei în rândul ei. Coloana „altele" ține valorile nearătate ale rândurilor de aici.`}{' '}
+        {outside === null ? null : outside > 0 ? t`Rândurile nearătate: alte ${fmt(outside)} acte.` : t`Toate actele selecției sunt în aceste rânduri.`}
+      </p>
     </div>
   )
 }

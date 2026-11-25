@@ -4,7 +4,7 @@ import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-c
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { LegalAnalyticsArgs } from '@/schemas/legal-analytics'
 
-type SsrRead = readonly ['head' | 'summary' | 'breakdown', LegalAnalyticsArgs]
+type SsrRead = readonly ['head' | 'summary' | 'breakdown' | 'series' | 'grid', LegalAnalyticsArgs]
 
 export type LegislationAnalyticsRouteLoaderData = {
   /** Server render only: `false` when an aggregate read failed (or no layer is published) and the browser reads it. */
@@ -14,9 +14,10 @@ export type LegislationAnalyticsRouteLoaderData = {
 }
 
 /**
- * The analysis page renders its question's aggregate answers on the server: the head, the summary and, for a
- * ranking, the breakdown of its lens, read from the analytics memo kept in the server process
- * (`legal-analytics-ssr.ts`) and hydrated into the browser's cache. The acts list is read in the browser (the API
+ * The analysis page renders its question's aggregate answers on the server: the head, the summary and the chart
+ * the question asks for (a ranking's breakdown, a series or a grid, `chartRead`), all started together and read
+ * from the analytics memo kept in the server process (`legal-analytics-ssr.ts`), then hydrated into the browser's
+ * cache. The acts list is read in the browser (the API
  * serves it `no-store`). A failed or refused read (503 before the first layer is published) is left out of the
  * cache, the page reads it in the browser, and the render goes out `no-store`. The feature's modules are imported
  * inside the loader, so this file (which every page's route tree carries) stays thin.
@@ -34,10 +35,8 @@ export const Route = createFileRoute('/legislation/analytics')({
       ['head', {}],
       ['summary', base],
     ]
-    if (question.isDataLens(q.vedere) && q.forma === 'clasament') {
-      const lens = question.apiLens(q.vedere, q.vedere === 'felul' && q.fin)
-      reads.push(['breakdown', { ...base, lens, ...(q.vedere === 'emitent' && { limit: 50 }) }])
-    }
+    const chart = question.chartRead(q)
+    if (chart) reads.push(chart)
     if (!shouldBlockLoaderForSsr()) {
       for (const [view, args] of reads) {
         void context.queryClient.prefetchQuery(legalAnalyticsQueryOptions(view, args)).catch(() => undefined)

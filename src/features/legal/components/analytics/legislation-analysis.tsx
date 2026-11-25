@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2, SlidersHorizontal } from 'lucide-react'
+import { DataStatusBadge } from '@/components/data-trust'
 import { HeadlinePhrase } from '@/components/filters/filter-sheet/headline-phrase'
 import { Chip, Group, Row, SHEET_CLOSE } from '@/components/filters/filter-sheet/filter-sheet-parts'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
@@ -22,7 +23,6 @@ import { LEGAL_ANALYTICS_NAMING_CACHE, retryLegalAnalytics, useLegalAnalytics } 
 import {
   FAMILY_LABEL,
   GROUP_LABEL,
-  GROUP_ORDER,
   KIND_LABEL,
   LINK_KIND_LABEL,
   LINK_NOTE_LABEL,
@@ -37,8 +37,9 @@ import {
   LENS_LABEL,
   LENSES,
   SOON_LENSES,
-  apiLens,
+  chartRead,
   filterArgs,
+  gridColumns,
   isDataLens,
   isFiltered,
   type DataLens,
@@ -47,8 +48,9 @@ import {
   type Order,
   type Question,
 } from '../../lib/analytics-question'
-import { fmt, pct } from '../../lib/analytics-format'
-import { READING_SENTENCE } from '../../lib/analytics-notes-text'
+import { fmt, pct, pctOf } from '../../lib/analytics-format'
+import { readingSentence } from '../../lib/analytics-notes-text'
+import { isLegalMockEnabled } from '../../lib/mock-mode'
 import { labelOfKey, rankedOf, useQuestion } from '../../lib/analytics-view'
 import { everyYear } from '../../lib/analytics-years'
 import { AnalyticsCaveats, AnalyticsProblem } from './analytics-notes'
@@ -76,7 +78,7 @@ function rulesOf(s: LegalAnalyticsSummary) {
   return {
     main: s.total ? (rules / s.total) * 100 : 0,
     note: s.total
-      ? t`${pct(s.uncertain / s.total)} încadrare nesigură · ${pct(s.unplaced / s.total)} neîncadrate · din ${fmt(s.total)}`
+      ? t`${pctOf(s.uncertain, s.total)} încadrare nesigură · ${pctOf(s.unplaced, s.total)} neîncadrate · din ${fmt(s.total)}`
       : '',
   }
 }
@@ -106,17 +108,22 @@ export function LegislationAnalysis({ unavailable = false }: { readonly unavaila
   const summary = useLegalAnalytics('summary', base)
   useOneLayer([head.data?.layer.layerId, summary.data?.layer.layerId])
 
-  if (head.error) return <AnalyticsProblem error={head.error} />
-  // refused on the server (503): the calm panel, on the server too, until a browser read succeeds
-  if (unavailable && !head.data) return <AnalyticsProblem error={LEGAL_ANALYTICS_UNAVAILABLE} />
+  // No layer published yet (503): one calm panel for the page, on the server too, until a browser read succeeds.
+  // Any other failure of the head is said beside the controls that need it; the bands that answered stay.
+  const headRefused = head.error instanceof LegalAnalyticsError && head.error.kind === 'unavailable'
+  if (headRefused || (unavailable && !head.data)) return <AnalyticsProblem error={LEGAL_ANALYTICS_UNAVAILABLE} />
   const s = summary.data?.data
   const h = head.data?.data
   const population = q.populatie === 'stoc' ? t`legislația așa cum este` : t`ce s-a publicat`
   return (
     <div className="flex min-w-0 flex-col gap-12">
       <section aria-label={t`Întrebarea`}>
-        <MonoLabel className="block text-primary">{t`Analiză`}</MonoLabel>
-        <Headline q={q} move={move} onOpen={() => setSheet(true)} head={h} />
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <MonoLabel className="block text-primary">{t`Analiză`}</MonoLabel>
+          {/* Under mock mode every figure on the page is a fixture: said at the top (data-trust contract). */}
+          {isLegalMockEnabled() ? <DataStatusBadge status="mock" /> : null}
+        </div>
+        <Headline q={q} move={move} onOpen={() => setSheet(true)} />
         <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
           <button type="button" onClick={() => setSheet(true)} className="font-medium text-foreground underline-offset-4 hover:underline">
             {t`+ Adaugă un filtru`}
@@ -145,16 +152,25 @@ export function LegislationAnalysis({ unavailable = false }: { readonly unavaila
               { key: 'stoc', label: t`Stoc · legislația așa cum este` },
             ]}
           />
-          <p className="text-xs text-muted-foreground">
-            {h
-              ? q.populatie === 'stoc'
-                ? t`Actele care stabilesc reguli și stau singure, încadrate ferm: ${fmt(h.totals.inStock)} acte (definiție provizorie).`
-                : t`Fiecare act publicat, la data lui: ${fmt(h.totals.acts)} acte.`
-              : null}
-          </p>
+          <div className="text-xs text-muted-foreground">
+            {head.error ? (
+              <AnalyticsProblem error={head.error} />
+            ) : h ? (
+              q.populatie === 'stoc' ? (
+                t`Actele care stabilesc reguli și stau singure, încadrate ferm: ${fmt(h.totals.inStock)} acte (definiție provizorie).`
+              ) : (
+                t`Fiecare act publicat, la data lui: ${fmt(h.totals.acts)} acte.`
+              )
+            ) : null}
+          </div>
         </div>
       </section>
-      {s ? (
+      {s && s.total === 0 ? (
+        // An empty selection has no shares: said in words, never as 0,0%.
+        <p className="border-y py-6 text-sm text-muted-foreground" role="status">
+          {t`Niciun act nu se potrivește cu această întrebare. Scoate un filtru.`}
+        </p>
+      ) : s ? (
         <HubFiguresBand
           locale="ro"
           facts={[
@@ -162,7 +178,7 @@ export function LegislationAnalysis({ unavailable = false }: { readonly unavaila
             fact('reguli', rulesOf(s).main, 1, '%', t`stabilesc reguli (încadrate ferm)`, rulesOf(s).note, '#raspuns'),
             fact(
               'text',
-              s.total ? (s.withText / s.total) * 100 : 0,
+              (s.withText / s.total) * 100,
               1,
               '%',
               t`au text citibil în Portal`,
@@ -209,8 +225,8 @@ export function LegislationAnalysis({ unavailable = false }: { readonly unavaila
         </div>
       </section>
       <ActsBand q={q} move={move} base={base} />
-      <AnalyticsCaveats head={h} />
-      {h ? <FilterSheet q={q} move={move} open={sheet} onOpenChange={setSheet} head={h} base={base} /> : null}
+      <AnalyticsCaveats head={h} population={q.populatie} />
+      {h ? <FilterSheet q={q} move={move} open={sheet} onOpenChange={setSheet} head={h} /> : null}
     </div>
   )
 }
@@ -220,29 +236,21 @@ function Headline({
   q,
   move,
   onOpen,
-  head,
 }: {
   readonly q: Question
   readonly move: (q: Question) => void
   readonly onOpen: () => void
-  readonly head: LegalAnalyticsHead | undefined
 }) {
   const typeText = q.tip.length ? q.tip.map((k) => TYPE_LABEL[k] ?? k).join(', ') : t`de orice tip`
-  const min = head?.years.min ?? null
-  const max = head?.years.max ?? null
+  // No period chosen is every act, those without a year included: not the same as the years min–max, which
+  // leaves them out. So it reads „din orice an".
   const yearText = q.an
     ? q.an.from === q.an.to
       ? t`din ${String(q.an.from)}`
       : t`din ${String(q.an.from)}–${String(q.an.to)}`
-    : min !== null && max !== null
-      ? t`din ${String(min)}–${String(max)}`
-      : t`din orice an`
-  const issuerText =
-    q.emitent !== null
-      ? t`de la ${q.emitent}`
-      : q.familie !== null
-        ? t`de la ${FAMILY_LABEL[q.familie] ?? q.familie}`
-        : t`de la orice emitent`
+    : t`din orice an`
+  const issuerText = q.emitent !== null ? t`de la ${q.emitent}` : null
+  const familyText = q.familie !== null ? t`din familia ${FAMILY_LABEL[q.familie] ?? q.familie}` : null
   const felulText =
     q.felul === null
       ? t`de orice fel`
@@ -272,7 +280,10 @@ function Headline({
     <h2 className="mt-3 max-w-[30ch] text-2xl font-semibold leading-snug tracking-tight text-foreground sm:text-4xl">
       {t`Acte`} {phrase(typeText, q.tip.length > 0, () => move({ ...q, tip: [] }))},{' '}
       {phrase(yearText, q.an !== null, () => move({ ...q, an: null }))},{' '}
-      {phrase(issuerText, q.emitent !== null || q.familie !== null, () => move({ ...q, emitent: null, familie: null }))},{' '}
+      {/* The family and the issuer are two filters: each its own phrase, each removed on its own. */}
+      {familyText ? <>{phrase(familyText, true, () => move({ ...q, familie: null }))}, </> : null}
+      {issuerText ? <>{phrase(issuerText, true, () => move({ ...q, emitent: null }))}, </> : null}
+      {familyText === null && issuerText === null ? <>{phrase(t`de la orice emitent`, false, () => undefined)}, </> : null}
       {phrase(felulText, q.felul !== null, () => move({ ...q, felul: null }))}
       {dynText ? <>, {phrase(dynText, true, () => move({ ...q, dinamica: null }))}</> : null}
       {', '}
@@ -330,8 +341,9 @@ function RankAnswer({
   readonly head: LegalAnalyticsHead | undefined
 }) {
   const vedere = q.vedere as DataLens
-  const lens = apiLens(vedere, vedere === 'felul' && q.fin)
-  const answer = useLegalAnalytics('breakdown', { ...base, lens, ...(vedere === 'emitent' && { limit: 50 }) })
+  // the read the route loader made on the server: one key, so the server's answer is used
+  const [, args] = chartRead(q) ?? ['breakdown', base]
+  const answer = useLegalAnalytics('breakdown', args)
   if (answer.error) return <AnalyticsProblem error={answer.error} />
   const b = answer.data?.data
   if (!b) return <div className="h-64 animate-pulse bg-muted/40" aria-hidden="true" />
@@ -366,15 +378,15 @@ function RankAnswer({
           else if (vedere === 'dinamica') move({ ...q, dinamica: q.dinamica === Number(key) ? null : Number(key) })
         }}
       />
-      {vedere === 'felul' ? <p className="mt-3 max-w-[80ch] text-sm text-foreground">{READING_SENTENCE}</p> : null}
+      {vedere === 'felul' ? <p className="mt-3 max-w-[80ch] text-sm text-foreground">{readingSentence(head?.rules['felul'])}</p> : null}
     </div>
   )
 }
 
 function SeriesAnswer({ q, base }: { readonly q: Question; readonly base: LegalAnalyticsArgs }) {
   const vedere = q.vedere as DataLens
-  const lens = apiLens(vedere, vedere === 'felul' && q.fin)
-  const answer = useLegalAnalytics('series', { ...base, lens })
+  const [, args] = chartRead(q) ?? ['series', base]
+  const answer = useLegalAnalytics('series', args)
   if (answer.error) return <AnalyticsProblem error={answer.error} />
   const s = answer.data?.data
   if (!s) return <div className="h-64 animate-pulse bg-muted/40" aria-hidden="true" />
@@ -404,8 +416,10 @@ function GridAnswer({
 }) {
   const vedere = q.vedere as DataLens
   const other = DATA_LENSES.filter((l) => l !== vedere)
-  const cu = other.includes(q.cu) ? q.cu : (other[0] ?? 'tip')
-  const answer = useLegalAnalytics('grid', { ...base, lens: apiLens(vedere), by: apiLens(cu) })
+  const cu = gridColumns(q)
+  // the Felul axis keeps the level the reader chose (groups or kinds), as in the other forms
+  const [, args] = chartRead(q) ?? ['grid', base]
+  const answer = useLegalAnalytics('grid', args)
   const g = answer.data?.data
   return (
     <div>
@@ -425,6 +439,7 @@ function GridAnswer({
           rows={rankedOf(g.lens, g.rows, g.total)}
           cols={[...g.cols.map((c) => labelOfKey(g.by, c.key)), 'altele']}
           cells={g.cells}
+          total={g.total}
           rowCaption={LENS_LABEL[vedere]}
         />
       ) : (
@@ -496,7 +511,7 @@ function LinksView({ base }: { readonly base: LegalAnalyticsArgs }) {
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           {total
-            ? t`${fmt(total)} acte care modifică, după titlu; ${fmt(resolved)} (${pct(resolved / total)}) legate de un singur act din corpus. Restul, în coloanele gri: un cod numit, o țintă cu același număr la mai mulți emitenți, o țintă care lipsește din corpus, sau niciun act numit în titlu. Legile și ordonanțele sunt o singură bandă.`
+            ? t`${fmt(total)} trimiteri de modificare, citite din titluri; ${fmt(resolved)} (${pct(resolved / total)}) duc la un singur act din corpus. Restul, în coloanele gri: un cod numit, o țintă cu același număr la mai mulți emitenți, o țintă care lipsește din corpus, sau niciun act numit în titlu. Legile și ordonanțele sunt o singură bandă.`
             : t`Niciun act care modifică în selecție.`}
         </p>
       </div>
@@ -732,22 +747,21 @@ function FilterSheet({
   open,
   onOpenChange,
   head,
-  base,
 }: {
   readonly q: Question
   readonly move: (q: Question) => void
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
   readonly head: LegalAnalyticsHead
-  readonly base: LegalAnalyticsArgs
 }) {
   const [issuerSearch, setIssuerSearch] = useState('')
   const min = head.years.min ?? 1800
   const max = head.years.max ?? new Date().getFullYear()
   const years = Array.from({ length: Math.max(0, max - min + 1) }, (_, j) => min + j)
-  // the full lineage list (the head lists the first 300) only once someone searches
+  // the full lineage list (the head lists the first 300) only once someone searches; over the whole corpus, as
+  // the head's list is, so the counts keep one basis while the reader types
   const searching = open && issuerSearch.trim().length >= 2
-  const allIssuers = useLegalAnalytics('breakdown', { ...base, lens: 'issuer', limit: 1000 }, searching)
+  const allIssuers = useLegalAnalytics('breakdown', { lens: 'issuer', limit: 1000 }, searching)
   const needle = fold(issuerSearch)
   const issuers = (
     searching && allIssuers.data
@@ -764,6 +778,9 @@ function FilterSheet({
         <SheetHeader>
           <SheetTitle>{t`Filtre`}</SheetTitle>
         </SheetHeader>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {t`Cifrele de lângă opțiuni: acte din tot ce s-a publicat, fără filtre.`}
+        </p>
         <div className="mt-4 divide-y">
           <Group title={t`Când`}>
             <Row label={t`De la`}>
@@ -824,7 +841,7 @@ function FilterSheet({
             </Row>
             <Row label={t`Felul`}>
               <div className="grid gap-1">
-                {GROUP_ORDER.map((g) => (
+                {felulOptions(head.values.felulGroups).map((g) => (
                   <button
                     key={g}
                     type="button"
@@ -835,7 +852,7 @@ function FilterSheet({
                       q.felul === g ? 'border-primary bg-primary/5 font-medium' : 'hover:bg-muted',
                     )}
                   >
-                    {GROUP_LABEL[g]}
+                    {GROUP_LABEL[g] ?? g}
                   </button>
                 ))}
               </div>
@@ -925,6 +942,15 @@ function FilterSheet({
       </SheetContent>
     </Sheet>
   )
+}
+
+/**
+ * The Felul classes the filter offers: the layer's groups (a new group appears with the layer that brings it),
+ * then the weak placements, a class of their own, then the unplaced.
+ */
+function felulOptions(groups: readonly string[]): string[] {
+  const firm = groups.filter((g) => g !== 'uncertain' && g !== 'unplaced')
+  return [...firm, 'uncertain', 'unplaced']
 }
 
 const fold = (s: string) =>

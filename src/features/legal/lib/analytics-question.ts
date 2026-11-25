@@ -87,7 +87,8 @@ export function readQuestion(search: Record<string, unknown>): Question {
     cu,
     an: from !== null && to !== null && from <= to ? { from, to } : null,
     tip,
-    emitent: emitent !== '' && emitent.length <= 2000 ? emitent : null,
+    // Kept whatever its length: the layer names joint issuers at length, and the server checks the name.
+    emitent: emitent !== '' ? emitent : null,
     familie: KEY.test(familie) ? familie : null,
     felul: KEY.test(felul) ? felul : null,
     dinamica: /^[0-3]$/u.test(dinamica) ? Number(dinamica) : null,
@@ -141,6 +142,32 @@ export function apiLens(lens: DataLens, fine = false): LegalAnalyticsLens {
     case 'dinamica':
       return 'versions'
   }
+}
+
+/** The other lens a grid crosses its rows with: the question's own, or the first other data lens. */
+export function gridColumns(q: Question): DataLens {
+  const vedere = isDataLens(q.vedere) ? q.vedere : 'felul'
+  const other = DATA_LENSES.filter((lens) => lens !== vedere)
+  return other.includes(q.cu) ? q.cu : (other[0] ?? 'tip')
+}
+
+/**
+ * The answer a question's chart reads, as the page and the route loader both ask it (one query, one cache
+ * entry): a ranking's breakdown, a series, or a grid. The Felul axis keeps the level the reader chose (groups or
+ * kinds) in every form. `null` for a view with no aggregate chart (links, the soon lenses).
+ */
+export function chartRead(
+  q: Question,
+): readonly ['breakdown' | 'series' | 'grid', LegalAnalyticsArgs] | null {
+  if (!isDataLens(q.vedere)) return null
+  const base = filterArgs(q)
+  const lens = apiLens(q.vedere, q.vedere === 'felul' && q.fin)
+  if (q.forma === 'timp') return ['series', { ...base, lens }]
+  if (q.forma === 'grila') {
+    const cu = gridColumns(q)
+    return ['grid', { ...base, lens, by: apiLens(cu, cu === 'felul' && q.fin) }]
+  }
+  return ['breakdown', { ...base, lens, ...(q.vedere === 'emitent' && { limit: 50 }) }]
 }
 
 export const API_ORDER: Readonly<Record<Order, LegalAnalyticsOrder>> = {

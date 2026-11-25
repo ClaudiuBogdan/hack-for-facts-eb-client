@@ -98,7 +98,7 @@ export const legalAnalyticsBreakdownSchema = z.object({
   ...denominators,
   lens: z.enum(LEGAL_ANALYTICS_LENSES),
   rows: z.array(keyCount),
-  rest: z.number().int(),
+  rest: count,
   truncated: z.boolean(),
 })
 export type LegalAnalyticsBreakdown = z.infer<typeof legalAnalyticsBreakdownSchema>
@@ -111,6 +111,8 @@ export const legalAnalyticsSeriesSchema = z.object({
   restKey: z.literal(true),
   unknownYear: count,
 })
+  // a year's counts are one per key and one for the rest: a short vector would draw a missing count as zero
+  .refine((s) => s.years.every((y) => y.acts.length === s.keys.length + 1), { message: 'a year has the wrong number of counts', path: ['years'] })
 export type LegalAnalyticsSeries = z.infer<typeof legalAnalyticsSeriesSchema>
 
 export const legalAnalyticsGridSchema = z.object({
@@ -121,6 +123,11 @@ export const legalAnalyticsGridSchema = z.object({
   cols: z.array(keyCount),
   cells: z.array(z.array(count)),
 })
+  // one line of cells a row, one cell a column and one for the rest
+  .refine((g) => g.cells.length === g.rows.length && g.cells.every((line) => line.length === g.cols.length + 1), {
+    message: 'the cells do not match the rows and columns',
+    path: ['cells'],
+  })
 export type LegalAnalyticsGrid = z.infer<typeof legalAnalyticsGridSchema>
 
 /** An act id is the server's decimal bigint string. Links are built from it, so nothing else passes: a slash or a „?" would change where the link leads. */

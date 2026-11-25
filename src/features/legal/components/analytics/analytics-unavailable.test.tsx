@@ -66,9 +66,9 @@ describe('the analytics „not published yet" panel', () => {
     expect(screen.queryByText('Analiza se pregătește')).not.toBeInTheDocument()
   })
 
-  it('shows the panel on the analysis page when no layer is published', async () => {
+  it('shows exactly one panel on the analysis page when no layer is published', async () => {
     render(<LegislationAnalyticsPage />, { queryClient: createTestQueryClient() })
-    await waitFor(() => expect(screen.getAllByText('Analiza se pregătește').length).toBeGreaterThan(0))
+    await waitFor(() => expect(screen.getAllByText('Analiza se pregătește')).toHaveLength(1))
     expect(screen.queryByText('acte în selecție')).not.toBeInTheDocument()
   })
 

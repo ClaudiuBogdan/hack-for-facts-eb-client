@@ -81,6 +81,27 @@ describe('the analysis page and its reads', () => {
     expect(screen.getByText(/\(legislația așa cum este\)/)).toBeInTheDocument()
   })
 
+  it('keeps the bands that answered when the head fails, and says what failed', async () => {
+    intercept = (view) => (view === 'head' ? Promise.reject(new LegalAnalyticsError('failed', 'boom', 500)) : undefined)
+    render(<LegislationAnalyticsPage />, { queryClient: createTestQueryClient() })
+    expect(await screen.findByText('acte în selecție')).toBeInTheDocument()
+    expect(await screen.findByText('Nu am putut încărca această parte a analizei.', {}, { timeout: 5000 })).toBeInTheDocument()
+    expect(screen.queryByText('Analiza se pregătește')).not.toBeInTheDocument()
+  })
+
+  it('says an empty selection in words, never as 0,0%', async () => {
+    intercept = (view, args) =>
+      view === 'summary'
+        ? fetchLegalAnalyticsMock('summary', args).then((answer) => ({
+            ...answer,
+            data: { ...answer.data, total: 0, uncertain: 0, unplaced: 0, withText: 0, withVersions: 0, felul: [] },
+          }))
+        : undefined
+    render(<LegislationAnalyticsPage />, { queryClient: createTestQueryClient() })
+    expect(await screen.findByText('Niciun act nu se potrivește cu această întrebare. Scoate un filtru.')).toBeInTheDocument()
+    expect(screen.queryByText('0,0%')).not.toBeInTheDocument()
+  })
+
   it('starts the acts list again from its first page when the server refuses the cursor', async () => {
     let refusals = 0
     intercept = (view, args) => {

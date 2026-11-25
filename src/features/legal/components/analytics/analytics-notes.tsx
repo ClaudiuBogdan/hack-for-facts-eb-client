@@ -5,12 +5,19 @@ import { LegalAnalyticsError } from '../../api/legal-analytics-api'
 import { analyticsNotes } from '../../lib/analytics-notes-text'
 
 /** The notes, visible at the foot of the page. */
-export function AnalyticsCaveats({ head }: { readonly head: LegalAnalyticsHead | undefined }) {
+export function AnalyticsCaveats({
+  head,
+  population = 'flux',
+}: {
+  readonly head: LegalAnalyticsHead | undefined
+  /** The question's population: the notes give the flow's shares only on the flow. */
+  readonly population?: 'flux' | 'stoc'
+}) {
   return (
     <section aria-label={t`De știut despre aceste cifre`} className="border-t pt-6">
       <MonoLabel className="block text-muted-foreground">{t`De știut`}</MonoLabel>
       <ul className="mt-3 max-w-[80ch] list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-muted-foreground">
-        {analyticsNotes(head).map((note) => (
+        {analyticsNotes(head, population).map((note) => (
           <li key={note}>{note}</li>
         ))}
       </ul>

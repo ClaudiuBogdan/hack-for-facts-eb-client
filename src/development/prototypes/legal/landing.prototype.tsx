@@ -20,7 +20,7 @@ export const prototype = {
     simplu: {
       title: 'Pornire, runda 2: antet curățat',
       component: LandingHubSimple,
-      note: 'Owner, 25 November: less in the head. Home link at the top and in the pinned bar, the search with one row of shortcuts, six acts in two plain lines, the four figures in their own band under the bar; type as on the site landing. Bands and foot as in round 1. Live API.',
+      note: 'Owner, 25 November: less in the head. Home link at the top (not in the pinned bar), the hubs\' search with one row of shortcuts, the five leading acts in the companies hub\'s leaders card, the four figures in their own band under the bar; type as on the site landing. Bands and foot as in round 1. Approved and promoted to /legislation the same day. Live API.',
     },
     pagina: {
       title: 'Antetul unei pagini dedicate (exemplu: Analiză)',
