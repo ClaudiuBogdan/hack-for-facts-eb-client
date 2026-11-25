@@ -6,6 +6,8 @@ import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 export type LegislationRouteLoaderData = {
   /** Server render only: `false` when the gazette band's or an analytics read failed and the browser reads it. */
   readonly seeded?: boolean
+  /** Server render only: an analytics read was refused with 503 (no layer published yet): render the panel. */
+  readonly analyticsUnavailable?: boolean
 }
 
 /** The front door's aggregate analytics reads, rendered on the server (the acts board is read in the browser). */
@@ -46,6 +48,7 @@ export const Route = createFileRoute('/legislation/')({
       import('@/features/legal/api/legal-analytics-ssr'),
     ])
     let seeded = true
+    let analyticsUnavailable = false
     try {
       await context.queryClient.ensureQueryData({ ...options, queryFn: () => readLegislationFrontDoorForSsr(), retry: false })
     } catch {
@@ -66,10 +69,12 @@ export const Route = createFileRoute('/legislation/')({
     results.forEach((r, j) => {
       if (r.status === 'fulfilled') return
       seeded = false
+      // a 503 (no layer published yet, or busy): the page renders the calm panel on the server
+      if ((r.reason as { kind?: unknown } | null)?.kind === 'unavailable') analyticsUnavailable = true
       const [view, args] = ANALYTICS_READS[j] ?? ANALYTICS_READS[0]
       context.queryClient.removeQueries({ queryKey: legalAnalyticsQueryOptions(view, args).queryKey, exact: true })
     })
-    return { seeded }
+    return { seeded, analyticsUnavailable }
   },
   headers: ({ loaderData }) =>
     loaderData?.seeded === false

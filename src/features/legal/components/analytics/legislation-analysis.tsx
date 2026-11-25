@@ -17,7 +17,7 @@ import type {
   LegalAnalyticsLinks,
   LegalAnalyticsSummary,
 } from '@/schemas/legal-analytics'
-import { fetchLegalAnalytics } from '../../api/legal-analytics-api'
+import { fetchLegalAnalytics, LEGAL_ANALYTICS_UNAVAILABLE } from '../../api/legal-analytics-api'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import {
   FAMILY_LABEL,
@@ -97,7 +97,7 @@ function useOneLayer(layers: readonly (string | undefined)[]) {
  * `/legislation/analytics` (design §4.2, §11): the question as the headline, the population, the lens, the answer,
  * the acts. Every figure is a count from the published insights layer; the page computes the shares.
  */
-export function LegislationAnalysis() {
+export function LegislationAnalysis({ unavailable = false }: { readonly unavailable?: boolean }) {
   const [q, move] = useQuestion()
   const [sheet, setSheet] = useState(false)
   const head = useLegalAnalytics('head', {})
@@ -106,6 +106,8 @@ export function LegislationAnalysis() {
   useOneLayer([head.data?.layer.layerId, summary.data?.layer.layerId])
 
   if (head.error) return <AnalyticsProblem error={head.error} />
+  // refused on the server (503): the calm panel, on the server too, until a browser read succeeds
+  if (unavailable && !head.data) return <AnalyticsProblem error={LEGAL_ANALYTICS_UNAVAILABLE} />
   const s = summary.data?.data
   const h = head.data?.data
   const population = q.populatie === 'stoc' ? t`legislația așa cum este` : t`ce s-a publicat`

@@ -3,7 +3,11 @@ import { isLegalMockEnabled } from '../lib/mock-mode'
 import { fetchLegalAnalyticsLive } from './legal-analytics-api.live'
 import { fetchLegalAnalyticsMock } from './legal-analytics-api.mock'
 
-export { LegalAnalyticsError, type LegalAnalyticsErrorKind } from './legal-analytics-api.live'
+export {
+  LEGAL_ANALYTICS_UNAVAILABLE,
+  LegalAnalyticsError,
+  type LegalAnalyticsErrorKind,
+} from './legal-analytics-api.live'
 
 /** Mock/live dispatcher for the legislation analytics views; both lanes validate through the same schemas. */
 export async function fetchLegalAnalytics<V extends LegalAnalyticsView>(

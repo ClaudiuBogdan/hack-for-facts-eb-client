@@ -68,7 +68,7 @@ describe('/legislation loader', () => {
 
     const first = new QueryClient()
     const data = await asServerRender(() => route.loader({ context: { queryClient: first } }))
-    expect(data).toEqual({ seeded: true })
+    expect(data).toEqual({ seeded: true, analyticsUnavailable: false })
     expect(first.getQueryData(FRONT_DOOR_KEY)).toEqual(frontDoor('a'))
     expect(route.headers({ loaderData: data })).toEqual({ 'Cache-Control': 'public' })
 
@@ -87,7 +87,7 @@ describe('/legislation loader', () => {
 
     const failed = new QueryClient()
     const data = await asServerRender(() => route.loader({ context: { queryClient: failed } }))
-    expect(data).toEqual({ seeded: false })
+    expect(data).toEqual({ seeded: false, analyticsUnavailable: false })
     // Nothing dehydrated for it, a failure included: the browser's query reads it.
     expect(failed.getQueryState(FRONT_DOOR_KEY)).toBeUndefined()
     expect(route.headers({ loaderData: data })).toEqual({ 'Cache-Control': 'no-store' })

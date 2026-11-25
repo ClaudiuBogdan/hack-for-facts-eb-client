@@ -27,6 +27,7 @@ vi.mock('../../api/legal-analytics-api', async () => {
   )
   return {
     LegalAnalyticsError: live.LegalAnalyticsError,
+    LEGAL_ANALYTICS_UNAVAILABLE: live.LEGAL_ANALYTICS_UNAVAILABLE,
     fetchLegalAnalytics: vi.fn(() =>
       Promise.reject(new live.LegalAnalyticsError('unavailable', 'No legislation analytics layer is published.', 503)),
     ),
@@ -45,6 +46,20 @@ describe('the analytics „not published yet" panel', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Întrebarea nu se potrivește')
     rerender(<AnalyticsProblem error={new Error('network')} />)
     expect(screen.getByRole('status')).toHaveTextContent('Nu am putut încărca această parte')
+  })
+
+  it('renders the panel at once when the server read was refused, as the server render does', () => {
+    // first render, before any browser read settles: what the server renders
+    const page = render(<LegislationAnalyticsPage analyticsUnavailable />, { queryClient: createTestQueryClient() })
+    expect(screen.getByText('Analiza se pregătește')).toBeInTheDocument()
+    page.unmount()
+    render(<LegislationPage analyticsUnavailable />, { queryClient: createTestQueryClient() })
+    expect(screen.getByText('Analiza se pregătește')).toBeInTheDocument()
+  })
+
+  it('renders no panel at first without the server refusal (placeholders until the read answers)', () => {
+    render(<LegislationAnalyticsPage />, { queryClient: createTestQueryClient() })
+    expect(screen.queryByText('Analiza se pregătește')).not.toBeInTheDocument()
   })
 
   it('shows the panel on the analysis page when no layer is published', async () => {

@@ -5,6 +5,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HUB_SHORTCUT_LINK_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import type { LegalAnalyticsLinks, LegalAnalyticsOrder } from '@/schemas/legal-analytics'
+import { LEGAL_ANALYTICS_UNAVAILABLE } from '../../api/legal-analytics-api'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import { fmt, pct } from '../../lib/analytics-format'
 import { labelOfKey } from '../../lib/analytics-view'
@@ -37,10 +38,12 @@ function fact(key: string, value: number, label: string, note: string, href: str
  * court, or with the most listed versions), what was published each year by Felul, the ordinance laws, and the
  * themes to come. Every figure is a count of the published insights layer; a band whose read fails says so alone.
  */
-export function LegislationFrontDoorBands() {
+export function LegislationFrontDoorBands({ unavailable = false }: { readonly unavailable?: boolean }) {
   const head = useLegalAnalytics('head', {})
   const summary = useLegalAnalytics('summary', {})
   if (head.error) return <AnalyticsProblem error={head.error} />
+  // refused on the server (503): the calm panel, on the server too, until a browser read succeeds
+  if (unavailable && !head.data) return <AnalyticsProblem error={LEGAL_ANALYTICS_UNAVAILABLE} />
   const h = head.data?.data
   const s = summary.data?.data
   return (

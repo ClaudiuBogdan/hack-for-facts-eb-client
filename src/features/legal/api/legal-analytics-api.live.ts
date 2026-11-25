@@ -38,6 +38,13 @@ export class LegalAnalyticsError extends Error {
   }
 }
 
+/** The refusal the server render met (503, no layer published yet), standing in until a browser read answers. */
+export const LEGAL_ANALYTICS_UNAVAILABLE = new LegalAnalyticsError(
+  'unavailable',
+  'No legislation analytics layer is published.',
+  503,
+)
+
 /** The query string of an answer: every given argument once, `type` repeated, in a fixed order. */
 export function analyticsSearchParams(args: LegalAnalyticsArgs): URLSearchParams {
   const params = new URLSearchParams()

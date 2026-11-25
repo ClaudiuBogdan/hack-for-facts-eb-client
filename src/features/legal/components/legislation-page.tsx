@@ -18,7 +18,12 @@ import { LegislationShell } from './legislation-shell'
  * filled on the server by the route loader. The old subject grid is gone: subjects (Domeniu) come back with the
  * domain lens. The honesty notes stay, with the analytics notes beside them.
  */
-export function LegislationPage() {
+export function LegislationPage({
+  analyticsUnavailable = false,
+}: {
+  /** The server's analytics read was refused with 503: the bands render the panel until a read succeeds. */
+  readonly analyticsUnavailable?: boolean
+}) {
   const { data, isLoading, isError } = useLegislationFrontDoor()
   const { data: statusCounts } = useLegislationStatusCounts()
   const { measuredAt } = useLegislationFrontier('corpus')
@@ -33,7 +38,7 @@ export function LegislationPage() {
     >
       <div className="flex flex-col gap-12">
         <LegislationSearchBand />
-        <LegislationFrontDoorBands />
+        <LegislationFrontDoorBands unavailable={analyticsUnavailable} />
         {isLoading ? (
           <LegislationOverviewSkeleton />
         ) : isError || !data ? null : (

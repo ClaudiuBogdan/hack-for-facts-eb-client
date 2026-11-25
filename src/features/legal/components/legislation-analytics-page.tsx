@@ -8,12 +8,17 @@ import { LegislationShell } from './legislation-shell'
  * population, the lens, the answer and the acts, every figure a count of the published insights layer. Promoted
  * from the prototype `development/prototypes/legal` (analysis variant); the prototype keeps the theme page.
  */
-export function LegislationAnalyticsPage() {
+export function LegislationAnalyticsPage({
+  analyticsUnavailable = false,
+}: {
+  /** The server's analytics read was refused with 503: the panel renders until a read succeeds. */
+  readonly analyticsUnavailable?: boolean
+}) {
   const { data: statusCounts } = useLegislationStatusCounts()
   const { measuredAt } = useLegislationFrontier('corpus')
   return (
     <LegislationShell activeTab="analiza" counts={statusCounts ?? {}} measuredAt={measuredAt}>
-      <LegislationAnalysis />
+      <LegislationAnalysis unavailable={analyticsUnavailable} />
     </LegislationShell>
   )
 }

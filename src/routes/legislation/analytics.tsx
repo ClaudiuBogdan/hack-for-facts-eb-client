@@ -9,6 +9,8 @@ type SsrRead = readonly ['head' | 'summary' | 'breakdown', LegalAnalyticsArgs]
 export type LegislationAnalyticsRouteLoaderData = {
   /** Server render only: `false` when an aggregate read failed (or no layer is published) and the browser reads it. */
   readonly seeded?: boolean
+  /** Server render only: an analytics read was refused with 503 (no layer published yet): render the panel. */
+  readonly analyticsUnavailable?: boolean
 }
 
 /**
@@ -53,13 +55,16 @@ export const Route = createFileRoute('/legislation/analytics')({
       ),
     )
     let seeded = true
+    let analyticsUnavailable = false
     results.forEach((r, j) => {
       if (r.status === 'fulfilled') return
       seeded = false
+      // a 503 (no layer published yet, or busy): the page renders the calm panel on the server
+      if ((r.reason as { kind?: unknown } | null)?.kind === 'unavailable') analyticsUnavailable = true
       const [view, args] = reads[j] ?? (['head', {}] as const)
       context.queryClient.removeQueries({ queryKey: legalAnalyticsQueryOptions(view, args).queryKey, exact: true })
     })
-    return { seeded }
+    return { seeded, analyticsUnavailable }
   },
   headers: ({ loaderData }) =>
     loaderData?.seeded === false
