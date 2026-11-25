@@ -52,7 +52,7 @@ export function ClassificationActions({ type, code }: ClassificationActionsProps
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" asChild>
               <Link
-                to="/entity-analytics"
+                to="/public-institutions"
                 search={{
                   view: 'line-items',
                   filter,

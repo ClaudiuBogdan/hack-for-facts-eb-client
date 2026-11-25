@@ -68,7 +68,7 @@ export function BudgetLineItemsPreview({ data, isLoading, filter, groupBy }: Bud
                     <Trans>Detailed Line Items Breakdown</Trans>
                 </h3>
                 <Button asChild variant="outline" size="sm">
-                    <Link to="/entity-analytics" search={{ view: 'line-items', filter }}>
+                    <Link to="/public-institutions" search={{ view: 'line-items', filter }}>
                         <Trans>Advanced Filtering</Trans>
                         <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>

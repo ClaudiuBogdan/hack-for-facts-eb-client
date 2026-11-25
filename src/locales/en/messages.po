@@ -1837,9 +1837,13 @@ msgstr "{0} views enabled"
 #~ msgstr "{0}–{1}"
 
 #. placeholder {0}: countText(String(first), locale)
+#. placeholder {0}: formatNumber(first)
 #. placeholder {1}: countText(String(first + edges.length - 1), locale)
+#. placeholder {1}: formatNumber(first + shown - 1)
 #. placeholder {2}: countText(totalCount, locale)
+#. placeholder {2}: formatNumber(total)
 #: src/features/private-companies/components/analytics/analytics-records.tsx:230
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:86
 msgid "{0}–{1} din {2}"
 msgstr "{0}–{1} of {2}"
 
@@ -2683,6 +2687,10 @@ msgstr "{elsewhere, plural, one {For one of those on the list, the announcements
 msgid "{exact} lei"
 msgstr "{exact} lei"
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:140
+msgid "{excluded, plural, one {o excludere} few {# excluderi} other {# de excluderi}}"
+msgstr "{excluded, plural, one {one exclusion} other {# exclusions}}"
+
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:85
 msgid "{extra, plural, one {Anunțurile de selecție AMEPIP o mai numesc pentru o întreprindere, pe care lista nu o pune sub ea.} few {Anunțurile de selecție AMEPIP o mai numesc pentru {n} întreprinderi, pe care lista nu le pune sub ea.} other {Anunțurile de selecție AMEPIP o mai numesc pentru {n} de întreprinderi, pe care lista nu le pune sub ea.}}"
 msgstr "{extra, plural, one {AMEPIP’s selection announcements also name it for one enterprise, which the list does not put under it.} other {AMEPIP’s selection announcements also name it for {n} enterprises, which the list does not put under it.}}"
@@ -3124,6 +3132,50 @@ msgstr "{more, plural, one {and one more winner} other {and # more winners}}"
 #: src/features/national-budget/analytics/components/analytics-law.tsx:224
 msgid "{moved} față de {0}"
 msgstr "{moved} vs {0}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:102
+msgid "{n, plural, one {o etichetă} few {# etichete} other {# de etichete}}"
+msgstr "{n, plural, one {one tag} other {# tags}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:92
+msgid "{n, plural, one {o instituție aleasă} few {# instituții alese} other {# de instituții alese}}"
+msgstr "{n, plural, one {one chosen institution} other {# chosen institutions}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:96
+msgid "{n, plural, one {o localitate} few {# localități} other {# de localități}}"
+msgstr "{n, plural, one {one locality} other {# localities}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:114
+msgid "{n, plural, one {o sursă de finanțare} few {# surse de finanțare} other {# de surse de finanțare}}"
+msgstr "{n, plural, one {one funding source} other {# funding sources}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:106
+msgid "{n, plural, one {un capitol funcțional} few {# capitole funcționale} other {# de capitole funcționale}}"
+msgstr "{n, plural, one {one functional chapter} other {# functional chapters}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:108
+msgid "{n, plural, one {un cod economic} few {# coduri economice} other {# de coduri economice}}"
+msgstr "{n, plural, one {one economic code} other {# economic codes}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:104
+msgid "{n, plural, one {un cod funcțional} few {# coduri funcționale} other {# de coduri funcționale}}"
+msgstr "{n, plural, one {one functional code} other {# functional codes}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:98
+msgid "{n, plural, one {un județ} few {# județe} other {# de județe}}"
+msgstr "{n, plural, one {one county} other {# counties}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:112
+msgid "{n, plural, one {un sector bugetar} few {# sectoare bugetare} other {# de sectoare bugetare}}"
+msgstr "{n, plural, one {one budget sector} other {# budget sectors}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:100
+msgid "{n, plural, one {un tip de instituție} few {# tipuri de instituții} other {# de tipuri de instituții}}"
+msgstr "{n, plural, one {one institution type} other {# institution types}}"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:110
+msgid "{n, plural, one {un titlu economic} few {# titluri economice} other {# de titluri economice}}"
+msgstr "{n, plural, one {one economic title} other {# economic titles}}"
 
 #. placeholder {0}: row.cell.authority!.code
 #: src/features/national-budget/analytics/components/analytics-law.tsx:608
@@ -4596,6 +4648,7 @@ msgid "Abțineri"
 msgstr "Abțineri"
 
 #: src/components/sidebar/nav-main.tsx:45
+#: src/features/public-institutions/components/public-institutions-head.tsx:175
 msgid "Acasă"
 msgstr "Home"
 
@@ -6696,6 +6749,10 @@ msgstr "Another platform signal: {other}."
 msgid "Altă formă juridică decât"
 msgstr "A legal form other than"
 
+#: src/features/public-institutions/components/public-institutions-head.tsx:61
+msgid "altă perioadă"
+msgstr "another period"
+
 #: src/features/statistics/lib/periodicity-labels.ts:8
 msgid "altă periodicitate"
 msgstr "other periodicity"
@@ -7035,7 +7092,7 @@ msgid "Amount Per Capita"
 msgstr "Amount Per Capita"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:972
-#: src/components/filters/EntityAnalyticsFilter.tsx:601
+#: src/components/filters/EntityAnalyticsFilter.tsx:603
 #: src/components/filters/MapFilter.tsx:418
 msgid "Amount Range"
 msgstr "Amount Range"
@@ -7167,6 +7224,7 @@ msgstr "An unexpected error occurred"
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:139
 #: src/features/private-companies/components/profile/company-years-band.tsx:213
 #: src/features/private-companies/lib/company-profile-text.ts:601
+#: src/features/public-institutions/components/public-institutions-head.tsx:185
 msgid "ANAF"
 msgstr "ANAF"
 
@@ -7381,7 +7439,7 @@ msgstr "Analytics Series Alert"
 msgid "Analytics view"
 msgstr "Analytics view"
 
-#: src/routes/entity-analytics.tsx:47
+#: src/routes/entity-analytics.tsx:42
 msgid "Analyze aggregated values per entity and explore top entities by amount and per capita."
 msgstr "Analyze aggregated values per entity and explore top entities by amount and per capita."
 
@@ -7616,6 +7674,8 @@ msgstr "annual"
 #: src/features/ngos/registry/components/registry-answer.tsx:538
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:299
 #: src/features/procurement/components/analytics/analytics-filters.tsx:74
+#: src/features/public-institutions/components/public-institutions-head.tsx:58
+#: src/features/public-institutions/components/public-institutions-head.tsx:59
 msgid "Anul"
 msgstr "Year"
 
@@ -7626,10 +7686,19 @@ msgstr "Year"
 msgid "Anul {0} din adresă este în afara seriei; se arată tot intervalul {1}–{2}."
 msgstr "The year {0} in the address lies outside the series; the whole span {1}–{2} is shown."
 
+#. placeholder {0}: coverage.year
+#: src/features/public-institutions/lib/public-institutions-text.ts:168
+msgid "anul {0} e în curs"
+msgstr "{0} is still in progress"
+
 #. placeholder {0}: view.year
 #: src/features/national-budget/home/components/home-balance.tsx:93
 msgid "Anul {0} nu s-a încheiat: lunile lui sunt în secțiunea „Anul în curs\"."
 msgstr "{0} is not over yet: its months are in the “Current year” section."
+
+#: src/features/public-institutions/components/public-institutions-figures.tsx:62
+msgid "anul {year} e în curs"
+msgstr "{year} is still in progress"
 
 #: src/features/justice/components/analysis/analysis-years.tsx:149
 #: src/features/procurement/components/analytics/analytics-years.tsx:209
@@ -9405,8 +9474,8 @@ msgstr "Budget sector"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:918
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1147
 #: src/components/entities/EntityReportCard.tsx:139
-#: src/components/filters/EntityAnalyticsFilter.tsx:549
-#: src/components/filters/EntityAnalyticsFilter.tsx:746
+#: src/components/filters/EntityAnalyticsFilter.tsx:551
+#: src/components/filters/EntityAnalyticsFilter.tsx:748
 #: src/components/filters/MapFilter.tsx:380
 #: src/components/filters/MapFilter.tsx:572
 msgid "Budget Sector"
@@ -10160,6 +10229,10 @@ msgstr "Equity"
 msgid "capitol"
 msgstr "chapter"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:127
+msgid "Capitole"
+msgstr "Chapters"
+
 #: src/features/national-budget/analytics/components/analytics-law.tsx:506
 msgid "Capitolul (domeniul)"
 msgstr "Chapter (area)"
@@ -10876,6 +10949,10 @@ msgstr "Search datasets"
 msgid "Caută și în actele abrogate sau ieșite din vigoare"
 msgstr "Also search repealed acts and acts no longer in force"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:180
+msgid "Caută un capitol…"
+msgstr "Search a chapter…"
+
 #: src/features/statistics/components/comparison/comparison-pickers.tsx:98
 msgid "Caută un indicator INS"
 msgstr "Search for an INS indicator"
@@ -11442,6 +11519,10 @@ msgstr "What the registry says about it"
 msgid "Ce sunt"
 msgstr "What they are"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:53
+msgid "Ce sunt transferurile"
+msgstr "What transfers are"
+
 #: src/features/legal/components/legislation-guide.tsx:238
 msgid "Ce text citești aici — și unde e forma oficială"
 msgstr "What text you are reading here — and where the official form is"
@@ -11477,6 +11558,10 @@ msgstr "What do you want to compare? Pick one of the indicators below or search 
 #: src/features/public-enterprises/lib/hub-text.ts:97
 msgid "Cea mai mare cifră de afaceri în {year}: {0}, {1}."
 msgstr "The largest turnover in {year}: {0}, {1}."
+
+#: src/features/public-institutions/components/public-institutions-figures.tsx:85
+msgid "Cea mai mare instituție"
+msgstr "The largest institution"
 
 #. placeholder {0}: percentText(first.share, 0)
 #. placeholder {1}: daSupplierBucketName(bucket)
@@ -11688,6 +11773,10 @@ msgstr "Largest"
 #: src/features/statistics/lib/comparison-presets.ts:56
 msgid "Cele mai mari 6 orașe"
 msgstr "The 6 largest cities"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:161
+msgid "Cele mai mari cheltuieli de personal"
+msgstr "The largest staff costs"
 
 #: src/features/procurement/components/home/home-money-bands.tsx:185
 msgid "Cele mai mari contracte"
@@ -12127,6 +12216,9 @@ msgstr "spending"
 #: src/features/national-budget/home/components/home-balance.tsx:114
 #: src/features/national-budget/home/components/home-budgets.tsx:133
 #: src/features/national-budget/home/components/home-now.tsx:127
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:189
+#: src/features/public-institutions/components/public-institutions-figures.tsx:77
+#: src/features/public-institutions/components/public-institutions-head.tsx:210
 msgid "Cheltuieli"
 msgstr "Spending"
 
@@ -12184,6 +12276,7 @@ msgstr "Public spending, {0}"
 
 #: src/features/national-budget/home/components/home-budgets.tsx:131
 #: src/features/national-budget/home/components/home-now.tsx:125
+#: src/features/public-institutions/components/public-institutions-head.tsx:207
 msgid "Cheltuieli sau venituri"
 msgstr "Spending or revenue"
 
@@ -12224,6 +12317,30 @@ msgstr "Prepaid expenses"
 #: src/features/national-budget/home/components/home-spending.tsx:49
 msgid "Cheltuielile în timp"
 msgstr "Spending over time"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:42
+msgid "Cheltuielile instituțiilor publice"
+msgstr "Public institutions' spending"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:38
+msgid "Cheltuielile pe locuitor ale instituțiilor publice"
+msgstr "Public institutions' spending per resident"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:36
+msgid "Cheltuielile pe locuitor ale primăriilor"
+msgstr "Town halls' spending per resident"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:37
+msgid "Cheltuielile pe locuitor ale primăriilor și consiliilor județene"
+msgstr "Town halls' and county councils' spending per resident"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:40
+msgid "Cheltuielile primăriilor"
+msgstr "Town halls' spending"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:41
+msgid "Cheltuielile primăriilor și consiliilor județene"
+msgstr "Town halls' and county councils' spending"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:388
 msgid "cheltuielile publice"
@@ -12428,6 +12545,7 @@ msgstr "Figures published on the platform"
 #: src/features/public-enterprises/components/authority/authority-portfolio-page.tsx:95
 #: src/features/public-enterprises/components/enterprise/public-enterprise-page.tsx:113
 #: src/features/public-enterprises/components/hub/public-enterprise-hub-page.tsx:193
+#: src/features/public-institutions/components/public-institutions-figures.tsx:90
 #: src/features/statistics/pages/statistics-hub-page.tsx:196
 msgid "Cifre-cheie"
 msgstr "Key figures"
@@ -12513,6 +12631,10 @@ msgstr "The figures did not load."
 msgid "Cifrele scrutinului nu s-au încărcat."
 msgstr "The contest’s figures did not load."
 
+#: src/features/public-institutions/components/public-institutions-figures.tsx:94
+msgid "Cifrele selecției nu au putut fi citite."
+msgstr "The selection's figures could not be read."
+
 #: src/features/private-companies/components/analytics/analytics-maps.tsx:68
 msgid "Cifrele unei firme stau toate în județul sediului, oriunde ar lucra."
 msgstr "All of a company's figures sit in the county of its registered office, wherever it works."
@@ -12557,6 +12679,7 @@ msgstr "Five firms account for {0} of the value of direct purchases in {1}; {2} 
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:38
 #: src/features/private-companies/components/analytics/analytics-head.tsx:238
 #: src/features/private-companies/components/analytics/analytics-head.tsx:239
+#: src/features/public-institutions/lib/public-institutions-text.ts:148
 msgid "Cine"
 msgstr "Who"
 
@@ -12567,6 +12690,22 @@ msgstr "Who awards contracts through negotiation without a notice?"
 #: src/features/procurement/lib/analytics-questions.ts:64
 msgid "Cine câștigă contractele de construcții?"
 msgstr "Who wins the construction contracts?"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:159
+msgid "Cine cheltuie cel mai mult pe asistență socială"
+msgstr "Who spends the most on social assistance"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:157
+msgid "Cine cheltuie cel mai mult pe învățământ"
+msgstr "Who spends the most on education"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:158
+msgid "Cine cheltuie cel mai mult pe sănătate"
+msgstr "Who spends the most on health"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:160
+msgid "Cine cheltuie cel mai mult pe transporturi"
+msgstr "Who spends the most on transport"
 
 #: src/features/public-enterprises/components/hub/hub-pending.tsx:35
 #: src/features/public-enterprises/components/hub/public-enterprise-hub-page.tsx:95
@@ -12761,6 +12900,11 @@ msgstr "class {filerClass}"
 msgid "clasă CAEN calificată {codes}"
 msgstr "qualified CAEN class {codes}"
 
+#: src/features/public-institutions/components/public-institutions-figures.tsx:20
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:143
+msgid "Clasament"
+msgstr "Ranking"
+
 #: src/features/procurement/components/home/home-context-bands.tsx:564
 #: src/features/procurement/components/home/procurement-home-page.tsx:164
 msgid "Clasamente"
@@ -12799,6 +12943,10 @@ msgstr "Clasamentul este ordonat după numărul de înregistrări, pentru că va
 #: src/features/procurement/lib/caveat-text.ts:288
 msgid "Clasamentul este ordonat după numărul de înregistrări: nicio înregistrare din această selecție nu are o valoare acceptată pe baza de calcul folosită, așa că o ordonare după valoare ar fi o egalitate de zerouri."
 msgstr "Clasamentul este ordonat după numărul de înregistrări: nicio înregistrare din această selecție nu are o valoare acceptată pe baza de calcul folosită, așa că o ordonare după valoare ar fi o egalitate de zerouri."
+
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:151
+msgid "Clasamentul nu a putut fi citit."
+msgstr "The ranking could not be read."
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:342
 msgid "Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări."
@@ -12873,7 +13021,7 @@ msgstr "Clear"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:703
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1034
-#: src/components/filters/EntityAnalyticsFilter.tsx:652
+#: src/components/filters/EntityAnalyticsFilter.tsx:654
 #: src/components/filters/MapFilter.tsx:468
 #: src/components/ui/multi-select.tsx:118
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:282
@@ -14847,6 +14995,11 @@ msgstr "Copy the link"
 msgid "Copiază link"
 msgstr "Copy link"
 
+#: src/features/public-institutions/components/public-institutions-head.tsx:81
+#: src/features/public-institutions/components/public-institutions-head.tsx:82
+msgid "Copiază linkul"
+msgstr "Copy the link"
+
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:465
 msgid "Copiază linkul acestei ședințe"
 msgstr "Copiază linkul acestei ședințe"
@@ -15191,8 +15344,8 @@ msgstr "Counties"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1080
 #: src/components/entities/views/entity-profile-view.presentation.tsx:195
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:86
-#: src/components/filters/EntityAnalyticsFilter.tsx:495
-#: src/components/filters/EntityAnalyticsFilter.tsx:694
+#: src/components/filters/EntityAnalyticsFilter.tsx:497
+#: src/components/filters/EntityAnalyticsFilter.tsx:696
 #: src/components/filters/MapFilter.tsx:238
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1088
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:94
@@ -15484,6 +15637,7 @@ msgstr "Award criterion"
 #: src/features/private-companies/components/analytics/analytics-axis.tsx:126
 #: src/features/private-companies/components/analytics/analytics-evolution.tsx:128
 #: src/features/private-companies/components/analytics/analytics-records.tsx:236
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:96
 msgid "CSV"
 msgstr "CSV"
 
@@ -15991,6 +16145,10 @@ msgstr "How it is bought"
 #: src/features/justice/lib/analysis-questions.ts:44
 msgid "Cum se împart dosarele pe niveluri de instanță?"
 msgstr "How are the cases split across court levels?"
+
+#: src/features/public-institutions/components/public-institutions-head.tsx:219
+msgid "Cum se măsoară"
+msgstr "How it is measured"
 
 #: src/features/procurement/components/procurement-info-sheet.tsx:139
 #~ msgid "Cum sunt calculate sumele"
@@ -16649,6 +16807,10 @@ msgstr "data through {0}"
 #~ msgid "Date până în {0} {1}"
 #~ msgstr "Data up to {0} {1}"
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:171
+msgid "date până în {monthName} {year}"
+msgstr "data up to {monthName} {year}"
+
 #: src/features/statistics/lib/period.ts:117
 #~ msgid "Date până în {trimmed}"
 #~ msgstr "Data up to {trimmed}"
@@ -16684,6 +16846,11 @@ msgstr "data to {0} (ÎCCJ archive: {1})"
 #: src/features/justice/lib/justice-format.ts:105
 #~ msgid "Date parțiale"
 #~ msgstr "Date parțiale"
+
+#. placeholder {0}: coverage.year
+#: src/features/public-institutions/lib/public-institutions-text.ts:167
+msgid "date pentru tot anul {0}"
+msgstr "data for the whole of {0}"
 
 #: src/features/ngos/organization/components/purpose-section.tsx:52
 #~ msgid "Date personale ascunse"
@@ -17175,6 +17342,8 @@ msgid "De unde vând"
 msgstr "Where they sell from"
 
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:199
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:221
+#: src/features/public-institutions/components/public-institutions-figures.tsx:24
 msgid "De unde vin banii"
 msgstr "Where the money comes from"
 
@@ -18010,6 +18179,10 @@ msgstr "Details"
 msgid "Details about excluded items and amount filters used in this view."
 msgstr "Details about excluded items and amount filters used in this view."
 
+#: src/features/public-institutions/components/public-institutions-head.tsx:241
+msgid "Detaliat"
+msgstr "Detailed"
+
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:122
 #: src/features/public-investments/components/ObjectiveListRow.tsx:44
 msgid "Detalii"
@@ -18520,6 +18693,7 @@ msgstr "from some of the entries; the rest have no value"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:738
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:812
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:180
 msgid "Din PIB"
 msgstr "Of GDP"
 
@@ -18566,6 +18740,10 @@ msgstr "From official sources, for informed decisions."
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:763
 msgid "Din toate bugetele"
 msgstr "Of all budgets"
+
+#: src/features/public-institutions/components/public-institutions-figures.tsx:86
+msgid "din total"
+msgstr "of the total"
 
 #: src/features/national-budget/home/components/home-charts.tsx:205
 msgid "Din total"
@@ -18893,6 +19071,10 @@ msgstr "publication details only"
 msgid "Doar deciziile preluate până acum, nu toate deciziile Curții; fără dată, doar anul."
 msgstr "Only the decisions captured so far, not all of the Court's; no date, only the year."
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:145
+msgid "doar ele"
+msgstr "only transfers"
+
 #: src/features/privacy/components/consent-card.tsx:372
 #: src/features/privacy/components/cookie-settings-page.tsx:137
 #: src/features/privacy/components/cookie-settings-page.tsx:225
@@ -18962,6 +19144,14 @@ msgstr "Only part of the CAEN entries is linked to the company: the list may be 
 #: src/features/justice/components/hub/justice-hub-bands.tsx:527
 msgid "Doar o parte din decizii, din {0}; firmele și instituțiile din ele sunt legate de CUI-uri încă nevalidate."
 msgstr "Only part of the decisions, since {0}; the companies and institutions in them are linked to CUIs not yet validated."
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:116
+msgid "doar primăriile"
+msgstr "town halls only"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:118
+msgid "doar primăriile și consiliile județene"
+msgstr "town halls and county councils only"
 
 #: src/features/ngos/hub/ngo-domains.tsx:90
 msgid "Doar primele {limit}"
@@ -19492,7 +19682,7 @@ msgstr "According to AMEPIP’s selection announcements, it controls {0}"
 msgid "După ce"
 msgstr "By"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:622
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:590
 #~ msgid "După cifra de afaceri din bilanțurile pe {YEAR} și variația față de {previousYear}."
 #~ msgstr "By turnover in the {YEAR} financial statements, and the change on {previousYear}."
 
@@ -19567,7 +19757,7 @@ msgstr "By the number of cases dated {0}."
 msgid "după numărul de firme"
 msgstr "by number of companies"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:620
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:588
 #~ msgid "După numărul mediu de salariați din bilanțurile pe {YEAR} și variația față de {previousYear}."
 #~ msgstr "By average number of employees in the {YEAR} financial statements, and the change on {previousYear}."
 
@@ -19765,6 +19955,7 @@ msgstr "Equipment and machinery"
 #: src/components/common/classification-info-link.tsx:132
 #: src/components/common/classification-info-link.tsx:179
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:124
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:118
 #: src/lib/ins/ins-metric-registry.ts:106
 msgid "Economic"
 msgstr "Economic"
@@ -19775,8 +19966,8 @@ msgstr "Economic classification"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:903
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1128
-#: src/components/filters/EntityAnalyticsFilter.tsx:532
-#: src/components/filters/EntityAnalyticsFilter.tsx:729
+#: src/components/filters/EntityAnalyticsFilter.tsx:534
+#: src/components/filters/EntityAnalyticsFilter.tsx:731
 #: src/components/filters/MapFilter.tsx:343
 #: src/components/filters/MapFilter.tsx:536
 msgid "Economic Classification"
@@ -19797,8 +19988,8 @@ msgstr "Economic prefix"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:910
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1137
-#: src/components/filters/EntityAnalyticsFilter.tsx:540
-#: src/components/filters/EntityAnalyticsFilter.tsx:737
+#: src/components/filters/EntityAnalyticsFilter.tsx:542
+#: src/components/filters/EntityAnalyticsFilter.tsx:739
 msgid "Economic Prefixes"
 msgstr "Economic Prefixes"
 
@@ -20348,8 +20539,8 @@ msgstr "Enter the number under which the NGO is registered in the Register of As
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:833
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1047
-#: src/components/filters/EntityAnalyticsFilter.tsx:465
-#: src/components/filters/EntityAnalyticsFilter.tsx:664
+#: src/components/filters/EntityAnalyticsFilter.tsx:467
+#: src/components/filters/EntityAnalyticsFilter.tsx:666
 #: src/components/filters/MapFilter.tsx:289
 #: src/components/filters/MapFilter.tsx:480
 msgid "Entities"
@@ -20370,7 +20561,7 @@ msgstr "Entity"
 msgid "Entity Analytics"
 msgstr "Entity Analytics"
 
-#: src/routes/entity-analytics.tsx:46
+#: src/routes/entity-analytics.tsx:41
 msgid "Entity analytics – Transparenta.eu"
 msgstr "Entity analytics – Transparenta.eu"
 
@@ -20400,8 +20591,8 @@ msgstr "Entity type"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:870
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1090
-#: src/components/filters/EntityAnalyticsFilter.tsx:506
-#: src/components/filters/EntityAnalyticsFilter.tsx:703
+#: src/components/filters/EntityAnalyticsFilter.tsx:508
+#: src/components/filters/EntityAnalyticsFilter.tsx:705
 #: src/components/filters/MapFilter.tsx:364
 #: src/components/filters/MapFilter.tsx:556
 msgid "Entity Type"
@@ -20808,18 +20999,18 @@ msgstr "Excellent"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1137
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1147
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1156
-#: src/components/filters/EntityAnalyticsFilter.tsx:664
-#: src/components/filters/EntityAnalyticsFilter.tsx:672
-#: src/components/filters/EntityAnalyticsFilter.tsx:686
-#: src/components/filters/EntityAnalyticsFilter.tsx:694
-#: src/components/filters/EntityAnalyticsFilter.tsx:703
-#: src/components/filters/EntityAnalyticsFilter.tsx:712
-#: src/components/filters/EntityAnalyticsFilter.tsx:720
-#: src/components/filters/EntityAnalyticsFilter.tsx:729
-#: src/components/filters/EntityAnalyticsFilter.tsx:737
-#: src/components/filters/EntityAnalyticsFilter.tsx:746
-#: src/components/filters/EntityAnalyticsFilter.tsx:754
-#: src/components/filters/EntityAnalyticsFilter.tsx:762
+#: src/components/filters/EntityAnalyticsFilter.tsx:666
+#: src/components/filters/EntityAnalyticsFilter.tsx:674
+#: src/components/filters/EntityAnalyticsFilter.tsx:688
+#: src/components/filters/EntityAnalyticsFilter.tsx:696
+#: src/components/filters/EntityAnalyticsFilter.tsx:705
+#: src/components/filters/EntityAnalyticsFilter.tsx:714
+#: src/components/filters/EntityAnalyticsFilter.tsx:722
+#: src/components/filters/EntityAnalyticsFilter.tsx:731
+#: src/components/filters/EntityAnalyticsFilter.tsx:739
+#: src/components/filters/EntityAnalyticsFilter.tsx:748
+#: src/components/filters/EntityAnalyticsFilter.tsx:756
+#: src/components/filters/EntityAnalyticsFilter.tsx:764
 #: src/components/filters/MapFilter.tsx:480
 #: src/components/filters/MapFilter.tsx:488
 #: src/components/filters/MapFilter.tsx:502
@@ -20840,7 +21031,7 @@ msgid "Exclude entitățile cu această etichetă"
 msgstr "Exclude entities with this tag"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1014
-#: src/components/filters/EntityAnalyticsFilter.tsx:632
+#: src/components/filters/EntityAnalyticsFilter.tsx:634
 #: src/components/filters/MapFilter.tsx:448
 msgid "Exclude Filters"
 msgstr "Exclude Filters"
@@ -20896,12 +21087,12 @@ msgstr "Execution analytics"
 #~ msgstr "Execution under framework agreements — reported subsequent contracts, a separate population."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:965
-#: src/components/filters/EntityAnalyticsFilter.tsx:593
+#: src/components/filters/EntityAnalyticsFilter.tsx:595
 msgid "Executive: No"
 msgstr "Executive: No"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:965
-#: src/components/filters/EntityAnalyticsFilter.tsx:593
+#: src/components/filters/EntityAnalyticsFilter.tsx:595
 msgid "Executive: Yes"
 msgstr "Executive: Yes"
 
@@ -20982,7 +21173,7 @@ msgstr "Expand value filters panel"
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:71
 #: src/components/entities/EntityFinancialTrends.tsx:438
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:12
-#: src/components/filters/EntityAnalyticsFilter.tsx:434
+#: src/components/filters/EntityAnalyticsFilter.tsx:436
 #: src/components/filters/MapFilter.tsx:254
 #: src/components/maps/utils.ts:39
 #: src/features/advanced-map-analytics/standalone-map-state.ts:67
@@ -21750,6 +21941,10 @@ msgstr "No public name"
 msgid "Fără domeniu precis"
 msgstr "No clear field"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:144
+msgid "fără ele"
+msgstr "without transfers"
+
 #: src/features/legal/components/reader/legal-reader-page.tsx:435
 msgid "Fără expresie canonică"
 msgstr "No canonical expression"
@@ -21939,9 +22134,17 @@ msgstr "no payments in the previous year"
 msgid "fără potrivire ONRC"
 msgstr "no ONRC match"
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:116
+msgid "fără primării"
+msgstr "without town halls"
+
 #: src/features/entity-search/components/entity-search-page.tsx:313
 msgid "Fără primării"
 msgstr "Exclude local authorities"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:118
+msgid "fără primării și consilii județene"
+msgstr "without town halls and county councils"
 
 #: src/features/ngos/components/ngo-snapshot-page.tsx:238
 #~ msgid "Fara probleme de validare pentru acest instantaneu."
@@ -22287,12 +22490,14 @@ msgstr "since"
 msgid "față de {0}"
 msgstr "vs {0}"
 
+#. placeholder {0}: (selection.year ?? 0) - 1
 #. placeholder {0}: months.year - 1
 #. placeholder {0}: periodShort(before)
-#. placeholder {0}: periodShort(previous)
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:149
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:317
 #: src/features/national-budget/home/components/home-now.tsx:147
+#: src/features/public-institutions/components/public-institutions-figures.tsx:61
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:182
 msgid "Față de {0}"
 msgstr "vs {0}"
 
@@ -22478,6 +22683,10 @@ msgstr "Each group, with its lines beneath it, largest first; a group is the sum
 #~ msgid "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
 #~ msgstr "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
 
+#: src/features/public-institutions/components/public-institutions-head.tsx:241
+msgid "Fiecare instituție, cu raportul ei"
+msgstr "Each institution, with its own report"
+
 #: src/features/national-budget/home/components/home-start.tsx:54
 msgid "Fiecare întrebare deschide pagina de analize avansate, cu toate cifrele."
 msgstr "Each question opens the advanced analysis page, with all the figures."
@@ -22497,6 +22706,10 @@ msgstr "Each month: the bulletin's figure from 1 January. Months from different 
 #: src/features/ngos/hub/ngo-hub-parts.tsx:135
 msgid "Fiecare ONG, după nume, județ, formă juridică și stare."
 msgstr "Every NGO, by name, county, legal form and status."
+
+#: src/features/public-institutions/components/public-institutions-head.tsx:239
+msgid "Fiecare ordonator principal de credite, cu instituțiile din subordine la un loc"
+msgstr "Each main authorising officer, with its subordinate institutions together"
 
 #: src/features/parliament/components/member-interventii-tab.tsx:235
 msgid "Fiecare pătrat este o zi; intensitatea arată câte intervenții a avut parlamentarul. Faceți clic pe o zi pentru a filtra lista."
@@ -22634,7 +22847,7 @@ msgid "Filters info"
 msgstr "Filters info"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1040
-#: src/components/filters/EntityAnalyticsFilter.tsx:658
+#: src/components/filters/EntityAnalyticsFilter.tsx:660
 #: src/components/filters/MapFilter.tsx:474
 msgid "Filters marked as exclude will remove data matching these criteria from the results."
 msgstr "Filters marked as exclude will remove data matching these criteria from the results."
@@ -22669,6 +22882,7 @@ msgstr "Filtered"
 #: src/features/private-companies/components/analytics/analytics-head.tsx:187
 #: src/features/procurement/components/analytics/analytics-filters.tsx:492
 #: src/features/procurement/components/analytics/analytics-filters.tsx:528
+#: src/features/public-institutions/components/public-institutions-head.tsx:99
 #: src/features/statistics/components/explorer/dataset-explorer-filter-sheet.tsx:56
 #: src/features/statistics/components/explorer/statistics-filter-trigger-button.tsx:23
 #: src/features/statistics/components/explorer/statistics-filter-trigger-button.tsx:27
@@ -22680,6 +22894,7 @@ msgid "Filtre ({activeCount} active)"
 msgstr "Filters ({activeCount} active)"
 
 #: src/features/entity-search/components/entity-search-page.tsx:310
+#: src/features/public-institutions/components/public-institutions-head.tsx:254
 #: src/features/statistics/components/explorer/statistics-active-filters.tsx:64
 msgid "Filtre active"
 msgstr "Active filters"
@@ -23576,6 +23791,10 @@ msgstr "The file of the {year} statement, on data.gov.ro"
 msgid "Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere."
 msgstr "The file is the one the statement was read from; a statement can also appear in other files."
 
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:89
+msgid "Fișierul nu a putut fi făcut. Încearcă din nou."
+msgstr "The file could not be made. Try again."
+
 #: src/features/private-companies/components/profile/company-years-band.tsx:183
 #: src/features/private-companies/components/profile/company-years-band.tsx:450
 msgid "Fișierul pe data.gov.ro"
@@ -23925,14 +24144,18 @@ msgstr "Functional"
 msgid "funcțional"
 msgstr "operational"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:117
+msgid "Funcțional"
+msgstr "Functional"
+
 #: src/lib/chart-filter-utils.ts:41
 msgid "Functional classification"
 msgstr "Functional classification"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:888
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1109
-#: src/components/filters/EntityAnalyticsFilter.tsx:515
-#: src/components/filters/EntityAnalyticsFilter.tsx:712
+#: src/components/filters/EntityAnalyticsFilter.tsx:517
+#: src/components/filters/EntityAnalyticsFilter.tsx:714
 #: src/components/filters/MapFilter.tsx:328
 #: src/components/filters/MapFilter.tsx:519
 msgid "Functional Classification"
@@ -23953,8 +24176,8 @@ msgstr "Functional prefix"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:895
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1118
-#: src/components/filters/EntityAnalyticsFilter.tsx:523
-#: src/components/filters/EntityAnalyticsFilter.tsx:720
+#: src/components/filters/EntityAnalyticsFilter.tsx:525
+#: src/components/filters/EntityAnalyticsFilter.tsx:722
 msgid "Functional Prefixes"
 msgstr "Functional Prefixes"
 
@@ -23989,8 +24212,8 @@ msgstr "Funding source"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:925
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1156
-#: src/components/filters/EntityAnalyticsFilter.tsx:557
-#: src/components/filters/EntityAnalyticsFilter.tsx:754
+#: src/components/filters/EntityAnalyticsFilter.tsx:559
+#: src/components/filters/EntityAnalyticsFilter.tsx:756
 #: src/components/filters/MapFilter.tsx:388
 #: src/components/filters/MapFilter.tsx:580
 msgid "Funding Source"
@@ -24473,6 +24696,10 @@ msgstr "Economic interest grouping"
 #: src/features/private-companies/lib/company-legal-forms.ts:20
 msgid "Grup european de interes economic"
 msgstr "European economic interest grouping"
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:114
+msgid "Grupare"
+msgstr "Grouping"
 
 #: src/features/elections/catalog/election-edition-page.tsx:128
 #~ msgid "Grupare pe platformă (neverificată)"
@@ -25208,9 +25435,11 @@ msgstr "in \"invisible\" consumption taxes."
 
 #. placeholder {0}: current.year
 #. placeholder {0}: layer.period
-#. placeholder {0}: series.year
+#. placeholder {0}: page.periodLabel
 #: src/features/private-companies/lib/company-analytics-text.ts:367
 #: src/features/procurement/components/home/home-context-bands.tsx:231
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:222
+#: src/features/public-institutions/components/public-institutions-head.tsx:163
 #: src/features/statistics/components/hub/hub-county-band.tsx:393
 #: src/features/statistics/components/uat-map/uat-map-series.ts:105
 msgid "în {0}"
@@ -25345,6 +25574,10 @@ msgstr "In {period} it has no direct purchases published in SEAP; the contracts 
 #: src/features/public-enterprises/lib/enterprise-text.ts:242
 msgid "În {period} nu are achiziții publicate în SEAP."
 msgstr "In {period} it has no purchases published in SEAP."
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:71
+msgid "în {periodLabel}"
+msgstr "in {periodLabel}"
 
 #: src/features/private-companies/lib/company-analytics-text.ts:368
 msgid "în {uatGroups} grupuri de localități"
@@ -26213,6 +26446,9 @@ msgstr "Revenue of the general consolidated budget (all public budgets, without 
 #: src/features/private-companies/components/hub/company-county-map.tsx:116
 #: src/features/private-companies/components/profile/company-profile-states.tsx:159
 #: src/features/procurement/components/analytics/analytics-answer.tsx:353
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:231
+#: src/features/public-institutions/components/public-institutions-figures.tsx:96
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:153
 #: src/features/statistics/components/county-map/county-map.tsx:125
 #: src/features/statistics/components/hub/hub-chrome.tsx:68
 #: src/features/statistics/components/hub/hub-county-band.tsx:360
@@ -26343,7 +26579,7 @@ msgstr "including taxes on buildings, land and vehicles"
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:65
 #: src/components/entities/EntityFinancialTrends.tsx:424
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:13
-#: src/components/filters/EntityAnalyticsFilter.tsx:435
+#: src/components/filters/EntityAnalyticsFilter.tsx:437
 #: src/components/filters/MapFilter.tsx:255
 #: src/components/maps/utils.ts:39
 #: src/features/advanced-map-analytics/standalone-map-state.ts:68
@@ -27200,6 +27436,7 @@ msgstr "National research and development institute"
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:350
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:257
 #: src/features/procurement/components/profile/party-years-matrix.tsx:75
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:167
 msgid "Instituția"
 msgstr "Institution"
 
@@ -27312,6 +27549,7 @@ msgstr "Institution, company, category, county…"
 #: src/features/landing/components/start-here-panel.tsx:269
 #: src/features/landing/lib/search-filters.ts:70
 #: src/features/procurement/components/analytics/analytics-filters.tsx:169
+#: src/features/public-institutions/components/public-institutions-figures.tsx:75
 msgid "Instituții"
 msgstr "Institutions"
 
@@ -27353,12 +27591,17 @@ msgstr "public institutions"
 
 #: src/components/sidebar/nav-main.tsx:67
 #: src/features/landing/lib/landing-groups.ts:94
+#: src/features/public-institutions/components/public-institutions-head.tsx:180
 msgid "Instituții publice"
 msgstr "Public institutions"
 
 #: src/features/national-budget/home/components/home-budgets.tsx:49
 msgid "instituții publice care se finanțează și din venituri proprii"
 msgstr "public institutions also funded from their own revenue"
+
+#: src/routes/public-institutions.tsx:39
+msgid "Instituții publice: cheltuieli și venituri, instituție cu instituție — Transparenta.eu"
+msgstr "Public institutions: spending and revenue, institution by institution — Transparenta.eu"
 
 #: src/features/procurement/components/analytics/analytics-controls.tsx:167
 msgid "Instituții și firme"
@@ -27377,9 +27620,21 @@ msgstr "The institutions that bought the most directly from the firm since {DIRE
 msgid "Instituțiile centrale își au sediul în București."
 msgstr "Central institutions are headquartered in Bucharest."
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:152
+msgid "Instituțiile cu cele mai mari cheltuieli"
+msgstr "The institutions that spend the most"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:153
+msgid "Instituțiile cu cele mai mari venituri"
+msgstr "The institutions with the most revenue"
+
 #: src/features/procurement/lib/supplier-text.ts:176
 msgid "Instituțiile din {where}, județul firmei, au cumpărat {share} din valoarea vânzărilor ei directe; restul, cele din {others}."
 msgstr "Institutions in {where}, the firm’s county, bought {share} of the value of its direct sales; the rest, those in {others}."
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:57
+msgid "Instituțiile trimit bani altor bugete publice (de exemplu, de la bugetul de stat la bugetele locale). Adunați cu cheltuielile celor care îi primesc, aceiași bani se numără de două ori."
+msgstr "Institutions send money to other public budgets (for example, from the state budget to local budgets). Added to the spending of those who receive it, the same money is counted twice."
 
 #: src/features/procurement/components/home/home-context-bands.tsx:565
 msgid "Instituțiile, firmele și categoriile, după număr și valoare, pe ani."
@@ -27598,6 +27853,7 @@ msgstr "The question has no answer in this release"
 #: src/features/ngos/registry/components/registry-head.tsx:192
 #: src/features/private-companies/components/analytics/analytics-head.tsx:253
 #: src/features/procurement/components/analytics/analytics-controls.tsx:259
+#: src/features/public-institutions/components/public-institutions-head.tsx:112
 msgid "Întrebări"
 msgstr "Questions"
 
@@ -27848,7 +28104,7 @@ msgid "Is defined"
 msgstr "Is defined"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:954
-#: src/components/filters/EntityAnalyticsFilter.tsx:582
+#: src/components/filters/EntityAnalyticsFilter.tsx:584
 #: src/components/filters/MapFilter.tsx:408
 #: src/lib/chart-filter-utils.ts:46
 msgid "Is UAT"
@@ -29207,7 +29463,7 @@ msgstr "Line item disappeared - possible reclassification"
 
 #: src/components/commitments/CommitmentsTable.tsx:295
 #: src/components/commitments/CommitmentsTable.tsx:402
-#: src/components/filters/EntityAnalyticsFilter.tsx:422
+#: src/components/filters/EntityAnalyticsFilter.tsx:423
 msgid "Line Items"
 msgstr "Line Items"
 
@@ -30578,8 +30834,8 @@ msgstr "Main creditor"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:840
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1056
-#: src/components/filters/EntityAnalyticsFilter.tsx:473
-#: src/components/filters/EntityAnalyticsFilter.tsx:672
+#: src/components/filters/EntityAnalyticsFilter.tsx:475
+#: src/components/filters/EntityAnalyticsFilter.tsx:674
 #: src/components/filters/MapFilter.tsx:297
 #: src/components/filters/MapFilter.tsx:488
 msgid "Main Creditor"
@@ -32690,6 +32946,10 @@ msgstr "no entry has a value"
 msgid "Nicio instanță cu acest nume. Încearcă un oraș sau un județ."
 msgstr "No court by that name. Try a city or a county."
 
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:159
+msgid "Nicio instituție în această selecție."
+msgstr "No institution in this selection."
+
 #. placeholder {0}: String(resolved.anchorYear)
 #: src/features/parliament/components/parliament-speech-activity-panel.tsx:257
 msgid "Nicio intervenție în plen în {0}."
@@ -32845,6 +33105,10 @@ msgstr "no status in the register; a form for {0}"
 msgid "nicio stare înscrisă"
 msgstr "no status recorded"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:185
+msgid "Nicio sumă în această selecție."
+msgstr "No amount in this selection."
+
 #. placeholder {0}: snapshot.financials.year
 #: src/features/public-enterprises/lib/hub-text.ts:191
 msgid "Nicio sumă pe toate întreprinderile: populația e provizorie, iar bilanțurile lipsesc la unele. Clasamentele folosesc anul {0}."
@@ -32975,6 +33239,10 @@ msgstr "no statements"
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:546
 msgid "Niciun buget pentru „{0}\"."
 msgstr "No budget matches “{0}”."
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:185
+msgid "Niciun capitol nu se potrivește căutării."
+msgstr "No chapter matches the search."
 
 #: src/features/procurement/components/buyer/buyer-awards-band.tsx:161
 #: src/features/procurement/components/contract-award/procurement-contract-award-page.tsx:173
@@ -33247,6 +33515,10 @@ msgstr "Level"
 #: src/features/public-enterprises/lib/enterprise-text.ts:57
 msgid "nivel central"
 msgstr "central level"
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:124
+msgid "Nivel de detaliu"
+msgstr "Level of detail"
 
 #: src/routes/justitie.cautare.tsx:294
 #~ msgid "Nivel instanță"
@@ -33950,7 +34222,7 @@ msgstr "Normal"
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:110
 #: src/components/charts/components/series-config/SeriesFilter.tsx:743
-#: src/components/filters/EntityAnalyticsFilter.tsx:443
+#: src/components/filters/EntityAnalyticsFilter.tsx:445
 #: src/components/filters/MapFilter.tsx:266
 #: src/lib/chart-filter-utils.ts:52
 msgid "Normalization"
@@ -35426,6 +35698,14 @@ msgstr "Some have no published value: the sum is a lower bound."
 #~ msgid "o persoană fizică"
 #~ msgstr "a natural person"
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:126
+msgid "o populație maximă"
+msgstr "a maximum population"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:124
+msgid "o populație minimă"
+msgstr "a minimum population"
+
 #: src/features/legal/components/legislation-act-finder.tsx:174
 msgid "o potrivire"
 msgstr "one match"
@@ -35466,6 +35746,14 @@ msgstr "A sum adds only reported, admitted values; an average divides by the com
 #: src/features/private-companies/components/analytics/analytics-source.tsx:43
 #~ msgid "O sumă adună doar valorile raportate și admise; o medie împarte la firmele care au raportat, nu la toate. Nicio sumă nu este 0 când nicio firmă nu a raportat."
 #~ msgstr "A sum adds only reported, admitted values; an average divides by the companies that reported, not by all of them. No sum is 0 when no company reported."
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:122
+msgid "o sumă maximă"
+msgstr "a maximum amount"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:120
+msgid "o sumă minimă"
+msgstr "a minimum amount"
 
 #: src/features/private-companies/components/profile/company-years-band.tsx:89
 msgid "O valoare estompată și subliniată e publicată de sursă, dar nu intră în cifrele paginii; motivul apare în dreptul ei și sub tabel, la anul ei. O celulă goală: nicio valoare disponibilă aici pentru rând în acel an. O coloană umbrită: ani fără valori disponibile aici — nu neapărat ani fără bilanț."
@@ -36299,6 +36587,10 @@ msgstr "Ordered by the {year} headcount."
 msgid "Ordonate după rezultatul net din {year}, de la cel mai mic."
 msgstr "Ordered by the {year} net result, lowest first."
 
+#: src/features/public-institutions/components/public-institutions-head.tsx:236
+msgid "Ordonator principal"
+msgstr "Main authorising officer"
+
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:897
 msgid "Ordonatori principali"
 msgstr "Principal authorising officers"
@@ -36523,8 +36815,11 @@ msgid "pagina {0} din {1}"
 msgstr "page {0} of {1}"
 
 #. placeholder {0}: countText(page)
+#. placeholder {0}: formatNumber(page.page)
 #. placeholder {1}: countText(Math.max(pages, 1))
+#. placeholder {1}: formatNumber(pages)
 #: src/features/procurement/components/buyer/buyer-awards-band.tsx:200
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:98
 msgid "Pagina {0} din {1}"
 msgstr "Page {0} of {1}"
 
@@ -36580,6 +36875,7 @@ msgstr "the purchase's page on e-licitatie.ro"
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:173
 #: src/features/private-companies/components/analytics/analytics-records.tsx:238
 #: src/features/procurement/components/analytics/analytics-answer.tsx:434
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:99
 msgid "Pagina anterioară"
 msgstr "Previous page"
 
@@ -36626,6 +36922,7 @@ msgstr "An NGO's page exists when the National NGO Registry has a current entry 
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:209
 #: src/features/private-companies/components/analytics/analytics-records.tsx:241
 #: src/features/procurement/components/analytics/analytics-answer.tsx:437
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:102
 msgid "Pagina următoare"
 msgstr "Next page"
 
@@ -36900,6 +37197,10 @@ msgstr "The parties"
 msgid "Părțile cu risc personal sunt reținute până la revizuire."
 msgstr "Părțile cu risc personal sunt reținute până la revizuire."
 
+#: src/features/public-institutions/components/public-institutions-figures.tsx:18
+msgid "Părțile paginii"
+msgstr "Parts of the page"
+
 #: src/features/national-budget/home/components/home-charts.tsx:140
 msgid "Părțile, după mărime"
 msgstr "The parts, by size"
@@ -37099,6 +37400,7 @@ msgid "Pe bugete, cifrele sunt de la 1 ianuarie, nu ale perioadei alese."
 msgstr "By budget, the figures run from 1 January, not over the chosen period."
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:493
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:170
 msgid "Pe capitole"
 msgstr "By chapter"
 
@@ -37119,6 +37421,7 @@ msgid "Pe categorii"
 msgstr "By category"
 
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:36
+#: src/features/public-institutions/lib/public-institutions-text.ts:150
 msgid "Pe ce"
 msgstr "On what"
 
@@ -37163,6 +37466,14 @@ msgstr "What was spent from the "
 #: src/features/national-budget/analytics/lib/analytics-view.ts:439
 msgid "Pe ce s-au cheltuit banii publici în {when}?"
 msgstr "What was public money spent on in {when}?"
+
+#: src/features/public-institutions/components/public-institutions-figures.tsx:24
+msgid "Pe ce se cheltuie"
+msgstr "What it is spent on"
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:221
+msgid "Pe ce se cheltuie banii"
+msgstr "What the money is spent on"
 
 #: src/features/procurement/lib/analytics-questions.ts:70
 msgid "Pe ce se duc banii achizițiilor directe?"
@@ -37304,8 +37615,15 @@ msgstr "per inhabitant"
 
 #: src/features/budget-map/components/map-page.tsx:149
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:130
+#: src/features/public-institutions/components/public-institutions-head.tsx:223
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:175
+#: src/features/public-institutions/lib/public-institutions-text.ts:149
 msgid "Pe locuitor"
 msgstr "Per resident"
+
+#: src/features/public-institutions/components/public-institutions-figures.tsx:77
+msgid "Pe locuitor, toată selecția"
+msgstr "Per resident, whole selection"
 
 #: src/features/procurement/components/buyer/buyer-bands.tsx:434
 msgid "Pe locuitor: achizițiile directe împărțite la populația unității administrativ-teritoriale (INS), calculat de Transparenta.eu."
@@ -37384,6 +37702,10 @@ msgstr "by subcategory"
 msgid "Pe tipuri (titluri)"
 msgstr "By type (titles)"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:170
+msgid "Pe titluri economice"
+msgstr "By economic title"
+
 #: src/features/justice/components/hub/justice-hub-page.tsx:78
 #: src/features/justice/lib/analysis-questions.ts:24
 msgid "Pe trepte"
@@ -37461,6 +37783,11 @@ msgstr "pensioners"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:69
 msgid "Pensions (CAS), Health (CASS)"
 msgstr "Pensions (CAS), Health (CASS)"
+
+#: src/features/public-institutions/components/public-institutions-head.tsx:195
+#: src/features/public-institutions/lib/public-institutions-text.ts:70
+msgid "pentru"
+msgstr "on"
 
 #: src/features/parliament/lib/vote-position-labels.ts:15
 msgid "Pentru"
@@ -37734,7 +38061,7 @@ msgstr "Perioadă: {start} – {end}"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:820
 #: src/components/entities/views/ins-stats-view.presentation.tsx:899
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1163
-#: src/components/filters/EntityAnalyticsFilter.tsx:455
+#: src/components/filters/EntityAnalyticsFilter.tsx:457
 #: src/components/filters/MapFilter.tsx:280
 #: src/components/maps/utils.ts:32
 #: src/components/maps/utils.ts:34
@@ -38327,6 +38654,11 @@ msgstr "Population: {0} publishable legal persons from the registry, in any stat
 msgid "Populația: INS, 1 ianuarie {year}."
 msgstr "Population: INS, 1 January {year}."
 
+#: src/features/public-institutions/components/public-institutions-page.tsx:42
+msgid "Populația: INS."
+msgstr "Population: INS."
+
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:172
 #: src/features/statistics/components/uat-map/uat-map-series.ts:111
 #: src/features/statistics/lib/territory-groups.ts:23
 msgid "Populație"
@@ -38405,7 +38737,7 @@ msgstr "Population methodology: Bucharest sector figures for 2020 are provisiona
 #~ msgstr "Population methodology: Bucharest sector figures for 2020 are provisional INS data (January 1 domicile population). Bucharest city uses a separate series. Years without verified data remain unavailable."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:994
-#: src/components/filters/EntityAnalyticsFilter.tsx:612
+#: src/components/filters/EntityAnalyticsFilter.tsx:614
 #: src/components/filters/MapFilter.tsx:428
 msgid "Population Range"
 msgstr "Population Range"
@@ -39033,6 +39365,10 @@ msgstr "Town halls"
 msgid "Primării, ministere, școli și spitale, comparate după venituri și cheltuieli."
 msgstr "Town halls, ministries, schools and hospitals, compared by revenue and spending."
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:154
+msgid "Primăriile și consiliile județene, după cheltuieli"
+msgstr "Town halls and county councils, by spending"
+
 #: src/features/national-budget/home/components/home-budgets.tsx:43
 msgid "primăriile și consiliile județene: școli, străzi, transport local, ajutoare sociale"
 msgstr "town halls and county councils: schools, streets, local transport, social assistance"
@@ -39041,6 +39377,10 @@ msgstr "town halls and county councils: schools, streets, local transport, socia
 #: src/features/budget-map/components/map-page-table.tsx:86
 msgid "Primăriile și consiliul județean"
 msgstr "City halls and the county council"
+
+#: src/routes/public-institutions.tsx:40
+msgid "Primăriile, consiliile județene, ministerele, școlile și spitalele, după cheltuieli și venituri, în total sau pe locuitor, an de an, din execuțiile bugetare publicate de ANAF."
+msgstr "Town halls, county councils, ministries, schools and hospitals, by spending and revenue, in total or per resident, year by year, from the budget execution reports published by ANAF."
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4985
 msgid "Primary UAT"
@@ -39074,6 +39414,10 @@ msgstr "the first {GAZETTE_CONTENTS_FIRST} publications in the contents — the 
 #: src/features/justice/components/analysis/analysis-table.tsx:215
 msgid "Primele {TOP_EXPANDED}"
 msgstr "First {TOP_EXPANDED}"
+
+#: src/features/public-institutions/components/public-institutions-figures.tsx:85
+msgid "Primele 10 instituții"
+msgstr "The top 10 institutions"
 
 #: src/features/procurement/components/analytics/analytics-answer.tsx:307
 msgid "Primele 100"
@@ -39131,6 +39475,10 @@ msgstr "through {0}"
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:42
 msgid "Prin ce bugete trec banii"
 msgstr "Which budgets the money goes through"
+
+#: src/features/public-institutions/components/public-institutions-head.tsx:235
+msgid "Principal"
+msgstr "Main"
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:284
 msgid "principală (presupusă)"
@@ -39287,14 +39635,6 @@ msgstr "Shares of {total}, the companies analysis total for {year}."
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:558
 msgid "Procente din cele {total} în funcțiune din analiza bilanțurilor."
 msgstr "Shares of the {total} active in the companies analysis."
-
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:552
-#~ msgid "Procente din totalul firmelor în funcțiune: {total}."
-#~ msgstr "Shares of all active companies: {total}."
-
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:552
-#~ msgid "Procente din totalul pe {year}: {total}."
-#~ msgstr "Shares of the {year} total: {total}."
 
 #: src/features/public-investments/components/HowToReadData.tsx:67
 msgid "Procentul decontat din contractat (decontat / contractat)."
@@ -40269,6 +40609,18 @@ msgstr "Rank (Top/Bottom N)"
 msgid "Rapoarte de erori"
 msgstr "Error reports"
 
+#: src/features/public-institutions/components/public-institutions-head.tsx:228
+msgid "Rapoartele"
+msgstr "The reports"
+
+#: src/features/public-institutions/components/public-institutions-page.tsx:36
+msgid "rapoartele ordonatorilor principali de credite, cu instituțiile din subordine la un loc"
+msgstr "the main authorising officers' reports, with their subordinate institutions together"
+
+#: src/features/public-institutions/components/public-institutions-page.tsx:35
+msgid "rapoartele ordonatorilor secundari de credite, cu instituțiile din subordine la un loc"
+msgstr "the secondary authorising officers' reports, with their subordinate institutions together"
+
 #: src/features/legal/lib/legal-vocabulary.ts:129
 msgid "Raport"
 msgstr "Report"
@@ -40312,6 +40664,10 @@ msgstr "Reported in SEAP"
 #: src/components/shared/procurement-data/request-dataset-action.tsx:39
 msgid "Raportează o problemă de date"
 msgstr "Raportează o problemă de date"
+
+#: src/features/public-institutions/components/public-institutions-page.tsx:33
+msgid "raportul fiecărei instituții"
+msgstr "each institution's own report"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:451
 msgid "raportul SEAP al achizițiilor directe"
@@ -41326,7 +41682,7 @@ msgstr "Report type"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:932
 #: src/components/entities/EntityReportCard.tsx:124
-#: src/components/filters/EntityAnalyticsFilter.tsx:573
+#: src/components/filters/EntityAnalyticsFilter.tsx:575
 #: src/components/filters/MapFilter.tsx:396
 msgid "Report Type"
 msgstr "Report Type"
@@ -41548,6 +41904,10 @@ msgstr "Collapse"
 msgid "Restrânge {0}"
 msgstr "Collapse {0}"
 
+#: src/features/public-institutions/components/public-institutions-page.tsx:64
+msgid "Restrânge instituțiile și sumele după loc, clasificație, sector și altele."
+msgstr "Narrow the institutions and amounts by place, classification, sector and more."
+
 #: src/features/statistics/components/detail-export-button.tsx:48
 msgid "Restrânge selecția pentru a exporta toate observațiile."
 msgstr "Narrow the selection to export all observations."
@@ -41691,7 +42051,7 @@ msgid "Revenue as % of GDP: EU Comparison"
 msgstr "Revenue as % of GDP: EU Comparison"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:711
-#: src/components/filters/EntityAnalyticsFilter.tsx:428
+#: src/components/filters/EntityAnalyticsFilter.tsx:430
 msgid "Revenues/Expenses"
 msgstr "Revenues/Expenses"
 
@@ -42449,8 +42809,12 @@ msgstr "Remove"
 msgid "Scoate „{0}\""
 msgstr "Remove “{0}”"
 
+#. placeholder {0}: chip.text
 #. placeholder {0}: phrase.text
+#. placeholder {0}: topic.text
 #: src/features/private-companies/components/analytics/analytics-head.tsx:92
+#: src/features/public-institutions/components/public-institutions-head.tsx:196
+#: src/features/public-institutions/components/public-institutions-head.tsx:260
 msgid "Scoate „{0}”"
 msgstr "Remove “{0}”"
 
@@ -42824,6 +43188,10 @@ msgstr "Loading the legislation analysis"
 msgid "Se încarcă cifrele achizițiilor…"
 msgstr "Loading the procurement figures…"
 
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:157
+msgid "Se încarcă clasamentul"
+msgstr "Loading the ranking"
+
 #: src/features/procurement/components/contract/contract-head.tsx:182
 msgid "Se încarcă contractul"
 msgstr "Loading the contract"
@@ -42948,6 +43316,10 @@ msgstr "Loading the dataset"
 msgid "Se încarcă stenograma ședinței"
 msgstr "Se încarcă stenograma ședinței"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:235
+msgid "Se încarcă structura"
+msgstr "Loading the breakdown"
+
 #: src/features/budget-map/components/map-page-table.tsx:191
 msgid "Se încarcă tabelul…"
 msgstr "Loading the table…"
@@ -42975,6 +43347,10 @@ msgstr "Only standalone contracts are counted: framework agreement ceilings and 
 #: src/features/procurement/components/analytics/analytics-years.tsx:206
 #~ msgid "Se numără și acordurile-cadru."
 #~ msgstr "Framework agreements are counted here too."
+
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:96
+msgid "Se pregătește…"
+msgstr "Preparing…"
 
 #: src/features/statistics/components/comparison/comparison-states.tsx:119
 msgid "Se reîncarcă…"
@@ -45952,6 +46328,10 @@ msgstr "Clear the selection"
 msgid "Șterge teritoriul invalid"
 msgstr "Clear invalid territory"
 
+#: src/features/public-institutions/components/public-institutions-head.tsx:267
+msgid "Șterge toate"
+msgstr "Clear all"
+
 #: src/features/statistics/components/explorer/statistics-active-filters.tsx:101
 msgid "Șterge toate filtrele"
 msgstr "Clear all filters"
@@ -45996,6 +46376,10 @@ msgstr "Strip this prefix from x-axis labels for this series (e.g., 2024-). Help
 #~ msgid "Struck off"
 #~ msgstr "Struck off"
 
+#: src/features/public-institutions/components/public-institutions-figures.tsx:23
+msgid "Structură"
+msgstr "Breakdown"
+
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:176
 msgid "Structura acestei matrice nu poate fi verificată"
 msgstr "This matrix's structure cannot be verified"
@@ -46003,6 +46387,10 @@ msgstr "This matrix's structure cannot be verified"
 #: src/features/legal/components/reader/legal-reader-toc.tsx:160
 msgid "Structura actului"
 msgstr "Structure of the act"
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:229
+msgid "Structura nu a putut fi citită."
+msgstr "The breakdown could not be read."
 
 #. placeholder {0}: number(LEGAL_DOCS_WITHOUT_ARTICLE_STRUCTURE)
 #. placeholder {1}: percent(LEGAL_ARTICLE_STRUCTURE_GAP_RATE)
@@ -46044,6 +46432,10 @@ msgstr "sub prag"
 #: src/features/private-companies/components/hub/hub-sections.tsx:578
 #~ msgid "Sub procedură — de verificat când un furnizor al unei instituții apare aici."
 #~ msgstr "Under proceedings — worth checking when an institution's supplier appears here."
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:128
+msgid "Subcapitole"
+msgstr "Subchapters"
 
 #: src/components/classification-explorer/ClassificationChildren.tsx:20
 msgid "Subcategories"
@@ -46506,6 +46898,10 @@ msgstr "Source: European Court of Human Rights, <0>HUDOC</0>"
 msgid "Sursa: Curtea Europeană a Drepturilor Omului, <0>HUDOC</0>, documente până la {0}"
 msgstr "Source: European Court of Human Rights, <0>HUDOC</0>, documents up to {0}"
 
+#: src/features/public-institutions/components/public-institutions-page.tsx:41
+msgid "Sursa: execuțiile bugetare lunare publicate de ANAF (extranet)"
+msgstr "Source: the monthly budget execution reports published by ANAF (extranet)"
+
 #: src/features/statistics/components/detail-source-line.tsx:33
 #~ msgid "Sursă: INS Tempo"
 #~ msgstr "Source: INS Tempo"
@@ -46813,7 +47209,7 @@ msgstr "Series table"
 #~ msgid "Tabelul seriei ({0})"
 #~ msgstr "Series table ({0})"
 
-#: src/components/filters/EntityAnalyticsFilter.tsx:421
+#: src/components/filters/EntityAnalyticsFilter.tsx:422
 #: src/components/filters/MapFilter.tsx:221
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1244
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3670
@@ -46834,8 +47230,8 @@ msgstr "Table view"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:880
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1099
-#: src/components/filters/EntityAnalyticsFilter.tsx:565
-#: src/components/filters/EntityAnalyticsFilter.tsx:762
+#: src/components/filters/EntityAnalyticsFilter.tsx:567
+#: src/components/filters/EntityAnalyticsFilter.tsx:764
 #: src/components/filters/MapFilter.tsx:372
 #: src/components/filters/MapFilter.tsx:564
 #: src/lib/chart-filter-utils.ts:51
@@ -47011,7 +47407,7 @@ msgstr "Terms and conditions"
 #~ msgstr "Terms of Service"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:963
-#: src/components/filters/EntityAnalyticsFilter.tsx:591
+#: src/components/filters/EntityAnalyticsFilter.tsx:593
 #: src/lib/chart-filter-utils.ts:47
 msgid "Territorial executive"
 msgstr "Territorial executive"
@@ -48062,6 +48458,7 @@ msgstr "All the value of the contracts awarded in {year} went to {label}."
 #: src/features/legal/components/legislation-acts-directory.tsx:244
 #: src/features/legal/components/legislation-acts-directory.tsx:321
 #: src/features/legal/components/legislation-changes-feed.tsx:262
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:143
 msgid "toate"
 msgstr "all"
 
@@ -48258,6 +48655,10 @@ msgstr "All domains"
 msgid "toate felurile"
 msgstr "all kinds"
 
+#: src/features/public-institutions/components/public-institutions-page.tsx:63
+msgid "Toate filtrele"
+msgstr "All filters"
+
 #: src/features/public-enterprises/components/hub/hub-hero.tsx:64
 msgid "Toate firmele"
 msgstr "All companies"
@@ -48318,6 +48719,14 @@ msgstr "All institutions that awarded it contracts in {year} are in {where}, the
 #: src/features/procurement/lib/supplier-text.ts:167
 msgid "Toate instituțiile care i-au atribuit contracte în {year} sunt din {where}."
 msgstr "All institutions that awarded it contracts in {year} are in {where}."
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:225
+msgid "Toate instituțiile din selecție, la un loc, fără pragul de sumă."
+msgstr "All the institutions in the selection, together, without the amount threshold."
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:225
+msgid "Toate instituțiile din selecție, la un loc."
+msgstr "All the institutions in the selection, together."
 
 #: src/features/public-enterprises/components/authority/authority-bands.tsx:61
 msgid "Toate întreprinderile"
@@ -48625,6 +49034,9 @@ msgstr "total"
 #: src/features/private-companies/lib/company-analytics-view.ts:122
 #: src/features/procurement/components/direct-purchase/direct-purchase-receipt.tsx:154
 #: src/features/procurement/components/profile/party-years-matrix.tsx:86
+#: src/features/public-institutions/components/public-institutions-figures.tsx:81
+#: src/features/public-institutions/components/public-institutions-head.tsx:222
+#: src/features/public-institutions/components/public-institutions-ranking.tsx:180
 msgid "Total"
 msgstr "Total"
 
@@ -48719,17 +49131,9 @@ msgstr "Total"
 msgid "Totalul e cifra de afaceri pe {year} din analiza bilanțurilor, ediția {releaseId}: firmele dintr-o ediție a registrului, cu valorile admise după verificare. De aceea diferă de cifra de afaceri de sus, care adună toate bilanțurile pe {year} citite de la ANAF."
 msgstr "The total is the {year} turnover in the companies analysis, release {releaseId}: the companies of one edition of the register, with the values admitted after checks. That is why it differs from the turnover at the top, which adds up every {year} statement read from ANAF."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:562
-#~ msgid "Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}, cel mult {ceiling} pe firmă: peste, e o greșeală de introducere. De aceea diferă de numărul de salariați de sus."
-#~ msgstr "The total is the average number of employees in {year} in the companies analysis, release {releaseId}, at most {ceiling} per company: above that, a count is a keying error. That is why it differs from the employees at the top."
-
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:571
 msgid "Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}: firmele dintr-o ediție a registrului, cu valorile admise după verificare, cel mult {ceiling} pe firmă. De aceea diferă de numărul de salariați de sus, care adună toate bilanțurile pe {year} citite de la ANAF, cu aceeași limită."
 msgstr "The total is the average number of employees in {year} in the companies analysis, release {releaseId}: the companies of one edition of the register, with the values admitted after checks, at most {ceiling} per company. That is why it differs from the employees at the top, which add up every {year} statement read from ANAF, with the same limit."
-
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:567
-#~ msgid "Totalul numără firmele cu starea „în funcțiune\" în registrul citit de analiza bilanțurilor, ediția {releaseId}: o singură ediție a registrului, deci poate diferi de numărul de sus."
-#~ msgstr "The total counts the companies with the status \"in business\" in the register read by the companies analysis, release {releaseId}: a single edition of the register, so it can differ from the figure at the top."
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:577
 msgid "Totalul numără persoanele juridice cu starea „în funcțiune\" din ediția registrului citită de analiza bilanțurilor, ediția {releaseId}. Firmele în funcțiune de sus sunt numărate altfel din registru, deci cele două numere diferă."
@@ -48827,6 +49231,10 @@ msgstr "Transcrierile oficiale ale dezbaterilor din plen — ședință cu ședi
 msgid "Transfers Only"
 msgstr "Transfers Only"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:137
+msgid "Transferuri"
+msgstr "Transfers"
+
 #: src/features/national-budget/analytics/lib/analytics-view.ts:176
 msgctxt "national budget classification"
 msgid "Transferuri – total (subtotal, până în 2021)"
@@ -48841,6 +49249,10 @@ msgctxt "national budget classification"
 msgid "Transferuri către alte bugete"
 msgstr "Transfers to other budgets"
 
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:136
+msgid "Transferuri între bugete"
+msgstr "Transfers between budgets"
+
 #: src/features/national-budget/analytics/lib/analytics-view.ts:225
 msgid "Transferuri între bugete (se scad)"
 msgstr "Transfers between budgets (deducted)"
@@ -48854,6 +49266,10 @@ msgstr "Transfers between levels of government"
 msgctxt "national budget classification"
 msgid "Transferuri între unități ale administrației publice"
 msgstr "Transfers between public administration units"
+
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:58
+msgid "Transferuri: titlurile economice 51.01 și 51.02."
+msgstr "Transfers: economic titles 51.01 and 51.02."
 
 #: src/features/landing/components/landing-page.tsx:268
 #~ msgid "Transformăm date publice în informații clare, pentru a înțelege și decide mai bine."
@@ -49174,8 +49590,8 @@ msgstr "Type your answer..."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:853
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1071
-#: src/components/filters/EntityAnalyticsFilter.tsx:487
-#: src/components/filters/EntityAnalyticsFilter.tsx:686
+#: src/components/filters/EntityAnalyticsFilter.tsx:489
+#: src/components/filters/EntityAnalyticsFilter.tsx:688
 #: src/components/filters/MapFilter.tsx:237
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1087
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:93
@@ -49225,13 +49641,13 @@ msgid "UAT Outliers"
 msgstr "UAT Outliers"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:459
-#: src/components/filters/EntityAnalyticsFilter.tsx:584
+#: src/components/filters/EntityAnalyticsFilter.tsx:586
 #: src/components/filters/MapFilter.tsx:410
 msgid "UAT: No"
 msgstr "UAT: No"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:458
-#: src/components/filters/EntityAnalyticsFilter.tsx:584
+#: src/components/filters/EntityAnalyticsFilter.tsx:586
 #: src/components/filters/MapFilter.tsx:410
 msgid "UAT: Yes"
 msgstr "UAT: Yes"
@@ -49512,6 +49928,10 @@ msgstr "One INS indicator for up to six places — localities, counties or the w
 msgid "Un număr de salariați imposibil ({0}, CUI {1}) e lăsat afară din clasament."
 msgstr "An impossible employee count ({0}, CUI {1}) is left out of the ranking."
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:94
+msgid "un ordonator principal ales"
+msgstr "a chosen main authorising officer"
+
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:401
 msgid "Un rând fără valoare în această perioadă („—\", motivul la indicator) rămâne în arbore; grupa lui nu mai e suma rândurilor arătate."
 msgstr "A line without a value in this period (“—”, the reason in the tooltip) stays in the tree; its group is then no longer the sum of the lines shown."
@@ -49625,6 +50045,10 @@ msgstr "Where their <0/>seat is"
 msgid "Unde lucrează salariații din Cluj"
 msgstr "Where Cluj's employees work"
 
+#: src/features/public-institutions/lib/public-institutions-text.ts:155
+msgid "Unde se cheltuie cel mai mult pe locuitor"
+msgstr "Where the most is spent per resident"
+
 #: src/features/procurement/lib/analytics-questions.ts:76
 msgid "Unde se cumpără cel mai mult, pe locuitor?"
 msgstr "Where is the most bought, per resident?"
@@ -49649,6 +50073,10 @@ msgstr "Where your locality stands"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:255
 #~ msgid "Unde stă județul tău"
 #~ msgstr "Where your county stands"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:156
+msgid "Unde sunt cele mai mari venituri pe locuitor"
+msgstr "Where revenue per resident is highest"
 
 #: src/features/justice/lib/analysis-questions.ts:32
 msgid "Unde sunt cele mai multe dosare la 1.000 de locuitori?"
@@ -50984,6 +51412,9 @@ msgstr "revenue"
 #: src/features/national-budget/home/components/home-now.tsx:128
 #: src/features/ngos/hub/ngo-hub-page.tsx:303
 #: src/features/ngos/hub/ngo-money.tsx:33
+#: src/features/public-institutions/components/public-institutions-breakdown.tsx:189
+#: src/features/public-institutions/components/public-institutions-figures.tsx:77
+#: src/features/public-institutions/components/public-institutions-head.tsx:211
 msgid "Venituri"
 msgstr "Revenue"
 
@@ -51150,6 +51581,30 @@ msgstr "Deferred income"
 #: src/features/national-budget/home/components/home-revenue.tsx:82
 msgid "Veniturile în timp"
 msgstr "Revenue over time"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:33
+msgid "Veniturile instituțiilor publice"
+msgstr "Public institutions' revenue"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:29
+msgid "Veniturile pe locuitor ale instituțiilor publice"
+msgstr "Public institutions' revenue per resident"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:27
+msgid "Veniturile pe locuitor ale primăriilor"
+msgstr "Town halls' revenue per resident"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:28
+msgid "Veniturile pe locuitor ale primăriilor și consiliilor județene"
+msgstr "Town halls' and county councils' revenue per resident"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:31
+msgid "Veniturile primăriilor"
+msgstr "Town halls' revenue"
+
+#: src/features/public-institutions/lib/public-institutions-text.ts:32
+msgid "Veniturile primăriilor și consiliilor județene"
+msgstr "Town halls' and county councils' revenue"
 
 #: src/features/national-budget/home/components/home-budgets.tsx:49
 msgid "veniturile proprii ale instituțiilor publice"
@@ -51430,7 +51885,7 @@ msgstr "See it as a supplier"
 msgid "Vezi-le pe pagina achiziției din SEAP"
 msgstr "See them on the purchase's SEAP page"
 
-#: src/components/filters/EntityAnalyticsFilter.tsx:418
+#: src/components/filters/EntityAnalyticsFilter.tsx:419
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1077
 #: src/components/maps/HeatmapDataTable.tsx:468
 #: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:44

@@ -3388,7 +3388,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     const showAllLink = screen.getByRole('link', {
       name: 'View all institutions',
     })
-    expect(showAllLink).toHaveAttribute('href', '/entity-analytics')
+    expect(showAllLink).toHaveAttribute('href', '/public-institutions')
     expect(showAllLink).toHaveAttribute(
       'data-search',
       expect.stringContaining('"main_creditor_cui":"12345678"'),

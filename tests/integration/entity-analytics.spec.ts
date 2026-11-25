@@ -377,9 +377,14 @@ test.describe('Native grouped analytics availability', () => {
         pageInfo: { totalCount: 2, hasNextPage: false, hasPreviousPage: false },
       } } } })
     })
-    // Navigate in-app so the response comes through the browser mock, not SSR hydration.
-    await page.goto('/')
-    await page.locator('a[href="/entity-analytics"]').first().click()
+    // Read the ranking in the browser, through the mock, not in the server render: the line-items view
+    // reads no ranking on the server, and switching to the table reads it here. (The landing links to
+    // /public-institutions now; this page stays for its links.)
+    await page.goto('/entity-analytics?view=line-items')
+    await waitForHydration(page)
+    // The radio itself is visually hidden; its label is what a reader clicks.
+    await page.locator('label[for="view-type-table"]').click()
+    await expect(page).toHaveURL(/view=table/)
     const annual = page.getByRole('row').filter({ hasText: 'Annual ratio' })
     const unavailable = page.getByRole('row').filter({ hasText: 'Unavailable ratio' })
     await expect(annual).toBeVisible()
@@ -394,9 +399,14 @@ test.describe('Native grouped analytics availability', () => {
       if (!route.request().postDataJSON()?.query?.includes('query EntityAnalytics')) return route.fallback()
       await route.fulfill({ json: { errors: [{ message: 'CPI is unavailable for 2025', extensions: { code: 'SERVICE_UNAVAILABLE' } }] } })
     })
-    // Navigate in-app so the response comes through the browser mock, not SSR hydration.
-    await page.goto('/')
-    await page.locator('a[href="/entity-analytics"]').first().click()
+    // Read the ranking in the browser, through the mock, not in the server render: the line-items view
+    // reads no ranking on the server, and switching to the table reads it here. (The landing links to
+    // /public-institutions now; this page stays for its links.)
+    await page.goto('/entity-analytics?view=line-items')
+    await waitForHydration(page)
+    // The radio itself is visually hidden; its label is what a reader clicks.
+    await page.locator('label[for="view-type-table"]').click()
+    await expect(page).toHaveURL(/view=table/)
     await expect(page.getByRole('alert').filter({ hasText: 'CPI is unavailable for 2025' })).toBeVisible({ timeout: 20000 })
     await expect(page.getByRole('alert').filter({ hasText: /nominal RON|valori nominale în lei/ })).toBeVisible()
   })

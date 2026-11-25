@@ -30,7 +30,7 @@ describe('entity table navigation preserves selected institutions', () => {
       const { unmount } = render(<FloatingQuickNav mapViewType={mapViewType} tableActive filterInput={filter} />)
       fireEvent.click(screen.getByRole('button', { name: 'Go to Entity Table' }))
       expect(navigate).toHaveBeenLastCalledWith({
-        to: '/entity-analytics',
+        to: '/public-institutions',
         search: {
           view: 'table', sortOrder: 'desc', page: 1, pageSize: 25,
           filter: { ...filter, currency: undefined, inflation_adjusted: undefined },

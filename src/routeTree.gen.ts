@@ -31,6 +31,7 @@ import { Route as PnrrRouteImport } from './routes/pnrr'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProcurementRouteRouteImport } from './routes/procurement/route'
 import { Route as ProvocareRouteImport } from './routes/provocare'
+import { Route as PublicInstitutionsRouteImport } from './routes/public-institutions'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as TestErrorRouteImport } from './routes/test-error'
@@ -314,6 +315,13 @@ const ProvocareRoute = ProvocareRouteImport.update({
   path: '/provocare',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/provocare.lazy').then((d) => d.Route))
+const PublicInstitutionsRoute = PublicInstitutionsRouteImport.update({
+  id: '/public-institutions',
+  path: '/public-institutions',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/public-institutions.lazy').then((d) => d.Route),
+)
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
@@ -1574,6 +1582,7 @@ export interface FileRoutesByFullPath {
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/public-institutions': typeof PublicInstitutionsRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
@@ -1763,6 +1772,7 @@ export interface FileRoutesByTo {
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/public-institutions': typeof PublicInstitutionsRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
@@ -1952,6 +1962,7 @@ export interface FileRoutesById {
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/public-institutions': typeof PublicInstitutionsRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
@@ -2151,6 +2162,7 @@ export interface FileRouteTypes {
     | '/pnrr'
     | '/privacy'
     | '/provocare'
+    | '/public-institutions'
     | '/sign-in'
     | '/sign-up'
     | '/test-error'
@@ -2340,6 +2352,7 @@ export interface FileRouteTypes {
     | '/pnrr'
     | '/privacy'
     | '/provocare'
+    | '/public-institutions'
     | '/sign-in'
     | '/sign-up'
     | '/test-error'
@@ -2528,6 +2541,7 @@ export interface FileRouteTypes {
     | '/pnrr'
     | '/privacy'
     | '/provocare'
+    | '/public-institutions'
     | '/sign-in'
     | '/sign-up'
     | '/test-error'
@@ -2726,6 +2740,7 @@ export interface RootRouteChildren {
   PnrrRoute: typeof PnrrRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
+  PublicInstitutionsRoute: typeof PublicInstitutionsRoute
   SignInRoute: typeof SignInRouteWithChildren
   SignUpRoute: typeof SignUpRouteWithChildren
   TestErrorRoute: typeof TestErrorRoute
@@ -2960,6 +2975,13 @@ declare module '@tanstack/react-router' {
       path: '/provocare'
       fullPath: '/provocare'
       preLoaderRoute: typeof ProvocareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public-institutions': {
+      id: '/public-institutions'
+      path: '/public-institutions'
+      fullPath: '/public-institutions'
+      preLoaderRoute: typeof PublicInstitutionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sign-in': {
@@ -4652,6 +4674,7 @@ const rootRouteChildren: RootRouteChildren = {
   PnrrRoute: PnrrRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,
+  PublicInstitutionsRoute: PublicInstitutionsRoute,
   SignInRoute: SignInRouteWithChildren,
   SignUpRoute: SignUpRouteWithChildren,
   TestErrorRoute: TestErrorRoute,

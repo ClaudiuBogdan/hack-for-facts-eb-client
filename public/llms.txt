@@ -10,7 +10,7 @@ Base URL:
 
 ## Routes Overview
 - /entities/{cui}: Single entity details and analytics
-- /entity-analytics: Cross-entity analytics (table, treemap, line-items)
+- /public-institutions: Cross-entity analytics (table, treemap, line-items)
 - /national-budget: The national budget for citizens: revenue, spending, deficit, ministries and the budget law, by year
 - /national-budget/analytics: The national budget in depth: every bulletin line, budget and period, the budget laws and the ministries
 - /budget-explorer: Budget exploration by categories (functional/economic), with filters (a bare link goes to /national-budget)
@@ -36,7 +36,7 @@ Examples:
 - https://transparenta.eu/entities/4267117?year=2025&view=map&normalization=per_capita
 - https://transparenta.eu/entities/4267117?period=QUARTER&quarter=Q4
 
-## Entity Analytics (/entity-analytics)
+## Public institutions (/public-institutions)
 Purpose: Compare entities with filters and switch views (table/line-items/treemap)
 Common params:
 - filter.report_period.type=YEAR|QUARTER|MONTH
@@ -49,7 +49,7 @@ Parameters JSON: (coming from schema)
 - https://transparenta.eu/ai/entities-analytics-parameters.json
 
 Example:
-- https://transparenta.eu/entity-analytics?view=line-items
+- https://transparenta.eu/public-institutions?view=line-items
 
 ## Budget Explorer (/budget-explorer)
 Purpose: Explore budget composition across categories and years

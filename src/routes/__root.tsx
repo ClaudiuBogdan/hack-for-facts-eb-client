@@ -208,14 +208,14 @@ function getGlobalHead() {
       {
         name: "ai:site:instructions",
         content:
-          "Use /entities/{cui} for single-entity analytics; /entity-analytics for cross-entity analytics; /budget-explorer for multi-filter budget exploration.",
+          "Use /entities/{cui} for single-entity analytics; /public-institutions for cross-entity analytics; /budget-explorer for multi-filter budget exploration.",
       },
       {
         name: "ai:routes",
         content: JSON.stringify({
           "/entities/{cui}":
             "Entity details and analytics (views, period, normalization).",
-          "/entity-analytics":
+          "/public-institutions":
             "Cross-entity analytics (filter by years, categories, geography).",
           "/budget-explorer":
             "Explore and slice budget across years and categories.",
