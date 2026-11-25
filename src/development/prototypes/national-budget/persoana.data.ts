@@ -79,6 +79,8 @@ export function leiNumber(lei: number | null): string {
 export function changeOf(now: number | null, before: number | null): string | null {
   if (now === null || before === null || before === 0) return null
   const change = (now / before - 1) * 100
+  // A change that rounds to nothing is said as „0%", never „−0,0%".
+  if (Math.abs(change) < 0.05) return '0%'
   const text = formatHubNumber(Math.abs(change), { digits: Math.abs(change) < 10 ? 1 : 0 })
   return `${change >= 0 ? '+' : '−'}${text}%`
 }
@@ -249,12 +251,12 @@ export function useNewestView(): YearView {
 
 // ─────────────────────────────────────────────────────── out of a hundred ──
 
-/** Whole lei out of 100 by the largest remainder, so they always make exactly 100. */
-export function outOfHundred(values: readonly number[]): readonly number[] {
+/** Whole lei out of 100 (or of `whole`) by the largest remainder, so they always make exactly that. */
+export function outOfHundred(values: readonly number[], whole = 100): readonly number[] {
   const total = values.reduce((sum, value) => sum + Math.max(value, 0), 0) || 1
-  const exact = values.map((value) => (Math.max(value, 0) / total) * 100)
+  const exact = values.map((value) => (Math.max(value, 0) / total) * whole)
   const floors = exact.map(Math.floor)
-  let left = 100 - floors.reduce((sum, value) => sum + value, 0)
+  let left = whole - floors.reduce((sum, value) => sum + value, 0)
   const order = exact.map((value, index) => ({ index, remainder: value - Math.floor(value) })).sort((a, b) => b.remainder - a.remainder)
   for (const { index } of order) {
     if (left <= 0) break
@@ -262,6 +264,11 @@ export function outOfHundred(values: readonly number[]): readonly number[] {
     left -= 1
   }
   return floors
+}
+
+const REST_LINE = {
+  spending: { label: 'Alte cheltuieli', hint: 'proiecte PNRR din împrumuturi, active financiare, rambursări, alte cheltuieli' },
+  revenue: { label: 'Alte venituri', hint: 'taxe vamale, alte impozite, venituri din capital, alte sume de la UE' },
 }
 
 export type HundredLine = { readonly key: string; readonly label: string; readonly hint: string | null; readonly exact: string; readonly lei: number; readonly change: string | null; readonly rest?: boolean }
@@ -286,7 +293,7 @@ export function useHundred(view: YearView, side: 'spending' | 'revenue') {
     })
     .sort((a, b) => Number(b.exact) - Number(a.exact))
   const restExact = (Number(whole) - named.reduce((sum, line) => sum + Number(line.exact), 0)).toFixed(2)
-  const withRest = Number(restExact) / Number(whole) > 0.005 ? [...named, { key: 'rest', label: side === 'spending' ? 'Alte cheltuieli' : 'Alte venituri', hint: null, exact: restExact, change: null, rest: true }] : named
+  const withRest = Number(restExact) / Number(whole) > 0.005 ? [...named, { key: 'rest', ...REST_LINE[side], exact: restExact, change: null, rest: true }] : named
   const hundreds = outOfHundred(withRest.map((line) => Number(line.exact)))
   return {
     whole,

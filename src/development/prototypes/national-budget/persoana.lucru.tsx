@@ -14,6 +14,7 @@ import { HUB_SHORTCUT_LINK_CLASS } from '@/features/statistics/components/hub/hu
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import { populationText, useHundred, useOfficialTotals } from './persoana.data'
+import { FlowSection } from './persoana.flow'
 import { BORROWED_FILL } from './persoana.sections'
 import { DataNote, SourcesLine, YearPicker, YearProvider, useInView, usePersonYear } from './persoana.shell'
 
@@ -108,8 +109,7 @@ function BalancePanel() {
 
 function Shortcuts() {
   const links = [
-    { label: 'Pe ce se duc', hash: 'cheltuieli' },
-    { label: 'De unde vin', hash: 'venituri' },
+    { label: 'De unde vin și pe ce se duc', hash: 'bani' },
     { label: 'Împrumutul', hash: 'imprumut' },
   ]
   return (
@@ -137,7 +137,14 @@ function Hero() {
         <CornerTicks />
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8 lg:pb-10">
           <div className="min-w-0 lg:col-span-7">
-            <MonoLabel className="text-muted-foreground">Buget / Național</MonoLabel>
+            <nav aria-label="Ești aici">
+              <MonoLabel className="text-muted-foreground">
+                <Link to="/" search={((previous: Record<string, unknown>) => siteKeys(previous)) as never} className="-my-3 inline-block py-3 underline-offset-4 transition-colors hover:text-foreground hover:underline">
+                  Acasă
+                </Link>{' '}
+                / Buget / Național
+              </MonoLabel>
+            </nav>
             <BandRead fallback={<TitlePending />}>
               <h1 className="mt-5 text-[clamp(2.2rem,8vw+0.6rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
                 Bugetul țării,
@@ -179,8 +186,7 @@ function TitlePending() {
 // ──────────────────────────────────────────────────── bar and figures band ──
 
 const SECTIONS = [
-  { id: 'cheltuieli', label: 'Pe ce' },
-  { id: 'venituri', label: 'De unde' },
+  { id: 'bani', label: 'De unde și pe ce' },
   { id: 'domenii', label: 'Pe domenii' },
   { id: 'ministere', label: 'Cine' },
   { id: 'imprumut', label: 'Împrumutul' },
@@ -219,7 +225,7 @@ function FiguresBand() {
   const interest = spending.lines.find((line) => line.key === 'mfin.bgc.expenditure.interest') ?? null
   const previous = view.partial ? `aceleași luni din ${view.year - 1}` : String(view.year - 1)
   const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance), 2)
-  const fact = (key: string, exact: string | null, label: string, note: string): HubFact => ({
+  const fact = (key: string, hash: string, exact: string | null, label: string, note: string): HubFact => ({
     key,
     value: exact ? Math.abs(Number(exact)) / 1e9 : 0,
     digits: 1,
@@ -227,16 +233,16 @@ function FiguresBand() {
     label,
     note,
     link: (content, className) => (
-      <a href={`#${key}`} className={className}>
+      <a href={`#${hash}`} className={className}>
         {content}
       </a>
     ),
   })
   const facts: HubFact[] = [
-    fact('cheltuieli', totals.spending, 'Cheltuieli publice', `${totals.spendingChange ?? '—'} față de ${previous}`),
-    fact('venituri', totals.revenue, 'Venituri publice', `${totals.revenueChange ?? '—'} față de ${previous}`),
-    fact('imprumut', totals.deficit, 'Deficit bugetar (cash)', [`${totals.borrowed} lei din fiecare 100 cheltuiți`, deficitShare ? `${deficitShare} din PIB` : null].filter(Boolean).join(' · ')),
-    fact('dobanzi', interest?.exact ?? null, 'Dobânzi la datorie', `${interest?.lei ?? '—'} lei din fiecare 100 cheltuiți · ${interest?.change ?? '—'}`),
+    fact('cheltuieli', 'bani', totals.spending, 'Cheltuieli publice', `${totals.spendingChange ?? '—'} față de ${previous}`),
+    fact('venituri', 'bani', totals.revenue, 'Venituri publice', `${totals.revenueChange ?? '—'} față de ${previous}`),
+    fact('imprumut', 'imprumut', totals.deficit, 'Deficit bugetar (cash)', [`${totals.borrowed} lei din fiecare 100 cheltuiți`, deficitShare ? `${deficitShare} din PIB` : null].filter(Boolean).join(' · ')),
+    fact('dobanzi', 'imprumut', interest?.exact ?? null, 'Dobânzi la datorie', `${interest?.lei ?? '—'} lei din fiecare 100 cheltuiți · ${interest?.change ?? '—'}`),
   ]
   return <HubFiguresBand facts={facts} locale="ro" />
 }
@@ -273,10 +279,9 @@ function Page() {
           </BandRead>
         </RuledFrame>
       </section>
+      <FlowSection />
       <section className="border-b">
-        <RuledFrame className="py-16 text-sm text-muted-foreground">
-          Secțiunile urmează, din cele trei versiuni și din notele tale: pe ce se duc banii, de unde vin, pe domenii, cine îi cheltuie, împrumutul, anul în curs, mai departe.
-        </RuledFrame>
+        <RuledFrame className="py-16 text-sm text-muted-foreground">Secțiunile următoare, din cele trei versiuni și din notele tale: pe domenii și cine cheltuie, împrumutul, anul în curs, mai departe.</RuledFrame>
       </section>
       {/* The population and the data's date close the page, above the site footer. */}
       <section className="border-b" aria-label="Despre date">

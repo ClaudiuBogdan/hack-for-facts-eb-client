@@ -1337,3 +1337,32 @@ Prototype: `?v=lucru` (`persoana.lucru.tsx`).
   the grid („2026: anul în curs, până în septembrie"). It first led the menu
   on a row of its own; the owner found it read like a title. The pinned bar carries the same button, without the
   label, once the hero has scrolled away.
+
+### 12.6 The working version's first section: 100 lei, two columns (25 November 2026)
+
+Owner: „Ok" to the recommendation. `persoana.flow.tsx`, anchor `#bani`.
+
+- **One section instead of two.** „De unde vin banii și pe ce se duc": the
+  „Fluxul" version's two columns of the same height, measured in the hero's
+  lei out of 100 instead of lei per resident. It replaces the two
+  hundred-squares sections (spending, revenue).
+- **Left, where 100 spent lei came from:** the revenue lines and, hatched,
+  the borrowed lei. The borrowed lei are the hero's figure (18 in 2025); the
+  revenue lines share the rest (82) by the largest remainder, so the section
+  can never contradict the head. **Right, what they went on:** the spending
+  lines, 100 by the largest remainder.
+- **Labels on the outer sides:** the lei and the name; the official amount
+  too when the block is tall enough (not on a phone). Blocks under 3 lei
+  carry no label; every line is in the lists below.
+- **Under the columns, every line:** its lei of 100, the name with its
+  colour, what it is and the change on the year before, the official amount,
+  and the amount per resident as a description („13.174 lei pe locuitor").
+  This is where per-resident amounts live (owner: descriptions in sections,
+  never the headline).
+- **Wording:** „1 leu"; a change that rounds to nothing is „0%".
+- **The head's top line is a real breadcrumb** (owner: a link back to the
+  homepage): „Acasă / Buget / Național", „Acasă" linked to `/`.
+- The pinned bar and the shortcuts name one section („De unde și pe ce");
+  the figures band's spending and revenue tiles link to it.
+- Still to come, in order: domains and ministries (one section, two tabs),
+  borrowing year by year with the interest, the year so far, „Mai departe".
