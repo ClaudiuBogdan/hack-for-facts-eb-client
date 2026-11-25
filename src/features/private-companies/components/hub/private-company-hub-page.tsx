@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import type { ReactNode } from 'react'
+import type { ReactNode, RefObject } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
@@ -29,6 +30,7 @@ import { formatHubDay, formatHubMonth, formatHubNumber, formatHubShare, formatHu
 import { COMPANY_HUB_ACTIVITIES } from '../../lib/hub-activities'
 import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
 import type { HubActivityRow } from '../../lib/hub-snapshot-types'
+import { useHubFirstVisit } from '../../lib/hub-first-visit'
 import { hubCountyLayer, registrationSeries, survivalShare } from '../../lib/hub-view'
 import { CompanyHubHero, CompanyLeadersFrame } from './company-hub-hero'
 import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandNumber, companyHubSections } from './company-hub-sections'
@@ -123,6 +125,9 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
+/** No root: handed to the reveal on a return visit, so it finds nothing to arm. */
+const NO_ROOT: RefObject<HTMLDivElement | null> = { current: null }
+
 /** A figure's link to the band that breaks it down, showing it by that figure's measure. */
 function toBand(id: 'domenii' | 'infiintari', domenii?: CompanyHubSectorMetric) {
   return function BandLink(label: ReactNode, className: string) {
@@ -144,7 +149,11 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
   const { i18n } = useLingui()
   const navigate = useNavigate()
   const rootRef = useRef<HTMLDivElement>(null)
-  useRevealOnView(rootRef, startArrivalEffects)
+  // Entrances play the first time the page is on screen, not when the reader comes back to it from a
+  // company or the analysis: with no root the reveal arms nothing, every block shows as rendered, and
+  // the count-up, which starts from the reveal, does not run.
+  const firstVisit = useHubFirstVisit()
+  useRevealOnView(firstVisit ? rootRef : NO_ROOT, startArrivalEffects)
   // The count-up driver is module state; an unmount mid-flight would leave it
   // ticking against nodes that are no longer in the document.
   useEffect(() => () => stopCounting(), [])
@@ -654,8 +663,15 @@ function SourcesLine() {
 function StartCard({ to, title, body }: { readonly to: Record<string, unknown>; readonly title: ReactNode; readonly body: ReactNode }) {
   return (
     <li>
-      <Link to="/companies/analytics" search={to} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40">
-        <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
+      <Link to="/companies/analytics" search={to} className="group block h-full bg-background p-5 transition-colors hover:bg-muted/40">
+        {/* The arrow at rest, as every tile of the landing's index carries one: a phone has no hover to show it. */}
+        <span className="flex items-start justify-between gap-3">
+          <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
+          <ArrowRight
+            aria-hidden="true"
+            className="mt-1 size-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transition-none"
+          />
+        </span>
         <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{body}</span>
       </Link>
     </li>
