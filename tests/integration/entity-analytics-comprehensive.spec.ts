@@ -41,6 +41,8 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
     // Set up GraphQL mocks
     await mockApi.mockGraphQL('EntityAnalytics', 'entity-analytics')
     await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
+    // The budget sector filter reads its list in the browser when opened; mocked, so no test reaches the live API.
+    await mockApi.mockGraphQL('BudgetSectors', 'budget-sectors')
   })
 
   // ============================================================================
