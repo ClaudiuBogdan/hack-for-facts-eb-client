@@ -994,6 +994,26 @@ and chose, from a question dialog, all of the following.
   chrome, so they are opt-in switches there, approved by root; the other hubs
   are unchanged.
 
-### Open
+- **The English shortcuts are shorter** (owner's choice): „Active companies ·
+  Statements analysis · Procurement", one line on a desktop. The three links
+  carry a message context of their own (`companies hub shortcut`), so the
+  same Romanian words elsewhere keep their English.
 
-- The English shortcut row wraps onto a second line on a desktop.
+### From the review (Codex `gpt-6.2-sol`, same day)
+
+- **A share names its total's source in the open.** „Procente din 1.107.680
+  firme în funcțiune" read as the country's, against 1.749.479 at the top:
+  the analysis counts one registry edition's legal persons. The note is now
+  „Procente din cele {total} în funcțiune din analiza bilanțurilor." and, for
+  money and employees, „Procente din {total}, totalul analizei bilanțurilor pe
+  {year}."
+- **The employees' ⓘ gives the right reason.** Both totals keep the same
+  0–50.000 headcount, so the ceiling does not explain their difference; the
+  edition and the admitted values do.
+- **The insolvency card names every status it counts**: „Firme în insolvență,
+  reorganizare judiciară sau faliment". With its sentence gone, the title was
+  narrower than the count and the filter it opens.
+- *Left as is:* on a slow client navigation, the loading state's pinned bar
+  offers anchors (`#domenii`, `#marime`, …) whose bands arrive with the page;
+  a click in that fraction of a second scrolls nowhere. As before the change
+  for every band but the counties.

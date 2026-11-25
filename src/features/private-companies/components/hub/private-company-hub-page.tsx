@@ -470,7 +470,8 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
             <ul className="grid gap-px border bg-border/70 sm:grid-cols-3" data-testid="company-hub-start">
               <StartCard
                 to={hubCompaniesSearch(YEAR, { observedStatus: { in: [...INSOLVENCY_STATUSES] } })}
-                title={<Trans>Firme în insolvență sau faliment</Trans>}
+                // The card is its title and its count, so the title names every status the count holds.
+                title={<Trans>Firme în insolvență, reorganizare judiciară sau faliment</Trans>}
                 body={firmCount(national.insolvency)}
               />
               <StartCard
@@ -549,7 +550,12 @@ function ActivitiesCaption({ measure }: { readonly measure: ActivityMeasure }) {
   const ceiling = formatHubNumber(HUB_EMPLOYEE_CEILING)
   return (
     <>
-      {measure === 'activeFirms' ? <Trans>Procente din totalul firmelor în funcțiune: {total}.</Trans> : <Trans>Procente din totalul pe {year}: {total}.</Trans>}{' '}
+      {/* The total named with its source, so it never reads as the country's: the analysis counts one registry edition's legal persons. */}
+      {measure === 'activeFirms' ? (
+        <Trans>Procente din cele {total} în funcțiune din analiza bilanțurilor.</Trans>
+      ) : (
+        <Trans>Procente din {total}, totalul analizei bilanțurilor pe {year}.</Trans>
+      )}{' '}
       <HubInfoNote label={t`Despre aceste procente`}>
         {/* What the total is, and why it is not the figure at the top of the page. */}
         <p>
@@ -560,13 +566,14 @@ function ActivitiesCaption({ measure }: { readonly measure: ActivityMeasure }) {
             </Trans>
           ) : measure === 'employees' ? (
             <Trans>
-              Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}, cel mult {ceiling} pe firmă: peste, e o greșeală de
-              introducere. De aceea diferă de numărul de salariați de sus.
+              Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}: firmele dintr-o ediție a registrului, cu valorile
+              admise după verificare, cel mult {ceiling} pe firmă. De aceea diferă de numărul de salariați de sus, care adună toate bilanțurile pe {year} citite
+              de la ANAF, cu aceeași limită.
             </Trans>
           ) : (
             <Trans>
-              Totalul numără firmele cu starea „în funcțiune" în registrul citit de analiza bilanțurilor, ediția {releaseId}: o singură ediție a registrului, deci
-              poate diferi de numărul de sus.
+              Totalul numără persoanele juridice cu starea „în funcțiune" din ediția registrului citită de analiza bilanțurilor, ediția {releaseId}. Firmele în
+              funcțiune de sus sunt numărate altfel din registru, deci cele două numere diferă.
             </Trans>
           )}
         </p>

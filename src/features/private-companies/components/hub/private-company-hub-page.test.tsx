@@ -137,7 +137,7 @@ describe('PrivateCompanyHubPage', () => {
     const activities = screen.getByTestId('company-hub-activities')
     // Rev.3 4711: 92,0 mld. of the 2.780,3 mld. lei admitted — not of the raw 2.841,2 mld. in the figures band.
     expect(within(activities).getAllByRole('listitem')[0]?.textContent).toMatch(/3[.,]3\s?%/u)
-    expect(activities.textContent).toMatch(/Procente din totalul pe 2025: 2[.,]780[.,]3\smld\.\slei\./u)
+    expect(activities.textContent).toMatch(/Procente din 2[.,]780[.,]3\smld\.\slei, totalul analizei bilanțurilor pe 2025\./u)
     // The unselected keep their share: several ONRC classes and no selection hold 21,2% of the turnover.
     expect(within(screen.getByTestId('company-hub-activities-rest')).getByText('Mai multe activități clasificate ONRC, niciuna selectată').parentElement?.textContent).toMatch(/21[.,]2\s?%/u)
   })
