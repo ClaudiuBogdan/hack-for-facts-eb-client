@@ -9,7 +9,6 @@ import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
-import { useLegislationStatusCounts } from '@/features/legal/hooks/use-legislation'
 import { useLegislationFrontier } from '@/features/legal/hooks/use-legislation-frontier'
 import { useLegalAnalytics } from '@/features/legal/hooks/use-legislation-analytics'
 import { fmt, pct } from '@/features/legal/lib/analytics-format'
@@ -416,14 +415,16 @@ const FACT_LINK_CLASS = 'after:absolute after:inset-0 after:content-[""] focus-v
  * theirs: the figure, its short label, and one plain line saying what it is of. Each leads to the page that
  * breaks it down, and each comes from its own read: a figure whose read failed shows a dash and says so, never
  * a zero.
+ *
+ * No status figure: the Portal's „în vigoare" / „abrogat" marks are mostly undated badges (I-27, I-28, I-29), so
+ * status never feeds a headline figure (design doc §4). The acts that set rules are the analysis's stock: firm
+ * placements, one per base act, status not applied, so never said as „in force" or „today".
  */
 function FiguresBand() {
   const head = useLegalAnalytics('head', {})
   const summary = useLegalAnalytics('summary', {})
-  const status = useLegislationStatusCounts()
   const h = head.data?.data
   const s = summary.data?.data
-  const counts = status.data
   const valueOf = (value: number | undefined, query: { readonly isPending: boolean }) => value ?? (query.isPending ? undefined : null)
   const noteOf = (note: ReactNode | undefined, query: { readonly isPending: boolean }) => note ?? (query.isPending ? undefined : null)
 
@@ -451,32 +452,30 @@ function FiguresBand() {
       ),
     },
     {
-      key: 'in-force',
-      value: valueOf(counts?.inVigoare, status),
-      label: <Trans>În vigoare</Trans>,
+      key: 'text',
+      value: valueOf(s?.withText, summary),
+      label: <Trans>Cu text de citit</Trans>,
       note: noteOf(
-        counts?.inVigoare !== undefined ? (
-          counts.total !== undefined && counts.total > 0 ? (
-            <Trans>
-              {pct(counts.inVigoare / counts.total)} din {fmt(counts.total)} acte cu statut
-            </Trans>
-          ) : (
-            <Trans>Cu statutul „în vigoare"</Trans>
-          )
+        s ? (
+          <Trans>
+            {pct(s.withText / Math.max(1, s.total))} din {fmt(s.total)} acte
+          </Trans>
         ) : undefined,
-        status,
+        summary,
       ),
       link: (label, className) => (
-        <Link to="/legislation/acts" search={{ status: 'in-vigoare' }} className={className}>
+        <Link to="/legislation/acts" search={{ status: 'toate' }} className={className}>
           {label}
         </Link>
       ),
     },
     {
-      key: 'stock',
+      key: 'rules',
       value: valueOf(h?.totals.inStock, head),
-      label: <Trans>Acte în stoc</Trans>,
-      note: noteOf(h ? <Trans>Stabilesc reguli și stau singure (definiție provizorie)</Trans> : undefined, head),
+      // Not „stabilesc reguli" alone: that is the Felul band's group (all rule-making acts, a larger count).
+      // These stand on their own: acts that only amend, apply or repeal another are not counted.
+      label: <Trans>Legislația de bază</Trans>,
+      note: noteOf(h ? <Trans>Stabilesc reguli de sine stătătoare; definiție provizorie</Trans> : undefined, head),
       link: (label, className) => (
         <Link to="/legislation/analytics" search={analysisSearch({ populatie: 'stoc' })} className={className}>
           {label}
