@@ -24,6 +24,11 @@ helper's headers and `/legislation/acts/$actId/text` sets none of its own, so bo
   `Cache-Control` to `no-store` on a 5xx or on an error-boundary render), in one place for every route.
 - Or whether each public page proves its render in another way (a server-side check of the rendered stream before the headers are
   sent is not available while the response streams).
+- Responses that end before route headers (a root search-validation error, a router redirect) carry no route `Cache-Control`; the
+  sweep should set a site-wide default (`no-store` for HTML) at the server entry. Examples (review `astra-client-5`, 25 November
+  2026): `/legislation/guide?currency=GBP` ends with only the root's `Cache-Control: no-store`; `/legislation/search?historical=false`
+  redirects to the default filter before any route header is set. Neither serves page content publicly (the error is `no-store`,
+  the redirect has no body), and the order is the framework's, on every route.
 
 ## Related: cookies and public headers (root's decision, 25 November 2026)
 

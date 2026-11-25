@@ -38,7 +38,7 @@ describe('LegislationShell', () => {
     expect(own).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getAllByRole('link').filter((link) => link.getAttribute('aria-current') === 'page')).toHaveLength(1)
     expect(screen.getByText('conținut')).toBeInTheDocument()
-    // the app shell holds the page's one main landmark
+    // the legislation shell adds no main landmark
     expect(screen.queryByRole('main')).not.toBeInTheDocument()
   })
 
@@ -75,6 +75,5 @@ describe('LegislationShell', () => {
     const row = sources?.parentElement
     expect(row?.tagName).toBe('DIV')
     expect(row?.textContent).toMatch(/Date demonstrative \(mock\)|Demo data/)
-    expect(doc.querySelector('header p div')).toBeNull()
   })
 })

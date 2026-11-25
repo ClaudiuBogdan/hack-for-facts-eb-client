@@ -154,8 +154,7 @@ export function LegislationShell({ activeTab, measuredAt, dataStatus, children }
         </RuledFrame>
       </nav>
 
-      {/* No <main> of its own: the app shell has the page's one. A fragment target (#raspuns, #acte) lands below the
-          pinned row. */}
+      {/* The legislation shell adds no main landmark. A fragment target (#raspuns, #acte) lands below the pinned row. */}
       <RuledFrame className="py-8 sm:py-10 [&_[id]]:scroll-mt-14">{children}</RuledFrame>
     </div>
   )
