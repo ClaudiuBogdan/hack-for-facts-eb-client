@@ -78,12 +78,6 @@ export const legislationLinkClassName =
 export const legislationFieldClassName =
   'h-12 min-w-0 flex-1 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-base shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
 
-export const legislationSubmitClassName =
-  'h-12 shrink-0 rounded-none px-6 text-base font-semibold text-white hover:opacity-90'
-
-export const legislationExampleChipClassName =
-  'rounded-none border border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
-
 /* The solid `legislationActionClassName` button is gone (2026-08-12): its
    docblock argued the official-text exit was "the page's reason to exist"
    because we did not hold the law's text — the act page now serves the full

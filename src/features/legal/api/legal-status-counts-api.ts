@@ -1,7 +1,9 @@
 import type { LegalStatusActCounts } from '@/schemas/legal'
 import { isLegalMockEnabled } from '../lib/mock-mode'
 import { fetchStatusActCountsLive } from './legal-status-counts-api.live'
-import { fetchStatusActCountsMock } from './legal-status-counts-api.mock'
+
+/** Fixtures only in the development server and the tests: in production this is the constant `false`, so the mock is never emitted. */
+const FIXTURE_BUILD = import.meta.env.DEV || import.meta.env.MODE === 'test'
 
 /**
  * Mock/live dispatcher for the headline counts — the KPI strip's four tiles
@@ -20,6 +22,6 @@ import { fetchStatusActCountsMock } from './legal-status-counts-api.mock'
 export async function fetchStatusActCounts(
   options: { readonly signal?: AbortSignal } = {},
 ): Promise<LegalStatusActCounts> {
-  if (isLegalMockEnabled()) return fetchStatusActCountsMock()
+  if (FIXTURE_BUILD && isLegalMockEnabled()) return (await import('./legal-status-counts-api.mock')).fetchStatusActCountsMock()
   return fetchStatusActCountsLive(options)
 }
