@@ -55,6 +55,26 @@ export function leaderName(act: Pick<LegalAnalyticsActRow, 'citation' | 'title'>
   return { primary: title, secondary: act.citation }
 }
 
+/** The day the Portal's title ends on („LEGE (R) 95 14/04/2006") and its republication mark. */
+const TITLE_DAY = /\s*\d{1,2}\/\d{1,2}\/\d{4}\s*$/u
+const REPUBLISHED = /\s*\(R\)/gu
+
+/**
+ * An act in one line. The Portal's title is most often its citation said again („HG 1705 29/11/2006" for
+ * „HG nr. 1705/2006"): then the act goes by its citation alone. A title that is a name („COD FISCAL",
+ * „CONSTITUTIE") is the act's name, in the source's own spelling, with its citation beside it unless the
+ * citation is one the Portal generated.
+ */
+export function actName(act: Pick<LegalAnalyticsActRow, 'citation' | 'title'>): { readonly name: string; readonly citation: string | null } {
+  const words = (act.title ?? '').replace(TITLE_DAY, '').replace(REPUBLISHED, '').trim()
+  const generated = GENERATED_CITATION.test(act.citation)
+  if (words !== '' && !/\d/u.test(words)) {
+    const name = words.charAt(0).toLocaleUpperCase('ro') + words.slice(1).toLocaleLowerCase('ro')
+    return { name, citation: generated ? null : act.citation }
+  }
+  return { name: generated && words !== '' ? words : act.citation, citation: null }
+}
+
 /** The years chart starts here: the corpus holds a few hundred earlier acts, in scattered years. */
 export const YEARS_FROM = 1990
 

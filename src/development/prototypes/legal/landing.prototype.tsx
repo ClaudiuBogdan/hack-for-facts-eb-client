@@ -1,6 +1,7 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { LandingHub } from './landing.hub'
 import { DedicatedPageExample } from './landing.page'
+import { LandingHubSimple } from './landing.simple'
 
 /**
  * The legislation landing without tabs, for the owner's review (asked for on 25 November 2026): a hub in the
@@ -15,6 +16,11 @@ export const prototype = {
       title: 'Pornire (/legislation)',
       component: LandingHub,
       note: 'Search and the leading acts in the head, the pinned bar, four figures, six numbered bands (changes, Felul, issuers, years, links, Monitorul Oficial), six places to start, the reading note and the sources. Live API.',
+    },
+    simplu: {
+      title: 'Pornire, runda 2: antet curățat',
+      component: LandingHubSimple,
+      note: 'Owner, 25 November: less in the head. Home link at the top and in the pinned bar, the search with one row of shortcuts, six acts in two plain lines, the four figures in their own band under the bar; type as on the site landing. Bands and foot as in round 1. Live API.',
     },
     pagina: {
       title: 'Antetul unei pagini dedicate (exemplu: Analiză)',

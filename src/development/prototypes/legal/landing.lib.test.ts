@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_QUESTION, readQuestion } from '@/features/legal/lib/analytics-question'
 import type { LegalAnalyticsLinks, LegalAnalyticsSeries } from '@/schemas/legal-analytics'
-import { YEARS_FROM, analysisSearch, isoDaysBefore, leaderName, linkCounts, yearsChart } from './landing.lib'
+import { YEARS_FROM, actName, analysisSearch, isoDaysBefore, leaderName, linkCounts, yearsChart } from './landing.lib'
 
 const denominators = { total: 100, population: 100, uncertain: 0, unplaced: 0 }
 
@@ -24,6 +24,23 @@ describe('analysisSearch', () => {
     for (const patch of questions) {
       expect(readQuestion(analysisSearch(patch))).toEqual({ ...DEFAULT_QUESTION, ...patch })
     }
+  })
+})
+
+describe('actName', () => {
+  it('names an act by its citation when the title only says the citation again', () => {
+    expect(actName({ citation: 'HG nr. 1705/2006', title: 'HG 1705 29/11/2006' })).toEqual({ name: 'HG nr. 1705/2006', citation: null })
+    expect(actName({ citation: 'Legea nr. 95/2006', title: 'LEGE (R) 95 14/04/2006' })).toEqual({ name: 'Legea nr. 95/2006', citation: null })
+    expect(actName({ citation: 'Legea nr. 1/2011', title: null })).toEqual({ name: 'Legea nr. 1/2011', citation: null })
+  })
+
+  it('keeps a title that is a name, with the citation beside it', () => {
+    expect(actName({ citation: 'Legea nr. 227/2015', title: 'COD FISCAL 08/09/2015' })).toEqual({ name: 'Cod fiscal', citation: 'Legea nr. 227/2015' })
+  })
+
+  it('drops a citation the Portal generated', () => {
+    expect(actName({ citation: 'Doc nr. 47355', title: 'CONSTITUTIE (R) 21/11/1991' })).toEqual({ name: 'Constitutie', citation: null })
+    expect(actName({ citation: 'Doc nr. 9', title: 'DOC 9 01/01/2000' })).toEqual({ name: 'DOC 9', citation: null })
   })
 })
 

@@ -174,12 +174,12 @@ export function LandingHub() {
  * Answers of one page must come from one layer: if two of them differ (a layer was published while the page
  * loaded), every analytics read is made again. The same reads the bands make, by the same keys.
  */
-function useOneLayer(ranking: LeadersRanking) {
+export function useOneLayer(ranking: LeadersRanking, leadersShown: number = LEADERS_SHOWN) {
   const client = useQueryClient()
   const layers = [
     useLegalAnalytics('head', {}).data?.layer.layerId,
     useLegalAnalytics('summary', {}).data?.layer.layerId,
-    useLegalAnalytics('acts', { order: ranking === 'citate' ? 'cited' : 'amended', limit: LEADERS_SHOWN }).data?.layer.layerId,
+    useLegalAnalytics('acts', { order: ranking === 'citate' ? 'cited' : 'amended', limit: leadersShown }).data?.layer.layerId,
     useLegalAnalytics('breakdown', { lens: 'issuer', limit: ISSUERS_SHOWN + 1 }).data?.layer.layerId,
     useLegalAnalytics('series', { lens: 'felul' }).data?.layer.layerId,
     useLegalAnalytics('links', {}).data?.layer.layerId,
@@ -195,9 +195,10 @@ function useOneLayer(ranking: LeadersRanking) {
 /**
  * The search as the page's main action. It hands the words to the finder (`/legislation/search`), which
  * answers act numbers and act names: the placeholder and the examples show only those shapes. A plain form,
- * so it submits without the page's code too.
+ * so it submits without the page's code too. The examples under it can be left out (the placeholder shows the
+ * same shapes).
  */
-function HubSearch() {
+export function HubSearch({ examples = true }: { readonly examples?: boolean }) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -230,21 +231,23 @@ function HubSearch() {
           <Trans>Caută</Trans>
         </Button>
       </form>
-      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2">
-        <MonoLabel className="mr-1 text-muted-foreground/70">
-          <Trans>Exemple</Trans>
-        </MonoLabel>
-        {SEARCH_EXAMPLES.map((example) => (
-          <Link
-            key={example}
-            to="/legislation/search"
-            search={{ q: example }}
-            className="inline-flex min-h-9 items-center rounded-sm border bg-background px-2.5 text-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-muted/40"
-          >
-            {example}
-          </Link>
-        ))}
-      </div>
+      {examples ? (
+        <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2">
+          <MonoLabel className="mr-1 text-muted-foreground/70">
+            <Trans>Exemple</Trans>
+          </MonoLabel>
+          {SEARCH_EXAMPLES.map((example) => (
+            <Link
+              key={example}
+              to="/legislation/search"
+              search={{ q: example }}
+              className="inline-flex min-h-9 items-center rounded-sm border bg-background px-2.5 text-sm text-foreground transition-colors hover:border-foreground/40 hover:bg-muted/40"
+            >
+              {example}
+            </Link>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -430,7 +433,7 @@ function HubFigures() {
  * page's own writer, so it carries only filters its parser reads), the acts directory and the guide. A card
  * says its size from an answer the page already holds; without the answer it says the question alone.
  */
-function StartCards() {
+export function StartCards() {
   const head = useLegalAnalytics('head', {}).data?.data
   const links = useLegalAnalytics('links', {}).data?.data
   const ordinances = head?.types.find((row) => row.key === 'ordonanta-urgenta')?.acts
@@ -571,7 +574,7 @@ function StartCard({
 // ───────────────────────────────────────────────────── the foot ──
 
 /** The page's full sources line, closing it: each source, its publisher and its dates. */
-function SourcesLine() {
+export function SourcesLine() {
   const { i18n } = useLingui()
   const freshness = useLegislationFreshness().data
   const layer = useLegalAnalytics('head', {}).data?.layer
