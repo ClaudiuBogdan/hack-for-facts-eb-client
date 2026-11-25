@@ -76,4 +76,18 @@ test.describe('Public institutions page, when the API fails', () => {
     await expect(page.getByRole('alert').filter({ hasText: /clasamentul nu a putut fi citit|ranking could not be read/i })).toBeVisible({ timeout: 15000 })
     await expect(page.getByRole('button', { name: /încearcă din nou|try again/i }).first()).toBeVisible()
   })
+
+  test('explains a selection the API cannot answer, as the old page did', async ({ page, mockApi }) => {
+    await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
+    await mockApi.mockGraphQL('GetExecutionLineItemsAnalytics', 'execution-analytics')
+    await page.route('**/api/v1/graphql', async (route) => {
+      if (!route.request().postDataJSON()?.query?.includes('query EntityAnalytics')) return route.fallback()
+      await route.fulfill({ json: { errors: [{ message: 'CPI is unavailable for 2025', extensions: { code: 'SERVICE_UNAVAILABLE' } }] } })
+    })
+    await page.goto('/public-institutions')
+    await waitForHydration(page)
+    await page.getByRole('group', { name: /rapoartele|the reports/i }).getByRole('button', { name: /detaliat|detailed/i }).click()
+    await expect(page.getByRole('alert').filter({ hasText: 'CPI is unavailable for 2025' })).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('alert').filter({ hasText: /nominal RON|valori nominale în lei/ })).toBeVisible()
+  })
 })

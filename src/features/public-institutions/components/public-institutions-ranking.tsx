@@ -3,9 +3,11 @@ import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { BudgetAnalyticsError } from '@/components/entity-analytics/BudgetAnalyticsError'
 import { PopulationMethodologyNote } from '@/components/normalization/population-methodology-note'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { entityRankingFilter, fetchEntityAnalytics } from '@/lib/api/entity-analytics'
+import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import { downloadMapDataCsv } from '@/lib/map-data-csv'
 import { populationMethodologyReference } from '@/lib/population-methodology'
 import { cn, formatNumber } from '@/lib/utils'
@@ -116,6 +118,11 @@ function usePreviousYear(page: PublicInstitutionsState, rows: readonly EntityAna
   return { shown, pending: status === 'pending' || (whole && rows.length > 0 && previous.isPending), byCui }
 }
 
+/** The API cannot answer this selection (a year without CPI for real prices, a population it lacks): no retry helps, the reader has to change it. */
+function isUnavailable(error: Error | null): error is Error {
+  return error instanceof GraphQLRequestError && error.graphQLErrors.some((entry) => entry.extensions?.code === 'SERVICE_UNAVAILABLE')
+}
+
 function Change({ now, before, locale, pending }: { readonly now: number | null | undefined; readonly before: number | null | undefined; readonly locale: string; readonly pending: boolean }) {
   if (pending) return <span className="inline-block h-3 w-10 animate-pulse rounded-sm bg-muted align-middle" />
   const ratio = changeOf(now, before)
@@ -134,7 +141,12 @@ export function PublicInstitutionsRanking({ page }: { readonly page: PublicInsti
   const measureOf = (row: EntityAnalyticsDataPoint | undefined) => (row ? (perCapita ? row.per_capita_amount : row.total_amount) : undefined)
   return (
     <section id={RANKING_ID} aria-label={t`Clasament`} className="min-w-0 scroll-mt-14">
-      {ranking.isError ? (
+      {isUnavailable(ranking.error) ? (
+        // The old page's explanation: what is missing, and to choose another period or nominal amounts.
+        <div className="py-6">
+          <BudgetAnalyticsError error={ranking.error} />
+        </div>
+      ) : ranking.isError ? (
         <p role="alert" className="py-6 text-sm text-muted-foreground">
           {t`Clasamentul nu a putut fi citit.`}{' '}
           <button type="button" onClick={() => void ranking.refetch()} className="font-medium text-foreground underline underline-offset-4">
