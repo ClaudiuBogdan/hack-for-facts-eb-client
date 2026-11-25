@@ -23,6 +23,7 @@ const RULES: ReadonlyArray<readonly [path: RegExp, settings: DisplaySettings]> =
   [/^\/maps?(?:\/|$)/, BOTH],
   [/^\/charts(?:\/|$)/, BOTH],
   [/^\/entity-analytics(?:\/|$)/, BOTH],
+  [/^\/public-institutions(?:\/|$)/, BOTH],
   [/^\/budget-explorer(?:\/|$)/, BOTH],
   // Only the PNRR overview converts amounts; its subpages show source currencies.
   [/^\/pnrr\/?$/, CURRENCY_ONLY],

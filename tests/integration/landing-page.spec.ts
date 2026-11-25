@@ -55,7 +55,7 @@ test.describe('Landing Page', () => {
   test('displays the grouped index of surfaces', async ({ page }) => {
     const groups: ReadonlyArray<readonly [RegExp, readonly string[]]> = [
       [/banii publici|public money/i, ['/national-budget', '/procurement', '/pnrr']],
-      [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/public-enterprises', '/ngos']],
+      [/instituții și organizații|institutions and organi/i, ['/public-institutions', '/companies', '/public-enterprises', '/ngos']],
       [LAW, ['/legislation', '/justice', '/parlament', '/alegeri']],
       [/instrumente|tools/i, ['/map', '/charts', '/ins']],
     ]

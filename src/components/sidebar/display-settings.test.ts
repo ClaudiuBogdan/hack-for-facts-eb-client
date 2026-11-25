@@ -9,6 +9,7 @@ describe('displaySettingsFor', () => {
     '/maps/editor',
     '/charts/abc',
     '/entity-analytics',
+    '/public-institutions',
     '/budget-explorer',
   ])('offers currency and real prices on %s', (path) => {
     expect(displaySettingsFor(path)).toEqual({ currency: true, inflation: true })

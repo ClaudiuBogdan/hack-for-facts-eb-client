@@ -93,7 +93,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
       {
         title: msg`Instituții publice`,
         blurb: msg`Primării, ministere, școli și spitale, comparate după venituri și cheltuieli.`,
-        to: '/entity-analytics',
+        to: '/public-institutions',
         icon: ListOrdered,
       },
       {

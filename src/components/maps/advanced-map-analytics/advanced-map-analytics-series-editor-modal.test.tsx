@@ -258,7 +258,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
 
     expect(tableLinkProps?.target).toBe('_blank');
     expect(tableLinkProps?.rel).toBe('noopener noreferrer');
-    expect(tableLinkProps?.to).toBe('/entity-analytics');
+    expect(tableLinkProps?.to).toBe('/public-institutions');
 
     const tableSearch = tableLinkProps?.search as Record<string, unknown>;
     expect(tableSearch.view).toBe('table');

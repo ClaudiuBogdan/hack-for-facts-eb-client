@@ -71,7 +71,7 @@ describe('NavMain', () => {
     expect(screen.getByRole('link', { name: 'Acasă' })).toHaveAttribute('href', '/')
     const groups: ReadonlyArray<readonly [string, readonly string[]]> = [
       ['Banii publici', ['/national-budget', '/procurement', '/pnrr']],
-      ['Instituții și organizații', ['/entity-analytics', '/companies', '/public-enterprises', '/ngos']],
+      ['Instituții și organizații', ['/public-institutions', '/companies', '/public-enterprises', '/ngos']],
       ['Lege, justiție și alegeri', ['/legislation', '/justice', '/parlament', '/alegeri']],
       ['Statistici și instrumente', ['/map', '/charts', '/ins']],
     ]
