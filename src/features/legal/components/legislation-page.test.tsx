@@ -159,6 +159,10 @@ describe('LegislationPage, the legislation hub', () => {
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
     expect(bar).not.toHaveTextContent(/0\d/)
     expect(within(bar).getByRole('link', { name: 'Fel' })).toHaveAttribute('href', '#feluri')
+    // each section after its icon, as the national budget page's bar; the icon is decoration
+    const links = within(bar).getAllByRole('link')
+    expect(links).toHaveLength(6)
+    for (const link of links) expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
   })
 
   it('keeps the reading of the kind of act in the open, by its figures', async () => {

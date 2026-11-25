@@ -1530,3 +1530,216 @@ page on its view for the page's year. The list is the live component's
 (`StartLinks`, exported from `home-start.tsx`; the live `StartBand` renders
 it unchanged), under the working version's own heading, without the hub's
 section number.
+
+### 12.12 A gallery of chart elements; the 3% line and the interest trend (25 November 2026)
+
+**Owner:** compare the budgets with something other than bars and prototype each option. Prototype elements from a list of chart types
+(treemap, waterfall, heatmap, stacked area, Sankey, …). Develop the chart additions and the share card.
+
+**The gallery** (`?v=grafice`, `persoana.grafice.tsx`): each candidate is a section on the page's data and year. The owner picks what moves
+into the working version.
+
+- **The budgets** (`persoana.budgets.tsx`): one read of the year's budget columns (2019 on; not December 2023). For each budget: what it
+  spent, and where its money came from. That is its own revenue, „subvenții" from other budgets, EU funds, and its deficit as borrowed.
+  The four large budgets are named; the rest share a line.
+  - *Mosaic:* one block per budget, as wide as its spending, split by source. On a phone the blocks lie down.
+  - *100 lei:* 100 squares of all budgets' spending, coloured by budget. The note says the budgets add up to more than public spending.
+  - *Flow:* a Sankey from the four sources to the budgets. **Who paid whom is not printed**, so no payer is linked to a receiver; the
+    note names the payers (the state budget, 93,2 mld. lei in 2025).
+- **Waterfall:** this year's spending against last year's, by kind of spending, the largest rise first; „Restul" is the total's change
+  minus the named lines.
+- **Heatmap:** spending in each month alone since 2006 (the server's `PERIOD_DIFFERENCE`), coloured against the same year's average
+  month. December stands out in nearly every year.
+- **Make-up over time:** stacked areas, as shares or in lei. Years whose December bulletin lacks the lines (2008, 2011, 2013) are skipped
+  and named.
+- **Revenue treemap:** the bulletin's revenue tree, opened at the top past „venituri curente"; a tile with „›" opens, a breadcrumb goes
+  back.
+- **Share card:** the reader's share of public spending as a 1200 × 630 picture. The live one would be server-made, like the entity share
+  images.
+
+**In the working version:** the borrowing chart's % view has the EU's 3% reference line, with a note that the EU applies it to the ESA
+deficit, not the cash one. The interest figure has interest per resident for every full year since 2006 (117 lei in 2006, 2.652 lei in
+2025).
+
+**Not built, and why:**
+- *Execution against the law (bullet charts):* the laws in the data are as first published, not as amended, so a percentage would
+  mislead (§ data lanes).
+- *Choropleth:* local budgets by county belong with the map's data.
+- *Donut:* the 100-lei grid already shows parts of a whole.
+- *A new chart library (ECharts):* `recharts` and `d3-sankey` are already in the app. A new library is a shared dependency and a heavier
+  bundle, so it is the owner's call.
+- *Inflation toggle:* needs a CPI series.
+
+**Colour (owner, 25 November 2026: more colour, still clean, the flow above all).** The gallery's charts use the data-viz reference
+palette in its validated order (`persoana.palette.ts`), each hue with its dark-mode step: blue, orange, aqua, yellow, magenta, green.
+The validator was run for each set used, in light and dark. The four sources and the six-hue stack pass the adjacent-pair checks in both
+modes (CVD ΔE ≥ 8.4, normal vision ≥ 19.3). Aqua, yellow and magenta are under 3:1 on the light page, so marks carry labels.
+- *Sources (mosaic, flow):* own revenue blue, other budgets orange, EU funds aqua, borrowed yellow and hatched (a second cue). Each flow
+  band takes its source's colour; the budgets stay neutral.
+- *Budgets (100 lei):* state blue, local orange, pensions aqua, health yellow, the rest grey.
+- *Waterfall:* rises blue, falls red (the palette's opposite pair).
+- *Stack:* six hues, „Altele" grey. *Treemap:* a hue per top tile; an opened tile's lines in shades of its hue; labels white or near-black
+  by hue.
+- *Heatmap:* one blue scale, as an amount should be.
+
+### 12.13 The budgets section in the working version (25 November 2026)
+
+`BudgetsSection` (`persoana.budgets.tsx`), anchor `#bugete`, between the 100-lei columns and the state budget, with a bar link
+„Bugetele" (icon `Layers`).
+- **Owner:** keep the 100-lei squares, with no „100 lei" in the title. Put the flow in the same section behind a switch like
+  „Ponderi | mld. lei". Give the flow a better design and a tooltip on hover.
+- **Title:** „Prin ce bugete trec banii". The switch is „Ponderi" (the squares, the default) or „Fluxul banilor". The caption above the
+  chart names the view and the period.
+- **One colour, one budget:** the flow's bands take the colour of the budget they feed (state blue, local orange, pensions aqua, health
+  yellow, others grey), the same as the squares. The sources are neutral bars, ordered so the bands cross least (borrowed, EU funds, own
+  revenue, other budgets). Borrowed money is hatched. Labels give each node's amount and its share of all.
+- **Tooltips:** a card by the pointer that flips near the right edge.
+  - *A square:* the budget's lei of 100, its amount, per resident, and what it pays for.
+  - *A band:* the source's amount, its share of the budget's money, per resident.
+  - *A source:* its total and what it is.
+  - *A budget:* its spending and its sources' shares.
+  The hovered band, budget or source lights its bands and dims the rest. On a phone a tap shows the card; a tap on the empty chart
+  closes it.
+- **Phone:** the flow's labels sit inside the chart, beside their bar, with a background halo.
+- **Years:** the section needs the budget columns (2019 on; not December 2023); other years say so.
+
+**Lists, compact (owner, 25 November 2026: cleaner, no bars, more compact).** Every 100-lei list row (`persoana.rows.tsx`) has two lines:
+- the lei of 100, the line's name and its official amount;
+- one quiet line with the change, the amount per resident and what the line holds. It is cut at the line's end, whole on hover.
+
+The state budget's bars are gone; its rows have no colour square, since no chart there needs a key. The first section keeps its squares.
+On a phone the name wraps instead of being cut. A row is 57 px on desktop (it was about 130 with the bar and a two-line description).
+
+**Budgets on printed figures (25 November 2026, from the pre-integration review).** The first build mixed two bases: the flow showed each
+budget's sources summed (Pensii 158,2), the squares its spending (158,1). The payers note compared 157,8 received with 112,7 from one
+spending line. Now:
+- *Rows:* the four named budgets are printed columns. „Alte bugete" is the printed „total before transfers" minus those four, never a sum
+  of the small columns.
+- *Sources:* a budget's money from other budgets is its revenue „subvenții"; the bulletin's transfers column nets all of it (−157,8 in
+  2025). EU funds are its „sume primite de la UE" lines; borrowed is its deficit. Own revenue is the rest of its spending, so a budget in
+  surplus shows the surplus apart (pensions, 164,9 mil. lei in 2025). Every budget's sources add up to its spending. The four sources add
+  up to the printed 1.003,1.
+- *Notes:* they use the bulletin's own bridge. 185,1 mld. lei passed between budgets and are netted once in public spending (808,7),
+  157,8 of them as „subvenții". The budgets' deficits are 156,9 together; the consolidated deficit is 146,0 after the other budgets'
+  surpluses and financial operations. Who paid whom is not printed and is never drawn.
+
+## 13. Promoting the per-person working version to `/national-budget` (plan, 25 November 2026)
+
+**Owner's decisions:**
+- The working version replaces the live page's bands. No gallery chart joins it.
+- The law band goes; „Mai departe" links the law views.
+- Population and GDP ship as static tables, labelled with source and vintage. The API ask is filed in `docs/issues`.
+- The share card becomes the page's real preview image in this integration.
+- The prototypes stay (owner's standing rule; this overrides `prototyping.md`'s „git rm the prototype").
+
+**Before the port (done):** the budgets on printed columns (§12.13), the checkpoint commits, `origin/dev` merged.
+
+**The port, in order:**
+1. *Data.* The tables and the per-resident division move to the feature's `lib/` with source, vintage and unit tests. Shares and changes
+   use `exactPercent`/`exactChange`/`shareOf`/`restOf`; floats only to plot and for whole-lei apportionment. The new reads join
+   `useHomePrefetch`.
+2. *Year.* The live `an` search param, `useHomeYear`/`useShownYear`, the year notice and the noindex rule stay. The prototype's
+   `YearProvider` does not move.
+3. *Components.* Hero, pinned bar (icons, year beside the name), figures band, and the sections: 100 lei, budgets, state budget,
+   borrowing, year in progress, further. They go into `src/features/national-budget/home/components/`, built on the live shell. The
+   chart palette is checked against `DESIGN.md` first.
+4. *Language.* Every string through Lingui, resolved at render: whole sentences, plurals for leu/lei/de lei. Both catalogs are filled and
+   each English msgstr is checked against its msgid; root gets a note first.
+5. *Share image.* `/national-budget/share-image.png` per year and locale, on the PNRR handler's pattern, with `og:image`/`twitter:image`
+   in the route head. Its figure must equal the hero's.
+6. *Head and anchors.* The route's title and description are rewritten. Old anchors (`#cheltuieli`, `#venituri`, `#deficit`, `#domenii`,
+   `#ministere`, `#lege`) are checked for inbound links.
+7. *Tests.* Unit tests for the data lib. `national-budget-home.spec.ts` and the home unit tests are rewritten. The landing spec, the build
+   with `build:validate` and the cookie check, `?lang=en` and dark mode are all run.
+8. *Removal.* The live bands no longer used are deleted last, with what readers lose listed for the owner.
+9. *Gates.* Opus 5.5 xhigh plus Codex `gpt-6.1-sol` xhigh review, then one commit; the push waits for the owner's word and root's OK.
+
+### 13.1 Review round 1 (25 November 2026)
+
+Codex `gpt-6.2-sol` xhigh and Opus 5.5 xhigh read the port. What changed:
+- **The budgets' bridge names every printed step again (NB-001).** „Toate bugetele, înainte de transferuri" less the transfers and the
+  signed financial operations is the consolidated budget (2025: 1.003,1 − 185,1 − 9,3 = 808,7 mld. lei). The sentence is said only when
+  the printed steps add up to within a leu (the cells carry the spreadsheet's float noise: 0,00007 lei in 2025); otherwise no sum is said.
+- **„Fonduri UE" in the budgets section takes the four EU lines** under total revenue: payments for both financial frameworks, „alte sume
+  primite de la UE" and the PNRR grants. The state budget's 2025 EU money is 68,7 mld. lei, not 43,3; the PNRR grants (22,8) had been
+  counted as its own revenue. This amends §12.13.
+- **A budget whose sources don't add up to its spending is not drawn as flows**; the squares stay. A release missing one of the four named
+  budgets has no comparison (it would hide inside „Alte bugete").
+- **A total printed without its lines has no breakdown** (2008, 2011, 2013): the totals, and a sentence, never 100 lei of „Alte cheltuieli"
+  (§11.5, lost in the port; `hundredOf` is now tested).
+- **The share card's figure is on the page**: spending per resident under „A cheltuit", rounded as the card rounds it.
+- **One year rule for the page, the menus and the card**: a year without its 1 January population opens the default year, with a notice
+  (the menus don't offer it); the years the bulletins don't finish are listed in the menu but disabled, as the old page did.
+- **Reads:** the prefetch no longer starts the law's and the old budget columns' reads, nor the monthly totals no section reads, nor the GDP
+  denominator; it warms the newest bulletin's totals, which two sections read whatever the year. A failed prefetch fails quietly, and a section
+  whose read failed reads again when the reader picks another year.
+- **Smaller:** the year-in-progress headline takes the GDP share of the amount's month; a printed surplus is never drawn as a deficit; shares
+  are kept at four decimals and rounded once for display; „Alte instituții" is summed from its own rows; „pe locuitor" has the page's own
+  id („per resident"); „față de" reads „vs" in English.
+
+**Residuals, judged acceptable:** the share card's URL is cached an hour (and served stale a day) like the site's other cards, so after a new
+bulletin a shared `?an=` of the year in progress can show the previous month for up to a day; the 100-lei columns are drawn equal although
+2013's printed balance differs from revenue less spending by 0,1 mil. lei; the flows and the monthly chart are read by pointer (the lists and
+notes carry the figures); the old band anchors (`#cheltuieli`, `#deficit`, …) are gone, with no inbound link in the repo.
+
+### 13.2 The server keeps the API's answers (owner, 25 November 2026)
+
+Owner: the pages render on the server for search engines and agents, and must load fast. Astra (`gpt-6-astra` xhigh, read-only; run at the
+owner's explicit request in this session, 25 November 2026: „use astra to figure out how to cache the active period", an exception to the
+Sol-only rule for Codex runs; reviews stayed on `gpt-6.2-sol`) compared a
+server data cache, a committed snapshot, a shared HTML cache and browser persistence; a shared HTML cache conflicts with CACHE-001 (the render
+reads the reader's cookies), a snapshot makes every monthly bulletin a commit, browser persistence doesn't help a first visit.
+
+**What is built** (`analytics/api/shared-read.ts`): the web server keeps the national budget API's answers and ANAF's in memory, shared by every
+reader's render; the HTML is still rendered per request, `private, no-store`. A read bound to a bulletin snapshot is kept for a day (it never
+changes; a new bulletin brings a new snapshot, hence new keys, and the December bulletin moves the default year by itself). The catalog and ANAF
+are fresh (the catalog a minute, ANAF five), then served while a single read replaces them, up to a day. A failed read keeps nothing; a read that finds its snapshot
+moved drops the catalog. At most 300 answers (an observations page is some 100 kB). In the browser nothing changes: a picked year reads live.
+
+**Measured** (dev server, `curl`, full HTML): a year's first render 0,8–0,9 s, then 0,10–0,14 s.
+
+**Limits:** a restarted process starts empty; after an API outage the catalog and ANAF can be served up to a day old, without a sign on the
+page (the figures stay those of the snapshot the catalog names, so the page never mixes two bulletins). Astra's fuller design (a generation
+swapped whole, seven days' retention, a JSON endpoint for the browser, the copy's time in the data note) stays on file if these limits bite.
+
+### 13.3 Review round 2 (25 November 2026)
+
+Codex `gpt-6.2-sol` xhigh and Opus 5.5 xhigh read the fixes and the cache; the last round root allows. What changed:
+- **The cache:** a reader already gone starts no read (an unobserved failure would be an unhandled rejection); a read forgotten or replaced while it
+  ran writes nothing (a slow September catalog can't land over October's); the least recently used copies go first, never a read in flight; the key
+  is the whole GraphQL document and its variables; the catalog is fresh one minute (it names the snapshot the browser reads after it). Its server
+  path is tested.
+- **The budgets' comparison needs public spending printed**, like the four named budgets; „received as subsidies" is said only when printed.
+- **„Alte instituții" is one line of the hundred**: whole lei apportioned once over the fifteen named and it, not its small rows' lei added up.
+- **A failed section reads again on a new catalog** (a bulletin landed under it), not only on a new year.
+- The last three English comparisons say „vs"; the built check wants a PNG from both image requests.
+
+**Residuals, judged acceptable (rounding at exact half-units, rare paths):** a per-resident amount at an exact half leu, a GDP share at an exact
+half of its last digit, and the figures band's billions are rounded through floats; „the rest" under half a percent is left out before the hundred
+is apportioned (a line can gain a leu); an address asking for a year the page won't show prefetches that year's reads; ANAF's chapters and
+authorities can come from two refreshes for up to five minutes after a correction. The population table must get the new year's row before that
+year's December bulletin lands (NB-002), or the bare page opens a year without its figures per resident.
+
+
+### 13.4 The owner's independent reviewers (25 November 2026)
+
+Four read-only reviewers of the preview, forwarded by the owner; each finding checked against the code, the dev API and the sources:
+- **The cash deficit is not borrowing.** 146,03 mld. lei is the consolidated cash deficit (Ministry, 27 January 2026: „deficit cash de
+  146,03 mld lei, respectiv 7,65% din PIB"). The page called it borrowed in the head, the 100 lei and the borrowing section; it is
+  „Deficit bugetar (cash)" again there and on the share card. The budgets flow's 156,9 mld. lei sums the budgets' own balances before
+  consolidation: „Deficite înainte de consolidare".
+- **ANAF's chapter 55 is not interest alone.** 2025: 50,10 mld. lei, of which 48,84 interest (economic code 30) and 1,27 loan
+  repayments and fees (codes 81, 20), as the dev API's line items add up. The row takes the chapter's name, „Tranzacții privind datoria
+  publică și împrumuturi"; the bulletin's interest (50,5 mld. lei) stays „Dobânzi la datorie".
+- **The GDP notes said the bulletins don't print shares they do print.** May 2025 (3,39%) and December 2023 (5,68%) are missing from the
+  served series, not from the bulletins; the notes say so, and that each month's share is the one first published (the September 2026
+  bulletin restates September 2025 at 5,31%, the page shows 5,39%). The data asks are NB-009.
+- **The interest chart says why 2008, 2011 and 2013 are empty**: 2008's annual table is loaded for its totals only (a backfill candidate,
+  NB-009); the 2011 and 2013 December bulletins give the year as an estimate, kept out of the executed series.
+- **The headings say deficit too (owner's choice):** the section „Deficitul, an de an", the pinned bar's „Deficitul", the hero's „…și cât e
+  deficitul" and the page's description. The section's lede still says the deficit is covered by borrowing, repaid with interest.
+
+**Root's check before the push:** the two ANAF reads were kept in the server's copy under a key of year and month, which a year in progress at
+December shares with the full year while asking another period (months from January, or the year). Both reads are now keyed by the filter they
+send, in full (`anafReadKey`), and their query keys carry `partial`; a unit test pins it.
+

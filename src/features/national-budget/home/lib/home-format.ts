@@ -6,9 +6,9 @@
 import { t } from '@lingui/core/macro'
 
 import { lineLabel, moneyText } from '@/features/national-budget/analytics/lib/analytics-format'
-import { canonicalDecimal, exactPercent, isNegative, absDecimal } from '@/features/national-budget/analytics/lib/exact'
+import { exactPercent, isNegative, absDecimal } from '@/features/national-budget/analytics/lib/exact'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
-import { decimalSign, sumDecimals } from '@/lib/exact-decimal'
+import { sumDecimals } from '@/lib/exact-decimal'
 
 export { moneyText }
 
@@ -53,7 +53,8 @@ const CHAPTERS: Readonly<Record<string, () => string>> = {
   '51': () => t`Autorități publice și relații externe`,
   '53': () => t`Cercetare fundamentală`,
   '54': () => t`Alte servicii publice generale`,
-  '55': () => t`Datoria publică (dobânzi)`,
+  // The chapter's own name: it holds the interest and also fees and loan repayments (2025: 48,8 of 50,1 mld. lei are interest).
+  '55': () => t`Tranzacții privind datoria publică și împrumuturi`,
   '56': () => t`Transferuri către alte bugete`,
   '57': () => t`Asigurări și asistență socială (transferuri)`,
   '59': () => t`Alte cheltuieli`,
@@ -75,6 +76,31 @@ const CHAPTERS: Readonly<Record<string, () => string>> = {
   '85': () => t`Comunicații`,
   '86': () => t`Cercetare în economie`,
   '87': () => t`Turism și alte acțiuni economice`,
+}
+
+/** What a chapter holds, in a reader's words (from the subchapters the state budget pays most under). */
+const CHAPTER_HINTS: Readonly<Record<string, () => string>> = {
+  '51': () => t`Guvernul și ministerele, contribuția României la bugetul UE, cofinanțarea proiectelor europene`,
+  '54': () => t`alte servicii ale statului, garanții plătite din bugetul de stat`,
+  '55': () => t`mai ales dobânzi la datoria publică; și comisioane, rambursări de împrumuturi`,
+  '56': () => t`bani trimiși altor bugete, mai ales celui de pensii, ca să-și acopere plățile`,
+  '60': () => t`armata`,
+  '61': () => t`poliție, protecție civilă și pompieri, instanțe, penitenciare`,
+  '65': () => t`școli: salariile profesorilor, învățământul primar și gimnazial`,
+  '66': () => t`programe naționale de sănătate, spitalele ministerelor`,
+  '67': () => t`culte, sport, cultură`,
+  '68': () => t`pensii plătite din bugetul de stat, alocații, indemnizații, ajutor social`,
+  '70': () => t`locuințe, apă și canalizare, dezvoltarea localităților`,
+  '74': () => t`mediu, poluare, ape`,
+  '80': () => t`programe de dezvoltare regională și socială`,
+  '81': () => t`energie`,
+  '83': () => t`subvenții pentru agricultori, păduri`,
+  '84': () => t`drumuri și poduri, căi ferate`,
+}
+
+/** What a functional chapter holds, in a reader's words; null for a chapter without one. */
+export function chapterHint(code: string): string | null {
+  return CHAPTER_HINTS[code]?.() ?? null
 }
 
 export function chapterName(code: string): string {
@@ -176,46 +202,6 @@ export function restOf(total: string, parts: readonly (string | null)[]): string
   return sumDecimals([total, ...negated])
 }
 
-/**
- * The budgets band's sentence: what the budgets add up to, the transfers
- * between them, the financial operations, and the consolidated budget, all
- * printed columns. The financial operations are named whenever they are not
- * zero: without them, the transfers alone don't take the sum to the
- * consolidated budget. No sentence when a step is missing.
- */
-export function budgetsLede({
-  year,
-  side,
-  before,
-  transfers,
-  operations,
-  consolidated,
-}: {
-  readonly year: string
-  readonly side: 'EXPENDITURE' | 'REVENUE'
-  readonly before: string | null
-  readonly transfers: string | null
-  readonly operations: string | null
-  readonly consolidated: string | null
-}): string | null {
-  if (!before || !transfers || !operations || !consolidated) return null
-  const sign = decimalSign(canonicalDecimal(operations))
-  if (sign === null) return null
-  const all = moneyText(before)
-  const moved = moneyText(absDecimal(transfers))
-  const ops = moneyText(absDecimal(operations))
-  const total = moneyText(consolidated)
-  if (side === 'EXPENDITURE') {
-    if (sign === 0) return t`În ${year}, bugetele publice au cheltuit împreună ${all}. Dar ${moved} au fost bani dați de un buget altuia, care i-a cheltuit apoi el: socotiți o singură dată, cheltuielile statului au fost ${total}.`
-    return sign < 0
-      ? t`În ${year}, bugetele publice au cheltuit împreună ${all}. Dar ${moved} au fost bani dați de un buget altuia, care i-a cheltuit apoi el. Socotiți o singură dată și fără cele ${ops} de operațiuni financiare, cheltuielile statului au fost ${total}.`
-      : t`În ${year}, bugetele publice au cheltuit împreună ${all}. Dar ${moved} au fost bani dați de un buget altuia, care i-a cheltuit apoi el. Socotiți o singură dată și adăugând cele ${ops} de operațiuni financiare, cheltuielile statului au fost ${total}.`
-  }
-  if (sign === 0) return t`În ${year}, bugetele publice au încasat împreună ${all}. Dar ${moved} au venit de la alt buget: socotite o singură dată, veniturile statului au fost ${total}.`
-  return sign < 0
-    ? t`În ${year}, bugetele publice au încasat împreună ${all}. Dar ${moved} au venit de la alt buget. Socotite o singură dată și fără cele ${ops} de operațiuni financiare, veniturile statului au fost ${total}.`
-    : t`În ${year}, bugetele publice au încasat împreună ${all}. Dar ${moved} au venit de la alt buget. Socotite o singură dată și adăugând cele ${ops} de operațiuni financiare, veniturile statului au fost ${total}.`
-}
 
 /** „ian.", „feb." … for a month axis. */
 export function monthShort(month: number): string {

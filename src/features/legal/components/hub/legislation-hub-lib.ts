@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { CalendarDays, FilePenLine, Landmark, Network, Newspaper, Shapes, type LucideIcon } from 'lucide-react'
 import type { HomeSection } from '@/features/procurement/lib/home-links'
 import type { LegalAnalyticsActRow, LegalAnalyticsArgs, LegalAnalyticsLinks, LegalAnalyticsSeries } from '@/schemas/legal-analytics'
 import { DEFAULT_QUESTION, searchOfQuestion, type Question } from '../../lib/analytics-question'
@@ -153,17 +154,21 @@ export const LEADER_ROW_CLASS = 'group grid grid-cols-[1.5rem_minmax(0,1fr)_auto
 /** The link under the acts card to the rest, in the analysis: the hubs' „more" link. */
 export const LEADERS_MORE_CLASS = 'mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline'
 
+/** A section of the page in the pinned bar: its anchor, its short name and its icon. */
+export type LegalHubSection = HomeSection & { readonly icon: LucideIcon }
+
 /**
- * The page's sections, in order: the pinned bar's links, each a short name of its data (owner, 25 November
- * 2026: no numbers, names as the companies hub's), short enough that all fit at 390px. The anchors are kept.
+ * The page's sections, in order: the pinned bar's links, each a short name of its data and an icon (owner,
+ * 25 November 2026: no numbers, names as the companies hub's; icons as the national budget page's bar). The
+ * anchors are kept.
  */
-export function legalHubSections(): readonly HomeSection[] {
+export function legalHubSections(): readonly LegalHubSection[] {
   return [
-    { id: 'schimbari', label: t`Modificări` },
-    { id: 'feluri', label: t`Fel` },
-    { id: 'emitenti', label: t`Emitenți` },
-    { id: 'ani', label: t`Ani` },
-    { id: 'legaturi', label: t`Legături` },
-    { id: 'monitor', label: t`Monitorul Oficial` },
+    { id: 'schimbari', label: t`Modificări`, icon: FilePenLine },
+    { id: 'feluri', label: t`Fel`, icon: Shapes },
+    { id: 'emitenti', label: t`Emitenți`, icon: Landmark },
+    { id: 'ani', label: t`Ani`, icon: CalendarDays },
+    { id: 'legaturi', label: t`Legături`, icon: Network },
+    { id: 'monitor', label: t`Monitorul Oficial`, icon: Newspaper },
   ]
 }
