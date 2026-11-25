@@ -3,22 +3,22 @@ import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ArrowLeft, Check, Copy } from 'lucide-react'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
 import { HubInfoNote } from '../hub/hub-info-note'
 import { ANALYSIS_LEGAL_FORMS } from '../../lib/company-analytics-url'
+import { mainShownAsCurrent } from '../../lib/company-main-activity-model'
 import { caenEdition, type CompanyProfileModel, type StatusKind } from '../../lib/company-profile-model'
 import { companySentenceFacts, headActivity, headActivityDetail, nameLength, statusNotice, statusText } from '../../lib/company-profile-text'
 import { companyFactSearch } from '../../lib/hub-analysis-links'
-import { CompanyBalanceTrend } from './company-balance-trend'
 
 /**
  * The profile's head: where the company sits in the directory, its name, what
- * it is in a sentence, its status and identifiers — and beside them, when it
- * filed statements, its last five years on one chart. The head is about the
- * company only; its place in the economy comes near the end of the page.
+ * it is in a sentence, its status and identifiers. No chart (owner, 25
+ * November 2026, „Fără grafic"): the business band draws every year, the
+ * figures under the head the newest. The head is about the company only; its
+ * place in the economy comes near the end of the page.
  */
 
 const HEADING: Record<ReturnType<typeof nameLength>, string> = {
@@ -28,31 +28,26 @@ const HEADING: Record<ReturnType<typeof nameLength>, string> = {
 }
 
 export function CompanyProfileHead({ model }: { readonly model: CompanyProfileModel }) {
-  // The trend plots admitted values only: with none, there is nothing to draw.
-  const { recent } = model
-  const trend = model.latest !== null && [...recent.turnover, ...recent.net.map((point) => point.value), ...recent.employees].some((value) => value !== null)
   return (
     <section className="relative border-b" aria-labelledby="company-profile-title">
       <TwoLayerLattice idPrefix="company-profile" />
-      <RuledFrame className="py-10 sm:py-12 lg:py-14">
+      <RuledFrame className="py-10 sm:py-12 lg:py-12">
         <CornerTicks />
-        <div className={cn('grid grid-cols-1 items-center gap-10', trend && 'lg:grid-cols-12 lg:gap-8')}>
-          <div className={cn('min-w-0', trend && 'lg:col-span-7')}>
-            <CompanyKicker model={model} />
-            <h1
-              id="company-profile-title"
-              className={cn('mt-4 font-extrabold leading-[0.95] tracking-tighter text-foreground', HEADING[nameLength(model.displayName)])}
-            >
-              {model.displayName}
-            </h1>
-            <CompanySentence model={model} className="mt-4 max-w-[60ch] text-base leading-relaxed text-muted-foreground sm:text-lg" />
-            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <StatusChips model={model} explained />
-              <IdentifierLine model={model} />
-            </div>
-            <StatusNotice model={model} registryCaveats={false} className="mt-4 max-w-[60ch]" />
+        <div className="min-w-0 max-w-4xl">
+          <CompanyKicker model={model} />
+          {/* The landing's headline set. */}
+          <h1
+            id="company-profile-title"
+            className={cn('mt-4 font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [word-spacing:0.06em]', HEADING[nameLength(model.displayName)])}
+          >
+            {model.displayName}
+          </h1>
+          <CompanySentence model={model} className="mt-4 max-w-[64ch] text-base leading-relaxed text-muted-foreground sm:text-lg" />
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <StatusChips model={model} explained />
+            <IdentifierLine model={model} />
           </div>
-          {trend ? <CompanyBalanceTrend model={model} className="min-w-0 lg:col-span-5 lg:border-l lg:pl-8" /> : null}
+          <StatusNotice model={model} registryCaveats={false} className="mt-4 max-w-[60ch]" />
         </div>
         {/* The crux on the head's bottom rule, where the section nav begins; above the nav, which would cover its top half. */}
         <span className="absolute inset-x-0 top-full z-30 mt-px">
@@ -179,8 +174,28 @@ export function CompanySentence({ model, className }: { readonly model: CompanyP
   )
 }
 
-/** The head's activity sentence (`headActivity`), after the company's; nothing when the selection selects nothing for another reason. */
+/**
+ * The head's activity sentence, after the company's, the same activity „Ce
+ * face firma" leads with (owner, 25 November 2026, „Same as the band"): ANAF's
+ * presumed main activity where it is current with an exact key, said as
+ * presumed and leading to its band; otherwise the derived selection
+ * (`headActivity`); nothing when the selection selects nothing for another
+ * reason. A withdrawal of ANAF's source reaches here through the page's model
+ * (`withAnafWithdrawnSeen`), so the head drops the name with the band.
+ */
 function ActivitySentence({ model }: { readonly model: CompanyProfileModel }) {
+  const view = model.assumedMain
+  if (view.kind === 'assigned' && mainShownAsCurrent(view.activity) && view.activity.resolved) {
+    const presumed = view.activity.resolved.label
+    return (
+      <>
+        {' '}
+        <Trans>
+          Activitate principală (presupusă după ANAF): <Fact link={{ hash: 'activitati', hint: t`ce face firma, mai jos` }}>{presumed}</Fact>.
+        </Trans>
+      </>
+    )
+  }
   const activity = headActivity(model)
   if (!activity) return null
   if (activity.kind === 'fiscal') {
@@ -235,11 +250,11 @@ export function CompanyKicker({ model, className }: { readonly model: CompanyPro
     const edition = caenEdition(division.revision)
     return t`Diviziunea CAEN ${code}, ${edition}: ${name}`
   })()
-  // Every text box trimmed to its capitals, so centring puts the arrow on the capitals' middle in any font.
+  // The way back in plain text, not mono capitals (the hub's rule, owner 25 November 2026).
   return (
-    <MonoLabel className={cn('flex flex-wrap items-center gap-2 text-muted-foreground **:[text-box:trim-both_cap_alphabetic]', className)}>
+    <nav aria-label={t`Unde se află firma`} className={cn('flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground', className)}>
       <Link to="/companies" className="group inline-flex items-center gap-1.5 hover:text-foreground">
-        <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
+        <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
         <span>
           <Trans>Firme</Trans>
         </span>
@@ -260,13 +275,12 @@ export function CompanyKicker({ model, className }: { readonly model: CompanyPro
       {division ? (
         <>
           <span aria-hidden="true">/</span>
-          {/* Cut along the line only: the kicker trims each box to its capitals, which a vertical clip would cut into. */}
-          <span className="min-w-0 max-w-full overflow-x-clip text-ellipsis whitespace-nowrap sm:max-w-[48ch]" title={divisionTitle}>
+          <span className="min-w-0 max-w-full truncate sm:max-w-[48ch]" title={divisionTitle}>
             {division.name}
           </span>
         </>
       ) : null}
-    </MonoLabel>
+    </nav>
   )
 }
 

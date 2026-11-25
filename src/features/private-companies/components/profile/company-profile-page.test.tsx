@@ -24,6 +24,7 @@ import {
 import { monthText } from '../../lib/company-profile-format'
 import { notAssessed } from '../../lib/financial-qualification'
 import { ACTIVITY_SELECTIONS } from '../../mocks/fixtures/activity-selection'
+import { MAIN_ACTIVITIES, assignedRead } from '../../mocks/fixtures/main-activity'
 import { admittedQualification } from '../../mocks/fixtures/qualification'
 import { mockRegistryEvidence } from '../../mocks/fixtures/registry'
 import { CompanyProfilePage } from './company-profile-page'
@@ -199,6 +200,11 @@ function sectionLinks() {
     .map((link) => link.getAttribute('href'))
 }
 
+/** The activity list's counts and naming notes sit behind its ⓘ (owner, 25 November 2026): open it, read in the popover. */
+function openListNote() {
+  fireEvent.click(within(document.getElementById('activitati') as HTMLElement).getByRole('button', { name: 'Despre lista activităților' }))
+}
+
 describe('CompanyProfilePage', () => {
   beforeEach(() => {
     seap.cutoff = SEAP_CUTOFF
@@ -215,8 +221,8 @@ describe('CompanyProfilePage', () => {
     expect(html).toContain('data-count-value="21.7"')
     expect(html).toContain('Pierdere netă, 2025')
     expect(html).toContain('data-count-value="517.9"')
-    // The head's chart says every value to assistive technology.
-    expect(html).toContain('<caption>Cifra de afaceri, rezultatul net și salariații, 2021–2025</caption>')
+    // No chart in the head (owner, 25 November 2026, „Fără grafic"): the business band draws the years.
+    expect(html).not.toContain('<caption>Cifra de afaceri, rezultatul net și salariații, 2021–2025</caption>')
     // The money band names its instruments: an award is not money received.
     expect(html).toContain('Contracte, achiziții și PNRR')
     expect(html).not.toContain('Ce a primit de la stat')
@@ -224,14 +230,15 @@ describe('CompanyProfilePage', () => {
     expect(html).toContain('Datele din registru')
   })
 
-  it('numbers the bands it has, computes no economy shares, and leaves out litigation it cannot read', async () => {
+  it('links the bands it has, unnumbered, computes no economy shares, and leaves out litigation it cannot read', async () => {
     render(page(builder()))
     await registryPinned()
-    expect(sectionLinks()).toEqual(['#afacerea', '#bani-publici', '#activitati', '#an-cu-an', '#registru'])
-    // The number is decoration — the band's heading repeats it — so a link is named by its band alone.
+    // The owner's order (25 November 2026): the chart, what the company does, its statements, public money, the registry.
+    expect(sectionLinks()).toEqual(['#afacerea', '#activitati', '#an-cu-an', '#bani-publici', '#registru'])
+    // No running numbers (owner, 25 November 2026): each link and each band is named by its band alone.
     const bar = within(screen.getByRole('navigation', { name: 'Secțiunile paginii' }))
     for (const name of ['Afacerea', 'Bani publici', 'Activități', 'An cu an', 'Registru']) expect(bar.getByRole('link', { name })).toBeInTheDocument()
-    expect(screen.getByText('05 / Registru')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/0\d \/ (Afacerea|Registru)/u)
     expect(screen.queryByText('Cât cântărește în economie')).toBeNull()
   })
 
@@ -239,7 +246,7 @@ describe('CompanyProfilePage', () => {
     litigation.current = { cui: '123', caseCount: 3, courtLevels: [{ courtLevel: 'tribunal', count: 3 }], years: [{ year: 2025, count: 3 }], coverage: 1, caveats: [] }
     render(page(builder()))
     await registryPinned()
-    expect(sectionLinks()).toEqual(['#afacerea', '#bani-publici', '#activitati', '#litigii', '#an-cu-an', '#registru'])
+    expect(sectionLinks()).toEqual(['#afacerea', '#activitati', '#an-cu-an', '#bani-publici', '#litigii', '#registru'])
     const band = document.getElementById('litigii') as HTMLElement
     expect(within(band).getByText('litigation summary 3')).toBeInTheDocument()
     expect(within(band).getByText(/^litigation cases /)).toBeInTheDocument()
@@ -348,16 +355,17 @@ describe('CompanyProfilePage', () => {
     expect(refetch).toHaveBeenCalledTimes(1)
   })
 
-  it('writes the chart’s measure to the URL, and „Toate" as no measure at all', async () => {
-    render(page(builder(), { masura: 'profit' }))
+  // Owner, 25 November 2026 („Două panouri"): money and people at once, each on its own panel — no measure switch.
+  it('draws money and people at once, with no measure switch, and reads a year from the keyboard', async () => {
+    render(page(builder()))
     await registryPinned()
-    const toggle = screen.getByRole('radiogroup', { name: 'Graficul arată' })
-    expect(within(toggle).getByRole('radio', { name: 'Rezultat net' })).toHaveAttribute('aria-checked', 'true')
-    fireEvent.click(within(toggle).getByRole('radio', { name: 'Salariați' }))
-    expect(navigated({ masura: 'profit' })).toEqual({ masura: 'salariati' })
-    fireEvent.click(within(toggle).getByRole('radio', { name: 'Toate' }))
-    expect(navigated({ masura: 'salariati' })).toEqual({ masura: undefined })
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    expect(band.queryByRole('radiogroup', { name: 'Graficul arată' })).toBeNull()
+    expect(band.queryByText(/^Bilanț, \d{4}$/u)).toBeNull()
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    expect(within(band.getByTestId('company-years-reading')).getByText('Salariați')).toBeInTheDocument()
   })
+
 
   it('says in a line what a company with no statement and no public money does not have', async () => {
     render(page(companyProfile({ cui: '47387800', legalName: 'A & B IDEATICA S.R.L.' })))
@@ -425,6 +433,28 @@ describe('CompanyProfilePage — the head', () => {
     await registryPinned()
     expect(sentence()).toHaveTextContent(/^Persoană fizică autorizată din Gherla, Cluj/u)
     expect(within(sentence()).queryByRole('link', { name: /^Persoană fizică autorizată/u })).toBeNull()
+  })
+
+  // Owner, 25 November 2026 („Same as the band"): the head names the activity „Ce face firma" leads with.
+  it('names the presumed main activity as presumed where ANAF gives a current one, leading to its band, before the selection', async () => {
+    render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.onrcSingleClass, mainActivity: assignedRead(MAIN_ACTIVITIES.lidlLatestRevision) })))
+    await registryPinned()
+    // The link's hint („ce face firma, mai jos") is spoken after the name, for assistive technology.
+    expect(sentence()).toHaveTextContent(/Activitate principală \(presupusă după ANAF\): Comerț cu amănuntul nespecializat, predominant alimentar \(MOCK\) \(ce face firma, mai jos\)\./u)
+    expect(sentence().textContent).not.toMatch(/Activitatea selectată/u)
+    expect(within(sentence()).getByRole('link', { name: /^Comerț cu amănuntul nespecializat/u })).toHaveAttribute('href', '#activitati')
+  })
+
+  it('falls back to the selection where the presumed main activity is not current, in the head and the band alike', async () => {
+    render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.onrcSingleClass, mainActivity: assignedRead(MAIN_ACTIVITIES.pendingRefresh) })))
+    await registryPinned()
+    expect(sentence().textContent).not.toMatch(/presupusă după ANAF/u)
+    expect(sentence()).toHaveTextContent(/Activitatea selectată: /u)
+    // The band leads with the same activity: the selection first, the pending presumed one after it.
+    const band = document.getElementById('activitati') as HTMLElement
+    const selection = within(band).getByTestId('company-activity-selection')
+    expect(selection.compareDocumentPosition(within(band).getByTestId('company-main-activity')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(within(band).queryByTestId('company-activity-grouping')).toBeNull()
   })
 
   it('names a selected ONRC class by its exact label, code and revision, and opens its exact filter with the revision', async () => {
@@ -639,7 +669,8 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     const rows = within(document.getElementById(unqualified.getAttribute('aria-controls') ?? '') as HTMLElement)
     expect(rows.getByText('5600')).toBeInTheDocument()
     expect(rows.getByText('cod scurt în sursă — clasă/grupă ambiguă')).toBeInTheDocument()
-    expect(activities.getByText(/O înscriere neclasificată/u)).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText(/O înscriere neclasificată/u)).toBeInTheDocument()
   })
 
   it('never heads short source codes with the division their padded digits name (the six-row short-token company)', async () => {
@@ -677,7 +708,8 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     expect(panel.getAllByText('cod scurt în sursă — clasă/grupă ambiguă')).toHaveLength(3)
     expect(panel.getByText('cod fără denumire în nomenclatorul CAEN')).toBeInTheDocument()
     // Every row counted, the classes' nomenclature kept.
-    expect(activities.getByText('6 activități autorizate în registrul comerțului (CAEN Rev.2).')).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText('6 activități autorizate în registrul comerțului (CAEN Rev.2).')).toBeInTheDocument()
   })
 
   it('never infers a class for an older API row without class state: Rev.1 0201 gets no division 02 and no forestry name', async () => {
@@ -735,7 +767,8 @@ describe('CompanyProfilePage — every registry revision (CD-23)', () => {
     const panel = document.getElementById(button.getAttribute('aria-controls') ?? '') as HTMLElement
     expect(within(panel).getByText('Cultivarea cerealelor')).toBeInTheDocument()
     expect(within(panel).getByText('Cultivarea legumelor')).toBeInTheDocument()
-    expect(activities().getByText('2 activități autorizate în registrul comerțului (CAEN Rev.0).')).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText('2 activități autorizate în registrul comerțului (CAEN Rev.0).')).toBeInTheDocument()
   })
 
   it('opens the same digits in Rev.3 and Rev.1 apart, names no row without a revision, and keeps ANAF’s code its own', async () => {
@@ -758,8 +791,9 @@ describe('CompanyProfilePage — every registry revision (CD-23)', () => {
     await registryPinned()
     // Each revision under its own name, every one of them on the page.
     for (const name of ['CAEN Rev.3', 'CAEN Rev.2', 'CAEN Rev.1', 'CAEN Rev.0', 'Fără revizie CAEN']) expect(activities().getByText(name)).toBeInTheDocument()
-    expect(activities().getByText('CAEN Rev.3: 2 · CAEN Rev.2: 1 · CAEN Rev.1: 1 · CAEN Rev.0: 1 · Fără revizie CAEN: 1')).toBeInTheDocument()
-    expect(activities().getByText(/^6 înscrieri de activități în registrul comerțului, pe revizii CAEN;/)).toBeInTheDocument()
+    openListNote()
+    expect(screen.getByText('CAEN Rev.3: 2 · CAEN Rev.2: 1 · CAEN Rev.1: 1 · CAEN Rev.0: 1 · Fără revizie CAEN: 1')).toBeInTheDocument()
+    expect(screen.getByText(/^6 înscrieri de activități în registrul comerțului, pe revizii CAEN;/)).toBeInTheDocument()
     // No single nomenclature for rows that use several.
     expect(activities().queryByText(/autorizate în registrul comerțului \(CAEN/)).toBeNull()
 
@@ -1009,7 +1043,7 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     }
   })
 
-  it('names the bottom line by what it holds: a held result’s profit is „Profit net", in the head chart and the business band', async () => {
+  it('names the bottom line by what it holds: a held result’s profit is „Profit net", in the figures and the business band', async () => {
     // OMV's shape: the 464d layout's profits, admitted, their results held for want of a loss.
     const fourSixFour = (year: number, profit: string): RawCompanyFinancialYear => ({
       year,
@@ -1020,16 +1054,20 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
       employees: '6701',
       qualification: rawQualification({ turnover: 'REPORTED', employees: 'REPORTED', net_profit: 'REPORTED', net_result: 'HELD_PROFILE' }),
     })
-    render(page(mapped([fourSixFour(2025, '3067559914'), fourSixFour(2024, '4143914310')]), { masura: 'profit' }))
+    render(page(mapped([fourSixFour(2025, '3067559914'), fourSixFour(2024, '4143914310')])))
     await registryPinned()
     // The figure, its change between two admitted profits.
     expect(screen.getByText('Profit net, 2025')).toBeInTheDocument()
     expect(screen.getByText('-26,0% față de 2024')).toBeInTheDocument()
-    // The chart's measure and the head chart's legend say profit, never the result.
-    const toggle = screen.getByRole('radiogroup', { name: 'Graficul arată' })
-    expect(within(toggle).getByRole('radio', { name: 'Profit net' })).toHaveAttribute('aria-checked', 'true')
-    expect(within(toggle).queryByRole('radio', { name: 'Rezultat net' })).toBeNull()
-    expect(screen.getByRole('table', { name: /^Cifra de afaceri, profitul net și salariații, 2024–2025$/u })).toBeInTheDocument()
+    // The chart's year reads profit, never the result.
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    const reading = within(band.getByTestId('company-years-reading'))
+    expect(reading.getByText('Profit net')).toBeInTheDocument()
+    expect(reading.queryByText('Rezultat net')).toBeNull()
+    // The table behind the chart says profit too, in its name and its column.
+    const table = screen.getByRole('table', { name: 'Cifra de afaceri, profitul net și salariații' })
+    expect(within(table).getByRole('columnheader', { name: /profit net/iu })).toBeInTheDocument()
   })
 
   it('leaves a held result’s zero profit a gap and says why — never a break-even', async () => {
@@ -1044,13 +1082,14 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
       qualification: rawQualification({ turnover: 'REPORTED', employees: 'REPORTED', net_profit: 'REPORTED', net_result: 'HELD_PROFILE' }),
     })
     const profile = mapped([zero(2025), zero(2024)])
-    render(page(profile, { masura: 'profit' }))
+    render(page(profile))
     await registryPinned()
     for (const label of ['Profit net, 2025', 'Rezultat net, 2025', 'Pierdere netă, 2025']) expect(screen.queryByText(label)).toBeNull()
     expect(buildCompanyProfileModel(profile).series.net.every((point) => point.value === null)).toBe(true)
-    // The year's reading (the chart's spoken value) says why it is empty.
-    const chart = within(document.getElementById('afacerea') as HTMLElement).getByRole('slider')
-    expect(chart).toHaveAttribute('aria-valuetext', '2025, Profit net zero și nicio pierdere disponibilă aici: rezultatul net nu se știe')
+    // The year's reading says why the bottom line is empty.
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    expect(band.getByTestId('company-years-reading')).toHaveTextContent('Profit net zero și nicio pierdere disponibilă aici: rezultatul net nu se știe')
   })
 
   it('says a held result’s own reason when a loss WAS typed — never „no typed loss"', async () => {
@@ -1064,11 +1103,13 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
       employees: '3',
       qualification: rawQualification({ turnover: 'REPORTED', employees: 'REPORTED', net_profit: 'REPORTED', net_loss: 'REPORTED', net_result: 'HELD_QUALITY' }),
     }
-    render(page(mapped([lossTyped]), { masura: 'profit' }))
+    render(page(mapped([lossTyped])))
     await registryPinned()
-    const chart = within(document.getElementById('afacerea') as HTMLElement).getByRole('slider')
-    expect(chart).toHaveAttribute('aria-valuetext', '2025, Reținut pentru un semnal de calitate')
-    expect(chart.getAttribute('aria-valuetext')).not.toMatch(/nicio pierdere/u)
+    const band = within(document.getElementById('afacerea') as HTMLElement)
+    fireEvent.keyDown(band.getByRole('group', { name: /^Anii:/u }), { key: 'End' })
+    const reading = band.getByTestId('company-years-reading')
+    expect(reading).toHaveTextContent('Reținut pentru un semnal de calitate')
+    expect(reading.textContent).not.toMatch(/nicio pierdere/u)
   })
 
   it('names the statements on another basis instead of plotting them under the newest policy (D1-C03)', async () => {
@@ -1110,20 +1151,14 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
   }
   const longForm = () => screen.queryByRole('region', { name: 'Bilanțuri doar în format lung' })
 
-  it('lists the long-format-only years under the statements: year, publisher, class as recorded and the recorded file — no value', async () => {
+  // Owner, 25 November 2026: the page shows nothing it cannot read — the statements held only in long format are
+  // not listed (they were years, classes and files, never values). The years they cover stay a gap, never a zero.
+  it('lists no long-format-only statement, and draws no column, figure or point for their years', async () => {
     render(page(mapped([ANAF_2024], LONG_FORM)))
     await registryPinned()
     const band = within(document.getElementById('an-cu-an') as HTMLElement)
-    const list = within(band.getByRole('region', { name: 'Bilanțuri doar în format lung' }))
-    expect(list.getByText(/^Bilanțurile pe 2012–2013 sunt înregistrate sub acest CUI doar în format lung/u)).toHaveTextContent('Nu sunt ani fără bilanț.')
-    expect(list.getByText('2013 · MF · clasa ir')).toBeInTheDocument()
-    expect(list.getByText('2012 · MF · clasa ir')).toBeInTheDocument()
-    // The recorded anchor file, exactly; none when none was recorded. The class is never read as a reporting basis.
-    expect(list.getByRole('link', { name: 'Fișierul bilanțului pe 2013, pe data.gov.ro' })).toHaveAttribute('href', OMV_2013_URL)
-    expect(list.queryByRole('link', { name: /2012/u })).toBeNull()
-    expect(list.getByText('Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere.')).toBeInTheDocument()
-    expect(document.body.textContent).not.toMatch(/IFRS|rândul|mfp:13dec119/u)
-    // No column, figure or point for those years: the matrix keeps only the typed statement.
+    expect(longForm()).toBeNull()
+    expect(document.body.textContent).not.toMatch(/format lung|data\.gov\.ro|IFRS|rândul|mfp:13dec119/u)
     expect(band.queryByRole('button', { name: /^Bilanțul pe 201[23]/u })).toBeNull()
     expect(buildCompanyProfileModel(mapped([ANAF_2024], LONG_FORM)).span).toEqual([2024])
   })
@@ -1204,16 +1239,17 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     expect(document.body.innerHTML).not.toContain('javascript:')
   })
 
-  it('discloses a long-format-only CUI where its figures would be, with no years band', async () => {
+  // Owner, 25 November 2026: nothing the page cannot read is listed. A CUI whose statements are all in long format
+  // says what the data here lacks — values, never a claim that it filed nothing — and lists no file.
+  it('says a long-format-only CUI has no values here, with no years band and no list of files', async () => {
     render(page(mapped([], [{ ...LONG_FORM[0]!, resourceUrl: 'javascript:alert(1)' }])))
     await registryPinned()
     expect(document.getElementById('an-cu-an')).toBeNull()
     const business = within(document.getElementById('afacerea') as HTMLElement)
     expect(business.getByText(/Nicio valoare din bilanțuri în datele de aici/u)).toBeInTheDocument()
-    const list = within(business.getByRole('region', { name: 'Bilanțuri doar în format lung' }))
-    expect(list.getByText(/^Bilanțul pe 2013 e înregistrat sub acest CUI doar în format lung/u)).toHaveTextContent('Nu e un an fără bilanț.')
-    // Only a web address is a link.
-    expect(list.queryByRole('link')).toBeNull()
+    expect(longForm()).toBeNull()
+    expect(business.queryByRole('link')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/Niciun bilanț publicat/u)
   })
 
   it('says nothing about long-format statements when the API cannot say, nor when it knows none', async () => {

@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import type { CompanyRegistryEvidence } from '@/schemas/private-company-registry'
 import { statusCodeText } from '../../lib/company-registry-text'
@@ -18,9 +17,9 @@ export function CompanyRegistryEvidenceList({ evidence, className }: { readonly 
   if (evidence.cuiState !== 'in_edition' || identifiers.length === 0) return null
   return (
     <section className={cn('text-sm', className)} aria-labelledby="company-registry-evidence-title" data-testid="company-registry-evidence">
-      <MonoLabel id="company-registry-evidence-title" className="block text-muted-foreground">
+      <span id="company-registry-evidence-title" className="block text-xs text-muted-foreground">
         <Trans>Identificatorii din ediția ONRC</Trans>
-      </MonoLabel>
+      </span>
       {identifiers.length > 1 ? (
         <p className="mt-2 text-muted-foreground">
           <Trans>CUI-ul apare sub mai mulți identificatori de înregistrare; fiecare e listat cu stările lui, niciunul nu e ales.</Trans>

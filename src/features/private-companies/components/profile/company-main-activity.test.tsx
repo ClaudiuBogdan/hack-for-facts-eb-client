@@ -111,6 +111,17 @@ function rowMarks(): { readonly main: string[]; readonly sameCode: string[]; rea
   return marks
 }
 
+/** How the presumption was derived — the match, the dates, the evidence — sits behind the block's ⓘ (owner, 25 November 2026): open it. */
+function openDerivation() {
+  fireEvent.click(within(block()).getByRole('button', { name: 'Cum a fost presupusă' }))
+}
+
+/** A part of the derivation, the marker opened first when it is closed. */
+function derived(testId: 'company-main-activity-basis' | 'company-main-activity-dates') {
+  if (!screen.queryByTestId(testId)) openDerivation()
+  return screen.getByTestId(testId)
+}
+
 describe('the main activity block', () => {
   it('Lidl-like: the ONRC counterpart with its frozen label and edition, the latest-revision note; badge on Rev.3 only, „same code" on Rev.2', () => {
     renderBand(
@@ -121,13 +132,14 @@ describe('the main activity block', () => {
         anaf('4711'),
       ]),
     )
-    expect(within(block()).getByText('Activitate principală (presupusă după ANAF)')).toBeInTheDocument()
+    // What the block is opens its description (owner, 25 November 2026), not a label over it.
+    expect(within(block()).getByText(/^Activitate principală \(presupusă după ANAF\)\. /u)).toBeInTheDocument()
     expect(screen.getByTestId('company-main-activity-headline').textContent).toMatch(
       /^Corespondent ONRC: Rev\.3 4711 — Comerț cu amănuntul nespecializat, predominant alimentar \(MOCK\) \(ediția ONRC din .+2026\)$/u,
     )
-    expect(screen.getByTestId('company-main-activity-basis').textContent).toContain('cea mai recentă revizie potrivită; candidați: Rev.3 4711, Rev.2 4711')
+    expect(derived('company-main-activity-basis').textContent).toContain('cea mai recentă revizie potrivită; candidați: Rev.3 4711, Rev.2 4711')
     // ANAF's requested status date and ONRC's edition date, each its own.
-    expect(screen.getByTestId('company-main-activity-dates').textContent).toMatch(/ANAF: situația cerută la .+ · ediția ONRC din .+/u)
+    expect(derived('company-main-activity-dates').textContent).toMatch(/ANAF: situația cerută la .+ · ediția ONRC din .+/u)
     expect(block().textContent).not.toMatch(/declarat[ăa]? (la|de) ONRC/iu)
     const marks = rowMarks()
     expect(marks.rows).toHaveLength(3)
@@ -137,23 +149,36 @@ describe('the main activity block', () => {
     expect(marks.sameCode[0]).toContain('același cod ca ANAF')
   })
 
-  it('stays above the derived selection, which keeps its own title and wording', () => {
-    renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.lidlLatestRevision), [onrc('4711', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })]))
-    const selection = screen.getByTestId('company-activity-selection')
-    expect(block().compareDocumentPosition(selection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(within(selection).getByText(/^Activitate selectată \(derivată\)/u)).toBeInTheDocument()
+  // Owner, 25 November 2026 („Only the presumed main"): the presumed main activity is the band's one answer; the
+  // derived selection is no second block beside it, and is said in one line only where it differs.
+  it('leads alone: the derived selection is no second block, and is said in one line only where it differs', () => {
+    const { unmount } = renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.lidlLatestRevision), [onrc('4711', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })]))
+    expect(block()).toBeInTheDocument()
+    expect(screen.queryByTestId('company-activity-selection')).toBeNull()
+    // The fixture's selection (an ONRC single class) is not the presumed Rev.3 4711: said once, as the analysis's grouping.
+    const grouping = screen.queryByTestId('company-activity-grouping')
+    const selection = ACTIVITY_SELECTIONS.onrcSingleClass
+    if (selection.code === '4711' && selection.revision === 'rev3') expect(grouping).toBeNull()
+    else expect(grouping?.textContent).toMatch(/^În analiza bilanțurilor e grupată la: /u)
+    unmount()
+    // No presumed activity: the selection is the answer again.
+    renderBand(profileWith(NO_ASSIGNMENT_READ, [onrc('4711', 'rev3')]))
+    expect(screen.getByTestId('company-activity-selection')).toBeInTheDocument()
   })
 
   it('OMV-like: the leading-zero basis is said with ANAF’s own token', () => {
     renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.omvLeadingZero), [onrc('0610', 'rev2', { isMainCaen: true, matchesAssumedMainCode: true })]))
     expect(screen.getByTestId('company-main-activity-headline').textContent).toMatch(/^Corespondent ONRC: Rev\.2 0610 — Extracția petrolului brut \(MOCK\)/u)
-    expect(screen.getByTestId('company-main-activity-basis').textContent).toContain('cod ANAF „610” potrivit cu ONRC 0610 (zerouri la început)')
+    expect(derived('company-main-activity-basis').textContent).toContain('cod ANAF „610” potrivit cu ONRC 0610 (zerouri la început)')
   })
 
   it('NO_ONRC_MATCH: ANAF’s code with an unknown revision and no label; no row is marked', () => {
     renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.marketingNoMatch), [onrc('7311', 'rev2', { isMainCaen: false, matchesAssumedMainCode: false })]))
     expect(screen.getByTestId('company-main-activity-headline').textContent).toBe('Cod ANAF 4730 · revizie necunoscută')
     expect(block().textContent).not.toContain('Corespondent ONRC')
+    // No counterpart: the description says nothing of a match with the edition.
+    expect(block().textContent).not.toContain('potrivit cu activitățile din ediția ONRC')
+    expect(block().textContent).toContain('Activitate principală (presupusă după ANAF), din codul CAEN din datele fiscale ANAF.')
     expect(rowMarks()).toMatchObject({ main: [], sameCode: [], rows: [expect.stringContaining('7311')] })
   })
 
@@ -179,14 +204,14 @@ describe('the main activity block', () => {
 
   it('CORRECTED: the reviewed correction by its id, nothing more (no reviewer or reason is served)', () => {
     renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.corrected), [onrc('5221', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })]))
-    expect(screen.getByTestId('company-main-activity-basis').textContent).toContain('corecție revizuită (nr. 3)')
+    expect(derived('company-main-activity-basis').textContent).toContain('corecție revizuită (nr. 3)')
   })
 
   it('PENDING_REFRESH: the last assignment with its dates and „actualizare în curs"; no badge', () => {
     renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.pendingRefresh), [onrc('4711', 'rev3', { isMainCaen: null, matchesAssumedMainCode: null })]))
     expect(screen.getByTestId('company-main-activity-pending').textContent).toBe('actualizare în curs')
     expect(screen.getByTestId('company-main-activity-headline').textContent).toMatch(/^Corespondent ONRC: Rev\.3 4711/u)
-    expect(screen.getByTestId('company-main-activity-dates').textContent).toMatch(/ANAF: situația cerută la/u)
+    expect(derived('company-main-activity-dates').textContent).toMatch(/ANAF: situația cerută la/u)
     expect(rowMarks()).toMatchObject({ main: [], sameCode: [] })
   })
 
@@ -202,7 +227,7 @@ describe('the main activity block', () => {
     renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.onrcUnavailable), []))
     expect(screen.getByTestId('company-main-activity-headline').textContent).toBe('Cod ANAF 4711 · fără corespondent ONRC')
     expect(block().textContent).not.toContain('Corespondent ONRC')
-    expect(screen.getByTestId('company-main-activity-dates').textContent).not.toContain('ediția ONRC')
+    expect(derived('company-main-activity-dates').textContent).not.toContain('ediția ONRC')
   })
 
   it('NO_ASSIGNMENT: a short neutral note; UNAVAILABLE and an older API: nothing at all', () => {
@@ -265,7 +290,7 @@ describe('the main block never writes a token that is no public digit form', () 
     const omv = MAIN_ACTIVITIES.omvLeadingZero
     for (const token of ['610', '0610', '000610']) {
       const view = renderBand(profileWith(assignedRead({ ...omv, anaf: mainAnafFixture({ ...omv.anaf, originalToken: token }) }), [onrc('0610', 'rev2', { isMainCaen: true, matchesAssumedMainCode: true })]))
-      expect(screen.getByTestId('company-main-activity-basis').textContent).toContain(`cod ANAF „${token}” potrivit cu ONRC 0610`)
+      expect(derived('company-main-activity-basis').textContent).toContain(`cod ANAF „${token}” potrivit cu ONRC 0610`)
       view.unmount()
     }
     for (const token of ['9999', '0000']) {
@@ -303,7 +328,7 @@ describe('what is shown as the current main activity', () => {
     expect(text).not.toContain('4711')
     expect(text).not.toContain('Comerț')
     // The fiscal source's own date may stay: an honest reference to the old source.
-    expect(screen.getByTestId('company-main-activity-dates').textContent).toContain('ANAF: situația cerută la')
+    expect(derived('company-main-activity-dates').textContent).toContain('ANAF: situația cerută la')
     expect(rowMarks()).toMatchObject({ main: [], sameCode: [] })
     await new Promise((resolve) => setTimeout(resolve, 20))
     expect(screen.queryByTestId('company-main-activity-analysis')).toBeNull()

@@ -79,9 +79,18 @@ export function mainKickerText(): string {
   return t`Activitate principală (presupusă după ANAF)`
 }
 
-/** What the block is, under every assignment. */
-export function mainAssumptionText(): string {
-  return t`O presupunere: codul CAEN din datele fiscale ANAF, potrivit cu activitățile din ediția ONRC. Nu e o informație publicată de ONRC.`
+/**
+ * What the block is and what it rests on, in one description under its lead
+ * (owner, 25 November 2026): the label in its brackets says „presupusă", so
+ * the sentence does not open on „O presupunere" again.
+ */
+export function mainDescriptionText(): string {
+  return t`Activitate principală (presupusă după ANAF). Codul CAEN din datele fiscale ANAF, potrivit cu activitățile din ediția ONRC. Nu e o informație publicată de ONRC.`
+}
+
+/** The same, where ANAF's code has no ONRC counterpart: nothing said of a match. */
+export function mainDescriptionUnmatchedText(): string {
+  return t`Activitate principală (presupusă după ANAF), din codul CAEN din datele fiscale ANAF. Nu e o informație publicată de ONRC.`
 }
 
 function editionText(activity: CompanyMainActivity): string {
