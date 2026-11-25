@@ -153,6 +153,7 @@ import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cu
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
 import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
 import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
+import { Route as ProcurementContractAwardsIdRouteImport } from './routes/procurement/contract-awards/$id'
 import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
 import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/procurement/direct-acquisitions/$id'
 import { Route as ProcurementInstitutionsCuiRouteImport } from './routes/procurement/institutions/$cui'
@@ -1118,6 +1119,16 @@ const ProcurementCategoriesCodeRoute =
   } as any).lazy(() =>
     import('./routes/procurement/categories/$code.lazy').then((d) => d.Route),
   )
+const ProcurementContractAwardsIdRoute =
+  ProcurementContractAwardsIdRouteImport.update({
+    id: '/contract-awards/$id',
+    path: '/contract-awards/$id',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/contract-awards/$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const ProcurementContractsIdRoute = ProcurementContractsIdRouteImport.update({
   id: '/contracts/$id',
   path: '/contracts/$id',
@@ -1658,6 +1669,7 @@ export interface FileRoutesByFullPath {
   '/pnrr/proiecte/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contract-awards/$id': typeof ProcurementContractAwardsIdRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
@@ -1837,6 +1849,7 @@ export interface FileRoutesByTo {
   '/pnrr/proiecte/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contract-awards/$id': typeof ProcurementContractAwardsIdRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
@@ -2032,6 +2045,7 @@ export interface FileRoutesById {
   '/pnrr_/proiecte_/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contract-awards/$id': typeof ProcurementContractAwardsIdRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
@@ -2229,6 +2243,7 @@ export interface FileRouteTypes {
     | '/pnrr/proiecte/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
+    | '/procurement/contract-awards/$id'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/institutions/$cui'
@@ -2408,6 +2423,7 @@ export interface FileRouteTypes {
     | '/pnrr/proiecte/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
+    | '/procurement/contract-awards/$id'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/institutions/$cui'
@@ -2602,6 +2618,7 @@ export interface FileRouteTypes {
     | '/pnrr_/proiecte_/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
+    | '/procurement/contract-awards/$id'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/institutions/$cui'
@@ -3810,6 +3827,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProcurementCategoriesCodeRouteImport
       parentRoute: typeof ProcurementRouteRoute
     }
+    '/procurement/contract-awards/$id': {
+      id: '/procurement/contract-awards/$id'
+      path: '/contract-awards/$id'
+      fullPath: '/procurement/contract-awards/$id'
+      preLoaderRoute: typeof ProcurementContractAwardsIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
     '/procurement/contracts/$id': {
       id: '/procurement/contracts/$id'
       path: '/contracts/$id'
@@ -4257,6 +4281,7 @@ interface ProcurementRouteRouteChildren {
   ProcurementSearchRoute: typeof ProcurementSearchRoute
   ProcurementIndexRoute: typeof ProcurementIndexRoute
   ProcurementCategoriesCodeRoute: typeof ProcurementCategoriesCodeRoute
+  ProcurementContractAwardsIdRoute: typeof ProcurementContractAwardsIdRoute
   ProcurementContractsIdRoute: typeof ProcurementContractsIdRoute
   ProcurementDirectAcquisitionsIdRoute: typeof ProcurementDirectAcquisitionsIdRoute
   ProcurementInstitutionsCuiRoute: typeof ProcurementInstitutionsCuiRoute
@@ -4269,6 +4294,7 @@ const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
   ProcurementSearchRoute: ProcurementSearchRoute,
   ProcurementIndexRoute: ProcurementIndexRoute,
   ProcurementCategoriesCodeRoute: ProcurementCategoriesCodeRoute,
+  ProcurementContractAwardsIdRoute: ProcurementContractAwardsIdRoute,
   ProcurementContractsIdRoute: ProcurementContractsIdRoute,
   ProcurementDirectAcquisitionsIdRoute: ProcurementDirectAcquisitionsIdRoute,
   ProcurementInstitutionsCuiRoute: ProcurementInstitutionsCuiRoute,
@@ -4701,3 +4727,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

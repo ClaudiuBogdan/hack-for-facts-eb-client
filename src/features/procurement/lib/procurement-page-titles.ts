@@ -54,6 +54,16 @@ export function buildContractDocumentTitle(i18n: I18n, options: { readonly id: s
   return authority ? `${title} — ${authority} — ${suffix(i18n)}` : `${title} — ${suffix(i18n)}`
 }
 
+/**
+ * A contract award (PROC-KB0Z step 1) is named by what was awarded and, for an
+ * authority, who awarded it; a person buyer's masked name never goes in a title.
+ */
+export function buildContractAwardDocumentTitle(i18n: I18n, options: { readonly title?: string | null; readonly authorityName?: string | null }): string {
+  const title = options.title?.trim() || i18n._(msg`Contract atribuit`)
+  const authority = options.authorityName?.trim()
+  return authority ? `${title} — ${authority} — ${suffix(i18n)}` : `${title} — ${suffix(i18n)}`
+}
+
 export function buildInstitutionDocumentTitle(i18n: I18n, options: { readonly cui: string; readonly authorityName?: string | null }): string {
   const name = options.authorityName?.trim()
   const cui = options.cui

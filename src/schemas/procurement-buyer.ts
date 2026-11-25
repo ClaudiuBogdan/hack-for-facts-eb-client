@@ -18,18 +18,31 @@ export const PROCUREMENT_BUYER_GRAINS = ['directe', 'contracte'] as const
 
 export type ProcurementBuyerGrain = (typeof PROCUREMENT_BUYER_GRAINS)[number]
 
+/** The contract awards' order (PROC-KB0Z step 1): newest first by default, oldest first, largest first. */
+export const PROCUREMENT_BUYER_AWARD_ORDERS = ['noi', 'vechi', 'valoare'] as const
+
+export type ProcurementBuyerAwardOrder = (typeof PROCUREMENT_BUYER_AWARD_ORDERS)[number]
+
+/** The furthest page a list may reach: the API lists to row 10,000, twenty a page. */
+export const PROCUREMENT_BUYER_AWARD_MAX_PAGE = 500
+
 export interface ProcurementBuyerSearch {
   readonly year?: number
   /** „Ce cumpără". */
   readonly ce?: ProcurementBuyerGrain
   /** „Cele mai mari". */
   readonly mari?: ProcurementBuyerGrain
+  /** „Contractele atribuite": their order, and the page shown. */
+  readonly ordine?: ProcurementBuyerAwardOrder
+  readonly pagina?: number
 }
 
 const schema = z.object({
   year: z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
   ce: z.enum(PROCUREMENT_BUYER_GRAINS).optional().catch(undefined),
   mari: z.enum(PROCUREMENT_BUYER_GRAINS).optional().catch(undefined),
+  ordine: z.enum(PROCUREMENT_BUYER_AWARD_ORDERS).optional().catch(undefined),
+  pagina: z.coerce.number().int().min(1).max(PROCUREMENT_BUYER_AWARD_MAX_PAGE).optional().catch(undefined),
 })
 
 export function parseProcurementBuyerSearch(raw: Record<string, unknown>): ProcurementBuyerSearch {
@@ -38,5 +51,8 @@ export function parseProcurementBuyerSearch(raw: Record<string, unknown>): Procu
     ...(parsed.year !== undefined ? { year: parsed.year } : {}),
     ...(parsed.ce ? { ce: parsed.ce } : {}),
     ...(parsed.mari ? { mari: parsed.mari } : {}),
+    // The defaults stay out of the URL: newest first, the first page.
+    ...(parsed.ordine && parsed.ordine !== 'noi' ? { ordine: parsed.ordine } : {}),
+    ...(parsed.pagina !== undefined && parsed.pagina > 1 ? { pagina: parsed.pagina } : {}),
   }
 }
