@@ -369,21 +369,17 @@ function Head({
               <span>{t`Analize avansate`}</span>
             </span>
           </MonoLabel>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-xs text-muted-foreground sm:inline">{fresh}</span>
-            <span className="flex items-center gap-2">
-              <MonoLabel className="sr-only text-muted-foreground sm:not-sr-only">{execution ? t`Perioada` : t`Legea`}</MonoLabel>
-              {execution ? (
-                <PeriodMenu key={`${asked.label}-${asked.basis}`} catalog={catalog} tip={state.tip as 'cheltuieli' | 'venituri' | 'sold'} period={asked} budget={state.buget} onChange={onChange} />
-              ) : (
-                <LawYearMenu years={lawYears} value={lawYear} label={lawText(lawYear)} onChange={(an) => onChange({ an, rand: null })} />
-              )}
-            </span>
-          </div>
+          <span className="hidden text-xs text-muted-foreground sm:inline">{fresh}</span>
         </div>
         <p className="mt-2 text-right text-xs text-muted-foreground sm:hidden">{fresh}</p>
         <Headline state={state} catalog={catalog} period={execution ? period : null} edition={edition} lawYear={lawYear} onChange={onChange} onFilters={onFilters} />
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1">
+        {/* The period (or the law's year) opens the row under the question, as on the other analysis pages. */}
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
+          {execution ? (
+            <PeriodMenu key={`${asked.label}-${asked.basis}`} catalog={catalog} tip={state.tip as 'cheltuieli' | 'venituri' | 'sold'} period={asked} budget={state.buget} onChange={onChange} />
+          ) : (
+            <LawYearMenu years={lawYears} value={lawYear} label={String(lawYear)} onChange={(an) => onChange({ an, rand: null })} />
+          )}
           <FiltersButton state={state} onClick={onFilters} className={LINK} />
           <QuestionsMenu onPick={onChange} className={LINK} />
           <ShareIcon className={cn(LINK, 'size-11 justify-center sm:size-auto')} />
