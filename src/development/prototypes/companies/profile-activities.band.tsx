@@ -15,6 +15,7 @@ import { CaenDescription } from '@/features/private-companies/components/caen-de
 import { CompanyMainActivity } from '@/features/private-companies/components/profile/company-main-activity'
 import { HubInfoNote } from '@/features/private-companies/components/hub/hub-info-note'
 import { BAND_GRID_CLASS, ProfileBand, ROW_LINK_CLASS } from '@/features/private-companies/components/profile/company-profile-band'
+import { DesignMainActivity } from './profile-main-activity.design'
 
 const TITLE_ID = 'company-activities-title'
 
@@ -459,11 +460,14 @@ export function DesignActivitiesBand({
   model: served,
   onCompanyGone,
   strip = true,
+  designedMain = false,
 }: {
   readonly model: CompanyProfileModel
   readonly onCompanyGone?: () => void
   /** The strip of every domain over the ranked list. */
   readonly strip?: boolean
+  /** ANAF's presumed main activity in its redesigned drawing, in the open (`DesignMainActivity`); else today's, folded. */
+  readonly designedMain?: boolean
 }) {
   const [anafWithdrawnUnder, setAnafWithdrawnUnder] = useState<string | null>(null)
   const [refusedAnswer, setRefusedAnswer] = useState<PrivateCompanyProfile | null>(null)
@@ -491,10 +495,14 @@ export function DesignActivitiesBand({
             <MainActivity model={model} />
           )}
           {/* Mounted whether shown or not: it reads on load. Hidden when it would draw nothing. */}
-          <div className={cn('mt-8 border-t border-border/70 pt-4', !anafShown && 'hidden')}>
-            <Fold label={<Trans>Activitatea principală presupusă după ANAF</Trans>}>
-              <CompanyMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} />
-            </Fold>
+          <div className={cn('mt-8 border-t border-border/70 pt-5', !anafShown && 'hidden')}>
+            {designedMain ? (
+              <DesignMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} />
+            ) : (
+              <Fold label={<Trans>Activitatea principală presupusă după ANAF</Trans>}>
+                <CompanyMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} />
+              </Fold>
+            )}
           </div>
         </div>
         {model.activities.total > 0 ? (

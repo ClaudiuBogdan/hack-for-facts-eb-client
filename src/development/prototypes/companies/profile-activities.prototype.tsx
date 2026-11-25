@@ -39,6 +39,10 @@ function ActivitiesDesign() {
   return <Frame>{(model) => <DesignActivitiesBand model={model} />}</Frame>
 }
 
+function ActivitiesDesignPrincipal() {
+  return <Frame>{(model) => <DesignActivitiesBand model={model} designedMain />}</Frame>
+}
+
 function ActivitiesDesignLista() {
   return <Frame>{(model) => <DesignActivitiesBand model={model} strip={false} />}</Frame>
 }
@@ -63,11 +67,16 @@ export const prototype = {
       component: ActivitiesDesign,
       note: 'The answer left (the selection as the lead, ANAF’s presumed activity folded under it); right, the registry’s spread: a sentence, one strip of every domain, the ranked domains with inline bars.',
     },
+    'design-principal': {
+      title: 'Design + activitatea principală nouă',
+      component: ActivitiesDesignPrincipal,
+      note: 'As „Design", with ANAF’s presumed main activity redrawn and in the open: its name, ANAF’s code → the ONRC activity, how they were matched, the assumption in a line, dates behind ⓘ.',
+    },
     'design-lista': {
       title: 'Design: fără bandă',
       component: ActivitiesDesignLista,
       note: 'As „Design", without the strip: the sentence and the ranked domains with inline bars.',
     },
   },
-  compare: ['azi', 'design'],
+  compare: ['design', 'design-principal'],
 } satisfies PrototypeDefinition
