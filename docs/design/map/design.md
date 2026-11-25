@@ -129,10 +129,20 @@ Nitro route cache (turned off separately), and the label lag below.
   needs the room). The landing's picker is squared from `/map`'s own frame;
   the landing is untouched.
 - **The table sits in the site footer's frame** (`RuledFrame`: centred,
-  `max-w-6xl`, its side rules), so its edges line up with the footer's content;
-  square like the bar, its numbers on one line, its headers free to wrap. Tried
-  on the way (owner): full width (the figures sat too far from their names),
-  then a narrower `max-w-4xl` on the bar's left edge, then centred.
+  `max-w-6xl`, its side rules): the search box and the pager keep to the
+  frame's padding, the rows run the section's full width from rule to rule,
+  their text on the same edges; square like the bar, numbers on one line,
+  headers free to wrap. Tried on the way (owner): full width (the figures sat
+  too far from their names), then a narrower `max-w-4xl` on the bar's left
+  edge, then centred.
+- **A „#" column gives each row's place** in the sort shown, among all the
+  rows, so a search keeps each place (Cluj-Napoca keeps its rank); a row
+  without the sorted figure shows „—". Its numbers start on the search box's
+  left edge; the column is fixed to a five-figure place. Hidden on a phone.
+- **Loading shows placeholder rows** shaped like the real ones (a name over
+  its county, the figures, narrower on a phone), with a hidden status line
+  for assistive tech, until both the figures and the level's shapes are in;
+  „nothing matches" only after they are.
 - **The pager is one quiet line under the table**, as on
   `/public-institutions`: „1–50 din 3.186" on the left, „Pagina 1 din 64" and
   two square arrows on the right (44 px under a finger, 32 px under a mouse);

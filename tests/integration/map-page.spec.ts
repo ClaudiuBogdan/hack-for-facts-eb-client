@@ -108,6 +108,8 @@ test.describe('Map page', () => {
     const row = page.getByRole('row').filter({ has: page.getByRole('link', { name: 'Cluj-Napoca' }) })
     await expect(row).toBeVisible({ timeout: 20000 })
     await expect(row.getByRole('link', { name: 'Cluj-Napoca' })).toHaveAttribute('href', '/entities/4305857')
+    // Its place among all the primării by income, kept through the search: the fixture's largest.
+    await expect(row.getByRole('cell').first()).toHaveText('1')
     await expect(row).toContainText(/10\smil\. lei/)
     await expect(row).toContainText(/−2\smil\. lei/)
     await expect(row).toContainText('−20%')
