@@ -1,0 +1,32 @@
+import type { PrototypeDefinition } from '@/development/harness/entry'
+import { LandingHub } from './landing.hub'
+import { DedicatedPageExample } from './landing.page'
+import { LandingHubSimple } from './landing.simple'
+
+/**
+ * The legislation landing without tabs, for the owner's review (asked for on 25 November 2026): a hub in the
+ * companies hub's composition, with a summary of each dedicated page and a link to it, and one example of the
+ * slim head a dedicated page carries once the tab bar is gone. Live data from the dev API through the
+ * feature's hooks: no fixture, and nothing from the analytics prototype's fixture or map.
+ */
+export const prototype = {
+  title: 'Legislație — pagina de pornire fără file (prototip, 25 noiembrie)',
+  variants: {
+    hub: {
+      title: 'Pornire (/legislation)',
+      component: LandingHub,
+      note: 'Search and the leading acts in the head, the pinned bar, four figures, six numbered bands (changes, Felul, issuers, years, links, Monitorul Oficial), six places to start, the reading note and the sources. Live API.',
+    },
+    simplu: {
+      title: 'Pornire, runda 2: antet curățat',
+      component: LandingHubSimple,
+      note: 'Owner, 25 November: less in the head. Home link at the top (not in the pinned bar), the hubs\' search with one row of shortcuts, the five leading acts in the companies hub\'s leaders card, the four figures in their own band under the bar; type as on the site landing. Bands and foot as in round 1. Approved and promoted to /legislation the same day. Live API.',
+    },
+    pagina: {
+      title: 'Antetul unei pagini dedicate (exemplu: Analiză)',
+      component: DedicatedPageExample,
+      note: 'Breadcrumb, title, one pinned row of the sibling pages; no hero, no tab bar. Placeholder body.',
+    },
+  },
+  compare: ['hub'],
+} satisfies PrototypeDefinition

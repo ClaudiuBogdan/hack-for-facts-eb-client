@@ -6,7 +6,7 @@
       "parameters": "https://transparenta.eu/ai/entities-parameters.json"
     },
     {
-      "path": "/entity-analytics",
+      "path": "/public-institutions",
       "purpose": "Cross-entity analytics (filter by years, categories, geography).",
       "parameters": "https://transparenta.eu/ai/entities-analytics-parameters.json"
     },

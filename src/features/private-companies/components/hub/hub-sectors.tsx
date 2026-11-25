@@ -1,11 +1,13 @@
-import type { ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
 import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { STEP_BG } from '@/features/statistics/lib/county-map'
 import { cn } from '@/lib/utils'
 import { activitySourceTag, unclassifiedActivityLabel } from '../../lib/company-activity-text'
-import { formatHubShare, formatHubValue, type HubUnit } from '../../lib/hub-format'
+import { formatHubShare, formatHubValue, formatHubValueText, type HubUnit } from '../../lib/hub-format'
 import type { HubActivityRanking, HubActivityRow, HubSizeClass } from '../../lib/hub-snapshot-types'
 import type { CompanyAnalysisActivityBasis } from '@/schemas/company-analytics'
 
@@ -18,6 +20,9 @@ const MEASURE_UNIT: Record<ActivityMeasure, HubUnit> = {
 }
 
 const ROW_CLASS = 'grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5'
+
+/** The ranked rows a phone shows before the reader asks for the rest: the list is a screen and a half there. */
+const PHONE_ROWS = 5
 
 /**
  * The analysis's derived activity selection ranked by one measure, the first
@@ -50,6 +55,10 @@ export function HubActivities({
   readonly className?: string
 }) {
   const unit = MEASURE_UNIT[measure]
+  // Every row is in the server's HTML; on a phone the ones past the first five wait behind a button.
+  const [allShown, setAllShown] = useState(false)
+  const listRef = useRef<HTMLOListElement>(null)
+  const folded = allShown ? 0 : Math.max(ranking.rows.length - PHONE_ROWS, 0)
   const max = Math.max(...ranking.rows.map((row) => row.value), 1)
   const figure = (value: number | null) => {
     if (value === null) return <span className="text-muted-foreground">—</span>
@@ -65,7 +74,7 @@ export function HubActivities({
   const rest = [
     {
       key: 'other',
-      label: plural(groups, { one: 'O altă activitate selectată', few: 'Alte # activități selectate', other: 'Alte # de activități selectate' }),
+      label: plural(groups, { one: 'O altă activitate', few: 'Alte # activități', other: 'Alte # de activități' }),
       value: ranking.other.value,
     },
     ...ranking.unclassified.map((entry) => ({
@@ -76,23 +85,31 @@ export function HubActivities({
   ]
   return (
     <div className={className} data-testid="company-hub-activities">
-      <ol className="divide-y divide-border/70 border-y border-border/70">
+      {/* Two columns from a wide screen, read down the first and then the second: ten rows in the height of
+          five. Each row carries its own bottom rule, so both columns close on one. */}
+      <ol
+        ref={listRef}
+        className="border-t border-border/70 lg:grid lg:grid-flow-col lg:grid-cols-2 lg:gap-x-12"
+        style={{ gridTemplateRows: `repeat(${Math.ceil(ranking.rows.length / 2)}, auto)` }}
+      >
         {ranking.rows.map((row, index) => {
           const { code } = row
           const label = row.label ?? t`Codul CAEN ${code}`
           const tag = `${code} · ${activitySourceTag(row) ?? ''}`
           return (
-            <li key={row.key}>
-              <Link to="/companies/analytics" search={rowLink(row)} className={cn(ROW_CLASS, 'transition-colors hover:bg-muted/40')}>
+            <li key={row.key} className={cn('border-b border-border/70', folded > 0 && index >= PHONE_ROWS && 'max-sm:hidden')}>
+              <Link to="/companies/analytics" search={rowLink(row)} className={cn(ROW_CLASS, 'h-full transition-colors hover:bg-muted/40')}>
                 <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
                 <span className="min-w-0">
                   <span className="flex items-baseline justify-between gap-3">
-                    <span className="text-sm text-foreground sm:truncate" title={label}>
+                    {/* The whole name on a phone; two lines from `sm`, where two columns share the width, the rest on a pointer. */}
+                    <span className="text-sm leading-snug text-foreground sm:line-clamp-2" title={label}>
                       {label}
                     </span>
-                    <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{formatHubShare(row.value, ranking.total)}</MonoLabel>
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{formatHubShare(row.value, ranking.total)}</span>
                   </span>
-                  <MonoLabel className="mt-0.5 block truncate text-muted-foreground">{tag}</MonoLabel>
+                  {/* The code and its source: quiet, in the page's sans, its own casing („ONRC Rev.3"). */}
+                  <span className="mt-0.5 block truncate text-xs tabular-nums text-muted-foreground">{tag}</span>
                   <span className="mt-1.5 block h-1.5 bg-muted/70" aria-hidden="true">
                     <span className="block h-full bg-primary/70" style={{ width: `${Math.max(0.6, (row.value / max) * 100).toFixed(1)}%` }} />
                   </span>
@@ -103,23 +120,44 @@ export function HubActivities({
           )
         })}
       </ol>
-      {/* Never ranked, always counted: the rest of the groups, and the companies the selection names no activity for. */}
-      <ul className="divide-y divide-border/70 border-b border-border/70" data-testid="company-hub-activities-rest">
-        {rest.map((entry) => (
-          <li key={entry.key} className={ROW_CLASS}>
-            <span aria-hidden="true" />
-            <span className="flex min-w-0 items-baseline justify-between gap-3">
-              <span className="text-sm text-muted-foreground">{entry.label}</span>
-              <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{entry.value === null ? '—' : formatHubShare(entry.value, ranking.total)}</MonoLabel>
-            </span>
-            <span className="w-24 text-right text-sm tabular-nums text-muted-foreground sm:w-28">{figure(entry.value)}</span>
-          </li>
-        ))}
-      </ul>
-      <Link to="/companies/analytics" search={analysis} className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9">
-        <Trans>Toate activitățile selectate, în analiza bilanțurilor</Trans> →
-      </Link>
-      <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground">{caption}</MonoLabel>
+      {folded > 0 ? (
+        <button
+          type="button"
+          // The button leaves with the fold: the focus goes on to the first row it opened, so Tab continues from there.
+          onClick={() => {
+            flushSync(() => setAllShown(true))
+            listRef.current?.querySelectorAll('a')[PHONE_ROWS]?.focus()
+          }}
+          className="flex min-h-11 w-full items-center gap-3 border-b border-border/70 text-sm font-medium text-foreground transition-colors hover:bg-muted/50 sm:hidden"
+        >
+          <span className="h-px flex-1 border-t border-dashed border-border" aria-hidden="true" />
+          {plural(folded, { one: 'Încă o activitate', few: 'Încă # activități', other: 'Încă # de activități' })}
+          <span className="h-px flex-1 border-t border-dashed border-border" aria-hidden="true" />
+        </button>
+      ) : null}
+      {/* Never ranked, always counted: the rest of the groups, and the companies the selection names no activity
+          for. Beside them from a wide screen, where the list leads and what its shares are of. */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
+        <ul className="divide-y divide-border/70 border-b border-border/70" data-testid="company-hub-activities-rest">
+          {rest.map((entry) => (
+            <li key={entry.key} className={ROW_CLASS}>
+              <span aria-hidden="true" />
+              <span className="flex min-w-0 items-baseline justify-between gap-3">
+                <span className="text-sm text-muted-foreground">{entry.label}</span>
+                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{entry.value === null ? '—' : formatHubShare(entry.value, ranking.total)}</span>
+              </span>
+              <span className="w-24 text-right text-sm tabular-nums text-muted-foreground sm:w-28">{figure(entry.value)}</span>
+            </li>
+          ))}
+        </ul>
+        <div>
+          <Link to="/companies/analytics" search={analysis} className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9">
+            <Trans>Toate activitățile, în analiza bilanțurilor</Trans> →
+          </Link>
+          {/* A sentence, so plain text: what the shares are of, and the note behind its marker. */}
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{caption}</p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -162,12 +200,163 @@ export function HubSizeTable({ classes, className }: { readonly classes: readonl
             <th scope="row" className="whitespace-nowrap py-2.5 pl-1 text-left font-normal text-foreground">
               {label[row.key]}
             </th>
-            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">{formatHubShare(row.firms, firms)}</td>
-            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">{formatHubShare(row.employees, employees)}</td>
-            <td className="py-2.5 pl-3 pr-1 text-right font-semibold tabular-nums text-foreground">{formatHubShare(row.turnover, turnover)}</td>
+            {/* The share, and the figure the bars' readings give: the table is what assistive technology reads. */}
+            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">
+              {formatHubShare(row.firms, firms)} <span className="sr-only">({formatHubValueText(row.firms, 'firms')})</span>
+            </td>
+            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">
+              {formatHubShare(row.employees, employees)} <span className="sr-only">({formatHubValueText(row.employees, 'persons')})</span>
+            </td>
+            <td className="py-2.5 pl-3 pr-1 text-right font-semibold tabular-nums text-foreground">
+              {formatHubShare(row.turnover, turnover)} <span className="sr-only">({formatHubValueText(row.turnover, 'lei')})</span>
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
+  )
+}
+
+/** The size classes' names, smallest first: the bars' legend and the table's rows. */
+function sizeClassLabel(key: HubSizeClass['key']): ReactNode {
+  switch (key) {
+    case '0':
+      return <Trans>niciunul</Trans>
+    case '250+':
+      return <Trans>250 și peste</Trans>
+    default:
+      return key.replace('-', '–')
+  }
+}
+
+/** A size class in words, for a part's title on a pointer („250 de salariați sau mai mulți: 40,7% din cifra de afaceri"). */
+function sizeClassText(key: HubSizeClass['key']): string {
+  switch (key) {
+    case '0':
+      return t`fără salariați`
+    case '250+':
+      return t`250 de salariați sau mai mulți`
+    default: {
+      const range = key.replace('-', '–')
+      return t`${range} salariați`
+    }
+  }
+}
+
+/** Text on the map's steps 1–3 is the foreground colour, on 4–5 the background colour: at least 4.5:1 in either theme. */
+const STEP_LABEL = ['text-foreground', 'text-foreground', 'text-foreground', 'text-background', 'text-background'] as const
+
+type SizeMeasureKey = 'firms' | 'employees' | 'turnover'
+
+/** The part under the pointer (or the last one tapped): which bar, which class. */
+type SizePart = { readonly measure: SizeMeasureKey; readonly key: HubSizeClass['key'] }
+
+/**
+ * The statements by size class as three bars, one whole each — the firms,
+ * their employees and their turnover — split into the five classes, smallest
+ * first, in the county map's five steps of one hue (the classes are ordered).
+ * A part wide enough carries its share. Pointing at a part (tapping it, on a
+ * touch screen) opens a reading above it, in the charts' tooltip box: the
+ * class, its figure and its share (owner, 25 November 2026). The bars are a
+ * picture: the same figures are the table under them, for assistive
+ * technology (`HubSizeTable`).
+ */
+export function HubSizeBars({ classes, className }: { readonly classes: readonly HubSizeClass[]; readonly className?: string }) {
+  const [active, setActive] = useState<SizePart | null>(null)
+  const measures: readonly { readonly key: SizeMeasureKey; readonly label: ReactNode; readonly of: string; readonly unit: HubUnit; readonly value: (row: HubSizeClass) => number }[] = [
+    { key: 'firms', label: <Trans>Firme</Trans>, of: t`din firme`, unit: 'firms', value: (row) => row.firms },
+    { key: 'employees', label: <Trans>Salariați</Trans>, of: t`din salariați`, unit: 'persons', value: (row) => row.employees },
+    { key: 'turnover', label: <Trans>Cifra de afaceri</Trans>, of: t`din cifra de afaceri`, unit: 'lei', value: (row) => row.turnover },
+  ]
+  return (
+    <div className={className} data-testid="company-hub-size-bars">
+      <div className="space-y-3" aria-hidden="true">
+        {measures.map((measure) => {
+          const total = classes.reduce((sum, row) => sum + measure.value(row), 0)
+          // Where each part starts, as a share of its bar: the reading stands over the part's middle.
+          let before = 0
+          const parts = classes.map((row, index) => {
+            const value = measure.value(row)
+            const start = total > 0 ? before / total : 0
+            before += value
+            return { row, index, value, start, share: total > 0 ? value / total : 0 }
+          })
+          const shown = active?.measure === measure.key ? parts.find((part) => part.row.key === active.key && part.value > 0) : undefined
+          const middle = shown ? shown.start + shown.share / 2 : 0
+          return (
+            <div key={measure.key} className="grid grid-cols-1 gap-1.5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center sm:gap-4">
+              <span className="text-sm text-foreground">{measure.label}</span>
+              <div className="relative">
+                <div
+                  className="flex h-9 gap-px overflow-hidden rounded-sm bg-border/70"
+                  onPointerLeave={(event) => {
+                    if (event.pointerType === 'mouse') setActive(null)
+                  }}
+                >
+                  {parts.map(({ row, index, value, share }) => {
+                    if (value <= 0 || total <= 0) return null
+                    const part: SizePart = { measure: measure.key, key: row.key }
+                    const isActive = shown?.row.key === row.key
+                    return (
+                      <span
+                        key={row.key}
+                        data-size-part={`${measure.key}:${row.key}`}
+                        className={cn(
+                          'flex min-w-0.5 cursor-default items-center justify-center overflow-hidden transition-shadow',
+                          STEP_BG[index],
+                          STEP_LABEL[index],
+                          isActive && 'ring-2 ring-inset ring-foreground/70',
+                        )}
+                        style={{ flexGrow: value, flexBasis: 0 }}
+                        onPointerEnter={(event) => {
+                          if (event.pointerType === 'mouse') setActive(part)
+                        }}
+                        // A touch screen has no hover: a tap opens the reading, a second tap on the same part closes it.
+                        onClick={() => setActive((current) => (current?.measure === part.measure && current.key === part.key ? null : part))}
+                      >
+                        {/* The share inside the part when it fits: from 6% of the width on a wide screen, 14% on a phone. */}
+                        {share >= 0.06 ? (
+                          <span className={cn('whitespace-nowrap px-1 text-xs font-medium tabular-nums', share < 0.14 && 'max-sm:hidden')}>
+                            {formatHubShare(value, total)}
+                          </span>
+                        ) : null}
+                      </span>
+                    )
+                  })}
+                </div>
+                {shown ? (
+                  <div
+                    data-size-reading
+                    // The charts' tooltip box (`ChartTooltip`) at one width, over the part's middle and never past either
+                    // end of the bar, so a phone's 280px bar keeps it on the screen.
+                    className="pointer-events-none absolute bottom-full z-10 mb-2 w-48 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+                    style={{ left: `clamp(0px, calc(${(middle * 100).toFixed(2)}% - 6rem), calc(100% - 12rem))` }}
+                  >
+                    <span className="block text-muted-foreground">{sizeClassText(shown.row.key)}</span>
+                    <span className="mt-1 block text-sm font-semibold tabular-nums text-foreground">{formatHubValueText(shown.value, measure.unit)}</span>
+                    <span className="block tabular-nums text-muted-foreground">
+                      {formatHubShare(shown.value, total)} {measure.of}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          )
+        })}
+        {/* The classes, in the bars' order and colours. */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs text-muted-foreground sm:pl-[10rem]">
+          <span>
+            <Trans>Salariați pe firmă:</Trans>
+          </span>
+          {classes.map((row, index) => (
+            <span key={row.key} className="inline-flex items-center gap-1.5">
+              <span className={cn('size-2.5 rounded-[2px] ring-1 ring-inset ring-foreground/10', STEP_BG[index])} />
+              {sizeClassLabel(row.key)}
+            </span>
+          ))}
+        </div>
+      </div>
+      <HubSizeTable className="sr-only" classes={classes} />
+    </div>
   )
 }

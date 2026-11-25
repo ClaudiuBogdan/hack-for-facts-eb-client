@@ -3,7 +3,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 export const Route = createFileRoute('/entities/')({
   beforeLoad: () => {
     throw redirect({
-      to: '/entity-analytics',
+      to: '/public-institutions',
       replace: true,
     })
   },

@@ -1,70 +1,14 @@
-import { Trans } from '@lingui/react/macro'
-import {
-  useLegislationFrontDoor,
-  useLegislationStatusCounts,
-} from '../hooks/use-legislation'
-import { useLegislationFrontier } from '../hooks/use-legislation-frontier'
-import { LegislationDomainGrid } from './legislation-domain-grid'
-import { LegislationGazetteBand } from './legislation-gazette-band'
-import { LegislationHonestyNotes } from './legislation-honesty-notes'
-import { LegislationOverviewSkeleton } from './legislation-overview-skeleton'
-import { LegislationSearchBand } from './legislation-search-band'
-import { LegislationShell } from './legislation-shell'
+import { LegislationHub } from './hub/legislation-hub'
 
 /**
- * `/legislation` — the module front door, and a finding aid rather than a
- * dashboard.
- *
- * Every band here answers "where is the act I need": search it, browse it by
- * subject, or find the gazette issue that proves it was published. The headline
- * counts and the citation ranking moved to `/legislation/analytics` — they
- * describe the corpus rather than helping you get into it.
- *
- * The header still carries the three stat chips, so the page is not numberless;
- * the analysis is one tab away, not hidden.
- *
- * The search box is deliberately unframed and there is no coverage ribbon: both
- * were removed as noise above the fold. The trust label the ribbon carried moved
- * into the header meta line, and the coverage caveats it summarised are stated
- * in full — and in prose — by the honesty band at the bottom.
- *
- * There is no "recently changed acts" band: the server has no global,
- * date-ordered status-event query (§6.1), and a placeholder over 84 420 real
- * events would misrepresent the data. The gazette band runs full width instead.
- *
- * Its one read is the gazette band's (`useLegislationFrontDoor`), which the
- * route's loader fills on the server.
+ * `/legislation`: the legislation hub (design: `docs/design/legal/main-page.md`). The module's front door:
+ * find an act, see the corpus in a few figures and bands, and go on to the dedicated pages.
  */
-export function LegislationPage() {
-  const { data, isLoading, isError } = useLegislationFrontDoor()
-  // The header chips ride the status-counts aggregate (shared query key with
-  // the analytics strip); `?? {}` keeps the chip row's space reserved while
-  // the counts are on the wire, so their arrival does not shift the tab nav.
-  const { data: statusCounts } = useLegislationStatusCounts()
-  // "date până la" is the staler of the live gazette and changes frontiers.
-  const { measuredAt } = useLegislationFrontier('corpus')
-
-  return (
-    <LegislationShell
-      activeTab="prezentare"
-      counts={statusCounts ?? {}}
-      measuredAt={measuredAt}
-      dataStatus={data?.coverage.dataStatus}
-    >
-      {isLoading ? (
-        <LegislationOverviewSkeleton />
-      ) : isError || !data ? (
-        <p className="text-[var(--pnrr-muted)]">
-          <Trans>Nu am putut încărca datele despre legislație.</Trans>
-        </p>
-      ) : (
-        <div className="flex flex-col gap-12">
-          <LegislationSearchBand />
-          <LegislationDomainGrid />
-          <LegislationGazetteBand issues={data.latestGazetteIssues} />
-          <LegislationHonestyNotes />
-        </div>
-      )}
-    </LegislationShell>
-  )
+export function LegislationPage({
+  analyticsUnavailable = false,
+}: {
+  /** The server's analytics read was refused with 503: the figures band says so until a read succeeds. */
+  readonly analyticsUnavailable?: boolean
+}) {
+  return <LegislationHub analyticsUnavailable={analyticsUnavailable} />
 }

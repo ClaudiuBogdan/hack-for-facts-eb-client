@@ -55,7 +55,9 @@ export function ActPublicationBand({ act }: Props) {
           other="# de publicări"
         />
       }
-      description={t`De la data apariției în Monitorul Oficial, un act produce efecte.`}
+      // Publication is the proof the act exists, not the day it takes effect: an act can name a later date
+      // (review astra-client-2, B7: the same claim was taken out of the hub's gazette section).
+      description={t`Apariția în Monitorul Oficial dovedește publicarea actului. Data de la care actul produce efecte e cea stabilită în act sau prin lege.`}
       footnote={
         <Trans>
           Marcajul se referă doar la existența PDF-ului oficial pe

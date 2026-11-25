@@ -36,7 +36,7 @@ import { NormalizationModeSelect } from '@/components/normalization/normalizatio
 import { getNormalizationUnit } from '@/lib/utils'
 import type { AnalyticsFilterType, Currency } from '@/schemas/charts'
 
-export function EntityAnalyticsFilter({ currency = 'RON', normalization }: { readonly currency?: Currency; readonly normalization?: AnalyticsFilterType['normalization'] }) {
+export function EntityAnalyticsFilter({ currency = 'RON', normalization, showViewSwitch = true }: { readonly currency?: Currency; readonly normalization?: AnalyticsFilterType['normalization']; /** Off where the page shows the table and the breakdown together. */ readonly showViewSwitch?: boolean }) {
   const { filter, setFilter, resetFilter, view, setView } = useEntityAnalyticsFilter()
   // Label stores (cache + API-backed)
   const entityLabelsStore = useEntityLabel((filter.entity_cuis ?? []) as string[])
@@ -412,6 +412,7 @@ export function EntityAnalyticsFilter({ currency = 'RON', normalization }: { rea
       </CardHeader>
       <CardContent className="flex flex-col flex-1 min-h-0 p-0 space-y-1 overflow-y-auto">
 
+        {showViewSwitch ? (
         <div className="p-3 border-b">
           <h4 className="mb-2 text-sm font-medium flex items-center">
             <BarChart2Icon className="w-4 h-4 mr-2" />
@@ -422,6 +423,7 @@ export function EntityAnalyticsFilter({ currency = 'RON', normalization }: { rea
             { id: 'line-items', label: t`Line Items`, icon: BarChart2Icon },
           ]} />
         </div>
+        ) : null}
         <div className="p-3 border-b">
           <h4 className="mb-2 text-sm font-medium flex items-center">
             <ArrowUpDown className="w-4 h-4 mr-2" />

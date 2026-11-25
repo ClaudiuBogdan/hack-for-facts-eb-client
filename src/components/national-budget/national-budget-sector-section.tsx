@@ -89,7 +89,7 @@ export function NationalBudgetSectorSection({
             />
             <Button asChild variant="outline" size="sm">
               <Link
-                to="/entity-analytics"
+                to="/public-institutions"
                 search={{
                   view: 'line-items',
                   transferFilter,

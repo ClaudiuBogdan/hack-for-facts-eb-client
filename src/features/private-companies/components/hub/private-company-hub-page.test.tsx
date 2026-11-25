@@ -126,7 +126,7 @@ describe('PrivateCompanyHubPage', () => {
     expect(rows.filter((row) => /4941 · ONRC Rev\.[23]/u.test(row.textContent ?? ''))).toHaveLength(2)
     // The rest and the companies with no selection, counted apart from the ranking. (The test's numbers are English.)
     const rest = within(screen.getByTestId('company-hub-activities-rest')).getAllByRole('listitem').map((row) => row.textContent ?? '')
-    expect(rest.some((text) => /^Alte 2[.,]?577 de activități selectate/u.test(text))).toBe(true)
+    expect(rest.some((text) => /^Alte 2[.,]?577 de activități/u.test(text))).toBe(true)
     expect(rest.some((text) => text.startsWith('Mai multe activități clasificate ONRC, niciuna selectată'))).toBe(true)
     // No division, no Rev.2 sector name borrowed for an ANAF code.
     expect(activities.textContent).not.toMatch(/Software și servicii IT|Comerț cu ridicata\b(?! al)/u)
@@ -137,7 +137,7 @@ describe('PrivateCompanyHubPage', () => {
     const activities = screen.getByTestId('company-hub-activities')
     // Rev.3 4711: 92,0 mld. of the 2.780,3 mld. lei admitted — not of the raw 2.841,2 mld. in the figures band.
     expect(within(activities).getAllByRole('listitem')[0]?.textContent).toMatch(/3[.,]3\s?%/u)
-    expect(activities.textContent).toMatch(/Procente din 2[.,]780[.,]3\smld\.\slei, cifra de afaceri admisă pe 2025 în analiza bilanțurilor, ediția 7\./u)
+    expect(activities.textContent).toMatch(/Procente din 2[.,]780[.,]3\smld\.\slei, totalul analizei bilanțurilor pe 2025\./u)
     // The unselected keep their share: several ONRC classes and no selection hold 21,2% of the turnover.
     expect(within(screen.getByTestId('company-hub-activities-rest')).getByText('Mai multe activități clasificate ONRC, niciuna selectată').parentElement?.textContent).toMatch(/21[.,]2\s?%/u)
   })
@@ -166,15 +166,15 @@ describe('PrivateCompanyHubPage', () => {
     }
   })
 
-  it('ranks the ten largest companies of each list, and opens the rest in the analysis', () => {
+  it('ranks the five largest companies of each list, and opens the rest in the analysis', () => {
     const { rerender } = render(page())
     const leaders = () => within(screen.getByTestId('company-hub-leaders')).getAllByRole('link')
     const more = () => screen.getByRole('link', { name: /Toate firmele, în analiza bilanțurilor/ })
-    expect(leaders()).toHaveLength(10)
+    expect(leaders()).toHaveLength(5)
     expect(linkOf(more())).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover' } })
     rerender(page({ clasament: 'salariati' }))
-    expect(leaders()).toHaveLength(10)
-    // Within the hub's headcounts: the keying error the ten leave out stays out there too.
+    expect(leaders()).toHaveLength(5)
+    // Within the hub's headcounts: the keying error the ranking leaves out stays out there too.
     expect(linkOf(more()).search).toEqual({ an: 2025, indicator: 'employees', interval: 'employees:0~50000' })
   })
 
@@ -199,7 +199,7 @@ describe('PrivateCompanyHubPage', () => {
     expect(screen.getByText(leader.name).closest('a')?.textContent).toContain('Timiș · radiată · 4711 · Comerț cu amănuntul nespecializat · ONRC Rev.3')
   })
 
-  it('names a ranked company by the release’s selection, or why it has none — never by ANAF’s fiscal division', () => {
+  it('names a ranked company by the release’s selection, and by its county alone when there is none — never by ANAF’s fiscal division', () => {
     const [selected, unselected] = COMPANY_HUB_SNAPSHOT.leaders.turnover
     if (!selected || !unselected) throw new Error('the snapshot ranks no company')
     const none: CompanyAnalysisActivity = { basis: 'ONRC_MULTIPLE_CLASSES', source: null, code: null, revision: null, label: null, descriptionStatus: null, descriptions: [], derived: true }
@@ -207,7 +207,9 @@ describe('PrivateCompanyHubPage', () => {
     const [first, second] = within(screen.getByTestId('company-hub-leaders')).getAllByRole('link')
     // A company the release does not hold: its county alone.
     expect(first?.textContent).toMatch(/București(?!\s*·)/u)
-    expect(second?.textContent).toContain('București · Mai multe activități clasificate ONRC, niciuna selectată')
+    // No selection: the county alone, not a caveat the row would cut (the company's page says why).
+    expect(second?.textContent).toMatch(/București(?!\s*·)/u)
+    expect(second?.textContent).not.toContain('niciuna selectată')
   })
 
   it('draws the economy through the analysis release’s years, the last one possibly incomplete', () => {

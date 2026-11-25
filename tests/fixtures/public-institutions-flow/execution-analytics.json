@@ -1,0 +1,30 @@
+{
+  "data": {
+    "executionAnalytics": [
+      {
+        "seriesId": "total",
+        "missingPeriods": [],
+        "xAxis": {
+          "name": "Year",
+          "type": "INTEGER",
+          "unit": "year"
+        },
+        "yAxis": {
+          "name": "Amount",
+          "type": "FLOAT",
+          "unit": "RON"
+        },
+        "data": [
+          {
+            "x": "2024",
+            "y": 878209000000
+          },
+          {
+            "x": "2025",
+            "y": 991058907047.27
+          }
+        ]
+      }
+    ]
+  }
+}

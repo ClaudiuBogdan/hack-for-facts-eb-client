@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const outputDir = process.argv[2] ?? ".output";
-const PATHS = ["/", "/map", "/entity-analytics"];
+const PATHS = ["/", "/map", "/entity-analytics", "/public-institutions"];
 const CASES = [
   { cookie: "user-locale=en", lang: "en" },
   { cookie: null, lang: "ro" },

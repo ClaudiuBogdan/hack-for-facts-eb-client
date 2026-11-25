@@ -46,12 +46,13 @@ test.describe('Companies hub', () => {
     await page.goto('/companies')
     await waitForPageReady(page)
 
-    await expect(page.getByRole('heading', { name: /Economia/, level: 1 })).toBeVisible({ timeout: 30000 })
+    await expect(page.getByRole('heading', { name: /Firmele din/, level: 1 })).toBeVisible({ timeout: 30000 })
     await expect(page.getByTestId('company-hub-leaders')).toContainText('OMV PETROM SA')
     // The analysis's derived activity selection, each class in its own revision — no ANAF code read into a division.
     await expect(page.getByTestId('company-hub-activities')).toContainText('4711 · ONRC Rev.3')
     await expect(page.getByTestId('company-hub-activities-rest')).toContainText('Mai multe activități clasificate ONRC, niciuna selectată')
-    await expect(page.getByTestId('company-hub-sizes')).toBeVisible()
+    // Company size as three bars; the table behind them is for assistive technology.
+    await expect(page.getByTestId('company-hub-size-bars')).toBeVisible()
     // No qualified breakdown of the year's new companies exists: none is drawn.
     await expect(page.getByTestId('company-hub-new-sectors')).toHaveCount(0)
 

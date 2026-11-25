@@ -89,7 +89,7 @@ describe('NationalBudgetSectorSection', () => {
     expect(
       screen.getByRole('button', { name: 'Spending Calculation' })
     ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Analyze line items/i })).toHaveAttribute('href', expect.stringContaining('/entity-analytics'))
+    expect(screen.getByRole('link', { name: /Analyze line items/i })).toHaveAttribute('href', expect.stringContaining('/public-institutions'))
     expect(screen.getByText('Agregat informativ')).toBeInTheDocument()
 
     expect(useTreemapDrilldownSpy).toHaveBeenCalledWith(
