@@ -443,7 +443,7 @@ msgid "{0, plural, one {# atenționare} other {# atenționări}}"
 msgstr "{0, plural, one {# warning} other {# warnings}}"
 
 #. placeholder {0}: data.recordCount
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:125
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:124
 msgid "{0, plural, one {# contract atribuit în {period}} few {# contracte atribuite în {period}} other {# de contracte atribuite în {period}}}"
 msgstr "{0, plural, one {# contract awarded in {period}} other {# contracts awarded in {period}}}"
 
@@ -3096,7 +3096,7 @@ msgstr "{more, plural, one {and at least one more firm} other {and at least # mo
 msgid "{more, plural, one {și încă o firmă} few {și încă # firme} other {și încă # de firme}}"
 msgstr "{more, plural, one {and one more firm} other {and # more firms}}"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:167
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:166
 msgid "{more, plural, one {și încă un câștigător} few {și încă # câștigători} other {și încă # de câștigători}}"
 msgstr "{more, plural, one {and one more winner} other {and # more winners}}"
 
@@ -3115,7 +3115,7 @@ msgstr "{name} · code {0} in the law (not a CUI)"
 #~ msgstr "{name} · ranked {place} of {total}"
 
 #: src/features/procurement/lib/analytics-text.ts:78
-#: src/features/procurement/lib/contract-award-model.ts:120
+#: src/features/procurement/lib/contract-award-model.ts:126
 #: src/features/procurement/lib/withheld-party.ts:83
 msgid "{name} (CUI {code})"
 msgstr "{name} (CUI {code})"
@@ -3335,7 +3335,7 @@ msgstr "{repeated} repeated rows removed"
 msgid "{resultsCount} results found"
 msgstr "{resultsCount} results found"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:139
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:138
 msgid "{review} în verificare, cu valoarea în afara totalurilor"
 msgstr "{review} under review, their value kept out of totals"
 
@@ -3758,7 +3758,7 @@ msgstr "{value, plural, one {one inactive} other {{shown} inactive}}"
 msgid "{value} inhabitants"
 msgstr "{value} inhabitants"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:133
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:132
 msgid "{valued} cu valoare publicată"
 msgstr "{valued} with a published value"
 
@@ -10170,7 +10170,7 @@ msgstr "Cash and bank accounts"
 msgid "Casa și conturile la bănci"
 msgstr "Cash and bank accounts"
 
-#: src/features/procurement/lib/contract-award-model.ts:294
+#: src/features/procurement/lib/contract-award-model.ts:306
 msgid "Câștigat de o asociere: valoarea e a întregului contract; SEAP nu publică partea fiecărei firme."
 msgstr "Won by a consortium: the value is the whole contract's; SEAP does not publish each firm's share."
 
@@ -10178,11 +10178,11 @@ msgstr "Won by a consortium: the value is the whole contract's; SEAP does not pu
 msgid "Câștigător"
 msgstr "Winner"
 
-#: src/features/procurement/lib/contract-award-model.ts:129
+#: src/features/procurement/lib/contract-award-model.ts:135
 msgid "Câștigător fără cod fiscal valid"
 msgstr "Winner with no valid tax code"
 
-#: src/features/procurement/lib/contract-award-model.ts:127
+#: src/features/procurement/lib/contract-award-model.ts:133
 msgid "Câștigător nepublicat"
 msgstr "Winner not published"
 
@@ -10193,6 +10193,10 @@ msgstr "Winners"
 #: src/features/procurement/components/procedure/procedure-block.tsx:253
 msgid "Câștigătorii"
 msgstr "Winners"
+
+#: src/features/procurement/lib/contract-award-text.ts:87
+msgid "Câștigătorii nu pot fi numiți acum: apar fără nume și fără cod fiscal."
+msgstr "The winners cannot be named right now: they appear with no name and no tax code."
 
 #: src/features/procurement/components/procedure/procedure-block.tsx:253
 msgid "Câștigătorul"
@@ -11584,7 +11588,7 @@ msgstr "The busiest courts, {0}"
 #: src/features/private-companies/components/analytics/analytics-head.tsx:233
 #: src/features/private-companies/components/analytics/analytics-head.tsx:234
 #: src/features/private-companies/components/analytics/analytics-head.tsx:235
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:72
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:71
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:265
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:291
 #: src/features/statistics/components/uat-map/uat-map-lists.tsx:96
@@ -11682,7 +11686,7 @@ msgstr "Most are in group {group}: {0}."
 
 #: src/features/procurement/components/analytics/analytics-answer.tsx:391
 #: src/features/procurement/components/analytics/analytics-answer.tsx:397
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:70
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:69
 #: src/features/procurement/components/home/home-context-bands.tsx:485
 #: src/features/procurement/components/home/procurement-home-page.tsx:115
 msgid "Cele mai noi"
@@ -11700,7 +11704,7 @@ msgstr "Most recent"
 msgid "Cele mai recente valori, cu județul și țara ca reper. Fiecare deschide seria completă."
 msgstr "The latest values, with the county and the country for reference. Each one opens the full series."
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:71
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:70
 msgid "Cele mai vechi"
 msgstr "Oldest"
 
@@ -14204,7 +14208,7 @@ msgstr "Contract {id}"
 #~ msgid "contract and subsequent-contract"
 #~ msgstr "contract and subsequent-contract"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:144
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:143
 #: src/features/procurement/components/contract-award/procurement-contract-award-page.tsx:139
 #: src/features/procurement/lib/procurement-page-titles.ts:62
 msgid "Contract atribuit"
@@ -14418,7 +14422,7 @@ msgstr "Contracts, purchases and PNRR"
 msgid "Contractele"
 msgstr "Contracts"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:63
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:62
 #: src/features/procurement/lib/analytics-text.ts:199
 msgid "Contractele atribuite"
 msgstr "Contracts awarded"
@@ -14452,7 +14456,7 @@ msgstr "Contracts awarded before 2021 are not published yet: those years do not 
 msgid "Contractele atribuite înainte de 2021 nu sunt încă publicate."
 msgstr "Contracts awarded before 2021 are not published yet."
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:85
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:84
 msgid "Contractele atribuite nu sunt disponibile acum."
 msgstr "Contract awards are not available right now."
 
@@ -15594,17 +15598,17 @@ msgstr "CUI {0}"
 #~ msgid "CUI {0}, din Registrul național ONG și ANAF."
 #~ msgstr "CUI {0}, din Registrul național ONG și ANAF."
 
-#: src/features/procurement/lib/contract-award-model.ts:116
+#: src/features/procurement/lib/contract-award-model.ts:122
 msgid "CUI {code}"
 msgstr "CUI {code}"
 
-#: src/features/procurement/lib/contract-award-model.ts:116
+#: src/features/procurement/lib/contract-award-model.ts:122
 #: src/features/procurement/lib/withheld-party.ts:168
 msgid "CUI {code} (denumire indisponibilă în registrul firmelor)"
 msgstr "CUI {code} (name not in the company registry)"
 
 #: src/features/procurement/lib/analytics-text.ts:75
-#: src/features/procurement/lib/contract-award-model.ts:124
+#: src/features/procurement/lib/contract-award-model.ts:130
 #: src/features/procurement/lib/withheld-party.ts:79
 msgid "CUI {code} (nume nepublicat)"
 msgstr "CUI {code} (name not published)"
@@ -15882,7 +15886,7 @@ msgstr "Buy through SEAP"
 msgid "Cumpărător"
 msgstr "Buyer"
 
-#: src/features/procurement/lib/contract-award-model.ts:127
+#: src/features/procurement/lib/contract-award-model.ts:133
 msgid "Cumpărător nepublicat"
 msgstr "Buyer not published"
 
@@ -24741,7 +24745,7 @@ msgstr "Identitate verificata"
 #~ msgid "Identitatea contractului e în verificare: contractul nu intră în niciun total."
 #~ msgstr "The contract's identity is under review: it is in no total."
 
-#: src/features/procurement/lib/contract-award-model.ts:292
+#: src/features/procurement/lib/contract-award-model.ts:304
 msgid "Identitatea contractului e în verificare: valoarea lui nu intră în niciun total."
 msgstr "The contract's identity is under review: its value is in no total."
 
@@ -25650,7 +25654,7 @@ msgstr "In all, the procedure awarded {total}."
 msgid "În total, procedura a atribuit acorduri-cadru de cel mult {total}."
 msgstr "In all, the procedure awarded framework agreements worth at most {total}."
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:175
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:174
 #: src/features/procurement/components/contract-award/procurement-contract-award-page.tsx:159
 msgid "în verificare"
 msgstr "under review"
@@ -25745,7 +25749,7 @@ msgstr "Fiscally inactive, but with a statement"
 #~ msgid "Inactive în lista ANAF, dar încă în funcțiune în registrul ONRC."
 #~ msgstr "Inactive on the ANAF list, but still active in the ONRC register."
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:202
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:201
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:268
 msgid "Înainte"
 msgstr "Înainte"
@@ -25792,7 +25796,7 @@ msgstr "High Court (whole country)"
 msgid "Înalta Curte de Casație și Justiție"
 msgstr "High Court of Cassation and Justice"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:194
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:193
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:260
 msgid "Înapoi"
 msgstr "Înapoi"
@@ -25832,7 +25836,7 @@ msgstr "Back to Legislation"
 #~ msgstr "Înapoi la părțile dosarului"
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:312
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:102
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:101
 msgid "Înapoi la prima pagină"
 msgstr "Back to the first page"
 
@@ -32696,7 +32700,7 @@ msgstr "no statements"
 msgid "Niciun buget pentru „{0}\"."
 msgstr "No budget matches “{0}”."
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:158
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:157
 #: src/features/procurement/components/contract-award/procurement-contract-award-page.tsx:173
 msgid "Niciun câștigător publicat"
 msgstr "No winner published"
@@ -32721,7 +32725,7 @@ msgstr "No contract awarded in {0} with a published value."
 msgid "Niciun contract atribuit în {0}."
 msgstr "No contract awarded in {0}."
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:96
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:95
 msgid "Niciun contract atribuit în {period}."
 msgstr "No contract awarded in {period}."
 
@@ -35939,7 +35943,7 @@ msgstr "Town of {name}"
 msgid "Ordin"
 msgstr "Order"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:68
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:67
 msgid "Ordine"
 msgstr "Order"
 
@@ -36226,7 +36230,7 @@ msgstr "page {0} of {1}"
 
 #. placeholder {0}: countText(page)
 #. placeholder {1}: countText(Math.max(pages, 1))
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:197
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:196
 msgid "Pagina {0} din {1}"
 msgstr "Page {0} of {1}"
 
@@ -36255,7 +36259,7 @@ msgstr "Page {safeCurrent} of {totalPages}"
 msgid "pagina aceasta"
 msgstr "this page"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:100
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:99
 msgid "Pagina aceasta nu are contracte."
 msgstr "This page has no contracts."
 
@@ -36355,7 +36359,7 @@ msgstr "Paginare ședințe"
 msgid "Paginare seturi de date"
 msgstr "Dataset pagination"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:191
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:190
 msgid "Paginile contractelor"
 msgstr "Contract pages"
 
@@ -49964,7 +49968,7 @@ msgstr "negative INS value, not used"
 msgid "valoare logică"
 msgstr "boolean value"
 
-#: src/features/procurement/components/buyer/buyer-awards-band.tsx:175
+#: src/features/procurement/components/buyer/buyer-awards-band.tsx:174
 msgid "valoare maximă"
 msgstr "maximum value"
 
@@ -50129,7 +50133,7 @@ msgstr "Estimated value"
 msgid "Valoarea exactă"
 msgstr "Exact value"
 
-#: src/features/procurement/lib/contract-award-model.ts:297
+#: src/features/procurement/lib/contract-award-model.ts:309
 msgid "Valoarea în lei e echivalată din {currency}, moneda publicată."
 msgstr "The value in lei is converted from {currency}, the published currency."
 
@@ -50181,11 +50185,11 @@ msgstr "Valoarea pe furnizor nu include contractele încredințate unor asocieri
 msgid "Valoarea produsă în județ, împărțită la locuitorii lui."
 msgstr "The value produced in the county, divided by its inhabitants."
 
-#: src/features/procurement/lib/contract-award-model.ts:301
+#: src/features/procurement/lib/contract-award-model.ts:313
 msgid "Valoarea publicată în SEAP e negativă, o greșeală a sursei."
 msgstr "The value published in SEAP is negative, an error of the source."
 
-#: src/features/procurement/lib/contract-award-model.ts:300
+#: src/features/procurement/lib/contract-award-model.ts:312
 msgid "Valoarea publicată în SEAP e zero."
 msgstr "The value published in SEAP is zero."
 
@@ -50303,7 +50307,7 @@ msgstr "published values admitted; net result held"
 msgid "Valorile publicate în bilanțuri, pe ani"
 msgstr "The values published in the statements, by year"
 
-#: src/features/procurement/lib/contract-award-model.ts:299
+#: src/features/procurement/lib/contract-award-model.ts:311
 msgid "Valorile publicate în SEAP pentru acest contract nu se potrivesc între ele."
 msgstr "The values SEAP publishes for this contract do not agree."
 

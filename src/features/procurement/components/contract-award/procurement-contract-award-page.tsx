@@ -14,7 +14,7 @@ import { CaRecordsOffError, type ContractAwardRead } from '../../api/procurement
 import { useContractAward } from '../../hooks/use-procurement-contract-award'
 import { procurementContractAwardKeys } from '../../lib/contract-award-keys'
 import { authorityNameOf, caRecordNotes, type ContractAward } from '../../lib/contract-award-model'
-import { caAmountLabel, caAmountText, caKindText, caVatText, fullDayText as fullDay, lotEstimateText, signedLei } from '../../lib/contract-award-text'
+import { caAmountLabel, caAmountText, caKindText, caVatText, fullDayText as fullDay, lotEstimateText, signedLei, winnersUnnamedText } from '../../lib/contract-award-text'
 import { categoryOfCode } from '../../lib/home-categories'
 import { buildContractAwardDocumentTitle } from '../../lib/procurement-page-titles'
 import { CpvLabel } from '../cpv-label'
@@ -137,7 +137,7 @@ function AwardSheet({ award }: { readonly award: ContractAward }) {
   const { i18n } = useLingui()
   const year = award.awardDay ? Number(award.awardDay.slice(0, 4)) : undefined
   const title = award.title ?? (award.cpvCode ? i18n._(categoryOfCode(award.cpvCode).label) : t`Contract atribuit`)
-  const notes = caRecordNotes(award)
+  const notes = award.winnersUnnamed ? [winnersUnnamedText(), ...caRecordNotes(award)] : caRecordNotes(award)
   const buyer = award.buyer
   const back =
     buyer && buyer.kind === 'company' && buyer.authority && buyer.code ? (

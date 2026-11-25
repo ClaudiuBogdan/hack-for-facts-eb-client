@@ -17,6 +17,12 @@ import { lastDayOf, type ProfilePeriod } from './profile-period'
  *   client does not know, are plain text — the last with nothing at all.
  */
 
+/**
+ * An answer's `disclosureKey` when the API could not read the names view: every winner is served with no code or name.
+ * Not an error, and not a key: the page says the winners cannot be named now (procurement-da-api, 25 November 2026).
+ */
+export const CA_NAMES_UNAVAILABLE = 'unavailable'
+
 /** The first year of the published window. */
 export const CA_FLOOR_YEAR = 2021
 export const CA_FLOOR_DAY = `${CA_FLOOR_YEAR}-01-01`
@@ -183,6 +189,8 @@ function rowOf(raw: RawCaRow): CaRecordRow {
 /** A buyer's contract awards in a period: its counts and one page of its records, read in one snapshot. */
 export interface BuyerContractAwards {
   readonly dataAsOf: string
+  /** The names view was not readable for the read (`disclosureKey` `unavailable`): no winner carries a code or a name. */
+  readonly winnersUnnamed: boolean
   /** The first day published (the floor). */
   readonly floor: string
   readonly recordCount: number
@@ -203,6 +211,7 @@ export function mapBuyerContractAwards(raw: RawContractAwards): BuyerContractAwa
   const { summary, records } = raw
   return {
     dataAsOf: summary.dataAsOf,
+    winnersUnnamed: summary.disclosureKey === CA_NAMES_UNAVAILABLE || records.disclosureKey === CA_NAMES_UNAVAILABLE,
     floor: summary.window.floor,
     recordCount: summary.recordCount,
     valuedCount: summary.valuedCount,
@@ -231,6 +240,8 @@ export interface CaLot {
 
 export interface ContractAward extends CaRecordRow {
   readonly dataAsOf: string
+  /** The names view was not readable for the read: no winner carries a code or a name. */
+  readonly winnersUnnamed: boolean
   /** `excluded` | `included` | `unknown`. */
   readonly vatBasis: string
   readonly fxSource: string | null
@@ -262,6 +273,7 @@ export function mapContractAward(raw: RawContractAward): ContractAward {
   return {
     ...rowOf(record),
     dataAsOf: raw.dataAsOf,
+    winnersUnnamed: raw.disclosureKey === CA_NAMES_UNAVAILABLE,
     vatBasis: record.vatBasis,
     fxSource: record.fxSource,
     changeLei: amountOf(record.changeLei),

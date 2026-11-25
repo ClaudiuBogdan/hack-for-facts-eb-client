@@ -17,7 +17,7 @@ const { useBuyerContractAwards } = await import('./use-procurement-contract-awar
 
 const REQUEST = { cui: '4364446', from: '2025-01-01', to: '2025-12-31', sort: 'awardDayDesc', page: 1 } as const
 
-/** A buyer's awards keep the rows shown across another order or page, never rows a failed read hid. */
+/** A buyer's awards: another order or page waits for its own read; no winner is shown from another query's cache. */
 describe('useBuyerContractAwards', () => {
   it('shows no placeholder from a read that failed after it had answered', async () => {
     const client = createTestQueryClient()
@@ -36,7 +36,7 @@ describe('useBuyerContractAwards', () => {
     expect(result.current.data).toBeUndefined()
   })
 
-  it('keeps a standing read’s rows while another order of the same buyer and period is on its way', async () => {
+  it('shows no rows of another order while its own read is on its way', async () => {
     const client = createTestQueryClient()
     const wrapper = ({ children }: { readonly children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>
     read.mockReset()
@@ -45,6 +45,7 @@ describe('useBuyerContractAwards', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     read.mockImplementation(() => new Promise(() => undefined))
     rerender({ request: { ...REQUEST, sort: 'amountDesc' } })
-    expect(result.current.isPlaceholderData).toBe(true)
+    expect(result.current.isPlaceholderData).toBe(false)
+    expect(result.current.data).toBeUndefined()
   })
 })

@@ -107,6 +107,13 @@ describe('contract-award records', () => {
     expect(mapContractAward(rawAward({ record: { sourceUrl: 'http://www.e-licitatie.ro/x' } }).award).sourceUrl).toBeNull()
   })
 
+  it('says winners unnamed when the API could not read the names view, which is no error', () => {
+    expect(mapBuyerContractAwards(rawAwards()).winnersUnnamed).toBe(false)
+    expect(mapBuyerContractAwards(rawAwards({ records: { disclosureKey: 'unavailable' } })).winnersUnnamed).toBe(true)
+    const raw = rawAward()
+    expect(mapContractAward({ ...raw.award, disclosureKey: 'unavailable' }).winnersUnnamed).toBe(true)
+  })
+
   it('cancels a lot only when the source says cancelled', () => {
     const lot = (cancelledStatus: string | null) => mapContractAward(rawAward({ lots: [{ lotOrder: 1, lotNumber: '1', title: 'Lot', cpvCode: null, estimatedValue: null, currency: null, isEuFunded: null, cancelledStatus }] }).award).lots[0]?.cancelled
     expect(['cancelled', 'not_cancelled', 'unknown', 'not_expected', null].map(lot)).toEqual([true, false, false, false, false])

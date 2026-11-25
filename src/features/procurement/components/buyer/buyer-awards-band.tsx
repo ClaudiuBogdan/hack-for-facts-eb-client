@@ -4,12 +4,11 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import { cn } from '@/lib/utils'
 import { PROCUREMENT_BUYER_AWARD_MAX_PAGE, type ProcurementBuyerAwardOrder } from '@/schemas/procurement-buyer'
 import { CaRecordsOffError } from '../../api/procurement-contract-award-api'
 import { useBuyerContractAwards } from '../../hooks/use-procurement-contract-award'
 import { caWindowOf, type BuyerContractAwards, type CaRecordRow, type CaSort } from '../../lib/contract-award-model'
-import { beforeFloorText, caAmountText, caKindText } from '../../lib/contract-award-text'
+import { beforeFloorText, caAmountText, caKindText, winnersUnnamedText } from '../../lib/contract-award-text'
 import type { BuyerProfile } from '../../lib/buyer-model'
 import { categoryOfCode } from '../../lib/home-categories'
 import { countText, dayText } from '../../lib/home-format'
@@ -90,7 +89,7 @@ export function BuyerAwardsBand({
         ) : !data ? (
           <HubPending rows={6} />
         ) : (
-          <div aria-busy={query.isPlaceholderData} className={cn('transition-opacity duration-300 motion-reduce:transition-none', query.isPlaceholderData && 'opacity-50')}>
+          <div>
             {data.total === 0 && data.page === 1 ? (
               <p className="border-y py-4 text-sm text-muted-foreground">
                 <Trans>Niciun contract atribuit în {period}.</Trans>
@@ -208,6 +207,7 @@ function Pager({ data, onPage }: { readonly data: BuyerContractAwards; readonly 
 
 function AwardsNotes({ data, clipped }: { readonly data: BuyerContractAwards | undefined; readonly clipped: boolean }) {
   const notes: string[] = []
+  if (data?.winnersUnnamed) notes.push(winnersUnnamedText())
   if (clipped) notes.push(beforeFloorText())
   if (data && data.depthLimited) notes.push(t`Lista ajunge până la al 10.000-lea contract: alege un an ca s-o restrângi.`)
   if (data && data.undatedCount > 0) {

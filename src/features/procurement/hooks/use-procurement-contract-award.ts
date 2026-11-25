@@ -47,8 +47,11 @@ export function useContractAward(id: string, initialData?: ContractAwardRead) {
 /**
  * A buyer's counts and a page of its records, read in the browser only: the
  * server render that carries the buyer's page stays free of winner codes, so
- * it can be kept as before. Null asks nothing (a period before 2021). Another
- * page or order keeps the rows shown until its own land (same buyer and period only).
+ * it can be kept as before. Null asks nothing (a period before 2021).
+ *
+ * No placeholder: another page or order waits for its own read. A winner's
+ * code or name is shown only from the answer that carried it, never from
+ * another query's cache (procurement-da-api, 25 November 2026).
  */
 export function useBuyerContractAwards(request: BuyerContractAwardsRequest | null) {
   return useQuery({
@@ -57,12 +60,5 @@ export function useBuyerContractAwards(request: BuyerContractAwardsRequest | nul
     retry,
     ...DA_QUERY_CACHE,
     enabled: request !== null,
-    // The same buyer and period only (another's rows would be the wrong list), and only from a read that stands: rows a
-    // failed read hid are never shown again as a placeholder.
-    placeholderData: (previous, previousQuery) => {
-      const key = previousQuery?.queryKey
-      const stands = previousQuery?.state.status === 'success'
-      return stands && request && key && key[3] === request.cui && key[4] === request.from && key[5] === request.to ? previous : undefined
-    },
   })
 }

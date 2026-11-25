@@ -120,6 +120,12 @@ describe('ProcurementContractAwardPage', () => {
     expect(screen.queryByText('CONSTRUCT TEST SRL')).toBeNull()
   })
 
+  it('says the winners cannot be named now when the API could not read the names view', () => {
+    const raw = rawAward({ record: { winners: [{ order: 1, displayKind: 'withheld', fiscalCode: null, name: null, disclosed: null }] } })
+    const html = renderToStaticMarkup(page({ id: RECORD_ID, read: found({ award: { ...raw.award, disclosureKey: 'unavailable' } }) }))
+    expect(html).toContain('Câștigătorii nu pot fi numiți acum: apar fără nume și fără cod fiscal.')
+  })
+
   it('says a framework’s footer as its maximum, not an award', () => {
     const html = renderToStaticMarkup(page({ id: RECORD_ID, read: found(rawAward({ record: { valueKind: 'framework_ceiling', contractKind: 'framework_agreement' } })) }))
     expect(html).toContain('Valoarea e cea maximă a acordului-cadru, nu o plată.')

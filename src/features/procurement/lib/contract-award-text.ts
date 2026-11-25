@@ -81,3 +81,8 @@ export function fullDayText(date: string): string {
   const parsed = new Date(`${date.slice(0, 10)}T00:00:00Z`)
   return Number.isNaN(parsed.getTime()) ? date : formatter.format(parsed)
 }
+
+/** The names view was not readable for the read: the winners are shown with no code or name, and the page says why. */
+export function winnersUnnamedText(): string {
+  return t`Câștigătorii nu pot fi numiți acum: apar fără nume și fără cod fiscal.`
+}
