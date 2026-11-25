@@ -59,8 +59,8 @@ describe('HubFiguresBand', () => {
     const band = render(<HubFiguresBand facts={[fact('a')]} locale="ro" arrow />)
     const svg = band.container.querySelector('dt svg')
     expect(svg).toHaveAttribute('aria-hidden', 'true')
-    // Hidden unless the tile has a link in it; then the landing's rule: hover or focus, always on touch.
-    expect(svg).toHaveClass('hidden', 'group-has-[a]:block', 'opacity-0', 'group-hover:opacity-100', 'group-focus-within:opacity-100')
+    // Hidden unless the label is a link (a link in the note does not count); then the landing's rule: hover or focus, always on touch.
+    expect(svg).toHaveClass('hidden', 'group-has-[dt>a:first-child]:block', 'opacity-0', 'group-hover:opacity-100', 'group-focus-within:opacity-100')
     // The tile's link keeps the label alone as its name.
     expect(screen.getByRole('link')).toHaveAccessibleName('label a')
   })

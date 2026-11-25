@@ -55,7 +55,7 @@ export function HubFiguresBand({
   readonly plain?: boolean
   /**
    * The landing's cue that a tile leads somewhere: an arrow in its corner, decorative, drawn only on a tile
-   * whose label is a link (`group-has-[a]`), with the landing's rule for when it shows
+   * whose label is a link (`group-has-[dt>a:first-child]`: a link in the note does not count), with the landing's rule for when it shows
    * (`national-facts-band.tsx`): on hover or focus where a pointer hovers, always on a touch screen.
    */
   readonly arrow?: boolean
@@ -92,7 +92,7 @@ export function HubFiguresBand({
             {arrow ? (
               <ArrowUpRight
                 aria-hidden="true"
-                className="pointer-events-none absolute right-2 top-2 hidden size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 group-has-[a]:block motion-reduce:transition-none [@media(hover:none)]:opacity-100"
+                className="pointer-events-none absolute right-2 top-2 hidden size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 group-has-[dt>a:first-child]:block motion-reduce:transition-none [@media(hover:none)]:opacity-100"
               />
             ) : null}
           </dt>
