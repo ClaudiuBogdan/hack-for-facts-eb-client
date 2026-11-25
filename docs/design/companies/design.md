@@ -1094,3 +1094,52 @@ counties or fewer would not fold on a phone (every layer has 42); at 360px in
 English the readout's link can wrap to a fourth line and move the map on a
 first tap (as before this round).
 
+## The company page reworked (25 November 2026)
+
+The owner's choices for `/companies/<cui>`, each picked from prototypes kept
+under `src/development/prototypes/companies/` (`profile-head`,
+`profile-activities`, `profile-main-activity`, `profile-years`,
+`profile-business`, and `profile-page`, the page assembled).
+
+### Decisions
+
+- **The head has no chart** („Fără grafic"): the way back in plain text, the
+  name as the landing's headline, the sentence, the chips and identifiers.
+- **One activity across the page** („Same as the band"): the head's sentence
+  and „Ce face firma" both lead with ANAF's presumed main activity, always
+  said as presumed — „Activitate principală (presupusă după ANAF)" — where it
+  is current with an exact key; otherwise the derived selection, as before.
+  The selection the analysis groups by is said in one quiet line only where
+  it differs („În analiza bilanțurilor e grupată la: …"). The owner found two
+  activities side by side confusing. Root was told (a naming choice).
+- **„Ce face firma", designed**: the presumed activity's name large, one
+  description that says what it is („Activitate principală (presupusă după
+  ANAF). Codul CAEN din datele fiscale ANAF, potrivit cu activitățile din
+  ediția ONRC. Nu e o informație publicată de ONRC." — no „O presupunere:",
+  the brackets say it), how it was derived and when behind one ⓘ; beside it
+  how many activities in how many domains, one strip of every domain and the
+  domains ranked with inline bars, the answer's domain marked and always
+  listed.
+- **„Cum merge afacerea" is one chart** („remove the bilanț … focus on a good
+  chart", version „Două panouri" of five): money above (turnover pale, the
+  bottom line solid from zero, a loss red, an admitted profit outlined),
+  people below on their own scale, a clear gap between the panels with no
+  label in it, people named in the legend by their colour (owner: „we need
+  the gap"). Years with no comparable values collapse into one hatched
+  column; a year's reading gives its three figures or why one is missing. No
+  balance-sheet table, no measure switch (`?masura=` is read and ignored).
+- **The bands' order**: the chart, „Ce face firma", „Bilanțurile, an cu an",
+  public money, litigation, the registry. No running numbers.
+- **„Bilanțurile, an cu an" with less at first**: the key lines (and any
+  line with a held or uncounted value in the years shown) and the newest six
+  statements, each a button from the rest.
+- **No list of statements held only in long format** (owner: „remove if we
+  don't have the data or if we can't show it"; confirmed as its own question
+  for root's provenance rule). No figure on the page loses its source: a
+  year's statement, opened from the table, keeps its ANAF query or MF files.
+
+### Left as is
+
+- The public-money band is procurement-da-client's (its v3 reads land
+  separately); the page passes it an empty `index`.
+

@@ -40,7 +40,9 @@ export function CompanyBusinessBand({
   }
   // The newest statement could not be assessed: said where its figures would be. Every value it published is in the years' band.
   const notAssessed = notAssessedNotice(model)
-  const gaps = model.missingYears.length > 0 ? yearRanges(model.missingYears) : null
+  // The years the chart has nothing to draw for: no statement, or one whose values are all left out (their reasons in each year's reading).
+  const blank = model.span.filter((_, index) => model.series.turnover[index]?.value == null && model.series.net[index]?.value == null && model.series.employees[index]?.value == null)
+  const gaps = blank.length > 0 ? yearRanges(blank) : null
   return (
     <ProfileBand id="afacerea" titleId={TITLE_ID}>
       <HubSectionHead titleId={TITLE_ID} index={index} title={title} lede={financialLede(model)} />

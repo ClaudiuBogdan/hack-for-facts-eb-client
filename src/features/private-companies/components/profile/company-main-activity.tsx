@@ -50,6 +50,7 @@ import {
   mainDerivedText,
   mainHistoryNoteText,
   mainDescriptionText,
+  mainDescriptionUnmatchedText,
   mainKickerText,
   mainNoAssignmentText,
   mainOutcomeStatusText,
@@ -201,7 +202,8 @@ function AssignedMainActivity({
       {/* The one sentence in the open (owner, 25 November 2026); how it was derived, and when, behind its marker. */}
       {/* What the lead is, said in the description (owner, 25 November 2026), then the assumption in its one sentence. */}
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        {mainDescriptionText()}{' '}
+        {/* Without an ONRC counterpart the description does not say the code was matched to the edition. */}
+        {activity.resolved ? mainDescriptionText() : mainDescriptionUnmatchedText()}{' '}
         <HubInfoNote label={t`Cum a fost presupusă`}>
           {chain ? (
             <p>

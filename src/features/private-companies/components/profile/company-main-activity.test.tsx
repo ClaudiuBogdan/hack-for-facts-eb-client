@@ -176,6 +176,9 @@ describe('the main activity block', () => {
     renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.marketingNoMatch), [onrc('7311', 'rev2', { isMainCaen: false, matchesAssumedMainCode: false })]))
     expect(screen.getByTestId('company-main-activity-headline').textContent).toBe('Cod ANAF 4730 · revizie necunoscută')
     expect(block().textContent).not.toContain('Corespondent ONRC')
+    // No counterpart: the description says nothing of a match with the edition.
+    expect(block().textContent).not.toContain('potrivit cu activitățile din ediția ONRC')
+    expect(block().textContent).toContain('Activitate principală (presupusă după ANAF), din codul CAEN din datele fiscale ANAF.')
     expect(rowMarks()).toMatchObject({ main: [], sameCode: [], rows: [expect.stringContaining('7311')] })
   })
 

@@ -88,6 +88,11 @@ export function mainDescriptionText(): string {
   return t`Activitate principală (presupusă după ANAF). Codul CAEN din datele fiscale ANAF, potrivit cu activitățile din ediția ONRC. Nu e o informație publicată de ONRC.`
 }
 
+/** The same, where ANAF's code has no ONRC counterpart: nothing said of a match. */
+export function mainDescriptionUnmatchedText(): string {
+  return t`Activitate principală (presupusă după ANAF), din codul CAEN din datele fiscale ANAF. Nu e o informație publicată de ONRC.`
+}
+
 function editionText(activity: CompanyMainActivity): string {
   const edition = activity.edition
   if (!edition) return t`ediția ONRC necunoscută`

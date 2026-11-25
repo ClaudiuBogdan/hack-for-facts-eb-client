@@ -192,7 +192,15 @@ export function CompanyYearsBand({ model, index, last = false }: { readonly mode
             </button>
           ) : null}
           {hiddenYears > 0 || allYears ? (
-            <button type="button" aria-pressed={allYears} onClick={() => setAllYears((value) => !value)} className="inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline">
+            <button
+              type="button"
+              aria-pressed={allYears}
+              onClick={() => {
+                // Folding the older years closes a statement opened among them: its year button is going.
+                if (allYears && chosen !== null && !statements.slice(0, RECENT_YEARS).some((statement) => statement.year === chosen)) setChosen(null)
+                setAllYears((value) => !value)
+              }}
+              className="inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline">
               {allYears ? <Trans>Doar ultimii {RECENT_YEARS} ani</Trans> : plural(hiddenYears, { one: 'Încă un an', few: 'Încă # ani', other: 'Încă # de ani' })}
             </button>
           ) : null}

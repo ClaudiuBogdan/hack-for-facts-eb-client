@@ -9,6 +9,7 @@ import type { PrivateCompanyActivitySelection, PrivateCompanyProfile } from '@/s
 import { activityRowStateText, activitySelectionTexts, truncatedObservationsText } from '../../lib/company-activity-text'
 import { caenDescriptionLines } from '../../lib/company-analytics-text'
 import { mainBadgeText, sameCodeAsAnafText } from '../../lib/company-main-activity-text'
+import { mainShownAsCurrent } from '../../lib/company-main-activity-model'
 import { caenEdition, withAnafWithdrawnSeen, withOwningCompanyRefused, type ActivityGroup, type CompanyProfileModel } from '../../lib/company-profile-model'
 import { CaenDescription } from '../caen-description'
 import { CompanyMainActivity } from './company-main-activity'
@@ -297,7 +298,11 @@ function ActivitySpread({ model, limit = 6 }: { readonly model: CompanyProfileMo
   return (
     <div data-testid="company-activity-spread">
       <p className="text-base text-foreground">
-        {plural(total, { one: 'O activitate autorizată', few: '# activități autorizate', other: '# de activități autorizate' })} {summary}.
+        {/* Registry rows counted as activities only within one CAEN revision: across revisions, or with none, they are entries. */}
+        {revision !== null
+          ? plural(total, { one: 'O activitate autorizată', few: '# activități autorizate', other: '# de activități autorizate' })
+          : plural(total, { one: 'O înscriere de activitate', few: '# înscrieri de activități', other: '# de înscrieri de activități' })}{' '}
+        {summary}.
       </p>
       {strip ? (
         // One whole: every domain as wide as its activities. A picture; the list under it says the same.
@@ -445,35 +450,35 @@ function PresumedFirst({
   readonly onCompanyNotPublic: () => void
 }) {
   const view = model.assumedMain
-  const presumed = view.kind === 'assigned' ? view.activity : null
-  const presumedBlock = <CompanyMainActivity model={model} onAnafWithdrawn={onAnafWithdrawn} onCompanyNotPublic={onCompanyNotPublic} />
-  if (!presumed) {
-    return (
-      <>
-        {model.selection ? (
-          <ActivitySelection selection={model.selection} lead />
-        ) : model.selectionUnavailable ? (
-          <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="company-activity-selection-unavailable">
-            <Trans>Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos.</Trans>
-          </p>
-        ) : (
-          <MainActivity model={model} />
-        )}
-        {/* Mounted for its reads, drawn only when it has something to say (no assignment, unreadable). */}
-        <div className={cn('mt-8 border-t border-border/70 pt-5', (view.kind === 'not_served' || view.kind === 'unavailable' || view.kind === 'refused') && 'hidden')}>
-          {presumedBlock}
-        </div>
-      </>
-    )
-  }
+  // The same rule as the head's sentence: the presumed activity leads only when it is current with an exact key.
+  const presumed = view.kind === 'assigned' && mainShownAsCurrent(view.activity) ? view.activity : null
   const { selection } = model
-  const key = presumed.resolved
+  const key = presumed?.resolved ?? null
   const same = selection !== null && selection.code !== null && key !== null && selection.code === key.code && selection.revision === key.revision
   const grouping = selection === null || same ? null : selection.code !== null ? (selection.label ?? selection.code) : null
+  // The presumed block keeps one place in the tree whichever activity leads: it holds its history read and the
+  // panel a reader opened, and a withdrawal reported by that history must not remount it.
   return (
     <>
-      {presumedBlock}
-      {selection && !same ? (
+      {presumed ? null : model.selection ? (
+        <ActivitySelection selection={model.selection} lead />
+      ) : model.selectionUnavailable ? (
+        <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="company-activity-selection-unavailable">
+          <Trans>Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos.</Trans>
+        </p>
+      ) : (
+        <MainActivity model={model} />
+      )}
+      {/* Mounted for its reads, drawn only when it has something to say (no assignment, unreadable). */}
+      <div
+        className={cn(
+          !presumed && 'mt-8 border-t border-border/70 pt-5',
+          (view.kind === 'not_served' || view.kind === 'unavailable' || view.kind === 'refused') && 'hidden',
+        )}
+      >
+        <CompanyMainActivity model={model} onAnafWithdrawn={onAnafWithdrawn} onCompanyNotPublic={onCompanyNotPublic} />
+      </div>
+      {presumed && selection && !same ? (
         <p className="mt-5 border-t border-border/70 pt-4 text-sm text-muted-foreground" data-testid="company-activity-grouping">
           {grouping !== null ? (
             <Trans>

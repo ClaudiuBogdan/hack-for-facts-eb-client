@@ -3,7 +3,7 @@ import { t } from '@lingui/core/macro'
 import { niceScale } from '@/features/statistics/lib/period-chart'
 import { count, moneyText, moneyTick } from '../../lib/company-profile-format'
 import type { CompanyProfileModel, NetPoint } from '../../lib/company-profile-model'
-import { netPointLabel } from '../../lib/company-profile-text'
+import { measureLabel, netChartLabel, netPointLabel } from '../../lib/company-profile-text'
 import { cn } from '@/lib/utils'
 
 /**
@@ -69,7 +69,7 @@ function scaleOf(values: readonly number[], count: number): { readonly from: num
 }
 
 const HATCH = 'bg-[repeating-linear-gradient(135deg,transparent_0_6px,hsl(var(--muted-foreground)/0.12)_6px_7px)]'
-const percent = (fraction: number) => `${(fraction * 100).toFixed(3)}%`
+const percent = (fraction: number) => `${(fraction * 100).toFixed(4)}%`
 
 /** The figures a year's reading names. */
 export type ChartMetric = 'turnover' | 'net' | 'employees'
@@ -90,7 +90,9 @@ export function CompanyYearsChart({
   const net = model.series.net
   const netValues = net.map((point) => point.value)
   const employees = model.series.employees.map((point) => point.value)
-  const slots = slotsOf(span, new Set(model.missingYears))
+  // A year with nothing to draw — no statement, or one whose values are all left out — joins a run of empty years.
+  const blank = new Set(span.filter((_, index) => turnover[index] == null && netValues[index] == null && employees[index] == null))
+  const slots = slotsOf(span, blank)
   const units = slots.reduce((sum, slot) => sum + (slot.kind === 'gap' ? GAP_WIDTH : 1), 0)
   let cursor = 0
   const placed = slots.map((slot) => {
@@ -135,7 +137,7 @@ export function CompanyYearsChart({
 
   const swatch = (className: string) => <span className={cn('inline-block size-2.5 shrink-0 rounded-[2px]', className)} aria-hidden="true" />
   const netTone = (point: NetPoint | undefined) =>
-    point?.value != null && point.value < 0 ? 'bg-destructive' : point?.kind === 'profit' ? 'border-2 border-primary bg-background' : 'bg-primary'
+    point?.value != null && point.value < 0 ? 'bg-destructive' : point?.kind === 'profit' ? 'bg-background ring-2 ring-inset ring-primary' : 'bg-primary'
 
   /** A run of points, broken at every year without a value and at every gap. */
   const runsOf = (values: readonly (number | null)[], y: (value: number) => number) => {
@@ -163,11 +165,12 @@ export function CompanyYearsChart({
     const zero = y(0)
     const ticks = panel.allTicks ? scale.ticks : [...new Set([scale.from, 0, scale.to])].filter((tick) => tick >= scale.from && tick <= scale.to)
     const format = panel.kind === 'people' ? (value: number) => count(value) : moneyTick
+    // A value that is not zero is at least 2px tall, from the zero line outwards: never rounded away.
     const bar = (left: number, width: number, from: number, to: number, share: number) => ({
       left: percent(left + (width * (1 - share)) / 2),
       width: percent(width * share),
-      top: percent(Math.min(from, to)),
-      height: percent(Math.abs(to - from)),
+      top: to < from ? `min(${percent(to)}, calc(${percent(from)} - 2px))` : percent(from),
+      height: `max(${percent(Math.abs(to - from))}, 2px)`,
     })
     return (
       // A clear gap between the panels, with no label in it (owner, 25 November 2026): two scales, never read as one;
@@ -327,52 +330,46 @@ export function CompanyYearsChart({
           ))}
         </div>
 
-        {/* The year's reading, beside its column: all three figures, whatever the panels draw. */}
-        {reading ? (
-          <div
-            aria-live="polite"
-            className={cn(
-              'pointer-events-none absolute top-0 z-10 w-max min-w-48 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md',
-              reading.entry.left + reading.entry.width / 2 > 0.6 ? '-translate-x-full' : '',
-            )}
-            // The plot starts after the 4rem gutter: a fraction of it is 4rem + fraction × (100% − 4rem).
-            style={{
-              left:
-                reading.entry.left + reading.entry.width / 2 > 0.6
-                  ? `calc(4rem + (100% - 4rem) * ${reading.entry.left.toFixed(4)} - 0.5rem)`
-                  : `calc(4rem + (100% - 4rem) * ${(reading.entry.left + reading.entry.width).toFixed(4)} + 0.5rem)`,
-            }}
-          >
-            <span className="block font-mono tabular-nums text-muted-foreground">{reading.year}</span>
-            <dl className="mt-1.5 grid grid-cols-[auto_minmax(0,13rem)] gap-x-4 gap-y-1" data-testid="company-years-reading">
-              <dt className="inline-flex items-center gap-1.5">
-                {swatch('bg-primary/20')}
-                {t`Cifra de afaceri`}
-              </dt>
-              <Figure value={reading.turnover === null ? null : moneyText(reading.turnover)} reason={() => reasonOf?.(reading.index, 'turnover')} />
-              <dt className="inline-flex items-center gap-1.5">
-                {swatch(netTone(reading.net))}
-                {netPointLabel(reading.net)}
-              </dt>
-              <Figure value={reading.net?.value == null ? null : moneyText(reading.net.value)} reason={() => reasonOf?.(reading.index, 'net')} />
-              <dt className="inline-flex items-center gap-1.5">
-                <span className="inline-block h-0.5 w-2.5 bg-amber-500" aria-hidden="true" />
-                {t`Salariați`}
-              </dt>
-              <Figure value={reading.employees === null ? null : count(reading.employees)} reason={() => reasonOf?.(reading.index, 'employees')} />
-            </dl>
-          </div>
-        ) : null}
+        {/* The year's reading: all three figures, whatever the panels draw. One width, centred over its year and kept
+            inside the plot, so a phone shows all of it. The live region stays mounted, so its first reading is announced. */}
+        <div aria-live="polite" className="pointer-events-none absolute inset-x-0 top-0 z-10">
+          {reading ? (
+            <div
+              className="absolute top-0 w-60 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+              // The plot starts after the 4rem gutter: a point of it is 4rem + fraction × (100% − 4rem).
+              style={{ left: `clamp(0px, calc(4rem + (100% - 4rem) * ${(reading.entry.left + reading.entry.width / 2).toFixed(4)} - 7.5rem), calc(100% - 15rem))` }}
+            >
+              <span className="block font-mono tabular-nums text-muted-foreground">{reading.year}</span>
+              <dl className="mt-1.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1" data-testid="company-years-reading">
+                <dt className="inline-flex items-center gap-1.5">
+                  {swatch('bg-primary/20')}
+                  {t`Cifra de afaceri`}
+                </dt>
+                <Figure value={reading.turnover === null ? null : moneyText(reading.turnover)} reason={() => reasonOf?.(reading.index, 'turnover')} />
+                <dt className="inline-flex items-center gap-1.5">
+                  {swatch(netTone(reading.net))}
+                  {netPointLabel(reading.net)}
+                </dt>
+                <Figure value={reading.net?.value == null ? null : moneyText(reading.net.value)} reason={() => reasonOf?.(reading.index, 'net')} />
+                <dt className="inline-flex items-center gap-1.5">
+                  <span className="inline-block h-0.5 w-2.5 bg-amber-500" aria-hidden="true" />
+                  {t`Salariați`}
+                </dt>
+                <Figure value={reading.employees === null ? null : count(reading.employees)} reason={() => reasonOf?.(reading.index, 'employees')} />
+              </dl>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* The same figures, read out as a table. */}
       <table className="sr-only">
-        <caption>{t`Cifra de afaceri, rezultatul net și salariații, pe ani`}</caption>
+        <caption>{netChartLabel(net)}</caption>
         <thead>
           <tr>
             <th scope="col">{t`An`}</th>
             <th scope="col">{t`Cifra de afaceri`}</th>
-            <th scope="col">{t`Rezultat net`}</th>
+            <th scope="col">{measureLabel('profit', net)}</th>
             <th scope="col">{t`Salariați`}</th>
           </tr>
         </thead>
@@ -380,9 +377,9 @@ export function CompanyYearsChart({
           {span.map((year, index) => (
             <tr key={year}>
               <th scope="row">{year}</th>
-              <td>{turnover[index] == null ? '—' : moneyText(turnover[index]!)}</td>
-              <td>{net[index]?.value == null ? '—' : `${moneyText(net[index]!.value!)} (${netPointLabel(net[index])})`}</td>
-              <td>{employees[index] == null ? '—' : count(employees[index]!)}</td>
+              <td>{turnover[index] == null ? (reasonOf?.(index, 'turnover') ?? '—') : moneyText(turnover[index]!)}</td>
+              <td>{net[index]?.value == null ? (reasonOf?.(index, 'net') ?? '—') : `${moneyText(net[index]!.value!)} (${netPointLabel(net[index])})`}</td>
+              <td>{employees[index] == null ? (reasonOf?.(index, 'employees') ?? '—') : count(employees[index]!)}</td>
             </tr>
           ))}
         </tbody>

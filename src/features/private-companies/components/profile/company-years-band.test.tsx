@@ -29,6 +29,15 @@ describe('CompanyYearsBand', () => {
     expect(years()).toHaveLength(6)
   })
 
+  it('closes a statement opened among the older years when they fold away', () => {
+    render(<CompanyYearsBand model={buildCompanyProfileModel(tenYears())} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Încă 4 ani' }))
+    fireEvent.click(table().getByRole('button', { name: /^Bilanțul pe 2017/u }))
+    expect(screen.getByRole('region', { name: 'Bilanțul pe 2017' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Doar ultimii 6 ani' }))
+    expect(screen.queryByRole('region', { name: 'Bilanțul pe 2017' })).toBeNull()
+  })
+
   it('says how many statements it holds, with no section number', () => {
     render(<CompanyYearsBand model={buildCompanyProfileModel(tenYears())} />)
     const head = screen.getByRole('heading', { level: 2, name: 'Bilanțurile, an cu an' })

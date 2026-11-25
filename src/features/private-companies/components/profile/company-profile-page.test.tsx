@@ -445,11 +445,16 @@ describe('CompanyProfilePage — the head', () => {
     expect(within(sentence()).getByRole('link', { name: /^Comerț cu amănuntul nespecializat/u })).toHaveAttribute('href', '#activitati')
   })
 
-  it('falls back to the selection where the presumed main activity is not current', async () => {
+  it('falls back to the selection where the presumed main activity is not current, in the head and the band alike', async () => {
     render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.onrcSingleClass, mainActivity: assignedRead(MAIN_ACTIVITIES.pendingRefresh) })))
     await registryPinned()
     expect(sentence().textContent).not.toMatch(/presupusă după ANAF/u)
     expect(sentence()).toHaveTextContent(/Activitatea selectată: /u)
+    // The band leads with the same activity: the selection first, the pending presumed one after it.
+    const band = document.getElementById('activitati') as HTMLElement
+    const selection = within(band).getByTestId('company-activity-selection')
+    expect(selection.compareDocumentPosition(within(band).getByTestId('company-main-activity')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(within(band).queryByTestId('company-activity-grouping')).toBeNull()
   })
 
   it('names a selected ONRC class by its exact label, code and revision, and opens its exact filter with the revision', async () => {
@@ -1060,6 +1065,9 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     const reading = within(band.getByTestId('company-years-reading'))
     expect(reading.getByText('Profit net')).toBeInTheDocument()
     expect(reading.queryByText('Rezultat net')).toBeNull()
+    // The table behind the chart says profit too, in its name and its column.
+    const table = screen.getByRole('table', { name: 'Cifra de afaceri, profitul net și salariații' })
+    expect(within(table).getByRole('columnheader', { name: /profit net/iu })).toBeInTheDocument()
   })
 
   it('leaves a held result’s zero profit a gap and says why — never a break-even', async () => {
