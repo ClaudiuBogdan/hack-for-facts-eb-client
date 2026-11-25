@@ -12,6 +12,11 @@ Browser GraphQL answers for `tests/integration/companies-profile.spec.ts`. The p
 - in the two `*-profile.json`, every company value: CUI, organisation id, name, legal form, registration code and recorded date, headline status code and label, territory, fiscal record, CAEN rows, public money and as-of dates;
 - every financial statement value of ABC's 18 years (turnover, profit, loss, employees and the balance-sheet summary), and the trajectory deltas.
 
+**Recorded on 25 November 2026** from the dev API, value for value (reformatted), for the page's reads beside the company's own (they had no mock, so CI read the live API):
+- `company-analysis-release`: `CompanyAnalysisRelease`, no variables — the companies analysis's active release (its metadata, dimensions and limits; no company);
+- `procurement-da-release`: `ProcurementDaRelease`, no variables — the procurement release's status;
+- `procurement-cutoff`: `ProcurementCutoff` for 2026-01–2027-12 — SEAP's national monthly counts, mocked for any range the page asks.
+
 **Curated, synthetic.** Added in October 2026 when the contract grew. None of this is an observation of the September recording, and none of it is ONRC, ANAF or MFP authority:
 - **Registry scope.** One published edition, `41` with epochs `3`/`7` (`scopeKey` `onrc:published:41:3:7`). It uses the server's real version names, and its publication date is the recorded `asOf.onrc` (2026-07-18). It appears in `company-registry.json`, in each profile's `registry` and in each `*-registration-diff.json`.
 - **Registry evidence** for each CUI. It is `IN_EDITION`, with one identifier (the recorded registration code), one identity row and one status row (the recorded headline code). There is one CAEN row per recorded ONRC CAEN activity. Each value has single-observation bases, and coverage is complete. Provenance row hashes are synthetic digests, and source URLs are null.

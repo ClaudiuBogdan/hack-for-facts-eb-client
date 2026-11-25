@@ -20,15 +20,16 @@ vi.mock('@/features/national-budget/analytics/hooks/use-national-budget-analytic
 }))
 
 describe('the national budget page before its catalog', () => {
-  it('shows the head, the pinned bar and every band’s question, not a page-wide skeleton', () => {
+  it('shows the head, the pinned bar and every section’s title, not a page-wide skeleton', () => {
     render(<NationalBudgetHomePage />)
     // Lingui is the suite's mock (src/test/mocks): the source text.
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('De unde vin banii publici')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Bugetul țării')
     expect(screen.getByRole('navigation', { name: 'Secțiunile paginii' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Cifre-cheie' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Pe ce se duc banii publici' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Ce a aprobat Parlamentul' })).toBeInTheDocument()
+    for (const title of ['De unde vin banii și pe ce se duc', 'Prin ce bugete trec banii', 'Bugetul de stat, pe domenii și pe instituții', 'Deficitul, an de an', 'Mai departe']) {
+      expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()
+    }
     // The year menus and the numbers wait for their reads.
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Anul:/u })).not.toBeInTheDocument()
   })
 })

@@ -16,7 +16,7 @@ type MainItemUrl =
   | "/map"
   | "/charts"
   | "/national-budget"
-  | "/entity-analytics"
+  | "/public-institutions"
   | "/procurement"
   | "/pnrr"
   | "/companies"
@@ -64,7 +64,7 @@ const GROUPS: readonly NavGroup[] = [
     key: "institutii",
     title: <Trans>Instituții și organizații</Trans>,
     items: [
-      { title: <Trans>Instituții publice</Trans>, url: "/entity-analytics", icon: ListOrdered },
+      { title: <Trans>Instituții publice</Trans>, url: "/public-institutions", icon: ListOrdered },
       // Building2 stands for "Întreprinderi publice"; private companies need their own mark.
       { title: <Trans>Firme</Trans>, url: "/companies", icon: Briefcase },
       { title: <Trans>Întreprinderi publice</Trans>, url: "/public-enterprises", icon: Building2 },

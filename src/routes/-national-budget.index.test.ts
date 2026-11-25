@@ -45,7 +45,8 @@ describe('/national-budget', () => {
 
   it('is never cached, by a CDN or by the browser', () => {
     const headers = route.headers()
-    expect(headers['Cache-Control']).toMatch(/no-store/)
+    // Private: the render reads the reader's cookies, so no shared cache may keep it (CACHE-001).
+    expect(headers['Cache-Control']).toBe('private, no-store')
     expect(headers['CDN-Cache-Control']).toBe('no-store')
   })
 
@@ -60,5 +61,13 @@ describe('/national-budget', () => {
     expect(headOf({ an: 2020 }).meta).toContainEqual({ name: 'robots', content: 'noindex, follow' })
     expect(headOf({ an: 2020 }).links).toEqual([])
     expect(headOf({ lang: 'en' }).links).toHaveLength(1)
+  })
+
+  it('shares the card of the year and language shown', () => {
+    const image = (search: Record<string, unknown>, locale = 'ro') =>
+      route.head({ match: { context: { locale }, search: route.validateSearch(search) } }).meta.find((entry) => entry.property === 'og:image')?.content
+    expect(image({})).toMatch(/\/national-budget\/share-image\.png\?lang=ro$/)
+    expect(image({ an: 2020 }, 'en')).toMatch(/\/national-budget\/share-image\.png\?an=2020&lang=en$/)
+    expect(headOf({}).meta).toContainEqual({ name: 'twitter:image', content: image({}) })
   })
 })

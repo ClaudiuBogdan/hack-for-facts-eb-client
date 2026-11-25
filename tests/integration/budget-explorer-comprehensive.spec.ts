@@ -34,7 +34,7 @@ async function waitForBudgetExplorerSections(page: Page) {
   ).toBeVisible({ timeout: 15000 })
 }
 
-async function waitForLinkHref(link: Locator, hrefPattern = /\/entity-analytics/) {
+async function waitForLinkHref(link: Locator, hrefPattern = /\/public-institutions/) {
   await expect(link).toBeVisible({ timeout: 15000 })
   await expect.poll(async () => {
     const href = await link.getAttribute('href')
@@ -137,7 +137,7 @@ test.describe('National Budget Page', () => {
     )
     const decodedHref = decodeURIComponent(totalHref ?? '')
 
-    expect(totalHref ?? '').toContain('/entity-analytics')
+    expect(totalHref ?? '').toContain('/public-institutions')
     expect(decodedHref).toContain('line-items')
     expect(decodedHref).toContain('budget_sector_ids')
     expect(decodedHref).toMatch(/"account_category":"ch"|account_category=ch/i)

@@ -31,6 +31,7 @@ import { Route as PnrrRouteImport } from './routes/pnrr'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProcurementRouteRouteImport } from './routes/procurement/route'
 import { Route as ProvocareRouteImport } from './routes/provocare'
+import { Route as PublicInstitutionsRouteImport } from './routes/public-institutions'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as TestErrorRouteImport } from './routes/test-error'
@@ -74,6 +75,7 @@ import { Route as LegislationGuideRouteImport } from './routes/legislation/guide
 import { Route as LegislationSearchRouteImport } from './routes/legislation/search'
 import { Route as NationalBudgetIndexRouteImport } from './routes/national-budget.index'
 import { Route as NationalBudgetAnalyticsRouteImport } from './routes/national-budget.analytics'
+import { Route as NationalBudgetShareImageDotpngRouteImport } from './routes/national-budget.share-image[.]png'
 import { Route as NgosIndexRouteImport } from './routes/ngos/index'
 import { Route as NgosCuiRouteImport } from './routes/ngos.$cui'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
@@ -314,6 +316,13 @@ const ProvocareRoute = ProvocareRouteImport.update({
   path: '/provocare',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/provocare.lazy').then((d) => d.Route))
+const PublicInstitutionsRoute = PublicInstitutionsRouteImport.update({
+  id: '/public-institutions',
+  path: '/public-institutions',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/public-institutions.lazy').then((d) => d.Route),
+)
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
@@ -569,6 +578,12 @@ const NationalBudgetAnalyticsRoute = NationalBudgetAnalyticsRouteImport.update({
 } as any).lazy(() =>
   import('./routes/national-budget.analytics.lazy').then((d) => d.Route),
 )
+const NationalBudgetShareImageDotpngRoute =
+  NationalBudgetShareImageDotpngRouteImport.update({
+    id: '/national-budget/share-image.png',
+    path: '/national-budget/share-image.png',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const NgosIndexRoute = NgosIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -1574,6 +1589,7 @@ export interface FileRoutesByFullPath {
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/public-institutions': typeof PublicInstitutionsRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
@@ -1606,6 +1622,7 @@ export interface FileRoutesByFullPath {
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
   '/national-budget/analytics': typeof NationalBudgetAnalyticsRoute
+  '/national-budget/share-image.png': typeof NationalBudgetShareImageDotpngRoute
   '/ngos/$cui': typeof NgosCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr/judete': typeof PnrrJudeteRoute
@@ -1763,6 +1780,7 @@ export interface FileRoutesByTo {
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/public-institutions': typeof PublicInstitutionsRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
@@ -1791,6 +1809,7 @@ export interface FileRoutesByTo {
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
   '/national-budget/analytics': typeof NationalBudgetAnalyticsRoute
+  '/national-budget/share-image.png': typeof NationalBudgetShareImageDotpngRoute
   '/ngos/$cui': typeof NgosCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr/judete': typeof PnrrJudeteRoute
@@ -1952,6 +1971,7 @@ export interface FileRoutesById {
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/public-institutions': typeof PublicInstitutionsRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
@@ -1984,6 +2004,7 @@ export interface FileRoutesById {
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
   '/national-budget/analytics': typeof NationalBudgetAnalyticsRoute
+  '/national-budget/share-image.png': typeof NationalBudgetShareImageDotpngRoute
   '/ngos/$cui': typeof NgosCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr_/judete': typeof PnrrJudeteRoute
@@ -2151,6 +2172,7 @@ export interface FileRouteTypes {
     | '/pnrr'
     | '/privacy'
     | '/provocare'
+    | '/public-institutions'
     | '/sign-in'
     | '/sign-up'
     | '/test-error'
@@ -2183,6 +2205,7 @@ export interface FileRouteTypes {
     | '/legislation/guide'
     | '/legislation/search'
     | '/national-budget/analytics'
+    | '/national-budget/share-image.png'
     | '/ngos/$cui'
     | '/pnrr/share-image.png'
     | '/pnrr/judete'
@@ -2340,6 +2363,7 @@ export interface FileRouteTypes {
     | '/pnrr'
     | '/privacy'
     | '/provocare'
+    | '/public-institutions'
     | '/sign-in'
     | '/sign-up'
     | '/test-error'
@@ -2368,6 +2392,7 @@ export interface FileRouteTypes {
     | '/legislation/guide'
     | '/legislation/search'
     | '/national-budget/analytics'
+    | '/national-budget/share-image.png'
     | '/ngos/$cui'
     | '/pnrr/share-image.png'
     | '/pnrr/judete'
@@ -2528,6 +2553,7 @@ export interface FileRouteTypes {
     | '/pnrr'
     | '/privacy'
     | '/provocare'
+    | '/public-institutions'
     | '/sign-in'
     | '/sign-up'
     | '/test-error'
@@ -2560,6 +2586,7 @@ export interface FileRouteTypes {
     | '/legislation/guide'
     | '/legislation/search'
     | '/national-budget/analytics'
+    | '/national-budget/share-image.png'
     | '/ngos/$cui'
     | '/pnrr/share-image.png'
     | '/pnrr_/judete'
@@ -2726,6 +2753,7 @@ export interface RootRouteChildren {
   PnrrRoute: typeof PnrrRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
+  PublicInstitutionsRoute: typeof PublicInstitutionsRoute
   SignInRoute: typeof SignInRouteWithChildren
   SignUpRoute: typeof SignUpRouteWithChildren
   TestErrorRoute: typeof TestErrorRoute
@@ -2749,6 +2777,7 @@ export interface RootRouteChildren {
   LegislationGuideRoute: typeof LegislationGuideRoute
   LegislationSearchRoute: typeof LegislationSearchRoute
   NationalBudgetAnalyticsRoute: typeof NationalBudgetAnalyticsRoute
+  NationalBudgetShareImageDotpngRoute: typeof NationalBudgetShareImageDotpngRoute
   PnrrJudeteRoute: typeof PnrrJudeteRoute
   PnrrOrganizatiiRoute: typeof PnrrOrganizatiiRoute
   PnrrProiecteRoute: typeof PnrrProiecteRoute
@@ -2960,6 +2989,13 @@ declare module '@tanstack/react-router' {
       path: '/provocare'
       fullPath: '/provocare'
       preLoaderRoute: typeof ProvocareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public-institutions': {
+      id: '/public-institutions'
+      path: '/public-institutions'
+      fullPath: '/public-institutions'
+      preLoaderRoute: typeof PublicInstitutionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sign-in': {
@@ -3268,6 +3304,13 @@ declare module '@tanstack/react-router' {
       path: '/national-budget/analytics'
       fullPath: '/national-budget/analytics'
       preLoaderRoute: typeof NationalBudgetAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national-budget/share-image.png': {
+      id: '/national-budget/share-image.png'
+      path: '/national-budget/share-image.png'
+      fullPath: '/national-budget/share-image.png'
+      preLoaderRoute: typeof NationalBudgetShareImageDotpngRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ngos/': {
@@ -4652,6 +4695,7 @@ const rootRouteChildren: RootRouteChildren = {
   PnrrRoute: PnrrRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,
+  PublicInstitutionsRoute: PublicInstitutionsRoute,
   SignInRoute: SignInRouteWithChildren,
   SignUpRoute: SignUpRouteWithChildren,
   TestErrorRoute: TestErrorRoute,
@@ -4675,6 +4719,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegislationGuideRoute: LegislationGuideRoute,
   LegislationSearchRoute: LegislationSearchRoute,
   NationalBudgetAnalyticsRoute: NationalBudgetAnalyticsRoute,
+  NationalBudgetShareImageDotpngRoute: NationalBudgetShareImageDotpngRoute,
   PnrrJudeteRoute: PnrrJudeteRoute,
   PnrrOrganizatiiRoute: PnrrOrganizatiiRoute,
   PnrrProiecteRoute: PnrrProiecteRoute,

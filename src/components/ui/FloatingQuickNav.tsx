@@ -55,7 +55,7 @@ export function FloatingQuickNav({ className, mapViewType, mapActive, tableActiv
 
     const handleTableNavigate = () => {
         const next = convertFilterInputToEntityTableState(filterInput)
-        navigate({ to: '/entity-analytics', search: next });
+        navigate({ to: '/public-institutions', search: next });
     }
 
     const handleChartNavigate = () => {

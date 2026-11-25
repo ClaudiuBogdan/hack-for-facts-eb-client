@@ -2,97 +2,21 @@ import { useCallback, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisCaen } from '@/schemas/company-analytics'
 import type { PrivateCompanyActivitySelection, PrivateCompanyProfile } from '@/schemas/private-company'
 import { activityRowStateText, activitySelectionTexts, truncatedObservationsText } from '../../lib/company-activity-text'
 import { caenDescriptionLines } from '../../lib/company-analytics-text'
 import { mainBadgeText, sameCodeAsAnafText } from '../../lib/company-main-activity-text'
+import { mainShownAsCurrent } from '../../lib/company-main-activity-model'
 import { caenEdition, withAnafWithdrawnSeen, withOwningCompanyRefused, type ActivityGroup, type CompanyProfileModel } from '../../lib/company-profile-model'
 import { CaenDescription } from '../caen-description'
 import { CompanyMainActivity } from './company-main-activity'
 import { HubInfoNote } from '../hub/hub-info-note'
-import { BAND_GRID_CLASS, ProfileBand, ROW_LINK_CLASS } from './company-profile-band'
+import { ProfileBand, ROW_LINK_CLASS } from './company-profile-band'
 
 const TITLE_ID = 'company-activities-title'
-
-/**
- * „Ce face firma": first, where the API serves it, the ANAF-assumed main
- * activity (`CompanyMainActivity`) — an assumption from ANAF's fiscal code,
- * never a principal activity ONRC declared; its flags mark the one ONRC class
- * row it names („principală (presupusă)") and the rows with the same digits
- * („același cod ca ANAF"), and nothing else. Then the derived activity
- * selection, unchanged — ONRC first, ANAF's
- * fiscal code only when the edition holds no class — with how it was
- * selected, each source's date and the edition's coverage; from an older API
- * that serves none, the ANAF fiscal CAEN code, as before. Then the
- * activities the pinned ONRC edition observes, by revision and division — a
- * division opens on its classes; the rows that are no class (a short source
- * code, an unknown revision, a key no catalog names, an unparsed code) close
- * their revision as one group of unqualified observations, with no division
- * number or sector, each row its code as served and what it is, unlabelled.
- * Each statement keeps its source: ANAF's code is named only from
- * its own CAEN revision (its published data may identify none) and is never a
- * current ONRC fact; the registry's meaning of the same digits is said as the
- * registry's. Every revision the edition lists is shown, Rev.0 included, each
- * under its own name; names come from the current database catalog of the
- * row's own revision, and a row with no known revision has none.
- *
- * Once the main activity's history reports ANAF's source withdrawn under the
- * assignment shown, the main block and the rows' flags lose every ANAF field
- * at once (`withAnafWithdrawnSeen`), until the profile read again answers.
- * Once it answers that the company is no longer public, the main block and
- * the rows' flags go at once (`withOwningCompanyRefused`) and the page's
- * privacy path is told (`onCompanyGone`): it hides the answer and reads the
- * profile again.
- */
-export function CompanyActivitiesBand({
-  model: served,
-  index,
-  onCompanyGone,
-}: {
-  readonly model: CompanyProfileModel
-  readonly index: string
-  /** The page's privacy path for a dependent read that found the company gone (`useProfileRegistryScope`). */
-  readonly onCompanyGone?: () => void
-}) {
-  const [anafWithdrawnUnder, setAnafWithdrawnUnder] = useState<string | null>(null)
-  const [refusedAnswer, setRefusedAnswer] = useState<PrivateCompanyProfile | null>(null)
-  const model = withOwningCompanyRefused(withAnafWithdrawnSeen(served, anafWithdrawnUnder), refusedAnswer)
-  const answer = served.profile
-  const onCompanyNotPublic = useCallback(() => {
-    setRefusedAnswer(answer)
-    onCompanyGone?.()
-  }, [answer, onCompanyGone])
-  return (
-    <ProfileBand id="activitati" titleId={TITLE_ID}>
-      <div className={BAND_GRID_CLASS}>
-        <div className="min-w-0 lg:col-span-5">
-          <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>Ce face firma</Trans>} />
-          <CompanyMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} className="mt-8" />
-          {model.selection ? (
-            <ActivitySelection selection={model.selection} className="mt-8" />
-          ) : model.selectionUnavailable ? (
-            <p role="status" className="mt-8 border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="company-activity-selection-unavailable">
-              <Trans>Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos.</Trans>
-            </p>
-          ) : (
-            <MainActivity model={model} className="mt-8" />
-          )}
-        </div>
-        {model.activities.total > 0 ? (
-          <div className={cn('min-w-0 lg:col-span-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-            <MonoLabel className="block text-muted-foreground">
-              <Trans>Activitățile autorizate, pe domenii</Trans>
-            </MonoLabel>
-            <ActivityGroups model={model} className="mt-4" />
-          </div>
-        ) : null}
-      </div>
-    </ProfileBand>
-  )
-}
 
 function MainActivity({ model, className }: { readonly model: CompanyProfileModel; readonly className?: string }) {
   const { mainActivity } = model
@@ -107,9 +31,9 @@ function MainActivity({ model, className }: { readonly model: CompanyProfileMode
   const edition = revision ? caenEdition(revision) : null
   return (
     <div className={cn('border-l-2 border-primary pl-4', className)}>
-      <MonoLabel className="block text-primary">
+      <span className="block text-xs font-medium text-primary">
         <Trans>Cod CAEN fiscal ANAF · {mainActivity.code}</Trans>
-      </MonoLabel>
+      </span>
       <p className="mt-2 text-lg font-semibold leading-snug text-foreground">{label ?? <Trans>Codul CAEN {code}</Trans>}</p>
       <p className="mt-1 text-sm text-muted-foreground">
         {edition ? (
@@ -144,7 +68,16 @@ function MainActivity({ model, className }: { readonly model: CompanyProfileMode
  * classes are listed beside it, and why (what ANAF's code says beside them)
  * sits with how, behind the title's info button.
  */
-function ActivitySelection({ selection, className }: { readonly selection: PrivateCompanyActivitySelection; readonly className?: string }) {
+function ActivitySelection({
+  selection,
+  className,
+  lead = false,
+}: {
+  readonly selection: PrivateCompanyActivitySelection
+  readonly className?: string
+  /** The band's answer: no rule beside it, the title at the answer's size. */
+  readonly lead?: boolean
+}) {
   const texts = activitySelectionTexts(selection)
   const incomplete = selection.caenCoverage === 'partial' || selection.caenCoverage === 'unresolved'
   const selected = selection.code !== null
@@ -160,13 +93,19 @@ function ActivitySelection({ selection, className }: { readonly selection: Priva
     </HubInfoNote>
   )
   return (
-    <div className={cn('border-l-2 pl-4', selected ? 'border-primary' : 'border-border', className)} data-testid="company-activity-selection">
-      <MonoLabel className="block text-primary">{texts.kicker}</MonoLabel>
-      <div className={cn('mt-2 text-lg font-semibold leading-snug', selected ? 'text-foreground' : 'text-muted-foreground')}>
+    <div className={cn(!lead && 'border-l-2 pl-4', !lead && (selected ? 'border-primary' : 'border-border'), className)} data-testid="company-activity-selection">
+      <span className={cn('block text-xs', lead ? 'text-muted-foreground' : 'font-medium text-primary')}>{texts.kicker}</span>
+      <div
+        className={cn(
+          'mt-2 font-semibold',
+          lead ? 'text-2xl leading-tight tracking-tight sm:text-[1.75rem]' : 'text-lg leading-snug',
+          selected ? 'text-foreground' : 'text-muted-foreground',
+        )}
+      >
         <SelectionTitle selection={selection} />
         {quiet ? <> {how}</> : null}
       </div>
-      {meta ? <MonoLabel className="mt-1.5 block leading-relaxed text-muted-foreground">{meta}</MonoLabel> : null}
+      {meta ? <span className="mt-1.5 block text-xs leading-relaxed text-muted-foreground">{meta}</span> : null}
       {quiet ? null : (
         <p className="mt-2 text-sm text-muted-foreground">
           {texts.basis} {how}
@@ -233,72 +172,208 @@ function revisionName(revision: string | null): string {
   return revision ? `CAEN ${caenEdition(revision)}` : t`Fără revizie CAEN`
 }
 
-function ActivityGroups({ model, limit = 8, className }: { readonly model: CompanyProfileModel; readonly limit?: number; readonly className?: string }) {
+/** The registry's spread: the top domains in the county map's five navy steps, darkest first; the rest one grey. */
+const SPREAD_STEPS = ['bg-choropleth-5', 'bg-choropleth-4', 'bg-choropleth-3', 'bg-choropleth-2', 'bg-choropleth-1'] as const
+const SPREAD_REST = 'bg-muted-foreground/25'
+
+/** The division an ONRC key sits in, in its own revision; null without a key. */
+function groupKeyOf(model: CompanyProfileModel, key: { readonly code: string | null; readonly revision: string | null } | null): string | null {
+  if (!key || key.code === null) return null
+  const division = key.code.slice(0, 2)
+  return model.activities.groups.find((group) => group.division === division && group.revision === key.revision)?.key ?? null
+}
+
+/**
+ * The domain the band's answer sits in, and what to call it: the presumed main activity's ONRC counterpart where
+ * the band leads with it (`presumedFirst`), else the selection's class (ONRC only).
+ */
+function markedGroup(model: CompanyProfileModel, presumedFirst: boolean): { readonly key: string | null; readonly presumed: boolean } {
+  const view = model.assumedMain
+  if (presumedFirst && view.kind === 'assigned' && view.activity.resolved) {
+    return { key: groupKeyOf(model, view.activity.resolved), presumed: true }
+  }
+  const { selection } = model
+  if (!selection || selection.source !== 'onrc') return { key: null, presumed: false }
+  return { key: groupKeyOf(model, selection), presumed: false }
+}
+
+/**
+ * „Ce face firma" (owner, 25 November 2026: „I would like a design. Rethink
+ * the section"; „Only the presumed main"). The band answers once, then shows
+ * the registry's spread.
+ *
+ * - The answer, left (`PresumedFirst`): ANAF's presumed main activity
+ *   (`CompanyMainActivity`) — its name, one description that says it is
+ *   presumed, how it was derived behind ⓘ — never called a registered
+ *   principal activity. The derived selection the analysis groups by is said
+ *   in one quiet line only where it differs; it is the answer only where ANAF
+ *   gives no presumed activity. The presumed block stays mounted in every
+ *   case: it reads on load (its history, the analysis link).
+ * - The spread, right (`ActivitySpread`): how many activities in how many
+ *   domains, in a sentence; one strip of every domain as wide as its
+ *   activities, the five largest in the navy steps and the rest grey; the
+ *   domains ranked with an inline bar keyed to the strip, each opening on its
+ *   activities (the API's main badge and same-code hint on its rows); the
+ *   answer's domain marked and always listed; the notes behind one ⓘ, the
+ *   cut-list line in the open.
+ *
+ * Once a history row reports ANAF's source withdrawn, every ANAF field goes
+ * at once (`withAnafWithdrawnSeen`) here and, through `onAnafWithdrawn`, in
+ * the page's head; once the company is reported no longer public, the main
+ * block and the rows' flags go (`withOwningCompanyRefused`) and the page's
+ * privacy path is told (`onCompanyGone`).
+ */
+export function CompanyActivitiesBand({
+  model: served,
+  index,
+  onCompanyGone,
+  onAnafWithdrawn,
+}: {
+  readonly model: CompanyProfileModel
+  /** The band's numbered caption; none on a page that numbers no band. */
+  readonly index?: string
+  /** The page's privacy path for a dependent read that found the company gone (`useProfileRegistryScope`). */
+  readonly onCompanyGone?: () => void
+  /** Told when a history row reports ANAF's source withdrawn, so the page's head drops the activity at once too. */
+  readonly onAnafWithdrawn?: (identity: string) => void
+}) {
+  const [anafWithdrawnUnder, setAnafWithdrawnUnder] = useState<string | null>(null)
+  const [refusedAnswer, setRefusedAnswer] = useState<PrivateCompanyProfile | null>(null)
+  const model = withOwningCompanyRefused(withAnafWithdrawnSeen(served, anafWithdrawnUnder), refusedAnswer)
+  const answer = served.profile
+  const onCompanyNotPublic = useCallback(() => {
+    setRefusedAnswer(answer)
+    onCompanyGone?.()
+  }, [answer, onCompanyGone])
+  const onWithdrawn = useCallback(
+    (identity: string) => {
+      setAnafWithdrawnUnder(identity)
+      onAnafWithdrawn?.(identity)
+    },
+    [onAnafWithdrawn],
+  )
+  return (
+    <ProfileBand id="activitati" titleId={TITLE_ID}>
+      <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>Ce face firma</Trans>} />
+      <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="min-w-0 lg:col-span-5">
+          <PresumedFirst model={model} onAnafWithdrawn={onWithdrawn} onCompanyNotPublic={onCompanyNotPublic} />
+        </div>
+        {model.activities.total > 0 ? (
+          <div className="min-w-0 lg:col-span-7">
+            <ActivitySpread model={model} />
+          </div>
+        ) : null}
+      </div>
+    </ProfileBand>
+  )
+}
+
+/** How widely the company is registered: a sentence, the strip, the ranked domains, the notes. */
+function ActivitySpread({ model, limit = 6 }: { readonly model: CompanyProfileModel; readonly limit?: number }) {
+  const strip = true
   const [open, setOpen] = useState<string | null>(null)
   const [all, setAll] = useState(false)
-  const { groups, total, revision, byRevision } = model.activities
-  const shown = all ? groups : groups.slice(0, limit)
+  const { groups: served, total, revision, byRevision } = model.activities
+  // Domains largest first, across revisions (a division in two revisions is two domains, as the registry lists
+  // them); the rows that are no class — unqualified or unassessed observations — close the list, never a domain.
+  const classes = served.filter((group) => group.kind === 'class').sort((a, b) => b.activities.length - a.activities.length)
+  const groups = [...classes, ...served.filter((group) => group.kind !== 'class')]
+  const largest = groups.reduce((most, group) => Math.max(most, group.activities.length), 1)
+  const marked = markedGroup(model, true)
+  const selected = marked.key
+  // A domain's colour by its rank among the domains; observations that are no class have none (they are not in the strip).
+  const tone = (group: ActivityGroup) => {
+    const rank = classes.indexOf(group)
+    return rank === -1 ? 'bg-transparent' : (SPREAD_STEPS[rank] ?? SPREAD_REST)
+  }
+  // The answer's domain is always in the list: under the largest ones, in its rank, when it is not among them.
+  const top = groups.slice(0, limit)
+  const pinned = selected !== null && !top.some((group) => group.key === selected) ? groups.find((group) => group.key === selected) : undefined
+  const shown = all ? groups : pinned ? [...top, pinned] : top
   const nomenclature = revision ? ` (CAEN ${caenEdition(revision)})` : ''
-  // Several revisions, or none named: each block of groups is headed by its own revision.
   const headed = revision === null
-  // The groups come ordered by revision, so one revision's groups are consecutive.
-  const blocks: { key: string; revision: string | null; groups: { group: ActivityGroup; index: number }[] }[] = []
-  shown.forEach((group, index) => {
-    const last = blocks[blocks.length - 1]
-    if (last?.revision === group.revision) last.groups.push({ group, index })
-    else blocks.push({ key: group.key, revision: group.revision, groups: [{ group, index }] })
-  })
+  const domainCount = classes.length
+  const summary = plural(domainCount, { one: 'într-un domeniu', few: 'în # domenii', other: 'în # de domenii' })
   return (
-    <div className={className}>
-      {blocks.map((block) => (
-        <div key={block.key} className={headed ? 'mt-4 first:mt-0' : undefined}>
-          {headed ? <MonoLabel className="mb-1 block text-muted-foreground">{revisionName(block.revision)}</MonoLabel> : null}
-          <ul className="divide-y divide-border/70 border-y border-border/70">
-            {block.groups.map(({ group, index }) => {
-              const expanded = open === group.key
-              const panelId = `company-activities-${String(index)}`
-              return (
-                <li key={group.key}>
-                  <button
-                    type="button"
-                    aria-expanded={expanded}
-                    aria-controls={panelId}
-                    onClick={() => setOpen(expanded ? null : group.key)}
-                    className={cn('grid w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5 text-left', ROW_LINK_CLASS)}
-                  >
-                    <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{group.division ?? ''}</MonoLabel>
-                    <span className="text-sm text-foreground">{group.label}</span>
-                    <span className="pr-1 text-sm tabular-nums text-muted-foreground">{group.activities.length}</span>
-                  </button>
-                  {expanded ? (
-                    <ul id={panelId} className="mb-3 ml-11 space-y-1.5 border-l pl-3">
-                      {group.activities.map((activity, row) => (
-                        // A row may repeat (the transport carries no row identifier): its position keeps it.
-                        <li key={`${activity.code}-${String(row)}`} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2 text-sm">
-                          <span className="font-mono text-xs tabular-nums text-muted-foreground">{activity.code}</span>
-                          <span className="text-muted-foreground">
-                            {activity.label ?? activityRowStateText(activity.classState)}
-                            {/* The API's flags only: the main badge where it names this row, the hint where only the digits agree. */}
-                            {activity.isMainCaen === true ? (
-                              <span className="ml-2 inline-block rounded-sm border border-primary/40 px-1.5 text-xs font-medium text-primary" data-testid="company-activity-main-badge">
-                                {mainBadgeText()}
-                              </span>
-                            ) : activity.matchesAssumedMainCode === true ? (
-                              <span className="ml-2 inline-block text-xs text-muted-foreground" data-testid="company-activity-same-code-hint">
-                                · {sameCodeAsAnafText()}
-                              </span>
-                            ) : null}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </li>
-              )
-            })}
-          </ul>
+    <div data-testid="company-activity-spread">
+      <p className="text-base text-foreground">
+        {/* Registry rows counted as activities only within one CAEN revision: across revisions, or with none, they are entries. */}
+        {revision !== null
+          ? plural(total, { one: 'O activitate autorizată', few: '# activități autorizate', other: '# de activități autorizate' })
+          : plural(total, { one: 'O înscriere de activitate', few: '# înscrieri de activități', other: '# de înscrieri de activități' })}{' '}
+        {summary}.
+      </p>
+      {strip ? (
+        // One whole: every domain as wide as its activities. A picture; the list under it says the same.
+        <div className="mt-4 flex h-7 gap-px overflow-hidden rounded-sm bg-border/60" aria-hidden="true" data-testid="company-activity-strip">
+          {classes.map((group) => (
+            <span
+              key={group.key}
+              className={cn('min-w-px', tone(group), group.key === selected && 'ring-2 ring-inset ring-foreground')}
+              style={{ flexGrow: group.activities.length, flexBasis: 0 }}
+              title={`${group.label}: ${String(group.activities.length)}`}
+            />
+          ))}
         </div>
-      ))}
+      ) : null}
+      <ul className="mt-5 divide-y divide-border/70 border-y border-border/70">
+        {shown.map((group) => {
+          const index = groups.indexOf(group)
+          const expanded = open === group.key
+          const panelId = `company-activities-${String(index)}`
+          const count = group.activities.length
+          return (
+            <li key={group.key}>
+              <button
+                type="button"
+                aria-expanded={expanded}
+                aria-controls={panelId}
+                onClick={() => setOpen(expanded ? null : group.key)}
+                className={cn('grid w-full grid-cols-[0.75rem_2rem_minmax(0,1fr)_2.5rem] items-start gap-x-3 py-2.5 text-left', ROW_LINK_CLASS)}
+              >
+                <span className={cn('mt-1.5 size-2.5 rounded-[2px]', strip ? tone(group) : 'bg-transparent')} aria-hidden="true" />
+                <MonoLabel className="pt-1 tabular-nums text-muted-foreground">{group.division ?? ''}</MonoLabel>
+                <span className="min-w-0">
+                  <span className="text-sm leading-snug text-foreground">{group.label}</span>
+                  {group.key === selected ? (
+                    <span className="ml-2 inline-block rounded-sm border border-primary/40 px-1.5 text-xs font-medium text-primary">
+                      {marked.presumed ? <Trans>aici e activitatea principală presupusă</Trans> : <Trans>aici e activitatea selectată</Trans>}
+                    </span>
+                  ) : null}
+                  {headed ? <span className="ml-2 text-xs text-muted-foreground">{revisionName(group.revision)}</span> : null}
+                  <span className="mt-1.5 block h-1 bg-muted/70" aria-hidden="true">
+                    <span className="block h-full bg-primary/60" style={{ width: `${Math.max(2, (count / largest) * 100).toFixed(1)}%` }} />
+                  </span>
+                </span>
+                <span className="pr-1 text-right text-sm tabular-nums text-muted-foreground">{count}</span>
+              </button>
+              {expanded ? (
+                <ul id={panelId} className="mb-3 ml-[3.75rem] space-y-1.5 border-l pl-3">
+                  {group.activities.map((activity, row) => (
+                    // A row may repeat (the transport carries no row identifier): its position keeps it.
+                    <li key={`${activity.code}-${String(row)}`} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2 text-sm">
+                      <span className="font-mono text-xs tabular-nums text-muted-foreground">{activity.code}</span>
+                      <span className="text-muted-foreground">
+                        {activity.label ?? activityRowStateText(activity.classState)}
+                        {activity.isMainCaen === true ? (
+                          <span className="ml-2 inline-block rounded-sm border border-primary/40 px-1.5 text-xs font-medium text-primary" data-testid="company-activity-main-badge">
+                            {mainBadgeText()}
+                          </span>
+                        ) : activity.matchesAssumedMainCode === true ? (
+                          <span className="ml-2 inline-block text-xs text-muted-foreground" data-testid="company-activity-same-code-hint">
+                            · {sameCodeAsAnafText()}
+                          </span>
+                        ) : null}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
       {groups.length > limit ? (
         <button
           type="button"
@@ -309,49 +384,114 @@ function ActivityGroups({ model, limit = 8, className }: { readonly model: Compa
           {all ? <Trans>Doar primele {limit} domenii</Trans> : plural(groups.length, { one: 'Un domeniu', few: 'Toate cele # domenii', other: 'Toate cele # de domenii' })}
         </button>
       ) : null}
-      {/* The API bounds the list: a cut list says the edition's count beside what is shown, never passes for all of it. */}
       {model.registry.observationsTruncated ? (
         <p className="mt-4 text-xs text-muted-foreground" data-testid="company-activities-truncated">
           {model.selection ? truncatedObservationsText(model.selection.observationCount, total) : t`Lista e scurtată: ediția are mai multe înscrieri decât cele afișate aici.`}
         </p>
-      ) : (
-        <p className="mt-4 text-xs text-muted-foreground">
-          {revision !== null ? (
-            plural(total, {
-              one: `O activitate autorizată în registrul comerțului${nomenclature}.`,
-              few: `# activități autorizate în registrul comerțului${nomenclature}.`,
-              other: `# de activități autorizate în registrul comerțului${nomenclature}.`,
-            })
-          ) : byRevision.length > 1 ? (
-            plural(total, {
-              one: 'O activitate înscrisă în registrul comerțului.',
-              few: '# înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.',
-              other: '# de înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.',
-            })
-          ) : (
-            plural(total, {
-              one: 'O activitate înscrisă în registrul comerțului, fără revizie CAEN.',
-              few: '# activități înscrise în registrul comerțului, fără revizie CAEN.',
-              other: '# de activități înscrise în registrul comerțului, fără revizie CAEN.',
-            })
-          )}
-        </p>
-      )}
-      {byRevision.length > 1 ? (
-        <p className="mt-1 text-xs text-muted-foreground">{byRevision.map((entry) => `${revisionName(entry.revision)}: ${String(entry.count)}`).join(' · ')}</p>
       ) : null}
-      <p className="mt-2 text-xs text-muted-foreground">
-        <Trans>
-          Din ediția ONRC afișată. Denumirile sunt din nomenclatorul CAEN curent al platformei, pe revizia fiecărei înscrieri; o înscriere
-          fără revizie cunoscută nu are denumire.
-        </Trans>
-        {groups.some((group) => group.activities.some((activity) => activity.classState !== null && activity.classState !== 'class')) ? (
-          <>
-            {' '}
-            <Trans>O înscriere neclasificată (cod scurt, cod fără denumire în nomenclator, cod neinterpretabil) nu are denumire și nu e o activitate clasificată.</Trans>
-          </>
-        ) : null}
+      <p className="mt-3 text-xs text-muted-foreground">
+        <Trans>Din registrul comerțului, ediția ONRC afișată.</Trans>{' '}
+        <HubInfoNote label={t`Despre lista activităților`}>
+          {model.registry.observationsTruncated ? null : (
+            <p>
+              {revision !== null
+                ? plural(total, {
+                    one: `O activitate autorizată în registrul comerțului${nomenclature}.`,
+                    few: `# activități autorizate în registrul comerțului${nomenclature}.`,
+                    other: `# de activități autorizate în registrul comerțului${nomenclature}.`,
+                  })
+                : byRevision.length > 1
+                  ? plural(total, {
+                      one: 'O activitate înscrisă în registrul comerțului.',
+                      few: '# înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.',
+                      other: '# de înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.',
+                    })
+                  : plural(total, {
+                      one: 'O activitate înscrisă în registrul comerțului, fără revizie CAEN.',
+                      few: '# activități înscrise în registrul comerțului, fără revizie CAEN.',
+                      other: '# de activități înscrise în registrul comerțului, fără revizie CAEN.',
+                    })}
+            </p>
+          )}
+          {byRevision.length > 1 ? <p>{byRevision.map((entry) => `${revisionName(entry.revision)}: ${String(entry.count)}`).join(' · ')}</p> : null}
+          <p>
+            <Trans>
+              Denumirile sunt din nomenclatorul CAEN curent al platformei, pe revizia fiecărei înscrieri; o înscriere fără revizie cunoscută nu are
+              denumire.
+            </Trans>
+            {groups.some((group) => group.activities.some((activity) => activity.classState !== null && activity.classState !== 'class')) ? (
+              <>
+                {' '}
+                <Trans>O înscriere neclasificată (cod scurt, cod fără denumire în nomenclator, cod neinterpretabil) nu are denumire și nu e o activitate clasificată.</Trans>
+              </>
+            ) : null}
+          </p>
+        </HubInfoNote>
       </p>
     </div>
+  )
+}
+
+/**
+ * One activity as the band's answer (owner, 25 November 2026: „Only the
+ * presumed main"): ANAF's presumed main activity, redrawn. The analysis's
+ * own grouping (the derived selection the hub and the analysis use) is said
+ * in one quiet line only where it differs from it. Where ANAF gives no
+ * presumed activity, the selection is the answer instead, as before. The
+ * presumed block stays mounted in every case: it reads on load.
+ */
+function PresumedFirst({
+  model,
+  onAnafWithdrawn,
+  onCompanyNotPublic,
+}: {
+  readonly model: CompanyProfileModel
+  readonly onAnafWithdrawn: (identity: string) => void
+  readonly onCompanyNotPublic: () => void
+}) {
+  const view = model.assumedMain
+  // The same rule as the head's sentence: the presumed activity leads only when it is current with an exact key.
+  const presumed = view.kind === 'assigned' && mainShownAsCurrent(view.activity) ? view.activity : null
+  const { selection } = model
+  const key = presumed?.resolved ?? null
+  const same = selection !== null && selection.code !== null && key !== null && selection.code === key.code && selection.revision === key.revision
+  const grouping = selection === null || same ? null : selection.code !== null ? (selection.label ?? selection.code) : null
+  // The presumed block keeps one place in the tree whichever activity leads: it holds its history read and the
+  // panel a reader opened, and a withdrawal reported by that history must not remount it.
+  return (
+    <>
+      {presumed ? null : model.selection ? (
+        <ActivitySelection selection={model.selection} lead />
+      ) : model.selectionUnavailable ? (
+        <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="company-activity-selection-unavailable">
+          <Trans>Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos.</Trans>
+        </p>
+      ) : (
+        <MainActivity model={model} />
+      )}
+      {/* Mounted for its reads, drawn only when it has something to say (no assignment, unreadable). */}
+      <div
+        className={cn(
+          !presumed && 'mt-8 border-t border-border/70 pt-5',
+          (view.kind === 'not_served' || view.kind === 'unavailable' || view.kind === 'refused') && 'hidden',
+        )}
+      >
+        <CompanyMainActivity model={model} onAnafWithdrawn={onAnafWithdrawn} onCompanyNotPublic={onCompanyNotPublic} />
+      </div>
+      {presumed && selection && !same ? (
+        <p className="mt-5 border-t border-border/70 pt-4 text-sm text-muted-foreground" data-testid="company-activity-grouping">
+          {grouping !== null ? (
+            <Trans>
+              În analiza bilanțurilor e grupată la: <span className="text-foreground">{grouping}</span>
+              {selection.code ? ` (${selection.code})` : ''}.
+            </Trans>
+          ) : selection.basis === 'onrc_multiple_classes' ? (
+            <Trans>În analiza bilanțurilor nu e grupată la o activitate: are mai multe activități clasificate.</Trans>
+          ) : (
+            <Trans>În analiza bilanțurilor nu e grupată la o activitate.</Trans>
+          )}
+        </p>
+      ) : null}
+    </>
   )
 }

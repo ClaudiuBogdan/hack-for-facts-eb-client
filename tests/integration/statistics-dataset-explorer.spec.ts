@@ -69,6 +69,10 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
 
   // Unfiltered fallback — must stay last.
   await mockApi.mockGraphQL('InsDatasetsExplorer', 'page-1')
+
+  // A row's link loads its dataset ahead of the click (TEST-001): the dev API's answer of 2026-11-25, which has
+  // no dataset CTB026X.
+  await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-ctb026x', { variables: { code: 'CTB026X' } })
 }
 
 function resultRows(page: import('@playwright/test').Page) {

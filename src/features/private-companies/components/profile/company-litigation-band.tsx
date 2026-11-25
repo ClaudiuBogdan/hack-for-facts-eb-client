@@ -19,7 +19,8 @@ export function CompanyLitigationBand({
   litigation,
 }: {
   readonly cui: string
-  readonly index: string
+  /** The band's numbered caption; none on a page that numbers no band. */
+  readonly index?: string
   readonly litigation: JudicialCompanyLitigation
 }) {
   return (
@@ -29,7 +30,7 @@ export function CompanyLitigationBand({
           <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>În instanță</Trans>} />
           <CompanyLitigationSummary litigation={litigation} className="mt-8" />
         </div>
-        <CompanyLitigationCases cui={cui} className={cn('min-w-0 lg:col-span-7', HUB_BESIDE_TITLE_CLASS)} />
+        <CompanyLitigationCases cui={cui} className={cn('min-w-0 lg:col-span-7', index && HUB_BESIDE_TITLE_CLASS)} />
       </div>
     </ProfileBand>
   )

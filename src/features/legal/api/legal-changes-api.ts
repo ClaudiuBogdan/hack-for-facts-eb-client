@@ -4,10 +4,13 @@ import {
   fetchRecentChangesCountLive,
   fetchRecentChangesPageLive,
 } from './legal-changes-api.live'
-import {
-  fetchRecentChangesCountMock,
-  fetchRecentChangesPageMock,
-} from './legal-changes-api.mock'
+
+/**
+ * The fixture is served only by the development server and the tests: it names real acts as they were when it
+ * was copied, so in production the condition is the constant `false` and the fixture's module is never emitted
+ * (the same guard as the analytics adapter's).
+ */
+const FIXTURE_BUILD = import.meta.env.DEV || import.meta.env.MODE === 'test'
 
 /**
  * Mock/live dispatcher for the change feed (`/legislation/changes`). One
@@ -22,7 +25,7 @@ export async function fetchRecentChangesPage(
     readonly signal?: AbortSignal
   } = {},
 ): Promise<LegalChangesPage> {
-  if (isLegalMockEnabled()) return fetchRecentChangesPageMock(filter)
+  if (FIXTURE_BUILD && isLegalMockEnabled()) return (await import('./legal-changes-api.mock')).fetchRecentChangesPageMock(filter)
   return fetchRecentChangesPageLive(filter, options)
 }
 
@@ -37,6 +40,6 @@ export async function fetchRecentChangesCount(
   filter: LegalChangesFilter,
   options: { readonly signal?: AbortSignal } = {},
 ): Promise<number | null> {
-  if (isLegalMockEnabled()) return fetchRecentChangesCountMock(filter)
+  if (FIXTURE_BUILD && isLegalMockEnabled()) return (await import('./legal-changes-api.mock')).fetchRecentChangesCountMock(filter)
   return fetchRecentChangesCountLive(filter, options)
 }

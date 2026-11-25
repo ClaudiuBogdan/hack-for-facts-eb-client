@@ -1,0 +1,3514 @@
+{
+  "data": {
+    "dashboard": [
+      {
+        "latestPeriod": "2003",
+        "status": "SERIES",
+        "truncated": false,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "AGR112B",
+          "code": "AGR112B",
+          "name_ro": "Productia totala de struguri pe judete si localitati",
+          "name_en": "Total production of grapes by counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "metadata": {
+            "methodology_ro": "Datele  privind productia de struguri de pe suprafata cultivata / recoltata cu plantatii de vii pe rod, sunt prezentate  pe total productie de pe suprafata cultivata cu vii pe rod, ( de  peste 3 ani vechime) categorii de vii, vii altoite si hibride si pe forme de proprietate, la nivel de localitate, din care productia obtinuta pe suprafata cultivata/recoltata aflata in proprietate privata precum si productia de struguri obtinuta in  exploatatile agricole individuale.",
+            "data_sources_ro": "Cercetari statistice bazate pe surse administrative",
+            "source_year_range": [
+              1990,
+              2003
+            ],
+            "source_last_update": "2007-06-29",
+            "observation_count": 29121,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "9e01798937f769bc4f814c39b126e26e7daacfd89b0ef609a98cc781ade0750a",
+            "revision_id": "1934",
+            "transform_contract_sha256": "29ad0ebc66c833f3afd6a01b74c6c5e56544ce09d8d23b40e1af007990e45b03",
+            "published_at": "2026-10-06 12:28:44.972688+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/AGR112B?lang=ro"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Tone",
+              "classification_type": null
+            }
+          ]
+        },
+        "observations": [
+          {
+            "id": "v1:AGR112B:3095:2444:4494:9729",
+            "dataset_code": "AGR112B",
+            "value": "38",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2003",
+              "year": 2003,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2003",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4475:9729",
+            "dataset_code": "AGR112B",
+            "value": "38",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2002",
+              "year": 2002,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2002",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4418:9729",
+            "dataset_code": "AGR112B",
+            "value": "38",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1999",
+              "year": 1999,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1999",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4399:9729",
+            "dataset_code": "AGR112B",
+            "value": "28",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1998",
+              "year": 1998,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1998",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4380:9729",
+            "dataset_code": "AGR112B",
+            "value": "37",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1997",
+              "year": 1997,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1997",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4361:9729",
+            "dataset_code": "AGR112B",
+            "value": "40",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1996",
+              "year": 1996,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1996",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4342:9729",
+            "dataset_code": "AGR112B",
+            "value": "40",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1995",
+              "year": 1995,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1995",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4323:9729",
+            "dataset_code": "AGR112B",
+            "value": "63",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1994",
+              "year": 1994,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1994",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4304:9729",
+            "dataset_code": "AGR112B",
+            "value": "85",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1993",
+              "year": 1993,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1993",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4285:9729",
+            "dataset_code": "AGR112B",
+            "value": "41",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1992",
+              "year": 1992,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1992",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4266:9729",
+            "dataset_code": "AGR112B",
+            "value": "63",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1991",
+              "year": 1991,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1991",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:AGR112B:3095:2444:4247:9729",
+            "dataset_code": "AGR112B",
+            "value": "22",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "1990",
+              "year": 1990,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9729",
+              "symbol": "other",
+              "name_ro": "Tone",
+              "name_en": "Tonnes"
+            },
+            "classifications": [
+              {
+                "id": "AGR112B:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "AGR112B:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "1990",
+              "unit_code": "9729",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "latestPeriod": "2025",
+        "status": "SERIES",
+        "truncated": false,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "ART103D",
+          "code": "ART103D",
+          "name_ro": "Institutii si companii de spectacole sau concerte dupa felul institutiilor si companiilor de spectacole sau concerte,pe judete si localitati",
+          "name_en": "Institutions and companies for arts performing or concerts by type of institutions and companies for arts performing or concerts,by counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "metadata": {
+            "methodology_ro": "Daca sub aceeasi conducere administrativa exista colective artistice care dau spectacole in genuri artistice diferite sau limbi diferite se considera ca fiind unitati artistice separate.\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/cultura/Activitatea-institutiilor-si-companiilor-de-spectacole-sau-concerte.pdf\" target=\"_blank\">Raport de metadate si calitate</a>",
+            "data_sources_ro": "Cercetarea statistica privind activitatea institutiilor si companiilor de spectacole sau concerte <<5502>>",
+            "source_year_range": [
+              2018,
+              2025
+            ],
+            "source_last_update": "2026-06-30",
+            "observation_count": 1575,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "4ddb2efc247d9025a91087a7faa88c0d93149dc58f14fad3e938d5e94acf50e1",
+            "revision_id": "197",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/ART103D?lang=ro"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "Categorii de institutii de spectacol",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "classification_type": {
+                "code": "D2"
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar",
+              "classification_type": null
+            }
+          ]
+        },
+        "observations": [
+          {
+            "id": "v1:ART103D:6078:3095:2444:4912:9669",
+            "dataset_code": "ART103D",
+            "value": "8",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2025",
+              "year": 2025,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2025",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:ART103D:6078:3095:2444:4893:9669",
+            "dataset_code": "ART103D",
+            "value": "10",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2024",
+              "year": 2024,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2024",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:ART103D:6078:3095:2444:4874:9669",
+            "dataset_code": "ART103D",
+            "value": "7",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2023",
+              "year": 2023,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2023",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:ART103D:6078:3095:2444:4855:9669",
+            "dataset_code": "ART103D",
+            "value": "7",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2022",
+              "year": 2022,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2022",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:ART103D:6078:3095:2444:4836:9669",
+            "dataset_code": "ART103D",
+            "value": "7",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2021",
+              "year": 2021,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2021",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:ART103D:6078:3095:2444:4817:9669",
+            "dataset_code": "ART103D",
+            "value": "8",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2020",
+              "year": 2020,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2020",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:ART103D:6078:3095:2444:4798:9669",
+            "dataset_code": "ART103D",
+            "value": "8",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2019",
+              "year": 2019,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2019",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:ART103D:6078:3095:2444:4779:9669",
+            "dataset_code": "ART103D",
+            "value": "10",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2018",
+              "year": 2018,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9669",
+              "symbol": "count",
+              "name_ro": "Numar",
+              "name_en": "Number"
+            },
+            "classifications": [
+              {
+                "id": "ART103D:D0:6078",
+                "type_code": "D0",
+                "code": "6078"
+              },
+              {
+                "id": "ART103D:D1:3095",
+                "type_code": "D1",
+                "code": "3095"
+              },
+              {
+                "id": "ART103D:D2:2444",
+                "type_code": "D2",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    1,
+                    3095
+                  ],
+                  [
+                    2,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2018",
+              "unit_code": "9669",
+              "classifications": {
+                "D0": "6078",
+                "D1": "3095",
+                "D2": "2444"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "latestPeriod": "2024",
+        "status": "SERIES",
+        "truncated": false,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "JUS105C",
+          "code": "JUS105C",
+          "name_ro": "Persoane condamnate/sanctionate definitiv aflate in penitenciare (inclusiv centre de detentie si centre educative), pe judete si localitati (la sfarsitul anului)",
+          "name_en": "Persons who received a final conviction/sanction and who are in penitentiaries (including detention centres and educational centers), by counties and localities (end of year)",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "metadata": {
+            "methodology_ro": "Art.115 alin.1 pct.2 din Codul Penal - Masuri educative privative de libertate\nArt. 53 lit. a) si b) din Codul Penal -     Pedepsele principale (detentiunea pe viata sau inchisoarea)\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/Justitie/Statistica-justitiei-din-surse-administrative.pdf\" target=\"_blank\">Raport de metadate si calitate</a>",
+            "data_sources_ro": "Persoane condamnate/sanctionate definitiv aflate in penitenciare (inclusiv centre de detentie si centre educative) <<5165>>",
+            "source_year_range": [
+              2014,
+              2024
+            ],
+            "source_last_update": "2026-09-24",
+            "observation_count": 31630,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "6075aedb0a846bdf03b91eaea84beae2b2d2e9868e4b029daa624f073563f9d2",
+            "revision_id": "2410",
+            "transform_contract_sha256": "29ad0ebc66c833f3afd6a01b74c6c5e56544ce09d8d23b40e1af007990e45b03",
+            "published_at": "2026-10-06 13:46:10.604499+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/JUS105C?lang=ro"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar persoane",
+              "classification_type": null
+            }
+          ]
+        },
+        "observations": [
+          {
+            "id": "v1:JUS105C:3095:2444:4893:9685",
+            "dataset_code": "JUS105C",
+            "value": "112",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2024",
+              "year": 2024,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2024",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4874:9685",
+            "dataset_code": "JUS105C",
+            "value": "82",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2023",
+              "year": 2023,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2023",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4855:9685",
+            "dataset_code": "JUS105C",
+            "value": "83",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2022",
+              "year": 2022,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2022",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4836:9685",
+            "dataset_code": "JUS105C",
+            "value": "100",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2021",
+              "year": 2021,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2021",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4817:9685",
+            "dataset_code": "JUS105C",
+            "value": "106",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2020",
+              "year": 2020,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2020",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4798:9685",
+            "dataset_code": "JUS105C",
+            "value": "130",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2019",
+              "year": 2019,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2019",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4779:9685",
+            "dataset_code": "JUS105C",
+            "value": "154",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2018",
+              "year": 2018,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2018",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4760:9685",
+            "dataset_code": "JUS105C",
+            "value": "172",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2017",
+              "year": 2017,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2017",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4741:9685",
+            "dataset_code": "JUS105C",
+            "value": "169",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2016",
+              "year": 2016,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2016",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4722:9685",
+            "dataset_code": "JUS105C",
+            "value": "199",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2015",
+              "year": 2015,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2015",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:JUS105C:3095:2444:4703:9685",
+            "dataset_code": "JUS105C",
+            "value": "212",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2014",
+              "year": 2014,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "JUS105C:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "JUS105C:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2014",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "latestPeriod": "2023",
+        "status": "SERIES",
+        "truncated": false,
+        "geographicWitnesses": [],
+        "dataset": {
+          "id": "POP204F",
+          "code": "POP204F",
+          "name_ro": "Nascuti morti cu resedinta obisnuita in Romania pe judete si localitati",
+          "name_en": "Late foetal deaths with usual residence in Romania by counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "metadata": {
+            "methodology_ro": "Repartizarea teritoriala s-a facut dupa resedinta obisnuita a mamei (parinte) sau a reprezentantului legal.\r\n\r\n<a href=\"https://insse.ro/cms/files/Rapoarte%20de%20calitate/populatie/Statistica-demografica.pdf\" target=\"_blank\"> Raport de metadate si calitate </a>\r\n",
+            "data_sources_ro": "Cercetarea statistica privind mortalitatea <<5162>>",
+            "source_year_range": [
+              2015,
+              2025
+            ],
+            "source_last_update": "2026-06-22",
+            "observation_count": 5127,
+            "has_region_data": false,
+            "has_national_data": true,
+            "custody_sha256": "6d1212960402044159423ba572c9d96fad390c2ff9d84ae7886e697385558f62",
+            "revision_id": "1083",
+            "transform_contract_sha256": "bddc45cd6e97a8f93f0c0d6f33fe82d6dad5597cb5b29336c2069147d27a4d2d",
+            "published_at": "2026-09-06 13:18:44.842571+00",
+            "source_url": "http://statistici.insse.ro:8077/tempo-ins/matrix/POP204F?lang=ro"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "TERRITORIAL",
+              "label_ro": "Judete",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "Localitati ",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Ani",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM: Numar persoane",
+              "classification_type": null
+            }
+          ]
+        },
+        "observations": [
+          {
+            "id": "v1:POP204F:3095:2444:4874:9685",
+            "dataset_code": "POP204F",
+            "value": "1",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2023",
+              "year": 2023,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2023",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4855:9685",
+            "dataset_code": "POP204F",
+            "value": "2",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2022",
+              "year": 2022,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2022",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4836:9685",
+            "dataset_code": "POP204F",
+            "value": "2",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2021",
+              "year": 2021,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2021",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4817:9685",
+            "dataset_code": "POP204F",
+            "value": "2",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2020",
+              "year": 2020,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2020",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4798:9685",
+            "dataset_code": "POP204F",
+            "value": "5",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2019",
+              "year": 2019,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2019",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4779:9685",
+            "dataset_code": "POP204F",
+            "value": "3",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2018",
+              "year": 2018,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2018",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4760:9685",
+            "dataset_code": "POP204F",
+            "value": "5",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2017",
+              "year": 2017,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2017",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4741:9685",
+            "dataset_code": "POP204F",
+            "value": "5",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2016",
+              "year": 2016,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2016",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          },
+          {
+            "id": "v1:POP204F:3095:2444:4722:9685",
+            "dataset_code": "POP204F",
+            "value": "7",
+            "value_status": null,
+            "time_period": {
+              "iso_period": "2015",
+              "year": 2015,
+              "quarter": null,
+              "month": null,
+              "periodicity": "ANNUAL"
+            },
+            "unit": {
+              "code": "9685",
+              "symbol": "persons",
+              "name_ro": "Numar persoane",
+              "name_en": "Number of persons"
+            },
+            "classifications": [
+              {
+                "id": "POP204F:D0:3095",
+                "type_code": "D0",
+                "code": "3095"
+              },
+              {
+                "id": "POP204F:D1:2444",
+                "type_code": "D1",
+                "code": "2444"
+              }
+            ],
+            "dimensions": {
+              "geography": {
+                "pairs": [
+                  [
+                    0,
+                    3095
+                  ],
+                  [
+                    1,
+                    2444
+                  ]
+                ],
+                "resolution": "EXACT",
+                "flags": [],
+                "resolvedTerritory": {
+                  "territoryId": 2552,
+                  "code": "143450",
+                  "sirutaCode": "143450",
+                  "level": "LAU",
+                  "nameRo": "MUNICIPIUL SIBIU",
+                  "parentId": 48,
+                  "parentCode": "SB",
+                  "parentNameRo": "Sibiu",
+                  "coreTerritoryId": 1238
+                },
+                "contextTerritory": {
+                  "territoryId": 48,
+                  "code": "SB",
+                  "sirutaCode": null,
+                  "level": "NUTS3",
+                  "nameRo": "Sibiu",
+                  "parentId": 7,
+                  "parentCode": "RO12",
+                  "parentNameRo": "Centru",
+                  "coreTerritoryId": 1811
+                },
+                "applicableRules": [],
+                "qualified": false
+              },
+              "territory_code": "143450",
+              "siruta_code": "143450",
+              "period": "2015",
+              "unit_code": "9685",
+              "classifications": {
+                "D0": "3095",
+                "D1": "2444"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "identity": {
+      "nodes": [
+        {
+          "code": "143450",
+          "siruta_code": "143450",
+          "level": "LAU",
+          "name_ro": "MUNICIPIUL SIBIU",
+          "parent_code": "SB",
+          "parent_name_ro": "Sibiu"
+        }
+      ]
+    }
+  }
+}

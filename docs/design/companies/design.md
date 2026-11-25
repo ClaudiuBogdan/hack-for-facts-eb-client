@@ -906,3 +906,240 @@ filter sheet, list query (`companies(filter, q, …)`), county options
   front door.
 - **The profile's "not found" state** links „Caută în firme" to the front
   door, whose search box finds a company by name or CUI.
+
+## The hub polished as the landing was (25 November 2026)
+
+The owner asked for the front door to be polished the way the main landing
+was (`docs/design/landing/design.md`, 22–24 November). Only the hub's own
+components changed; the chrome the hubs share (`HubSectionHead`,
+`HubFiguresBand`, `HomeSectionNav`, `MonoLabel`) is untouched.
+
+### Decisions
+
+- **The title names the dataset: „Firmele din România"** (owner's choice of
+  four), replacing „Economia, firmă cu firmă". „Firme private" was the owner's
+  first wording and was not used: the page counts every company in the trade
+  register, the state's own included (CFR, Poșta Română), and those have their
+  own section. The caption over the title („Firme / România") is gone: it said
+  the same words.
+- **The description says what is in it, then where it comes from**: „Cifră de
+  afaceri, profit și salariați, din registrul comerțului și bilanțurile
+  anuale." (owner's choice of three). No „pentru fiecare firmă", as the landing
+  dropped „toate / fiecare".
+- **The headline is set as the landing's**: tracking `-0.04em`, word spacing
+  `0.06em`, line height 0.96, Inter's round commas (`ss03`) on the page's
+  root; the subtitle at normal tracking, balanced. The hub keeps its own fluid
+  size. Two lines at every width, the break written.
+- **The shortcut row is the landing's**: the label in plain `text-sm` on the
+  links' baseline, the links without an underline, the accent on hover. On a
+  phone the label has its own line and each shortcut is a 44px row.
+- **The leaders' card shows five companies, not ten** (owner, from the
+  prototype `/development/companies/hub-head`, variant `cinci`). With ten
+  the head was about 1,045px tall at 1440 with half a column empty under the
+  shortcuts, and about 1,450px on a phone; with five, about 720 and 1,110.
+  Turned down: one-line rows (`simplu`), the landing's institutions panel
+  without the switch (`panou`), the four figures in place of the ranking
+  (`cifre`), nothing beside the search (`fara`). The prototype is kept.
+- **Words are plain text, mono stays for codes and figures** (DESIGN.md, „Mono
+  only where it is necessary"): the card's heading, each leader's county,
+  activity and change, the size table's caption, the registrations chart's
+  caption, the activities' note, the map's readout and legend title, the
+  sources label. Still mono: ranks, shares, CAEN codes with their source tag,
+  the legend's bounds, column heads over figures.
+- **Entrances play once per page load** (`lib/hub-first-visit.ts`), the
+  landing's rule with a flag of the hub's own: coming back from a company or
+  the analysis shows the page as rendered. The landing's flag is not shared,
+  so neither page switches the other's entrances off.
+- **The three starting points carry an arrow at rest**, as the landing's
+  index tiles do.
+
+### The sections and their words (same day)
+
+The owner asked for the sections, their text and their titles to be rethought,
+and chose, from a question dialog, all of the following.
+
+- **A section is named by its data, as the page is.** „Firmele pe județe" (was
+  „Unde stă județul tău"), „Domenii de activitate" („Din ce trăiește
+  economia"), „Firme mici și mari" (new), „Evoluția pe ani" („Economia, an de
+  an"), „Firme înregistrate pe ani" („Câte firme apar în fiecare an"), „Firme
+  după stare" („De aici poți începe"). The pinned bar says them short:
+  Județe · Domenii · Mărime · Ani · Firme noi. The anchors are unchanged
+  (`#judete`, `#domenii`, `#economie`, `#infiintari`), with `#marime` added.
+- **Size has its own section.** The size table and its sentence („Cele 1.641
+  de firme cu 250 de salariați sau mai mulți fac 40,7%…") sat under the
+  activities' title. The activities band is now its ranking alone, in two
+  columns from a wide screen (read down the first, then the second), with the
+  rest of the groups, the link to the analysis and the note under it.
+- **One sentence per section, the rest behind its ⓘ.** The activities say what
+  they are ranked by („Primele 10 activități după cifra de afaceri din
+  2025.", the count from the ranking itself). Their note is „Procente din
+  totalul pe 2025: 2.780,3 mld. lei." and its ⓘ says what that total is and
+  why it is not the 2.841,2 at the top of the page (one registry edition's
+  companies with the admitted values, against every statement read) before
+  the two paragraphs on how an activity is selected. The years' sentence lost
+  „Fiecare an își numără firmele cu bilanț", now the first line behind its ⓘ.
+  „Alte 3.162 de activități selectate" is „Alte 3.162 de activități", and the
+  link „Toate activitățile, în analiza bilanțurilor".
+- **Kept in the open, because the data needs it:** „posibil incomplet" on the
+  last year, nominal lei, „înregistrate" (never founded), the CAEN revision on
+  each activity row, and the three kinds of companies with no selected
+  activity as three rows (merging them was offered and declined by default:
+  it is a change to the figures, not to the words).
+- **A status card is its name and its count** („21.420 de firme"): the line
+  under each title repeated the title.
+- **The sources are said once, at the foot of the page.** The line at the
+  head's foot is gone; each of the four figures names its source under it.
+- **No section numbers on this page, and the notes under the four figures in
+  plain text** (owner: „Drop on companies only"). They come from the shared hub
+  chrome, so they are opt-in switches there, approved by root; the other hubs
+  are unchanged.
+
+- **The English shortcuts are shorter** (owner's choice): „Active companies ·
+  Statements analysis · Procurement", one line on a desktop. The three links
+  carry a message context of their own (`companies hub shortcut`), so the
+  same Romanian words elsewhere keep their English.
+
+### From the review (Codex `gpt-6.2-sol`, same day)
+
+- **A share names its total's source in the open.** „Procente din 1.107.680
+  firme în funcțiune" read as the country's, against 1.749.479 at the top:
+  the analysis counts one registry edition's legal persons. The note is now
+  „Procente din cele {total} în funcțiune din analiza bilanțurilor." and, for
+  money and employees, „Procente din {total}, totalul analizei bilanțurilor pe
+  {year}."
+- **The employees' ⓘ gives the right reason.** Both totals keep the same
+  0–50.000 headcount, so the ceiling does not explain their difference; the
+  edition and the admitted values do.
+- **The insolvency card names every status it counts**: „Firme în insolvență,
+  reorganizare judiciară sau faliment". With its sentence gone, the title was
+  narrower than the count and the filter it opens.
+- *Left as is:* on a slow client navigation, the loading state's pinned bar
+  offers anchors (`#domenii`, `#marime`, …) whose bands arrive with the page;
+  a click in that fraction of a second scrolls nowhere. As before the change
+  for every band but the counties.
+
+## The second polish round (25 November 2026)
+
+The owner picked eight more changes from a question dialog, then asked for
+tooltips on the charts and a shorter years band.
+
+### Decisions
+
+- **A leader's line says the county, and the release's activity only when
+  one is selected.** Three of the five rows ended in a cut „Mai multe
+  activități clasificate…"; the company's page says why none is selected.
+  Supersedes, for the hub's card, „or why none is selected" in „The hub
+  rebuilt from the Zeus design". The card's footnote is gone; each change
+  says „față de 2024" on a pointer and to a screen reader.
+- **The head's columns are centred against each other** from `lg`.
+- **The four figures read as plain text, with the landing's corner arrow**
+  (`HubFiguresBand` `plain` and `arrow`, opt-in, approved by root; the arrow
+  only on a tile whose label is the link).
+- **On a phone the activities fold after five** („Încă 5 activități"); the
+  focus goes on to the first row opened. Every row is in the server's HTML.
+- **The county legend prints the values under the joins between its
+  colours, in plain text, without the ends**, as the landing's budget map
+  does (DESIGN.md, 2026-11-23, an exception to the 2026-10-02 rule, here by
+  the owner's choice again): a class holds its lower bound; the values are
+  rounded as the readout rounds them, and the readout and the ranking give
+  each county's figure. The national tick says „România", the ranking's
+  header is plain text.
+- **Activity names wrap to two lines from `sm`** (the whole name on a phone),
+  the code line and the shares in plain text.
+- **The years and registrations charts run across their bands**; the years'
+  first and last whole years sit beside the band's switch, and its chart is
+  lower from `lg` (owner). Their unit, publisher and year labels are plain
+  text; the tick figures stay mono.
+- **Company size is three stacked bars** (firms, employees, turnover), one
+  whole each, split by class in the county map's five steps of one hue; a
+  part wide enough carries its share. **Hover (a tap on a phone) opens a
+  reading** in the charts' tooltip box: the class, its figure, its share
+  (owner). The bars are `aria-hidden`; the table stays for assistive
+  technology, each share with its figure.
+
+### From the review (Codex `gpt-6.2-sol`, second round)
+
+Fixed: the size reading stays inside the bar on a 320px phone; the corner
+arrow needs the label to be the link (a link in a note does not count); the
+size table gives the figures as well as the shares; the fold's button hands
+the focus on.
+
+Left, and why:
+- The legend's values are rounded (15,8 mld. for a cutoff of
+  15.785.595.555 lei): as before this round, and as the landing's legend.
+- On a phone the change's „față de 2024" is not visible: the owner dropped
+  the footnote that said it; a pointer and a screen reader get it.
+- Sighted keyboard readers cannot open a size part's reading (the bars are a
+  picture); the shares wide enough are printed, and the analysis has the rest.
+- The size caption („Bilanțurile pe 2025") does not say that 85 statements
+  without a headcount are in no class: true before this round as well.
+
+## The third polish round (25 November 2026)
+
+- **The years band's head is a row of its own**, its title at the top, the
+  switch and the first and last whole years beside it (a head aligned by its
+  foot left the title low).
+- **A status card leads with its count as a figure**, its name under it, as
+  the four figures at the top read. The band says where the counts are from
+  („În registrul comerțului, iulie 2026.") and, behind its ⓘ, that the
+  analysis a card opens counts one registry edition and can show another
+  total (from the review).
+- **On a phone the county ranking shows three at each end** (`phoneEdge`, by
+  CSS: one list for every width; never more than the wider screens show), and
+  the map's readout is tighter. The keyboard focus after opening the list
+  follows the same breakpoint as the CSS (`width < 40rem`, from the review).
+
+Left from the review (Codex `gpt-6.2-sol`, third round): a layer of eleven
+counties or fewer would not fold on a phone (every layer has 42); at 360px in
+English the readout's link can wrap to a fourth line and move the map on a
+first tap (as before this round).
+
+## The company page reworked (25 November 2026)
+
+The owner's choices for `/companies/<cui>`, each picked from prototypes kept
+under `src/development/prototypes/companies/` (`profile-head`,
+`profile-activities`, `profile-main-activity`, `profile-years`,
+`profile-business`, and `profile-page`, the page assembled).
+
+### Decisions
+
+- **The head has no chart** („Fără grafic"): the way back in plain text, the
+  name as the landing's headline, the sentence, the chips and identifiers.
+- **One activity across the page** („Same as the band"): the head's sentence
+  and „Ce face firma" both lead with ANAF's presumed main activity, always
+  said as presumed — „Activitate principală (presupusă după ANAF)" — where it
+  is current with an exact key; otherwise the derived selection, as before.
+  The selection the analysis groups by is said in one quiet line only where
+  it differs („În analiza bilanțurilor e grupată la: …"). The owner found two
+  activities side by side confusing. Root was told (a naming choice).
+- **„Ce face firma", designed**: the presumed activity's name large, one
+  description that says what it is („Activitate principală (presupusă după
+  ANAF). Codul CAEN din datele fiscale ANAF, potrivit cu activitățile din
+  ediția ONRC. Nu e o informație publicată de ONRC." — no „O presupunere:",
+  the brackets say it), how it was derived and when behind one ⓘ; beside it
+  how many activities in how many domains, one strip of every domain and the
+  domains ranked with inline bars, the answer's domain marked and always
+  listed.
+- **„Cum merge afacerea" is one chart** („remove the bilanț … focus on a good
+  chart", version „Două panouri" of five): money above (turnover pale, the
+  bottom line solid from zero, a loss red, an admitted profit outlined),
+  people below on their own scale, a clear gap between the panels with no
+  label in it, people named in the legend by their colour (owner: „we need
+  the gap"). Years with no comparable values collapse into one hatched
+  column; a year's reading gives its three figures or why one is missing. No
+  balance-sheet table, no measure switch (`?masura=` is read and ignored).
+- **The bands' order**: the chart, „Ce face firma", „Bilanțurile, an cu an",
+  public money, litigation, the registry. No running numbers.
+- **„Bilanțurile, an cu an" with less at first**: the key lines (and any
+  line with a held or uncounted value in the years shown) and the newest six
+  statements, each a button from the rest.
+- **No list of statements held only in long format** (owner: „remove if we
+  don't have the data or if we can't show it"; confirmed as its own question
+  for root's provenance rule). No figure on the page loses its source: a
+  year's statement, opened from the table, keeps its ANAF query or MF files.
+
+### Left as is
+
+- The public-money band is procurement-da-client's (its v3 reads land
+  separately); the page passes it an empty `index`.
+

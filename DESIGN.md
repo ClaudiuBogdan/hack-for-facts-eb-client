@@ -879,6 +879,28 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-11-25 — `/national-budget`'s categorical charts use the data-viz
+  reference palette, not navy-then-grey.** The budgets' squares and flow, and
+  only that page's categorical charts, draw in blue, orange, aqua and yellow,
+  with grey for „the rest" and the borrowed money hatched as well
+  (`src/features/national-budget/home/lib/chart-palette.ts`). Each hue has its
+  dark step, and there are no new `index.css` tokens. Amounts keep one hue
+  (the borrowing bars, the lists' navy). *Why:* the product
+  owner asked for more colour on the charts, the flow above all. The sets were
+  run through the palette validator in both themes: adjacent pairs at CVD ΔE
+  ≥ 8.4 and normal-vision ΔE ≥ 19.3. Three light steps are under 3:1 on the
+  page, so every mark there carries a text label or a legend. Record:
+  `docs/design/national-budget/design.md` §12.12–12.13.
+
+- **2026-11-25 — `/map` draws in the landing's red–blue, not the navy
+  choropleth.** The map page is now the landing's budget map, so it keeps its
+  colours: the balance on ColorBrewer RdBu (deficit red, surplus blue), income
+  and expenses on its blue and red arms. Over the counties the balance is cut
+  at ±1/±3/±6% instead of the primării's ±3/±10/±20%, measured over
+  2016–2025, and the legend prints the edges. *Why:* the owner chose one look
+  for the two budget maps, and a deficit and a surplus need two hues; at the
+  primării's edges most counties were the neutral class. Record:
+  `docs/design/map/design.md`.
 - **2026-11-23 — The landing budget map's legend prints boundaries, not
   class names.** An exception to the 2026-10-02 rule, by the owner's choice:
   the values sit under the joins between colours („−20%", „14 mil."), not one

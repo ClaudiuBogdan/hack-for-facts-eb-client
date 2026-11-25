@@ -34,6 +34,19 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('InsObservations', 'counties-pop215a', { variables: { datasetCode: 'POP215A' } })
   await mockApi.mockGraphQL('InsObservations', 'counties-pop110a', { variables: { datasetCode: 'POP110A' } })
   await mockApi.mockGraphQL('SearchEntities', 'search-entities-popul')
+  // Pages the hub's links open read these in the browser (TEST-001), the dev API's answers of 2026-11-25:
+  // Vâlcea's population dataset (with its series and its related datasets, which its link loads ahead), the
+  // national population dataset (with its related datasets), the locality the map's centre opens (Roșia, Sibiu)
+  // and the one the finder opens (Sibiu), each cut to four of its smaller datasets with all their observations
+  // (the wholes are 2 and 3 MB), with their county's and the country's figures.
+  await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-pop217a-vl', { variables: { code: 'POP217A' } })
+  await mockApi.mockGraphQL('InsSourceObservations', 'observations-pop217a-vl', { variables: { datasetCode: 'POP217A' } })
+  await mockApi.mockGraphQL('StatisticsRelatedDatasets', 'related-1150', { variables: { contextCode: '1150' } })
+  await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-pop107d', { variables: { code: 'POP107D' } })
+  await mockApi.mockGraphQL('StatisticsRelatedDatasets', 'related-1012', { variables: { contextCode: '1012' } })
+  await mockApi.mockGraphQL('StatisticsTerritoryHub', 'territory-hub-145408', { variables: { sirutaCode: '145408' } })
+  await mockApi.mockGraphQL('StatisticsTerritoryHub', 'territory-hub-143450', { variables: { sirutaCode: '143450' } })
+  await mockApi.mockGraphQL('StatisticsTerritoryHubContext', 'territory-hub-context-sb', { variables: { countyCode: 'SB' } })
 }
 
 /** The router JSON-encodes search values that parse as JSON (`"1"`, arrays); read them back decoded. */

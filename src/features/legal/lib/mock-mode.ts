@@ -20,8 +20,14 @@ export const LEGAL_DATASET_ID = 'legal-acts'
  * carries a `DataStatusBadge` and a provenance note, because its fixtures are
  * real acts copied from production and are indistinguishable from served data
  * otherwise.
+ *
+ * A production build has no fixtures (the API facades load them only in the development server and the tests,
+ * FIXTURE-001), so there it is never mock mode, whatever the flags say: a mock flag set by mistake would otherwise
+ * put the mock badges and the fixtures' provenance notes over live data. Keep the facades' own guards too: this
+ * function is not a constant the build can fold, so it cannot keep the fixtures out of the bundle.
  */
 export function isLegalMockEnabled(): boolean {
+  if (!(import.meta.env.DEV || import.meta.env.MODE === 'test')) return false
   const override = import.meta.env.VITE_LEGAL_USE_LIVE_API
   if (override === 'true') return false
   if (override === 'false') return true

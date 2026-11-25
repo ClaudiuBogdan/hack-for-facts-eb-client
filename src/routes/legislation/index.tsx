@@ -1,56 +1,71 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 
 export type LegislationRouteLoaderData = {
-  /** Server render only: `false` when the gazette band's read failed and the browser reads it. */
+  /** Server render only: `false` when an analytics read failed and the browser reads it. */
   readonly seeded?: boolean
+  /** Server render only: an analytics read was refused with 503 (no layer published yet): render the panel. */
+  readonly analyticsUnavailable?: boolean
 }
 
 /**
- * The front door reads only its gazette band (the citation ranking is the
- * analytics tab's), through the page's query. On the server the loader fills
- * that query from the read kept in the server process
- * (`legal-front-door-ssr.ts`), and the router hydrates it into the browser's
- * cache. A failed server read is left out of the cache: the page reads it in
- * the browser, and the render goes out `no-store`. On a client-side
- * navigation the loader starts the query's read and returns at once, so the
- * page frame paints and the band fills in; a read the cache already holds is
- * not made again. The feature's modules are imported inside the loader, so
+ * The hub's aggregate analytics answers (its figures, the Felul and issuers bands, the years chart:
+ * `LEGAL_HUB_SERVER_READS`) are rendered on the server: the loader starts them together, fills the page's
+ * queries from the reads kept in the server process (`legal-analytics-ssr.ts`), and the router hydrates them
+ * into the browser's cache. Nothing that names an act is read here: the leading acts, the links, the changes and
+ * the gazette band are read in the browser. A failed server read is left out of the cache and the page reads it
+ * in the browser (`seeded: false`). The page is never stored by a shared cache (see `headers`). On a client-side
+ * navigation the loader starts the reads and returns at once, so the page frame paints and the bands fill in; a
+ * read the cache already holds is not made again. The feature's modules are imported inside the loader, so
  * this file (which every page's route tree carries) stays thin.
  */
 export const Route = createFileRoute('/legislation/')({
   loader: async ({ context }): Promise<LegislationRouteLoaderData> => {
-    const { legislationFrontDoorQueryOptions } = await import('@/features/legal/hooks/use-legislation')
-    const options = legislationFrontDoorQueryOptions()
+    const [{ LEGAL_HUB_SERVER_READS }, { legalAnalyticsQueryOptions }] = await Promise.all([
+      import('@/features/legal/components/hub/legislation-hub-lib'),
+      import('@/features/legal/hooks/use-legislation-analytics'),
+    ])
     if (!shouldBlockLoaderForSsr()) {
-      void context.queryClient.prefetchQuery(options).catch(() => undefined)
+      for (const [view, args] of LEGAL_HUB_SERVER_READS) {
+        void context.queryClient.prefetchQuery(legalAnalyticsQueryOptions(view, args)).catch(() => undefined)
+      }
       return {}
     }
-    const { readLegislationFrontDoorForSsr } = await import('@/features/legal/api/legal-front-door-ssr')
-    try {
-      await context.queryClient.ensureQueryData({ ...options, queryFn: () => readLegislationFrontDoorForSsr(), retry: false })
-      return { seeded: true }
-    } catch {
-      // Not dehydrated as a failure: the browser's query reads it afresh.
-      context.queryClient.removeQueries({ queryKey: options.queryKey, exact: true })
-      return { seeded: false }
-    }
-  },
-  headers: ({ loaderData }) =>
-    loaderData?.seeded === false
-      ? createNoStoreHeaders()
-      : createPublicPageCacheHeaders({
-          sharedMaxAgeSeconds: 600,
-          staleWhileRevalidateSeconds: 3600,
+    const { readLegalAnalyticsForSsr } = await import('@/features/legal/api/legal-analytics-ssr')
+    let seeded = true
+    let analyticsUnavailable = false
+    // The bands degrade on their own: a refused read (no layer published yet) is read in the browser.
+    const results = await Promise.allSettled(
+      LEGAL_HUB_SERVER_READS.map(([view, args]) =>
+        context.queryClient.ensureQueryData({
+          ...legalAnalyticsQueryOptions(view, args),
+          queryFn: () => readLegalAnalyticsForSsr(view, args),
+          retry: false,
         }),
+      ),
+    )
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') return
+      seeded = false
+      // a 503 (no layer published yet, or busy): the page says so calmly, on the server too
+      if ((result.reason as { kind?: unknown } | null)?.kind === 'unavailable') analyticsUnavailable = true
+      const read = LEGAL_HUB_SERVER_READS[index]
+      // Not dehydrated as a failure: the browser's query reads it afresh.
+      if (read) context.queryClient.removeQueries({ queryKey: legalAnalyticsQueryOptions(read[0], read[1]).queryKey, exact: true })
+    })
+    return { seeded, analyticsUnavailable }
+  },
+  // Never stored by a shared cache, on every path (root, 25 November 2026; CACHE-001): the page renders in the
+  // reader's language from their cookie, and the CDN does not key on `Vary: Cookie`. The server's own memo of
+  // the aggregate answers keeps the render fast.
+  headers: () => ({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' }),
   head: () => ({
     meta: [
       { title: `${t`Legislația României`} — Transparenta.eu` },
       {
         name: 'description',
-        content: t`Legi, ordonanțe și hotărâri din Portal Legislativ, cu statutul lor și dovada publicării în Monitorul Oficial.`,
+        content: t`Legi, ordonanțe și hotărâri din Portalul Legislativ: textul lor, cine le emite și cum se schimbă.`,
       },
     ],
   }),

@@ -6,12 +6,10 @@
  * waits on a read before its own. Each read's options are one function, so
  * the prefetch and the band share a key.
  */
-import { isServer, queryOptions, usePrefetchQuery, useQueryClient, useSuspenseQueries, useSuspenseQuery, type QueryClient } from '@tanstack/react-query'
+import { queryOptions, usePrefetchQuery, useQueryClient, useSuspenseQueries, useSuspenseQuery, type QueryClient } from '@tanstack/react-query'
 
 import { NationalBudgetApiError, fetchApprovedRecords, isRetryable } from '@/features/national-budget/analytics/api/national-budget-api'
 import {
-  approvedRecordsOptions,
-  approvedTotalsOptions,
   executionGridOptions,
   nationalCatalogKey,
   nationalCatalogOptions,
@@ -20,7 +18,6 @@ import {
 } from '@/features/national-budget/analytics/hooks/use-national-budget-analytics'
 import { cellsOf, type Cell } from '@/features/national-budget/analytics/lib/analytics-data'
 import { lastCompleteYear } from '@/features/national-budget/analytics/lib/analytics-view'
-import { yearOf } from '@/features/national-budget/analytics/lib/series'
 import type { BudgetApprovedEdition, BudgetNationalCatalog } from '@/schemas/national-budget-api'
 import {
   ANAF_FIRST_YEAR,
@@ -30,12 +27,12 @@ import {
   anafAuthoritiesOptions,
   anafChaptersOptions,
   gdpOf,
-  lawEditionOf,
   previousView,
   unfinishedYearsOf,
+  yearViews,
   type YearView,
 } from '../lib/home-data'
-import { lawChaptersOf, lawDeficitInput, planTotalsInput, previousEdition } from '../lib/home-law'
+import { lawChaptersOf } from '../lib/home-law'
 
 const TOTALS = [TOTAL_ITEMS.revenue, TOTAL_ITEMS.spending, TOTAL_ITEMS.balance]
 
@@ -50,19 +47,11 @@ export const LINE_SETS = {
 
 function totalsHistoryOptions(client: QueryClient, catalog: BudgetNationalCatalog) {
   const coverage = catalog.execution.coverage
-  return [
-    executionGridOptions(client, catalog.snapshots.execution, {
-      itemIds: TOTALS,
-      basis: 'FULL_YEAR',
-      period: { type: 'YEAR', interval: { start: coverage.firstMonth.slice(0, 4), end: String(lastCompleteYear(coverage)) } },
-    }),
-    // The year in progress against the one before, from 1 January.
-    executionGridOptions(client, catalog.snapshots.execution, {
-      itemIds: TOTALS,
-      basis: 'YTD',
-      period: { type: 'MONTH', interval: { start: `${yearOf(coverage.lastMonth) - 1}-01`, end: coverage.lastMonth } },
-    }),
-  ] as const
+  return executionGridOptions(client, catalog.snapshots.execution, {
+    itemIds: TOTALS,
+    basis: 'FULL_YEAR',
+    period: { type: 'YEAR', interval: { start: coverage.firstMonth.slice(0, 4), end: String(lastCompleteYear(coverage)) } },
+  })
 }
 
 function yearLinesOptions(client: QueryClient, catalog: BudgetNationalCatalog, view: YearView, itemIds: readonly string[]) {
@@ -125,14 +114,13 @@ export function lawChaptersOptions(client: QueryClient, snapshot: string, editio
 
 // ──────────────────────────────────────────────────────────── the reads ──
 
-/** Every year the bulletins finish, then the two last years month by month: the three totals. One key for the page's time bands. */
+/** Every year the bulletins finish: the three totals. One key for the page's time bands. */
 export function useTotalsHistory() {
   const catalog = useNationalCatalog()
   const client = useQueryClient()
-  const [{ data: years }, { data: months }] = useSuspenseQueries({ queries: totalsHistoryOptions(client, catalog) })
+  const { data: years } = useSuspenseQuery(totalsHistoryOptions(client, catalog))
   const yearCells = new Map(years.results.map((result) => [result.item.itemId, cellsOf(result)]))
-  const monthCells = new Map(months.results.map((result) => [result.item.itemId, cellsOf(result)]))
-  return { yearCells, monthCells, complete: lastCompleteYear(catalog.execution.coverage), lastMonth: catalog.execution.coverage.lastMonth }
+  return { yearCells, complete: lastCompleteYear(catalog.execution.coverage) }
 }
 
 /**
@@ -144,7 +132,7 @@ export function useTotalsHistory() {
 export function useUnfinishedYears(views: readonly YearView[], read = true): ReadonlyMap<number, string | null> {
   const catalog = useNationalCatalog()
   const client = useQueryClient()
-  const [years] = totalsHistoryOptions(client, catalog)
+  const years = totalsHistoryOptions(client, catalog)
   // Its own key over the years' read (shared through the cache, one request): it never fails. If the years can't be
   // read, the menus offer every year — on the server too, where an error boundary can't catch it — and the page stands.
   // Unread (`read` false), none is held back and nothing waits; one hook either way, so the tree under it keeps its state.
@@ -182,6 +170,14 @@ export function useGdp(view: YearView) {
     queries: [gdpSharesOptions(client, catalog, view), gdpDenominatorOptions(client, catalog, view)],
   })
   return gdpOf({ catalog, shares: shares.rows, denominators: denominators.rows, year: view.year })
+}
+
+/** The year's printed shares of GDP alone, without the GDP itself (the page shows the shares only). */
+export function useGdpShares(view: YearView) {
+  const catalog = useNationalCatalog()
+  const client = useQueryClient()
+  const { data: shares } = useSuspenseQuery(gdpSharesOptions(client, catalog, view))
+  return gdpOf({ catalog, shares: shares.rows, denominators: [], year: view.year })
 }
 
 /** The year's release: each budget's printed column for the revenue and spending totals. */
@@ -230,25 +226,23 @@ export function useLawChapters(edition: BudgetApprovedEdition, previous: BudgetA
 const either = (options: object) => options as Parameters<typeof usePrefetchQuery>[0]
 
 /**
- * Every read of the year's view, started at once when the page renders —
- * on the server and on a change of year — so that a band whose reads run
- * one after another (a law's totals, then its deficit, then its chapters)
- * finds them in flight. A source a year doesn't reach (ANAF before 2016, a
- * law not loaded) prefetches the catalog in its place: the hooks stay the
- * same in number and order.
+ * Every read the page's sections make for the year's view, started at once
+ * when the page renders — on the server and on a change of year — so no
+ * section waits on another's read; and the newest bulletin's totals, which
+ * the borrowing and year-in-progress sections read whatever the year. A
+ * source a year doesn't reach (ANAF before 2016) prefetches the catalog in
+ * its place: the hooks stay the same in number and order.
  */
 export function useHomePrefetch(view: YearView) {
   const catalog = useNationalCatalog()
   const client = useQueryClient()
-  const [years, months] = totalsHistoryOptions(client, catalog)
-  usePrefetchQuery(years)
-  usePrefetchQuery(months)
+  usePrefetchQuery(totalsHistoryOptions(client, catalog))
   usePrefetchQuery(yearLinesOptions(client, catalog, view, LINE_SETS.totals))
   usePrefetchQuery(yearLinesOptions(client, catalog, view, LINE_SETS.spending))
   usePrefetchQuery(yearLinesOptions(client, catalog, view, LINE_SETS.revenue))
+  const views = yearViews(catalog)
+  usePrefetchQuery(yearLinesOptions(client, catalog, views[views.length - 1] ?? view, LINE_SETS.totals))
   usePrefetchQuery(gdpSharesOptions(client, catalog, view))
-  usePrefetchQuery(gdpDenominatorOptions(client, catalog, view))
-  usePrefetchQuery(budgetColumnsOptions(client, catalog, view))
   const anaf = view.year >= ANAF_FIRST_YEAR
   const fallback = nationalCatalogOptions()
   usePrefetchQuery(either(anaf ? anafAuthoritiesOptions(view) : fallback))
@@ -256,12 +250,4 @@ export function useHomePrefetch(view: YearView) {
   usePrefetchQuery(either(compared ? anafAuthoritiesOptions(previousView(view)) : fallback))
   usePrefetchQuery(either(anaf ? anafChaptersOptions(view) : fallback))
   usePrefetchQuery(either(compared ? anafChaptersOptions(previousView(view)) : fallback))
-  const edition = lawEditionOf(catalog, view.year)
-  const previous = edition ? previousEdition(catalog.approved.editions, edition) : null
-  usePrefetchQuery(either(edition ? approvedTotalsOptions(client, catalog.snapshots.approved, planTotalsInput(edition, previous)) : fallback))
-  usePrefetchQuery(either(edition ? approvedRecordsOptions(client, catalog.snapshots.approved, lawDeficitInput(edition)) : fallback))
-  // The law's chapters are read in the browser only (their rows come in pages, some 5 s): the server's document doesn't wait for them.
-  const chapters = edition && !isServer
-  usePrefetchQuery(either(chapters ? lawChaptersOptions(client, catalog.snapshots.approved, edition) : fallback))
-  usePrefetchQuery(either(chapters && previous ? lawChaptersOptions(client, catalog.snapshots.approved, previous) : fallback))
 }

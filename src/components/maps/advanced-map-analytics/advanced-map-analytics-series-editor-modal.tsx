@@ -159,7 +159,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                 <Button asChild size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                   <Link
                     data-testid="advanced-map-analytics-open-table-link"
-                    to="/entity-analytics"
+                    to="/public-institutions"
                     search={tableSearch}
                     target="_blank"
                     rel="noopener noreferrer"
