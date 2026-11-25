@@ -1,0 +1,67 @@
+{
+  "data": {
+    "nationalDirectMonths": [
+      {
+        "points": [
+          {
+            "bucket": "2026-01",
+            "value": "129363"
+          },
+          {
+            "bucket": "2026-02",
+            "value": "166264"
+          },
+          {
+            "bucket": "2026-03",
+            "value": "201280"
+          },
+          {
+            "bucket": "2026-04",
+            "value": "178786"
+          },
+          {
+            "bucket": "2026-05",
+            "value": "226871"
+          },
+          {
+            "bucket": "2026-06",
+            "value": "213458"
+          },
+          {
+            "bucket": "2026-07",
+            "value": "188039"
+          },
+          {
+            "bucket": "2026-08",
+            "value": "158576"
+          },
+          {
+            "bucket": "2026-09",
+            "value": "222729"
+          },
+          {
+            "bucket": "2026-10",
+            "value": "219302"
+          },
+          {
+            "bucket": "2026-11",
+            "value": "156745"
+          }
+        ],
+        "meta": {
+          "disclosureKey": "2026-11-21T23:13:07.212166Z",
+          "buildId": "1795302787212166"
+        }
+      }
+    ],
+    "nationalAwardMonths": [
+      {
+        "points": [],
+        "meta": {
+          "disclosureKey": null,
+          "buildId": "1795302787212166"
+        }
+      }
+    ]
+  }
+}
