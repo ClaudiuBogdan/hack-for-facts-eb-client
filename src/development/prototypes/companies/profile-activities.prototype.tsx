@@ -1,7 +1,7 @@
 import { CompanyActivitiesBand } from '@/features/private-companies/components/profile/company-activities-band'
 import { CompanyRegistryScopeProvider } from '@/features/private-companies/components/registry/company-registry-scope-provider'
 import type { PrototypeDefinition } from '@/development/harness/entry'
-import { ProtoActivitiesBand } from './profile-activities.band'
+import { DesignActivitiesBand, ProtoActivitiesBand } from './profile-activities.band'
 import { PROTOTYPE_MARKER, useProtoModel } from './profile.data'
 
 /**
@@ -35,6 +35,14 @@ function ActivitiesPliat() {
   return <Frame>{(model) => <ProtoActivitiesBand model={model} anafFolded />}</Frame>
 }
 
+function ActivitiesDesign() {
+  return <Frame>{(model) => <DesignActivitiesBand model={model} />}</Frame>
+}
+
+function ActivitiesDesignLista() {
+  return <Frame>{(model) => <DesignActivitiesBand model={model} strip={false} />}</Frame>
+}
+
 export const prototype = {
   title: 'Firmă — ce face firma, mai simplu',
   spec: 'docs/design/companies/design.md',
@@ -50,6 +58,16 @@ export const prototype = {
       component: ActivitiesPliat,
       note: 'As „Selecția întâi", with ANAF’s assumed main activity behind a button (still read on load).',
     },
+    design: {
+      title: 'Design: răspuns și amprentă',
+      component: ActivitiesDesign,
+      note: 'The answer left (the selection as the lead, ANAF’s presumed activity folded under it); right, the registry’s spread: a sentence, one strip of every domain, the ranked domains with inline bars.',
+    },
+    'design-lista': {
+      title: 'Design: fără bandă',
+      component: ActivitiesDesignLista,
+      note: 'As „Design", without the strip: the sentence and the ranked domains with inline bars.',
+    },
   },
-  compare: ['azi', 'pliat'],
+  compare: ['azi', 'design'],
 } satisfies PrototypeDefinition
