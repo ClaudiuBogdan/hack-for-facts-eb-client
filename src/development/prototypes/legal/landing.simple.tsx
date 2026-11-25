@@ -1,25 +1,25 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
-import { useLingui } from '@lingui/react'
+import { Link, useLocation, useNavigate, useSearch } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ArrowLeft, ArrowRight, ArrowUpRight, Home } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Scale } from 'lucide-react'
+import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
-import { useLegislationFrontier } from '@/features/legal/hooks/use-legislation-frontier'
+import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
 import { useLegalAnalytics } from '@/features/legal/hooks/use-legislation-analytics'
 import { fmt, pct } from '@/features/legal/lib/analytics-format'
 import { READING_SENTENCE } from '@/features/legal/lib/analytics-notes-text'
-import { formatLegalDate } from '@/features/legal/lib/legal-format'
-import { HubInfoNote } from '@/features/private-companies/components/hub/hub-info-note'
-import type { HomeSection } from '@/features/procurement/lib/home-links'
+import { LEADERS_MORE_CLASS, LEADER_ROW_CLASS } from '@/features/private-companies/components/hub/company-hub-sections'
+import { HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { ChangesBand, FelulBand, GazetteBand, IssuersBand, LinksBand, YearsBand, legalHubSections, type LeadersRanking } from './landing.bands'
-import { HubSearch, SourcesLine, StartCards, useOneLayer } from './landing.hub'
+import { SourcesLine, StartCards, useOneLayer } from './landing.hub'
 import { GAZETTE_URL, PORTAL_URL, PROTOTYPE_MARKER, actName, analysisSearch } from './landing.lib'
 import { BandNote, PendingBar } from './landing.parts'
 
@@ -29,24 +29,29 @@ import { BandNote, PendingBar } from './landing.parts'
  * to the main page navigation at the top"). The first round stays as the `hub` variant.
  *
  * What changed, against `hub`:
- * - The head holds one thing to do and one thing to look at: the search with one row of shortcuts, and a short
- *   list of acts. The example chips are gone (the placeholder shows the same shapes), the shortcuts are four,
+ * - The head holds one thing to do and one thing to look at: the search with one row of shortcuts, and the
+ *   leading acts. The example chips are gone (the placeholder shows the same shapes), the shortcuts are four,
  *   and the four figures left the head for their own band under the pinned bar, as on the site's landing and
  *   the companies hub.
- * - The acts' card is six rows of two plain lines, in the landing's institutions panel's form: an act is named
- *   once (its citation, or its name where the Portal gives one), with its issuer under it; the figure's column
- *   is named once, in the card's header, and what the figure counts sits behind one marker.
- * - The way home: „Acasă" opens the head, and the pinned bar starts with it, so it stays in reach on scroll.
+ * - The search and the acts' card are the other hubs' (owner, same day: „keep the design for search component
+ *   and table in the header consistent with the other pages"): the site's search scoped to legislation, as
+ *   the companies, NGO and procurement hubs scope theirs, and the companies hub's leaders' card (title, the
+ *   ranking's switch, rows of place, name, bar and a quiet line, the figure), five rows to keep the head
+ *   compact (owner). An act is named once (its
+ *   citation, or its name where the Portal gives one), with its issuer under it.
+ * - The way home: „Acasă" opens the head. The pinned bar is the hubs' own, without a home button (owner).
+ * - The sources in the head are their names alone, as the national budget's head says its own; the dates are
+ *   in the page's last line.
  * - Type as the landing sets it: the headline's tracking, word spacing and leading; the lede's normal tracking;
- *   round commas (`ss03`); words in Inter in their own casing, mono capitals only on the figures' short labels.
+ *   round commas (`ss03`); words in Inter in their own casing, mono capitals only on short labels.
  *
  * The bands, the start cards and the foot are the first round's, untouched.
  */
 
 const DEFAULT_RANKING: LeadersRanking = 'modificate'
 
-/** The acts the head lists: a glance, not a table. The rest is one link away. */
-const HEAD_ACTS_SHOWN = 6
+/** The acts the head's table shows: the top five, so the head stays compact (owner). The rest is one link away. */
+const HEAD_ACTS_SHOWN = 5
 
 /** A shortcut under the search, as the landing sets its own: medium weight, the accent on hover, no underline. */
 const SHORTCUT_LINK_CLASS = 'inline-flex min-h-11 items-center text-sm font-medium text-foreground transition-colors hover:text-primary sm:min-h-0'
@@ -117,7 +122,7 @@ export function LandingHubSimple() {
                 <Trans>Legi, ordonanțe și hotărâri din Portalul Legislativ: textul lor, cine le emite și cum se schimbă.</Trans>
               </p>
               <div className="mt-6 sm:mt-7">
-                <HubSearch examples={false} />
+                <HeadSearch />
               </div>
               {/* The landing's shortcut row: the label is a sentence that runs into the links, so it is set in
                   their voice and shares their baseline; on a phone it has its own line and each shortcut is a
@@ -155,7 +160,7 @@ export function LandingHubSimple() {
         </RuledFrame>
       </section>
 
-      <SectionBar title={t`Legislația României`} sections={sections} />
+      <HomeSectionNav title={t`Legislația României`} sections={sections} />
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>
@@ -196,201 +201,155 @@ export function LandingHubSimple() {
   )
 }
 
-// ───────────────────────────────────────────────────── the pinned bar ──
-
-/**
- * The page's pinned bar with the way home at its start: the hubs' bar (`HomeSectionNav`), which is shared and
- * left as it is, drawn here with „Acasă" before the page's name. On a phone the link is its icon alone.
- */
-function SectionBar({ title, sections }: { readonly title: string; readonly sections: readonly HomeSection[] }) {
-  return (
-    <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
-      <RuledFrame className="flex items-center gap-4 overflow-x-auto py-0 sm:gap-5">
-        <Link
-          to="/"
-          aria-label={t`Pagina principală`}
-          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Home className="size-4" aria-hidden="true" />
-          <span className="hidden sm:inline" aria-hidden="true">
-            <Trans>Acasă</Trans>
-          </span>
-        </Link>
-        <span className="hidden h-4 w-px shrink-0 bg-border md:block" aria-hidden="true" />
-        <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground md:block md:max-w-72">{title}</span>
-        <ol className="flex shrink-0 gap-4 sm:gap-5 md:ml-auto">
-          {sections.map((section, position) => (
-            <li key={section.id}>
-              <a href={`#${section.id}`} className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-                <MonoLabel className="text-primary" aria-hidden="true">
-                  {String(position + 1).padStart(2, '0')}
-                </MonoLabel>
-                {section.label}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </RuledFrame>
-    </nav>
-  )
-}
-
 // ───────────────────────────────────────────────────── the head ──
 
 /**
- * The acts most amended, or most cited, as a short list beside the search: the landing's institutions panel's
- * form. The two rankings are the card's header; the figure's column is named once, beside them, with what it
- * counts behind the marker. A row is an act in one line and its issuer under it.
+ * The site's search, scoped to legislation, as the companies, NGO and procurement hubs scope theirs: the same
+ * field, ranking and keyboard, the scope sent to the server as `docTypes`. A row opens the act's page. It
+ * takes focus on arrival only at the top of the page and never on a phone.
+ */
+function HeadSearch() {
+  const isMobile = useIsMobile()
+  const { hash } = useLocation()
+  return (
+    <DeferredLandingSearch
+      docTypes={['legal_act']}
+      fixedScope={{ label: t`Legislație`, Icon: Scale }}
+      // Short, as the companies hub's („Nume sau CUI..."): beside the „Legislație" pill a 390px phone has room for about twelve letters.
+      placeholder={t`Nume sau nr…`}
+      autoFocus={!isMobile && !hash}
+      scrollToTopOnFocus={isMobile}
+    />
+  )
+}
+
+/**
+ * The five acts most amended, or most cited, in the companies hub's leaders' card: the title and the ranking's
+ * switch, then a row per act (its place, its name, its figure as a bar against the first's, a quiet line with
+ * its issuer, the figure), the link to the rest and what the figure counts. An act is named once: its
+ * citation, or its name where the Portal gives one, with the citation then on the quiet line.
  */
 function HeadActs({ ranking, onRanking }: { readonly ranking: LeadersRanking; readonly onRanking: (key: LeadersRanking) => void }) {
   const cited = ranking === 'citate'
   const acts = useLegalAnalytics('acts', { order: cited ? 'cited' : 'amended', limit: HEAD_ACTS_SHOWN })
   const rows = acts.data?.data.rows ?? []
-  // The full name from `sm`; on a phone „Cele mai" is said once, before the two, so they fit beside the marker.
-  const options: readonly { readonly key: LeadersRanking; readonly label: string; readonly short: string }[] = [
-    { key: 'modificate', label: t`Cele mai modificate`, short: t`modificate` },
-    { key: 'citate', label: t`Cele mai citate`, short: t`citate` },
-  ]
+  const figure = (row: (typeof rows)[number]) => (cited ? row.cited : row.amended)
+  const top = Math.max(1, ...rows.map(figure))
   return (
-    <section className="overflow-hidden rounded-lg border border-input bg-card" aria-labelledby="legal-hub-acts-title">
-      <h2 id="legal-hub-acts-title" className="sr-only">
-        <Trans>Actele din frunte</Trans>
-      </h2>
-      <div className="flex items-center justify-between gap-3 border-b bg-muted/40 pl-4 pr-2 sm:pr-3">
-        <div role="group" aria-label={t`Clasamentul după`} className="flex items-center gap-3 sm:gap-4">
-          <span className="text-sm text-muted-foreground sm:hidden" aria-hidden="true">
-            <Trans>Cele mai</Trans>
-          </span>
-          {options.map((option) => {
-            const chosen = option.key === ranking
-            return (
-              <button
-                key={option.key}
-                type="button"
-                aria-pressed={chosen}
-                aria-label={option.label}
-                onClick={() => onRanking(option.key)}
-                className={cn(
-                  'relative inline-flex min-h-11 items-center whitespace-nowrap text-sm transition-colors hover:text-foreground',
-                  chosen ? 'font-semibold text-foreground' : 'text-muted-foreground',
-                )}
-              >
-                <span className="sm:hidden">{option.short}</span>
-                <span className="hidden sm:inline">{option.label}</span>
-                {chosen ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" aria-hidden="true" /> : null}
-              </button>
-            )
-          })}
-        </div>
-        <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-          <span className="hidden sm:inline">{cited ? <Trans>Citări</Trans> : <Trans>Modificări</Trans>}</span>
-          <HubInfoNote label={t`Despre clasament`}>
-            <p>
-              {cited ? (
-                <Trans>De câte ori actul e citat de alte acte din corpus.</Trans>
-              ) : (
-                <Trans>De câte ori actul e numit ca țintă în titlul unui act care îl modifică.</Trans>
-              )}
-            </p>
-          </HubInfoNote>
-        </span>
+    <section className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6" aria-labelledby="legal-hub-acts-title">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <h2 id="legal-hub-acts-title" className="text-sm font-semibold text-foreground">
+          {cited ? <Trans>Cele mai citate acte</Trans> : <Trans>Cele mai modificate acte</Trans>}
+        </h2>
+        {/* The switch names the measure, as the companies hub's does („Cifra de afaceri", „Salariați"): two short words, one line on a phone. */}
+        <IndicatorToggle<LeadersRanking>
+          label={t`Clasamentul după`}
+          options={[
+            { key: 'modificate', label: t`Modificări` },
+            { key: 'citate', label: t`Citări` },
+          ]}
+          value={ranking}
+          onChange={onRanking}
+        />
       </div>
       {acts.error ? (
-        <div className="px-4 py-3">
+        <div className="mt-4">
           <BandNote error={acts.error} onRetry={() => void acts.refetch()} />
         </div>
       ) : acts.data ? (
-        // The previous ranking stays while the next one loads, dimmed: its figures are not the new header's.
-        <ol className={cn('transition-opacity', acts.isPlaceholderData && 'opacity-40')} aria-busy={acts.isPlaceholderData} data-testid="legal-hub-head-acts">
-          {rows.map((row) => {
+        // The previous ranking stays while the next one loads, dimmed: its figures are not the new switch's.
+        <ol
+          className={cn('mt-4 divide-y divide-border/70 border-y border-border/70 transition-opacity', acts.isPlaceholderData && 'opacity-40')}
+          aria-busy={acts.isPlaceholderData}
+          data-testid="legal-hub-head-acts"
+        >
+          {rows.map((row, index) => {
             const act = actName(row)
             const under = [act.citation, row.issuer].filter((part): part is string => part !== null && part !== '').join(' · ')
             return (
               <li key={row.actId}>
-                <Link
-                  to="/legislation/acts/$actId"
-                  params={{ actId: row.actId }}
-                  className="group flex items-baseline justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-                >
+                <Link to="/legislation/acts/$actId" params={{ actId: row.actId }} className={cn(LEADER_ROW_CLASS, 'transition-colors hover:bg-muted/40')}>
+                  <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-card-foreground group-hover:underline">{act.name}</span>
+                    <span className="block truncate text-sm font-medium text-foreground">{act.name}</span>
+                    <span className="mt-1 block h-1 bg-muted" aria-hidden="true">
+                      <span
+                        className="block h-1 bg-primary/70 transition-colors group-hover:bg-primary"
+                        style={{ width: `${Math.min(Math.max((figure(row) / top) * 100, 0.8), 100).toFixed(1)}%` }}
+                      />
+                    </span>
                     {/* The line is kept under an act with nothing to say there, so the rows share one height. */}
-                    <span className={cn('block truncate', META_CLASS)}>{under === '' ? ' ' : under}</span>
+                    <span className={cn('mt-1 block truncate', META_CLASS)} title={under === '' ? undefined : under}>
+                      {under === '' ? '\u00a0' : under}
+                    </span>
                   </span>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums text-card-foreground">{fmt(cited ? row.cited : row.amended)}</span>
+                  <span className="text-right">
+                    <span className="block text-sm font-semibold tabular-nums text-foreground">{fmt(figure(row))}</span>
+                    <span className={cn('block', META_CLASS)}>{cited ? t`citări` : t`modificări`}</span>
+                  </span>
                 </Link>
               </li>
             )
           })}
         </ol>
       ) : (
-        <ol aria-hidden="true">
+        <ol className="mt-4 divide-y divide-border/70 border-y border-border/70" aria-hidden="true">
           {Array.from({ length: HEAD_ACTS_SHOWN }, (_, index) => (
-            <li key={index} className="flex items-baseline justify-between gap-3 px-4 py-2.5">
-              <span className="min-w-0 flex-1">
+            <li key={index} className={LEADER_ROW_CLASS}>
+              <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
+              <span className="min-w-0">
                 <span className="block text-sm font-medium">
-                  <PendingBar className="w-1/2" />
+                  <PendingBar className="block w-3/4" />
                 </span>
-                <span className={cn('block', META_CLASS)}>
+                <span className="mt-1 block h-1 bg-muted" />
+                <span className={cn('mt-1 block', META_CLASS)}>
                   <PendingBar className="w-1/3" />
                 </span>
               </span>
-              <span className="text-sm font-semibold">
-                <PendingBar className="w-10" />
+              <span className="text-right">
+                <span className="block text-sm font-semibold">
+                  <PendingBar className="w-12" />
+                </span>
+                <span className={cn('block', META_CLASS)}>
+                  <PendingBar className="w-10" />
+                </span>
               </span>
             </li>
           ))}
         </ol>
       )}
-      <Link
-        to="/legislation/analytics"
-        search={analysisSearch({ ordine: cited ? 'citari' : 'modificari' })}
-        hash="acte"
-        className="group flex items-center justify-between gap-3 border-t bg-muted/40 px-4 py-2.5 text-sm font-medium text-card-foreground transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-      >
-        <span className="group-hover:underline">{cited ? <Trans>Toate actele, după citări</Trans> : <Trans>Toate actele, după modificări</Trans>}</span>
-        <ArrowRight aria-hidden="true" className="size-4 text-muted-foreground" />
+      <Link to="/legislation/analytics" search={analysisSearch({ ordine: cited ? 'citari' : 'modificari' })} hash="acte" className={LEADERS_MORE_CLASS}>
+        {cited ? <Trans>Toate actele, după citări</Trans> : <Trans>Toate actele, după modificări</Trans>} →
       </Link>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {cited ? (
+          <Trans>De câte ori actul e citat de alte acte din corpus.</Trans>
+        ) : (
+          <Trans>De câte ori actul e numit ca țintă în titlul unui act care îl modifică.</Trans>
+        )}
+      </p>
     </section>
   )
 }
 
 /**
- * The sources in a line at the head's foot, with the two dates a reader needs: how far the data goes, and when
- * the analysis was made. The corpus's own date and the layer are in the page's last line.
+ * The head's few words of sources, as the national budget's head says its own: the names, each a link. How
+ * far the data goes and when the analysis was made are in the page's last line.
  */
 function HeadSources() {
-  const { i18n } = useLingui()
-  const { measuredAt } = useLegislationFrontier('corpus')
-  const layer = useLegalAnalytics('head', {}).data?.layer
-  const day = (value: string) => formatLegalDate(value, i18n.locale)
-  const link = 'whitespace-nowrap font-medium text-foreground underline-offset-4 hover:underline'
+  const link = 'font-medium text-foreground underline-offset-4 hover:underline'
   return (
     <p className="text-sm text-muted-foreground" data-testid="legal-hub-freshness">
       <Trans>
         Surse:{' '}
         <a href={PORTAL_URL} target="_blank" rel="noreferrer" className={link}>
-          Portalul Legislativ<span aria-hidden="true"> ↗</span>
-          <span className="sr-only"> (se deschide într-o filă nouă)</span>
-        </a>{' '}
-        și{' '}
+          Portalul Legislativ
+        </a>
+        ,{' '}
         <a href={GAZETTE_URL} target="_blank" rel="noreferrer" className={link}>
-          Monitorul Oficial<span aria-hidden="true"> ↗</span>
-          <span className="sr-only"> (se deschide într-o filă nouă)</span>
+          Monitorul Oficial
         </a>
       </Trans>
-      {measuredAt ? (
-        <>
-          {' · '}
-          <Trans>date până la {day(measuredAt)}</Trans>
-        </>
-      ) : null}
-      {layer ? (
-        <>
-          {' · '}
-          <Trans>analiză din {day(layer.publishedAt)}</Trans>
-        </>
-      ) : null}
     </p>
   )
 }
