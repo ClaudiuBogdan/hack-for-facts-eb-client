@@ -340,58 +340,55 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
       {/* One column, the chart across the band's width: beside the title, the chart left the column under the
           title empty below its two figures (owner, 25 November 2026). */}
       <HomeBand id="economie" labelledBy="hub-economy-title">
-        <HubSectionHead
-          titleId="hub-economy-title"
-          title={<Trans>Evoluția pe ani</Trans>}
-          lede={economyLede(economyMeasure)}
-          aside={
-            // The switch, and under it the first and last whole years: beside the title, not a row of their own
-            // (owner, 25 November 2026: the band ran 470px taller across the page).
-            <div className="flex flex-col gap-5 sm:items-end">
-              <IndicatorToggle
-                label={t`Anii după`}
-                options={[
-                  { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
-                  { key: 'rezultat-net', label: t`Rezultatul net` },
-                  { key: 'salariati', label: t`Salariați` },
-                ]}
-                value={yearMeasure}
-                onChange={(key: CompanyHubYearMeasure) => choose('evolutie', key, DEFAULT_YEAR_MEASURE)}
+        {/* The head's own row, its title at the top: beside the switch and the first and last years, a head
+            aligned by its foot left the title low with empty room over it (owner, 25 November 2026). */}
+        <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-6">
+          <HubSectionHead titleId="hub-economy-title" title={<Trans>Evoluția pe ani</Trans>} lede={economyLede(economyMeasure)} />
+          {/* The switch, and under it the first and last whole years: beside the title, not a row of their own. */}
+          <div className="flex w-full flex-col gap-5 sm:w-auto sm:items-end">
+            <IndicatorToggle
+              label={t`Anii după`}
+              options={[
+                { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
+                { key: 'rezultat-net', label: t`Rezultatul net` },
+                { key: 'salariati', label: t`Salariați` },
+              ]}
+              value={yearMeasure}
+              onChange={(key: CompanyHubYearMeasure) => choose('evolutie', key, DEFAULT_YEAR_MEASURE)}
+            />
+            <div className="w-full sm:w-[26rem]">
+              <HubEconomySpan
+                years={SNAPSHOT.years}
+                measure={economyMeasure}
+                note={
+                  <>
+                    <p>
+                      <Trans>Fiecare an își numără firmele cu bilanț pe acel an.</Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Analiza bilanțurilor, ediția {SNAPSHOT.yearsSource.releaseId}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile
+                        admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Cifrele-cheie de sus adună bilanțurile pe {YEAR} citite până acum de la ANAF, ale tuturor firmelor, deci diferă de anul {YEAR} de
+                        aici.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Salariații: un număr mediu peste {formatHubNumber(HUB_EMPLOYEE_CEILING)} sau sub zero e o greșeală de introducere și nu e adunat;
+                        analiza deschisă de aici păstrează aceeași limită.
+                      </Trans>
+                    </p>
+                  </>
+                }
               />
-              <div className="w-full sm:w-[26rem]">
-                <HubEconomySpan
-                  years={SNAPSHOT.years}
-                  measure={economyMeasure}
-                  note={
-                    <>
-                      <p>
-                        <Trans>Fiecare an își numără firmele cu bilanț pe acel an.</Trans>
-                      </p>
-                      <p>
-                        <Trans>
-                          Analiza bilanțurilor, ediția {SNAPSHOT.yearsSource.releaseId}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile
-                          admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}.
-                        </Trans>
-                      </p>
-                      <p>
-                        <Trans>
-                          Cifrele-cheie de sus adună bilanțurile pe {YEAR} citite până acum de la ANAF, ale tuturor firmelor, deci diferă de anul {YEAR} de
-                          aici.
-                        </Trans>
-                      </p>
-                      <p>
-                        <Trans>
-                          Salariații: un număr mediu peste {formatHubNumber(HUB_EMPLOYEE_CEILING)} sau sub zero e o greșeală de introducere și nu e adunat;
-                          analiza deschisă de aici păstrează aceeași limită.
-                        </Trans>
-                      </p>
-                    </>
-                  }
-                />
-              </div>
             </div>
-          }
-        />
+          </div>
+        </div>
         <div className="mt-8" data-reveal>
           <HubEconomyChart years={SNAPSHOT.years} measure={economyMeasure} />
           <Link
@@ -466,17 +463,17 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                 to={hubCompaniesSearch(YEAR, { observedStatus: { in: [...INSOLVENCY_STATUSES] } })}
                 // The card is its title and its count, so the title names every status the count holds.
                 title={<Trans>Firme în insolvență, reorganizare judiciară sau faliment</Trans>}
-                body={firmCount(national.insolvency)}
+                count={national.insolvency}
               />
               <StartCard
                 to={hubCompaniesSearch(YEAR, { fiscallyInactive: ['YES'], observedStatus: { in: [STATUS_ACTIVE] } })}
                 title={<Trans>În funcțiune, dar inactive la ANAF</Trans>}
-                body={firmCount(national.fiscallyInactive)}
+                count={national.fiscallyInactive}
               />
               <StartCard
                 to={hubCompaniesSearch(YEAR, { observedStatus: { in: [...DISSOLUTION_STATUSES] } })}
                 title={<Trans>Firme în dizolvare sau lichidare</Trans>}
-                body={firmCount(national.dissolution)}
+                count={national.dissolution}
               />
             </ul>
           </div>
@@ -486,11 +483,6 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
       <SourcesLine />
     </div>
   )
-}
-
-/** A count of companies, as a card's only line: Romanian writes „de" before a count ending in 20–99. */
-function firmCount(count: number): string {
-  return plural(count, { one: '# firmă', few: '# firme', other: '# de firme' })
 }
 
 /** What the activities are ranked by, in one line under the band's title: the count is the ranking's own. */
@@ -649,20 +641,23 @@ function SourcesLine() {
   )
 }
 
-/** One place to start: a selection in the analysis, with its size in the snapshot said. */
-function StartCard({ to, title, body }: { readonly to: Record<string, unknown>; readonly title: ReactNode; readonly body: ReactNode }) {
+/**
+ * One status: its count as a figure, the way the four figures at the top read, and under it what it counts
+ * (owner, 25 November 2026). The card opens the same selection in the analysis.
+ */
+function StartCard({ to, title, count }: { readonly to: Record<string, unknown>; readonly title: ReactNode; readonly count: number }) {
   return (
     <li>
-      <Link to="/companies/analytics" search={to} className="group block h-full bg-background p-5 transition-colors hover:bg-muted/40">
+      <Link to="/companies/analytics" search={to} className="group flex h-full flex-col bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6">
         {/* The arrow at rest, as every tile of the landing's index carries one: a phone has no hover to show it. */}
         <span className="flex items-start justify-between gap-3">
-          <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
+          <span className="text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">{formatHubNumber(count)}</span>
           <ArrowRight
             aria-hidden="true"
-            className="mt-1 size-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transition-none"
+            className="mt-1.5 size-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transition-none"
           />
         </span>
-        <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{body}</span>
+        <span className="mt-2 block text-sm font-medium leading-snug text-foreground">{title}</span>
       </Link>
     </li>
   )

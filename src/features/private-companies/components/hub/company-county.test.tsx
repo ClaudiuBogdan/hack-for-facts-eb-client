@@ -185,4 +185,21 @@ describe('CompanyCountyRank', () => {
     fireEvent.click(screen.getByRole('button', { name: /Încă 2 județe/ }))
     expect(screen.getAllByRole('list').flatMap((list) => within(list).getAllByRole('link'))).toHaveLength(12)
   })
+
+  it('shows three at each end on a phone, by CSS, the same list sent for every width', () => {
+    const many: HubCountyLayer = {
+      unit: 'firms',
+      national: 1000,
+      values: ['AB', 'AR', 'AG', 'BC', 'BH', 'BN', 'BT', 'BV', 'BR', 'BZ', 'CS', 'CL'].map((code, index) => ({ code, value: 100 - index })),
+    }
+    render(<CompanyCountyRank layer={many} countyLink={analysisLink} phoneEdge={3} />)
+    const items = screen.getAllByRole('list').flatMap((list) => within(list).getAllByRole('listitem'))
+    // 1–5 and 8–12 sent; 4, 5, 8 and 9 hidden below `sm`.
+    expect(items).toHaveLength(10)
+    expect(items.map((item) => item.className.includes('max-sm:hidden'))).toEqual([false, false, false, true, true, true, true, false, false, false])
+    // The button counts what each width hides.
+    const button = screen.getByRole('button')
+    expect(within(button).getByText('Încă 6 județe')).toHaveClass('sm:hidden')
+    expect(within(button).getByText('Încă 2 județe')).toHaveClass('max-sm:hidden')
+  })
 })

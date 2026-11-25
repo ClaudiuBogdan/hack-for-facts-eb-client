@@ -149,7 +149,7 @@ export function CompanyCountyMap({
         <svg
           ref={svgRef}
           viewBox={`0 0 ${COUNTY_MAP_WIDTH} ${shapes.height.toFixed(0)}`}
-          className="mt-4 block h-auto w-full touch-manipulation"
+          className="mt-3 block h-auto w-full touch-manipulation sm:mt-4"
           role="group"
           aria-label={legend}
           onClick={(event) => {
@@ -309,11 +309,12 @@ function CountyReadout({
   const note = county ? describeAgainstNational(county.value, layer.national, layer.unit, digits) : null
 
   return (
-    <div id={id} className="flex min-h-20 flex-col justify-start">
+    // Three lines at most (the place, the figure, how it compares): their height kept, so the map never moves.
+    <div id={id} className="flex min-h-[4.625rem] flex-col justify-start sm:min-h-20">
       {/* A place and its rank, in words: plain text, not a mono capital line. */}
       <p className="text-xs leading-relaxed text-muted-foreground">{caption}</p>
       {formatted ? (
-        <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-3xl">
+        <p className="mt-0.5 text-xl font-semibold tabular-nums tracking-tight text-foreground sm:mt-1 sm:text-3xl">
           {formatted.value}
           {formatted.unit ? (
             <>
