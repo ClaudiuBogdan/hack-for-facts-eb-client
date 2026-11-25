@@ -11019,12 +11019,12 @@ msgid "Cât cheltuie primăriile pe bunuri și servicii, an de an?"
 msgstr "How much do town halls spend on goods and services, year by year?"
 
 #: src/features/national-budget/home/components/person-head.tsx:37
-msgid "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât se împrumută."
-msgstr "How much the state spends for each of its {people} residents, on what, where the money comes from and how much it borrows."
+msgid "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât e deficitul."
+msgstr "How much the state spends for each of its {people} residents, on what, where the money comes from and what the deficit is."
 
 #: src/features/national-budget/home/components/person-head.tsx:37
-msgid "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât se împrumută."
-msgstr "How much the state spends for each resident, on what, where the money comes from and how much it borrows."
+msgid "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât e deficitul."
+msgstr "How much the state spends for each resident, on what, where the money comes from and what the deficit is."
 
 #: src/features/national-budget/home/components/home-balance.tsx:88
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:40
@@ -11032,8 +11032,8 @@ msgstr "How much the state spends for each resident, on what, where the money co
 #~ msgstr "How much the state spends beyond what it collects"
 
 #: src/routes/national-budget.index.tsx:45
-msgid "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât se împrumută an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
-msgstr "How much the Romanian state spends for each resident, on what and with what money, which budgets the money passes through, how much is borrowed year by year since 2006 and how the year in progress is going. Data from the Ministry of Finance execution bulletins, the state budget execution reported to ANAF and the population according to INS."
+msgid "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât e deficitul an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
+msgstr "How much the Romanian state spends for each resident, on what and with what money, which budgets the money passes through, what the deficit is year by year since 2006 and how the year in progress is going. Data from the Ministry of Finance execution bulletins, the state budget execution reported to ANAF and the population according to INS."
 
 #: src/features/procurement/components/home/home-context-bands.tsx:114
 msgid "Cât cumpără județul tău"
@@ -11104,10 +11104,6 @@ msgstr "How much was invested (non-financial assets), year by year?"
 #: src/features/national-budget/analytics/lib/analytics-view.ts:509
 msgid "Cât se cheltuie în fiecare lună (și în decembrie)?"
 msgstr "How much is spent each month (and in December)?"
-
-#: src/features/national-budget/home/components/person-debt.tsx:257
-msgid "Cât se împrumută, an de an"
-msgstr "How much is borrowed, year by year"
 
 #: src/features/justice/components/hub/justice-hub-bands.tsx:122
 msgid "Cât se judecă în județul tău"
@@ -18608,9 +18604,9 @@ msgstr "Deficits before consolidation: the budgets' own (the other budgets count
 msgid "deficitul"
 msgstr "the deficit"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:40
-#~ msgid "Deficitul"
-#~ msgstr "Deficit"
+#: src/features/national-budget/home/components/person-head.tsx:198
+msgid "Deficitul"
+msgstr "Deficit"
 
 #: src/features/national-budget/home/components/person-year.tsx:222
 msgid "Deficitul adunat din ianuarie până la fiecare lună, anul acesta și anul trecut: arată dacă anul merge mai bine sau mai rău decât cel trecut."
@@ -18636,10 +18632,9 @@ msgstr "The deficit since the start of the year"
 msgid "deficitul fiecărui buget înainte de consolidare: ce a cheltuit peste încasări"
 msgstr "each budget's deficit before consolidation: what it spent beyond its revenue"
 
-#: src/features/national-budget/home/components/home-balance.tsx:60
-#: src/features/national-budget/home/components/home-head.tsx:77
-#~ msgid "Deficitul, an de an"
-#~ msgstr "The deficit, year by year"
+#: src/features/national-budget/home/components/person-debt.tsx:257
+msgid "Deficitul, an de an"
+msgstr "The deficit, year by year"
 
 #: src/features/national-budget/home/components/person-debt.tsx:51
 #: src/features/national-budget/home/components/person-year.tsx:77
@@ -26724,10 +26719,6 @@ msgstr "Tax on wages and income"
 #: src/features/national-budget/home/lib/home-format.ts:22
 msgid "Impozitul pe venit"
 msgstr "Income tax"
-
-#: src/features/national-budget/home/components/person-head.tsx:198
-msgid "Împrumutul"
-msgstr "Borrowing"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:330
 msgctxt "national budget classification"

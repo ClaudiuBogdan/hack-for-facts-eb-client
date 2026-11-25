@@ -26,7 +26,7 @@ describe('the national budget page before its catalog', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Bugetul țării')
     expect(screen.getByRole('navigation', { name: 'Secțiunile paginii' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Cifre-cheie' })).toBeInTheDocument()
-    for (const title of ['De unde vin banii și pe ce se duc', 'Prin ce bugete trec banii', 'Bugetul de stat, pe domenii și pe instituții', 'Cât se împrumută, an de an', 'Mai departe']) {
+    for (const title of ['De unde vin banii și pe ce se duc', 'Prin ce bugete trec banii', 'Bugetul de stat, pe domenii și pe instituții', 'Deficitul, an de an', 'Mai departe']) {
       expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()
     }
     // The year menus and the numbers wait for their reads.

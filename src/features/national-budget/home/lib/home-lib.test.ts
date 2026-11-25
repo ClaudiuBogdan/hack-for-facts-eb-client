@@ -5,7 +5,10 @@ import type { BudgetApprovedRecord, BudgetNationalCatalog, BudgetNationalSeries,
 import {
   ANAF_FIRST_YEAR,
   TOTAL_ITEMS,
+  anafAuthoritiesOptions,
+  anafChaptersOptions,
   anafFilter,
+  anafReadKey,
   anafTotal,
   chaptersOf,
   defaultYear,
@@ -396,5 +399,19 @@ describe('the GDP figures, each from its own source', () => {
     expect([others.share(TOTAL_ITEMS.spending), others.shareStatus(TOTAL_ITEMS.spending)]).toEqual([null, 'absent'])
     expect([others.share(TOTAL_ITEMS.revenue), others.shareStatus(TOTAL_ITEMS.revenue)]).toEqual(['0', 'available'])
     expect([others.share(TOTAL_ITEMS.balance), others.shareStatus(TOTAL_ITEMS.balance)]).toEqual([null, 'unqualified'])
+  })
+})
+
+describe('ANAF reads, by what they ask', () => {
+  it('give a year in progress at December and the full year their own keys: they ask different periods', () => {
+    const full = viewOfYear(catalog, 2025)
+    const partial = { ...full, partial: true }
+    expect(full.month).toBe('2025-12')
+    expect(anafReadKey('authorities', anafFilter(partial))).not.toBe(anafReadKey('authorities', anafFilter(full)))
+    expect(anafReadKey('chapters', anafFilter(partial))).not.toBe(anafReadKey('chapters', anafFilter(full)))
+    expect(anafAuthoritiesOptions(partial).queryKey).not.toEqual(anafAuthoritiesOptions(full).queryKey)
+    expect(anafChaptersOptions(partial).queryKey).not.toEqual(anafChaptersOptions(full).queryKey)
+    // One authority's chapters are another question again.
+    expect(anafChaptersOptions(full, '4267117').queryKey).not.toEqual(anafChaptersOptions(full).queryKey)
   })
 })

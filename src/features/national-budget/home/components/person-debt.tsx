@@ -254,7 +254,7 @@ function Debt() {
 
 export function DebtSection() {
   return (
-    <Section id="imprumut" title={t`Cât se împrumută, an de an`} lede={t`Ce cheltuie statul peste încasări se acoperă din împrumuturi, care se dau înapoi cu dobândă din bugetele anilor următori.`}>
+    <Section id="imprumut" title={t`Deficitul, an de an`} lede={t`Ce cheltuie statul peste încasări se acoperă din împrumuturi, care se dau înapoi cu dobândă din bugetele anilor următori.`}>
       <Debt />
     </Section>
   )

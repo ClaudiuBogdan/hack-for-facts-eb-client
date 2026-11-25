@@ -302,13 +302,22 @@ const leiOf = (amount: number | string): string => Number(amount).toFixed(2)
 
 export type AnafAuthority = { readonly cui: string; readonly name: string; readonly lei: string }
 
+/**
+ * An ANAF read's key in the server's shared copy: the filter it sends, in full. A year in progress at December and the
+ * full year share a year and a month but ask different periods (months from January, or the year).
+ */
+export function anafReadKey(kind: 'authorities' | 'chapters', filter: AnalyticsFilterType): string {
+  return `${ANAF_ROOT} ${kind} ${JSON.stringify(filter)}`
+}
+
 export function anafAuthoritiesOptions(view: YearView) {
+  const filter = anafFilter(view)
   return queryOptions({
-    queryKey: [ANAF_ROOT, 'authorities', view.year, view.month] as const,
+    queryKey: [ANAF_ROOT, 'authorities', view.year, view.month, view.partial] as const,
     // Through the server's shared copy (`shared-read.ts`): ANAF's reports are the current state, kept a few minutes.
     queryFn: ({ signal }) =>
-      sharedRead(`${ANAF_ROOT} authorities ${view.year} ${view.month}`, CURRENT_STATE, async (readSignal) => {
-        const page = await fetchEntityAnalytics({ filter: anafFilter(view), sort: { by: 'amount', order: 'DESC' }, limit: AUTHORITIES_LIMIT, signal: readSignal })
+      sharedRead(anafReadKey('authorities', filter), CURRENT_STATE, async (readSignal) => {
+        const page = await fetchEntityAnalytics({ filter, sort: { by: 'amount', order: 'DESC' }, limit: AUTHORITIES_LIMIT, signal: readSignal })
         // Every authority or none: a cut list would understate the state budget it is summed into, and inflate every share.
         if (page.pageInfo.hasNextPage || page.nodes.length < page.pageInfo.totalCount) throw new Error(`ANAF listed ${page.nodes.length} of ${page.pageInfo.totalCount} authorities`)
         return page.nodes.map((node): AnafAuthority => ({ cui: node.entity_cui, name: node.entity_name, lei: leiOf(node.amount) }))
@@ -336,12 +345,13 @@ export function chaptersOf(nodes: readonly { readonly fn_c?: string | null; read
 
 /** The state budget's payments by functional chapter, or one authority's. */
 export function anafChaptersOptions(view: YearView, cui: string | null = null) {
+  const filter = anafFilter(view, cui ? { entity_cuis: [cui] } : {})
   return queryOptions({
-    queryKey: [ANAF_ROOT, 'chapters', view.year, view.month, cui] as const,
+    queryKey: [ANAF_ROOT, 'chapters', view.year, view.month, view.partial, cui] as const,
     queryFn: ({ signal }) =>
-      sharedRead(`${ANAF_ROOT} chapters ${view.year} ${view.month} ${cui ?? ''}`, CURRENT_STATE, async (readSignal) => {
+      sharedRead(anafReadKey('chapters', filter), CURRENT_STATE, async (readSignal) => {
         // The whole list or an error: the explorer's reader refuses a cut page.
-        const page = await fetchCompleteAggregatedLineItems(anafFilter(view, cui ? { entity_cuis: [cui] } : {}), readSignal)
+        const page = await fetchCompleteAggregatedLineItems(filter, readSignal)
         return chaptersOf(page.nodes)
       }, signal),
     staleTime: ANAF_STALE,

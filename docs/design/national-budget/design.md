@@ -1684,7 +1684,9 @@ notes carry the figures); the old band anchors (`#cheltuieli`, `#deficit`, …) 
 
 ### 13.2 The server keeps the API's answers (owner, 25 November 2026)
 
-Owner: the pages render on the server for search engines and agents, and must load fast. Astra (`gpt-6-astra` xhigh, read-only) compared a
+Owner: the pages render on the server for search engines and agents, and must load fast. Astra (`gpt-6-astra` xhigh, read-only; run at the
+owner's explicit request in this session, 25 November 2026: „use astra to figure out how to cache the active period", an exception to the
+Sol-only rule for Codex runs; reviews stayed on `gpt-6.2-sol`) compared a
 server data cache, a committed snapshot, a shared HTML cache and browser persistence; a shared HTML cache conflicts with CACHE-001 (the render
 reads the reader's cookies), a snapshot makes every monthly bulletin a commit, browser persistence doesn't help a first visit.
 
@@ -1734,3 +1736,10 @@ Four read-only reviewers of the preview, forwarded by the owner; each finding ch
   bulletin restates September 2025 at 5,31%, the page shows 5,39%). The data asks are NB-009.
 - **The interest chart says why 2008, 2011 and 2013 are empty**: 2008's annual table is loaded for its totals only (a backfill candidate,
   NB-009); the 2011 and 2013 December bulletins give the year as an estimate, kept out of the executed series.
+- **The headings say deficit too (owner's choice):** the section „Deficitul, an de an", the pinned bar's „Deficitul", the hero's „…și cât e
+  deficitul" and the page's description. The section's lede still says the deficit is covered by borrowing, repaid with interest.
+
+**Root's check before the push:** the two ANAF reads were kept in the server's copy under a key of year and month, which a year in progress at
+December shares with the full year while asking another period (months from January, or the year). Both reads are now keyed by the filter they
+send, in full (`anafReadKey`), and their query keys carry `partial`; a unit test pins it.
+

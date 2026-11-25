@@ -34,7 +34,7 @@ function Lede() {
   const people = populationText(view.year)
   return (
     <p className="mt-5 max-w-[50ch] text-balance text-lg leading-relaxed tracking-normal text-muted-foreground sm:text-xl">
-      {people ? t`Cât cheltuie statul pentru fiecare dintre cei ${people} de locuitori, pe ce, de unde vin banii și cât se împrumută.` : t`Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât se împrumută.`}
+      {people ? t`Cât cheltuie statul pentru fiecare dintre cei ${people} de locuitori, pe ce, de unde vin banii și cât e deficitul.` : t`Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât e deficitul.`}
     </p>
   )
 }
@@ -195,7 +195,7 @@ function pageSections(): readonly SectionLink[] {
     { id: 'bani', label: t`De unde și pe ce`, icon: ArrowLeftRight },
     { id: 'bugete', label: t`Bugetele`, icon: Layers },
     { id: 'stat', label: t`Bugetul de stat`, icon: Landmark },
-    { id: 'imprumut', label: t`Împrumutul`, icon: HandCoins },
+    { id: 'imprumut', label: t`Deficitul`, icon: HandCoins },
     { id: 'anul', label: t`Anul în curs`, icon: CalendarDays },
   ]
 }

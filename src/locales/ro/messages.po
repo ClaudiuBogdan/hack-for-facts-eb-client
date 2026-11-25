@@ -11019,12 +11019,12 @@ msgid "Cât cheltuie primăriile pe bunuri și servicii, an de an?"
 msgstr "Cât cheltuie primăriile pe bunuri și servicii, an de an?"
 
 #: src/features/national-budget/home/components/person-head.tsx:37
-msgid "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât se împrumută."
-msgstr "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât se împrumută."
+msgid "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât e deficitul."
+msgstr "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât e deficitul."
 
 #: src/features/national-budget/home/components/person-head.tsx:37
-msgid "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât se împrumută."
-msgstr "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât se împrumută."
+msgid "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât e deficitul."
+msgstr "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât e deficitul."
 
 #: src/features/national-budget/home/components/home-balance.tsx:88
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:40
@@ -11032,8 +11032,8 @@ msgstr "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii �
 #~ msgstr "Cât cheltuie statul peste ce încasează"
 
 #: src/routes/national-budget.index.tsx:45
-msgid "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât se împrumută an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
-msgstr "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât se împrumută an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
+msgid "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât e deficitul an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
+msgstr "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât e deficitul an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
 
 #: src/features/procurement/components/home/home-context-bands.tsx:114
 msgid "Cât cumpără județul tău"
@@ -11104,10 +11104,6 @@ msgstr "Cât s-a investit (active nefinanciare), an de an?"
 #: src/features/national-budget/analytics/lib/analytics-view.ts:509
 msgid "Cât se cheltuie în fiecare lună (și în decembrie)?"
 msgstr "Cât se cheltuie în fiecare lună (și în decembrie)?"
-
-#: src/features/national-budget/home/components/person-debt.tsx:257
-msgid "Cât se împrumută, an de an"
-msgstr "Cât se împrumută, an de an"
 
 #: src/features/justice/components/hub/justice-hub-bands.tsx:122
 msgid "Cât se judecă în județul tău"
@@ -18608,9 +18604,9 @@ msgstr "Deficite înainte de consolidare: ale bugetelor (celelalte bugete socoti
 msgid "deficitul"
 msgstr "deficitul"
 
-#: src/features/national-budget/home/components/national-budget-home-page.tsx:40
-#~ msgid "Deficitul"
-#~ msgstr "Deficitul"
+#: src/features/national-budget/home/components/person-head.tsx:198
+msgid "Deficitul"
+msgstr "Deficitul"
 
 #: src/features/national-budget/home/components/person-year.tsx:222
 msgid "Deficitul adunat din ianuarie până la fiecare lună, anul acesta și anul trecut: arată dacă anul merge mai bine sau mai rău decât cel trecut."
@@ -18636,10 +18632,9 @@ msgstr "Deficitul de la începutul anului"
 msgid "deficitul fiecărui buget înainte de consolidare: ce a cheltuit peste încasări"
 msgstr "deficitul fiecărui buget înainte de consolidare: ce a cheltuit peste încasări"
 
-#: src/features/national-budget/home/components/home-balance.tsx:60
-#: src/features/national-budget/home/components/home-head.tsx:77
-#~ msgid "Deficitul, an de an"
-#~ msgstr "Deficitul, an de an"
+#: src/features/national-budget/home/components/person-debt.tsx:257
+msgid "Deficitul, an de an"
+msgstr "Deficitul, an de an"
 
 #: src/features/national-budget/home/components/person-debt.tsx:51
 #: src/features/national-budget/home/components/person-year.tsx:77
@@ -26720,10 +26715,6 @@ msgstr "Impozitul pe salarii și venit"
 #: src/features/national-budget/home/lib/home-format.ts:22
 msgid "Impozitul pe venit"
 msgstr "Impozitul pe venit"
-
-#: src/features/national-budget/home/components/person-head.tsx:198
-msgid "Împrumutul"
-msgstr "Împrumutul"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:330
 msgctxt "national budget classification"
