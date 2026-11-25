@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ArrowUpRight, ChevronDown, TriangleAlert, X } from 'lucide-react'
+import { ArrowUpRight, TriangleAlert, X } from 'lucide-react'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import type { PrivateCompanyStatementPublisher } from '@/schemas/private-company'
@@ -52,9 +52,11 @@ const RECENT_YEARS = 6
  * PROTOTYPE (owner, 25 November 2026: „Statements table"). A copy of
  * `company-years-band.tsx`: the same matrix, cells, flags, held values, gap
  * columns and opened statement, with less of it at first — the key lines and
- * the newest six statements, each a button away from the rest — its captions
- * in plain text, and the statements held only in long format folded behind a
- * line that names their years and how many.
+ * the newest six statements, each a button away from the rest — and its
+ * captions in plain text. The statements held only in long format are not
+ * listed (owner, 25 November 2026: nothing the page cannot show); the shaded
+ * gap column still marks those years, and its note says a gap is not a year
+ * without a statement.
  */
 export function ProtoYearsBand({ model, last = false }: { readonly model: CompanyProfileModel; readonly last?: boolean }) {
   const [chosen, setChosen] = useState<number | null>(null)
@@ -197,7 +199,7 @@ export function ProtoYearsBand({ model, last = false }: { readonly model: Compan
         </div>
       ) : null}
       {open ? <StatementDetail statement={open} locale={locale} onClose={close} className="mt-6" /> : null}
-      <LongFormFold model={model} className="mt-8" />
+
     </ProfileBand>
   )
 }
@@ -512,41 +514,5 @@ function StatementDetail({
         </p>
       ) : null}
     </section>
-  )
-}
-
-/**
- * The statements held only in long format, folded: the closed line names
- * their years and how many, so a closed fold still says they exist (a gap
- * never reads as „no statement"); open, today's list.
- */
-function LongFormFold({ model, className }: { readonly model: CompanyProfileModel; readonly className?: string }) {
-  const [open, setOpen] = useState(false)
-  if (longFormNotice(model) === null || model.longForm === null || model.longForm.length === 0) return null
-  const years = model.longForm.map((statement) => statement.fiscalYear)
-  const from = Math.min(...years)
-  const to = Math.max(...years)
-  const span = from === to ? String(from) : `${String(from)}–${String(to)}`
-  const total = model.longForm.length
-  return (
-    <div className={className}>
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls="company-years-long-form"
-        onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-9 items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:underline"
-      >
-        <ChevronDown className={cn('size-4 transition-transform motion-reduce:transition-none', open && 'rotate-180')} aria-hidden="true" />
-        {plural(total, {
-          one: `Un bilanț doar în format lung, fără valori aici (${span})`,
-          few: `# bilanțuri doar în format lung, fără valori aici (${span})`,
-          other: `# de bilanțuri doar în format lung, fără valori aici (${span})`,
-        })}
-      </button>
-      <div id="company-years-long-form" hidden={!open}>
-        <LongFormStatements model={model} className="mt-3" />
-      </div>
-    </div>
   )
 }

@@ -23,6 +23,7 @@ import { companySentenceFacts, headActivity, nameLength } from '@/features/priva
 import { HubFiguresBand } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import { PROTOTYPE_MARKER, useProtoModel } from './profile.data'
+import { PresumedSentence } from './profile-head.sentence'
 
 /**
  * The company page's head with less in it (owner, 25 November 2026: „Lighter
@@ -176,17 +177,16 @@ export function HeadSimplu() {
  * every year on one chart, and the four figures give the newest. The rest
  * stays: the way back, the name, the sentence, the chips, the identifiers.
  */
-export function HeadFaraGrafic() {
+/** The chosen head („Fără grafic"), on its own: the assembled page draws it too. */
+export function ChosenHead({ model }: { readonly model: CompanyProfileModel }) {
   return (
-    <Page
-      head={(model) => (
         <HeadFrame className="lg:py-12">
           <div className="max-w-4xl">
             <PlainKicker model={model} />
             <h1 id="company-profile-title" className={cn('mt-4', HEADLINE_CLASS, HEADING[nameLength(model.displayName)])}>
               {model.displayName}
             </h1>
-            <CompanySentence model={model} className="mt-4 max-w-[64ch] text-base leading-relaxed text-muted-foreground sm:text-lg" />
+            <PresumedSentence model={model} className="mt-4 max-w-[64ch] text-base leading-relaxed text-muted-foreground sm:text-lg" />
             <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
               <StatusChips model={model} explained />
               <IdentifierLine model={model} />
@@ -194,9 +194,11 @@ export function HeadFaraGrafic() {
             <StatusNotice model={model} registryCaveats={false} className="mt-4 max-w-[60ch]" />
           </div>
         </HeadFrame>
-      )}
-    />
   )
+}
+
+export function HeadFaraGrafic() {
+  return <Page head={(model) => <ChosenHead model={model} />} />
 }
 
 // ──────────────────────────────────── scurt: who it is, and its state ──

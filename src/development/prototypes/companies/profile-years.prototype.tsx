@@ -28,7 +28,7 @@ export const prototype = {
     'mai-putin': {
       title: 'Mai puțin la început',
       component: () => <Frame>{(model) => <ProtoYearsBand model={model} />}</Frame>,
-      note: 'The ten key lines and the newest six statements, each a button from the rest; plain captions; the long-format years folded behind a line that names them.',
+      note: 'The ten key lines and the newest six statements, each a button from the rest; plain captions; no list of the long-format years.',
     },
   },
   compare: ['azi', 'mai-putin'],
