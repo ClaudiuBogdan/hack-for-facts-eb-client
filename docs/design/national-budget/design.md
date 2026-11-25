@@ -1228,3 +1228,71 @@ From the QA tracker (`qa-trackers/national-budget/ISSUES.md`, outside the repo):
   the opener away. The two ways out above move the focus to the new question.
 - Not here: the collapsed sidebar's link names (NB-005, fixed site-wide by the
   procurement session) and the nested `main` (NB-006, shared shell, no owner yet).
+
+## 12. The page at one person's scale (25 November 2026)
+
+**Owner:** „prototype better design of this page, rethinking how we explain the
+data, what visual elements we use"; „polish and redesign where necessary. The
+header needs a rewrite, remove and reorganize elements." Asked what a reader
+should take away, the owner chose **their share of it**: the budget at one
+person's scale, as **a new storyline**, not the nine bands redrawn. Of three
+storylines (per person with no input, a salary calculator, everyday
+comparisons) the owner kept **per person**, built as **two or three versions to
+pick from**.
+
+Prototype: `/development/national-budget/persoana` (`?v=bon`, `?v=flux`,
+`?v=luna`), files `src/development/prototypes/national-budget/persoana.*`.
+
+### 12.1 What was wrong with the page (read on :3012, 25 November)
+
+- The nine bands are one layout nine times (text left, a blue chart right),
+  the hundred squares twice and the treemap twice; ~10.500 px tall.
+- The amounts have no human scale: „808,7 mld. lei" means little to a reader.
+- Three overlapping cuts of spending (by nature, by domain, by ministry) with
+  totals that differ (808,7 against 499,4) and no reason given up front.
+- The head says its figures three times: the balance card, the four-figure
+  band, the pinned bar's year menu beside the head's own.
+
+### 12.2 Decisions in all three versions
+
+- **Every amount is divided by the resident population on 1 January of its
+  year** (INS POP105A; Eurostat `demo_gind` JAN, the same figures, kept as a
+  table in `persoana.data.ts`, 2006–2026, 2026 provisional). Said as „pentru
+  fiecare locuitor", never as what a person paid; the notes say it is an
+  average.
+- **The head is the answer.** No caption, no generic title, no balance card,
+  no four-figure band, no shortcut row: one sentence as the title, one line
+  under it (per month, what came from taxes and what was borrowed), the
+  sources in a few words with the population. One year menu on screen: the
+  head's, and the pinned bar's only once the head has scrolled away.
+- **Sections:** the version's opening figure, where the money came from
+  (except `flux`, which holds it), domains and ministries (ANAF, state budget,
+  per person, with why pensions and hospitals are mostly elsewhere),
+  borrowing year by year per person with the interest per person, the year in
+  progress against the same months, and „Mai departe".
+- **Cut to links:** the budgets' bridge („Prin ce bugete trec banii") and the
+  law („Ce a aprobat Parlamentul") — accountant views the analysis page
+  already has.
+- **No public debt figure:** none of the page's sources carries it; the
+  borrowing and the interest stand in for it, and say what they are.
+
+### 12.3 The three versions
+
+- **`bon`** — „În 2025, statul a cheltuit 42.468 lei pentru fiecare
+  locuitor." The spending lines as a printed receipt: each line, the total,
+  then what paid for it (taxes and contributions, then the borrowed part) and
+  the monthly figure; the four largest lines explained beside it.
+- **`flux`** — „Pentru fiecare locuitor, statul a încasat 34.800 lei și a
+  cheltuit 42.468 lei." Two columns of the same height: the revenue lines plus
+  the borrowed part (hatched) against the spending lines; small blocks listed
+  under the columns.
+- **`luna`** — „Statul cheltuie 3.539 lei pe lună pentru fiecare locuitor."
+  One month of spending as one bar, then each line as a large monthly amount
+  in a ruled grid; every section in lei per month.
+
+### 12.4 Open points
+
+- The owner picks a version (or parts of several).
+- Per-person amounts are in current lei; an inflation-adjusted view would need
+  a CPI series the page doesn't read yet.
+- The population table moves to a live INS read if the page is promoted.
