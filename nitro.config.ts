@@ -33,15 +33,12 @@ export default defineNitroConfig({
     // Cache-Control is set by the handler for CDN/browser caching.
     "/entities/**/share-image.png": { cache: false },
     "/entities/**": { cache: shortPublicPageCache },
-    "/entity-analytics": { cache: shortPublicPageCache },
-    "/map": {
-      cache: {
-        maxAge: 300,
-        swr: true,
-        staleMaxAge: 3600,
-        varies: ["cookie"],
-      },
-    },
+    // Rendered per request: a cached render never sees the reader's cookies
+    // (ocache strips the headers named in `varies` from the request it renders),
+    // so the language, theme, currency and dismissed notices fell back to the
+    // defaults. scripts/check-built-cookie-render.mjs pins it.
+    "/entity-analytics": { cache: false },
+    "/map": { cache: false },
     "/budget-explorer": { cache: longPublicPageCache },
     // Boundary files are published under a new dated name, never over an old
     // one (`src/hooks/useGeoJson.ts`), so a copy never goes stale.
