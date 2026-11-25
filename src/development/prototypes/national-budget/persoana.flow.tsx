@@ -116,9 +116,11 @@ function Rows({ title, parts, previous }: { readonly title: string; readonly par
 /**
  * The two lists under the columns. Closed, each is its five largest lines
  * (owner: the full lists were too big); one button across the width opens
- * both and closes them again (owner: one button, not one per list).
+ * both and closes them again (owner: one button, not one per list). The note
+ * on how to read the figures shows with the full lists only.
  */
 function Detail({ left, right, previous }: { readonly left: readonly Part[]; readonly right: readonly Part[]; readonly previous: string }) {
+  const { view } = usePersonYear()
   const [open, setOpen] = useState(false)
   const shownLeft = open ? left : largestOf(left)
   const shownRight = open ? right : largestOf(right)
@@ -146,6 +148,13 @@ function Detail({ left, right, previous }: { readonly left: readonly Part[]; rea
           {open ? null : <span className="font-normal text-muted-foreground">încă {hidden}</span>}
           <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')} aria-hidden="true" />
         </button>
+      ) : null}
+      {/* How to read the figures, kept with the full lists so the closed section stays clean (owner). */}
+      {open || hidden === 0 ? (
+        <Note>
+          Bugetul general consolidat {inPeriod(view.text)}. Încasările plus împrumutul fac cheltuielile, de aceea coloanele au aceeași înălțime. Leii din 100 sunt rotunjiți la întreg. Pe locuitor: suma împărțită la populația rezidentă de la 1
+          ianuarie.
+        </Note>
       ) : null}
     </div>
   )
@@ -203,10 +212,6 @@ function Flow() {
         </div>
       </div>
       <Detail left={left} right={right} previous={previous} />
-      <Note>
-        Bugetul general consolidat {inPeriod(view.text)}. Încasările plus împrumutul fac cheltuielile, de aceea coloanele au aceeași înălțime. Leii din 100 sunt rotunjiți la întreg. Pe locuitor: suma împărțită la populația rezidentă de la 1
-        ianuarie.
-      </Note>
     </div>
   )
 }

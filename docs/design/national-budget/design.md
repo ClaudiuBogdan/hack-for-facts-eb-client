@@ -1423,3 +1423,7 @@ lines and an expand for the rest.
 - **The columns above are unchanged**: they still draw every line.
 - **Wording:** whole lei take „de" from 20 („26 de lei", „17 lei", „1 leu");
   the figures in a list share a right edge whatever word follows.
+- **The note on how to read the figures** (the consolidated budget, why the
+  columns are level, the rounding, the population) shows under the button
+  only while the lists are open (owner: keep the closed section clean, keep
+  the information).
