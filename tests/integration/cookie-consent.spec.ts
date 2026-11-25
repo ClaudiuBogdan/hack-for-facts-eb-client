@@ -11,7 +11,8 @@
  * Tests support both English and Romanian locales.
  */
 
-import { test, expect, type Locator, type Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
+import { test, expect } from '../utils/api-guard'
 import { waitForHydration } from '../utils/test-helpers'
 import { mockMapReads } from '../utils/map-mocks'
 

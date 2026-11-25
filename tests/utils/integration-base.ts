@@ -10,7 +10,8 @@
  * - record: Fetch from real API and save as fixtures
  */
 
-import { test as base } from '@playwright/test'
+// The API guard's test (TEST-001): every spec built on this one fails in CI if its browser reads the API unmocked.
+import { test as base } from './api-guard'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'

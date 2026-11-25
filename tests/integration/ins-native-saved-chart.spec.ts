@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../utils/api-guard'
 
 const chartId = 'ed86a86f-4f51-42e9-84c8-2645e7142a11'
 const baseSeries = (id: string, datasetCode: string) => ({
