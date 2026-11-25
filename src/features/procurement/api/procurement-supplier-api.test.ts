@@ -278,17 +278,60 @@ describe('fetchProcurementSupplier', () => {
     expect(profile.weights.get('4540313')?.share).toBeCloseTo(0.29, 2)
   })
 
-  it('names an institution the spine cannot from the firm’s own direct purchase from it', async () => {
+  it('names an institution the spine cannot from the release’s purchase between the two (PROC-001: not the legacy list)', async () => {
     answer({
       analysis: {
         ProcurementSupplierKeys: { directClients: [{ rankedBy: 'value', buckets: [top('4540054', '2', '663935', '0.13')] }] },
         ProcurementSupplierNames: { labels: [{ cui: '103029862', canonicalName: 'HYDROSTROY AD', status: 'named' }, { cui: '4540054', canonicalName: null, status: 'placeholder' }] },
-        ProcurementSupplierDirectNames: { n0: { items: [{ authority: { cui: '4540054', name: 'LICEUL TEORETIC IOAN PETRUS OTOPENI', displayName: null } }] } },
+        ProcurementSupplierDirectNames: { n0: { items: [{ buyer: { fiscalCode: '4540054', name: 'LICEUL TEORETIC IOAN PETRUS OTOPENI' } }] } },
       },
     })
     const profile = await fetchProcurementSupplier('103029862', LATEST)
     expect(profile.names.get('4540054')).toBe('Liceul Teoretic Ioan Petrus Otopeni')
-    expect(call('ProcurementSupplierDirectNames')?.[1]).toEqual({ n0: { supplierCui: { eq: '103029862' }, authorityCui: { eq: '4540054' } } })
+    expect(call('ProcurementSupplierDirectNames')?.[1]).toEqual({ n0: { supplierFiscalCode: '103029862', buyerFiscalCode: '4540054' } })
+    expect(call('ProcurementSupplierDirectNames')?.[0]).toContain('procurementDaPurchases(filter: $n0')
+    expect(call('ProcurementSupplierDirectNames')?.[2]).not.toHaveProperty('legacy')
+  })
+
+  it('maps each institution to its own alias: two unnamed buyers, two filters, two names', async () => {
+    answer({
+      analysis: {
+        ProcurementSupplierKeys: { directClients: [{ rankedBy: 'value', buckets: [top('4540054', '2', '663935', '0.13'), top('4540313', '1', '1000', '0.01')] }] },
+        ProcurementSupplierNames: {
+          labels: [
+            { cui: '103029862', canonicalName: 'HYDROSTROY AD', status: 'named' },
+            { cui: '4540054', canonicalName: null, status: 'placeholder' },
+            { cui: '4540313', canonicalName: null, status: 'placeholder' },
+          ],
+        },
+        ProcurementSupplierDirectNames: {
+          n0: { items: [{ buyer: { fiscalCode: '4540054', name: 'LICEUL TEORETIC IOAN PETRUS OTOPENI' } }] },
+          n1: { items: [{ buyer: { fiscalCode: '4540313', name: 'GRADINITA NR 1 OTOPENI' } }] },
+        },
+      },
+    })
+    const profile = await fetchProcurementSupplier('103029862', LATEST)
+    expect(profile.names.get('4540054')).toBe('Liceul Teoretic Ioan Petrus Otopeni')
+    expect(profile.names.get('4540313')).toBe('Gradinita Nr 1 Otopeni')
+    expect(call('ProcurementSupplierDirectNames')?.[1]).toEqual({
+      n0: { supplierFiscalCode: '103029862', buyerFiscalCode: '4540054' },
+      n1: { supplierFiscalCode: '103029862', buyerFiscalCode: '4540313' },
+    })
+    const query = call('ProcurementSupplierDirectNames')?.[0] as string
+    expect(query).toContain('n0: procurementDaPurchases(filter: $n0, pageSize: 1)')
+    expect(query).toContain('n1: procurementDaPurchases(filter: $n1, pageSize: 1)')
+  })
+
+  it('leaves an institution unnamed when the release serves no name for it', async () => {
+    answer({
+      analysis: {
+        ProcurementSupplierKeys: { directClients: [{ rankedBy: 'value', buckets: [top('4540054', '2', '663935', '0.13')] }] },
+        ProcurementSupplierNames: { labels: [{ cui: '103029862', canonicalName: 'HYDROSTROY AD', status: 'named' }, { cui: '4540054', canonicalName: null, status: 'placeholder' }] },
+        ProcurementSupplierDirectNames: { n0: { items: [{ buyer: { fiscalCode: '4540054', name: '  ' } }] } },
+      },
+    })
+    const profile = await fetchProcurementSupplier('103029862', LATEST)
+    expect(profile.names.has('4540054')).toBe(false)
   })
 
   it('builds the years from the months', async () => {

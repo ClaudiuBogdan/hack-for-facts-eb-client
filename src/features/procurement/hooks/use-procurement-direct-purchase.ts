@@ -34,7 +34,7 @@ export function procurementDirectPurchaseContextQueryOptions(purchase: DirectPur
   return queryOptions({
     queryKey: procurementDirectPurchaseKeys.context(purchase.id),
     queryFn: ({ signal }) => (input ? fetchDirectPurchaseContext(input, purchase, signal) : Promise.resolve(null)),
-    // D6: the neighbours come from undated lists too (the release's around, the legacy list).
+    // D6: every read here sends the purchase's supplier code (the analysis reads, and a release purchase's neighbours): kept only while shown.
     ...DA_QUERY_CACHE,
     enabled: input !== null,
     ...(initialData ? { initialData } : {}),

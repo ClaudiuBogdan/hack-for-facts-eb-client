@@ -118,18 +118,6 @@ describe('the context', () => {
   const month = (index: number) => `${PART}-${String(index).padStart(2, '0')}`
   const complete = directPurchase({ publicationDate: `${LATEST}-06-01`, finalizationDate: `${LATEST}-06-02` })
   const input = { id: complete.id, authorityCui: '361684', supplierCui: '9446547', day: `${LATEST}-06-01`, yearDay: `${LATEST}-06-02` }
-  const around = (id: string, date: string, status = 'finalized', finalized = date) => ({
-    id,
-    uniqueCode: null,
-    title: 'ARANJAMENTE FLORALE',
-    valueRon: '10.00',
-    status,
-    sourceSystem: 'elicitatie_da',
-    publicationDate: date,
-    finalizationDate: finalized,
-    value: { valueAccepted: status !== 'cancelled', valueRonComparable: status !== 'cancelled' ? '10.00' : null },
-  })
-
   const handlers: Record<string, Handler> = {
     // The national months: the year in progress full through May, a trickle in June.
     ProcurementCutoff: () => {
@@ -152,40 +140,21 @@ describe('the context', () => {
       sellerYear: stats('13', '352289'),
       sellerClients: [{ rankedBy: 'value', buckets: [top('x'), top('361684')] }],
     }),
-    ProcurementDirectPurchaseAround: () => ({
-      all: { total: 24, totalEstimated: false },
-      newer: { items: [around(complete.id, `${LATEST}-06-02`), around('n1', `${LATEST}-07-01`)] },
-      older: { items: [around('o1', `${LATEST}-05-01`, 'cancelled')] },
-    }),
   }
 
   const variablesOf = (operationName: string) => graphqlQuery.mock.calls.find((call) => (call[2] as { readonly operationName: string }).operationName === operationName)?.[1] as Record<string, Record<string, unknown>> | undefined
 
-  it('composes the pair, each side’s year and place, and the records around', async () => {
+  it('composes the pair and each side’s year and place; a legacy purchase reads no records around (PROC-001)', async () => {
     answer(handlers)
     const context = await fetchDirectPurchaseContext(input, complete)
-    expect(context).toMatchObject({ year: LATEST, through: null, records: { count: 24, estimated: false }, pair: { count: 1, value: 98448 }, partial: false })
+    // Not read is no failure: no count, no band, and the context is whole.
+    expect(context).toMatchObject({ year: LATEST, through: null, records: null, others: [], pair: { count: 1, value: 98448 }, partial: false })
     // Third of three named firms, and more past them; second of two institutions.
     expect(context.buyer).toEqual({ count: 142, value: 1764398, sellers: 3, more: true, rank: 3 })
     expect(context.seller).toEqual({ count: 13, value: 352289, clients: 2, more: false, rank: 2 })
-    expect(context.others.map((other) => [other.id, other.done])).toEqual([
-      ['n1', true],
-      [complete.id, true],
-      ['o1', false],
-    ])
-  })
-
-  it('reads a neighbour as its own page does: a record whose end SEAP does not say is no purchase, dated by its request', async () => {
-    answer({
-      ...handlers,
-      ProcurementDirectPurchaseAround: () => ({
-        all: { total: 2, totalEstimated: false },
-        newer: { items: [around(complete.id, `${LATEST}-06-02`), around('u1', `${LATEST}-07-16`, 'offered', `${LATEST}-07-21`)] },
-        older: { items: [] },
-      }),
-    })
-    const context = await fetchDirectPurchaseContext(input, complete)
-    expect(context.others.find((other) => other.id === 'u1')).toMatchObject({ date: `${LATEST}-07-16`, done: false })
+    const asked = graphqlQuery.mock.calls.map((call) => (call[2] as { readonly operationName: string }).operationName)
+    expect(asked).not.toContain('ProcurementDirectPurchaseAround')
+    expect(asked).not.toContain('ProcurementDaAround')
   })
 
   it('runs the pair’s years to the year in progress, cut at its cutoff', async () => {
@@ -208,9 +177,6 @@ describe('the context', () => {
     const neighbour = { ...RELEASE_CASES.noLongerListed().purchase, purchaseId: 'b'.repeat(64) }
     answer({
       ...handlers,
-      ProcurementDirectPurchaseAround: () => {
-        throw new Error('the legacy list is not read for a release purchase')
-      },
       ProcurementDaAround: () => ({
         all: { total: 5, totalCapped: false, dataAsOf: 't1' },
         newer: { dataAsOf: 't1', items: [neighbour] },
@@ -225,12 +191,10 @@ describe('the context', () => {
     expect(variablesOf('ProcurementDirectPurchaseAround')).toBeUndefined()
   })
 
-  it('reads a complete year whole, and the purchases the explorer lists', async () => {
+  it('reads a complete year whole', async () => {
     answer(handlers)
     await fetchDirectPurchaseContext(input, complete)
     expect(variablesOf('ProcurementDirectPurchaseBuyer')?.buyerYear).toMatchObject({ from: `${LATEST}-01`, to: `${LATEST}-12` })
-    // From 2019, as the band's sentences count: the legacy rows before it do not compare.
-    expect(variablesOf('ProcurementDirectPurchaseAround')?.all).toMatchObject({ status: { in: ['offered', 'awarded', 'finalized', 'unknown'] }, publicationDate: { gte: '2019-01-01' } })
   })
 
   it('reads the year in progress through its cutoff, or the purchase’s month when later', async () => {
@@ -260,46 +224,56 @@ describe('the context', () => {
     expect(context.pair).toEqual({ count: 1, value: 98448 })
   })
 
-  it('reads a retired legacy list as no neighbours offered, not a part that failed', async () => {
-    const unavailable = (field: string) => ({ message: 'not served', path: [field], extensions: { code: 'SERVICE_UNAVAILABLE' } })
+  it('draws no band for a release purchase the dated lists do not hold: the read stood, so the context is whole', async () => {
+    const { mapReleasePurchase } = await import('../lib/direct-purchase-release')
+    const { NO_NAMES } = await import('../lib/direct-purchase-model')
+    const { RELEASE_CASES } = await import('../lib/direct-purchase-release.fixture')
+    const release = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
     answer({
       ...handlers,
-      ProcurementDirectPurchaseAround: () => {
-        throw new GraphQLRequestError('GraphQL errors', { graphQLErrors: [unavailable('all'), unavailable('newer'), unavailable('older')] })
+      ProcurementDaAround: () => ({ all: { total: 0, totalCapped: false, dataAsOf: 't1' }, newer: { dataAsOf: 't1', items: [] }, older: { dataAsOf: 't1', items: [] } }),
+    })
+    const context = await fetchDirectPurchaseContext({ ...input, id: release.id, yearDay: '2025-06-02' }, release)
+    expect(context.others).toEqual([])
+    expect(context.records).toEqual({ count: 0, estimated: false })
+    expect(context.partial).toBe(false)
+  })
+
+  it('sends a release purchase’s neighbours read under the publication seen when the context began (D6)', async () => {
+    const { noteKey, resetNewestKeyForTests } = await import('@/lib/disclosure-key')
+    const { mapReleasePurchase } = await import('../lib/direct-purchase-release')
+    const { NO_NAMES } = await import('../lib/direct-purchase-model')
+    const { RELEASE_CASES } = await import('../lib/direct-purchase-release.fixture')
+    const release = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
+    resetNewestKeyForTests()
+    noteKey('2026-11-19T03:10:00.123456Z')
+    try {
+      answer({
+        ...handlers,
+        ProcurementDaAround: () => ({ all: { total: 0, totalCapped: false, dataAsOf: 't1' }, newer: { dataAsOf: 't1', items: [] }, older: { dataAsOf: 't1', items: [] } }),
+      })
+      await fetchDirectPurchaseContext({ ...input, id: release.id, yearDay: '2025-06-02' }, release)
+      const options = graphqlQuery.mock.calls.find((call) => (call[2] as { readonly operationName: string }).operationName === 'ProcurementDaAround')?.[2] as { readonly disclosureSeen?: string | null }
+      expect(options.disclosureSeen).toBe('2026-11-19T03:10:00.123456Z')
+    } finally {
+      resetNewestKeyForTests()
+    }
+  })
+
+  it('says a release purchase’s failed neighbours read: no band, and the context partial', async () => {
+    const { mapReleasePurchase } = await import('../lib/direct-purchase-release')
+    const { NO_NAMES } = await import('../lib/direct-purchase-model')
+    const { RELEASE_CASES } = await import('../lib/direct-purchase-release.fixture')
+    const release = mapReleasePurchase(RELEASE_CASES.countedAsReported(), NO_NAMES)
+    answer({
+      ...handlers,
+      ProcurementDaAround: () => {
+        throw new Error('down')
       },
     })
-    const context = await fetchDirectPurchaseContext(input, complete)
-    expect(context.partial).toBe(false)
+    const context = await fetchDirectPurchaseContext({ ...input, id: release.id, yearDay: '2025-06-02' }, release)
+    expect(context.partial).toBe(true)
     expect(context.records).toBeNull()
     expect(context.others).toEqual([])
-    expect(context.pair).toEqual({ count: 1, value: 98448 })
-  })
-
-  it('still says so when the legacy list fails any other way', async () => {
-    answer({
-      ...handlers,
-      ProcurementDirectPurchaseAround: () => {
-        throw new GraphQLRequestError('GraphQL errors', {
-          graphQLErrors: [
-            { message: 'not served', path: ['all'], extensions: { code: 'SERVICE_UNAVAILABLE' } },
-            { message: 'Internal server error', path: ['newer'], extensions: { code: 'INTERNAL_SERVER_ERROR' } },
-          ],
-        })
-      },
-    })
-    const context = await fetchDirectPurchaseContext(input, complete)
-    expect(context.partial).toBe(true)
-    expect(context.others).toEqual([])
-  })
-
-  it('still says so for a plain HTTP 503 that names no GraphQL error', async () => {
-    answer({
-      ...handlers,
-      ProcurementDirectPurchaseAround: () => {
-        throw new GraphQLRequestError('Service Unavailable', { status: 503 })
-      },
-    })
-    const context = await fetchDirectPurchaseContext(input, complete)
-    expect(context.partial).toBe(true)
   })
 })

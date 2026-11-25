@@ -233,16 +233,16 @@ function placeFields(buyers: readonly string[]): BuyerField[] {
   return buyers.map((buyer, index) => ({ alias: `c${index}`, kind: 'breakdown', scope: { authorityCui: buyer, ...AWARDS }, args: 'dimension: buyerCounty, topN: 1, rankBy: count' }))
 }
 
-/** The names on the firm's own direct purchases from institutions the spine cannot name, in requests of forty. */
+/** The names the release gives the firm's own direct purchases from institutions the spine cannot name, in requests of forty. */
 async function readDirectNames(cui: string, buyers: readonly string[], signal?: AbortSignal): Promise<ReadonlyMap<string, string>> {
   const answers = await Promise.all(
     chunks(buyers, SUPPLIER_DAYS_PER_REQUEST).map(async (batch) => {
-      const variables = Object.fromEntries(batch.map((buyer, index) => [`n${index}`, { supplierCui: { eq: cui }, authorityCui: { eq: buyer } }]))
-      const raw = await graphqlQuery<Raw>(supplierDirectNamesQuery(batch.length), variables, { operationName: 'ProcurementSupplierDirectNames', signal, legacy: true })
-      return batch.map((buyer, index) => [buyer, supplierDirectNameSchema.parse(raw[`n${index}`]).items[0]?.authority] as const)
+      const variables = Object.fromEntries(batch.map((buyer, index) => [`n${index}`, { supplierFiscalCode: cui, buyerFiscalCode: buyer }]))
+      const raw = await graphqlQuery<Raw>(supplierDirectNamesQuery(batch.length), variables, { operationName: 'ProcurementSupplierDirectNames', signal })
+      return batch.map((buyer, index) => [buyer, supplierDirectNameSchema.parse(raw[`n${index}`]).items[0]?.buyer] as const)
     }),
   )
-  return new Map(answers.flat().flatMap(([buyer, authority]) => (authority && (authority.displayName ?? authority.name) ? [[buyer, partyOf(authority).name] as const] : [])))
+  return new Map(answers.flat().flatMap(([buyer, served]) => (served?.name?.trim() ? [[buyer, partyOf({ cui: served.fiscalCode, name: served.name, displayName: null }).name] as const] : [])))
 }
 
 /** Where each buyer sits: the county on its own contract records, in requests of fifty. */

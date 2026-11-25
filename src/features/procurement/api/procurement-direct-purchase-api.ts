@@ -7,13 +7,8 @@ import {
   aroundOf,
   contextPeriodOf,
   cpvKey,
-  familyOf,
-  isPurchase,
-  LISTED_FROM,
   mapDirectPurchase,
   NO_NAMES,
-  outcomeOf,
-  shownDayOf,
   type DirectPurchase,
   type DpContext,
   type DpContextInput,
@@ -22,7 +17,7 @@ import {
   type DpOther,
   type DpYear,
 } from '../lib/direct-purchase-model'
-import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear } from '../lib/home-model'
+import { DIRECT_COMPARABLE_FROM, homeYear, truncatePartYear } from '../lib/home-model'
 import { mapDirectAcquisition } from './graphql/procurement-mappers'
 import { PROCUREMENT_DA_DETAIL_QUERY, PROCUREMENT_DA_RECORD_QUERY, procurementDaDetailResponseSchema, procurementDaRecordResponseSchema, type RawProcurementDaDetail } from './graphql/procurement-queries'
 import {
@@ -33,15 +28,7 @@ import {
   type BuyerField,
   type RawBuyerBreakdown,
 } from './graphql/procurement-buyer-queries'
-import {
-  DIRECT_PURCHASE_AROUND_QUERY,
-  DIRECT_PURCHASE_NAMES_QUERY,
-  directPurchaseAroundSchema,
-  directPurchaseNamesSchema,
-  type RawAroundItem,
-  type RawDirectPurchaseAround,
-  type RawDirectPurchaseNames,
-} from './graphql/procurement-direct-purchase-queries'
+import { DIRECT_PURCHASE_NAMES_QUERY, directPurchaseNamesSchema, type RawDirectPurchaseNames } from './graphql/procurement-direct-purchase-queries'
 import { readCutoffOutcome, untilAborted } from './procurement-cutoff'
 
 /**
@@ -55,9 +42,11 @@ import { readCutoffOutcome, untilAborted } from './procurement-cutoff'
  *    `null`, never an error.
  * 2. **The context** — the pair's years, the institution's year and the
  *    firm's year (three analysis requests side by side: the API resolves one
- *    request's fields one after another) and the records around this one (a
- *    fourth). Each fails soft — its part null, never a zero — and the
- *    context is then `partial`.
+ *    request's fields one after another) and, for a release purchase, the
+ *    records around this one (a fourth). Each fails soft — its part null,
+ *    never a zero — and the context is then `partial`. A legacy purchase has
+ *    no records around: the legacy list is retired (PROC-001), and the release
+ *    does not hold a purchase it never published.
  */
 
 /** The budget platform's `CUI` takes at most ten digits; a longer identifier has no record to read. */
@@ -68,14 +57,6 @@ const AROUND_PER_SIDE = 4
 const AROUND_SHOWN = 3
 /** A breakdown's top buckets: past them the API tells only that there are more. */
 const RANKED = 100
-/** The list's statuses but the cancelled: what the explorer lists between two parties by default. */
-const LISTED_STATUSES = ['offered', 'awarded', 'finalized', 'unknown']
-
-const decimal = (value: string | null | undefined): number | null => {
-  if (value === null || value === undefined) return null
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
 
 // ─────────────────────────────────────────────────────────── the purchase ──
 
@@ -176,33 +157,8 @@ function statsOf(raw: unknown): { readonly count: number; readonly value: number
   return { count: block?.recordCount ?? 0, value: block?.valueAwardedSum ?? null }
 }
 
-function otherOf(item: RawAroundItem): DpOther {
-  // How it ended, as its own page reads it (the list has no detail: a cancelled catalogue purchase is only stopped).
-  const outcome = outcomeOf(item.status, familyOf(item.sourceSystem), null, item.finalizationDate ?? item.publicationDate)
-  const done = isPurchase(outcome)
-  return {
-    id: item.id,
-    code: item.uniqueCode,
-    // D6: a withheld title is never shown; the category's label stands in, and identifies nothing.
-    title: item.titleWithheld ? (item.cpvLabel?.trim() || null) : (tidyTitle(item.title) ?? (item.cpvLabel?.trim() || null)),
-    titlePublic: !item.titleWithheld && tidyTitle(item.title) !== null,
-    // A purchase's checked value; anything else's offer, struck on the page.
-    value: done ? (item.value?.valueAccepted ? decimal(item.value.valueRonComparable) : null) : decimal(item.valueRon),
-    // A purchase dated by its end, anything else by its request — as its own page dates it.
-    date: shownDayOf({ finalized: item.finalizationDate, published: item.publicationDate, outcome }),
-    done,
-  }
-}
-
 type Settled<T> = { readonly ok: true; readonly value: T } | { readonly ok: false }
-
-/** A legacy purchase's neighbours when the API no longer serves the legacy list: none, and no count. */
-const NO_LEGACY_AROUND: RawDirectPurchaseAround = { all: { total: null, totalEstimated: false }, newer: { items: [] }, older: { items: [] } }
-
-/** The API refused every field as not served: SERVICE_UNAVAILABLE, the legacy list switched off. */
-function listRetired(error: unknown): boolean {
-  return error instanceof GraphQLRequestError && error.graphQLErrors.length > 0 && error.graphQLErrors.every((entry) => entry.extensions?.code === 'SERVICE_UNAVAILABLE')
-}
+type Around = { readonly records: DpContext['records']; readonly newer: readonly DpOther[]; readonly older: readonly DpOther[] }
 
 /** A read that fails soft — a reader who left fails it. */
 async function soft<T>(read: Promise<T>, signal?: AbortSignal): Promise<Settled<T>> {
@@ -266,31 +222,11 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
     ),
     signal,
   )
-  const both = { authorityCui: { eq: input.authorityCui }, supplierCui: { eq: input.supplierCui } }
-  // A release purchase's neighbours come from the release, dated by finalization as it dates them.
-  const releaseAroundRead = purchase.money
+  // A release purchase's neighbours come from the release, dated by finalization as it dates them. A legacy purchase
+  // (no release money) has none to read: nothing is asked, and no band is drawn.
+  const aroundRead: Promise<Settled<Around>> | null = purchase.money
     ? soft(fetchReleaseAround({ authorityCui: input.authorityCui, supplierCui: input.supplierCui, day: input.yearDay }, AROUND_PER_SIDE, signal, seen), signal)
     : null
-  const legacyAroundRead = releaseAroundRead ? null : soft(
-    graphqlQuery<unknown>(
-      DIRECT_PURCHASE_AROUND_QUERY,
-      {
-        all: { ...both, status: { in: LISTED_STATUSES }, publicationDate: { gte: LISTED_FROM } },
-        newer: { ...both, publicationDate: { gte: input.day } },
-        older: { ...both, publicationDate: { lte: input.day } },
-        perSide: AROUND_PER_SIDE,
-      },
-      { operationName: 'ProcurementDirectPurchaseAround', signal, disclosureSeen: seen, legacy: true },
-    ).then(
-      (raw) => directPurchaseAroundSchema.parse(raw),
-      (error: unknown) => {
-        // The legacy list retired (every field SERVICE_UNAVAILABLE): no neighbours are offered, which no reload changes.
-        if (!signal?.aborted && listRetired(error)) return NO_LEGACY_AROUND
-        throw error
-      },
-    ),
-    signal,
-  )
 
   // The year's reads: a complete year's at once, the year in progress's once its cutoff is known.
   const periodRead = year > latest ? cutoffRead.then((outcome) => contextPeriodOf(input.yearDay, latest, outcome.cutoff.direct)) : Promise.resolve(contextPeriodOf(input.yearDay, latest, null))
@@ -328,27 +264,14 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
     return Promise.all([period, buyerRead, sellerRead] as const)
   })
   // All awaited together: a reader who leaves fails them all at once, none left unheard.
-  const [historyRaw, [period, buyerRaw, sellerRaw], legacyAround, releaseAround, cutoff] = await Promise.all([
+  const [historyRaw, [period, buyerRaw, sellerRaw], read, cutoff] = await Promise.all([
     historyRead,
     yearRead,
-    legacyAroundRead ?? Promise.resolve({ ok: false } as const),
-    releaseAroundRead ?? Promise.resolve({ ok: false } as const),
+    aroundRead ?? Promise.resolve(null),
     cutoffRead,
   ])
-  const around: Settled<{ readonly records: DpContext['records']; readonly newer: readonly DpOther[]; readonly older: readonly DpOther[] }> = releaseAroundRead
-    ? releaseAround.ok
-      ? { ok: true, value: releaseAround.value }
-      : { ok: false }
-    : legacyAround.ok
-      ? {
-          ok: true,
-          value: {
-            records: legacyAround.value.all.total !== null ? { count: legacyAround.value.all.total, estimated: legacyAround.value.all.totalEstimated } : null,
-            newer: legacyAround.value.newer.items.map(otherOf),
-            older: legacyAround.value.older.items.map(otherOf),
-          },
-        }
-      : { ok: false }
+  // Not read (a legacy purchase) is no failure: no count and no band, and the context is not partial for it.
+  const around: Settled<Around> = read ?? { ok: true, value: { records: null, newer: [], older: [] } }
 
   // The year in progress runs through its cutoff — or through the purchase's month, when the purchase is in it and later.
   const partThrough = year === part ? period.through : cutoff.cutoff.direct
@@ -381,8 +304,9 @@ export async function fetchDirectPurchaseContext(input: DpContextInput, purchase
     pair: buyerRaw.ok ? statsOf(buyerRaw.value.pairYear) : null,
     buyer,
     seller,
-    // No neighbours offered (the legacy list retired): no band, rather than one holding this purchase alone.
-    others: around.ok && !(legacyAround.ok && legacyAround.value === NO_LEGACY_AROUND) ? aroundOf(purchase, around.value.newer, around.value.older, AROUND_SHOWN) : [],
+    // No neighbours read (a legacy purchase), or none listed (a purchase the dated lists do not hold): no band, rather
+    // than one holding this purchase alone.
+    others: read !== null && around.ok && around.value.newer.length + around.value.older.length > 0 ? aroundOf(purchase, around.value.newer, around.value.older, AROUND_SHOWN) : [],
     partial: !historyRaw.ok || !buyerRaw.ok || !sellerRaw.ok || !around.ok || cutoff.failed,
   }
 }
