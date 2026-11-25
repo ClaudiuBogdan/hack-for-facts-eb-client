@@ -12,8 +12,11 @@ alone: `loaderData?.seeded === false ? no-store : public`. If the loader succeed
 (a thrown error in a lazy component, a failed chunk import, a render-time exception), the response can carry the public header the
 callback already returned, and a shared cache (`s-maxage`) may keep the error page for the page's window.
 
-`/legislation` and `/legislation/analytics` are out of it: since 25 November 2026 they send `Cache-Control: private, no-store` and
-`CDN-Cache-Control: no-store` on every path (root's decision below; `src/routes/legislation/-headers.test.ts`).
+The legislation section's seven pages are out of it, and the sweep below skips them: since 25 November 2026 `/legislation`,
+`/legislation/analytics`, `/legislation/search`, `/legislation/acts`, `/legislation/changes`, `/legislation/gazette` and
+`/legislation/guide` send `Cache-Control: private, no-store` and `CDN-Cache-Control: no-store` on every path (root's decision below;
+`src/routes/legislation/-headers.test.ts`). The act pages are not among them: `/legislation/acts/$actId` still sends the public
+helper's headers and `/legislation/acts/$actId/text` sets none of its own, so both stay in the sweep.
 
 ## What to decide
 
