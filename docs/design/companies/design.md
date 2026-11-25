@@ -1074,3 +1074,23 @@ Left, and why:
 - The size caption („Bilanțurile pe 2025") does not say that 85 statements
   without a headcount are in no class: true before this round as well.
 
+## The third polish round (25 November 2026)
+
+- **The years band's head is a row of its own**, its title at the top, the
+  switch and the first and last whole years beside it (a head aligned by its
+  foot left the title low).
+- **A status card leads with its count as a figure**, its name under it, as
+  the four figures at the top read. The band says where the counts are from
+  („În registrul comerțului, iulie 2026.") and, behind its ⓘ, that the
+  analysis a card opens counts one registry edition and can show another
+  total (from the review).
+- **On a phone the county ranking shows three at each end** (`phoneEdge`, by
+  CSS: one list for every width; never more than the wider screens show), and
+  the map's readout is tighter. The keyboard focus after opening the list
+  follows the same breakpoint as the CSS (`width < 40rem`, from the review).
+
+Left from the review (Codex `gpt-6.2-sol`, third round): a layer of eleven
+counties or fewer would not fold on a phone (every layer has 42); at 360px in
+English the readout's link can wrap to a fourth line and move the map on a
+first tap (as before this round).
+

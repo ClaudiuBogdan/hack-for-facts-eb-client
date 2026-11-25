@@ -202,4 +202,17 @@ describe('CompanyCountyRank', () => {
     expect(within(button).getByText('Încă 6 județe')).toHaveClass('sm:hidden')
     expect(within(button).getByText('Încă 2 județe')).toHaveClass('max-sm:hidden')
   })
+
+  it('never shows more on a phone than on a wider screen', () => {
+    const many: HubCountyLayer = {
+      unit: 'firms',
+      national: 1000,
+      values: ['AB', 'AR', 'AG', 'BC', 'BH', 'BN', 'BT', 'BV', 'BR', 'BZ', 'CS', 'CL'].map((code, index) => ({ code, value: 100 - index })),
+    }
+    render(<CompanyCountyRank layer={many} countyLink={analysisLink} phoneEdge={7} />)
+    const items = screen.getAllByRole('list').flatMap((list) => within(list).getAllByRole('listitem'))
+    expect(items).toHaveLength(10)
+    expect(items.some((item) => item.className.includes('max-sm:hidden'))).toBe(false)
+    expect(screen.getByRole('button', { name: 'Încă 2 județe' })).toBeInTheDocument()
+  })
 })

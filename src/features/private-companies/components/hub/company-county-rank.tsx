@@ -29,7 +29,7 @@ export function CompanyCountyRank({
   layer,
   countyLink,
   edge = 5,
-  phoneEdge = edge,
+  phoneEdge: phoneEdgeAsked = edge,
   activeCode,
   onActiveChange,
   className,
@@ -46,6 +46,8 @@ export function CompanyCountyRank({
   readonly className?: string
 }) {
   const [expanded, setExpanded] = useState(false)
+  // Never more than the wider screens show: the phone's ends are a shorter cut of the same list.
+  const phoneEdge = Math.min(phoneEdgeAsked, edge)
   const listRef = useRef<HTMLDivElement>(null)
   const scale = hubLayerScale(layer)
   const ranked = rankCounties(layer.values)
@@ -70,8 +72,9 @@ export function CompanyCountyRank({
   const toggle = (next: boolean, keyboard: boolean) => {
     setExpanded(next)
     if (!keyboard) return
-    // The first county the list opened: past the phone's shorter ends there.
-    const opened = window.matchMedia('(max-width: 639px)').matches ? phoneEdge : edge
+    // The first county the list opened: past the phone's shorter ends there. The query is Tailwind's own
+    // `max-sm` (`width < 40rem`), so it agrees with the CSS that hid the rows at every font size.
+    const opened = window.matchMedia('(width < 40rem)').matches ? phoneEdge : edge
     requestAnimationFrame(() => {
       const target = next
         ? listRef.current?.querySelectorAll<HTMLElement>('ol a')[opened]

@@ -152,7 +152,7 @@ msgstr ": de ce"
 msgid ".csv, .tsv, .xlsx, .xls"
 msgstr ".csv, .tsv, .xlsx, .xls"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:635
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:652
 msgid "· Anii: analiza bilanțurilor, ediția {releaseId}, publicată pe {releaseDay}"
 msgstr "· Anii: analiza bilanțurilor, ediția {releaseId}, publicată pe {releaseDay}"
 
@@ -2804,8 +2804,8 @@ msgstr "{head} și {last}"
 msgid "{held, plural, one {O valoare reținută la verificare nu intră în sume.} few {# valori reținute la verificare nu intră în sume.} other {# de valori reținute la verificare nu intră în sume.}}"
 msgstr "{held, plural, one {O valoare reținută la verificare nu intră în sume.} few {# valori reținute la verificare nu intră în sume.} other {# de valori reținute la verificare nu intră în sume.}}"
 
-#: src/features/private-companies/components/hub/company-county-rank.tsx:165
 #: src/features/private-companies/components/hub/company-county-rank.tsx:168
+#: src/features/private-companies/components/hub/company-county-rank.tsx:171
 #: src/features/statistics/components/hub/hub-county-rank.tsx:196
 msgid "{hidden, plural, one {Încă un județ} few {Încă # județe} other {Încă # de județe}}"
 msgstr "{hidden, plural, one {Încă un județ} few {Încă # județe} other {Încă # de județe}}"
@@ -3275,7 +3275,7 @@ msgstr "{partners, plural, one {încă o firmă} few {alte # firme} other {alte 
 msgid "{partYear} e în curs: coloana ei are datele până în {0}."
 msgstr "{partYear} e în curs: coloana ei are datele până în {0}."
 
-#: src/features/private-companies/components/hub/company-county-rank.tsx:164
+#: src/features/private-companies/components/hub/company-county-rank.tsx:167
 msgid "{phoneHidden, plural, one {Încă un județ} few {Încă # județe} other {Încă # de județe}}"
 msgstr "{phoneHidden, plural, one {Încă un județ} few {Încă # județe} other {Încă # de județe}}"
 
@@ -3372,15 +3372,15 @@ msgstr "{review} în verificare, cu valoarea în afara totalurilor"
 #~ msgid "{review} în verificare, în niciun total"
 #~ msgstr "{review} în verificare, în niciun total"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:493
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:510
 msgid "{rows, plural, one {Prima activitate după cifra de afaceri din {year}.} few {Primele # activități după cifra de afaceri din {year}.} other {Primele # de activități după cifra de afaceri din {year}.}}"
 msgstr "{rows, plural, one {Prima activitate după cifra de afaceri din {year}.} few {Primele # activități după cifra de afaceri din {year}.} other {Primele # de activități după cifra de afaceri din {year}.}}"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:505
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:522
 msgid "{rows, plural, one {Prima activitate după numărul de firme în funcțiune.} few {Primele # activități după numărul de firme în funcțiune.} other {Primele # de activități după numărul de firme în funcțiune.}}"
 msgstr "{rows, plural, one {Prima activitate după numărul de firme în funcțiune.} few {Primele # activități după numărul de firme în funcțiune.} other {Primele # de activități după numărul de firme în funcțiune.}}"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:499
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:516
 msgid "{rows, plural, one {Prima activitate după numărul de salariați din {year}.} few {Primele # activități după numărul de salariați din {year}.} other {Primele # de activități după numărul de salariați din {year}.}}"
 msgstr "{rows, plural, one {Prima activitate după numărul de salariați din {year}.} few {Primele # activități după numărul de salariați din {year}.} other {Primele # de activități după numărul de salariați din {year}.}}"
 
@@ -4075,7 +4075,7 @@ msgstr "<0>Posturi ocupate (S)</0> este numărul de posturi raportate ca ocupate
 #~ msgid "<0>Refused acquisitions are included in this list.</0> These purchases did not go ahead, so the totals and charts on the other tabs do not count them — the list below will not add up to those figures. Clear the “{cancelledLabel}” status to return to concluded acquisitions only."
 #~ msgstr "<0>Achizițiile refuzate sunt incluse în această listă.</0> Aceste achiziții nu au mai avut loc, deci totalurile și graficele din celelalte file nu le contabilizează — lista de mai jos nu se va potrivi cu acele cifre. Deselectați statusul „{cancelledLabel}” pentru a reveni doar la achizițiile încheiate."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:629
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:646
 msgid "<0>Registrul comerțului</0>, Oficiul Național al Registrului Comerțului, {month} · Bilanțurile pe {YEAR}, ANAF · Populația: INS, 1 ianuarie {YEAR}"
 msgstr "<0>Registrul comerțului</0>, Oficiul Național al Registrului Comerțului, {month} · Bilanțurile pe {YEAR}, ANAF · Populația: INS, 1 ianuarie {YEAR}"
 
@@ -11718,7 +11718,7 @@ msgstr "Cele mai mari firme după cifra de afaceri"
 #~ msgid "Cele mai mari firme, {0}"
 #~ msgstr "Cele mai mari firme, {0}"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:587
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:604
 msgid "Cele mai mari firme, {YEAR}"
 msgstr "Cele mai mari firme, {YEAR}"
 
@@ -12320,7 +12320,7 @@ msgstr "cifra de afaceri"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:232
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:287
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:352
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:592
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:609
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:103
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:173
 #: src/features/private-companies/components/profile/company-business-band.tsx:148
@@ -12336,7 +12336,7 @@ msgstr "Cifra de afaceri"
 msgid "Cifra de afaceri {year}"
 msgstr "Cifra de afaceri {year}"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:517
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:534
 msgid "Cifra de afaceri din bilanțuri, în lei nominali, neajustați cu inflația."
 msgstr "Cifra de afaceri din bilanțuri, în lei nominali, neajustați cu inflația."
 
@@ -12783,7 +12783,7 @@ msgstr "Clasamente"
 #~ msgid "Clasamentul acoperă {0} din {1} atribuit. Alte {2} provin din contracte încredințate unor asocieri cu mai mulți membri, unde repartiția pe furnizori nu este publicată."
 #~ msgstr ""
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:590
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:607
 #: src/features/procurement/components/home/procurement-home-page.tsx:289
 msgid "Clasamentul după"
 msgstr "Clasamentul după"
@@ -17949,7 +17949,11 @@ msgstr "Despre aceste date"
 msgid "Despre aceste date și surse"
 msgstr ""
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:545
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:464
+msgid "Despre aceste numere"
+msgstr "Despre aceste numere"
+
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:562
 msgid "Despre aceste procente"
 msgstr "Despre aceste procente"
 
@@ -18971,13 +18975,13 @@ msgstr "Doar primele {limit} domenii"
 msgid "Doar primele 10"
 msgstr "Doar primele 10"
 
-#: src/features/private-companies/components/hub/company-county-rank.tsx:189
-#: src/features/private-companies/components/hub/company-county-rank.tsx:193
+#: src/features/private-companies/components/hub/company-county-rank.tsx:192
+#: src/features/private-companies/components/hub/company-county-rank.tsx:196
 #: src/features/statistics/components/hub/hub-county-rank.tsx:211
 msgid "Doar primele și ultimele {edge}"
 msgstr "Doar primele și ultimele {edge}"
 
-#: src/features/private-companies/components/hub/company-county-rank.tsx:186
+#: src/features/private-companies/components/hub/company-county-rank.tsx:189
 msgid "Doar primele și ultimele {phoneEdge}"
 msgstr "Doar primele și ultimele {phoneEdge}"
 
@@ -22303,7 +22307,7 @@ msgid "față de {0}, aceleași luni"
 msgstr "față de {0}, aceleași luni"
 
 #: src/features/ngos/hub/ngo-leaders.tsx:76
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:607
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:624
 msgid "față de {previousYear}"
 msgstr "față de {previousYear}"
 
@@ -22412,6 +22416,10 @@ msgstr "Fiecare buget, alături"
 #: src/features/parliament/components/parliament-stenogram-interventions-view.tsx:127
 msgid "Fiecare card conține o singură luare de cuvânt. Acolo unde intervenția are o poziție dovedită în stenogramă, cardul duce la locul ei exact în textul integral al ședinței."
 msgstr ""
+
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:466
+msgid "Fiecare card deschide aceeași selecție în analiza bilanțurilor, care numără firmele unei singure ediții a registrului: totalul de acolo poate fi altul decât cel de aici."
+msgstr "Fiecare card deschide aceeași selecție în analiza bilanțurilor, care numără firmele unei singure ediții a registrului: totalul de acolo poate fi altul decât cel de aici."
 
 #: src/features/public-investments/components/HowToReadData.tsx:119
 msgid "Fiecare cifră are o dovadă: butonul „Vezi dovada” deschide registrul sursă, snapshot-ul și extrasul brut."
@@ -23141,7 +23149,7 @@ msgstr "firme din {name}"
 msgid "Firme din {name}"
 msgstr "Firme din {name}"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:457
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:459
 msgid "Firme după stare"
 msgstr "Firme după stare"
 
@@ -23157,7 +23165,7 @@ msgstr "Firme fără loc cunoscut (inclusiv străine)"
 #~ msgid "Firme în directorul platformei"
 #~ msgstr "Firme în directorul platformei"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:475
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:492
 msgid "Firme în dizolvare sau lichidare"
 msgstr "Firme în dizolvare sau lichidare"
 
@@ -23182,7 +23190,7 @@ msgstr "Firme în funcțiune la 1.000 de locuitori (populația INS la 1 ianuarie
 #~ msgid "Firme în insolvență sau faliment"
 #~ msgstr "Firme în insolvență sau faliment"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:465
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:482
 msgid "Firme în insolvență, reorganizare judiciară sau faliment"
 msgstr "Firme în insolvență, reorganizare judiciară sau faliment"
 
@@ -25704,7 +25712,7 @@ msgstr "În funcțiune în {month}"
 #~ msgid "În funcțiune în registru, inactive fiscal la ANAF"
 #~ msgstr "În funcțiune în registru, inactive fiscal la ANAF"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:470
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:487
 msgid "În funcțiune, dar inactive la ANAF"
 msgstr "În funcțiune, dar inactive la ANAF"
 
@@ -25839,6 +25847,10 @@ msgstr "În registru"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:182
 msgid "În registrul comerțului, {month}"
 msgstr "În registrul comerțului, {month}"
+
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:463
+msgid "În registrul comerțului, {month}."
+msgstr "În registrul comerțului, {month}."
 
 #: src/components/identity/identity-confidence-badge.tsx:178
 #: src/components/provenance/source-provenance.tsx:445
@@ -28029,7 +28041,7 @@ msgstr "județ"
 #: src/features/elections/catalog/elections-catalog-text.ts:87
 #: src/features/justice/components/analysis/analysis-filters.tsx:168
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:365
-#: src/features/private-companies/components/hub/company-county-rank.tsx:128
+#: src/features/private-companies/components/hub/company-county-rank.tsx:131
 #: src/features/private-companies/lib/company-analytics-text.ts:88
 #: src/features/procurement/components/home/home-context-bands.tsx:190
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:108
@@ -28844,7 +28856,7 @@ msgstr "Legea bugetului pe {0} nu e încă în date: avem legile din {1}–{2}."
 msgid "Legea bugetului, pe capitole"
 msgstr "Legea bugetului, pe capitole"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:568
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:585
 msgid "Legea cere fiecărei firme o activitate principală înregistrată, dar fișierele ONRC publicate pe care le citim nu o marchează: activitatea de aici e selecția platformei, nu activitatea principală înregistrată. Fiecare clasă e în revizia CAEN a înscrierii ei; aceleași cifre în două revizii sunt două rânduri."
 msgstr "Legea cere fiecărei firme o activitate principală înregistrată, dar fișierele ONRC publicate pe care le citim nu o marchează: activitatea de aici e selecția platformei, nu activitatea principală înregistrată. Fiecare clasă e în revizia CAEN a înscrierii ei; aceleași cifre în două revizii sunt două rânduri."
 
@@ -35054,7 +35066,7 @@ msgstr "Numărul maxim de posturi raportat în ediția din septembrie 2025, incl
 msgid "Numărul mediu de salariați"
 msgstr "Numărul mediu de salariați"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:521
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:538
 msgid "Numărul mediu de salariați din bilanțuri, adunat: nu persoane distincte."
 msgstr "Numărul mediu de salariați din bilanțuri, adunat: nu persoane distincte."
 
@@ -39264,11 +39276,11 @@ msgstr "procente"
 #~ msgid "Procente din {total}, numărul mediu admis pe {year} (cel mult {ceiling} pe firmă) în analiza bilanțurilor, ediția {releaseId}."
 #~ msgstr "Procente din {total}, numărul mediu admis pe {year} (cel mult {ceiling} pe firmă) în analiza bilanțurilor, ediția {releaseId}."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:543
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:560
 msgid "Procente din {total}, totalul analizei bilanțurilor pe {year}."
 msgstr "Procente din {total}, totalul analizei bilanțurilor pe {year}."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:541
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:558
 msgid "Procente din cele {total} în funcțiune din analiza bilanțurilor."
 msgstr "Procente din cele {total} în funcțiune din analiza bilanțurilor."
 
@@ -39441,7 +39453,7 @@ msgstr "Profitul net"
 msgid "Profitul net minus pierderea netă, din situațiile în care cel puțin una e raportată."
 msgstr "Profitul net minus pierderea netă, din situațiile în care cel puțin una e raportată."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:519
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:536
 msgid "Profiturile minus pierderile: sub zero, anii în care pierderile au fost mai mari."
 msgstr "Profiturile minus pierderile: sub zero, anii în care pierderile au fost mai mari."
 
@@ -42013,7 +42025,7 @@ msgid "România · {0}"
 msgstr "România · {0}"
 
 #. placeholder {0}: unit.value
-#: src/features/private-companies/components/hub/company-county-rank.tsx:139
+#: src/features/private-companies/components/hub/company-county-rank.tsx:142
 msgid "România {0}"
 msgstr "România {0}"
 
@@ -42189,7 +42201,7 @@ msgstr "salariați"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:216
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:288
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:354
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:593
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:610
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:115
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:133
 #: src/features/private-companies/components/profile/company-business-band.tsx:152
@@ -46574,7 +46586,7 @@ msgstr "Sursa: SEAP."
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:578
 #: src/features/ngos/organization/components/profile-parts.tsx:643
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:627
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:644
 #: src/features/public-enterprises/components/authority/authority-portfolio-page.tsx:31
 msgid "Surse"
 msgstr "Surse"
@@ -48259,7 +48271,7 @@ msgctxt "companies hub shortcut"
 msgid "Toate firmele în funcțiune"
 msgstr "Toate firmele în funcțiune"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:610
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:627
 msgid "Toate firmele, în analiza bilanțurilor"
 msgstr "Toate firmele, în analiza bilanțurilor"
 
@@ -48699,7 +48711,7 @@ msgstr "Total: adăugați toate valorile care corespund (cel mai potrivit pentru
 msgid "Totalul"
 msgstr "Totalul"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:549
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:566
 msgid "Totalul e cifra de afaceri pe {year} din analiza bilanțurilor, ediția {releaseId}: firmele dintr-o ediție a registrului, cu valorile admise după verificare. De aceea diferă de cifra de afaceri de sus, care adună toate bilanțurile pe {year} citite de la ANAF."
 msgstr "Totalul e cifra de afaceri pe {year} din analiza bilanțurilor, ediția {releaseId}: firmele dintr-o ediție a registrului, cu valorile admise după verificare. De aceea diferă de cifra de afaceri de sus, care adună toate bilanțurile pe {year} citite de la ANAF."
 
@@ -48707,7 +48719,7 @@ msgstr "Totalul e cifra de afaceri pe {year} din analiza bilanțurilor, ediția 
 #~ msgid "Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}, cel mult {ceiling} pe firmă: peste, e o greșeală de introducere. De aceea diferă de numărul de salariați de sus."
 #~ msgstr "Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}, cel mult {ceiling} pe firmă: peste, e o greșeală de introducere. De aceea diferă de numărul de salariați de sus."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:554
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:571
 msgid "Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}: firmele dintr-o ediție a registrului, cu valorile admise după verificare, cel mult {ceiling} pe firmă. De aceea diferă de numărul de salariați de sus, care adună toate bilanțurile pe {year} citite de la ANAF, cu aceeași limită."
 msgstr "Totalul e numărul mediu de salariați pe {year} din analiza bilanțurilor, ediția {releaseId}: firmele dintr-o ediție a registrului, cu valorile admise după verificare, cel mult {ceiling} pe firmă. De aceea diferă de numărul de salariați de sus, care adună toate bilanțurile pe {year} citite de la ANAF, cu aceeași limită."
 
@@ -48715,7 +48727,7 @@ msgstr "Totalul e numărul mediu de salariați pe {year} din analiza bilanțuril
 #~ msgid "Totalul numără firmele cu starea „în funcțiune\" în registrul citit de analiza bilanțurilor, ediția {releaseId}: o singură ediție a registrului, deci poate diferi de numărul de sus."
 #~ msgstr "Totalul numără firmele cu starea „în funcțiune\" în registrul citit de analiza bilanțurilor, ediția {releaseId}: o singură ediție a registrului, deci poate diferi de numărul de sus."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:560
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:577
 msgid "Totalul numără persoanele juridice cu starea „în funcțiune\" din ediția registrului citită de analiza bilanțurilor, ediția {releaseId}. Firmele în funcțiune de sus sunt numărate altfel din registru, deci cele două numere diferă."
 msgstr "Totalul numără persoanele juridice cu starea „în funcțiune\" din ediția registrului citită de analiza bilanțurilor, ediția {releaseId}. Firmele în funcțiune de sus sunt numărate altfel din registru, deci cele două numere diferă."
 

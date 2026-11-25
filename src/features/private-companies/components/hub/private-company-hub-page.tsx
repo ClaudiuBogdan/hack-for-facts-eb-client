@@ -454,7 +454,24 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
       <section aria-labelledby="hub-start-title" className="border-b">
         <RuledFrame className="py-14 sm:py-20">
-          <HubSectionHead titleId="hub-start-title" title={<Trans>Firme după stare</Trans>} />
+          <HubSectionHead
+            titleId="hub-start-title"
+            title={<Trans>Firme după stare</Trans>}
+            // Where the counts are from, and why the analysis a card opens can count otherwise.
+            lede={
+              <>
+                <Trans>În registrul comerțului, {month}.</Trans>{' '}
+                <HubInfoNote label={t`Despre aceste numere`}>
+                  <p>
+                    <Trans>
+                      Fiecare card deschide aceeași selecție în analiza bilanțurilor, care numără firmele unei singure ediții a registrului: totalul de acolo
+                      poate fi altul decât cel de aici.
+                    </Trans>
+                  </p>
+                </HubInfoNote>
+              </>
+            }
+          />
           <div className="mt-8" data-reveal>
             {/* A card is its selection's name and its size: the count is the snapshot's, and the card opens the
                 same selection in the analysis, whose companies are one ONRC edition's, so its own count can differ. */}
