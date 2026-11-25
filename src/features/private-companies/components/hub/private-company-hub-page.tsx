@@ -345,49 +345,53 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
           title={<Trans>Evoluția pe ani</Trans>}
           lede={economyLede(economyMeasure)}
           aside={
-            <IndicatorToggle
-              label={t`Anii după`}
-              options={[
-                { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
-                { key: 'rezultat-net', label: t`Rezultatul net` },
-                { key: 'salariati', label: t`Salariați` },
-              ]}
-              value={yearMeasure}
-              onChange={(key: CompanyHubYearMeasure) => choose('evolutie', key, DEFAULT_YEAR_MEASURE)}
-            />
+            // The switch, and under it the first and last whole years: beside the title, not a row of their own
+            // (owner, 25 November 2026: the band ran 470px taller across the page).
+            <div className="flex flex-col gap-5 sm:items-end">
+              <IndicatorToggle
+                label={t`Anii după`}
+                options={[
+                  { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
+                  { key: 'rezultat-net', label: t`Rezultatul net` },
+                  { key: 'salariati', label: t`Salariați` },
+                ]}
+                value={yearMeasure}
+                onChange={(key: CompanyHubYearMeasure) => choose('evolutie', key, DEFAULT_YEAR_MEASURE)}
+              />
+              <div className="w-full sm:w-[26rem]">
+                <HubEconomySpan
+                  years={SNAPSHOT.years}
+                  measure={economyMeasure}
+                  note={
+                    <>
+                      <p>
+                        <Trans>Fiecare an își numără firmele cu bilanț pe acel an.</Trans>
+                      </p>
+                      <p>
+                        <Trans>
+                          Analiza bilanțurilor, ediția {SNAPSHOT.yearsSource.releaseId}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile
+                          admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}.
+                        </Trans>
+                      </p>
+                      <p>
+                        <Trans>
+                          Cifrele-cheie de sus adună bilanțurile pe {YEAR} citite până acum de la ANAF, ale tuturor firmelor, deci diferă de anul {YEAR} de
+                          aici.
+                        </Trans>
+                      </p>
+                      <p>
+                        <Trans>
+                          Salariații: un număr mediu peste {formatHubNumber(HUB_EMPLOYEE_CEILING)} sau sub zero e o greșeală de introducere și nu e adunat;
+                          analiza deschisă de aici păstrează aceeași limită.
+                        </Trans>
+                      </p>
+                    </>
+                  }
+                />
+              </div>
+            </div>
           }
         />
-        <div className="mt-8 max-w-md" data-reveal>
-          <HubEconomySpan
-            years={SNAPSHOT.years}
-            measure={economyMeasure}
-            note={
-              <>
-                <p>
-                  <Trans>Fiecare an își numără firmele cu bilanț pe acel an.</Trans>
-                </p>
-                <p>
-                  <Trans>
-                    Analiza bilanțurilor, ediția {SNAPSHOT.yearsSource.releaseId}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile
-                    admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}.
-                  </Trans>
-                </p>
-                <p>
-                  <Trans>
-                    Cifrele-cheie de sus adună bilanțurile pe {YEAR} citite până acum de la ANAF, ale tuturor firmelor, deci diferă de anul {YEAR} de
-                    aici.
-                  </Trans>
-                </p>
-                <p>
-                  <Trans>
-                    Salariații: un număr mediu peste {formatHubNumber(HUB_EMPLOYEE_CEILING)} sau sub zero e o greșeală de introducere și nu e adunat;
-                    analiza deschisă de aici păstrează aceeași limită.
-                  </Trans>
-                </p>
-              </>
-            }
-          />
-        </div>
         <div className="mt-8" data-reveal>
           <HubEconomyChart years={SNAPSHOT.years} measure={economyMeasure} />
           <Link

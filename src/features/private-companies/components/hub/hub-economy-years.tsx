@@ -120,7 +120,7 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
           aria-valuemax={count - 1}
           aria-valuenow={shown}
           aria-valuetext={spoken(shown)}
-          className={cn(CHART_PLOT_CLASS, 'h-56 sm:h-64 lg:h-[22.5rem]')}
+          className={cn(CHART_PLOT_CLASS, 'h-56 sm:h-64 lg:h-72')}
           {...handlers}
         >
           <span id={hintId} className="sr-only">

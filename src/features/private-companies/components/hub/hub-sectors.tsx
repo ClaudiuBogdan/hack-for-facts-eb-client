@@ -6,7 +6,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { STEP_BG } from '@/features/statistics/lib/county-map'
 import { cn } from '@/lib/utils'
 import { activitySourceTag, unclassifiedActivityLabel } from '../../lib/company-activity-text'
-import { formatHubShare, formatHubValue, type HubUnit } from '../../lib/hub-format'
+import { formatHubShare, formatHubValue, formatHubValueText, type HubUnit } from '../../lib/hub-format'
 import type { HubActivityRanking, HubActivityRow, HubSizeClass } from '../../lib/hub-snapshot-types'
 import type { CompanyAnalysisActivityBasis } from '@/schemas/company-analytics'
 
@@ -232,48 +232,101 @@ function sizeClassText(key: HubSizeClass['key']): string {
 /** Text on the map's steps 1–3 is the foreground colour, on 4–5 the background colour: at least 4.5:1 in either theme. */
 const STEP_LABEL = ['text-foreground', 'text-foreground', 'text-foreground', 'text-background', 'text-background'] as const
 
+type SizeMeasureKey = 'firms' | 'employees' | 'turnover'
+
+/** The part under the pointer (or the last one tapped): which bar, which class. */
+type SizePart = { readonly measure: SizeMeasureKey; readonly key: HubSizeClass['key'] }
+
 /**
  * The statements by size class as three bars, one whole each — the firms,
  * their employees and their turnover — split into the five classes, smallest
  * first, in the county map's five steps of one hue (the classes are ordered).
- * A part wide enough carries its share; every part says its class and share
- * to a pointer. The bars are a picture: the same figures are the table under
- * them, for assistive technology (`HubSizeTable`).
+ * A part wide enough carries its share. Pointing at a part (tapping it, on a
+ * touch screen) opens a reading above it, in the charts' tooltip box: the
+ * class, its figure and its share (owner, 25 November 2026). The bars are a
+ * picture: the same figures are the table under them, for assistive
+ * technology (`HubSizeTable`).
  */
 export function HubSizeBars({ classes, className }: { readonly classes: readonly HubSizeClass[]; readonly className?: string }) {
-  const measures = [
-    { key: 'firms', label: <Trans>Firme</Trans>, of: t`din firme`, value: (row: HubSizeClass) => row.firms },
-    { key: 'employees', label: <Trans>Salariați</Trans>, of: t`din salariați`, value: (row: HubSizeClass) => row.employees },
-    { key: 'turnover', label: <Trans>Cifra de afaceri</Trans>, of: t`din cifra de afaceri`, value: (row: HubSizeClass) => row.turnover },
-  ] as const
+  const [active, setActive] = useState<SizePart | null>(null)
+  const measures: readonly { readonly key: SizeMeasureKey; readonly label: ReactNode; readonly of: string; readonly unit: HubUnit; readonly value: (row: HubSizeClass) => number }[] = [
+    { key: 'firms', label: <Trans>Firme</Trans>, of: t`din firme`, unit: 'firms', value: (row) => row.firms },
+    { key: 'employees', label: <Trans>Salariați</Trans>, of: t`din salariați`, unit: 'persons', value: (row) => row.employees },
+    { key: 'turnover', label: <Trans>Cifra de afaceri</Trans>, of: t`din cifra de afaceri`, unit: 'lei', value: (row) => row.turnover },
+  ]
   return (
     <div className={className} data-testid="company-hub-size-bars">
       <div className="space-y-3" aria-hidden="true">
         {measures.map((measure) => {
           const total = classes.reduce((sum, row) => sum + measure.value(row), 0)
+          // Where each part starts, as a share of its bar: the reading stands over the part's middle.
+          let before = 0
+          const parts = classes.map((row, index) => {
+            const value = measure.value(row)
+            const start = total > 0 ? before / total : 0
+            before += value
+            return { row, index, value, start, share: total > 0 ? value / total : 0 }
+          })
+          const shown = active?.measure === measure.key ? parts.find((part) => part.row.key === active.key && part.value > 0) : undefined
+          const middle = shown ? shown.start + shown.share / 2 : 0
           return (
             <div key={measure.key} className="grid grid-cols-1 gap-1.5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center sm:gap-4">
               <span className="text-sm text-foreground">{measure.label}</span>
-              <div className="flex h-9 gap-px overflow-hidden rounded-sm bg-border/70">
-                {classes.map((row, index) => {
-                  const value = measure.value(row)
-                  if (value <= 0 || total <= 0) return null
-                  const share = value / total
-                  const text = formatHubShare(value, total)
-                  return (
-                    <span
-                      key={row.key}
-                      className={cn('flex min-w-0.5 items-center justify-center overflow-hidden', STEP_BG[index], STEP_LABEL[index])}
-                      style={{ flexGrow: value, flexBasis: 0 }}
-                      title={`${sizeClassText(row.key)}: ${text} ${measure.of}`}
-                    >
-                      {/* The share inside the part when it fits: from 6% of the width on a wide screen, 14% on a phone. */}
-                      {share >= 0.06 ? (
-                        <span className={cn('whitespace-nowrap px-1 text-xs font-medium tabular-nums', share < 0.14 && 'max-sm:hidden')}>{text}</span>
-                      ) : null}
+              <div className="relative">
+                <div
+                  className="flex h-9 gap-px overflow-hidden rounded-sm bg-border/70"
+                  onPointerLeave={(event) => {
+                    if (event.pointerType === 'mouse') setActive(null)
+                  }}
+                >
+                  {parts.map(({ row, index, value, share }) => {
+                    if (value <= 0 || total <= 0) return null
+                    const part: SizePart = { measure: measure.key, key: row.key }
+                    const isActive = shown?.row.key === row.key
+                    return (
+                      <span
+                        key={row.key}
+                        data-size-part={`${measure.key}:${row.key}`}
+                        className={cn(
+                          'flex min-w-0.5 cursor-default items-center justify-center overflow-hidden transition-shadow',
+                          STEP_BG[index],
+                          STEP_LABEL[index],
+                          isActive && 'ring-2 ring-inset ring-foreground/70',
+                        )}
+                        style={{ flexGrow: value, flexBasis: 0 }}
+                        onPointerEnter={(event) => {
+                          if (event.pointerType === 'mouse') setActive(part)
+                        }}
+                        // A touch screen has no hover: a tap opens the reading, a second tap on the same part closes it.
+                        onClick={() => setActive((current) => (current?.measure === part.measure && current.key === part.key ? null : part))}
+                      >
+                        {/* The share inside the part when it fits: from 6% of the width on a wide screen, 14% on a phone. */}
+                        {share >= 0.06 ? (
+                          <span className={cn('whitespace-nowrap px-1 text-xs font-medium tabular-nums', share < 0.14 && 'max-sm:hidden')}>
+                            {formatHubShare(value, total)}
+                          </span>
+                        ) : null}
+                      </span>
+                    )
+                  })}
+                </div>
+                {shown ? (
+                  <div
+                    data-size-reading
+                    // The charts' tooltip box (`ChartTooltip`), over the part's middle; near an end it keeps inside the bar.
+                    className={cn(
+                      'pointer-events-none absolute bottom-full z-10 mb-2 w-max min-w-40 max-w-72 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md',
+                      middle < 0.15 ? 'translate-x-0' : middle > 0.85 ? '-translate-x-full' : '-translate-x-1/2',
+                    )}
+                    style={{ left: `${(middle < 0.15 ? shown.start : middle > 0.85 ? shown.start + shown.share : middle) * 100}%` }}
+                  >
+                    <span className="block text-muted-foreground">{sizeClassText(shown.row.key)}</span>
+                    <span className="mt-1 block text-sm font-semibold tabular-nums text-foreground">{formatHubValueText(shown.value, measure.unit)}</span>
+                    <span className="block tabular-nums text-muted-foreground">
+                      {formatHubShare(shown.value, total)} {measure.of}
                     </span>
-                  )
-                })}
+                  </div>
+                ) : null}
               </div>
             </div>
           )

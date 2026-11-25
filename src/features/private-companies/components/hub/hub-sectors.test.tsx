@@ -61,15 +61,31 @@ const SIZES: readonly HubSizeClass[] = [
 ]
 
 describe('HubSizeBars', () => {
-  it('draws three wholes split by class, a part only where there is a value, each worded on a pointer', () => {
+  it('draws three wholes split by class, a part only where there is a value', () => {
     render(<HubSizeBars classes={SIZES} />)
-    const bars = screen.getByTestId('company-hub-size-bars')
-    const parts = [...bars.querySelectorAll('[title]')].map((part) => part.getAttribute('title'))
+    const parts = [...screen.getByTestId('company-hub-size-bars').querySelectorAll('[data-size-part]')].map((part) => part.getAttribute('data-size-part'))
     // No employees in the class with none: four employee parts, five of each other.
     expect(parts).toHaveLength(14)
-    // (The test's numbers follow its locale, so either decimal mark.)
-    expect(parts.some((title) => /^250 de salariați sau mai mulți: 41[.,]0\s?% din cifra de afaceri$/u.test(title ?? ''))).toBe(true)
-    expect(parts.some((title) => /^fără salariați: 41[.,]7\s?% din firme$/u.test(title ?? ''))).toBe(true)
+    expect(parts).not.toContain('employees:0')
+  })
+
+  it('reads a part out on hover, and on a tap on a touch screen', () => {
+    render(<HubSizeBars classes={SIZES} />)
+    const bars = screen.getByTestId('company-hub-size-bars')
+    const part = (key: string) => bars.querySelector(`[data-size-part="${key}"]`) as HTMLElement
+    const reading = () => bars.querySelector('[data-size-reading]')
+    expect(reading()).toBeNull()
+
+    fireEvent.pointerEnter(part('turnover:250+'), { pointerType: 'mouse' })
+    // The class, its figure and its share. (The test's numbers follow its locale, so either decimal mark.)
+    expect(reading()?.textContent).toMatch(/^250 de salariați sau mai mulți410 lei41[.,]0\s?% din cifra de afaceri$/u)
+    fireEvent.pointerLeave(part('turnover:250+').parentElement as HTMLElement, { pointerType: 'mouse' })
+    expect(reading()).toBeNull()
+
+    fireEvent.click(part('firms:0'))
+    expect(reading()?.textContent).toMatch(/^fără salariați400 firme41[.,]7\s?% din firme$/u)
+    fireEvent.click(part('firms:0'))
+    expect(reading()).toBeNull()
   })
 
   it('keeps the figures as a table for assistive technology, the bars a picture', () => {
