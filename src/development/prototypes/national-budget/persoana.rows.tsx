@@ -54,46 +54,43 @@ function perResident(exact: string, view: YearView): string {
 }
 
 /**
- * A list's lines: the lei of 100, what the line is, the official amount and
- * the amount per resident. `max` draws a bar per line against the largest
- * (a list with no chart above it); without it a line carries its colour as a
- * small square, the key to the chart above.
+ * A list's lines, two lines each (owner: clean and compact, no bars): the
+ * lei of 100, what the line is and its official amount; under them, in one
+ * quiet line, how it moved, the amount per resident and what the line holds
+ * (cut at the line's end, whole on hover). `swatch` shows the line's colour,
+ * the key to a chart above; a list with no chart has none.
  */
-function Rows({ title, parts, previous, max }: { readonly title: string; readonly parts: readonly HundredPart[]; readonly previous: string; readonly max?: number }) {
+function Rows({ title, parts, previous, swatch }: { readonly title: string; readonly parts: readonly HundredPart[]; readonly previous: string; readonly swatch: boolean }) {
   const { view } = usePersonYear()
   return (
     <div className="min-w-0">
       <h3 className="text-sm font-semibold">{title}</h3>
-      <ul className="mt-3 divide-y border-y">
-        {parts.map((part) => (
-          <li key={part.key} className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5">
-            {/* The figures share a right edge, whatever word follows them („lei", „de lei"). */}
-            <span className="whitespace-nowrap text-lg font-semibold tabular-nums">
-              <span className="inline-block w-7 text-right">{part.lei || '<1'}</span> <span className="text-xs font-normal text-muted-foreground">{part.lei ? leiWord(part.lei) : 'leu'}</span>
-            </span>
-            <span className="flex min-w-0 items-baseline gap-2 text-sm">
-              {max ? null : <span className={cn('size-2.5 shrink-0 translate-y-px rounded-[2px]', part.fill.className)} style={part.fill.style} aria-hidden="true" />}
-              {part.cui ? (
-                <Link to="/entities/$cui" params={{ cui: part.cui }} search={((before: Record<string, unknown>) => siteKeys(before)) as never} className="transition-colors hover:text-primary">
-                  {part.label}
-                </Link>
-              ) : (
-                <span className={cn(part.strong && 'font-semibold')}>{part.label}</span>
-              )}
-            </span>
-            <span className="text-right text-sm tabular-nums">{moneyText(part.exact)}</span>
-            {max ? (
-              <span className="col-span-2 col-start-2 mt-1.5 block h-1.5 rounded-full bg-muted" aria-hidden="true">
-                <span className={cn('block h-full rounded-full', part.fill.className)} style={{ width: `${Math.max(0.6, (Number(part.exact) / max) * 100)}%`, ...part.fill.style }} />
+      <ul className="mt-2 divide-y border-y">
+        {parts.map((part) => {
+          const details = [part.change ? `${part.change} față de ${previous}` : null, `${perResident(part.exact, view)} pe locuitor`, part.hint].filter(Boolean).join(' · ')
+          return (
+            <li key={part.key} className="grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2">
+              {/* The figures share a right edge, whatever word follows them („lei", „de lei"). */}
+              <span className="whitespace-nowrap text-base font-semibold tabular-nums">
+                <span className="inline-block w-6 text-right">{part.lei || '<1'}</span> <span className="text-xs font-normal text-muted-foreground">{part.lei ? leiWord(part.lei) : 'leu'}</span>
               </span>
-            ) : null}
-            {/* What the line is and how it moved; the amount per resident beside it, under it on a phone. */}
-            <span className={cn('col-span-2 col-start-2 grid gap-x-4 text-xs leading-snug text-muted-foreground sm:grid-cols-[minmax(0,1fr)_auto]', max ? 'mt-1.5' : 'mt-0.5')}>
-              <span>{[part.hint, part.change ? `${part.change} față de ${previous}` : null].filter(Boolean).join(' · ')}</span>
-              <span className="tabular-nums sm:text-right">{perResident(part.exact, view)} pe locuitor</span>
-            </span>
-          </li>
-        ))}
+              <span className="flex min-w-0 items-baseline gap-2 text-sm">
+                {swatch ? <span className={cn('size-2.5 shrink-0 translate-y-px rounded-[2px]', part.fill.className)} style={part.fill.style} aria-hidden="true" /> : null}
+                {part.cui ? (
+                  <Link to="/entities/$cui" params={{ cui: part.cui }} search={((before: Record<string, unknown>) => siteKeys(before)) as never} className="transition-colors hover:text-primary sm:truncate">
+                    {part.label}
+                  </Link>
+                ) : (
+                  <span className={cn('sm:truncate', part.strong && 'font-semibold')}>{part.label}</span>
+                )}
+              </span>
+              <span className="whitespace-nowrap text-right text-sm tabular-nums">{moneyText(part.exact)}</span>
+              <span className="col-span-2 col-start-2 truncate text-xs text-muted-foreground" title={details}>
+                {details}
+              </span>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
@@ -104,7 +101,7 @@ export function TwoLists({
   right,
   previous,
   note,
-  bars = false,
+  swatches = true,
   className,
 }: {
   readonly left: HundredList
@@ -113,13 +110,12 @@ export function TwoLists({
   readonly previous: string
   /** How to read the figures; shown with the full lists. */
   readonly note: ReactNode
-  /** A bar per line against the list's largest, for lists with no chart above them. */
-  readonly bars?: boolean
+  /** Each line's colour as a small square: the key to a chart above the lists. */
+  readonly swatches?: boolean
   readonly className?: string
 }) {
   const [open, setOpen] = useState(false)
   const shown = (list: HundredList) => (open ? list.parts : largestOf(list.parts))
-  const maxOf = (list: HundredList) => (bars ? Math.max(...list.parts.map((part) => Number(part.exact)), 1) : undefined)
   const hidden = left.parts.length + right.parts.length - largestOf(left.parts).length - largestOf(right.parts).length
   // Closing takes rows away above the button; the page is moved by as much, so the button stays under the pointer.
   const toggle = (button: HTMLButtonElement) => {
@@ -129,9 +125,9 @@ export function TwoLists({
   }
   return (
     <div className={className}>
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-2">
-        <Rows title={left.title} parts={shown(left)} previous={previous} max={maxOf(left)} />
-        <Rows title={right.title} parts={shown(right)} previous={previous} max={maxOf(right)} />
+      <div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-2">
+        <Rows title={left.title} parts={shown(left)} previous={previous} swatch={swatches} />
+        <Rows title={right.title} parts={shown(right)} previous={previous} swatch={swatches} />
       </div>
       {hidden > 0 ? (
         <button

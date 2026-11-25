@@ -1,7 +1,8 @@
-import { useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
+import { ArrowUpRight } from 'lucide-react'
 
-import { AnalyticsLink } from '@/features/national-budget/home/components/home-shell'
+import { nextSearch, type AdvancedState } from '@/features/national-budget/analytics/lib/analytics-state'
 import { siteKeys } from '@/features/national-budget/home/lib/home-data'
 import { cn } from '@/lib/utils'
 import {
@@ -28,6 +29,20 @@ import { Note, Section, monthName, usePersonYear } from './persoana.shell'
  * the borrowing year by year, the year in progress, and where to go next.
  * Each says its amounts per resident, a year or a month as the version asks.
  */
+
+/** A way into the analysis page (the live page's link, kept here when the live bands were replaced, 25 November 2026). */
+function AnalyticsLink({ patch, children, className }: { readonly patch: Partial<AdvancedState>; readonly children: ReactNode; readonly className?: string }) {
+  return (
+    <Link
+      to="/national-budget/analytics"
+      search={((previous: Record<string, unknown>) => nextSearch(siteKeys(previous), patch)) as never}
+      className={cn('inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline sm:min-h-0', className)}
+    >
+      {children}
+      <ArrowUpRight className="size-3.5" aria-hidden="true" />
+    </Link>
+  )
+}
 
 // ──────────────────────────────────────────────────────────────── tones ──
 

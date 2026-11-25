@@ -56,6 +56,13 @@ describe('the year shown', () => {
     // Lingui is the suite's mock (src/test/mocks): the source text, interpolated.
     expect(shown.notice).toBe('Pentru 2009 buletinele nu au anul întreg (lipsește buletinul lunii); arătăm 2025.')
   })
+
+  it('is the default year, said so, for a year without its 1 January population (a new year, before INS publishes it)', () => {
+    const later = { ...catalog, execution: { ...catalog.execution, coverage: { ...catalog.execution.coverage, lastMonth: '2027-02' } } } as BudgetNationalCatalog
+    const shown = shownYearOf(later, { view: viewOfYear(later, 2027), views: yearViews(later), setYear: () => undefined }, new Map())
+    expect(shown.view.year).toBe(2026)
+    expect(shown.notice).toBe('Pentru 2027 nu avem încă populația de la 1 ianuarie, la care se împart sumele; arătăm 2026.')
+  })
 })
 
 describe('the unfinished years, read or not', () => {

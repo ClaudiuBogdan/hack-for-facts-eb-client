@@ -1,10 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
+import { useExecutionGrid, useNationalCatalog } from '@/features/national-budget/analytics/hooks/use-national-budget-analytics'
+import { cellsOf } from '@/features/national-budget/analytics/lib/analytics-data'
+import { lastCompleteYear } from '@/features/national-budget/analytics/lib/analytics-view'
 import { gdpSizeText, moneyText } from '@/features/national-budget/home/lib/home-format'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { cn } from '@/lib/utils'
-import { leiText, leiWord, perPerson, useBorrowedYears, useHundred, type BorrowedYear } from './persoana.data'
+import { leiText, leiWord, perPerson, populationOf, useBorrowedYears, useHundred, type BorrowedYear } from './persoana.data'
 import { Mark, Note, Section, Stat, monthName, usePersonYear } from './persoana.shell'
 
 /**
@@ -66,7 +69,17 @@ function Chart({
         <span className="text-sm font-semibold">Deficitul bugetar, an de an</span>
         <IndicatorToggle label="Deficitul, măsurat în" options={MEASURES} value={measure} onChange={onMeasure} />
       </figcaption>
-      <div className="mt-5 flex h-64 items-end gap-[3px] border-b">
+      <div className="relative mt-5 flex h-64 items-end gap-[3px] border-b">
+        {/* The EU's reference value for a deficit (owner's pick, 25 November 2026): a dashed line, in the share view only. */}
+        {measure === 'pib' && ceiling > 3 ? (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 z-10 border-t border-dashed border-foreground/55"
+            style={{ bottom: `${(3 / ceiling) * 100}%` }}
+          >
+            <span className="absolute bottom-0.5 left-0 rounded-[2px] bg-background/85 px-1 text-[0.6875rem] text-muted-foreground">pragul UE: 3% din PIB</span>
+          </span>
+        ) : null}
         {years.map((row) => {
           const picked = row.year === chosen
           const value = valueOf(row, measure)
@@ -81,9 +94,19 @@ function Chart({
               onClick={() => onPick(row.year)}
               className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end rounded-t-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             >
-              <span className={cn('mb-1 whitespace-nowrap text-[0.6875rem] leading-none tabular-nums', picked ? 'font-semibold text-foreground' : 'hidden text-muted-foreground sm:block')}>{text}</span>
               <span
-                className={cn('block w-full rounded-t-sm transition-[height,background-color] duration-300 motion-reduce:transition-none', picked ? 'bg-primary' : 'bg-primary/25 group-hover:bg-primary/50')}
+                className={cn(
+                  'mb-1 whitespace-nowrap text-[0.6875rem] leading-none tabular-nums',
+                  picked ? 'font-semibold text-foreground' : 'hidden text-muted-foreground sm:block',
+                )}
+              >
+                {text}
+              </span>
+              <span
+                className={cn(
+                  'block w-full rounded-t-sm transition-[height,background-color] duration-300 motion-reduce:transition-none',
+                  picked ? 'bg-primary' : 'bg-primary/25 group-hover:bg-primary/50',
+                )}
                 style={{ height: `${value === null ? 0 : Math.max((value / ceiling) * 100, 0.8)}%` }}
               />
             </button>
@@ -94,7 +117,13 @@ function Chart({
         {years.map((row) => {
           const picked = row.year === chosen
           return (
-            <span key={row.year} className={cn('min-w-0 flex-1 whitespace-nowrap text-center', picked ? 'font-semibold text-foreground' : cn('text-muted-foreground', row.year % 5 !== 0 && 'invisible sm:visible'))}>
+            <span
+              key={row.year}
+              className={cn(
+                'min-w-0 flex-1 whitespace-nowrap text-center',
+                picked ? 'font-semibold text-foreground' : cn('text-muted-foreground', row.year % 5 !== 0 && 'invisible sm:visible'),
+              )}
+            >
               {String(row.year).slice(2)}
               {row.partial ? <span className="ml-px inline-block size-1 rounded-full bg-current align-middle opacity-70" /> : null}
             </span>
@@ -111,6 +140,44 @@ function Chart({
         <span>Apasă un an ca să-l alegi pentru toată pagina.</span>
       </p>
     </figure>
+  )
+}
+
+/** Interest on the debt per resident, every full year since 2006: what past borrowing costs each year. */
+function InterestTrend({ chosen }: { readonly chosen: number }) {
+  const catalog = useNationalCatalog()
+  const complete = lastCompleteYear(catalog.execution.coverage)
+  const grid = useExecutionGrid({ itemIds: ['mfin.bgc.expenditure.interest'], basis: 'FULL_YEAR', period: { type: 'YEAR', interval: { start: '2006', end: String(complete) } } })
+  const cells = cellsOf(grid.results[0])
+  const points = Array.from({ length: complete - 2005 }, (_, index) => {
+    const year = 2006 + index
+    const exact = cells.get(String(year))?.exact
+    const people = populationOf(year)
+    return { year, lei: exact && people ? Number(exact) / people : null }
+  })
+  const top = Math.max(...points.map((point) => point.lei ?? 0), 1)
+  const first = points.find((point) => point.lei !== null)
+  const last = [...points].reverse().find((point) => point.lei !== null)
+  return (
+    <div className="mt-5">
+      <p className="text-xs text-muted-foreground">
+        Dobânzi pe locuitor: <Mark>{leiText(first?.lei ?? null)}</Mark> în {first?.year}, <Mark>{leiText(last?.lei ?? null)}</Mark> în {last?.year}
+      </p>
+      <div
+        className="mt-2 flex h-12 items-end gap-[2px]"
+        role="img"
+        aria-label={points.map((point) => `${point.year}: ${point.lei === null ? 'fără date' : leiText(point.lei)}`).join('; ')}
+      >
+        {points.map((point) => (
+          <span
+            key={point.year}
+            title={`${point.year}: ${point.lei === null ? 'fără date' : `${leiText(point.lei)} pe locuitor`}`}
+            className={cn('min-w-0 flex-1 rounded-t-[2px]', point.year === chosen ? 'bg-primary' : 'bg-primary/30')}
+            style={{ height: `${point.lei === null ? 0 : Math.max(4, (point.lei / top) * 100)}%` }}
+          />
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -162,7 +229,9 @@ function Debt() {
             unit={byShare ? '% din PIB' : amount.endsWith('mld. lei') ? 'mld. lei' : ''}
             label={`deficit bugetar (cash) în ${period}`}
             notes={[
-              byShare ? <Mark>{amount}</Mark> : share ? (
+              byShare ? (
+                <Mark>{amount}</Mark>
+              ) : share ? (
                 <>
                   <Mark>{share}</Mark> din PIB
                 </>
@@ -177,26 +246,32 @@ function Debt() {
           <p className="text-sm text-muted-foreground">{year?.lei === 0 ? `${period} s-a încheiat fără deficit.` : `Buletinul nu are deficitul pentru ${period}.`}</p>
         )}
         {interest ? (
-          <Stat
-            value={moneyText(interest.exact).replace(/\s*mld\. lei$/u, '')}
-            unit={moneyText(interest.exact).endsWith('mld. lei') ? 'mld. lei' : ''}
-            label={`dobânzi la datorie în ${period}`}
-            notes={[
-              ofHundred(interest.lei, 'din fiecare 100 cheltuiți'),
-              interest.change ? (
+          <div>
+            <Stat
+              value={moneyText(interest.exact).replace(/\s*mld\. lei$/u, '')}
+              unit={moneyText(interest.exact).endsWith('mld. lei') ? 'mld. lei' : ''}
+              label={`dobânzi la datorie în ${period}`}
+              notes={[
+                ofHundred(interest.lei, 'din fiecare 100 cheltuiți'),
+                interest.change ? (
+                  <>
+                    <Mark>{interest.change}</Mark> față de {previous}
+                  </>
+                ) : null,
                 <>
-                  <Mark>{interest.change}</Mark> față de {previous}
-                </>
-              ) : null,
-              <>
-                <Mark>{leiText(perPerson(interest.exact, view))}</Mark> pe locuitor
-              </>,
-            ]}
-          />
+                  <Mark>{leiText(perPerson(interest.exact, view))}</Mark> pe locuitor
+                </>,
+              ]}
+            />
+            <InterestTrend chosen={view.year} />
+          </div>
         ) : null}
       </div>
       <Note>
         Deficitul bugetului general consolidat (cash).{' '}
+        {measure === 'pib'
+          ? 'Linia punctată e valoarea de referință din tratatele UE, 3% din PIB; UE o aplică deficitului calculat după metoda ei (ESA), puțin diferit de cel cash. '
+          : ''}
         {measure === 'lei'
           ? 'Sumele sunt în lei curenți, neajustați cu inflația.'
           : computed
@@ -209,7 +284,11 @@ function Debt() {
 
 export function DebtSection() {
   return (
-    <Section id="imprumut" title="Cât se împrumută, an de an" lede="Ce cheltuie statul peste încasări se acoperă din împrumuturi, care se dau înapoi cu dobândă din bugetele anilor următori.">
+    <Section
+      id="imprumut"
+      title="Cât se împrumută, an de an"
+      lede="Ce cheltuie statul peste încasări se acoperă din împrumuturi, care se dau înapoi cu dobândă din bugetele anilor următori."
+    >
       <Debt />
     </Section>
   )
