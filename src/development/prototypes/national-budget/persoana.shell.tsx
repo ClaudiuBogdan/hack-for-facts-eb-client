@@ -24,7 +24,7 @@ export function usePersonYear(): PersonYear {
   return value
 }
 
-function YearProvider({ children }: { readonly children: ReactNode }) {
+export function YearProvider({ children }: { readonly children: ReactNode }) {
   const catalog = useNationalCatalog()
   const views = usePersonYears()
   const [year, setYear] = useState(() => defaultYear(catalog))
@@ -102,7 +102,7 @@ export function PersonPage({ head, sections, children }: { readonly head: ReactN
 }
 
 /** Whether an element is on screen; true until the browser says otherwise. */
-function useInView(ref: RefObject<HTMLElement | null>): boolean {
+export function useInView(ref: RefObject<HTMLElement | null>): boolean {
   const [visible, setVisible] = useState(true)
   useEffect(() => {
     const node = ref.current
