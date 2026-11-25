@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LegalAnalyticsError } from '../api/legal-analytics-api'
-import { legalAnalyticsQueryOptions, retryLegalAnalytics } from './use-legislation-analytics'
+import { legalAnalyticsQueryOptions, retryLegalAnalytics, retryLegalAnalyticsOnMount } from './use-legislation-analytics'
 
 describe('retryLegalAnalytics', () => {
   it('never retries a refusal: 400, 429, 503', () => {
@@ -15,6 +15,17 @@ describe('retryLegalAnalytics', () => {
       expect(retryLegalAnalytics(1, error)).toBe(true)
       expect(retryLegalAnalytics(2, error)).toBe(false)
     }
+  })
+})
+
+describe('retryLegalAnalyticsOnMount', () => {
+  it('does not read a refused query again just because a view mounts', () => {
+    for (const status of [400, 429, 503] as const) {
+      const kind = status === 400 ? 'invalid' : status === 503 ? 'unavailable' : 'failed'
+      expect(retryLegalAnalyticsOnMount({ state: { error: new LegalAnalyticsError(kind, 'refused', status) } }), String(status)).toBe(false)
+    }
+    expect(retryLegalAnalyticsOnMount({ state: { error: new LegalAnalyticsError('failed', 'boom', 500) } })).toBe(true)
+    expect(retryLegalAnalyticsOnMount({ state: { error: null } })).toBe(true)
   })
 })
 

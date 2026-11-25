@@ -83,7 +83,21 @@ function canonicalValue(key: string, value: unknown): string | undefined {
 export function answersQuestion(view: LegalAnalyticsView, args: LegalAnalyticsArgs, meta: { readonly view: string; readonly args: Readonly<Record<string, unknown>> }): boolean {
   if (meta.view !== view) return false
   const asked = args as Readonly<Record<string, unknown>>
-  return FILTER_KEYS.every((key) => canonicalValue(key, asked[key]) === canonicalValue(key, meta.args[key]))
+  if (!FILTER_KEYS.every((key) => canonicalValue(key, asked[key]) === canonicalValue(key, meta.args[key]))) return false
+  // The question's own axes, with the server's defaults for an axis left out (it drops a default when it echoes).
+  const echoed = (key: string, fallback: string) => String(meta.args[key] ?? fallback)
+  const lens = String(args.lens ?? 'felul')
+  switch (view) {
+    case 'breakdown':
+    case 'series':
+      return echoed('lens', 'felul') === lens
+    case 'grid':
+      return echoed('lens', 'felul') === lens && echoed('by', lens === 'type' ? 'felul' : 'type') === String(args.by ?? (lens === 'type' ? 'felul' : 'type'))
+    case 'acts':
+      return echoed('order', 'amended') === String(args.order ?? 'amended')
+    default:
+      return true
+  }
 }
 
 function parseJsonSafely(text: string): unknown {
@@ -115,7 +129,9 @@ export async function fetchLegalAnalyticsLive<V extends LegalAnalyticsView>(
     logger.error('Analytics transport error', { view, message })
     throw new LegalAnalyticsError('failed', 'Analytics request failed')
   }
-  const body = parseJsonSafely(await response.text()) as { ok?: unknown; data?: unknown; meta?: unknown; message?: unknown; field?: unknown } | null
+  // A body that cannot be read (the connection dropped mid-body) is no body: the status still classifies the answer.
+  const text = await response.text().catch(() => '')
+  const body = parseJsonSafely(text) as { ok?: unknown; data?: unknown; meta?: unknown; message?: unknown; field?: unknown } | null
   if (!response.ok) {
     const kind: LegalAnalyticsErrorKind =
       response.status === 503 ? 'unavailable' : response.status === 400 ? 'invalid' : 'failed'

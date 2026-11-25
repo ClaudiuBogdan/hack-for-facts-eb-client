@@ -27,3 +27,16 @@ describe('readQuestion', () => {
     expect(readQuestion({ emitent: name }).emitent).toBe(name)
   })
 })
+
+describe('readQuestion, years', () => {
+  it('takes a period inside 1800–2100, its endpoints included', () => {
+    expect(readQuestion({ an: '1800-2100' }).an).toEqual({ from: 1800, to: 2100 })
+    expect(readQuestion({ an: '2026' }).an).toEqual({ from: 2026, to: 2026 })
+  })
+
+  it('takes no period outside them', () => {
+    expect(readQuestion({ an: '1799-1990' }).an).toBeNull()
+    expect(readQuestion({ an: '2101' }).an).toBeNull()
+    expect(readQuestion({ an: '1990-2101' }).an).toBeNull()
+  })
+})

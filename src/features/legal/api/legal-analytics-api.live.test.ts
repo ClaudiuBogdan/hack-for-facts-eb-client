@@ -61,6 +61,13 @@ describe('fetchLegalAnalyticsLive', () => {
     await expect(fetchLegalAnalyticsLive('breakdown', {})).rejects.toThrow(OFF_CONTRACT)
   })
 
+  it('keeps the status when the body cannot be read', async () => {
+    const response = new Response('{}', { status: 503 })
+    vi.spyOn(response, 'text').mockRejectedValue(new Error('connection reset'))
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(response)))
+    await expect(fetchLegalAnalyticsLive('summary', {})).rejects.toMatchObject({ kind: 'unavailable', status: 503 })
+  })
+
   it('keeps the field a 400 names', async () => {
     respond(400, { ok: false, error: 'InvalidInput', message: 'stale cursor', field: 'cursor' })
     await expect(fetchLegalAnalyticsLive('acts', { cursor: 'x' })).rejects.toMatchObject({ kind: 'invalid', status: 400, field: 'cursor' })
@@ -74,5 +81,19 @@ describe('answersQuestion', () => {
     expect(answersQuestion('breakdown', { lens: 'issuer', limit: 9 }, { view: 'breakdown', args: { lens: 'issuer', limit: 9 } })).toBe(true)
     expect(answersQuestion('summary', { from: 1990, to: 2000 }, { view: 'summary', args: { from: 1990 } })).toBe(false)
     expect(answersQuestion('summary', {}, { view: 'summary', args: { issuer: 'Guvernul' } })).toBe(false)
+  })
+
+  it('checks the question\'s own axes, with the server\'s defaults for those left out', () => {
+    // a Felul breakdown is not an issuer breakdown
+    expect(answersQuestion('breakdown', { lens: 'issuer', limit: 9 }, { view: 'breakdown', args: {} })).toBe(false)
+    expect(answersQuestion('breakdown', {}, { view: 'breakdown', args: {} })).toBe(true)
+    expect(answersQuestion('series', { lens: 'kind' }, { view: 'series', args: { lens: 'kind' } })).toBe(true)
+    // the grid's columns: type by default, Felul when the rows are types
+    expect(answersQuestion('grid', { lens: 'issuer' }, { view: 'grid', args: { lens: 'issuer' } })).toBe(true)
+    expect(answersQuestion('grid', { lens: 'issuer', by: 'kind' }, { view: 'grid', args: { lens: 'issuer' } })).toBe(false)
+    expect(answersQuestion('grid', { lens: 'type' }, { view: 'grid', args: { lens: 'type' } })).toBe(true)
+    // an amended-order page is not the cited ranking
+    expect(answersQuestion('acts', { order: 'cited', limit: 5 }, { view: 'acts', args: { limit: 5 } })).toBe(false)
+    expect(answersQuestion('acts', { order: 'amended', limit: 5 }, { view: 'acts', args: { limit: 5 } })).toBe(true)
   })
 })

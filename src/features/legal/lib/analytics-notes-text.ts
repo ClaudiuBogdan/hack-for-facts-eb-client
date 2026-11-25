@@ -9,15 +9,19 @@ import { fmt, pctOf } from './analytics-format'
 export const READING_SENTENCE =
   'Felul actului e citit din titlu, de reguli (v6). Citite independent 385 de acte: 94% din încadrările ferme coincid. Încadrările nesigure (reguli de rezervă) sunt o clasă separată, numărată în nicio grupă și nici în stoc.'
 
-/** The rules the independent reading audited (`head.rules.felul` of the layers built with them). */
-const AUDITED_FELUL_RULES = 'felul-v6-'
+/** The rules the independent reading audited: `head.rules.felul` of the layers built with them, exactly. */
+const AUDITED_FELUL_RULES = 'felul-v6-2026-11-24'
 
 /**
- * How the Felul lens is read, for the rules the layer was built with: the audit's figures only for the rules
- * that were audited. A later rules version says its name and no audit until one is made.
+ * How the Felul lens is read, for the rules the layer was built with: the audit's figures only for the exact
+ * rules that were audited. Another version says its name and no audit until one is made; without the layer's
+ * head (not read, or failed) the sentence names no version and no audit.
  */
 export function readingSentence(felulRules: string | undefined): string {
-  if (felulRules === undefined || felulRules.startsWith(AUDITED_FELUL_RULES)) {
+  if (felulRules === undefined) {
+    return t`Felul actului e citit din titlu, de reguli. Încadrările nesigure (reguli de rezervă) sunt o clasă separată, numărată în nicio grupă și nici în stoc.`
+  }
+  if (felulRules === AUDITED_FELUL_RULES) {
     return t`Felul actului e citit din titlu, de reguli (v6). Citite independent 385 de acte: 94% din încadrările ferme coincid. Încadrările nesigure (reguli de rezervă) sunt o clasă separată, numărată în nicio grupă și nici în stoc.`
   }
   return t`Felul actului e citit din titlu, de reguli (${felulRules}). Încadrările nesigure (reguli de rezervă) sunt o clasă separată, numărată în nicio grupă și nici în stoc.`

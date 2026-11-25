@@ -18,8 +18,18 @@ export const LEGAL_ANALYTICS_NAMING_CACHE = { staleTime: 0, gcTime: 0 } as const
  * retried; a transport failure or another server error is, twice.
  */
 export function retryLegalAnalytics(failures: number, error: unknown): boolean {
-  if (error instanceof LegalAnalyticsError && (error.kind !== 'failed' || error.status === 429)) return false
+  if (isRefusal(error)) return false
   return failures < 2
+}
+
+/** A 400, 429 or 503: the server's answer, not a failure to read. */
+function isRefusal(error: unknown): boolean {
+  return error instanceof LegalAnalyticsError && (error.kind !== 'failed' || error.status === 429)
+}
+
+/** A query that ended refused (a hover prefetch met a 429, say) is not read again just because a view mounts. */
+export function retryLegalAnalyticsOnMount(query: { readonly state: { readonly error: unknown } }): boolean {
+  return !isRefusal(query.state.error)
 }
 
 /**
@@ -32,6 +42,7 @@ export function legalAnalyticsQueryOptions<V extends LegalAnalyticsView>(view: V
     queryFn: ({ signal }) => fetchLegalAnalytics(view, args, signal),
     ...(NAMING_VIEWS.has(view) ? LEGAL_ANALYTICS_NAMING_CACHE : { staleTime: 5 * 60 * 1000 }),
     retry: retryLegalAnalytics,
+    retryOnMount: retryLegalAnalyticsOnMount,
   })
 }
 

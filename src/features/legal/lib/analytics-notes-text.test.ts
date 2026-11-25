@@ -13,6 +13,13 @@ describe('readingSentence', () => {
     expect(later).not.toContain('385')
     expect(later).not.toContain('94%')
   })
+
+  it('claims no audit for a differently dated v6, nor without the layer\'s rules', () => {
+    expect(readingSentence('felul-v6-2026-12-01')).not.toContain('385')
+    const unknown = readingSentence(undefined)
+    expect(unknown).not.toContain('385')
+    expect(unknown).not.toContain('v6')
+  })
 })
 
 describe('analyticsNotes', () => {

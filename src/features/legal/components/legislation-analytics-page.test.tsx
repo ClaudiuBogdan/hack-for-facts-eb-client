@@ -44,8 +44,10 @@ describe('LegislationAnalyticsPage', () => {
     expect(screen.getByText('stabilesc reguli (încadrate ferm)')).toBeInTheDocument()
     // the shares the page computes from the fixture's counts: 18.661 and 6.307 of 227.202
     expect(screen.getByText('8,2% încadrare nesigură · 2,8% neîncadrate · din 227.202')).toBeInTheDocument()
-    // 72.995 rule-making acts of 227.202: 32,1% (the figure's readable copy)
-    expect(screen.getByText('32,1%')).toBeInTheDocument()
+    // 72.995 rule-making acts of 227.202: 32,1%, in its own tile (the figure's readable copy)
+    const tile = screen.getByText('stabilesc reguli (încadrate ferm)').closest('div')
+    expect(tile).not.toBeNull()
+    expect(within(tile as HTMLElement).getByText('32,1')).toBeInTheDocument()
     expect(await screen.findByText(/Citite independent 385 de acte: 94%/, { selector: 'p.text-foreground' })).toBeInTheDocument()
   })
 

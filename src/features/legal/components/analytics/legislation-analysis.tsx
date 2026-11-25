@@ -18,8 +18,8 @@ import type {
   LegalAnalyticsLinks,
   LegalAnalyticsSummary,
 } from '@/schemas/legal-analytics'
-import { fetchLegalAnalytics, LEGAL_ANALYTICS_UNAVAILABLE, LegalAnalyticsError } from '../../api/legal-analytics-api'
-import { LEGAL_ANALYTICS_NAMING_CACHE, retryLegalAnalytics, useLegalAnalytics } from '../../hooks/use-legislation-analytics'
+import { fetchLegalAnalytics, isLegalAnalyticsMock, LEGAL_ANALYTICS_UNAVAILABLE, LegalAnalyticsError } from '../../api/legal-analytics-api'
+import { LEGAL_ANALYTICS_NAMING_CACHE, retryLegalAnalytics, retryLegalAnalyticsOnMount, useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import {
   FAMILY_LABEL,
   GROUP_LABEL,
@@ -37,6 +37,8 @@ import {
   LENS_LABEL,
   LENSES,
   SOON_LENSES,
+  YEAR_MAX,
+  YEAR_MIN,
   chartRead,
   filterArgs,
   gridColumns,
@@ -48,9 +50,8 @@ import {
   type Order,
   type Question,
 } from '../../lib/analytics-question'
-import { fmt, pct, pctOf } from '../../lib/analytics-format'
+import { fmt, pct, pctOf, shareFigure } from '../../lib/analytics-format'
 import { readingSentence } from '../../lib/analytics-notes-text'
-import { isLegalMockEnabled } from '../../lib/mock-mode'
 import { labelOfKey, rankedOf, useQuestion } from '../../lib/analytics-view'
 import { everyYear } from '../../lib/analytics-years'
 import { AnalyticsCaveats, AnalyticsProblem } from './analytics-notes'
@@ -76,7 +77,7 @@ function fact(key: string, value: number, digits: number, unit: string, label: s
 function rulesOf(s: LegalAnalyticsSummary) {
   const rules = s.felul.find((r) => r.key === 'rule-making')?.acts ?? 0
   return {
-    main: s.total ? (rules / s.total) * 100 : 0,
+    main: shareFigure(rules, s.total),
     note: s.total
       ? t`${pctOf(s.uncertain, s.total)} încadrare nesigură · ${pctOf(s.unplaced, s.total)} neîncadrate · din ${fmt(s.total)}`
       : '',
@@ -121,7 +122,7 @@ export function LegislationAnalysis({ unavailable = false }: { readonly unavaila
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <MonoLabel className="block text-primary">{t`Analiză`}</MonoLabel>
           {/* Under mock mode every figure on the page is a fixture: said at the top (data-trust contract). */}
-          {isLegalMockEnabled() ? <DataStatusBadge status="mock" /> : null}
+          {isLegalAnalyticsMock() ? <DataStatusBadge status="mock" /> : null}
         </div>
         <Headline q={q} move={move} onOpen={() => setSheet(true)} />
         <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
@@ -175,11 +176,11 @@ export function LegislationAnalysis({ unavailable = false }: { readonly unavaila
           locale="ro"
           facts={[
             fact('sel', s.total, 0, '', t`acte în selecție`, t`din ${fmt(s.population)} (${population})`, '#raspuns'),
-            fact('reguli', rulesOf(s).main, 1, '%', t`stabilesc reguli (încadrate ferm)`, rulesOf(s).note, '#raspuns'),
+            fact('reguli', rulesOf(s).main.value, rulesOf(s).main.digits, '%', t`stabilesc reguli (încadrate ferm)`, rulesOf(s).note, '#raspuns'),
             fact(
               'text',
-              (s.withText / s.total) * 100,
-              1,
+              shareFigure(s.withText, s.total).value,
+              shareFigure(s.withText, s.total).digits,
               '%',
               t`au text citibil în Portal`,
               t`${fmt(s.withText)} acte`,
@@ -396,6 +397,8 @@ function SeriesAnswer({ q, base }: { readonly q: Question; readonly base: LegalA
       years={everyYear(
         s.years.map((y) => ({ year: y.year, values: y.acts })),
         s.keys.length + 1,
+        // a chosen period is drawn whole, its empty years at either end included
+        q.an ? { from: q.an.from, to: q.an.to } : {},
       )}
       labels={[...s.keys.map((k) => labelOfKey(s.lens, k)), t`altele`]}
       lastIsRest
@@ -456,7 +459,9 @@ const MATRIX_REST = ['code', 'ambiguous', 'outside_corpus', 'no_target_in_title'
 function LinksView({ base }: { readonly base: LegalAnalyticsArgs }) {
   const answer = useLegalAnalytics('links', base)
   if (answer.error) return <AnalyticsProblem error={answer.error} />
-  const l = answer.data?.data
+  // The view names acts: only an answer read since this view mounted is shown (the server's privacy gate is
+  // asked on every read), never one another part of the page kept.
+  const l = answer.isFetchedAfterMount ? answer.data?.data : undefined
   if (!l) return <div className="h-64 animate-pulse bg-muted/40" aria-hidden="true" />
   const cell = (a: string, b: string) => l.amends.find((x) => x.sourceBand === a && x.target === b)?.links ?? 0
   const total = l.amends.reduce((s, x) => s + x.links, 0)
@@ -634,6 +639,7 @@ function ActsBand({
     // The view names acts: nothing of it is kept (see the hook).
     ...LEGAL_ANALYTICS_NAMING_CACHE,
     retry: retryLegalAnalytics,
+    retryOnMount: retryLegalAnalyticsOnMount,
   })
   // A next page that failed leaves the pages already read on screen. One failure is not a failure of the list:
   // the server refuses a cursor issued by an earlier layer (400, field „cursor") once a new layer is published,
@@ -644,7 +650,8 @@ function ActsBand({
     if (cursorRefused) void client.resetQueries({ queryKey: PAGED_ACTS_KEY })
   }, [cursorRefused, client])
   const first = pages.data?.pages[0]?.data
-  const rows = pages.data?.pages.flatMap((p) => p.data.rows) ?? []
+  // Only rows read since this list mounted: the view names acts (see LinksView).
+  const rows = pages.isFetchedAfterMount ? (pages.data?.pages.flatMap((p) => p.data.rows) ?? []) : []
   const hidden = first?.hidden ?? 0
   return (
     <section id="acte" aria-label={t`Actele din selecție`}>
@@ -688,6 +695,10 @@ function ActsBand({
               <TableHead className="text-right">
                 <MonoLabel>{t`vers.`}</MonoLabel>
               </TableHead>
+              {/* the acts citing it: the figure the „Citări" order sorts by, so the order can be checked */}
+              <TableHead className="text-right">
+                <MonoLabel>{t`citări`}</MonoLabel>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -714,6 +725,7 @@ function ActsBand({
                 <TableCell className="py-1.5 text-right tabular-nums">{a.amended || '—'}</TableCell>
                 <TableCell className="py-1.5 text-right tabular-nums">{a.court || '—'}</TableCell>
                 <TableCell className="py-1.5 text-right tabular-nums">{a.versions || '—'}</TableCell>
+                <TableCell className="py-1.5 text-right tabular-nums">{a.cited || '—'}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -755,8 +767,8 @@ function FilterSheet({
   readonly head: LegalAnalyticsHead
 }) {
   const [issuerSearch, setIssuerSearch] = useState('')
-  const min = head.years.min ?? 1800
-  const max = head.years.max ?? new Date().getFullYear()
+  const min = Math.max(YEAR_MIN, head.years.min ?? YEAR_MIN)
+  const max = Math.min(YEAR_MAX, head.years.max ?? new Date().getFullYear())
   const years = Array.from({ length: Math.max(0, max - min + 1) }, (_, j) => min + j)
   // the full lineage list (the head lists the first 300) only once someone searches; over the whole corpus, as
   // the head's list is, so the counts keep one basis while the reader types

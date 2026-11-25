@@ -1,4 +1,3 @@
-import { useLegislationStatusCounts } from '../hooks/use-legislation'
 import { useLegislationFrontier } from '../hooks/use-legislation-frontier'
 import { LegislationAnalysis } from './analytics/legislation-analysis'
 import { LegislationShell } from './legislation-shell'
@@ -14,10 +13,11 @@ export function LegislationAnalyticsPage({
   /** The server's analytics read was refused with 503: the panel renders until a read succeeds. */
   readonly analyticsUnavailable?: boolean
 }) {
-  const { data: statusCounts } = useLegislationStatusCounts()
   const { measuredAt } = useLegislationFrontier('corpus')
   return (
-    <LegislationShell activeTab="analiza" counts={statusCounts ?? {}} measuredAt={measuredAt}>
+    // No status counts in the head: the Portal's „în vigoare" / „abrogat" marks are mostly undated badges, and
+    // status never feeds a headline figure until the status redesign lands (analytics design §4; I-27–I-29).
+    <LegislationShell activeTab="analiza" measuredAt={measuredAt}>
       <LegislationAnalysis unavailable={analyticsUnavailable} />
     </LegislationShell>
   )

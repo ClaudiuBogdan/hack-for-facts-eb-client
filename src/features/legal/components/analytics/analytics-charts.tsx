@@ -138,6 +138,7 @@ export function StackedYears({
   axis,
   pendingFrom,
   lastIsRest,
+  plain = false,
 }: {
   readonly years: readonly { readonly year: number; readonly values: readonly number[] }[]
   readonly labels: readonly string[]
@@ -149,6 +150,8 @@ export function StackedYears({
   readonly pendingFrom?: { readonly year: number; readonly label: string }
   /** The last label is the rest („altele"), drawn grey. Unset: read from the label, as the first callers wrote it. */
   readonly lastIsRest?: boolean
+  /** The caption and the legend's lead-in are words: plain text, as the hub sets its captions, not mono capitals. */
+  readonly plain?: boolean
 }) {
   const rest = lastIsRest ?? labels[labels.length - 1] === 'altele'
   const colour = (j: number) => (rest && j === labels.length - 1 ? STACK_BG[5] : STACK_BG[Math.min(j, 4)])
@@ -158,7 +161,7 @@ export function StackedYears({
   return (
     <figure>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <MonoLabel className="block text-muted-foreground">{caption}</MonoLabel>
+        {plain ? <p className="text-xs text-muted-foreground">{caption}</p> : <MonoLabel className="block text-muted-foreground">{caption}</MonoLabel>}
         <p className="min-h-5 text-xs tabular-nums text-muted-foreground" aria-live="polite">
           {shown
             ? `${axis ? '' : `${shown.year}: `}${fmt(shown.values.reduce((s, v) => s + v, 0))} ${t`acte`} · ${labels
@@ -200,9 +203,7 @@ export function StackedYears({
         <span>{axis ? axis[1] : years[years.length - 1]?.year}</span>
       </div>
       <ul className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-        <li>
-          <MonoLabel>{t`de jos în sus`}</MonoLabel>
-        </li>
+        <li>{plain ? t`De jos în sus:` : <MonoLabel>{t`de jos în sus`}</MonoLabel>}</li>
         {labels.map((l, j) => (
           <li key={l} className="flex items-center gap-1.5">
             <span className={cn('size-2.5', colour(j))} aria-hidden="true" />

@@ -26,3 +26,11 @@ describe('everyYear', () => {
     expect(everyYear([], 3)).toEqual([])
   })
 })
+
+describe('everyYear, bounded', () => {
+  it('never runs the axis past the years the API answers', () => {
+    const years = everyYear([{ year: 1, values: [1] }, { year: 1990, values: [2] }, { year: 99999, values: [3] }], 1)
+    expect(years.map((row) => row.year)).toEqual([1990])
+    expect(everyYear([], 1, { from: 1700, to: 2300 })).toHaveLength(2100 - 1800 + 1)
+  })
+})

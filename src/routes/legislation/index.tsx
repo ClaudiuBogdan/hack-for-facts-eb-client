@@ -57,8 +57,10 @@ export const Route = createFileRoute('/legislation/')({
     })
     return { seeded, analyticsUnavailable }
   },
-  headers: ({ loaderData }) =>
-    loaderData?.seeded === false
+  // Public only for a render proven whole: the match succeeded and every server read answered. Anything else
+  // (no loader data, a failed loader or component, a refused read) goes out `no-store`.
+  headers: ({ loaderData, match }) =>
+    match?.status !== 'success' || loaderData?.seeded !== true
       ? createNoStoreHeaders()
       : createPublicPageCacheHeaders({
           sharedMaxAgeSeconds: 600,

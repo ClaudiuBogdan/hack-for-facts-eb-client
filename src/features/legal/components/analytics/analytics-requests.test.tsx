@@ -32,6 +32,8 @@ vi.mock('../../api/legal-analytics-api', async () => {
   return {
     LegalAnalyticsError: live.LegalAnalyticsError,
     LEGAL_ANALYTICS_UNAVAILABLE: live.LEGAL_ANALYTICS_UNAVAILABLE,
+    // the unit tests run on the mock lane
+    isLegalAnalyticsMock: () => true,
     fetchLegalAnalytics: vi.fn((view: LegalAnalyticsView, args: LegalAnalyticsArgs) => {
       calls.push({ view, args })
       return intercept(view, args) ?? mock.fetchLegalAnalyticsMock(view, args)

@@ -68,6 +68,11 @@ function oneOf<T extends string>(v: unknown, list: readonly T[], fallback: T): T
 }
 const KEY = /^[a-z0-9_-]{1,64}$/u
 
+/** The years the API answers (its own bounds): a period outside them is not a question it takes. */
+export const YEAR_MIN = 1800
+export const YEAR_MAX = 2100
+const inYears = (year: number) => year >= YEAR_MIN && year <= YEAR_MAX
+
 /** Every key the address carries is read; an unreadable one falls back to its default. */
 export function readQuestion(search: Record<string, unknown>): Question {
   const an = /^(\d{4})(?:-(\d{4}))?$/u.exec(text(search['an']))
@@ -85,7 +90,7 @@ export function readQuestion(search: Record<string, unknown>): Question {
     fin: text(search['fin']) === '1',
     forma: oneOf(search['forma'], FORMS, 'clasament'),
     cu,
-    an: from !== null && to !== null && from <= to ? { from, to } : null,
+    an: from !== null && to !== null && from <= to && inYears(from) && inYears(to) ? { from, to } : null,
     tip,
     // Kept whatever its length: the layer names joint issuers at length, and the server checks the name.
     emitent: emitent !== '' ? emitent : null,

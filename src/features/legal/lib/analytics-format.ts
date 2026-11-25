@@ -22,6 +22,20 @@ export const pct = (x: number, digits = 1) => {
   return `${format(x * 100)}%`
 }
 
+/**
+ * A share as a percentage figure (0–100) and the decimals to print it with, for a figure that counts up: as
+ * many decimals (one to three) as it takes not to print 0 or 100 for a share that is neither. A share still
+ * closer than that is held at 0,001 or 99,999, which it exceeds or does not reach.
+ */
+export function shareFigure(n: number, total: number): { readonly value: number; readonly digits: number } {
+  const x = total > 0 ? n / total : 0
+  for (const digits of [1, 2, 3]) {
+    const rounded = Number((x * 100).toFixed(digits))
+    if (!((x > 0 && rounded === 0) || (x < 1 && rounded === 100))) return { value: x * 100, digits }
+  }
+  return { value: x > 0.5 ? 99.999 : 0.001, digits: 3 }
+}
+
 /** `n` as a share of `total`, or a dash when there is nothing to share (an empty selection). */
 export const pctOf = (n: number, total: number, digits = 1) => (total > 0 ? pct(n / total, digits) : '—')
 
