@@ -62,13 +62,13 @@ export function YearSelect({ className }: { readonly className?: string }) {
 /**
  * The year as the hero sets it (owner, 25 November 2026: compact, in the same
  * place, no side arrows, a polished menu): „Anul [2025 ▾]" as one button the
- * width of its year; the menu leads with the year in progress, then every
- * full year in a grid of four, newest first, the chosen one marked.
+ * width of its year; the menu is every year in one grid of four, newest
+ * first, the chosen one filled, the year in progress marked with a dot and
+ * named in a line under the grid (owner: 2026 sat apart like a title).
  */
 export function YearPicker({ className, label = true }: { readonly className?: string; readonly label?: boolean }) {
   const { view, views, setYear } = usePersonYear()
   const running = views.filter((entry) => entry.partial)
-  const full = views.filter((entry) => !entry.partial)
   const item = 'relative flex cursor-pointer select-none items-center justify-center rounded-md text-sm tabular-nums outline-none transition-colors data-[highlighted]:bg-muted data-[state=checked]:bg-primary data-[state=checked]:font-semibold data-[state=checked]:text-primary-foreground'
   return (
     <DropdownMenu.Root modal={false}>
@@ -89,23 +89,20 @@ export function YearPicker({ className, label = true }: { readonly className?: s
           sideOffset={6}
           className="z-50 w-72 rounded-lg border bg-popover p-2 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[side=bottom]:slide-in-from-top-1"
         >
-          <DropdownMenu.RadioGroup value={String(view.year)} onValueChange={(value) => setYear(Number(value))}>
-            {running.map((entry) => (
-              <DropdownMenu.RadioItem key={entry.year} value={String(entry.year)} className={cn(item, 'h-10 justify-between px-3')}>
-                <span>{entry.year}</span>
-                <span className="text-xs font-normal opacity-80">în curs, până în {monthName(entry.month)}</span>
+          <DropdownMenu.RadioGroup value={String(view.year)} onValueChange={(value) => setYear(Number(value))} className="grid grid-cols-4 gap-1">
+            {views.map((entry) => (
+              <DropdownMenu.RadioItem key={entry.year} value={String(entry.year)} className={cn(item, 'h-9 gap-1')} aria-label={entry.partial ? `${entry.year}, în curs, până în ${monthName(entry.month)}` : String(entry.year)}>
+                {entry.year}
+                {entry.partial ? <span aria-hidden="true" className="size-1.5 rounded-full bg-current opacity-60" /> : null}
               </DropdownMenu.RadioItem>
             ))}
-            {running.length ? <DropdownMenu.Separator className="my-2 h-px bg-border" /> : null}
-            <DropdownMenu.Label className="px-1 pb-1.5 text-xs text-muted-foreground">Ani încheiați</DropdownMenu.Label>
-            <div className="grid grid-cols-4 gap-1">
-              {full.map((entry) => (
-                <DropdownMenu.RadioItem key={entry.year} value={String(entry.year)} className={cn(item, 'h-9')}>
-                  {entry.year}
-                </DropdownMenu.RadioItem>
-              ))}
-            </div>
           </DropdownMenu.RadioGroup>
+          {running.map((entry) => (
+            <p key={entry.year} className="mt-2 flex items-center gap-1.5 border-t px-1 pt-2 text-xs text-muted-foreground">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-muted-foreground/70" />
+              {entry.year}: anul în curs, până în {monthName(entry.month)}
+            </p>
+          ))}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

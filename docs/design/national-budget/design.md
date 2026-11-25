@@ -1332,7 +1332,8 @@ Prototype: `?v=lucru` (`persoana.lucru.tsx`).
 - **The year (owner: compact, same place, no side arrows, a polished
   dropdown):** „Anul [2025 ▾]", one button the width of its year (the year in
   progress adds „până în septembrie"), a hairline border and a soft focus
-  ring. Its menu leads with the year in progress („în curs, până în
-  septembrie"), then „Ani încheiați" in a grid of four, newest first, the
-  chosen year filled. The pinned bar carries the same button, without the
+  ring. Its menu is every year in one grid of four, newest first, the chosen year
+  filled; the year in progress is marked with a dot and named in a line under
+  the grid („2026: anul în curs, până în septembrie"). It first led the menu
+  on a row of its own; the owner found it read like a title. The pinned bar carries the same button, without the
   label, once the hero has scrolled away.
