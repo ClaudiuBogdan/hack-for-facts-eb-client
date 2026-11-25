@@ -202,6 +202,10 @@ export type LegalChangesSearch = LazyOutput<typeof legalChangesSearchSchema>
  * exact-citation lookup of a repealed law). Only `true` is a stored value:
  * the default is URL-absence, so `?historical=false` and junk both drop.
  */
+/** One of the finder's filter keys: short text, a number read as text, anything else dropped. Built on use. */
+const finderKey = () =>
+  z.preprocess((value) => (typeof value === 'number' ? String(value) : value), z.string().min(1).max(200).optional()).catch(undefined)
+
 export const legalFinderSearchSchema = lazySchema(() =>
   z.object({
     q: z
@@ -211,6 +215,15 @@ export const legalFinderSearchSchema = lazySchema(() =>
       )
       .catch(undefined),
     historical: z.literal(true).optional().catch(undefined),
+    // The filters (owner, 25 November 2026), read and checked against their vocabularies by
+    // `features/legal/lib/search-filters.ts`; here only kept as text (the router may hand a year over as a
+    // number) and dropped when unreadable.
+    stare: finderKey(),
+    tip: finderKey(),
+    an: finderKey(),
+    domeniu: finderKey(),
+    categorie: finderKey(),
+    sanctiuni: z.literal(true).optional().catch(undefined),
   }),
 )
 export type LegalFinderSearch = LazyOutput<typeof legalFinderSearchSchema>

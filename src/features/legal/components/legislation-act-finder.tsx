@@ -1,533 +1,426 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useLingui } from '@lingui/react'
-import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
-import { AlertTriangle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { plural, t } from '@lingui/core/macro'
+import { ArrowRight, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { SEARCH_FIELD_CLASS, SEARCH_FIELD_KEYBOARD_CLASS, SEARCH_ICON_CLASS, SEARCH_INPUT_CLASS } from '@/features/landing/components/search/search-field'
+import { cn } from '@/lib/utils'
 import type { LegalFinderSearch } from '@/schemas/legal'
-import {
-  LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT,
-  legalActStatusSchema,
-} from '@/schemas/legal'
+import { LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT, legalActStatusSchema } from '@/schemas/legal'
 import { fetchLegalSearch } from '../api/legal-search-api'
 import { resolveLegalActs } from '../api/legal-resolve-api'
 import { parseLegalCitationShape } from '../lib/legal-citation'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import { legalActTypeLabel, legalIssuerLabel } from '../lib/legal-vocabulary'
-import {
-  LEGISLATION_ACCENT,
-  legislationAlertClassName,
-  legislationExampleChipClassName,
-  legislationFieldClassName,
-  legislationLinkClassName,
-  legislationRowClassName,
-  legislationStatLabelClassName,
-  legislationSubmitClassName,
-} from '../lib/legislation-theme'
+import { isSearchFiltered, readSearchFilters, searchArgs, searchHitName, searchOfFilters, usesSummaries, type SearchFilters } from '../lib/search-filters'
+import { LegalInfoNote } from './hub/legislation-hub-chrome'
 import { LegalStatusBadge } from './legal-status-badge'
-import { LegislationSearchSkeleton } from './legislation-search-skeleton'
+import { LegislationActiveFilters, LegislationFilterButton, LegislationFilterPanel } from './legislation-search-filters'
 import { LegislationSearchSnippet } from './legislation-search-snippet'
-import { LegislationSection } from './legislation-section'
 
-/** Queries the tab can actually answer today — every chip is a measured hit. */
-const EXAMPLES = [
-  'Legea 53/2003',
-  'Codul muncii',
-  'Codul fiscal',
-  'OUG 57/2019',
-] as const
+/** Queries the page can answer today, each a measured hit. */
+const EXAMPLES = ['Legea 53/2003', 'Codul muncii', 'Codul fiscal', 'OUG 57/2019'] as const
 
-const secondaryButtonClassName =
-  'inline-flex h-11 items-center rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-5 text-sm font-semibold text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] disabled:opacity-50'
+/** Provision hits shown under one act (the server sends up to three). */
+const SNIPPETS_PER_ACT = 3
+
+/** The search runs this long after the reader stops typing (owner, 25 November 2026: search as you type). */
+const TYPING_PAUSE_MS = 300
+/** Fewer letters than this wait for Enter: „HG" alone would match half the corpus. */
+const TYPED_MIN = 3
+
+const MORE_LINK = 'inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0'
+const TEXT_LINK = 'font-medium text-foreground underline-offset-4 hover:underline'
 
 type Props = {
   readonly search: LegalFinderSearch
 }
 
-
-/** Provision hits shown under one act (the server sends up to three). */
-const SNIPPETS_PER_ACT = 3
 /**
- * The Caută tab (`/legislation/search`) — a citation and name finder that
- * states plainly it is NOT full-text search.
+ * `/legislation/search` (promoted 25 November 2026 from the prototype `development/prototypes/legal/search`): a
+ * citation and name finder that says plainly what it does not search.
  *
- * Measured on production 2026-08-26: `legalSearch` answers citations ("Legea
- * 53/2003" → one exact act, not degraded) and act names ("codul muncii" →
- * lexical matches over display citations), while genuine text phrases
- * ("concediu de odihna", "salariul minim", "contract individual de munca")
- * return NOTHING — the server says so via the `semantic search unavailable`
- * caveat. So the single most important thing here is the empty state: a
- * phrase query must never get a bare "no results" implying the law is absent
- * — it gets told the corpus is not yet searchable by phrase. The other
- * honesty surfaces: `actsTotal: null` renders as "unknown", never 0; every
- * server caveat except the English sentinel renders VERBATIM in the footnote
- * (the published-form warning is the server's own wording, not ours); the
- * answering engine is named — and decides the copy: on `opensearch` (the
- * legal-v2 units index, or the legacy sections index) words in the acts' text
- * DO match, so only meaning search is said to be missing; on `postgres` text
- * search is said to be missing too. The legal-v2 engine never counts
- * (`actsTotal: null`) and always sends its consolidation caveat, rendered
- * verbatim like every non-sentinel caveat.
+ * The question lives in the address: `q`, then the filters (`lib/search-filters.ts`). It is asked as the reader
+ * types (after a pause, from three letters; Enter at once), each step replacing the history entry; a filter is a
+ * new entry. The last answer stays, faded, while the next is read.
  *
- * Two lanes run per submitted query, both URL-driven (`q` is a shareable
- * link): `legalSearch` (acts channel — sections are a name echo today, see
- * the live adapter) and `legalResolve(dim:"act")`, whose job is AMBIGUITY —
- * 'codul fiscal' genuinely names two acts and the reader picks; the resolver
- * strip also rescues a query the search lane zeroed (the resolver is not
- * status-gated, so a repealed act still gets named). The server's
- * `includeHistorical` default (false) hides abrogated / out-of-force acts
- * even from exact citations, so the toggle — and the retry link on every
- * empty state — widen it explicitly.
+ * Two lanes per query: `legalSearch` and `legalResolve(dim: "act")`, whose job is ambiguity („codul fiscal" names
+ * two acts and the reader picks) and rescue (a citation the status gate hid). The honesty kept from the first
+ * finder: `actsTotal: null` is said as unknown, never 0; every server caveat but the English sentinel is shown
+ * verbatim; the engine is named and decides the copy (on `opensearch` words in the acts' text match, so only
+ * meaning search is said to be missing; on `postgres` text search too); a query that finds nothing never reads as
+ * „the law does not exist"; a degraded answer says so in the open.
  */
 export function LegislationActFinder({ search }: Props) {
-  const { i18n } = useLingui()
   const navigate = useNavigate()
-
   const q = search.q?.trim() ?? ''
-  const hasQuery = q.length > 0
-  const historical = search.historical === true
+  const filters = readSearchFilters(search)
+  const [panel, setPanel] = useState(false)
 
-  // The box mirrors the URL (back/forward, shared links) but is edited
-  // locally until submit — typing must not fire requests or rewrite history.
+  // The box mirrors the address (back and forward, a shared link), but only where it says something else: while
+  // the reader types, the address follows the box, not the other way.
   const [draft, setDraft] = useState(q)
-  useEffect(() => setDraft(q), [q])
+  const typed = useRef(draft)
+  typed.current = draft
+  useEffect(() => {
+    if (typed.current.trim() !== q) setDraft(q)
+  }, [q])
 
-  const runSearch = (
-    nextQ: string,
-    nextHistorical: boolean,
-    options: { readonly replace?: boolean } = {},
-  ) => {
+  const go = (next: { readonly q: string; readonly filters: SearchFilters }, options: { readonly replace: boolean }) => {
     void navigate({
       to: '/legislation/search',
-      search: {
-        ...(nextQ.length > 0 && { q: nextQ }),
-        ...(nextHistorical && { historical: true as const }),
-      },
-      ...(options.replace === true && { replace: true }),
+      search: { q: next.q.length > 0 ? next.q : undefined, ...searchOfFilters(next.filters) },
+      replace: options.replace,
+      resetScroll: false,
     })
   }
 
+  // As the reader types: once they pause, from three letters; an emptied box clears the answer.
+  useEffect(() => {
+    const next = draft.trim()
+    if (next === q || (next.length > 0 && next.length < TYPED_MIN)) return
+    const timer = window.setTimeout(() => go({ q: next, filters }, { replace: true }), TYPING_PAUSE_MS)
+    return () => window.clearTimeout(timer)
+    // `go` and `filters` are rebuilt each render from the address; the pause restarts only when the box changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, q])
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const trimmed = draft.trim()
-    if (trimmed.length === 0) return
-    runSearch(trimmed, historical)
+    const next = draft.trim()
+    if (next.length > 0) go({ q: next, filters }, { replace: true })
   }
+  const run = (example: string) => {
+    setDraft(example)
+    go({ q: example, filters }, { replace: false })
+  }
+  const setFilters = (next: SearchFilters) => go({ q, filters: next }, { replace: false })
 
-  const searchQuery = useQuery({
-    queryKey: ['legal', 'finder-search', q, historical],
-    queryFn: ({ signal }) => fetchLegalSearch(q, { historical, signal }),
-    enabled: hasQuery,
+  return (
+    <div className="space-y-10">
+      <form onSubmit={onSubmit} role="search" aria-label={t`Caută în legislație`} className="max-w-3xl">
+        <div className="flex items-start gap-2">
+          <SearchField draft={draft} onDraft={setDraft} />
+          {/* Beside the field (owner, 25 November 2026): the filters are part of the question. */}
+          <LegislationFilterButton filters={filters} onOpen={() => setPanel(true)} />
+        </div>
+        {q.length > 0 ? null : (
+          <nav aria-label={t`Exemple`} className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <span className="basis-full text-sm text-muted-foreground sm:basis-auto">{t`Încearcă`}</span>
+            {EXAMPLES.map((example) => (
+              <button key={example} type="button" onClick={() => run(example)} className="inline-flex min-h-11 items-center text-sm font-medium text-foreground transition-colors hover:text-primary sm:min-h-0">
+                {example}
+              </button>
+            ))}
+          </nav>
+        )}
+      </form>
+
+      {q.length > 0 ? <Answer q={q} filters={filters} onFilters={setFilters} /> : <WhatToSearch onExample={run} />}
+      <LegislationFilterPanel filters={filters} onChange={setFilters} open={panel} onOpenChange={setPanel} />
+    </div>
+  )
+}
+
+/**
+ * The landing's field without its lift on focus (its answers open in a panel under it; here they are the page),
+ * so focus is its border; the ring is drawn for the keyboard only, as on the landing.
+ */
+function SearchField({ draft, onDraft }: { readonly draft: string; readonly onDraft: (value: string) => void }) {
+  const pointer = useRef(false)
+  const [keyboard, setKeyboard] = useState(false)
+  return (
+    <div className={cn('relative min-w-0 flex-1', SEARCH_FIELD_CLASS, 'pr-10 focus-within:shadow-none', keyboard && SEARCH_FIELD_KEYBOARD_CLASS)}>
+      <Search aria-hidden="true" className={SEARCH_ICON_CLASS} />
+      <input
+        value={draft}
+        onChange={(event) => onDraft(event.target.value)}
+        onPointerDown={() => {
+          pointer.current = true
+        }}
+        onFocus={() => {
+          setKeyboard(!pointer.current)
+          pointer.current = false
+        }}
+        onBlur={() => setKeyboard(false)}
+        aria-label={t`Caută în legislație`}
+        placeholder={t`Legea 53/2003, Codul muncii, OUG 57/2019`}
+        className={SEARCH_INPUT_CLASS}
+        enterKeyHint="search"
+      />
+      {draft.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => onDraft('')}
+          aria-label={t`Golește căutarea`}
+          className="absolute right-2 top-6 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+        >
+          <X className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+/** Before a search: what the page finds, in two short columns, and its limits behind the ⓘ. */
+function WhatToSearch({ onExample }: { readonly onExample: (example: string) => void }) {
+  const example = (text: string) => (
+    <button type="button" onClick={() => onExample(text)} className={TEXT_LINK}>
+      {text}
+    </button>
+  )
+  return (
+    <section aria-labelledby="search-what-title" className="border-t pt-8">
+      <div className="flex items-center gap-1">
+        <h2 id="search-what-title" className="text-2xl font-semibold tracking-tight text-foreground">
+          {t`Ce găsești aici`}
+        </h2>
+        <LegalInfoNote label={t`Ce nu găsești încă`}>
+          <p>{t`Căutarea după sens nu este încă disponibilă, iar căutarea în textul legilor depinde de motorul care răspunde: rezultatele spun care a fost.`}</p>
+          <p>{t`Dacă o căutare nu găsește nimic, asta nu înseamnă că prevederea nu există în legislație.`}</p>
+        </LegalInfoNote>
+      </div>
+      <dl className="mt-6 grid gap-6 sm:grid-cols-2">
+        <div>
+          <dt className="text-sm font-semibold text-foreground">{t`Un act după numărul lui`}</dt>
+          <dd className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            {example('Legea 53/2003')}, {example('OUG 57/2019')}, {example('HG 1/2016')}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-sm font-semibold text-foreground">{t`Un act după denumirea lui`}</dt>
+          <dd className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            {example('Codul muncii')}, {example('Codul fiscal')}, {example('Codul administrativ')}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  )
+}
+
+function Answer({ q, filters, onFilters }: { readonly q: string; readonly filters: SearchFilters; readonly onFilters: (next: SearchFilters) => void }) {
+  const { i18n } = useLingui()
+  const { filter, historical } = searchArgs(filters)
+  const filtered = isSearchFiltered(filters)
+  const search = useQuery({
+    queryKey: ['legal', 'finder-search', q, historical, filter],
+    queryFn: ({ signal }) => fetchLegalSearch(q, { historical, filter, signal }),
     staleTime: 5 * 60 * 1000,
     retry: 1,
+    // While the next answer is read, the last one stays (faded): typing does not flash the page empty.
+    placeholderData: keepPreviousData,
   })
-
-  // The resolver lane is auxiliary: it must never take the page down, so it
-  // does not retry and its error state renders as silence, not as a wall.
-  const resolveQuery = useQuery({
+  // The resolver lane is auxiliary: no retry, and its failure is silence.
+  const resolve = useQuery({
     queryKey: ['legal', 'finder-resolve', q],
     queryFn: ({ signal }) => resolveLegalActs(q, { signal }),
-    enabled: hasQuery,
     staleTime: 5 * 60 * 1000,
     retry: false,
   })
 
-  const result = searchQuery.data
-  const acts = result?.acts ?? []
-  const resolveHits = resolveQuery.data ?? []
-  const semanticUnavailable =
-    result?.caveats.includes(LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT) ?? false
-  // Every other caveat renders verbatim — the sentinel alone is translated
-  // into the phrase-honesty messaging (it is a machine marker, not prose).
-  const verbatimCaveats =
-    result?.caveats.filter(
-      (caveat) => caveat !== LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT,
-    ) ?? []
-  // Which kind of search answered decides what the empty and partial states
-  // may claim: the OpenSearch engine matches words in the acts' TEXT (on the
-  // legacy sections index and on the legal-v2 units index alike), the
-  // Postgres path only citations and names. Meaning search runs on neither
-  // today — the server's semantic sentinel says so on both.
-  const textSearched = result?.engine === 'opensearch'
-  const isCitationShaped = parseLegalCitationShape(q) !== null
-  const emptyResult = searchQuery.isSuccess && acts.length === 0
-  // The strip earns its place twice: a name that maps to SEVERAL acts is an
-  // ambiguity the reader must decide (never auto-picked), and a resolver hit
-  // on a zeroed search is a rescue (typically an act the historical gate
-  // hid). One resolver hit that merely repeats the top result stays silent.
-  const showStrip =
-    searchQuery.isSuccess &&
-    (resolveHits.length >= 2 || (resolveHits.length > 0 && emptyResult))
+  if (search.isPending) return <PendingRows />
+  if (search.isError) {
+    return (
+      <section className="border-t pt-8">
+        <p className="text-base text-foreground">{t`Nu am putut căuta în legislație.`}</p>
+        <Button variant="outline" className="mt-4" onClick={() => void search.refetch()}>
+          {t`Încearcă din nou`}
+        </Button>
+      </section>
+    )
+  }
 
-  const countLine =
-    searchQuery.isSuccess && acts.length > 0
-      ? result?.actsTotal == null
-        ? acts.length === 1
-          ? t`o potrivire afișată — numărul total nu este cunoscut`
-          : t`${formatLegalNumber(acts.length, i18n.locale)} potriviri afișate — numărul total nu este cunoscut`
-        : result.totalsExhaustive
-          ? result.actsTotal === 1
-            ? t`o potrivire`
-            : t`${formatLegalNumber(result.actsTotal, i18n.locale)} potriviri`
-          : t`cel puțin ${formatLegalNumber(result.actsTotal, i18n.locale)} potriviri`
-      : undefined
+  const result = search.data
+  const stale = search.isPlaceholderData
+  const acts = result.acts
+  const textSearched = result.engine === 'opensearch'
+  const semanticUnavailable = result.caveats.includes(LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
+  // Every other caveat is shown verbatim: the sentinel alone is a machine marker, said in our words.
+  const verbatim = result.caveats.filter((caveat) => caveat !== LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
+  const empty = acts.length === 0
+  const resolveHits = resolve.data ?? []
+  // Several acts for one name is a choice the reader makes; one act on a zeroed search is a rescue. Never over the
+  // last query's faded answer: the resolver already answers the new one.
+  const choose = !stale && (resolveHits.length >= 2 || (resolveHits.length > 0 && empty))
+  const widen =
+    filters.stare !== 'implicit' ? null : (
+      <button type="button" onClick={() => onFilters({ ...filters, stare: 'toate' })} className={MORE_LINK}>
+        {t`Caută și în actele abrogate sau ieșite din vigoare`}
+        <ArrowRight className="size-3.5" aria-hidden="true" />
+      </button>
+    )
+  const n = (value: number) => formatLegalNumber(value, i18n.locale)
+  // Romanian counts take „de" from twenty on („20 de potriviri"): the plural's „other" form.
+  const count =
+    result.actsTotal == null
+      ? plural(acts.length, { one: 'O potrivire afișată', few: '# potriviri afișate', other: '# de potriviri afișate' })
+      : result.totalsExhaustive
+        ? plural(result.actsTotal, { one: 'O potrivire', few: '# potriviri', other: '# de potriviri' })
+        : plural(result.actsTotal, { one: 'Cel puțin o potrivire', few: 'Cel puțin # potriviri', other: 'Cel puțin # de potriviri' })
 
-  const historicalRetry = !historical && (
-    <button
-      type="button"
-      className={cn(legislationLinkClassName, 'self-start text-left')}
-      onClick={() => runSearch(q, true)}
-    >
-      <Trans>Caută și în actele abrogate sau ieșite din vigoare</Trans>
-    </button>
-  )
-
-  return (
-    <LegislationSection
-      id="legislation-finder-heading"
-      title={t`Caută în legislație`}
-      {...(countLine !== undefined && { description: countLine })}
-      bodyClassName="p-0"
-      {...(result !== undefined && {
-        footnote: (
-          <div className="flex flex-col gap-1.5">
-            {verbatimCaveats.length > 0 && (
-              <ul
-                aria-label={t`Precizări de la server`}
-                className="flex list-disc flex-col gap-1 pl-4"
-              >
-                {verbatimCaveats.map((caveat) => (
-                  <li key={caveat}>{caveat}</li>
-                ))}
-              </ul>
-            )}
-            <p>
-              <Trans>motor de căutare: {result.engine}</Trans>
-              {result.asOf !== null && (
-                <>
-                  {' · '}
-                  <Trans>
-                    index din {formatLegalDate(result.asOf, i18n.locale)}
-                  </Trans>
-                </>
-              )}
-              {result.degraded && (
-                <>
-                  {' · '}
-                  <Trans>răspuns degradat — o parte din căutare nu a rulat</Trans>
-                </>
-              )}
-            </p>
-          </div>
-        ),
-      })}
-    >
-      <form
-        onSubmit={onSubmit}
-        aria-label={t`Caută în legislație`}
-        className="flex flex-col gap-3 border-b border-[var(--pnrr-subtle)] px-5 py-4 sm:px-6"
-      >
-        <div className="flex min-w-0 gap-0">
-          <Input
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            className={legislationFieldClassName}
-            aria-label={t`Caută în legislație`}
-            placeholder={t`Legea 53/2003 · Codul muncii · OUG 57/2019`}
-          />
-          <Button
-            type="submit"
-            className={legislationSubmitClassName}
-            style={{ backgroundColor: LEGISLATION_ACCENT }}
-          >
-            <Trans>Caută</Trans>
-          </Button>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-[var(--pnrr-muted)]">
-              <Trans>Exemple:</Trans>
-            </span>
-            {EXAMPLES.map((example) => (
-              <button
-                key={example}
-                type="button"
-                onClick={() => runSearch(example, historical)}
-                className={legislationExampleChipClassName}
-              >
-                {example}
-              </button>
-            ))}
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-[var(--pnrr-fg)]">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded-none accent-[#512178]"
-              checked={historical}
-              onChange={(event) =>
-                runSearch(q, event.target.checked, { replace: !hasQuery })
-              }
-            />
-            <Trans>include actele abrogate sau ieșite din vigoare</Trans>
-          </label>
-        </div>
-      </form>
-
-      {!hasQuery && (
-        <div className="flex flex-col gap-4 px-5 py-6 sm:px-6">
-          <div>
-            <p className={legislationStatLabelClassName}>
-              <Trans>Ce poți căuta</Trans>
-            </p>
-            <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-sm text-[var(--pnrr-fg)]">
-              <li>
-                <Trans>
-                  numărul actului — „Legea 53/2003”, „OUG 57/2019”, „HG 1/2016”
-                </Trans>
-              </li>
-              <li>
-                <Trans>
-                  denumirea actului — „Codul muncii”, „Codul fiscal”, „Codul
-                  administrativ”
-                </Trans>
-              </li>
-            </ul>
-          </div>
-
-          <div className={legislationAlertClassName} role="note">
-            <AlertTriangle
-              className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
-              aria-hidden
-            />
-            <p className="text-sm font-medium text-[var(--pnrr-fg)]">
-              <Trans>
-                Căutarea după sens nu este încă disponibilă, iar căutarea în
-                textul legilor depinde de motorul care răspunde — rezultatele
-                spun care a fost. Dacă o căutare nu găsește nimic, asta nu
-                înseamnă că prevederea nu există în legislație.
-              </Trans>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {hasQuery && searchQuery.isLoading && <LegislationSearchSkeleton />}
-
-      {hasQuery && searchQuery.isError && (
-        <div className="px-5 py-6 sm:px-6">
-          <p className="text-sm text-[var(--pnrr-fg)]">
-            <Trans>Nu am putut căuta în legislație.</Trans>
-          </p>
-          <button
-            type="button"
-            className={cn(secondaryButtonClassName, 'mt-3')}
-            onClick={() => void searchQuery.refetch()}
-          >
-            <Trans>Încearcă din nou</Trans>
-          </button>
-        </div>
-      )}
-
-      {searchQuery.isSuccess && semanticUnavailable && acts.length > 0 && (
-        <p className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-xs text-[var(--pnrr-muted)] sm:px-6">
-          {textSearched ? (
-            <Trans>
-              Potriviri după cuvintele din numele, titlul și textul actelor.
-              Căutarea după sens nu este încă disponibilă — o prevedere poate
-              exista chiar dacă nu apare aici.
-            </Trans>
-          ) : (
-            <Trans>
-              Potriviri după numărul și denumirea actelor. Căutarea în textul
-              legilor nu este încă disponibilă — o prevedere poate exista chiar
-              dacă nu apare aici.
-            </Trans>
-          )}
+  const notes: ReactNode = (
+    <>
+      {semanticUnavailable ? (
+        <p>
+          {textSearched
+            ? t`Potriviri după cuvintele din numele, titlul și textul actelor. Căutarea după sens nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici.`
+            : t`Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici.`}
         </p>
-      )}
-
-      {showStrip && (
-        <div className="border-b border-[var(--pnrr-subtle)]">
-          <p className="px-5 pt-4 text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)] sm:px-6">
-            {resolveHits.length >= 2 ? (
-              <Trans>
-                Această căutare corespunde mai multor acte — alege actul:
-              </Trans>
-            ) : (
-              <Trans>Un act corespunde acestei căutări:</Trans>
-            )}
-          </p>
-          <ul aria-label={t`Acte identificate`} className="pb-1 pt-1">
-            {resolveHits.map((hit) => {
-              const parsedStatus = legalActStatusSchema.safeParse(hit.hint)
-              return (
-                <li key={`${hit.value}-${hit.label}`}>
-                  <Link
-                    to="/legislation/acts/$actId"
-                    params={{ actId: hit.value }}
-                    className={cn(legislationRowClassName, 'border-b-0 py-2')}
-                  >
-                    <span className="min-w-0 flex-1 truncate text-base font-semibold text-[var(--pnrr-fg)]">
-                      {hit.label}
-                    </span>
-                    {parsedStatus.success ? (
-                      <LegalStatusBadge status={parsedStatus.data} />
-                    ) : hit.hint !== null ? (
-                      <span className="shrink-0 text-xs text-[var(--pnrr-muted)]">
-                        {hit.hint}
-                      </span>
-                    ) : null}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      )}
-
-      {searchQuery.isSuccess && acts.length > 0 && (
-        <ul aria-label={t`Rezultate`}>
-          {acts.map((hit) => (
-            <li
-              key={hit.act.actId}
-              className="border-b border-[var(--pnrr-subtle)] last:border-b-0"
-            >
-              <div className="flex flex-col gap-1 px-5 py-4 sm:px-6">
-                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                  <Link
-                    to="/legislation/acts/$actId"
-                    params={{ actId: hit.act.actId }}
-                    className="text-base font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-                  >
-                    {hit.act.displayCitation}
-                  </Link>
-                  <LegalStatusBadge status={hit.act.status} />
-                </span>
-                <span className="text-xs text-[var(--pnrr-muted)]">
-                  {legalActTypeLabel(hit.act.actType)}
-                  {hit.act.actYear !== null ? ` · ${hit.act.actYear}` : ''}
-                  {hit.act.issuerSlug !== null
-                    ? ` · ${legalIssuerLabel(hit.act.issuerSlug)}`
-                    : ''}
-                  {hit.act.inDegree !== null && hit.act.inDegree > 0 && (
-                    <>
-                      {' · '}
-                      <Trans>
-                        citat de{' '}
-                        {formatLegalNumber(hit.act.inDegree, i18n.locale)} ori
-                      </Trans>
-                    </>
-                  )}
-                </span>
-                {hit.description !== null && (
-                  <p className="text-sm leading-6 text-[var(--pnrr-fg)]">
-                    {hit.description}
-                  </p>
-                )}
-                {(result?.sections ?? [])
-                  .filter((section) => section.actId === hit.act.actId)
-                  .slice(0, SNIPPETS_PER_ACT)
-                  .map((section, index) => (
-                    <LegislationSearchSnippet
-                      key={`${section.documentId}-${index}`}
-                      hit={section}
-                    />
-                  ))}
-              </div>
-            </li>
+      ) : null}
+      {result.actsTotal == null && acts.length > 0 ? <p>{t`Numărul total de potriviri nu este cunoscut: sunt afișate cele mai potrivite.`}</p> : null}
+      {verbatim.length > 0 ? (
+        <ul className="list-disc space-y-1 pl-4" aria-label={t`Precizări de la server`}>
+          {verbatim.map((caveat) => (
+            <li key={caveat}>{caveat}</li>
           ))}
         </ul>
-      )}
+      ) : null}
+      <p className="text-xs">
+        {t`Motor de căutare: ${result.engine}`}
+        {result.asOf !== null ? ` · ${t`index din ${formatLegalDate(result.asOf, i18n.locale)}`}` : ''}
+      </p>
+    </>
+  )
+  // A degraded answer is said where it is read, not only behind the ⓘ.
+  const degraded = result.degraded ? <p className="text-sm text-muted-foreground">{t`Răspuns parțial: o parte din căutare nu a rulat.`}</p> : null
 
-      {emptyResult && !showStrip && isCitationShaped && (
-        <div className="flex flex-col gap-2 px-5 py-6 sm:px-6">
-          <p className="text-sm font-semibold text-[var(--pnrr-fg)]">
-            <Trans>Niciun act găsit pentru citarea „{q}”.</Trans>
-          </p>
-          <p className="text-sm text-[var(--pnrr-muted)]">
-            <Trans>
-              Actele abrogate sau ieșite din vigoare nu sunt incluse implicit
-              în căutare.
-            </Trans>
-          </p>
-          {historicalRetry}
-          <p className="text-sm text-[var(--pnrr-muted)]">
-            <Trans>
-              Verifică și numărul și anul actului — de exemplu „Legea
-              53/2003”.
-            </Trans>
-          </p>
+  return (
+    <div className={cn('space-y-10 transition-opacity', stale && 'opacity-60')} aria-busy={stale}>
+      {filtered ? (
+        <div className="space-y-2">
+          <LegislationActiveFilters filters={filters} onChange={onFilters} />
+          {usesSummaries(filters) ? <p className="text-xs text-muted-foreground">{t`Cu domeniul, categoria sau sancțiunile, actele fără rezumat nu apar.`}</p> : null}
         </div>
-      )}
+      ) : null}
+      {choose ? <ChooseAct hits={resolveHits} several={resolveHits.length >= 2} /> : null}
 
-      {emptyResult && !isCitationShaped && !showStrip && (
-        <div className="px-5 py-6 sm:px-6">
-          {/* THE honesty message. A phrase query zeroing out must never read
-              as "the law does not exist": the corpus simply cannot be
-              searched by phrase yet, and saying so is this tab's contract. */}
-          <div className={legislationAlertClassName} role="note">
-            <AlertTriangle
-              className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
-              aria-hidden
-            />
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-semibold text-[var(--pnrr-fg)]">
-                <Trans>
-                  Nu am găsit niciun act pentru „{q}” — dar asta nu înseamnă
-                  că prevederea nu există în legislație.
-                </Trans>
+      {empty ? (
+        <section aria-labelledby="search-empty-title" className="border-t pt-8">
+          {choose ? (
+            <p id="search-empty-title" className="max-w-[60ch] text-base leading-relaxed text-muted-foreground">
+              {textSearched
+                ? t`Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă.`
+                : t`Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea în textul legilor nu este încă disponibilă.`}
+            </p>
+          ) : parseLegalCitationShape(q) !== null ? (
+            <>
+              <h2 id="search-empty-title" className="text-2xl font-semibold tracking-tight text-foreground">
+                {t`Niciun act găsit pentru citarea „${q}"`}
+              </h2>
+              <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
+                {t`Actele abrogate sau ieșite din vigoare nu sunt incluse implicit. Verifică și numărul și anul actului, de exemplu „Legea 53/2003".`}
               </p>
-              <p className="text-sm text-[var(--pnrr-fg)]">
-                {textSearched ? (
-                  <Trans>
-                    Am căutat cuvintele în numele, titlul și textul actelor,
-                    dar nu și după sens — o prevedere formulată cu alte cuvinte
-                    nu apare, așa că lipsa rezultatelor nu spune nimic despre
-                    existența ei.
-                  </Trans>
-                ) : (
-                  <Trans>
-                    Deocamdată căutarea funcționează după numărul actului (de
-                    exemplu „Legea 53/2003”) și după denumirea lui (de exemplu
-                    „Codul muncii”). Căutarea după expresii din textul legilor —
-                    cum ar fi „concediu de odihnă” — nu este încă disponibilă,
-                    așa că lipsa rezultatelor nu spune nimic despre existența
-                    prevederii.
-                  </Trans>
-                )}
+            </>
+          ) : (
+            <>
+              {/* The page's contract: a phrase that finds nothing never reads as „the law does not exist". */}
+              <h2 id="search-empty-title" className="max-w-[40ch] text-2xl font-semibold tracking-tight text-foreground">
+                {t`Niciun act pentru „${q}", dar asta nu înseamnă că prevederea nu există`}
+              </h2>
+              <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
+                {textSearched
+                  ? t`Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens: o prevedere formulată cu alte cuvinte nu apare.`
+                  : t`Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 53/2003") și după denumire (de exemplu „Codul muncii"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă", nu este încă disponibilă.`}
               </p>
-              {historicalRetry}
-            </div>
+            </>
+          )}
+          {filtered ? <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{t`Filtrele alese pot fi motivul: scoate-le pe rând.`}</p> : null}
+          {degraded ? <div className="mt-3">{degraded}</div> : null}
+          {widen ? <div className="mt-4">{widen}</div> : null}
+          <div className="mt-4 flex items-center gap-1 text-sm text-muted-foreground">
+            {t`Cum s-a căutat`}
+            <LegalInfoNote label={t`Cum se caută`}>{notes}</LegalInfoNote>
           </div>
-        </div>
+        </section>
+      ) : (
+        <section aria-labelledby="search-results-title" className="border-t pt-8">
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-2">
+            <div className="flex items-center gap-1">
+              <h2 id="search-results-title" className="text-2xl font-semibold tracking-tight text-foreground">
+                {count}
+              </h2>
+              <LegalInfoNote label={t`Cum se caută`}>{notes}</LegalInfoNote>
+            </div>
+            {widen}
+          </div>
+          {degraded ? <div className="mt-2">{degraded}</div> : null}
+          <ol aria-label={t`Rezultate`} className="mt-6 divide-y border-y">
+            {acts.map((hit) => (
+              <li key={hit.act.actId} className="py-5">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+                  <Link to="/legislation/acts/$actId" params={{ actId: hit.act.actId }} className="line-clamp-2 max-w-[70ch] text-base font-semibold text-foreground underline-offset-4 hover:underline">
+                    {searchHitName(hit)}
+                  </Link>
+                  <LegalStatusBadge status={hit.act.status} />
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {[
+                    // „Doc" says nothing about the act: its kind is left out rather than named so.
+                    hit.act.actType === 'doc' ? null : legalActTypeLabel(hit.act.actType),
+                    hit.act.actYear !== null ? String(hit.act.actYear) : null,
+                    hit.act.issuerSlug !== null ? legalIssuerLabel(hit.act.issuerSlug) : null,
+                    hit.act.inDegree !== null && hit.act.inDegree > 0 ? t`citat de ${n(hit.act.inDegree)} ori` : null,
+                  ]
+                    .filter((part) => part !== null)
+                    .join(' · ')}
+                </p>
+                {hit.description !== null ? <p className="mt-2 line-clamp-2 max-w-[80ch] text-sm leading-relaxed text-foreground/85">{hit.description}</p> : null}
+                <div className="mt-2 space-y-2">
+                  {result.sections
+                    .filter((section) => section.actId === hit.act.actId)
+                    .slice(0, SNIPPETS_PER_ACT)
+                    .map((section, index) => (
+                      <LegislationSearchSnippet key={`${section.documentId}-${index}`} hit={section} />
+                    ))}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
       )}
+    </div>
+  )
+}
 
-      {emptyResult && showStrip && (
-        <div className="flex flex-col gap-2 px-5 py-4 sm:px-6">
-          <p className="text-sm text-[var(--pnrr-muted)]">
-            {textSearched ? (
-              <Trans>
-                Căutarea directă nu a găsit nimic — actele de mai sus sunt
-                potriviri după denumirea sau numărul actului. Căutarea după
-                sens nu este încă disponibilă.
-              </Trans>
-            ) : (
-              <Trans>
-                Căutarea directă nu a găsit nimic — actele de mai sus sunt
-                potriviri după denumirea sau numărul actului. Căutarea în
-                textul legilor nu este încă disponibilă.
-              </Trans>
-            )}
-          </p>
-          {historicalRetry}
-        </div>
-      )}
-    </LegislationSection>
+/** The resolver's acts for a name that means several, or the one act a zeroed search missed: the reader picks. */
+function ChooseAct({ hits, several }: { readonly hits: readonly { readonly value: string; readonly label: string; readonly hint: string | null }[]; readonly several: boolean }) {
+  return (
+    <section aria-labelledby="search-choose-title" className="max-w-3xl border bg-background p-5 shadow-sm sm:p-6">
+      <h2 id="search-choose-title" className="text-sm font-semibold text-foreground">
+        {several ? t`Mai multe acte poartă acest nume: alege actul` : t`Un act corespunde acestei căutări`}
+      </h2>
+      <ul aria-label={t`Acte identificate`} className="mt-3 divide-y">
+        {hits.map((hit) => {
+          const status = legalActStatusSchema.safeParse(hit.hint)
+          return (
+            <li key={`${hit.value}-${hit.label}`}>
+              <Link to="/legislation/acts/$actId" params={{ actId: hit.value }} className="group flex min-h-11 items-center justify-between gap-4 py-2.5">
+                <span className="min-w-0 truncate text-base font-medium text-foreground group-hover:underline group-hover:underline-offset-4">{hit.label}</span>
+                {status.success ? <LegalStatusBadge status={status.data} /> : hit.hint !== null ? <span className="shrink-0 text-xs text-muted-foreground">{hit.hint}</span> : null}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
+function PendingRows() {
+  return (
+    <section className="border-t pt-8" aria-busy="true" aria-label={t`Se caută`}>
+      <div className="h-8 w-56 animate-pulse rounded bg-muted" />
+      <div className="mt-6 divide-y border-y">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className="space-y-2 py-5">
+            <div className="h-5 w-48 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-72 animate-pulse rounded bg-muted/70" />
+            <div className="h-4 w-full max-w-2xl animate-pulse rounded bg-muted/60" />
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
