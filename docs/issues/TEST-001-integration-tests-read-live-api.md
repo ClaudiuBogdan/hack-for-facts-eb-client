@@ -24,7 +24,7 @@ Nothing fails when either happens: the test passes or fails on whatever the live
 ## Browser reads
 
 First seen as 127 "No mock found" warnings in CI run 45595066962 (commit 5d93c166a). The API guard (below) then caught every
-browser request to the API that no route answered, in a full run of both CI steps on 2026-11-25. That run found 221, in 11 spec
+browser request to the API that no route answered, in a full run of both CI steps on 2026-11-25. That run found 221, in 10 spec
 files, including the no-mock tests and the REST map read the warnings never showed.
 
 | Spec | Reads (full run, 2026-11-25) | With | State |
@@ -44,21 +44,27 @@ files, including the no-mock tests and the REST map read the warnings never show
 | `national-budget-home.spec.ts` | BudgetApprovedRecords 40, BudgetExecutionObservations 3, BudgetNationalExecutionSeries 3, AggregatedLineItems 2, EntityAnalytics 2, BudgetApprovedTotals 1 | client-dev-polish | open |
 | `national-budget-analytics.spec.ts` | BudgetApprovedTotals 5, BudgetApprovedRecords 4, BudgetExecutionObservations 3, BudgetApprovedSeries 1 | client-dev-polish | open |
 
-How the fixtures are made: each is the dev API's own answer to the app's own query text, with the variables the test sends. Where
-the answer is large it is cut by whole records (a population map to one UAT's cell, a locality hub to four of its datasets).
-`tests/utils/map-mocks.ts` answers the map's grouped-series read from two such recordings (the landing's and the entity page's), by
-the request's granularity and series ids.
+How the fixtures are made: the ones recorded for TEST-001 are the dev API's own answers (2026-11-25) to the app's own query text,
+with the variables the test sends. Where an answer is large it is cut by whole records: a population map to one UAT's cell, a
+locality hub to four of its datasets. Two are reused from older fixtures rather than recorded:
+- `entity-analytics-comprehensive-flow/budget-sectors.json`, the budget-explorer flow's five sectors;
+- `landing-page-flow/entity-metadata.json`, the entity details flow's.
+
+`tests/utils/map-mocks.ts` answers the map's grouped-series read from two recordings (the landing's and the entity page's). It
+matches the request's granularity and, series by series, its id and filter, so another year needs a new recording.
 
 ## The API guard (browser side)
 
 `tests/utils/api-guard.ts`, an auto fixture: `integration-base` builds on it, and the six specs that import Playwright directly import
 it instead (`charts-page`, `cookie-consent`, `ins-native-entity`, `ins-native-saved-chart`, `statistics-comparisons`,
 `statistics-ins-native-outcomes`).
-- It is a browser-context route, registered first, matching `VITE_API_URL`'s origin and any `/graphql` path (the app's own
-  `/api/v1/graphql` proxy included). Context routes run after every page route, so it sees only what no mock answered.
-  `INTERNAL_API_URL` is the server's, not the browser's, so the guard does not watch it.
-- Under `CI` in mock mode it aborts the request and fails the test, naming each request. Locally it prints
-  `[api-guard] no mock: …` with the spec and test and lets the request through.
+- It is a browser-context route, registered first. It matches anything to the browser's API origin (`VITE_API_URL`, or
+  `API_URL`) and the GraphQL paths `/api/v1/graphql` (the app's own proxy included) and `/graphql` on any origin. Page navigations
+  pass. Context routes run after every page route, so it sees only what no mock answered. `INTERNAL_API_URL` is the server's,
+  not the browser's, so the guard does not watch it.
+- Under `CI` in mock mode it aborts the request and fails the test, naming each request. It checks after closing the test's
+  pages, so a read the page starts as the test ends counts too. Locally it prints `[api-guard] no mock: …` with the spec and
+  test, and lets the request through.
 
 **A new spec imports `test` and `expect` from `../utils/integration-base`, or from `../utils/api-guard` if it must not have
 `integration-base`'s stored consent.** It goes in last, after a CI-style run with zero catches.

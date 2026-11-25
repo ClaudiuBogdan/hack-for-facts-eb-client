@@ -17,14 +17,17 @@
 import { readFileSync } from 'node:fs'
 
 const WARNING = /\[mockApi\] No mock found for operation: (\w+)/
-const RESULT = /[✓✘-]\s+\d+ \[integration\] › (tests\/integration\/[^:]+):\d+:\d+ › (.+?)(?: \(retry #\d+\))? \([\d.]+m?s\)\s*$/
+// A result line: passed ✓, failed ✘ or skipped -, with a duration in ms, s or m (none when skipped).
+const RESULT = /[✓✘-]\s+\d+ \[integration\] › (tests\/integration\/[^:]+):\d+:\d+ › (.+?)(?: \(retry #\d+\))?(?: \([\d.]+(?:ms|s|m)\))?\s*$/
+// Colour codes, when the reporter wrote to a terminal or FORCE_COLOR was set.
+const ANSI = /\x1b\[[0-9;]*m/g
 
 const bySpec = new Map()
 let total = 0
 for (const path of process.argv.slice(2)) {
   let pending = []
   for (const raw of readFileSync(path, 'utf8').split('\n')) {
-    const line = raw.replace(/^\S+Z /, '')
+    const line = raw.replace(ANSI, '').replace(/^\S+Z /, '')
     const warning = WARNING.exec(line)
     if (warning) {
       pending.push(warning[1])
