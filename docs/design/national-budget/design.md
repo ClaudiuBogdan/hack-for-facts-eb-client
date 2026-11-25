@@ -1402,3 +1402,6 @@ figures band, keeping their structure and elements.
   an up-right arrow for leaving the page.
 - Not done: the count-up and the entrances (the prototype never armed them);
   the other three versions keep their type.
+- **Year button, flat (owner, the same day):** no shadow; a hairline border
+  that darkens on hover, on focus and while the menu is open; a 6px radius;
+  no background change. The menu is unchanged.

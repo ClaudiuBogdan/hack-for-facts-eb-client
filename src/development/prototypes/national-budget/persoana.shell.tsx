@@ -61,7 +61,8 @@ export function YearSelect({ className }: { readonly className?: string }) {
 
 /**
  * The year as the hero sets it (owner, 25 November 2026: compact, in the same
- * place, no side arrows, a polished menu): „Anul [2025 ▾]" as one button the
+ * place, no side arrows, a polished menu; the button flat, a hairline border
+ * and no shadow): „Anul [2025 ▾]" as one button the
  * width of its year; the menu is every year in one grid of four, newest
  * first, the chosen one filled, the year in progress marked with a dot and
  * named in a line under the grid (owner: 2026 sat apart like a title).
@@ -76,7 +77,7 @@ export function YearPicker({ className, label = true }: { readonly className?: s
         {label ? <span className="text-sm text-muted-foreground">Anul</span> : null}
         <DropdownMenu.Trigger
           aria-label={`Anul: ${yearLabel(view)}`}
-          className="group inline-flex h-10 items-center gap-2 rounded-lg border border-border/80 bg-background pl-3.5 pr-2.5 text-base font-semibold tabular-nums shadow-xs outline-none transition-colors hover:border-foreground/25 hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:border-foreground/30 data-[state=open]:bg-muted/40"
+          className="group inline-flex h-10 items-center gap-2.5 rounded-md border border-border bg-background pl-4 pr-3 text-base font-semibold tabular-nums outline-none transition-colors hover:border-foreground/30 focus-visible:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:border-foreground/40"
         >
           {view.year}
           {view.partial ? <span className="text-sm font-normal text-muted-foreground">până în {monthName(view.month)}</span> : null}
