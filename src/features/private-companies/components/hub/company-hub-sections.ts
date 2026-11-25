@@ -24,5 +24,8 @@ export const COMPANY_HUB_LEADERS_SHOWN = 10
 /** A leader's row: place, name, bar and meta, figure and change. The loading state's rows are the same grid. */
 export const LEADER_ROW_CLASS = 'group grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2'
 
+/** A leader's quiet lines — where it is and what it does, its change on the year before: plain text in its own casing, one line tall. */
+export const LEADER_META_CLASS = 'text-xs leading-4 text-muted-foreground'
+
 /** The link under the leaders to the rest, in the analysis: the procurement hub's `SHOW_MORE_CLASS`, held here so the loading state stays light. */
 export const LEADERS_MORE_CLASS = 'mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline'

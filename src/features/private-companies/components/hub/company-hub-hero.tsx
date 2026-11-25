@@ -6,11 +6,13 @@ import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
-import { HUB_SHORTCUT_LINK_CLASS } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { urlSearchOfText } from '../../lib/company-analytics-search'
 import { STATUS_ACTIVE } from '../../lib/company-status-codes'
-import { LEADER_ROW_CLASS } from './company-hub-sections'
+import { LEADER_META_CLASS, LEADER_ROW_CLASS } from './company-hub-sections'
+
+/** A shortcut under the search, as the landing sets its own: medium weight, the accent on hover, no underline. */
+const SHORTCUT_LINK_CLASS = 'inline-flex min-h-11 items-center text-sm font-medium text-foreground transition-colors hover:text-primary sm:min-h-0'
 
 /** The companies in business in the analysis, on its own year: the loading state's, drawn before the snapshot is read. */
 const IN_BUSINESS = urlSearchOfText({ stare: STATUS_ACTIVE })
@@ -46,33 +48,38 @@ export function CompanyHubHero({
             <MonoLabel className="text-muted-foreground">
               <Trans>Firme / România</Trans>
             </MonoLabel>
-            {/* Two lines at every width: each fits its line on a phone, so no word is left alone on a third. */}
-            <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+            {/* Two lines at every width: each fits its line on a phone, so no word is left alone on a third.
+                Set as the landing's headline is: the tight tracking closes the gaps between words too, so they
+                are given back (`word-spacing`), and the lines sit far enough apart for the breve of „ă" to
+                clear the line above. */}
+            <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
               <Trans>
                 Economia,
                 <br />
                 firmă cu firmă
               </Trans>
             </h1>
-            <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            {/* The site's tracking is set for 14px text: at 20px under a tight headline it reads loose. */}
+            <p className="mt-5 max-w-[46ch] text-balance text-lg leading-relaxed tracking-normal text-muted-foreground sm:text-xl">
               <Trans>Din registrul comerțului și bilanțurile depuse la ANAF, pentru fiecare firmă, domeniu și județ.</Trans>
             </p>
             <div className="mt-6 sm:mt-7">{search}</div>
-            <nav aria-label={t`Scurtături`} className="mt-4">
-              <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">
+            {/* The landing's shortcut row: the label is a sentence that runs into the links, so it is set in
+                their voice (plain text, not a mono caption) and shares their baseline; on a phone it has its
+                own line and each shortcut is a 44px row. */}
+            <nav aria-label={t`Scurtături`} className="mt-4 flex flex-wrap items-baseline gap-x-4 sm:gap-x-5 sm:gap-y-1.5">
+              <span className="basis-full text-sm text-muted-foreground sm:basis-auto">
                 <Trans>Sau mergi direct la</Trans>
-              </MonoLabel>
-              <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
-                <Link to="/companies/analytics" search={inBusiness ?? IN_BUSINESS} preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
-                  <Trans>Toate firmele în funcțiune</Trans>
-                </Link>
-                <Link to="/companies/analytics" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
-                  <Trans>Analiza bilanțurilor</Trans>
-                </Link>
-                <Link to="/procurement" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
-                  <Trans>Achiziții publice</Trans>
-                </Link>
               </span>
+              <Link to="/companies/analytics" search={inBusiness ?? IN_BUSINESS} preload="intent" className={SHORTCUT_LINK_CLASS}>
+                <Trans>Toate firmele în funcțiune</Trans>
+              </Link>
+              <Link to="/companies/analytics" preload="intent" className={SHORTCUT_LINK_CLASS}>
+                <Trans>Analiza bilanțurilor</Trans>
+              </Link>
+              <Link to="/procurement" preload="intent" className={SHORTCUT_LINK_CLASS}>
+                <Trans>Achiziții publice</Trans>
+              </Link>
             </nav>
           </div>
           <div className="min-w-0 lg:col-span-5">{leaders}</div>
@@ -93,9 +100,10 @@ export function CompanyLeadersFrame({ title, toggle, children }: { readonly titl
   return (
     <section className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6" aria-labelledby="hub-leaders-title">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <MonoLabel id="hub-leaders-title" className="text-primary">
+        {/* The card's heading, in the page's own voice: words, not a code. */}
+        <h2 id="hub-leaders-title" className="text-sm font-semibold text-foreground">
           {title}
-        </MonoLabel>
+        </h2>
         {toggle}
       </div>
       {children}
@@ -147,17 +155,17 @@ export function CompanyLeaderRowsPending({ rows, className }: { readonly rows: n
             </span>
             {/* The figure's bar's track, its length not known yet. */}
             <span className="mt-1 block h-1 bg-muted" />
-            <MonoLabel className="mt-1 block">
+            <span className={cn('mt-1 block', LEADER_META_CLASS)}>
               <PendingBar className="w-1/2" />
-            </MonoLabel>
+            </span>
           </span>
           <span className="text-right">
             <span className="block text-sm font-semibold">
               <PendingBar className="w-20" />
             </span>
-            <MonoLabel className="block">
+            <span className={cn('block', LEADER_META_CLASS)}>
               <PendingBar className="w-10" />
-            </MonoLabel>
+            </span>
           </span>
         </li>
       ))}

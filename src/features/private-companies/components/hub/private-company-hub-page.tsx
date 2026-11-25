@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
@@ -78,6 +77,9 @@ const DEFAULT_RANKING: CompanyHubRanking = 'cifra-de-afaceri'
 const DEFAULT_SECTOR_METRIC: CompanyHubSectorMetric = 'cifra-de-afaceri'
 const DEFAULT_MAP: CompanyHubMapIndicator = 'densitate'
 const DEFAULT_YEAR_MEASURE: CompanyHubYearMeasure = 'cifra-de-afaceri'
+
+/** A caption over a table or a chart: a sentence, so plain text in its own casing, never a mono capital line. */
+const CAPTION_CLASS = 'text-xs leading-relaxed text-muted-foreground'
 
 /** The registry's open data, where the counts of companies come from. */
 const ONRC_OPEN_DATA_URL = 'https://data.gov.ro/ro/organization/onrc'
@@ -229,7 +231,9 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
   const lastMfYear = ANAF_FIRST_YEAR - 1
 
   return (
-    <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
+    // `ss03` is Inter's round commas and quotes, as on the landing: the headline's comma, the comma in a
+    // figure („2.841,2") and the one under every „ș" and „ț". Already in the font the page downloads.
+    <div ref={rootRef} className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']">
       <RevealStyles />
       <SmearFilters />
 
@@ -289,9 +293,9 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
               }
             />
             <div className="mt-8" data-reveal>
-              <MonoLabel className="block text-muted-foreground">
+              <p className={CAPTION_CLASS}>
                 <Trans>Bilanțurile pe {YEAR}, după numărul de salariați</Trans>
-              </MonoLabel>
+              </p>
               <HubSizeTable className="mt-3" classes={SNAPSHOT.sizeClasses} />
             </div>
           </div>
@@ -443,9 +447,9 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
             />
           </div>
           <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-            <MonoLabel className="block text-muted-foreground">
+            <p className={CAPTION_CLASS}>
               <Trans>Firme înregistrate pe an, și câte mai sunt în funcțiune</Trans>
-            </MonoLabel>
+            </p>
             <div className="mt-3">
               <HubTwoLineChart
                 a={{ label: t`Înregistrate`, points: series.registered }}
@@ -628,9 +632,9 @@ function SourcesLine() {
     <footer className="border-b bg-muted/20">
       <RuledFrame className="py-6">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          <MonoLabel className="mr-3 text-foreground">
+          <span className="mr-2 font-medium text-foreground">
             <Trans>Surse</Trans>
-          </MonoLabel>
+          </span>
           <Trans>
             <a href={ONRC_OPEN_DATA_URL} target="_blank" rel="noreferrer" className={link}>
               Registrul comerțului

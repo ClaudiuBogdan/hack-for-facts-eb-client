@@ -119,7 +119,8 @@ export function HubActivities({
       <Link to="/companies/analytics" search={analysis} className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9">
         <Trans>Toate activitățile selectate, în analiza bilanțurilor</Trans> →
       </Link>
-      <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground">{caption}</MonoLabel>
+      {/* A sentence, so plain text: what the shares are of, and the note behind its marker. */}
+      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{caption}</p>
     </div>
   )
 }

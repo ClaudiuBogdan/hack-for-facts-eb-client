@@ -311,7 +311,8 @@ function CountyReadout({
 
   return (
     <div id={id} className="flex min-h-20 flex-col justify-start">
-      <MonoLabel className="block leading-relaxed text-muted-foreground">{caption}</MonoLabel>
+      {/* A place and its rank, in words: plain text, not a mono capital line. */}
+      <p className="text-xs leading-relaxed text-muted-foreground">{caption}</p>
       {formatted ? (
         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-3xl">
           {formatted.value}
@@ -373,21 +374,22 @@ function CountyLegend({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-        <MonoLabel className="leading-relaxed text-muted-foreground">{title}</MonoLabel>
+        {/* What the map shows, as a sentence in the page's own type. */}
+        <p className="text-xs leading-relaxed text-muted-foreground">{title}</p>
         {missing.length > 0 ? (
           <span className="flex items-center gap-2">
             <svg width="16" height="10" className="block shrink-0" aria-hidden="true">
               <rect width="16" height="10" fill={`url(#${NO_DATA_PATTERN})`} />
             </svg>
             {/* Named, not only counted: a hatched county cannot be focused or tapped. */}
-            <MonoLabel className="leading-relaxed text-muted-foreground">
+            <span className="text-xs leading-relaxed text-muted-foreground">
               {plural(missing.length, {
                 one: 'un județ fără valoare',
                 few: '# județe fără valoare',
                 other: '# de județe fără valoare',
               })}
               : {missing.map(countyName).join(', ')}
-            </MonoLabel>
+            </span>
           </span>
         ) : null}
       </div>

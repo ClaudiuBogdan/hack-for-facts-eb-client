@@ -7,7 +7,7 @@ import { STATUS_ACTIVE, STATUS_STRUCK_OFF } from '../../lib/company-status-codes
 import { countyName } from '../../lib/hub-counties'
 import { formatHubChange, formatHubValue, type HubUnit } from '../../lib/hub-format'
 import type { HubLeader } from '../../lib/hub-snapshot-types'
-import { LEADER_ROW_CLASS } from './company-hub-sections'
+import { LEADER_META_CLASS, LEADER_ROW_CLASS } from './company-hub-sections'
 
 /** A company that led the year and has left business since says so: the ranking is of a year, the registry of now. */
 function statusNote(status: string | null): string | null {
@@ -55,7 +55,7 @@ export function HubLeaders({
                 <span className="block truncate text-sm font-medium text-foreground">{leader.name}</span>
                 <FigureBar fraction={leader.value / top} />
                 {/* The activity last: it is the long part, the one the line cuts, so the status is never cut. */}
-                <MonoLabel className="mt-1 block truncate text-muted-foreground" title={[county, note, activity].filter(Boolean).join(' · ')}>
+                <span className={cn('mt-1 block truncate', LEADER_META_CLASS)} title={[county, note, activity].filter(Boolean).join(' · ')}>
                   {county}
                   {note ? (
                     <>
@@ -64,14 +64,14 @@ export function HubLeaders({
                     </>
                   ) : null}
                   {activity ? `${county || note ? ' · ' : ''}${activity}` : null}
-                </MonoLabel>
+                </span>
               </span>
               <span className="text-right">
                 <span className="block text-sm font-semibold tabular-nums text-foreground">
                   {figure.value}
                   {unit === 'lei' ? <span className="ml-1 font-normal text-muted-foreground">{figure.unit}</span> : null}
                 </span>
-                {change ? <MonoLabel className="block tabular-nums text-muted-foreground">{change}</MonoLabel> : null}
+                {change ? <span className={cn('block tabular-nums', LEADER_META_CLASS)}>{change}</span> : null}
               </span>
             </Link>
           </li>
