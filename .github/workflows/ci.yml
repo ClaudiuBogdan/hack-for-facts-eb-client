@@ -168,8 +168,8 @@ jobs:
         # This is the only build made from a full checkout, so it is the only one
         # that contains src/development/. The Docker build has already excluded
         # that directory, so validating there alone would never catch a leak.
-        # Then the built server is asked for /map and /entity-analytics with an
-        # English cookie (scripts/check-built-cookie-render.mjs).
+        # Then the built server is asked for /, /map and /entity-analytics with
+        # an English cookie (scripts/check-built-cookie-render.mjs).
         run: yarn build && yarn build:validate && node scripts/check-built-cookie-render.mjs
         env:
           NODE_OPTIONS: --max-http-header-size=64384 --max-old-space-size=3072

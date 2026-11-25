@@ -1,45 +1,20 @@
 import { defineNitroConfig } from "nitro/config";
 
-const shortPublicPageCache = {
-  maxAge: 300,
-  swr: true,
-  staleMaxAge: 86400,
-  varies: ["cookie"],
-} as const;
-
-const longPublicPageCache = {
-  maxAge: 3600,
-  swr: true,
-  staleMaxAge: 86400,
-  varies: ["cookie"],
-} as const;
-
 export default defineNitroConfig({
   routeRules: {
-    // IMPORTANT: Only cache routes that are truly public and deterministic.
-    // If a route starts rendering auth/session/user-sensitive SSR content,
-    // set that route to `cache: false` and return `Cache-Control: no-store`.
-    // Nitro cached handler keys include pathname + query string by default,
-    // so URL search state (currency/lang/filter params) is cache-keyed.
-    "/": {
-      cache: {
-        maxAge: 3600,
-        swr: true,
-        staleMaxAge: 604800,
-        varies: ["cookie"],
-      },
-    },
-    // Keep Nitro in passthrough mode for binary image bodies.
-    // Cache-Control is set by the handler for CDN/browser caching.
+    // No page has a Nitro route cache. A cached render never saw the reader's
+    // cookies (ocache strips the headers named in `varies` from the request it
+    // renders), so the language, theme, currency and dismissed notices fell back
+    // to their defaults, and each visitor's cookies kept a copy of the page
+    // (docs/issues/CACHE-001-route-cache-renders-without-cookies.md). Pages
+    // render per request; scripts/check-built-cookie-render.mjs pins it.
+    //
+    // Meant for the share images: binary bodies, passed through, with the
+    // Cache-Control the handler sets. The matcher ignores what follows `**`, so
+    // the rule matches every path under /entities/, the pages included.
     "/entities/**/share-image.png": { cache: false },
-    "/entities/**": { cache: shortPublicPageCache },
-    // Rendered per request: a cached render never sees the reader's cookies
-    // (ocache strips the headers named in `varies` from the request it renders),
-    // so the language, theme, currency and dismissed notices fell back to the
-    // defaults. scripts/check-built-cookie-render.mjs pins it.
     "/entity-analytics": { cache: false },
     "/map": { cache: false },
-    "/budget-explorer": { cache: longPublicPageCache },
     // Boundary files are published under a new dated name, never over an old
     // one (`src/hooks/useGeoJson.ts`), so a copy never goes stale.
     "/geojson/**": {

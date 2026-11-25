@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// The built server renders /map and /entity-analytics from the reader's
-// cookies: `user-locale=en` gives an English page, no cookie the Romanian
-// default. A Nitro route cache on those paths broke it, because ocache strips
-// the headers it varies on from the request it renders (nitro.config.ts).
+// The built server renders pages from the reader's cookies: `user-locale=en`
+// gives an English page, no cookie the Romanian default. A Nitro route cache
+// broke it on /, /map and /entity-analytics, because ocache strips the headers
+// it varies on from the request it renders (nitro.config.ts, CACHE-001).
 //   node scripts/check-built-cookie-render.mjs [.output]
 
 import { spawn } from "node:child_process";
@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const outputDir = process.argv[2] ?? ".output";
-const PATHS = ["/map", "/entity-analytics"];
+const PATHS = ["/", "/map", "/entity-analytics"];
 const CASES = [
   { cookie: "user-locale=en", lang: "en" },
   { cookie: null, lang: "ro" },
