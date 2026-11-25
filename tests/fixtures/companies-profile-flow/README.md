@@ -5,9 +5,10 @@ Browser GraphQL answers for `tests/integration/companies-profile.spec.ts`. The p
 ## What was recorded, and what is curated
 
 **Recorded** from the dev API on 24 September 2026 and kept byte for byte:
-- `abc-aggregates`, `abc-authority-names`, `abc-records`, `abc-supplier-name`, `cpv-divisions`;
-- `ideatica-aggregates`, `ideatica-records`, `ideatica-supplier-name`;
+- `abc-aggregates`, `abc-authority-names`, `abc-supplier-name`, `cpv-divisions`;
+- `ideatica-aggregates`, `ideatica-supplier-name`;
 - `abc-litigation`, `ideatica-litigation`: the judicial API's company-litigation summary, recorded on 7 October 2026 (no link published: `caseCount` 0, `coverage` 0, so the page shows no litigation band);
+- `abc-da-newest`, `ideatica-da-newest` (the release's newest accepted purchases, `ProcurementDaSupplierNewest`) and `abc-winner-awards`, `ideatica-winner-awards` (contract awards by winner, `ProcurementWinnerContractAwards`), recorded on 25 November 2026 when the band moved off the retired legacy reads (client PROC-001). Ideatica's winner answer is the API's `NOT_FOUND`: no contract award listed for its code. The legacy `*-records` fixtures (`ProcurementSupplierRecords`) were removed with that read. The band's aggregates are now asked on the `direct_acquisition` grain alone, and the recorded `*-aggregates` answer it unchanged;
 - in the two `*-profile.json`, every company value: CUI, organisation id, name, legal form, registration code and recorded date, headline status code and label, territory, fiscal record, CAEN rows, public money and as-of dates;
 - every financial statement value of ABC's 18 years (turnover, profit, loss, employees and the balance-sheet summary), and the trajectory deltas.
 

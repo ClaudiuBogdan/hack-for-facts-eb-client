@@ -69,7 +69,8 @@ export function CompanyMoneyBand({
   onGrain,
 }: {
   readonly model: CompanyProfileModel
-  readonly index: string
+  /** The band's caption, when the page numbers its bands; none, and no offset beside the title for it. */
+  readonly index?: string
   readonly procurement: ProcurementState
   readonly onGrain: (grain: CompanyPaymentGrain) => void
 }) {
@@ -80,7 +81,7 @@ export function CompanyMoneyBand({
   if (money.receivedCount === 0 && money.commitments.count === 0 && procurement.status === 'ready' && seapGrains === 0) {
     return (
       <ProfileBand id="bani-publici" titleId={TITLE_ID}>
-        <HubSectionHead titleId={TITLE_ID} index={index} title={title} />
+        <HubSectionHead titleId={TITLE_ID} index={index ?? ''} title={title} />
         <NoPublicMoney className="mt-5" />
       </ProfileBand>
     )
@@ -89,7 +90,7 @@ export function CompanyMoneyBand({
     // No public money in the profile, and the SEAP read, which may list records the profile lacks, has not answered: its state alone.
     return (
       <ProfileBand id="bani-publici" titleId={TITLE_ID}>
-        <HubSectionHead titleId={TITLE_ID} index={index} title={title} />
+        <HubSectionHead titleId={TITLE_ID} index={index ?? ''} title={title} />
         <SeapDetail model={model} procurement={procurement} onGrain={onGrain} />
       </ProfileBand>
     )
@@ -102,14 +103,14 @@ export function CompanyMoneyBand({
     <ProfileBand id="bani-publici" titleId={TITLE_ID}>
       <div className={BAND_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-5">
-          <HubSectionHead titleId={TITLE_ID} index={index} title={title} lede={moneyLede(model)} />
+          <HubSectionHead titleId={TITLE_ID} index={index ?? ''} title={title} lede={moneyLede(model)} />
           <MoneyFlows model={model} className="mt-8" />
         </div>
         {charted ? (
-          <div className={cn('min-w-0 lg:col-span-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-            <MonoLabel className="block text-muted-foreground">
+          <div className={cn('min-w-0 lg:col-span-7', index && HUB_BESIDE_TITLE_CLASS)} data-reveal>
+            <p className="text-xs text-muted-foreground">
               <Trans>Pe an, după anul contractului sau al achiziției</Trans>
-            </MonoLabel>
+            </p>
             <MoneyChart model={model} className="mt-4" />
           </div>
         ) : null}
@@ -156,10 +157,10 @@ function MoneyFlows({ model, className }: { readonly model: CompanyProfileModel;
             <span className={cn('size-2.5 shrink-0 rounded-[2px]', BUCKET_SWATCH[flowBucket(flow.flowType)])} aria-hidden="true" />
             <span className="min-w-0">
               {flowLabel(flow.flowType)}
-              <MonoLabel className="mt-1 block text-muted-foreground">
+              <span className="mt-1 block text-xs text-muted-foreground">
                 {flowCount(flow.flowType, flow.count)}
                 {flow.receipt ? null : <>, {t`nu plăți`}</>}
-              </MonoLabel>
+              </span>
             </span>
           </dt>
           <dd className={cn('text-right tabular-nums', flow.total === null ? 'text-sm text-muted-foreground' : 'text-base font-semibold text-foreground')}>
@@ -294,7 +295,7 @@ function SeapDetail({
     grains.length > 1 ? (
       <IndicatorToggle label={t`Înregistrările SEAP`} options={grains.map((key) => ({ key, label: grainLabel(key) }))} value={grain} onChange={onGrain} />
     ) : (
-      <MonoLabel className="text-muted-foreground">{grainLabel(grain)}</MonoLabel>
+      <span className="text-xs text-muted-foreground">{grainLabel(grain)}</span>
     )
   const part = grain === 'contracte' ? read.contracts : read.directAcquisitions
   if (part.status === 'failed') {
@@ -322,22 +323,22 @@ function SeapDetail({
     <div className={cn('mt-14', BAND_GRID_CLASS)} data-reveal>
       <div className="min-w-0 lg:col-span-7">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <MonoLabel className="text-primary">
+          <p className="text-xs text-muted-foreground">
             <Trans>Cine cumpără</Trans>
-          </MonoLabel>
+          </p>
           <div className="w-full sm:w-fit">{toggle}</div>
         </div>
         <PayerList direct={direct} className="mt-4" />
         <CoverageNote direct={direct} className="mt-3" />
       </div>
       <div className="min-w-0 lg:col-span-5">
-        <MonoLabel className="block text-primary">
+        <p className="text-xs text-muted-foreground">
           <Trans>Pentru ce</Trans>
-        </MonoLabel>
+        </p>
         <CategoryList direct={direct} className="mt-5" />
-        <MonoLabel className="mt-10 block text-primary">
+        <p className="mt-10 text-xs text-muted-foreground">
           <Trans>Cele mai recente</Trans>
-        </MonoLabel>
+        </p>
         <RecentRecords records={direct.recent} className="mt-4" />
         {cui ? <ProcurementLinks cui={cui} grain={grain} className="mt-3" /> : null}
       </div>
@@ -363,9 +364,9 @@ function ContractsDetail({ contracts, cui, toggle }: { readonly contracts: Compa
     <div className={cn('mt-14', BAND_GRID_CLASS)} data-reveal>
       <div className="min-w-0 lg:col-span-7">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <MonoLabel className="text-primary">
+          <p className="text-xs text-muted-foreground">
             <Trans>Contracte atribuite</Trans>
-          </MonoLabel>
+          </p>
           <div className="w-full sm:w-fit">{toggle}</div>
         </div>
         <p className="mt-4 max-w-[60ch] text-sm leading-relaxed text-foreground">{parts.join(' ')}</p>
@@ -374,9 +375,9 @@ function ContractsDetail({ contracts, cui, toggle }: { readonly contracts: Compa
         </p>
       </div>
       <div className="min-w-0 lg:col-span-5">
-        <MonoLabel className="block text-primary">
+        <p className="text-xs text-muted-foreground">
           <Trans>Cele mai recente</Trans>
-        </MonoLabel>
+        </p>
         <RecentRecords records={contracts.recent} className="mt-4" />
         {cui ? <ProcurementLinks cui={cui} grain="contracte" className="mt-3" /> : null}
       </div>
@@ -469,7 +470,7 @@ function PayerList({ direct, limit = 8, className }: { readonly direct: CompanyD
                   style={{ width: `${Math.max(0.8, (measure(row) / max) * 100).toFixed(1)}%` }}
                 />
               </span>
-              <MonoLabel className="mt-1.5 block tabular-nums text-muted-foreground">{grainCount(grain, row.count)}</MonoLabel>
+              <span className="mt-1.5 block text-xs tabular-nums text-muted-foreground">{grainCount(grain, row.count)}</span>
             </span>
             <span className="self-start text-right text-sm font-semibold tabular-nums text-foreground">
               {row.amountRon === null ? '—' : moneyCell(row.amountRon)}

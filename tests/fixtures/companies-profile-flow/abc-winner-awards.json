@@ -1,0 +1,924 @@
+{
+  "data": {
+    "summary": {
+      "dataAsOf": "2026-11-21T23:13:07.212166Z",
+      "disclosureKey": "2026-11-21T23:13:07.212166Z",
+      "window": {
+        "floor": "2021-01-01",
+        "from": "2021-01-01",
+        "to": null
+      },
+      "winner": {
+        "order": null,
+        "displayKind": "company",
+        "fiscalCode": "23617561",
+        "name": "ABC-CON-INTERNAŢIONAL SRL",
+        "disclosed": true
+      },
+      "recordCount": 51,
+      "valuedCount": 51,
+      "identityReviewCount": 0,
+      "undatedCount": 0
+    },
+    "records": {
+      "dataAsOf": "2026-11-21T23:13:07.212166Z",
+      "disclosureKey": "2026-11-21T23:13:07.212166Z",
+      "window": {
+        "floor": "2021-01-01",
+        "from": "2021-01-01",
+        "to": null
+      },
+      "items": [
+        {
+          "recordId": "elicitatie_api_pub:ca:100560733:106565171",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "16829837.52",
+          "nativeAmount": "16829837.52",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2025-07-09",
+          "title": "Executie lucrări  pentru obiectivul „Extindere retea de canalizare in comuna Brebeni, judetul Olt”",
+          "cpvCode": "45232400-6",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "34924324",
+              "name": "CUBE STRUCTURE ENGINEERING S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4716763",
+            "displayKind": "authority",
+            "name": "COMUNA BREBENI"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100550945:106389679",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "19583343.49",
+          "nativeAmount": "19583343.49",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2025-05-26",
+          "title": "MODERNIZARE SI EXTINDERE RETELE HIRDROEDILITARE, COMUNA SEICA MARE, JUDETUL SIBIU",
+          "cpvCode": "45231300-8",
+          "winnerCount": 4,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "15440751",
+              "name": "TEHNIMARKET SRL",
+              "disclosed": true
+            },
+            {
+              "order": 3,
+              "displayKind": "company",
+              "fiscalCode": "3206081",
+              "name": "CASREP SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4241052",
+            "displayKind": "authority",
+            "name": "Primăria Comunei Șeica Mare - Compartimentul de A i tență Socială și Autoritate Tutelară"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100527992:105967067",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "10385635.00",
+          "nativeAmount": "10385635.00",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2025-01-31",
+          "title": "Proiectare si executie lucrari   pentru investitia CONSTRUIREA DE LOCUINTE PENTRU TINERI IN ORASUL MARASESTI, JUDETUL VRANCEA",
+          "cpvCode": "45211100-0",
+          "winnerCount": 3,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "34872594",
+              "name": "P & D EUROCONF METALIC SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "24087773",
+              "name": "CONSULTING GRUP EXPERT SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4410623",
+            "displayKind": "authority",
+            "name": "Primăria orașului Mărășești - Direcția de A i tență Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100522361:105853892",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "6804886.69",
+          "nativeAmount": "6804886.69",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2025-01-16",
+          "title": "Execuție lucrări pentru proiectul de investiții „Înființare de sisteme individuale adecvate(SIA) de colecatre și epurare a apelor uzate în comuna Deleni, satele Bulboaca, Deleni și Zizinca, județul Vaslui”, finanțat prin Planul Naţional de Redresare şi Rezilienţă Apel nr. PNRR/2022/C1/I.2",
+          "cpvCode": "45232411-6",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "40032834",
+              "name": "AMENAJĂRI IVCONS S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3394252",
+            "displayKind": "authority",
+            "name": "Primăria Comunei Deleni - Compartiment A i tenţă Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100648899:107958760",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "3784227.42",
+          "nativeAmount": "3784227.42",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-12-16",
+          "title": "Executie lucrări de modernizare clădire la sediul CNCIR SA - Sucursala Regionala MOLDOVA- Punct de lucru Bacău",
+          "cpvCode": "45262690-4",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "31497610",
+              "name": "CLEVER TRANSCOM SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "27787860",
+            "displayKind": "authority",
+            "name": "COMPANIA NAŢIONALĂ PENTRU CONTROLUL CAZANELOR, INSTALAŢIILOR DE RIDICAT ŞI RECIPIENTELOR SUB PRESIUNE - (CNCIR) SA"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100511842:105704887",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "1974601.38",
+          "nativeAmount": "1974601.38",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-11-19",
+          "title": "Executie  lucrari  \"Reabilitare  camin cultiral in comuna Odoreu\"",
+          "cpvCode": "45000000-7",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "42824865",
+              "name": "RCC ROLAND CORP CONST S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3897424",
+            "displayKind": "authority",
+            "name": "Primăria Comunei Odoreu - Compartiment de A i tenţă Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100501810:105589538",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "28496455.10",
+          "nativeAmount": "28496455.10",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-10-10",
+          "title": "Servicii de proiectare faza Proiect Tehnic, asistență tehnică din partea proiectantului și execuție lucrări pentru proiectul de investiții ”REALIZARE RETEA DE CANALIZARE GRAVITATIONALA, POMPATA SI RACORDURI, IN COMUNA FOCURI, JUDETUL IASI”",
+          "cpvCode": "45232400-6",
+          "winnerCount": 5,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "43937781",
+              "name": "ARBEIT PROJECT SOLUTION S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 3,
+              "displayKind": "company",
+              "fiscalCode": "15440751",
+              "name": "TEHNIMARKET SRL",
+              "disclosed": true
+            },
+            {
+              "order": 4,
+              "displayKind": "company",
+              "fiscalCode": "45048009",
+              "name": "TOP TEAM DESIGN PROIECT S.R.L.",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4540046",
+            "displayKind": "authority",
+            "name": "COMUNA FOCURI"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100619946:107480362",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "21949067.45",
+          "nativeAmount": "21949067.45",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-08-07",
+          "title": "Execuție lucrări in cadrul proiectului: „Renovare energetică moderată a clădirii Secției Exterioare Obstetrică-Ginecologie a Spitalului Județean de Urgență Mavromati Botoșani”",
+          "cpvCode": "45453000-7",
+          "winnerCount": 4,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "6908390",
+              "name": "GENERAL CONSTRUCT SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 3,
+              "displayKind": "company",
+              "fiscalCode": "16042827",
+              "name": "DAM CONSTRUCT SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3372955",
+            "displayKind": "authority",
+            "name": "JUDETUL BOTOSANI"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100508208:105657410",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "37446215.85",
+          "nativeAmount": "37446215.85",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-08-02",
+          "title": "Servicii de proiectare faza Proiect Tehnic, asistență tehnică din partea proiectantului și execuție lucrări pentru proiectul de investiții ”INFIINTARE RETEA INTELIGENTA DE DISTRIBUTIE GAZE NATURALE IN COMUNA RACHITI, JUDETUL BOTOSANI”.",
+          "cpvCode": "45231221-0",
+          "winnerCount": 3,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "10844872",
+              "name": "CONALID SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "31055944",
+              "name": "BTDCONSTRUCT & AMBIENT SRL",
+              "disclosed": false
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3372106",
+            "displayKind": "authority",
+            "name": "Primăria Comunei Răchiți - Compartiment A i tență Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100651817:108013675",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "8498144.20",
+          "nativeAmount": "8498144.20",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-06-28",
+          "title": "13594 - Proiectare, asistență tehnică din partea proiectantului pe perioada execuției lucrărilor și execuție lucrări pentru obiectivul de investitii: “Reabilitarea, extindere și dotare Liceu Tehnologic Făget, sat Ghimeș, comuna Ghimeș-Făget, judetul Bacău”",
+          "cpvCode": "45200000-9",
+          "winnerCount": 3,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "24087773",
+              "name": "CONSULTING GRUP EXPERT SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "39786265",
+              "name": "GRUP CONSTRUCT DESIGN S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "14273221",
+            "displayKind": "authority",
+            "name": "COMPANIA NATIONALA DE INVESTITII C.N.I. SA"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100495694:105495996",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "1796629.11",
+          "nativeAmount": "1796629.11",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-06-11",
+          "title": "Extindere retea de canalizare in satele Albesti, Buimaceni si Jijia, comuna Albesti, jud. Botosani",
+          "cpvCode": "45231100-6",
+          "winnerCount": 4,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "45048009",
+              "name": "TOP TEAM DESIGN PROIECT S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 3,
+              "displayKind": "company",
+              "fiscalCode": "15440751",
+              "name": "TEHNIMARKET SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3373519",
+            "displayKind": "authority",
+            "name": "Primăria Comunei Albești -Compartiment A i tență Socială și Autoritate Tutelară"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100540415:106208992",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "31615314.51",
+          "nativeAmount": "31615314.51",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-04-10",
+          "title": "Servicii de proiectare (PTh + DE și Asistență Tehnică din partea proiectantului), Execuție lucrări și Furnizare Dotări, pentru obiectivul de investiții: “Locuințe pentru tineri care provin din grupuri/comunități vulnerabile la nivelul Municipiului Botoșani“ PNRR/2022/I2, Runda 1",
+          "cpvCode": "45000000-7",
+          "winnerCount": 4,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "6908390",
+              "name": "GENERAL CONSTRUCT SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "34933357",
+              "name": "ARHITECTURES PROJECTS DEVELOPMENT-8  SRL",
+              "disclosed": true
+            },
+            {
+              "order": 3,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3372882",
+            "displayKind": "authority",
+            "name": "Municipiul Boto ani"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100450771:104917105",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "5716001.65",
+          "nativeAmount": "5716001.65",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-03-14",
+          "title": "\"Eficienta energetica a cladirilor Liceului “Stefan D. Luchian” pentru reducerea consumului de resurse\"",
+          "cpvCode": "45000000-7",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "612603",
+              "name": "ALCAROM MIXT IMPORT EXPORT SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3373403",
+            "displayKind": "authority",
+            "name": "Primăria Orașului Ștefănești - Direcția A i tență Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100444578:104811150",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "6481264.86",
+          "nativeAmount": "6481264.86",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-02-14",
+          "title": "“Construirea de locuinte de serviciu pentru specialisti din sanatate si invatamant in orasul Stefanesti, judetul Botosani”",
+          "cpvCode": "45000000-7",
+          "winnerCount": 3,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "16042827",
+              "name": "DAM CONSTRUCT SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3373403",
+            "displayKind": "authority",
+            "name": "Primăria Orașului Ștefănești - Direcția A i tență Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100441728:104756575",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "16391731.15",
+          "nativeAmount": "16391731.15",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-02-09",
+          "title": "Servicii de proiectare si Execuţie lucrări pentru obiectivul “Extindere retea de canalizare in comuna Sipote, judetul Iasi”",
+          "cpvCode": "45232400-6",
+          "winnerCount": 4,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "15440751",
+              "name": "TEHNIMARKET SRL",
+              "disclosed": true
+            },
+            {
+              "order": 3,
+              "displayKind": "company",
+              "fiscalCode": "43937781",
+              "name": "ARBEIT PROJECT SOLUTION S.R.L.",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4540291",
+            "displayKind": "authority",
+            "name": "COMUNA SIPOTE"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100432231:104585479",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "1202360.56",
+          "nativeAmount": "1202360.56",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2024-01-11",
+          "title": "REABILITARE CAMIN CULTURAL SONA, COMUNA SONA, JUDETUL ALBA",
+          "cpvCode": "45000000-7",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4562036",
+            "displayKind": "authority",
+            "name": "Primăria Comunei Șona - Compartimentul A i tență Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100425737:104497878",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "16123277.71",
+          "nativeAmount": "16123277.71",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2023-12-15",
+          "title": "Execuție lucrări pentru obiectivul  de investiții, ”Eficientizarea energetică a blocurilor de locuințe din orașul Comănești, Asociația de Proprietari ”Azur” nr. 6: Str. Republicii Bl. A (sc A+B), A1 (sc A+B), bl. B1, B2, B3, B4, B5, B6, B7, B8”, C5- A 3.1-9",
+          "cpvCode": "45210000-2",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "24314868",
+              "name": "INSIDE CONSTRUCTION SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4353269",
+            "displayKind": "authority",
+            "name": "Primăria Orașului Comănești - Direcția de A i tență Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100440272:104734111",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "5002298.14",
+          "nativeAmount": "5002298.14",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2023-12-11",
+          "title": "Continuare lucrări pentru finalizarea obiectivului “Alimentare cu apă Sat Todirești, Comuna Todirești, Județul Suceava”",
+          "cpvCode": "45232150-8",
+          "winnerCount": 2,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "15049525",
+              "name": "EURO EST GROUP SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "4326922",
+            "displayKind": "authority",
+            "name": "COMUNA TODIRESTI"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100420099:104439903",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "21356880.62",
+          "nativeAmount": "21356880.62",
+          "currency": "RON",
+          "flags": [
+            "joint_win"
+          ],
+          "awardDay": "2023-11-29",
+          "title": "RETELE HIDROEDILITARE, COMUNA CAINENI, JUDETUL VALCEA",
+          "cpvCode": "45000000-7",
+          "winnerCount": 4,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "33648158",
+              "name": "BAHM CONSTRUCȚII CIVILE ȘI INDUSTRIALE S.R.L.",
+              "disclosed": true
+            },
+            {
+              "order": 1,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            },
+            {
+              "order": 2,
+              "displayKind": "company",
+              "fiscalCode": "15440751",
+              "name": "TEHNIMARKET SRL",
+              "disclosed": true
+            },
+            {
+              "order": 3,
+              "displayKind": "company",
+              "fiscalCode": "3206081",
+              "name": "CASREP SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "2541681",
+            "displayKind": "authority",
+            "name": "Primăria Comunei Câineni - Compartiment A i tență Socială"
+          }
+        },
+        {
+          "recordId": "elicitatie_api_pub:ca:100621942:107518113",
+          "contractKind": "ordinary",
+          "valueKind": "awarded",
+          "additive": true,
+          "status": "awarded",
+          "amountLei": "35084106.90",
+          "nativeAmount": "35084106.90",
+          "currency": "RON",
+          "flags": [],
+          "awardDay": "2023-11-27",
+          "title": "Contract de lucrări aferent obiectivului de investiții Complex Corecțional Penitenciarul Botoșani",
+          "cpvCode": "45210000-2",
+          "winnerCount": 1,
+          "winners": [
+            {
+              "order": 0,
+              "displayKind": "company",
+              "fiscalCode": "23617561",
+              "name": "ABC-CON-INTERNAŢIONAL SRL",
+              "disclosed": true
+            }
+          ],
+          "buyer": {
+            "fiscalCode": "3503538",
+            "displayKind": "authority",
+            "name": "Penitenciarul Botoșani"
+          }
+        }
+      ],
+      "page": 1,
+      "pageSize": 20,
+      "total": 51,
+      "hasMore": true,
+      "depthLimited": false
+    }
+  }
+}

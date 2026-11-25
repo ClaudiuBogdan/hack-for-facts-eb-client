@@ -1,0 +1,20 @@
+{
+  "data": null,
+  "errors": [
+    {
+      "message": "No published contract awards for this supplier code.",
+      "locations": [
+        {
+          "line": 3,
+          "column": 5
+        }
+      ],
+      "path": [
+        "summary"
+      ],
+      "extensions": {
+        "code": "NOT_FOUND"
+      }
+    }
+  ]
+}
