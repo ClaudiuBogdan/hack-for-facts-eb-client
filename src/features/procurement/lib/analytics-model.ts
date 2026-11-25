@@ -32,7 +32,10 @@ export interface Population {
    * valued), `none` (frameworks: a ceiling is not spend).
    */
   readonly money: 'clean' | 'provisional' | 'none'
-  /** The first year whose records compare with today's (direct purchases before 2019 cannot tell a purchase from a refused offer). */
+  /**
+   * The first year whose records compare with today's: direct purchases before 2019 cannot tell a purchase from a refused
+   * offer; contracts and frameworks are published from 2021 (owner, 24 November 2026; PROC-KB0Z).
+   */
   readonly comparableFrom: number
   /**
    * The last month before the rows come mostly from e-licitatie (from 2026):
@@ -65,8 +68,8 @@ export const FRAMEWORKS_SCOPE = { grain: 'contract', recordKind: 'framework_agre
 
 export const POPULATIONS: Readonly<Record<PopulationId, Population>> = {
   directe: { id: 'directe', grain: 'direct_acquisition', money: 'clean', comparableFrom: 2019, changes: true, cutoff: 'direct', defaultMeasure: 'lei' },
-  contracte: { id: 'contracte', grain: 'contract', recordKind: 'contract_award', money: 'provisional', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
-  acorduri: { id: 'acorduri', ...FRAMEWORKS_SCOPE, money: 'none', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
+  contracte: { id: 'contracte', grain: 'contract', recordKind: 'contract_award', money: 'provisional', comparableFrom: 2021, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
+  acorduri: { id: 'acorduri', ...FRAMEWORKS_SCOPE, money: 'none', comparableFrom: 2021, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
 }
 
 // ────────────────────────────────────────────────────────────────── axes ──

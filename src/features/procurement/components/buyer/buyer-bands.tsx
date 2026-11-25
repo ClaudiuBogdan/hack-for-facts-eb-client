@@ -53,11 +53,19 @@ function grainOf(choice: ProcurementBuyerGrain): 'direct' | 'contract' {
   return choice === 'directe' ? 'direct' : 'contract'
 }
 
-/** Contracts the API does not count now (its contract analysis abstaining while legacy procurement is off): unavailable, never „none". */
+/**
+ * Contract figures the API does not compute now (PROC-KB0Z step 1: the
+ * contract grain's stats, series and breakdowns abstain until the money build
+ * serves them): said as not computed yet, never „none" and never a failed
+ * read; the contracts themselves are listed in their own band.
+ */
 function ContractsUnread({ className }: { readonly className?: string }) {
   return (
     <p className={cn('border-y py-4 text-sm text-muted-foreground', className)}>
-      <Trans>Cifrele nu s-au încărcat.</Trans>
+      <Trans>Cifrele contractelor nu sunt calculate încă.</Trans>{' '}
+      <a href="#contracte" className="font-medium text-foreground underline underline-offset-4">
+        <Trans>Vezi contractele atribuite</Trans>
+      </a>
     </p>
   )
 }

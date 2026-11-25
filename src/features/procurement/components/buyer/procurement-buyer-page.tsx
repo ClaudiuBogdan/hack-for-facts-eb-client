@@ -25,6 +25,7 @@ import { HomeBand, HomeSectionNav } from '../home/home-chrome'
 import { ProfileFallbackNotice } from '../profile/profile-fallback-notice'
 import { moneyFact } from '../profile/profile-facts'
 import { ProfileYearsChart } from '../profile/profile-years-chart'
+import { BuyerAwardsBand } from './buyer-awards-band'
 import { BuyerContextBand, BuyerHowBand, BuyerLargestBand, BuyerWhatBand, BuyerWhenBand, BuyerWhereBand, BuyerWhoBand } from './buyer-bands'
 import { BuyerHead, BuyerHeadPending } from './buyer-head'
 
@@ -173,7 +174,8 @@ export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: s
   const choose = (patch: Partial<ProcurementBuyerSearch>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true, resetScroll: false })
   // The last twelve months are the default: they stay out of the URL; a year picked is written.
-  const onChoice = (next: PeriodChoice) => choose({ year: next === RECENT ? undefined : next })
+  // Another period starts its contracts' list on the first page.
+  const onChoice = (next: PeriodChoice) => choose({ year: next === RECENT ? undefined : next, pagina: undefined })
 
   return (
     <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
@@ -259,6 +261,7 @@ function BuyerBody({
         ...(profile.supplierPlaces ? [{ id: 'de-unde', label: t`De unde` }] : []),
         { id: 'cand', label: t`Când` },
         { id: 'cum', label: t`Cum` },
+        { id: 'contracte', label: t`Contracte` },
         { id: 'cele-mai-mari', label: t`Cele mai mari` },
         ...(hasContext ? [{ id: 'context', label: t`Context` }] : []),
       ]
@@ -309,6 +312,14 @@ function BuyerBody({
             {profile.supplierPlaces ? <BuyerWhereBand profile={profile} index={index('de-unde')} /> : null}
             <BuyerWhenBand profile={profile} index={index('cand')} />
             <BuyerHowBand profile={profile} index={index('cum')} />
+            <BuyerAwardsBand
+              profile={profile}
+              index={index('contracte')}
+              order={search.ordine ?? 'noi'}
+              page={search.pagina ?? 1}
+              onOrder={(order) => choose({ ordine: order === 'noi' ? undefined : order, pagina: undefined })}
+              onPage={(page) => choose({ pagina: page === 1 ? undefined : page })}
+            />
             <BuyerLargestBand
               profile={profile}
               index={index('cele-mai-mari')}
