@@ -537,8 +537,9 @@ function PopulationNav({
   readonly onChange: (patch: Partial<AdvancedState>) => void
   readonly onSearch: () => void
 }) {
+  // Under the sidebar (z-40), which widens over the page on hover: at the same z-index the bar, later in the document, covered it.
   return (
-    <nav ref={barRef} aria-label={t`Ce citești`} className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
+    <nav ref={barRef} aria-label={t`Ce citești`} className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-2 py-0 sm:gap-6">
         <SearchButton onClick={onSearch} className="order-last border-l pl-1 sm:order-first sm:border-l-0" />
         <ol className="grid min-w-0 flex-1 grid-cols-5 sm:ml-auto sm:flex sm:flex-none sm:gap-6">
