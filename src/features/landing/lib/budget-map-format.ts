@@ -64,8 +64,13 @@ export function formatPercent(value: number | null, locale: NumberLocale): strin
   return `${minus(formatter(locale, { maximumFractionDigits: 1, signDisplay: 'exceptZero' }).format(value))}%`
 }
 
-/** Rounded to `step` as `Intl` rounds: half away from zero. */
-const roundTo = (value: number, step: number) => Math.sign(value) * Math.round(Math.abs(value) / step) * step
+/**
+ * Rounded to `step` as `Intl` rounds: half away from zero, on the decimal the
+ * number reads as. `0.95 / 0.1` is 9.4999… in binary, which `Math.round` takes
+ * down while `Intl` prints „1" — so the quotient is read at 12 significant
+ * digits first, and „+1%" is never coloured in the class below 1.
+ */
+const roundTo = (value: number, step: number) => Math.sign(value) * Math.round(Number((Math.abs(value) / step).toPrecision(12))) * step
 
 /** An amount rounded as `compactParts` prints it: one decimal of its thousands, millions or billions. */
 export function asPrinted(value: number): number {

@@ -27,7 +27,21 @@ import { MapPageTable } from './map-page-table'
  * and figures. Decisions: `docs/design/map/design.md`.
  */
 
-const loadMap = () => quietImport(() => import('./map-page-map'))
+/**
+ * The map's code (its script or its stylesheet) did not arrive. Marked where it
+ * is imported: Vite's own error for a stylesheet that failed does not read as a
+ * chunk error, and a reload can mend either, unlike a browser that cannot draw.
+ */
+class MapCodeError extends Error {
+  constructor(readonly original: unknown) {
+    super('The map page code did not load')
+  }
+}
+
+const loadMap = () =>
+  quietImport(() => import('./map-page-map')).catch((error: unknown) => {
+    throw new MapCodeError(error)
+  })
 const MapPageMap = lazy(loadMap)
 
 const SEGMENT = 'h-9 gap-1.5 px-3 text-sm data-[state=on]:bg-secondary data-[state=on]:text-foreground'
@@ -39,7 +53,7 @@ const MAP_PLACE = 'grid h-[62dvh] min-h-80 place-items-center bg-muted/30 text-s
  * so only it offers one.
  */
 function MapFailed({ error }: { readonly error: Error }) {
-  const chunk = isUpdateAvailableError(error)
+  const chunk = error instanceof MapCodeError || isUpdateAvailableError(error)
   return (
     <div className={MAP_PLACE}>
       <p className="flex flex-wrap items-center gap-3">

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { defaultParseSearch } from '@tanstack/react-router'
 import { DEFAULT_STATE, LEGACY_KEYS, legacyState, searchFromState, stateFromSearch, type PageState } from './map-page-search'
 
 /** An old link's year, as the previous page wrote it. */
@@ -120,3 +121,24 @@ describe('an old link to the map', () => {
     expect(stateFromSearch({ ...old, harta: 'cheltuieli', an: 2018, pe: 'x', nivel: 'y', vedere: 'z' })).toEqual({ ...DEFAULT_STATE, measureId: 'expenses', year: '2018' })
   })
 })
+
+describe('an address as the router reads it', () => {
+  it('opens the default year for a value that is not plain text or a number, without throwing', () => {
+    // The router parses each value as JSON: an object without a usable toString, an array of one year.
+    for (const query of ['?an=%7B%22toString%22%3Anull%7D', '?an=%5B2019%5D', '?an=%7B%7D']) {
+      const search = defaultParseSearch(query)
+      expect(() => stateFromSearch(search), query).not.toThrow()
+      expect(stateFromSearch(search).year, query).toBe('2025')
+    }
+    expect(stateFromSearch(defaultParseSearch('?an=2019')).year).toBe('2019')
+  })
+
+  it('reads an old period\'s year only from plain values', () => {
+    const odd = { toString: null }
+    expect(() => stateFromSearch({ filters: { report_period: { selection: { interval: { start: odd, end: odd } } } } })).not.toThrow()
+    expect(stateFromSearch({ filters: { report_period: { selection: { interval: { start: ['2019'], end: ['2019'] } } } } }).year).toBe('2025')
+    expect(stateFromSearch({ filters: { report_period: { selection: { dates: [['2023']] } } } }).year).toBe('2025')
+    expect(stateFromSearch({ filters: { report_period: { selection: { interval: { start: 2021, end: '2021' } } } } }).year).toBe('2021')
+  })
+})
+

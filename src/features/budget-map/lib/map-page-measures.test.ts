@@ -44,6 +44,10 @@ describe('the map page measures', () => {
     expect(scale.classOf(-1.06)).toBe(2)
     expect(scale.classOf(7)).toBe(6)
     expect(scale.classOf(null)).toBeNull()
+    // 1,000,000,000 lei in, 990,500,000 out: 0.95%, which prints „+1%" — so it is coloured from 1, not as neutral.
+    const share = ((1_000_000_000 - 990_500_000) / 1_000_000_000) * 100
+    expect(byId('2025', 'total', 'county').get('balance')!.format(share, 'ro')).toBe('+1%')
+    expect(scale.classOf(share)).toBe(4)
     // The primării keep their own edges.
     expect(byId('2025', 'total', 'uat').get('balance')!.scale([]).classes.map((item) => item.from)).toEqual([null, -20, -10, -3, 3, 10, 20])
   })

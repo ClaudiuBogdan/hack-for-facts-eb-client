@@ -58,7 +58,7 @@ export function MapPageTable({
   readonly level: Level
   readonly locale: NumberLocale
 }) {
-  const { uats, counties, figures, failed, retry } = data
+  const { uats, counties, figures, tableFailed, retry } = data
   const county = level === 'county'
   // The picked map decides the opening sort; a header the reader clicks holds until the map changes.
   const [chosen, setChosen] = useState<{ readonly forMeasure: MeasureId; readonly key: SortKey; readonly descending: boolean } | null>(null)
@@ -125,7 +125,7 @@ export function MapPageTable({
   const phoneColumn = sort.key === 'name' ? 'share' : sort.key
   const cell = (key: Exclude<SortKey, 'name'>) => cn('text-right tabular-nums', key !== phoneColumn && 'hidden sm:table-cell')
 
-  if (failed) {
+  if (tableFailed) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-3 px-4 py-6 text-sm text-muted-foreground md:px-6">
         {t`Tabelul nu s-a putut încărca.`}

@@ -22,7 +22,11 @@ export interface MapPageData {
   readonly figures: ReadonlyMap<string, BudgetFigures> | undefined
   /** Budgets with figures but no shape (the capital's own budget, drawn as its sectors). */
   readonly outsideMap: number
+  /** Something the map reads failed: the shapes, the label points or the figures. */
   readonly failed: boolean
+  /** Something the table reads failed: the figures, or the shapes of the picked level (it needs no label points). */
+  readonly tableFailed: boolean
+  /** Asks again for whatever failed. */
   readonly retry: () => void
 }
 
@@ -37,6 +41,7 @@ export function useMapPageData(year: string, basis: Basis, level: Level): MapPag
     figures: figures.data?.byUat,
     outsideMap: figures.data?.outsideMap ?? 0,
     failed: queries.some((query) => query.isError),
+    tableFailed: figures.isError || (level === 'county' ? counties.isError : uats.isError),
     retry: () => {
       for (const query of queries) if (query.isError) void query.refetch()
     },

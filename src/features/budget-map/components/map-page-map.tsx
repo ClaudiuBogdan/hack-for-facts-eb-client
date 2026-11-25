@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ATTRIBUTION, COUNTY_TARGET, GESTURE_HINT, UAT_TARGET, buildInfo, useMapInstance, useUatPointer } from '@/features/landing/components/budget-map/map-engine'
 import { UatPopover, UatTooltip, type UatInfo } from '@/features/landing/components/budget-map/uat-info'
 import { ZoomButton } from '@/features/landing/components/budget-map/zoom-button'
-import { coverageOf, measureValues, type Measure } from '@/features/landing/lib/budget-map-measures'
+import { NO_DATA_COLOR, coverageOf, measureValues, type Measure } from '@/features/landing/lib/budget-map-measures'
 import { ROMANIA_BOUNDS, SOURCE, countyLabelPoints, fillColorExpression, setMapLevel, uatLabelPoints, type MapWords } from '@/features/landing/lib/budget-map-style'
 import type { NumberLocale } from '@/features/landing/lib/national-facts'
 import { countyNameRo } from '@/lib/territory-counties'
@@ -64,7 +64,8 @@ export default function MapPageMap({
     windows: t`Folosește Ctrl + scroll pentru zoom pe hartă`,
     mac: t`Folosește ⌘ + scroll pentru zoom pe hartă`,
     mobile: t`Folosește două degete pentru a muta harta`,
-    title: t`Harta primăriilor`,
+    // The canvas's name for assistive tech, read once: true of either level.
+    title: t`Harta bugetelor locale`,
     attributionToggle: t`Arată sursele hărții`,
     boundaries: t`Limite UAT: ANCPI, prin`,
   }
@@ -80,7 +81,9 @@ export default function MapPageMap({
   useEffect(() => {
     if (map) setMapLevel(map, level)
   }, [map, level])
-  // A new map, year, count or level: new colours and new figures in the labels; the view stays.
+  // A new map, year, count or level: new colours and new figures in the labels; the view stays. Until
+  // the picked figures arrive (or if they fail) the shapes are the no-data grey and the labels carry
+  // names only: nothing from the previous year, count or level stays on the map under the new legend.
   useEffect(() => {
     if (!map || !labels) return
     const figure = (code: string) => {
@@ -90,12 +93,11 @@ export default function MapPageMap({
     const countyLabels = map.getSource(SOURCE.countyLabels) as maplibregl.GeoJSONSource
     if (county) {
       countyLabels.setData(countyLabelPoints(labels, (code) => countyNameRo(code) ?? code, figure))
-      if (figures) map.setPaintProperty('county-fill', 'fill-color', fillColorExpression(codes, values, scale, 'mnemonic'))
+      map.setPaintProperty('county-fill', 'fill-color', figures ? fillColorExpression(codes, values, scale, 'mnemonic') : NO_DATA_COLOR)
       return
     }
     countyLabels.setData(countyLabelPoints(labels, (code) => countyNameRo(code) ?? code))
-    if (!figures) return
-    map.setPaintProperty('uat-fill', 'fill-color', fillColorExpression(codes, values, scale))
+    map.setPaintProperty('uat-fill', 'fill-color', figures ? fillColorExpression(codes, values, scale) : NO_DATA_COLOR)
     ;(map.getSource(SOURCE.uatLabels) as maplibregl.GeoJSONSource).setData(uatLabelPoints(labels, (code) => String(uatProps.get(code)?.name ?? ''), figure))
   }, [map, labels, figures, county, codes, values, scale, uatProps, valueOf, measure, locale])
   const ready = Boolean(map && uats && counties && labels && figures)
@@ -131,8 +133,8 @@ export default function MapPageMap({
     <div className="flex min-h-0 flex-1 flex-col md:relative">
       {/* A flex row, the map stretched across it: MapLibre's own stylesheet makes its container `position: relative`, so it cannot be laid over the frame. */}
       <div ref={frameRef} className="relative flex h-[62dvh] min-h-80 md:h-auto md:min-h-0 md:flex-1">
-        {/* MapLibre names its own canvas region (`Map.Title`, in the page's language). While another year loads, the colours are the last ones: dimmed. */}
-        <div ref={containerRef} className={cn('min-w-0 flex-1 transition-opacity', GESTURE_HINT, ATTRIBUTION, map && !figures && 'opacity-50')} />
+        {/* MapLibre names its own canvas region (`Map.Title`, in the page's language). */}
+        <div ref={containerRef} className={cn('min-w-0 flex-1', GESTURE_HINT, ATTRIBUTION)} />
         {tooltip && tooltipInfo ? <UatTooltip info={tooltipInfo} locale={locale} x={tooltip.x} y={tooltip.y} frame={tooltip.frame} amount={amount} /> : null}
         <div className="absolute top-3 right-3 flex flex-col gap-1.5">
           <ZoomButton label={t`Apropie`} onClick={() => map?.zoomIn()}>

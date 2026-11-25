@@ -249,8 +249,10 @@ export function useUatPointer(map: maplibregl.Map | null, frameRef: React.RefObj
 
   useEffect(() => {
     if (!map) return
-    // An outline left by the other target goes with it.
+    // An outline, tooltip or popover left by the other target goes with it: switching back must not bring it back.
     outlineRef.current(null)
+    setTooltip(null)
+    setPopover(null)
     const uatAt = (point: maplibregl.PointLike) => {
       const feature = map.queryRenderedFeatures(point, { layers: [layer] })[0]
       return feature ? { siruta: String(feature.properties?.[key] ?? feature.id), cui: typeof feature.properties?.cui === 'string' ? feature.properties.cui : '' } : null

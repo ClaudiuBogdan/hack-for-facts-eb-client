@@ -22,7 +22,7 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 /** No figures yet: the bar and the places for the map or the table, as the server renders them. */
-const data: MapPageData = { uats: undefined, counties: undefined, labels: undefined, figures: undefined, outsideMap: 0, failed: false, retry: () => {} }
+const data: MapPageData = { uats: undefined, counties: undefined, labels: undefined, figures: undefined, outsideMap: 0, failed: false, tableFailed: false, retry: () => {} }
 vi.mock('@/features/budget-map/hooks/use-map-page-data', () => ({ useMapPageData: () => data }))
 // MapLibre needs WebGL; the map's own behaviour is checked in the browser.
 vi.mock('@/features/budget-map/components/map-page-map', () => ({ default: () => <div data-testid="map" /> }))

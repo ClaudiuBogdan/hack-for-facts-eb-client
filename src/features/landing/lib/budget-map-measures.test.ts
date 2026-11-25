@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseFiguresCsv } from '../api/budget-map'
-import { asPrinted, compactParts, formatAmount, formatPercent, joinParts } from './budget-map-format'
+import { asPrinted, compactParts, formatAmount, formatPercent, joinParts, percentAsPrinted } from './budget-map-format'
 import { coverageOf, measureById, measureValues, percentileEdges, percentileScale, positionOnScale, type BudgetFigures } from './budget-map-measures'
 
 const NB = ' '
@@ -148,3 +148,17 @@ describe('a percentile scale in another unit', () => {
     expect(percentileScale([null, null], RAMP, Math.round).classes).toEqual([])
   })
 })
+
+describe('a figure half-way between two printed values', () => {
+  it('rounds as the printed figure does, though binary division lands just below the half', () => {
+    // 0.95 / 0.1 is 9.4999… in binary; Intl prints 0.95 as „+1%".
+    const share = ((10_000 - 9_905) / 10_000) * 100
+    expect(formatPercent(share, 'ro')).toBe('+1%')
+    expect(percentAsPrinted(share)).toBe(1)
+    expect(percentAsPrinted(-2.95)).toBeCloseTo(-3, 10)
+    expect(formatPercent(-2.95, 'ro')).toBe('−3%')
+    expect(asPrinted(14_250_000)).toBe(14_300_000)
+    expect(joinParts(compactParts(14_250_000, 'ro'), 'ro')).toBe('14,3\u00a0mil.')
+  })
+})
+

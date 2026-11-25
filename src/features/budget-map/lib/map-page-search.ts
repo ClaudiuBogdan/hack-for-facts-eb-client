@@ -33,15 +33,26 @@ type Search = Readonly<Record<string, unknown>>
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> => typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const isYear = (value: unknown): value is string => (YEARS as readonly string[]).includes(String(value))
+/**
+ * A year this page has, from a plain value the router read (text or a number).
+ * Anything else — an object, an array — is unreadable: `String()` of a parsed
+ * `{"toString":null}` would throw, and `[2019]` would pass as 2019.
+ */
+function yearOf(value: unknown): string | undefined {
+  if (typeof value !== 'string' && typeof value !== 'number') return undefined
+  const year = String(value)
+  return (YEARS as readonly string[]).includes(year) ? year : undefined
+}
 
 /** The single year an old `report_period` names, if it names exactly one this page has. */
 function legacyYear(period: unknown): string | undefined {
   if (!isRecord(period) || !isRecord(period.selection)) return undefined
   const { interval, dates } = period.selection
-  if (isRecord(interval) && interval.start !== undefined && String(interval.start) === String(interval.end) && isYear(interval.start)) return String(interval.start)
-  if (Array.isArray(dates) && dates.length === 1 && isYear(dates[0])) return String(dates[0])
-  return undefined
+  if (isRecord(interval)) {
+    const start = yearOf(interval.start)
+    return start !== undefined && start === yearOf(interval.end) ? start : undefined
+  }
+  return Array.isArray(dates) && dates.length === 1 ? yearOf(dates[0]) : undefined
 }
 
 /** What an old link asks for that this page can show; nothing else. */
@@ -69,10 +80,9 @@ export function legacyState(search: Search): Partial<PageState> {
 /** The page's state from the address: its own keys first, then what an old link asks for, then the default. */
 export function stateFromSearch(search: Search): PageState {
   const legacy = legacyState(search)
-  const year = search.an === undefined ? undefined : String(search.an)
   return {
     measureId: measureFromSearch(search.harta) ?? (search.harta === undefined ? legacy.measureId : undefined) ?? DEFAULT_STATE.measureId,
-    year: (year !== undefined && isYear(year) ? year : undefined) ?? (search.an === undefined ? legacy.year : undefined) ?? DEFAULT_STATE.year,
+    year: yearOf(search.an) ?? (search.an === undefined ? legacy.year : undefined) ?? DEFAULT_STATE.year,
     basis: search.pe === 'locuitor' ? 'per_capita' : search.pe === undefined ? (legacy.basis ?? DEFAULT_STATE.basis) : DEFAULT_STATE.basis,
     level: search.nivel === 'judete' ? 'county' : search.nivel === undefined ? (legacy.level ?? DEFAULT_STATE.level) : DEFAULT_STATE.level,
     view: search.vedere === 'tabel' ? 'table' : search.vedere === undefined ? (legacy.view ?? DEFAULT_STATE.view) : DEFAULT_STATE.view,
