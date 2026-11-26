@@ -28,7 +28,7 @@ catalogues change:
 - fill its Romanian entry with the Romanian source **in the same commit**: with the `ro` entry left empty, the Romanian
   page would start showing the new English text;
 - leave the strings marked **stays** as they are;
-- ask the legislation session about the one marked **ask**;
+- translate the one that quotes the Portal as written under it below;
 - check both languages in a browser on an act with a consolidated form, one whose latest form has no text, and one the
   previous corpus does not hold.
 
@@ -123,6 +123,8 @@ catalogues change:
 - "Monitorul Oficial {moCitation}": the gazette's name and a citation: stays Romanian.
 - "Portal": a source's short name: the same word in English.
 
-### Ask first: 1
+### Mixed with a quote from the Portal: 1 (answered)
 
-- "Portalul Legislativ indică „{note}”.": our words around a quote from the Portal (`{note}` is the Portal's own label): ask the legislation session before translating; the quote stays Romanian.
+- "Portalul Legislativ indică „{note}”.": the words around the quote are ours and are translated; the quote is the
+  Portal's and stays as served, in Romanian, inside its Romanian quotation marks. English: "The Legislative Portal
+  states: „{note}”." (the legislation session, 26 November 2026).
