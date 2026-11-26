@@ -150,6 +150,16 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
       const republication = { ...v2, canonical: { ...canonical, versionKind: 'republicare', caveat: null } }
       const fourth = render(<ActDetailHeader act={republication} />)
       expect(fourth.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
+      // a republication carrying the consolidation caveat is still a republication (Codex review, round 2)
+      const caveatedRepublication = { ...v2, canonical: { ...canonical, versionKind: 'republicare', caveat: LEGAL_UNOFFICIAL_CONSOLIDATION_CAVEAT } }
+      const sixth = render(<ActDetailHeader act={caveatedRepublication} />)
+      expect(sixth.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
+      // a republication the same day as the original: another issue the day cannot tell apart, so no line
+      const [listedOriginal] = v2.documents
+      if (listedOriginal === undefined) throw new Error('the legal_v2 fixture lost its original')
+      const sameDay = { ...listedOriginal, documentId: 'f900018', versionKind: 'republicare', sourceUrl: null }
+      const seventh = render(<ActDetailHeader act={{ ...v2, documents: [...v2.documents, sameDay] }} />)
+      expect(seventh.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
       // two originals: the line must name the first one's day, not a later one's
       const [firstOriginal] = v2.documents
       if (firstOriginal === undefined) throw new Error('the legal_v2 fixture lost its original')
@@ -168,6 +178,8 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
       const alone = { ...v2, documents: [], canonical: { ...canonical, versionKind: 'original', caveat: null, firstPublicationDate: '1996-04-03' } }
       const { container } = render(<ActDetailHeader act={alone} />)
       expect(container.querySelector('dl')?.textContent ?? '').toContain('Monitorul Oficial nr. 67 din April 3, 1996')
+      // and its own Portal page with it (Codex review, round 2)
+      expect(links(container)).toEqual([['Portalul legislativ', canonical.sourceUrl]])
     })
 
     it('links no address that is not a whole web address', () => {

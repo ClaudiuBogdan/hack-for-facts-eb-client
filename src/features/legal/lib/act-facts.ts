@@ -58,9 +58,13 @@ export function headPublication(act: LegalActDetail): HeadPublication | null {
   }
   if (act.gazettePublications.length > 0) return null
   const canonical = act.canonical
-  if (canonical === null || !(canonical.versionKind === 'original' || isConsolidationVersion(canonical))) return null
+  // By kind: a republication carrying the consolidation caveat is still a republication (Codex review, round 2).
+  if (canonical === null || !(canonical.versionKind === 'original' || canonical.versionKind === 'consolidare')) return null
   const masthead = readMastheadPublication(canonical.publicationRaw)
   if (masthead === null) return null
+  const dayOf = (doc: { readonly firstPublicationDate: string | null; readonly versionDate: string | null }) => doc.firstPublicationDate ?? doc.versionDate
+  // A republication the same day as the original came out in another issue, which the day cannot tell apart: no line.
+  if ([...act.documents, canonical].some((doc) => doc.versionKind === 'republicare' && dayOf(doc) === masthead.issueDate)) return null
   const firstDay = [...act.documents, canonical]
     .filter((doc) => doc.versionKind === 'original' && !isConsolidationVersion(doc))
     .map((doc) => doc.firstPublicationDate ?? doc.versionDate)
@@ -81,8 +85,9 @@ export function originalPortalUrl(act: LegalActDetail, issued: string | null): s
   if (issued === null) return null
   const publishedThatDay = (doc: Pick<LegalActDocumentVersion, 'versionKind' | 'caveat' | 'portalLabelRaw' | 'portalLabelDate' | 'firstPublicationDate' | 'versionDate'>) =>
     doc.versionKind === 'original' && !isConsolidationVersion(doc) && (doc.firstPublicationDate ?? doc.versionDate) === issued
+  // The canonical counts as a form of its own: an original the act lists nowhere else still has its page (round 2).
   const pages = new Set(
-    act.documents
+    [...act.documents, ...(act.canonical === null ? [] : [act.canonical])]
       .filter(publishedThatDay)
       .map((doc) => webAddress(doc.sourceUrl))
       .filter((url): url is string => url !== null),
