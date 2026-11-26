@@ -68,7 +68,11 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
   const den = act.canonical?.den ?? null
   // The formal name ("LEGE nr. 98 din 19 mai 2016"), shown whenever it says
   // more than the H1 citation does.
-  const showDen = den !== null && den !== act.displayCitation
+  // A citation that already is the formal name with the subject (an act with
+  // no number: "REGULAMENT privind …") says all of it: neither is repeated.
+  const citationSaysAll = den !== null && textSubject !== null && `${den} ${textSubject}` === act.displayCitation
+  const showDen = den !== null && den !== act.displayCitation && !citationSaysAll
+  const showSubject = textSubject !== null && !citationSaysAll
   const isMock = isLegalMockEnabled()
 
   // The header owns the publication fact now (user decision 2026-08-11: the
@@ -99,7 +103,8 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
   // Each fact under its name. The long one comes last: in the band it is the
   // cell that takes what is left of the row, and wraps.
   const facts = [
-    { name: t`Tip`, value: legalActTypeLabel(act.actType) },
+    // An act served without a type has no „Tip" to show: never a name over nothing.
+    act.actType ? { name: t`Tip`, value: legalActTypeLabel(act.actType) } : null,
     act.issuerSlug ? { name: t`Emitent`, value: legalIssuerLabel(act.issuerSlug) } : null,
     act.entryIntoForce ? { name: t`În vigoare din`, value: formatLegalDate(act.entryIntoForce, i18n.locale) } : null,
     moCitation !== null ? { name: t`Publicat în`, value: t`Monitorul Oficial ${moCitation}`, wide: true } : null,
@@ -136,7 +141,7 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
           {act.displayCitation}
         </h1>
 
-        {textSubject !== null ? (
+        {showSubject ? (
           <p className="mt-2 text-lg leading-7 text-muted-foreground sm:text-xl sm:leading-8">
             {textSubject}
           </p>
@@ -144,23 +149,27 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
       </div>
 
       {/* Two facts to a row on a phone, the publication on a row of its own
-          (half a phone's width broke it over three lines); from `sm` one row,
-          the publication taking what is left. From 88rem: one under the
-          other, at the third column's foot, on the side box's inner edge. */}
-      <dl
-        className={cn(
-          ACT_COLUMN,
-          'mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-y py-3 sm:grid-cols-[auto_auto_auto_minmax(0,1fr)] lg:col-start-2 lg:row-start-2',
-          'min-[88rem]:col-start-3 min-[88rem]:row-span-3 min-[88rem]:row-start-1 min-[88rem]:mt-0 min-[88rem]:block min-[88rem]:max-w-none min-[88rem]:space-y-2.5 min-[88rem]:self-end min-[88rem]:border-y-0 min-[88rem]:px-3 min-[88rem]:py-0',
-        )}
-      >
-        {facts.map((fact) => (
-          <div key={fact.name} className={fact.wide === true ? 'col-span-2 sm:col-span-1' : undefined}>
-            <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
-            <dd className="text-sm leading-6 text-foreground min-[88rem]:leading-5">{fact.value}</dd>
-          </div>
-        ))}
-      </dl>
+          (half a phone's width broke it over three lines). From `sm` they run
+          on one row and wrap: a long issuer takes a row of its own and wraps
+          inside it, the publication takes what is left and never falls under
+          one word's width. From 88rem: one under the other, at the third
+          column's foot, on the side box's inner edge. No facts, no band. */}
+      {facts.length > 0 ? (
+        <dl
+          className={cn(
+            ACT_COLUMN,
+            'mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-y py-3 sm:flex sm:flex-wrap lg:col-start-2 lg:row-start-2',
+            'min-[88rem]:col-start-3 min-[88rem]:row-span-3 min-[88rem]:row-start-1 min-[88rem]:mt-0 min-[88rem]:block min-[88rem]:max-w-none min-[88rem]:space-y-2.5 min-[88rem]:self-end min-[88rem]:border-y-0 min-[88rem]:px-3 min-[88rem]:py-0',
+          )}
+        >
+          {facts.map((fact) => (
+            <div key={fact.name} className={cn('min-w-0', fact.wide === true && 'col-span-2 sm:min-w-[min(100%,14rem)] sm:flex-1')}>
+              <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
+              <dd className="text-sm leading-6 text-foreground min-[88rem]:leading-5">{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
 
       <div className={cn(ACT_COLUMN, 'mt-3 space-y-0.5 text-sm leading-6 text-muted-foreground empty:hidden lg:col-start-2 lg:row-start-3')}>
         {showDen ? <p>{den}</p> : null}
