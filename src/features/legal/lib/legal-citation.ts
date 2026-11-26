@@ -68,11 +68,45 @@ export function parseLegalCitationShape(
 }
 
 /**
+ * The server's spelling of a query before its whole-query grammar reads it (`normalize` in the server's
+ * `core/citation.ts`): folded, a dotted type abbreviation („O.U.G.", „H.G.") joined into its word, „nr." dropped.
+ */
+function normalizeCitation(raw: string): string {
+  const text = fold(raw).trim()
+  const dotted = /^(?:[a-z] ?\. ?)+/u.exec(text)?.[0]
+  const joined = dotted?.replace(/[ .]/gu, '')
+  const head = dotted !== undefined && joined !== undefined && TYPE_ALIASES[joined] !== undefined ? `${joined} ${text.slice(dotted.length)}` : text
+  return head
+    .replace(/\bnr *\.?/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim()
+}
+
+/**
+ * The query IS one citation: a type word, an optional „nr.", the number and the year, and nothing else. A port of
+ * the server's `parseExactCitation` (`hack-for-facts-eb-server/src/modules/legal/core/citation.ts`), the grammar
+ * the server answers a citation with. „Legea de modificare a Legii 53/2003", a second citation or issuer words are
+ * not one citation: the finder's numbered card is drawn only for a query this reads (review astra-client-12).
+ */
+export function parseExactCitation(raw: string): LegalCitationShape | null {
+  const text = normalizeCitation(raw).replace(/ ?[,;.:?!]+$/u, '')
+  const match = /^([a-z]+) ?(\d{1,5}) ?\/ ?(\d{4})$/u.exec(text)
+  if (match === null) return null
+  const [, typeWord, num, year] = match
+  const actType = TYPE_ALIASES[typeWord ?? '']
+  if (actType === undefined || num === undefined || year === undefined) return null
+  const actYear = Number(year)
+  if (actYear < 1850 || actYear > 2100) return null
+  return { actType, actNumber: num, actYear }
+}
+
+/**
  * Whether a resolver's act label („Legea nr. 53/2003", „OUG nr. 57/2019", „Hotărârea nr. 1/2016") carries the
- * citation's number and year: the finder's „Actul cu acest număr" card is drawn only then. The type word is not
- * compared: the resolver writes „OUG" or „Hotărârea" where the reader may have typed „ordonanța" or „HG".
+ * citation's number and year, each read whole („123456/2020" is not „23456/2020"): the finder's „Actul cu acest
+ * număr" card and its „same number" sentence are drawn only then. The type word is not compared: the resolver writes
+ * „OUG" or „Hotărârea" where the reader may have typed „ordonanța" or „HG".
  */
 export function labelCarriesCitation(label: string, citation: LegalCitationShape): boolean {
-  const match = /(\d{1,5})\s*\/\s*(\d{4})\b/u.exec(label)
+  const match = /(?<!\d)(\d{1,5})\s*\/\s*(\d{4})(?!\d)/u.exec(label)
   return match !== null && Number(match[1]) === Number(citation.actNumber) && Number(match[2]) === citation.actYear
 }
