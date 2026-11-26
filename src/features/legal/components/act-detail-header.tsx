@@ -111,8 +111,8 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
 
   // Where the publication can be read at its sources (owner, 26 November 2026): the Portal's page of the act as
   // published, and the gazette issue's page on monitoruloficial.ro. Only under the publication the head states (the
-  // one sure match), and only a link that is served.
-  const portalUrl = originalPortalUrl(act)
+  // one sure match), and only a link that is served; the Portal's page only when it is the text that issue printed.
+  const portalUrl = publication === null ? null : originalPortalUrl(act, publication)
   const gazetteUrl = webAddress(publication?.pdfUrl ?? null)
   const sources = [
     portalUrl !== null ? { href: portalUrl, label: t`Portalul legislativ` } : null,

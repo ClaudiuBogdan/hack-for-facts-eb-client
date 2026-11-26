@@ -6,6 +6,7 @@ import {
   legalActDetailV2Fixture,
   legalActDetailV2UnbridgedFixture,
 } from '../mocks/fixtures/legal-act-detail'
+import { LEGAL_UNOFFICIAL_CONSOLIDATION_CAVEAT } from '@/schemas/legal'
 import { ActDetailHeader } from './act-detail-header'
 
 vi.mock('@tanstack/react-router', () => ({
@@ -84,21 +85,45 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
     expect(sourcesOf('Tip')).toEqual([])
   })
 
-  it('links the original form’s own Portal page, never the default consolidation’s', () => {
-    const original = { ...act.documents[0], documentId: 'f1', versionKind: 'original', isCanonical: false, sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/178667' }
-    const consolidation = { ...act.documents[0], documentId: 'f2', versionKind: 'consolidare', isCanonical: true, sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/290673' }
-    const v2 = {
-      ...act,
-      canonical: act.canonical === null ? null : { ...act.canonical, documentId: 'f2', versionKind: 'consolidare' },
-      documents: [consolidation, original],
-      officialTextUrl: consolidation.sourceUrl,
-    }
-    render(<ActDetailHeader act={v2} />)
-    expect(sourcesOf('Publicat în')[0]).toEqual(['Portalul legislativ', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/178667'])
-    // with no page of the original, the consolidation's page does not stand in for it
-    const unbound = render(<ActDetailHeader act={{ ...v2, documents: [consolidation, { ...original, sourceUrl: null }] }} />)
-    const unboundLinks = [...(unbound.container.querySelector('dl')?.querySelectorAll('a') ?? [])].map((link) => link.textContent)
-    expect(unboundLinks).toEqual(['Monitorul Oficial'])
+  describe('on legal_v2, the Portal’s page of the text the cited issue printed', () => {
+    const v2 = legalActDetailV2Fixture
+    const [original, consolidation] = v2.documents
+    if (original === undefined || consolidation === undefined) throw new Error('the legal_v2 fixture lost its forms')
+    // The issue that printed the original form (3 April 1996), tied for sure.
+    const issue = { moIssueId: 'mo-1996-61', partCode: 'PI', issueNumber: 61, issueYear: 1996, issueDate: '1996-04-03', pdfUrl: 'https://monitoruloficial.ro/Monitorul-Oficial--PI--61--1996.html', resolution: 'unique', matchedVia: 'act_year' }
+    const withIssue = (overrides: Partial<typeof v2> = {}, published: Partial<typeof issue> = {}) => ({ ...v2, gazettePublications: [{ ...issue, ...published }], ...overrides })
+    const links = (container: HTMLElement) => [...container.querySelectorAll('dl a')].map((link) => [link.textContent, link.getAttribute('href')])
+
+    it('links the original form’s own page, never the default consolidation’s', () => {
+      const { container } = render(<ActDetailHeader act={withIssue()} />)
+      expect(v2.officialTextUrl).toBe(consolidation.sourceUrl)
+      expect(links(container)).toEqual([
+        ['Portalul legislativ', original.sourceUrl],
+        ['Monitorul Oficial', issue.pdfUrl],
+      ])
+    })
+
+    it('links no Portal page the cited issue did not print: another day, a page among several, a consolidation, or none', () => {
+      const gazetteOnly = [['Monitorul Oficial', issue.pdfUrl]]
+      // the cited issue is a later one (a republication): the 1996 original is not what it printed
+      expect(links(render(<ActDetailHeader act={withIssue({}, { issueDate: '2024-05-02' })} />).container)).toEqual(gazetteOnly)
+      // two originals that day with different pages: none is chosen
+      const twin = { ...original, documentId: 'f900019', sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900019' }
+      expect(links(render(<ActDetailHeader act={withIssue({ documents: [original, twin, consolidation] })} />).container)).toEqual(gazetteOnly)
+      // the same page named twice is one page
+      expect(links(render(<ActDetailHeader act={withIssue({ documents: [original, { ...twin, sourceUrl: original.sourceUrl }, consolidation] })} />).container)[0]).toEqual(['Portalul legislativ', original.sourceUrl])
+      // a form marked as a consolidation is not the text as published, whatever its kind says
+      const caveated = { ...original, caveat: LEGAL_UNOFFICIAL_CONSOLIDATION_CAVEAT }
+      expect(links(render(<ActDetailHeader act={withIssue({ documents: [caveated, consolidation] })} />).container)).toEqual(gazetteOnly)
+      // an original with no page bound (several Portal pages claim it): on legal_v2 nothing stands in for it
+      const unbound = { ...original, sourceUrl: null }
+      expect(links(render(<ActDetailHeader act={withIssue({ documents: [unbound, consolidation], officialTextUrl: original.sourceUrl })} />).container)).toEqual(gazetteOnly)
+    })
+
+    it('links no address that is not a whole web address', () => {
+      const { container } = render(<ActDetailHeader act={withIssue({}, { pdfUrl: 'https://' })} />)
+      expect(links(container)).toEqual([['Portalul legislativ', original.sourceUrl]])
+    })
   })
 
   it('links nothing it is not sure of: no sure publication, no address, or one that is no web page', () => {
@@ -128,8 +153,10 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
     // The same issue 5, no longer a sure match: it must not be shown as the act's publication.
     const unsure = act.gazettePublications.map((publication) => ({ ...publication, resolution: 'ambiguous' as const }))
     expect(unsure).toHaveLength(1)
-    render(<ActDetailHeader act={{ ...act, gazettePublications: unsure }} />)
+    const { container } = render(<ActDetailHeader act={{ ...act, gazettePublications: unsure }} />)
     expect(screen.queryByText('Publicat în', { selector: 'dt' })).not.toBeInTheDocument()
+    // and no way out to either source: the Portal page and the issue's page are said of a sure publication only
+    expect(container.querySelectorAll('header a[target="_blank"]')).toHaveLength(0)
     expect(fact('Tip')).toBe('Lege')
   })
 

@@ -1,4 +1,5 @@
-import type { LegalActDetail, LegalActSummaryData } from '@/schemas/legal'
+import type { LegalActDetail, LegalActDocumentVersion, LegalActSummaryData } from '@/schemas/legal'
+import { isConsolidationVersion } from './legal-versions'
 
 /**
  * The single gazette publication the page may state as FACT.
@@ -21,21 +22,41 @@ export function uniqueGazettePublication(
 }
 
 /**
- * The Portal's page of the act as it was published: its original form's page (on legal_v2 each form has its own,
- * `DetaliiDocumentAfis/<id>`). On the legacy source the forms carry no page, and the act's `officialTextUrl` is the
- * canonical document's page, which is the original there all but always: it stands in only while the canonical is
- * the original. Never the default text's page when that is a consolidation: it is another text than the one
- * published. Null when there is none, or when it is no web address.
+ * The Portal's page of the act as the cited publication printed it: the original form's own page (on legal_v2 each
+ * form has its own, `DetaliiDocumentAfis/<id>`), only when that form came out the day the cited issue did, and only
+ * when exactly one such page is named (a page is never chosen among several). A form marked as a consolidation is
+ * never the text as published, whatever its kind says. On the legacy source the forms carry no page, and the act's
+ * `officialTextUrl` is the canonical document's page: it stands in only while the canonical is that original. Null
+ * when there is none, when it cannot be tied to the issue, or when it is no web address (Codex review, round 1).
  */
-export function originalPortalUrl(act: LegalActDetail): string | null {
-  const own = act.documents.find((doc) => doc.versionKind === 'original' && doc.sourceUrl !== null)?.sourceUrl ?? null
-  const url = own ?? (act.canonical?.versionKind === 'original' ? act.officialTextUrl : null)
-  return webAddress(url)
+export function originalPortalUrl(act: LegalActDetail, publication: LegalActDetail['gazettePublications'][number]): string | null {
+  const issued = publication.issueDate
+  if (issued === null) return null
+  const publishedThatDay = (doc: Pick<LegalActDocumentVersion, 'versionKind' | 'caveat' | 'portalLabelRaw' | 'portalLabelDate' | 'firstPublicationDate' | 'versionDate'>) =>
+    doc.versionKind === 'original' && !isConsolidationVersion(doc) && (doc.firstPublicationDate ?? doc.versionDate) === issued
+  const pages = new Set(
+    act.documents
+      .filter(publishedThatDay)
+      .map((doc) => webAddress(doc.sourceUrl))
+      .filter((url): url is string => url !== null),
+  )
+  if (pages.size > 1) return null
+  const [own] = pages
+  if (own !== undefined) return own
+  if (act.dataSource === 'legal_v2' || act.canonical === null || !publishedThatDay(act.canonical)) return null
+  return webAddress(act.officialTextUrl)
 }
 
-/** A served address shown as a link only when it is a web page (`https:` or `http:`): never `javascript:` or a bare path. */
+/** A served address shown as a link only when it is a web page: `https:` or `http:` with a host, never `javascript:`, a bare path or a scheme alone. */
 export function webAddress(url: string | null): string | null {
-  return url !== null && /^https?:\/\//iu.test(url.trim()) ? url.trim() : null
+  if (url === null) return null
+  const trimmed = url.trim()
+  try {
+    const parsed = new URL(trimmed)
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.hostname !== '' ? trimmed : null
+  } catch {
+    return null
+  }
 }
 
 /** Empty and whitespace-only are absence, not content. */
