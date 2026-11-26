@@ -120,6 +120,12 @@ export type ActPageModel = {
    * count, the publication and the forms open from the start.
    */
   readonly recordStyle?: 'rows' | 'stacked' | 'folds'
+  /**
+   * How a table wider than the text's column says so, and how a figure that is not served is drawn: see `ActBlocks`.
+   * Owner, 26 November 2026, from pictures: tables stay as they were (`plain`, no hint); a figure takes one line.
+   */
+  readonly tableStyle?: 'plain' | 'hint' | 'open'
+  readonly figureStyle?: 'box' | 'line'
   /** The act's warnings (the live page's component), placed by `apparatus`. */
   readonly warnings?: ReactNode
   /** What must be said about the text before it is read (the live page's own notices), between the form line and the text. */
@@ -1136,6 +1142,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
     railNoticeFolded = true,
     headStyle = 'side',
     recordStyle = 'folds',
+    tableStyle = 'plain',
+    figureStyle = 'line',
     textState,
     afterText,
     changedMark = 'none',
@@ -1444,6 +1452,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                 containsNonBmp={containsNonBmp}
                 changedMark={changedMark !== 'none'}
                 foldNotes={apparatus !== 'full'}
+                tableStyle={tableStyle}
+                figureStyle={figureStyle}
                 onCopyLink={copyLink}
               />
             </article>

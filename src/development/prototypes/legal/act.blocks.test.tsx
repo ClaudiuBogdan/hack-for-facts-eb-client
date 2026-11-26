@@ -10,7 +10,9 @@ import { ActBlocks } from './act.blocks'
 import { ACT_SPECIMEN } from './act.specimen'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, params }: { readonly children: ReactNode; readonly to: string; readonly params?: Record<string, string> }) => <a href={params?.actId ? to.replace('$actId', params.actId) : to}>{children}</a>,
+  Link: ({ children, to, params }: { readonly children: ReactNode; readonly to: string; readonly params?: Record<string, string> }) => (
+    <a href={params?.actId ? to.replace('$actId', params.actId) : to}>{children}</a>
+  ),
 }))
 
 /**
@@ -65,7 +67,35 @@ describe('the act text in the prototype skin', () => {
     }
     for (const block of ACT_SPECIMEN.blocks) walk(block)
     // the format's 29 kinds, less `carte` (drawn as `parte`) and `bloc` (a bare container, four in the corpus)
-    for (const kind of ['parte', 'titlu', 'titlu_act', 'subtitlu_act', 'capitol', 'subcapitol', 'sectiune', 'articol', 'anexa', 'apendice', 'alineat', 'litera', 'liniuta', 'punct', 'paragraf', 'citat', 'nota', 'emitent', 'publicare', 'semnatura', 'tabel', 'rand', 'celula', 'imagine', 'lista', 'element_lista', 'preformatat']) {
+    for (const kind of [
+      'parte',
+      'titlu',
+      'titlu_act',
+      'subtitlu_act',
+      'capitol',
+      'subcapitol',
+      'sectiune',
+      'articol',
+      'anexa',
+      'apendice',
+      'alineat',
+      'litera',
+      'liniuta',
+      'punct',
+      'paragraf',
+      'citat',
+      'nota',
+      'emitent',
+      'publicare',
+      'semnatura',
+      'tabel',
+      'rand',
+      'celula',
+      'imagine',
+      'lista',
+      'element_lista',
+      'preformatat',
+    ]) {
       expect(kinds, kind).toContain(kind)
     }
     expect([...states].sort()).toEqual(['amendment_note', 'changed', 'repealed', 'struck:full', 'struck:partial', 'unmarked'])
@@ -85,15 +115,24 @@ describe('the act text in the prototype skin', () => {
     expect(control?.textContent).toBe('')
   })
 
-  it.each(['render-rows-100023.json', 'render-rows-46408.json', 'render-rows-v2-f900012.json', 'render-rows-100019.json'])('draws the real artifact %s character for character', (name) => {
-    for (const row of rowsOf(name)) {
-      const blocks = row.tldf.blocks
-      if (blocks === undefined) continue
-      const { container, unmount } = render(<ActBlocks blocks={blocks} marks={row.tldf.marks ?? []} containsNonBmp={row.tldf.contains_non_bmp ?? false} />)
-      expect(container.textContent).toBe(foldTldfBlocks(blocks))
-      unmount()
-    }
+  it("keeps the text unchanged under the tables' and figures' other designs", () => {
+    const { container } = render(<ActBlocks blocks={ACT_SPECIMEN.blocks} marks={ACT_SPECIMEN.marks} containsNonBmp={false} tableStyle="open" figureStyle="line" />)
+    expect(container.textContent).toBe(foldTldfBlocks(ACT_SPECIMEN.blocks))
+    expect(container.querySelector('[data-kind=imagine] [role=img]')).toHaveAttribute('data-figure-label')
   })
+
+  it.each(['render-rows-100023.json', 'render-rows-46408.json', 'render-rows-v2-f900012.json', 'render-rows-100019.json'])(
+    'draws the real artifact %s character for character',
+    (name) => {
+      for (const row of rowsOf(name)) {
+        const blocks = row.tldf.blocks
+        if (blocks === undefined) continue
+        const { container, unmount } = render(<ActBlocks blocks={blocks} marks={row.tldf.marks ?? []} containsNonBmp={row.tldf.contains_non_bmp ?? false} />)
+        expect(container.textContent).toBe(foldTldfBlocks(blocks))
+        unmount()
+      }
+    },
+  )
 
   it('says a repealed provision in words that are not text, and keeps a real table a table', () => {
     const { container } = render(<ActBlocks blocks={ACT_SPECIMEN.blocks} marks={ACT_SPECIMEN.marks} containsNonBmp={false} />)

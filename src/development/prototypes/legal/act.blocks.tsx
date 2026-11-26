@@ -1,7 +1,8 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { Link2 } from 'lucide-react'
+import { ImageOff, Link2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { foldTldfBlocks } from '@/features/legal/lib/tldf/fold'
 import { actionableMark, buildMarkIndex, sliceRun, type MarkIndex, type RunSegment } from '@/features/legal/lib/tldf/marks'
@@ -33,7 +34,8 @@ const UI = '[font-family:var(--font-family)]'
 const SERIF = "[font-family:'Iowan_Old_Style',Charter,'Bitstream_Charter','Sitka_Text',Cambria,'Noto_Serif',Georgia,serif]"
 
 /** A heading's two runs in the site's sans: the rank (`ttl`) and the name (`den`). */
-const HEAD = '[&>[data-role=ttl]]:[font-family:var(--font-family)] [&>[data-role=den]]:[font-family:var(--font-family)] [&>[data-role=den]]:font-semibold [&>[data-role=den]]:tracking-tight'
+const HEAD =
+  '[&>[data-role=ttl]]:[font-family:var(--font-family)] [&>[data-role=den]]:[font-family:var(--font-family)] [&>[data-role=den]]:font-semibold [&>[data-role=den]]:tracking-tight'
 /** With a name after it the rank is a quiet label; alone it is the heading. */
 const RANK =
   '[&:has(>[data-role=den])>[data-role=ttl]]:text-sm [&:has(>[data-role=den])>[data-role=ttl]]:font-medium [&:has(>[data-role=den])>[data-role=ttl]]:text-muted-foreground [&:not(:has(>[data-role=den]))>[data-role=ttl]]:text-xl [&:not(:has(>[data-role=den]))>[data-role=ttl]]:font-semibold [&:not(:has(>[data-role=den]))>[data-role=ttl]]:tracking-tight'
@@ -90,7 +92,8 @@ const AMENDMENT_NOTE = `mt-2 border-l-2 border-primary/30 pl-3 ${UI} text-[0.812
 const CHANGED = 'relative before:absolute before:-left-3 before:bottom-1 before:top-1 before:w-0.5 before:rounded-full before:bg-primary/60'
 const STRUCK = 'text-muted-foreground line-through decoration-[1.5px]'
 /** The repealed state in words after the struck text, as generated content from `data-state-label`. */
-const STATE_LABEL = 'after:ml-2 after:inline-block after:content-[attr(data-state-label)] after:[font-family:var(--font-family)] after:text-xs after:font-medium after:text-status-blocked-fg'
+const STATE_LABEL =
+  'after:ml-2 after:inline-block after:content-[attr(data-state-label)] after:[font-family:var(--font-family)] after:text-xs after:font-medium after:text-status-blocked-fg'
 
 const RUN_ROLE_CLASS: Readonly<Record<string, string>> = { ttl: 'font-semibold', den: '', bdy: '' }
 
@@ -123,14 +126,23 @@ function MarkElement({ mark, text }: { readonly mark: TldfMark; readonly text: s
   const link = mark.link
   if (link?.kind === 'act' && typeof link.target_act_id === 'number') {
     return (
-      <Link to="/legislation/acts/$actId" params={{ actId: String(link.target_act_id) }} className="text-primary underline decoration-primary/30 underline-offset-[3px] hover:decoration-primary">
+      <Link
+        to="/legislation/acts/$actId"
+        params={{ actId: String(link.target_act_id) }}
+        className="text-primary underline decoration-primary/30 underline-offset-[3px] hover:decoration-primary"
+      >
         {text}
       </Link>
     )
   }
   if (link?.kind === 'external' && typeof link.href === 'string') {
     return (
-      <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-primary underline decoration-primary/40 decoration-dotted underline-offset-[3px] hover:decoration-solid">
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary underline decoration-primary/40 decoration-dotted underline-offset-[3px] hover:decoration-solid"
+      >
         {text}
       </a>
     )
@@ -169,7 +181,9 @@ type BlockProps = { readonly block: TldfBlock; readonly marks: MarkIndex; readon
  * one before an article's name, so „Articolul 3" and „Definiții" share a line.
  */
 function BlockContent({ block, marks, onCopyLink }: BlockProps) {
-  const items = [...block.content.map((run) => ({ start: run.span[0], run })), ...(block.children ?? []).map((child) => ({ start: child.span[0], child }))].sort((a, b) => a.start - b.start)
+  const items = [...block.content.map((run) => ({ start: run.span[0], run })), ...(block.children ?? []).map((child) => ({ start: child.span[0], child }))].sort(
+    (a, b) => a.start - b.start,
+  )
   const inlineMarker = INLINE_MARKER_KINDS.has(block.kind)
   const collapseAt = new Set<number>()
   for (const [index, item] of items.entries()) {
@@ -218,23 +232,88 @@ function isRenderableTable(block: TldfBlock): boolean {
   return !rows.some((row) => (row.children ?? []).some((cell) => cell.kind !== 'celula'))
 }
 
-function TableBlock({ block, marks }: BlockProps) {
+/**
+ * How a table wider than the column says so (owner, 26 November 2026, the text's elements): `plain`, it scrolls in
+ * its frame and says nothing; `hint`, a line under it says it goes on to the right; `open`, that line also opens the
+ * table at the window's width. The line's words are generated content: the text of the page is unchanged.
+ */
+const TableStyle = createContext<'plain' | 'hint' | 'open'>('plain')
+/** A figure the act has but this page cannot show: `box`, a frame of the figure's size; `line`, one line that says so. */
+const FigureStyle = createContext<'box' | 'line'>('box')
+
+function TableRows({ block, marks, ids }: BlockProps & { readonly ids: boolean }) {
   return (
-    <div className="mt-5 overflow-x-auto rounded-md border" tabIndex={0} role="region" aria-label={TABLE_REGION_LABEL}>
-      <table id={`tldf-${block.id}`} data-kind="tabel" className={cn(TABLE_CLASS, 'scroll-mt-24')}>
-        <tbody>
-          {spanOrdered(block.children).map((row) => (
-            <tr key={row.id} id={`tldf-${row.id}`} data-kind="rand" {...struckAttrsOf(row)} className={cn('scroll-mt-24', struckClassOf(row))}>
-              {spanOrdered(row.children).map((cell) => (
-                <td key={cell.id} id={`tldf-${cell.id}`} data-kind="celula" {...struckAttrsOf(cell)} className={cn(CELL_CLASS, 'scroll-mt-24', struckClassOf(cell))} {...gridSpanProps(cell.grid)}>
-                  <BlockContent block={cell} marks={marks} />
-                </td>
-              ))}
-            </tr>
+    <tbody>
+      {spanOrdered(block.children).map((row) => (
+        <tr key={row.id} {...(ids && { id: `tldf-${row.id}` })} data-kind="rand" {...struckAttrsOf(row)} className={cn('scroll-mt-24', struckClassOf(row))}>
+          {spanOrdered(row.children).map((cell) => (
+            <td
+              key={cell.id}
+              {...(ids && { id: `tldf-${cell.id}` })}
+              data-kind="celula"
+              {...struckAttrsOf(cell)}
+              className={cn(CELL_CLASS, 'scroll-mt-24', struckClassOf(cell))}
+              {...gridSpanProps(cell.grid)}
+            >
+              <BlockContent block={cell} marks={marks} />
+            </td>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </tr>
+      ))}
+    </tbody>
+  )
+}
+
+function TableBlock({ block, marks }: BlockProps) {
+  const style = useContext(TableStyle)
+  const frame = useRef<HTMLDivElement>(null)
+  const [wide, setWide] = useState(false)
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    const element = frame.current
+    if (element === null || style === 'plain' || typeof ResizeObserver === 'undefined') return
+    const measure = () => setWide(element.scrollWidth > element.clientWidth + 1)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [style])
+  return (
+    <>
+      <div ref={frame} className="mt-5 overflow-x-auto rounded-md border" tabIndex={0} role="region" aria-label={TABLE_REGION_LABEL}>
+        <table id={`tldf-${block.id}`} data-kind="tabel" className={cn(TABLE_CLASS, 'scroll-mt-24')}>
+          <TableRows block={block} marks={marks} ids />
+        </table>
+      </div>
+      {wide ? (
+        <div className={cn('mt-1.5 flex flex-wrap items-center justify-between gap-x-4 whitespace-normal text-xs leading-5 text-muted-foreground', UI)}>
+          <span aria-hidden="true" data-label={t`Tabelul continuă la dreapta: derulează-l.`} className="before:content-[attr(data-label)]" />
+          {style === 'open' ? (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              aria-label={t`Deschide tabelul pe toată lățimea ferestrei`}
+              data-label={t`Deschide tabelul`}
+              // From `sm`: on a phone the window is no wider than the column, so opening the table there gains nothing.
+              className="hidden min-h-8 items-center font-medium text-foreground underline decoration-foreground/30 underline-offset-4 before:content-[attr(data-label)] hover:decoration-foreground sm:inline-flex"
+            />
+          ) : null}
+        </div>
+      ) : null}
+      {open ? (
+        // Outside the text's column (a portal): the same rows, at the window's width, without the anchors' ids.
+        <Dialog open onOpenChange={setOpen}>
+          <DialogContent className="flex max-h-[90dvh] w-[min(96vw,84rem)] max-w-none flex-col gap-3 p-4 sm:p-5">
+            <DialogTitle className={cn('text-sm font-medium', UI)}>{t`Tabel din act`}</DialogTitle>
+            <div className={cn('overflow-auto rounded-md border', SERIF)}>
+              <table className={TABLE_CLASS}>
+                <TableRows block={block} marks={marks} ids={false} />
+              </table>
+            </div>
+          </DialogContent>
+        </Dialog>
+      ) : null}
+    </>
   )
 }
 
@@ -242,6 +321,7 @@ const FIGURE_CLASS = `mx-auto flex min-h-24 max-h-96 w-full items-center justify
 const assetDimension = (value: number | undefined): number | undefined => (typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined)
 
 function ImagineBlock({ block, marks }: BlockProps) {
+  const line = useContext(FigureStyle) === 'line'
   const rawAlt = block.asset?.alt
   const alt = typeof rawAlt === 'string' && rawAlt.trim() !== '' ? rawAlt.trim() : undefined
   const label = alt !== undefined ? t`Figură din actul original: ${alt}` : t`Figură din actul original (imagine indisponibilă)`
@@ -249,7 +329,28 @@ function ImagineBlock({ block, marks }: BlockProps) {
   const height = assetDimension(block.asset?.height)
   return (
     <div id={`tldf-${block.id}`} data-kind="imagine" {...struckAttrsOf(block)} className={cn('mt-5 scroll-mt-24', block.struck === 'full' && 'opacity-60')}>
-      <div role="img" aria-label={label} data-figure-label={label} className={FIGURE_CLASS} {...(width !== undefined && height !== undefined && { style: { aspectRatio: `${String(width)} / ${String(height)}`, maxWidth: width } })} />
+      {line ? (
+        // The figure is not served: one line says so, where a frame of the figure's size showed only emptiness.
+        <div
+          role="img"
+          aria-label={label}
+          data-figure-label={label}
+          className={cn(
+            'flex min-h-11 items-center gap-2.5 whitespace-normal rounded-md border border-dashed border-foreground/25 px-3 py-2 text-sm text-muted-foreground before:order-2 before:content-[attr(data-figure-label)]',
+            UI,
+          )}
+        >
+          <ImageOff className="size-4 shrink-0" aria-hidden="true" />
+        </div>
+      ) : (
+        <div
+          role="img"
+          aria-label={label}
+          data-figure-label={label}
+          className={FIGURE_CLASS}
+          {...(width !== undefined && height !== undefined && { style: { aspectRatio: `${String(width)} / ${String(height)}`, maxWidth: width } })}
+        />
+      )}
       <BlockContent block={block} marks={marks} />
     </div>
   )
@@ -283,7 +384,12 @@ function FoldedNote({ block, marks, onCopyLink }: BlockProps) {
   const [open, setOpen] = useState(false)
   return (
     <div id={`tldf-${block.id}`} data-kind="nota" className={cn(BLOCK_CLASS.nota, 'scroll-mt-24')}>
-      <div className={cn(!open && 'relative max-h-[8.25rem] overflow-hidden after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-10 after:bg-gradient-to-t after:from-muted after:to-transparent')}>
+      <div
+        className={cn(
+          !open &&
+            'relative max-h-[8.25rem] overflow-hidden after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-10 after:bg-gradient-to-t after:from-muted after:to-transparent',
+        )}
+      >
         {/* One fold for the whole note: a long line inside it is not folded again. */}
         <FoldNotes.Provider value={false}>
           <BlockContent block={block} marks={marks} onCopyLink={onCopyLink} />
@@ -304,7 +410,8 @@ function FoldedNote({ block, marks, onCopyLink }: BlockProps) {
 function BlockView({ block, marks, onCopyLink }: BlockProps) {
   const foldNotes = useContext(FoldNotes)
   if (block.kind === 'tabel' && isRenderableTable(block)) return <TableBlock block={block} marks={marks} />
-  if (foldNotes && block.kind === 'nota' && block.struck === undefined && block.span[1] - block.span[0] > LONG_NOTE) return <FoldedNote block={block} marks={marks} onCopyLink={onCopyLink} />
+  if (foldNotes && block.kind === 'nota' && block.struck === undefined && block.span[1] - block.span[0] > LONG_NOTE)
+    return <FoldedNote block={block} marks={marks} onCopyLink={onCopyLink} />
   if (block.kind === 'imagine') return <ImagineBlock block={block} marks={marks} />
 
   const Tag = block.kind === 'lista' ? (block.type === 'OL' ? 'ol' : 'ul') : block.kind === 'element_lista' ? 'li' : 'div'
@@ -321,7 +428,15 @@ function BlockView({ block, marks, onCopyLink }: BlockProps) {
       {...struckAttrsOf(block)}
       {...(changed && { 'data-changed': 'true', title: t`Modificat față de forma de bază a actului` })}
       {...(scroll && { tabIndex: 0, role: 'region', 'aria-label': t`Text aliniat pe coloane, derulabil orizontal` })}
-      className={cn(note ? AMENDMENT_NOTE : BLOCK_CLASS[block.kind], !note && displayClass(block), marker !== undefined && LIST_MARKER_CLASS, struckClassOf(block), block.struck_repealed === true && STATE_LABEL, changed && CHANGED, 'scroll-mt-24')}
+      className={cn(
+        note ? AMENDMENT_NOTE : BLOCK_CLASS[block.kind],
+        !note && displayClass(block),
+        marker !== undefined && LIST_MARKER_CLASS,
+        struckClassOf(block),
+        block.struck_repealed === true && STATE_LABEL,
+        changed && CHANGED,
+        'scroll-mt-24',
+      )}
     >
       {block.kind === 'articol' && onCopyLink !== undefined ? (
         // An icon alone, so the article's text content is unchanged. From `lg`, in the gutter, on hover or focus.
@@ -355,6 +470,8 @@ export function ActBlocks({
   containsNonBmp,
   changedMark = false,
   foldNotes = false,
+  tableStyle = 'plain',
+  figureStyle = 'box',
   onCopyLink,
 }: {
   readonly blocks: readonly TldfBlock[]
@@ -364,6 +481,10 @@ export function ActBlocks({
   readonly changedMark?: boolean
   /** True shows only the first lines of a long note of the Portal, with a control that opens it. */
   readonly foldNotes?: boolean
+  /** How a table wider than the column says so, see `TableStyle`. */
+  readonly tableStyle?: 'plain' | 'hint' | 'open'
+  /** How a figure that is not served is drawn, see `FigureStyle`. */
+  readonly figureStyle?: 'box' | 'line'
   /** Given, each article carries a „copy link" control in the gutter. */
   readonly onCopyLink?: (block: TldfBlock) => void
 }) {
@@ -371,13 +492,21 @@ export function ActBlocks({
   const intrinsicHeight = useMemo(() => Math.max(1200, Math.round(charCount(blocks) * 0.5)), [blocks])
   return (
     <div
-      className={cn('whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-foreground [content-visibility:auto] sm:text-lg sm:leading-[1.75] [&>*:first-child]:mt-0', SERIF, !changedMark && '[&_[data-changed]]:before:hidden')}
+      className={cn(
+        'whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-foreground [content-visibility:auto] sm:text-lg sm:leading-[1.75] [&>*:first-child]:mt-0',
+        SERIF,
+        !changedMark && '[&_[data-changed]]:before:hidden',
+      )}
       style={{ containIntrinsicSize: `auto ${String(intrinsicHeight)}px` }}
     >
       <FoldNotes.Provider value={foldNotes}>
-        {blocks.map((block) => (
-          <BlockView key={block.id} block={block} marks={index} onCopyLink={onCopyLink} />
-        ))}
+        <TableStyle.Provider value={tableStyle}>
+          <FigureStyle.Provider value={figureStyle}>
+            {blocks.map((block) => (
+              <BlockView key={block.id} block={block} marks={index} onCopyLink={onCopyLink} />
+            ))}
+          </FigureStyle.Provider>
+        </TableStyle.Provider>
       </FoldNotes.Provider>
     </div>
   )

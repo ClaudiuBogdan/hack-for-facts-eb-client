@@ -37,6 +37,9 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * side box on a wide screen and in a band under the title on narrower ones (`?antet=linii`, `?antet=banda` keep the
  * others); the record in folding sections with their counts (`?fisa=coloana`, `?fisa=titluri`); the contents box
  * ends with a fixed row that goes to the record.
+ * A floating button also goes back to the start (owner: both). The text's elements: a figure that is not served
+ * takes one line (`?figura=cadru` keeps the frame); a wide table stays as it was, the owner declined a hint and an
+ * open-wide view (`?tabel=indiciu`, `?tabel=deschide` keep them).
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',

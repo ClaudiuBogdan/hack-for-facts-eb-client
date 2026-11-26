@@ -63,7 +63,14 @@ function PageStates() {
         <ActTextLoading />
       </Shown>
       <Shown what="Textul nu este încărcat aici">
-        <ActTextState title={t`Textul nu este încă disponibil`} action={<SourceLink href="https://legislatie.just.ro/"><Trans>Vezi textul pe legislatie.just.ro</Trans></SourceLink>}>
+        <ActTextState
+          title={t`Textul nu este încă disponibil`}
+          action={
+            <SourceLink href="https://legislatie.just.ro/">
+              <Trans>Vezi textul pe legislatie.just.ro</Trans>
+            </SourceLink>
+          }
+        >
           {t`Versiunea există pe Portalul Legislativ, dar textul ei nu este încă încărcat aici.`}
         </ActTextState>
       </Shown>
@@ -167,9 +174,25 @@ function useContentsOptions(): {
   readonly railNoticeFolded: boolean
   readonly headStyle: 'lines' | 'band' | 'side'
   readonly recordStyle: 'rows' | 'stacked' | 'folds'
+  readonly tableStyle: 'plain' | 'hint' | 'open'
+  readonly figureStyle: 'box' | 'line'
 } {
-  const search: { readonly cadru?: unknown; readonly cap?: unknown; readonly dreapta?: unknown; readonly nota?: unknown; readonly antet?: unknown; readonly fisa?: unknown } = useSearch({ strict: false })
+  const search: {
+    readonly cadru?: unknown
+    readonly cap?: unknown
+    readonly dreapta?: unknown
+    readonly nota?: unknown
+    readonly antet?: unknown
+    readonly fisa?: unknown
+    readonly tabel?: unknown
+    readonly figura?: unknown
+  } = useSearch({ strict: false })
   return {
+    // The text's elements. Owner, 26 November 2026: a wide table stays as it was, a figure that is not served takes one
+    // line. Not chosen, kept to be seen: `?tabel=indiciu` (a wide table says it goes on), `?tabel=deschide` (and opens
+    // at the window's width), `?figura=cadru` (a frame of the figure's size).
+    tableStyle: search.tabel === 'indiciu' ? 'hint' : search.tabel === 'deschide' ? 'open' : 'plain',
+    figureStyle: search.figura === 'cadru' ? 'box' : 'line',
     // The page's head and its closing record. Owner, 26 November 2026: the named facts at the right, the record in
     // folding sections. Not chosen, kept to be seen: `?antet=linii` / `?antet=banda`, `?fisa=coloana` / `?fisa=titluri`.
     headStyle: search.antet === 'linii' ? 'lines' : search.antet === 'banda' ? 'band' : 'side',
@@ -275,7 +298,19 @@ function LiveAct({ act }: { readonly act: LegalActDetail }) {
   return <LiveText key={documentId ?? 'none'} act={act} documentId={documentId} picked={picked !== null && picked !== reading.documentId} reading={reading} onForm={setPicked} />
 }
 
-function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: LegalActDetail; readonly documentId: string | null; readonly picked: boolean; readonly reading: ReturnType<typeof defaultReadingOf>; readonly onForm: (documentId: string) => void }) {
+function LiveText({
+  act,
+  documentId,
+  picked,
+  reading,
+  onForm,
+}: {
+  readonly act: LegalActDetail
+  readonly documentId: string | null
+  readonly picked: boolean
+  readonly reading: ReturnType<typeof defaultReadingOf>
+  readonly onForm: (documentId: string) => void
+}) {
   const legalV2 = act.dataSource === 'legal_v2'
   const render = useLegalRender(documentId, { legalV2 })
   const outline = useLegalOutline(documentId)
@@ -315,7 +350,16 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
   const waiting = documentId !== null && (render.isPending || (manifest !== null && loadedParts === 0 && !failed))
   const textState =
     documentId === null ? (
-      <ActTextState title={t`Nu avem un text servibil pentru acest act`} action={act.officialTextUrl !== null ? <SourceLink href={act.officialTextUrl}><Trans>Vezi textul pe legislatie.just.ro</Trans></SourceLink> : undefined}>
+      <ActTextState
+        title={t`Nu avem un text servibil pentru acest act`}
+        action={
+          act.officialTextUrl !== null ? (
+            <SourceLink href={act.officialTextUrl}>
+              <Trans>Vezi textul pe legislatie.just.ro</Trans>
+            </SourceLink>
+          ) : undefined
+        }
+      >
         {t`Metadatele rămân publice; textul se consultă la sursa oficială.`}
       </ActTextState>
     ) : recompiled ? (
@@ -361,9 +405,19 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
         warnings: <ActWarnings act={act} variant="row" />,
         onForm,
         // The live page's own notices, unchanged and not yet restyled: what they say matters more here than how they look.
-        notices: <ActDefaultNotices act={act} shown={shown} notCurrentDefault={!picked && reading.basis === 'latest_available'} onlyReadableDefault={!picked && reading.basis === 'only_readable'} />,
+        notices: (
+          <ActDefaultNotices
+            act={act}
+            shown={shown}
+            notCurrentDefault={!picked && reading.basis === 'latest_available'}
+            onlyReadableDefault={!picked && reading.basis === 'only_readable'}
+          />
+        ),
         textState,
-        afterText: manifest !== null && loadedParts > 0 ? <MoreParts loaded={loadedParts} total={manifest.chunks.length} pending={parts > loadedParts && !failed} onMore={() => setParts(loadedParts + 1)} /> : undefined,
+        afterText:
+          manifest !== null && loadedParts > 0 ? (
+            <MoreParts loaded={loadedParts} total={manifest.chunks.length} pending={parts > loadedParts && !failed} onMore={() => setParts(loadedParts + 1)} />
+          ) : undefined,
       }}
     />
   )
@@ -384,7 +438,9 @@ export function ActLivePage() {
   if (act.data == null) {
     return (
       <div className="mx-auto max-w-[42rem] px-4 py-16">
-        <ActTextState title={act.isError ? 'Nu am putut încărca actul' : `Nu avem actul ${actId}`}>Prototipul citește actul din API-ul de dezvoltare; schimbă numărul din adresă (?act=…).</ActTextState>
+        <ActTextState title={act.isError ? 'Nu am putut încărca actul' : `Nu avem actul ${actId}`}>
+          Prototipul citește actul din API-ul de dezvoltare; schimbă numărul din adresă (?act=…).
+        </ActTextState>
       </div>
     )
   }
