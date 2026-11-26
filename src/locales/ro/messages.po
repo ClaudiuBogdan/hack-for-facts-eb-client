@@ -55074,3 +55074,8 @@ msgstr "Σ POP206D / Σ POP108D × 1.000"
 #: src/components/budget-explorer/budget-transform.ts:151
 msgid "Fără cod de clasificație"
 msgstr "Fără cod de clasificație"
+
+#: src/features/privacy/components/consent-card.tsx:393
+#: src/features/privacy/components/cookie-settings-page.tsx:258
+msgid "Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă."
+msgstr "Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă."

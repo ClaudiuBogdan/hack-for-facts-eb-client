@@ -14,6 +14,7 @@ export type ConsentPreferences = {
 }
 
 const CONSENT_STORAGE_KEY = 'cookie-consent'
+let writeFailed = false
 
 /**
  * The stored decision, or null when there is none this schema version can
@@ -24,7 +25,7 @@ const CONSENT_STORAGE_KEY = 'cookie-consent'
  * enabled while the banner is asking the user again.
  */
 function readStoredConsent(): ConsentPreferences | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined' || writeFailed) return null
 
   try {
     const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY)
@@ -38,8 +39,8 @@ function readStoredConsent(): ConsentPreferences | null {
     return {
       version: 1,
       essential: true,
-      analytics: Boolean(parsed.analytics),
-      sentry: Boolean(parsed.sentry),
+      analytics: parsed.analytics === true,
+      sentry: parsed.sentry === true,
       updatedAt: parsed.updatedAt,
     }
   } catch {
@@ -70,26 +71,38 @@ export function getConsent(): ConsentPreferences {
   return readStoredConsent() ?? getDefaultConsent()
 }
 
-export function setConsent(next: ConsentPreferences): void {
-  if (typeof window === 'undefined') return
+export function setConsent(next: ConsentPreferences): boolean {
+  if (typeof window === 'undefined') return false
   const payload: ConsentPreferences = {
     ...next,
     version: 1,
     essential: true,
     updatedAt: new Date().toISOString(),
   }
-  window.localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(payload))
-  window.dispatchEvent(new CustomEvent('consent:changed', { detail: payload }))
+  try {
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(payload))
+    writeFailed = false
+  } catch {
+    writeFailed = true
+    try {
+      window.localStorage.removeItem(CONSENT_STORAGE_KEY)
+    } catch {
+      // Storage may be fully blocked. Keep optional telemetry off in this tab.
+    }
+  }
+
+  window.dispatchEvent(new CustomEvent('consent:changed', { detail: writeFailed ? getDefaultConsent() : payload }))
+  return !writeFailed
 }
 
-export function acceptAll(): void {
+export function acceptAll(): boolean {
   const current = getConsent()
-  setConsent({ ...current, analytics: true, sentry: true })
+  return setConsent({ ...current, analytics: true, sentry: true })
 }
 
-export function declineAll(): void {
+export function declineAll(): boolean {
   const current = getConsent()
-  setConsent({ ...current, analytics: false, sentry: false })
+  return setConsent({ ...current, analytics: false, sentry: false })
 }
 
 export function hasAnalyticsConsent(): boolean {
