@@ -10,7 +10,8 @@
  * `SSR_API_MODE=strict` nothing is forwarded; with `SSR_API_MODE=record` every read is forwarded and its answer saved.
  *
  * Every read prints one line, `[ssr-api] <source> <operation> <hash> <from>`, so with one worker each read lands in
- * its test's place in Playwright's output. `GET /__ssr-api/reads?after=<seq>` lists them for a test's own check.
+ * its test's place in Playwright's output. `GET /__ssr-api/reads?after=<seq>` lists them for a test's own check, and
+ * `/__ssr-api/judged` keeps where the checks have got to (GET reads it, POST `?upTo=<seq>` moves it on).
  */
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
@@ -59,6 +60,13 @@ for (const file of readdirSync(FIXTURES).filter((name) => name.endsWith('.json.g
 
 const reads = []
 
+/**
+ * How far the tests' checks have judged the reads (`test.ts`): each check starts here and moves it past what it
+ * judged. It lives here, not in a worker, so a worker restarted after a failure goes on from where the last check
+ * ended: nothing is judged twice, nothing skipped.
+ */
+let judged = 0
+
 function note(source, operation, key, from, budget) {
   const read = { seq: reads.length + 1, source, operation, key, from, nationalBudget: budget }
   reads.push(read)
@@ -82,6 +90,10 @@ createServer(async (request, response) => {
   if (request.method === 'GET' && url.pathname === '/__ssr-api/reads') {
     const after = Number(url.searchParams.get('after') ?? 0)
     return send(response, 200, JSON.stringify(reads.filter((read) => read.seq > after)))
+  }
+  if (url.pathname === '/__ssr-api/judged') {
+    if (request.method === 'POST') judged = Math.max(judged, Number(url.searchParams.get('upTo') ?? 0) || 0)
+    return send(response, 200, JSON.stringify({ judged }))
   }
   if (request.method !== 'POST' || !url.pathname.endsWith('/graphql')) return send(response, 404, '{"errors":[{"message":"[ssr-api] not a GraphQL read"}]}')
 
@@ -109,7 +121,8 @@ createServer(async (request, response) => {
     }
     if (MODE === 'strict' || budget) {
       note('missing', operation, key, from, budget)
-      console.log(`[ssr-api] missing ${key} asked ${stable(variables).slice(0, 400)}`)
+      // In full: a cursor alone runs to a thousand characters, and the variables are what a recording needs.
+      console.log(`[ssr-api] missing ${key} asked ${stable(variables)}`)
       return send(response, 200, JSON.stringify({ errors: [{ message: `[ssr-api] no fixture for ${key}`, extensions: { code: 'SSR_API_MISSING' } }] }))
     }
     const answer = await forward(raw)
