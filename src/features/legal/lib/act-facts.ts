@@ -20,6 +20,24 @@ export function uniqueGazettePublication(
   )
 }
 
+/**
+ * The Portal's page of the act as it was published: its original form's page (on legal_v2 each form has its own,
+ * `DetaliiDocumentAfis/<id>`). On the legacy source the forms carry no page, and the act's `officialTextUrl` is the
+ * canonical document's page, which is the original there all but always: it stands in only while the canonical is
+ * the original. Never the default text's page when that is a consolidation: it is another text than the one
+ * published. Null when there is none, or when it is no web address.
+ */
+export function originalPortalUrl(act: LegalActDetail): string | null {
+  const own = act.documents.find((doc) => doc.versionKind === 'original' && doc.sourceUrl !== null)?.sourceUrl ?? null
+  const url = own ?? (act.canonical?.versionKind === 'original' ? act.officialTextUrl : null)
+  return webAddress(url)
+}
+
+/** A served address shown as a link only when it is a web page (`https:` or `http:`): never `javascript:` or a bare path. */
+export function webAddress(url: string | null): string | null {
+  return url !== null && /^https?:\/\//iu.test(url.trim()) ? url.trim() : null
+}
+
 /** Empty and whitespace-only are absence, not content. */
 export const cleanSummaryText = (value: string | null): string | null =>
   value !== null && value.trim() !== '' ? value : null

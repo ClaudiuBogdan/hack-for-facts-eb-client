@@ -58,8 +58,60 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
     expect(value?.tagName).toBe('DD')
     expect(term.parentElement?.parentElement?.tagName).toBe('DL')
     expect(term.parentElement?.children).toHaveLength(2)
-    return value?.textContent ?? null
+    // a fact read at its sources holds its value on a line of its own, the links under it
+    return (value?.querySelector(':scope > span.block') ?? value)?.textContent ?? null
   }
+
+  /** The links out under a fact, by name and address. */
+  const sourcesOf = (name: string): readonly (readonly [string, string | null])[] =>
+    [...(screen.getByText(name, { selector: 'dt' }).nextElementSibling?.querySelectorAll('a') ?? [])].map((link) => [
+      link.textContent,
+      link.getAttribute('href'),
+    ])
+
+  it('links the publication to the Portal’s page of the act as published and to the gazette issue, in a new tab', () => {
+    render(<ActDetailHeader act={act} />)
+    // the legacy source: the canonical is the original, its Portal page is the act's
+    expect(sourcesOf('Publicat în')).toEqual([
+      ['Portalul legislativ', 'https://legislatie.just.ro/Public/DetaliiDocument/222901'],
+      ['Monitorul Oficial', 'https://monitoruloficial.ro/Monitorul-Oficial--PI--5--2020.html'],
+    ])
+    for (const link of screen.getByText('Publicat în', { selector: 'dt' }).nextElementSibling?.querySelectorAll('a') ?? []) {
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    }
+    // the other facts link nowhere
+    expect(sourcesOf('Tip')).toEqual([])
+  })
+
+  it('links the original form’s own Portal page, never the default consolidation’s', () => {
+    const original = { ...act.documents[0], documentId: 'f1', versionKind: 'original', isCanonical: false, sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/178667' }
+    const consolidation = { ...act.documents[0], documentId: 'f2', versionKind: 'consolidare', isCanonical: true, sourceUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/290673' }
+    const v2 = {
+      ...act,
+      canonical: act.canonical === null ? null : { ...act.canonical, documentId: 'f2', versionKind: 'consolidare' },
+      documents: [consolidation, original],
+      officialTextUrl: consolidation.sourceUrl,
+    }
+    render(<ActDetailHeader act={v2} />)
+    expect(sourcesOf('Publicat în')[0]).toEqual(['Portalul legislativ', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/178667'])
+    // with no page of the original, the consolidation's page does not stand in for it
+    const unbound = render(<ActDetailHeader act={{ ...v2, documents: [consolidation, { ...original, sourceUrl: null }] }} />)
+    const unboundLinks = [...(unbound.container.querySelector('dl')?.querySelectorAll('a') ?? [])].map((link) => link.textContent)
+    expect(unboundLinks).toEqual(['Monitorul Oficial'])
+  })
+
+  it('links nothing it is not sure of: no sure publication, no address, or one that is no web page', () => {
+    // a gazette issue without a page, and a Portal address that is no web page: the value alone, as before
+    const bare = {
+      ...act,
+      gazettePublications: act.gazettePublications.map((publication) => ({ ...publication, pdfUrl: null })),
+      officialTextUrl: 'javascript:alert(1)',
+    }
+    render(<ActDetailHeader act={bare} />)
+    expect(sourcesOf('Publicat în')).toEqual([])
+    expect(fact('Publicat în')).toBe('Monitorul Oficial nr. 5 (Partea I) din January 7, 2020')
+  })
 
   it('names the kind, the issuer and the date it applies from', () => {
     render(<ActDetailHeader act={act} />)

@@ -2,11 +2,11 @@ import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust'
 import { cn } from '@/lib/utils'
 import type { LegalActDetail } from '@/schemas/legal'
-import { uniqueGazettePublication } from '../lib/act-facts'
+import { originalPortalUrl, uniqueGazettePublication, webAddress } from '../lib/act-facts'
 import { formatLegalDate } from '../lib/legal-format'
 import { isLegalMockEnabled } from '../lib/mock-mode'
 import {
@@ -15,7 +15,11 @@ import {
   legalIssuerLabel,
 } from '../lib/legal-vocabulary'
 import { LegalStatusBadge } from './legal-status-badge'
-import { ACT_COLUMN, ACT_GRID, ACT_GRID_THREE, ACT_TITLE_ID } from './reader/act-page-grid'
+import { ACT_COLUMN, ACT_GRID, ACT_GRID_THREE, ACT_LINK, ACT_TITLE_ID } from './reader/act-page-grid'
+
+/** A page where a fact can be read at its source. */
+type Source = { readonly href: string; readonly label: string }
+type Fact = { readonly name: string; readonly value: string; readonly wide?: boolean; readonly sources?: readonly Source[] }
 
 type Props = {
   readonly act: LegalActDetail
@@ -47,6 +51,11 @@ type Props = {
  * serves the full text itself, so the exit stopped being the page's reason to
  * exist. The route to legislatie.just.ro lives in the summary card's footer on
  * the happy path, and in every render-failure card as the escape hatch.
+ *
+ * Under „Publicat în" the publication can be read at its two sources (owner,
+ * 26 November 2026): the Portal's page of the act as published, and the
+ * gazette issue's page. Named by the site they open, with no claim on what
+ * either holds.
  *
  * What the page still says, and must keep saying, is narrower — the
  * publication band's PDF marker means an official PDF exists on
@@ -100,16 +109,27 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
           .join(' ')
       : null
 
+  // Where the publication can be read at its sources (owner, 26 November 2026): the Portal's page of the act as
+  // published, and the gazette issue's page on monitoruloficial.ro. Only under the publication the head states (the
+  // one sure match), and only a link that is served.
+  const portalUrl = originalPortalUrl(act)
+  const gazetteUrl = webAddress(publication?.pdfUrl ?? null)
+  const sources = [
+    portalUrl !== null ? { href: portalUrl, label: t`Portalul legislativ` } : null,
+    gazetteUrl !== null ? { href: gazetteUrl, label: t`Monitorul Oficial` } : null,
+  ].filter((source): source is Source => source !== null)
+
   const actType = act.actType.trim()
   // Each fact under its name. The long one comes last: in the band it is the
   // cell that takes what is left of the row, and wraps.
-  const facts = [
+  const candidates: readonly (Fact | null)[] = [
     // An act served without a type (or with blanks for one) has no „Tip" to show: never a name over nothing.
     actType !== '' ? { name: t`Tip`, value: legalActTypeLabel(actType) } : null,
     act.issuerSlug ? { name: t`Emitent`, value: legalIssuerLabel(act.issuerSlug) } : null,
     act.entryIntoForce ? { name: t`În vigoare din`, value: formatLegalDate(act.entryIntoForce, i18n.locale) } : null,
-    moCitation !== null ? { name: t`Publicat în`, value: t`Monitorul Oficial ${moCitation}`, wide: true } : null,
-  ].filter((fact): fact is { name: string; value: string; wide?: boolean } => fact !== null)
+    moCitation !== null ? { name: t`Publicat în`, value: t`Monitorul Oficial ${moCitation}`, wide: true, sources } : null,
+  ]
+  const facts = candidates.filter((fact): fact is Fact => fact !== null)
 
   return (
     // On the page's one grid (owner, 26 November 2026, the act page's
@@ -172,7 +192,30 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
               )}
             >
               <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
-              <dd className="text-sm leading-6 text-foreground min-[88rem]:leading-5">{fact.value}</dd>
+              <dd className="text-sm leading-6 text-foreground min-[88rem]:leading-5">
+                {fact.sources !== undefined && fact.sources.length > 0 ? (
+                  <>
+                    <span className="block">{fact.value}</span>
+                    {/* They leave the site: the site's blue and the arrow out, as every way out of this page. */}
+                    <span className="flex flex-wrap gap-x-4 sm:mt-1 sm:gap-y-1 [overflow-wrap:normal]">
+                      {fact.sources.map((source) => (
+                        <a
+                          key={source.href}
+                          href={source.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(ACT_LINK, 'inline-flex min-h-11 items-center whitespace-nowrap sm:min-h-6')}
+                        >
+                          {source.label}
+                          <ArrowUpRight className="ml-0.5 size-3.5" aria-hidden />
+                        </a>
+                      ))}
+                    </span>
+                  </>
+                ) : (
+                  fact.value
+                )}
+              </dd>
             </div>
           ))}
         </dl>
