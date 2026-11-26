@@ -15,6 +15,7 @@ import {
   screen,
   fireEvent,
   waitFor,
+  within,
   createTestQueryClient,
 } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
@@ -172,6 +173,27 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     } finally {
       Element.prototype.scrollIntoView = original
     }
+  })
+
+  it('writes the text on show with a provision chosen in the contents after a refused ?doc= (astra-client-12)', async () => {
+    const act = {
+      ...legalActDetailFixture,
+      canonical:
+        legalActDetailFixture.canonical === null
+          ? null
+          : { ...legalActDetailFixture.canonical, documentId: '100023' },
+    }
+    navigateMock.mockClear()
+    render(<ActReadingLayout act={act} docOverride="100019" nod="r10" lead={null} fisa={null} />)
+    const toc = await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+    const entry = within(toc).getAllByRole('button').find((button) => button.getAttribute('aria-expanded') === null) as HTMLElement
+    fireEvent.click(entry)
+    const options = navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    // the refused document leaves the address with the provision chosen in the text actually shown
+    const next = options.search({ doc: '100019', nod: 'r10' })
+    expect(next.doc).toBe('100023')
+    expect(typeof next.nod).toBe('string')
+    expect(next.nod).not.toBe('r10')
   })
 
   it('honours an override that is one of the act\'s own expressions', async () => {

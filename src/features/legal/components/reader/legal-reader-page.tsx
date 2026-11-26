@@ -258,7 +258,9 @@ export function ActReadingLayout({
     (entry: LegalOutlineEntry) => {
       void navigate({
         to: '.',
-        search: (prev: Record<string, unknown>) => ({ ...prev, nod: entry.path }),
+        // After a refused `?doc=`, the provision is chosen in the text on show: that text's id goes with it, so the
+        // choice survives a reload and is resolved (and its chunk loaded) like any link (review astra-client-12).
+        search: (prev: Record<string, unknown>) => ({ ...prev, ...(foreignDoc && documentId !== null ? { doc: documentId } : {}), nod: entry.path }),
         replace: true,
         resetScroll: false,
       })
@@ -267,7 +269,7 @@ export function ActReadingLayout({
       setActivePath(entry.path)
       scrollToNodTarget(entry.path, entry.path)
     },
-    [navigate],
+    [navigate, foreignDoc, documentId],
   )
 
   const onDomGrowth = useCallback(() => setDomVersion((v) => v + 1), [])
