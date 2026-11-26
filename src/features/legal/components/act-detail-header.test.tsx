@@ -89,8 +89,8 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
     const v2 = legalActDetailV2Fixture
     const [original, consolidation] = v2.documents
     if (original === undefined || consolidation === undefined) throw new Error('the legal_v2 fixture lost its forms')
-    // The issue that printed the original form (3 April 1996), tied for sure.
-    const issue = { moIssueId: 'mo-1996-61', partCode: 'PI', issueNumber: 61, issueYear: 1996, issueDate: '1996-04-03', pdfUrl: 'https://monitoruloficial.ro/Monitorul-Oficial--PI--61--1996.html', resolution: 'unique', matchedVia: 'act_year' }
+    // The issue that printed the original form (nr. 67 of 3 April 1996, as the fixture's masthead says), tied for sure.
+    const issue = { moIssueId: 'mo-1996-67', partCode: 'PI', issueNumber: 67, issueYear: 1996, issueDate: '1996-04-03', pdfUrl: 'https://monitoruloficial.ro/Monitorul-Oficial--PI--67--1996.html', resolution: 'unique', matchedVia: 'act_year' }
     const withIssue = (overrides: Partial<typeof v2> = {}, published: Partial<typeof issue> = {}) => ({ ...v2, gazettePublications: [{ ...issue, ...published }], ...overrides })
     const links = (container: HTMLElement) => [...container.querySelectorAll('dl a')].map((link) => [link.textContent, link.getAttribute('href')])
 
@@ -115,14 +115,22 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
       // a form marked as a consolidation is not the text as published, whatever its kind says
       const caveated = { ...original, caveat: LEGAL_UNOFFICIAL_CONSOLIDATION_CAVEAT }
       expect(links(render(<ActDetailHeader act={withIssue({ documents: [caveated, consolidation] })} />).container)).toEqual(gazetteOnly)
-      // an original with no page bound (several Portal pages claim it): on legal_v2 nothing stands in for it
-      const unbound = { ...original, sourceUrl: null }
-      expect(links(render(<ActDetailHeader act={withIssue({ documents: [unbound, consolidation], officialTextUrl: original.sourceUrl })} />).container)).toEqual(gazetteOnly)
+      // an original with no page bound (several Portal pages claim it): on legal_v2 nothing stands in for it, not
+      // even the act's page while the canonical is that same original (Codex review, round 2)
+      const unbound = { ...original, isCanonical: true, sourceUrl: null }
+      const canonicalOriginal = v2.canonical === null ? null : { ...v2.canonical, documentId: original.documentId, versionKind: 'original', caveat: null, firstPublicationDate: original.firstPublicationDate, versionDate: original.versionDate, sourceUrl: null }
+      const fallbackBait = withIssue({ documents: [unbound, consolidation], canonical: canonicalOriginal, officialTextUrl: 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900099' })
+      expect(links(render(<ActDetailHeader act={fallbackBait} />).container)).toEqual(gazetteOnly)
+      // the same act on the legacy source: the act's page stands in for the canonical original
+      expect(links(render(<ActDetailHeader act={{ ...fallbackBait, dataSource: 'legal' }} />).container)[0]).toEqual(['Portalul legislativ', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900099'])
     })
 
     it('links no address that is not a whole web address', () => {
       const { container } = render(<ActDetailHeader act={withIssue({}, { pdfUrl: 'https://' })} />)
       expect(links(container)).toEqual([['Portalul legislativ', original.sourceUrl]])
+      // one slash short: the parser finds the host, but the page would open it on this site (Codex review, round 2)
+      const slash = render(<ActDetailHeader act={withIssue({}, { pdfUrl: 'https:/monitoruloficial.ro/Monitorul-Oficial--PI--67--1996.html' })} />)
+      expect(links(slash.container)).toEqual([['Portalul legislativ', original.sourceUrl]])
     })
   })
 

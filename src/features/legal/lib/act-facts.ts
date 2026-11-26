@@ -47,10 +47,15 @@ export function originalPortalUrl(act: LegalActDetail, publication: LegalActDeta
   return webAddress(act.officialTextUrl)
 }
 
-/** A served address shown as a link only when it is a web page: `https:` or `http:` with a host, never `javascript:`, a bare path or a scheme alone. */
+/**
+ * A served address shown as a link only when it is a whole web address: `https://` or `http://` and a host, never
+ * `javascript:`, a bare path, a scheme alone, or `https:/host…`, which the URL parser reads with a host but a page
+ * resolves on its own site (Codex review, round 2).
+ */
 export function webAddress(url: string | null): string | null {
   if (url === null) return null
   const trimmed = url.trim()
+  if (!/^https?:\/\//iu.test(trimmed)) return null
   try {
     const parsed = new URL(trimmed)
     return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.hostname !== '' ? trimmed : null
