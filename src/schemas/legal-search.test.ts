@@ -31,3 +31,17 @@ describe('the search addresses through the router codec', () => {
     expect(legalReaderSearchSchema.parse(roundTrip({ doc, nod }))).toEqual({ doc, nod })
   })
 })
+
+describe('legalReaderSearchSchema', () => {
+  it('drops the nod of a doc it cannot read: the nod pointed into that document, not the default text (astra-client-12)', () => {
+    expect(legalReaderSearchSchema.parse(parseAppSearch('?doc=true&nod=r10'))).toEqual({})
+    expect(legalReaderSearchSchema.parse({ doc: '', nod: 'r10' })).toEqual({})
+    expect(legalReaderSearchSchema.parse({ doc: -3, nod: 'r10' })).toEqual({})
+  })
+
+  it('keeps a nod on its own, and a nod with a doc it reads', () => {
+    expect(legalReaderSearchSchema.parse(parseAppSearch('?nod=r10'))).toEqual({ nod: 'r10' })
+    expect(legalReaderSearchSchema.parse(parseAppSearch('?doc=54260&nod=r10'))).toEqual({ doc: '54260', nod: 'r10' })
+    expect(legalReaderSearchSchema.parse({ doc: 'f900012' })).toEqual({ doc: 'f900012' })
+  })
+})
