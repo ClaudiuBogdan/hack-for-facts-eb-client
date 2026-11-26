@@ -66,12 +66,14 @@ import { createContext, useContext, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Link } from "@tanstack/react-router";
 import { t } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createLogger } from "@/lib/logger";
 import { buildMarkIndex, sliceRun, actionableMark } from "../../lib/tldf/marks";
 import type { MarkIndex, RunSegment } from "../../lib/tldf/marks";
 import { foldTldfBlocks } from "../../lib/tldf/fold";
+import { FOLDED_NOTE_ATTR } from "../../lib/tldf/folded-note";
 import type { TldfBlock, TldfMark, TldfRun } from "../../lib/tldf/types";
 
 const logger = createLogger("legal-reader");
@@ -185,7 +187,9 @@ const MARKER =
  */
 const STRUCK_MARKER =
   "[&[data-struck=full]>[data-role=ttl]]:text-muted-foreground [&[data-struck=full]>[data-role=ttl]]:line-through [&[data-struck=full]>[data-role=ttl]]:decoration-1 [&[data-struck=full]>[data-role=ttl]]:decoration-foreground/40";
-const ITEM = `mt-2 pl-7 sm:pl-9 ${MARKER} ${STRUCK_MARKER} [&>[data-role=ttl]]:-ml-7 [&>[data-role=ttl]]:min-w-7 sm:[&>[data-role=ttl]]:-ml-9 sm:[&>[data-role=ttl]]:min-w-9`;
+// `flow-root`: an item that is its marker alone still has its line's height,
+// so the next item's marker cannot slide up beside it.
+const ITEM = `flow-root mt-2 pl-7 sm:pl-9 ${MARKER} ${STRUCK_MARKER} [&>[data-role=ttl]]:-ml-7 [&>[data-role=ttl]]:min-w-7 sm:[&>[data-role=ttl]]:-ml-9 sm:[&>[data-role=ttl]]:min-w-9`;
 /**
  * Quoted text — a structurally-classified `citat`, or the new wording an
  * amending act quotes (see `displayClass`): set in behind a left rule only,
@@ -215,7 +219,7 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   subtitlu_act: `${UI} text-base leading-7 text-muted-foreground`,
   // From `sm` the paragraph's number hangs in the gutter; on a phone it stays
   // in the line, where the width is the text's.
-  alineat: `${STRUCK_MARKER} mt-3 sm:[&:has(>[data-role=ttl])]:pl-10 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70 sm:[&>[data-role=ttl]]:float-left sm:[&>[data-role=ttl]]:-ml-10 sm:[&>[data-role=ttl]]:min-w-10 sm:[&>[data-role=ttl]]:pr-1.5`,
+  alineat: `${STRUCK_MARKER} mt-3 sm:[&:has(>[data-role=ttl])]:flow-root sm:[&:has(>[data-role=ttl])]:pl-10 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70 sm:[&>[data-role=ttl]]:float-left sm:[&>[data-role=ttl]]:-ml-10 sm:[&>[data-role=ttl]]:min-w-10 sm:[&>[data-role=ttl]]:pr-1.5`,
   // Letters, points and dash-items ("– ...") share one list grain, a step
   // apart: at a tighter step the gap between two litere matched the leading
   // inside one, so multi-line items (the definitions articles — the densest,
@@ -250,9 +254,11 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   // Drawn layouts keep their columns: no wrapping, the box scrolls sideways
   // (and is a focusable, named region — see BlockView). Served texts carry
   // each line as a `paragraf` child: they touch, so the drawn strokes join.
-  // On paper nothing scrolls: the lines wrap, so every character prints.
+  // A row of dashes inside it is not clipped at the column (as `displayClass`
+  // clips one in running text): it scrolls with the box. On paper nothing
+  // scrolls: the lines wrap, an unbroken row breaks, every character prints.
   preformatat:
-    "mt-4 overflow-x-auto rounded-md border bg-muted/40 px-4 py-3 font-mono text-[0.8125rem] leading-5 whitespace-pre [&_[data-kind=paragraf]]:mt-0 print:overflow-visible print:whitespace-pre-wrap",
+    "mt-4 overflow-x-auto rounded-md border bg-muted/40 px-4 py-3 font-mono text-[0.8125rem] leading-5 whitespace-pre [&_[data-kind=paragraf]]:mt-0 [&_[data-kind=paragraf]]:overflow-visible print:overflow-visible print:whitespace-pre-wrap print:[overflow-wrap:anywhere]",
   // v1.1 source-asserted lists. Native markers are suppressed HERE
   // (`list-none`) — not via Tailwind preflight, which only resets `ol, ul,
   // menu` and would leave an off-contract `element_lista` (an `<li>` outside
@@ -658,30 +664,37 @@ function warnUnrenderableTable(rejection: TableGuardRejection): void {
   );
 }
 
+/** The last cell of a row in reading order: where a repealed row says so. */
+const lastCellOf = (row: TldfBlock): TldfBlock | undefined => {
+  const cells = spanOrdered(row.children);
+  return cells[cells.length - 1];
+};
+
 function TableBlock({ block, marks }: BlockProps) {
+  // The scroll shell is chrome (a 6-column annex table can outgrow the
+  // 78ch column); the table element itself stays the addressable block.
+  //
+  // KEYBOARD REACHABILITY (WCAG 2.1.1). A wide table is only readable if the
+  // shell can be scrolled, and a scroll container that cannot take focus
+  // cannot be scrolled from the keyboard — the columns past the fold are
+  // simply unreachable. This matters more since TLDF v1.1: measured on the
+  // live corpus 2026-09-01, 24,505 tables carry 12+ columns (widest 81)
+  // across 5,351 documents, and an 81-column table lays out ~3372px inside a
+  // 704px column.
+  //
+  // Chromium already does this natively — measured in Chromium 151, the
+  // shell takes focus with no tabIndex at all — but that is a recent default
+  // and Safari does not do it. `tabIndex={0}` is therefore a no-op on Chrome
+  // and the fix everywhere else. `role="region"` + a label is what turns the
+  // focus stop into something a screen reader announces rather than an
+  // unexplained landing point; without the accessible name a focusable
+  // generic div is arguably worse than none.
+  //
+  // The label is an ATTRIBUTE, never a text node: the renderer's invariant is
+  // that DOM text equals the fold, so a <caption> would break it. Same trick
+  // as the imagine placeholder.
   return (
-    // The scroll shell is chrome (a 6-column annex table can outgrow the
-    // 78ch column); the table element itself stays the addressable block.
-    //
-    // KEYBOARD REACHABILITY (WCAG 2.1.1). A wide table is only readable if the
-    // shell can be scrolled, and a scroll container that cannot take focus
-    // cannot be scrolled from the keyboard — the columns past the fold are
-    // simply unreachable. This matters more since TLDF v1.1: measured on the
-    // live corpus 2026-09-01, 24,505 tables carry 12+ columns (widest 81)
-    // across 5,351 documents, and an 81-column table lays out ~3372px inside a
-    // 704px column.
-    //
-    // Chromium already does this natively — measured in Chromium 151, the
-    // shell takes focus with no tabIndex at all — but that is a recent default
-    // and Safari does not do it. `tabIndex={0}` is therefore a no-op on Chrome
-    // and the fix everywhere else. `role="region"` + a label is what turns the
-    // focus stop into something a screen reader announces rather than an
-    // unexplained landing point; without the accessible name a focusable
-    // generic div is arguably worse than none.
-    //
-    // The label is an ATTRIBUTE, never a text node: the renderer's invariant is
-    // that DOM text equals the fold, so a <caption> would break it. Same trick
-    // as the imagine placeholder.
+    <>
     <div
       className="mt-5 overflow-x-auto rounded-md border"
       tabIndex={0}
@@ -724,6 +737,13 @@ function TableBlock({ block, marks }: BlockProps) {
                       empty celula renders an empty <td>: dropping it would
                       shift every later cell left (the §3.2 exemption). */}
                   <BlockContent block={cell} marks={marks} />
+                  {/* The repealed state in words: a cell's own, or its row's
+                      (said in the row's last cell: nothing but cells may sit
+                      under a `<tr>`). */}
+                  {isRepealed(cell) ||
+                  (isRepealed(row) && cell === lastCellOf(row)) ? (
+                    <RepealedMark />
+                  ) : null}
                 </td>
               ))}
             </tr>
@@ -731,6 +751,9 @@ function TableBlock({ block, marks }: BlockProps) {
         </tbody>
       </table>
     </div>
+    {/* A repealed table says so under its frame, outside the `<table>`. */}
+    {isRepealed(block) ? <RepealedMark /> : null}
+    </>
   );
 }
 
@@ -791,6 +814,7 @@ function ImagineBlock({ block, marks }: BlockProps) {
           (outside the role="img" shell, so nothing hides from the a11y tree).
           Normally renders nothing. */}
       <BlockContent block={block} marks={marks} />
+      {isRepealed(block) ? <RepealedMark /> : null}
     </div>
   );
 }
@@ -839,8 +863,10 @@ function foldedTextOpensWithMarker(folded: string, label: string): boolean {
 
 /** Applied only alongside `data-list-marker`: an empty `::before` with a
     margin would still paint stray leading space. */
+// The marker is an inline block, which the item's own strike does not cross:
+// a fully struck item strikes it by its own rule.
 const LIST_MARKER_CLASS =
-  "before:mr-2 before:inline-block before:min-w-6 before:font-medium before:text-foreground/70 before:content-[attr(data-list-marker)]";
+  "before:mr-2 before:inline-block before:min-w-6 before:font-medium before:text-foreground/70 before:content-[attr(data-list-marker)] [&[data-struck=full]]:before:text-muted-foreground [&[data-struck=full]]:before:line-through [&[data-struck=full]]:before:decoration-1 [&[data-struck=full]]:before:decoration-foreground/40";
 
 /* ── v1.1 source-state rendering (user decision 2026-08-26) ──────────────── */
 
@@ -892,6 +918,25 @@ const STATE_MARK = `ml-2 inline-flex items-center gap-1.5 whitespace-nowrap ${UI
  * prop through every wrapper; `TldfBlocksView` sets it, `FoldedNote` turns it
  * off for its own content (one fold per note).
  */
+/**
+ * The repealed state in words: an empty element (the text is unchanged) named
+ * for assistive technology, its ring and word drawn as generated content. The
+ * word is in the reader's language while the law around it is Romanian, so it
+ * says which language it is.
+ */
+function RepealedMark() {
+  const { i18n } = useLingui();
+  return (
+    <span
+      role="img"
+      lang={i18n.locale}
+      aria-label={t`abrogat`}
+      data-label={t`abrogat`}
+      className={STATE_MARK}
+    />
+  );
+}
+
 const FoldNotes = createContext(false);
 
 /** A note longer than this many characters (its span) is folded, when notes are folded at all. */
@@ -906,30 +951,52 @@ const LONG_NOTE = 600;
  * name is `aria-label`), so the column's text content is unchanged.
  */
 function FoldedNote({ block, marks }: BlockProps) {
+  const { i18n } = useLingui();
   const [open, setOpen] = useState(false);
   const note = useRef<HTMLDivElement>(null);
+  const body = useRef<HTMLDivElement>(null);
   const more = t`Arată toată nota`;
+  // Opened, the box scrolls no more and its own offset is gone: the page
+  // takes the same distance, so what was brought into view stays in view.
+  const openKeepingPlace = (box: HTMLElement) => {
+    const moved = box.scrollTop;
+    flushSync(() => setOpen(true));
+    if (moved > 0) window.scrollBy(0, moved);
+  };
   return (
     <div
       ref={note}
       id={`tldf-${block.id}`}
       data-kind="nota"
+      {...{ [FOLDED_NOTE_ATTR]: open ? "open" : "closed" }}
       className={cn(BLOCK_CLASS.nota, "scroll-mt-24")}
     >
       <div
+        ref={body}
+        // Takes the focus when the note is opened from the keyboard (below).
+        tabIndex={-1}
         // A hidden-overflow box still scrolls when something inside it is
-        // brought into view: a `?nod=` jump, a find-in-page hit, a link taking
-        // keyboard focus. The note opens then, so the target is never shown
-        // inside a clipped box with the note's first lines pushed out. Opened,
-        // the box scrolls no more and its offset is gone: the page takes the
-        // same distance, so the target stays where the browser put it.
+        // brought into view: a find-in-page hit, a link taking keyboard focus.
+        // The note opens then, so the target is never shown inside a clipped
+        // box with the note's first lines pushed out. (A `?nod=` jump opens
+        // the note first: `revealFoldedNote`.)
         onScroll={(event) => {
-          const moved = event.currentTarget.scrollTop;
-          if (open || moved <= 0) return;
-          flushSync(() => setOpen(true));
-          window.scrollBy(0, moved);
+          if (!open && event.currentTarget.scrollTop > 0) {
+            openKeepingPlace(event.currentTarget);
+          }
+        }}
+        // Focus on something in the faded or clipped part opens the note too,
+        // whether or not the box had to scroll to show it.
+        onFocus={(event) => {
+          const box = event.currentTarget;
+          if (open || event.target === box) return;
+          const edge = box.getBoundingClientRect().bottom - 40;
+          if (event.target.getBoundingClientRect().bottom > edge) {
+            openKeepingPlace(box);
+          }
         }}
         className={cn(
+          "outline-none",
           // The note's label keeps its colour inside this wrapper too.
           "[&>[data-role=ttl]]:text-foreground",
           // The last lines fade by a mask, so the fade is right on any ground
@@ -946,9 +1013,20 @@ function FoldedNote({ block, marks }: BlockProps) {
       </div>
       <button
         type="button"
-        onClick={() => {
+        // The control speaks the reader's language inside a Romanian text.
+        lang={i18n.locale}
+        onClick={(event) => {
           if (!open) {
-            setOpen(true);
+            // Pressed from the keyboard, the control would go to the far end
+            // of the opened note with the focus on it, and the next Tab would
+            // skip every link of the text just shown: the focus goes to the
+            // note's start. A pointer, and a jump that opens the note for its
+            // target, leave the focus where it is.
+            const fromKeyboard =
+              event.detail === 0 &&
+              document.activeElement === event.currentTarget;
+            flushSync(() => setOpen(true));
+            if (fromKeyboard) body.current?.focus({ preventScroll: true });
             return;
           }
           // Closed from far down a long note, the reader would be left below
@@ -1033,20 +1111,16 @@ function BlockView({ block, marks }: BlockProps) {
       className={cn(
         note ? AMENDMENT_NOTE : BLOCK_CLASS[block.kind],
         note ? undefined : displayClass(block),
+        // An `<li>` never shows the browser's own bullet, whatever face the
+        // block takes (the note of a change replaces the kind's classes).
+        Tag === "li" && "list-none",
         marker !== undefined && LIST_MARKER_CLASS,
         struckClassOf(block),
         "scroll-mt-24",
       )}
     >
       <BlockContent block={block} marks={marks} />
-      {repealed ? (
-        <span
-          role="img"
-          aria-label={t`abrogat`}
-          data-label={t`abrogat`}
-          className={STATE_MARK}
-        />
-      ) : null}
+      {repealed ? <RepealedMark /> : null}
     </Tag>
   );
 }
