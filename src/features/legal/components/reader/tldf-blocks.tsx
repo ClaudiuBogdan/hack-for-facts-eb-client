@@ -8,8 +8,9 @@
  * elements and classes; no element may inject or reorder a single character.
  * Find-in-page, copy/paste and citation all operate on the proven text. The
  * column renders under `whitespace-pre-wrap`, so `\n` separators ARE the
- * line structure — with two VISUAL exceptions (user decision 2026-08-12,
- * the gap complaint), both `white-space: normal` spans around a separator,
+ * line structure — with a few VISUAL exceptions (user decision 2026-08-12,
+ * the gap complaint; three more pairs on 26 November 2026, see
+ * `BlockContent`), each a `white-space: normal` span around a separator,
  * never a changed character: a block's LEADING `\n` collapses (the block
  * element already breaks the line, so it only painted a phantom blank line
  * inside every block), and in enumeration blocks (alineat/litera/punct/
@@ -49,11 +50,23 @@
  * only 1.0). The version is constant within a document; block dispatch is on
  * `block.kind` alone, and `format_version` is read only for chunk-head
  * agreement (`legal-reader-page.tsx:621`), never to branch a render.
+ *
+ * THE LOOK (owner, 26 November 2026, promoted from the prototype
+ * `development/prototypes/legal/act.blocks.tsx`, which changed classes and
+ * wrappers only): the law's words in the reader's own serif, our apparatus
+ * (notes on changes, tables, the publication plate, headings) in the site's
+ * sans; the site's neutral tokens; enumeration markers hung in a gutter so
+ * numbers line up and the text keeps one edge. The words that look adds — a
+ * repealed provision's state, a figure's label, the control of a folded note
+ * — are attributes drawn as generated content, never text nodes, so the
+ * invariant above holds unchanged.
  */
 
-import { useMemo } from "react";
+import { createContext, useContext, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link } from "@tanstack/react-router";
 import { t } from "@lingui/core/macro";
+import { ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createLogger } from "@/lib/logger";
 import { buildMarkIndex, sliceRun, actionableMark } from "../../lib/tldf/marks";
@@ -111,76 +124,135 @@ const warnedTableShapes = new Set<string>();
 
 /**
  * The UI sans inside the reader. Tailwind's `font-sans` is NOT mapped to the
- * app's Inter token (`--font-family` lands on `body` only), so headings must
- * reference the token directly or they silently fall back to the system UI
- * stack — measured as `-apple-system` against Inter everywhere else.
+ * app's Inter token (`--font-family` lands on `body` only), so headings and
+ * apparatus must reference the token directly or they silently fall back to
+ * the system UI stack — measured as `-apple-system` against Inter everywhere
+ * else.
  */
-const HEAD_FONT = "[&>[data-role=ttl]]:[font-family:var(--font-family)]";
+const UI = "[font-family:var(--font-family)]";
 
 /**
- * Per-kind spacing plus a heading scale. The `[&>[data-role=ttl]]` variants
- * style ONLY the block's own heading runs (children are `div`s, so `>` never
- * reaches their text): the structural ladder steps 30/28/22/19px against the
- * 18px serif body — on a 40.000px document the skeleton has to be visible
- * from type alone — and titlu/capitol carry a hairline rule above. Styling
- * lives entirely on wrappers; the character stream is untouched.
+ * The law's own face (owner, 26 November 2026: serif, no switch to the site's
+ * sans). No font file is added: the serif is the reader's own — Iowan on
+ * Apple, Charter, Sitka or Cambria on Windows, Noto Serif on Android and
+ * Linux, Georgia as the floor. (`_` is a space inside the arbitrary value.)
  */
+const SERIF =
+  "[font-family:'Iowan_Old_Style',Charter,'Bitstream_Charter','Sitka_Text',Cambria,'Noto_Serif',Georgia,serif]";
+
 /**
  * Container kinds carry TWO runs: the rank ("Titlul I", role `ttl`) and the
- * denumire ("Dispoziții generale", role `den`). The number is the address,
- * the title is the content — so the rank renders as a small letterspaced
- * eyebrow and the denumire takes the display size. (Child-variant utilities
- * out-specify the run's own role classes, so the per-kind sizes win.) The
- * eyebrow is `:has`-gated: a container WITHOUT a denumire keeps a real
- * heading size instead of degrading to a 14px whisper. `uppercase` here is
- * text-transform — visual only; copy, find-in-page and the fold keep the
- * served characters exactly.
+ * denumire ("Dispoziții generale", role `den`). Both are set in the site's
+ * sans, in sentence case (no text-transform). The `[&>[data-role=…]]`
+ * variants style ONLY the block's own heading runs (children are `div`s, so
+ * `>` never reaches their text). Styling lives entirely on wrappers; the
+ * character stream is untouched.
  */
-const RANK_EYEBROW =
-  "[&:has(>[data-role=den])>[data-role=ttl]]:text-sm [&:has(>[data-role=den])>[data-role=ttl]]:font-bold [&:has(>[data-role=den])>[data-role=ttl]]:uppercase [&:has(>[data-role=den])>[data-role=ttl]]:tracking-wider [&:has(>[data-role=den])>[data-role=ttl]]:text-muted-foreground [&:not(:has(>[data-role=den]))>[data-role=ttl]]:text-[1.375rem] [&:not(:has(>[data-role=den]))>[data-role=ttl]]:font-bold [&:not(:has(>[data-role=den]))>[data-role=ttl]]:tracking-tight";
-const DEN_FONT = "[&>[data-role=den]]:[font-family:var(--font-family)]";
+const HEAD =
+  "[&>[data-role=ttl]]:[font-family:var(--font-family)] [&>[data-role=den]]:[font-family:var(--font-family)] [&>[data-role=den]]:font-semibold [&>[data-role=den]]:tracking-tight";
+/**
+ * The number is the address, the name is the content: with a denumire after
+ * it the rank is a quiet label and the denumire takes the display size. The
+ * label is `:has`-gated: a container WITHOUT a denumire keeps a real heading
+ * size instead of degrading to a whisper. (Child-variant utilities
+ * out-specify the run's own role classes, so the per-kind sizes win.)
+ */
+const RANK =
+  "[&:has(>[data-role=den])>[data-role=ttl]]:text-sm [&:has(>[data-role=den])>[data-role=ttl]]:font-medium [&:has(>[data-role=den])>[data-role=ttl]]:text-muted-foreground [&:not(:has(>[data-role=den]))>[data-role=ttl]]:text-xl [&:not(:has(>[data-role=den]))>[data-role=ttl]]:font-semibold [&:not(:has(>[data-role=den]))>[data-role=ttl]]:tracking-tight";
+/** Whatever follows its parent's heading directly sits close to it. */
+const FIRST = "[&>[data-role]+[data-kind]]:mt-5";
+/**
+ * A ruled heading that follows its parent's heading directly drops its own
+ * rule and the room above it. Worn by the ruled headings themselves, keyed on
+ * the HEADING runs before them: a box that follows a body run (a drawn table
+ * after "*Font 7*", a note under an annex's name) keeps its border and its
+ * padding (review, 26 November 2026).
+ */
+const UNDER_HEADING =
+  "[[data-role=ttl]+&]:border-t-0 [[data-role=ttl]+&]:pt-0 [[data-role=den]+&]:border-t-0 [[data-role=den]+&]:pt-0";
+/**
+ * A marker ("(1)", "a)", "1.", "–") hung in the gutter of its own block:
+ * numbers line up in a column and the text keeps one edge. The marker keeps
+ * a gap of its own, so a wide one ("a^1)") never touches the text. A float
+ * moves no character: the marker run stays where the fold puts it.
+ */
+const MARKER =
+  "[&>[data-role=ttl]]:float-left [&>[data-role=ttl]]:pr-1.5 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70";
+/**
+ * A fully struck provision strikes its marker too. A floated marker is out of
+ * the line, so the block's own strike does not reach it, and the marker's
+ * colour above would outrank the struck block's.
+ */
+const STRUCK_MARKER =
+  "[&[data-struck=full]>[data-role=ttl]]:text-muted-foreground [&[data-struck=full]>[data-role=ttl]]:line-through [&[data-struck=full]>[data-role=ttl]]:decoration-1 [&[data-struck=full]>[data-role=ttl]]:decoration-foreground/40";
+const ITEM = `mt-2 pl-7 sm:pl-9 ${MARKER} ${STRUCK_MARKER} [&>[data-role=ttl]]:-ml-7 [&>[data-role=ttl]]:min-w-7 sm:[&>[data-role=ttl]]:-ml-9 sm:[&>[data-role=ttl]]:min-w-9`;
+/**
+ * Quoted text — a structurally-classified `citat`, or the new wording an
+ * amending act quotes (see `displayClass`): set in behind a left rule only,
+ * on the page's own ground (owner, 26 November 2026; the Portal's notes keep
+ * the grey field).
+ */
+const QUOTED =
+  "mt-4 border-l-2 border-foreground/30 py-0.5 pl-5 pr-4 [&>*:first-child]:mt-0";
 
 const BLOCK_CLASS: Readonly<Record<string, string>> = {
-  carte: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-3xl [&>[data-role=den]]:font-black [&>[data-role=den]]:tracking-tight`,
-  parte: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-3xl [&>[data-role=den]]:font-black [&>[data-role=den]]:tracking-tight`,
-  titlu: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.75rem] [&>[data-role=den]]:font-black [&>[data-role=den]]:tracking-tight`,
-  // The document's own masthead — the title lines the law opens with.
-  titlu_act: "text-lg leading-relaxed",
-  subtitlu_act: "text-base leading-relaxed",
-  capitol: `mt-11 border-t border-[var(--pnrr-subtle)] pt-6 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.375rem] [&>[data-role=den]]:font-bold`,
-  subcapitol: `mt-8 ${HEAD_FONT} [&>[data-role=ttl]]:text-[1.1875rem] [&>[data-role=ttl]]:font-bold`,
-  sectiune: `mt-8 ${HEAD_FONT} [&>[data-role=ttl]]:text-[1.1875rem] [&>[data-role=ttl]]:font-bold`,
-  articol: `mt-8 ${HEAD_FONT} [&>[data-role=ttl]]:text-[1.1875rem] [&>[data-role=ttl]]:font-semibold`,
+  carte: `${FIRST} ${UNDER_HEADING} mt-20 border-t border-foreground/20 pt-8 ${HEAD} ${RANK} [&>[data-role=den]]:text-[1.75rem] [&>[data-role=den]]:leading-9`,
+  parte: `${FIRST} ${UNDER_HEADING} mt-20 border-t border-foreground/20 pt-8 ${HEAD} ${RANK} [&>[data-role=den]]:text-[1.75rem] [&>[data-role=den]]:leading-9`,
+  titlu: `${FIRST} ${UNDER_HEADING} mt-16 border-t pt-7 ${HEAD} ${RANK} [&>[data-role=den]]:text-2xl [&>[data-role=den]]:leading-8`,
+  capitol: `${FIRST} ${UNDER_HEADING} mt-12 border-t pt-6 ${HEAD} ${RANK} [&>[data-role=den]]:text-xl [&>[data-role=den]]:leading-7`,
+  sectiune: `${FIRST} mt-10 ${HEAD} ${RANK} [&>[data-role=den]]:text-lg [&>[data-role=den]]:leading-7`,
+  subcapitol: `${FIRST} mt-10 ${HEAD} ${RANK} [&>[data-role=den]]:text-lg [&>[data-role=den]]:leading-7`,
+  // The article's number is the address people cite; its name, where it has
+  // one, follows in the same sans, quieter.
+  articol: `mt-9 [&>[data-role=ttl]]:[font-family:var(--font-family)] [&>[data-role=ttl]]:text-base [&>[data-role=ttl]]:font-semibold [&>[data-role=den]]:[font-family:var(--font-family)] [&>[data-role=den]]:ml-2 [&>[data-role=den]]:text-base [&>[data-role=den]]:font-normal [&>[data-role=den]]:text-muted-foreground`,
   // Same rank/denumire model as the containers above — "Anexa nr. 1" is
   // usually den-less and takes the :has fallback size.
-  anexa: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.375rem] [&>[data-role=den]]:font-bold`,
-  apendice: `mt-11 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:font-bold`,
-  alineat: "mt-2.5",
-  // Same step as alineat, NOT tighter: at mt-1.5 the gap between two litere
-  // matched the leading inside one, so multi-line items (the definitions
-  // articles — the densest, most-consulted part of most laws) fused into an
-  // unparseable column. Short single-line runs still read as a list.
-  litera: "mt-2.5 pl-6",
-  // Dash-items ("– ...") — same list grain as litera/punct.
-  liniuta: "mt-2.5 pl-6",
-  punct: "mt-2.5 pl-6",
-  paragraf: "mt-2.5",
+  anexa: `${FIRST} ${UNDER_HEADING} mt-20 border-t border-foreground/20 pt-8 ${HEAD} ${RANK} [&>[data-role=den]]:text-2xl [&>[data-role=den]]:leading-8`,
+  apendice: `${FIRST} mt-12 ${HEAD} ${RANK} [&>[data-role=den]]:text-lg [&>[data-role=den]]:leading-7`,
+  // The document's own masthead — the title lines the law opens with, shown
+  // only where the page head does not already say them.
+  titlu_act: `${UI} text-xl font-semibold leading-8 tracking-tight`,
+  subtitlu_act: `${UI} text-base leading-7 text-muted-foreground`,
+  // From `sm` the paragraph's number hangs in the gutter; on a phone it stays
+  // in the line, where the width is the text's.
+  alineat: `${STRUCK_MARKER} mt-3 sm:[&:has(>[data-role=ttl])]:pl-10 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70 sm:[&>[data-role=ttl]]:float-left sm:[&>[data-role=ttl]]:-ml-10 sm:[&>[data-role=ttl]]:min-w-10 sm:[&>[data-role=ttl]]:pr-1.5`,
+  // Letters, points and dash-items ("– ...") share one list grain, a step
+  // apart: at a tighter step the gap between two litere matched the leading
+  // inside one, so multi-line items (the definitions articles — the densest,
+  // most-consulted part of most laws) fused into an unparseable column.
+  litera: ITEM,
+  punct: ITEM,
+  liniuta: ITEM,
+  paragraf: "mt-3",
   // A structurally-classified quotation — the same container the
   // OPENS_QUOTED heuristic approximates when the parser didn't mark one.
-  citat:
-    "mt-3 border-l-[3px] border-[var(--pnrr-border)] bg-[var(--pnrr-hover)] py-2 pl-5 pr-3",
-  nota: "mt-3 pl-4 border-l-2 border-muted text-muted-foreground text-[0.95em]",
+  citat: QUOTED,
+  // The Portal's notes are apparatus, not provisions: the site's sans, a
+  // size down, on a quiet ground. A served note holds its lines as notes of
+  // their own: one ground for the whole, none for the lines.
+  nota: `mt-4 rounded-md bg-muted/60 px-4 py-3 ${UI} text-sm leading-6 text-muted-foreground [&>[data-role=ttl]]:text-foreground [&_[data-kind=paragraf]]:mt-1.5 [&_[data-kind=nota]]:mt-1.5 [&_[data-kind=nota]]:rounded-none [&_[data-kind=nota]]:bg-transparent [&_[data-kind=nota]]:p-0`,
   // Publication metadata plate (EMITENT / Publicat în) — kept quiet; the
   // fișa above states the same facts with provenance.
-  emitent: "mt-4 text-[0.95em] text-muted-foreground",
-  publicare: "mt-3 text-[0.95em] text-muted-foreground",
-  semnatura: "mt-8 text-muted-foreground",
+  emitent: `mt-3 ${UI} text-sm leading-6 text-muted-foreground [&>[data-role=ttl]]:font-medium`,
+  publicare: `mt-1 ${UI} text-sm leading-6 text-muted-foreground [&>[data-role=ttl]]:font-medium`,
+  // The signatures as the act's closing: the text's own face and colour, the
+  // outermost signature block under a short rule (a nested one cancels it).
+  // The lines stay one under the other, in source order: the text does not
+  // say which line is an office and which a name ("Contrasemnează:", an
+  // office on two lines), so pairing them would be a guess.
+  semnatura:
+    "mt-8 w-fit min-w-56 border-t border-foreground/25 pt-4 text-base leading-7 text-foreground [&_[data-kind=semnatura]]:mt-0 [&_[data-kind=semnatura]]:w-auto [&_[data-kind=semnatura]]:min-w-0 [&_[data-kind=semnatura]]:border-t-0 [&_[data-kind=semnatura]]:pt-0",
   // Column-aligned content: a proportional serif destroys the alignment.
   // For `tabel` this slot is only the OFF-CONTRACT fallback — a well-formed
   // v1.1 table takes the real `<table>` path in BlockView; a malformed one
   // renders flat, where monospace keeps any space-padded alignment readable.
   tabel: "mt-4 font-mono text-sm",
-  preformatat: "mt-4 font-mono text-sm",
+  // Drawn layouts keep their columns: no wrapping, the box scrolls sideways
+  // (and is a focusable, named region — see BlockView). Served texts carry
+  // each line as a `paragraf` child: they touch, so the drawn strokes join.
+  // On paper nothing scrolls: the lines wrap, so every character prints.
+  preformatat:
+    "mt-4 overflow-x-auto rounded-md border bg-muted/40 px-4 py-3 font-mono text-[0.8125rem] leading-5 whitespace-pre [&_[data-kind=paragraf]]:mt-0 print:overflow-visible print:whitespace-pre-wrap",
   // v1.1 source-asserted lists. Native markers are suppressed HERE
   // (`list-none`) — not via Tailwind preflight, which only resets `ol, ul,
   // menu` and would leave an off-contract `element_lista` (an `<li>` outside
@@ -188,9 +260,17 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   // A marker captured as run text must not be doubled, and an attribute-
   // carried one is restored via LIST_MARKER_CLASS instead. The indent
   // matches the litera/punct grain.
-  lista: "mt-2.5 pl-6 list-none",
-  element_lista: "mt-2.5 list-none",
+  lista: "mt-2 list-none pl-7 sm:pl-9",
+  element_lista: "mt-2 list-none",
 };
+
+/**
+ * The note a consolidated form adds after a changed provision ("(la
+ * 28-07-2022, Litera m) … a fost modificată de …)"): the Portal's record of a
+ * change, not a provision. Plain small print in the site's sans, no rule, no
+ * inset, so the law's own text reads on without it.
+ */
+const AMENDMENT_NOTE = `mt-2 ${UI} text-[0.8125rem] leading-5 text-muted-foreground`;
 
 const RUN_ROLE_CLASS: Readonly<Record<string, string>> = {
   // Heading line of a structural unit ("Articolul 1", "CAPITOLUL II").
@@ -198,8 +278,9 @@ const RUN_ROLE_CLASS: Readonly<Record<string, string>> = {
   // `text-foreground` made the same label near-black on one act and muted on
   // another depending on class order.
   ttl: "font-semibold",
-  // Denomination/label run ("LEGE nr. 17") — the document's own masthead.
-  den: "[font-family:var(--font-family)] font-semibold tracking-wide",
+  // Denomination/label run ("LEGE nr. 17"): its face comes from its block —
+  // the heading kinds and the masthead set it in the sans.
+  den: "",
   // Body text — the default reading style.
   bdy: "",
 };
@@ -210,9 +291,9 @@ const RUN_ROLE_CLASS: Readonly<Record<string, string>> = {
  * - An all-dashes paragraph is the portal's section separator — kept in the
  *   character stream, visually receded to a rule-like line.
  * - A block opening with a quotation mark inside an amending act is the
- *   QUOTED NEW WORDING ("va avea următorul cuprins: «...»") — it gets a
- *   left-rule container so instruction and inserted law stop reading as the
- *   same voice.
+ *   QUOTED NEW WORDING ("va avea următorul cuprins: «...»") — it is set in
+ *   like a `citat` (QUOTED) so instruction and inserted law stop reading as
+ *   the same voice.
  */
 const ownText = (block: TldfBlock): string =>
   block.content.map((run) => (run.sep ?? "") + run.text).join("");
@@ -236,10 +317,10 @@ function displayClass(block: TldfBlock): string | undefined {
   if (block.kind !== "paragraf" && block.kind !== "alineat") return undefined;
   const text = ownText(block);
   if (DASH_RULE.test(text) && text.trim() !== "") {
-    return "text-[var(--pnrr-subtle)] select-all overflow-hidden";
+    return "select-all overflow-hidden text-foreground/25";
   }
   if (OPENS_QUOTED.test(text)) {
-    return "mt-3 border-l-[3px] border-[var(--pnrr-border)] bg-[var(--pnrr-hover)] py-2 pl-5 pr-3";
+    return QUOTED;
   }
   return undefined;
 }
@@ -272,12 +353,14 @@ function MarkElement({
   // the source strike (user decision: visible strikethrough); legal meaning
   // is asserted only by the BLOCK's struck_repealed, never by the mark.
   if (mark.kind === "italic") return <em>{text}</em>;
-  if (mark.kind === "bold") return <strong>{text}</strong>;
+  if (mark.kind === "bold") {
+    return <strong className="font-semibold">{text}</strong>;
+  }
   if (mark.kind === "underline") {
-    return <span className="underline underline-offset-2">{text}</span>;
+    return <span className="underline underline-offset-[3px]">{text}</span>;
   }
   if (mark.kind === "struck") {
-    return <s className="text-muted-foreground decoration-[1.5px]">{text}</s>;
+    return <s className={STRUCK_TEXT_CLASS}>{text}</s>;
   }
   const link = mark.link;
   if (link?.kind === "act" && typeof link.target_act_id === "number") {
@@ -285,7 +368,7 @@ function MarkElement({
       <Link
         to="/legislation/acts/$actId"
         params={{ actId: String(link.target_act_id) }}
-        className="text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
+        className="text-primary underline decoration-primary/30 underline-offset-[3px] hover:decoration-primary"
       >
         {text}
       </Link>
@@ -297,7 +380,7 @@ function MarkElement({
         href={link.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-primary underline decoration-dotted underline-offset-2"
+        className="text-primary underline decoration-primary/40 decoration-dotted underline-offset-[3px] hover:decoration-solid"
       >
         {text}
       </a>
@@ -307,7 +390,7 @@ function MarkElement({
   // unresolved references: visibly a reference, honestly not a link.
   return (
     <span
-      className="underline decoration-dotted decoration-muted-foreground/60 underline-offset-2"
+      className="underline decoration-muted-foreground/50 decoration-dotted underline-offset-[3px]"
       title={t`Referință legislativă (fără țintă navigabilă)`}
     >
       {text}
@@ -375,7 +458,11 @@ function BlockContent({ block, marks }: BlockProps) {
   // Which separators collapse visually (never textually): a block-leading
   // one — the block-element boundary already breaks the line, so it only
   // painted a phantom blank line — and, on enumeration grains, the one right
-  // after the marker run, so "(1)"/"a)" joins its body.
+  // after the marker run, so "(1)"/"a)" joins its body. The same collapse
+  // after a label run joins three more pairs (owner, 26 November 2026, the
+  // act page's redesign): an article's number and its name ("Articolul 3" +
+  // "Definiții"), the issuer's label and its value, the publication's label
+  // and its issue. An article's BODY run is never joined to its number.
   const inlineMarker = INLINE_MARKER_KINDS.has(block.kind);
   const collapseAt = new Set<number>();
   for (const [index, item] of items.entries()) {
@@ -383,10 +470,17 @@ function BlockContent({ block, marks }: BlockProps) {
     if (index === 0) collapseAt.add(index);
     const previous = items[index - 1];
     if (
-      inlineMarker &&
-      previous !== undefined &&
-      "run" in previous &&
-      previous.run.role === "ttl"
+      previous === undefined ||
+      !("run" in previous) ||
+      previous.run.role !== "ttl"
+    ) {
+      continue;
+    }
+    if (
+      inlineMarker ||
+      block.kind === "emitent" ||
+      block.kind === "publicare" ||
+      (block.kind === "articol" && item.run.role === "den")
     ) {
       collapseAt.add(index);
     }
@@ -413,12 +507,14 @@ function BlockContent({ block, marks }: BlockProps) {
 /* ── v1.1 presentation rendering ──────────────────────────────────────────── */
 
 /**
- * The document's table face, not an app widget's: a 2px structural outer
- * border, ONE hairline weight inside, zero radius, the reading column's serif
- * inherited at a step down (tables are dense reference material — the CPV/NACE
- * crosswalk annexes), cells top-aligned. Under `border-collapse` the 2px outer
- * edge wins over the 1px cell hairlines at the perimeter, so the two weights
- * never double up.
+ * The table face: reference material, not prose (the CPV/NACE crosswalk
+ * annexes) — the site's sans a size down, figures in columns (`tabular-nums`),
+ * ONE hairline weight inside, cells top-aligned. The frame is on the scroll
+ * shell (`TableBlock`), so the table's own outer edge is hidden
+ * (`border-hidden` under `border-collapse`) and the cell hairlines never
+ * double it. A table wider than the column scrolls in its frame and says
+ * nothing more (owner, 26 November 2026: the hint and the open-wide dialog
+ * were declined).
  */
 // `w-full` and NOT `min-w-max`. This was tried and reverted, so the reasoning
 // is recorded to stop it being retried: `width: 100%` on a table is a FLOOR,
@@ -452,8 +548,7 @@ function BlockContent({ block, marks }: BlockProps) {
  * — the fold invariant forbids adding characters to the DOM. */
 const TABLE_REGION_LABEL = "Tabel din act, derulabil orizontal";
 
-const TABLE_CLASS =
-  "w-full border-collapse border-2 border-[var(--pnrr-border)] text-[0.9375rem] leading-[1.5]";
+const TABLE_CLASS = `w-full border-collapse border-hidden ${UI} text-sm leading-5 tabular-nums`;
 
 /**
  * Cell text is "a stack of row-synchronized visual lines", not prose
@@ -462,8 +557,7 @@ const TABLE_CLASS =
  * column's paragraph margin collapses to a line stack inside cells. Descendant
  * scope on purpose: a nested table's cells want the same.
  */
-const CELL_CLASS =
-  "border border-[var(--pnrr-subtle)] px-3 py-1.5 align-top [&_[data-kind=paragraf]]:mt-0";
+const CELL_CLASS = "border px-3 py-2 align-top [&_[data-kind=paragraf]]:mt-0";
 
 /** Serving smallint bound — mirrors `tldfGridSchema`. The API boundary already
     validates it; re-checked here because tests (and any future caller) can
@@ -589,7 +683,7 @@ function TableBlock({ block, marks }: BlockProps) {
     // that DOM text equals the fold, so a <caption> would break it. Same trick
     // as the imagine placeholder.
     <div
-      className="mt-4 overflow-x-auto"
+      className="mt-5 overflow-x-auto rounded-md border"
       tabIndex={0}
       role="region"
       aria-label={TABLE_REGION_LABEL}
@@ -641,21 +735,17 @@ function TableBlock({ block, marks }: BlockProps) {
 }
 
 /**
- * The `imagine` placeholder face. The visible label is CSS generated content
- * from `data-figure-label` — with `aria-label` carrying the same text for
- * assistive tech — and NEVER a text node: the column's textContent must stay
- * exactly the fold, and an imagine block is a zero-character block. (CSS
- * `attr()` also needs no escaping, unlike a literal `content` string.) Sans
- * type on purpose: the placeholder is our chrome speaking, not the law's
+ * The `imagine` placeholder face: ONE line with an icon (owner, 26 November
+ * 2026 — a frame of the figure's size showed only emptiness). The visible
+ * label is CSS generated content from `data-figure-label` — with `aria-label`
+ * carrying the same text for assistive tech — and NEVER a text node: the
+ * column's textContent must stay exactly the fold, and an imagine block is a
+ * zero-character block. (CSS `attr()` also needs no escaping, unlike a
+ * literal `content` string.) The icon is an SVG with no text of its own.
+ * Sans type on purpose: the placeholder is our chrome speaking, not the law's
  * serif voice.
  */
-const IMAGE_PLACEHOLDER_CLASS =
-  "mx-auto flex min-h-24 max-h-96 w-full items-center justify-center whitespace-normal border border-dashed border-[var(--pnrr-subtle)] bg-[var(--pnrr-hover)] px-4 py-6 text-center [font-family:var(--font-family)] text-sm text-[var(--pnrr-muted)] before:content-[attr(data-figure-label)]";
-
-const assetDimension = (value: number | undefined): number | undefined =>
-  typeof value === "number" && Number.isFinite(value) && value > 0
-    ? value
-    : undefined;
+const FIGURE_LINE_CLASS = `flex min-h-11 items-center gap-2.5 whitespace-normal rounded-md border border-dashed border-foreground/25 px-3 py-2 ${UI} text-sm text-muted-foreground before:order-2 before:content-[attr(data-figure-label)]`;
 
 /**
  * v1.1 `imagine` — an anchored zero-character block. Its asset deliberately
@@ -665,7 +755,8 @@ const assetDimension = (value: number | undefined): number | undefined =>
  * the honest rendering is a placeholder that SAYS what it is — never an empty
  * div, never a broken `<img>`. `alt`, when the source carried one, is the
  * document's own description and leads the label; the compiler can emit
- * `alt: ''` and zero dimensions, which count as absent here.
+ * `alt: ''`, which counts as absent here. The declared dimensions no longer
+ * shape anything: the one-line placeholder has no footprint to keep.
  */
 function ImagineBlock({ block, marks }: BlockProps) {
   const rawAlt = block.asset?.alt;
@@ -677,15 +768,13 @@ function ImagineBlock({ block, marks }: BlockProps) {
     alt !== undefined
       ? t`Figură din actul original: ${alt}`
       : t`Figură din actul original (imagine indisponibilă)`;
-  const width = assetDimension(block.asset?.width);
-  const height = assetDimension(block.asset?.height);
   return (
     <div
       id={`tldf-${block.id}`}
       data-kind="imagine"
       {...struckAttrsOf(block)}
       className={cn(
-        "mt-4 scroll-mt-24",
+        "mt-5 scroll-mt-24",
         block.struck === "full" && "opacity-60",
       )}
     >
@@ -693,18 +782,10 @@ function ImagineBlock({ block, marks }: BlockProps) {
         role="img"
         aria-label={label}
         data-figure-label={label}
-        className={IMAGE_PLACEHOLDER_CLASS}
-        // Declared dimensions shape the placeholder to the figure's footprint
-        // so the document keeps its visual rhythm; the min/max clamps keep a
-        // degenerate ratio from collapsing or swallowing the column.
-        {...(width !== undefined &&
-          height !== undefined && {
-            style: {
-              aspectRatio: `${String(width)} / ${String(height)}`,
-              maxWidth: width,
-            },
-          })}
-      />
+        className={FIGURE_LINE_CLASS}
+      >
+        <ImageOff className="size-4 shrink-0" aria-hidden="true" />
+      </div>
       {/* Contract: imagine owns no text. If a malformed artifact carries runs
           or children anyway, fidelity outranks the contract — render them
           (outside the role="img" shell, so nothing hides from the a11y tree).
@@ -758,22 +839,28 @@ function foldedTextOpensWithMarker(folded: string, label: string): boolean {
 
 /** Applied only alongside `data-list-marker`: an empty `::before` with a
     margin would still paint stray leading space. */
-const LIST_MARKER_CLASS = "before:mr-2 before:content-[attr(data-list-marker)]";
+const LIST_MARKER_CLASS =
+  "before:mr-2 before:inline-block before:min-w-6 before:font-medium before:text-foreground/70 before:content-[attr(data-list-marker)]";
 
 /* ── v1.1 source-state rendering (user decision 2026-08-26) ──────────────── */
 
 /**
  * Visible strikethrough, maximum fidelity first: nothing hidden, nothing
- * moved. A strike alone is SOURCE EVIDENCE — only `struck_repealed` (the
- * validated narrow rule) is allowed to say "abrogat".
+ * moved — with a thin, pale line, so struck text stays readable (owner, 26
+ * November 2026). A strike alone is SOURCE EVIDENCE — only `struck_repealed`
+ * (the validated narrow rule) is allowed to say "abrogat".
  */
 const STRUCK_TEXT_CLASS =
-  "line-through decoration-[1.5px] text-muted-foreground";
+  "text-muted-foreground line-through decoration-1 decoration-foreground/40";
 
 function struckClassOf(block: TldfBlock): string | undefined {
   // 'partial' draws via exact `struck` marks; the block face stays upright.
   return block.struck === "full" ? STRUCK_TEXT_CLASS : undefined;
 }
+
+/** The validated narrow rule, and the only thing allowed to say "abrogat". */
+const isRepealed = (block: TldfBlock): boolean =>
+  block.struck !== undefined && block.struck_repealed === true;
 
 function struckAttrsOf(block: TldfBlock): {
   readonly "data-struck"?: "partial" | "full";
@@ -782,11 +869,104 @@ function struckAttrsOf(block: TldfBlock): {
   if (block.struck === undefined) return {};
   return {
     "data-struck": block.struck,
-    ...(block.struck_repealed === true && { title: t`Text abrogat` }),
+    ...(isRepealed(block) && { title: t`Text abrogat` }),
   };
 }
 
+/**
+ * The repealed state as the site's status mark (`LegalStatusBadge`): colour
+ * in the ring alone, the word in plain text after the struck provision. An
+ * EMPTY element: the ring is `::before`, the word is `::after` generated from
+ * `data-label`, and assistive tech gets the same word from `role="img"` +
+ * `aria-label` — so the column's text content is unchanged. `inline-flex`
+ * makes it an atomic inline, so the block's strike line does not run through
+ * the word.
+ */
+const STATE_MARK = `ml-2 inline-flex items-center gap-1.5 whitespace-nowrap ${UI} text-xs text-foreground/80 before:size-2.5 before:shrink-0 before:rounded-full before:border-[1.5px] before:border-status-blocked-fg before:content-[''] after:content-[attr(data-label)]`;
+
+/* ── folded notes of the Portal ──────────────────────────────────────────── */
+
+/**
+ * Whether a long note of the Portal shows only its first lines. A context so
+ * it reaches notes at any depth (a cell, a list item) without threading a
+ * prop through every wrapper; `TldfBlocksView` sets it, `FoldedNote` turns it
+ * off for its own content (one fold per note).
+ */
+const FoldNotes = createContext(false);
+
+/** A note longer than this many characters (its span) is folded, when notes are folded at all. */
+const LONG_NOTE = 600;
+
+/**
+ * A long note of the Portal (the transitional provisions of amending acts a
+ * consolidated form carries at its head run to a screen or more), folded to
+ * its first lines. Every word stays in the DOM in fold order — find-in-page
+ * and copy still reach it; the fold is a height clamp, not a removal. The
+ * control's words are generated content from `data-label` (its accessible
+ * name is `aria-label`), so the column's text content is unchanged.
+ */
+function FoldedNote({ block, marks }: BlockProps) {
+  const [open, setOpen] = useState(false);
+  const note = useRef<HTMLDivElement>(null);
+  const more = t`Arată toată nota`;
+  return (
+    <div
+      ref={note}
+      id={`tldf-${block.id}`}
+      data-kind="nota"
+      className={cn(BLOCK_CLASS.nota, "scroll-mt-24")}
+    >
+      <div
+        // A hidden-overflow box still scrolls when something inside it is
+        // brought into view: a `?nod=` jump, a find-in-page hit, a link taking
+        // keyboard focus. The note opens then, so the target is never shown
+        // inside a clipped box with the note's first lines pushed out. Opened,
+        // the box scrolls no more and its offset is gone: the page takes the
+        // same distance, so the target stays where the browser put it.
+        onScroll={(event) => {
+          const moved = event.currentTarget.scrollTop;
+          if (open || moved <= 0) return;
+          flushSync(() => setOpen(true));
+          window.scrollBy(0, moved);
+        }}
+        className={cn(
+          // The note's label keeps its colour inside this wrapper too.
+          "[&>[data-role=ttl]]:text-foreground",
+          // The last lines fade by a mask, so the fade is right on any ground
+          // (the note's own, a table cell's, either theme). On paper the note
+          // is whole.
+          !open &&
+            "max-h-[8.25rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_calc(100%_-_2.5rem),transparent)] print:max-h-none print:overflow-visible print:[mask-image:none]",
+        )}
+      >
+        {/* One fold for the whole note: a long line inside it is not folded again. */}
+        <FoldNotes.Provider value={false}>
+          <BlockContent block={block} marks={marks} />
+        </FoldNotes.Provider>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          if (!open) {
+            setOpen(true);
+            return;
+          }
+          // Closed from far down a long note, the reader would be left below
+          // it with the control above the screen: the note comes back in view.
+          flushSync(() => setOpen(false));
+          note.current?.scrollIntoView({ block: "nearest" });
+        }}
+        aria-expanded={open}
+        aria-label={open ? t`Arată mai puțin din notă` : more}
+        data-label={open ? t`Arată mai puțin` : more}
+        className="mt-1 inline-flex min-h-11 items-center whitespace-normal font-medium text-foreground underline decoration-foreground/30 underline-offset-4 before:content-[attr(data-label)] hover:decoration-foreground sm:min-h-9 print:hidden"
+      />
+    </div>
+  );
+}
+
 function BlockView({ block, marks }: BlockProps) {
+  const foldNotes = useContext(FoldNotes);
   if (!KNOWN_KINDS.has(block.kind) && !warnedKinds.has(block.kind)) {
     warnedKinds.add(block.kind);
     logger.warn("Unknown TLDF block kind, rendering as plain block", {
@@ -800,6 +980,14 @@ function BlockView({ block, marks }: BlockProps) {
       return <TableBlock block={block} marks={marks} />;
     }
     warnUnrenderableTable(rejection);
+  }
+  if (
+    foldNotes &&
+    block.kind === "nota" &&
+    block.struck === undefined &&
+    block.span[1] - block.span[0] > LONG_NOTE
+  ) {
+    return <FoldedNote block={block} marks={marks} />;
   }
   if (block.kind === "imagine") {
     return <ImagineBlock block={block} marks={marks} />;
@@ -820,22 +1008,45 @@ function BlockView({ block, marks }: BlockProps) {
         : "div";
   const marker =
     block.kind === "element_lista" ? listMarkerOf(block) : undefined;
+  // The Portal's note of a change takes the note face, never the quoted or
+  // dash-rule display heuristics.
+  const note = block.annotation_role === "amendment_note";
+  // A drawn layout scrolls sideways in its box (`whitespace-pre`), so the box
+  // must take focus to be scrollable from the keyboard (WCAG 2.1.1) and be
+  // named to be announced — same reasoning, and same attribute-only label, as
+  // the table shell.
+  const scroll = block.kind === "preformatat";
+  const repealed = isRepealed(block);
 
   return (
     <Tag
       id={`tldf-${block.id}`}
       data-kind={block.kind}
+      {...(note && { "data-annotation": "amendment_note" })}
       {...(marker !== undefined && { "data-list-marker": marker })}
       {...struckAttrsOf(block)}
+      {...(scroll && {
+        tabIndex: 0,
+        role: "region",
+        "aria-label": t`Text aliniat pe coloane, derulabil orizontal`,
+      })}
       className={cn(
-        BLOCK_CLASS[block.kind],
-        displayClass(block),
+        note ? AMENDMENT_NOTE : BLOCK_CLASS[block.kind],
+        note ? undefined : displayClass(block),
         marker !== undefined && LIST_MARKER_CLASS,
         struckClassOf(block),
         "scroll-mt-24",
       )}
     >
       <BlockContent block={block} marks={marks} />
+      {repealed ? (
+        <span
+          role="img"
+          aria-label={t`abrogat`}
+          data-label={t`abrogat`}
+          className={STATE_MARK}
+        />
+      ) : null}
     </Tag>
   );
 }
@@ -845,6 +1056,12 @@ export type TldfBlocksViewProps = {
   /** DOCUMENT-level marks (the envelope's; chunk payloads reuse the same array). */
   readonly marks: readonly TldfMark[];
   readonly containsNonBmp: boolean;
+  /**
+   * Show only the first lines of a long note of the Portal (a `nota` longer
+   * than LONG_NOTE characters, not struck), with a control that opens it.
+   * Off by default; the act page turns it on.
+   */
+  readonly foldNotes?: boolean;
 };
 
 /**
@@ -867,6 +1084,7 @@ export function TldfBlocksView({
   blocks,
   marks,
   containsNonBmp,
+  foldNotes = false,
 }: TldfBlocksViewProps) {
   const index = useMemo(
     () => buildMarkIndex(marks, containsNonBmp),
@@ -881,17 +1099,24 @@ export function TldfBlocksView({
     [blocks],
   );
   return (
-    // Serif at 18px/1.75 — long-form legal reading, distinct from the sans UI
-    // around it (Charter ships on macOS/iOS, Cambria on Windows, Georgia is
-    // the floor everywhere); headings return to Inter via the per-kind
-    // classes above.
+    // The reader's serif (SERIF) at 17px/1.7 on a phone, 18px/1.75 from `sm`
+    // — long-form legal reading, distinct from the sans UI around it;
+    // headings and apparatus return to Inter via the per-kind classes above.
+    // The first block's top margin is dropped only when this column is the
+    // first of its parent: in a chunked document every later group keeps the
+    // margin its first block takes at the group boundary.
     <div
-      className="whitespace-pre-wrap [font-family:Charter,Cambria,Georgia,serif] text-[1.125rem] leading-[1.75] text-[var(--pnrr-fg)] [content-visibility:auto]"
+      className={cn(
+        "whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-foreground [content-visibility:auto] sm:text-lg sm:leading-[1.75] [&:first-child>*:first-child]:mt-0",
+        SERIF,
+      )}
       style={{ containIntrinsicSize: `auto ${String(intrinsicHeight)}px` }}
     >
-      {blocks.map((block) => (
-        <BlockView key={block.id} block={block} marks={index} />
-      ))}
+      <FoldNotes.Provider value={foldNotes}>
+        {blocks.map((block) => (
+          <BlockView key={block.id} block={block} marks={index} />
+        ))}
+      </FoldNotes.Provider>
     </div>
   );
 }

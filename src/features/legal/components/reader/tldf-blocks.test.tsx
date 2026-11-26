@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { render } from '@/test/test-utils'
+import { fireEvent, render } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 
 import { foldTldfBlocks } from '../../lib/tldf/fold'
@@ -186,6 +186,63 @@ describe('separator collapse is visual-only and exactly scoped', () => {
     const collapsed = container.querySelectorAll('.whitespace-normal')
     expect(collapsed).toHaveLength(2)
     for (const span of collapsed) expect(span.textContent).toBe('\n')
+  })
+
+  it('joins an article\'s name to its number, and never its body', () => {
+    // Fold: "\nArticolul 3\nDefiniții\nÎn sensul prezentei legi."
+    const articol: TldfBlock = {
+      id: 'art-3',
+      kind: 'articol',
+      type: 'ART',
+      span: [0, 49],
+      content: [
+        { role: 'ttl', sep: '\n', text: 'Articolul 3', span: [0, 12] },
+        { role: 'den', sep: '\n', text: 'Definiții', span: [12, 22] },
+        { role: 'bdy', sep: '\n', text: 'În sensul prezentei legi.', span: [22, 48] },
+      ],
+    }
+    const { container } = render(
+      <TldfBlocksView blocks={[articol]} marks={[]} containsNonBmp={false} />,
+    )
+    expect(container.textContent).toBe(foldTldfBlocks([articol]))
+    // The leading separator and the one before the name; the body keeps its line.
+    expect(container.querySelectorAll('.whitespace-normal')).toHaveLength(2)
+    expect(container.querySelector('[data-role="den"] > .whitespace-normal')).not.toBeNull()
+    expect(container.querySelector('[data-role="bdy"] > .whitespace-normal')).toBeNull()
+
+    // An article with no name: its body is not pulled up beside the number.
+    const unnamed: TldfBlock = {
+      ...articol,
+      id: 'art-4',
+      content: [
+        { role: 'ttl', sep: '\n', text: 'Articolul 4', span: [0, 12] },
+        { role: 'bdy', sep: '\n', text: 'Text.', span: [12, 18] },
+      ],
+      span: [0, 18],
+    }
+    const second = render(
+      <TldfBlocksView blocks={[unnamed]} marks={[]} containsNonBmp={false} />,
+    )
+    expect(second.container.textContent).toBe(foldTldfBlocks([unnamed]))
+    expect(second.container.querySelectorAll('.whitespace-normal')).toHaveLength(1)
+  })
+
+  it.each(['emitent', 'publicare'])('joins the label of %s to its value', (kind) => {
+    const block: TldfBlock = {
+      id: `${kind}-1`,
+      kind,
+      type: 'p',
+      span: [0, 17],
+      content: [
+        { role: 'ttl', sep: '\n', text: 'EMITENT', span: [0, 8] },
+        { role: 'bdy', sep: '\n', text: 'GUVERNUL', span: [8, 17] },
+      ],
+    }
+    const { container } = render(
+      <TldfBlocksView blocks={[block]} marks={[]} containsNonBmp={false} />,
+    )
+    expect(container.textContent).toBe(foldTldfBlocks([block]))
+    expect(container.querySelectorAll('.whitespace-normal')).toHaveLength(2)
   })
 
   it('never collapses a space separator', () => {
@@ -650,7 +707,7 @@ describe('v1.1 tables (hand-built fixture — no production 1.1 artifact exists 
     expect(container.querySelector('table, tbody, tr, td')).toBeNull()
     const paragraf = container.querySelector('[data-kind="paragraf"]')
     expect(paragraf?.tagName).toBe('DIV')
-    expect(paragraf?.className).toContain('mt-2.5')
+    expect(paragraf?.className).toContain('mt-3')
     expect(container.textContent).toBe('hello')
   })
 
@@ -927,8 +984,28 @@ describe('v1.1 imagine (hand-built fixture)', () => {
     expect(figure?.getAttribute('data-figure-label')).toBe(figure?.getAttribute('aria-label'))
     expect(figure?.textContent).toBe('')
     expect(container.querySelector('img')).toBeNull()
-    // Declared dimensions shape the placeholder.
-    expect((figure as HTMLElement).style.aspectRatio).toBe('640 / 480')
+    // One line (owner, 2026-11-26): the declared dimensions no longer shape
+    // the placeholder into a frame of the figure's size.
+    expect((figure as HTMLElement).style.aspectRatio).toBe('')
+    expect(figure?.hasAttribute('style')).toBe(false)
+  })
+
+  it('draws an unserved figure as one line: an icon and the label as generated content, no text node', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={V11_BLOCKS} marks={[]} containsNonBmp={false} />,
+    )
+    const figure = container.querySelector('[data-kind="imagine"] > [role="img"]')
+    expect(figure).not.toBeNull()
+    if (figure === null) return
+    expect(figure.getAttribute('data-figure-label')).toBe('Figură din actul original: Sigiliul instituției')
+    // The label is drawn from the attribute (`::before`), never as text.
+    expect(figure.className).toContain('before:content-[attr(data-figure-label)]')
+    expect(textNodesOf(figure)).toHaveLength(0)
+    // The icon is decorative: hidden from assistive tech, which reads the label.
+    const icon = figure.querySelector('svg')
+    expect(icon).not.toBeNull()
+    expect(icon?.getAttribute('aria-hidden')).toBe('true')
+    expect(container.textContent).toBe(V11_TEXT)
   })
 
   it('adds zero characters to the document text', () => {
@@ -1110,9 +1187,9 @@ describe('format 1.0 is untouched by the v1.1 renderer', () => {
     expect(el?.outerHTML).toBe(
       '<div id="tldf-bloc-1" data-kind="bloc" class="scroll-mt-24">' +
         '<span data-role="ttl" class="font-semibold">Blocul I</span>' +
-        '<span data-role="den" class="[font-family:var(--font-family)] font-semibold tracking-wide"> Dispoziții</span>' +
+        '<span data-role="den"> Dispoziții</span>' +
         '<span data-role="bdy"> cuprins.</span>' +
-        '<div id="tldf-bloc-1-p" data-kind="paragraf" class="mt-2.5 scroll-mt-24">' +
+        '<div id="tldf-bloc-1-p" data-kind="paragraf" class="mt-3 scroll-mt-24">' +
         '<span> copilul.</span>' +
         '</div>' +
         '</div>',
@@ -1156,6 +1233,56 @@ describe('v1.1 source-state rendering (struck, 2026-08-26)', () => {
     const block = container.querySelector('[data-struck="full"]')
     expect(block).not.toBeNull()
     expect(block?.getAttribute('title')).toBeNull()
+  })
+
+  it('says the repealed state as a status mark exposed to assistive tech, with no text node', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[struckPar]} marks={[]} containsNonBmp={false} />,
+    )
+    const block = container.querySelector('[data-struck="full"]')
+    const mark = block?.querySelector('[role="img"]')
+    expect(mark).not.toBeNull()
+    if (mark === null || mark === undefined) return
+    // The word reaches assistive tech as a name and sighted readers as
+    // generated content (`::after` from data-label) — never as a text node.
+    expect(mark.getAttribute('aria-label')).toBe('abrogat')
+    expect(mark.getAttribute('data-label')).toBe('abrogat')
+    expect(mark.className).toContain('after:content-[attr(data-label)]')
+    expect(mark.className).toContain('before:border-status-blocked-fg')
+    expect(mark.childNodes).toHaveLength(0)
+    // The title stays, and the column's text is the fold, unchanged.
+    expect(block?.getAttribute('title')).toBe('Text abrogat')
+    expect(container.textContent).toBe(foldTldfBlocks([struckPar]))
+  })
+
+  it('a strike without struck_repealed carries no repealed mark', () => {
+    const { container } = render(
+      <TldfBlocksView
+        blocks={[
+          { ...struckPar, struck_repealed: undefined },
+          { ...struckPar, id: 's2', struck: 'partial', struck_repealed: undefined },
+        ]}
+        marks={[]}
+        containsNonBmp={false}
+      />,
+    )
+    expect(container.querySelectorAll('[data-struck]')).toHaveLength(2)
+    expect(container.querySelector('[role="img"]')).toBeNull()
+    expect(container.querySelector('[data-label]')).toBeNull()
+    expect(container.querySelector('[aria-label="abrogat"]')).toBeNull()
+  })
+
+  it('draws struck text with a thin, pale line', () => {
+    const { container } = render(
+      <TldfBlocksView
+        blocks={[{ ...struckPar, struck_repealed: undefined }]}
+        marks={[]}
+        containsNonBmp={false}
+      />,
+    )
+    const block = container.querySelector('[data-struck="full"]')
+    expect(block?.className).toContain('decoration-1')
+    expect(block?.className).toContain('decoration-foreground/40')
   })
 
   it('a partial strike keeps the block face upright and draws the exact mark range', () => {
@@ -1273,5 +1400,257 @@ describe('v1.1 source-state rendering (struck, 2026-08-26)', () => {
     expect(cells[0]?.className).toContain('line-through')
     expect(cells[1]?.getAttribute('data-struck')).toBeNull()
     expect(cells[1]?.className).not.toContain('line-through')
+  })
+})
+
+describe('folded notes of the Portal (foldNotes)', () => {
+  // A long note: its heading run and four long lines as notes of their own,
+  // the shape a consolidated form carries at its head. Spans are consecutive.
+  const sentence =
+    'Prevederile prezentei ordonanțe de urgență se aplică procedurilor de atribuire inițiate după data intrării în vigoare, iar procedurile în curs rămân supuse legislației în vigoare la data inițierii lor.'
+  const noteLine = (id: string, start: number): TldfBlock => ({
+    id,
+    kind: 'nota',
+    type: 'NTA',
+    span: [start, start + 1 + sentence.length],
+    content: [{ sep: '\n', text: sentence, span: [start + 1, start + 1 + sentence.length] }],
+  })
+  const heading = 'Notă'
+  const first = noteLine('n1', heading.length)
+  const second = noteLine('n2', first.span[1])
+  const third = noteLine('n3', second.span[1])
+  const fourth = noteLine('n4', third.span[1])
+  const longNote: TldfBlock = {
+    id: 'n',
+    kind: 'nota',
+    type: 'NTA',
+    span: [0, fourth.span[1]],
+    content: [{ role: 'ttl', text: heading, span: [0, heading.length] }],
+    children: [first, second, third, fourth],
+  }
+  const shortNote: TldfBlock = {
+    id: 'short',
+    kind: 'nota',
+    type: 'NTA',
+    span: [0, 24],
+    content: [{ text: 'O notă scurtă, întreagă.', span: [0, 24] }],
+  }
+
+  it('the fixture note is long enough to fold', () => {
+    // Six hundred characters: fewer can fit in the folded height on a wide screen, and would fold to nothing hidden.
+    expect(longNote.span[1] - longNote.span[0]).toBeGreaterThan(600)
+  })
+
+  it('is off by default: a long note renders whole, with no control', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} />,
+    )
+    expect(container.querySelector('button')).toBeNull()
+    expect(container.textContent).toBe(foldTldfBlocks([longNote]))
+  })
+
+  it('folds a long note to its first lines without adding or losing a character', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    // Fidelity: every word of the note is still in the column, in fold order.
+    expect(container.textContent).toBe(foldTldfBlocks([longNote]))
+    const note = container.querySelector('#tldf-n')
+    expect(note?.getAttribute('data-kind')).toBe('nota')
+    // One control, for the outer note only — its lines are not folded again.
+    const controls = container.querySelectorAll('button')
+    expect(controls).toHaveLength(1)
+    const control = controls[0]
+    expect(control?.parentElement).toBe(note)
+    // The control's words are generated content, never a text node.
+    expect(control?.getAttribute('data-label')).toBe('Arată toată nota')
+    expect(control?.getAttribute('aria-label')).toBe('Arată toată nota')
+    expect(control?.getAttribute('aria-expanded')).toBe('false')
+    expect(control?.childNodes).toHaveLength(0)
+    // The note's content is clamped, not removed.
+    const body = note?.firstElementChild
+    expect(body?.className).toContain('max-h-[8.25rem]')
+    expect(body?.className).toContain('overflow-hidden')
+    expect(body?.querySelectorAll('[data-kind="nota"]')).toHaveLength(4)
+  })
+
+  it('opens and closes the note, the text unchanged either way', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    const control = container.querySelector('button')
+    expect(control).not.toBeNull()
+    if (control === null) return
+    fireEvent.click(control)
+    expect(control.getAttribute('aria-expanded')).toBe('true')
+    expect(control.getAttribute('data-label')).toBe('Arată mai puțin')
+    expect(control.getAttribute('aria-label')).toBe('Arată mai puțin din notă')
+    const body = container.querySelector('#tldf-n')?.firstElementChild
+    expect(body?.className ?? '').not.toContain('max-h-[8.25rem]')
+    expect(body?.className ?? '').not.toContain('overflow-hidden')
+    expect(container.textContent).toBe(foldTldfBlocks([longNote]))
+    fireEvent.click(control)
+    expect(control.getAttribute('aria-expanded')).toBe('false')
+    expect(control.getAttribute('data-label')).toBe('Arată toată nota')
+    expect(container.textContent).toBe(foldTldfBlocks([longNote]))
+  })
+
+  it('opens by itself when something inside it is scrolled into view', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    const body = container.querySelector('#tldf-n')?.firstElementChild
+    const control = container.querySelector('button')
+    expect(body).not.toBeNull()
+    if (body == null || control === null) return
+    // A scroll event with the box still at its start changes nothing.
+    fireEvent.scroll(body)
+    expect(control.getAttribute('aria-expanded')).toBe('false')
+    // A jump to a target inside the clipped part scrolls the box: the note opens,
+    // and the page takes over the distance the box had scrolled.
+    const scrollBy = vi.spyOn(window, 'scrollBy').mockImplementation(() => {})
+    body.scrollTop = 64
+    fireEvent.scroll(body)
+    expect(control.getAttribute('aria-expanded')).toBe('true')
+    expect(body.className).not.toContain('overflow-hidden')
+    expect(scrollBy).toHaveBeenCalledWith(0, 64)
+    expect(container.textContent).toBe(foldTldfBlocks([longNote]))
+    scrollBy.mockRestore()
+  })
+
+  it('brings the note back into view when it is closed', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    const note = container.querySelector('#tldf-n')
+    const control = container.querySelector('button')
+    if (note === null || control === null) throw new Error('the folded note did not render')
+    const intoView = vi.spyOn(note, 'scrollIntoView').mockImplementation(() => {})
+    fireEvent.click(control)
+    expect(intoView).not.toHaveBeenCalled()
+    fireEvent.click(control)
+    expect(control.getAttribute('aria-expanded')).toBe('false')
+    expect(intoView).toHaveBeenCalledWith({ block: 'nearest' })
+  })
+
+  it('prints a folded note whole, without its control', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    const body = container.querySelector('#tldf-n')?.firstElementChild
+    expect(body?.className).toContain('print:max-h-none')
+    expect(body?.className).toContain('print:overflow-visible')
+    expect(container.querySelector('button')?.className).toContain('print:hidden')
+  })
+
+  it('leaves a short note and a struck long note whole', () => {
+    const struckLong: TldfBlock = { ...longNote, id: 'struck-n', struck: 'full' }
+    const { container } = render(
+      <TldfBlocksView blocks={[shortNote, struckLong]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    expect(container.querySelector('button')).toBeNull()
+    expect(container.textContent).toBe(foldTldfBlocks([shortNote, struckLong]))
+  })
+
+  it('folds a long note wherever it sits, including inside a table cell', () => {
+    const inCell = tinyTable({ span: longNote.span, content: [], children: [longNote] })
+    const { container } = render(
+      <TldfBlocksView blocks={[inCell]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    expect(container.querySelector('td #tldf-n > button')).not.toBeNull()
+    expect(container.textContent).toBe(foldTldfBlocks([inCell]))
+  })
+})
+
+
+describe('review of the act text\'s look (26 November 2026)', () => {
+  const run = (role: 'ttl' | 'den' | 'bdy', text: string, start: number) => ({ role, sep: '\n' as const, text, span: [start, start + 1 + text.length] as [number, number] })
+
+  it('a fully struck item strikes its hung marker too; a partial strike does not', () => {
+    const item = (id: string, struck: 'full' | 'partial'): TldfBlock => ({
+      id,
+      kind: 'litera',
+      type: 'LIT',
+      span: [0, 15],
+      struck,
+      content: [run('ttl', 'a)', 0), run('bdy', 'abrogată;', 3)],
+    })
+    const { container } = render(
+      <TldfBlocksView blocks={[item('full', 'full'), item('part', 'partial')]} marks={[]} containsNonBmp={false} />,
+    )
+    // The rule is keyed on the block's own attribute, so it is the attribute that decides.
+    const full = container.querySelector('#tldf-full')
+    const part = container.querySelector('#tldf-part')
+    expect(full?.className).toContain('[&[data-struck=full]>[data-role=ttl]]:line-through')
+    expect(full?.getAttribute('data-struck')).toBe('full')
+    expect(part?.getAttribute('data-struck')).toBe('partial')
+  })
+
+  it('only a ruled heading drops its rule under its parent\'s heading: a box after a run keeps its frame', () => {
+    const anexa: TldfBlock = {
+      id: 'anx',
+      kind: 'anexa',
+      type: 'ANX',
+      span: [0, 60],
+      content: [run('ttl', 'Anexa nr. 1', 0), run('bdy', '*Font 7*', 12)],
+      children: [
+        { id: 'pre', kind: 'preformatat', type: 'PRE', span: [21, 40], content: [{ sep: '\n', text: '| Nr. | Denumire |', span: [21, 40] }] },
+        { id: 'cap', kind: 'capitol', type: 'CAP', span: [40, 60], content: [run('ttl', 'Capitolul I', 40)] },
+      ],
+    }
+    const { container } = render(
+      <TldfBlocksView blocks={[anexa]} marks={[]} containsNonBmp={false} />,
+    )
+    expect(container.textContent).toBe(foldTldfBlocks([anexa]))
+    // The parent no longer strips the border and padding of whatever follows a run.
+    expect(container.querySelector('#tldf-anx')?.className).not.toContain('[&>[data-role]+[data-kind]]:border-t-0')
+    expect(container.querySelector('#tldf-anx')?.className).not.toContain('[&>[data-role]+[data-kind]]:pt-0')
+    // The ruled heading carries the rule itself; the box has none of it.
+    expect(container.querySelector('#tldf-cap')?.className).toContain('[[data-role=ttl]+&]:border-t-0')
+    expect(container.querySelector('#tldf-pre')?.className).not.toContain('border-t-0')
+    expect(container.querySelector('#tldf-pre')?.className).not.toContain('pt-0')
+  })
+
+  it('a drawn layout is a named, focusable region whose lines touch and which prints whole', () => {
+    const pre: TldfBlock = {
+      id: 'pre',
+      kind: 'preformatat',
+      type: 'PRE',
+      span: [0, 40],
+      content: [],
+      children: [
+        { id: 'l1', kind: 'paragraf', type: 'p', span: [0, 20], content: [{ sep: '\n', text: '┌─────┬──────────┐', span: [0, 20] }] },
+        { id: 'l2', kind: 'paragraf', type: 'p', span: [20, 40], content: [{ sep: '\n', text: '│ Nr. │ Denumire │', span: [20, 40] }] },
+      ],
+    }
+    const { container } = render(
+      <TldfBlocksView blocks={[pre]} marks={[]} containsNonBmp={false} />,
+    )
+    const box = container.querySelector('#tldf-pre')
+    expect(container.textContent).toBe(foldTldfBlocks([pre]))
+    expect(box?.getAttribute('role')).toBe('region')
+    expect(box?.getAttribute('tabindex')).toBe('0')
+    expect(box?.getAttribute('aria-label')).toBe('Text aliniat pe coloane, derulabil orizontal')
+    expect(box?.className).toContain('[&_[data-kind=paragraf]]:mt-0')
+    expect(box?.className).toContain('print:whitespace-pre-wrap')
+  })
+
+  it('the note of a change is plain small print, even when it opens with a quotation mark', () => {
+    const note: TldfBlock = {
+      id: 'am',
+      kind: 'paragraf',
+      type: 'p',
+      span: [0, 30],
+      annotation_role: 'amendment_note',
+      content: [{ sep: '\n', text: '„(la 28-07-2022, modificată)”', span: [0, 30] }],
+    }
+    const { container } = render(
+      <TldfBlocksView blocks={[note]} marks={[]} containsNonBmp={false} />,
+    )
+    const element = container.querySelector('#tldf-am')
+    expect(element?.getAttribute('data-annotation')).toBe('amendment_note')
+    expect(element?.className).toContain('text-[0.8125rem]')
+    // Not drawn as quoted text, and with no rule of its own.
+    expect(element?.className).not.toContain('border-l')
   })
 })

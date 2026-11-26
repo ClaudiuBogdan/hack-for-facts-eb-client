@@ -542,7 +542,8 @@ function EnvelopeReader({
   }, [onRendered])
   return (
     <article id="reader-content" lang="ro">
-      <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} />
+      {/* The act page folds the Portal's long notes to their first lines. */}
+      <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} foldNotes />
     </article>
   )
 }
@@ -818,6 +819,7 @@ function ChunkedReader({
               }
               marks={manifest.marks}
               containsNonBmp={manifest.contains_non_bmp}
+              foldNotes
             />
           ) : null,
         )}
