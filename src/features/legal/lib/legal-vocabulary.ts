@@ -161,14 +161,25 @@ export function legalActTypeLabel(slug: string): string {
 }
 
 /**
+ * A slug that strings several issuers and their act numbers together („ministerul-sanatatiinr-233-din-14-martie-
+ * 2006casa-nationala-de-asigurari-de-sanatatenr-125-…"): a joint act, stored upstream as one issuer (LEG-N36A).
+ */
+const JOINT_ISSUERS = /nr-\d/u
+
+/**
  * `legal.acts.issuer_slug` — who issued it.
  *
  * Only the head is mapped; the tail (5.993 further values) is prettified. The
  * near-duplicate government slugs are folded onto one label deliberately —
  * they are the same institution spelled four ways upstream, and showing the
  * variance would be reporting a data defect as if it were a fact about the act.
+ *
+ * The head grew on 26 November 2026 (owner: clean issuer names) by the issuers met most in search answers on
+ * the dev API, each with its name as the institution writes it; the High Court's two panels are said shortly.
+ * A joint act's run-together slug is said as what it is, several issuers, not spelled out as one name.
  */
 export function legalIssuerLabel(slug: string): string {
+  if (JOINT_ISSUERS.test(slug)) return t`Mai mulți emitenți`
   switch (slug) {
     case 'guvernul':
     case 'guvernul-romaniei':
@@ -189,6 +200,16 @@ export function legalIssuerLabel(slug: string): string {
     case 'inalta-curte':
     case 'inalta-curte-de-casatie-si-justitie':
       return t`Înalta Curte de Casație și Justiție`
+    case 'inalta-curte-de-casatie-si-justitie-completul-pentru-dezlegarea-unor-chestiuni-de-drept':
+      return t`Înalta Curte, completul pentru chestiuni de drept`
+    case 'inalta-curte-de-casatie-si-justitie-completul-competent-sa-judece-recursul-in-interesul-legii':
+      return t`Înalta Curte, completul pentru recurs în interesul legii`
+    case 'consiliul-superior-al-magistraturii':
+      return t`Consiliul Superior al Magistraturii`
+    case 'consiliul-superior-al-magistraturii-plenul':
+      return t`Consiliul Superior al Magistraturii, plenul`
+    case 'consiliul-superior-al-magistraturii-sectia-pentru-judecatori':
+      return t`Consiliul Superior al Magistraturii, secția pentru judecători`
     case 'ministerul-justitiei':
       return t`Ministerul Justiției`
     case 'ministerul-transporturilor':
@@ -207,6 +228,65 @@ export function legalIssuerLabel(slug: string): string {
       return t`Ministerul Educației`
     case 'ministerul-finantelor-publice':
       return t`Ministerul Finanțelor Publice`
+    case 'ministerul-finantelor':
+      return t`Ministerul Finanțelor`
+    case 'ministerul-sanatatii-publice':
+      return t`Ministerul Sănătății Publice`
+    case 'ministerul-educatiei-si-cercetarii':
+      return t`Ministerul Educației și Cercetării`
+    case 'ministerul-educatiei-nationale':
+      return t`Ministerul Educației Naționale`
+    case 'ministerul-agriculturii-si-dezvoltarii-rurale':
+      return t`Ministerul Agriculturii și Dezvoltării Rurale`
+    case 'ministerul-agriculturii-alimentatiei-si-padurilor':
+      return t`Ministerul Agriculturii, Alimentației și Pădurilor`
+    case 'ministerul-agriculturii-padurilor-si-dezvoltarii-rurale':
+      return t`Ministerul Agriculturii, Pădurilor și Dezvoltării Rurale`
+    case 'ministerul-mediului-apelor-si-padurilor':
+      return t`Ministerul Mediului, Apelor și Pădurilor`
+    case 'ministerul-muncii-si-protectiei-sociale':
+      return t`Ministerul Muncii și Protecției Sociale`
+    case 'ministerul-culturii-si-cultelor':
+      return t`Ministerul Culturii și Cultelor`
+    case 'ministerul-transporturilor-si-infrastructurii':
+      return t`Ministerul Transporturilor și Infrastructurii`
+    case 'ministerul-transporturilor-constructiilor-si-turismului':
+      return t`Ministerul Transporturilor, Construcțiilor și Turismului`
+    case 'autoritatea-nationala-de-reglementare-in-domeniul-energiei':
+      return t`Autoritatea Națională de Reglementare în Domeniul Energiei`
+    case 'autoritatea-de-supraveghere-financiara':
+      return t`Autoritatea de Supraveghere Financiară`
+    case 'autoritatea-nationala-pentru-protectia-consumatorilor':
+      return t`Autoritatea Națională pentru Protecția Consumatorilor`
+    case 'autoritatea-nationala-sanitara-veterinara-si-pentru-siguranta-alimentelor':
+      return t`Autoritatea Națională Sanitară Veterinară și pentru Siguranța Alimentelor`
+    case 'autoritatea-nationala-de-supraveghere-a-prelucrarii-datelor-cu-caracter-personal':
+      return t`Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal`
+    case 'agentia-nationala-de-cadastru-si-publicitate-imobiliara':
+      return t`Agenția Națională de Cadastru și Publicitate Imobiliară`
+    case 'agentia-nationala-de-administrare-fiscala':
+      return t`Agenția Națională de Administrare Fiscală`
+    case 'administratia-nationala-a-penitenciarelor':
+      return t`Administrația Națională a Penitenciarelor`
+    case 'casa-nationala-de-asigurari-de-sanatate':
+      return t`Casa Națională de Asigurări de Sănătate`
+    case 'consiliul-concurentei':
+      return t`Consiliul Concurenței`
+    case 'consiliul-national-al-audiovizualului':
+      return t`Consiliul Național al Audiovizualului`
+    case 'regia-autonoma-monitorul-oficial':
+      return t`Regia Autonomă „Monitorul Oficial”`
+    case 'uniunea-nationala-a-notarilor-publici':
+    case 'uniunea-nationala-a-notarilor-publici-din-romania':
+      return t`Uniunea Națională a Notarilor Publici din România`
+    case 'uniunea-nationala-a-barourilor-din-romania':
+      return t`Uniunea Națională a Barourilor din România`
+    case 'colegiul-medicilor-din-romania':
+      return t`Colegiul Medicilor din România`
+    case 'camera-auditorilor-financiari-din-romania':
+      return t`Camera Auditorilor Financiari din România`
+    case 'camera-consultantilor-fiscali':
+      return t`Camera Consultanților Fiscali`
     case 'act-international':
       return t`Act internațional`
     default:
