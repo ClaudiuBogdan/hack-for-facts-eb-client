@@ -727,6 +727,11 @@ export const legalSearchSectionHitSchema = z.object({
   nodeLabel: z.string().nullable(),
   snippet: z.string().nullable(),
   servedForm: legalServedFormSchema.nullable(),
+  /**
+   * The act's citation (`act.displayCitation`): a provision whose act is in none of the answer's act rows is drawn
+   * under that name. Optional, so the fixtures and the mock lane, which carry none, still parse.
+   */
+  actCitation: z.string().nullable().optional(),
 })
 export type LegalSearchSectionHit = z.infer<typeof legalSearchSectionHitSchema>
 

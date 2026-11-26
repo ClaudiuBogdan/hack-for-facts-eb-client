@@ -60,4 +60,12 @@ describe('groupProvisions', () => {
     expect(groups[0]?.fragments).toEqual(['a', 'b'])
     expect(groups[0]?.nodePath).toBeNull()
   })
+
+  it('keeps a provision whose fragment the server withheld when it has a path, and a later fragment joins it (astra-client-11)', () => {
+    const groups = groupProvisions([hit('f1', 'r10', 'Articolul 10', null), hit('f1', 'r10', 'Articolul 10', 'un fragment'), hit('f1', 'r11', 'Articolul 11', null)])
+    expect(groups.map((group) => [group.label, group.nodePath, group.fragments])).toEqual([
+      ['Articolul 10', 'r10', ['un fragment']],
+      ['Articolul 11', 'r11', []],
+    ])
+  })
 })

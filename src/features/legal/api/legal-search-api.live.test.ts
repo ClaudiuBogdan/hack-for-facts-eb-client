@@ -112,7 +112,7 @@ describe('fetchLegalSearchLive', () => {
   })
 
   const sectionHit = (overrides: Record<string, unknown> = {}) => ({
-    act: { actId: '900002' },
+    act: { actId: '900002', displayCitation: 'Hotărârea nr. 206/1996' },
     documentId: 'f900012',
     nodePath: 'r10',
     nodeLabel: 'Articol unic',
@@ -139,6 +139,8 @@ describe('fetchLegalSearchLive', () => {
     expect(query).toMatch(/sections \{/)
     // the provision's path, so a hit links to its provision
     expect(query).toMatch(/sections \{[^]*nodePath/)
+    // the act's citation, to name a provision's act when the act is in no row
+    expect(query).toMatch(/sections \{\s*act \{\s*actId\s*displayCitation/)
     expect(query).toMatch(/servedForm \{[^}]*caveat[^}]*portalLabelDate/s)
   })
 
@@ -150,6 +152,7 @@ describe('fetchLegalSearchLive', () => {
     expect(result.sections).toEqual([
       {
         actId: '900002',
+        actCitation: 'Hotărârea nr. 206/1996',
         documentId: 'f900012',
         nodePath: 'r10',
         nodeLabel: 'Articol unic',

@@ -78,15 +78,22 @@ export type ProvisionGroup = {
 /**
  * One act's provision hits, gathered by provision: the engine sends a fragment per hit, and several fragments of
  * one long provision would otherwise repeat its label. A hit with no path is grouped by its document and label.
+ *
+ * A hit whose fragment is withheld (legal_v2 sends `snippet: null` when the served wording differs) is still a
+ * provision that matched: kept when it has a path to link to, with no fragment (review astra-client-11). A hit with
+ * neither a fragment nor a path has nothing to show and is left out.
  */
 export function groupProvisions(hits: readonly LegalSearchSectionHit[]): readonly ProvisionGroup[] {
   const groups = new Map<string, { documentId: string; nodePath: string | null; label: string | null; fragments: string[]; servedForm: LegalSearchSectionHit['servedForm'] }>()
   for (const hit of hits) {
-    if (hit.snippet === null) continue
+    if (hit.snippet === null && hit.nodePath === null) continue
     const key = `${hit.documentId}|${hit.nodePath ?? `label:${hit.nodeLabel ?? ''}`}`
-    const group = groups.get(key)
-    if (group === undefined) groups.set(key, { documentId: hit.documentId, nodePath: hit.nodePath, label: hit.nodeLabel, fragments: [hit.snippet], servedForm: hit.servedForm })
-    else if (!group.fragments.includes(hit.snippet)) group.fragments.push(hit.snippet)
+    let group = groups.get(key)
+    if (group === undefined) {
+      group = { documentId: hit.documentId, nodePath: hit.nodePath, label: hit.nodeLabel, fragments: [], servedForm: hit.servedForm }
+      groups.set(key, group)
+    }
+    if (hit.snippet !== null && !group.fragments.includes(hit.snippet)) group.fragments.push(hit.snippet)
   }
   return [...groups.entries()].map(([key, group]) => ({ key, ...group }))
 }
