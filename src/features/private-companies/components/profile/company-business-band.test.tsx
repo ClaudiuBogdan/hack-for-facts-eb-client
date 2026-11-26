@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { PrivateCompanyFinancialYear, PrivateCompanyIfrsFormYear, PrivateCompanyProfile } from '@/schemas/private-company'
 import { companyProfile, financialYear } from '../../lib/company-profile.fixture'
 import { buildCompanyProfileModel } from '../../lib/company-profile-model'
-import { financialLede } from '../../lib/company-profile-text'
+import { financialLede, netChangeNote } from '../../lib/company-profile-text'
 import { admittedQualification } from '../../mocks/fixtures/qualification'
 import { CompanyBusinessBand } from './company-business-band'
 import { companyFigures } from './company-figures'
@@ -208,6 +208,24 @@ describe('CompanyBusinessBand, the IFRS form', () => {
     expect(unknown.comparable).toBe(true)
     expect(financialLede(unknown) ?? '').toMatch(/crescut/u)
     expect(companyFigures(unknown, { business: 'afacerea', money: 'bani-publici' }).map((fact) => String(fact.note ?? '')).join(' ')).toMatch(/față de 2023/u)
+  })
+
+  it('compares two IFRS-layout years only on qualified figures, never on a stored zero of a held result', () => {
+    // 2023 a profit year (its profit admitted, the result held); 2024 a loss year on the same layout: a zero profit, no
+    // typed loss (the mislabelled line, PRIV-Z2VJ) and the stored result „0" under a held status.
+    const profitYear = ifrsLayout(2023, 10 * M, 1 * M, 50)
+    const lossShape = typed(2024, 9 * M, 0, 48, { reportingForm: 'ifrs', netLoss: null })
+    const lossYear = { ...lossShape, qualification: { ...admittedQualification(lossShape, { net_result: 'held_profile' }), netResult: '0' } }
+    const model = buildCompanyProfileModel(companyProfile({ financials: [profitYear, lossYear] }))
+    expect(model.comparable).toBe(true)
+    // The stored zero is no result: no net change, no „profit de …" against it, no loss year counted.
+    expect(netChangeNote(profitYear, lossYear)).toBeNull()
+    expect(financialLede(model) ?? '').not.toMatch(/profit|pierdere|zero/u)
+    expect(model.lossYears).toBe(0)
+    expect(model.series.net[1]).toEqual({ year: 2024, value: null, kind: null })
+    // Two profit years on the layout compare their admitted profits, as one metric.
+    const next = ifrsLayout(2024, 11 * M, 1.2 * M, 51)
+    expect(netChangeNote(profitYear, next)).toMatch(/față de 2023/u)
   })
 
   it('draws a company held only in the IFRS file, with no lede and no „no statement"', () => {
