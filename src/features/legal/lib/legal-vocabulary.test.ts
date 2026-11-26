@@ -22,6 +22,14 @@ describe('legalIssuerLabel', () => {
     expect(legalIssuerLabel('banca-nationala-a-romanieinr-1-din-12-februarie-2004comisia-nationala-a-valorilor-mobiliarenr-3-din-11-februarie-2004')).toBe('Mai mulți emitenți')
   })
 
+  it('keeps a single issuer whose own name carries a number (astra-client-11)', () => {
+    expect(legalIssuerLabel('biroul-electoral-judetean-nr-33-salaj')).toBe('Biroul Electoral Judetean Nr 33 Salaj')
+    expect(legalIssuerLabel('biroul-electoral-judetean-nr-28-mures')).toBe('Biroul Electoral Judetean Nr 28 Mures')
+    expect(legalIssuerLabel('biroul-electoral-judetean-nr-27-mehedinti')).toBe('Biroul Electoral Judetean Nr 27 Mehedinti')
+    // a number and a date, but not glued to a name: not the run-together shape either
+    expect(legalIssuerLabel('comisia-nr-3-din-11-februarie-2004')).not.toBe('Mai mulți emitenți')
+  })
+
   it('prettifies an unmapped slug without guessing its diacritics', () => {
     expect(legalIssuerLabel('ministerul-apelor-si-protectiei-mediului')).toBe('Ministerul Apelor si Protectiei Mediului')
   })

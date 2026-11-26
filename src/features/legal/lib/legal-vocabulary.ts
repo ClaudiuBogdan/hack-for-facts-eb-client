@@ -163,8 +163,12 @@ export function legalActTypeLabel(slug: string): string {
 /**
  * A slug that strings several issuers and their act numbers together („ministerul-sanatatiinr-233-din-14-martie-
  * 2006casa-nationala-de-asigurari-de-sanatatenr-125-…"): a joint act, stored upstream as one issuer (LEG-N36A).
+ * Its mark is an issuer's name run straight into an act's number and date, with no hyphen before „nr":
+ * „…sanatatiinr-233-din-14-martie-2006". A number alone is not it: „biroul-electoral-judetean-nr-33-salaj" is one
+ * office (review astra-client-11), and a slug that is unsure stays the prettified slug.
  */
-const JOINT_ISSUERS = /nr-\d/u
+const JOINT_ISSUERS =
+  /\p{L}nr-\d+-din-\d{1,2}-(?:ianuarie|februarie|martie|aprilie|mai|iunie|iulie|august|septembrie|octombrie|noiembrie|decembrie)-\d{4}/u
 
 /**
  * `legal.acts.issuer_slug` — who issued it.
