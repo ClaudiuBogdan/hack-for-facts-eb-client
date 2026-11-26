@@ -1183,6 +1183,11 @@ session against its evidence.
   admission policy, never qualified (tested: the same lede, counts and figures
   with and without them). FY2019+ IFRS-layout years keep their held result:
   an admitted profit outlined, a loss year „rezultatul net nu se știe".
+- **No year-on-year note across a change of form**: where exactly one of the
+  newest two statements is marked IFRS, the lede, the figures' „față de" and
+  the net-change note compare nothing — as the chart's line breaks there and
+  the API nulls its own deltas (`reporting_form_changed`, proposed by
+  server-companies to root). Where the API reads no form, nothing changes.
 
 ### Not yet live
 

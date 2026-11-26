@@ -14,7 +14,7 @@ import { caenDivisionLabel } from './caen-divisions'
 import { commaBelow, displayCompanyName } from './company-name-display'
 import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE, STATUS_STRUCK_OFF } from './company-status-codes'
 import { foldCountyName } from './county-names'
-import { admittedNet, comparable, metricStatus, qualifiedNet, reportedNumber, sourceValues, type AdmittedNetKind, type SourceValue } from './financial-qualification'
+import { admittedNet, comparable, metricStatus, qualifiedNet, reportedNumber, sameReportingForm, sourceValues, type AdmittedNetKind, type SourceValue } from './financial-qualification'
 import { isReceiptFlow } from './public-money-display'
 import { legalFormName } from './company-legal-forms'
 import { assumedMainOf, withAnafWithdrawn, type AssumedMainView } from './company-main-activity-model'
@@ -773,7 +773,8 @@ export function buildCompanyProfileModel(
     statementSources: statementSourcesOf(years),
     latest,
     previous,
-    comparable: latest !== null && previous !== null && comparable(latest, previous),
+    // One policy and one form: never a year-on-year note across a change of form.
+    comparable: latest !== null && previous !== null && comparable(latest, previous) && sameReportingForm(latest, previous),
     stale: latest !== null && latest.fiscalYear < now.getFullYear() - 2,
     span,
     missingYears: span.filter((year) => !byYear.has(year)),

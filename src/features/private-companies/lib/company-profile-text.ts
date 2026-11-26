@@ -13,7 +13,7 @@ import { legalFormIsFeminine } from './company-legal-forms'
 import { count, moneyText, percent, yearRanges } from './company-profile-format'
 import { caenEdition, type CompanyProfileModel, type NetPoint, type SizeClass, type StatementValues } from './company-profile-model'
 import { cuiStateText } from './company-registry-text'
-import { admittedNet, comparable, reportedNumber, reportedSummary } from './financial-qualification'
+import { admittedNet, comparable, reportedNumber, reportedSummary, sameReportingForm } from './financial-qualification'
 import { formatHubNumber } from './hub-format'
 
 /**
@@ -194,7 +194,7 @@ export function changeNote(from: number | null | undefined, to: number | null | 
  * result, in either direction.
  */
 export function netChangeNote(previous: PrivateCompanyFinancialYear | null, latest: PrivateCompanyFinancialYear): string | null {
-  if (!previous || !comparable(previous, latest)) return null
+  if (!previous || !comparable(previous, latest) || !sameReportingForm(previous, latest)) return null
   const was = admittedNet(previous)
   const is = admittedNet(latest)
   if (!was || !is || was.kind !== is.kind) return null

@@ -190,6 +190,26 @@ describe('CompanyBusinessBand, the IFRS form', () => {
     expect(figures(withFile)).toEqual(figures(without))
   })
 
+  it('compares no two years across a change of form, and compares as before where no form is read', () => {
+    const switched = (form: 'ifrs' | null) =>
+      buildCompanyProfileModel(
+        companyProfile({
+          financials: [typed(2023, 10 * M, 1 * M, 50), { ...typed(2024, 12 * M, 1.5 * M, 55), reportingForm: form }],
+        }),
+      )
+    const changed = switched('ifrs')
+    expect(changed.comparable).toBe(false)
+    // Nothing to compare: no lede at all, no „față de" under a figure.
+    expect(financialLede(changed) ?? '').not.toMatch(/crescut|scăzut/u)
+    const notes = companyFigures(changed, { business: 'afacerea', money: 'bani-publici' }).map((fact) => String(fact.note ?? ''))
+    expect(notes.join(' ')).not.toMatch(/față de 2023/u)
+    // No form read (the API's null): unmarked both, compared as today.
+    const unknown = switched(null)
+    expect(unknown.comparable).toBe(true)
+    expect(financialLede(unknown) ?? '').toMatch(/crescut/u)
+    expect(companyFigures(unknown, { business: 'afacerea', money: 'bani-publici' }).map((fact) => String(fact.note ?? '')).join(' ')).toMatch(/față de 2023/u)
+  })
+
   it('draws a company held only in the IFRS file, with no lede and no „no statement"', () => {
     render(<CompanyBusinessBand model={buildCompanyProfileModel(companyProfile({ financials: [], ifrsFormYears: [...IFRS_FILE] }))} />)
     expect(band().getByTestId('company-years-ifrs-legend')).toBeInTheDocument()
