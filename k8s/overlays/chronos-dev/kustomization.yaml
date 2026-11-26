@@ -25,4 +25,4 @@ patches:
 images:
 - name: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
   newName: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
-  newTag: b45aea616285cb753da6d7f00f120204d62b9201
+  newTag: c4293f34ccc13daee2a69734e8651e0d5c0980b2
