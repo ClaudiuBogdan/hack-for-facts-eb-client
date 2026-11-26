@@ -147,12 +147,13 @@ function useChangedMark(): 'bar' | 'legend' | 'none' {
 }
 
 /**
- * How much room the text's apparatus takes above the text, to compare (owner, 26 November 2026): `?aparat=pliat`
- * folds it to one line, `?aparat=lateral` moves it to a column at the right on a wide screen.
+ * How much room the text's apparatus takes above the text. Owner, 26 November 2026: a column at the right on a wide
+ * screen (folded on narrower ones). The two layouts not chosen stay to be seen: `?aparat=intreg` (all of it above
+ * the text) and `?aparat=pliat` (folded on every screen).
  */
 function useApparatus(): 'full' | 'compact' | 'rail' {
   const search: { readonly aparat?: unknown } = useSearch({ strict: false })
-  return search.aparat === 'pliat' ? 'compact' : search.aparat === 'lateral' ? 'rail' : 'full'
+  return search.aparat === 'intreg' ? 'full' : search.aparat === 'pliat' ? 'compact' : 'rail'
 }
 
 export function ActSpecimenPage() {

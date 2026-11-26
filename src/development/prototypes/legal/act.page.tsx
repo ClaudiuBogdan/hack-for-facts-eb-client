@@ -66,7 +66,7 @@ export type ActPageModel = {
   readonly onForm?: (documentId: string) => void
   /**
    * How much room the text's apparatus takes above the text (owner, 26 November 2026: can this part be cleaner on
-   * a desktop; what must stay, what can be folded or moved aside):
+   * a desktop; what must stay, what can be folded or moved aside). The owner chose `rail`, from a picture of the three:
    * - `full`: the version, the whole notice of the unofficial form, the warnings, then the text;
    * - `compact`: one line for the version and the notice's first sentence, the rest behind „Detalii"; the warnings
    *   go under the summary they qualify; a long note of the Portal shows its first lines;
@@ -91,8 +91,8 @@ const LINK = 'font-medium text-primary underline decoration-primary/30 underline
 const CONTROL = 'h-11 sm:h-10'
 /** A control that opens more of the same page. Not blue: blue is for a link that goes somewhere (owner, 26 November 2026). */
 const MORE = 'font-medium text-foreground underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground'
-/** With the side column: a wider page, the same left edge for the head, the bar and the body. */
-const GRID_WIDE = 'mx-auto grid w-full max-w-[84rem] grid-cols-1 px-4 sm:px-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-x-12'
+/** With the side column: from 88rem a wider page, the same left edge for the head, the bar and the body; narrower, the usual width. */
+const GRID_WIDE = 'mx-auto grid w-full max-w-6xl grid-cols-1 px-4 sm:px-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-x-12 min-[88rem]:max-w-[84rem]'
 
 /* ── notices and states: the page's small vocabulary ─────────────────────── */
 
@@ -496,23 +496,22 @@ function FormSelect({ act, shown, onForm, anchor = false, stacked = false }: Pic
 
 /**
  * The notice of an unofficial consolidated form (LEG-X3AV), its sentences word for word. Whole, or folded: the
- * first sentence stays in sight (with the reading bar, which names the form on every screen of the text) and the
- * Portal's own note, the guidance and the link open under „Detalii".
+ * first sentence and the Portal's own note with its date stay in sight; the guidance and the link open under
+ * „Detalii".
  */
 function ConsolidationNotice({ shown, folded = false }: { readonly shown: ShownVersion; readonly folded?: boolean }) {
   const { i18n } = useLingui()
   const [open, setOpen] = useState(false)
   if (!isConsolidationVersion(shown)) return null
   const note = portalConsolidationNote(shown, (value) => formatLegalDate(value, i18n.locale))
-  const rest = (
-    <>
-      {note !== null ? (
-        <>
-          <Trans>Portalul Legislativ indică „{note}”.</Trans>{' '}
-        </>
-      ) : null}
-      <Trans>Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.</Trans>
-    </>
+  const portal =
+    note !== null ? (
+      <>
+        <Trans>Portalul Legislativ indică „{note}”.</Trans>{' '}
+      </>
+    ) : null
+  const guidance = (
+    <Trans>Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.</Trans>
   )
   const source =
     shown.sourceUrl !== null ? (
@@ -523,7 +522,8 @@ function ConsolidationNotice({ shown, folded = false }: { readonly shown: ShownV
   if (!folded) {
     return (
       <ActNotice tone="caution" title={<Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>} action={source}>
-        {rest}
+        {portal}
+        {guidance}
       </ActNotice>
     )
   }
@@ -537,8 +537,11 @@ function ConsolidationNotice({ shown, folded = false }: { readonly shown: ShownV
           {open ? <Trans>Mai puțin</Trans> : <Trans>Detalii</Trans>}
         </button>
       </p>
+      {/* The Portal's own note and its date stay in sight with the first sentence (LEG-X3AV, the legislation session's
+          reading, 26 November 2026): it is the date the text reflects, to set against the date a reader asks about. */}
+      {portal !== null ? <p className="text-muted-foreground">{portal}</p> : null}
       <div id="act-forma-detalii" hidden={!open} className="pb-1 text-muted-foreground">
-        {rest}
+        {guidance}
         {source !== undefined ? <div className="mt-1.5">{source}</div> : null}
       </div>
     </div>
@@ -715,7 +718,7 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'full', textState, afterText, changedMark = 'none' } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', textState, afterText, changedMark = 'none' } = model
   const grid = apparatus === 'rail' ? GRID_WIDE : GRID
   const { i18n } = useLingui()
   const [sheet, setSheet] = useState(false)
@@ -844,7 +847,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
             </p>
             {shown !== null ? (
               <p className="hidden shrink-0 text-sm text-muted-foreground md:block">
-                <Trans>Forma din {formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</Trans>
+                {/* For a consolidation the date is the Portal's own note's, never one this page works out (LEG-X3AV). */}
+                <Trans>Forma din {formName(shown.versionKind, isConsolidationVersion(shown) ? shown.portalLabelDate : shownDate(act, shown), i18n.locale)}</Trans>
               </p>
             ) : null}
           </div>
