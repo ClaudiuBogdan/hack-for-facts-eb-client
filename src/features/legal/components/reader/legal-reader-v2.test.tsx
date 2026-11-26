@@ -227,6 +227,22 @@ describe('ActReadingLayout on legal_v2', () => {
     }
   })
 
+  it('says the publication once: the text\'s own line hides behind the head\'s, and only when it names the same issue', async () => {
+    // The act is matched to no issue: the head states the Portal's masthead line, nr. 67 of 3 April 1996 (owner,
+    // 26 November 2026), and the text's publicare block (0.1.1.4) names that same issue.
+    const { container } = render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
+    await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
+    expect(container.querySelector('[id="tldf-0.1.1.4"]')).toBeNull()
+    expect(readerText(container)).not.toMatch(/MONITORUL OFICIAL nr\. 67/)
+    // a head that states another issue leaves the text's line where it is
+    const canonical = legalActDetailV2Fixture.canonical
+    if (canonical === null) throw new Error('the legal_v2 fixture lost its canonical')
+    const other = { ...legalActDetailV2Fixture, canonical: { ...canonical, publicationRaw: 'MONITORUL OFICIAL nr. 68 din 3 aprilie 1996' } }
+    const second = render(<ActReadingLayout act={other} lead={null} fisa={null} />)
+    await waitFor(() => expect(readerText(second.container).length).toBeGreaterThan(100))
+    expect(second.container.querySelector('[id="tldf-0.1.1.4"]')).not.toBeNull()
+  })
+
   it("labels the text by the render's servedForm, the authoritative account of what was served", async () => {
     // The version list calls f900011 the original; the server says the text
     // it served is a consolidation — the banner follows the server.

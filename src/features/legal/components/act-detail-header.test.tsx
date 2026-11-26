@@ -146,10 +146,28 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
       const odd = { ...v2, canonical: { ...canonical, publicationRaw: 'M.Of. 67/1996' } }
       const second = render(<ActDetailHeader act={odd} />)
       expect(second.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
+      // a republication shown by default: its masthead is its own issue's, even on the original's day (Codex, round 1)
+      const republication = { ...v2, canonical: { ...canonical, versionKind: 'republicare', caveat: null } }
+      const fourth = render(<ActDetailHeader act={republication} />)
+      expect(fourth.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
+      // two originals: the line must name the first one's day, not a later one's
+      const [firstOriginal] = v2.documents
+      if (firstOriginal === undefined) throw new Error('the legal_v2 fixture lost its original')
+      const earlier = { ...firstOriginal, documentId: 'f900010', versionDate: '1990-01-05', firstPublicationDate: '1990-01-05' }
+      const fifth = render(<ActDetailHeader act={{ ...v2, documents: [earlier, ...v2.documents] }} />)
+      expect(fifth.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
       // matches that are only probable: the record's band says how probable, the head states none
       const probable = { ...v2, gazettePublications: [{ ...issue, resolution: 'cluster' }] }
       const third = render(<ActDetailHeader act={probable} />)
       expect(third.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
+    })
+
+    it('reads the masthead of a canonical original that is not listed among the forms', () => {
+      const canonical = v2.canonical
+      if (canonical === null) throw new Error('the legal_v2 fixture lost its canonical')
+      const alone = { ...v2, documents: [], canonical: { ...canonical, versionKind: 'original', caveat: null, firstPublicationDate: '1996-04-03' } }
+      const { container } = render(<ActDetailHeader act={alone} />)
+      expect(container.querySelector('dl')?.textContent ?? '').toContain('Monitorul Oficial nr. 67 din April 3, 1996')
     })
 
     it('links no address that is not a whole web address', () => {

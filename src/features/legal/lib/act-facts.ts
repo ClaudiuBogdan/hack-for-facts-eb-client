@@ -38,15 +38,18 @@ export function readMastheadPublication(raw: string | null): { readonly issueNum
   if (match === null) return null
   const [, number = '', day = '', month = '', year = ''] = match
   const monthIndex = RO_MONTHS.indexOf(month.toLowerCase())
-  if (monthIndex < 0 || Number(day) < 1 || Number(day) > 31) return null
+  // A day the calendar has: „29 februarie 2023" is none (Codex review, round 1).
+  const date = new Date(Date.UTC(Number(year), monthIndex, Number(day)))
+  if (monthIndex < 0 || date.getUTCMonth() !== monthIndex || date.getUTCDate() !== Number(day)) return null
   return { issueNumber: Number(number.replace(/\./gu, '')), issueDate: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${day.padStart(2, '0')}` }
 }
 
 /**
  * What the head states under „Publicat în": the one sure gazette match; else, when the act is matched to no issue at
- * all, the Portal's own masthead line of the default text (owner, 26 November 2026), only when it names the day the
- * original form came out, so a republication's line never stands in for the first publication. An act with matches
- * that are only probable states none: the record's band says how probable.
+ * all, the Portal's own masthead line of the default text (owner, 26 November 2026), only when that text is the
+ * original or a consolidation of it (a republication's masthead is its own issue's) and the line names the day of the
+ * act's FIRST original form (the earliest, listed or canonical). An act with matches that are only probable states
+ * none: the record's band says how probable.
  */
 export function headPublication(act: LegalActDetail): HeadPublication | null {
   const unique = uniqueGazettePublication(act)
@@ -54,12 +57,16 @@ export function headPublication(act: LegalActDetail): HeadPublication | null {
     return { issueNumber: unique.issueNumber, partCode: unique.partCode, issueDate: unique.issueDate, pdfUrl: unique.pdfUrl }
   }
   if (act.gazettePublications.length > 0) return null
-  const masthead = readMastheadPublication(act.canonical?.publicationRaw ?? null)
+  const canonical = act.canonical
+  if (canonical === null || !(canonical.versionKind === 'original' || isConsolidationVersion(canonical))) return null
+  const masthead = readMastheadPublication(canonical.publicationRaw)
   if (masthead === null) return null
-  const original = act.documents.some(
-    (doc) => doc.versionKind === 'original' && !isConsolidationVersion(doc) && (doc.firstPublicationDate ?? doc.versionDate) === masthead.issueDate,
-  )
-  return original ? { issueNumber: masthead.issueNumber, partCode: null, issueDate: masthead.issueDate, pdfUrl: null } : null
+  const firstDay = [...act.documents, canonical]
+    .filter((doc) => doc.versionKind === 'original' && !isConsolidationVersion(doc))
+    .map((doc) => doc.firstPublicationDate ?? doc.versionDate)
+    .filter((day): day is string => day !== null)
+    .sort()[0]
+  return firstDay === masthead.issueDate ? { issueNumber: masthead.issueNumber, partCode: null, issueDate: masthead.issueDate, pdfUrl: null } : null
 }
 
 /**
