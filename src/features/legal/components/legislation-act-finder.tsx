@@ -259,8 +259,9 @@ function Field({ draft, onDraft, busy }: { readonly draft: string; readonly onDr
       if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return
       const target = event.target
       if (target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return
-      // An open dialog (the filters, an ⓘ) keeps the keys: the field behind it is not where the reader is.
-      if (document.querySelector('[role="dialog"]') !== null) return
+      // A key pressed inside a dialog (the filters, an ⓘ) stays there: the field behind it is not where the reader
+      // is. Only the key's own place counts: the cookie notice is a dialog that stands on the page without the focus.
+      if (target instanceof Element && target.closest('[role="dialog"]') !== null) return
       event.preventDefault()
       input.current?.focus()
     }

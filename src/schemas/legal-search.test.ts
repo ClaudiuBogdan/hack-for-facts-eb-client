@@ -14,6 +14,15 @@ describe('the search addresses through the router codec', () => {
     expect(legalFinderSearchSchema.parse(roundTrip({ q, tip: 'lege', an: '2015-' }))).toEqual({ q, tip: 'lege', an: '2015-' })
   })
 
+  it('keeps a question a native form sent bare as the word typed, and the address the server writes for it', () => {
+    // the server's canonical redirect re-writes the validated search: `?q=true` must become the text, not vanish
+    const read = legalFinderSearchSchema.parse(parseAppSearch('?q=true&tip=lege'))
+    expect(read).toEqual({ q: 'true', tip: 'lege' })
+    expect(stringifyAppSearch(read)).toBe('?q=%22true%22&tip=lege')
+    // a number keeps its value, not its spelling: the codec reads `1.10` as 1.1 before the schema runs
+    expect(legalFinderSearchSchema.parse(parseAppSearch('?q=1.10')).q).toBe('1.1')
+  })
+
   it.each([
     ['f900012', 'r10'],
     ['54260', '10'],

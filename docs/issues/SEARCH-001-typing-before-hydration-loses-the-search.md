@@ -43,9 +43,10 @@ Both parts are in `legislation-act-finder.tsx`:
    `…?tip=lege` asks for `…?tip=lege&q=Codul+civil`. The server renders that page with the question in the box and
    the loading rows; it does not render the answer, which the browser reads once the scripts run (the route has no
    loader for the search; corrected after review astra-client-11). Without scripts the page stays on the loading
-   rows. Still open: a question the router's codec reads as JSON is changed on that load (`?q=1.10` becomes `1.1`,
-   `?q=true` is dropped). The server's canonical redirect (`router.beforeLoad` in `@tanstack/router-core`) rewrites
-   the address before any route runs, so only the shared codec (`src/lib/router-search-codec.ts`) can keep it.
+   rows. A bare `?q=true` is read as the word typed. Still open: a number loses its spelling on that load (`?q=1.10`
+   becomes `1.1`). The router's codec reads it as JSON, and the server's canonical redirect (`router.beforeLoad` in
+   `@tanstack/router-core`) rewrites the address before any route runs, so only the shared codec
+   (`src/lib/router-search-codec.ts`) can keep it.
 2. On mount the field takes the box's DOM value when it differs from the draft, so the text is searched after the
    usual typing pause.
 

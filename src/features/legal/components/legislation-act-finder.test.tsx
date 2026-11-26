@@ -431,10 +431,15 @@ describe('LegislationActFinder', () => {
   })
 
   it('brings the cursor to the field on „/", but not from inside an open dialog (astra-client-11)', async () => {
+    // a dialog that stands on the page without the focus (the cookie notice) does not take the key away
+    const notice = document.createElement('div')
+    notice.setAttribute('role', 'dialog')
+    document.body.append(notice)
     render(<LegislationActFinder search={{}} />)
     const box = screen.getByRole('textbox', { name: /Caută în legislație/ })
     fireEvent.keyDown(document.body, { key: '/' })
     expect(document.activeElement).toBe(box)
+    notice.remove()
 
     fireEvent.click(screen.getByRole('button', { name: 'Filtre' }))
     const dialog = await screen.findByRole('dialog', { name: 'Filtre' })

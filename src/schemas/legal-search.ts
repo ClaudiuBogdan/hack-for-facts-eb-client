@@ -192,10 +192,14 @@ export type LegalChangesSearch = LazyOutput<typeof legalChangesSearchSchema>
  * URL state for `/legislation/search` — the Caută tab, so a search is a
  * shareable link. TanStack Router JSON-parses search params, so a
  * numeric-looking `q` (`?q=227`) arrives as a NUMBER — coerce it back to text
- * rather than dropping a legitimate query, but treat `null`/booleans as junk
+ * rather than dropping a legitimate query, but treat `null` as junk
  * (`z.coerce.string()` alone would turn `?q=null` into the literal text
  * "null" and search for it); the same trap and cure as `entity-search.ts`'s
- * `optionalSearchString`.
+ * `optionalSearchString`. A boolean is the word the reader typed: the router
+ * writes the text "true" as `?q=%22true%22`, so a bare `?q=true` comes from the
+ * page's native form (SEARCH-001) and is kept as "true" (review
+ * astra-client-11). A number's spelling is lost before this schema runs
+ * (`?q=1.10` arrives as 1.1), which only the shared codec could keep.
  *
  * `historical: true` widens the search to abrogated / out-of-force acts (the
  * server's `includeHistorical`, default false — which silently zeroes even an
@@ -214,7 +218,7 @@ export const legalFinderSearchSchema = lazySchema(() =>
   z.object({
     q: z
       .preprocess(
-        (value) => (value === null || typeof value === 'boolean' ? undefined : value),
+        (value) => (value === null ? undefined : typeof value === 'boolean' ? String(value) : value),
         z.coerce.string().min(1).max(400).optional(),
       )
       .catch(undefined),
