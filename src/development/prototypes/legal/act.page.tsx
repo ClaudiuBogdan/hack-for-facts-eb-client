@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -89,6 +89,17 @@ export type ActPageModel = {
    * the bar.
    */
   readonly contentsHead?: 'ruled' | 'row' | 'inset' | 'docked'
+  /**
+   * The side column's own design. The owner chose `box` with the notice folded on 26 November 2026 ("improve those
+   * elements design"), from a picture of the three: `round2`,
+   * as first built (the page's notice and the live warnings as they come); `plain`, the same three things set for a
+   * narrow column (a version name that wraps and is never cut, the notice as small print, the warnings without
+   * their inset and weight); `box`, those in a box hung from the reading bar, the contents box's twin, with
+   * „Versiunea textului" in the bar.
+   */
+  readonly railStyle?: 'round2' | 'plain' | 'box'
+  /** In the restyled side column, the notice's guidance and link behind „Detalii". */
+  readonly railNoticeFolded?: boolean
   /** The act's warnings (the live page's component), placed by `apparatus`. */
   readonly warnings?: ReactNode
   /** What must be said about the text before it is read (the live page's own notices), between the form line and the text. */
@@ -104,6 +115,19 @@ const GRID = 'mx-auto grid w-full max-w-6xl grid-cols-1 px-4 sm:px-6 lg:grid-col
 const COLUMN = 'min-w-0 max-w-[42rem]'
 const LINK = 'font-medium text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary'
 const CONTROL = 'h-11 sm:h-10'
+/**
+ * The live page's warnings (`ActWarnings`, rows), worn by the side column: its words and its open-on-demand rows as
+ * they are, restyled from outside. The headline at the column's reading size and medium weight, the triangle and
+ * the chevron on its first line, no inset, the explanation as small print under the headline's text.
+ */
+const RAIL_WARNINGS = cn(
+  '[&_details]:border-border',
+  '[&_summary]:items-start [&_summary]:gap-2 [&_summary]:px-0 [&_summary]:py-2.5',
+  '[&_summary>svg:first-child]:mt-[3px] [&_summary>svg:first-child]:text-status-partial-fg',
+  '[&_summary>span]:text-sm [&_summary>span]:font-medium [&_summary>span]:leading-5 [&_summary>span]:text-foreground',
+  '[&_summary>svg:last-child]:mt-0.5 [&_summary>svg:last-child]:text-muted-foreground',
+  '[&_details>p]:px-0 [&_details>p]:pb-3 [&_details>p]:pl-[1.375rem] [&_details>p]:text-xs [&_details>p]:leading-5 [&_details>p]:text-muted-foreground',
+)
 /** An outline longer than this many entries starts folded: a code's contents are several screens long. */
 const FOLD_FROM = 40
 /** A control that opens more of the same page. Not blue: blue is for a link that goes somewhere (owner, 26 November 2026). */
@@ -610,22 +634,49 @@ function Summary({ act, warnings }: { readonly act: LegalActDetail; readonly war
   )
 }
 
-function FormSelect({ act, shown, onForm, anchor = false, stacked = false }: Pick<ActPageModel, 'act' | 'onForm'> & { readonly shown: ShownVersion; readonly anchor?: boolean; readonly stacked?: boolean }) {
+function FormSelect({
+  act,
+  shown,
+  onForm,
+  anchor = false,
+  stacked = false,
+  wrap = false,
+  bare = false,
+}: Pick<ActPageModel, 'act' | 'onForm'> & {
+  readonly shown: ShownVersion
+  readonly anchor?: boolean
+  readonly stacked?: boolean
+  /** In a narrow column the chosen form's name takes two lines and is never cut. */
+  readonly wrap?: boolean
+  /** The container says „Versiunea textului" itself. */
+  readonly bare?: boolean
+}) {
   const { i18n } = useLingui()
   const forms = orderVersionsNewestFirst(act.documents.filter(isSelectableVersion))
+  const date = shownDate(act, shown)
   return (
     <div className={cn('flex gap-x-3 gap-y-1.5 text-sm', stacked ? 'flex-col' : 'flex-wrap items-center')}>
-      <span className="scroll-mt-20 text-muted-foreground" {...(anchor && { id: 'act-forma' })}>
-        <Trans>Versiunea textului</Trans>
-      </span>
+      {bare ? null : (
+        <span className="scroll-mt-20 text-muted-foreground" {...(anchor && { id: 'act-forma' })}>
+          <Trans>Versiunea textului</Trans>
+        </span>
+      )}
       {forms.length > 1 && onForm !== undefined && forms.some((form) => form.documentId === shown.documentId) ? (
         <ChoiceSelect
           value={shown.documentId}
           groups={[{ options: forms.map((form) => ({ value: form.documentId, label: formName(form.versionKind, listedDate(form), i18n.locale) })) }]}
           onChange={onForm}
           label={t`Versiunea textului`}
-          triggerClassName={cn(CONTROL, 'min-w-0 max-w-full gap-2 text-sm font-medium', stacked ? 'w-full' : 'w-auto')}
-        />
+          triggerClassName={cn('min-w-0 max-w-full gap-2 text-sm font-medium', stacked ? 'w-full' : 'w-auto', wrap ? 'h-auto min-h-11 whitespace-normal py-1.5 text-left leading-5 sm:min-h-10 [&>span]:line-clamp-none' : CONTROL)}
+        >
+          {wrap ? (
+            // Two lines: the date the form is named by, then what kind of form it is. Nothing is cut.
+            <span className="min-w-0 flex-1">
+              {date !== null ? <span className="block">{formatLegalDate(date, i18n.locale)}</span> : null}
+              <span className={cn('block', date !== null && 'text-xs font-normal text-muted-foreground')}>{versionKindLabel(shown.versionKind)}</span>
+            </span>
+          ) : undefined}
+        </ChoiceSelect>
       ) : (
         <span className="font-medium">{formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</span>
       )}
@@ -638,9 +689,10 @@ function FormSelect({ act, shown, onForm, anchor = false, stacked = false }: Pic
  * first sentence and the Portal's own note with its date stay in sight; the guidance and the link open under
  * „Detalii".
  */
-function ConsolidationNotice({ shown, folded = false }: { readonly shown: ShownVersion; readonly folded?: boolean }) {
+function ConsolidationNotice({ shown, folded = false, dense = false }: { readonly shown: ShownVersion; readonly folded?: boolean; readonly dense?: boolean }) {
   const { i18n } = useLingui()
   const [open, setOpen] = useState(false)
+  const details = useId()
   if (!isConsolidationVersion(shown)) return null
   const note = portalConsolidationNote(shown, (value) => formatLegalDate(value, i18n.locale))
   const portal =
@@ -658,6 +710,36 @@ function ConsolidationNotice({ shown, folded = false }: { readonly shown: ShownV
         <Trans>Forma consolidată pe Portalul Legislativ</Trans>
       </SourceLink>
     ) : undefined
+  if (dense) {
+    // In the side column: the same sentences, set as a column's small print. What the form is and the Portal's own
+    // dated note at reading size; the guidance and the link a size down, whole or under „Detalii".
+    const rest = (
+      <>
+        <p>{guidance}</p>
+        {source !== undefined ? <p className="mt-1.5 [&_a]:text-xs">{source}</p> : null}
+      </>
+    )
+    return (
+      <div role="note" className="border-l-2 border-status-partial-fg pl-3 text-sm leading-5">
+        <p className="font-medium text-foreground">
+          <Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>
+        </p>
+        {portal !== null ? <p className="mt-1 text-muted-foreground">{portal}</p> : null}
+        {folded ? (
+          <>
+            <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls={details} className={cn(MORE, 'mt-1 inline-flex min-h-8 items-center text-xs')}>
+              {open ? <Trans>Mai puțin</Trans> : <Trans>Detalii</Trans>}
+            </button>
+            <div id={details} hidden={!open} className="pb-0.5 text-xs leading-5 text-muted-foreground">
+              {rest}
+            </div>
+          </>
+        ) : (
+          <div className="mt-1.5 text-xs leading-5 text-muted-foreground">{rest}</div>
+        )}
+      </div>
+    )
+  }
   if (!folded) {
     return (
       <ActNotice tone="caution" title={<Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>} action={source}>
@@ -672,14 +754,14 @@ function ConsolidationNotice({ shown, folded = false }: { readonly shown: ShownV
         <span className="font-medium text-foreground">
           <Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>
         </span>
-        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="act-forma-detalii" className={cn(MORE, 'inline-flex min-h-11 items-center sm:min-h-0')}>
+        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls={details} className={cn(MORE, 'inline-flex min-h-11 items-center sm:min-h-0')}>
           {open ? <Trans>Mai puțin</Trans> : <Trans>Detalii</Trans>}
         </button>
       </p>
       {/* The Portal's own note and its date stay in sight with the first sentence (LEG-X3AV, the legislation session's
           reading, 26 November 2026): it is the date the text reflects, to set against the date a reader asks about. */}
       {portal !== null ? <p className="text-muted-foreground">{portal}</p> : null}
-      <div id="act-forma-detalii" hidden={!open} className="pb-1 text-muted-foreground">
+      <div id={details} hidden={!open} className="pb-1 text-muted-foreground">
         {guidance}
         {source !== undefined ? <div className="mt-1.5">{source}</div> : null}
       </div>
@@ -857,7 +939,7 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', contentsFrame = 'panel', contentsHead = 'docked', textState, afterText, changedMark = 'none' } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', contentsFrame = 'panel', contentsHead = 'docked', railStyle = 'box', railNoticeFolded = true, textState, afterText, changedMark = 'none' } = model
   const grid = apparatus === 'rail' ? GRID_WIDE : GRID
   const { i18n } = useLingui()
   const [sheet, setSheet] = useState(false)
@@ -940,6 +1022,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   const docked = panel && !tinted && contentsHead === 'docked'
   const head = tinted ? 'ruled' : contentsHead
   const jump = outline.filter(isArticle).length >= 8
+  const railBox = apparatus === 'rail' && railStyle === 'box' && shown !== null
 
   return (
     <div className="bg-background pb-24 text-foreground [font-family:var(--font-family)]">
@@ -947,7 +1030,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
 
       {/* The reading bar: stays while the text scrolls. */}
       <div className="sticky top-0 z-20 border-y bg-background">
-        <div className={cn(grid, 'items-center')}>
+        <div className={cn(grid, 'items-center', railBox && 'min-[88rem]:grid-cols-[16rem_minmax(0,42rem)_17rem]')}>
           {/* Docked: the box's frame runs up through the bar, which is its head. */}
           <div className={cn('hidden items-center justify-between text-sm font-medium', (!panel || docked) && 'lg:flex', docked && 'self-stretch border-x pl-3 pr-1.5')}>
             <Trans>Cuprins</Trans>
@@ -1002,11 +1085,17 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
               )}
             </p>
             {shown !== null ? (
-              <p className="hidden shrink-0 text-sm text-muted-foreground md:block">
+              // With the box at the right, the box itself names the form on a wide screen.
+              <p className={cn('hidden shrink-0 text-sm text-muted-foreground md:block', railBox && 'min-[88rem]:hidden')}>
                 <Trans>Forma din {formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</Trans>
               </p>
             ) : null}
           </div>
+          {railBox ? (
+            <div className="hidden items-center self-stretch border-x px-3 text-sm font-medium min-[88rem]:flex">
+              <Trans>Versiunea textului</Trans>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -1080,7 +1169,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
             </div>
           ) : null}
           {notices !== undefined ? <div className="space-y-4 pb-5">{notices}</div> : null}
-          {warnings !== undefined && apparatus !== 'compact' ? <div className={cn('pb-5', apparatus === 'rail' && 'min-[88rem]:hidden')}>{warnings}</div> : null}
+          {/* Narrower than the side column's breakpoint, the warnings wear the same lighter skin in the text's column. */}
+          {warnings !== undefined && apparatus !== 'compact' ? <div className={cn('pb-5', apparatus === 'rail' && 'min-[88rem]:hidden', apparatus === 'rail' && railStyle !== 'round2' && RAIL_WARNINGS)}>{warnings}</div> : null}
           {textState === undefined && changedMark === 'legend' && blocks.length > 0 ? (
             <p className="flex items-center gap-2.5 pb-4 text-xs leading-5 text-muted-foreground">
               <span aria-hidden="true" className="h-4 w-0.5 shrink-0 rounded-full bg-primary/60" />
@@ -1097,12 +1187,25 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           {children}
         </main>
         {apparatus === 'rail' && shown !== null ? (
-          <aside aria-label={t`Despre textul afișat`} className="hidden min-[88rem]:block">
-            <div className="sticky top-16 max-h-[calc(100dvh-5rem)] space-y-4 overflow-y-auto overscroll-contain pb-8">
-              <FormSelect act={act} shown={shown} onForm={onForm} stacked />
-              <ConsolidationNotice shown={shown} />
-              {warnings !== undefined ? <div>{warnings}</div> : null}
-            </div>
+          <aside aria-label={t`Despre textul afișat`} className={cn('hidden min-[88rem]:block', railBox && '-mt-6')}>
+            {railStyle === 'round2' ? (
+              <div className="sticky top-16 max-h-[calc(100dvh-5rem)] space-y-4 overflow-y-auto overscroll-contain pb-8">
+                <FormSelect act={act} shown={shown} onForm={onForm} stacked />
+                <ConsolidationNotice shown={shown} />
+                {warnings !== undefined ? <div>{warnings}</div> : null}
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  'sticky space-y-3 overflow-y-auto overscroll-contain [scrollbar-width:thin]',
+                  railBox ? 'top-[3.125rem] max-h-[calc(100dvh-4rem)] rounded-b-md border border-t-0 px-3 pb-2 pt-3' : 'top-16 max-h-[calc(100dvh-5rem)] pb-8',
+                )}
+              >
+                <FormSelect act={act} shown={shown} onForm={onForm} stacked wrap bare={railBox} />
+                <ConsolidationNotice shown={shown} dense folded={railNoticeFolded} />
+                {warnings !== undefined ? <div className={RAIL_WARNINGS}>{warnings}</div> : null}
+              </div>
+            )}
           </aside>
         ) : null}
       </div>

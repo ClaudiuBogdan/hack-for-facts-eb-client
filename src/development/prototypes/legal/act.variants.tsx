@@ -160,9 +160,19 @@ function useApparatus(): 'full' | 'compact' | 'rail' {
  * What holds the contents on a desktop. Owner, 26 November 2026: the bordered box. The three not chosen stay to be
  * seen: `?cadru=simplu` (nothing around the list), `?cadru=fond` (a grey box) and `?cadru=coloana` (a line at its right).
  */
-function useContentsOptions(): { readonly contentsFrame: 'plain' | 'panel' | 'tinted' | 'column'; readonly contentsHead: 'ruled' | 'row' | 'inset' | 'docked' } {
-  const search: { readonly cadru?: unknown; readonly cap?: unknown } = useSearch({ strict: false })
+function useContentsOptions(): {
+  readonly contentsFrame: 'plain' | 'panel' | 'tinted' | 'column'
+  readonly contentsHead: 'ruled' | 'row' | 'inset' | 'docked'
+  readonly railStyle: 'round2' | 'plain' | 'box'
+  readonly railNoticeFolded: boolean
+} {
+  const search: { readonly cadru?: unknown; readonly cap?: unknown; readonly dreapta?: unknown; readonly nota?: unknown } = useSearch({ strict: false })
   return {
+    // The side column's design. Owner, 26 November 2026: in a box hung from the bar, the notice's guidance and link
+    // behind „Detalii". Not chosen, kept to be seen: `?dreapta=vechi` (as first built), `?dreapta=simplu` (restyled,
+    // no box) and `?nota=intreaga` (the whole notice in sight).
+    railStyle: search.dreapta === 'vechi' ? 'round2' : search.dreapta === 'simplu' ? 'plain' : 'box',
+    railNoticeFolded: search.nota !== 'intreaga',
     // The box's head. Owner, 26 November 2026: hung from the reading bar. The three not chosen stay to be seen:
     // `?cap=randuri` (two ruled rows), `?cap=rand` (one row), `?cap=interior` (the field inside the head).
     contentsHead: search.cap === 'randuri' ? 'ruled' : search.cap === 'rand' ? 'row' : search.cap === 'interior' ? 'inset' : 'docked',

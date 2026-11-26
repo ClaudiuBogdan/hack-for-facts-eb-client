@@ -27,6 +27,9 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * owner's idea); an outline of more than 40 entries starts folded.
  * The box hangs from the reading bar, which holds its title and switch (owner, from a picture of four heads;
  * `?cap=randuri`, `?cap=rand` and `?cap=interior` keep the others).
+ * The side column is the contents box's twin: a box hung from the bar, which says „Versiunea textului"; a version name
+ * on two lines, the notice as small print with its guidance and link behind „Detalii", the live warnings worn
+ * lighter (owner, from a picture; `?dreapta=vechi`, `?dreapta=simplu` and `?nota=intreaga` keep the rest).
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',
