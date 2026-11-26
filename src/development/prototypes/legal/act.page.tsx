@@ -1232,7 +1232,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
               <div
                 className={cn(
                   'sticky space-y-3 overflow-y-auto overscroll-contain [scrollbar-width:thin]',
-                  railBox ? 'top-[3.125rem] max-h-[calc(100dvh-4rem)] rounded-b-md border border-t-0 px-3 pb-2 pt-3' : 'top-16 max-h-[calc(100dvh-5rem)] pb-8',
+                  // The box ends above the app's floating feedback button (bottom right), and scrolls inside itself on a short screen.
+                  railBox ? 'top-[3.125rem] max-h-[calc(100dvh-8.5rem)] rounded-b-md border border-t-0 px-3 pb-2 pt-3' : 'top-16 max-h-[calc(100dvh-8.5rem)] pb-8',
                 )}
               >
                 <FormSelect act={act} shown={shown} onForm={onForm} stacked wrap bare={railBox} />
