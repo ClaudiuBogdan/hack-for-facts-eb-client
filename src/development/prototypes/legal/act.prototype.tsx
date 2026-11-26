@@ -14,6 +14,10 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * grid of article numbers with its jump field, with „Art." at the top left of each grid. No bar on changed provisions:
  * the change notes say it (`?bara=linie` and `?bara=legenda` show the two treatments not chosen). Next: more changes
  * on the prototype before any promotion.
+ *
+ * Round 2 (same day): controls that open more of the page are not blue. Open: how much room the version, the notice
+ * of the unofficial form, the warnings and the Portal's long note take above the text: as now, folded
+ * (`?aparat=pliat`) or in a column at the right on a wide screen (`?aparat=lateral`).
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',

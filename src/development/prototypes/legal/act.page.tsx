@@ -64,6 +64,18 @@ export type ActPageModel = {
   /** Made-up data: the page says so beside the status. */
   readonly mock: boolean
   readonly onForm?: (documentId: string) => void
+  /**
+   * How much room the text's apparatus takes above the text (owner, 26 November 2026: can this part be cleaner on
+   * a desktop; what must stay, what can be folded or moved aside):
+   * - `full`: the version, the whole notice of the unofficial form, the warnings, then the text;
+   * - `compact`: one line for the version and the notice's first sentence, the rest behind „Detalii"; the warnings
+   *   go under the summary they qualify; a long note of the Portal shows its first lines;
+   * - `rail`: on a wide screen all of it moves to a column at the text's right that stays in view; narrower, as
+   *   `compact`.
+   */
+  readonly apparatus?: 'full' | 'compact' | 'rail'
+  /** The act's warnings (the live page's component), placed by `apparatus`. */
+  readonly warnings?: ReactNode
   /** What must be said about the text before it is read (the live page's own notices), between the form line and the text. */
   readonly notices?: ReactNode
   /** Shown in the text's place while it loads or when it cannot be shown. */
@@ -77,6 +89,10 @@ const GRID = 'mx-auto grid w-full max-w-6xl grid-cols-1 px-4 sm:px-6 lg:grid-col
 const COLUMN = 'min-w-0 max-w-[42rem]'
 const LINK = 'font-medium text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary'
 const CONTROL = 'h-11 sm:h-10'
+/** A control that opens more of the same page. Not blue: blue is for a link that goes somewhere (owner, 26 November 2026). */
+const MORE = 'font-medium text-foreground underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground'
+/** With the side column: a wider page, the same left edge for the head, the bar and the body. */
+const GRID_WIDE = 'mx-auto grid w-full max-w-[84rem] grid-cols-1 px-4 sm:px-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-x-12'
 
 /* ── notices and states: the page's small vocabulary ─────────────────────── */
 
@@ -118,9 +134,10 @@ export function ActTextLoading() {
 
 export function SourceLink({ href, children }: { readonly href: string; readonly children: ReactNode }) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={cn(LINK, 'inline-flex items-center gap-1 text-sm')}>
+    // Inline, so the arrow stays with the last word when the link wraps in a narrow column.
+    <a href={href} target="_blank" rel="noopener noreferrer" className={cn(LINK, 'text-sm')}>
       {children}
-      <ArrowUpRight className="size-3.5" aria-hidden="true" />
+      <ArrowUpRight className="ml-1 inline size-3.5 align-[-2px]" aria-hidden="true" />
     </a>
   )
 }
@@ -136,7 +153,7 @@ function BackLink({ className }: { readonly className?: string }) {
   )
 }
 
-function ActHead({ act, subject, mock }: Pick<ActPageModel, 'act' | 'subject' | 'mock'>) {
+function ActHead({ act, subject, mock, grid }: Pick<ActPageModel, 'act' | 'subject' | 'mock'> & { readonly grid: string }) {
   const { i18n } = useLingui()
   const den = act.canonical?.den ?? null
   const publication = uniqueGazettePublication(act)
@@ -154,7 +171,7 @@ function ActHead({ act, subject, mock }: Pick<ActPageModel, 'act' | 'subject' | 
     act.aliases.length > 0 ? t`cunoscut și ca ${act.aliases.join(', ')}` : null,
   ].filter((part): part is string => part !== null)
   return (
-    <header className={cn(GRID, 'pb-7 pt-4 sm:pb-9 lg:pt-8')}>
+    <header className={cn(grid, 'pb-7 pt-4 sm:pb-9 lg:pt-8')}>
       <div className="hidden lg:block">
         <BackLink className="-mt-2.5" />
       </div>
@@ -429,7 +446,7 @@ function shownDate(act: LegalActDetail, shown: ShownVersion): string | null {
 
 /* ── the lead: the summary and the form shown ────────────────────────────── */
 
-function Summary({ act }: { readonly act: LegalActDetail }) {
+function Summary({ act, warnings }: { readonly act: LegalActDetail; readonly warnings?: ReactNode }) {
   const [open, setOpen] = useState(false)
   const text = act.summary?.plainLanguageSummary?.trim() ?? act.summary?.description?.trim() ?? ''
   if (text === '') return null
@@ -440,7 +457,7 @@ function Summary({ act }: { readonly act: LegalActDetail }) {
       </h2>
       <p className={cn('mt-1 text-base leading-7', !open && 'line-clamp-4 sm:line-clamp-3')}>{text}</p>
       {text.length > 240 ? (
-        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className={cn(LINK, 'mt-1 inline-flex min-h-11 items-center text-sm sm:min-h-10')}>
+        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className={cn(MORE, 'mt-1 inline-flex min-h-11 items-center text-sm sm:min-h-10')}>
           {open ? <Trans>Arată mai puțin</Trans> : <Trans>Citește tot rezumatul</Trans>}
         </button>
       ) : null}
@@ -448,47 +465,82 @@ function Summary({ act }: { readonly act: LegalActDetail }) {
       <p className="mt-1 text-xs leading-5 text-muted-foreground">
         <Trans>Rezumat generat de AI din textul actului. Este un strat explicativ, nu textul legii și nu consultanță juridică.</Trans>
       </p>
+      {/* The warnings qualify the summary, so they sit on it (the live page's own rule). */}
+      {warnings !== undefined ? <div className="mt-3">{warnings}</div> : null}
     </section>
   )
 }
 
-function FormLine({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 'onForm'>) {
+function FormSelect({ act, shown, onForm, anchor = false, stacked = false }: Pick<ActPageModel, 'act' | 'onForm'> & { readonly shown: ShownVersion; readonly anchor?: boolean; readonly stacked?: boolean }) {
   const { i18n } = useLingui()
   const forms = orderVersionsNewestFirst(act.documents.filter(isSelectableVersion))
-  if (shown === null) return null
-  const note = isConsolidationVersion(shown) ? portalConsolidationNote(shown, (value) => formatLegalDate(value, i18n.locale)) : null
   return (
-    <div className="space-y-4 py-5">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-        <span className="scroll-mt-20 text-muted-foreground" id="act-forma">
-          <Trans>Versiunea textului</Trans>
-        </span>
-        {forms.length > 1 && onForm !== undefined && forms.some((form) => form.documentId === shown.documentId) ? (
-          <ChoiceSelect
-            value={shown.documentId}
-            groups={[{ options: forms.map((form) => ({ value: form.documentId, label: formName(form.versionKind, versionDateOf(form), i18n.locale) })) }]}
-            onChange={onForm}
-            label={t`Versiunea textului`}
-            triggerClassName={cn(CONTROL, 'w-auto min-w-0 max-w-full gap-2 text-sm font-medium')}
-          />
-        ) : (
-          <span className="font-medium">{formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</span>
-        )}
-      </div>
-      {isConsolidationVersion(shown) ? (
-        <ActNotice
-          tone="caution"
-          title={<Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>}
-          action={shown.sourceUrl !== null ? <SourceLink href={shown.sourceUrl}><Trans>Forma consolidată pe Portalul Legislativ</Trans></SourceLink> : undefined}
-        >
-          {note !== null ? (
-            <>
-              <Trans>Portalul Legislativ indică „{note}”.</Trans>{' '}
-            </>
-          ) : null}
-          <Trans>Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.</Trans>
-        </ActNotice>
+    <div className={cn('flex gap-x-3 gap-y-1.5 text-sm', stacked ? 'flex-col' : 'flex-wrap items-center')}>
+      <span className="scroll-mt-20 text-muted-foreground" {...(anchor && { id: 'act-forma' })}>
+        <Trans>Versiunea textului</Trans>
+      </span>
+      {forms.length > 1 && onForm !== undefined && forms.some((form) => form.documentId === shown.documentId) ? (
+        <ChoiceSelect
+          value={shown.documentId}
+          groups={[{ options: forms.map((form) => ({ value: form.documentId, label: formName(form.versionKind, versionDateOf(form), i18n.locale) })) }]}
+          onChange={onForm}
+          label={t`Versiunea textului`}
+          triggerClassName={cn(CONTROL, 'min-w-0 max-w-full gap-2 text-sm font-medium', stacked ? 'w-full' : 'w-auto')}
+        />
+      ) : (
+        <span className="font-medium">{formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</span>
+      )}
+    </div>
+  )
+}
+
+/**
+ * The notice of an unofficial consolidated form (LEG-X3AV), its sentences word for word. Whole, or folded: the
+ * first sentence stays in sight (with the reading bar, which names the form on every screen of the text) and the
+ * Portal's own note, the guidance and the link open under „Detalii".
+ */
+function ConsolidationNotice({ shown, folded = false }: { readonly shown: ShownVersion; readonly folded?: boolean }) {
+  const { i18n } = useLingui()
+  const [open, setOpen] = useState(false)
+  if (!isConsolidationVersion(shown)) return null
+  const note = portalConsolidationNote(shown, (value) => formatLegalDate(value, i18n.locale))
+  const rest = (
+    <>
+      {note !== null ? (
+        <>
+          <Trans>Portalul Legislativ indică „{note}”.</Trans>{' '}
+        </>
       ) : null}
+      <Trans>Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.</Trans>
+    </>
+  )
+  const source =
+    shown.sourceUrl !== null ? (
+      <SourceLink href={shown.sourceUrl}>
+        <Trans>Forma consolidată pe Portalul Legislativ</Trans>
+      </SourceLink>
+    ) : undefined
+  if (!folded) {
+    return (
+      <ActNotice tone="caution" title={<Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>} action={source}>
+        {rest}
+      </ActNotice>
+    )
+  }
+  return (
+    <div role="note" className="border-l-2 border-status-partial-fg pl-4 text-sm leading-6">
+      <p className="flex flex-wrap items-baseline gap-x-3">
+        <span className="font-medium text-foreground">
+          <Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>
+        </span>
+        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="act-forma-detalii" className={cn(MORE, 'inline-flex min-h-11 items-center sm:min-h-0')}>
+          {open ? <Trans>Mai puțin</Trans> : <Trans>Detalii</Trans>}
+        </button>
+      </p>
+      <div id="act-forma-detalii" hidden={!open} className="pb-1 text-muted-foreground">
+        {rest}
+        {source !== undefined ? <div className="mt-1.5">{source}</div> : null}
+      </div>
     </div>
   )
 }
@@ -512,7 +564,7 @@ function Cut<T>({ items, first = 5, render }: { readonly items: readonly T[]; re
     <>
       <ul className="divide-y">{shown.map((item, index) => render(item, index))}</ul>
       {items.length > first + 2 ? (
-        <button type="button" onClick={() => setAll(!all)} aria-expanded={all} className={cn(LINK, 'mt-1 inline-flex min-h-11 items-center sm:min-h-10')}>
+        <button type="button" onClick={() => setAll(!all)} aria-expanded={all} className={cn(MORE, 'mt-1 inline-flex min-h-11 items-center sm:min-h-10')}>
           {all ? <Trans>Arată mai puține</Trans> : <Trans>Arată toate cele {items.length}</Trans>}
         </button>
       ) : null}
@@ -663,7 +715,8 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, textState, afterText, changedMark = 'none' } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'full', textState, afterText, changedMark = 'none' } = model
+  const grid = apparatus === 'rail' ? GRID_WIDE : GRID
   const { i18n } = useLingui()
   const [sheet, setSheet] = useState(false)
   /** One short sentence in the bar, in the place's stead for a moment: a link was copied, or a place could not be reached. */
@@ -735,11 +788,11 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
 
   return (
     <div className="bg-background pb-24 text-foreground [font-family:var(--font-family)]">
-      <ActHead act={act} subject={subject} mock={mock} />
+      <ActHead act={act} subject={subject} mock={mock} grid={grid} />
 
       {/* The reading bar: stays while the text scrolls. */}
       <div className="sticky top-0 z-20 border-y bg-background">
-        <div className={cn(GRID, 'items-center')}>
+        <div className={cn(grid, 'items-center')}>
           <p className="hidden text-sm font-medium lg:block">
             <Trans>Cuprins</Trans>
           </p>
@@ -798,7 +851,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
         </div>
       </div>
 
-      <div className={cn(GRID, 'pt-6')}>
+      {/* With the side column, from 88rem (1408 px): contents, text, and what is to know about the text, each in its own column. */}
+      <div className={cn(grid, 'pt-6', apparatus === 'rail' && 'min-[88rem]:grid-cols-[16rem_minmax(0,42rem)_17rem]')}>
         <aside className="hidden lg:block">
           <div data-act-contents className="sticky top-16 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2">
             {outline.length > 0 ? (
@@ -817,9 +871,16 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           </div>
         </aside>
         <main className={COLUMN}>
-          <Summary act={act} />
-          <FormLine act={act} shown={shown} onForm={onForm} />
+          <Summary act={act} warnings={apparatus === 'compact' ? warnings : undefined} />
+          {shown !== null ? (
+            // On the wide screen of `rail` this block gives way to the column at the right.
+            <div className={cn('space-y-3 py-5', apparatus === 'rail' && 'min-[88rem]:hidden')}>
+              <FormSelect act={act} shown={shown} onForm={onForm} anchor />
+              <ConsolidationNotice shown={shown} folded={apparatus !== 'full'} />
+            </div>
+          ) : null}
           {notices !== undefined ? <div className="space-y-4 pb-5">{notices}</div> : null}
+          {warnings !== undefined && apparatus !== 'compact' ? <div className={cn('pb-5', apparatus === 'rail' && 'min-[88rem]:hidden')}>{warnings}</div> : null}
           {textState === undefined && changedMark === 'legend' && blocks.length > 0 ? (
             <p className="flex items-center gap-2.5 pb-4 text-xs leading-5 text-muted-foreground">
               <span aria-hidden="true" className="h-4 w-0.5 shrink-0 rounded-full bg-primary/60" />
@@ -828,13 +889,22 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           ) : null}
           {textState ?? (
             <article aria-label={t`Textul actului`} className="pt-2">
-              <ActBlocks blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} changedMark={changedMark !== 'none'} onCopyLink={copyLink} />
+              <ActBlocks blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} changedMark={changedMark !== 'none'} foldNotes={apparatus !== 'full'} onCopyLink={copyLink} />
             </article>
           )}
           {afterText}
           <ActRecord act={act} shown={shown} onForm={pickForm} />
           {children}
         </main>
+        {apparatus === 'rail' && shown !== null ? (
+          <aside aria-label={t`Despre textul afișat`} className="hidden min-[88rem]:block">
+            <div className="sticky top-16 max-h-[calc(100dvh-5rem)] space-y-4 overflow-y-auto overscroll-contain pb-8">
+              <FormSelect act={act} shown={shown} onForm={onForm} stacked />
+              <ConsolidationNotice shown={shown} />
+              {warnings !== undefined ? <div>{warnings}</div> : null}
+            </div>
+          </aside>
+        ) : null}
       </div>
     </div>
   )

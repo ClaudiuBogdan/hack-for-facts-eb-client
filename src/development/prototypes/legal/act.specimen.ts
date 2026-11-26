@@ -129,7 +129,11 @@ const NODES: readonly Node[] = [
     // As served: a note's lines are notes of their own inside it.
     children: [
       { kind: 'nota', type: 'NTA', lines: [{ text: [act('Articolul XI din ORDONANȚA DE URGENȚĂ nr. 26 din 18 martie 2022', 252718), ', publicată în MONITORUL OFICIAL nr. 272 din 21 martie 2022 prevede:'] }] },
+      { kind: 'nota', type: 'NTA', lines: [{ text: 'Articolul XI' }] },
       { kind: 'nota', type: 'NTA', lines: [{ text: ['(1) Prevederile ', inside('art. I'), ' și ', inside('II'), ' se aplică procedurilor de atribuire inițiate după data intrării în vigoare a prezentei ordonanțe de urgență.'] }] },
+      { kind: 'nota', type: 'NTA', lines: [{ text: '(2) Procedurile de atribuire în curs de desfășurare la data intrării în vigoare a prezentei ordonanțe de urgență rămân supuse legislației în vigoare la data inițierii acestora. Prin procedură de atribuire în curs de desfășurare se înțelege orice procedură pentru care s-a transmis un anunț de participare, un anunț de participare simplificat sau, după caz, o invitație de participare până la data intrării în vigoare a prezentei ordonanțe de urgență.' }] },
+      { kind: 'nota', type: 'NTA', lines: [{ text: ['(3) Prevederile ', inside('art. I'), ' și ', inside('II'), ' din prezenta ordonanță de urgență se aplică contractelor de achiziție publică încheiate de la data intrării în vigoare, iar la contractele aflate în derulare doar pentru situații juridice născute de la data intrării în vigoare a prezentei ordonanțe de urgență.'] }] },
+      { kind: 'nota', type: 'NTA', lines: [{ text: ['(4) Prevederile ', inside('art. III'), ' din prezenta ordonanță de urgență se aplică numai contestațiilor, cererilor sau plângerilor formulate, respectiv termenelor de introducere a acțiunii începute de la intrarea în vigoare a prezentei ordonanțe de urgență.'] }] },
     ],
   },
   p('Parlamentul României adoptă prezenta lege.'),

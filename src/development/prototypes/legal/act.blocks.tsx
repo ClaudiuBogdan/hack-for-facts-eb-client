@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Link2 } from 'lucide-react'
@@ -156,6 +156,11 @@ function RunSpan({ run, marks, collapseSep = false }: { readonly run: TldfRun; r
   )
 }
 
+/** The skin's option that reaches every block: whether a long note of the Portal shows only its first lines. */
+const FoldNotes = createContext(false)
+/** A note longer than this many characters is folded, when notes are folded at all. */
+const LONG_NOTE = 420
+
 type BlockProps = { readonly block: TldfBlock; readonly marks: MarkIndex; readonly onCopyLink?: ((block: TldfBlock) => void) | undefined }
 
 /**
@@ -172,7 +177,8 @@ function BlockContent({ block, marks, onCopyLink }: BlockProps) {
     if (index === 0) collapseAt.add(index)
     const previous = items[index - 1]
     if (previous === undefined || !('run' in previous) || previous.run.role !== 'ttl') continue
-    if (inlineMarker || (block.kind === 'articol' && item.run.role === 'den')) collapseAt.add(index)
+    // The issuer's label and its value, the publication's label and its issue: one line each.
+    if (inlineMarker || block.kind === 'emitent' || block.kind === 'publicare' || (block.kind === 'articol' && item.run.role === 'den')) collapseAt.add(index)
   }
   return (
     <>
@@ -268,8 +274,37 @@ function struckAttrsOf(block: TldfBlock): { readonly 'data-struck'?: 'partial' |
   return { 'data-struck': block.struck, ...(block.struck_repealed === true && { title: t`Text abrogat`, 'data-state-label': t`abrogat` }) }
 }
 
+/**
+ * A long note of the Portal (the transitional provisions of amending acts that a consolidated form carries at its
+ * head run to a screen or more), folded to its first lines. Every word stays in the page: find-in-page and copy
+ * still reach it. The control's words are generated content, so the text of the page is unchanged.
+ */
+function FoldedNote({ block, marks, onCopyLink }: BlockProps) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div id={`tldf-${block.id}`} data-kind="nota" className={cn(BLOCK_CLASS.nota, 'scroll-mt-24')}>
+      <div className={cn(!open && 'relative max-h-[8.25rem] overflow-hidden after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-10 after:bg-gradient-to-t after:from-muted after:to-transparent')}>
+        {/* One fold for the whole note: a long line inside it is not folded again. */}
+        <FoldNotes.Provider value={false}>
+          <BlockContent block={block} marks={marks} onCopyLink={onCopyLink} />
+        </FoldNotes.Provider>
+      </div>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-label={open ? t`Arată mai puțin din notă` : t`Arată toată nota`}
+        data-label={open ? t`Arată mai puțin` : t`Arată toată nota`}
+        className="mt-1 inline-flex min-h-11 items-center whitespace-normal font-medium text-foreground underline decoration-foreground/30 underline-offset-4 before:content-[attr(data-label)] hover:decoration-foreground sm:min-h-9"
+      />
+    </div>
+  )
+}
+
 function BlockView({ block, marks, onCopyLink }: BlockProps) {
+  const foldNotes = useContext(FoldNotes)
   if (block.kind === 'tabel' && isRenderableTable(block)) return <TableBlock block={block} marks={marks} />
+  if (foldNotes && block.kind === 'nota' && block.struck === undefined && block.span[1] - block.span[0] > LONG_NOTE) return <FoldedNote block={block} marks={marks} onCopyLink={onCopyLink} />
   if (block.kind === 'imagine') return <ImagineBlock block={block} marks={marks} />
 
   const Tag = block.kind === 'lista' ? (block.type === 'OL' ? 'ol' : 'ul') : block.kind === 'element_lista' ? 'li' : 'div'
@@ -319,6 +354,7 @@ export function ActBlocks({
   marks,
   containsNonBmp,
   changedMark = false,
+  foldNotes = false,
   onCopyLink,
 }: {
   readonly blocks: readonly TldfBlock[]
@@ -326,6 +362,8 @@ export function ActBlocks({
   readonly containsNonBmp: boolean
   /** True draws a bar in the gutter of the provisions changed since the base form. Off by the owner's decision: their change notes say it. */
   readonly changedMark?: boolean
+  /** True shows only the first lines of a long note of the Portal, with a control that opens it. */
+  readonly foldNotes?: boolean
   /** Given, each article carries a „copy link" control in the gutter. */
   readonly onCopyLink?: (block: TldfBlock) => void
 }) {
@@ -336,9 +374,11 @@ export function ActBlocks({
       className={cn('whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-foreground [content-visibility:auto] sm:text-lg sm:leading-[1.75] [&>*:first-child]:mt-0', SERIF, !changedMark && '[&_[data-changed]]:before:hidden')}
       style={{ containIntrinsicSize: `auto ${String(intrinsicHeight)}px` }}
     >
-      {blocks.map((block) => (
-        <BlockView key={block.id} block={block} marks={index} onCopyLink={onCopyLink} />
-      ))}
+      <FoldNotes.Provider value={foldNotes}>
+        {blocks.map((block) => (
+          <BlockView key={block.id} block={block} marks={index} onCopyLink={onCopyLink} />
+        ))}
+      </FoldNotes.Provider>
     </div>
   )
 }

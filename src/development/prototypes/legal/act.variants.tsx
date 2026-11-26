@@ -146,9 +146,19 @@ function useChangedMark(): 'bar' | 'legend' | 'none' {
   return search.bara === 'linie' ? 'bar' : search.bara === 'legenda' ? 'legend' : 'none'
 }
 
+/**
+ * How much room the text's apparatus takes above the text, to compare (owner, 26 November 2026): `?aparat=pliat`
+ * folds it to one line, `?aparat=lateral` moves it to a column at the right on a wide screen.
+ */
+function useApparatus(): 'full' | 'compact' | 'rail' {
+  const search: { readonly aparat?: unknown } = useSearch({ strict: false })
+  return search.aparat === 'pliat' ? 'compact' : search.aparat === 'lateral' ? 'rail' : 'full'
+}
+
 export function ActSpecimenPage() {
   const [documentId, setDocumentId] = useState(SPECIMEN_SHOWN_DOCUMENT_ID)
   const changedMark = useChangedMark()
+  const apparatus = useApparatus()
   return (
     <ActPageView
       model={{
@@ -161,6 +171,8 @@ export function ActSpecimenPage() {
         outline: ACT_SPECIMEN.outline,
         mock: true,
         changedMark,
+        apparatus,
+        warnings: <ActWarnings act={SPECIMEN_ACT} variant="row" />,
         onForm: setDocumentId,
       }}
     >
@@ -253,6 +265,7 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
   const partBlocks = partQueries.slice(0, loadedParts).flatMap((query) => (query.data?.kind === 'chunk' ? query.data.tldf.blocks : []))
   const served = render.data?.kind === 'envelope' ? render.data.tldf.blocks : partBlocks
   const changedMark = useChangedMark()
+  const apparatus = useApparatus()
   const split = useMemo(() => splitMasthead(served, mastheadFacts(act)), [served, act])
   // A part compiled in another run than the manifest's is never joined to it: the text is read again whole.
   const recompiled = manifest !== null && partQueries.some((query) => query.data !== undefined && query.data.tldf.generation.run_id !== manifest.generation.run_id)
@@ -308,14 +321,12 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
         },
         mock: false,
         changedMark,
+        apparatus,
+        // The live page's own warnings, unchanged and not yet restyled.
+        warnings: <ActWarnings act={act} variant="row" />,
         onForm,
         // The live page's own notices, unchanged and not yet restyled: what they say matters more here than how they look.
-        notices: (
-          <>
-            <ActDefaultNotices act={act} shown={shown} notCurrentDefault={!picked && reading.basis === 'latest_available'} onlyReadableDefault={!picked && reading.basis === 'only_readable'} />
-            <ActWarnings act={act} variant="row" />
-          </>
-        ),
+        notices: <ActDefaultNotices act={act} shown={shown} notCurrentDefault={!picked && reading.basis === 'latest_available'} onlyReadableDefault={!picked && reading.basis === 'only_readable'} />,
         textState,
         afterText: manifest !== null && loadedParts > 0 ? <MoreParts loaded={loadedParts} total={manifest.chunks.length} pending={parts > loadedParts && !failed} onMore={() => setParts(loadedParts + 1)} /> : undefined,
       }}

@@ -77,6 +77,14 @@ describe('the act text in the prototype skin', () => {
     expect(container.textContent).toBe(foldTldfBlocks(ACT_SPECIMEN.blocks))
   })
 
+  it('folds a long note without adding or losing a character', () => {
+    const { container } = render(<ActBlocks blocks={ACT_SPECIMEN.blocks} marks={ACT_SPECIMEN.marks} containsNonBmp={false} foldNotes />)
+    expect(container.textContent).toBe(foldTldfBlocks(ACT_SPECIMEN.blocks))
+    const control = container.querySelector('[data-kind=nota] > button')
+    expect(control).toHaveAttribute('data-label', 'Arată toată nota')
+    expect(control?.textContent).toBe('')
+  })
+
   it.each(['render-rows-100023.json', 'render-rows-46408.json', 'render-rows-v2-f900012.json', 'render-rows-100019.json'])('draws the real artifact %s character for character', (name) => {
     for (const row of rowsOf(name)) {
       const blocks = row.tldf.blocks

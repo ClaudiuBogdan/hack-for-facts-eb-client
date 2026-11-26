@@ -63,7 +63,8 @@ export const SPECIMEN_ACT: LegalActDetail = {
   actYear: 2016,
   issuerSlug: 'parlamentul',
   status: 'modificat',
-  statusEvidence: { modifiedByCount: 14, contradictedAbrogations: 0, abrogatedByCount: 0, futureEventCount: 0 },
+  // Both of the page's warnings show on the specimen: references of change recorded, and repeal signals that disagree.
+  statusEvidence: { modifiedByCount: 14, contradictedAbrogations: 2, abrogatedByCount: 2, futureEventCount: 0 },
   entryIntoForce: '2016-05-26',
   inDegree: 4120,
   aliases: ['legea achizițiilor publice'],
