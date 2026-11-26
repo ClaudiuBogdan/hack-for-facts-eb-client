@@ -163,12 +163,16 @@ export function legalActTypeLabel(slug: string): string {
 /**
  * A slug that strings several issuers and their act numbers together („ministerul-sanatatiinr-233-din-14-martie-
  * 2006casa-nationala-de-asigurari-de-sanatatenr-125-…"): a joint act, stored upstream as one issuer (LEG-N36A).
- * Its mark is an issuer's name run straight into an act's number and date, with no hyphen before „nr":
- * „…sanatatiinr-233-din-14-martie-2006". A number alone is not it: „biroul-electoral-judetean-nr-33-salaj" is one
- * office (review astra-client-11), and a slug that is unsure stays the prettified slug.
+ * Its mark is an issuer's name run straight into an act's number and date, with no hyphen before „nr"
+ * („…sanatatiinr-233-din-14-martie-2006"), twice or more: one issuer per pair. A number alone is not it:
+ * „biroul-electoral-judetean-nr-33-salaj" is one office (review astra-client-11), and a slug that is unsure stays
+ * the prettified slug.
  */
-const JOINT_ISSUERS =
-  /\p{L}nr-\d+-din-\d{1,2}-(?:ianuarie|februarie|martie|aprilie|mai|iunie|iulie|august|septembrie|octombrie|noiembrie|decembrie)-\d{4}/u
+const JOINT_ISSUER_PAIR =
+  /\p{L}nr-\d+-din-\d{1,2}-(?:ianuarie|februarie|martie|aprilie|mai|iunie|iulie|august|septembrie|octombrie|noiembrie|decembrie)-\d{4}/gu
+
+/** Two such pairs at least: one glued number is one issuer's slug with its act's number (review astra-client-12). */
+const isJointIssuers = (slug: string): boolean => (slug.match(JOINT_ISSUER_PAIR)?.length ?? 0) >= 2
 
 /**
  * `legal.acts.issuer_slug` — who issued it.
@@ -183,7 +187,7 @@ const JOINT_ISSUERS =
  * A joint act's run-together slug is said as what it is, several issuers, not spelled out as one name.
  */
 export function legalIssuerLabel(slug: string): string {
-  if (JOINT_ISSUERS.test(slug)) return t`Mai mulți emitenți`
+  if (isJointIssuers(slug)) return t`Mai mulți emitenți`
   switch (slug) {
     case 'guvernul':
     case 'guvernul-romaniei':

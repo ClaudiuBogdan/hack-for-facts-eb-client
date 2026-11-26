@@ -30,6 +30,11 @@ describe('legalIssuerLabel', () => {
     expect(legalIssuerLabel('comisia-nr-3-din-11-februarie-2004')).not.toBe('Mai mulți emitenți')
   })
 
+  it('says several issuers only where two issuer-and-number pairs are run together (astra-client-12)', () => {
+    // one glued number and date: one issuer's slug with its act's number, not proof of a second issuer
+    expect(legalIssuerLabel('ministerul-sanatatiinr-233-din-14-martie-2006')).not.toBe('Mai mulți emitenți')
+  })
+
   it('prettifies an unmapped slug without guessing its diacritics', () => {
     expect(legalIssuerLabel('ministerul-apelor-si-protectiei-mediului')).toBe('Ministerul Apelor si Protectiei Mediului')
   })
