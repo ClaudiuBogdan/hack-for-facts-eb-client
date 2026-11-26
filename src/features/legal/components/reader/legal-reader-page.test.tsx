@@ -29,6 +29,7 @@ import {
   legalActDetailFixture,
 } from '../../mocks/fixtures/legal-act-detail'
 import { foldTldfBlocks } from '../../lib/tldf/fold'
+import { resolveDocOverride } from '../../lib/legal-versions'
 import { ActReadingLayout } from './legal-reader-page'
 import type { TldfChunkPayload, TldfEnvelope } from '../../lib/tldf/types'
 
@@ -176,8 +177,9 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
   })
 
   it('writes the text on show with a provision chosen in the contents after a refused ?doc= (astra-client-12)', async () => {
+    // the default text is one of the act's own documents, as on a real act
     const act = {
-      ...legalActDetailFixture,
+      ...owning('100023'),
       canonical:
         legalActDetailFixture.canonical === null
           ? null
@@ -194,6 +196,8 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     expect(next.doc).toBe('100023')
     expect(typeof next.nod).toBe('string')
     expect(next.nod).not.toBe('r10')
+    // and the address written is one the reader accepts on the next render: the act's own text, not refused again
+    expect(resolveDocOverride(act, String(next.doc)).kind).toBe('own')
   })
 
   it('honours an override that is one of the act\'s own expressions', async () => {
