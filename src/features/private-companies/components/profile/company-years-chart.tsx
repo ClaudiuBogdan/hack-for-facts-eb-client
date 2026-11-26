@@ -119,6 +119,9 @@ export function CompanyYearsChart({
   })
   const yearSlots = placed.flatMap(({ slot, left, width }) => (slot.kind === 'year' ? [{ row: slot.row, slot, left, width }] : []))
   const [active, setActive] = useState<number | null>(null)
+  // A click (a tap) holds its year's reading: a mouse can then travel to the reading's link across other years.
+  // Hovering only previews; the held year goes with a click on it again, another year's click or Escape.
+  const [held, setHeld] = useState(false)
   // Nothing is read at rest: a reading opens on a pointer, a tap or the keyboard.
   const shown = active ?? -1
   const isActive = (slot: Slot) => yearSlots[shown]?.slot === slot
@@ -160,6 +163,11 @@ export function CompanyYearsChart({
   const reading = yearSlots[shown] ?? null
 
   const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape' && active !== null) {
+      setActive(null)
+      setHeld(false)
+      return
+    }
     const from = active ?? last + 1
     const next = event.key === 'ArrowLeft' ? from - 1 : event.key === 'ArrowRight' ? Math.min(from + 1, last) : event.key === 'Home' ? 0 : event.key === 'End' ? last : null
     if (next === null) return
@@ -341,7 +349,7 @@ export function CompanyYearsChart({
         aria-label={t`Anii: săgețile stânga și dreapta trec de la un an la altul`}
         onKeyDown={onKey}
         onPointerLeave={(event) => {
-          if (event.pointerType === 'mouse') setActive(null)
+          if (event.pointerType === 'mouse' && !held) setActive(null)
         }}
         className={cn('relative pl-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', runs.length > 0 ? 'mt-3' : 'mt-4')}
       >
@@ -395,9 +403,14 @@ export function CompanyYearsChart({
               className="absolute inset-y-0"
               style={{ left: percent(left), width: percent(width) }}
               onPointerEnter={(event) => {
-                if (event.pointerType === 'mouse') setActive(position)
+                if (event.pointerType === 'mouse' && !held) setActive(position)
               }}
-              onClick={() => setActive(position)}
+              onClick={() => {
+                // A click on the held year lets it go; on any other year, holds that one.
+                const release = held && active === position
+                setActive(position)
+                setHeld(!release)
+              }}
               aria-hidden="true"
             />
           ))}
@@ -405,12 +418,13 @@ export function CompanyYearsChart({
 
         {/* The year's reading: its form, its publisher, all three figures whatever the panels draw, its source. One width,
             centred over its year and kept inside the plot, so a phone shows all of it. The live region stays mounted, so
-            its first reading is announced. Only the source link takes the pointer: a tap elsewhere on the box reaches the
-            year under it (on a phone the box covers most of the plot). */}
+            its first reading is announced. Where a pointer hovers, the box holds it, so the reading stays while the mouse
+            travels to its link; on a touch screen only the link takes it, so a tap elsewhere on the box reaches the year
+            under it (on a phone the box covers most of the plot). */}
         <div aria-live="polite" className="pointer-events-none absolute inset-x-0 top-0 z-10">
           {reading ? (
             <div
-              className="absolute top-0 w-64 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+              className="absolute top-0 w-64 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md [@media(hover:hover)]:pointer-events-auto"
               // The plot starts after the 4rem gutter: a point of it is 4rem + fraction × (100% − 4rem).
               style={{ left: `clamp(0px, calc(4rem + (100% - 4rem) * ${(reading.left + reading.width / 2).toFixed(4)} - 8rem), calc(100% - 16rem))` }}
             >
@@ -441,7 +455,7 @@ export function CompanyYearsChart({
                   href={reading.row.source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="pointer-events-auto mt-1.5 inline-flex min-h-8 items-center gap-1 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  className="pointer-events-auto mt-1.5 inline-flex min-h-8 items-center gap-1 rounded-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   data-testid="company-years-reading-source"
                 >
                   {sourceLabel(reading.row)}

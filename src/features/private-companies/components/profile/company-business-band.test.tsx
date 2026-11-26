@@ -114,6 +114,14 @@ describe('CompanyBusinessBand, the IFRS form', () => {
     expect(reading.getByRole('link', { name: /Fișierul pe data\.gov\.ro/u })).toHaveAttribute('href', 'https://data.gov.ro/web_ir_an2014.txt')
   })
 
+  it('closes a reading on Escape', () => {
+    render(<CompanyBusinessBand model={buildCompanyProfileModel(formsCompany())} />)
+    readYear(3)
+    expect(band().getByTestId('company-years-reading')).toBeInTheDocument()
+    fireEvent.keyDown(band().getByRole('group', { name: /^Anii:/u }), { key: 'Escape' })
+    expect(band().queryByTestId('company-years-reading')).toBeNull()
+  })
+
   it('keeps the held result of an IFRS-layout year held, its admitted profit outlined, and links ANAF', () => {
     render(<CompanyBusinessBand model={buildCompanyProfileModel(formsCompany())} />)
     const reading = within(readYear(11))

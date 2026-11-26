@@ -1172,8 +1172,12 @@ session against its evidence.
   that it is no fall). No text under the chart but the real gaps.
 - **Sources in the reading, for every company** (owner): each year's reading
   names its publisher and links its source — the Ministry's file or ANAF's
-  answer for the year. Only the link takes the pointer, so a tap under the box
-  reaches the year beneath (checked at 360).
+  answer for the year. On a touch screen only the link takes the pointer, so a
+  tap under the box reaches the year beneath (checked at 360). With a mouse,
+  hovering previews a year and a click holds it, so the pointer can travel to
+  the link across other years (checked for the newest, a middle and the first
+  year at 1440); a click on it again, another year or Escape lets it go. Tab
+  from the chart lands on the link.
 - **Nothing derived reads the IFRS-file figures**: not the lede, the loss
   years, the figures band or a comparison — source observations outside the
   admission policy, never qualified (tested: the same lede, counts and figures
