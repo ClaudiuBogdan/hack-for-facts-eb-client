@@ -121,9 +121,10 @@ export const legalReaderSearchSchema = lazySchema(() =>
     })
     // A `nod` is a path in the `doc` it came with: when that `doc` is present but unreadable (`?doc=true&nod=r10`),
     // the same path in the default text may be another provision, so both go. A `nod` alone stays a link into the
-    // default text (review astra-client-12).
-    .transform(({ doc, nod }): { doc?: string; nod?: string } =>
-      doc === UNREADABLE_DOC ? {} : { ...(doc === undefined ? {} : { doc }), ...(nod === undefined ? {} : { nod }) },
+    // default text (review astra-client-12). Both keys are always named: the router merges this result over the
+    // root's passthrough search, where a key left out would keep the address's raw value.
+    .transform(({ doc, nod }): { doc: string | undefined; nod: string | undefined } =>
+      doc === UNREADABLE_DOC ? { doc: undefined, nod: undefined } : { doc, nod },
     ),
 )
 export type LegalReaderSearch = LazyOutput<typeof legalReaderSearchSchema>

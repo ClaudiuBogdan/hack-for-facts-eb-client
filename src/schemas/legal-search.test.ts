@@ -33,15 +33,24 @@ describe('the search addresses through the router codec', () => {
 })
 
 describe('legalReaderSearchSchema', () => {
+  /**
+   * The page's search as the router builds it: the root's search is passthrough and this route's result is merged
+   * over it, so a key this schema leaves out keeps the raw value from the address. Every key must be named.
+   */
+  const pageSearch = (address: string) => {
+    const raw = parseAppSearch(address)
+    return { ...raw, ...legalReaderSearchSchema.parse(raw) }
+  }
+
   it('drops the nod of a doc it cannot read: the nod pointed into that document, not the default text (astra-client-12)', () => {
-    expect(legalReaderSearchSchema.parse(parseAppSearch('?doc=true&nod=r10'))).toEqual({})
-    expect(legalReaderSearchSchema.parse({ doc: '', nod: 'r10' })).toEqual({})
-    expect(legalReaderSearchSchema.parse({ doc: -3, nod: 'r10' })).toEqual({})
+    expect(pageSearch('?doc=true&nod=r10')).toStrictEqual({ doc: undefined, nod: undefined })
+    expect(legalReaderSearchSchema.parse({ doc: '', nod: 'r10' })).toStrictEqual({ doc: undefined, nod: undefined })
+    expect(legalReaderSearchSchema.parse({ doc: -3, nod: 'r10' })).toStrictEqual({ doc: undefined, nod: undefined })
   })
 
   it('keeps a nod on its own, and a nod with a doc it reads', () => {
-    expect(legalReaderSearchSchema.parse(parseAppSearch('?nod=r10'))).toEqual({ nod: 'r10' })
-    expect(legalReaderSearchSchema.parse(parseAppSearch('?doc=54260&nod=r10'))).toEqual({ doc: '54260', nod: 'r10' })
-    expect(legalReaderSearchSchema.parse({ doc: 'f900012' })).toEqual({ doc: 'f900012' })
+    expect(pageSearch('?nod=r10')).toStrictEqual({ doc: undefined, nod: 'r10' })
+    expect(pageSearch('?doc=54260&nod=r10')).toStrictEqual({ doc: '54260', nod: 'r10' })
+    expect(legalReaderSearchSchema.parse({ doc: 'f900012' })).toStrictEqual({ doc: 'f900012', nod: undefined })
   })
 })
