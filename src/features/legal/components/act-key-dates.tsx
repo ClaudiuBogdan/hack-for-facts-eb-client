@@ -3,8 +3,9 @@ import { t } from '@lingui/core/macro'
 import { Plural, Trans } from '@lingui/react/macro'
 import type { LegalKeyDate } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
-import { LEGISLATION_ACCENT } from '../lib/legislation-theme'
+import { cn } from '@/lib/utils'
 import { ActAccordionItem } from './act-accordion'
+import { ACT_RECORD_LINE } from './reader/act-page-grid'
 
 type Props = {
   readonly keyDates: readonly LegalKeyDate[]
@@ -42,35 +43,25 @@ export function ActKeyDates({ keyDates }: Props) {
         />
       }
     >
-      <ol className="flex flex-col">
+      <ol className="divide-y">
         {dated.map((entry, index) => (
-          <li
-            key={`${entry.date}-${index}`}
-            className="flex flex-col gap-1 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:flex-row sm:gap-5 sm:px-6"
-          >
-            <span
-              className="shrink-0 text-sm font-bold tabular-nums sm:w-40"
-              style={{ color: LEGISLATION_ACCENT }}
-            >
+          <li key={`${entry.date}-${index}`} className={ACT_RECORD_LINE}>
+            <span className="tabular-nums text-muted-foreground">
               {formatLegalDate(entry.date ?? '', i18n.locale)}
             </span>
-            <span className="min-w-0 text-sm leading-6 text-[var(--pnrr-fg)]">
-              {entry.description}
-            </span>
+            <span className="min-w-0">{entry.description}</span>
           </li>
         ))}
 
         {undated.map((entry, index) => (
           <li
             key={`undated-${index}`}
-            className="flex flex-col gap-1 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:flex-row sm:gap-5 sm:px-6"
+            className={cn(ACT_RECORD_LINE, 'text-muted-foreground')}
           >
-            <span className="shrink-0 text-xs text-[var(--pnrr-muted)] sm:w-40">
+            <span>
               <Trans>fără dată exactă</Trans>
             </span>
-            <span className="min-w-0 text-sm leading-6 text-[var(--pnrr-muted)]">
-              {entry.description}
-            </span>
+            <span className="min-w-0">{entry.description}</span>
           </li>
         ))}
       </ol>

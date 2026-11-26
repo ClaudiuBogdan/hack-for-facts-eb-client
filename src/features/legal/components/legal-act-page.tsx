@@ -35,13 +35,16 @@ type Props = {
  * `/legislation/acts/$actId` — one normative document, ONE page (user
  * decision 2026-08-10: the text is not a separate route), with the TEXT as
  * the main content (user decision 2026-08-11). The shape is the portal's,
- * redesigned: a left nav carrying only the served Cuprins, and a main column
- * that reads top to bottom as —
+ * redesigned (owner, 26 November 2026): one grid for the head and the body —
+ * the served Cuprins in a box at the left, the reading column, and from 88rem
+ * a box at the right about the text shown — under a reading bar that stays in
+ * view. The reading column reads top to bottom as —
  *
  *  0. header — what this is, is it alive, the act's own masthead
- *  1. one summary card — the formal description, the clamped plain summary,
- *     its qualifying ⚠ warnings as collapsed footer rows, and the
- *     AI-provenance row carrying the official-source link
+ *  1. the summary — the formal description, the clamped plain summary, and
+ *     the AI-provenance line carrying the official-source link
+ *  1b. what is to know about the text shown — the version, the consolidation
+ *     notice, the act's ⚠ warnings (the right-hand box from 88rem)
  *  2. the text itself — full, chunk-streamed, `?nod=`-addressable
  *  3. fișa — one accordion at the bottom: relevance, the record, the
  *     mechanics, the limits (it replaced the FAQ, same decision)
@@ -85,7 +88,7 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
   }
 
   return (
-    <div className="min-h-screen min-w-0 bg-background">
+    <div className="min-h-screen min-w-0 bg-background text-foreground">
       <ActDetailHeader act={data} textSubject={masthead?.subject ?? null} />
 
       <ActReadingLayout
@@ -93,29 +96,34 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
         onMasthead={setMasthead}
         {...(docOverride !== undefined && { docOverride })}
         {...(nod !== undefined && { nod })}
-        lead={
+        // The warnings qualify the summary. With a version shown they are
+        // worn by the box about the text shown (owner, 26 November 2026, the
+        // act page's redesign); otherwise the summary carries them as footer
+        // rows, or, with no summary, they stand alone. Never twice, never lost.
+        warnings={<ActWarnings act={data} variant="row" />}
+        lead={({ withWarnings }) =>
           // Gated on the CONTENT the card actually renders, not the summary
           // object: both its texts are independently nullable/blank, and a
           // summary that suppresses the card must not swallow the warnings.
           data.summary && hasSummaryContent(data.summary) ? (
-            // One card: the summary with its qualifying warnings as footer
-            // rows (user decision 2026-08-11) — not three stacked elements.
             <ActPlainSummary
               summary={data.summary}
               officialTextUrl={data.officialTextUrl}
-              qualifiers={<ActWarnings act={data} variant="row" />}
+              qualifiers={withWarnings ? <ActWarnings act={data} variant="row" /> : undefined}
             />
-          ) : (
+          ) : withWarnings ? (
             // No summary to attach them to — the warnings stand alone.
             <ActWarnings act={data} />
-          )
+          ) : null
         }
-        fisa={
+        fisa={({ ownDocumentId }) => (
           /* Rows stay in ladder order — relevance, then the record, then
              the mechanics, then the limits — so opening them top to bottom
              is still the progressive disclosure the page was designed
              around. */
-          <ActAccordion label={t`Detalii despre acest act`}>
+          // Keyed by the act: a row opened or a list shown whole on one act
+          // must not stay so on the next one reached by a link.
+          <ActAccordion key={data.actId} label={t`Detalii despre acest act`}>
             {data.summary ? <ActRelevanceBand summary={data.summary} /> : null}
             {data.summary ? (
               <ActKeyDates keyDates={data.summary.keyDates} />
@@ -128,7 +136,9 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
               complete={data.timelineComplete}
               available={bridgeCovers(data, 'timeline')}
             />
-            <ActVersionsBand act={data} />
+            {/* The version asked for by the address, by the id the reader resolved it to (an old page id names a
+                form by another id): its line is never behind the row's cut. */}
+            <ActVersionsBand act={data} {...(ownDocumentId !== null && { shownDocumentId: ownDocumentId })} />
             <ActReferencesBand
               group={data.outLinks}
               direction="out"
@@ -148,7 +158,7 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
               mastheadInHeader={masthead?.lifted ?? false}
             />
           </ActAccordion>
-        }
+        )}
       />
     </div>
   )

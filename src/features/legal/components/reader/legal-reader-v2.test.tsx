@@ -19,6 +19,7 @@ import {
   screen,
   fireEvent,
   waitFor,
+  within,
   createTestQueryClient,
 } from '@/test/test-utils'
 import { LegalRenderFailureError } from '../../lib/legal-render-error'
@@ -34,7 +35,11 @@ import {
 import { ActReadingLayout } from './legal-reader-page'
 
 const navigateMock = vi.fn()
-vi.mock('@tanstack/react-router', () => ({
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
+  ...(await importOriginal<typeof import('@tanstack/react-router')>()),
+  // The stand-in reads the state the way the app asks for it (`select`), from an address of the act's page.
+  useRouterState: ({ select }: { readonly select: (state: unknown) => unknown }) => select({ location: { pathname: '/legislation/acts/1', search: {} } }),
   Link: ({ children, to }: { readonly children: ReactNode; readonly to: string }) => (
     <a href={to}>{children}</a>
   ),
@@ -126,6 +131,8 @@ describe('ActReadingLayout on legal_v2', () => {
       'Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.',
     )
     expect(note).not.toHaveTextContent(/în vigoare la/)
+    // The guidance and the Portal link are folded under „Detalii" (owner, 26 November 2026).
+    fireEvent.click(within(note as HTMLElement).getByRole('button', { name: 'Detalii' }))
     expect(
       screen.getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ }),
     ).toHaveAttribute('href', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012')
@@ -167,6 +174,23 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(screen.getByLabelText(/Versiunea textului/)).toHaveValue('f900011')
   })
 
+  it('tells the record which version the address asks for by the id it resolved to, never the old page id', async () => {
+    const record = ({ ownDocumentId }: { readonly ownDocumentId: string | null }) => <p>record for {String(ownDocumentId)}</p>
+    // an old page id: nothing while the lookup runs, then the form it names
+    const { unmount } = render(<ActReadingLayout act={legalActDetailV2Fixture} docOverride="777" lead={null} fisa={record} />)
+    expect(await screen.findByText('record for f900011')).toBeInTheDocument()
+    expect(screen.queryByText('record for 777')).not.toBeInTheDocument()
+    unmount()
+    // a refused id names no version of the act
+    const refused = render(<ActReadingLayout act={legalActDetailV2Fixture} docOverride="54260" lead={null} fisa={record} />)
+    await screen.findByText(/nu aparține acestui act/)
+    expect(screen.getByText('record for null')).toBeInTheDocument()
+    refused.unmount()
+    // no ?doc=: none
+    render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={record} />)
+    expect(screen.getByText('record for null')).toBeInTheDocument()
+  })
+
   it.each([
     ['names no version of this act', '54260'],
     ['names no form at all', '31337'],
@@ -181,7 +205,10 @@ describe('ActReadingLayout on legal_v2', () => {
   })
 
   it('takes no ?nod= into the default text when the lookup refuses the page id (astra-client-11)', async () => {
-    const nod = (rows[0]?.tldf.blocks as { id: string }[] | undefined)?.[3]?.id ?? ''
+    // A block of the body: the masthead's publication line (block 3) hides behind the head's „Publicat în", which
+    // states the Portal's own line on an act matched to no issue (owner, 26 November 2026).
+    const blocks = (rows[0]?.tldf.blocks as { id: string }[] | undefined) ?? []
+    const nod = blocks[blocks.length - 1]?.id ?? ''
     const scrollIntoView = vi.fn()
     const original = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = scrollIntoView
@@ -200,6 +227,22 @@ describe('ActReadingLayout on legal_v2', () => {
     }
   })
 
+  it('says the publication once: the text\'s own line hides behind the head\'s, and only when it names the same issue', async () => {
+    // The act is matched to no issue: the head states the Portal's masthead line, nr. 67 of 3 April 1996 (owner,
+    // 26 November 2026), and the text's publicare block (0.1.1.4) names that same issue.
+    const { container } = render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
+    await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
+    expect(container.querySelector('[id="tldf-0.1.1.4"]')).toBeNull()
+    expect(readerText(container)).not.toMatch(/MONITORUL OFICIAL nr\. 67/)
+    // a head that states another issue leaves the text's line where it is
+    const canonical = legalActDetailV2Fixture.canonical
+    if (canonical === null) throw new Error('the legal_v2 fixture lost its canonical')
+    const other = { ...legalActDetailV2Fixture, canonical: { ...canonical, publicationRaw: 'MONITORUL OFICIAL nr. 68 din 3 aprilie 1996' } }
+    const second = render(<ActReadingLayout act={other} lead={null} fisa={null} />)
+    await waitFor(() => expect(readerText(second.container).length).toBeGreaterThan(100))
+    expect(second.container.querySelector('[id="tldf-0.1.1.4"]')).not.toBeNull()
+  })
+
   it("labels the text by the render's servedForm, the authoritative account of what was served", async () => {
     // The version list calls f900011 the original; the server says the text
     // it served is a consolidation — the banner follows the server.
@@ -216,6 +259,7 @@ describe('ActReadingLayout on legal_v2', () => {
     )
     const banner = await screen.findByText(/Formă consolidată neoficială, cu caracter informativ\./)
     expect(banner.closest('[role="note"]')).toHaveTextContent(/„actualizat până la .*2023.*”/)
+    fireEvent.click(screen.getByRole('button', { name: 'Detalii' }))
     expect(
       screen.getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ }),
     ).toHaveAttribute('href', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/5551')
@@ -255,6 +299,144 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(navigateMock).toHaveBeenLastCalledWith(
       expect.objectContaining({ search: {}, hash: 'act-text' }),
     )
+  })
+
+  it('keeps the notice\'s first sentence and the Portal\'s dated note in sight when folded; only the guidance and the link fold', async () => {
+    render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
+    const first = await screen.findByText('Formă consolidată neoficială, cu caracter informativ.')
+    const note = first.closest('[role="note"]') as HTMLElement
+    const dated = within(note).getByText(/Portalul Legislativ indică „consolidarea din .*2024.*”\./)
+    const guidance = within(note).getByText(/Pentru a stabili dispozițiile aplicabile la o dată/)
+    // folded: the first sentence and the Portal's dated note are never inside the folded part
+    expect(first.closest('.hidden')).toBeNull()
+    expect(dated.closest('.hidden')).toBeNull()
+    const fold = guidance.closest('.hidden')
+    expect(fold).not.toBeNull()
+    expect(fold).toContainElement(within(note).getByText(/Forma consolidată pe Portalul Legislativ/))
+    // folded on screen only: on paper the guidance and the link are printed, and the switch is not
+    expect(fold).toHaveClass('print:block')
+    expect(fold).not.toHaveAttribute('hidden')
+    const details = within(note).getByRole('button', { name: 'Detalii' })
+    expect(details).toHaveClass('print:hidden')
+    expect(details).toHaveAttribute('aria-expanded', 'false')
+    expect(details.getAttribute('aria-controls')).toBe(fold?.id)
+    fireEvent.click(details)
+    expect(guidance.closest('.hidden')).toBeNull()
+    expect(within(note).getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ })).toBeInTheDocument()
+    expect(within(note).getByRole('button', { name: 'Mai puțin' })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('sets the version select in the box about the text shown, names the version whole, and writes ?doc= through the router', async () => {
+    render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
+    const about = await screen.findByRole('complementary', { name: 'Despre textul afișat' })
+    const select = within(about).getByLabelText(/Versiunea textului/)
+    // the face names the version by the Portal's date and its kind, nothing cut: read from the drawn face, not
+    // from the options under it (which say the same and would hide a face left empty)
+    const face = select.parentElement as HTMLElement
+    const drawn = face.firstElementChild as HTMLElement
+    expect(drawn.tagName).toBe('SPAN')
+    expect(drawn).toHaveTextContent(/2024/)
+    expect(drawn).toHaveTextContent(/formă consolidată neoficială/)
+    // the keyboard's ring is on the face (the select itself is unseen): 2 px, and an outline where colours are forced
+    expect(face).toHaveClass('has-[select:focus-visible]:ring-2', 'forced-colors:has-[select:focus-visible]:outline')
+    fireEvent.change(select, { target: { value: 'f900011' } })
+    expect(navigateMock).toHaveBeenLastCalledWith({
+      to: '.',
+      search: { doc: 'f900011' },
+      hash: 'act-text',
+      replace: true,
+      resetScroll: false,
+    })
+  })
+
+  it("names a consolidation by the Portal's own date, never by the list's ordering date", async () => {
+    const act = {
+      ...legalActDetailV2Fixture,
+      documents: legalActDetailV2Fixture.documents.map((doc) =>
+        doc.documentId === 'f900012' ? { ...doc, portalLabelDate: '2023-11-30' } : doc,
+      ),
+      canonical:
+        legalActDetailV2Fixture.canonical === null
+          ? null
+          : { ...legalActDetailV2Fixture.canonical, portalLabelDate: '2023-11-30' },
+    }
+    render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+    const select = await screen.findByLabelText(/Versiunea textului/)
+    const option = Array.from(select.querySelectorAll('option')).find((o) => o.value === 'f900012')
+    expect(option?.textContent).toMatch(/2023/)
+    expect(option?.textContent).not.toMatch(/2024/)
+    await screen.findByText('Formă consolidată neoficială, cu caracter informativ.')
+    expect(select.parentElement).toHaveTextContent(/2023/)
+    expect(select.parentElement).not.toHaveTextContent(/2024/)
+  })
+
+  it('marks a deep-linked note nested in a note, over the parent note\'s own ground', async () => {
+    const nod = '0.1.1.12.3.1.2.1'
+    const { container } = render(
+      <ActReadingLayout act={legalActDetailV2Fixture} nod={nod} lead={null} fisa={null} />,
+    )
+    await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull())
+    const target = container.querySelector(`[id="tldf-${nod}"]`) as HTMLElement
+    expect(target.parentElement?.closest('[data-kind="nota"]')).not.toBeNull()
+    await waitFor(() => expect(target).toHaveClass('bg-foreground/10!'))
+  })
+
+  it('opens a folded note of the Portal that holds a deep-linked block', async () => {
+    // The fixture's notes are short; the outer one is made long enough to fold (its span alone decides it).
+    type Block = { id: string; span: [number, number]; children?: Block[] }
+    const tldf = structuredClone(rows[0]?.tldf) as { blocks: Block[] }
+    const lengthen = (blocks: Block[]) => {
+      for (const block of blocks) {
+        if (block.id === '0.1.1.12.3.1') block.span = [block.span[0], block.span[0] + 1200]
+        lengthen(block.children ?? [])
+      }
+    }
+    lengthen(tldf.blocks)
+    vi.mocked(fetchLegalRender).mockImplementationOnce(async (documentId: string) => ({
+      ...envelopeFor(documentId),
+      tldf: { ...tldf, document_id: documentId },
+    }) as unknown as LegalRenderData)
+    const nod = '0.1.1.12.3.1.2.1'
+    // The note must be open WHEN the target is brought into view: its state is read at the moment of the call.
+    const foldAtScroll: (string | null)[] = []
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function scrollIntoView(this: Element) {
+      if (this.id === `tldf-${nod}`) foldAtScroll.push(this.closest('[data-note-fold]')?.getAttribute('data-note-fold') ?? null)
+    }
+    try {
+      const { container } = render(
+        <ActReadingLayout act={legalActDetailV2Fixture} nod={nod} lead={null} fisa={null} />,
+      )
+      await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull())
+      const target = container.querySelector(`[id="tldf-${nod}"]`) as HTMLElement
+      const holder = target.closest('[data-note-fold]')
+      expect(holder).not.toBeNull()
+      // folded until the jump, open once the deep link has landed
+      await waitFor(() => expect(holder).toHaveAttribute('data-note-fold', 'open'))
+      await waitFor(() => expect(foldAtScroll.length).toBeGreaterThan(0))
+      expect(foldAtScroll.every((state) => state === 'open')).toBe(true)
+      // the mark keeps the block's text at full contrast on its tint
+      expect(target).toHaveClass('bg-foreground/10!', 'text-foreground!')
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('keeps the text in place, and a note the reader opened, when the same version comes back in a new generation', async () => {
+    const queryClient = createTestQueryClient()
+    const { container } = renderShared(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />, { queryClient })
+    await waitFor(() => expect(container.querySelector('#reader-content')).not.toBeNull())
+    const before = container.querySelector('#reader-content')
+    const calls = vi.mocked(fetchLegalRender).mock.calls.length
+    vi.mocked(fetchLegalRender).mockImplementationOnce(async (documentId: string) => {
+      const data = envelopeFor(documentId) as unknown as { tldf: { generation: Record<string, unknown> } }
+      return { ...data, tldf: { ...data.tldf, generation: { ...data.tldf.generation, run_id: 'a-later-generation' } } } as unknown as LegalRenderData
+    })
+    await queryClient.invalidateQueries()
+    await waitFor(() => expect(vi.mocked(fetchLegalRender).mock.calls.length).toBeGreaterThan(calls))
+    // Settled on the new generation: the same element still holds the text (a remount would have replaced it).
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(container.querySelector('#reader-content')).toBe(before)
   })
 
   it('shows a static label, not a dropdown, when one version is readable', async () => {
@@ -312,6 +494,19 @@ describe('ActReadingLayout on legal_v2', () => {
       expect(navigateMock).toHaveBeenLastCalledWith(expect.objectContaining({ search: {} }))
     })
 
+    it("dates the consolidation it shows by the Portal's own date, not the list's ordering date", async () => {
+      const act = {
+        ...legalActDetailV2LatestNotAvailableFixture,
+        documents: legalActDetailV2LatestNotAvailableFixture.documents.map((doc) =>
+          doc.documentId === 'f900012' ? { ...doc, portalLabelDate: '2023-11-30' } : doc,
+        ),
+      }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      const notice = (await screen.findByText(/Cea mai recentă versiune a actului/)).closest('[role="note"]')
+      expect(notice).toHaveTextContent(/Afișăm versiunea din .*2023.* \(formă consolidată neoficială\)/)
+      expect(notice).not.toHaveTextContent(/Afișăm versiunea din .*2024/)
+    })
+
     it("names the latest form the server picks (latestDocumentId), not the client's guess", async () => {
       // A same-day tie: the server's rule picked the consolidation f900013
       // (not loaded), not the republication the newest-first guess would name.
@@ -344,6 +539,8 @@ describe('ActReadingLayout on legal_v2', () => {
     ])('%s: keeps the no-text state and requests no text', async (_case, act) => {
       render(<ActReadingLayout act={act} lead={null} fisa={null} />)
       expect(await screen.findByText('Fără expresie canonică')).toBeInTheDocument()
+      // an act with no text is not said to be a text without contents
+      expect(screen.queryByText('Acest text nu are un cuprins.')).not.toBeInTheDocument()
       expect(requestedIds()).toEqual([])
       expect(screen.queryByText(/Afișăm versiunea/)).not.toBeInTheDocument()
     })
@@ -360,6 +557,8 @@ describe('ActReadingLayout on legal_v2', () => {
         ),
       ).toBeInTheDocument()
       expect(screen.queryByText('Fără expresie canonică')).not.toBeInTheDocument()
+      // undated: the bar names the version alone („Forma din" needs a date)
+      expect(container.textContent).not.toMatch(/Forma din/)
     })
 
     it('with several readable undated versions, shows the original first and lists the others', async () => {

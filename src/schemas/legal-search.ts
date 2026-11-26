@@ -117,7 +117,11 @@ export const legalReaderSearchSchema = lazySchema(() =>
         .transform((value) => String(value))
         .optional()
         .catch(UNREADABLE_DOC),
-      nod: z.string().min(1).optional(),
+      // A path is text. The router has already read a bare `?nod=1.10` as the number 1.1: its spelling is lost,
+      // and writing the number back as text could name another provision (`1.1`). Such a `nod` is
+      // dropped, so the page opens on the text without a jump instead of failing (it answered 500). The app's own
+      // links quote a path that looks like a number (`stringifyAppSearch`), so they keep their jump. LEGAL-001.
+      nod: z.string().min(1).optional().catch(undefined),
     })
     // A `nod` is a path in the `doc` it came with: when that `doc` is present but unreadable (`?doc=true&nod=r10`),
     // the same path in the default text may be another provision, so both go. A `nod` alone stays a link into the

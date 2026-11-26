@@ -4,8 +4,8 @@ import { t } from '@lingui/core/macro'
 import { Plural, Trans } from '@lingui/react/macro'
 import type { LegalTimelineEntry } from '@/schemas/legal'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
-import { legislationLinkClassName } from '../lib/legislation-theme'
 import { ActAccordionItem } from './act-accordion'
+import { ACT_RECORD_LINE, ACT_RECORD_MORE } from './reader/act-page-grid'
 
 type Props = {
   /** Null when the history is not available for this act (bridged on legal_v2). */
@@ -49,7 +49,7 @@ export function ActTimelineBand({ timeline, complete = true, available = true }:
         title={t`Ce s-a întâmplat cu acest act`}
         description={t`Modificări, completări, abrogări și alte evenimente de statut.`}
       >
-        <p className="px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p className="text-muted-foreground">
           <Trans>Istoricul nu este disponibil pentru acest act.</Trans>
         </p>
       </ActAccordionItem>
@@ -87,54 +87,48 @@ export function ActTimelineBand({ timeline, complete = true, available = true }:
       }
     >
       {complete === true ? null : complete === null ? (
-        <p
-          role="status"
-          className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6"
-        >
+        <p role="status" className="pb-2 text-muted-foreground">
           <Trans>Nu știm dacă lista este completă.</Trans>
         </p>
       ) : (
-        <p
-          role="status"
-          className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6"
-        >
+        <p role="status" className="pb-2 text-muted-foreground">
           <Trans>
             Lista nu este completă: actul are mai multe evenimente decât s-au putut
             încărca.
           </Trans>
         </p>
       )}
-      <ol id="act-timeline-entries" className="flex flex-col">
+      <ol id="act-timeline-entries" className="divide-y">
         {visible.map((entry, index) => (
           <li
             key={`${entry.label}-${entry.effectiveDate}-${index}`}
-            className="flex flex-col gap-1 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-5 sm:px-6"
+            className={ACT_RECORD_LINE}
           >
-            <span className="shrink-0 text-sm tabular-nums text-[var(--pnrr-muted)] sm:w-32">
+            <span className="tabular-nums text-muted-foreground">
               {entry.effectiveDate
                 ? formatLegalDate(entry.effectiveDate, i18n.locale)
                 : t`fără dată`}
             </span>
-            <span className="min-w-0 flex-1 text-sm font-medium text-[var(--pnrr-fg)]">
-              {entry.label}
+            <span className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3">
+              <span className="min-w-0">{entry.label}</span>
+              {entry.eventSource ? (
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {entry.eventSource === 'monitorul-oficial'
+                    ? t`Monitorul Oficial`
+                    : t`Portal`}
+                </span>
+              ) : null}
             </span>
-            {entry.eventSource ? (
-              <span className="shrink-0 text-xs text-[var(--pnrr-muted)]">
-                {entry.eventSource === 'monitorul-oficial'
-                  ? t`Monitorul Oficial`
-                  : t`Portal`}
-              </span>
-            ) : null}
           </li>
         ))}
       </ol>
 
       {ordered.length > PAGE ? (
-        <div className="border-t border-[var(--pnrr-subtle)] px-5 py-3 sm:px-6">
+        <div>
           <button
             type="button"
             onClick={() => setExpanded((value) => !value)}
-            className={legislationLinkClassName}
+            className={ACT_RECORD_MORE}
             aria-expanded={expanded}
             aria-controls="act-timeline-entries"
           >

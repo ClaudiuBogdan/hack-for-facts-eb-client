@@ -1,15 +1,20 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@/test/test-utils'
+import { act, fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { LegalActDetail } from '@/schemas/legal'
 import {
   legalActDetailById,
   legalActDetailFixture,
   legalActDetailRichFixture,
+  legalActDetailV2Fixture,
 } from '../mocks/fixtures/legal-act-detail'
 import { LegalActPage } from './legal-act-page'
 
-vi.mock('@tanstack/react-router', () => ({
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
+  ...(await importOriginal<typeof import('@tanstack/react-router')>()),
+  // The stand-in reads the state the way the app asks for it (`select`), from an address of the act's page.
+  useRouterState: ({ select }: { readonly select: (state: unknown) => unknown }) => select({ location: { pathname: '/legislation/acts/1', search: {} } }),
   Link: ({
     children,
     to,
@@ -103,21 +108,104 @@ describe('LegalActPage', () => {
     expect(relevance).toHaveTextContent('cetățeni · firme')
   })
 
-  it('keeps the staleness warning on the summary card itself', () => {
+  it('shows the staleness warning once, in the box about the text shown', () => {
     mockAct(legalActDetailRichFixture)
     render(<LegalActPage actId="66150" />)
 
-    const warning = screen.getByText(
+    // The warning qualifies the text shown, so with a version shown it lives
+    // in the box about that text (owner, 26 November 2026, the act page's
+    // redesign: the right-hand box from 88rem, the reading column below) —
+    // with its headline always visible, and once at any width.
+    const warnings = screen.getAllByText(
       /295 de referințe de modificare sau completare înregistrate pentru act/,
     )
-    // The warning qualifies the summary, so it lives ON the summary card as
-    // a footer row with its headline always visible (user decision
-    // 2026-08-11) — one card, not a separate banner the eye can file away.
-    const card = screen
-      .getByText('Pe scurt')
-      .closest('section')
-    expect(card).not.toBeNull()
-    expect(card).toContainElement(warning)
+    expect(warnings).toHaveLength(1)
+    const about = screen.getByRole('complementary', { name: 'Despre textul afișat' })
+    expect(about).toContainElement(warnings[0] ?? null)
+    expect(screen.getByText('Pe scurt').closest('section')).not.toContainElement(warnings[0] ?? null)
+  })
+
+  it('keeps the warnings once on an act with no summary', () => {
+    mockAct({ ...legalActDetailRichFixture, summary: null })
+    render(<LegalActPage actId="66150" />)
+
+    expect(screen.queryByText('Pe scurt')).not.toBeInTheDocument()
+    const warnings = screen.getAllByText(/295 de referințe de modificare sau completare/)
+    expect(warnings).toHaveLength(1)
+    expect(screen.getByRole('complementary', { name: 'Despre textul afișat' })).toContainElement(warnings[0] ?? null)
+  })
+
+  it('puts the warnings on the summary when no version of the text is shown', () => {
+    // No readable version: no box about the text shown, so the summary wears them.
+    mockAct({
+      ...legalActDetailRichFixture,
+      canonical: null,
+      documents: [],
+      latestAvailableDocumentId: null,
+    })
+    render(<LegalActPage actId="66150" />)
+
+    expect(screen.queryByRole('complementary', { name: 'Despre textul afișat' })).not.toBeInTheDocument()
+    const warnings = screen.getAllByText(/295 de referințe de modificare sau completare/)
+    expect(warnings).toHaveLength(1)
+    expect(screen.getByText('Pe scurt').closest('section')).toContainElement(warnings[0] ?? null)
+  })
+
+  it('offers the ways back to the start only once the head has left the screen, and lands on the title', () => {
+    const observers: { readonly callback: IntersectionObserverCallback; readonly targets: Element[] }[] = []
+    class RecordingObserver {
+      readonly root = null
+      readonly rootMargin = ''
+      readonly scrollMargin = ''
+      readonly thresholds: readonly number[] = []
+      private readonly record: { readonly callback: IntersectionObserverCallback; readonly targets: Element[] }
+      constructor(callback: IntersectionObserverCallback) {
+        this.record = { callback, targets: [] }
+        observers.push(this.record)
+      }
+      observe(target: Element) {
+        this.record.targets.push(target)
+      }
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return []
+      }
+    }
+    const original = window.IntersectionObserver
+    vi.stubGlobal('IntersectionObserver', RecordingObserver)
+    window.IntersectionObserver = RecordingObserver as unknown as typeof IntersectionObserver
+    try {
+      mockAct(legalActDetailRichFixture)
+      render(<LegalActPage actId="66150" />)
+      const back = () => screen.queryAllByRole('button', { name: 'Înapoi la începutul actului' })
+      expect(back()).toHaveLength(0)
+
+      // Every observed element reports itself out of view, above the window: the head has been scrolled past.
+      const scrolledPast = (top: number) =>
+        act(() => {
+          for (const { callback, targets } of observers) {
+            callback(
+              targets.map((target) => ({ target, isIntersecting: false, boundingClientRect: { top } }) as unknown as IntersectionObserverEntry),
+              {} as IntersectionObserver,
+            )
+          }
+        })
+      // Below the window (a head taller than a phone's screen) is not away.
+      scrolledPast(900)
+      expect(back()).toHaveLength(0)
+      scrolledPast(-400)
+      // The bar's, and the floating one (beside the text from 72rem, in the corner below).
+      expect(back()).toHaveLength(3)
+
+      vi.mocked(window.scrollTo).mockClear()
+      fireEvent.click(back()[0] as HTMLElement)
+      expect(window.scrollTo).toHaveBeenCalledWith({ top: 0 })
+      expect(screen.getByRole('heading', { level: 1 })).toHaveFocus()
+    } finally {
+      vi.unstubAllGlobals()
+      window.IntersectionObserver = original
+    }
   })
 
   it('surfaces contradicted abrogations', () => {
@@ -192,6 +280,90 @@ describe('LegalActPage', () => {
     expect(
       screen.getByRole('button', { name: /Unde a fost publicat/ }),
     ).toHaveTextContent('1 publicare')
+  })
+
+  it('keeps the record’s nine rows in their order, as h3s under "Fișa actului", the publication and the versions open', () => {
+    mockAct(legalActDetailRichFixture)
+    render(<LegalActPage actId="66150" />)
+
+    const record = screen.getByRole('group', { name: 'Detalii despre acest act' })
+    const heads = Array.from(record.querySelectorAll('section > h3 > button'))
+    expect(heads.map((head) => head.closest('h3')?.id)).toEqual([
+      'act-relevance-heading',
+      'act-key-dates-heading',
+      'act-publication-heading',
+      'act-timeline-heading',
+      'act-versions-heading',
+      'act-references-out-heading',
+      'act-references-in-heading',
+      'act-anchors-heading',
+      'act-provenance-heading',
+    ])
+    expect(heads.map((head) => head.getAttribute('aria-expanded'))).toEqual([
+      'false',
+      'false',
+      'true',
+      'false',
+      'true',
+      'false',
+      'false',
+      'false',
+      'false',
+    ])
+    expect(screen.getByRole('heading', { level: 2, name: 'Fișa actului' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: /Unde a fost publicat/ })).toBeInTheDocument()
+    expect(record.innerHTML).not.toMatch(/pnrr/)
+  })
+
+  it('starts the record afresh on another act: a row opened on one is not open on the next', () => {
+    mockAct(legalActDetailRichFixture)
+    const { rerender } = render(<LegalActPage actId="66150" />)
+    const timeline = () => screen.getByRole('button', { name: /Ce s-a întâmplat cu acest act/ })
+    fireEvent.click(timeline())
+    expect(timeline()).toHaveAttribute('aria-expanded', 'true')
+    // the same act read again (a refetch) keeps what the reader opened
+    mockAct({ ...legalActDetailRichFixture })
+    rerender(<LegalActPage actId="66150" />)
+    expect(timeline()).toHaveAttribute('aria-expanded', 'true')
+    // another act, reached by a link on the same route
+    mockAct({ ...legalActDetailRichFixture, actId: '900001' })
+    rerender(<LegalActPage actId="900001" />)
+    expect(timeline()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('keeps the line of the version the address asks for in sight in the record, and only then', () => {
+    const base = legalActDetailV2Fixture.documents[0]
+    const canonical = legalActDetailV2Fixture.canonical
+    if (base === undefined || canonical === null) throw new Error('the legal_v2 fixture lost its default')
+    // nine consolidations, one a year from 2001; the newest is the default
+    const act = {
+      ...legalActDetailV2Fixture,
+      canonical: { ...canonical, documentId: 'f9' },
+      documents: Array.from({ length: 9 }, (_, index) => ({
+        ...base,
+        documentId: `f${String(index + 1)}`,
+        versionKind: 'consolidare',
+        versionDate: `${String(2001 + index)}-03-01`,
+        portalLabelDate: `${String(2001 + index)}-03-01`,
+        isCanonical: index === 8,
+      })),
+    }
+    mockAct(act)
+    const lines = () => within(screen.getByRole('region', { name: /Versiunile textului/ })).getAllByRole('listitem')
+    const { unmount } = render(<LegalActPage actId={act.actId} docOverride="f2" />)
+    expect(lines()).toHaveLength(6)
+    expect(lines()[5]?.firstElementChild).toHaveTextContent('2002')
+    unmount()
+    render(<LegalActPage actId={act.actId} />)
+    expect(lines()).toHaveLength(5)
+  })
+
+  it('lets a line of the record break anywhere: an identifier with no space cannot run past a phone', () => {
+    mockAct(legalActDetailRichFixture)
+    render(<LegalActPage actId="66150" />)
+    const lines = screen.getByRole('region', { name: /Versiunile textului/ }).querySelectorAll('li')
+    expect(lines.length).toBeGreaterThan(0)
+    for (const line of lines) expect(line).toHaveClass('[overflow-wrap:anywhere]')
   })
 
   it('renders a not-found page for an unknown act', () => {

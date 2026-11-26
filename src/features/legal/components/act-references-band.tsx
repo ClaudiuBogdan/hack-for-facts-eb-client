@@ -7,6 +7,7 @@ import { formatLegalNumber } from '../lib/legal-format'
 import { legalRelationLabel } from '../lib/legal-vocabulary'
 import { LegalStatusBadge } from './legal-status-badge'
 import { ActAccordionItem } from './act-accordion'
+import { ACT_LINK, ACT_RECORD_LINE } from './reader/act-page-grid'
 
 type Props = {
   /** Null when the links are not available for this act (bridged on legal_v2). */
@@ -49,7 +50,7 @@ export function ActReferencesBand({ group, direction, available = true }: Props)
         id={`act-references-${direction}-heading`}
         title={isOut ? t`Ce face acest act` : t`Cine îl citează`}
       >
-        <p className="px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p className="text-muted-foreground">
           <Trans>Legăturile nu sunt disponibile pentru acest act.</Trans>
         </p>
       </ActAccordionItem>
@@ -99,7 +100,7 @@ export function ActReferencesBand({ group, direction, available = true }: Props)
         </Trans>
       }
     >
-      <ul className="flex flex-col">
+      <ul className="divide-y">
         {group.items.map((reference, index) => (
           <ReferenceRow
             key={`${reference.relation}-${reference.act?.actId ?? reference.targetRaw ?? index}`}
@@ -109,7 +110,7 @@ export function ActReferencesBand({ group, direction, available = true }: Props)
       </ul>
 
       {group.hasMore ? (
-        <p className="border-t border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
           {group.totalCount !== null ? (
             <Trans>
               Se afișează {formatLegalNumber(shownCount, i18n.locale)} din{' '}
@@ -132,28 +133,28 @@ function ReferenceRow({ reference }: { readonly reference: LegalReference }) {
   const isFirm = reference.resolution === 'unique' && reference.act !== null
 
   return (
-    <li className="flex flex-col gap-1.5 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:px-6">
-      <span className="text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
+    <li className={ACT_RECORD_LINE}>
+      <span className="text-muted-foreground">
         {legalRelationLabel(reference.relation)}
       </span>
 
       {isFirm && reference.act ? (
-        <span className="flex flex-wrap items-center gap-2">
+        <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
           <Link
             to="/legislation/acts/$actId"
             params={{ actId: reference.act.actId }}
-            className="text-base font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 hover:text-[var(--pnrr-muted)]"
+            className={ACT_LINK}
           >
             {reference.act.displayCitation}
           </Link>
           <LegalStatusBadge status={reference.act.status} />
         </span>
       ) : (
-        <span className="flex flex-col gap-0.5">
-          <span className="text-base text-[var(--pnrr-fg)]">
+        <span className="flex min-w-0 flex-col gap-0.5">
+          <span>
             {reference.targetRaw ?? <Trans>trimitere nerezolvată</Trans>}
           </span>
-          <span className="text-xs text-[var(--pnrr-muted)]">
+          <span className="text-xs text-muted-foreground">
             {reference.resolution === 'external' ? (
               <Trans>act din afara corpusului — fără pagină la noi</Trans>
             ) : (
