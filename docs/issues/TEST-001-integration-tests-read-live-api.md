@@ -122,6 +122,11 @@ forwards nothing; `SSR_API_MODE=record` saves. Every read prints `[ssr-api] <fix
 did not recur in two record runs or two full runs. Its variables weren't logged then (the log line came after); if it recurs, the
 check now fails that test or the next one, and the log names the variables, to record it.
 
+2026-11-26, local only: in a full run on e15dcd069 (CI env, one worker), `chart-builder-comprehensive.spec.ts` :81 („1.2 Config dialog
+opens automatically") and :581 („10.3 Tablet viewport works correctly") each timed out once at 20 s waiting for the config-ready
+marker (:66), then passed on retry in 2 s. CI on the same code (45776216309, 9189c1252) retried neither, nor did 45768571410. If they
+retry in CI, they become their own TEST issue (a config-ready marker timeout under load), with both runs' evidence.
+
 **Ownership:** ssr-api (server reads) is client-dev-polish's; the API guard (browser reads) is client-entity-analytics'.
 
 ## Closure criterion
