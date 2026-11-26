@@ -205,7 +205,10 @@ describe('ActReadingLayout on legal_v2', () => {
   })
 
   it('takes no ?nod= into the default text when the lookup refuses the page id (astra-client-11)', async () => {
-    const nod = (rows[0]?.tldf.blocks as { id: string }[] | undefined)?.[3]?.id ?? ''
+    // A block of the body: the masthead's publication line (block 3) hides behind the head's „Publicat în", which
+    // states the Portal's own line on an act matched to no issue (owner, 26 November 2026).
+    const blocks = (rows[0]?.tldf.blocks as { id: string }[] | undefined) ?? []
+    const nod = blocks[blocks.length - 1]?.id ?? ''
     const scrollIntoView = vi.fn()
     const original = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = scrollIntoView

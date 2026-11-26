@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust'
 import { cn } from '@/lib/utils'
 import type { LegalActDetail } from '@/schemas/legal'
-import { originalPortalUrl, uniqueGazettePublication, webAddress } from '../lib/act-facts'
+import { headPublication, originalPortalUrl, webAddress } from '../lib/act-facts'
 import { formatLegalDate } from '../lib/legal-format'
 import { isLegalMockEnabled } from '../lib/mock-mode'
 import {
@@ -85,7 +85,8 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
   const isMock = isLegalMockEnabled()
 
   // The header owns the publication fact now (user decision 2026-08-11: the
-  // text's masthead moved up here). Unique matches only — the reader hides
+  // text's masthead moved up here). Sure matches only (or the Portal's own
+  // line, see below) — the reader hides
   // the text's own "Publicat în" line only when its issue number AND year
   // match what this line shows, so the fact is stated exactly once, never
   // zero times. The citation body ("nr. 390 (Partea I) din 23 mai 2016") is
@@ -93,9 +94,11 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
   // its connectors are part of the identifier, not translatable prose. The
   // issue number is an identifier too: String(), never the locale group
   // separator.
-  const publication = uniqueGazettePublication(act)
+  const publication = headPublication(act)
+  // The publication stated is a sure gazette match or, for an act matched to no issue, the Portal's own masthead line
+  // when it names the day the original came out (owner, 26 November 2026): `headPublication`, shared with the reader.
   const moCitation =
-    publication !== null && publication.issueNumber !== null
+    publication !== null
       ? [
           `nr. ${String(publication.issueNumber)}`,
           publication.partCode !== null
@@ -112,7 +115,7 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
   // Where the publication can be read at its sources (owner, 26 November 2026): the Portal's page of the act as
   // published, and the gazette issue's page on monitoruloficial.ro. Only under the publication the head states (the
   // one sure match), and only a link that is served; the Portal's page only when it is the text that issue printed.
-  const portalUrl = publication === null ? null : originalPortalUrl(act, publication)
+  const portalUrl = publication === null ? null : originalPortalUrl(act, publication.issueDate)
   const gazetteUrl = webAddress(publication?.pdfUrl ?? null)
   const sources = [
     portalUrl !== null ? { href: portalUrl, label: t`Portalul legislativ` } : null,

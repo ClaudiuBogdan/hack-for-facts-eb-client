@@ -21,6 +21,47 @@ export function uniqueGazettePublication(
   )
 }
 
+/** The publication the head states, and the reader's masthead hides behind: a sure gazette match, or the Portal's own line. */
+export type HeadPublication = {
+  readonly issueNumber: number
+  readonly partCode: string | null
+  readonly issueDate: string | null
+  /** The issue's page on monitoruloficial.ro: only a matched issue has one, and it is never built. */
+  readonly pdfUrl: string | null
+}
+
+const RO_MONTHS = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie']
+
+/** „MONITORUL OFICIAL nr. 1020 din 21 decembrie 2006" read as its issue and day; null for any other writing. */
+export function readMastheadPublication(raw: string | null): { readonly issueNumber: number; readonly issueDate: string } | null {
+  const match = /^\s*MONITORUL OFICIAL\s+nr\.\s*(\d{1,3}(?:\.\d{3})+|\d+)\s+din\s+(\d{1,2})\s+(\p{L}+)\s+(\d{4})\s*$/iu.exec(raw ?? '')
+  if (match === null) return null
+  const [, number = '', day = '', month = '', year = ''] = match
+  const monthIndex = RO_MONTHS.indexOf(month.toLowerCase())
+  if (monthIndex < 0 || Number(day) < 1 || Number(day) > 31) return null
+  return { issueNumber: Number(number.replace(/\./gu, '')), issueDate: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${day.padStart(2, '0')}` }
+}
+
+/**
+ * What the head states under „Publicat în": the one sure gazette match; else, when the act is matched to no issue at
+ * all, the Portal's own masthead line of the default text (owner, 26 November 2026), only when it names the day the
+ * original form came out, so a republication's line never stands in for the first publication. An act with matches
+ * that are only probable states none: the record's band says how probable.
+ */
+export function headPublication(act: LegalActDetail): HeadPublication | null {
+  const unique = uniqueGazettePublication(act)
+  if (unique !== null && unique.issueNumber !== null) {
+    return { issueNumber: unique.issueNumber, partCode: unique.partCode, issueDate: unique.issueDate, pdfUrl: unique.pdfUrl }
+  }
+  if (act.gazettePublications.length > 0) return null
+  const masthead = readMastheadPublication(act.canonical?.publicationRaw ?? null)
+  if (masthead === null) return null
+  const original = act.documents.some(
+    (doc) => doc.versionKind === 'original' && !isConsolidationVersion(doc) && (doc.firstPublicationDate ?? doc.versionDate) === masthead.issueDate,
+  )
+  return original ? { issueNumber: masthead.issueNumber, partCode: null, issueDate: masthead.issueDate, pdfUrl: null } : null
+}
+
 /**
  * The Portal's page of the act as the cited publication printed it: the original form's own page (on legal_v2 each
  * form has its own, `DetaliiDocumentAfis/<id>`), only when that form came out the day the cited issue did, and only
@@ -29,8 +70,7 @@ export function uniqueGazettePublication(
  * `officialTextUrl` is the canonical document's page: it stands in only while the canonical is that original. Null
  * when there is none, when it cannot be tied to the issue, or when it is no web address (Codex review, round 1).
  */
-export function originalPortalUrl(act: LegalActDetail, publication: LegalActDetail['gazettePublications'][number]): string | null {
-  const issued = publication.issueDate
+export function originalPortalUrl(act: LegalActDetail, issued: string | null): string | null {
   if (issued === null) return null
   const publishedThatDay = (doc: Pick<LegalActDocumentVersion, 'versionKind' | 'caveat' | 'portalLabelRaw' | 'portalLabelDate' | 'firstPublicationDate' | 'versionDate'>) =>
     doc.versionKind === 'original' && !isConsolidationVersion(doc) && (doc.firstPublicationDate ?? doc.versionDate) === issued

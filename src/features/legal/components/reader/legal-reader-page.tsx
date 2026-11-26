@@ -60,7 +60,7 @@ import {
   LegalRenderFailureError,
 } from '../../lib/legal-render-error'
 import type { LegalRenderFailure } from '../../lib/legal-render-error'
-import { uniqueGazettePublication } from '../../lib/act-facts'
+import { headPublication } from '../../lib/act-facts'
 import { CONTENTS_FOLD_FROM, isArticleEntry } from '../../lib/legal-outline'
 import {
   defaultReadingOf,
@@ -420,7 +420,7 @@ export function ActReadingLayout({
     if (override !== undefined) {
       return { den: null, issuerLabel: null, issueNumber: null, issueYear: null }
     }
-    const publication = uniqueGazettePublication(act)
+    const publication = headPublication(act)
     const issueDate = publication?.issueDate ?? null
     return {
       den: act.canonical?.den ?? null,

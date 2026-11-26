@@ -125,6 +125,33 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
       expect(links(render(<ActDetailHeader act={{ ...fallbackBait, dataSource: 'legal' }} />).container)[0]).toEqual(['Portalul legislativ', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900099'])
     })
 
+    it('with no issue matched, states the Portal’s own masthead line and links only the Portal page (owner, 26 November 2026)', () => {
+      // the fixture's act is matched to no issue; its text's masthead names nr. 67 of 3 April 1996, the original's day
+      expect(v2.gazettePublications).toEqual([])
+      expect(v2.canonical?.publicationRaw).toBe('MONITORUL OFICIAL nr. 67 din 3 aprilie 1996')
+      const { container } = render(<ActDetailHeader act={v2} />)
+      // the dates in the reader's language (the tests run in English); no issue page, as none was matched
+      expect(fact('Publicat în')).toBe('Monitorul Oficial nr. 67 din April 3, 1996')
+      expect(links(container)).toEqual([['Portalul legislativ', original.sourceUrl]])
+    })
+
+    it('states no masthead line that is not the first publication, or not in the Portal’s plain writing', () => {
+      const canonical = v2.canonical
+      if (canonical === null) throw new Error('the legal_v2 fixture lost its canonical')
+      // a republication's line: its day is no original's
+      const republished = { ...v2, canonical: { ...canonical, publicationRaw: 'MONITORUL OFICIAL nr. 345 din 2 mai 2024' } }
+      render(<ActDetailHeader act={republished} />)
+      expect(screen.queryByText('Publicat în', { selector: 'dt' })).not.toBeInTheDocument()
+      // a line in another writing is not read
+      const odd = { ...v2, canonical: { ...canonical, publicationRaw: 'M.Of. 67/1996' } }
+      const second = render(<ActDetailHeader act={odd} />)
+      expect(second.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
+      // matches that are only probable: the record's band says how probable, the head states none
+      const probable = { ...v2, gazettePublications: [{ ...issue, resolution: 'cluster' }] }
+      const third = render(<ActDetailHeader act={probable} />)
+      expect(third.container.querySelector('dl')?.textContent ?? '').not.toContain('Publicat în')
+    })
+
     it('links no address that is not a whole web address', () => {
       const { container } = render(<ActDetailHeader act={withIssue({}, { pdfUrl: 'https://' })} />)
       expect(links(container)).toEqual([['Portalul legislativ', original.sourceUrl]])
