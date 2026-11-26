@@ -11,8 +11,9 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * `act.blocks.test.tsx` holds it to the same rule (the page's text is the fold of the blocks, character for character).
  *
  * Owner, 26 November 2026, round 1: the text stays in a serif (no switch to the site's sans); the contents keeps the
- * grid of article numbers with its jump field, with „Art." at the top left of each grid. Open: the bar on changed
- * provisions (`?bara=fara`, `?bara=legenda` show the other two treatments).
+ * grid of article numbers with its jump field, with „Art." at the top left of each grid. No bar on changed provisions:
+ * the change notes say it (`?bara=linie` and `?bara=legenda` show the two treatments not chosen). Next: more changes
+ * on the prototype before any promotion.
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',

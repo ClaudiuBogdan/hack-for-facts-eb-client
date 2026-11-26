@@ -22,7 +22,8 @@ import type { TldfBlock, TldfMark, TldfRun } from '@/features/legal/lib/tldf/typ
  * - a heading ladder in sentence case: the rank („Capitolul I") a quiet label, the name the heading;
  * - paragraph and letter markers hang in a gutter, so numbers line up in a column and the text keeps one edge;
  * - a change note that a consolidated form adds after a provision is drawn as a note, not as the law's voice;
- * - a provision changed since the base form carries a bar in the gutter; a repealed one says so in words.
+ * - a repealed provision says so in words; a provision changed since the base form carries no mark of its own
+ *   (owner, 26 November 2026: the change notes under it say it; the gutter bar was on most lines of a real act).
  */
 
 /** The site's sans (Inter): Tailwind's `font-sans` is not mapped to it, so the token is named directly. */
@@ -317,13 +318,13 @@ export function ActBlocks({
   blocks,
   marks,
   containsNonBmp,
-  changedMark = true,
+  changedMark = false,
   onCopyLink,
 }: {
   readonly blocks: readonly TldfBlock[]
   readonly marks: readonly TldfMark[]
   readonly containsNonBmp: boolean
-  /** False takes the gutter bar off the provisions changed since the base form (their change notes stay). */
+  /** True draws a bar in the gutter of the provisions changed since the base form. Off by the owner's decision: their change notes say it. */
   readonly changedMark?: boolean
   /** Given, each article carries a „copy link" control in the gutter. */
   readonly onCopyLink?: (block: TldfBlock) => void

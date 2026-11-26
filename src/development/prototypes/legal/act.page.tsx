@@ -57,8 +57,8 @@ export type ActPageModel = {
    */
   readonly onReach?: (path: string) => boolean
   /**
-   * How a provision changed since the act's base form is marked, for the owner to compare: a bar in the gutter, the
-   * bar with one line above the text that says what it means, or no mark (the change notes stay in all three).
+   * How a provision changed since the act's base form is marked. Owner, 26 November 2026: no mark, the change notes
+   * under the provisions say it. The bar in the gutter and the bar with a line that explains it were the other two.
    */
   readonly changedMark?: 'bar' | 'legend' | 'none'
   /** Made-up data: the page says so beside the status. */
@@ -663,7 +663,7 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, textState, afterText, changedMark = 'bar' } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, textState, afterText, changedMark = 'none' } = model
   const { i18n } = useLingui()
   const [sheet, setSheet] = useState(false)
   /** One short sentence in the bar, in the place's stead for a moment: a link was copied, or a place could not be reached. */

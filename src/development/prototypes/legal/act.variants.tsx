@@ -136,10 +136,14 @@ function mastheadFacts(act: LegalActDetail) {
 
 const SPECIMEN_SPLIT = splitMasthead(ACT_SPECIMEN.blocks, mastheadFacts(SPECIMEN_ACT))
 
-/** `?bara=fara` or `?bara=legenda` in the address: the two other ways to treat the changed-provision bar, to compare. */
+/**
+ * Owner, 26 November 2026: no bar on the provisions changed since the base form; their change notes say it. The two
+ * treatments that were not chosen stay to be seen: `?bara=linie` (the bar) and `?bara=legenda` (the bar and one
+ * line that explains it).
+ */
 function useChangedMark(): 'bar' | 'legend' | 'none' {
   const search: { readonly bara?: unknown } = useSearch({ strict: false })
-  return search.bara === 'fara' ? 'none' : search.bara === 'legenda' ? 'legend' : 'bar'
+  return search.bara === 'linie' ? 'bar' : search.bara === 'legenda' ? 'legend' : 'none'
 }
 
 export function ActSpecimenPage() {
