@@ -17,7 +17,7 @@ import type { TldfBlock, TldfMark, TldfRun } from '@/features/legal/lib/tldf/typ
  *
  * What the skin changes (owner, 26 November 2026: rethink the act page's design):
  * - the site's neutral tokens instead of the `--pnrr-*` set the page still sits on;
- * - the law's words in one reading face (serif by default, the site's sans as the other option), our apparatus
+ * - the law's words in a serif (owner, 26 November 2026: serif, no switch to the site's sans), our apparatus
  *   (notes on changes, tables, signatures, the publication plate) in the site's sans, a size down;
  * - a heading ladder in sentence case: the rank („Capitolul I") a quiet label, the name the heading;
  * - paragraph and letter markers hang in a gutter, so numbers line up in a column and the text keeps one edge;
@@ -28,13 +28,8 @@ import type { TldfBlock, TldfMark, TldfRun } from '@/features/legal/lib/tldf/typ
 /** The site's sans (Inter): Tailwind's `font-sans` is not mapped to it, so the token is named directly. */
 const UI = '[font-family:var(--font-family)]'
 
-export type ReadingFace = 'serif' | 'sans'
-
-/** No font file is added: the serif is the reader's own (Iowan on Apple, Charter, Sitka or Cambria on Windows, Noto Serif on Android and Linux). */
-const FACE: Readonly<Record<ReadingFace, string>> = {
-  serif: "[font-family:'Iowan_Old_Style',Charter,'Bitstream_Charter','Sitka_Text',Cambria,'Noto_Serif',Georgia,serif]",
-  sans: UI,
-}
+/** The law's own face. No font file is added: the serif is the reader's own (Iowan on Apple, Charter, Sitka or Cambria on Windows, Noto Serif on Android and Linux). */
+const SERIF = "[font-family:'Iowan_Old_Style',Charter,'Bitstream_Charter','Sitka_Text',Cambria,'Noto_Serif',Georgia,serif]"
 
 /** A heading's two runs in the site's sans: the rank (`ttl`) and the name (`den`). */
 const HEAD = '[&>[data-role=ttl]]:[font-family:var(--font-family)] [&>[data-role=den]]:[font-family:var(--font-family)] [&>[data-role=den]]:font-semibold [&>[data-role=den]]:tracking-tight'
@@ -322,13 +317,14 @@ export function ActBlocks({
   blocks,
   marks,
   containsNonBmp,
-  face = 'serif',
+  changedMark = true,
   onCopyLink,
 }: {
   readonly blocks: readonly TldfBlock[]
   readonly marks: readonly TldfMark[]
   readonly containsNonBmp: boolean
-  readonly face?: ReadingFace
+  /** False takes the gutter bar off the provisions changed since the base form (their change notes stay). */
+  readonly changedMark?: boolean
   /** Given, each article carries a „copy link" control in the gutter. */
   readonly onCopyLink?: (block: TldfBlock) => void
 }) {
@@ -336,7 +332,7 @@ export function ActBlocks({
   const intrinsicHeight = useMemo(() => Math.max(1200, Math.round(charCount(blocks) * 0.5)), [blocks])
   return (
     <div
-      className={cn('whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-foreground [content-visibility:auto] sm:text-lg sm:leading-[1.75] [&>*:first-child]:mt-0', FACE[face])}
+      className={cn('whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-foreground [content-visibility:auto] sm:text-lg sm:leading-[1.75] [&>*:first-child]:mt-0', SERIF, !changedMark && '[&_[data-changed]]:before:hidden')}
       style={{ containIntrinsicSize: `auto ${String(intrinsicHeight)}px` }}
     >
       {blocks.map((block) => (

@@ -16,7 +16,7 @@ import { domAnchorForPath } from '@/features/legal/lib/tldf/nod-resolve'
 import type { TldfBlock, TldfMark } from '@/features/legal/lib/tldf/types'
 import { cn } from '@/lib/utils'
 import type { LegalActDetail, LegalOutlineEntry, LegalReferenceGroup } from '@/schemas/legal'
-import { ActBlocks, type ReadingFace } from './act.blocks'
+import { ActBlocks } from './act.blocks'
 
 /**
  * The act page, rethought (owner, 26 November 2026: header, side panel, closing section and the page's elements).
@@ -27,7 +27,7 @@ import { ActBlocks, type ReadingFace } from './act.blocks'
  * 1. a head that names the act in the site's own type (no more the heavy 3rem title on the old token set): the
  *    status as a mark, the citation, what the act is about, and three facts in one line;
  * 2. a slim bar that stays at the top while reading: the contents button on a phone, the place in the act
- *    („Capitolul I › Secțiunea a 2-a › Articolul 3"), the form shown, and the reading face;
+ *    („Capitolul I › Secțiunea a 2-a › Articolul 3") and the form shown;
  * 3. the contents beside the text: headings as a short outline, and the articles as a grid of numbers under their
  *    heading (a law's articles are addresses, people look them up by number), with a field that jumps to one;
  * 4. after the text, the act's record as plain rows (publication, forms, changes, references, source) instead of
@@ -56,6 +56,11 @@ export type ActPageModel = {
    * being read; the page then goes there once the part arrives.
    */
   readonly onReach?: (path: string) => boolean
+  /**
+   * How a provision changed since the act's base form is marked, for the owner to compare: a bar in the gutter, the
+   * bar with one line above the text that says what it means, or no mark (the change notes stay in all three).
+   */
+  readonly changedMark?: 'bar' | 'legend' | 'none'
   /** Made-up data: the page says so beside the status. */
   readonly mock: boolean
   readonly onForm?: (documentId: string) => void
@@ -214,9 +219,16 @@ type ContentsRow = { readonly kind: 'heading'; readonly entry: LegalOutlineEntry
 /** The served outline as rows: a heading at its nesting level, then the run of articles under it as one grid. */
 function contentsRows(outline: readonly LegalOutlineEntry[]): readonly ContentsRow[] {
   const rows: ContentsRow[] = []
-  const open: number[] = []
+  // A heading stays open while the next entries are below its rank AND inside its span of the text: some outlines
+  // serve an annex in the middle of the articles (LEG-CEJT), and rank alone would nest the next title under it.
+  const open: { readonly depth: number; readonly end: number | null }[] = []
+  const inside = (parent: { readonly end: number | null }, entry: LegalOutlineEntry) => parent.end === null || entry.charStart === null || entry.charStart < parent.end
   let run: LegalOutlineEntry[] | null = null
   for (const entry of outline) {
+    while (open.length > 0 && !inside(open[open.length - 1] ?? { end: null }, entry)) {
+      open.pop()
+      run = null
+    }
     if (isArticle(entry)) {
       if (run === null) {
         run = []
@@ -226,9 +238,9 @@ function contentsRows(outline: readonly LegalOutlineEntry[]): readonly ContentsR
       continue
     }
     run = null
-    while (open.length > 0 && (open[open.length - 1] ?? 0) >= entry.depth) open.pop()
+    while (open.length > 0 && (open[open.length - 1]?.depth ?? 0) >= entry.depth) open.pop()
     rows.push({ kind: 'heading', entry, level: open.length })
-    open.push(entry.depth)
+    open.push({ depth: entry.depth, end: entry.charEnd })
   }
   return rows
 }
@@ -308,7 +320,11 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false }: Co
             </li>
           ) : (
             <li key={row.entries[0]?.path} style={{ paddingLeft: `${String(row.level * 0.75)}rem` }} className="pb-1.5">
-              <ol className="-mx-1 flex flex-wrap gap-0.5" aria-label={t`Articole`}>
+              <ol className="-mx-1 flex flex-wrap items-center gap-0.5" aria-label={t`Articole`}>
+                {/* Owner, 26 November 2026: say what the numbers are, at the grid's top left. The list's own name says it to a screen reader. */}
+                <li aria-hidden="true" className={cn('inline-flex items-center px-1.5 text-xs font-medium text-foreground', touch ? 'h-11' : 'h-8')}>
+                  <Trans>Art.</Trans>
+                </li>
                 {row.entries.map((entry) => (
                   <li key={entry.path}>
                     <a
@@ -379,7 +395,9 @@ function ancestorsOf(outline: readonly LegalOutlineEntry[], path: string | null)
   let depth = self.depth
   for (let cursor = index - 1; cursor >= 0 && depth > 1; cursor--) {
     const entry = outline[cursor]
-    if (entry !== undefined && entry.depth < depth) {
+    // Above in rank and, where the outline gives spans, around this place in the text: never by rank alone (LEG-CEJT).
+    const around = entry === undefined || entry.charEnd === null || self.charStart === null || self.charStart < entry.charEnd
+    if (entry !== undefined && entry.depth < depth && around) {
       chain.unshift(entry)
       depth = entry.depth
     }
@@ -399,27 +417,6 @@ function headingNames(blocks: readonly TldfBlock[], into: Map<string, string> = 
 }
 
 /* ── the reading bar ─────────────────────────────────────────────────────── */
-
-function FaceToggle({ face, onFace }: { readonly face: ReadingFace; readonly onFace: (face: ReadingFace) => void }) {
-  const option = (value: ReadingFace, label: string, className: string) => (
-    <button
-      type="button"
-      aria-pressed={face === value}
-      aria-label={label}
-      title={label}
-      onClick={() => onFace(value)}
-      className={cn('inline-flex h-9 w-10 items-center justify-center rounded-[5px] text-base leading-none', className, face === value ? 'bg-background text-foreground shadow-[0_0_0_1px_hsl(var(--border))]' : 'text-muted-foreground hover:text-foreground')}
-    >
-      Aa
-    </button>
-  )
-  return (
-    <div role="group" aria-label={t`Litera textului`} className="flex shrink-0 rounded-md bg-muted p-0.5">
-      {option('serif', t`Literă cu serife`, "[font-family:'Iowan_Old_Style',Charter,'Sitka_Text',Cambria,'Noto_Serif',Georgia,serif]")}
-      {option('sans', t`Literă fără serife`, '')}
-    </div>
-  )
-}
 
 const formName = (kind: string, date: string | null, locale: string): string => (date === null ? versionKindLabel(kind) : `${formatLegalDate(date, locale)}, ${versionKindLabel(kind)}`)
 
@@ -666,9 +663,8 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, textState, afterText } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, textState, afterText, changedMark = 'bar' } = model
   const { i18n } = useLingui()
-  const [face, setFace] = useState<ReadingFace>('serif')
   const [sheet, setSheet] = useState(false)
   /** One short sentence in the bar, in the place's stead for a moment: a link was copied, or a place could not be reached. */
   const [said, setSaid] = useState<string | null>(null)
@@ -798,7 +794,6 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                 <Trans>Forma din {formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</Trans>
               </p>
             ) : null}
-            <FaceToggle face={face} onFace={setFace} />
           </div>
         </div>
       </div>
@@ -825,9 +820,15 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           <Summary act={act} />
           <FormLine act={act} shown={shown} onForm={onForm} />
           {notices !== undefined ? <div className="space-y-4 pb-5">{notices}</div> : null}
+          {textState === undefined && changedMark === 'legend' && blocks.length > 0 ? (
+            <p className="flex items-center gap-2.5 pb-4 text-xs leading-5 text-muted-foreground">
+              <span aria-hidden="true" className="h-4 w-0.5 shrink-0 rounded-full bg-primary/60" />
+              <Trans>Linia din stânga textului marchează dispozițiile modificate față de forma de bază a actului.</Trans>
+            </p>
+          ) : null}
           {textState ?? (
             <article aria-label={t`Textul actului`} className="pt-2">
-              <ActBlocks blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} face={face} onCopyLink={copyLink} />
+              <ActBlocks blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} changedMark={changedMark !== 'none'} onCopyLink={copyLink} />
             </article>
           )}
           {afterText}

@@ -72,8 +72,8 @@ describe('the act text in the prototype skin', () => {
     expect(new Set(ACT_SPECIMEN.marks.map((mark) => mark.kind))).toEqual(new Set(['reference', 'legal_ref', 'italic', 'bold', 'underline', 'struck']))
   })
 
-  it.each(['serif', 'sans'] as const)('draws the specimen character for character (%s)', (face) => {
-    const { container } = render(<ActBlocks blocks={ACT_SPECIMEN.blocks} marks={ACT_SPECIMEN.marks} containsNonBmp={false} face={face} onCopyLink={() => {}} />)
+  it.each([true, false])('draws the specimen character for character (changed mark: %s)', (changedMark) => {
+    const { container } = render(<ActBlocks blocks={ACT_SPECIMEN.blocks} marks={ACT_SPECIMEN.marks} containsNonBmp={false} changedMark={changedMark} onCopyLink={() => {}} />)
     expect(container.textContent).toBe(foldTldfBlocks(ACT_SPECIMEN.blocks))
   })
 

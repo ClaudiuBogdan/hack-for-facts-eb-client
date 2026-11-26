@@ -136,8 +136,15 @@ function mastheadFacts(act: LegalActDetail) {
 
 const SPECIMEN_SPLIT = splitMasthead(ACT_SPECIMEN.blocks, mastheadFacts(SPECIMEN_ACT))
 
+/** `?bara=fara` or `?bara=legenda` in the address: the two other ways to treat the changed-provision bar, to compare. */
+function useChangedMark(): 'bar' | 'legend' | 'none' {
+  const search: { readonly bara?: unknown } = useSearch({ strict: false })
+  return search.bara === 'fara' ? 'none' : search.bara === 'legenda' ? 'legend' : 'bar'
+}
+
 export function ActSpecimenPage() {
   const [documentId, setDocumentId] = useState(SPECIMEN_SHOWN_DOCUMENT_ID)
+  const changedMark = useChangedMark()
   return (
     <ActPageView
       model={{
@@ -149,6 +156,7 @@ export function ActSpecimenPage() {
         containsNonBmp: false,
         outline: ACT_SPECIMEN.outline,
         mock: true,
+        changedMark,
         onForm: setDocumentId,
       }}
     >
@@ -240,6 +248,7 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
   const loadedParts = firstMissing === -1 ? partQueries.length : firstMissing
   const partBlocks = partQueries.slice(0, loadedParts).flatMap((query) => (query.data?.kind === 'chunk' ? query.data.tldf.blocks : []))
   const served = render.data?.kind === 'envelope' ? render.data.tldf.blocks : partBlocks
+  const changedMark = useChangedMark()
   const split = useMemo(() => splitMasthead(served, mastheadFacts(act)), [served, act])
   // A part compiled in another run than the manifest's is never joined to it: the text is read again whole.
   const recompiled = manifest !== null && partQueries.some((query) => query.data !== undefined && query.data.tldf.generation.run_id !== manifest.generation.run_id)
@@ -294,6 +303,7 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
           return true
         },
         mock: false,
+        changedMark,
         onForm,
         // The live page's own notices, unchanged and not yet restyled: what they say matters more here than how they look.
         notices: (
