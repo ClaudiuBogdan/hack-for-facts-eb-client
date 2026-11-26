@@ -45,8 +45,12 @@ Both parts are in `legislation-act-finder.tsx`:
    loader for the search; corrected after review astra-client-11). Without scripts the page stays on the loading
    rows. A bare `?q=true` is read as the word typed. Still open: a number loses its spelling on that load (`?q=1.10`
    becomes `1.1`). The router's codec reads it as JSON, and the server's canonical redirect (`router.beforeLoad` in
-   `@tanstack/router-core`) rewrites the address before any route runs, so only the shared codec
-   (`src/lib/router-search-codec.ts`) can keep it.
+   `@tanstack/router-core`) rewrites the address before any route's `beforeLoad` or schema runs. Two places could
+   keep it: the shared codec (`src/lib/router-search-codec.ts`), or a request middleware on this route
+   (`server.middleware`, which TanStack Start runs on the original request before the router) that redirects a lone
+   bare numeric `q` to its JSON-quoted spelling (review astra-client-12). Neither is done: the codec is shared, and
+   no route in the app has a request middleware yet, so the first one wants its own check of the client bundle and
+   a production build. Low priority: only a number typed before hydration, then Enter, loses its spelling.
 2. On mount the field takes the box's DOM value when it differs from the draft, so the text is searched after the
    usual typing pause.
 
