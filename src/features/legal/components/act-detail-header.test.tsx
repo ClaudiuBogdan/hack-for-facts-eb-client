@@ -36,3 +36,53 @@ describe('ActDetailHeader — the legal_v2 bridge line', () => {
     expect(screen.queryByText(/corpusul anterior/)).not.toBeInTheDocument()
   })
 })
+
+describe('ActDetailHeader — the act\'s facts, each under its name', () => {
+  const act = {
+    ...legalActDetailFixture,
+    displayCitation: 'Legea nr. 98/2016',
+    actType: 'lege',
+    issuerSlug: 'parlamentul',
+    entryIntoForce: '2016-05-26',
+    aliases: ['legea achizițiilor publice'],
+    canonical:
+      legalActDetailFixture.canonical === null
+        ? null
+        : { ...legalActDetailFixture.canonical, den: 'LEGE nr. 98 din 19 mai 2016' },
+  }
+
+  const fact = (name: string): string | null => {
+    const term = screen.getByText(name, { selector: 'dt' })
+    return term.nextElementSibling?.textContent ?? null
+  }
+
+  it('names the kind, the issuer and the date it applies from', () => {
+    render(<ActDetailHeader act={act} />)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Legea nr. 98/2016')
+    expect(fact('Tip')).toBe('Lege')
+    expect(fact('Emitent')).toBe('Parlamentul României')
+    // The date in the reader's language (the tests run in English).
+    expect(fact('În vigoare din')).toMatch(/26.*2016/)
+  })
+
+  it('leaves out a fact the act does not have, name and all', () => {
+    render(<ActDetailHeader act={{ ...act, issuerSlug: null, entryIntoForce: null }} />)
+    expect(screen.queryByText('Emitent', { selector: 'dt' })).not.toBeInTheDocument()
+    expect(screen.queryByText('În vigoare din', { selector: 'dt' })).not.toBeInTheDocument()
+    expect(fact('Tip')).toBe('Lege')
+  })
+
+  it('shows the subject lifted from the text under the citation, and the formal name as small print', () => {
+    render(<ActDetailHeader act={act} textSubject="privind achizițiile publice" />)
+    expect(screen.getByText('privind achizițiile publice')).toBeInTheDocument()
+    // The formal name stays its own line: it is no longer joined to the subject.
+    expect(screen.getByText('LEGE nr. 98 din 19 mai 2016')).toBeInTheDocument()
+    expect(screen.getByText('cunoscut și ca legea achizițiilor publice')).toBeInTheDocument()
+  })
+
+  it('does not repeat a formal name that says no more than the citation', () => {
+    const same = { ...act, canonical: act.canonical === null ? null : { ...act.canonical, den: 'Legea nr. 98/2016' } }
+    render(<ActDetailHeader act={same} />)
+    expect(screen.getAllByText('Legea nr. 98/2016')).toHaveLength(1)
+  })
+})

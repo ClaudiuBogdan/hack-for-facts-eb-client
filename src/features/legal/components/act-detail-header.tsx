@@ -2,8 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ChevronLeft } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ArrowLeft } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust'
 import type { LegalActDetail } from '@/schemas/legal'
 import { uniqueGazettePublication } from '../lib/act-facts'
@@ -14,16 +13,15 @@ import {
   legalGazettePartLabel,
   legalIssuerLabel,
 } from '../lib/legal-vocabulary'
-import { legislationHeaderMetaClassName } from '../lib/legislation-theme'
 import { LegalStatusBadge } from './legal-status-badge'
 
 type Props = {
   readonly act: LegalActDetail
   /**
    * The act's subject, lifted from the text's masthead once it renders
-   * ("privind achizițiile publice") — appended to the den line, restoring
-   * the one sentence the portal splits across two blocks. `null` until the
-   * text loads, or when nothing was lifted.
+   * ("privind achizițiile publice") — shown under the citation, as the
+   * sentence that says what the act is about. `null` until the text loads,
+   * or when nothing was lifted.
    */
   readonly textSubject?: string | null
 }
@@ -32,10 +30,12 @@ type Props = {
  * Rung 0 of the disclosure ladder — the verdict strip.
  *
  * One identity column — status, the citation people actually search for
- * ("Legea nr. 227/2015"), the formal name with the lifted subject, one line
- * of classification, and the Monitorul Oficial line. Everything short enough
- * to share a line does: act type, issuer, entry into force and the aliases
- * are one `·`-joined line rather than four.
+ * ("Legea nr. 227/2015"), the subject lifted from the text, then the act's
+ * facts each under its name (owner, 26 November 2026, the act page's
+ * redesign, chosen from a picture of three): what kind of act, who issued
+ * it, since when it applies, where it was published. The formal name, the
+ * aliases and the corpus line follow as small print. The facts are the same
+ * ones, in the same words, that the `·`-joined lines said before.
  *
  * Status leads as an eyebrow above the title because rung 0's question is "what
  * is this, and is it alive" — and "Abrogat parțial" is the half of that answer a
@@ -64,12 +64,9 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
   const { i18n } = useLingui()
 
   const den = act.canonical?.den ?? null
-  // The den line: "LEGE nr. 98 din 19 mai 2016" + the subject lifted from
-  // the text's masthead ("privind achizițiile publice") — one sentence
-  // again. Shown whenever it says more than the H1 citation does.
-  const denLine =
-    den !== null && textSubject !== null ? `${den} ${textSubject}` : den
-  const showDen = denLine !== null && denLine !== act.displayCitation
+  // The formal name ("LEGE nr. 98 din 19 mai 2016"), shown whenever it says
+  // more than the H1 citation does.
+  const showDen = den !== null && den !== act.displayCitation
   const isMock = isLegalMockEnabled()
 
   // The header owns the publication fact now (user decision 2026-08-11: the
@@ -97,27 +94,23 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
           .join(' ')
       : null
 
-  const classification = [
-    legalActTypeLabel(act.actType),
-    act.issuerSlug ? legalIssuerLabel(act.issuerSlug) : null,
-    act.entryIntoForce
-      ? t`în vigoare din ${formatLegalDate(act.entryIntoForce, i18n.locale)}`
-      : null,
-    act.aliases.length > 0
-      ? t`cunoscut și ca ${act.aliases.join(', ')}`
-      : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(' · ')
+  // Each fact under its name. The long one comes last: in the band it is the
+  // cell that takes what is left of the row, and wraps.
+  const facts = [
+    { name: t`Tip`, value: legalActTypeLabel(act.actType) },
+    act.issuerSlug ? { name: t`Emitent`, value: legalIssuerLabel(act.issuerSlug) } : null,
+    act.entryIntoForce ? { name: t`În vigoare din`, value: formatLegalDate(act.entryIntoForce, i18n.locale) } : null,
+    moCitation !== null ? { name: t`Publicat în`, value: t`Monitorul Oficial ${moCitation}`, wide: true } : null,
+  ].filter((fact): fact is { name: string; value: string; wide?: boolean } => fact !== null)
 
   return (
     <header className="border-b-2 border-[var(--pnrr-border)] bg-background">
-      <div className="mx-auto max-w-7xl px-4 pt-5 pb-6 sm:px-6 sm:pt-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-3 pb-7 sm:px-6 sm:pb-9 lg:px-8 lg:pt-5">
         <Link
           to="/legislation"
-          className="inline-flex items-center gap-1 text-sm text-[var(--pnrr-muted)] underline-offset-2 hover:underline"
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground sm:min-h-10"
         >
-          <ChevronLeft className="h-4 w-4" aria-hidden />
+          <ArrowLeft className="size-4" aria-hidden />
           <Trans>Legislația României</Trans>
         </Link>
 
@@ -128,41 +121,45 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
             edge, anchoring the rail column. */}
         <div className="lg:grid lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-10">
           <div className="hidden lg:block" aria-hidden />
-          <div className="mt-4 min-w-0">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <LegalStatusBadge status={act.status} strong />
-                {isMock ? <DataStatusBadge status="mock" /> : null}
-              </div>
+          <div className="mt-2 min-w-0 max-w-[42rem]">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <LegalStatusBadge status={act.status} strong />
+              {isMock ? <DataStatusBadge status="mock" /> : null}
+            </div>
 
-              <h1 className="mt-2.5 max-w-3xl text-balance text-[clamp(1.75rem,4vw,3rem)] font-black leading-[0.95] tracking-tight text-[var(--pnrr-fg)]">
-                {act.displayCitation}
-              </h1>
+            <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+              {act.displayCitation}
+            </h1>
 
-              {showDen ? (
-                <p className="mt-2 max-w-3xl text-base leading-6 text-[var(--pnrr-fg)]">
-                  {denLine}
-                </p>
+            {textSubject !== null ? (
+              <p className="mt-2 text-lg leading-7 text-muted-foreground sm:text-xl sm:leading-8">
+                {textSubject}
+              </p>
+            ) : null}
+
+            {/* Two facts to a row on a phone, the publication on a row of its
+                own (half a phone's width broke it over three lines); from
+                `sm` one row, the publication taking what is left. */}
+            <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-y py-3 sm:grid-cols-[auto_auto_auto_minmax(0,1fr)]">
+              {facts.map((fact) => (
+                <div key={fact.name} className={fact.wide === true ? 'col-span-2 sm:col-span-1' : undefined}>
+                  <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
+                  <dd className="text-sm leading-6 text-foreground">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="mt-3 space-y-0.5 text-sm leading-6 text-muted-foreground">
+              {showDen ? <p>{den}</p> : null}
+              {act.aliases.length > 0 ? (
+                <p>{t`cunoscut și ca ${act.aliases.join(', ')}`}</p>
               ) : null}
-
-              {classification ? (
-                <p className={cn(legislationHeaderMetaClassName, 'mt-2 text-sm')}>
-                  {classification}
-                </p>
-              ) : null}
-
-              {moCitation !== null ? (
-                <p className={cn(legislationHeaderMetaClassName, 'mt-1 text-sm')}>
-                  <Trans>Publicat în Monitorul Oficial {moCitation}</Trans>
-                </p>
-              ) : null}
-
               {/* legal_v2 serves identity, versions and text from the rebuilt
                   corpus and BRIDGES the rest from the previous one by act id.
                   One quiet line says so; an act the previous corpus does not
                   hold has no status, links or summary at all, and says that. */}
               {act.dataSource === 'legal_v2' ? (
-                <p className={cn(legislationHeaderMetaClassName, 'mt-1 text-xs')}>
+                <p className="text-xs leading-5">
                   {act.bridgedFields.length > 0 ? (
                     <Trans>
                       Starea, legăturile și rezumatul provin din corpusul anterior.
@@ -176,7 +173,6 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
                 </p>
               ) : null}
             </div>
-
           </div>
         </div>
       </div>

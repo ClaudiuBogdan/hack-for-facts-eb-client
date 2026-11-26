@@ -17301,7 +17301,7 @@ msgid "Cunoaștem structura acestei matrice din catalogul INS, dar nu i-am înc�
 msgstr "Cunoaștem structura acestei matrice din catalogul INS, dar nu i-am încărcat încă datele. Poți cere prioritizarea ei."
 
 #. placeholder {0}: act.aliases.join(', ')
-#: src/features/legal/components/act-detail-header.tsx:107
+#: src/features/legal/components/act-detail-header.tsx:155
 msgid "cunoscut și ca {0}"
 msgstr "cunoscut și ca {0}"
 
@@ -21869,6 +21869,7 @@ msgstr "Actualizari prin email pentru toate entitatile din aceasta campanie"
 msgid "Emigrants (POP309E)"
 msgstr "Emigranți (POP309E)"
 
+#: src/features/legal/components/act-detail-header.tsx:101
 #: src/features/legal/components/analytics/legislation-analysis.tsx:902
 msgid "Emitent"
 msgstr "Emitent"
@@ -27841,10 +27842,14 @@ msgstr "în verificare"
 msgid "În vigoare"
 msgstr "În vigoare"
 
+#: src/features/legal/components/act-detail-header.tsx:102
+msgid "În vigoare din"
+msgstr "În vigoare din"
+
 #. placeholder {0}: formatLegalDate(act.entryIntoForce, i18n.locale)
 #: src/features/legal/components/act-detail-header.tsx:104
-msgid "în vigoare din {0}"
-msgstr "în vigoare din {0}"
+#~ msgid "în vigoare din {0}"
+#~ msgstr "în vigoare din {0}"
 
 #: src/features/procurement/lib/procedure-text.ts:100
 msgid "în ziua contractului"
@@ -31079,7 +31084,7 @@ msgstr "Legislația de bază"
 msgid "Legislația de bază, după felul actului"
 msgstr "Legislația de bază, după felul actului"
 
-#: src/features/legal/components/act-detail-header.tsx:121
+#: src/features/legal/components/act-detail-header.tsx:114
 #: src/features/legal/components/hub/legislation-hub.tsx:174
 #: src/routes/legislation/index.tsx:65
 msgid "Legislația României"
@@ -33985,6 +33990,10 @@ msgstr "Monitorizează această instituție"
 #: src/routes/legislation/gazette.tsx:18
 msgid "Monitorul Oficial"
 msgstr "Monitorul Oficial"
+
+#: src/features/legal/components/act-detail-header.tsx:103
+msgid "Monitorul Oficial {moCitation}"
+msgstr "Monitorul Oficial {moCitation}"
 
 #: src/components/commitments/commitments-trends.tsx:205
 #: src/components/entities/EntityFinancialTrends.tsx:190
@@ -42456,9 +42465,13 @@ msgstr "Achiziții publice pentru această instituție — contracte, achiziții
 #~ msgid "publicat {0}"
 #~ msgstr "publicat {0}"
 
+#: src/features/legal/components/act-detail-header.tsx:103
+msgid "Publicat în"
+msgstr "Publicat în"
+
 #: src/features/legal/components/act-detail-header.tsx:156
-msgid "Publicat în Monitorul Oficial {moCitation}"
-msgstr "Publicat în Monitorul Oficial {moCitation}"
+#~ msgid "Publicat în Monitorul Oficial {moCitation}"
+#~ msgstr "Publicat în Monitorul Oficial {moCitation}"
 
 #: src/components/shared/procurement-data/freshness-badge.tsx:28
 #: src/components/shared/procurement-data/source-provenance-drawer.tsx:102
@@ -48296,11 +48309,11 @@ msgstr "Starea întreprinderilor, după fiecare sursă"
 msgid "Starea ta"
 msgstr "Starea ta"
 
-#: src/features/legal/components/act-detail-header.tsx:171
+#: src/features/legal/components/act-detail-header.tsx:168
 msgid "Starea, legăturile și rezumatul nu sunt disponibile pentru acest act: corpusul anterior nu îl conține."
 msgstr ""
 
-#: src/features/legal/components/act-detail-header.tsx:167
+#: src/features/legal/components/act-detail-header.tsx:164
 msgid "Starea, legăturile și rezumatul provin din corpusul anterior."
 msgstr ""
 
@@ -50677,6 +50690,7 @@ msgid "Ținut"
 msgstr "Ținut"
 
 #: src/features/elections/catalog/election-edition-page.tsx:131
+#: src/features/legal/components/act-detail-header.tsx:100
 #: src/features/legal/components/analytics/legislation-analysis.tsx:825
 #: src/features/legal/components/legislation-search-filters.tsx:300
 msgid "Tip"
