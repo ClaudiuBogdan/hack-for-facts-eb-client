@@ -1,12 +1,13 @@
+import { useRef, useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, within } from '@/test/test-utils'
+import { fireEvent, render, screen, waitFor, within } from '@/test/test-utils'
 import { NO_SEARCH_FILTERS, type SearchFilters } from '../lib/search-filters'
 import { LegislationActiveFilters, LegislationFilterButton, LegislationFilterPanel } from './legislation-search-filters'
 
-const panel = (filters: SearchFilters = NO_SEARCH_FILTERS) => {
+const panel = (filters: SearchFilters = NO_SEARCH_FILTERS, asked?: boolean) => {
   const onChange = vi.fn()
   const onOpenChange = vi.fn()
-  render(<LegislationFilterPanel filters={filters} onChange={onChange} open onOpenChange={onOpenChange} />)
+  render(<LegislationFilterPanel filters={filters} onChange={onChange} open onOpenChange={onOpenChange} asked={asked} />)
   return { onChange, onOpenChange, dialog: screen.getByRole('dialog', { name: 'Filtre' }) }
 }
 /** The first button of that name: the type list is drawn before the category list, which repeats some names. */
@@ -29,6 +30,21 @@ describe('LegislationFilterPanel', () => {
     expect(within(dialog).getAllByRole('button', { name: 'Decret' })).toHaveLength(2)
     expect(within(dialog).getByRole('button', { name: 'Tip necunoscut' })).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Mai puține' })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('takes the focus to the first option the link reveals (astra-client-11)', () => {
+    const { dialog } = panel()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Încă 12 tipuri' }))
+    // „Decret", the seventh type, was hidden; the category list has its own „Decret" further down
+    expect(document.activeElement).toBe(first(dialog, 'Decret'))
+  })
+
+  it('counts only the options the link hides (astra-client-11)', () => {
+    // „Decret" is chosen, so it is shown with the list closed: eleven types are left behind the link
+    const { dialog } = panel({ ...NO_SEARCH_FILTERS, tip: ['decret'] })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Mai puține' }))
+    expect(within(dialog).getByRole('button', { name: 'Încă 11 tipuri' })).toBeInTheDocument()
+    expect(options(dialog, 'Lege', 'Încă 11 tipuri')).toEqual(['Lege', 'Ordonanță de urgență', 'Ordonanță', 'Hotărâre', 'Ordin', 'Decizie', 'Decret'])
   })
 
   it('opens a list whole when one of its hidden options is chosen', () => {
@@ -63,6 +79,32 @@ describe('LegislationFilterPanel', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false)
     fireEvent.click(within(dialog).getByRole('button', { name: 'Scoate toate' }))
     expect(onChange).toHaveBeenLastCalledWith(NO_SEARCH_FILTERS)
+  })
+
+  it('says „Gata" on the phone’s bar when no question is asked: closing shows the ways to ask, not results', () => {
+    const { dialog } = panel(NO_SEARCH_FILTERS, false)
+    expect(within(dialog).getByRole('button', { name: 'Gata' })).toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Vezi rezultatele' })).not.toBeInTheDocument()
+  })
+
+  it('closes from the bar and gives the focus back to the button that opened it (astra-client-11)', async () => {
+    function Page() {
+      const [open, setOpen] = useState(false)
+      const button = useRef<HTMLButtonElement>(null)
+      return (
+        <>
+          <LegislationFilterButton ref={button} filters={NO_SEARCH_FILTERS} onOpen={() => setOpen(true)} />
+          <LegislationFilterPanel filters={NO_SEARCH_FILTERS} onChange={vi.fn()} open={open} onOpenChange={setOpen} returnFocus={() => button.current?.focus()} />
+        </>
+      )
+    }
+    render(<Page />)
+    const opener = screen.getByRole('button', { name: 'Filtre' })
+    fireEvent.click(opener)
+    const dialog = await screen.findByRole('dialog', { name: 'Filtre' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Vezi rezultatele' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Filtre' })).not.toBeInTheDocument())
+    expect(document.activeElement).toBe(opener)
   })
 
   it('offers nothing to take off when no filter is on, and keeps the issuer’s note', () => {

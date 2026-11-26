@@ -1,4 +1,5 @@
-import { useState, type ReactNode, type Ref } from 'react'
+import { useRef, useState, type ReactNode, type Ref } from 'react'
+import { flushSync } from 'react-dom'
 import { t } from '@lingui/core/macro'
 import { Check, SlidersHorizontal, X } from 'lucide-react'
 import { FIELD, Group, Row, SHEET_CLOSE } from '@/components/filters/filter-sheet/filter-sheet-parts'
@@ -125,7 +126,8 @@ export function LegislationActiveFilters({ filters, onChange }: { readonly filte
     ...(filters.sanctiuni ? [{ key: 'sanctiuni', label: t`Menționează sancțiuni`, clear: () => onChange({ ...filters, sanctiuni: false }) }] : []),
   ]
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-3" role="group" aria-label={t`Filtre active`}>
+    // A row gap of 16 px: each chip's press area reaches 8 px above and below it, so wrapped rows never overlap.
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-4" role="group" aria-label={t`Filtre active`}>
       {chips.map((chip) => (
         <ActiveChip key={chip.key} label={chip.label} onClear={chip.clear} />
       ))}
@@ -144,9 +146,21 @@ export function LegislationActiveFilters({ filters, onChange }: { readonly filte
  * One option, as a plain row: a mark that fills when it is chosen (a box where several can be, a ring where one
  * is) and its name, which wraps onto a second line and is never cut. 44 px tall on a phone, 36 from `sm`.
  */
-function Option({ on, one = false, onPress, children }: { readonly on: boolean; readonly one?: boolean; readonly onPress: () => void; readonly children: ReactNode }) {
+function Option({
+  on,
+  one = false,
+  onPress,
+  children,
+  ref,
+}: {
+  readonly on: boolean
+  readonly one?: boolean
+  readonly onPress: () => void
+  readonly children: ReactNode
+  readonly ref?: Ref<HTMLButtonElement>
+}) {
   return (
-    <button type="button" aria-pressed={on} onClick={onPress} className="flex min-h-11 w-full items-start gap-2.5 rounded-sm px-2 py-3 text-left text-sm leading-5 hover:bg-muted sm:min-h-9 sm:py-2">
+    <button ref={ref} type="button" aria-pressed={on} onClick={onPress} className="flex min-h-11 w-full items-start gap-2.5 rounded-sm px-2 py-3 text-left text-sm leading-5 hover:bg-muted sm:min-h-9 sm:py-2">
       <span
         aria-hidden="true"
         className={cn('mt-0.5 flex size-4 shrink-0 items-center justify-center border', one ? 'rounded-full' : 'rounded-[3px]', on ? 'border-primary bg-primary text-primary-foreground' : 'border-foreground/30 bg-background')}
@@ -178,6 +192,8 @@ const FIRST = 6
 /**
  * A list where several options can be chosen, in two columns. A long list shows its first six and the rest behind
  * one link; an option that is chosen is always shown, and a list with a chosen option among the rest opens whole.
+ * The link counts only the options it hides, and opening it takes the focus to the first option it revealed, which
+ * is drawn before the link (review astra-client-11: Tab from the link went past them).
  * The first six are the lists' own order: the types by the act's rank (laws and ordinances, then the Government's
  * and the ministers' acts), the domains by how many acts carry them (the dev API's counts, 26 November 2026), the
  * categories as the summaries list them.
@@ -198,24 +214,34 @@ function Choices({
 }) {
   const rest = more === undefined ? [] : keys.slice(FIRST)
   const [open, setOpen] = useState(() => rest.some((key) => chosen.includes(key)))
+  const hidden = rest.filter((key) => !chosen.includes(key))
   const shown = open || rest.length === 0 ? keys : [...keys.slice(0, FIRST), ...rest.filter((key) => chosen.includes(key))]
+  // The first option the link reveals, focused once it is drawn.
+  const firstRevealed = useRef<HTMLButtonElement>(null)
   return (
     <>
       <div className="grid grid-cols-2 gap-x-1">
         {shown.map((key) => (
-          <Option key={key} on={chosen.includes(key)} onPress={() => onToggle(key)}>
+          <Option key={key} ref={key === hidden[0] ? firstRevealed : undefined} on={chosen.includes(key)} onPress={() => onToggle(key)}>
             {label(key)}
           </Option>
         ))}
       </div>
-      {rest.length > 0 && more !== undefined ? (
+      {hidden.length > 0 && more !== undefined ? (
         <button
           type="button"
           aria-expanded={open}
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            if (open) {
+              setOpen(false)
+              return
+            }
+            flushSync(() => setOpen(true))
+            firstRevealed.current?.focus()
+          }}
           className="inline-flex min-h-11 items-center px-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:min-h-9"
         >
-          {open ? t`Mai puține` : more(rest.length)}
+          {open ? t`Mai puține` : more(hidden.length)}
         </button>
       ) : null}
     </>
@@ -231,6 +257,7 @@ export function LegislationFilterPanel({
   open,
   onOpenChange,
   returnFocus,
+  asked = true,
 }: {
   readonly filters: SearchFilters
   readonly onChange: (next: SearchFilters) => void
@@ -238,6 +265,11 @@ export function LegislationFilterPanel({
   readonly onOpenChange: (open: boolean) => void
   /** Where the focus goes when the panel closes: the button that opened it (the panel has no trigger of its own). */
   readonly returnFocus?: () => void
+  /**
+   * Whether a question is asked: without one, closing the panel shows the ways to ask, not results, and the phone's
+   * bar says „Gata". Unsaid, it is taken as asked.
+   */
+  readonly asked?: boolean
 }) {
   const years = yearOptions()
   const filtered = isSearchFiltered(filters)
@@ -340,7 +372,7 @@ export function LegislationFilterPanel({
             closes the panel onto the results, with the way to take every filter off beside it. */}
         <div className="sticky -bottom-6 -mx-6 -mb-6 mt-6 flex items-center gap-4 border-t bg-background px-6 py-3 sm:hidden">
           <Button type="button" className="min-h-11 flex-1" onClick={() => onOpenChange(false)}>
-            {t`Vezi rezultatele`}
+            {asked ? t`Vezi rezultatele` : t`Gata`}
           </Button>
           {filtered ? (
             <button type="button" onClick={() => onChange(NO_SEARCH_FILTERS)} className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
