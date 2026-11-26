@@ -73,7 +73,10 @@ import { createLogger } from "@/lib/logger";
 import { buildMarkIndex, sliceRun, actionableMark } from "../../lib/tldf/marks";
 import type { MarkIndex, RunSegment } from "../../lib/tldf/marks";
 import { foldTldfBlocks } from "../../lib/tldf/fold";
-import { FOLDED_NOTE_ATTR } from "../../lib/tldf/folded-note";
+import {
+  FOLDED_NOTE_ATTR,
+  isRevealingFoldedNote,
+} from "../../lib/tldf/folded-note";
 import type { TldfBlock, TldfMark, TldfRun } from "../../lib/tldf/types";
 
 const logger = createLogger("legal-reader");
@@ -187,9 +190,13 @@ const MARKER =
  */
 const STRUCK_MARKER =
   "[&[data-struck=full]>[data-role=ttl]]:text-muted-foreground [&[data-struck=full]>[data-role=ttl]]:line-through [&[data-struck=full]>[data-role=ttl]]:decoration-1 [&[data-struck=full]>[data-role=ttl]]:decoration-foreground/40";
-// `flow-root`: an item that is its marker alone still has its line's height,
-// so the next item's marker cannot slide up beside it.
-const ITEM = `flow-root mt-2 pl-7 sm:pl-9 ${MARKER} ${STRUCK_MARKER} [&>[data-role=ttl]]:-ml-7 [&>[data-role=ttl]]:min-w-7 sm:[&>[data-role=ttl]]:-ml-9 sm:[&>[data-role=ttl]]:min-w-9`;
+// An item that is its marker alone has nothing in flow once the marker
+// floats: it becomes a `flow-root`, so it keeps its line's height and the next
+// item's marker cannot slide up beside it. Only that shape: on an item with a
+// body, containing the float would also hold its first child's top margin
+// inside, and the first line would start below the marker.
+const MARKER_ALONE = "[&:not(:has(>:not([data-role=ttl])))]:flow-root";
+const ITEM = `${MARKER_ALONE} mt-2 pl-7 sm:pl-9 ${MARKER} ${STRUCK_MARKER} [&>[data-role=ttl]]:-ml-7 [&>[data-role=ttl]]:min-w-7 sm:[&>[data-role=ttl]]:-ml-9 sm:[&>[data-role=ttl]]:min-w-9`;
 /**
  * Quoted text — a structurally-classified `citat`, or the new wording an
  * amending act quotes (see `displayClass`): set in behind a left rule only,
@@ -219,7 +226,7 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   subtitlu_act: `${UI} text-base leading-7 text-muted-foreground`,
   // From `sm` the paragraph's number hangs in the gutter; on a phone it stays
   // in the line, where the width is the text's.
-  alineat: `${STRUCK_MARKER} mt-3 sm:[&:has(>[data-role=ttl])]:flow-root sm:[&:has(>[data-role=ttl])]:pl-10 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70 sm:[&>[data-role=ttl]]:float-left sm:[&>[data-role=ttl]]:-ml-10 sm:[&>[data-role=ttl]]:min-w-10 sm:[&>[data-role=ttl]]:pr-1.5`,
+  alineat: `${STRUCK_MARKER} mt-3 sm:${MARKER_ALONE} sm:[&:has(>[data-role=ttl])]:pl-10 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70 sm:[&>[data-role=ttl]]:float-left sm:[&>[data-role=ttl]]:-ml-10 sm:[&>[data-role=ttl]]:min-w-10 sm:[&>[data-role=ttl]]:pr-1.5`,
   // Letters, points and dash-items ("– ...") share one list grain, a step
   // apart: at a tighter step the gap between two litere matched the leading
   // inside one, so multi-line items (the definitions articles — the densest,
@@ -664,12 +671,6 @@ function warnUnrenderableTable(rejection: TableGuardRejection): void {
   );
 }
 
-/** The last cell of a row in reading order: where a repealed row says so. */
-const lastCellOf = (row: TldfBlock): TldfBlock | undefined => {
-  const cells = spanOrdered(row.children);
-  return cells[cells.length - 1];
-};
-
 function TableBlock({ block, marks }: BlockProps) {
   // The scroll shell is chrome (a 6-column annex table can outgrow the
   // 78ch column); the table element itself stays the addressable block.
@@ -718,7 +719,7 @@ function TableBlock({ block, marks }: BlockProps) {
               {...struckAttrsOf(row)}
               className={cn("scroll-mt-24", struckClassOf(row))}
             >
-              {spanOrdered(row.children).map((cell) => (
+              {spanOrdered(row.children).map((cell, index, cells) => (
                 <td
                   key={cell.id}
                   id={`tldf-${cell.id}`}
@@ -741,7 +742,7 @@ function TableBlock({ block, marks }: BlockProps) {
                       (said in the row's last cell: nothing but cells may sit
                       under a `<tr>`). */}
                   {isRepealed(cell) ||
-                  (isRepealed(row) && cell === lastCellOf(row)) ? (
+                  (isRepealed(row) && index === cells.length - 1) ? (
                     <RepealedMark />
                   ) : null}
                 </td>
@@ -796,16 +797,15 @@ function ImagineBlock({ block, marks }: BlockProps) {
       id={`tldf-${block.id}`}
       data-kind="imagine"
       {...struckAttrsOf(block)}
-      className={cn(
-        "mt-5 scroll-mt-24",
-        block.struck === "full" && "opacity-60",
-      )}
+      className="mt-5 scroll-mt-24"
     >
       <div
         role="img"
         aria-label={label}
         data-figure-label={label}
-        className={FIGURE_LINE_CLASS}
+        // A struck figure dims its own line only: the word that says it is
+        // repealed, after it, keeps its full contrast.
+        className={cn(FIGURE_LINE_CLASS, block.struck === "full" && "opacity-60")}
       >
         <ImageOff className="size-4 shrink-0" aria-hidden="true" />
       </div>
@@ -990,13 +990,18 @@ function FoldedNote({ block, marks }: BlockProps) {
         onFocus={(event) => {
           const box = event.currentTarget;
           if (open || event.target === box) return;
-          const edge = box.getBoundingClientRect().bottom - 40;
+          // The mask fades the last 2.5rem, whatever the reader's font size is.
+          const rem = parseFloat(
+            getComputedStyle(document.documentElement).fontSize,
+          );
+          const fade = 2.5 * (Number.isFinite(rem) && rem > 0 ? rem : 16);
+          const edge = box.getBoundingClientRect().bottom - fade;
           if (event.target.getBoundingClientRect().bottom > edge) {
             openKeepingPlace(box);
           }
         }}
         className={cn(
-          "outline-none",
+          "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           // The note's label keeps its colour inside this wrapper too.
           "[&>[data-role=ttl]]:text-foreground",
           // The last lines fade by a mask, so the fade is right on any ground
@@ -1024,7 +1029,8 @@ function FoldedNote({ block, marks }: BlockProps) {
             // target, leave the focus where it is.
             const fromKeyboard =
               event.detail === 0 &&
-              document.activeElement === event.currentTarget;
+              document.activeElement === event.currentTarget &&
+              !isRevealingFoldedNote();
             flushSync(() => setOpen(true));
             if (fromKeyboard) body.current?.focus({ preventScroll: true });
             return;

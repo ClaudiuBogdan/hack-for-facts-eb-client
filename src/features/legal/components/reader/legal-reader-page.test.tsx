@@ -234,8 +234,13 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       <ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />,
     )
     await waitFor(() => {
-      expect(container.querySelector(`[id="tldf-${nod}"]`)).toHaveClass('bg-foreground/10!')
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).toHaveClass('bg-foreground/10!', 'text-foreground!')
     })
+    // for a moment only: both classes are gone after 1.6 s
+    await new Promise((resolve) => setTimeout(resolve, 1700))
+    const block = container.querySelector(`[id="tldf-${nod}"]`)
+    expect(block).not.toHaveClass('bg-foreground/10!')
+    expect(block).not.toHaveClass('text-foreground!')
   })
 
   it('honours an override that is one of the act\'s own expressions', async () => {

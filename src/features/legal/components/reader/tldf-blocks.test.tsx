@@ -1636,6 +1636,50 @@ describe('folded notes of the Portal (foldNotes)', () => {
     expect(document.activeElement).toBe(body)
   })
 
+  it('a jump\'s opening leaves the keyboard focus on the control it was on', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} foldNotes />,
+    )
+    const body = container.querySelector<HTMLElement>('#tldf-n > div')
+    const target = container.querySelector('#tldf-n1')
+    const control = container.querySelector<HTMLButtonElement>('button')
+    if (body === null || target === null || control === null) throw new Error('the folded note did not render')
+    // The reader's focus is on the control when a jump opens the note: it is not a key press, the focus does not move.
+    control.focus()
+    revealFoldedNote(target)
+    expect(control.getAttribute('aria-expanded')).toBe('true')
+    expect(document.activeElement).toBe(control)
+    // The body shows its focus when a real key press does move it there.
+    expect(body.className).toContain('focus-visible:ring-2')
+  })
+
+  it('the hidden part is as deep as the fade at the reader\'s font size', () => {
+    const rect = (top: number, bottom: number) => () => ({ top, bottom, left: 0, right: 600, width: 600, height: bottom - top, x: 0, y: top, toJSON: () => ({}) })
+    const opensOnFocus = (rootFontSize: string) => {
+      document.documentElement.style.fontSize = rootFontSize
+      try {
+        const { container, unmount } = render(
+          <TldfBlocksView blocks={[longNote]} marks={[]} containsNonBmp={false} foldNotes />,
+        )
+        const body = container.querySelector<HTMLElement>('#tldf-n > div')
+        const line = container.querySelector<HTMLElement>('#tldf-n2')
+        const control = container.querySelector('button')
+        if (body === null || line === null || control === null) throw new Error('the folded note did not render')
+        body.getBoundingClientRect = rect(0, 132)
+        // The line ends 50 px above the box's end: inside a 60 px fade (24 px root), outside a 40 px one (16 px root).
+        line.getBoundingClientRect = rect(40, 82)
+        fireEvent.focusIn(line)
+        const opened = control.getAttribute('aria-expanded') === 'true'
+        unmount()
+        return opened
+      } finally {
+        document.documentElement.style.fontSize = ''
+      }
+    }
+    expect(opensOnFocus('16px')).toBe(false)
+    expect(opensOnFocus('24px')).toBe(true)
+  })
+
   it('leaves a short note and a struck long note whole', () => {
     const struckLong: TldfBlock = { ...longNote, id: 'struck-n', struck: 'full' }
     const { container } = render(
@@ -1757,6 +1801,10 @@ describe('review of the act text\'s look (26 November 2026)', () => {
     // The table says it under its frame, outside the `<table>`.
     expect(container.querySelector('table')?.parentElement?.nextElementSibling?.getAttribute('aria-label')).toBe('abrogat')
     expect(marks('#tldf-fig')).toBe(1)
+    // A struck figure dims its own line, not the word that says why (which would fall under the contrast floor).
+    expect(container.querySelector('#tldf-fig')?.className).not.toContain('opacity-60')
+    expect(container.querySelector('#tldf-fig > [role="img"]:not([aria-label="abrogat"])')?.className).toContain('opacity-60')
+    expect(container.querySelector('#tldf-fig > [aria-label="abrogat"]')?.className).not.toContain('opacity-60')
     // The mark names its language: the word is the interface's, the text around it is the law's.
     expect(container.querySelector('[role="img"][aria-label="abrogat"]')?.getAttribute('lang')).toBeTruthy()
   })
@@ -1784,7 +1832,10 @@ describe('review of the act text\'s look (26 November 2026)', () => {
       children: [{ id: 'dash', kind: 'paragraf', type: 'p', span: [3, 30], content: [{ sep: '\n', text: '- - - - - - - - - - - - - ', span: [3, 30] }] }],
     }
     const { container } = render(<TldfBlocksView blocks={[markerOnly, pre]} marks={[]} containsNonBmp={false} />)
-    expect(container.querySelector('#tldf-only')?.className).toContain('flow-root')
+    // Only the marker-alone shape contains its float: an item with a body must not (its first line would drop below the marker).
+    const itemClasses = container.querySelector('#tldf-only')?.className.split(/\s+/) ?? []
+    expect(itemClasses).toContain('[&:not(:has(>:not([data-role=ttl])))]:flow-root')
+    expect(itemClasses).not.toContain('flow-root')
     // The row keeps its own clip class (running text needs it); the box overrides it for its lines.
     expect(container.querySelector('#tldf-dash')?.className).toContain('overflow-hidden')
     expect(container.querySelector('#tldf-pre')?.className).toContain('[&_[data-kind=paragraf]]:overflow-visible')

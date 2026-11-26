@@ -126,11 +126,12 @@ type Props = {
 /**
  * The deep link's passing highlight, important: a note nested in a note would
  * otherwise lose it to the parent note's `[&_[data-kind=nota]]:bg-transparent`.
- * One class, added and removed whole. A light tint of the text's own colour:
- * the theme's `accent` is black on the light theme, and 60% of it hid the
- * very passage it pointed at.
+ * A light tint of the text's own colour: the theme's `accent` is black on the
+ * light theme, and 60% of it hid the very passage it pointed at. The block's
+ * own text takes the full text colour for as long: muted small print on the
+ * tint would fall under 4.5:1.
  */
-const NOD_HIGHLIGHT = 'bg-foreground/10!'
+const NOD_HIGHLIGHT = ['bg-foreground/10!', 'text-foreground!'] as const
 
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
 function scrollToNodTarget(nod: string, anchorPath: string): boolean {
@@ -149,8 +150,8 @@ function scrollToNodTarget(nod: string, anchorPath: string): boolean {
   }
   if (target.closest(`[${FOLDED_NOTE_ATTR}="closed"]`) !== null) queueMicrotask(reveal)
   else reveal()
-  target.classList.add(NOD_HIGHLIGHT)
-  window.setTimeout(() => target.classList.remove(NOD_HIGHLIGHT), 1600)
+  target.classList.add(...NOD_HIGHLIGHT)
+  window.setTimeout(() => target.classList.remove(...NOD_HIGHLIGHT), 1600)
   return true
 }
 
@@ -597,12 +598,16 @@ export function ActReadingLayout({
               {render.data !== undefined &&
                 render.data.kind === 'envelope' &&
                 envelopeSplit !== null && (
-                  // Keyed by document AND generation, as the chunked reader
-                  // is: what a reader opened in one version's text (a folded
-                  // note) must not stay open in another cached version whose
-                  // block has the same path.
+                  // Keyed by document: what a reader opened in one version's
+                  // text (a folded note) must not stay open in another cached
+                  // version whose block has the same path. Not by generation:
+                  // a revalidation that brings a new generation of the SAME
+                  // document must not remount the text under the reader, shut
+                  // the note a jump has just opened and leave the jump counted
+                  // as done (the chunked reader differs: its chunk slots
+                  // belong to one generation).
                   <EnvelopeReader
-                    key={`${documentId ?? ''}:${render.data.tldf.generation.run_id}`}
+                    key={documentId ?? ''}
                     blocks={envelopeSplit.blocks}
                     marks={render.data.tldf.marks}
                     containsNonBmp={render.data.tldf.contains_non_bmp}

@@ -346,16 +346,46 @@ describe('ActReadingLayout on legal_v2', () => {
       tldf: { ...tldf, document_id: documentId },
     }) as unknown as LegalRenderData)
     const nod = '0.1.1.12.3.1.2.1'
-    const { container } = render(
-      <ActReadingLayout act={legalActDetailV2Fixture} nod={nod} lead={null} fisa={null} />,
-    )
-    await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull())
-    const target = container.querySelector(`[id="tldf-${nod}"]`) as HTMLElement
-    const holder = target.closest('[data-note-fold]')
-    expect(holder).not.toBeNull()
-    // folded until the jump, open once the deep link has landed
-    await waitFor(() => expect(holder).toHaveAttribute('data-note-fold', 'open'))
-    expect(target).toHaveClass('bg-foreground/10!')
+    // The note must be open WHEN the target is brought into view: its state is read at the moment of the call.
+    const foldAtScroll: (string | null)[] = []
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function scrollIntoView(this: Element) {
+      if (this.id === `tldf-${nod}`) foldAtScroll.push(this.closest('[data-note-fold]')?.getAttribute('data-note-fold') ?? null)
+    }
+    try {
+      const { container } = render(
+        <ActReadingLayout act={legalActDetailV2Fixture} nod={nod} lead={null} fisa={null} />,
+      )
+      await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull())
+      const target = container.querySelector(`[id="tldf-${nod}"]`) as HTMLElement
+      const holder = target.closest('[data-note-fold]')
+      expect(holder).not.toBeNull()
+      // folded until the jump, open once the deep link has landed
+      await waitFor(() => expect(holder).toHaveAttribute('data-note-fold', 'open'))
+      await waitFor(() => expect(foldAtScroll.length).toBeGreaterThan(0))
+      expect(foldAtScroll.every((state) => state === 'open')).toBe(true)
+      // the mark keeps the block's text at full contrast on its tint
+      expect(target).toHaveClass('bg-foreground/10!', 'text-foreground!')
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('keeps the text in place, and a note the reader opened, when the same version comes back in a new generation', async () => {
+    const queryClient = createTestQueryClient()
+    const { container } = renderShared(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />, { queryClient })
+    await waitFor(() => expect(container.querySelector('#reader-content')).not.toBeNull())
+    const before = container.querySelector('#reader-content')
+    const calls = vi.mocked(fetchLegalRender).mock.calls.length
+    vi.mocked(fetchLegalRender).mockImplementationOnce(async (documentId: string) => {
+      const data = envelopeFor(documentId) as unknown as { tldf: { generation: Record<string, unknown> } }
+      return { ...data, tldf: { ...data.tldf, generation: { ...data.tldf.generation, run_id: 'a-later-generation' } } } as unknown as LegalRenderData
+    })
+    await queryClient.invalidateQueries()
+    await waitFor(() => expect(vi.mocked(fetchLegalRender).mock.calls.length).toBeGreaterThan(calls))
+    // Settled on the new generation: the same element still holds the text (a remount would have replaced it).
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(container.querySelector('#reader-content')).toBe(before)
   })
 
   it('shows a static label, not a dropdown, when one version is readable', async () => {
