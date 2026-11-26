@@ -277,6 +277,39 @@ describe('LegalActPage', () => {
     ).toHaveTextContent('1 publicare')
   })
 
+  it('keeps the record’s nine rows in their order, as h3s under "Fișa actului", the publication and the versions open', () => {
+    mockAct(legalActDetailRichFixture)
+    render(<LegalActPage actId="66150" />)
+
+    const record = screen.getByRole('group', { name: 'Detalii despre acest act' })
+    const heads = Array.from(record.querySelectorAll('section > h3 > button'))
+    expect(heads.map((head) => head.closest('h3')?.id)).toEqual([
+      'act-relevance-heading',
+      'act-key-dates-heading',
+      'act-publication-heading',
+      'act-timeline-heading',
+      'act-versions-heading',
+      'act-references-out-heading',
+      'act-references-in-heading',
+      'act-anchors-heading',
+      'act-provenance-heading',
+    ])
+    expect(heads.map((head) => head.getAttribute('aria-expanded'))).toEqual([
+      'false',
+      'false',
+      'true',
+      'false',
+      'true',
+      'false',
+      'false',
+      'false',
+      'false',
+    ])
+    expect(screen.getByRole('heading', { level: 2, name: 'Fișa actului' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: /Unde a fost publicat/ })).toBeInTheDocument()
+    expect(record.innerHTML).not.toMatch(/pnrr/)
+  })
+
   it('renders a not-found page for an unknown act', () => {
     mockAct(null)
     render(<LegalActPage actId="999999999" />)

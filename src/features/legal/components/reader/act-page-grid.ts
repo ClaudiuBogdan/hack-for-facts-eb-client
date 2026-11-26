@@ -31,6 +31,15 @@ export const ACT_TO_START = 'inline-flex items-center justify-center rounded-md 
 export const ACT_TITLE_ID = 'act-title'
 
 /**
+ * A line of a list in the act's record ("Fișa actului"): the date or the relation in the muted colour at the left,
+ * the thing itself at the right. The list draws the hairlines between its lines (`divide-y`).
+ */
+export const ACT_RECORD_LINE = 'grid grid-cols-[7.5rem_minmax(0,1fr)] gap-x-4 py-2 sm:grid-cols-[9rem_minmax(0,1fr)]'
+
+/** A control in the act's record that opens more of the same row: 44 px on a phone, 40 px from `sm`. */
+export const ACT_RECORD_MORE = cn(ACT_MORE, 'mt-1 inline-flex min-h-11 items-center text-left sm:min-h-10')
+
+/**
  * The live page's warnings (`ActWarnings`, rows), worn in the box about the text: their words and their
  * open-on-demand rows as they are, restyled from outside. The headline at the column's reading size and medium
  * weight, the triangle and the chevron on its first line, no inset, the explanation as small print under the

@@ -640,11 +640,10 @@ export function ActReadingLayout({
               who wants the record — publication, versions, references — has
               already decided the text isn't what they came for, and the
               header carries the identity facts a first glance needs. */}
-          <section id="act-fisa" aria-labelledby="act-fisa-heading" className="mt-16 scroll-mt-24">
-            <h2
-              id="act-fisa-heading"
-              className="mb-4 border-b-2 border-[var(--pnrr-border)] pb-3 text-3xl font-black tracking-tight text-[var(--pnrr-fg)]"
-            >
+          {/* The record closes the page under a strong rule; its rows open
+              with hairlines of their own (owner, 26 November 2026). */}
+          <section id="act-fisa" aria-labelledby="act-fisa-heading" className="mt-20 scroll-mt-24 border-t-2 border-foreground pt-6">
+            <h2 id="act-fisa-heading" className="pb-5 text-xl font-semibold tracking-tight">
               <Trans>Fișa actului</Trans>
             </h2>
             {fisa}
