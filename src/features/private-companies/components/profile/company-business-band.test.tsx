@@ -167,7 +167,8 @@ describe('CompanyBusinessBand, the IFRS form', () => {
     // 2018: the Ministry's blank turnover; 2019: ANAF's zero.
     const blank = within(readYear(4))
     expect(blank.getByText('2018')).toBeInTheDocument()
-    expect(blank.getByText('Celulă goală în fișierul Ministerului Finanțelor')).toBeInTheDocument()
+    // No figure read: a blank cell or a layout with no verified rule — never said as a blank alone, never a zero.
+    expect(blank.getByText('Nicio valoare citită din fișierul Ministerului Finanțelor')).toBeInTheDocument()
     const zero = within(readYear(5))
     expect(zero.getByText('2019')).toBeInTheDocument()
     expect(zero.getByText(/^0\s+lei$/u)).toBeInTheDocument()

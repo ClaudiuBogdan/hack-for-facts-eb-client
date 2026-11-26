@@ -285,8 +285,11 @@ export const ifrsSeamNote = (years: readonly number[]) => {
 /** Where a 2018 blank meets a 2019 zero: the difference as measured on 2019, the year both publishers cover. */
 export const ifrsBlankZeroNote = () => t`În 2019, unde fișierul Ministerului avea celula goală, ANAF a publicat 0: trecerea de la gol la 0 nu e o scădere.`
 
-/** Why a figure of a Ministry IFRS-file year is not drawn. */
-export const ifrsFileBlankReason = () => t`Celulă goală în fișierul Ministerului Finanțelor`
+/**
+ * Why a figure of a Ministry IFRS-file year is not drawn: no figure was read — a blank cell in the file, or a layout
+ * without exactly one verified rule (server-companies, contract item 11). Never a zero, and never said as a blank alone.
+ */
+export const ifrsFileBlankReason = () => t`Nicio valoare citită din fișierul Ministerului Finanțelor`
 
 /** A statement's publisher, by name. */
 export function publisherName(publisher: 'anaf' | 'mfp'): string {
