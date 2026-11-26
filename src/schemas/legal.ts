@@ -719,6 +719,11 @@ export type LegalServedForm = z.infer<typeof legalServedFormSchema>
 export const legalSearchSectionHitSchema = z.object({
   actId: z.string(),
   documentId: z.string(),
+  /**
+   * The provision's path in `documentId` (`document_nodes` path, the act page's `?nod=`), so a hit links to its
+   * provision. Null when the engine names none: the hit is then shown without a link.
+   */
+  nodePath: z.string().nullable(),
   nodeLabel: z.string().nullable(),
   snippet: z.string().nullable(),
   servedForm: legalServedFormSchema.nullable(),

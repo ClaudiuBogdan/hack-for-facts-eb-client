@@ -114,6 +114,7 @@ describe('fetchLegalSearchLive', () => {
   const sectionHit = (overrides: Record<string, unknown> = {}) => ({
     act: { actId: '900002' },
     documentId: 'f900012',
+    nodePath: 'r10',
     nodeLabel: 'Articol unic',
     snippet: 'Se aprobă <em>renunțarea</em>',
     servedForm: {
@@ -136,6 +137,8 @@ describe('fetchLegalSearchLive', () => {
     const [query] = graphqlQueryMock.mock.calls[0]
     expect(query).toMatch(/channel:\s*auto/)
     expect(query).toMatch(/sections \{/)
+    // the provision's path, so a hit links to its provision
+    expect(query).toMatch(/sections \{[^]*nodePath/)
     expect(query).toMatch(/servedForm \{[^}]*caveat[^}]*portalLabelDate/s)
   })
 
@@ -148,6 +151,7 @@ describe('fetchLegalSearchLive', () => {
       {
         actId: '900002',
         documentId: 'f900012',
+        nodePath: 'r10',
         nodeLabel: 'Articol unic',
         snippet: 'Se aprobă <em>renunțarea</em>',
         servedForm: {

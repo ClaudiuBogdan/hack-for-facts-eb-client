@@ -1,6 +1,9 @@
 import { act, createTestQueryClient, fireEvent, render as renderShared, screen, waitFor, within } from '@/test/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
+import { renderToString } from 'react-dom/server'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { LegalSearchResultData } from '@/schemas/legal'
 import { LegislationActFinder } from './legislation-act-finder'
 
@@ -16,8 +19,8 @@ vi.mock('../api/legal-resolve-api', async (importOriginal) => {
   return { ...original, resolveLegalActs: vi.fn(original.resolveLegalActs) }
 })
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, params }: { readonly children: ReactNode; readonly to: string; readonly params?: Record<string, string> }) => (
-    <a href={params?.actId ? to.replace('$actId', params.actId) : to}>{children}</a>
+  Link: ({ children, to, params, search }: { readonly children: ReactNode; readonly to: string; readonly params?: Record<string, string>; readonly search?: Record<string, string> }) => (
+    <a href={`${params?.actId ? to.replace('$actId', params.actId) : to}${search ? `?${new URLSearchParams(search).toString()}` : ''}`}>{children}</a>
   ),
   useNavigate: () => navigateMock,
 }))
@@ -48,12 +51,12 @@ describe('LegislationActFinder', () => {
     vi.useRealTimers()
   })
 
-  it('states what it finds, and keeps what it does not behind the ⓘ, before any query', async () => {
+  it('shows three ways to ask, and keeps what it does not find behind the ⓘ, before any query', async () => {
     const { fetchLegalSearch } = await import('../api/legal-search-api')
     render(<LegislationActFinder search={{}} />)
 
-    expect(screen.getByRole('heading', { name: 'Ce găsești aici' })).toBeInTheDocument()
-    expect(screen.getByText('Un act după numărul lui')).toBeInTheDocument()
+    const ways = screen.getByRole('region', { name: 'Ce poți căuta' })
+    for (const title of ['După număr', 'După nume', 'După cuvinte din text']) expect(within(ways).getByText(title)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ce nu găsești încă' }))
     const note = await screen.findByRole('dialog', { name: 'Ce nu găsești încă' })
     expect(note).toHaveTextContent(/nu este încă disponibilă/)
@@ -69,9 +72,81 @@ describe('LegislationActFinder', () => {
     expect(screen.getByText('Modificat')).toBeInTheDocument()
     // The citation shortcut is exact: actsTotal 1, totalsExhaustive true.
     expect(screen.getByRole('heading', { name: 'O potrivire' })).toBeInTheDocument()
+    // What was searched is said beside the count.
+    expect(screen.getByText('după numărul și denumirea actelor')).toBeInTheDocument()
     // No sentinel on this answer: the notes make no claim about meaning or text search.
     const notes = await openNotes()
     expect(notes).not.toHaveTextContent(/Potriviri după numărul și denumirea actelor/)
+  })
+
+  describe('the act a citation names (round 2)', () => {
+    const LAW = { kind: 'act', value: '30412', label: 'Legea nr. 53/2003', score: 1, hint: 'modificat' } as const
+
+    it('answers with that act in a card, before any list, when the resolver names exactly one', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([LAW])
+      render(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
+
+      const card = (await screen.findByRole('heading', { name: 'Legea nr. 53/2003' })).closest('section') as HTMLElement
+      expect(card).toHaveTextContent('Actul cu acest număr')
+      expect(within(card).getByText('Modificat')).toBeInTheDocument()
+      expect(within(card).getByRole('link', { name: 'Deschide actul' })).toHaveAttribute('href', '/legislation/acts/30412')
+      // the act is the whole answer: no list repeats it, and how it was searched stays one press away
+      expect(screen.queryByRole('list', { name: 'Rezultate' })).not.toBeInTheDocument()
+      expect(await openNotes()).toHaveTextContent(/Motor de căutare: postgres/)
+    })
+
+    it('shows the act the status gate hid, from the resolver alone', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([{ ...LAW, value: '777', label: 'Legea nr. 9999/2020', hint: 'abrogat' }])
+      render(<LegislationActFinder search={{ q: 'Legea 9999/2020' }} />)
+
+      const card = (await screen.findByRole('heading', { name: 'Legea nr. 9999/2020' })).closest('section') as HTMLElement
+      expect(within(card).getByText('Abrogat')).toBeInTheDocument()
+      // the search itself found nothing, and says the act above came from its number
+      expect(screen.getByText(/Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului/)).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /Niciun act găsit/ })).not.toBeInTheDocument()
+    })
+
+    it('waits for the resolver at most a second, then draws the list without it', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      vi.mocked(resolveLegalActs).mockImplementationOnce(() => new Promise(() => {}))
+      render(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
+
+      // the search has answered, the resolver has not: the act is not drawn as a row it may have to leave
+      await waitFor(() => expect(screen.getByRole('search')).toBeInTheDocument())
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      })
+      expect(screen.getByRole('region', { name: 'Se caută' })).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Legea nr. 53/2003' })).not.toBeInTheDocument()
+      expect(await screen.findByRole('link', { name: 'Legea nr. 53/2003' }, { timeout: 3000 })).toBeInTheDocument()
+    })
+
+    it('does not wait for the resolver when the question is not a citation', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      vi.mocked(resolveLegalActs).mockImplementationOnce(() => new Promise(() => {}))
+      render(<LegislationActFinder search={{ q: 'codul muncii' }} />)
+      expect(await screen.findByRole('link', { name: 'Legea nr. 53/2003' }, { timeout: 500 })).toBeInTheDocument()
+    })
+
+    it('leads with no act when the resolver names several the list already holds, and says how to tell them apart', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([LAW, { ...LAW }])
+      render(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
+
+      expect(await screen.findByText('Mai multe acte poartă acest număr: emitentul le deosebește.')).toBeInTheDocument()
+      expect(screen.queryByText('Actul cu acest număr')).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /alege actul/ })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Legea nr. 53/2003' })).toBeInTheDocument()
+    })
+  })
+
+  it('puts the question’s words in bold in an act’s name', async () => {
+    render(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
+
+    const link = await screen.findByRole('link', { name: 'Legea nr. 53/2003' })
+    expect([...link.querySelectorAll('b')].map((mark) => mark.textContent)).toEqual(['Legea', '2003'])
   })
 
   it('shows every server caveat VERBATIM and names the engine', async () => {
@@ -187,10 +262,49 @@ describe('LegislationActFinder', () => {
   it('runs an example as a search', async () => {
     render(<LegislationActFinder search={{}} />)
 
-    fireEvent.click(within(screen.getByRole('navigation', { name: 'Exemple' })).getByRole('button', { name: 'Legea 53/2003' }))
+    fireEvent.click(within(screen.getByRole('region', { name: 'Ce poți căuta' })).getByRole('button', { name: 'Legea 98/2016' }))
     expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/legislation/search', replace: false }))
     // the example keeps whatever filters the address holds
-    expect(sentSearch(0, { tip: 'lege' })).toEqual({ tip: 'lege', q: 'Legea 53/2003' })
+    expect(sentSearch(0, { tip: 'lege' })).toEqual({ tip: 'lege', q: 'Legea 98/2016' })
+    // and is written in the box at once
+    expect(screen.getByRole('textbox', { name: /Caută în legislație/ })).toHaveValue('Legea 98/2016')
+  })
+
+  describe('before the page hydrates (SEARCH-001)', () => {
+    it('is a form the browser can send by itself: the question and the address’s filters', () => {
+      render(<LegislationActFinder search={{ q: 'codul', tip: 'lege', historical: true }} />)
+
+      const form = screen.getByRole('search', { name: /Caută în legislație/ }) as HTMLFormElement
+      expect(form).toHaveAttribute('action', '/legislation/search')
+      expect(form.method).toBe('get')
+      expect(Object.fromEntries(new FormData(form))).toEqual({ q: 'codul', tip: 'lege', historical: 'true' })
+    })
+
+    it('takes up what was typed into the server’s page, and searches it', () => {
+      vi.useFakeTimers()
+      const client = createTestQueryClient()
+      const page = (
+        <QueryClientProvider client={client}>
+          <TooltipProvider>
+            <LegislationActFinder search={{}} />
+          </TooltipProvider>
+        </QueryClientProvider>
+      )
+      const container = document.createElement('div')
+      document.body.append(container)
+      container.innerHTML = renderToString(page)
+      // the reader types while the scripts load: the box holds text React's state does not
+      ;(container.querySelector('input[name="q"]') as HTMLInputElement).value = 'codul civil'
+
+      renderShared(<LegislationActFinder search={{}} />, { queryClient: client, container, hydrate: true })
+      expect(screen.getByRole('textbox', { name: /Caută în legislație/ })).toHaveValue('codul civil')
+      act(() => {
+        vi.advanceTimersByTime(300)
+      })
+      expect(navigateMock).toHaveBeenCalledTimes(1)
+      expect(sentSearch(0)).toEqual({ q: 'codul civil' })
+      container.remove()
+    })
   })
 
   it('reads the filters from the address into the search and shows them as removable chips', async () => {
@@ -377,6 +491,7 @@ describe('LegislationActFinder', () => {
             {
               actId: '900002',
               documentId: 'f900012',
+              nodePath: 'r10',
               nodeLabel: 'Articol unic',
               snippet: 'Se aprobă <em>renunțarea</em> la <b>cetățenia</b> română',
               servedForm: { documentId: 'f900012', versionKind: 'consolidare', caveat: 'unofficial_consolidation', portalLabelRaw: null, portalLabelDate: '2024-03-12' },
@@ -384,6 +499,7 @@ describe('LegislationActFinder', () => {
             {
               actId: '900002',
               documentId: 'f900011',
+              nodePath: null,
               nodeLabel: null,
               snippet: 'renunțarea din forma publicată',
               servedForm: { documentId: 'f900011', versionKind: 'original', caveat: null },
@@ -401,6 +517,21 @@ describe('LegislationActFinder', () => {
       const labels = screen.getAllByText(/Dintr-o formă consolidată neoficială/)
       expect(labels).toHaveLength(1)
       expect(labels[0]).toHaveTextContent(/Portalul Legislativ indică „consolidarea din .*2024/)
+      // The provision whose path the engine names links to it in the act's text; one without a path is not a link.
+      expect(screen.getByRole('link', { name: 'Articol unic' })).toHaveAttribute('href', '/legislation/acts/900002?doc=f900012&nod=r10')
+      expect(screen.getByText('Prevedere').closest('a')).toBeNull()
+    })
+
+    it('gathers the fragments of one provision under one label', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      const fragment = (snippet: string) => ({ actId: '900002', documentId: 'f900012', nodePath: 'r10', nodeLabel: 'Articolul 5', snippet, servedForm: null })
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(v2Answer([hit], [fragment('Articolul 5 prima <em>renunțare</em>'), fragment('a doua <em>renunțare</em>'), fragment('a doua <em>renunțare</em>')]))
+      render(<LegislationActFinder search={{ q: 'renunțare cetățenie' }} />)
+
+      expect(await screen.findAllByRole('link', { name: 'Articolul 5' })).toHaveLength(1)
+      // the label is not said again at the head of its own fragment, and a repeated fragment is drawn once
+      expect(screen.getByText(/prima/).closest('p')).toHaveTextContent('„prima renunțare”')
+      expect(screen.getAllByText(/a doua/)).toHaveLength(1)
     })
 
     it('claims no text search when the answer is degraded', async () => {

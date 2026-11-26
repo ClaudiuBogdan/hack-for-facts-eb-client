@@ -1,10 +1,11 @@
-import type { Ref } from 'react'
+import { useState, type ReactNode, type Ref } from 'react'
 import { t } from '@lingui/core/macro'
-import { SlidersHorizontal } from 'lucide-react'
-import { CELL, Chip, FIELD, Group, Row, SHEET_CLOSE } from '@/components/filters/filter-sheet/filter-sheet-parts'
+import { Check, SlidersHorizontal, X } from 'lucide-react'
+import { FIELD, Group, Row, SHEET_CLOSE } from '@/components/filters/filter-sheet/filter-sheet-parts'
+import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
-import { LEGAL_DOMAIN_SLUGS, legalDomainLabel, legalDomainLabelLoose } from '../lib/legal-domains'
+import { LEGAL_DOMAIN_SLUGS, legalDomainLabelLoose } from '../lib/legal-domains'
 import { legalActTypeLabel, legalStatusLabel } from '../lib/legal-vocabulary'
 import {
   NO_SEARCH_FILTERS,
@@ -24,6 +25,11 @@ import {
  * The search page's filters (owner, 25 November 2026): one button beside the field opens the analysis page's
  * side panel (a sheet on a phone); the filters on show as removable chips above the results. What each filter
  * means and which the engine takes is in `lib/search-filters.ts`.
+ *
+ * Round 2 (owner, 26 November 2026): the button has no box at rest from `sm`, the chips are small plain labels,
+ * and the panel's options are plain rows with a mark when chosen, the long lists cut to their first six with the
+ * rest behind one link, and on a phone a bar at the bottom that closes the panel. The frame (`Group`, `Row`, the
+ * year fields) is still the analysis pages' shared one; the options and the chips are this page's own.
  */
 
 function typeLabel(key: string): string {
@@ -38,7 +44,12 @@ function yearOptions(): readonly number[] {
 
 const toggled = (list: readonly string[], key: string) => (list.includes(key) ? list.filter((x) => x !== key) : [...list, key])
 
-/** Beside the field: as tall as it, with its border and radius, so the two read as one control; on a phone the icon. */
+/**
+ * Beside the field, as tall as it. From `sm` it has no box at rest (owner, 26 November 2026: „the problem is the
+ * border"): the icon and the word, a box on hover and for the keyboard, and a tinted box while a filter is on, so
+ * that state is seen without hovering. On a phone it is the icon alone and keeps its box, which is what says it
+ * can be pressed.
+ */
 export function LegislationFilterButton({
   filters,
   onOpen,
@@ -57,13 +68,33 @@ export function LegislationFilterButton({
       aria-haspopup="dialog"
       aria-label={on > 0 ? t`Filtre, ${on} active` : t`Filtre`}
       className={cn(
-        'inline-flex h-12 min-w-12 shrink-0 items-center justify-center gap-2 rounded-lg border bg-card px-3.5 text-sm font-medium text-foreground transition-colors hover:border-foreground/30 sm:px-4',
-        on > 0 && 'border-primary/50 bg-primary/5',
+        'inline-flex h-12 min-w-12 shrink-0 items-center justify-center gap-2 rounded-lg border bg-card px-3.5 text-sm font-medium text-foreground transition-colors hover:border-foreground/30 sm:h-14 sm:px-4',
+        on > 0 ? 'border-primary/50 bg-primary/5' : 'sm:border-transparent sm:bg-transparent sm:hover:border-input sm:hover:bg-card sm:focus-visible:border-input',
       )}
     >
       <SlidersHorizontal className="size-4" aria-hidden="true" />
       <span className="hidden sm:inline">{on > 0 ? t`Filtre (${on})` : t`Filtre`}</span>
       {on > 0 ? <span className="text-xs tabular-nums sm:hidden">{on}</span> : null}
+    </button>
+  )
+}
+
+/**
+ * A filter that is on, as a small plain label: pressing it takes the filter off. The drawn label is 28 px tall;
+ * its press area is grown to 44 px with a pseudo-element, so the row of chips stays quiet and each is still a
+ * whole target on a phone.
+ */
+function ActiveChip({ label, onClear }: { readonly label: string; readonly onClear: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      aria-label={t`Scoate ${label}`}
+      title={t`Scoate ${label}`}
+      className="group relative inline-flex h-7 max-w-full items-center gap-1.5 rounded-sm bg-muted pl-2.5 pr-2 text-sm text-foreground transition-colors after:absolute after:-inset-y-2 after:inset-x-0 after:content-[''] hover:bg-muted-foreground/20"
+    >
+      <span className="min-w-0 truncate">{label}</span>
+      <X className="size-3.5 shrink-0 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
     </button>
   )
 }
@@ -94,18 +125,102 @@ export function LegislationActiveFilters({ filters, onChange }: { readonly filte
     ...(filters.sanctiuni ? [{ key: 'sanctiuni', label: t`Menționează sancțiuni`, clear: () => onChange({ ...filters, sanctiuni: false }) }] : []),
   ]
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t`Filtre active`}>
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-3" role="group" aria-label={t`Filtre active`}>
       {chips.map((chip) => (
-        <Chip key={chip.key} label={chip.label} onClear={chip.clear} />
+        <ActiveChip key={chip.key} label={chip.label} onClear={chip.clear} />
       ))}
-      <button type="button" onClick={() => onChange(NO_SEARCH_FILTERS)} className="inline-flex min-h-11 items-center px-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:min-h-10">
+      <button
+        type="button"
+        onClick={() => onChange(NO_SEARCH_FILTERS)}
+        className="relative inline-flex h-7 items-center px-1 text-sm text-muted-foreground underline-offset-4 after:absolute after:-inset-y-2 after:inset-x-0 after:content-[''] hover:text-foreground hover:underline"
+      >
         {t`Scoate toate filtrele`}
       </button>
     </div>
   )
 }
 
-const pressed = (on: boolean) => cn(CELL, 'flex items-center text-left', on && 'border-primary bg-primary/5 font-medium')
+/**
+ * One option, as a plain row: a mark that fills when it is chosen (a box where several can be, a ring where one
+ * is) and its name, which wraps onto a second line and is never cut. 44 px tall on a phone, 36 from `sm`.
+ */
+function Option({ on, one = false, onPress, children }: { readonly on: boolean; readonly one?: boolean; readonly onPress: () => void; readonly children: ReactNode }) {
+  return (
+    <button type="button" aria-pressed={on} onClick={onPress} className="flex min-h-11 w-full items-start gap-2.5 rounded-sm px-2 py-3 text-left text-sm leading-5 hover:bg-muted sm:min-h-9 sm:py-2">
+      <span
+        aria-hidden="true"
+        className={cn('mt-0.5 flex size-4 shrink-0 items-center justify-center border', one ? 'rounded-full' : 'rounded-[3px]', on ? 'border-primary bg-primary text-primary-foreground' : 'border-foreground/30 bg-background')}
+      >
+        {on ? one ? <span className="size-1.5 rounded-full bg-current" /> : <Check className="size-3" strokeWidth={3} /> : null}
+      </span>
+      <span className={cn('min-w-0 break-words', on && 'font-medium')}>{children}</span>
+    </button>
+  )
+}
+
+/**
+ * A list of options under its label. On a phone the label sits above the list, so two columns of options have the
+ * sheet's whole width (beside the label, a column was 112 px and „Administrație" ran into its neighbour); from
+ * `sm` it is the shared `Row`'s label column.
+ */
+function ListRow({ label, children }: { readonly label: string; readonly children: ReactNode }) {
+  return (
+    <div className="grid gap-x-2 gap-y-0.5 sm:grid-cols-[4.25rem_minmax(0,1fr)] sm:items-start">
+      <span className="px-2 text-xs leading-tight text-muted-foreground sm:px-0 sm:pt-3">{label}</span>
+      <div className="min-w-0">{children}</div>
+    </div>
+  )
+}
+
+/** How many of a long list's options are shown before „more". */
+const FIRST = 6
+
+/**
+ * A list where several options can be chosen, in two columns. A long list shows its first six and the rest behind
+ * one link; an option that is chosen is always shown, and a list with a chosen option among the rest opens whole.
+ * The first six are the lists' own order: the types by the act's rank (laws and ordinances, then the Government's
+ * and the ministers' acts), the domains by how many acts carry them (the dev API's counts, 26 November 2026), the
+ * categories as the summaries list them.
+ */
+function Choices({
+  keys,
+  chosen,
+  label,
+  onToggle,
+  more,
+}: {
+  readonly keys: readonly string[]
+  readonly chosen: readonly string[]
+  readonly label: (key: string) => string
+  readonly onToggle: (key: string) => void
+  /** The link's words for the options not shown („Încă 12 tipuri"); a list with none takes no link. */
+  readonly more?: (hidden: number) => string
+}) {
+  const rest = more === undefined ? [] : keys.slice(FIRST)
+  const [open, setOpen] = useState(() => rest.some((key) => chosen.includes(key)))
+  const shown = open || rest.length === 0 ? keys : [...keys.slice(0, FIRST), ...rest.filter((key) => chosen.includes(key))]
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-x-1">
+        {shown.map((key) => (
+          <Option key={key} on={chosen.includes(key)} onPress={() => onToggle(key)}>
+            {label(key)}
+          </Option>
+        ))}
+      </div>
+      {rest.length > 0 && more !== undefined ? (
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          className="inline-flex min-h-11 items-center px-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:min-h-9"
+        >
+          {open ? t`Mai puține` : more(rest.length)}
+        </button>
+      ) : null}
+    </>
+  )
+}
 
 const STATUS_CHOICES: readonly SearchStatus[] = ['implicit', 'toate', ...SEARCH_STATUSES]
 
@@ -125,6 +240,7 @@ export function LegislationFilterPanel({
   readonly returnFocus?: () => void
 }) {
   const years = yearOptions()
+  const filtered = isSearchFiltered(filters)
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -142,24 +258,18 @@ export function LegislationFilterPanel({
         </SheetHeader>
         <div className="mt-4 divide-y">
           <Group title={t`Ce`}>
-            <Row label={t`Tip`}>
-              <div className="grid grid-cols-2 gap-1">
-                {SEARCH_TYPES.map((key) => (
-                  <button key={key} type="button" aria-pressed={filters.tip.includes(key)} onClick={() => onChange({ ...filters, tip: toggled(filters.tip, key) })} className={pressed(filters.tip.includes(key))}>
-                    <span className="truncate">{typeLabel(key)}</span>
-                  </button>
-                ))}
-              </div>
-            </Row>
-            <Row label={t`Stare`}>
-              <div className="grid grid-cols-2 gap-1">
+            <ListRow label={t`Tip`}>
+              <Choices keys={SEARCH_TYPES} chosen={filters.tip} label={typeLabel} onToggle={(key) => onChange({ ...filters, tip: toggled(filters.tip, key) })} more={(hidden) => t`Încă ${hidden} tipuri`} />
+            </ListRow>
+            <ListRow label={t`Stare`}>
+              <div className="grid grid-cols-2 gap-x-1">
                 {STATUS_CHOICES.map((key) => (
-                  <button key={key} type="button" aria-pressed={filters.stare === key} onClick={() => onChange({ ...filters, stare: key })} className={pressed(filters.stare === key)}>
-                    <span className="truncate">{key === 'implicit' ? t`Fără cele abrogate` : key === 'toate' ? t`Toate` : legalStatusLabel(key)}</span>
-                  </button>
+                  <Option key={key} one on={filters.stare === key} onPress={() => onChange({ ...filters, stare: key })}>
+                    {key === 'implicit' ? t`Fără cele abrogate` : key === 'toate' ? t`Toate` : legalStatusLabel(key)}
+                  </Option>
                 ))}
               </div>
-            </Row>
+            </ListRow>
           </Group>
           <Group title={t`Când`}>
             <Row label={t`De la`}>
@@ -188,40 +298,56 @@ export function LegislationFilterPanel({
             <p className="text-xs text-muted-foreground">
               {t`Domeniul, categoria și sancțiunile vin din rezumatele făcute automat ale actelor: un act fără rezumat nu apare când folosești unul dintre aceste filtre.`}
             </p>
-            <Row label={t`Domeniu`}>
-              <div className="grid gap-1">
-                {LEGAL_DOMAIN_SLUGS.map((key) => (
-                  <button key={key} type="button" aria-pressed={filters.domeniu.includes(key)} onClick={() => onChange({ ...filters, domeniu: toggled(filters.domeniu, key) })} className={pressed(filters.domeniu.includes(key))}>
-                    <span className="truncate">{legalDomainLabel(key)}</span>
-                  </button>
-                ))}
-              </div>
-            </Row>
-            <Row label={t`Categorie`}>
-              <div className="grid grid-cols-2 gap-1">
-                {SEARCH_CATEGORIES.map((key) => (
-                  <button key={key} type="button" aria-pressed={filters.categorie.includes(key)} onClick={() => onChange({ ...filters, categorie: toggled(filters.categorie, key) })} className={pressed(filters.categorie.includes(key))}>
-                    <span className="truncate">{searchCategoryLabel(key)}</span>
-                  </button>
-                ))}
-              </div>
-            </Row>
-            <Row label={t`Sancțiuni`}>
-              <button type="button" aria-pressed={filters.sanctiuni} onClick={() => onChange({ ...filters, sanctiuni: !filters.sanctiuni })} className={pressed(filters.sanctiuni)}>
+            <ListRow label={t`Domeniu`}>
+              <Choices
+                keys={LEGAL_DOMAIN_SLUGS}
+                chosen={filters.domeniu}
+                label={legalDomainLabelLoose}
+                onToggle={(key) => onChange({ ...filters, domeniu: toggled(filters.domeniu, key) })}
+                more={(hidden) => t`Încă ${hidden} domenii`}
+              />
+            </ListRow>
+            <ListRow label={t`Categorie`}>
+              <Choices
+                keys={SEARCH_CATEGORIES}
+                chosen={filters.categorie}
+                label={searchCategoryLabel}
+                onToggle={(key) => onChange({ ...filters, categorie: toggled(filters.categorie, key) })}
+                more={(hidden) => t`Încă ${hidden} categorii`}
+              />
+            </ListRow>
+            <ListRow label={t`Sancțiuni`}>
+              <Option on={filters.sanctiuni} onPress={() => onChange({ ...filters, sanctiuni: !filters.sanctiuni })}>
                 {t`Doar actele care menționează sancțiuni`}
-              </button>
-            </Row>
+              </Option>
+            </ListRow>
           </Group>
           <Group title={t`Cine`}>
             {/* LEG-N36A: the issuer filter waits for one name per issuer in the data. */}
             <p className="text-sm text-muted-foreground">{t`Filtrul după emitent vine curând: întâi fiecare emitent primește un singur nume în date.`}</p>
           </Group>
         </div>
-        {isSearchFiltered(filters) ? (
-          <button type="button" onClick={() => onChange(NO_SEARCH_FILTERS)} className="mt-6 min-h-11 w-full border text-sm hover:bg-muted">
+        {filtered ? (
+          <button
+            type="button"
+            onClick={() => onChange(NO_SEARCH_FILTERS)}
+            className="mt-6 hidden min-h-10 items-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:inline-flex"
+          >
             {t`Scoate toate filtrele`}
           </button>
         ) : null}
+        {/* On a phone the filters apply as they are pressed, and nothing said so: a bar that stays at the bottom
+            closes the panel onto the results, with the way to take every filter off beside it. */}
+        <div className="sticky -bottom-6 -mx-6 -mb-6 mt-6 flex items-center gap-4 border-t bg-background px-6 py-3 sm:hidden">
+          <Button type="button" className="min-h-11 flex-1" onClick={() => onOpenChange(false)}>
+            {t`Vezi rezultatele`}
+          </Button>
+          {filtered ? (
+            <button type="button" onClick={() => onChange(NO_SEARCH_FILTERS)} className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+              {t`Scoate toate`}
+            </button>
+          ) : null}
+        </div>
       </SheetContent>
     </Sheet>
   )

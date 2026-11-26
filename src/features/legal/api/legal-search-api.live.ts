@@ -49,6 +49,7 @@ const FINDER_SEARCH_QUERY = /* GraphQL */ `
           actId
         }
         documentId
+        nodePath
         nodeLabel
         snippet
         servedForm {
@@ -205,6 +206,7 @@ export async function fetchLegalSearchLive(
             {
               actId,
               documentId,
+              nodePath: str(raw.nodePath),
               nodeLabel: str(raw.nodeLabel),
               snippet: str(raw.snippet),
               servedForm:
