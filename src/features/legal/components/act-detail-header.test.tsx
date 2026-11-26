@@ -20,7 +20,8 @@ describe('ActDetailHeader — the legal_v2 bridge line', () => {
     expect(
       screen.getByText('Starea, legăturile și rezumatul provin din corpusul anterior.'),
     ).toBeInTheDocument()
-    expect(screen.getByText('În vigoare')).toBeInTheDocument()
+    // on the act's own page the status is a size up and in full contrast
+    expect(screen.getByText('În vigoare')).toHaveClass('text-base', 'font-semibold', 'text-foreground')
   })
 
   it('shows no status badge for an act the previous corpus does not hold, and says why', () => {
