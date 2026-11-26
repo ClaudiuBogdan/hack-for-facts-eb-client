@@ -7,7 +7,6 @@ import { DataStatusBadge } from '@/components/data-trust/data-status-badge'
 import { Button } from '@/components/ui/button'
 import { ChoiceSelect } from '@/components/ui/choice-select'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { LegalInfoNote } from '@/features/legal/components/hub/legislation-hub-chrome'
 import { LegalStatusBadge } from '@/features/legal/components/legal-status-badge'
 import { uniqueGazettePublication } from '@/features/legal/lib/act-facts'
 import { formatLegalDate, formatLegalNumber } from '@/features/legal/lib/legal-format'
@@ -50,6 +49,13 @@ export type ActPageModel = {
   readonly marks: readonly TldfMark[]
   readonly containsNonBmp: boolean
   readonly outline: readonly LegalOutlineEntry[]
+  /** The outline's read, when it is not simply there: the contents never says „none" while it loads or after it failed. */
+  readonly outlineState?: 'pending' | 'failed'
+  /**
+   * For a text served in parts: asked when a place of the outline is not on the page. True when its part is now
+   * being read; the page then goes there once the part arrives.
+   */
+  readonly onReach?: (path: string) => boolean
   /** Made-up data: the page says so beside the status. */
   readonly mock: boolean
   readonly onForm?: (documentId: string) => void
@@ -256,7 +262,6 @@ function GoToArticle({ outline, onGo, touch }: Pick<ContentsProps, 'outline' | '
       <div className="flex items-center rounded-md border focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-ring">
         <input
           name="articol"
-          inputMode="numeric"
           autoComplete="off"
           aria-label={t`Mergi la articolul cu numărul`}
           placeholder={t`Mergi la articolul…`}
@@ -433,11 +438,8 @@ function Summary({ act }: { readonly act: LegalActDetail }) {
   if (text === '') return null
   return (
     <section aria-labelledby="act-pe-scurt" className="border-b pb-6">
-      <h2 id="act-pe-scurt" className="flex items-center gap-0.5 text-sm font-medium">
+      <h2 id="act-pe-scurt" className="text-sm font-medium">
         <Trans>Pe scurt</Trans>
-        <LegalInfoNote label={t`Despre rezumat`}>
-          <Trans>Rezumat generat de AI din textul actului. Este un strat explicativ, nu textul legii și nu consultanță juridică.</Trans>
-        </LegalInfoNote>
       </h2>
       <p className={cn('mt-1 text-base leading-7', !open && 'line-clamp-4 sm:line-clamp-3')}>{text}</p>
       {text.length > 240 ? (
@@ -445,6 +447,10 @@ function Summary({ act }: { readonly act: LegalActDetail }) {
           {open ? <Trans>Arată mai puțin</Trans> : <Trans>Citește tot rezumatul</Trans>}
         </button>
       ) : null}
+      {/* Said in sight, as on the live page: a reader must not take the summary for the law. */}
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+        <Trans>Rezumat generat de AI din textul actului. Este un strat explicativ, nu textul legii și nu consultanță juridică.</Trans>
+      </p>
     </section>
   )
 }
@@ -457,7 +463,7 @@ function FormLine({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | '
   return (
     <div className="space-y-4 py-5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-        <span className="text-muted-foreground" id="act-forma">
+        <span className="scroll-mt-20 text-muted-foreground" id="act-forma">
           <Trans>Versiunea textului</Trans>
         </span>
         {forms.length > 1 && onForm !== undefined && forms.some((form) => form.documentId === shown.documentId) ? (
@@ -539,11 +545,15 @@ function References({ group }: { readonly group: LegalReferenceGroup }) {
           </li>
         )}
       />
-      {group.totalCount !== null && group.totalCount > group.items.length ? (
+      {group.hasMore ? (
         <p className="mt-2 text-xs leading-5 text-muted-foreground">
-          <Trans>
-            Primele {group.items.length} din {formatLegalNumber(group.totalCount, i18n.locale)}.
-          </Trans>
+          {group.totalCount !== null ? (
+            <Trans>
+              Se afișează {formatLegalNumber(group.items.length, i18n.locale)} din {formatLegalNumber(group.totalCount, i18n.locale)}. Lista completă apare odată cu directorul de acte.
+            </Trans>
+          ) : (
+            <Trans>Se afișează primele {formatLegalNumber(group.items.length, i18n.locale)}. Lista completă apare odată cu directorul de acte.</Trans>
+          )}
         </p>
       ) : null}
     </>
@@ -644,9 +654,6 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
       ) : null}
       {act.officialTextUrl !== null ? (
         <RecordRow title={<Trans>Sursa</Trans>}>
-          <p className="text-muted-foreground">
-            <Trans>Textul și datele despre act vin de pe Portalul Legislativ al Ministerului Justiției. Forma oficială a unui act este cea publicată în Monitorul Oficial.</Trans>
-          </p>
           <SourceLink href={act.officialTextUrl}>
             <Trans>Textul, pe legislatie.just.ro</Trans>
           </SourceLink>
@@ -659,18 +666,19 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, mock, onForm, notices, textState, afterText } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, textState, afterText } = model
   const { i18n } = useLingui()
   const [face, setFace] = useState<ReadingFace>('serif')
   const [sheet, setSheet] = useState(false)
   /** One short sentence in the bar, in the place's stead for a moment: a link was copied, or a place could not be reached. */
   const [said, setSaid] = useState<string | null>(null)
+  /** A place asked for whose part of the text is still being read. */
+  const [wanted, setWanted] = useState<string | null>(null)
   const names = useMemo(() => headingNames(blocks), [blocks])
   const activePath = useActivePath(outline, blocks)
   const ancestors = useMemo(() => ancestorsOf(outline, activePath), [outline, activePath])
   const trail = useMemo(() => new Set(ancestors.map((entry) => entry.path)), [ancestors])
   const active = outline.find((entry) => entry.path === activePath)
-  const place = active === undefined ? [] : [...ancestors.slice(-2), active]
 
   const go = (path: string) => {
     setSheet(false)
@@ -678,10 +686,29 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
     requestAnimationFrame(() => {
       const target = document.getElementById(domAnchorForPath(path))
       if (target !== null) target.scrollIntoView({ block: 'start' })
-      // A text served in parts: the place exists, its part is not on the page yet.
-      else setSaid(t`Locul acesta este într-o parte a textului care nu s-a încărcat încă.`)
+      // A text served in parts: the place exists, its part is not on the page yet. Its part is read, then the page goes there.
+      else if (onReach?.(path) === true) {
+        setWanted(path)
+        setSaid(t`Se încarcă partea de text în care se află…`)
+      } else setSaid(t`Locul acesta nu este în textul afișat.`)
     })
   }
+  useEffect(() => {
+    if (wanted === null) return
+    const target = document.getElementById(domAnchorForPath(wanted))
+    if (target === null) return
+    target.scrollIntoView({ block: 'start' })
+    setWanted(null)
+    setSaid(null)
+  }, [wanted, blocks])
+  /** A form picked from the record at the page's end: the reader is taken back to where the text starts. */
+  const pickForm =
+    onForm === undefined
+      ? undefined
+      : (documentId: string) => {
+          onForm(documentId)
+          document.getElementById('act-forma')?.scrollIntoView({ block: 'start' })
+        }
   const copyLink = (block: TldfBlock) => {
     const address = new URL(`/legislation/acts/${act.actId}`, window.location.origin)
     if (shown !== null && shown.documentId !== act.canonical?.documentId) address.searchParams.set('doc', shown.documentId)
@@ -699,7 +726,13 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   // In a long contents the lit place is kept in sight, inside the panel only.
   useEffect(() => {
     if (activePath === null) return
-    document.querySelector('[data-act-contents] [aria-current=location]')?.scrollIntoView({ block: 'nearest' })
+    // The panel's own scroll is moved, never the window's: `scrollIntoView` would move both.
+    const panel = document.querySelector('[data-act-contents]')
+    const lit = panel?.querySelector('[aria-current=location]')
+    if (panel == null || lit == null) return
+    const frame = panel.getBoundingClientRect()
+    const mark = lit.getBoundingClientRect()
+    if (mark.top < frame.top + 8 || mark.bottom > frame.bottom - 48) panel.scrollTop += mark.top - frame.top - frame.height / 2
   }, [activePath])
 
   const contents = (touch: boolean) => <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} />
@@ -733,23 +766,31 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                 </SheetContent>
               </Sheet>
             ) : null}
-            <p aria-live="polite" className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
-              {said !== null ? (
-                <span className="text-foreground">{said}</span>
-              ) : place.length === 0 ? (
-                act.displayCitation
+            <p className="flex min-w-0 flex-1 items-baseline text-sm text-muted-foreground">
+              {/* Only the one-off sentence is announced: the place changes with every scroll. */}
+              <span role="status" className="truncate text-foreground">
+                {said}
+              </span>
+              {said !== null ? null : active === undefined ? (
+                <span className="truncate">{act.displayCitation}</span>
               ) : (
-                place.map((entry, index) => (
-                  // On a phone the bar has room for the place itself; its chapter and section join from `sm`.
-                  <span key={entry.path} className={cn(index === place.length - 1 ? 'font-medium text-foreground' : 'hidden sm:inline')}>
-                    {index > 0 ? (
-                      <span aria-hidden="true" className="hidden font-normal text-muted-foreground sm:inline">
-                        {' › '}
-                      </span>
-                    ) : null}
-                    {entryLabel(entry)}
-                  </span>
-                ))
+                <>
+                  {/* The chapter and section give way first: the place itself is never cut. From `sm` only. */}
+                  {ancestors.length > 0 ? (
+                    <span className="hidden min-w-0 truncate sm:inline">
+                      {ancestors
+                        .slice(-2)
+                        .map((entry) => entryLabel(entry))
+                        .join(' › ')}
+                    </span>
+                  ) : null}
+                  {ancestors.length > 0 ? (
+                    <span aria-hidden="true" className="hidden shrink-0 px-1.5 sm:inline">
+                      ›
+                    </span>
+                  ) : null}
+                  <span className="shrink-0 font-medium text-foreground">{entryLabel(active)}</span>
+                </>
               )}
             </p>
             {shown !== null ? (
@@ -767,9 +808,15 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           <div data-act-contents className="sticky top-16 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2">
             {outline.length > 0 ? (
               contents(false)
+            ) : outlineState === 'pending' ? (
+              <div role="status" aria-label={t`Se încarcă cuprinsul…`} className="space-y-3 pt-1">
+                {['w-2/3', 'w-full', 'w-5/6', 'w-1/2'].map((width) => (
+                  <div key={width} className={cn('h-3.5 animate-pulse rounded bg-muted motion-reduce:animate-none', width)} />
+                ))}
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                <Trans>Acest text nu are un cuprins.</Trans>
+              <p className="text-sm leading-6 text-muted-foreground">
+                {outlineState === 'failed' ? <Trans>Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos.</Trans> : <Trans>Acest text nu are un cuprins.</Trans>}
               </p>
             )}
           </div>
@@ -784,7 +831,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
             </article>
           )}
           {afterText}
-          <ActRecord act={act} shown={shown} onForm={onForm} />
+          <ActRecord act={act} shown={shown} onForm={pickForm} />
           {children}
         </main>
       </div>

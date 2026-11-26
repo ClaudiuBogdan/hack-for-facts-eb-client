@@ -21,7 +21,7 @@ export const prototype = {
     act: {
       title: 'Pagina actului: un act servit (?act=72159)',
       component: ActLivePage,
-      note: 'The same page over a served act: the act, its text and its outline through the feature\'s own hooks, the masthead lines lifted into the head as on the live page. A text served in parts loads its first part and the rest on a button. Not in the prototype: opening at a fragment from the address (?nod=), the form from the address (?doc=), jumping to an article in a part not yet loaded, and the record\'s full rules (it shows the layout with what the act serves).',
+      note: "The same page over a served act: the act, its text and its outline through the feature's own hooks, the opening lines lifted into the head as on the live page. Before the text it says what the live page says (the default form's notices and the act's warnings, the live components unchanged, not yet restyled). A text served in parts reads its next part as you scroll, and a jump from the contents reads up to the part that holds the place. Not in the prototype: opening at a fragment or a form from the address (?nod=, ?doc=), and the record's full rules (it shows the layout with what the act serves). Try ?act=66150 for a very long act.",
     },
   },
   compare: ['elemente'],

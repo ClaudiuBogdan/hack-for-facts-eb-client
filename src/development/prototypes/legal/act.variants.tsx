@@ -11,6 +11,7 @@ import { useLegalRender } from '@/features/legal/hooks/use-legal-render'
 import { uniqueGazettePublication } from '@/features/legal/lib/act-facts'
 import { ActDefaultNotices } from '@/features/legal/components/act-default-notices'
 import { ActWarnings } from '@/features/legal/components/act-warnings'
+import { isTextNotYetAvailable, LegalRenderFailureError, type LegalRenderFailure } from '@/features/legal/lib/legal-render-error'
 import { defaultReadingOf, findVersion, withServedForm } from '@/features/legal/lib/legal-versions'
 import { legalIssuerLabel } from '@/features/legal/lib/legal-vocabulary'
 import { splitMasthead } from '@/features/legal/lib/tldf/masthead'
@@ -156,6 +157,56 @@ export function ActSpecimenPage() {
   )
 }
 
+/** Why the text is not shown, in the live reader's own words for each kind of failure. */
+function TextFailure({ error, sourceUrl, onRetry }: { readonly error: unknown; readonly sourceUrl: string | null; readonly onRetry: () => void }) {
+  const failure: LegalRenderFailure = error instanceof LegalRenderFailureError ? error.failure : { kind: 'transport', message: String(error), retryable: true }
+  const notYet = isTextNotYetAvailable(failure)
+  const title = notYet
+    ? t`Textul nu este încă disponibil`
+    : {
+        not_found: t`Nu există un text servit pentru acest document`,
+        restricted: t`Textul acestui document este restricționat`,
+        unavailable: t`Nu avem un text servibil pentru acest act`,
+        inconsistent: t`Textul stocat este momentan inconsistent`,
+        transport: t`Nu am putut încărca textul`,
+      }[failure.kind]
+  const body =
+    failure.renderStatus === 'composition_not_served'
+      ? t`Textul acestei versiuni are mai multe părți (antet și corp), pe care nu le afișăm încă împreună.`
+      : failure.renderStatus === 'label_missing'
+        ? t`Nu afișăm o formă consolidată fără mențiunea Portalului Legislativ și data ei, care lipsesc încă pentru această versiune.`
+        : notYet
+          ? t`Versiunea există pe Portalul Legislativ, dar textul ei nu este încă încărcat aici.`
+          : {
+              not_found: t`Ținem actul, dar nicio generare de text pentru această expresie.`,
+              restricted: t`Metadatele rămân publice; textul se consultă la sursa oficială.`,
+              unavailable: t`Extracția nu a produs un text servibil pentru această expresie.`,
+              inconsistent: t`Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum.`,
+              transport: t`Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă.`,
+            }[failure.kind]
+  return (
+    <ActTextState
+      title={title}
+      action={
+        <>
+          {sourceUrl !== null ? (
+            <SourceLink href={sourceUrl}>
+              <Trans>Vezi textul pe legislatie.just.ro</Trans>
+            </SourceLink>
+          ) : null}
+          {failure.retryable ? (
+            <Button variant="outline" className="h-11 sm:h-10" onClick={onRetry}>
+              <Trans>Încearcă din nou</Trans>
+            </Button>
+          ) : null}
+        </>
+      }
+    >
+      {body}
+    </ActTextState>
+  )
+}
+
 /* ── a served act ────────────────────────────────────────────────────────── */
 
 const DEFAULT_ACT = '72159'
@@ -184,8 +235,10 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
             retry: false,
           })),
   })
-  const loadedParts = partQueries.filter((query) => query.data?.kind === 'chunk').length
-  const partBlocks = partQueries.flatMap((query) => (query.data?.kind === 'chunk' ? query.data.tldf.blocks : []))
+  // Parts are shown in order and without gaps: a later part that arrives first waits for the ones before it.
+  const firstMissing = partQueries.findIndex((query) => query.data?.kind !== 'chunk')
+  const loadedParts = firstMissing === -1 ? partQueries.length : firstMissing
+  const partBlocks = partQueries.slice(0, loadedParts).flatMap((query) => (query.data?.kind === 'chunk' ? query.data.tldf.blocks : []))
   const served = render.data?.kind === 'envelope' ? render.data.tldf.blocks : partBlocks
   const split = useMemo(() => splitMasthead(served, mastheadFacts(act)), [served, act])
   // A part compiled in another run than the manifest's is never joined to it: the text is read again whole.
@@ -215,16 +268,7 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
         }
       />
     ) : failed && served.length === 0 ? (
-      <ActTextState
-        title={t`Nu am putut încărca textul`}
-        action={
-          <Button variant="outline" className="h-11 sm:h-10" onClick={readAgain}>
-            <Trans>Încearcă din nou</Trans>
-          </Button>
-        }
-      >
-        {t`Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă.`}
-      </ActTextState>
+      <TextFailure error={render.error ?? partQueries.find((query) => query.isError)?.error} sourceUrl={shown?.sourceUrl ?? act.officialTextUrl} onRetry={readAgain} />
     ) : waiting ? (
       <ActTextLoading />
     ) : undefined
@@ -238,6 +282,17 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
         marks: render.data?.kind === 'chunk' ? [] : (render.data?.tldf.marks ?? []),
         containsNonBmp: render.data?.kind === 'chunk' ? false : (render.data?.tldf.contains_non_bmp ?? false),
         outline: outline.data ?? [],
+        ...(outline.isPending && documentId !== null ? { outlineState: 'pending' as const } : outline.isError ? { outlineState: 'failed' as const } : {}),
+        // The outline's offsets and the parts' spans count the same folded text: the part that holds a place is the last one starting at or before it.
+        onReach: (path) => {
+          const start = outline.data?.find((entry) => entry.path === path)?.charStart
+          if (manifest === null || start == null) return false
+          let part = -1
+          for (const [index, chunk] of manifest.chunks.entries()) if (chunk.span[0] <= start) part = index
+          if (part < loadedParts) return false
+          setParts(part + 1)
+          return true
+        },
         mock: false,
         onForm,
         // The live page's own notices, unchanged and not yet restyled: what they say matters more here than how they look.
