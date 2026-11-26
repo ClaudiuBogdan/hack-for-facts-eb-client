@@ -51,3 +51,10 @@ server today.
 - On `/`, the browser recomputes the heads of every matched route, so the landing's title and canonical replace the root's
   while the error page shows.
 
+Seen once, not reproduced (full integration run on 40d12650e, 26 November 2026, load average 18.6):
+`statistics-ins-native-outcomes.spec.ts:90` (en 1440) passed on its second retry, after a chunk-recovery `__reload` on
+`/ins/teritorii/54975?…&lang=en`. A language switch imports the en catalogue in the root's `beforeLoad`, so a failed chunk
+there is a root error; that path, the error page and its recovery reload were the same before this change, which only adds
+the document around them. A rerun of the statistics project (retries 0) did not reload; another test failed under the same
+load. If CI's integration shards show the reload again, it goes to root before the dev sync.
+
