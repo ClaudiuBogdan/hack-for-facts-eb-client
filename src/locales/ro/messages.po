@@ -55079,3 +55079,31 @@ msgstr "Fără cod de clasificație"
 #: src/features/privacy/components/cookie-settings-page.tsx:258
 msgid "Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă."
 msgstr "Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă."
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:260
+msgid "{label}: {amount}."
+msgstr "{label}: {amount}."
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:255
+msgid "{label}: fără valoare publicată."
+msgstr "{label}: fără valoare publicată."
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:258
+msgid "{label}: valoare atribuită de {amount}."
+msgstr "{label}: valoare atribuită de {amount}."
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:264
+msgid "Anii: {period}."
+msgstr "Anii: {period}."
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:251
+msgid "Sursele consultate nu au înregistrări pentru această firmă."
+msgstr "Sursele consultate nu au înregistrări pentru această firmă."
+
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:83
+msgid "Toate înregistrările, pe pagina firmei"
+msgstr "Toate înregistrările, pe pagina firmei"
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:266
+msgid "Unele înregistrări nu au valoare publicată, deci totalurile disponibile sunt limite inferioare."
+msgstr "Unele înregistrări nu au valoare publicată, deci totalurile disponibile sunt limite inferioare."

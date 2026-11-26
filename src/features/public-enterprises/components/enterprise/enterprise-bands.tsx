@@ -5,9 +5,8 @@ import { ChevronDown } from 'lucide-react'
 
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { moneyText as companyMoneyText, yearRanges } from '@/features/private-companies/lib/company-profile-format'
+import { yearRanges } from '@/features/private-companies/lib/company-profile-format'
 import type { CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
-import { moneyPeriod } from '@/features/private-companies/lib/company-profile-text'
 import { HomeBand } from '@/features/procurement/components/home/home-chrome'
 import { useProcurementBuyerDirectCategories } from '@/features/procurement/hooks/use-procurement-buyer'
 import { CategoryRows, PartyRows } from '@/features/procurement/components/home/home-rows'
@@ -18,7 +17,7 @@ import { HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/
 import { cn } from '@/lib/utils'
 import type { PublicEnterpriseRead } from '@/schemas/public-enterprise-profile'
 import { boardPanel, type ControlGroup, type ControlRow, type IndicatorTables } from '../../lib/enterprise-model'
-import { controlLede, spendingLede } from '../../lib/enterprise-text'
+import { controlLede, sellerLede, spendingLede } from '../../lib/enterprise-text'
 import { BandColumns, BandNote } from '../hub/hub-parts'
 import { ControlList, IndicatorFacts, IndicatorTableView, OutLink, PeerList, StatusTable } from './enterprise-parts'
 
@@ -75,22 +74,13 @@ function Seller({ cui, company }: { readonly cui: string; readonly company: Read
   if (company.status === 'failed') return <HubLoadError onRetry={company.retry} />
   const model = company.value
   if (!model) return <p className="text-sm text-muted-foreground">{t`Fără fișă de firmă: nu se știe ce a vândut instituțiilor.`}</p>
-  const { money } = model
-  if (money.receivedCount === 0) return <p className="text-sm text-muted-foreground">{t`Nu apare ca furnizor plătit din bani publici.`}</p>
-  const period = moneyPeriod(model)
-  const valued = money.flows.some((flow) => flow.receipt && flow.total !== null)
+  const summary = sellerLede(model)
+  if (model.money.receivedCount === 0) return <p className="text-sm text-muted-foreground">{summary}</p>
   return (
     <div>
-      <p className="text-sm leading-relaxed text-foreground">
-        {valued
-          ? period
-            ? t`Contracte și plăți publice de ${companyMoneyText(money.received)}, ${period}.`
-            : t`Contracte și plăți publice de ${companyMoneyText(money.received)}.`
-          : t`Apare în contracte și plăți publice fără valoare publicată.`}{' '}
-        {money.unvaluedCount > 0 && valued ? <span className="text-muted-foreground">{t`O parte nu are valoare publicată: suma e o limită de jos.`}</span> : null}
-      </p>
+      <p className="text-sm leading-relaxed text-foreground">{summary}</p>
       <OutLink page="company" cui={cui} hash="bani-publici" className="mt-2">
-        {t`Ce a primit de la stat`}
+        {t`Toate înregistrările, pe pagina firmei`}
       </OutLink>
     </div>
   )
