@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
-import { act, fireEvent, render, screen } from '@/test/test-utils'
+import { act, fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { LegalActDetail } from '@/schemas/legal'
 import {
   legalActDetailById,
   legalActDetailFixture,
   legalActDetailRichFixture,
+  legalActDetailV2Fixture,
 } from '../mocks/fixtures/legal-act-detail'
 import { LegalActPage } from './legal-act-page'
 
@@ -327,6 +328,33 @@ describe('LegalActPage', () => {
     mockAct({ ...legalActDetailRichFixture, actId: '900001' })
     rerender(<LegalActPage actId="900001" />)
     expect(timeline()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('keeps the line of the version the address asks for in sight in the record, and only then', () => {
+    const base = legalActDetailV2Fixture.documents[0]
+    const canonical = legalActDetailV2Fixture.canonical
+    if (base === undefined || canonical === null) throw new Error('the legal_v2 fixture lost its default')
+    // nine consolidations, one a year from 2001; the newest is the default
+    const act = {
+      ...legalActDetailV2Fixture,
+      canonical: { ...canonical, documentId: 'f9' },
+      documents: Array.from({ length: 9 }, (_, index) => ({
+        ...base,
+        documentId: `f${String(index + 1)}`,
+        versionKind: 'consolidare',
+        versionDate: `${String(2001 + index)}-03-01`,
+        portalLabelDate: `${String(2001 + index)}-03-01`,
+        isCanonical: index === 8,
+      })),
+    }
+    mockAct(act)
+    const lines = () => within(screen.getByRole('region', { name: /Versiunile textului/ })).getAllByRole('listitem')
+    const { unmount } = render(<LegalActPage actId={act.actId} docOverride="f2" />)
+    expect(lines()).toHaveLength(6)
+    expect(lines()[5]?.firstElementChild).toHaveTextContent('2002')
+    unmount()
+    render(<LegalActPage actId={act.actId} />)
+    expect(lines()).toHaveLength(5)
   })
 
   it('lets a line of the record break anywhere: an identifier with no space cannot run past a phone', () => {

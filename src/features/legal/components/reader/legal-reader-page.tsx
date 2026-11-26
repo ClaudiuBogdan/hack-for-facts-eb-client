@@ -101,8 +101,12 @@ type Props = {
    * there), so they are said once at any width.
    */
   readonly warnings?: React.ReactNode
-  /** The fișa — the detail accordion, rendered under its own section H2. */
-  readonly fisa: React.ReactNode
+  /**
+   * The fișa — the detail accordion, rendered under its own section H2. As a function it is told which of the act's
+   * versions the address asks for, as the reader resolved it: `ownDocumentId` is the act's own document id (an old
+   * page id on legal_v2 is looked up first), or null when the address asks for none or for one that was refused.
+   */
+  readonly fisa: React.ReactNode | ((text: { readonly ownDocumentId: string | null }) => React.ReactNode)
   /**
    * `?doc=` — read this expression instead of the canonical document. Honoured
    * only when it is one of `act.documents`; another act's document is refused.
@@ -669,7 +673,7 @@ export function ActReadingLayout({
             <h2 id="act-fisa-heading" className="pb-5 text-xl font-semibold tracking-tight">
               <Trans>Fișa actului</Trans>
             </h2>
-            {fisa}
+            {typeof fisa === 'function' ? fisa({ ownDocumentId: ownId }) : fisa}
           </section>
 
           {/* The floating way back, beside the text from 72rem. */}

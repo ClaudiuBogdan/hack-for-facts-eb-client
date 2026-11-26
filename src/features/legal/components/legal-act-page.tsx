@@ -116,7 +116,7 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
             <ActWarnings act={data} />
           ) : null
         }
-        fisa={
+        fisa={({ ownDocumentId }) => (
           /* Rows stay in ladder order — relevance, then the record, then
              the mechanics, then the limits — so opening them top to bottom
              is still the progressive disclosure the page was designed
@@ -136,7 +136,9 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
               complete={data.timelineComplete}
               available={bridgeCovers(data, 'timeline')}
             />
-            <ActVersionsBand act={data} {...(docOverride !== undefined && { shownDocumentId: docOverride })} />
+            {/* The version asked for by the address, by the id the reader resolved it to (an old page id names a
+                form by another id): its line is never behind the row's cut. */}
+            <ActVersionsBand act={data} {...(ownDocumentId !== null && { shownDocumentId: ownDocumentId })} />
             <ActReferencesBand
               group={data.outLinks}
               direction="out"
@@ -156,7 +158,7 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
               mastheadInHeader={masthead?.lifted ?? false}
             />
           </ActAccordion>
-        }
+        )}
       />
     </div>
   )

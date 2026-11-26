@@ -173,6 +173,23 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(screen.getByLabelText(/Versiunea textului/)).toHaveValue('f900011')
   })
 
+  it('tells the record which version the address asks for by the id it resolved to, never the old page id', async () => {
+    const record = ({ ownDocumentId }: { readonly ownDocumentId: string | null }) => <p>record for {String(ownDocumentId)}</p>
+    // an old page id: nothing while the lookup runs, then the form it names
+    const { unmount } = render(<ActReadingLayout act={legalActDetailV2Fixture} docOverride="777" lead={null} fisa={record} />)
+    expect(await screen.findByText('record for f900011')).toBeInTheDocument()
+    expect(screen.queryByText('record for 777')).not.toBeInTheDocument()
+    unmount()
+    // a refused id names no version of the act
+    const refused = render(<ActReadingLayout act={legalActDetailV2Fixture} docOverride="54260" lead={null} fisa={record} />)
+    await screen.findByText(/nu aparține acestui act/)
+    expect(screen.getByText('record for null')).toBeInTheDocument()
+    refused.unmount()
+    // no ?doc=: none
+    render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={record} />)
+    expect(screen.getByText('record for null')).toBeInTheDocument()
+  })
+
   it.each([
     ['names no version of this act', '54260'],
     ['names no form at all', '31337'],
