@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import { getClassificationName, getClassificationParent } from '@/lib/classifications'
 import {
   getEconomicChapterName,
@@ -15,6 +16,7 @@ export type TreemapInput = {
   code: string
   isLeaf: boolean
   children: TreemapInput[]
+  terminal?: boolean
 }
 
 type BuildTreemapOptions = {
@@ -33,6 +35,7 @@ type BuildTreemapV2Options = {
   constraint?: { type: 'fn' | 'ec'; code: string }
   /** When there is no path (root), use this depth for grouping. */
   rootDepth?: 2 | 4 | 6
+  preserveUnclassified?: boolean
   /** Filter out specific economic codes (e.g., ec:51, 55.01 for spending) */
   excludeEcCodes?: string[]
   /** Filter out specific functional codes (e.g., fn:42, 43, 47, 36.05 for income) */
@@ -46,7 +49,7 @@ export type ExcludedItemsSummary = {
   items: Array<{ code: string; label: string; amount: number }>
 }
 
-export function buildTreemapDataV2({ data, primary, path, constraint, rootDepth, excludeEcCodes, excludeFnCodes }: BuildTreemapV2Options): TreemapInput[] {
+export function buildTreemapDataV2({ data, primary, path, constraint, rootDepth, excludeEcCodes, excludeFnCodes, preserveUnclassified }: BuildTreemapV2Options): TreemapInput[] {
   const currentCode = path.length > 0 ? path[path.length - 1] : null
   let depth = (currentCode
     ? (String(currentCode).split('.').length + 1) * 2
@@ -137,19 +140,21 @@ export function buildTreemapDataV2({ data, primary, path, constraint, rootDepth,
       if (!code.startsWith(clean(currentCode))) return acc
     }
 
-    const groupCode = getGroupCode(code)
-    if (!groupCode || (currentCode && groupCode === clean(currentCode))) {
-      return acc
-    }
+    const classifiedGroup = getGroupCode(code)
+    const exactParent = currentCode !== null && classifiedGroup === clean(currentCode)
+    const terminal = !classifiedGroup || exactParent
+    if (terminal && !preserveUnclassified) return acc
 
+    const groupCode = classifiedGroup || 'unclassified'
     if (!acc[groupCode]) {
       acc[groupCode] = {
-        name: getLabel(groupCode, item),
+        name: !classifiedGroup ? t`Fără cod de clasificație` : getLabel(groupCode, item),
         value: 0,
         code: groupCode,
         // Consider groups at depth >= 4 as leaves for UI purposes
-        isLeaf: depth >= 4,
+        isLeaf: terminal || depth >= 4,
         children: [],
+        ...(terminal ? { terminal: true } : {}),
       }
     }
 

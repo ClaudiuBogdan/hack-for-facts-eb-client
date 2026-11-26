@@ -137,6 +137,7 @@ type BudgetTreemapViewProps = Props & {
 }
 
 type TreemapNodePayload = {
+  terminal?: boolean
   name: string
   value: number
   signedValue: number
@@ -155,6 +156,7 @@ interface TreemapContentRendererProps {
   height: number;
   fill?: string;
   code?: string;
+  terminal?: boolean;
   payload?: TreemapNodePayload & Record<string, unknown>;
   [key: string]: unknown;
 }
@@ -396,6 +398,7 @@ const CustomizedContent: FC<{
   code?: string
   allowScaleAnimation?: boolean
   signedValue?: number
+  terminal?: boolean
   // Recharts passes the original datum under `payload`. We use its fill for stable coloring.
   payload?: TreemapNodePayload
   path?: BreadcrumbEntry[]
@@ -409,6 +412,7 @@ const CustomizedContent: FC<{
   const hasAnimatedInRef = useRef(false)
   const [isHovered, setIsHovered] = useState(false)
   const code = props.code ?? props.payload?.code
+  const terminal = props.terminal ?? props.payload?.terminal
   const bounceControls = useAnimationControls()
   const randomDelayRef = useRef(Math.random() * 0.15)
   const textScale = isHovered ? 1.1 : 1
@@ -418,7 +422,7 @@ const CustomizedContent: FC<{
   }, [])
 
   const analyticsRequest = useMemo(() => {
-    if (!code || !primary) {
+    if (!code || !primary || terminal) {
       return null
     }
 
@@ -430,8 +434,8 @@ const CustomizedContent: FC<{
     })
 
     return request.path.length > 0 ? request : null
-  }, [code, name, path, primary])
-  const shouldRenderInfoTrigger = Boolean(code && width > 40 && height > 40)
+  }, [code, name, path, primary, terminal])
+  const shouldRenderInfoTrigger = Boolean(code && !terminal && width > 40 && height > 40)
 
   useEffect(() => {
     if (!code) {
@@ -859,6 +863,7 @@ function BudgetTreemapView({
       signedValue: node.value,
       layoutValue: Math.abs(Number.isFinite(node.value) ? node.value : 0),
       code: node.code,
+      terminal: node.terminal,
       fill: getColor(`${primary}-${node.code}`),
     }))
   }, [deferredData, primary])
@@ -960,7 +965,8 @@ function BudgetTreemapView({
       return
     }
 
-    const target = event as { code?: string; payload?: { code?: string } }
+    const target = event as { code?: string; terminal?: boolean; payload?: { code?: string; terminal?: boolean } }
+    if (target?.terminal || target?.payload?.terminal) return
     const code = target?.code ?? target?.payload?.code ?? null
     startTransition(() => {
       onNodeClick?.(code ?? null)

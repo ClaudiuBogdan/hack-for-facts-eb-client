@@ -55074,3 +55074,7 @@ msgstr "Σ POP201D / Σ POP108D × 1,000"
 #: src/features/statistics/lib/territory-derived.ts:134
 msgid "Σ POP206D / Σ POP108D × 1.000"
 msgstr "Σ POP206D / Σ POP108D × 1,000"
+
+#: src/components/budget-explorer/budget-transform.ts:151
+msgid "Fără cod de clasificație"
+msgstr "No classification code"
