@@ -45,8 +45,14 @@ export function articleNumberAsKey(typed: string): string {
     .replace(/^0+(?=\d)/u, '')
 }
 
+/** The longest text read as an article number. */
+export const ARTICLE_TYPED_MAX = 40
+
 /** The article a typed number names, if the outline has it. */
 export function findArticle(outline: readonly LegalOutlineEntry[], typed: string): LegalOutlineEntry | undefined {
+  // No article number is this long („Articolul 1234^12"): a long paste names none, and is not searched (its runs
+  // of spaces would cost the regexes below time on every keystroke; Codex review, round 2).
+  if (typed.length > ARTICLE_TYPED_MAX) return undefined
   const asked = articleNumberAsKey(typed)
   if (asked === '') return undefined
   const articles = outline.filter(isArticleEntry)

@@ -19,7 +19,7 @@ import {
   act,
   createTestQueryClient,
 } from '@/test/test-utils'
-import { parseAppSearch } from '@/lib/router-search-codec'
+import { parseAppSearch, stringifyAppSearch } from '@/lib/router-search-codec'
 import { legalReaderSearchSchema } from '@/schemas/legal-search'
 import type { LegalOutlineEntry } from '@/schemas/legal'
 import {
@@ -35,7 +35,8 @@ const navigateMock = vi.fn()
 vi.mock('@tanstack/react-router', async (importOriginal) => ({
   // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
   ...(await importOriginal<typeof import('@tanstack/react-router')>()),
-  useRouterState: () => addressSearch,
+  // The stand-in reads the state the way the app asks for it (`select`): the act's page, at the address the test sets.
+  useRouterState: ({ select }: { readonly select: (state: unknown) => unknown }) => select({ location: { pathname: '/legislation/acts/1', search: addressSearch } }),
   Link: ({ children, to }: { readonly children: ReactNode; readonly to: string }) => <a href={to}>{children}</a>,
   useNavigate: () => navigateMock,
 }))
@@ -45,6 +46,12 @@ let addressSearch: Record<string, unknown> = {}
 
 /** What the outline transport answers next: a value, or a promise the test settles. */
 let outlineAnswer: () => Promise<LegalOutlineEntry[]> = async () => []
+/** The app's search serializer, counted: each entry's address is written once. */
+vi.mock('@/lib/router-search-codec', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/router-search-codec')>()
+  return { ...real, stringifyAppSearch: vi.fn(real.stringifyAppSearch) }
+})
+
 vi.mock('../../api/legal-outline-api', () => ({
   fetchLegalOutline: vi.fn(() => outlineAnswer()),
 }))
@@ -163,9 +170,47 @@ describe('the contents\' box', () => {
       readonly search: (previous: Record<string, unknown>) => Record<string, unknown>
     }
     expect(options.search({ doc: '100023' })).toEqual({ doc: '100023', nod: 'c2.a30' })
-    // the reader's place is in chapter 2 now: its branch opens, and the place is lit
-    expect(within(toc).getByRole('link', { name: 'Articolul 30' })).toHaveAttribute('aria-current', 'location')
+    // chapter 2's branch opens at once; chapter 1's stays folded
+    expect(within(toc).getByRole('link', { name: 'Articolul 30' })).toBeInTheDocument()
     expect(within(toc).queryByRole('link', { name: 'Articolul 3' })).toBeNull()
+    // but article 30 is not on the page (this outline names no block of the text): the reader is not there, and it
+    // is not lit as the place (Codex review, round 2)
+    expect(within(toc).getByRole('link', { name: 'Articolul 30' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('writes each entry\'s address once, not again on every render of the contents', async () => {
+    outlineAnswer = async () => outlineOf(1, 3)
+    const { rerender } = render(<ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />)
+    await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+    const written = vi.mocked(stringifyAppSearch)
+    const before = written.mock.calls.filter(([search]) => typeof search.nod === 'string').length
+    expect(before).toBeGreaterThanOrEqual(4)
+    rerender(<ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />)
+    rerender(<ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />)
+    expect(written.mock.calls.filter(([search]) => typeof search.nod === 'string')).toHaveLength(before)
+  })
+
+  it('gives the record\'s row an address that keeps the text on show and drops the place in it', async () => {
+    outlineAnswer = async () => outlineOf(1, 3)
+    addressSearch = { lang: 'en', nod: 'c1.a2' }
+    try {
+      render(<ActReadingLayout act={owning('100023')} docOverride="100023" nod="c1.a2" lead={null} fisa={null} />)
+      await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+      const href = screen.getByRole('link', { name: 'Fișa actului' }).getAttribute('href') ?? ''
+      // a new tab opens at the record, and no place in the address takes it back to the provision
+      const [address, hash] = href.split('#')
+      expect(hash).toBe('act-fisa')
+      expect(address?.startsWith('/legislation/acts/1?')).toBe(true)
+      const read = parseAppSearch(address?.slice(address.indexOf('?')) ?? '') as Record<string, unknown>
+      expect(read).toEqual({ lang: 'en', doc: '100023' })
+    } finally {
+      addressSearch = {}
+    }
+    // with nothing else in the address the path stays, so the place is not kept by a bare „#act-fisa"
+    outlineAnswer = async () => outlineOf(1, 3)
+    const legacy = render(<ActReadingLayout act={owning('100023')} lead={null} fisa={null} />)
+    await waitFor(() => expect(legacy.container.querySelector('a[href$="#act-fisa"]')).not.toBeNull())
+    expect(legacy.container.querySelector('a[href$="#act-fisa"]')?.getAttribute('href')).toBe('/legislation/acts/1#act-fisa')
   })
 })
 
@@ -191,10 +236,11 @@ describe('the contents on a phone', () => {
 describe('the box about the text shown', () => {
   it('names the version shown even when there is no version to choose', async () => {
     outlineAnswer = async () => []
-    // No version of the act is listed with a served render: never a choice. `100019` is shown by `?doc=`, and its text loads.
-    const base = owning('100019')
+    // No version of the act is listed with a served render: never a choice. `100023` is shown by `?doc=`, and its
+    // text (a small envelope) loads.
+    const base = owning('100023')
     const act = { ...base, documents: base.documents.map((doc) => ({ ...doc, render: null })) }
-    const { container } = render(<ActReadingLayout act={act} docOverride="100019" lead={null} fisa={null} />)
+    const { container } = render(<ActReadingLayout act={act} docOverride="100023" lead={null} fisa={null} />)
     await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
     const about = screen.getByRole('complementary', { name: 'Despre textul afișat' })
     expect(within(about).getByText(/^Versiunea afișată: republicare/)).toBeInTheDocument()
@@ -213,6 +259,19 @@ describe('the box about the text shown', () => {
     expect(within(about).getByText(/^republicare/)).toBeInTheDocument()
     expect(container.textContent).not.toMatch(/Versiunea afișată/)
     expect(container.textContent).not.toMatch(/Forma din/)
+    // the bar itself names no version (this one is undated: it would be named „republicare", without „Forma din")
+    const bar = container.querySelector('.sticky.top-0')
+    expect(bar).not.toBeNull()
+    expect(bar?.textContent).not.toMatch(/republicare/)
+    // and the contents say nothing of a text that is not on the page (Codex review, round 2)
+    expect(container.textContent).not.toMatch(/Acest text nu are un cuprins/)
+  })
+
+  it('says a text on the page has no contents once its outline has settled empty', async () => {
+    outlineAnswer = async () => []
+    const { container } = render(<ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />)
+    await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
+    expect(await screen.findByText('Acest text nu are un cuprins.')).toBeInTheDocument()
   })
 })
 

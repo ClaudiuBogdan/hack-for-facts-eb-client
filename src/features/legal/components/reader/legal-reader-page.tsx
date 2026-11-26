@@ -227,10 +227,14 @@ export function ActReadingLayout({
   const [openPath, setOpenPath] = useState<string | null>(null)
   if (activePath !== null && activePath !== openPath) setOpenPath(activePath)
   const [nodMissed, setNodMissed] = useState(false)
+  const scrolledForRef = useRef<string | null>(null)
   // Another text: its places are its own. Declared before the effect that lands a `?nod=`, which then sets the place.
+  // The landing done there is forgotten too: back to a text at the place it was left (A at x, B, then A at x again
+  // through history) is a landing of its own (Codex review, round 2).
   useEffect(() => {
     setActivePath(null)
     setOpenPath(null)
+    scrolledForRef.current = null
   }, [documentId])
 
   const manifest =
@@ -250,7 +254,6 @@ export function ActReadingLayout({
   // DOCUMENT and nod: the same nod on a different `?doc=` is a new scroll,
   // and there is no separate reset effect to erase a fresh landing.
   const scrollIntentKey = `${documentId ?? ''}::${targetNod ?? ''}`
-  const scrolledForRef = useRef<string | null>(null)
   useEffect(() => {
     if (targetNod === undefined) return
     if (scrolledForRef.current === scrollIntentKey) return
@@ -321,10 +324,16 @@ export function ActReadingLayout({
       })
       // Same-nod reselection still deserves a scroll.
       scrolledForRef.current = null
-      setActivePath(entry.path)
+      // The branch chosen opens at once; the place is lit only once the reader is there. A provision whose part of
+      // the text has not loaded is reached (and lit) by the landing above when it arrives, and one that never
+      // arrives is never named as the place (Codex review, round 2).
+      setOpenPath(entry.path)
+      const land = () => {
+        if (scrollToNodTarget(entry.path, entry.path)) setActivePath(entry.path)
+      }
       // From the phone's sheet the scroll waits a frame, until the closing sheet has let go of the page's scroll.
-      if (options?.deferScroll === true) requestAnimationFrame(() => scrollToNodTarget(entry.path, entry.path))
-      else scrollToNodTarget(entry.path, entry.path)
+      if (options?.deferScroll === true) requestAnimationFrame(land)
+      else land()
     },
     [navigate, foreignDoc, documentId],
   )
@@ -334,12 +343,28 @@ export function ActReadingLayout({
   // address holds, and written by the router's own serializer. A path such
   // as `0.1` or `1` reads back as a number unless it is quoted, and the
   // route refuses a `nod` that is not text (Codex review, 26 November 2026).
+  // Each entry's address is written once for an address: moving the lit place re-renders a long contents, and
+  // must not serialize every entry's search again (Codex review, round 2).
   const addressSearch = useRouterState({ select: (state) => state.location.search as Record<string, unknown> })
-  const tocHref = useCallback(
-    (entry: LegalOutlineEntry) =>
-      stringifyAppSearch({ ...addressSearch, doc: (foreignDoc ? documentId : docOverride) ?? undefined, nod: entry.path }),
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const linkSearch = useMemo(
+    () => ({ ...addressSearch, doc: (foreignDoc ? documentId : docOverride) ?? undefined }),
     [addressSearch, foreignDoc, documentId, docOverride],
   )
+  const tocHref = useMemo(() => {
+    const written = new Map<string, string>()
+    return (entry: LegalOutlineEntry) => {
+      let href = written.get(entry.path)
+      if (href === undefined) {
+        href = stringifyAppSearch({ ...linkSearch, nod: entry.path })
+        written.set(entry.path, href)
+      }
+      return href
+    }
+  }, [linkSearch])
+  // The record's address for a new tab: the text on show, without the place, so the new tab stays at the record
+  // instead of being taken back to the provision when its part of the text arrives (Codex review, round 2).
+  const recordHref = `${pathname}${stringifyAppSearch({ ...linkSearch, nod: undefined })}#act-fisa`
 
   // The contents: folded or whole (a long outline starts folded until the
   // reader chooses), and the phone's sheet that carries them.
@@ -473,7 +498,7 @@ export function ActReadingLayout({
               {/* Keyed by the text: what was typed in the jump field, and its answer, belong to one version. */}
               <LegalReaderToc key={documentId ?? ''} entries={outline} activePath={activePath} onSelect={onSheetSelect} hrefFor={tocHref} touch collapsed={collapsed} openPath={openPath} />
             </div>
-            <ContentsRecordLink touch onGo={() => toRecord(true)} />
+            <ContentsRecordLink touch href={recordHref} onGo={() => toRecord(true)} />
           </>
         }
       />
@@ -501,7 +526,7 @@ export function ActReadingLayout({
               <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3 [scrollbar-width:thin]">
                 <LegalReaderToc entries={outline} activePath={activePath} onSelect={onTocSelect} hrefFor={tocHref} bare collapsed={collapsed} openPath={openPath} />
               </div>
-              <ContentsRecordLink onGo={() => toRecord(false)} />
+              <ContentsRecordLink href={recordHref} onGo={() => toRecord(false)} />
             </div>
           ) : outlinePending ? (
             <div aria-hidden className="sticky top-16 space-y-3 pt-1">
@@ -509,8 +534,9 @@ export function ActReadingLayout({
                 <div key={width} className={cn('h-3.5 animate-pulse rounded bg-muted motion-reduce:animate-none', width)} />
               ))}
             </div>
-          ) : outlineQuery.isError || documentId === null ? null : (
-            // Said of a text only: an act with no text to show has its own card in the reading column.
+          ) : outlineQuery.isError || !render.isSuccess ? null : (
+            // Said of a text on the page only: an act with no text to show, or a text that failed to load, has its
+            // own card in the reading column (Codex review, round 2).
             <p className="sticky top-16 text-sm leading-6 text-muted-foreground">
               <Trans>Acest text nu are un cuprins.</Trans>
             </p>

@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, within } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { LegalOutlineEntry } from '@/schemas/legal'
-import { articleNumberAsKey, contentsRows, findArticle, outlineAncestors } from '../../lib/legal-outline'
+import { ARTICLE_TYPED_MAX, articleNumberAsKey, contentsRows, findArticle, outlineAncestors } from '../../lib/legal-outline'
 import { ContentsRecordLink, ContentsToggle, LegalReaderToc } from './legal-reader-toc'
 
 const entry = (
@@ -214,6 +214,10 @@ describe('an article number as a reader types it', () => {
     expect(findArticle(articles, '81')?.path).toBe('a80')
     expect(findArticle(articles, '9')).toBeUndefined()
     expect(findArticle(articles, '  ')).toBeUndefined()
+    // a long paste names no article, and is not searched (Codex review, round 2): up to the limit it still is
+    expect(findArticle(articles, `8${' '.repeat(5000)}x`)).toBeUndefined()
+    expect(findArticle(articles, `${' '.repeat(ARTICLE_TYPED_MAX - 1)}8`)?.path).toBe('a8')
+    expect(findArticle(articles, `${' '.repeat(ARTICLE_TYPED_MAX)}8`)).toBeUndefined()
   })
 
   it('takes a number as the outline writes it before reading it another way', () => {

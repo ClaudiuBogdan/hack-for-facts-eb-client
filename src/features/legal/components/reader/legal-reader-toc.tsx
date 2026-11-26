@@ -120,10 +120,19 @@ function LevelGuides({ level }: { readonly level: number }) {
 }
 
 /** The way from the contents to the act's record at the page's end: the contents' last, fixed row. */
-export function ContentsRecordLink({ onGo, touch = false }: { readonly onGo: () => void; readonly touch?: boolean }) {
+export function ContentsRecordLink({
+  onGo,
+  touch = false,
+  href = '#act-fisa',
+}: {
+  readonly onGo: () => void
+  readonly touch?: boolean
+  /** The record's own address, for a new tab: the page's, without the place in the text. */
+  readonly href?: string
+}) {
   return (
     <a
-      href="#act-fisa"
+      href={href}
       onClick={(event) => {
         // A new tab or window is the browser's to open, as for the entries above.
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return

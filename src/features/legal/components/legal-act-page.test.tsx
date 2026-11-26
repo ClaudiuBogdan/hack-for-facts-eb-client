@@ -13,7 +13,8 @@ import { LegalActPage } from './legal-act-page'
 vi.mock('@tanstack/react-router', async (importOriginal) => ({
   // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
   ...(await importOriginal<typeof import('@tanstack/react-router')>()),
-  useRouterState: () => ({}),
+  // The stand-in reads the state the way the app asks for it (`select`), from an address of the act's page.
+  useRouterState: ({ select }: { readonly select: (state: unknown) => unknown }) => select({ location: { pathname: '/legislation/acts/1', search: {} } }),
   Link: ({
     children,
     to,

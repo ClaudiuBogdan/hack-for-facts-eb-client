@@ -40,7 +40,8 @@ import { legalReaderSearchSchema } from '@/schemas/legal-search'
 vi.mock('@tanstack/react-router', async (importOriginal) => ({
   // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
   ...(await importOriginal<typeof import('@tanstack/react-router')>()),
-  useRouterState: () => ({}),
+  // The stand-in reads the state the way the app asks for it (`select`), from an address of the act's page.
+  useRouterState: ({ select }: { readonly select: (state: unknown) => unknown }) => select({ location: { pathname: '/legislation/acts/1', search: {} } }),
   Link: ({
     children,
     to,
@@ -223,7 +224,9 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       )
       await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
       const toRecord = screen.getByRole('link', { name: 'Fișa actului' })
-      expect(toRecord).toHaveAttribute('href', '#act-fisa')
+      // for a new tab: the page's own address and the text on show (a number-like id quoted, so it reads back as
+      // text), at the record
+      expect(toRecord).toHaveAttribute('href', '/legislation/acts/1?doc=%22100023%22#act-fisa')
       // outside the contents' own list, so folding the list never takes it away
       expect(toRecord.closest('nav')).toBeNull()
       scrollIntoView.mockClear()
@@ -234,6 +237,28 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       Element.prototype.scrollIntoView = original
     }
   })
+
+  it('lands again on a place it left, after another text in between (history back)', async () => {
+    const nod = envelope.blocks[3]?.id ?? ''
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container, rerender } = render(
+        <ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />,
+      )
+      const landed = () => scrollIntoView.mock.contexts.filter((element) => (element as Element).id === `tldf-${nod}`).length
+      await waitFor(() => expect(landed()).toBe(1))
+      // another text, with no place
+      rerender(<ActReadingLayout act={owning('100019')} docOverride="100019" lead={null} fisa={null} />)
+      await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).toBeNull(), { timeout: 15_000 })
+      // back to the first text at the same place: a landing of its own (Codex review, round 2)
+      rerender(<ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />)
+      await waitFor(() => expect(landed()).toBe(2), { timeout: 15_000 })
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  }, 60_000)
 
   it('marks a deep-linked block for a moment, over any note style', async () => {
     const nod = envelope.blocks[3]?.id ?? ''
