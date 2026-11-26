@@ -32,6 +32,11 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * lighter (owner, from a picture; `?dreapta=vechi`, `?dreapta=simplu` and `?nota=intreaga` keep the rest).
  * The way back to the act's start is a control in the reading bar („La început", an arrow on a phone), shown once
  * the act's head has left the screen (owner: a long text makes it hard to scroll up again).
+ *
+ * Round 4 (same day), the head and the closing record: the head's facts each under its name, at the right above the
+ * side box on a wide screen and in a band under the title on narrower ones (`?antet=linii`, `?antet=banda` keep the
+ * others); the record in folding sections with their counts (`?fisa=coloana`, `?fisa=titluri`); the contents box
+ * ends with a fixed row that goes to the record.
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',

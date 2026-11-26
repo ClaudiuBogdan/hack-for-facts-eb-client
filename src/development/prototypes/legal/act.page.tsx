@@ -1,8 +1,8 @@
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, ChevronRight, ChevronsDownUp, ChevronsUpDown, List } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, ChevronRight, ChevronsDownUp, ChevronsUpDown, List } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust/data-status-badge'
 import { Button } from '@/components/ui/button'
 import { ChoiceSelect } from '@/components/ui/choice-select'
@@ -10,7 +10,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { LegalStatusBadge } from '@/features/legal/components/legal-status-badge'
 import { uniqueGazettePublication } from '@/features/legal/lib/act-facts'
 import { formatLegalDate, formatLegalNumber } from '@/features/legal/lib/legal-format'
-import { isConsolidationVersion, isSelectableVersion, orderVersionsNewestFirst, portalConsolidationNote, versionDateOf, versionKindLabel, type ShownVersion } from '@/features/legal/lib/legal-versions'
+import {
+  isConsolidationVersion,
+  isSelectableVersion,
+  orderVersionsNewestFirst,
+  portalConsolidationNote,
+  versionDateOf,
+  versionKindLabel,
+  type ShownVersion,
+} from '@/features/legal/lib/legal-versions'
 import { legalActTypeLabel, legalGazettePartLabel, legalIssuerLabel, legalNodeKindLabel, legalRelationLabel } from '@/features/legal/lib/legal-vocabulary'
 import { domAnchorForPath } from '@/features/legal/lib/tldf/nod-resolve'
 import type { TldfBlock, TldfMark } from '@/features/legal/lib/tldf/types'
@@ -100,6 +108,18 @@ export type ActPageModel = {
   readonly railStyle?: 'round2' | 'plain' | 'box'
   /** In the restyled side column, the notice's guidance and link behind „Detalii". */
   readonly railNoticeFolded?: boolean
+  /**
+   * The page's head. The owner chose `side` on 26 November 2026, from a picture of the three: `lines`, round 1's lines of
+   * unnamed facts; `band`, the facts each under its name in a ruled band below the title; `side`, that band moved
+   * on a wide screen to the column above the side box.
+   */
+  readonly headStyle?: 'lines' | 'band' | 'side'
+  /**
+   * The closing record. The owner chose `folds` the same day, from a picture of the three: `rows`, round 1's (each section's name in a column at the left); `stacked`, the
+   * name above its section, the lists at the column's whole width; `folds`, each section a row that opens, with its
+   * count, the publication and the forms open from the start.
+   */
+  readonly recordStyle?: 'rows' | 'stacked' | 'folds'
   /** The act's warnings (the live page's component), placed by `apparatus`. */
   readonly warnings?: ReactNode
   /** What must be said about the text before it is read (the live page's own notices), between the form line and the text. */
@@ -141,7 +161,17 @@ type Tone = 'neutral' | 'caution' | 'blocked'
 const TONE_RULE: Readonly<Record<Tone, string>> = { neutral: 'border-foreground/30', caution: 'border-status-partial-fg', blocked: 'border-status-blocked-fg' }
 
 /** Something to know about what is shown: a rule in the tone's colour, the first sentence in full weight, no box. */
-export function ActNotice({ tone = 'neutral', title, children, action }: { readonly tone?: Tone; readonly title: ReactNode; readonly children?: ReactNode; readonly action?: ReactNode }) {
+export function ActNotice({
+  tone = 'neutral',
+  title,
+  children,
+  action,
+}: {
+  readonly tone?: Tone
+  readonly title: ReactNode
+  readonly children?: ReactNode
+  readonly action?: ReactNode
+}) {
   return (
     <div role="note" className={cn('border-l-2 py-0.5 pl-4 text-sm leading-6', TONE_RULE[tone])}>
       <p className="font-medium text-foreground">{title}</p>
@@ -194,14 +224,18 @@ function BackLink({ className }: { readonly className?: string }) {
   )
 }
 
-function ActHead({ act, subject, mock, grid }: Pick<ActPageModel, 'act' | 'subject' | 'mock'> & { readonly grid: string }) {
+function ActHead({ act, subject, mock, grid, headStyle = 'lines' }: Pick<ActPageModel, 'act' | 'subject' | 'mock' | 'headStyle'> & { readonly grid: string }) {
   const { i18n } = useLingui()
   const den = act.canonical?.den ?? null
   const publication = uniqueGazettePublication(act)
   // The same facts, in the same words and at the same weight as the live head: nothing is promoted here.
   const moCitation =
     publication !== null && publication.issueNumber !== null
-      ? [`nr. ${String(publication.issueNumber)}`, publication.partCode !== null ? `(${legalGazettePartLabel(publication.partCode)})` : null, publication.issueDate !== null ? `din ${formatLegalDate(publication.issueDate, i18n.locale)}` : null]
+      ? [
+          `nr. ${String(publication.issueNumber)}`,
+          publication.partCode !== null ? `(${legalGazettePartLabel(publication.partCode)})` : null,
+          publication.issueDate !== null ? `din ${formatLegalDate(publication.issueDate, i18n.locale)}` : null,
+        ]
           .filter((part): part is string => part !== null)
           .join(' ')
       : null
@@ -211,8 +245,17 @@ function ActHead({ act, subject, mock, grid }: Pick<ActPageModel, 'act' | 'subje
     act.entryIntoForce !== null ? t`în vigoare din ${formatLegalDate(act.entryIntoForce, i18n.locale)}` : null,
     act.aliases.length > 0 ? t`cunoscut și ca ${act.aliases.join(', ')}` : null,
   ].filter((part): part is string => part !== null)
+  // The same facts, each under its name: what kind of act, who issued it, where it was published, since when it applies.
+  const facts = [
+    { name: t`Tip`, value: legalActTypeLabel(act.actType) },
+    act.issuerSlug !== null ? { name: t`Emitent`, value: legalIssuerLabel(act.issuerSlug) } : null,
+    act.entryIntoForce !== null ? { name: t`În vigoare din`, value: formatLegalDate(act.entryIntoForce, i18n.locale) } : null,
+    // The long one last: in the band it is the cell that takes what is left and wraps.
+    moCitation !== null ? { name: t`Publicat în`, value: t`Monitorul Oficial ${moCitation}` } : null,
+  ].filter((fact): fact is { name: string; value: string } => fact !== null)
+  const side = headStyle === 'side'
   return (
-    <header className={cn(grid, 'pb-7 pt-4 sm:pb-9 lg:pt-8')}>
+    <header className={cn(grid, 'pb-7 pt-4 sm:pb-9 lg:pt-8', side && 'min-[88rem]:grid-cols-[16rem_minmax(0,42rem)_17rem]')}>
       <div className="hidden lg:block">
         <BackLink className="-mt-2.5" />
       </div>
@@ -227,31 +270,69 @@ function ActHead({ act, subject, mock, grid }: Pick<ActPageModel, 'act' | 'subje
           {act.displayCitation}
         </h1>
         {subject !== null ? <p className="mt-2 text-lg leading-7 text-muted-foreground sm:text-xl sm:leading-8">{subject}</p> : null}
-        <div className="mt-5 space-y-1 text-sm leading-6 text-muted-foreground">
-          {den !== null && den !== act.displayCitation ? <p className="text-foreground">{den}</p> : null}
-          {classification.length > 0 ? (
-            <ul className="flex flex-col gap-x-6 gap-y-1 sm:flex-row sm:flex-wrap">
-              {classification.map((part) => (
-                <li key={part}>{part}</li>
+        {headStyle !== 'lines' ? (
+          <>
+            {/* A band of named facts under the title; with `side`, a wide screen moves it to the column above the side box. */}
+            <dl className={cn('mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-y py-3 sm:grid-cols-[auto_auto_auto_minmax(0,1fr)]', side && 'min-[88rem]:hidden')}>
+              {facts.map((fact) => (
+                <div key={fact.name}>
+                  <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
+                  <dd className="text-sm leading-6">{fact.value}</dd>
+                </div>
               ))}
-            </ul>
-          ) : null}
-          {moCitation !== null ? (
-            <p>
-              <Trans>Publicat în Monitorul Oficial {moCitation}</Trans>
-            </p>
-          ) : null}
-          {act.dataSource === 'legal_v2' ? (
-            <p className="text-xs leading-5">
-              {act.bridgedFields.length > 0 ? (
-                <Trans>Starea, legăturile și rezumatul provin din corpusul anterior.</Trans>
-              ) : (
-                <Trans>Starea, legăturile și rezumatul nu sunt disponibile pentru acest act: corpusul anterior nu îl conține.</Trans>
-              )}
-            </p>
-          ) : null}
-        </div>
+            </dl>
+            <div className="mt-3 space-y-0.5 text-sm leading-6 text-muted-foreground">
+              {den !== null && den !== act.displayCitation ? <p>{den}</p> : null}
+              {act.aliases.length > 0 ? <p>{t`cunoscut și ca ${act.aliases.join(', ')}`}</p> : null}
+              {act.dataSource === 'legal_v2' ? (
+                <p className="text-xs leading-5">
+                  {act.bridgedFields.length > 0 ? (
+                    <Trans>Starea, legăturile și rezumatul provin din corpusul anterior.</Trans>
+                  ) : (
+                    <Trans>Starea, legăturile și rezumatul nu sunt disponibile pentru acest act: corpusul anterior nu îl conține.</Trans>
+                  )}
+                </p>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <div className="mt-5 space-y-1 text-sm leading-6 text-muted-foreground">
+            {den !== null && den !== act.displayCitation ? <p className="text-foreground">{den}</p> : null}
+            {classification.length > 0 ? (
+              <ul className="flex flex-col gap-x-6 gap-y-1 sm:flex-row sm:flex-wrap">
+                {classification.map((part) => (
+                  <li key={part}>{part}</li>
+                ))}
+              </ul>
+            ) : null}
+            {moCitation !== null ? (
+              <p>
+                <Trans>Publicat în Monitorul Oficial {moCitation}</Trans>
+              </p>
+            ) : null}
+            {act.dataSource === 'legal_v2' ? (
+              <p className="text-xs leading-5">
+                {act.bridgedFields.length > 0 ? (
+                  <Trans>Starea, legăturile și rezumatul provin din corpusul anterior.</Trans>
+                ) : (
+                  <Trans>Starea, legăturile și rezumatul nu sunt disponibile pentru acest act: corpusul anterior nu îl conține.</Trans>
+                )}
+              </p>
+            ) : null}
+          </div>
+        )}
       </div>
+      {side ? (
+        // Above the side box, on its inner edge: the facts one under the other.
+        <dl className="hidden space-y-2.5 self-end px-3 min-[88rem]:block">
+          {facts.map((fact) => (
+            <div key={fact.name}>
+              <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
+              <dd className="text-sm leading-5">{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </header>
   )
 }
@@ -275,7 +356,9 @@ function ArticleNumber({ value }: { readonly value: string }) {
   )
 }
 
-type ContentsRow = { readonly kind: 'heading'; readonly entry: LegalOutlineEntry; readonly level: number } | { readonly kind: 'articles'; readonly entries: readonly LegalOutlineEntry[]; readonly level: number }
+type ContentsRow =
+  | { readonly kind: 'heading'; readonly entry: LegalOutlineEntry; readonly level: number }
+  | { readonly kind: 'articles'; readonly entries: readonly LegalOutlineEntry[]; readonly level: number }
 
 /** The served outline as rows: a heading at its nesting level, then the run of articles under it as one grid. */
 function contentsRows(outline: readonly LegalOutlineEntry[]): readonly ContentsRow[] {
@@ -328,7 +411,17 @@ type ContentsProps = {
 }
 
 /** The switch between the whole contents and the folded one, beside the title. */
-function ContentsToggle({ collapsed, onToggle, touch = false, iconOnly = false }: { readonly collapsed: boolean; readonly onToggle: () => void; readonly touch?: boolean; readonly iconOnly?: boolean }) {
+function ContentsToggle({
+  collapsed,
+  onToggle,
+  touch = false,
+  iconOnly = false,
+}: {
+  readonly collapsed: boolean
+  readonly onToggle: () => void
+  readonly touch?: boolean
+  readonly iconOnly?: boolean
+}) {
   const Icon = collapsed ? ChevronsUpDown : ChevronsDownUp
   const says = collapsed ? t`Arată tot` : t`Restrânge`
   return (
@@ -338,7 +431,11 @@ function ContentsToggle({ collapsed, onToggle, touch = false, iconOnly = false }
       aria-pressed={collapsed}
       aria-label={t`Cuprins restrâns`}
       title={iconOnly ? says : undefined}
-      className={cn('inline-flex shrink-0 items-center justify-center gap-1 rounded-md text-xs font-normal text-muted-foreground hover:bg-muted hover:text-foreground', iconOnly ? 'w-8' : 'px-2', touch ? 'h-11' : 'h-8')}
+      className={cn(
+        'inline-flex shrink-0 items-center justify-center gap-1 rounded-md text-xs font-normal text-muted-foreground hover:bg-muted hover:text-foreground',
+        iconOnly ? 'w-8' : 'px-2',
+        touch ? 'h-11' : 'h-8',
+      )}
     >
       <Icon className={iconOnly ? 'size-4' : 'size-3.5'} aria-hidden="true" />
       {iconOnly ? null : <span aria-hidden="true">{says}</span>}
@@ -387,7 +484,14 @@ function GoToArticle({ outline, onGo, touch, flush }: Pick<ContentsProps, 'outli
           placeholder={short ? t`nr.` : t`Mergi la articolul…`}
           className={cn('min-w-0 bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground sm:text-sm', short ? 'w-12 px-1.5' : 'flex-1 px-3', height)}
         />
-        <button type="submit" aria-label={t`Mergi la articol`} className={cn('inline-flex shrink-0 items-center justify-center rounded-r-md text-muted-foreground hover:text-foreground', touch === true ? 'size-11' : short ? 'h-8 w-7' : flush === 'inset' ? 'size-9' : 'size-10')}>
+        <button
+          type="submit"
+          aria-label={t`Mergi la articol`}
+          className={cn(
+            'inline-flex shrink-0 items-center justify-center rounded-r-md text-muted-foreground hover:text-foreground',
+            touch === true ? 'size-11' : short ? 'h-8 w-7' : flush === 'inset' ? 'size-9' : 'size-10',
+          )}
+        >
           <ArrowRight className="size-4" aria-hidden="true" />
         </button>
       </div>
@@ -493,7 +597,11 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false, bare
             </li>
           ) : (
             // A run that follows another with no heading between them belongs to a level that has just been left: air above it.
-            <li key={row.entries[0]?.path} style={{ paddingLeft: `${String(row.level * 0.75)}rem` }} className={cn('relative flex pb-1.5', rows[index - 1]?.kind === 'articles' && 'pt-2')}>
+            <li
+              key={row.entries[0]?.path}
+              style={{ paddingLeft: `${String(row.level * 0.75)}rem` }}
+              className={cn('relative flex pb-1.5', rows[index - 1]?.kind === 'articles' && 'pt-2')}
+            >
               <LevelGuides level={row.level} />
               {/* Owner, 26 November 2026: say what the numbers are, at the grid's top left. The list's own name says it to a screen reader. */}
               <span aria-hidden="true" className={cn('flex shrink-0 items-center pl-1.5 text-xs font-medium text-foreground', touch ? 'h-11 w-11' : 'h-8 w-9')}>
@@ -593,7 +701,8 @@ function headingNames(blocks: readonly TldfBlock[], into: Map<string, string> = 
 
 /* ── the reading bar ─────────────────────────────────────────────────────── */
 
-const formName = (kind: string, date: string | null, locale: string): string => (date === null ? versionKindLabel(kind) : `${formatLegalDate(date, locale)}, ${versionKindLabel(kind)}`)
+const formName = (kind: string, date: string | null, locale: string): string =>
+  date === null ? versionKindLabel(kind) : `${formatLegalDate(date, locale)}, ${versionKindLabel(kind)}`
 
 /**
  * The date a form is named by. A consolidation is named by the Portal's own note's date and by nothing else: the
@@ -670,7 +779,11 @@ function FormSelect({
           groups={[{ options: forms.map((form) => ({ value: form.documentId, label: formName(form.versionKind, listedDate(form), i18n.locale) })) }]}
           onChange={onForm}
           label={t`Versiunea textului`}
-          triggerClassName={cn('min-w-0 max-w-full gap-2 text-sm font-medium', stacked ? 'w-full' : 'w-auto', wrap ? 'h-auto min-h-11 whitespace-normal py-1.5 text-left leading-5 sm:min-h-10 [&>span]:line-clamp-none' : CONTROL)}
+          triggerClassName={cn(
+            'min-w-0 max-w-full gap-2 text-sm font-medium',
+            stacked ? 'w-full' : 'w-auto',
+            wrap ? 'h-auto min-h-11 whitespace-normal py-1.5 text-left leading-5 sm:min-h-10 [&>span]:line-clamp-none' : CONTROL,
+          )}
         >
           {wrap ? (
             // Two lines: the date the form is named by, then what kind of form it is. Nothing is cut.
@@ -705,7 +818,9 @@ function ConsolidationNotice({ shown, folded = false, dense = false }: { readonl
       </>
     ) : null
   const guidance = (
-    <Trans>Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.</Trans>
+    <Trans>
+      Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.
+    </Trans>
   )
   const source =
     shown.sourceUrl !== null ? (
@@ -774,7 +889,58 @@ function ConsolidationNotice({ shown, folded = false, dense = false }: { readonl
 
 /* ── the closing record ──────────────────────────────────────────────────── */
 
-function RecordRow({ title, children }: { readonly title: ReactNode; readonly children: ReactNode }) {
+/** How the closing record sets its sections, see `recordStyle` on the model. */
+const RecordStyle = createContext<'rows' | 'stacked' | 'folds'>('rows')
+
+function RecordRow({
+  title,
+  count,
+  open: startsOpen = false,
+  children,
+}: {
+  readonly title: ReactNode
+  readonly count?: string
+  readonly open?: boolean
+  readonly children: ReactNode
+}) {
+  const style = useContext(RecordStyle)
+  const [open, setOpen] = useState(startsOpen)
+  const body = useId()
+  if (style === 'stacked') {
+    return (
+      <div className="border-t py-5">
+        <h3 className="flex items-baseline gap-2 pb-2 text-base font-semibold leading-6">
+          {title}
+          {count !== undefined ? <span className="text-sm font-normal tabular-nums text-muted-foreground">{count}</span> : null}
+        </h3>
+        <div className="min-w-0 text-sm leading-6">{children}</div>
+      </div>
+    )
+  }
+  if (style === 'folds') {
+    return (
+      <div className="border-t">
+        <h3>
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-controls={body}
+            className="flex min-h-12 w-full items-center gap-2 py-2 text-left text-sm font-medium hover:bg-muted/50"
+          >
+            <span className="min-w-0 flex-1">
+              {title}
+              {count !== undefined ? <span className="pl-2 font-normal tabular-nums text-muted-foreground">{count}</span> : null}
+            </span>
+            <ChevronDown className={cn('size-4 shrink-0 text-muted-foreground', open && 'rotate-180')} aria-hidden="true" />
+          </button>
+        </h3>
+        <div id={body} hidden={!open} className="min-w-0 pb-5 text-sm leading-6">
+          {children}
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="grid gap-x-8 gap-y-2 border-t py-5 sm:grid-cols-[10rem_minmax(0,1fr)]">
       <h3 className="text-sm font-medium leading-6">{title}</h3>
@@ -825,7 +991,8 @@ function References({ group }: { readonly group: LegalReferenceGroup }) {
         <p className="mt-2 text-xs leading-5 text-muted-foreground">
           {group.totalCount !== null ? (
             <Trans>
-              Se afișează {formatLegalNumber(group.items.length, i18n.locale)} din {formatLegalNumber(group.totalCount, i18n.locale)}. Lista completă apare odată cu directorul de acte.
+              Se afișează {formatLegalNumber(group.items.length, i18n.locale)} din {formatLegalNumber(group.totalCount, i18n.locale)}. Lista completă apare odată cu directorul de
+              acte.
             </Trans>
           ) : (
             <Trans>Se afișează primele {formatLegalNumber(group.items.length, i18n.locale)}. Lista completă apare odată cu directorul de acte.</Trans>
@@ -838,16 +1005,18 @@ function References({ group }: { readonly group: LegalReferenceGroup }) {
 
 function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 'onForm'>) {
   const { i18n } = useLingui()
+  const number = (value: number) => formatLegalNumber(value, i18n.locale)
   const date = (value: string | null) => (value === null ? t`fără dată` : formatLegalDate(value, i18n.locale))
   const publication = uniqueGazettePublication(act)
   const forms = orderVersionsNewestFirst(act.documents.filter((form) => form.versionKind !== 'stub-header'))
   return (
     <section aria-labelledby="act-fisa" className="mt-20 scroll-mt-24 border-t-2 border-foreground pt-6">
-      <h2 id="act-fisa" className="pb-5 text-xl font-semibold tracking-tight">
+      {/* Reached from the contents: it stops under the reading bar, not behind it. */}
+      <h2 id="act-fisa" className="scroll-mt-20 pb-5 text-xl font-semibold tracking-tight">
         <Trans>Fișa actului</Trans>
       </h2>
       {publication !== null && publication.issueNumber !== null ? (
-        <RecordRow title={<Trans>Publicare</Trans>}>
+        <RecordRow title={<Trans>Publicare</Trans>} open>
           <p>
             <Trans>
               Monitorul Oficial nr. {publication.issueNumber} din {date(publication.issueDate)}
@@ -861,7 +1030,7 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
         </RecordRow>
       ) : null}
       {forms.length > 0 ? (
-        <RecordRow title={<Trans>Formele textului</Trans>}>
+        <RecordRow title={<Trans>Formele textului</Trans>} count={number(forms.length)} open>
           <Cut
             items={forms}
             render={(form) => {
@@ -895,10 +1064,14 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
         </RecordRow>
       ) : null}
       {act.timeline !== null && act.timeline.length > 0 ? (
-        <RecordRow title={<Trans>Ce s-a întâmplat cu actul</Trans>}>
+        <RecordRow title={<Trans>Ce s-a întâmplat cu actul</Trans>} count={act.timelineComplete === true ? number(act.timeline.length) : undefined}>
           {act.timelineComplete === true ? null : (
             <p role="status" className="pb-2 text-muted-foreground">
-              {act.timelineComplete === null ? <Trans>Nu știm dacă lista este completă.</Trans> : <Trans>Lista nu este completă: actul are mai multe evenimente decât s-au putut încărca.</Trans>}
+              {act.timelineComplete === null ? (
+                <Trans>Nu știm dacă lista este completă.</Trans>
+              ) : (
+                <Trans>Lista nu este completă: actul are mai multe evenimente decât s-au putut încărca.</Trans>
+              )}
             </p>
           )}
           <Cut
@@ -919,17 +1092,17 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
         </RecordRow>
       ) : null}
       {act.outLinks !== null && act.outLinks.items.length > 0 ? (
-        <RecordRow title={<Trans>Acte la care trimite</Trans>}>
+        <RecordRow title={<Trans>Acte la care trimite</Trans>} count={act.outLinks.totalCount !== null ? number(act.outLinks.totalCount) : undefined}>
           <References group={act.outLinks} />
         </RecordRow>
       ) : null}
       {act.inLinks !== null && act.inLinks.items.length > 0 ? (
-        <RecordRow title={<Trans>Acte care trimit la el</Trans>}>
+        <RecordRow title={<Trans>Acte care trimit la el</Trans>} count={act.inLinks.totalCount !== null ? number(act.inLinks.totalCount) : undefined}>
           <References group={act.inLinks} />
         </RecordRow>
       ) : null}
       {act.officialTextUrl !== null ? (
-        <RecordRow title={<Trans>Sursa</Trans>}>
+        <RecordRow title={<Trans>Sursa</Trans>} open>
           <SourceLink href={act.officialTextUrl}>
             <Trans>Textul, pe legislatie.just.ro</Trans>
           </SourceLink>
@@ -942,7 +1115,31 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', contentsFrame = 'panel', contentsHead = 'docked', railStyle = 'box', railNoticeFolded = true, textState, afterText, changedMark = 'none' } = model
+  const {
+    act,
+    subject,
+    shown,
+    blocks,
+    marks,
+    containsNonBmp,
+    outline,
+    outlineState,
+    onReach,
+    mock,
+    onForm,
+    notices,
+    warnings,
+    apparatus = 'rail',
+    contentsFrame = 'panel',
+    contentsHead = 'docked',
+    railStyle = 'box',
+    railNoticeFolded = true,
+    headStyle = 'side',
+    recordStyle = 'folds',
+    textState,
+    afterText,
+    changedMark = 'none',
+  } = model
   const grid = apparatus === 'rail' ? GRID_WIDE : GRID
   const { i18n } = useLingui()
   const [sheet, setSheet] = useState(false)
@@ -1034,8 +1231,28 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
     if (mark.top < frame.top + 8 || mark.bottom > frame.bottom - 48) panel.scrollTop += mark.top - frame.top - frame.height / 2
   }, [activePath])
 
-  const contents = (touch: boolean, bare = false) => <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} bare={bare} collapsed={collapsed} openPath={openPath} />
+  const contents = (touch: boolean, bare = false) => (
+    <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} bare={bare} collapsed={collapsed} openPath={openPath} />
+  )
   const toggle = (touch: boolean) => (foldable ? <ContentsToggle collapsed={collapsed} onToggle={() => setFolded(!collapsed)} touch={touch} /> : null)
+  // The record at the page's end is after the whole text: the contents carry the way to it, as their last, fixed row.
+  const toRecord = (touch: boolean) => (
+    <a
+      href="#act-fisa"
+      onClick={(event) => {
+        event.preventDefault()
+        setSheet(false)
+        requestAnimationFrame(() => document.getElementById('act-fisa')?.scrollIntoView({ block: 'start' }))
+      }}
+      className={cn(
+        'flex shrink-0 items-center justify-between border-t text-sm text-muted-foreground hover:bg-muted hover:text-foreground',
+        touch ? 'min-h-12 px-4' : 'min-h-10 px-3',
+      )}
+    >
+      <Trans>Fișa actului</Trans>
+      <ArrowDown className="size-4" aria-hidden="true" />
+    </a>
+  )
   const panel = (contentsFrame === 'panel' || contentsFrame === 'tinted') && outline.length > 0
   const tinted = contentsFrame === 'tinted'
   const docked = panel && !tinted && contentsHead === 'docked'
@@ -1046,7 +1263,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   return (
     <div className="bg-background pb-24 text-foreground [font-family:var(--font-family)]">
       <div ref={headRef}>
-        <ActHead act={act} subject={subject} mock={mock} grid={grid} />
+        <ActHead act={act} subject={subject} mock={mock} grid={grid} headStyle={headStyle} />
       </div>
 
       {/* The reading bar: stays while the text scrolls. */}
@@ -1075,6 +1292,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                     {toggle(true)}
                   </SheetHeader>
                   <div className="px-4 py-4">{contents(true)}</div>
+                  {toRecord(true)}
                 </SheetContent>
               </Sheet>
             ) : null}
@@ -1142,7 +1360,11 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
               'sticky',
               docked ? 'top-[3.125rem]' : 'top-16',
               panel
-                ? cn('flex flex-col overflow-hidden rounded-md', docked ? 'max-h-[calc(100dvh-4rem)] rounded-t-none border border-t-0' : 'max-h-[calc(100dvh-5.5rem)]', tinted ? 'bg-muted/60' : !docked && 'border')
+                ? cn(
+                    'flex flex-col overflow-hidden rounded-md',
+                    docked ? 'max-h-[calc(100dvh-4rem)] rounded-t-none border border-t-0' : 'max-h-[calc(100dvh-5.5rem)]',
+                    tinted ? 'bg-muted/60' : !docked && 'border',
+                  )
                 : 'max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2',
             )}
           >
@@ -1177,6 +1399,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                 <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3 [scrollbar-width:thin]">
                   {contents(false, true)}
                 </div>
+                {toRecord(false)}
               </>
             ) : outline.length > 0 ? (
               contents(false)
@@ -1204,7 +1427,9 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           ) : null}
           {notices !== undefined ? <div className="space-y-4 pb-5">{notices}</div> : null}
           {/* Narrower than the side column's breakpoint, the warnings wear the same lighter skin in the text's column. */}
-          {warnings !== undefined && apparatus !== 'compact' ? <div className={cn('pb-5', apparatus === 'rail' && 'min-[88rem]:hidden', apparatus === 'rail' && railStyle !== 'round2' && RAIL_WARNINGS)}>{warnings}</div> : null}
+          {warnings !== undefined && apparatus !== 'compact' ? (
+            <div className={cn('pb-5', apparatus === 'rail' && 'min-[88rem]:hidden', apparatus === 'rail' && railStyle !== 'round2' && RAIL_WARNINGS)}>{warnings}</div>
+          ) : null}
           {textState === undefined && changedMark === 'legend' && blocks.length > 0 ? (
             <p className="flex items-center gap-2.5 pb-4 text-xs leading-5 text-muted-foreground">
               <span aria-hidden="true" className="h-4 w-0.5 shrink-0 rounded-full bg-primary/60" />
@@ -1213,11 +1438,20 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           ) : null}
           {textState ?? (
             <article aria-label={t`Textul actului`} className="pt-2">
-              <ActBlocks blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} changedMark={changedMark !== 'none'} foldNotes={apparatus !== 'full'} onCopyLink={copyLink} />
+              <ActBlocks
+                blocks={blocks}
+                marks={marks}
+                containsNonBmp={containsNonBmp}
+                changedMark={changedMark !== 'none'}
+                foldNotes={apparatus !== 'full'}
+                onCopyLink={copyLink}
+              />
             </article>
           )}
           {afterText}
-          <ActRecord act={act} shown={shown} onForm={pickForm} />
+          <RecordStyle.Provider value={recordStyle}>
+            <ActRecord act={act} shown={shown} onForm={pickForm} />
+          </RecordStyle.Provider>
           {children}
         </main>
         {apparatus === 'rail' && shown !== null ? (
