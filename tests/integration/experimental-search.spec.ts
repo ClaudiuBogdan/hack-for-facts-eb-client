@@ -11,6 +11,7 @@
  * SERVICE_UNAVAILABLE).
  */
 
+import type { Locator, Page } from '@playwright/test'
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
@@ -18,6 +19,21 @@ import type { MockApiFixture } from '../utils/types'
 const SEARCH_OP = 'SearchEntities'
 const ROUTE = '/experimental/search'
 const LISTBOX = '#es-listbox'
+
+/**
+ * The search box, once React has hydrated it (TEST-003). The page is server-rendered, so the box is on screen
+ * before it is React's. Text typed into it then stays in the box but never reaches React: hydration keeps the
+ * DOM's value and fires no change event, so the search is never sent. React attaches its props to an element
+ * when it hydrates it, so that is what this waits for. `waitForPageReady` does not: it waits for the network and
+ * the skeletons, not for React.
+ */
+async function hydratedSearchBox(page: Page): Promise<Locator> {
+  const input = page.getByRole('combobox')
+  await expect
+    .poll(() => input.evaluate((element) => Object.keys(element).some((key) => key.startsWith('__reactProps$'))), { timeout: 15000 })
+    .toBe(true)
+  return input
+}
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL(SEARCH_OP, 'results', { variables: { q: 'dedeman' } })
@@ -47,7 +63,7 @@ test.describe('Experimental entity search — desktop', () => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
-    await page.getByRole('combobox').fill('dedeman')
+    await (await hydratedSearchBox(page)).fill('dedeman')
 
     const listbox = page.locator(LISTBOX)
     await expect(listbox).toBeVisible({ timeout: 15000 })
@@ -86,7 +102,7 @@ test.describe('Experimental entity search — desktop', () => {
   test('facet chips render with counts and toggle the URL', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await page.getByRole('combobox').fill('dedeman')
+    await (await hydratedSearchBox(page)).fill('dedeman')
     await expect(page.locator(LISTBOX)).toBeVisible({ timeout: 15000 })
 
     // Visible ones only: the collapsed sidebar keeps its RO | EN buttons in the page, hidden.
@@ -102,7 +118,7 @@ test.describe('Experimental entity search — desktop', () => {
   test('keyboard navigation drives aria-activedescendant', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    const input = page.getByRole('combobox')
+    const input = await hydratedSearchBox(page)
     await input.fill('dedeman')
     await expect(page.locator(LISTBOX)).toBeVisible({ timeout: 15000 })
 
@@ -117,7 +133,7 @@ test.describe('Experimental entity search — desktop', () => {
   test('zero-results state', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await page.getByRole('combobox').fill('zzzqqq')
+    await (await hydratedSearchBox(page)).fill('zzzqqq')
 
     await expect(page.locator(`${LISTBOX} [role="option"]`)).toHaveCount(0)
     // A current initial page with no next page is the only real "no match".
@@ -128,7 +144,7 @@ test.describe('Experimental entity search — desktop', () => {
   test('a refused answer is withheld with a retry, never a zero', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await page.getByRole('combobox').fill('retras')
+    await (await hydratedSearchBox(page)).fill('retras')
 
     await expect(page.getByText('Răspunsul căutării a fost reținut.')).toBeVisible({ timeout: 15000 })
     await expect(page.getByRole('button', { name: 'Încearcă din nou' })).toBeVisible()
@@ -146,7 +162,7 @@ test.describe('Experimental entity search — desktop', () => {
     })
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await page.getByRole('combobox').fill('spital')
+    await (await hydratedSearchBox(page)).fill('spital')
 
     // Every CUI identity was withheld: nothing is shown, and nothing is claimed.
     await expect(
@@ -169,7 +185,7 @@ test.describe('Experimental entity search — desktop', () => {
   test('error state surfaces an alert', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await page.getByRole('combobox').fill('boom')
+    await (await hydratedSearchBox(page)).fill('boom')
 
     await expect(page.getByRole('alert')).toBeVisible({ timeout: 20000 })
     await page.screenshot({ path: 'tmp/shots/desktop-error.png', fullPage: true })
@@ -178,7 +194,7 @@ test.describe('Experimental entity search — desktop', () => {
   test('degraded engine shows a hint and claims no zero', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await page.getByRole('combobox').fill('fallback')
+    await (await hydratedSearchBox(page)).fill('fallback')
 
     // Under the contract a degraded answer is UNAVAILABLE and serves no hit:
     // the engine did not look, so the page says so instead of "no results".
@@ -201,7 +217,7 @@ test.describe('Experimental entity search — mobile', () => {
     await waitForPageReady(page)
 
     await expect(page.getByRole('combobox')).toBeVisible()
-    await page.getByRole('combobox').fill('dedeman')
+    await (await hydratedSearchBox(page)).fill('dedeman')
 
     const listbox = page.locator(LISTBOX)
     await expect(listbox).toBeVisible({ timeout: 15000 })
