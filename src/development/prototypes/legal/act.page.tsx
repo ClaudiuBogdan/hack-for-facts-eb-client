@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 're
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ArrowLeft, ArrowRight, ArrowUpRight, List } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUpRight, ChevronRight, ChevronsDownUp, ChevronsUpDown, List } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust/data-status-badge'
 import { Button } from '@/components/ui/button'
 import { ChoiceSelect } from '@/components/ui/choice-select'
@@ -96,6 +96,8 @@ const GRID = 'mx-auto grid w-full max-w-6xl grid-cols-1 px-4 sm:px-6 lg:grid-col
 const COLUMN = 'min-w-0 max-w-[42rem]'
 const LINK = 'font-medium text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary'
 const CONTROL = 'h-11 sm:h-10'
+/** An outline longer than this many entries starts folded: a code's contents are several screens long. */
+const FOLD_FROM = 40
 /** A control that opens more of the same page. Not blue: blue is for a link that goes somewhere (owner, 26 November 2026). */
 const MORE = 'font-medium text-foreground underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground'
 /** With the side column: from 88rem a wider page, the same left edge for the head, the bar and the body; narrower, the usual width. */
@@ -281,6 +283,30 @@ type ContentsProps = {
   readonly touch?: boolean
   /** The jump field is drawn by the container (in its own head) and not here. */
   readonly bare?: boolean
+  /**
+   * Folded (owner, 26 November 2026: a button beside the title that switches between all of it and a folded list
+   * whose sections open where the reader is): only the first level shows, and the branch that holds `openPath`.
+   */
+  readonly collapsed?: boolean
+  /** The place whose branch a folded list keeps open: where the reader last was. */
+  readonly openPath?: string | null
+}
+
+/** The switch between the whole contents and the folded one, beside the title. */
+function ContentsToggle({ collapsed, onToggle, touch = false }: { readonly collapsed: boolean; readonly onToggle: () => void; readonly touch?: boolean }) {
+  const Icon = collapsed ? ChevronsUpDown : ChevronsDownUp
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={collapsed}
+      aria-label={t`Cuprins restrâns`}
+      className={cn('inline-flex shrink-0 items-center gap-1 rounded-md px-2 text-xs font-normal text-muted-foreground hover:bg-muted hover:text-foreground', touch ? 'h-11' : 'h-8')}
+    >
+      <Icon className="size-3.5" aria-hidden="true" />
+      <span aria-hidden="true">{collapsed ? <Trans>Arată tot</Trans> : <Trans>Restrânge</Trans>}</span>
+    </button>
+  )
 }
 
 function GoToArticle({ outline, onGo, touch, flush }: Pick<ContentsProps, 'outline' | 'onGo' | 'touch'> & { readonly flush?: 'ruled' | 'filled' }) {
@@ -338,8 +364,37 @@ function LevelGuides({ level }: { readonly level: number }) {
  * paragraph's line stops under its last article, and the chapter's own articles hang on the chapter's line, after
  * a little air.
  */
-function Contents({ outline, names, activePath, trail, onGo, touch = false, bare = false }: ContentsProps) {
-  const rows = useMemo(() => contentsRows(outline), [outline])
+function Contents({ outline, names, activePath, trail, onGo, touch = false, bare = false, collapsed = false, openPath = null }: ContentsProps) {
+  const { rows, parents } = useMemo(() => {
+    const nested = contentsRows(outline)
+    // Each row's holder: the nearest heading above it at a lower level.
+    const holders: (number | null)[] = []
+    const stack: number[] = []
+    nested.forEach((row, index) => {
+      while (stack.length > 0 && (nested[stack[stack.length - 1] ?? 0]?.level ?? 0) >= row.level) stack.pop()
+      holders.push(stack[stack.length - 1] ?? null)
+      if (row.kind === 'heading') stack.push(index)
+    })
+    return { rows: nested, parents: holders }
+  }, [outline])
+  /** Folded: the headings that are open, which are the one the reader is at and those that hold it. Null when all is shown. */
+  const open = useMemo(() => {
+    if (!collapsed) return null
+    const set = new Set<number>()
+    let at = rows.findIndex((row) => (row.kind === 'heading' ? row.entry.path === openPath : row.entries.some((entry) => entry.path === openPath)))
+    if (rows[at]?.kind === 'heading') set.add(at)
+    while (at >= 0) {
+      const holder = parents[at] ?? null
+      if (holder === null) break
+      set.add(holder)
+      at = holder
+    }
+    return set
+  }, [collapsed, rows, parents, openPath])
+  const shown = (index: number) => {
+    const holder = parents[index] ?? null
+    return open === null || holder === null || open.has(holder)
+  }
   const articleCount = useMemo(() => outline.filter(isArticle).length, [outline])
   const go = (path: string) => (event: { preventDefault: () => void }) => {
     event.preventDefault()
@@ -350,7 +405,7 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false, bare
       {articleCount >= 8 && !bare ? <GoToArticle outline={outline} onGo={onGo} touch={touch} /> : null}
       <ol>
         {rows.map((row, index) =>
-          row.kind === 'heading' ? (
+          !shown(index) ? null : row.kind === 'heading' ? (
             <li key={row.entry.path} style={{ paddingLeft: `${String(row.level * 0.75)}rem` }} className={cn('relative py-px', row.level === 0 && 'pt-2 first:pt-0')}>
               <LevelGuides level={row.level} />
               <a
@@ -358,13 +413,19 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false, bare
                 onClick={go(row.entry.path)}
                 aria-current={activePath === row.entry.path ? 'location' : undefined}
                 className={cn(
-                  '-mx-2 block rounded-md px-2 leading-5 hover:bg-muted',
+                  '-mx-2 flex items-start gap-2 rounded-md px-2 leading-5 hover:bg-muted',
                   touch ? 'py-3' : 'py-1.5',
                   activePath === row.entry.path ? 'bg-muted font-medium text-foreground' : trail.has(row.entry.path) ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
-                <span className={cn(names.has(row.entry.path) && 'text-muted-foreground')}>{entryLabel(row.entry)}</span>
-                {names.has(row.entry.path) ? <span className="text-foreground"> {names.get(row.entry.path)}</span> : null}
+                <span className="min-w-0 flex-1">
+                  <span className={cn(names.has(row.entry.path) && 'text-muted-foreground')}>{entryLabel(row.entry)}</span>
+                  {names.has(row.entry.path) ? <span className="text-foreground"> {names.get(row.entry.path)}</span> : null}
+                </span>
+                {/* Folded: a heading that holds more says so, and which way it stands. Going to it opens it. */}
+                {open !== null && parents[index + 1] === index ? (
+                  <ChevronRight className={cn('mt-0.5 size-4 shrink-0 text-muted-foreground', open.has(index) && 'rotate-90')} aria-hidden="true" />
+                ) : null}
               </a>
             </li>
           ) : (
@@ -768,8 +829,15 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   const [said, setSaid] = useState<string | null>(null)
   /** A place asked for whose part of the text is still being read. */
   const [wanted, setWanted] = useState<string | null>(null)
+  /** The reader's choice between the whole contents and the folded one; until they choose, a long outline starts folded. */
+  const [folded, setFolded] = useState<boolean | null>(null)
+  const collapsed = folded ?? outline.length > FOLD_FROM
+  const foldable = outline.some((entry) => !isArticle(entry))
   const names = useMemo(() => headingNames(blocks), [blocks])
   const activePath = useActivePath(outline, blocks)
+  // The folded contents keep the last place open while the reader passes a gap between two blocks.
+  const [openPath, setOpenPath] = useState<string | null>(null)
+  if (activePath !== null && activePath !== openPath) setOpenPath(activePath)
   const ancestors = useMemo(() => ancestorsOf(outline, activePath), [outline, activePath])
   const trail = useMemo(() => new Set(ancestors.map((entry) => entry.path)), [ancestors])
   const active = outline.find((entry) => entry.path === activePath)
@@ -829,7 +897,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
     if (mark.top < frame.top + 8 || mark.bottom > frame.bottom - 48) panel.scrollTop += mark.top - frame.top - frame.height / 2
   }, [activePath])
 
-  const contents = (touch: boolean, bare = false) => <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} bare={bare} />
+  const contents = (touch: boolean, bare = false) => <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} bare={bare} collapsed={collapsed} openPath={openPath} />
+  const toggle = (touch: boolean) => (foldable ? <ContentsToggle collapsed={collapsed} onToggle={() => setFolded(!collapsed)} touch={touch} /> : null)
   const panel = (contentsFrame === 'panel' || contentsFrame === 'tinted') && outline.length > 0
   const tinted = contentsFrame === 'tinted'
 
@@ -840,9 +909,10 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
       {/* The reading bar: stays while the text scrolls. */}
       <div className="sticky top-0 z-20 border-y bg-background">
         <div className={cn(grid, 'items-center')}>
-          <p className={cn('hidden text-sm font-medium', !panel && 'lg:block')}>
+          <div className={cn('hidden items-center justify-between text-sm font-medium', !panel && 'lg:flex')}>
             <Trans>Cuprins</Trans>
-          </p>
+            {toggle(false)}
+          </div>
           {panel ? <span className="hidden lg:block" aria-hidden="true" /> : null}
           <div className="flex min-h-12 min-w-0 items-center gap-3">
             {outline.length > 0 ? (
@@ -854,10 +924,11 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[min(22rem,88vw)] overflow-y-auto p-0">
-                  <SheetHeader className="border-b px-4 py-3 text-left">
+                  <SheetHeader className="flex-row items-center gap-2 space-y-0 border-b py-1 pl-4 pr-12 text-left">
                     <SheetTitle className="text-base">
                       <Trans>Cuprins</Trans>
                     </SheetTitle>
+                    {toggle(true)}
                   </SheetHeader>
                   <div className="px-4 py-4">{contents(true)}</div>
                 </SheetContent>
@@ -909,9 +980,10 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
             {panel ? (
               // A box of its own: the title and the jump field stay, the list scrolls under them.
               <>
-                <p className={cn('px-3 py-2.5 text-sm font-medium', tinted ? 'pb-1' : 'border-b')}>
+                <div className={cn('flex min-h-11 items-center justify-between py-1 pl-3 pr-1.5 text-sm font-medium', !tinted && 'border-b')}>
                   <Trans>Cuprins</Trans>
-                </p>
+                  {toggle(false)}
+                </div>
                 {outline.filter(isArticle).length >= 8 ? <GoToArticle outline={outline} onGo={go} flush={tinted ? 'filled' : 'ruled'} /> : null}
                 <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3">
                   {contents(false, true)}

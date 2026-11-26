@@ -23,6 +23,8 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * Round 3 (same day), the contents: a bordered box with its own title and jump field (owner, from a picture of four
  * containers; `?cadru=simplu`, `?cadru=fond` and `?cadru=coloana` keep the others). The steps per level stay; article
  * numbers sit in cells of one width so they line up within a level; a faint line per level says what holds what.
+ * A switch beside the title folds the contents to its first level and keeps open the branch the reader is in (the
+ * owner's idea); an outline of more than 40 entries starts folded.
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',
