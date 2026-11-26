@@ -188,7 +188,12 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     navigateMock.mockClear()
     render(<ActReadingLayout act={act} docOverride="100019" nod="r10" lead={null} fisa={null} />)
     const toc = await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
-    const entry = within(toc).getAllByRole('button').find((button) => button.getAttribute('aria-expanded') === null) as HTMLElement
+    // the contents' entries are links now (an address for a new tab; a click is the reader's to answer)
+    const entry = within(toc).getAllByRole('link')[0] as HTMLElement
+    // the entry's own address, for a new tab or a copied link, names the text actually shown too
+    const address = new URLSearchParams(entry.getAttribute('href') ?? '')
+    expect(address.get('doc')).toBe('100023')
+    expect(address.get('nod')).toBeTruthy()
     fireEvent.click(entry)
     const options = navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
     // the refused document leaves the address with the provision chosen in the text actually shown
@@ -196,8 +201,31 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     expect(next.doc).toBe('100023')
     expect(typeof next.nod).toBe('string')
     expect(next.nod).not.toBe('r10')
+    expect(address.get('nod')).toBe(next.nod)
     // and the address written is one the reader accepts on the next render: the act's own text, not refused again
     expect(resolveDocOverride(act, String(next.doc)).kind).toBe('own')
+  })
+
+  it('ends the contents with a fixed way to the act\'s record', async () => {
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container } = render(
+        <ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={<p>fișa</p>} />,
+      )
+      await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+      const toRecord = screen.getByRole('link', { name: 'Fișa actului' })
+      expect(toRecord).toHaveAttribute('href', '#act-fisa')
+      // outside the contents' own list, so folding the list never takes it away
+      expect(toRecord.closest('nav')).toBeNull()
+      scrollIntoView.mockClear()
+      fireEvent.click(toRecord)
+      expect(scrollIntoView).toHaveBeenCalledTimes(1)
+      expect(scrollIntoView.mock.contexts[0]).toBe(container.querySelector('#act-fisa'))
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
   })
 
   it('marks a deep-linked block for a moment, over any note style', async () => {

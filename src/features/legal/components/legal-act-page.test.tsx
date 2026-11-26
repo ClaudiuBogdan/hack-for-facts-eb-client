@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@/test/test-utils'
+import { act, fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { LegalActDetail } from '@/schemas/legal'
 import {
@@ -103,21 +103,104 @@ describe('LegalActPage', () => {
     expect(relevance).toHaveTextContent('cetățeni · firme')
   })
 
-  it('keeps the staleness warning on the summary card itself', () => {
+  it('shows the staleness warning once, in the box about the text shown', () => {
     mockAct(legalActDetailRichFixture)
     render(<LegalActPage actId="66150" />)
 
-    const warning = screen.getByText(
+    // The warning qualifies the text shown, so with a version shown it lives
+    // in the box about that text (owner, 26 November 2026, the act page's
+    // redesign: the right-hand box from 88rem, the reading column below) —
+    // with its headline always visible, and once at any width.
+    const warnings = screen.getAllByText(
       /295 de referințe de modificare sau completare înregistrate pentru act/,
     )
-    // The warning qualifies the summary, so it lives ON the summary card as
-    // a footer row with its headline always visible (user decision
-    // 2026-08-11) — one card, not a separate banner the eye can file away.
-    const card = screen
-      .getByText('Pe scurt')
-      .closest('section')
-    expect(card).not.toBeNull()
-    expect(card).toContainElement(warning)
+    expect(warnings).toHaveLength(1)
+    const about = screen.getByRole('complementary', { name: 'Despre textul afișat' })
+    expect(about).toContainElement(warnings[0] ?? null)
+    expect(screen.getByText('Pe scurt').closest('section')).not.toContainElement(warnings[0] ?? null)
+  })
+
+  it('keeps the warnings once on an act with no summary', () => {
+    mockAct({ ...legalActDetailRichFixture, summary: null })
+    render(<LegalActPage actId="66150" />)
+
+    expect(screen.queryByText('Pe scurt')).not.toBeInTheDocument()
+    const warnings = screen.getAllByText(/295 de referințe de modificare sau completare/)
+    expect(warnings).toHaveLength(1)
+    expect(screen.getByRole('complementary', { name: 'Despre textul afișat' })).toContainElement(warnings[0] ?? null)
+  })
+
+  it('puts the warnings on the summary when no version of the text is shown', () => {
+    // No readable version: no box about the text shown, so the summary wears them.
+    mockAct({
+      ...legalActDetailRichFixture,
+      canonical: null,
+      documents: [],
+      latestAvailableDocumentId: null,
+    })
+    render(<LegalActPage actId="66150" />)
+
+    expect(screen.queryByRole('complementary', { name: 'Despre textul afișat' })).not.toBeInTheDocument()
+    const warnings = screen.getAllByText(/295 de referințe de modificare sau completare/)
+    expect(warnings).toHaveLength(1)
+    expect(screen.getByText('Pe scurt').closest('section')).toContainElement(warnings[0] ?? null)
+  })
+
+  it('offers the ways back to the start only once the head has left the screen, and lands on the title', () => {
+    const observers: { readonly callback: IntersectionObserverCallback; readonly targets: Element[] }[] = []
+    class RecordingObserver {
+      readonly root = null
+      readonly rootMargin = ''
+      readonly scrollMargin = ''
+      readonly thresholds: readonly number[] = []
+      private readonly record: { readonly callback: IntersectionObserverCallback; readonly targets: Element[] }
+      constructor(callback: IntersectionObserverCallback) {
+        this.record = { callback, targets: [] }
+        observers.push(this.record)
+      }
+      observe(target: Element) {
+        this.record.targets.push(target)
+      }
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return []
+      }
+    }
+    const original = window.IntersectionObserver
+    vi.stubGlobal('IntersectionObserver', RecordingObserver)
+    window.IntersectionObserver = RecordingObserver as unknown as typeof IntersectionObserver
+    try {
+      mockAct(legalActDetailRichFixture)
+      render(<LegalActPage actId="66150" />)
+      const back = () => screen.queryAllByRole('button', { name: 'Înapoi la începutul actului' })
+      expect(back()).toHaveLength(0)
+
+      // Every observed element reports itself out of view, above the window: the head has been scrolled past.
+      const scrolledPast = (top: number) =>
+        act(() => {
+          for (const { callback, targets } of observers) {
+            callback(
+              targets.map((target) => ({ target, isIntersecting: false, boundingClientRect: { top } }) as unknown as IntersectionObserverEntry),
+              {} as IntersectionObserver,
+            )
+          }
+        })
+      // Below the window (a head taller than a phone's screen) is not away.
+      scrolledPast(900)
+      expect(back()).toHaveLength(0)
+      scrolledPast(-400)
+      // The bar's, and the floating one (beside the text from 72rem, in the corner below).
+      expect(back()).toHaveLength(3)
+
+      vi.mocked(window.scrollTo).mockClear()
+      fireEvent.click(back()[0] as HTMLElement)
+      expect(window.scrollTo).toHaveBeenCalledWith({ top: 0 })
+      expect(screen.getByRole('heading', { level: 1 })).toHaveFocus()
+    } finally {
+      vi.unstubAllGlobals()
+      window.IntersectionObserver = original
+    }
   })
 
   it('surfaces contradicted abrogations', () => {

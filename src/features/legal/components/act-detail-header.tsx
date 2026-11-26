@@ -4,6 +4,7 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ArrowLeft } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust'
+import { cn } from '@/lib/utils'
 import type { LegalActDetail } from '@/schemas/legal'
 import { uniqueGazettePublication } from '../lib/act-facts'
 import { formatLegalDate } from '../lib/legal-format'
@@ -14,6 +15,7 @@ import {
   legalIssuerLabel,
 } from '../lib/legal-vocabulary'
 import { LegalStatusBadge } from './legal-status-badge'
+import { ACT_COLUMN, ACT_GRID, ACT_GRID_THREE, ACT_TITLE_ID } from './reader/act-page-grid'
 
 type Props = {
   readonly act: LegalActDetail
@@ -104,77 +106,85 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
   ].filter((fact): fact is { name: string; value: string; wide?: boolean } => fact !== null)
 
   return (
-    <header className="border-b-2 border-[var(--pnrr-border)] bg-background">
-      <div className="mx-auto max-w-7xl px-4 pt-3 pb-7 sm:px-6 sm:pb-9 lg:px-8 lg:pt-5">
-        <Link
-          to="/legislation"
-          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground sm:min-h-10"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          <Trans>Legislația României</Trans>
-        </Link>
+    // On the page's one grid (owner, 26 November 2026, the act page's
+    // redesign): the back link in the contents' column, the identity in the
+    // reading column, and from 88rem the facts in the third column, one under
+    // the other, above the box about the text shown. The facts are ONE list,
+    // moved by grid placement: they are said once at any width. No rule under
+    // the head: the reading bar's own border closes it.
+    <header className={cn(ACT_GRID, ACT_GRID_THREE, 'bg-background pb-7 pt-4 sm:pb-9 lg:pt-8')}>
+      <Link
+        to="/legislation"
+        className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground justify-self-start sm:min-h-10 lg:col-start-1 lg:row-start-1 lg:-mt-2.5"
+      >
+        <ArrowLeft className="size-4" aria-hidden />
+        <Trans>Legislația României</Trans>
+      </Link>
 
-        {/* The identity block sits on the SAME grid as the reading layout
-            below (user decision 2026-08-11): empty rail column, then the
-            content column — so the title, the summary card and the text all
-            share one left edge. The breadcrumb above stays at the container
-            edge, anchoring the rail column. */}
-        <div className="lg:grid lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-10">
-          <div className="hidden lg:block" aria-hidden />
-          <div className="mt-2 min-w-0 max-w-[42rem]">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <LegalStatusBadge status={act.status} strong />
-              {isMock ? <DataStatusBadge status="mock" /> : null}
-            </div>
-
-            <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
-              {act.displayCitation}
-            </h1>
-
-            {textSubject !== null ? (
-              <p className="mt-2 text-lg leading-7 text-muted-foreground sm:text-xl sm:leading-8">
-                {textSubject}
-              </p>
-            ) : null}
-
-            {/* Two facts to a row on a phone, the publication on a row of its
-                own (half a phone's width broke it over three lines); from
-                `sm` one row, the publication taking what is left. */}
-            <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-y py-3 sm:grid-cols-[auto_auto_auto_minmax(0,1fr)]">
-              {facts.map((fact) => (
-                <div key={fact.name} className={fact.wide === true ? 'col-span-2 sm:col-span-1' : undefined}>
-                  <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
-                  <dd className="text-sm leading-6 text-foreground">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <div className="mt-3 space-y-0.5 text-sm leading-6 text-muted-foreground">
-              {showDen ? <p>{den}</p> : null}
-              {act.aliases.length > 0 ? (
-                <p>{t`cunoscut și ca ${act.aliases.join(', ')}`}</p>
-              ) : null}
-              {/* legal_v2 serves identity, versions and text from the rebuilt
-                  corpus and BRIDGES the rest from the previous one by act id.
-                  One quiet line says so; an act the previous corpus does not
-                  hold has no status, links or summary at all, and says that. */}
-              {act.dataSource === 'legal_v2' ? (
-                <p className="text-xs leading-5">
-                  {act.bridgedFields.length > 0 ? (
-                    <Trans>
-                      Starea, legăturile și rezumatul provin din corpusul anterior.
-                    </Trans>
-                  ) : (
-                    <Trans>
-                      Starea, legăturile și rezumatul nu sunt disponibile pentru
-                      acest act: corpusul anterior nu îl conține.
-                    </Trans>
-                  )}
-                </p>
-              ) : null}
-            </div>
-          </div>
+      <div className={cn(ACT_COLUMN, 'lg:col-start-2 lg:row-start-1')}>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <LegalStatusBadge status={act.status} strong />
+          {isMock ? <DataStatusBadge status="mock" /> : null}
         </div>
+
+        {/* Takes the focus when the reader comes back to the act's start. */}
+        <h1
+          id={ACT_TITLE_ID}
+          tabIndex={-1}
+          className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-foreground outline-none sm:text-4xl"
+        >
+          {act.displayCitation}
+        </h1>
+
+        {textSubject !== null ? (
+          <p className="mt-2 text-lg leading-7 text-muted-foreground sm:text-xl sm:leading-8">
+            {textSubject}
+          </p>
+        ) : null}
+      </div>
+
+      {/* Two facts to a row on a phone, the publication on a row of its own
+          (half a phone's width broke it over three lines); from `sm` one row,
+          the publication taking what is left. From 88rem: one under the
+          other, at the third column's foot, on the side box's inner edge. */}
+      <dl
+        className={cn(
+          ACT_COLUMN,
+          'mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-y py-3 sm:grid-cols-[auto_auto_auto_minmax(0,1fr)] lg:col-start-2 lg:row-start-2',
+          'min-[88rem]:col-start-3 min-[88rem]:row-span-3 min-[88rem]:row-start-1 min-[88rem]:mt-0 min-[88rem]:block min-[88rem]:max-w-none min-[88rem]:space-y-2.5 min-[88rem]:self-end min-[88rem]:border-y-0 min-[88rem]:px-3 min-[88rem]:py-0',
+        )}
+      >
+        {facts.map((fact) => (
+          <div key={fact.name} className={fact.wide === true ? 'col-span-2 sm:col-span-1' : undefined}>
+            <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
+            <dd className="text-sm leading-6 text-foreground min-[88rem]:leading-5">{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className={cn(ACT_COLUMN, 'mt-3 space-y-0.5 text-sm leading-6 text-muted-foreground empty:hidden lg:col-start-2 lg:row-start-3')}>
+        {showDen ? <p>{den}</p> : null}
+        {act.aliases.length > 0 ? (
+          <p>{t`cunoscut și ca ${act.aliases.join(', ')}`}</p>
+        ) : null}
+        {/* legal_v2 serves identity, versions and text from the rebuilt
+            corpus and BRIDGES the rest from the previous one by act id.
+            One quiet line says so; an act the previous corpus does not
+            hold has no status, links or summary at all, and says that. */}
+        {act.dataSource === 'legal_v2' ? (
+          <p className="text-xs leading-5">
+            {act.bridgedFields.length > 0 ? (
+              <Trans>
+                Starea, legăturile și rezumatul provin din corpusul anterior.
+              </Trans>
+            ) : (
+              <Trans>
+                Starea, legăturile și rezumatul nu sunt disponibile pentru
+                acest act: corpusul anterior nu îl conține.
+              </Trans>
+            )}
+          </p>
+        ) : null}
       </div>
     </header>
   )

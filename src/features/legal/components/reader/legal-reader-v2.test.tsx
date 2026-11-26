@@ -19,6 +19,7 @@ import {
   screen,
   fireEvent,
   waitFor,
+  within,
   createTestQueryClient,
 } from '@/test/test-utils'
 import { LegalRenderFailureError } from '../../lib/legal-render-error'
@@ -126,6 +127,8 @@ describe('ActReadingLayout on legal_v2', () => {
       'Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante.',
     )
     expect(note).not.toHaveTextContent(/în vigoare la/)
+    // The guidance and the Portal link are folded under „Detalii" (owner, 26 November 2026).
+    fireEvent.click(within(note as HTMLElement).getByRole('button', { name: 'Detalii' }))
     expect(
       screen.getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ }),
     ).toHaveAttribute('href', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/900012')
@@ -216,6 +219,7 @@ describe('ActReadingLayout on legal_v2', () => {
     )
     const banner = await screen.findByText(/Formă consolidată neoficială, cu caracter informativ\./)
     expect(banner.closest('[role="note"]')).toHaveTextContent(/„actualizat până la .*2023.*”/)
+    fireEvent.click(screen.getByRole('button', { name: 'Detalii' }))
     expect(
       screen.getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ }),
     ).toHaveAttribute('href', 'https://legislatie.just.ro/Public/DetaliiDocumentAfis/5551')
@@ -255,6 +259,64 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(navigateMock).toHaveBeenLastCalledWith(
       expect.objectContaining({ search: {}, hash: 'act-text' }),
     )
+  })
+
+  it('keeps the notice\'s first sentence and the Portal\'s dated note in sight when folded; only the guidance and the link fold', async () => {
+    render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
+    const first = await screen.findByText('Formă consolidată neoficială, cu caracter informativ.')
+    const note = first.closest('[role="note"]') as HTMLElement
+    const dated = within(note).getByText(/Portalul Legislativ indică „consolidarea din .*2024.*”\./)
+    const guidance = within(note).getByText(/Pentru a stabili dispozițiile aplicabile la o dată/)
+    // folded: the first sentence and the Portal's dated note are never inside the folded part
+    expect(first.closest('[hidden]')).toBeNull()
+    expect(dated.closest('[hidden]')).toBeNull()
+    expect(guidance.closest('[hidden]')).not.toBeNull()
+    expect(screen.queryByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ })).toBeNull()
+    const details = within(note).getByRole('button', { name: 'Detalii' })
+    expect(details).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(details)
+    expect(guidance.closest('[hidden]')).toBeNull()
+    expect(within(note).getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ })).toBeInTheDocument()
+    expect(within(note).getByRole('button', { name: 'Mai puțin' })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('sets the version select in the box about the text shown, names the version whole, and writes ?doc= through the router', async () => {
+    render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
+    const about = await screen.findByRole('complementary', { name: 'Despre textul afișat' })
+    const select = within(about).getByLabelText(/Versiunea textului/)
+    // the face names the version by the Portal's date and its kind, nothing cut
+    const face = select.parentElement as HTMLElement
+    expect(face).toHaveTextContent(/2024/)
+    expect(face).toHaveTextContent(/formă consolidată neoficială/)
+    fireEvent.change(select, { target: { value: 'f900011' } })
+    expect(navigateMock).toHaveBeenLastCalledWith({
+      to: '.',
+      search: { doc: 'f900011' },
+      hash: 'act-text',
+      replace: true,
+      resetScroll: false,
+    })
+  })
+
+  it("names a consolidation by the Portal's own date, never by the list's ordering date", async () => {
+    const act = {
+      ...legalActDetailV2Fixture,
+      documents: legalActDetailV2Fixture.documents.map((doc) =>
+        doc.documentId === 'f900012' ? { ...doc, portalLabelDate: '2023-11-30' } : doc,
+      ),
+      canonical:
+        legalActDetailV2Fixture.canonical === null
+          ? null
+          : { ...legalActDetailV2Fixture.canonical, portalLabelDate: '2023-11-30' },
+    }
+    render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+    const select = await screen.findByLabelText(/Versiunea textului/)
+    const option = Array.from(select.querySelectorAll('option')).find((o) => o.value === 'f900012')
+    expect(option?.textContent).toMatch(/2023/)
+    expect(option?.textContent).not.toMatch(/2024/)
+    await screen.findByText('Formă consolidată neoficială, cu caracter informativ.')
+    expect(select.parentElement).toHaveTextContent(/2023/)
+    expect(select.parentElement).not.toHaveTextContent(/2024/)
   })
 
   it('marks a deep-linked note nested in a note, over the parent note\'s own ground', async () => {
@@ -349,6 +411,19 @@ describe('ActReadingLayout on legal_v2', () => {
       fireEvent.change(select, { target: { value: 'f900011' } })
       fireEvent.change(select, { target: { value: 'f900012' } })
       expect(navigateMock).toHaveBeenLastCalledWith(expect.objectContaining({ search: {} }))
+    })
+
+    it("dates the consolidation it shows by the Portal's own date, not the list's ordering date", async () => {
+      const act = {
+        ...legalActDetailV2LatestNotAvailableFixture,
+        documents: legalActDetailV2LatestNotAvailableFixture.documents.map((doc) =>
+          doc.documentId === 'f900012' ? { ...doc, portalLabelDate: '2023-11-30' } : doc,
+        ),
+      }
+      render(<ActReadingLayout act={act} lead={null} fisa={null} />)
+      const notice = (await screen.findByText(/Cea mai recentă versiune a actului/)).closest('[role="note"]')
+      expect(notice).toHaveTextContent(/Afișăm versiunea din .*2023.* \(formă consolidată neoficială\)/)
+      expect(notice).not.toHaveTextContent(/Afișăm versiunea din .*2024/)
     })
 
     it("names the latest form the server picks (latestDocumentId), not the client's guess", async () => {

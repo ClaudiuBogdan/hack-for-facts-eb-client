@@ -1,9 +1,11 @@
+import { useId, useState } from 'react'
 import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
-import { AlertTriangle, ExternalLink } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { formatLegalDate } from '../lib/legal-format'
 import { portalConsolidationNote, type ShownVersion } from '../lib/legal-versions'
-import { legislationAlertClassName } from '../lib/legislation-theme'
+import { ACT_LINK, ACT_MORE } from './reader/act-page-grid'
 
 type Props = {
   /** The consolidation whose text is on screen. */
@@ -21,28 +23,42 @@ type Props = {
  * filled the sentence is dropped rather than quoting nothing. The link is the
  * form's own Portal page.
  *
+ * Set as the box's small print (owner, 26 November 2026, the act page's
+ * redesign), folded: what the form is and the Portal's own dated note ALWAYS
+ * stay in sight (the data owner's rule: the date the text reflects is what a
+ * reader sets against the date they ask about); only the guidance sentence and
+ * the Portal link open under „Detalii".
+ *
  * It sits OUTSIDE `#reader-content`: the article holds only the law's text,
  * so find-in-page, copy and citation never pick the label up as law.
  */
 export function ActConsolidationBanner({ version }: Props) {
   const { i18n } = useLingui()
+  const [open, setOpen] = useState(false)
+  const details = useId()
   const note = portalConsolidationNote(version, (value) => formatLegalDate(value, i18n.locale))
 
   return (
-    <div className={`${legislationAlertClassName} mb-6`} role="note">
-      <AlertTriangle
-        className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
-        aria-hidden
-      />
-      <div className="flex flex-col gap-2 text-sm leading-6 text-[var(--pnrr-fg)]">
+    <div role="note" className="border-l-2 border-status-partial-fg pl-4 text-sm leading-6 min-[88rem]:pl-3 min-[88rem]:leading-5">
+      <p className="font-medium text-foreground">
+        <Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>
+      </p>
+      {note !== null && (
+        <p className="mt-1 text-muted-foreground">
+          <Trans>Portalul Legislativ indică „{note}”.</Trans>
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-controls={details}
+        className={cn(ACT_MORE, 'mt-1 inline-flex min-h-11 items-center text-xs sm:min-h-8')}
+      >
+        {open ? <Trans>Mai puțin</Trans> : <Trans>Detalii</Trans>}
+      </button>
+      <div id={details} hidden={!open} className="pb-0.5 text-xs leading-5 text-muted-foreground">
         <p>
-          <Trans>Formă consolidată neoficială, cu caracter informativ.</Trans>
-          {note !== null && (
-            <>
-              {' '}
-              <Trans>Portalul Legislativ indică „{note}”.</Trans>
-            </>
-          )}{' '}
           <Trans>
             Pentru a stabili dispozițiile aplicabile la o dată, consultați în
             Monitorul Oficial actul, republicările, actele modificatoare și
@@ -50,15 +66,11 @@ export function ActConsolidationBanner({ version }: Props) {
           </Trans>
         </p>
         {version.sourceUrl !== null && (
-          <p>
-            <a
-              href={version.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-semibold underline underline-offset-2"
-            >
+          <p className="mt-1.5">
+            {/* Inline, so the arrow stays with the last word when the link wraps in a narrow column. */}
+            <a href={version.sourceUrl} target="_blank" rel="noopener noreferrer" className={cn(ACT_LINK, 'text-xs')}>
               <Trans>Forma consolidată pe Portalul Legislativ</Trans>
-              <ExternalLink className="size-3" aria-hidden />
+              <ArrowUpRight className="ml-1 inline size-3.5 align-[-2px]" aria-hidden />
             </a>
           </p>
         )}
