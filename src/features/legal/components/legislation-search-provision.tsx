@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ArrowRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { formatLegalDate } from '../lib/legal-format'
 import { isConsolidationVersion, portalConsolidationNote } from '../lib/legal-versions'
 import type { ProvisionGroup } from '../lib/search-marks'
@@ -42,6 +43,10 @@ export function LegislationSearchProvision({ actId, group }: { readonly actId: s
   const consolidation = version !== null && isConsolidationVersion(version)
   const note = consolidation && version !== null ? portalConsolidationNote(version, (value) => formatLegalDate(value, i18n.locale)) : null
   const label = group.label ?? t`Prevedere`
+  // A provision shown as its link alone (the server withheld its words, no consolidation note) stands next to
+  // another such link: it gets a real 44 px row on a phone, not a press area grown over its neighbour (review
+  // astra-client-12). With text under it, the link keeps the press area grown around it.
+  const linkOnly = group.fragments.length === 0 && !consolidation
 
   return (
     <div className="border-l-2 border-border pl-3">
@@ -50,7 +55,10 @@ export function LegislationSearchProvision({ actId, group }: { readonly actId: s
           to="/legislation/acts/$actId"
           params={{ actId }}
           search={{ doc: group.documentId, nod: group.nodePath }}
-          className="relative inline-flex items-center gap-1 text-xs font-medium text-foreground underline-offset-4 after:absolute after:-inset-x-2 after:-inset-y-3.5 after:content-[''] hover:underline"
+          className={cn(
+            'relative inline-flex items-center gap-1 text-xs font-medium text-foreground underline-offset-4 hover:underline',
+            linkOnly ? 'min-h-11 sm:min-h-0' : "after:absolute after:-inset-x-2 after:-inset-y-3.5 after:content-['']",
+          )}
         >
           {label}
           <ArrowRight className="size-3" aria-hidden="true" />

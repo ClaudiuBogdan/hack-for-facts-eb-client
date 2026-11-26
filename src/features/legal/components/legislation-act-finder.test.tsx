@@ -19,8 +19,22 @@ vi.mock('../api/legal-resolve-api', async (importOriginal) => {
   return { ...original, resolveLegalActs: vi.fn(original.resolveLegalActs) }
 })
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, params, search }: { readonly children: ReactNode; readonly to: string; readonly params?: Record<string, string>; readonly search?: Record<string, string> }) => (
-    <a href={`${params?.actId ? to.replace('$actId', params.actId) : to}${search ? `?${new URLSearchParams(search).toString()}` : ''}`}>{children}</a>
+  Link: ({
+    children,
+    to,
+    params,
+    search,
+    className,
+  }: {
+    readonly children: ReactNode
+    readonly to: string
+    readonly params?: Record<string, string>
+    readonly search?: Record<string, string>
+    readonly className?: string
+  }) => (
+    <a href={`${params?.actId ? to.replace('$actId', params.actId) : to}${search ? `?${new URLSearchParams(search).toString()}` : ''}`} className={className}>
+      {children}
+    </a>
   ),
   useNavigate: () => navigateMock,
 }))
@@ -200,6 +214,60 @@ describe('LegislationActFinder', () => {
       expect(screen.queryByText('Actul cu acest număr')).not.toBeInTheDocument()
       expect(screen.queryByRole('link', { name: 'Deschide actul' })).not.toBeInTheDocument()
     })
+
+    it('gives no card to a query that cites a law inside other words: the amending law is not the amended one (astra-client-12)', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      // the resolver reads the number inside the words and names the law being amended
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([LAW])
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(answer([actHit('40001', 'Legea nr. 12/2020', 'lege', 'parlamentul'), actHit('30412', 'Legea nr. 53/2003', 'lege', 'parlamentul')]))
+      render(<LegislationActFinder search={{ q: 'Legea de modificare a Legii 53/2003' }} />)
+
+      const list = await screen.findByRole('list', { name: 'Rezultate' })
+      expect(within(list).getAllByRole('link').map((link) => link.textContent)).toEqual(['Legea nr. 12/2020', 'Legea nr. 53/2003'])
+      expect(screen.queryByText('Actul cu acest număr')).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Deschide actul' })).not.toBeInTheDocument()
+    })
+
+    it('says several acts carry the number only when every one it describes carries it whole (astra-client-12)', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([LAW, { ...LAW, value: '30499', label: 'Decizia nr. 153/2003' }])
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(
+        answer([actHit('30412', 'Legea nr. 53/2003', 'lege', 'parlamentul'), actHit('30499', 'Decizia nr. 153/2003', 'decizie', 'curtea-constitutionala')]),
+      )
+      render(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
+
+      await screen.findByRole('list', { name: 'Rezultate' })
+      expect(screen.queryByText('Mai multe acte poartă acest număr: emitentul le deosebește.')).not.toBeInTheDocument()
+    })
+
+    it('offers a name’s only candidate, when the search found nothing, as a possible match without a number card (astra-client-12)', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([{ kind: 'act', value: '777', label: 'Codul silvic', score: 1, hint: 'in-vigoare' }])
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(answer([]))
+      render(<LegislationActFinder search={{ q: 'codul silvic' }} />)
+
+      const card = (await screen.findByRole('heading', { name: 'Poate cauți acest act' })).closest('section') as HTMLElement
+      expect(within(card).getByRole('link', { name: /Codul silvic/ })).toHaveAttribute('href', '/legislation/acts/777')
+      expect(screen.queryByText('Actul cu acest număr')).not.toBeInTheDocument()
+      // the empty state speaks of the act above, not of no act at all
+      expect(screen.getByText(/Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului/)).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /Niciun act pentru/ })).not.toBeInTheDocument()
+    })
+
+    it('offers no possible match while a filter narrows the search', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([{ kind: 'act', value: '777', label: 'Codul silvic', score: 1, hint: 'in-vigoare' }])
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(answer([]))
+      render(<LegislationActFinder search={{ q: 'codul silvic', tip: 'decret' }} />)
+
+      expect(await screen.findByRole('heading', { name: /Niciun act pentru/ })).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: 'Poate cauți acest act' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Codul silvic/ })).not.toBeInTheDocument()
+    })
   })
 
   it('puts the question’s words in bold in an act’s name', async () => {
@@ -361,7 +429,9 @@ describe('LegislationActFinder', () => {
       act(() => {
         vi.advanceTimersByTime(100)
       })
-      // Back: a filter undone, the same query
+      // Back: a filter undone, the same query (the browser's address has moved when popstate fires)
+      const before = window.location.href
+      window.history.replaceState(null, '', '/legislation/search?q=codul')
       act(() => {
         window.dispatchEvent(new PopStateEvent('popstate'))
       })
@@ -370,6 +440,41 @@ describe('LegislationActFinder', () => {
         vi.advanceTimersByTime(1000)
       })
       expect(navigateMock).not.toHaveBeenCalled()
+      window.history.replaceState(null, '', before)
+    })
+
+    it('puts the landed question back in the box after a step through history, a filter undone included (astra-client-12)', () => {
+      vi.useFakeTimers()
+      const before = window.location.href
+      const { rerender } = render(<LegislationActFinder search={{ q: 'codul', tip: 'lege' }} />)
+      const box = screen.getByRole('textbox', { name: /Caută în legislație/ })
+      fireEvent.change(box, { target: { value: 'codul muncii' } })
+      // Back to the entry before the filter: the same question, the address already moved when popstate fires
+      window.history.replaceState(null, '', '/legislation/search?q=codul')
+      act(() => {
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
+      rerender(<LegislationActFinder search={{ q: 'codul' }} />)
+      expect(box).toHaveValue('codul')
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      expect(navigateMock).not.toHaveBeenCalled()
+      window.history.replaceState(null, '', before)
+    })
+
+    it('sends the emptied box on Enter, even before the pause ends (astra-client-12)', () => {
+      vi.useFakeTimers()
+      render(<LegislationActFinder search={{ q: 'codul', tip: 'lege' }} />)
+      fireEvent.change(screen.getByRole('textbox', { name: /Caută în legislație/ }), { target: { value: '' } })
+      fireEvent.submit(screen.getByRole('search', { name: /Caută în legislație/ }))
+      expect(navigateMock).toHaveBeenCalledTimes(1)
+      // the question goes, the filters stay
+      expect(sentSearch(0, { q: 'codul', tip: 'lege' })).toEqual({ q: undefined, tip: 'lege' })
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      expect(navigateMock).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -735,6 +840,37 @@ describe('LegislationActFinder', () => {
       expect(within(list).getByRole('link', { name: 'Actul 900003' })).toHaveAttribute('href', '/legislation/acts/900003')
       expect(screen.getByRole('heading', { name: '2 potriviri afișate' })).toBeInTheDocument()
       expect(screen.queryByRole('heading', { name: /Niciun act/ })).not.toBeInTheDocument()
+    })
+
+    it('counts the rows shown when provisions bring an act the act hits do not, and offers no choice among acts on show (astra-client-12)', async () => {
+      const { resolveLegalActs } = await import('../api/legal-resolve-api')
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      vi.mocked(resolveLegalActs).mockResolvedValueOnce([
+        { kind: 'act', value: '900002', label: 'Hotărârea nr. 206/1996', score: 1, hint: null },
+        { kind: 'act', value: '900003', label: 'Hotărârea nr. 206/1996', score: 1, hint: null },
+      ])
+      // a legacy OpenSearch answer: one act hit, counted exactly, and a provision of a second act
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce({
+        ...v2Answer([hit], [{ actId: '900003', actCitation: 'Hotărârea nr. 206/1996', documentId: 'f900020', nodePath: 'r5', nodeLabel: 'Articolul 5', snippet: 'un <em>fragment</em>', servedForm: null }]),
+        actsTotal: 1,
+        totalsExhaustive: true,
+      })
+      render(<LegislationActFinder search={{ q: 'HG 206/1996' }} />)
+
+      expect(await screen.findByRole('heading', { name: '2 potriviri afișate' })).toBeInTheDocument()
+      expect(screen.getAllByRole('listitem').filter((item) => item.closest('ol[aria-label="Rezultate"]'))).toHaveLength(2)
+      expect(screen.queryByRole('heading', { name: /alege actul/ })).not.toBeInTheDocument()
+    })
+
+    it('gives a provision shown only as a link a whole 44 px target, not a press area that reaches over its neighbour (astra-client-12)', async () => {
+      const { fetchLegalSearch } = await import('../api/legal-search-api')
+      const bare = (nodePath: string, nodeLabel: string) => ({ actId: '900002', documentId: 'f900012', nodePath, nodeLabel, snippet: null, servedForm: null })
+      vi.mocked(fetchLegalSearch).mockResolvedValueOnce(v2Answer([hit], [bare('r5', 'Articolul 5'), bare('r6', 'Articolul 6')]))
+      render(<LegislationActFinder search={{ q: 'renunțare cetățenie' }} />)
+
+      const link = await screen.findByRole('link', { name: 'Articolul 5' })
+      expect(link).toHaveClass('min-h-11')
+      expect(link.className).not.toMatch(/after:-inset-y/)
     })
 
     it('draws a citation’s provisions in its card, and does not call the search empty', async () => {

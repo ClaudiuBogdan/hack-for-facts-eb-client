@@ -7,11 +7,12 @@ import { ArrowRight, LoaderCircle, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SEARCH_FIELD_CLASS, SEARCH_FIELD_KEYBOARD_CLASS, SEARCH_INPUT_CLASS } from '@/features/landing/components/search/search-field'
 import { cn } from '@/lib/utils'
+import { legalFinderSearchSchema } from '@/schemas/legal-search'
 import type { LegalActStatus, LegalFinderSearch, LegalResolveHit, LegalSearchActHit, LegalSearchResultData } from '@/schemas/legal'
 import { LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT, legalActStatusSchema } from '@/schemas/legal'
 import { fetchLegalSearch } from '../api/legal-search-api'
 import { resolveLegalActs } from '../api/legal-resolve-api'
-import { labelCarriesCitation, parseLegalCitationShape } from '../lib/legal-citation'
+import { labelCarriesCitation, parseExactCitation, parseLegalCitationShape } from '../lib/legal-citation'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import { legalIssuerLabel } from '../lib/legal-vocabulary'
 import { isSearchFiltered, readSearchFilters, searchArgs, searchHitName, searchOfFilters, usesSummaries, type SearchFilters } from '../lib/search-filters'
@@ -115,6 +116,20 @@ export function LegislationActFinder({ search: address, lang = null }: Props) {
     const onTraverse = () => {
       stopTyping()
       sent.current = null
+      // The box says the question of the entry landed on, read from the address the browser already moved to: a
+      // Back that only undoes a filter keeps `q`, so the mirroring above never runs (review astra-client-12). The
+      // value is read as the router reads it (JSON first, else the text) and checked by the route's own schema.
+      const raw = new URLSearchParams(window.location.search).get('q')
+      let value: unknown = raw ?? undefined
+      try {
+        if (raw !== null) value = JSON.parse(raw)
+      } catch {
+        // plain text, as typed
+      }
+      const landed = legalFinderSearchSchema.safeParse({ q: value })
+      const next = landed.success ? (landed.data.q?.trim() ?? '') : ''
+      typed.current = next
+      setDraft(next)
     }
     window.addEventListener('popstate', onTraverse)
     return () => window.removeEventListener('popstate', onTraverse)
@@ -167,7 +182,8 @@ export function LegislationActFinder({ search: address, lang = null }: Props) {
     event.preventDefault()
     stopTyping()
     const next = draft.trim()
-    if (next.length > 0 && next !== q) sendQuery(next, { replace: true })
+    // An emptied box is sent too: it clears the question and keeps the filters (review astra-client-12).
+    if (next !== q) sendQuery(next, { replace: true })
   }
   const run = (example: string) => {
     setDraft(example)
@@ -414,13 +430,16 @@ function Answer({
   const narrowed = Object.keys(searchArgs(filters).filter).length > 0
   const stale = search.isPlaceholderData
   // A citation's answer waits for the resolver, so its act is not drawn as a row and then moved into the card.
-  const awaitsLead = !narrowed && !stale && resolving && parseLegalCitationShape(q) !== null
+  const awaitsLead = !narrowed && !stale && resolving && parseExactCitation(q) !== null
   if (search.isPending || search.data === undefined || awaitsLead) return <PendingRows />
 
   const result = search.data
   const acts = result.acts
   const words = questionWords(q)
-  const citation = parseLegalCitationShape(q)
+  // The numbered card and its „same number" sentence answer only a query that IS one citation, read by the
+  // server's own grammar: „Legea de modificare a Legii 53/2003" names the amending law, not Law 53/2003 (review
+  // astra-client-12).
+  const citation = parseExactCitation(q)
   // What the copy may claim: the OpenSearch engine, whole, searched the acts' text; the Postgres path only numbers
   // and names; a degraded OpenSearch answer lost a leg it does not name, so it claims neither.
   const reach: 'text' | 'names' | 'partial' = result.engine === 'opensearch' ? (result.degraded ? 'partial' : 'text') : 'names'
@@ -434,10 +453,6 @@ function Answer({
   // keep the engine's order.
   const only = named.length === 1 ? (named[0] ?? null) : null
   const lead = only !== null && citation !== null && labelCarriesCitation(only.label, citation) ? only : null
-  // Several acts under one citation: when the list holds them all, the list is the choice and one sentence says
-  // so; the card is for the acts the list does not show.
-  const several = named.length >= 2
-  const choose = several && named.some((one) => !acts.some((hit) => hit.act.actId === one.value))
   const leadHit = lead === null ? null : (acts.find((hit) => hit.act.actId === lead.value) ?? null)
   const rest = lead === null ? acts : acts.filter((hit) => hit.act.actId !== lead.value)
   // The provisions that matched, by act. The engine sends act and provision hits apart: a provision is drawn under
@@ -450,6 +465,17 @@ function Answer({
     .map((actId) => ({ actId, citation: result.sections.find((section) => section.actId === actId && section.actCitation)?.actCitation ?? null, provisions: provisionsOf(actId) }))
     .filter((one) => one.provisions.length > 0)
   const leadProvisions = lead === null ? 0 : provisionsOf(lead.value).length
+  // The acts on show in rows: act hits and acts brought by their provisions.
+  const shown = new Set([...acts.map((hit) => hit.act.actId), ...loose.map((one) => one.actId)])
+  // Several acts under one citation: when the rows hold them all, the rows are the choice, and one sentence says so
+  // only when every act it speaks of carries the number whole; the card is for the acts the rows do not show.
+  const several = named.length >= 2
+  const choose = several && named.some((one) => !shown.has(one.value))
+  const sameNumber = several && !choose && citation !== null && named.every((one) => labelCarriesCitation(one.label, citation))
+  // A name's only candidate that the search did not find (an alias the ranked search misses): offered as a possible
+  // match, never as the numbered answer (review astra-client-12). The narrowing guard above already holds: `named`
+  // is empty under a filter that narrows.
+  const maybe = only !== null && lead === null && acts.length === 0 && loose.length === 0 ? only : null
   const empty = acts.length === 0 && loose.length === 0 && leadProvisions === 0
   const rows = rest.length + loose.length
   const widen =
@@ -462,7 +488,7 @@ function Answer({
   const count =
     lead !== null
       ? t`Alte potriviri`
-      : result.actsTotal == null || acts.length === 0
+      : result.actsTotal == null || acts.length === 0 || loose.length > 0
         ? plural(rows, { one: 'O potrivire afișată', few: '# potriviri afișate', other: '# de potriviri afișate' })
         : result.totalsExhaustive
           ? plural(result.actsTotal, { one: 'O potrivire', few: '# potriviri', other: '# de potriviri' })
@@ -510,6 +536,7 @@ function Answer({
     <div className={cn('space-y-8 transition-opacity', stale && 'opacity-80')} aria-busy={stale}>
       {lead !== null ? <LeadAct lead={lead} hit={leadHit} provisions={provisionsOf(lead.value)} /> : null}
       {choose ? <ChooseAct hits={named} /> : null}
+      {maybe !== null ? <ChooseAct hits={[maybe]} title={t`Poate cauți acest act`} /> : null}
 
       {empty && stale ? (
         // The last question's empty answer, faded: its sentence would speak of a question no longer asked.
@@ -529,7 +556,7 @@ function Answer({
         </section>
       ) : empty ? (
         <section aria-labelledby="search-empty-title">
-          {lead !== null || choose ? (
+          {lead !== null || choose || maybe !== null ? (
             <p id="search-empty-title" className="max-w-[60ch] text-base leading-relaxed text-muted-foreground">
               {reach === 'text'
                 ? t`Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă.`
@@ -584,7 +611,7 @@ function Answer({
             </div>
             {widen}
           </div>
-          {several && !choose && citation !== null ? <p className="mt-3 text-sm text-muted-foreground">{t`Mai multe acte poartă acest număr: emitentul le deosebește.`}</p> : null}
+          {sameNumber ? <p className="mt-3 text-sm text-muted-foreground">{t`Mai multe acte poartă acest număr: emitentul le deosebește.`}</p> : null}
           {degraded ? <div className="mt-3">{degraded}</div> : null}
           <ol aria-label={t`Rezultate`} className="divide-y border-b">
             {rest.map(row)}
@@ -713,12 +740,12 @@ function LeadAct({ lead, hit, provisions }: { readonly lead: LegalResolveHit; re
   )
 }
 
-/** Several acts under one citation or name: the reader picks. */
-function ChooseAct({ hits }: { readonly hits: readonly LegalResolveHit[] }) {
+/** Several acts under one citation or name: the reader picks. With a title of its own, a name's possible match. */
+function ChooseAct({ hits, title }: { readonly hits: readonly LegalResolveHit[]; readonly title?: string }) {
   return (
     <section aria-labelledby="search-choose-title" className={CARD}>
       <h2 id="search-choose-title" className="text-sm font-semibold text-foreground">
-        {t`Mai multe acte poartă acest nume: alege actul`}
+        {title ?? t`Mai multe acte poartă acest nume: alege actul`}
       </h2>
       <ul aria-label={t`Acte identificate`} className="mt-3 divide-y divide-border/70 border-y border-border/70">
         {hits.map((hit) => {
