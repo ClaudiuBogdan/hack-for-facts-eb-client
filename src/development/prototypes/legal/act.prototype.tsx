@@ -30,6 +30,8 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * The side column is the contents box's twin: a box hung from the bar, which says „Versiunea textului"; a version name
  * on two lines, the notice as small print with its guidance and link behind „Detalii", the live warnings worn
  * lighter (owner, from a picture; `?dreapta=vechi`, `?dreapta=simplu` and `?nota=intreaga` keep the rest).
+ * The way back to the act's start is a control in the reading bar („La început", an arrow on a phone), shown once
+ * the act's head has left the screen (owner: a long text makes it hard to scroll up again).
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',

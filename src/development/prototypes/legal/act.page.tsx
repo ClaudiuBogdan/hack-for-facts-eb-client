@@ -1,8 +1,8 @@
-import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ArrowLeft, ArrowRight, ArrowUpRight, ChevronRight, ChevronsDownUp, ChevronsUpDown, List } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, ChevronRight, ChevronsDownUp, ChevronsUpDown, List } from 'lucide-react'
 import { DataStatusBadge } from '@/components/data-trust/data-status-badge'
 import { Button } from '@/components/ui/button'
 import { ChoiceSelect } from '@/components/ui/choice-select'
@@ -222,7 +222,10 @@ function ActHead({ act, subject, mock, grid }: Pick<ActPageModel, 'act' | 'subje
           <LegalStatusBadge status={act.status} strong />
           {mock ? <DataStatusBadge status="mock" /> : null}
         </div>
-        <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{act.displayCitation}</h1>
+        {/* Takes the focus when the reader comes back to the start from the reading bar. */}
+        <h1 tabIndex={-1} className="mt-3 text-3xl font-semibold leading-tight tracking-tight outline-none sm:text-4xl">
+          {act.displayCitation}
+        </h1>
         {subject !== null ? <p className="mt-2 text-lg leading-7 text-muted-foreground sm:text-xl sm:leading-8">{subject}</p> : null}
         <div className="mt-5 space-y-1 text-sm leading-6 text-muted-foreground">
           {den !== null && den !== act.displayCitation ? <p className="text-foreground">{den}</p> : null}
@@ -956,6 +959,22 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   // The folded contents keep the last place open while the reader passes a gap between two blocks.
   const [openPath, setOpenPath] = useState<string | null>(null)
   if (activePath !== null && activePath !== openPath) setOpenPath(activePath)
+  // The way back to the act's start (owner, 26 November 2026: a long text makes it hard to scroll up again): a control
+  // in the reading bar, which is in reach on every screen of the text, shown once the act's head has left the screen.
+  const headRef = useRef<HTMLDivElement>(null)
+  const [away, setAway] = useState(false)
+  useEffect(() => {
+    const head = headRef.current
+    if (head === null) return
+    const observer = new IntersectionObserver(([entry]) => setAway(entry !== undefined && !entry.isIntersecting))
+    observer.observe(head)
+    return () => observer.disconnect()
+  }, [])
+  const toStart = () => {
+    // At once, not as a glide: a code is a hundred screens long.
+    window.scrollTo({ top: 0 })
+    headRef.current?.querySelector('h1')?.focus({ preventScroll: true })
+  }
   const ancestors = useMemo(() => ancestorsOf(outline, activePath), [outline, activePath])
   const trail = useMemo(() => new Set(ancestors.map((entry) => entry.path)), [ancestors])
   const active = outline.find((entry) => entry.path === activePath)
@@ -1026,7 +1045,9 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
 
   return (
     <div className="bg-background pb-24 text-foreground [font-family:var(--font-family)]">
-      <ActHead act={act} subject={subject} mock={mock} grid={grid} />
+      <div ref={headRef}>
+        <ActHead act={act} subject={subject} mock={mock} grid={grid} />
+      </div>
 
       {/* The reading bar: stays while the text scrolls. */}
       <div className="sticky top-0 z-20 border-y bg-background">
@@ -1089,6 +1110,19 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
               <p className={cn('hidden shrink-0 text-sm text-muted-foreground md:block', railBox && 'min-[88rem]:hidden')}>
                 <Trans>Forma din {formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</Trans>
               </p>
+            ) : null}
+            {away ? (
+              <button
+                type="button"
+                onClick={toStart}
+                aria-label={t`Înapoi la începutul actului`}
+                className="inline-flex size-11 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm text-muted-foreground hover:bg-muted hover:text-foreground sm:h-8 sm:w-auto sm:px-2"
+              >
+                <ArrowUp className="size-4" aria-hidden="true" />
+                <span aria-hidden="true" className="hidden sm:inline">
+                  <Trans>La început</Trans>
+                </span>
+              </button>
             ) : null}
           </div>
           {railBox ? (
