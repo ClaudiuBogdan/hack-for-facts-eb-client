@@ -1,12 +1,3 @@
-import {
-  Archive,
-  Ban,
-  CheckCircle2,
-  CircleSlash,
-  HelpCircle,
-  PauseCircle,
-  PencilLine,
-} from 'lucide-react'
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type { LegalActStatus } from '@/schemas/legal'
@@ -17,51 +8,65 @@ type Props = {
    * the previous corpus, which may not hold the act): no badge renders.
    */
   readonly status: LegalActStatus | null
+  /**
+   * On the act's own page, where the status is the first thing to know about the act: a size up and in full
+   * contrast (owner, 26 November 2026). Lists keep the quiet mark.
+   */
+  readonly strong?: boolean
   readonly className?: string
 }
 
-const STATUS_CLASS: Record<LegalActStatus, string> = {
-  'in-vigoare':
-    'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200',
-  modificat: 'bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200',
-  abrogat: 'bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200',
-  'abrogat-partial':
-    'bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200',
-  suspendat:
-    'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
-  'iesit-din-vigoare':
-    'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-200',
-  necunoscut:
-    'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-200',
+/**
+ * How much of the act is in force, as a shape: a full disc is in force, a disc in a ring is in force and
+ * amended, a half disc is partly repealed, an empty ring is not in force, a dashed ring is not known.
+ */
+type Shape = 'full' | 'amended' | 'half' | 'ring' | 'dashed'
+
+/** The shape and its colour, from the site's status tokens: green in force, amber in part, red repealed, grey for the rest. */
+const MARK: Record<LegalActStatus, { readonly shape: Shape; readonly tone: string }> = {
+  'in-vigoare': { shape: 'full', tone: 'text-status-live-fg' },
+  modificat: { shape: 'amended', tone: 'text-status-live-fg' },
+  'abrogat-partial': { shape: 'half', tone: 'text-status-partial-fg' },
+  suspendat: { shape: 'ring', tone: 'text-status-partial-fg' },
+  abrogat: { shape: 'ring', tone: 'text-status-blocked-fg' },
+  'iesit-din-vigoare': { shape: 'ring', tone: 'text-muted-foreground' },
+  necunoscut: { shape: 'dashed', tone: 'text-muted-foreground' },
 }
 
-const STATUS_ICON: Record<LegalActStatus, typeof CheckCircle2> = {
-  'in-vigoare': CheckCircle2,
-  modificat: PencilLine,
-  abrogat: Ban,
-  'abrogat-partial': CircleSlash,
-  suspendat: PauseCircle,
-  'iesit-din-vigoare': Archive,
-  necunoscut: HelpCircle,
+function StatusShape({ shape, className }: { readonly shape: Shape; readonly className?: string }) {
+  return (
+    <svg viewBox="0 0 12 12" aria-hidden="true" className={cn('size-2.5 shrink-0', className)}>
+      {shape === 'full' ? <circle cx="6" cy="6" r="5" fill="currentColor" /> : null}
+      {shape === 'amended' ? (
+        <>
+          <circle cx="6" cy="6" r="4.75" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <circle cx="6" cy="6" r="2.25" fill="currentColor" />
+        </>
+      ) : null}
+      {shape === 'half' ? (
+        <>
+          <circle cx="6" cy="6" r="4.75" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M6 1.25a4.75 4.75 0 0 0 0 9.5z" fill="currentColor" />
+        </>
+      ) : null}
+      {shape === 'ring' ? <circle cx="6" cy="6" r="4.75" fill="none" stroke="currentColor" strokeWidth="1.5" /> : null}
+      {shape === 'dashed' ? <circle cx="6" cy="6" r="4.75" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2.2 2.2" /> : null}
+    </svg>
+  )
 }
 
 /**
- * The one way an act's status is shown anywhere in the domain. Always text +
- * icon, never colour alone.
+ * An act's status: a small shape and the status's name in plain text (owner, 26 November 2026: the tinted badge's
+ * colours did not sit with the pages). Colour is only in the shape; the name is always written, so nothing is
+ * said by colour alone. Prototyped in `development/legal/search`, variant `registru`.
  */
-export function LegalStatusBadge({ status, className }: Props) {
+export function LegalStatusBadge({ status, strong = false, className }: Props) {
   if (status === null) return null
-  const Icon = STATUS_ICON[status]
+  const mark = MARK[status]
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-[4px] px-2 py-0.5 text-xs font-semibold',
-        STATUS_CLASS[status],
-        className,
-      )}
-    >
-      <Icon className="h-3 w-3" aria-hidden />
+    <span className={cn('inline-flex shrink-0 items-center whitespace-nowrap', strong ? 'gap-2 text-base font-semibold text-foreground' : 'gap-1.5 text-sm text-foreground/80', className)}>
+      <StatusShape shape={mark.shape} className={cn(mark.tone, strong && 'size-3')} />
       {status === 'in-vigoare' ? (
         <Trans>În vigoare</Trans>
       ) : status === 'modificat' ? (
