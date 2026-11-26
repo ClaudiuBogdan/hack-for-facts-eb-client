@@ -57,6 +57,27 @@ Any spec that types into a server-rendered input right after `waitForPageReady` 
 gap. Those helpers wait for the network and the skeletons, not for React. Candidates include the landing page's
 search and the companies hub's search.
 
+## Open observation: one run where the box never hydrated (26 November 2026)
+
+In the pre-push gates for this fix (commit `a5d8be236`, the spec run five times with no retries, 50 tests), one test
+failed and 49 passed. The same step run again on the same commit passed 50 of 50. So: one failure in 100 runs.
+
+- **The test:** "mobile › renders results on a narrow viewport", the last of the first 50.
+- **Where it stopped:** inside `hydratedSearchBox`. React had not attached its props to the search box after 15
+  seconds. The page snapshot shows the server-rendered page fully drawn, the box focused, and no hydration. The other
+  49 tests each took 2.3 seconds or less.
+- **What this is not:** the old failure. No text was typed into a box React did not own; the wait did its job and
+  the test failed on the wait, not on a missing answer.
+- **Conditions:** load average about 12 on 20 cores. In that last minute another browser was opening a new
+  prototype route on the dev preview, a cold compile. This overlap is a candidate cause, not a finding.
+- **Not established:** why hydration did not finish. A script chunk that never loaded, a hydration error and plain
+  starvation would all look the same in the snapshot. The spec does not record console errors or failed requests.
+- **If it shows again:** capture the page's console and failed requests in the helper's failure path before raising
+  the timeout. A longer timeout would hide a page that never hydrates.
+
+Root took the push with this open (26 November 2026): one timeout in 100 runs under load against the earlier 1 in
+20–30.
+
 ## Follow-ups
 
 - **A shared helper for the tests.** A shared "wait until this element is hydrated" in `tests/utils/test-helpers.ts`
