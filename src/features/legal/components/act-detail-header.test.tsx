@@ -73,9 +73,17 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
   })
 
   it('names no publication when the act is not tied to one issue for sure', () => {
-    render(<ActDetailHeader act={{ ...act, gazettePublications: [] }} />)
+    // The same issue 5, no longer a sure match: it must not be shown as the act's publication.
+    const unsure = act.gazettePublications.map((publication) => ({ ...publication, resolution: 'ambiguous' as const }))
+    expect(unsure).toHaveLength(1)
+    render(<ActDetailHeader act={{ ...act, gazettePublications: unsure }} />)
     expect(screen.queryByText('Publicat în', { selector: 'dt' })).not.toBeInTheDocument()
     expect(fact('Tip')).toBe('Lege')
+  })
+
+  it('shows no publication when the act has none at all', () => {
+    render(<ActDetailHeader act={{ ...act, gazettePublications: [] }} />)
+    expect(screen.queryByText('Publicat în', { selector: 'dt' })).not.toBeInTheDocument()
   })
 
   it('shows no name over nothing: an act without a type has no „Tip", and no facts means no band', () => {
@@ -86,17 +94,21 @@ describe('ActDetailHeader — the act\'s facts, each under its name', () => {
     const withIssuer = render(<ActDetailHeader act={{ ...act, actType: '', entryIntoForce: null, gazettePublications: [] }} />)
     expect(withIssuer.container.querySelectorAll('dl dt')).toHaveLength(1)
     expect(withIssuer.container.querySelector('dl dt')?.textContent).toBe('Emitent')
+    // blanks are no type either
+    const blank = render(<ActDetailHeader act={{ ...act, actType: '   ', issuerSlug: null, entryIntoForce: null, gazettePublications: [] }} />)
+    expect(blank.container.querySelector('dl')).toBeNull()
   })
 
   it('lets a long issuer wrap on a row of its own and keeps the publication a readable width', () => {
     const { container } = render(<ActDetailHeader act={act} />)
     const list = container.querySelector('dl')
-    expect(list?.className).toContain('sm:flex')
-    expect(list?.className).toContain('sm:flex-wrap')
+    expect(list).toHaveClass('sm:flex', 'sm:flex-wrap')
     // no fixed column that a long value could squeeze to nothing
     expect(list?.className).not.toContain('sm:grid-cols-')
     const groups = [...(list?.children ?? [])]
-    expect(groups.every((group) => group.className.includes('min-w-0'))).toBe(true)
+    expect(groups).toHaveLength(4)
+    // every value can shrink and, with no place to break, breaks anywhere instead of running past the column
+    for (const group of groups) expect(group).toHaveClass('min-w-0', '[overflow-wrap:anywhere]')
     const publication = screen.getByText('Publicat în', { selector: 'dt' }).parentElement
     expect(publication?.className).toContain('sm:flex-1')
     expect(publication?.className).toContain('sm:min-w-[min(100%,14rem)]')

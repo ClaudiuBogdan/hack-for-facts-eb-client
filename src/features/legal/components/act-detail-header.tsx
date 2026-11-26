@@ -100,11 +100,12 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
           .join(' ')
       : null
 
+  const actType = act.actType.trim()
   // Each fact under its name. The long one comes last: in the band it is the
   // cell that takes what is left of the row, and wraps.
   const facts = [
-    // An act served without a type has no „Tip" to show: never a name over nothing.
-    act.actType ? { name: t`Tip`, value: legalActTypeLabel(act.actType) } : null,
+    // An act served without a type (or with blanks for one) has no „Tip" to show: never a name over nothing.
+    actType !== '' ? { name: t`Tip`, value: legalActTypeLabel(actType) } : null,
     act.issuerSlug ? { name: t`Emitent`, value: legalIssuerLabel(act.issuerSlug) } : null,
     act.entryIntoForce ? { name: t`În vigoare din`, value: formatLegalDate(act.entryIntoForce, i18n.locale) } : null,
     moCitation !== null ? { name: t`Publicat în`, value: t`Monitorul Oficial ${moCitation}`, wide: true } : null,
@@ -163,7 +164,13 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
           )}
         >
           {facts.map((fact) => (
-            <div key={fact.name} className={cn('min-w-0', fact.wide === true && 'col-span-2 sm:min-w-[min(100%,14rem)] sm:flex-1')}>
+            <div key={fact.name} className={cn(
+                // A value with no place to break (an issuer we have no name for is shown by its slug) breaks anywhere
+                // rather than run past the column.
+                'min-w-0 [overflow-wrap:anywhere]',
+                fact.wide === true && 'col-span-2 sm:min-w-[min(100%,14rem)] sm:flex-1',
+              )}
+            >
               <dt className="text-xs leading-5 text-muted-foreground">{fact.name}</dt>
               <dd className="text-sm leading-6 text-foreground min-[88rem]:leading-5">{fact.value}</dd>
             </div>
