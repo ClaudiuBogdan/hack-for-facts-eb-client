@@ -111,6 +111,18 @@ describe('budget-transform', () => {
       expect(functional.reduce((sum, node) => sum + node.value, 0)).toBe(115)
     })
 
+    it('adds no terminal copy of a 3-part economic code, where the depth is capped', () => {
+      const data = [
+        createNode('65.02', 'Education', '20.01.01', 'Supplies', 100, 1),
+        createNode('65.02', 'Education', '20.01', 'Goods', -10, 1),
+      ]
+      expect(buildTreemapDataV2({ data, primary: 'ec', path: ['20', '20.01', '20.01.01'], preserveUnclassified: true })).toEqual([])
+      expect(buildTreemapDataV2({ data, primary: 'ec', path: ['20', '20.01'], preserveUnclassified: true })).toEqual(expect.arrayContaining([
+        expect.objectContaining({ code: '20.01.01', value: 100 }),
+        expect.objectContaining({ code: '20.01', value: -10, terminal: true }),
+      ]))
+    })
+
     const sampleData: AggregatedNode[] = [
       createNode('51.01.01', 'Executive Functions', '10.01.01', 'Base Salaries', 100000, 5),
       createNode('51.01.01', 'Executive Functions', '10.01.02', 'Bonuses', 50000, 3),

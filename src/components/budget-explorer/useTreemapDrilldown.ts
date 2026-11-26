@@ -188,7 +188,8 @@ export function useTreemapDrilldown({
     let depth = (currentCode ? (currentCode.split('.').length + 1) * 2 : nextRootDepth) as 2 | 4 | 6 | 8
 
     // Mirror buildTreemapDataV2 behavior for economic classifications.
-    if (nextActive === 'ec' && depth > 6) {
+    const depthCapped = nextActive === 'ec' && depth > 6
+    if (depthCapped) {
       depth = 6
     }
     if (depth > 6) return false
@@ -230,7 +231,9 @@ export function useTreemapDrilldown({
           : codeParts.slice(0, 3).join('.')
 
       if (!groupCode) continue
-      if (currentCode && groupCode === currentCode && !(preserveUnclassified && item.amount)) continue
+      // A posting at the drilled code opens a level only where the tree goes deeper;
+      // at a capped depth every record matches the drilled code itself.
+      if (currentCode && groupCode === currentCode && (depthCapped || !(preserveUnclassified && item.amount))) continue
 
       return true
     }

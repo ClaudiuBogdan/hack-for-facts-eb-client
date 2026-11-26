@@ -56,7 +56,8 @@ export function buildTreemapDataV2({ data, primary, path, constraint, rootDepth,
     : (rootDepth ?? 2)) as 2 | 4 | 6
 
   // Economic codes only go 2 levels deep (chapter and subchapter), cap at depth 4
-  if (primary === 'ec' && depth > 6) {
+  const depthCapped = primary === 'ec' && depth > 6
+  if (depthCapped) {
     depth = 6
   }
 
@@ -141,8 +142,11 @@ export function buildTreemapDataV2({ data, primary, path, constraint, rootDepth,
     }
 
     const classifiedGroup = getGroupCode(code)
-    const exactParent = currentCode !== null && classifiedGroup === clean(currentCode)
-    const terminal = !classifiedGroup || exactParent
+    const atParent = currentCode !== null && classifiedGroup === clean(currentCode)
+    // At a capped depth every record groups to the drilled code itself: the
+    // tree ends there, so nothing is a posting at the parent.
+    if (atParent && depthCapped) return acc
+    const terminal = !classifiedGroup || atParent
     if (terminal && !preserveUnclassified) return acc
 
     const groupCode = classifiedGroup || 'unclassified'
