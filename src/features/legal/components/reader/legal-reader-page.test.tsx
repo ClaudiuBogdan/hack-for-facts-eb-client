@@ -141,6 +141,39 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     expect(keys.filter((key) => key.includes('100019'))).toEqual([])
   })
 
+  it('takes no ?nod= into the default text when the ?doc= it was meant for is refused (astra-client-11)', async () => {
+    // A provision link into another act's document: the default text (100023) has a node at the same path.
+    const nod = envelope.blocks[3]?.id ?? ''
+    const act = {
+      ...legalActDetailFixture,
+      canonical:
+        legalActDetailFixture.canonical === null
+          ? null
+          : { ...legalActDetailFixture.canonical, documentId: '100023' },
+    }
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container } = render(
+        <ActReadingLayout act={act} docOverride="100019" nod={nod} lead={null} fisa={null} />,
+      )
+      await waitFor(() => {
+        expect(container.querySelector('#reader-content')).not.toBeNull()
+      })
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull()
+      expect(screen.getByRole('status')).toHaveTextContent(/nu aparține acestui act/)
+      // Settled: the outline answered and the text is on screen; nothing was scrolled to or marked as the match.
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      expect(container.querySelector('.bg-accent\\/60')).toBeNull()
+      // nor is the provision said to be missing from a text it was never meant for
+      expect(screen.queryByText(/Nu am găsit fragmentul cerut/)).toBeNull()
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
   it('honours an override that is one of the act\'s own expressions', async () => {
     const { container } = render(
       <ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />,
