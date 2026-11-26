@@ -21,7 +21,8 @@ test.describe('Authority portfolio — the server render', () => {
   test('the page draws its head, its sources’ panel and the table, from the server', async ({ page }) => {
     const response = await page.goto(ROUTE)
     expect(response?.status()).toBe(200)
-    expect(response?.headers()['cache-control'] ?? '').toMatch(/s-maxage=3600/u)
+    // CACHE-002: a page renders from the reader's cookies, so it is never kept by a shared cache.
+    expect(response?.headers()['cache-control']).toBe('private, no-store')
     await waitForPageReady(page)
 
     await expect(page).toHaveTitle(/^Consiliul Local Sibiu: întreprinderile publice — Transparenta\.eu$/u)
