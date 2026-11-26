@@ -363,7 +363,12 @@ describe('the reading bar', () => {
 
   it('says „Forma din" only before a date: an undated version is named alone', () => {
     const { rerender } = render(bar({ activePath: null, shownName: '23 mai 2016, forma publicată', shownDated: true }))
-    expect(screen.getByText('Forma din 23 mai 2016, forma publicată')).toBeInTheDocument()
+    const version = screen.getByText('Forma din 23 mai 2016, forma publicată')
+    // the version takes the room the place leaves, and is cut at its end rather than cutting the place
+    expect(version).toHaveClass('min-w-0', 'truncate')
+    expect(version).not.toHaveClass('shrink-0')
+    expect(version.parentElement).toHaveClass('grid', 'grid-cols-[minmax(0,auto)_minmax(0,1fr)]')
+    expect(version.previousElementSibling?.tagName).toBe('P')
     rerender(bar({ activePath: null, shownName: 'forma publicată', shownDated: false }))
     expect(screen.getByText('forma publicată')).toBeInTheDocument()
     expect(screen.queryByText(/Forma din/)).toBeNull()

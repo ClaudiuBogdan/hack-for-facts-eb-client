@@ -86,39 +86,45 @@ export function ActReadingBar({
               </SheetContent>
             </Sheet>
           ) : null}
-          {/* The place changes with every scroll: it is not announced. */}
-          <p className="flex min-w-0 flex-1 items-baseline text-sm text-muted-foreground">
-            {active === undefined ? (
-              <span className="truncate">{citation}</span>
-            ) : (
-              <>
-                {/* The chapter and section give way first; the place itself is cut only when it alone is wider than
-                    its room (a heading's whole name on a phone). From `sm` only. */}
-                {ancestors.length > 0 ? (
-                  <>
-                    <span className="hidden min-w-0 shrink-[999] truncate sm:inline">
-                      {ancestors
-                        .slice(-2)
-                        .map((entry) => tocLabel(entry))
-                        .join(' › ')}
-                    </span>
-                    <span aria-hidden className="hidden shrink-0 px-1.5 sm:inline">
-                      ›
-                    </span>
-                  </>
-                ) : null}
-                <span className="min-w-0 truncate font-medium text-foreground">
-                  <ArticleNumber value={tocLabel(active)} />
-                </span>
-              </>
-            )}
-          </p>
-          {shownName !== null ? (
-            // With the box at the right, the box itself names the version on a wide screen.
-            <p className={cn('hidden shrink-0 text-sm text-muted-foreground md:block', about && 'min-[88rem]:hidden')}>
-              {shownDated ? <Trans>Forma din {shownName}</Trans> : shownName}
+          {/* The place first, then the version in what room is left: the place takes the width it needs and the
+              version's name is cut at its end (its date comes first, and the box above the text names it whole).
+              Seen at 1024 px: the version's 350 px left „Titlul II Impozitu…" of the place. The space between them is
+              the version's own padding: a column gap would take 12 px from the place on a phone, where no version shows. */}
+          <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,auto)_minmax(0,1fr)] items-baseline">
+            {/* The place changes with every scroll: it is not announced. */}
+            <p className="flex min-w-0 items-baseline text-sm text-muted-foreground">
+              {active === undefined ? (
+                <span className="truncate">{citation}</span>
+              ) : (
+                <>
+                  {/* The chapter and section give way first; the place itself is cut only when it alone is wider than
+                      its room (a heading's whole name on a phone). From `sm` only. */}
+                  {ancestors.length > 0 ? (
+                    <>
+                      <span className="hidden min-w-0 shrink-[999] truncate sm:inline">
+                        {ancestors
+                          .slice(-2)
+                          .map((entry) => tocLabel(entry))
+                          .join(' › ')}
+                      </span>
+                      <span aria-hidden className="hidden shrink-0 px-1.5 sm:inline">
+                        ›
+                      </span>
+                    </>
+                  ) : null}
+                  <span className="min-w-0 truncate font-medium text-foreground">
+                    <ArticleNumber value={tocLabel(active)} />
+                  </span>
+                </>
+              )}
             </p>
-          ) : null}
+            {shownName !== null ? (
+              // With the box at the right, the box itself names the version on a wide screen.
+              <p className={cn('hidden min-w-0 truncate pl-3 text-right text-sm text-muted-foreground md:block', about && 'min-[88rem]:hidden')}>
+                {shownDated ? <Trans>Forma din {shownName}</Trans> : shownName}
+              </p>
+            ) : null}
+          </div>
           {away ? (
             <button
               type="button"
