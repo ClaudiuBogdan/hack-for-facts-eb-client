@@ -119,9 +119,16 @@ function TipTitle({ color, children }: { readonly color?: string; readonly child
   )
 }
 
-/** The four named budgets take the palette's first four hues; the rest is grey. */
+/**
+ * The four named budgets in the page's navy family, the largest the strongest (owner, 26 November 2026: one hue,
+ * not four), in even steps that stop short of the ramp's light end, so the smallest stays apart from the grey of
+ * the rest in both themes.
+ */
+const BUDGET_STEPS = [100, 78, 58, 40] as const
+
 function budgetColor(rank: number): string {
-  return rank < 4 ? hue(rank + 1) : hue(0)
+  const step = BUDGET_STEPS[rank]
+  return step === undefined ? hue(0) : `color-mix(in oklab, hsl(var(--choropleth-5)) ${step}%, hsl(var(--choropleth-1)))`
 }
 
 // ──────────────────────────────────────────────────────────────── squares ──
