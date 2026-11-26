@@ -1143,3 +1143,49 @@ under `src/development/prototypes/companies/` (`profile-head`,
 - The public-money band is procurement-da-client's (its v3 reads land
   separately); the page passes it an empty `index`.
 
+## The IFRS form in the company chart (26 November 2026)
+
+The scrapper's labelled IFRS-form series (PRIV-ZVPV; the owner's decisions of
+25 November 2026, „show IFRS-form figures as a labelled series" and „label
+IFRS-form years per company-year"), drawn in the business chart. Prototyped
+on OMV Petrom's live profile with its FY2012–2018 rows as the view returns
+them, and on two fictitious companies marked as mock (`profile-ifrs`,
+variants `curat`, `banda`, `fundal`, `ambele`, `surse`, and `pagina`, the
+page's own band with the API's fields injected). Wording checked by the IFRS
+session against its evidence.
+
+### Decisions
+
+- **Each year in the series of its own form.** A year the publisher put on
+  the IFRS form — its own file's (the Ministry's „IR" file, FY2012–2018) or
+  ANAF's IFRS layout (FY2019+) — is labelled „Raportat pe formularul IFRS"
+  (the form, never the company's accounting); every other year carries no
+  form label (unmarked is never „ordinary"). The people line joins only
+  consecutive years on the same form: it breaks at a change of form, a missing
+  year and a blank. A zero is a zero; a Ministry blank is said as such.
+- **Clean, a short mention** (owner: „I prefer a clean option, I don't want
+  to add too much text, just a short mention"): a thin rule named „IFRS" over
+  each run; the legend's „Raportat pe formularul IFRS" is the only mention,
+  its ⓘ holding the turnover note (the form's „Cifra de afaceri netă" row,
+  not the IFRS sales line) and the publishers' seam (the company's own
+  Ministry years, then ANAF from 2019; where a 2018 blank meets a 2019 zero,
+  that it is no fall). No text under the chart but the real gaps.
+- **Sources in the reading, for every company** (owner): each year's reading
+  names its publisher and links its source — the Ministry's file or ANAF's
+  answer for the year. Only the link takes the pointer, so a tap under the box
+  reaches the year beneath (checked at 360).
+- **Nothing derived reads the IFRS-file figures**: not the lede, the loss
+  years, the figures band or a comparison — source observations outside the
+  admission policy, never qualified (tested: the same lede, counts and figures
+  with and without them). FY2019+ IFRS-layout years keep their held result:
+  an admitted profit outlined, a loss year „rezultatul net nu se știe".
+
+### Not yet live
+
+- The API serves none of it yet: the page reads `ifrsFormYears` and each
+  year's `reportingForm` as optional (both absent today, so no IFRS mark
+  shows; the reading's publisher and source link are the one change every
+  company would see), and the query and its adapter are wired when the
+  server's contract lands. Then the Sol review and root's note; the views go
+  live after the migration and the audit. Nothing of it ships before.
+

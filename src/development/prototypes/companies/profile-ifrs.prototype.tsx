@@ -4,7 +4,7 @@ import { CompanyBusinessBand } from '@/features/private-companies/components/pro
 import { ProfileBand } from '@/features/private-companies/components/profile/company-profile-band'
 import { CompanyYearsChart, type ChartMetric } from '@/features/private-companies/components/profile/company-years-chart'
 import { yearRanges } from '@/features/private-companies/lib/company-profile-format'
-import type { CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
+import { buildCompanyProfileModel, type CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
 import { financialLede } from '@/features/private-companies/lib/company-profile-text'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { useSearch } from '@tanstack/react-router'
@@ -54,8 +54,9 @@ function ProtoIfrsBand({ model, placement }: { readonly model: CompanyProfileMod
     (year, index) => !ifrsSet.has(year) && model.series.turnover[index]?.value == null && model.series.net[index]?.value == null && model.series.employees[index]?.value == null,
   )
   const gaps = blank.length > 0 ? yearRanges(blank) : null
-  const reasonOf = (index: number, _metric: ChartMetric) =>
-    ifrsSet.has(model.span[index] ?? -1) ? t`Indicatori publicați de Ministerul Finanțelor în fișierul IFRS; nu sunt incluși în grafic` : t`Fără valori comparabile pentru acest an`
+  // The page's chart reads a reason by year.
+  const reasonOf = (year: number, _metric: ChartMetric) =>
+    ifrsSet.has(year) ? t`Indicatori publicați de Ministerul Finanțelor în fișierul IFRS; nu sunt incluși în grafic` : t`Fără valori comparabile pentru acest an`
   const lede = financialLede(model)
   return (
     <ProfileBand id="afacerea" titleId={TITLE_ID}>
@@ -111,6 +112,32 @@ function SeriesBand({ marking, sources, notes = 'sub' }: { readonly marking: Mar
   )
 }
 
+/**
+ * The page's own business band (the implementation), on Petrom's live profile with what the API will add injected in
+ * the domain shape the adapter will produce: its Ministry IFRS-file years and ANAF's IFRS-layout markers (FY2019+).
+ */
+function ImplementedBand() {
+  const { model, state } = useProtoModel()
+  if (!model) return <p className="p-6 text-sm text-muted-foreground">{state}</p>
+  const profile = {
+    ...model.profile,
+    financials: model.profile.financials.map((year) => (PETROM_FORMS[year.fiscalYear]?.reportingForm === 'ifrs' ? { ...year, reportingForm: 'ifrs' as const } : year)),
+    ifrsFormYears: PETROM_IFRS.map((entry) => ({
+      fiscalYear: entry.year,
+      publisher: entry.publisher,
+      turnover: entry.turnover,
+      netResult: entry.netResult,
+      employees: entry.employees,
+      sourceUrl: entry.sourceUrl,
+    })),
+  }
+  return (
+    <div data-dev-marker={PROTOTYPE_MARKER} className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']">
+      <CompanyBusinessBand model={buildCompanyProfileModel(profile)} />
+    </div>
+  )
+}
+
 function Frame({ children }: { readonly children: (model: CompanyProfileModel) => React.ReactNode }) {
   const { model, state } = useProtoModel()
   if (!model) return <p className="p-6 text-sm text-muted-foreground">{state}</p>
@@ -140,6 +167,11 @@ export const prototype = {
       title: 'C · Scurt, sub grafic',
       component: () => <Frame>{(model) => <ProtoIfrsBand model={model} placement="scurt" />}</Frame>,
       note: 'The shortest form under the chart: the years, IFRS, outside this chart.',
+    },
+    pagina: {
+      title: 'Seria IFRS · Pe pagină (implementat)',
+      component: () => <ImplementedBand />,
+      note: 'The page’s own band, as implemented (owner, 26 November 2026: „Implement it"), on Petrom’s live profile with its Ministry IFRS years and ANAF’s IFRS-layout markers injected as the API will serve them.',
     },
     curat: {
       title: 'Seria IFRS · Curat',

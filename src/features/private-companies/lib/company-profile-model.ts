@@ -52,6 +52,41 @@ export interface NetPoint extends YearValue {
 }
 
 /**
+ * A year on the IFRS form held only in its publisher's file: its figures as filed (source observations, never
+ * qualified), as numbers for drawing. A value that is no plain number is null — said as not drawn, never as zero.
+ */
+export interface IfrsFileYear {
+  readonly year: number
+  readonly publisher: 'anaf' | 'mfp' | null
+  readonly turnover: number | null
+  readonly netResult: number | null
+  readonly employees: number | null
+  readonly sourceUrl: string | null
+}
+
+/** An exact amount or count as served, for drawing: a plain decimal or nothing. */
+function filedNumber(value: string | null): number | null {
+  if (value === null || !/^-?\d+(?:\.\d+)?$/u.test(value.trim())) return null
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
+/** The IFRS-file years, oldest first; a year that also has a typed statement keeps the statement (one selection per CUI and year). */
+function ifrsFileYearsOf(profile: PrivateCompanyProfile, typed: ReadonlySet<number>): readonly IfrsFileYear[] {
+  return (profile.ifrsFormYears ?? [])
+    .filter((entry) => !typed.has(entry.fiscalYear))
+    .map((entry) => ({
+      year: entry.fiscalYear,
+      publisher: entry.publisher,
+      turnover: filedNumber(entry.turnover),
+      netResult: filedNumber(entry.netResult),
+      employees: filedNumber(entry.employees),
+      sourceUrl: entry.sourceUrl,
+    }))
+    .sort((a, b) => a.year - b.year)
+}
+
+/**
  * One division of the registry's activities in one CAEN revision: `revision`
  * is the rows' own (`rev0`…`rev3`, or another the source names), null for
  * rows that name none. `key` is unique per revision and division, so the same
@@ -270,6 +305,13 @@ export interface CompanyProfileModel {
    * or count. Null: unknown (said as nothing, never as „none").
    */
   readonly longForm: readonly PrivateCompanyLongFormStatement[] | null
+  /**
+   * The IFRS form (owner, 25 November 2026): the years held only in the publisher's IFRS file (`fileYears`, the
+   * Ministry's FY2012–2018), and the typed years the publisher marks as on that form (`markedYears`, ANAF's IFRS
+   * layout). Beside the series, never in them: no lede, count, figure, comparison or trend reads it — only the
+   * chart, in its own labelled series. Both empty until the API serves them.
+   */
+  readonly ifrsForm: { readonly fileYears: readonly IfrsFileYear[]; readonly markedYears: readonly number[] }
   /**
    * The statements' qualification. Every series, trend, count and comparison
    * on the page shares ONE basis: the newest assessed statement's policy,
@@ -747,6 +789,10 @@ export function buildCompanyProfileModel(
     lossYears: netResult.filter((point) => point.value !== null && point.value < 0).length,
     sizeClass: sizeClassOf(latest ? employeesOf(latest) : null),
     longForm: profile.longFormStatements ?? null,
+    ifrsForm: {
+      fileYears: ifrsFileYearsOf(profile, new Set(byYear.keys())),
+      markedYears: years.filter((year) => year.reportingForm === 'ifrs').map((year) => year.fiscalYear),
+    },
     qualification: {
       policy: basis ? { version: basis.qualification.policyVersion, approvedOn: basis.qualification.policyApprovedOn } : null,
       latestNotAssessed: latest && latest.qualification.assessment !== 'assessed' ? (latest.qualification.reason ?? 'qualification_missing') : null,

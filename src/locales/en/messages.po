@@ -94,35 +94,35 @@ msgstr ", data through {0}"
 msgid ", hotărârea din {date} pe HUDOC (se deschide într-o filă nouă)"
 msgstr ", the judgment of {date} on HUDOC (opens in a new tab)"
 
-#: src/features/private-companies/lib/company-profile-text.ts:327
-#: src/features/private-companies/lib/company-profile-text.ts:330
+#: src/features/private-companies/lib/company-profile-text.ts:365
+#: src/features/private-companies/lib/company-profile-text.ts:368
 msgid ", iar firma a trecut pe pierdere"
 msgstr ", and the company swung to a loss"
 
-#: src/features/private-companies/lib/company-profile-text.ts:328
-#: src/features/private-companies/lib/company-profile-text.ts:330
+#: src/features/private-companies/lib/company-profile-text.ts:366
+#: src/features/private-companies/lib/company-profile-text.ts:368
 msgid ", iar firma a trecut pe profit"
 msgstr ", and the company swung to a profit"
 
-#: src/features/private-companies/lib/company-profile-text.ts:332
+#: src/features/private-companies/lib/company-profile-text.ts:370
 msgid ", iar pierderea a crescut"
 msgstr ", and the loss widened"
 
-#: src/features/private-companies/lib/company-profile-text.ts:332
+#: src/features/private-companies/lib/company-profile-text.ts:370
 msgid ", iar pierderea a rămas aceeași"
 msgstr ", and the loss stayed the same"
 
-#: src/features/private-companies/lib/company-profile-text.ts:332
+#: src/features/private-companies/lib/company-profile-text.ts:370
 msgid ", iar pierderea a scăzut"
 msgstr ", and the loss narrowed"
 
 #. placeholder {0}: movement(was, now)
-#: src/features/private-companies/lib/company-profile-text.ts:325
-#: src/features/private-companies/lib/company-profile-text.ts:331
+#: src/features/private-companies/lib/company-profile-text.ts:363
+#: src/features/private-companies/lib/company-profile-text.ts:369
 msgid ", iar profitul net {0}"
 msgstr ", and net profit {0}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:329
+#: src/features/private-companies/lib/company-profile-text.ts:367
 msgid ", iar rezultatul net a ajuns la zero"
 msgstr ", and the net result came to zero"
 
@@ -618,7 +618,7 @@ msgid "{0, plural, one {Arată # valoare} few {Arată toate cele # valori} other
 msgstr "{0, plural, one {Show # value} other {Show all # values}}"
 
 #. placeholder {0}: statements.length
-#: src/features/private-companies/lib/company-profile-text.ts:296
+#: src/features/private-companies/lib/company-profile-text.ts:334
 msgid "{0, plural, one {Bilanțul pe {years} e înregistrat sub acest CUI doar în format lung: pagina nu îi citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu e un an fără bilanț.} other {Bilanțurile pe {years} sunt înregistrate sub acest CUI doar în format lung: pagina nu le citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu sunt ani fără bilanț.}}"
 msgstr "{0, plural, one {The statement for {years} is recorded under this CUI in long format only: the page does not read its values, so it is not in the table, charts or comparisons. It is not a year without a statement.} other {The statements for {years} are recorded under this CUI in long format only: the page does not read their values, so they are not in the table, charts or comparisons. They are not years without a statement.}}"
 
@@ -773,7 +773,7 @@ msgid "{0, plural, one {o firmă} few {# firme} other {# de firme}}"
 msgstr "{0, plural, one {one firm} other {# firms}}"
 
 #. placeholder {0}: money.unvaluedCount
-#: src/features/private-companies/lib/company-profile-text.ts:486
+#: src/features/private-companies/lib/company-profile-text.ts:524
 msgid "{0, plural, one {O înregistrare nu are valoare publicată, deci suma e o limită de jos.} few {# înregistrări nu au valoare publicată, deci suma e o limită de jos.} other {# de înregistrări nu au valoare publicată, deci suma e o limită de jos.}}"
 msgstr "{0, plural, one {One record has no published value, so the total is a lower bound.} other {# records have no published value, so the total is a lower bound.}}"
 
@@ -3078,6 +3078,7 @@ msgstr "{groupWorkspaceCount} group workspace configured"
 msgid "{groupWorkspaceCount} group workspaces configured"
 msgstr "{groupWorkspaceCount} group workspaces configured"
 
+#: src/features/private-companies/lib/company-profile-text.ts:302
 #: src/features/procurement/lib/contract-text.ts:106
 msgid "{head} și {last}"
 msgstr "{head} and {last}"
@@ -3166,11 +3167,11 @@ msgstr "{inWindow, plural, one {came into force} other {came into force}}"
 msgid "{inWindow, plural, one {modificare înregistrată.} few {modificări înregistrate.} other {de modificări înregistrate.}}"
 msgstr "{inWindow, plural, one {recorded amendment.} other {recorded amendments.}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:614
+#: src/features/private-companies/lib/company-profile-text.ts:652
 msgid "{kept, plural, one {# valoare ținută în afara cifrelor; rezultatul net reținut} few {# valori ținute în afara cifrelor; rezultatul net reținut} other {# de valori ținute în afara cifrelor; rezultatul net reținut}}"
 msgstr "{kept, plural, one {# value kept out of the figures; net result held} other {# values kept out of the figures; net result held}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:620
+#: src/features/private-companies/lib/company-profile-text.ts:658
 msgid "{kept, plural, one {# valoare ținută în afara cifrelor} few {# valori ținute în afara cifrelor} other {# de valori ținute în afara cifrelor}}"
 msgstr "{kept, plural, one {# value kept out of the figures} other {# values kept out of the figures}}"
 
@@ -3337,7 +3338,7 @@ msgstr "{loss, plural, one {One of the {base} with an admitted {year} net result
 #~ msgid "{lossYears, plural, one {A încheiat cu pierdere un an din {filed}.} few {A încheiat cu pierdere # ani din {filed}.} other {A încheiat cu pierdere # de ani din {filed}.}}"
 #~ msgstr "{lossYears, plural, one {It made a loss in one year out of {filed}.} other {It made a loss in # years out of {filed}.}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:343
+#: src/features/private-companies/lib/company-profile-text.ts:381
 msgid "{lossYears, plural, one {A încheiat cu pierdere un an din cei {counted} cu rezultat net admis.} few {A încheiat cu pierdere # ani din cei {counted} cu rezultat net admis.} other {A încheiat cu pierdere # de ani din cei {counted} cu rezultat net admis.}}"
 msgstr "{lossYears, plural, one {It made a loss in one of the {counted} years with an admitted net result.} other {It made a loss in # of the {counted} years with an admitted net result.}}"
 
@@ -3669,7 +3670,7 @@ msgstr "{radiated, plural, one {The trade register does not always agree: at lea
 msgid "{range} salariați"
 msgstr "{range} employees"
 
-#: src/features/private-companies/lib/company-profile-text.ts:446
+#: src/features/private-companies/lib/company-profile-text.ts:484
 msgid "{range} și fără an"
 msgstr "{range} and undated"
 
@@ -3689,7 +3690,7 @@ msgstr "{received} collected"
 msgid "{received} încasați, {deficit} deficit"
 msgstr "{received} collected, {deficit} deficit"
 
-#: src/features/private-companies/lib/company-profile-text.ts:497
+#: src/features/private-companies/lib/company-profile-text.ts:535
 msgid "{records, plural, one {o înregistrare fără valoare publicată} few {# înregistrări fără valoare publicată} other {# de înregistrări fără valoare publicată}}"
 msgstr "{records, plural, one {one record with no published value} other {# records with no published value}}"
 
@@ -3994,7 +3995,7 @@ msgstr "{totalRowCount} UATs · {editedRowCount} edited"
 msgid "{unattributedCount} fără alegere înregistrată"
 msgstr "{unattributedCount} fără alegere înregistrată"
 
-#: src/features/private-companies/lib/company-profile-text.ts:351
+#: src/features/private-companies/lib/company-profile-text.ts:389
 msgid "{uncounted, plural, one {Rezultatul net al încă unui bilanț nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.} few {Rezultatul net al altor # bilanțuri nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.} other {Rezultatul net al altor # de bilanțuri nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.}}"
 msgstr "{uncounted, plural, one {The net result of one more statement is not counted: it is missing, held, not assessed or under another policy.} other {The net results of # more statements are not counted: they are missing, held, not assessed or under another policy.}}"
 
@@ -4052,7 +4053,7 @@ msgstr "{unpublished} of them were negotiated without a public notice."
 msgid "{unqualified, plural, one {o observație necalificată (cod scurt, revizie necunoscută, cod fără denumire sau neinterpretabil)} few {# observații necalificate (cod scurt, revizie necunoscută, cod fără denumire sau neinterpretabil)} other {# de observații necalificate (cod scurt, revizie necunoscută, cod fără denumire sau neinterpretabil)}}"
 msgstr "{unqualified, plural, one {one unqualified observation (short code, unknown revision, code without a catalog name or unreadable)} other {# unqualified observations (short code, unknown revision, code without a catalog name or unreadable)}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:416
+#: src/features/private-companies/lib/company-profile-text.ts:454
 #: src/features/procurement/lib/analytics-text.ts:135
 #: src/features/procurement/lib/contract-text.ts:25
 #: src/features/procurement/lib/home-format.ts:92
@@ -4070,7 +4071,7 @@ msgstr "{value, plural, one {# purchase} other {# purchases}}"
 msgid "{value, plural, one {# acord-cadru} few {# acorduri-cadru} other {# de acorduri-cadru}}"
 msgstr "{value, plural, one {# framework agreement} other {# framework agreements}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:420
+#: src/features/private-companies/lib/company-profile-text.ts:458
 msgid "{value, plural, one {# angajament PNRR} few {# angajamente PNRR} other {# de angajamente PNRR}}"
 msgstr "{value, plural, one {# PNRR commitment} other {# PNRR commitments}}"
 
@@ -4082,7 +4083,7 @@ msgstr "{value, plural, one {# contract awarded} other {# contracts awarded}}"
 msgid "{value, plural, one {# contract câștigat} few {# contracte câștigate} other {# de contracte câștigate}}"
 msgstr "{value, plural, one {# contract won} other {# contracts won}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:414
+#: src/features/private-companies/lib/company-profile-text.ts:452
 #: src/features/procurement/lib/contract-text.ts:9
 #: src/features/procurement/lib/home-format.ts:88
 msgid "{value, plural, one {# contract} few {# contracte} other {# de contracte}}"
@@ -4114,7 +4115,7 @@ msgstr "{value, plural, one {# lot} other {# lots}}"
 msgid "{value, plural, one {# lucrare} few {# lucrări} other {# de lucrări}}"
 msgstr "{value, plural, one {# work item} other {# work items}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:422
+#: src/features/private-companies/lib/company-profile-text.ts:460
 msgid "{value, plural, one {# plată} few {# plăți} other {# de plăți}}"
 msgstr "{value, plural, one {# payment} other {# payments}}"
 
@@ -4126,7 +4127,7 @@ msgstr "{value, plural, one {# product} other {# products}}"
 msgid "{value, plural, one {# serviciu} few {# servicii} other {# de servicii}}"
 msgstr "{value, plural, one {# service} other {# services}}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:418
+#: src/features/private-companies/lib/company-profile-text.ts:456
 msgid "{value, plural, one {# subcontract PNRR} few {# subcontracte PNRR} other {# de subcontracte PNRR}}"
 msgstr "{value, plural, one {# PNRR subcontract} other {# PNRR subcontracts}}"
 
@@ -4528,7 +4529,7 @@ msgstr "0 participants"
 msgid "0 salariați"
 msgstr "0 employees"
 
-#: src/features/private-companies/lib/company-profile-text.ts:275
+#: src/features/private-companies/lib/company-profile-text.ts:313
 msgid "0 salariați raportați în bilanțul pe {year}"
 msgstr "0 employees reported in the {year} statement"
 
@@ -4672,7 +4673,7 @@ msgstr "1 UAT assigned"
 msgid "1–9 salariați"
 msgstr "1–9 employees"
 
-#: src/features/private-companies/lib/company-profile-text.ts:277
+#: src/features/private-companies/lib/company-profile-text.ts:315
 msgid "1–9 salariați raportați în bilanțul pe {year}"
 msgstr "1–9 employees reported in the {year} statement"
 
@@ -4680,7 +4681,7 @@ msgstr "1–9 employees reported in the {year} statement"
 msgid "1,000 inhabitants"
 msgstr "1,000 inhabitants"
 
-#: src/features/private-companies/lib/company-profile-text.ts:279
+#: src/features/private-companies/lib/company-profile-text.ts:317
 msgid "10–49 de salariați raportați în bilanțul pe {year}"
 msgstr "10–49 employees reported in the {year} statement"
 
@@ -4714,7 +4715,7 @@ msgstr "100,000–1 M"
 msgid "250 de salariați sau mai mulți"
 msgstr "250 employees or more"
 
-#: src/features/private-companies/lib/company-profile-text.ts:283
+#: src/features/private-companies/lib/company-profile-text.ts:321
 msgid "250 de salariați sau mai mulți, raportați în bilanțul pe {year}"
 msgstr "250 or more employees, reported in the {year} statement"
 
@@ -4731,7 +4732,7 @@ msgstr "250 and over"
 #~ msgid "45 (division), 452 (group), 4523 (class), 45233 (category) or 45233140 (code)"
 #~ msgstr "45 (division), 452 (group), 4523 (class), 45233 (category) or 45233140 (code)"
 
-#: src/features/private-companies/lib/company-profile-text.ts:281
+#: src/features/private-companies/lib/company-profile-text.ts:319
 msgid "50–249 de salariați raportați în bilanțul pe {year}"
 msgstr "50–249 employees reported in the {year} statement"
 
@@ -5268,8 +5269,8 @@ msgstr "Procurement"
 msgid "achiziții directe"
 msgstr "direct purchases"
 
-#: src/features/private-companies/lib/company-profile-text.ts:396
-#: src/features/private-companies/lib/company-profile-text.ts:432
+#: src/features/private-companies/lib/company-profile-text.ts:434
+#: src/features/private-companies/lib/company-profile-text.ts:470
 #: src/features/procurement/components/buyer/buyer-bands.tsx:78
 #: src/features/procurement/components/home/home-context-bands.tsx:505
 #: src/features/procurement/components/home/home-money-bands.tsx:81
@@ -5845,7 +5846,7 @@ msgstr "Active"
 msgid "active (not pinned yet)"
 msgstr "active (not pinned yet)"
 
-#: src/features/private-companies/lib/company-profile-text.ts:528
+#: src/features/private-companies/lib/company-profile-text.ts:566
 msgid "Active circulante"
 msgstr "Current assets"
 
@@ -5883,7 +5884,7 @@ msgstr "Fiscally active"
 msgid "Active group workspace"
 msgstr "Active group workspace"
 
-#: src/features/private-companies/lib/company-profile-text.ts:530
+#: src/features/private-companies/lib/company-profile-text.ts:568
 msgid "Active imobilizate"
 msgstr "Fixed assets"
 
@@ -6627,11 +6628,11 @@ msgstr "Public administration and defence; compulsory social security"
 #~ msgid "Administrative location (API)"
 #~ msgstr "Administrative location (API)"
 
-#: src/features/private-companies/lib/company-profile-text.ts:583
+#: src/features/private-companies/lib/company-profile-text.ts:621
 msgid "admis: profitul minus pierderea, cum le-a calculat evaluatorul"
 msgstr "admitted: profit minus loss, as the evaluator computed it"
 
-#: src/features/private-companies/lib/company-profile-text.ts:556
+#: src/features/private-companies/lib/company-profile-text.ts:594
 #: src/features/procurement/lib/contract-text.ts:63
 msgid "admisă"
 msgstr "admitted"
@@ -7413,7 +7414,7 @@ msgstr "Other matters"
 msgid "Alte mijloace de transport"
 msgstr "Other transport equipment"
 
-#: src/features/private-companies/lib/company-profile-text.ts:406
+#: src/features/private-companies/lib/company-profile-text.ts:444
 msgid "Alte plăți publice"
 msgstr "Other public payments"
 
@@ -7661,7 +7662,7 @@ msgstr "year"
 #: src/features/legal/components/analytics/legislation-analysis.tsx:664
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:157
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:309
-#: src/features/private-companies/components/profile/company-years-chart.tsx:370
+#: src/features/private-companies/components/profile/company-years-chart.tsx:461
 #: src/features/statistics/components/detail/detail-observations-table.tsx:271
 msgid "An"
 msgstr "Year"
@@ -7765,7 +7766,7 @@ msgstr "An unexpected error occurred"
 #: src/features/private-companies/components/analytics/analytics-source.tsx:31
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:139
 #: src/features/private-companies/components/profile/company-years-band.tsx:230
-#: src/features/private-companies/lib/company-profile-text.ts:601
+#: src/features/private-companies/lib/company-profile-text.ts:639
 #: src/features/public-institutions/components/public-institutions-head.tsx:185
 msgid "ANAF"
 msgstr "ANAF"
@@ -8056,7 +8057,7 @@ msgstr "the annex is not loaded"
 msgid "Anexe"
 msgstr "Annexes"
 
-#: src/features/private-companies/lib/company-profile-text.ts:404
+#: src/features/private-companies/lib/company-profile-text.ts:442
 msgid "Angajamente PNRR"
 msgstr "PNRR commitments"
 
@@ -8142,7 +8143,7 @@ msgstr "Years by"
 msgid "Anii nu s-au putut citi acum."
 msgstr "The years could not be read right now."
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:279
+#: src/features/private-companies/components/profile/company-years-chart.tsx:341
 msgid "Anii: săgețile stânga și dreapta trec de la un an la altul"
 msgstr "The years: the left and right arrows move from one year to the next"
 
@@ -9756,7 +9757,7 @@ msgstr "Balance sheet"
 msgid "Bilanț la 31 decembrie {year}, lei"
 msgstr "Balance sheet at 31 December {year}, lei"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:88
+#: src/features/private-companies/components/profile/company-business-band.tsx:95
 msgid "Bilanț necalificat: valorile lui nu intră în grafic"
 msgstr "Statement not qualified: its values are not charted"
 
@@ -9775,7 +9776,7 @@ msgstr "Statement not qualified: its values are not charted"
 
 #. placeholder {0}: latest.fiscalYear
 #. placeholder {1}: notAssessedLabel(reason)
-#: src/features/private-companies/lib/company-profile-text.ts:668
+#: src/features/private-companies/lib/company-profile-text.ts:706
 msgid "Bilanțul pe {0} nu a putut fi calificat ({1}): valorile lui sunt cele publicate de sursă și nu intră în cifre, grafice sau comparații."
 msgstr "The {0} statement could not be qualified ({1}): its values are as the source published them and are kept out of figures, charts and comparisons."
 
@@ -9848,7 +9849,7 @@ msgid "bilanțurile firmelor"
 msgstr "the companies’ accounts"
 
 #. placeholder {0}: yearRanges(years)
-#: src/features/private-companies/lib/company-profile-text.ts:631
+#: src/features/private-companies/lib/company-profile-text.ts:669
 msgid "Bilanțurile pe {0} au fost calificate după altă politică sau altă ediție a datelor: nu intră în grafice, comparații și numărătoarea pierderilor alături de ceilalți ani; valorile lor sunt în tabel, estompate."
 msgstr "The statements for {0} were qualified under another policy or another edition of the data: they are not in the charts, comparisons or the count of loss years beside the other years; their values are in the table, faded."
 
@@ -10658,7 +10659,7 @@ msgstr "Transparenta.eu calculations from INS data, on the population by domicil
 msgid "Calendarul procedurii"
 msgstr "The procedure’s timeline"
 
-#: src/features/private-companies/lib/company-profile-model.ts:453
+#: src/features/private-companies/lib/company-profile-model.ts:495
 msgid "Calificare indisponibilă"
 msgstr "Qualification unavailable"
 
@@ -10666,15 +10667,15 @@ msgstr "Qualification unavailable"
 msgid "calificarea codului nu e disponibilă"
 msgstr "code qualification unavailable"
 
-#: src/features/private-companies/lib/company-profile-text.ts:640
+#: src/features/private-companies/lib/company-profile-text.ts:678
 msgid "calificarea nu este disponibilă acum"
 msgstr "qualification is not available right now"
 
-#: src/features/private-companies/lib/company-profile-text.ts:609
+#: src/features/private-companies/lib/company-profile-text.ts:647
 msgid "calificat după altă politică sau altă ediție a datelor"
 msgstr "qualified under another policy or another edition of the data"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:89
+#: src/features/private-companies/components/profile/company-business-band.tsx:96
 msgid "Calificat după altă politică sau ediție: nu se compară cu ceilalți ani"
 msgstr "Qualified under another policy or edition: not compared with the other years"
 
@@ -10871,7 +10872,7 @@ msgstr "capacity {seats}"
 msgid "Capacitate, nu ocupare. Doar unde există structuri de primire raportate."
 msgstr "Capacity, not occupancy. Only where accommodation establishments are reported."
 
-#: src/features/private-companies/lib/company-profile-text.ts:538
+#: src/features/private-companies/lib/company-profile-text.ts:576
 msgid "Capital social"
 msgstr "Share capital"
 
@@ -10883,7 +10884,7 @@ msgstr "the capital"
 msgid "Capitalul subscris vărsat"
 msgstr "Subscribed paid-up capital"
 
-#: src/features/private-companies/lib/company-profile-text.ts:546
+#: src/features/private-companies/lib/company-profile-text.ts:584
 msgid "Capitaluri proprii"
 msgstr "Equity"
 
@@ -12705,6 +12706,10 @@ msgstr "The notice's other rows could not be read just now: the association's fi
 msgid "Celula"
 msgstr "Cell"
 
+#: src/features/private-companies/lib/company-profile-text.ts:289
+msgid "Celulă goală în fișierul Ministerului Finanțelor"
+msgstr "Blank cell in the Ministry of Finance's file"
+
 #: src/features/ngos/organization/components/years-matrix.tsx:126
 msgid "celulă goală în sursă"
 msgstr "blank cell in the source"
@@ -13041,7 +13046,7 @@ msgstr "Staff costs"
 msgid "cheltuieli față de {previous}"
 msgstr "spending vs {previous}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:534
+#: src/features/private-companies/lib/company-profile-text.ts:572
 msgid "Cheltuieli în avans"
 msgstr "Prepaid expenses"
 
@@ -13066,7 +13071,7 @@ msgstr "Spending or revenue"
 #: src/features/landing/lib/budget-map-measures.ts:151
 #: src/features/ngos/organization/components/profile-parts.tsx:280
 #: src/features/ngos/organization/components/years-matrix.tsx:16
-#: src/features/private-companies/lib/company-profile-text.ts:520
+#: src/features/private-companies/lib/company-profile-text.ts:558
 msgid "Cheltuieli totale"
 msgstr "Total expenses"
 
@@ -13223,12 +13228,12 @@ msgstr "turnover"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:609
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:103
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:173
-#: src/features/private-companies/components/profile/company-years-chart.tsx:256
-#: src/features/private-companies/components/profile/company-years-chart.tsx:346
-#: src/features/private-companies/components/profile/company-years-chart.tsx:371
+#: src/features/private-companies/components/profile/company-years-chart.tsx:283
+#: src/features/private-companies/components/profile/company-years-chart.tsx:302
+#: src/features/private-companies/components/profile/company-years-chart.tsx:463
 #: src/features/private-companies/lib/company-analytics-text.ts:33
 #: src/features/private-companies/lib/company-profile-text.ts:233
-#: src/features/private-companies/lib/company-profile-text.ts:510
+#: src/features/private-companies/lib/company-profile-text.ts:548
 #: src/features/private-companies/lib/hub-economy.ts:31
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:214
 msgid "Cifra de afaceri"
@@ -13245,6 +13250,10 @@ msgstr "Turnover from the financial statements, in nominal lei, not adjusted for
 #: src/features/procurement/components/supplier/supplier-bands.tsx:444
 msgid "Cifra de afaceri e aici doar ca măsură a mărimii firmei. Nu o împărțim la vânzările către stat: un contract se întinde pe mai mulți ani, iar valoarea lui nu e o plată."
 msgstr "The turnover is here only as a measure of the firm’s size. We do not divide it by the sales to the state: a contract spans several years, and its value is not a payment."
+
+#: src/features/private-companies/components/profile/company-years-chart.tsx:283
+msgid "Cifra de afaceri netă"
+msgstr "Net turnover"
 
 #: src/features/private-companies/components/analytics/analytics-head.tsx:236
 msgid "Cifra de afaceri pe județe"
@@ -13289,7 +13298,7 @@ msgstr "Turnover, net result and employees"
 #~ msgid "Cifra de afaceri, rezultatul net și salariații, {0}–{1}"
 #~ msgstr "Turnover, net result and employees, {0}–{1}"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:244
+#: src/features/private-companies/components/profile/company-years-chart.tsx:290
 msgid "Cifra de afaceri, rezultatul net și salariații, pe ani"
 msgstr "Turnover, net result and employees, by year"
 
@@ -13470,12 +13479,12 @@ msgstr "The key figures above add up the {YEAR} statements read from ANAF so far
 
 #. placeholder {0}: policy.version
 #. placeholder {1}: policy.approvedOn
-#: src/features/private-companies/lib/company-profile-text.ts:659
+#: src/features/private-companies/lib/company-profile-text.ts:697
 msgid "Cifrele, graficele și comparațiile folosesc doar valorile admise de politica de calificare {0}, aprobată pe {1}. Admisă înseamnă extrasă și încadrată după regulile politicii, nu verificată economic."
 msgstr "Figures, charts and comparisons use only the values admitted by qualification policy {0}, approved on {1}. Admitted means extracted and mapped by the policy's rules, not economically verified."
 
 #. placeholder {0}: policy.version
-#: src/features/private-companies/lib/company-profile-text.ts:660
+#: src/features/private-companies/lib/company-profile-text.ts:698
 msgid "Cifrele, graficele și comparațiile folosesc doar valorile admise de politica de calificare {0}. Admisă înseamnă extrasă și încadrată după regulile politicii, nu verificată economic."
 msgstr "Figures, charts and comparisons use only the values admitted by qualification policy {0}. Admitted means extracted and mapped by the policy's rules, not economically verified."
 
@@ -15396,7 +15405,7 @@ msgstr "Contractat total verificat"
 msgid "contracte"
 msgstr "contracts"
 
-#: src/features/private-companies/lib/company-profile-text.ts:432
+#: src/features/private-companies/lib/company-profile-text.ts:470
 #: src/features/procurement/components/analytics/analytics-view.ts:52
 #: src/features/procurement/components/buyer/buyer-bands.tsx:79
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:264
@@ -15474,7 +15483,7 @@ msgstr "Contracts won, {year}"
 msgid "Contracte câștigate, după număr, {0}"
 msgstr "Contracts won, by number, {0}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:394
+#: src/features/private-companies/lib/company-profile-text.ts:432
 msgid "Contracte de achiziție publică"
 msgstr "Public procurement contracts"
 
@@ -16340,7 +16349,7 @@ msgstr "CPV indisponibil"
 #~ msgid "CPV: {0}"
 #~ msgstr "CPV: {0}"
 
-#: src/features/private-companies/lib/company-profile-text.ts:526
+#: src/features/private-companies/lib/company-profile-text.ts:564
 msgid "Creanțe"
 msgstr "Receivables"
 
@@ -16982,7 +16991,7 @@ msgstr "as the bulletin prints it"
 msgid "cum le trece registrul"
 msgstr "as the registry lists them"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:31
+#: src/features/private-companies/components/profile/company-business-band.tsx:32
 #: src/features/private-companies/components/profile/company-profile-states.tsx:109
 msgid "Cum merge afacerea"
 msgstr "How the business is doing"
@@ -17992,21 +18001,21 @@ msgid "Datoria publică și împrumuturi"
 msgstr "Public debt and borrowing"
 
 #: src/features/ngos/organization/components/years-matrix.tsx:20
-#: src/features/private-companies/lib/company-profile-text.ts:542
+#: src/features/private-companies/lib/company-profile-text.ts:580
 msgid "Datorii"
 msgstr "Debts"
 
 #. placeholder {0}: latest.fiscalYear
-#: src/features/private-companies/lib/company-profile-text.ts:373
+#: src/features/private-companies/lib/company-profile-text.ts:411
 msgid "Datorii de {debts} la sfârșitul lui {0}."
 msgstr "Debts of {debts} at the end of {0}."
 
-#: src/features/private-companies/lib/company-profile-text.ts:374
+#: src/features/private-companies/lib/company-profile-text.ts:412
 msgid "Datorii de {debts}, cu capitaluri proprii zero."
 msgstr "Debts of {debts}, with zero equity."
 
 #. placeholder {0}: moneyText(equity)
-#: src/features/private-companies/lib/company-profile-text.ts:375
+#: src/features/private-companies/lib/company-profile-text.ts:413
 msgid "Datorii de {debts}, cu capitalurile proprii negative ({0})."
 msgstr "Debts of {debts}, with negative equity ({0})."
 
@@ -18015,12 +18024,12 @@ msgid "Datoriile"
 msgstr "Debts"
 
 #. placeholder {0}: percent(ratio)
-#: src/features/private-companies/lib/company-profile-text.ts:378
+#: src/features/private-companies/lib/company-profile-text.ts:416
 msgid "Datoriile, de {debts}, sunt {0} din capitalurile proprii."
 msgstr "Debts, at {debts}, are {0} of equity."
 
 #. placeholder {0}: formatHubNumber(ratio, { digits: 1 })
-#: src/features/private-companies/lib/company-profile-text.ts:379
+#: src/features/private-companies/lib/company-profile-text.ts:417
 msgid "Datoriile, de {debts}, sunt de {0} ori capitalurile proprii."
 msgstr "Debts, at {debts}, are {0} times equity."
 
@@ -19208,6 +19217,10 @@ msgstr "About these values"
 msgid "Despre ani"
 msgstr "About the years"
 
+#: src/features/private-companies/lib/company-profile-text.ts:273
+msgid "Despre anii pe formularul IFRS"
+msgstr "About the years on the IFRS form"
+
 #: src/features/legal/components/analytics/legislation-analysis.tsx:933
 msgid "Despre ce"
 msgstr "About what"
@@ -19507,7 +19520,7 @@ msgid "din {0}, după suma aprobată"
 msgstr "of {0}, by approved amount"
 
 #. placeholder {0}: money.firstYear
-#: src/features/private-companies/lib/company-profile-text.ts:474
+#: src/features/private-companies/lib/company-profile-text.ts:512
 msgid "Din {0}, firma apare în {through} din bani publici, cu valori publicate de {sum}."
 msgstr "Since {0}, the company appears in {through} of public money, with published values of {sum}."
 
@@ -20173,11 +20186,11 @@ msgid "Diviziunea {division} ({0})"
 msgstr "Division {division} ({0})"
 
 #. placeholder {0}: caenEdition(revision)
-#: src/features/private-companies/lib/company-profile-model.ts:391
+#: src/features/private-companies/lib/company-profile-model.ts:433
 msgid "Diviziunea {division} (CAEN {0})"
 msgstr "Division {division} (CAEN {0})"
 
-#: src/features/private-companies/lib/company-profile-model.ts:391
+#: src/features/private-companies/lib/company-profile-model.ts:433
 msgid "Diviziunea {division} (fără revizie CAEN)"
 msgstr "Division {division} (no CAEN revision)"
 
@@ -22962,7 +22975,7 @@ msgstr "No selected activity"
 msgid "Fără an în număr"
 msgstr "No year in the number"
 
-#: src/features/private-companies/lib/company-profile-text.ts:444
+#: src/features/private-companies/lib/company-profile-text.ts:482
 msgid "fără an în sursă"
 msgstr "no year in the source"
 
@@ -23700,7 +23713,7 @@ msgstr "no published value"
 #~ msgid "fără valoare raportată"
 #~ msgstr "no value reported"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:54
+#: src/features/private-companies/components/profile/company-business-band.tsx:59
 msgid "Fără valori comparabile pentru {gaps}."
 msgstr "No comparable values for {gaps}."
 
@@ -23708,7 +23721,7 @@ msgstr "No comparable values for {gaps}."
 #~ msgid "Fără valori comparabile pentru {gapYears}"
 #~ msgstr "No comparable values for {gapYears}"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:87
+#: src/features/private-companies/components/profile/company-business-band.tsx:94
 msgid "Fără valori comparabile pentru acest an"
 msgstr "No comparable values for this year"
 
@@ -24560,15 +24573,15 @@ msgstr "the firm refused the institution's terms ({reason})."
 msgid "firma a refuzat condițiile instituției."
 msgstr "the firm refused the institution's terms."
 
-#: src/features/private-companies/lib/company-profile-text.ts:469
+#: src/features/private-companies/lib/company-profile-text.ts:507
 msgid "Firma apare în {through} din bani publici, cu valori publicate de {sum}; o parte nu are an în sursă."
 msgstr "The company appears in {through} of public money, with published values of {sum}; some have no year in the source."
 
-#: src/features/private-companies/lib/company-profile-text.ts:471
+#: src/features/private-companies/lib/company-profile-text.ts:509
 msgid "Firma apare în {through} din bani publici, cu valori publicate de {sum}."
 msgstr "The company appears in {through} of public money, with published values of {sum}."
 
-#: src/features/private-companies/lib/company-profile-text.ts:464
+#: src/features/private-companies/lib/company-profile-text.ts:502
 msgid "Firma apare în {through} din bani publici, fără nicio valoare publicată."
 msgstr "The company appears in {through} of public money, with no published value."
 
@@ -25126,6 +25139,7 @@ msgid "Fișierul nu a putut fi făcut. Încearcă din nou."
 msgstr "The file could not be made. Try again."
 
 #: src/features/private-companies/components/profile/company-years-band.tsx:467
+#: src/features/private-companies/components/profile/company-years-chart.tsx:285
 msgid "Fișierul pe data.gov.ro"
 msgstr "The file on data.gov.ro"
 
@@ -25389,6 +25403,10 @@ msgstr "Formula:"
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1242
 #~ msgid "Formular"
 #~ msgstr "Formular"
+
+#: src/features/private-companies/components/profile/company-years-chart.tsx:462
+msgid "Formularul"
+msgstr "Form"
 
 #: src/features/public-enterprises/lib/enterprise-text.ts:271
 msgid "Formularul AMEPIP e raportat de întreprindere și nu e verificat; unele valori ies din unitatea lor; „%” în galben e scris cum îl dă sursa."
@@ -26858,7 +26876,7 @@ msgstr "in {0} localities"
 #~ msgstr "In {0}, public budgets collected {1} together. But {2} came from another budget: counted once, the state's revenue was {3}."
 
 #. placeholder {0}: money.firstYear
-#: src/features/private-companies/lib/company-profile-text.ts:473
+#: src/features/private-companies/lib/company-profile-text.ts:511
 msgid "În {0}, firma apare în {through} din bani publici, cu valori publicate de {sum}."
 msgstr "In {0}, the company appears in {through} of public money, with published values of {sum}."
 
@@ -27034,7 +27052,7 @@ msgstr "In {year}, {0}, meaning sales without a tender, and {1} through a proced
 #~ msgstr "In {year}, the public budgets collected {all} together. But {moved} came from another budget. Counted once, and net of {ops} in financial operations, the state's revenue was {total}."
 
 #. placeholder {0}: movement(before, after)
-#: src/features/private-companies/lib/company-profile-text.ts:317
+#: src/features/private-companies/lib/company-profile-text.ts:355
 msgid "În {year}, cifra de afaceri {0}"
 msgstr "In {year}, turnover {0}"
 
@@ -27103,6 +27121,10 @@ msgstr "In {yearText}: {count}, {money}."
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:236
 msgid "În {yearText}: {count}."
 msgstr "In {yearText}: {count}."
+
+#: src/features/private-companies/lib/company-profile-text.ts:286
+msgid "În 2019, unde fișierul Ministerului avea celula goală, ANAF a publicat 0: trecerea de la gol la 0 nu e o scădere."
+msgstr "In 2019, where the Ministry's file had a blank cell, ANAF published 0: going from blank to 0 is not a fall."
 
 #: src/features/private-companies/lib/company-analytics-text.ts:233
 msgid "În această versiune (schema v2), codul CAEN larg se potrivește cu orice observație a codului, inclusiv cu revizie necunoscută, iar o excludere cere acoperire CAEN completă și nicio observație cu acel cod."
@@ -28945,11 +28967,11 @@ msgstr "Public order institution"
 msgid "Instituție din justiție"
 msgstr "Justice institution"
 
-#: src/features/private-companies/lib/company-profile-text.ts:387
+#: src/features/private-companies/lib/company-profile-text.ts:425
 msgid "Instituție fără nume publicat"
 msgstr "Institution with no published name"
 
-#: src/features/private-companies/lib/company-profile-text.ts:387
+#: src/features/private-companies/lib/company-profile-text.ts:425
 msgid "Instituție fără nume publicat (CUI {cui})"
 msgstr "Institution with no published name (CUI {cui})"
 
@@ -29094,6 +29116,7 @@ msgid "Intermedieri financiare, cu excepţia activităţilor de asigurări şi a
 msgstr "Financial service activities, except insurance and pension funding"
 
 #: src/features/private-companies/components/profile/company-years-band.tsx:467
+#: src/features/private-companies/components/profile/company-years-chart.tsx:285
 msgid "Interoghează ANAF pentru {year}"
 msgstr "Query ANAF for {year}"
 
@@ -33237,7 +33260,8 @@ msgstr "Ministry of Education and Research"
 #: src/features/national-budget/home/lib/home-format.ts:121
 #: src/features/private-companies/components/analytics/analytics-source.tsx:30
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:136
-#: src/features/private-companies/lib/company-profile-text.ts:602
+#: src/features/private-companies/lib/company-profile-text.ts:293
+#: src/features/private-companies/lib/company-profile-text.ts:640
 msgid "Ministerul Finanțelor"
 msgstr "Ministry of Finance"
 
@@ -34022,7 +34046,7 @@ msgstr "Not accepted in time"
 msgid "neadmis"
 msgstr "not admitted"
 
-#: src/features/private-companies/lib/company-profile-text.ts:587
+#: src/features/private-companies/lib/company-profile-text.ts:625
 msgid "neadmis pentru acest an"
 msgstr "not admitted for this year"
 
@@ -34034,16 +34058,16 @@ msgstr "not admitted for the year"
 msgid "neadmisă"
 msgstr "not admitted"
 
-#: src/features/private-companies/lib/company-profile-text.ts:561
+#: src/features/private-companies/lib/company-profile-text.ts:599
 msgid "neadmisă pentru acest an"
 msgstr "not admitted for this year"
 
 #. placeholder {0}: notAssessedLabel(statement.notAssessed)
-#: src/features/private-companies/lib/company-profile-text.ts:608
+#: src/features/private-companies/lib/company-profile-text.ts:646
 msgid "necalificat ({0})"
 msgstr "not qualified ({0})"
 
-#: src/features/private-companies/lib/company-profile-text.ts:571
+#: src/features/private-companies/lib/company-profile-text.ts:609
 msgid "necalificată"
 msgstr "not qualified"
 
@@ -34705,11 +34729,11 @@ msgstr "no value"
 msgid "Nicio valoare a bilanțului nu e disponibilă aici."
 msgstr "No value of the statement is available here."
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:71
+#: src/features/private-companies/components/profile/company-business-band.tsx:76
 msgid "Nicio valoare din bilanțuri în datele de aici: cifra de afaceri, rezultatul și numărul de salariați nu sunt disponibile."
 msgstr "No statement values in the data here: turnover, the result and the number of employees are not available."
 
-#: src/features/private-companies/lib/company-profile-text.ts:559
+#: src/features/private-companies/lib/company-profile-text.ts:597
 msgid "nicio valoare disponibilă aici"
 msgstr "no value available here"
 
@@ -34717,7 +34741,7 @@ msgstr "no value available here"
 msgid "nicio valoare disponibilă aici în acest an"
 msgstr "no value available here this year"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:100
+#: src/features/private-companies/components/profile/company-business-band.tsx:107
 msgid "Nicio valoare disponibilă aici pentru acest an"
 msgstr "No value available here for this year"
 
@@ -36567,7 +36591,7 @@ msgstr "There is no earlier published edition to compare with."
 #~ msgid "Nu există o ediție de sursă publică cu cheia {electionKey}."
 #~ msgstr "There is no public source edition with the key {electionKey}."
 
-#: src/features/private-companies/lib/company-profile-text.ts:643
+#: src/features/private-companies/lib/company-profile-text.ts:681
 msgid "nu există o politică de calificare publicată"
 msgstr "no qualification policy is published"
 
@@ -36718,7 +36742,7 @@ msgstr "Not computed from these figures"
 #~ msgid "Nu se poate calcula: în această perioadă nicio sumă atribuită nu revine unui furnizor anume. Cele {0} atribuite provin din contracte încredințate unor asocieri cu mai mulți membri, iar repartiția între membri nu este publicată."
 #~ msgstr "Nu se poate calcula: în această perioadă nicio sumă atribuită nu revine unui furnizor anume. Cele {0} atribuite provin din contracte încredințate unor asocieri cu mai mulți membri, iar repartiția între membri nu este publicată."
 
-#: src/features/private-companies/lib/company-profile-text.ts:585
+#: src/features/private-companies/lib/company-profile-text.ts:623
 msgid "nu se poate calcula: nici profitul, nici pierderea nu sunt disponibile aici"
 msgstr "cannot be computed: neither the profit nor the loss is available here"
 
@@ -37172,7 +37196,7 @@ msgstr "the name as its budget record writes it"
 msgid "numele, cum îl scriu anunțurile de selecție AMEPIP"
 msgstr "the name as AMEPIP’s selection announcements write it"
 
-#: src/features/private-companies/lib/company-profile-text.ts:532
+#: src/features/private-companies/lib/company-profile-text.ts:570
 msgid "Numerar și conturi la bănci"
 msgstr "Cash and bank accounts"
 
@@ -37420,7 +37444,7 @@ msgstr "an unpublished value"
 msgid "o valoare neverificată"
 msgstr "an unverified value"
 
-#: src/features/private-companies/lib/company-profile-text.ts:648
+#: src/features/private-companies/lib/company-profile-text.ts:686
 msgid "o valoare nu poate fi reprezentată exact"
 msgstr "a value cannot be represented exactly"
 
@@ -37518,7 +37542,7 @@ msgstr "incomplete observations"
 msgid "Observații INS"
 msgstr "INS notes"
 
-#: src/features/private-companies/lib/company-profile-model.ts:451
+#: src/features/private-companies/lib/company-profile-model.ts:493
 msgid "Observații necalificate"
 msgstr "Unqualified observations"
 
@@ -38968,7 +38992,7 @@ msgid "Path Progress"
 msgstr "Path Progress"
 
 #: src/features/private-companies/lib/company-analytics-text.ts:71
-#: src/features/private-companies/lib/company-profile-text.ts:548
+#: src/features/private-companies/lib/company-profile-text.ts:586
 msgid "Patrimoniul regiei"
 msgstr "Public régie patrimony"
 
@@ -39255,6 +39279,10 @@ msgstr "By form"
 #: src/features/ngos/hub/ngo-hub-page.tsx:214
 #~ msgid "Pe forme juridice"
 #~ msgstr "By legal form"
+
+#: src/features/private-companies/lib/company-profile-text.ts:277
+msgid "Pe formularul IFRS, cifra de afaceri este rândul „Cifra de afaceri netă\" din formularul depus, nu linia de venituri din vânzări din situația IFRS a companiei."
+msgstr "On the IFRS form, turnover is the row „Cifra de afaceri netă\" (net turnover) of the form filed, not the sales revenue line of the company's IFRS statements."
 
 #: src/features/procurement/lib/analytics-text.ts:271
 msgid "pe grupe de categorii"
@@ -39575,6 +39603,10 @@ msgstr "For {name}, the firm was the largest direct supplier: {share} of its dir
 msgid "Pentru {name}, firma a însemnat {share} din achizițiile ei directe."
 msgstr "For {name}, the firm made up {share} of its direct purchases."
 
+#: src/features/private-companies/lib/company-profile-text.ts:282
+msgid "Pentru {said}, cifrele formularului IFRS vin din fișierul Ministerului Finanțelor; din 2019, de la ANAF."
+msgstr "For {said}, the IFRS-form figures come from the Ministry of Finance's file; from 2019, from ANAF."
+
 #. placeholder {0}: moneyText(stateSpending)
 #. placeholder {1}: moneyText(deficit.replace(/^-/u, ''))
 #: src/features/national-budget/home/components/home-law.tsx:213
@@ -39619,7 +39651,7 @@ msgstr "For the one on the list, the announcements name another authority."
 msgid "Pentru codul {cui} nu avem o listă publicată de contracte atribuite."
 msgstr "There is no published list of contract awards for code {cui}."
 
-#: src/features/private-companies/lib/company-profile-text.ts:476
+#: src/features/private-companies/lib/company-profile-text.ts:514
 msgid "Pentru contracte și achiziții directe, valoarea e cea atribuită, nu ce s-a plătit efectiv."
 msgstr "For contracts and direct purchases, the value is the amount awarded, not what was actually paid."
 
@@ -40023,12 +40055,12 @@ msgstr "Leather and footwear"
 msgid "Pierdere"
 msgstr "Loss"
 
-#: src/features/private-companies/lib/company-profile-text.ts:524
+#: src/features/private-companies/lib/company-profile-text.ts:562
 msgid "Pierdere brută"
 msgstr "Gross loss"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:265
-#: src/features/private-companies/lib/company-profile-text.ts:514
+#: src/features/private-companies/components/profile/company-years-chart.tsx:311
+#: src/features/private-companies/lib/company-profile-text.ts:552
 msgid "Pierdere netă"
 msgstr "Net loss"
 
@@ -40139,11 +40171,11 @@ msgctxt "national budget classification"
 msgid "Plăți din anii trecuți, recuperate"
 msgstr "Payments from past years, recovered"
 
-#: src/features/private-companies/lib/company-profile-text.ts:402
+#: src/features/private-companies/lib/company-profile-text.ts:440
 msgid "Plăți din execuția bugetară"
 msgstr "Budget execution payments"
 
-#: src/features/private-companies/lib/company-profile-text.ts:398
+#: src/features/private-companies/lib/company-profile-text.ts:436
 msgid "Plăți PNRR"
 msgstr "PNRR payments"
 
@@ -40284,11 +40316,11 @@ msgstr "Pointere"
 #~ msgid "Politică"
 #~ msgstr "Politics"
 
-#: src/features/private-companies/lib/company-profile-text.ts:645
+#: src/features/private-companies/lib/company-profile-text.ts:683
 msgid "politica de calificare nu este aprobată"
 msgstr "the qualification policy is not approved"
 
-#: src/features/private-companies/lib/company-profile-text.ts:650
+#: src/features/private-companies/lib/company-profile-text.ts:688
 msgid "politica de calificare nu poate fi aplicată"
 msgstr "the qualification policy cannot be applied"
 
@@ -41568,21 +41600,21 @@ msgstr "The public profile was in the previous edition and is not in this one; t
 #~ msgid "Profiluri exemplu"
 #~ msgstr "Profiluri exemplu"
 
-#: src/features/private-companies/lib/company-profile-text.ts:522
+#: src/features/private-companies/lib/company-profile-text.ts:560
 msgid "Profit brut"
 msgstr "Gross profit"
 
 #: src/features/private-companies/lib/company-profile-text.ts:256
-#: src/features/private-companies/lib/company-profile-text.ts:268
-#: src/features/private-companies/lib/company-profile-text.ts:512
+#: src/features/private-companies/lib/company-profile-text.ts:306
+#: src/features/private-companies/lib/company-profile-text.ts:550
 msgid "Profit net"
 msgstr "Net profit"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:271
+#: src/features/private-companies/components/profile/company-years-chart.tsx:317
 msgid "Profit net (rezultatul net reținut)"
 msgstr "Net profit (net result held)"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:94
+#: src/features/private-companies/components/profile/company-business-band.tsx:101
 msgid "Profit net zero și nicio pierdere disponibilă aici: rezultatul net nu se știe"
 msgstr "Net profit zero and no loss available here: the net result is unknown"
 
@@ -41838,7 +41870,7 @@ msgstr "Provenienta sursa"
 msgid "Provisional"
 msgstr "Provisional"
 
-#: src/features/private-companies/lib/company-profile-text.ts:544
+#: src/features/private-companies/lib/company-profile-text.ts:582
 msgid "Provizioane"
 msgstr "Provisions"
 
@@ -42474,6 +42506,10 @@ msgstr "reported by {0}"
 #: src/features/private-companies/lib/company-analytics-view.ts:53
 #~ msgid "raportat de {0} firme"
 #~ msgstr "reported by {0} companies"
+
+#: src/features/private-companies/lib/company-profile-text.ts:270
+msgid "Raportat pe formularul IFRS"
+msgstr "Reported on the IFRS form"
 
 #: src/features/procurement/lib/direct-purchase-text.ts:221
 msgid "Raportată în SEAP"
@@ -43783,11 +43819,11 @@ msgid "Reținut după o verificare."
 msgstr "Held after a review."
 
 #: src/features/private-companies/lib/company-analytics-text.ts:147
-#: src/features/private-companies/lib/company-profile-text.ts:593
+#: src/features/private-companies/lib/company-profile-text.ts:631
 msgid "reținut după verificare"
 msgstr "held after review"
 
-#: src/features/private-companies/lib/company-profile-text.ts:595
+#: src/features/private-companies/lib/company-profile-text.ts:633
 msgid "reținut pentru un semnal de calitate"
 msgstr "held for a quality signal"
 
@@ -43799,11 +43835,11 @@ msgstr "held: unverified form"
 msgid "reținut: o componentă e reținută"
 msgstr "held: a component is held"
 
-#: src/features/private-companies/lib/company-profile-text.ts:589
+#: src/features/private-companies/lib/company-profile-text.ts:627
 msgid "reținut: pentru această formă de bilanț nu se calculează din profit și pierdere"
 msgstr "held: for this statement layout it is not computed from profit and loss"
 
-#: src/features/private-companies/lib/company-profile-text.ts:591
+#: src/features/private-companies/lib/company-profile-text.ts:629
 msgid "reținut: profitul sau pierderea publicată e reținută"
 msgstr "held: the published profit or loss is held"
 
@@ -43815,19 +43851,19 @@ msgstr "held: quality flag"
 msgid "reținută"
 msgstr "held back"
 
-#: src/features/private-companies/lib/company-profile-text.ts:565
+#: src/features/private-companies/lib/company-profile-text.ts:603
 msgid "reținută după verificare"
 msgstr "held after review"
 
-#: src/features/private-companies/lib/company-profile-text.ts:567
+#: src/features/private-companies/lib/company-profile-text.ts:605
 msgid "reținută pentru un semnal de calitate"
 msgstr "held for a quality signal"
 
-#: src/features/private-companies/lib/company-profile-text.ts:563
+#: src/features/private-companies/lib/company-profile-text.ts:601
 msgid "reținută: forma bilanțului nu e admisă pentru acest indicator"
 msgstr "held: the statement layout is not admitted for this indicator"
 
-#: src/features/private-companies/lib/company-profile-text.ts:569
+#: src/features/private-companies/lib/company-profile-text.ts:607
 msgid "reținută: o componentă a rezultatului e reținută"
 msgstr "held: a component of the result is held"
 
@@ -44009,10 +44045,10 @@ msgstr "Result"
 msgid "Rezultat de vot"
 msgstr "Rezultat de vot"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:260
+#: src/features/private-companies/components/profile/company-years-chart.tsx:306
 #: src/features/private-companies/lib/company-profile-text.ts:235
 #: src/features/private-companies/lib/company-profile-text.ts:256
-#: src/features/private-companies/lib/company-profile-text.ts:268
+#: src/features/private-companies/lib/company-profile-text.ts:306
 #: src/features/public-enterprises/components/authority/authority-parts.tsx:283
 msgid "Rezultat net"
 msgstr "Net result"
@@ -44389,11 +44425,11 @@ msgstr "employees"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:610
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:115
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:133
-#: src/features/private-companies/components/profile/company-years-chart.tsx:252
-#: src/features/private-companies/components/profile/company-years-chart.tsx:356
-#: src/features/private-companies/components/profile/company-years-chart.tsx:373
+#: src/features/private-companies/components/profile/company-years-chart.tsx:298
+#: src/features/private-companies/components/profile/company-years-chart.tsx:435
+#: src/features/private-companies/components/profile/company-years-chart.tsx:465
 #: src/features/private-companies/lib/company-profile-text.ts:237
-#: src/features/private-companies/lib/company-profile-text.ts:516
+#: src/features/private-companies/lib/company-profile-text.ts:554
 #: src/features/private-companies/lib/hub-economy.ts:35
 #: src/features/public-enterprises/components/authority/authority-parts.tsx:280
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:215
@@ -46831,7 +46867,7 @@ msgstr "Shows only the funds transferred to other public administration units."
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:329
 #: src/features/ngos/organization/components/profile-parts.tsx:408
-#: src/features/private-companies/lib/company-profile-text.ts:438
+#: src/features/private-companies/lib/company-profile-text.ts:476
 #: src/features/procurement/lib/direct-purchase-value-text.ts:111
 #: src/features/procurement/lib/home-text.ts:119
 #: src/features/public-enterprises/lib/enterprise-text.ts:110
@@ -48219,7 +48255,7 @@ msgstr "The stock (\"legislation as it stands\"): acts that set rules and stand 
 msgid "Stocul nu cuprinde încadrări nesigure sau acte neîncadrate. Procentele sunt calculate pe pagină din numărători."
 msgstr "The stock holds no uncertain placements and no unplaced acts. Percentages are computed on the page from the counts."
 
-#: src/features/private-companies/lib/company-profile-text.ts:540
+#: src/features/private-companies/lib/company-profile-text.ts:578
 msgid "Stocuri"
 msgstr "Inventories"
 
@@ -48316,7 +48352,7 @@ msgstr "Subcategories"
 msgid "Subchapter"
 msgstr "Subchapter"
 
-#: src/features/private-companies/lib/company-profile-text.ts:400
+#: src/features/private-companies/lib/company-profile-text.ts:438
 msgid "Subcontracte PNRR"
 msgstr "PNRR subcontracts"
 
@@ -48431,7 +48467,7 @@ msgstr "Sum group members"
 #~ msgid "Suma"
 #~ msgstr "Amount"
 
-#: src/features/private-companies/lib/company-profile-text.ts:482
+#: src/features/private-companies/lib/company-profile-text.ts:520
 msgid "Suma adună valori din instrumente diferite, fără verificare de dubluri între ele: nu e un total de bani încasați."
 msgstr "The sum adds values from different instruments, without a check for duplicates between them: it is not a total of money received."
 
@@ -48668,7 +48704,7 @@ msgstr "Sursa inaccesibila (cu dovada)"
 msgid "Sursă necunoscută"
 msgstr "Sursă necunoscută"
 
-#: src/features/private-companies/lib/company-profile-text.ts:603
+#: src/features/private-companies/lib/company-profile-text.ts:641
 msgid "sursă nenumită"
 msgstr "unnamed source"
 
@@ -50784,7 +50820,7 @@ msgstr "Toate stenogramele"
 #~ msgid "Toate tipurile"
 #~ msgstr "Toate tipurile"
 
-#: src/features/private-companies/lib/company-profile-text.ts:611
+#: src/features/private-companies/lib/company-profile-text.ts:649
 msgid "toate valorile admise"
 msgstr "all values admitted"
 
@@ -51755,7 +51791,7 @@ msgstr "Latest years with financial statements"
 msgid "Ultimul acord-cadru, încheiat"
 msgstr "Last framework agreement, signed"
 
-#: src/features/private-companies/lib/company-profile-text.ts:312
+#: src/features/private-companies/lib/company-profile-text.ts:350
 msgid "Ultimul bilanț disponibil aici este pe {newest}."
 msgstr "The latest statement available here is for {newest}."
 
@@ -52860,7 +52896,7 @@ msgstr "numeric value"
 msgid "valoare raportată; textul actului spune {stated}"
 msgstr "reported value; the amendment's text says {stated}"
 
-#: src/features/private-companies/components/profile/company-business-band.tsx:100
+#: src/features/private-companies/components/profile/company-business-band.tsx:107
 msgid "Valoare reținută: nu intră în grafic"
 msgstr "Value held: not charted"
 
@@ -53162,7 +53198,7 @@ msgstr "Values for the chosen period. The county and country reference points de
 msgid "Valorile publicate"
 msgstr "The published values"
 
-#: src/features/private-companies/lib/company-profile-text.ts:611
+#: src/features/private-companies/lib/company-profile-text.ts:649
 msgid "valorile publicate admise; rezultatul net reținut"
 msgstr "published values admitted; net result held"
 
@@ -53468,7 +53504,7 @@ msgctxt "national budget classification"
 msgid "Venituri fiscale"
 msgstr "Tax revenue"
 
-#: src/features/private-companies/lib/company-profile-text.ts:536
+#: src/features/private-companies/lib/company-profile-text.ts:574
 msgid "Venituri în avans"
 msgstr "Deferred income"
 
@@ -53542,7 +53578,7 @@ msgstr "Additional revenue from digitalisation"
 #: src/features/landing/lib/budget-map-measures.ts:150
 #: src/features/ngos/organization/components/profile-parts.tsx:276
 #: src/features/ngos/organization/components/years-matrix.tsx:12
-#: src/features/private-companies/lib/company-profile-text.ts:518
+#: src/features/private-companies/lib/company-profile-text.ts:556
 msgid "Venituri totale"
 msgstr "Total revenue"
 
