@@ -151,11 +151,16 @@ export const prototype = {
       component: () => <SeriesBand marking="fundal" sources="citire" />,
       note: 'The same, the IFRS runs marked by a faint ground across both panels and „IFRS" over each.',
     },
+    ambele: {
+      title: 'Seria IFRS · A+B · Bandă și fundal',
+      component: () => <SeriesBand marking="ambele" sources="citire" />,
+      note: 'Both marks at once (owner: „prototype both"): the named rule over each IFRS run and the faint ground behind it, across both panels.',
+    },
     surse: {
       title: 'Seria IFRS · C · Bandă, surse sub grafic',
       component: () => <SeriesBand marking="banda" sources="rand" />,
       note: 'As A, the Ministry’s IFRS files listed under the chart, one link a year, instead of a link in the reading (the ANAF years keep theirs in „Bilanțurile, an cu an").',
     },
   },
-  compare: ['azi', 'banda', 'fundal', 'surse'],
+  compare: ['azi', 'banda', 'fundal', 'ambele'],
 } satisfies PrototypeDefinition

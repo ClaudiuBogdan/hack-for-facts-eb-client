@@ -13,7 +13,8 @@ import type { FormRow } from './profile-ifrs.data'
  * blank. A zero is a zero. Copied from `company-years-chart.tsx`, which stays as it is.
  */
 
-export type Marking = 'banda' | 'fundal'
+/** How an IFRS run is marked: a named rule above the money panel, a faint ground across both panels, or both. */
+export type Marking = 'banda' | 'fundal' | 'ambele'
 export type SourcePlace = 'citire' | 'rand'
 
 type Slot = { readonly kind: 'year'; readonly row: FormRow } | { readonly kind: 'gap'; readonly from: number; readonly to: number }
@@ -148,7 +149,7 @@ export function IfrsYearsChart({
   }
 
   const tint = (key: string) =>
-    marking === 'fundal'
+    marking !== 'banda'
       ? runs.map((run) => (
           <div key={`${key}-${run.from}`} className="absolute inset-y-0 bg-primary/[0.07]" style={{ left: percent(run.left), width: percent(run.right - run.left) }} aria-hidden="true" />
         ))
@@ -277,8 +278,8 @@ export function IfrsYearsChart({
         ) : null}
         {runs.length > 0 ? (
           <li className="inline-flex items-center gap-1.5 text-foreground">
-            {marking === 'banda' ? (
-              <span className="inline-flex h-2.5 w-4 items-start border-t-2 border-primary" aria-hidden="true" />
+            {marking !== 'fundal' ? (
+              <span className={cn('inline-flex h-2.5 w-4 items-start border-t-2 border-primary', marking === 'ambele' && 'bg-primary/[0.12]')} aria-hidden="true" />
             ) : (
               swatch('bg-primary/[0.12]')
             )}
@@ -295,10 +296,10 @@ export function IfrsYearsChart({
         onPointerLeave={(event) => {
           if (event.pointerType === 'mouse') setActive(null)
         }}
-        className={cn('relative pl-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', marking === 'banda' ? 'mt-3' : 'mt-4')}
+        className={cn('relative pl-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', marking !== 'fundal' ? 'mt-3' : 'mt-4')}
       >
         {/* The IFRS runs, named above the money panel: a rule over the run and a short name, the full one in the legend. */}
-        {marking === 'banda' ? (
+        {marking !== 'fundal' ? (
           <div className="relative mb-2 h-5" aria-hidden="true">
             {runs.map((run) => (
               <div key={run.from} className="absolute bottom-0 border-t-2 border-primary" style={{ left: percent(run.left), width: percent(run.right - run.left) }}>
