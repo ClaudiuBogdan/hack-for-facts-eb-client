@@ -1467,7 +1467,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                 className={cn(
                   'sticky space-y-3 overflow-y-auto overscroll-contain [scrollbar-width:thin]',
                   // The box ends above the app's floating feedback button (bottom right), and scrolls inside itself on a short screen.
-                  railBox ? 'top-[3.125rem] max-h-[calc(100dvh-8.5rem)] rounded-b-md border border-t-0 px-3 pb-2 pt-3' : 'top-16 max-h-[calc(100dvh-8.5rem)] pb-8',
+                  railBox ? 'top-[3.125rem] max-h-[calc(100dvh-11.5rem)] rounded-b-md border border-t-0 px-3 pb-2 pt-3' : 'top-16 max-h-[calc(100dvh-8.5rem)] pb-8',
                 )}
               >
                 <FormSelect act={act} shown={shown} onForm={onForm} stacked wrap bare={railBox} />
@@ -1478,6 +1478,19 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           </aside>
         ) : null}
       </div>
+      {/* The same way back, floating (owner, 26 November 2026: both): above the app's feedback button on a desktop,
+          above the zone of the app's bottom menu on a phone. */}
+      {away ? (
+        <button
+          type="button"
+          onClick={toStart}
+          aria-label={t`Înapoi la începutul actului`}
+          title={t`Înapoi la începutul actului`}
+          className="fixed bottom-24 right-4 z-30 inline-flex size-11 items-center justify-center rounded-md border bg-background text-muted-foreground shadow-sm hover:text-foreground sm:bottom-20 sm:right-[2.125rem] sm:size-10"
+        >
+          <ArrowUp className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   )
 }
