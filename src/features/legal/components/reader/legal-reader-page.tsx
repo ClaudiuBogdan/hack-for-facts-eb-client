@@ -112,9 +112,11 @@ type Props = {
 /**
  * The deep link's passing highlight, important: a note nested in a note would
  * otherwise lose it to the parent note's `[&_[data-kind=nota]]:bg-transparent`.
- * One class, added and removed whole.
+ * One class, added and removed whole. A light tint of the text's own colour:
+ * the theme's `accent` is black on the light theme, and 60% of it hid the
+ * very passage it pointed at.
  */
-const NOD_HIGHLIGHT = 'bg-accent/60!'
+const NOD_HIGHLIGHT = 'bg-foreground/10!'
 
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
 function scrollToNodTarget(nod: string, anchorPath: string): boolean {

@@ -168,7 +168,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       // Settled: the outline answered and the text is on screen; nothing was scrolled to or marked as the match.
       await new Promise((resolve) => setTimeout(resolve, 50))
       expect(scrollIntoView).not.toHaveBeenCalled()
-      expect(container.querySelector('.bg-accent\\/60\\!')).toBeNull()
+      expect(container.querySelector('.bg-foreground\\/10\\!')).toBeNull()
       // nor is the provision said to be missing from a text it was never meant for
       expect(screen.queryByText(/Nu am găsit fragmentul cerut/)).toBeNull()
     } finally {
@@ -206,7 +206,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       <ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />,
     )
     await waitFor(() => {
-      expect(container.querySelector(`[id="tldf-${nod}"]`)).toHaveClass('bg-accent/60!')
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).toHaveClass('bg-foreground/10!')
     })
   })
 

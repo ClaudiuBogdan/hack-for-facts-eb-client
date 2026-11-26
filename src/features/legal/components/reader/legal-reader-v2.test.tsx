@@ -265,7 +265,7 @@ describe('ActReadingLayout on legal_v2', () => {
     await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull())
     const target = container.querySelector(`[id="tldf-${nod}"]`) as HTMLElement
     expect(target.parentElement?.closest('[data-kind="nota"]')).not.toBeNull()
-    await waitFor(() => expect(target).toHaveClass('bg-accent/60!'))
+    await waitFor(() => expect(target).toHaveClass('bg-foreground/10!'))
   })
 
   it('opens a folded note of the Portal that holds a deep-linked block', async () => {
@@ -293,7 +293,7 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(holder).not.toBeNull()
     // folded until the jump, open once the deep link has landed
     await waitFor(() => expect(holder).toHaveAttribute('data-note-fold', 'open'))
-    expect(target).toHaveClass('bg-accent/60!')
+    expect(target).toHaveClass('bg-foreground/10!')
   })
 
   it('shows a static label, not a dropdown, when one version is readable', async () => {
