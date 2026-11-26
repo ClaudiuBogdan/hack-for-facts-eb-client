@@ -47,7 +47,10 @@ src/locales/en/pnrr.po src/locales/ro/pnrr.po`) and commit only the catalogue yo
 ## Fix (suggested, not started)
 
 1. **One clean extract of the two catalogues, committed on its own** by whoever owns them, on `dev`. After it, a plain
-   extract with no source change is a no-op again, as it already is for `messages.po`.
+   extract with no source change is a no-op again, as it already is for `messages.po`. That commit is **reviewed by
+   message id, not by diff line**: list the ids added, removed and made obsolete in each catalogue and each locale, and
+   check that every `msgstr` of a kept id is unchanged. The diff itself is thousands of moved and renumbered lines and
+   shows none of that.
 2. **Decide the three obsolete PNRR messages** in that commit: keep them as `#~` entries, or drop them with
    `yarn i18n:clean` if nothing will bring them back.
 3. **Optional: stop the churn at its source.** Origin lines carry line numbers, so any edit above a message rewrites
