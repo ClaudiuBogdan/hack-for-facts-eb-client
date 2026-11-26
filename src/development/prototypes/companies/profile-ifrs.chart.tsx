@@ -28,6 +28,15 @@ export const IFRS_LABEL = 'Raportat pe formularul IFRS'
 export const TURNOVER_NOTE = 'Pe formularul IFRS, cifra de afaceri este rândul „Cifra de afaceri netă" din formularul depus, nu linia de venituri din vânzări din situația IFRS a companiei.'
 const PUBLISHER: Record<'mfp' | 'anaf', string> = { mfp: 'Ministerul Finanțelor', anaf: 'ANAF' }
 
+/**
+ * The years as ranges, the last joined by „și" („2014 și 2016–2018"): only the years there are, never first–last
+ * (a company moves between the Ministry's files). Commas would run into the sentence's own.
+ */
+export function yearsSaid(years: readonly number[]): string {
+  const ranges = yearRanges(years).split(', ').filter(Boolean)
+  return ranges.length > 1 ? `${ranges.slice(0, -1).join(', ')} și ${ranges[ranges.length - 1]}` : (ranges[0] ?? '')
+}
+
 const empty = (row: FormRow) => row.turnover === null && row.net.value === null && row.employees === null
 
 /** A year a slot of its own; a run of two or more unmarked years with nothing to draw, one narrow hatched slot. */
@@ -421,7 +430,7 @@ export function IfrsYearsChart({
           // The company's own Ministry years, inclusive („până în 2018" could read as ending before it); the blank-to-zero
           // difference as measured, on 2019, the year both publishers cover.
           <p>
-            Pentru {yearRanges(rows.filter((row) => row.form === 'ifrs' && row.publisher === 'mfp').map((row) => row.year))}, cifrele formularului IFRS vin din fișierul
+            Pentru {yearsSaid(rows.filter((row) => row.form === 'ifrs' && row.publisher === 'mfp').map((row) => row.year))}, cifrele formularului IFRS vin din fișierul
             Ministerului Finanțelor; din 2019, de la ANAF.
             {blankThenZero ? ' În 2019, unde fișierul Ministerului avea celula goală, ANAF a publicat 0: trecerea de la gol la 0 nu e o scădere.' : null}
           </p>
