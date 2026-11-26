@@ -115,7 +115,8 @@ export function rowsFromModel(model: CompanyProfileModel, ifrs: readonly IfrsFor
       net: { value: number(entry.netResult), kind: 'result' },
       employees: number(entry.employees),
       reasons: { turnover: BLANK_MFP, net: BLANK_MFP, employees: BLANK_MFP },
-      source: entry.sourceUrl ? { url: entry.sourceUrl, label: 'Fișierul IFRS pe data.gov.ro' } : null,
+      // The publisher never calls it an IFRS file (it is its „IR" class file): named by its publisher.
+      source: entry.sourceUrl ? { url: entry.sourceUrl, label: 'Fișierul Ministerului Finanțelor pe data.gov.ro' } : null,
     })
   }
   return [...byYear.values()].sort((a, b) => a.year - b.year)

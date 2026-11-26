@@ -24,7 +24,8 @@ const HATCH = 'bg-[repeating-linear-gradient(135deg,transparent_0_6px,hsl(var(--
 const percent = (fraction: number) => `${(fraction * 100).toFixed(4)}%`
 
 export const IFRS_LABEL = 'Raportat pe formularul IFRS'
-export const TURNOVER_NOTE = 'Pe formularul IFRS, cifra de afaceri e cifra de afaceri netă din formular, nu linia de venituri din vânzări a situației IFRS.'
+// The IFRS session's wording (26 November 2026): the form's row by its name, not the company's IFRS sales line.
+export const TURNOVER_NOTE = 'Pe formularul IFRS, cifra de afaceri este rândul „Cifra de afaceri netă" din formularul depus, nu linia de venituri din vânzări din situația IFRS a companiei.'
 const PUBLISHER: Record<'mfp' | 'anaf', string> = { mfp: 'Ministerul Finanțelor', anaf: 'ANAF' }
 
 const empty = (row: FormRow) => row.turnover === null && row.net.value === null && row.employees === null
@@ -417,14 +418,17 @@ export function IfrsYearsChart({
       <div className="mt-3 max-w-[72ch] space-y-1.5 text-xs leading-relaxed text-muted-foreground">
         {runs.length > 0 ? <p>{TURNOVER_NOTE}</p> : null}
         {seam ? (
+          // The company's own Ministry years, inclusive („până în 2018" could read as ending before it); the blank-to-zero
+          // difference as measured, on 2019, the year both publishers cover.
           <p>
-            Până în 2018 cifrele formularului IFRS vin din fișierul Ministerului Finanțelor, din 2019 de la ANAF.
-            {blankThenZero ? ' Unde Ministerul a lăsat o celulă goală, ANAF publică 0: trecerea de la gol la 0 nu e o scădere.' : null}
+            Pentru {yearRanges(rows.filter((row) => row.form === 'ifrs' && row.publisher === 'mfp').map((row) => row.year))}, cifrele formularului IFRS vin din fișierul
+            Ministerului Finanțelor; din 2019, de la ANAF.
+            {blankThenZero ? ' În 2019, unde fișierul Ministerului avea celula goală, ANAF a publicat 0: trecerea de la gol la 0 nu e o scădere.' : null}
           </p>
         ) : null}
         {sources === 'rand' && ifrsSources.length > 0 ? (
           <p>
-            Fișierele IFRS ale Ministerului Finanțelor:{' '}
+            Fișierele Ministerului Finanțelor pentru anii pe formularul IFRS:{' '}
             {ifrsSources.map((row, index) => (
               <span key={row.year}>
                 {index > 0 ? ' · ' : null}
