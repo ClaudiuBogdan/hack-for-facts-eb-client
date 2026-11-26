@@ -7,8 +7,11 @@ import { yearRanges } from '@/features/private-companies/lib/company-profile-for
 import type { CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
 import { financialLede } from '@/features/private-companies/lib/company-profile-text'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { useSearch } from '@tanstack/react-router'
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { PROTOTYPE_MARKER, useProtoModel } from './profile.data'
+import { IfrsYearsChart, type Marking, type SourcePlace } from './profile-ifrs.chart'
+import { MOCK_ONE_YEAR, MOCK_SWITCHER, PETROM_FORMS, PETROM_IFRS, rowsFromModel } from './profile-ifrs.data'
 
 /**
  * PROTOTYPE (owner via root, 25 November 2026): say why a company's IFRS
@@ -82,6 +85,32 @@ function ProtoIfrsBand({ model, placement }: { readonly model: CompanyProfileMod
   )
 }
 
+/**
+ * The labelled IFRS-form series (spec PRIV-ZVPV, owner decisions of 25 November 2026), on Petrom's live profile with
+ * its Ministry IFRS figures as the view returns them (`?caz=petrom`, the default), or on a fictitious company marked
+ * as mock: one that switches form (`?caz=comutator`), one the Ministry filed as IFRS for 2014 alone (`?caz=un-an`).
+ */
+function SeriesBand({ marking, sources }: { readonly marking: Marking; readonly sources: SourcePlace }) {
+  const search = useSearch({ strict: false }) as { readonly caz?: unknown }
+  const mock = search.caz === 'comutator' ? MOCK_SWITCHER : search.caz === 'un-an' ? MOCK_ONE_YEAR : null
+  const { model, state } = useProtoModel()
+  if (!mock && !model) return <p className="p-6 text-sm text-muted-foreground">{state}</p>
+  const rows = mock ?? rowsFromModel(model!, PETROM_IFRS, PETROM_FORMS)
+  return (
+    <div data-dev-marker={PROTOTYPE_MARKER} className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']">
+      <ProfileBand id="afacerea" titleId={TITLE_ID}>
+        {mock ? (
+          <p className="mb-6 inline-flex border border-amber-500/60 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
+            Firmă fictivă, date de probă (mock): {search.caz === 'comutator' ? 'schimbă formularul' : 'în fișierul IFRS doar în 2014'}
+          </p>
+        ) : null}
+        <HubSectionHead titleId={TITLE_ID} title={<Trans>Cum merge afacerea</Trans>} lede={mock ? null : financialLede(model!)} />
+        <IfrsYearsChart rows={rows} marking={marking} sources={sources} className="mt-8" />
+      </ProfileBand>
+    </div>
+  )
+}
+
 function Frame({ children }: { readonly children: (model: CompanyProfileModel) => React.ReactNode }) {
   const { model, state } = useProtoModel()
   if (!model) return <p className="p-6 text-sm text-muted-foreground">{state}</p>
@@ -112,6 +141,21 @@ export const prototype = {
       component: () => <Frame>{(model) => <ProtoIfrsBand model={model} placement="scurt" />}</Frame>,
       note: 'The shortest form under the chart: the years, IFRS, outside this chart.',
     },
+    banda: {
+      title: 'Seria IFRS · A · Bandă deasupra',
+      component: () => <SeriesBand marking="banda" sources="citire" />,
+      note: 'The IFRS-form years drawn, each in its own segment: a rule named „IFRS" over each run, the full label in the legend; the line breaks at every change of form, at a missing year and at a blank. Each year’s reading names its form and publisher, the turnover note, and links its source. ?caz=comutator | un-an for the fictitious hard cases.',
+    },
+    fundal: {
+      title: 'Seria IFRS · B · Fundal',
+      component: () => <SeriesBand marking="fundal" sources="citire" />,
+      note: 'The same, the IFRS runs marked by a faint ground across both panels and „IFRS" over each.',
+    },
+    surse: {
+      title: 'Seria IFRS · C · Bandă, surse sub grafic',
+      component: () => <SeriesBand marking="banda" sources="rand" />,
+      note: 'As A, the Ministry’s IFRS files listed under the chart, one link a year, instead of a link in the reading (the ANAF years keep theirs in „Bilanțurile, an cu an").',
+    },
   },
-  compare: ['azi', 'sub', 'lede', 'scurt'],
+  compare: ['azi', 'banda', 'fundal', 'surse'],
 } satisfies PrototypeDefinition
