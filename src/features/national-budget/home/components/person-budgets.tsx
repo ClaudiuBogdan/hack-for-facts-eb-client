@@ -7,7 +7,6 @@ import { exactPercent, plotOf } from '@/features/national-budget/analytics/lib/e
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { sumDecimals } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
-import { hue } from '../lib/chart-palette'
 import { moneyText } from '../lib/home-format'
 import { outOfHundred, perResident } from '../lib/per-resident'
 import { inPeriod, leiText, leiWord } from '../lib/person-format'
@@ -128,7 +127,7 @@ const BUDGET_STEPS = [100, 78, 58, 40] as const
 
 function budgetColor(rank: number): string {
   const step = BUDGET_STEPS[rank]
-  return step === undefined ? hue(0) : `color-mix(in oklab, hsl(var(--choropleth-5)) ${step}%, hsl(var(--choropleth-1)))`
+  return step === undefined ? 'hsl(var(--muted-foreground) / 0.4)' : `color-mix(in oklab, hsl(var(--choropleth-5)) ${step}%, hsl(var(--choropleth-1)))`
 }
 
 // ──────────────────────────────────────────────────────────────── squares ──
