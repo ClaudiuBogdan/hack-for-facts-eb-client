@@ -11,7 +11,7 @@ import type { LegalActStatus, LegalFinderSearch, LegalResolveHit, LegalSearchAct
 import { LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT, legalActStatusSchema } from '@/schemas/legal'
 import { fetchLegalSearch } from '../api/legal-search-api'
 import { resolveLegalActs } from '../api/legal-resolve-api'
-import { parseLegalCitationShape } from '../lib/legal-citation'
+import { labelCarriesCitation, parseLegalCitationShape } from '../lib/legal-citation'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import { legalIssuerLabel } from '../lib/legal-vocabulary'
 import { isSearchFiltered, readSearchFilters, searchArgs, searchHitName, searchOfFilters, usesSummaries, type SearchFilters } from '../lib/search-filters'
@@ -42,6 +42,11 @@ const ROW_GRID = 'sm:grid sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-x-5 lg:grid
 
 type Props = {
   readonly search: LegalFinderSearch
+  /**
+   * The language the address asks for (`?lang=`), if it asks for one: a pre-hydration Enter carries it, so the page
+   * the browser loads speaks the same language (the cookie carries the rest).
+   */
+  readonly lang?: 'ro' | 'en' | null
 }
 
 /**
@@ -75,7 +80,7 @@ type Props = {
  * was canonical, not the act's), `amendedAfterPublication` (references, not amending acts), any promise of an
  * act's text (6,174 public acts serve none), and the summaries' domains (one question's acts share them).
  */
-export function LegislationActFinder({ search: address }: Props) {
+export function LegislationActFinder({ search: address, lang = null }: Props) {
   const navigate = useNavigate()
   const q = address.q?.trim() ?? ''
   const filters = readSearchFilters(address)
@@ -98,11 +103,31 @@ export function LegislationActFinder({ search: address }: Props) {
     if (typed.current.trim() !== q) setDraft(q)
   }, [q])
 
+  // The typing pause's timer, held so Enter, an example and a step through history can stop it (review
+  // astra-client-11): a query sent by Enter is not sent again by the pause, and a Back that lands on an entry with
+  // the same query (a filter undone) is not overwritten by keys typed before it.
+  const typing = useRef<number | null>(null)
+  const stopTyping = () => {
+    if (typing.current !== null) window.clearTimeout(typing.current)
+    typing.current = null
+  }
+  useEffect(() => {
+    const onTraverse = () => {
+      stopTyping()
+      sent.current = null
+    }
+    window.addEventListener('popstate', onTraverse)
+    return () => window.removeEventListener('popstate', onTraverse)
+  }, [])
+
   /**
    * The query alone, written over the address as the router holds it when the navigation runs: the filters are
    * whatever is there then, never a copy taken when the reader began to type (astra-client-8).
    */
   const sendQuery = (next: string, options: { readonly replace: boolean }) => {
+    stopTyping()
+    // Already on its way: the navigation that carries it has not landed yet.
+    if (sent.current !== null && next === sent.current) return
     if (next !== q) sent.current = next
     void navigate({
       to: '/legislation/search',
@@ -125,16 +150,24 @@ export function LegislationActFinder({ search: address }: Props) {
   useEffect(() => {
     const next = draft.trim()
     if (next === q || (next.length > 0 && next.length < TYPED_MIN)) return
-    const timer = window.setTimeout(() => sendQuery(next, { replace: true }), TYPING_PAUSE_MS)
-    return () => window.clearTimeout(timer)
+    const timer = window.setTimeout(() => {
+      typing.current = null
+      sendQuery(next, { replace: true })
+    }, TYPING_PAUSE_MS)
+    typing.current = timer
+    return () => {
+      window.clearTimeout(timer)
+      if (typing.current === timer) typing.current = null
+    }
     // `sendQuery` is rebuilt each render and reads nothing captured but `q`; the pause restarts when the box changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, q])
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    stopTyping()
     const next = draft.trim()
-    if (next.length > 0) sendQuery(next, { replace: true })
+    if (next.length > 0 && next !== q) sendQuery(next, { replace: true })
   }
   const run = (example: string) => {
     setDraft(example)
@@ -168,17 +201,29 @@ export function LegislationActFinder({ search: address }: Props) {
   }, [q])
   return (
     <div className="max-w-4xl">
-      {/* `action`, the field's `name` and the filters as hidden fields are for a reader who presses Enter before the
-          page has hydrated: the browser then asks for `?q=…` with the address's filters itself, and the server
-          answers (SEARCH-001). Hydrated, `onSubmit` takes over. */}
+      {/* `action`, the field's `name`, the filters and the address's language as hidden fields are for a reader who
+          presses Enter before the page has hydrated: the browser then asks for `?q=…` with them itself, and the
+          server renders the page with the question in the box; the answer is read once the scripts run
+          (SEARCH-001). Hydrated, `onSubmit` takes over. */}
       <form onSubmit={onSubmit} action="/legislation/search" method="get" role="search" aria-label={t`Caută în legislație`}>
         {Object.entries(searchOfFilters(filters)).map(([key, value]) => (value === undefined ? null : <input key={key} type="hidden" name={key} value={String(value)} />))}
+        {lang !== null ? <input type="hidden" name="lang" value={lang} /> : null}
         <div className="flex items-start gap-2">
           <Field draft={draft} onDraft={setDraft} busy={asked && search.isFetching} />
           {/* Beside the field (owner, 25 November 2026): the filters are part of the question. */}
           <LegislationFilterButton ref={filterButton} filters={filters} onOpen={() => setPanel(true)} />
         </div>
       </form>
+      {/* The filters on, and where the summary-based ones come from, are said under the form whatever the answer's
+          state: before a question, while it is read, after an error (review astra-client-11). */}
+      {isSearchFiltered(filters) ? (
+        <div className="mt-4 space-y-2">
+          <LegislationActiveFilters filters={filters} onChange={setFilters} />
+          {usesSummaries(filters) ? (
+            <p className="text-xs text-muted-foreground">{t`Domeniul, categoria și sancțiunile vin din rezumate făcute automat: actele fără rezumat nu apar.`}</p>
+          ) : null}
+        </div>
+      ) : null}
       <div className="mt-8">
         {asked ? (
           <Answer q={q} filters={filters} onFilters={setFilters} search={search} resolveHits={resolve.data ?? []} resolving={resolve.isPending && waited !== q} />
@@ -186,7 +231,14 @@ export function LegislationActFinder({ search: address }: Props) {
           <Ways onExample={run} />
         )}
       </div>
-      <LegislationFilterPanel filters={filters} onChange={setFilters} open={panel} onOpenChange={setPanel} returnFocus={() => filterButton.current?.focus()} />
+      <LegislationFilterPanel
+        filters={filters}
+        onChange={setFilters}
+        open={panel}
+        onOpenChange={setPanel}
+        returnFocus={() => filterButton.current?.focus()}
+        asked={asked}
+      />
     </div>
   )
 }
@@ -207,6 +259,8 @@ function Field({ draft, onDraft, busy }: { readonly draft: string; readonly onDr
       if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return
       const target = event.target
       if (target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return
+      // An open dialog (the filters, an ⓘ) keeps the keys: the field behind it is not where the reader is.
+      if (document.querySelector('[role="dialog"]') !== null) return
       event.preventDefault()
       input.current?.focus()
     }
@@ -365,22 +419,38 @@ function Answer({
   const result = search.data
   const acts = result.acts
   const words = questionWords(q)
+  const citation = parseLegalCitationShape(q)
   // What the copy may claim: the OpenSearch engine, whole, searched the acts' text; the Postgres path only numbers
   // and names; a degraded OpenSearch answer lost a leg it does not name, so it claims neither.
   const reach: 'text' | 'names' | 'partial' = result.engine === 'opensearch' ? (result.degraded ? 'partial' : 'text') : 'names'
   const semanticUnavailable = result.caveats.includes(LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
   const verbatim = result.caveats.filter((caveat) => caveat !== LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT)
-  const empty = acts.length === 0
   // The resolver answers the new question while the last answer is still shown: its acts lead only a current answer
   // that no filter narrows. One act is the answer; several are a choice the reader makes.
   const named = !stale && !narrowed ? resolveHits : []
-  const lead = named.length === 1 ? (named[0] ?? null) : null
+  // „Actul cu acest număr" only for a citation, and only for the act that carries its number and year: the resolver
+  // also matches names by substring, and a name's one candidate is not the answer (review astra-client-11). Names
+  // keep the engine's order.
+  const only = named.length === 1 ? (named[0] ?? null) : null
+  const lead = only !== null && citation !== null && labelCarriesCitation(only.label, citation) ? only : null
   // Several acts under one citation: when the list holds them all, the list is the choice and one sentence says
   // so; the card is for the acts the list does not show.
   const several = named.length >= 2
   const choose = several && named.some((one) => !acts.some((hit) => hit.act.actId === one.value))
   const leadHit = lead === null ? null : (acts.find((hit) => hit.act.actId === lead.value) ?? null)
   const rest = lead === null ? acts : acts.filter((hit) => hit.act.actId !== lead.value)
+  // The provisions that matched, by act. The engine sends act and provision hits apart: a provision is drawn under
+  // its act wherever that act is (the card included), and one whose act is in no row gets a row of its own, so an
+  // answer of provisions alone is not said to be empty (review astra-client-11).
+  const provisionsOf = (actId: string) => groupProvisions(result.sections.filter((section) => section.actId === actId))
+  const placed = new Set([...acts.map((hit) => hit.act.actId), ...(lead === null ? [] : [lead.value])])
+  const loose = [...new Set(result.sections.map((section) => section.actId))]
+    .filter((actId) => !placed.has(actId))
+    .map((actId) => ({ actId, citation: result.sections.find((section) => section.actId === actId && section.actCitation)?.actCitation ?? null, provisions: provisionsOf(actId) }))
+    .filter((one) => one.provisions.length > 0)
+  const leadProvisions = lead === null ? 0 : provisionsOf(lead.value).length
+  const empty = acts.length === 0 && loose.length === 0 && leadProvisions === 0
+  const rows = rest.length + loose.length
   const widen =
     filters.stare !== 'implicit' ? null : (
       <button type="button" onClick={() => onFilters({ ...filters, stare: 'toate' })} className={MORE_LINK}>
@@ -391,8 +461,8 @@ function Answer({
   const count =
     lead !== null
       ? t`Alte potriviri`
-      : result.actsTotal == null
-        ? plural(acts.length, { one: 'O potrivire afișată', few: '# potriviri afișate', other: '# de potriviri afișate' })
+      : result.actsTotal == null || acts.length === 0
+        ? plural(rows, { one: 'O potrivire afișată', few: '# potriviri afișate', other: '# de potriviri afișate' })
         : result.totalsExhaustive
           ? plural(result.actsTotal, { one: 'O potrivire', few: '# potriviri', other: '# de potriviri' })
           : plural(result.actsTotal, { one: 'Cel puțin o potrivire', few: 'Cel puțin # potriviri', other: 'Cel puțin # de potriviri' })
@@ -433,22 +503,11 @@ function Answer({
       <LegalInfoNote label={t`Cum se caută`}>{notes}</LegalInfoNote>
     </div>
   )
-  const row = (hit: LegalSearchActHit) => (
-    <ActRow key={hit.act.actId} hit={hit} words={words} provisions={groupProvisions(result.sections.filter((section) => section.actId === hit.act.actId))} />
-  )
+  const row = (hit: LegalSearchActHit) => <ActRow key={hit.act.actId} hit={hit} words={words} provisions={provisionsOf(hit.act.actId)} />
 
   return (
     <div className={cn('space-y-8 transition-opacity', stale && 'opacity-80')} aria-busy={stale}>
-      {filtered ? (
-        <div className="space-y-2">
-          <LegislationActiveFilters filters={filters} onChange={onFilters} />
-          {usesSummaries(filters) ? (
-            <p className="text-xs text-muted-foreground">{t`Domeniul, categoria și sancțiunile vin din rezumate făcute automat: actele fără rezumat nu apar.`}</p>
-          ) : null}
-        </div>
-      ) : null}
-
-      {lead !== null ? <LeadAct lead={lead} hit={leadHit} /> : null}
+      {lead !== null ? <LeadAct lead={lead} hit={leadHit} provisions={provisionsOf(lead.value)} /> : null}
       {choose ? <ChooseAct hits={named} /> : null}
 
       {empty && stale ? (
@@ -479,7 +538,7 @@ function Answer({
             </p>
           ) : parseLegalCitationShape(q) !== null ? (
             <>
-              <h2 id="search-empty-title" className="text-xl font-semibold tracking-tight text-foreground">
+              <h2 id="search-empty-title" className="text-xl font-semibold tracking-tight text-foreground wrap-anywhere">
                 {t`Niciun act găsit pentru citarea „${q}"`}
               </h2>
               <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
@@ -489,7 +548,7 @@ function Answer({
           ) : (
             <>
               {/* The page's contract: a phrase that finds nothing never reads as „the law does not exist". */}
-              <h2 id="search-empty-title" className="max-w-[40ch] text-xl font-semibold tracking-tight text-foreground">
+              <h2 id="search-empty-title" className="max-w-[40ch] text-xl font-semibold tracking-tight text-foreground wrap-anywhere">
                 {t`Niciun act pentru „${q}", dar asta nu înseamnă că prevederea nu există`}
               </h2>
               <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
@@ -506,7 +565,7 @@ function Answer({
           {widen ? <div className="mt-4">{widen}</div> : null}
           {how}
         </section>
-      ) : rest.length === 0 ? (
+      ) : rows === 0 ? (
         // The act above is the whole answer.
         <div>
           {degraded}
@@ -524,10 +583,13 @@ function Answer({
             </div>
             {widen}
           </div>
-          {several && !choose ? <p className="mt-3 text-sm text-muted-foreground">{t`Mai multe acte poartă acest număr: emitentul le deosebește.`}</p> : null}
+          {several && !choose && citation !== null ? <p className="mt-3 text-sm text-muted-foreground">{t`Mai multe acte poartă acest număr: emitentul le deosebește.`}</p> : null}
           {degraded ? <div className="mt-3">{degraded}</div> : null}
           <ol aria-label={t`Rezultate`} className="divide-y border-b">
             {rest.map(row)}
+            {loose.map((one) => (
+              <ProvisionsRow key={one.actId} actId={one.actId} citation={one.citation} provisions={one.provisions} />
+            ))}
           </ol>
         </section>
       )}
@@ -591,11 +653,30 @@ function ActRow({ hit, words, provisions }: { readonly hit: LegalSearchActHit; r
   )
 }
 
+/** A row for an act the engine matched only by its provisions: the act, then the provisions under it. */
+function ProvisionsRow({ actId, citation, provisions }: { readonly actId: string; readonly citation: string | null; readonly provisions: readonly ProvisionGroup[] }) {
+  return (
+    <li className={cn('py-5', ROW_GRID)}>
+      <span className="hidden sm:block" aria-hidden="true" />
+      <div className="min-w-0">
+        <Link to="/legislation/acts/$actId" params={{ actId }} className="line-clamp-2 text-lg font-medium leading-snug text-foreground underline-offset-4 hover:underline">
+          {citation ?? t`Actul ${actId}`}
+        </Link>
+        <div className="mt-3 space-y-3">
+          {provisions.map((group) => (
+            <LegislationSearchProvision key={group.key} actId={actId} group={group} />
+          ))}
+        </div>
+      </div>
+    </li>
+  )
+}
+
 /**
  * The act a citation names, as the answer: its name and status, one sentence, its facts, the way in. With no search
  * hit behind it (the status gate hid the act) it is the resolver's name and status alone.
  */
-function LeadAct({ lead, hit }: { readonly lead: LegalResolveHit; readonly hit: LegalSearchActHit | null }) {
+function LeadAct({ lead, hit, provisions }: { readonly lead: LegalResolveHit; readonly hit: LegalSearchActHit | null; readonly provisions: readonly ProvisionGroup[] }) {
   const { i18n } = useLingui()
   const hinted = legalActStatusSchema.safeParse(lead.hint)
   const status: LegalActStatus | null = hit !== null ? hit.act.status : hinted.success ? hinted.data : null
@@ -611,6 +692,13 @@ function LeadAct({ lead, hit }: { readonly lead: LegalResolveHit; readonly hit: 
       </div>
       {hit !== null && hit.description !== null ? <p className="mt-3 max-w-[70ch] text-base leading-relaxed text-muted-foreground">{hit.description}</p> : null}
       {hit !== null ? <ActFacts hit={hit} cited="never" /> : null}
+      {provisions.length > 0 ? (
+        <div className="mt-4 space-y-3">
+          {provisions.map((group) => (
+            <LegislationSearchProvision key={group.key} actId={lead.value} group={group} />
+          ))}
+        </div>
+      ) : null}
       <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
         <Button asChild>
           <Link to="/legislation/acts/$actId" params={{ actId: lead.value }}>

@@ -25,14 +25,12 @@ function highlighted(snippet: string) {
   })
 }
 
-/** A fragment without the provision's own label at its head: the label is the link above it. */
-const withoutLabel = (fragment: string, label: string | null) => (label !== null && fragment.startsWith(label) ? fragment.slice(label.length).trimStart() : fragment)
-
 /**
  * A provision that matched, under its act in the finder: its label, a link to that provision in the act's text
- * (`?doc=…&nod=…`) when the engine names its path, then the engine's fragments of it. On legal_v2 the hit was
- * verified against a served form; when that form is a consolidation, its label goes with the fragments
- * (LEG-X3AV): the words come from an unofficial, informative text, and the Portal's own note says which.
+ * (`?doc=…&nod=…`) when the engine names its path, then the engine's fragments of it, quoted as served: never cut
+ * by the label, whose words may open another provision („Articolul 1" before „Articolul 10…", review astra-client-11).
+ * On legal_v2 the hit was verified against a served form; when that form is a consolidation, its label goes with
+ * the fragments (LEG-X3AV): the words come from an unofficial, informative text, and the Portal's own note says which.
  */
 export function LegislationSearchProvision({ actId, group }: { readonly actId: string; readonly group: ProvisionGroup }) {
   const { i18n } = useLingui()
@@ -62,7 +60,7 @@ export function LegislationSearchProvision({ actId, group }: { readonly actId: s
       )}
       {group.fragments.map((fragment) => (
         <p key={fragment} className="mt-1 line-clamp-3 max-w-[75ch] text-sm leading-6 text-foreground/90">
-          „{highlighted(withoutLabel(fragment, group.label))}”
+          „{highlighted(fragment)}”
         </p>
       ))}
       {consolidation ? (

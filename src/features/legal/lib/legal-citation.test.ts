@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseLegalCitationShape } from './legal-citation'
+import { labelCarriesCitation, parseLegalCitationShape } from './legal-citation'
 
 /**
  * The shape decides which empty-state message the Caută tab shows, so both
@@ -41,5 +41,25 @@ describe('parseLegalCitationShape', () => {
   it('rejects out-of-range years like the server does', () => {
     expect(parseLegalCitationShape('legea 1/1700')).toBeNull()
     expect(parseLegalCitationShape('legea 1/2200')).toBeNull()
+  })
+})
+
+describe('labelCarriesCitation', () => {
+  const citation = (q: string) => {
+    const shape = parseLegalCitationShape(q)
+    if (shape === null) throw new Error(`not a citation: ${q}`)
+    return shape
+  }
+
+  it('matches the resolver’s label by number and year, whatever the type word', () => {
+    expect(labelCarriesCitation('Legea nr. 53/2003', citation('Legea 53/2003'))).toBe(true)
+    expect(labelCarriesCitation('OUG nr. 57/2019', citation('ordonanta 57/2019'))).toBe(true)
+    expect(labelCarriesCitation('Hotărârea nr. 1/2016', citation('hg 01/2016'))).toBe(true)
+  })
+
+  it('refuses another number, another year, or a label with no number', () => {
+    expect(labelCarriesCitation('Legea nr. 530/2003', citation('Legea 53/2003'))).toBe(false)
+    expect(labelCarriesCitation('Legea nr. 53/2004', citation('Legea 53/2003'))).toBe(false)
+    expect(labelCarriesCitation('Codul fiscal din 2003', citation('Legea 53/2003'))).toBe(false)
   })
 })

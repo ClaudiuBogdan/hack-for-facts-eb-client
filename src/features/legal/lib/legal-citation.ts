@@ -66,3 +66,13 @@ export function parseLegalCitationShape(
   if (actYear < 1850 || actYear > 2100) return null
   return { actType, actNumber: num, actYear }
 }
+
+/**
+ * Whether a resolver's act label („Legea nr. 53/2003", „OUG nr. 57/2019", „Hotărârea nr. 1/2016") carries the
+ * citation's number and year: the finder's „Actul cu acest număr" card is drawn only then. The type word is not
+ * compared: the resolver writes „OUG" or „Hotărârea" where the reader may have typed „ordonanța" or „HG".
+ */
+export function labelCarriesCitation(label: string, citation: LegalCitationShape): boolean {
+  const match = /(\d{1,5})\s*\/\s*(\d{4})\b/u.exec(label)
+  return match !== null && Number(match[1]) === Number(citation.actNumber) && Number(match[2]) === citation.actYear
+}
