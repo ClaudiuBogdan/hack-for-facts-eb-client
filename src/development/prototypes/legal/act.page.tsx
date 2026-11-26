@@ -81,6 +81,14 @@ export type ActPageModel = {
    * a book's margin.
    */
   readonly contentsFrame?: 'plain' | 'panel' | 'tinted' | 'column'
+  /**
+   * The head of the bordered box. The owner chose `docked` on 26 November 2026 ("work on the container design"), from a picture of the four: `ruled`,
+   * round 3's two ruled rows (title and switch, then the jump field); `row`, one row holding the title, a small
+   * „Art." field and the switch as an icon; `inset`, the title row with the field set inside the head under it;
+   * `docked`, the box hangs from the reading bar, which holds its title and switch, and its frame runs up through
+   * the bar.
+   */
+  readonly contentsHead?: 'ruled' | 'row' | 'inset' | 'docked'
   /** The act's warnings (the live page's component), placed by `apparatus`. */
   readonly warnings?: ReactNode
   /** What must be said about the text before it is read (the live page's own notices), between the form line and the text. */
@@ -293,23 +301,30 @@ type ContentsProps = {
 }
 
 /** The switch between the whole contents and the folded one, beside the title. */
-function ContentsToggle({ collapsed, onToggle, touch = false }: { readonly collapsed: boolean; readonly onToggle: () => void; readonly touch?: boolean }) {
+function ContentsToggle({ collapsed, onToggle, touch = false, iconOnly = false }: { readonly collapsed: boolean; readonly onToggle: () => void; readonly touch?: boolean; readonly iconOnly?: boolean }) {
   const Icon = collapsed ? ChevronsUpDown : ChevronsDownUp
+  const says = collapsed ? t`Arată tot` : t`Restrânge`
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={collapsed}
       aria-label={t`Cuprins restrâns`}
-      className={cn('inline-flex shrink-0 items-center gap-1 rounded-md px-2 text-xs font-normal text-muted-foreground hover:bg-muted hover:text-foreground', touch ? 'h-11' : 'h-8')}
+      title={iconOnly ? says : undefined}
+      className={cn('inline-flex shrink-0 items-center justify-center gap-1 rounded-md text-xs font-normal text-muted-foreground hover:bg-muted hover:text-foreground', iconOnly ? 'w-8' : 'px-2', touch ? 'h-11' : 'h-8')}
     >
-      <Icon className="size-3.5" aria-hidden="true" />
-      <span aria-hidden="true">{collapsed ? <Trans>Arată tot</Trans> : <Trans>Restrânge</Trans>}</span>
+      <Icon className={iconOnly ? 'size-4' : 'size-3.5'} aria-hidden="true" />
+      {iconOnly ? null : <span aria-hidden="true">{says}</span>}
     </button>
   )
 }
 
-function GoToArticle({ outline, onGo, touch, flush }: Pick<ContentsProps, 'outline' | 'onGo' | 'touch'> & { readonly flush?: 'ruled' | 'filled' }) {
+/**
+ * The jump to an article by its number. `flush` says how the container wears it: `ruled`, a row of the box closed by
+ * a rule; `filled`, a field on the grey box; `inset`, a field inside the box's head; `short`, a small „Art." field
+ * in the head's one row (the form lends its children to that row, so its message takes a row of its own under it).
+ */
+function GoToArticle({ outline, onGo, touch, flush }: Pick<ContentsProps, 'outline' | 'onGo' | 'touch'> & { readonly flush?: 'ruled' | 'filled' | 'inset' | 'short' }) {
   const [missing, setMissing] = useState<string | null>(null)
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -321,21 +336,42 @@ function GoToArticle({ outline, onGo, touch, flush }: Pick<ContentsProps, 'outli
     setMissing(found === undefined ? asked : null)
     if (found !== undefined) onGo(found.path)
   }
+  const short = flush === 'short'
+  const height = touch === true ? 'h-11' : short ? 'h-8' : flush === 'inset' ? 'h-9' : 'h-10'
   return (
-    <form onSubmit={submit} className={cn(flush === undefined && 'pb-3', flush === 'filled' && 'px-3 pb-1 pt-1.5')}>
-      <div className={cn('flex items-center', flush === 'ruled' ? 'border-b focus-within:bg-muted/50' : cn('rounded-md border focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-ring', flush === 'filled' && 'bg-background'))}>
+    <form onSubmit={submit} className={cn(flush === undefined && 'pb-3', flush === 'filled' && 'px-3 pb-1 pt-1.5', flush === 'inset' && 'px-3 pb-3', short && 'contents')}>
+      <div
+        className={cn(
+          'flex items-center',
+          flush === 'ruled' ? 'border-b focus-within:bg-muted/50' : 'rounded-md border focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-ring',
+          flush === 'filled' && 'bg-background',
+          short && 'ml-auto',
+        )}
+      >
+        {short ? (
+          <span aria-hidden="true" className="pl-2 text-xs font-normal text-muted-foreground">
+            <Trans>Art.</Trans>
+          </span>
+        ) : null}
         <input
           name="articol"
           autoComplete="off"
           aria-label={t`Mergi la articolul cu numărul`}
-          placeholder={t`Mergi la articolul…`}
-          className={cn('min-w-0 flex-1 bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground sm:text-sm', touch === true ? 'h-11' : 'h-10')}
+          placeholder={short ? t`nr.` : t`Mergi la articolul…`}
+          className={cn('min-w-0 bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground sm:text-sm', short ? 'w-12 px-1.5' : 'flex-1 px-3', height)}
         />
-        <button type="submit" aria-label={t`Mergi la articol`} className={cn('inline-flex shrink-0 items-center justify-center rounded-r-md text-muted-foreground hover:text-foreground', touch === true ? 'size-11' : 'size-10')}>
+        <button type="submit" aria-label={t`Mergi la articol`} className={cn('inline-flex shrink-0 items-center justify-center rounded-r-md text-muted-foreground hover:text-foreground', touch === true ? 'size-11' : short ? 'h-8 w-7' : flush === 'inset' ? 'size-9' : 'size-10')}>
           <ArrowRight className="size-4" aria-hidden="true" />
         </button>
       </div>
-      <p role="status" className={cn('text-xs leading-5 text-muted-foreground', missing !== null && (flush === 'ruled' ? 'border-b px-3 py-1.5' : 'mt-1.5'))}>
+      <p
+        role="status"
+        className={cn(
+          'text-xs font-normal leading-5 text-muted-foreground',
+          short && 'order-last w-full',
+          missing !== null && (flush === 'ruled' ? 'border-b px-3 py-1.5' : short ? 'pb-1 pt-1.5' : 'mt-1.5'),
+        )}
+      >
         {missing !== null ? <Trans>Forma afișată nu are un articol {missing}.</Trans> : null}
       </p>
     </form>
@@ -821,7 +857,7 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', contentsFrame = 'panel', textState, afterText, changedMark = 'none' } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', contentsFrame = 'panel', contentsHead = 'docked', textState, afterText, changedMark = 'none' } = model
   const grid = apparatus === 'rail' ? GRID_WIDE : GRID
   const { i18n } = useLingui()
   const [sheet, setSheet] = useState(false)
@@ -901,6 +937,9 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   const toggle = (touch: boolean) => (foldable ? <ContentsToggle collapsed={collapsed} onToggle={() => setFolded(!collapsed)} touch={touch} /> : null)
   const panel = (contentsFrame === 'panel' || contentsFrame === 'tinted') && outline.length > 0
   const tinted = contentsFrame === 'tinted'
+  const docked = panel && !tinted && contentsHead === 'docked'
+  const head = tinted ? 'ruled' : contentsHead
+  const jump = outline.filter(isArticle).length >= 8
 
   return (
     <div className="bg-background pb-24 text-foreground [font-family:var(--font-family)]">
@@ -909,11 +948,12 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
       {/* The reading bar: stays while the text scrolls. */}
       <div className="sticky top-0 z-20 border-y bg-background">
         <div className={cn(grid, 'items-center')}>
-          <div className={cn('hidden items-center justify-between text-sm font-medium', !panel && 'lg:flex')}>
+          {/* Docked: the box's frame runs up through the bar, which is its head. */}
+          <div className={cn('hidden items-center justify-between text-sm font-medium', (!panel || docked) && 'lg:flex', docked && 'self-stretch border-x pl-3 pr-1.5')}>
             <Trans>Cuprins</Trans>
             {toggle(false)}
           </div>
-          {panel ? <span className="hidden lg:block" aria-hidden="true" /> : null}
+          {panel && !docked ? <span className="hidden lg:block" aria-hidden="true" /> : null}
           <div className="flex min-h-12 min-w-0 items-center gap-3">
             {outline.length > 0 ? (
               <Sheet open={sheet} onOpenChange={setSheet}>
@@ -972,20 +1012,46 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
 
       {/* With the side column, from 88rem (1408 px): contents, text, and what is to know about the text, each in its own column. */}
       <div className={cn(grid, 'pt-6', apparatus === 'rail' && 'min-[88rem]:grid-cols-[16rem_minmax(0,42rem)_17rem]')}>
-        <aside className={cn('hidden lg:block', contentsFrame === 'column' && '-mr-6 border-r pr-6')}>
+        <aside className={cn('hidden lg:block', contentsFrame === 'column' && '-mr-6 border-r pr-6', docked && '-mt-6')}>
           <div
             data-act-contents={panel ? undefined : ''}
-            className={cn('sticky top-16', panel ? cn('flex max-h-[calc(100dvh-5.5rem)] flex-col overflow-hidden rounded-md', tinted ? 'bg-muted/60' : 'border') : 'max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2')}
+            className={cn(
+              'sticky',
+              docked ? 'top-[3.125rem]' : 'top-16',
+              panel
+                ? cn('flex flex-col overflow-hidden rounded-md', docked ? 'max-h-[calc(100dvh-4rem)] rounded-t-none border border-t-0' : 'max-h-[calc(100dvh-5.5rem)]', tinted ? 'bg-muted/60' : !docked && 'border')
+                : 'max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2',
+            )}
           >
             {panel ? (
               // A box of its own: the title and the jump field stay, the list scrolls under them.
               <>
-                <div className={cn('flex min-h-11 items-center justify-between py-1 pl-3 pr-1.5 text-sm font-medium', !tinted && 'border-b')}>
-                  <Trans>Cuprins</Trans>
-                  {toggle(false)}
-                </div>
-                {outline.filter(isArticle).length >= 8 ? <GoToArticle outline={outline} onGo={go} flush={tinted ? 'filled' : 'ruled'} /> : null}
-                <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3">
+                {head === 'row' ? (
+                  <div className="flex min-h-11 flex-wrap items-center gap-x-1 border-b py-1.5 pl-3 pr-1.5 text-sm font-medium">
+                    <Trans>Cuprins</Trans>
+                    {jump ? <GoToArticle outline={outline} onGo={go} flush="short" /> : <span className="ml-auto" />}
+                    {foldable ? <ContentsToggle collapsed={collapsed} onToggle={() => setFolded(!collapsed)} iconOnly /> : null}
+                  </div>
+                ) : head === 'inset' ? (
+                  <div className="border-b">
+                    <div className="flex min-h-11 items-center justify-between py-1 pl-3 pr-1.5 text-sm font-medium">
+                      <Trans>Cuprins</Trans>
+                      {toggle(false)}
+                    </div>
+                    {jump ? <GoToArticle outline={outline} onGo={go} flush="inset" /> : null}
+                  </div>
+                ) : (
+                  <>
+                    {docked ? null : (
+                      <div className={cn('flex min-h-11 items-center justify-between py-1 pl-3 pr-1.5 text-sm font-medium', !tinted && 'border-b')}>
+                        <Trans>Cuprins</Trans>
+                        {toggle(false)}
+                      </div>
+                    )}
+                    {jump ? <GoToArticle outline={outline} onGo={go} flush={tinted ? 'filled' : 'ruled'} /> : null}
+                  </>
+                )}
+                <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3 [scrollbar-width:thin]">
                   {contents(false, true)}
                 </div>
               </>

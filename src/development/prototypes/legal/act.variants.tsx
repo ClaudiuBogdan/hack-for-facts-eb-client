@@ -160,9 +160,14 @@ function useApparatus(): 'full' | 'compact' | 'rail' {
  * What holds the contents on a desktop. Owner, 26 November 2026: the bordered box. The three not chosen stay to be
  * seen: `?cadru=simplu` (nothing around the list), `?cadru=fond` (a grey box) and `?cadru=coloana` (a line at its right).
  */
-function useContentsOptions(): { readonly contentsFrame: 'plain' | 'panel' | 'tinted' | 'column' } {
-  const search: { readonly cadru?: unknown } = useSearch({ strict: false })
-  return { contentsFrame: search.cadru === 'simplu' ? 'plain' : search.cadru === 'fond' ? 'tinted' : search.cadru === 'coloana' ? 'column' : 'panel' }
+function useContentsOptions(): { readonly contentsFrame: 'plain' | 'panel' | 'tinted' | 'column'; readonly contentsHead: 'ruled' | 'row' | 'inset' | 'docked' } {
+  const search: { readonly cadru?: unknown; readonly cap?: unknown } = useSearch({ strict: false })
+  return {
+    // The box's head. Owner, 26 November 2026: hung from the reading bar. The three not chosen stay to be seen:
+    // `?cap=randuri` (two ruled rows), `?cap=rand` (one row), `?cap=interior` (the field inside the head).
+    contentsHead: search.cap === 'randuri' ? 'ruled' : search.cap === 'rand' ? 'row' : search.cap === 'interior' ? 'inset' : 'docked',
+    contentsFrame: search.cadru === 'simplu' ? 'plain' : search.cadru === 'fond' ? 'tinted' : search.cadru === 'coloana' ? 'column' : 'panel',
+  }
 }
 
 export function ActSpecimenPage() {

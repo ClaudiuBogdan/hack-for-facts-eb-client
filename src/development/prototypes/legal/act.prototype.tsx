@@ -25,6 +25,8 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * numbers sit in cells of one width so they line up within a level; a faint line per level says what holds what.
  * A switch beside the title folds the contents to its first level and keeps open the branch the reader is in (the
  * owner's idea); an outline of more than 40 entries starts folded.
+ * The box hangs from the reading bar, which holds its title and switch (owner, from a picture of four heads;
+ * `?cap=randuri`, `?cap=rand` and `?cap=interior` keep the others).
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',
