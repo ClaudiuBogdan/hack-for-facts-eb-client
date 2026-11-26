@@ -121,7 +121,9 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
              the mechanics, then the limits — so opening them top to bottom
              is still the progressive disclosure the page was designed
              around. */
-          <ActAccordion label={t`Detalii despre acest act`}>
+          // Keyed by the act: a row opened or a list shown whole on one act
+          // must not stay so on the next one reached by a link.
+          <ActAccordion key={data.actId} label={t`Detalii despre acest act`}>
             {data.summary ? <ActRelevanceBand summary={data.summary} /> : null}
             {data.summary ? (
               <ActKeyDates keyDates={data.summary.keyDates} />
@@ -134,7 +136,7 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
               complete={data.timelineComplete}
               available={bridgeCovers(data, 'timeline')}
             />
-            <ActVersionsBand act={data} />
+            <ActVersionsBand act={data} {...(docOverride !== undefined && { shownDocumentId: docOverride })} />
             <ActReferencesBand
               group={data.outLinks}
               direction="out"

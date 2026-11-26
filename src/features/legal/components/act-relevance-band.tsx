@@ -110,7 +110,7 @@ export function ActRelevanceBand({ summary }: Props) {
               onClick={() => setShowFiscal((open) => !open)}
               className={ACT_RECORD_MORE}
               aria-expanded={showFiscal}
-              aria-controls="act-fiscal-impact"
+              aria-controls={showFiscal ? 'act-fiscal-impact' : undefined}
             >
               {showFiscal ? t`Ascunde impactul fiscal` : t`Vezi impactul fiscal`}
             </button>

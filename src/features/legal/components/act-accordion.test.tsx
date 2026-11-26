@@ -44,7 +44,8 @@ describe('ActAccordionItem', () => {
     render(row())
     const head = screen.getByRole('button', { name: /Versiunile textului/ })
     expect(head).toHaveAttribute('aria-expanded', 'false')
-    expect(head).toHaveAttribute('aria-controls', 'row-heading-panel')
+    // closed, the row has no body: it names none
+    expect(head).not.toHaveAttribute('aria-controls')
     expect(screen.queryByText('Corpul rândului')).not.toBeInTheDocument()
     expect(screen.queryByText('O notă de subsol.')).not.toBeInTheDocument()
 

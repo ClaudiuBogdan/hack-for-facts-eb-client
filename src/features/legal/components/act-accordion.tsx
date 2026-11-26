@@ -77,7 +77,8 @@ export function ActAccordionItem({
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
-          aria-controls={panelId}
+          // The body exists only while the row is open: a closed row points at nothing.
+          aria-controls={open ? panelId : undefined}
           className="flex min-h-12 w-full items-center gap-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted/50"
         >
           <span className="min-w-0 flex-1">

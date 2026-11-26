@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
 import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
@@ -19,13 +20,18 @@ import { ACT_LINK, ACT_RECORD_LINE, ACT_RECORD_MORE } from './reader/act-page-gr
 
 type Props = {
   readonly act: LegalActDetail
+  /** The version the address asks for (`?doc=`), when it is one of the act's: its line is never behind the cut. */
+  readonly shownDocumentId?: string
 }
 
 /**
  * The row opens on its newest versions; the rest come on demand (owner,
  * 26 November 2026: an act with 21 versions made the open row some 3,000 px
  * tall). A list only a line or two longer is shown whole: a control that
- * hides two lines saves nothing.
+ * hides two lines saves nothing. The version shown by default and the one the
+ * address asks for keep their lines whatever their age: the cut must never
+ * leave the row without the text a reader can open, or without the one they
+ * are reading.
  */
 const FIRST_VERSIONS = 5
 const WHOLE_UP_TO = FIRST_VERSIONS + 2
@@ -44,7 +50,7 @@ const WHOLE_UP_TO = FIRST_VERSIONS + 2
  * without a text we can show are dated on or after the latest readable one
  * (a same-day version counts).
  */
-export function ActVersionsBand({ act }: Props) {
+export function ActVersionsBand({ act, shownDocumentId }: Props) {
   const { i18n } = useLingui()
   const documents = act.documents
   if (documents.length === 0) return null
@@ -88,7 +94,7 @@ export function ActVersionsBand({ act }: Props) {
         </p>
       )}
       <VersionLines
-        count={ordered.length}
+        kept={ordered.map((doc) => doc.documentId === defaultReading.documentId || doc.documentId === shownDocumentId)}
         lines={ordered.map((doc) => (
           <VersionRow
             key={doc.documentId}
@@ -110,19 +116,41 @@ export function ActVersionsBand({ act }: Props) {
   )
 }
 
-/** The versions' lines: the newest ones, and one control for the rest. */
-function VersionLines({ count, lines }: { readonly count: number; readonly lines: readonly ReactNode[] }) {
+/** The versions' lines: the newest ones and the kept ones, and one control for the rest. */
+function VersionLines({ lines, kept }: { readonly lines: readonly ReactNode[]; readonly kept: readonly boolean[] }) {
   const [all, setAll] = useState(false)
+  const list = useRef<HTMLUListElement>(null)
+  const count = lines.length
   const cut = count > WHOLE_UP_TO
+  const inPreview = (index: number) => index < FIRST_VERSIONS || kept[index] === true
   return (
     <>
-      <ul id="act-versions-lines" className="divide-y">
-        {cut && !all ? lines.slice(0, FIRST_VERSIONS) : lines}
+      <ul ref={list} id="act-versions-lines" className="divide-y">
+        {cut && !all ? lines.filter((_, index) => inPreview(index)) : lines}
       </ul>
       {cut ? (
         <button
           type="button"
-          onClick={() => setAll((value) => !value)}
+          onClick={(event) => {
+            if (all) {
+              setAll(false)
+              return
+            }
+            // Opened from the keyboard, the new lines land above the control
+            // and the next Tab would leave the row past them: the focus goes
+            // to the first line that was hidden.
+            const fromKeyboard = event.detail === 0
+            flushSync(() => setAll(true))
+            if (!fromKeyboard) return
+            const first = list.current?.children[lines.findIndex((_, index) => !inPreview(index))]
+            if (!(first instanceof HTMLElement)) return
+            const link = first.querySelector<HTMLElement>('a[href]')
+            if (link !== null) link.focus()
+            else {
+              first.tabIndex = -1
+              first.focus()
+            }
+          }}
           aria-expanded={all}
           aria-controls="act-versions-lines"
           className={ACT_RECORD_MORE}

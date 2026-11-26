@@ -310,6 +310,30 @@ describe('LegalActPage', () => {
     expect(record.innerHTML).not.toMatch(/pnrr/)
   })
 
+  it('starts the record afresh on another act: a row opened on one is not open on the next', () => {
+    mockAct(legalActDetailRichFixture)
+    const { rerender } = render(<LegalActPage actId="66150" />)
+    const timeline = () => screen.getByRole('button', { name: /Ce s-a întâmplat cu acest act/ })
+    fireEvent.click(timeline())
+    expect(timeline()).toHaveAttribute('aria-expanded', 'true')
+    // the same act read again (a refetch) keeps what the reader opened
+    mockAct({ ...legalActDetailRichFixture })
+    rerender(<LegalActPage actId="66150" />)
+    expect(timeline()).toHaveAttribute('aria-expanded', 'true')
+    // another act, reached by a link on the same route
+    mockAct({ ...legalActDetailRichFixture, actId: '900001' })
+    rerender(<LegalActPage actId="900001" />)
+    expect(timeline()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('lets a line of the record break anywhere: an identifier with no space cannot run past a phone', () => {
+    mockAct(legalActDetailRichFixture)
+    render(<LegalActPage actId="66150" />)
+    const lines = screen.getByRole('region', { name: /Versiunile textului/ }).querySelectorAll('li')
+    expect(lines.length).toBeGreaterThan(0)
+    for (const line of lines) expect(line).toHaveClass('[overflow-wrap:anywhere]')
+  })
+
   it('renders a not-found page for an unknown act', () => {
     mockAct(null)
     render(<LegalActPage actId="999999999" />)
