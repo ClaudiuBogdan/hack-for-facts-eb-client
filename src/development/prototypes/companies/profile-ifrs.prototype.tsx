@@ -90,7 +90,7 @@ function ProtoIfrsBand({ model, placement }: { readonly model: CompanyProfileMod
  * its Ministry IFRS figures as the view returns them (`?caz=petrom`, the default), or on a fictitious company marked
  * as mock: one that switches form (`?caz=comutator`), one the Ministry filed as IFRS for 2014 alone (`?caz=un-an`).
  */
-function SeriesBand({ marking, sources }: { readonly marking: Marking; readonly sources: SourcePlace }) {
+function SeriesBand({ marking, sources, notes = 'sub' }: { readonly marking: Marking; readonly sources: SourcePlace; readonly notes?: 'sub' | 'info' }) {
   const search = useSearch({ strict: false }) as { readonly caz?: unknown }
   const mock = search.caz === 'comutator' ? MOCK_SWITCHER : search.caz === 'un-an' ? MOCK_ONE_YEAR : null
   const { model, state } = useProtoModel()
@@ -105,7 +105,7 @@ function SeriesBand({ marking, sources }: { readonly marking: Marking; readonly 
           </p>
         ) : null}
         <HubSectionHead titleId={TITLE_ID} title={<Trans>Cum merge afacerea</Trans>} lede={mock ? null : financialLede(model!)} />
-        <IfrsYearsChart rows={rows} marking={marking} sources={sources} className="mt-8" />
+        <IfrsYearsChart rows={rows} marking={marking} sources={sources} notes={notes} className="mt-8" />
       </ProfileBand>
     </div>
   )
@@ -141,6 +141,11 @@ export const prototype = {
       component: () => <Frame>{(model) => <ProtoIfrsBand model={model} placement="scurt" />}</Frame>,
       note: 'The shortest form under the chart: the years, IFRS, outside this chart.',
     },
+    curat: {
+      title: 'Seria IFRS · Curat',
+      component: () => <SeriesBand marking="banda" sources="citire" notes="info" />,
+      note: 'The clean option (owner, 26 November 2026: „just a short mention"): the thin rule named „IFRS" over each run; the legend’s „Raportat pe formularul IFRS" is the only mention, its ⓘ holding the turnover note and the Ministry-to-ANAF seam. No text under the chart but the real gaps; each year’s reading keeps its form, figures and source link.',
+    },
     banda: {
       title: 'Seria IFRS · A · Bandă deasupra',
       component: () => <SeriesBand marking="banda" sources="citire" />,
@@ -162,5 +167,5 @@ export const prototype = {
       note: 'As A, the Ministry’s IFRS files listed under the chart, one link a year, instead of a link in the reading (the ANAF years keep theirs in „Bilanțurile, an cu an").',
     },
   },
-  compare: ['azi', 'banda', 'fundal', 'ambele'],
+  compare: ['azi', 'curat', 'banda', 'ambele'],
 } satisfies PrototypeDefinition

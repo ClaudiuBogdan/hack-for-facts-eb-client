@@ -2,6 +2,7 @@ import { useId, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { niceScale } from '@/features/statistics/lib/period-chart'
 import { count, moneyText, moneyTick, yearRanges } from '@/features/private-companies/lib/company-profile-format'
+import { HubInfoNote } from '@/features/private-companies/components/hub/hub-info-note'
 import { cn } from '@/lib/utils'
 import type { FormRow } from './profile-ifrs.data'
 
@@ -80,11 +81,14 @@ export function IfrsYearsChart({
   rows,
   marking,
   sources,
+  notes = 'sub',
   className,
 }: {
   readonly rows: readonly FormRow[]
   readonly marking: Marking
   readonly sources: SourcePlace
+  /** The IFRS notes under the chart, or behind an ⓘ on the legend's IFRS entry (owner: „just a short mention"). */
+  readonly notes?: 'sub' | 'info'
   readonly className?: string
 }) {
   const id = useId()
@@ -254,6 +258,23 @@ export function IfrsYearsChart({
   })()
   const gaps = slots.filter((slot): slot is { kind: 'gap'; from: number; to: number } => slot.kind === 'gap')
 
+  // What the IFRS label means: the turnover note and the publishers' seam — under the chart, or behind the legend's ⓘ.
+  const ifrsNotes =
+    runs.length > 0 ? (
+      <>
+        <p>{TURNOVER_NOTE}</p>
+        {seam ? (
+          // The company's own Ministry years, inclusive („până în 2018" could read as ending before it); the blank-to-zero
+          // difference as measured, on 2019, the year both publishers cover.
+          <p>
+            Pentru {yearsSaid(rows.filter((row) => row.form === 'ifrs' && row.publisher === 'mfp').map((row) => row.year))}, cifrele formularului IFRS vin din fișierul
+            Ministerului Finanțelor; din 2019, de la ANAF.
+            {blankThenZero ? ' În 2019, unde fișierul Ministerului avea celula goală, ANAF a publicat 0: trecerea de la gol la 0 nu e o scădere.' : null}
+          </p>
+        ) : null}
+      </>
+    ) : null
+
   return (
     <figure className={cn('w-full', className)} aria-labelledby={`${id}-title`}>
       <figcaption id={`${id}-title`} className="sr-only">
@@ -294,6 +315,7 @@ export function IfrsYearsChart({
               swatch('bg-primary/[0.12]')
             )}
             {IFRS_LABEL}
+            {notes === 'info' ? <HubInfoNote label="Despre anii pe formularul IFRS">{ifrsNotes}</HubInfoNote> : null}
           </li>
         ) : null}
       </ul>
@@ -388,7 +410,7 @@ export function IfrsYearsChart({
               <dl className="mt-1.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1">
                 <dt className="inline-flex items-center gap-1.5">
                   {swatch('bg-primary/20')}
-                  {reading.slot.row.form === 'ifrs' ? 'Cifra de afaceri netă*' : 'Cifra de afaceri'}
+                  {reading.slot.row.form === 'ifrs' ? (notes === 'info' ? 'Cifra de afaceri netă' : 'Cifra de afaceri netă*') : 'Cifra de afaceri'}
                 </dt>
                 {figure(reading.slot.row.turnover === null ? null : moneyText(reading.slot.row.turnover), reading.slot.row.reasons.turnover)}
                 <dt className="inline-flex items-center gap-1.5">
@@ -402,7 +424,9 @@ export function IfrsYearsChart({
                 </dt>
                 {figure(reading.slot.row.employees === null ? null : count(reading.slot.row.employees), reading.slot.row.reasons.employees)}
               </dl>
-              {reading.slot.row.form === 'ifrs' ? <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">* cifra netă din formular, nu linia de vânzări a situației IFRS</p> : null}
+              {reading.slot.row.form === 'ifrs' && notes === 'sub' ? (
+                <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">* cifra netă din formular, nu linia de vânzări a situației IFRS</p>
+              ) : null}
               {sources === 'citire' ? (
                 reading.slot.row.source ? (
                   <a
@@ -425,16 +449,7 @@ export function IfrsYearsChart({
 
       {/* Under the chart: what the IFRS label means, the publishers' seam, the files, the real gaps. */}
       <div className="mt-3 max-w-[72ch] space-y-1.5 text-xs leading-relaxed text-muted-foreground">
-        {runs.length > 0 ? <p>{TURNOVER_NOTE}</p> : null}
-        {seam ? (
-          // The company's own Ministry years, inclusive („până în 2018" could read as ending before it); the blank-to-zero
-          // difference as measured, on 2019, the year both publishers cover.
-          <p>
-            Pentru {yearsSaid(rows.filter((row) => row.form === 'ifrs' && row.publisher === 'mfp').map((row) => row.year))}, cifrele formularului IFRS vin din fișierul
-            Ministerului Finanțelor; din 2019, de la ANAF.
-            {blankThenZero ? ' În 2019, unde fișierul Ministerului avea celula goală, ANAF a publicat 0: trecerea de la gol la 0 nu e o scădere.' : null}
-          </p>
-        ) : null}
+        {notes === 'sub' ? ifrsNotes : null}
         {sources === 'rand' && ifrsSources.length > 0 ? (
           <p>
             Fișierele Ministerului Finanțelor pentru anii pe formularul IFRS:{' '}
