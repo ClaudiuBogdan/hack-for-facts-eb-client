@@ -39,6 +39,14 @@ describe('LegislationFilterPanel', () => {
     expect(document.activeElement).toBe(first(dialog, 'Decret'))
   })
 
+  it('leaves the focus where a mouse click put it: only the keyboard is taken to the revealed options (astra-client-12)', () => {
+    const { dialog } = panel()
+    // a pointer click carries its click count; Enter or Space on the link carries none
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Încă 12 tipuri' }), { detail: 1 })
+    expect(within(dialog).getAllByRole('button', { name: 'Decret' })).toHaveLength(2)
+    expect(document.activeElement).not.toBe(first(dialog, 'Decret'))
+  })
+
   it('counts only the options the link hides (astra-client-11)', () => {
     // „Decret" is chosen, so it is shown with the list closed: eleven types are left behind the link
     const { dialog } = panel({ ...NO_SEARCH_FILTERS, tip: ['decret'] })

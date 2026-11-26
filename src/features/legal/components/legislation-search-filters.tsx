@@ -192,8 +192,8 @@ const FIRST = 6
 /**
  * A list where several options can be chosen, in two columns. A long list shows its first six and the rest behind
  * one link; an option that is chosen is always shown, and a list with a chosen option among the rest opens whole.
- * The link counts only the options it hides, and opening it takes the focus to the first option it revealed, which
- * is drawn before the link (review astra-client-11: Tab from the link went past them).
+ * The link counts only the options it hides, and opening it from the keyboard takes the focus to the first option
+ * it revealed, which is drawn before the link (review astra-client-11: Tab from the link went past them).
  * The first six are the lists' own order: the types by the act's rank (laws and ordinances, then the Government's
  * and the ministers' acts), the domains by how many acts carry them (the dev API's counts, 26 November 2026), the
  * categories as the summaries list them.
@@ -231,9 +231,16 @@ function Choices({
         <button
           type="button"
           aria-expanded={open}
-          onClick={() => {
+          onClick={(event) => {
             if (open) {
               setOpen(false)
+              return
+            }
+            // A pointer click (its count, `detail`, is 1 or more) leaves the focus where it is; Enter, Space or an
+            // assistive technology's activation (`detail` 0) is taken to the first option revealed (review
+            // astra-client-12).
+            if (event.detail !== 0) {
+              setOpen(true)
               return
             }
             flushSync(() => setOpen(true))
