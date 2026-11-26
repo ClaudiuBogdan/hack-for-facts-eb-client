@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
@@ -217,6 +217,12 @@ function useActiveSection(ids: readonly string[]): string | null {
 export function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
   const sections = pageSections()
   const active = useActiveSection(sections.map((section) => section.id))
+  const list = useRef<HTMLOListElement>(null)
+  // On a phone the list scrolls sideways: bring the section being read to its middle, the list alone (never the page, never focus).
+  useEffect(() => {
+    const link = active ? list.current?.querySelector<HTMLElement>(`a[href="#${active}"]`) : null
+    if (link && list.current) list.current.scrollTo({ left: link.offsetLeft - (list.current.clientWidth - link.offsetWidth) / 2 })
+  }, [active])
   return (
     <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-6 py-0">
@@ -226,7 +232,7 @@ export function SectionBar({ heroVisible }: { readonly heroVisible: boolean }) {
             <YearPicker label={false} className={cn('shrink-0', heroVisible && 'hidden')} />
           </YearScope>
         </div>
-        <ol className="-mx-2.5 flex min-w-0 overflow-x-auto md:ml-auto md:mr-0">
+        <ol ref={list} className="relative -mx-2.5 flex min-w-0 scroll-smooth overflow-x-auto motion-reduce:scroll-auto md:ml-auto md:mr-0">
           {sections.map((section) => {
             const current = active === section.id
             return (
