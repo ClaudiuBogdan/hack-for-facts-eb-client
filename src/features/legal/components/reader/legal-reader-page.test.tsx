@@ -168,7 +168,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       // Settled: the outline answered and the text is on screen; nothing was scrolled to or marked as the match.
       await new Promise((resolve) => setTimeout(resolve, 50))
       expect(scrollIntoView).not.toHaveBeenCalled()
-      expect(container.querySelector('.bg-accent\\/60')).toBeNull()
+      expect(container.querySelector('.bg-accent\\/60\\!')).toBeNull()
       // nor is the provision said to be missing from a text it was never meant for
       expect(screen.queryByText(/Nu am găsit fragmentul cerut/)).toBeNull()
     } finally {
@@ -198,6 +198,16 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     expect(next.nod).not.toBe('r10')
     // and the address written is one the reader accepts on the next render: the act's own text, not refused again
     expect(resolveDocOverride(act, String(next.doc)).kind).toBe('own')
+  })
+
+  it('marks a deep-linked block for a moment, over any note style', async () => {
+    const nod = envelope.blocks[3]?.id ?? ''
+    const { container } = render(
+      <ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />,
+    )
+    await waitFor(() => {
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).toHaveClass('bg-accent/60!')
+    })
   })
 
   it('honours an override that is one of the act\'s own expressions', async () => {

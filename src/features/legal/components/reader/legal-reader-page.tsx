@@ -76,6 +76,7 @@ import { ActVersionSelector } from '../act-version-selector'
 import { legalIssuerLabel } from '../../lib/legal-vocabulary'
 import { splitMasthead } from '../../lib/tldf/masthead'
 import type { MastheadFactsInHeader, MastheadSplit } from '../../lib/tldf/masthead'
+import { FOLDED_NOTE_ATTR, revealFoldedNote } from '../../lib/tldf/folded-note'
 import { domAnchorForPath, resolveNod } from '../../lib/tldf/nod-resolve'
 import type { TldfChunkPayload, TldfManifestPayload } from '../../lib/tldf/types'
 import { LegalReaderToc } from './legal-reader-toc'
@@ -108,15 +109,32 @@ type Props = {
   ) => void
 }
 
+/**
+ * The deep link's passing highlight, important: a note nested in a note would
+ * otherwise lose it to the parent note's `[&_[data-kind=nota]]:bg-transparent`.
+ * One class, added and removed whole.
+ */
+const NOD_HIGHLIGHT = 'bg-accent/60!'
+
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
 function scrollToNodTarget(nod: string, anchorPath: string): boolean {
   const target =
     document.getElementById(domAnchorForPath(nod)) ??
     document.getElementById(domAnchorForPath(anchorPath))
   if (target === null) return false
-  target.scrollIntoView({ block: 'start' })
-  target.classList.add('bg-accent/60')
-  window.setTimeout(() => target.classList.remove('bg-accent/60'), 1600)
+  // A folded note of the Portal that holds the target opens first: a target
+  // near its start would be reached without the clipped box scrolling at all.
+  // Its control commits the opening at once (`flushSync`), which React refuses
+  // inside an effect — where a deep link lands — so the opening and the
+  // scroll then wait for the effect to end.
+  const reveal = () => {
+    revealFoldedNote(target)
+    target.scrollIntoView({ block: 'start' })
+  }
+  if (target.closest(`[${FOLDED_NOTE_ATTR}="closed"]`) !== null) queueMicrotask(reveal)
+  else reveal()
+  target.classList.add(NOD_HIGHLIGHT)
+  window.setTimeout(() => target.classList.remove(NOD_HIGHLIGHT), 1600)
   return true
 }
 
@@ -477,7 +495,12 @@ export function ActReadingLayout({
               {render.data !== undefined &&
                 render.data.kind === 'envelope' &&
                 envelopeSplit !== null && (
+                  // Keyed by document AND generation, as the chunked reader
+                  // is: what a reader opened in one version's text (a folded
+                  // note) must not stay open in another cached version whose
+                  // block has the same path.
                   <EnvelopeReader
+                    key={`${documentId ?? ''}:${render.data.tldf.generation.run_id}`}
                     blocks={envelopeSplit.blocks}
                     marks={render.data.tldf.marks}
                     containsNonBmp={render.data.tldf.contains_non_bmp}

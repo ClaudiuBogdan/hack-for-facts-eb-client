@@ -257,6 +257,45 @@ describe('ActReadingLayout on legal_v2', () => {
     )
   })
 
+  it('marks a deep-linked note nested in a note, over the parent note\'s own ground', async () => {
+    const nod = '0.1.1.12.3.1.2.1'
+    const { container } = render(
+      <ActReadingLayout act={legalActDetailV2Fixture} nod={nod} lead={null} fisa={null} />,
+    )
+    await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull())
+    const target = container.querySelector(`[id="tldf-${nod}"]`) as HTMLElement
+    expect(target.parentElement?.closest('[data-kind="nota"]')).not.toBeNull()
+    await waitFor(() => expect(target).toHaveClass('bg-accent/60!'))
+  })
+
+  it('opens a folded note of the Portal that holds a deep-linked block', async () => {
+    // The fixture's notes are short; the outer one is made long enough to fold (its span alone decides it).
+    type Block = { id: string; span: [number, number]; children?: Block[] }
+    const tldf = structuredClone(rows[0]?.tldf) as { blocks: Block[] }
+    const lengthen = (blocks: Block[]) => {
+      for (const block of blocks) {
+        if (block.id === '0.1.1.12.3.1') block.span = [block.span[0], block.span[0] + 1200]
+        lengthen(block.children ?? [])
+      }
+    }
+    lengthen(tldf.blocks)
+    vi.mocked(fetchLegalRender).mockImplementationOnce(async (documentId: string) => ({
+      ...envelopeFor(documentId),
+      tldf: { ...tldf, document_id: documentId },
+    }) as unknown as LegalRenderData)
+    const nod = '0.1.1.12.3.1.2.1'
+    const { container } = render(
+      <ActReadingLayout act={legalActDetailV2Fixture} nod={nod} lead={null} fisa={null} />,
+    )
+    await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull())
+    const target = container.querySelector(`[id="tldf-${nod}"]`) as HTMLElement
+    const holder = target.closest('[data-note-fold]')
+    expect(holder).not.toBeNull()
+    // folded until the jump, open once the deep link has landed
+    await waitFor(() => expect(holder).toHaveAttribute('data-note-fold', 'open'))
+    expect(target).toHaveClass('bg-accent/60!')
+  })
+
   it('shows a static label, not a dropdown, when one version is readable', async () => {
     render(<ActReadingLayout act={legalActDetailV2UnbridgedFixture} lead={null} fisa={null} />)
     expect(await screen.findByText(/Versiunea afișată: forma publicată/)).toBeInTheDocument()
