@@ -627,6 +627,11 @@ msgstr "{0, plural, one {The statement for {years} is recorded under this CUI in
 msgid "{0, plural, one {Cel puțin # dosar} few {Cel puțin # dosare} other {Cel puțin # de dosare}}"
 msgstr "{0, plural, one {At least # case} other {At least # cases}}"
 
+#. placeholder {0}: result.actsTotal
+#: src/features/legal/components/legislation-act-finder.tsx:287
+msgid "{0, plural, one {Cel puțin o potrivire} few {Cel puțin # potriviri} other {Cel puțin # de potriviri}}"
+msgstr "{0, plural, one {At least one match} other {At least # matches}}"
+
 #. placeholder {0}: b.total
 #. placeholder {0}: s.total
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:203
@@ -806,6 +811,16 @@ msgstr "{0, plural, one {one option} other {# options}}"
 #: src/features/statistics/pages/statistics-hub-page.tsx:373
 #~ msgid "{0, plural, one {o persoană} few {# persoane} other {# de persoane}}"
 #~ msgstr "{0, plural, one {one person} other {# people}}"
+
+#. placeholder {0}: acts.length
+#: src/features/legal/components/legislation-act-finder.tsx:284
+msgid "{0, plural, one {O potrivire afișată} few {# potriviri afișate} other {# de potriviri afișate}}"
+msgstr "{0, plural, one {One match shown} other {# matches shown}}"
+
+#. placeholder {0}: result.actsTotal
+#: src/features/legal/components/legislation-act-finder.tsx:286
+msgid "{0, plural, one {O potrivire} few {# potriviri} other {# de potriviri}}"
+msgstr "{0, plural, one {One match} other {# matches}}"
 
 #. placeholder {0}: act.amendedAfterPublication
 #: src/features/legal/components/act-warnings.tsx:116
@@ -1001,9 +1016,14 @@ msgstr "{0} — text indisponibil"
 
 #. placeholder {0}: moneyText(row.spending)
 #. placeholder {1}: leiText(perResident(row.spending, view.year))
-#: src/features/national-budget/home/components/person-budgets.tsx:187
+#: src/features/national-budget/home/components/person-budgets.tsx:193
 msgid "{0} · {1} pe locuitor"
 msgstr "{0} · {1} per resident"
+
+#. placeholder {0}: view.text
+#: src/features/national-budget/home/components/person-receipt.tsx:58
+msgid "{0} · lei pe locuitor"
+msgstr "{0} · lei per resident"
 
 #. placeholder {0}: county.name
 #. placeholder {0}: countyName(county.code)
@@ -1199,18 +1219,18 @@ msgstr "{0} bins"
 #~ msgstr "{0} publishable cases as {1}."
 
 #. placeholder {0}: moneyText(spending.whole)
-#: src/features/national-budget/home/components/person-flow.tsx:108
+#: src/features/national-budget/home/components/person-flow.tsx:111
 msgid "{0} cheltuiți"
 msgstr "{0} spent"
 
 #. placeholder {0}: moneyText(tipRow.spending)
 #. placeholder {1}: leiText(perResident(tipRow.spending, view.year))
-#: src/features/national-budget/home/components/person-budgets.tsx:170
+#: src/features/national-budget/home/components/person-budgets.tsx:176
 msgid "{0} cheltuiți, {1} pe locuitor"
 msgstr "{0} spent, {1} per resident"
 
 #. placeholder {0}: moneyText(row.spending)
-#: src/features/national-budget/home/components/person-budgets.tsx:309
+#: src/features/national-budget/home/components/person-budgets.tsx:315
 msgid "{0} cheltuiți. Banii lui:"
 msgstr "{0} spent. Its money:"
 
@@ -1345,7 +1365,7 @@ msgstr "{0} of the money, to firms in {1}"
 #~ msgstr "{0} of the direct-purchase money went to firms in Bucharest, where the institution is too."
 
 #. placeholder {0}: share(value, row.spending)
-#: src/features/national-budget/home/components/person-budgets.tsx:289
+#: src/features/national-budget/home/components/person-budgets.tsx:295
 msgid "{0} din banii bugetului"
 msgstr "{0} of the budget's money"
 
@@ -1480,8 +1500,10 @@ msgstr "{0} without data: {1}"
 msgid "{0} față de {1}"
 msgstr "{0} vs {1}"
 
+#. placeholder {0}: line.change
 #. placeholder {0}: part.change
-#: src/features/national-budget/home/components/person-rows.tsx:63
+#: src/features/national-budget/home/components/person-receipt.tsx:109
+#: src/features/national-budget/home/components/person-rows.tsx:65
 msgid "{0} față de {previous}"
 msgstr "{0} vs {previous}"
 
@@ -1557,7 +1579,7 @@ msgstr "{0} in the captured data, {1} with a numbered document. What was decided
 
 #. placeholder {0}: moneyText(value)
 #. placeholder {1}: share(value, bridge.before)
-#: src/features/national-budget/home/components/person-budgets.tsx:299
+#: src/features/national-budget/home/components/person-budgets.tsx:305
 msgid "{0} în toate bugetele, {1}"
 msgstr "{0} across all budgets, {1}"
 
@@ -1588,7 +1610,7 @@ msgstr "{0} uncertain placement · {1} unplaced · of {2}"
 #. placeholder {0}: moneyText(revenue.whole)
 #. placeholder {1}: moneyText(spending.whole)
 #. placeholder {2}: inPeriod(view.text)
-#: src/features/national-budget/home/components/person-flow.tsx:66
+#: src/features/national-budget/home/components/person-flow.tsx:67
 msgid "{0} încasați și {1} cheltuiți {2}. Buletinul acestui an nu are împărțirea lor pe rânduri."
 msgstr "{0} collected and {1} spent {2}. This year's bulletin has no breakdown of them by line."
 
@@ -1677,7 +1699,7 @@ msgstr "{0} mn lei"
 
 #. placeholder {0}: format(value / 1e9, 1)
 #. placeholder {0}: formatHubNumber(value, { digits: 1 })
-#: src/features/national-budget/home/components/person-year.tsx:32
+#: src/features/national-budget/home/components/person-year.tsx:33
 #: src/features/public-enterprises/lib/hub-format.ts:31
 msgid "{0} mld. lei"
 msgstr "{0} bn lei"
@@ -1757,9 +1779,14 @@ msgstr "{0} on {1}"
 #~ msgstr "{0} on Facebook"
 
 #. placeholder {0}: leiText(perResident(value, view.year))
-#: src/features/national-budget/home/components/person-budgets.tsx:290
+#: src/features/national-budget/home/components/person-budgets.tsx:296
 msgid "{0} pe locuitor"
 msgstr "{0} per resident"
+
+#. placeholder {0}: leiText(receipt.monthly)
+#: src/features/national-budget/home/components/person-receipt.tsx:95
+msgid "{0} pe lună"
+msgstr "{0} a month"
 
 #. placeholder {0}: hearingsCount(sheet.hearings.length)
 #. placeholder {1}: countText(decisions)
@@ -1784,13 +1811,13 @@ msgstr "{0} per resident"
 
 #. placeholder {0}: formatLegalNumber(result.actsTotal, i18n.locale)
 #: src/features/legal/components/legislation-act-finder.tsx:175
-msgid "{0} potriviri"
-msgstr "{0} matches"
+#~ msgid "{0} potriviri"
+#~ msgstr "{0} matches"
 
 #. placeholder {0}: formatLegalNumber(acts.length, i18n.locale)
 #: src/features/legal/components/legislation-act-finder.tsx:171
-msgid "{0} potriviri afișate — numărul total nu este cunoscut"
-msgstr "{0} matches shown — the total number is not known"
+#~ msgid "{0} potriviri afișate — numărul total nu este cunoscut"
+#~ msgstr "{0} matches shown — the total number is not known"
 
 #. placeholder {0}: formatLegalNumber(hits.length, i18n.locale)
 #: src/features/legal/components/legislation-acts-directory.tsx:183
@@ -2232,7 +2259,7 @@ msgstr "{0}; ÎCCJ: {1}"
 #. placeholder {1}: moneyText(row.before.exact)
 #. placeholder {1}: moneyText(value)
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:368
-#: src/features/national-budget/home/components/person-budgets.tsx:288
+#: src/features/national-budget/home/components/person-budgets.tsx:294
 #: src/features/private-companies/lib/company-analytics-view.ts:185
 #: src/features/statistics/components/detail/detail-scope-sentence.tsx:376
 msgid "{0}: {1}"
@@ -2262,7 +2289,7 @@ msgstr "{0}: {1} · reported by {2} of {3} with a statement"
 
 #. placeholder {0}: budgetName(row.key)
 #. placeholder {1}: lei[rank] ?? 0
-#: src/features/national-budget/home/components/person-budgets.tsx:150
+#: src/features/national-budget/home/components/person-budgets.tsx:156
 msgid "{0}: {1} lei din 100"
 msgstr "{0}: {1} lei out of 100"
 
@@ -3681,11 +3708,11 @@ msgstr "{range}: no value available here"
 msgid "{rank, selectordinal, one {al #-lea} other {al #-lea}}"
 msgstr "{rank, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}"
 
-#: src/features/national-budget/home/components/person-flow.tsx:104
+#: src/features/national-budget/home/components/person-flow.tsx:107
 msgid "{received} încasați"
 msgstr "{received} collected"
 
-#: src/features/national-budget/home/components/person-flow.tsx:104
+#: src/features/national-budget/home/components/person-flow.tsx:107
 msgid "{received} încasați, {deficit} deficit"
 msgstr "{received} collected, {deficit} deficit"
 
@@ -3738,7 +3765,7 @@ msgstr "{repeated} repeated rows removed"
 #~ msgid "{representativeCount} representatives · {euBranchCount} EU branches"
 #~ msgstr "{representativeCount} representatives · {euBranchCount} EU branches"
 
-#: src/features/national-budget/home/components/person-rows.tsx:63
+#: src/features/national-budget/home/components/person-rows.tsx:65
 msgid "{resident} pe locuitor"
 msgstr "{resident} per resident"
 
@@ -4378,8 +4405,8 @@ msgstr "%"
 #: src/features/national-budget/home/components/person-debt.tsx:28
 #: src/features/national-budget/home/components/person-debt.tsx:46
 #: src/features/national-budget/home/components/person-debt.tsx:201
-#: src/features/national-budget/home/components/person-year.tsx:70
-#: src/features/national-budget/home/components/person-year.tsx:176
+#: src/features/national-budget/home/components/person-year.tsx:78
+#: src/features/national-budget/home/components/person-year.tsx:185
 msgid "% din PIB"
 msgstr "% of GDP"
 
@@ -4803,7 +4830,7 @@ msgstr "A ceiling is the maximum a framework agreement commits, counted once per
 #~ msgid "A ceiling ranking sliced by buyer, supplier or territory can count the same framework's ceiling more than once and materially mislead the order, so only the overall total and the monthly series are served on the Overview. Switch the value logic back to awarded value to rank institutions and suppliers."
 #~ msgstr "A ceiling ranking sliced by buyer, supplier or territory can count the same framework's ceiling more than once and materially mislead the order, so only the overall total and the monthly series are served on the Overview. Switch the value logic back to awarded value to rank institutions and suppliers."
 
-#: src/features/national-budget/home/components/person-head.tsx:76
+#: src/features/national-budget/home/components/person-head.tsx:74
 msgid "A cheltuit"
 msgstr "Spent"
 
@@ -4845,7 +4872,7 @@ msgstr "It was negotiated without a public notice."
 msgid "A ieșit o ediție nouă"
 msgstr "A new edition is out"
 
-#: src/features/national-budget/home/components/person-head.tsx:60
+#: src/features/national-budget/home/components/person-head.tsx:58
 msgid "A încasat"
 msgstr "Collected"
 
@@ -5021,7 +5048,7 @@ msgstr "Abțineri"
 
 #: src/components/sidebar/nav-main.tsx:45
 #: src/features/legal/components/hub/legislation-hub.tsx:110
-#: src/features/national-budget/home/components/person-head.tsx:144
+#: src/features/national-budget/home/components/person-head.tsx:138
 #: src/features/public-institutions/components/public-institutions-head.tsx:175
 msgid "Acasă"
 msgstr "Home"
@@ -5080,8 +5107,8 @@ msgid "Această acțiune deschide un canal pentru a semnala date lipsă sau bloc
 msgstr "Această acțiune deschide un canal pentru a semnala date lipsă sau blocate către echipa de date."
 
 #: src/features/legal/components/legislation-act-finder.tsx:359
-msgid "Această căutare corespunde mai multor acte — alege actul:"
-msgstr "This search matches several acts — choose the act:"
+#~ msgid "Această căutare corespunde mai multor acte — alege actul:"
+#~ msgstr "This search matches several acts — choose the act:"
 
 #: src/features/private-companies/components/analytics/analytics-axis.tsx:62
 msgid "Această ediție a analizei nu are activitatea principală presupusă după ANAF. Alege altă grupare sau o ediție care o oferă."
@@ -5659,7 +5686,7 @@ msgstr "Acts by the act's year"
 msgid "Acte găsite"
 msgstr "Acts found"
 
-#: src/features/legal/components/legislation-act-finder.tsx:366
+#: src/features/legal/components/legislation-act-finder.tsx:451
 msgid "Acte identificate"
 msgstr "Identified acts"
 
@@ -5714,8 +5741,12 @@ msgid "Actele"
 msgstr "Acts"
 
 #: src/features/legal/components/legislation-act-finder.tsx:454
-msgid "Actele abrogate sau ieșite din vigoare nu sunt incluse implicit în căutare."
-msgstr "Repealed acts and acts no longer in force are not included in the search by default."
+#~ msgid "Actele abrogate sau ieșite din vigoare nu sunt incluse implicit în căutare."
+#~ msgstr "Repealed acts and acts no longer in force are not included in the search by default."
+
+#: src/features/legal/components/legislation-act-finder.tsx:371
+msgid "Actele abrogate sau ieșite din vigoare nu sunt incluse implicit. Verifică și numărul și anul actului, de exemplu „Legea 53/2003\"."
+msgstr "Repealed or expired acts are not included by default. Check the act's number and year too, for example “Legea 53/2003”."
 
 #: src/features/procurement/components/procurement-institution-page.tsx:392
 #~ msgid "Actele adiționale se raportează ca număr — sumele brute din sursă nu sunt suficient de fiabile pentru a fi însumate."
@@ -5872,7 +5903,7 @@ msgctxt "national budget classification"
 msgid "Active financiare"
 msgstr "Financial assets"
 
-#: src/features/national-budget/home/hooks/use-person-data.ts:66
+#: src/features/national-budget/home/hooks/use-person-data.ts:68
 msgid "active financiare, rambursări, alte cheltuieli"
 msgstr "financial assets, repayments, other spending"
 
@@ -7342,11 +7373,11 @@ msgctxt "CAEN Rev.3 division"
 msgid "Alte activităţi profesionale, stiinţifice şi tehnice"
 msgstr "Other professional, scientific and technical activities"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:40
+#: src/features/national-budget/home/components/person-budgets.tsx:39
 msgid "Alte bugete"
 msgstr "Other budgets"
 
-#: src/features/national-budget/home/hooks/use-person-data.ts:66
+#: src/features/national-budget/home/hooks/use-person-data.ts:68
 #: src/features/national-budget/home/lib/home-format.ts:60
 msgid "Alte cheltuieli"
 msgstr "Other spending"
@@ -7487,7 +7518,7 @@ msgctxt "national budget classification"
 msgid "Alte transferuri"
 msgstr "Other transfers"
 
-#: src/features/national-budget/home/hooks/use-person-data.ts:65
+#: src/features/national-budget/home/hooks/use-person-data.ts:67
 msgid "Alte venituri"
 msgstr "Other revenue"
 
@@ -7497,6 +7528,7 @@ msgid "altele"
 msgstr "other"
 
 #: src/features/legal/lib/legal-domains.ts:65
+#: src/features/legal/lib/search-filters.ts:155
 #: src/features/procurement/lib/home-categories.ts:52
 #: src/features/public-enterprises/lib/enterprise-text.ts:208
 msgid "Altele"
@@ -7520,8 +7552,12 @@ msgstr "Other"
 #~ msgstr "Always enabled"
 
 #: src/features/legal/components/legislation-act-finder.tsx:488
-msgid "Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens — o prevedere formulată cu alte cuvinte nu apare, așa că lipsa rezultatelor nu spune nimic despre existența ei."
-msgstr "Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens — o prevedere formulată cu alte cuvinte nu apare, așa că lipsa rezultatelor nu spune nimic despre existența ei."
+#~ msgid "Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens — o prevedere formulată cu alte cuvinte nu apare, așa că lipsa rezultatelor nu spune nimic despre existența ei."
+#~ msgstr "Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens — o prevedere formulată cu alte cuvinte nu apare, așa că lipsa rezultatelor nu spune nimic despre existența ei."
+
+#: src/features/legal/components/legislation-act-finder.tsx:382
+msgid "Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens: o prevedere formulată cu alte cuvinte nu apare."
+msgstr "We searched for the words in the acts' names, titles and text, but not by meaning: a provision worded differently does not appear."
 
 #: src/features/landing/lib/people.ts:89
 msgid "Am construit Transparenta.eu pentru că datele despre banii publici există, dar în zeci de portaluri care nu vorbesc între ele."
@@ -7535,6 +7571,10 @@ msgstr "Exported {rowCount} rows."
 #: src/features/legal/components/act-warnings.tsx:198
 msgid "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 msgstr "We found conflicting repeal signals: {0}. The status shown is our best reading, not a certainty."
+
+#: src/features/legal/components/legislation-act-finder.tsx:345
+msgid "Am găsit potriviri, dar nu le-am putut afișa"
+msgstr "We found matches but could not show them"
 
 #: src/components/data-trust/page-notice.tsx:62
 msgid "Am înțeles"
@@ -7991,7 +8031,7 @@ msgid "Analize ale dosarelor"
 msgstr "Court case analysis"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:369
-#: src/features/national-budget/home/components/person-head.tsx:169
+#: src/features/national-budget/home/components/person-head.tsx:161
 msgid "Analize avansate"
 msgstr "Advanced analysis"
 
@@ -8281,6 +8321,10 @@ msgstr "{0} is still in progress"
 msgid "anul {year} e în curs"
 msgstr "{year} is still in progress"
 
+#: src/features/legal/components/legislation-search-filters.tsx:185
+msgid "Anul actului. O perioadă lasă deoparte actele fără an."
+msgstr "The act's year. A period leaves out acts without a year."
+
 #: src/features/justice/components/analysis/analysis-years.tsx:149
 #: src/features/procurement/components/analytics/analytics-years.tsx:209
 msgid "Anul ales"
@@ -8347,7 +8391,7 @@ msgstr "Year of the judgment"
 msgid "anul în curs"
 msgstr "year in progress"
 
-#: src/features/national-budget/home/components/person-head.tsx:199
+#: src/features/national-budget/home/components/person-head.tsx:192
 msgid "Anul în curs"
 msgstr "Current year"
 
@@ -8355,7 +8399,7 @@ msgstr "Current year"
 #~ msgid "Anul în curs, {year}, oricare ar fi anul ales mai sus."
 #~ msgstr "The current year, {year}, whatever year is chosen above."
 
-#: src/features/national-budget/home/components/person-year.tsx:221
+#: src/features/national-budget/home/components/person-year.tsx:230
 msgid "Anul în curs, lună de lună"
 msgstr "The year in progress, month by month"
 
@@ -8842,7 +8886,7 @@ msgstr "Zoom in"
 
 #: src/features/justice/components/analysis/analysis-filters.tsx:205
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:695
-#: src/features/national-budget/home/components/person-budgets.tsx:425
+#: src/features/national-budget/home/components/person-budgets.tsx:431
 #: src/features/ngos/registry/components/registry-filters.tsx:437
 #: src/features/parliament/components/member-interventii-tab.tsx:226
 #: src/features/private-companies/components/analytics/analytics-filter-sheet.tsx:152
@@ -8934,7 +8978,7 @@ msgstr "Show less"
 msgid "Arată mai puține"
 msgstr "Show fewer"
 
-#: src/features/national-budget/home/components/person-rows.tsx:133
+#: src/features/national-budget/home/components/person-rows.tsx:136
 msgid "Arată mai puține rânduri"
 msgstr "Show fewer rows"
 
@@ -8965,7 +9009,7 @@ msgstr "Show all {0} events"
 msgid "Arată toate cele {count}"
 msgstr "Show all {count}"
 
-#: src/features/national-budget/home/components/person-rows.tsx:133
+#: src/features/national-budget/home/components/person-rows.tsx:136
 msgid "Arată toate rândurile"
 msgstr "Show all rows"
 
@@ -9527,6 +9571,7 @@ msgstr "awarded values"
 #~ msgid "Awarded-value ranking is unavailable for this scope, so the server ranked by record count."
 #~ msgstr "Awarded-value ranking is unavailable for this scope, so the server ranked by record count."
 
+#: src/features/legal/components/legislation-search-filters.tsx:177
 #: src/features/procurement/components/contract/contract-block.tsx:393
 #: src/features/procurement/components/procedure/procedure-block.tsx:527
 msgid "azi"
@@ -9680,7 +9725,7 @@ msgstr "Road money mostly goes to consortiums: that is why we count, not add up 
 msgid "Banii publici"
 msgstr "Public money"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:436
+#: src/features/national-budget/home/components/person-budgets.tsx:442
 msgid "Banii publici nu stau într-un singur buget: trec prin bugetul de stat, prin bugetele primăriilor și județelor, prin cel al pensiilor și prin Fondul de sănătate. Unele își primesc o parte din bani de la altele."
 msgstr "Public money doesn't sit in a single budget: it goes through the state budget, the budgets of municipalities and counties, the pensions budget and the health fund. Some receive part of their money from the others."
 
@@ -9832,7 +9877,7 @@ msgstr "The {year} statement, needs checking"
 #~ msgid "Bilanțul, {0}"
 #~ msgstr "Balance, {0}"
 
-#: src/features/national-budget/home/components/person-head.tsx:56
+#: src/features/national-budget/home/components/person-head.tsx:54
 msgid "Bilanțul, {period}"
 msgstr "The balance, {period}"
 
@@ -9942,6 +9987,10 @@ msgstr "Birth, mortality, and migration balance."
 #: src/components/provenance/source-provenance.tsx:65
 #~ msgid "Blocat"
 #~ msgstr "Blocat"
+
+#: src/features/national-budget/home/components/person-head.tsx:188
+msgid "Bonul"
+msgstr "The receipt"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1688
 #~ msgid "boolean"
@@ -10135,7 +10184,7 @@ msgstr "Budgetary Academy"
 
 #: src/features/landing/lib/budget-map-measures.ts:124
 #: src/features/landing/lib/budget-map-measures.ts:138
-#: src/features/national-budget/home/components/person-head.tsx:149
+#: src/features/national-budget/home/components/person-head.tsx:143
 msgid "Buget"
 msgstr "Budget"
 
@@ -10153,23 +10202,23 @@ msgstr "National budget"
 msgid "Bugetare"
 msgstr "Budget"
 
-#: src/features/national-budget/home/components/person-head.tsx:196
+#: src/features/national-budget/home/components/person-head.tsx:189
 msgid "Bugetele"
 msgstr "Budgets"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:213
+#: src/features/national-budget/home/components/person-budgets.tsx:219
 msgid "Bugetele au cheltuit împreună {before} înainte de transferuri; cheltuielile publice, fără banii trecuți de la un buget la altul, sunt {consolidated}."
 msgstr "Together the budgets spent {before} before transfers; public spending, without the money passed from one budget to another, is {consolidated}."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:216
+#: src/features/national-budget/home/components/person-budgets.tsx:222
 msgid "Bugetele au cheltuit împreună {before} înainte de transferuri. Fără cei {passed} trecuți de la un buget la altul, care apar la amândouă, cheltuielile publice sunt {consolidated}."
 msgstr "Together the budgets spent {before} before transfers. Without the {passed} passed from one budget to another, which appear in both, public spending is {consolidated}."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:219
+#: src/features/national-budget/home/components/person-budgets.tsx:225
 msgid "Bugetele au cheltuit împreună {before} înainte de transferuri. Fără cei {passed} trecuți de la un buget la altul, care apar la amândouă, și adăugând {amount} din operațiunile financiare, cheltuielile publice sunt {consolidated}."
 msgstr "Together the budgets spent {before} before transfers. Without the {passed} passed from one budget to another, which appear in both, and adding {amount} of financial operations, public spending is {consolidated}."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:218
+#: src/features/national-budget/home/components/person-budgets.tsx:224
 msgid "Bugetele au cheltuit împreună {before} înainte de transferuri. Fără cei {passed} trecuți de la un buget la altul, care apar la amândouă, și fără {amount} din operațiunile financiare, cheltuielile publice sunt {consolidated}."
 msgstr "Together the budgets spent {before} before transfers. Without the {passed} passed from one budget to another, which appear in both, and without {amount} of financial operations, public spending is {consolidated}."
 
@@ -10178,7 +10227,7 @@ msgstr "Together the budgets spent {before} before transfers. Without the {passe
 #~ msgstr "Budgets with their own laws"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:203
-#: src/features/national-budget/home/components/person-budgets.tsx:34
+#: src/features/national-budget/home/components/person-budgets.tsx:33
 msgid "Bugetele locale"
 msgstr "Local budgets"
 
@@ -10210,8 +10259,8 @@ msgstr "Budget shown"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:201
 #: src/features/national-budget/analytics/lib/analytics-view.ts:268
-#: src/features/national-budget/home/components/person-budgets.tsx:32
-#: src/features/national-budget/home/components/person-head.tsx:197
+#: src/features/national-budget/home/components/person-budgets.tsx:31
+#: src/features/national-budget/home/components/person-head.tsx:190
 msgid "Bugetul de stat"
 msgstr "State budget"
 
@@ -10253,6 +10302,7 @@ msgid "Bugetul fiecărei primării în {year}"
 msgstr "Every city hall's budget in {year}"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:231
+#: src/features/national-budget/home/components/person-receipt.tsx:57
 msgid "Bugetul general consolidat"
 msgstr "General consolidated budget"
 
@@ -10265,7 +10315,7 @@ msgid "Bugetul general consolidat (toate)"
 msgstr "General consolidated budget (all)"
 
 #. placeholder {0}: inPeriod(view.text)
-#: src/features/national-budget/home/components/person-flow.tsx:121
+#: src/features/national-budget/home/components/person-flow.tsx:124
 msgid "Bugetul general consolidat {0}. Încasările plus deficitul fac cheltuielile, de aceea coloanele au aceeași înălțime. Leii din 100 sunt rotunjiți la întreg. Pe locuitor: suma împărțită la populația rezidentă de la 1 ianuarie."
 msgstr "The general consolidated budget {0}. Revenue plus the deficit make up spending, which is why the columns are the same height. Lei out of 100 are rounded to whole lei. Per resident: the amount divided by the resident population on 1 January."
 
@@ -10274,12 +10324,12 @@ msgstr "The general consolidated budget {0}. Revenue plus the deficit make up sp
 #~ msgstr "The general consolidated budget, from 1 January to the end of each month, from the Ministry of Finance's monthly execution bulletins (latest: {nowText}). A month without a bulletin stays empty. Current lei."
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:319
-#: src/features/national-budget/home/components/person-head.tsx:100
+#: src/features/national-budget/home/components/person-head.tsx:98
 msgid "Bugetul general consolidat: toate bugetele publice, fără transferurile dintre ele."
 msgstr "The general consolidated budget: all public budgets, without the transfers between them."
 
 #. placeholder {0}: totals.spendingChange
-#: src/features/national-budget/home/components/person-head.tsx:99
+#: src/features/national-budget/home/components/person-head.tsx:97
 msgid "Bugetul general consolidat: toate bugetele publice, fără transferurile dintre ele. Cheltuielile: {0} față de {previous}."
 msgstr "The general consolidated budget: all public budgets, without the transfers between them. Spending: {0} vs {previous}."
 
@@ -10289,7 +10339,7 @@ msgstr "The institution's budget"
 
 #: src/components/errors/not-found-page.tsx:11
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:365
-#: src/features/national-budget/home/components/person-head.tsx:231
+#: src/features/national-budget/home/components/person-head.tsx:230
 msgid "Bugetul național"
 msgstr "National budget"
 
@@ -10318,7 +10368,7 @@ msgstr "The City of Bucharest's own budget is not shown: the map shows its six s
 #~ msgid "Bugetul României pe înțelesul tuturor: cât încasează statul, cât cheltuie, cine cheltuie și cât se împrumută."
 #~ msgstr "Romania's budget for everyone: how much the state collects, how much it spends, who spends it and how much it borrows."
 
-#: src/features/national-budget/home/components/person-head.tsx:156
+#: src/features/national-budget/home/components/person-head.tsx:150
 msgid "Bugetul țării,"
 msgstr "The country's budget,"
 
@@ -10373,11 +10423,11 @@ msgstr "The bulletins give no value for {0}: {1}."
 msgid "Buletinul"
 msgstr "Bulletin"
 
-#: src/features/national-budget/home/components/person-flow.tsx:61
+#: src/features/national-budget/home/components/person-flow.tsx:62
 msgid "Buletinul acestui an nu are împărțirea pe rânduri."
 msgstr "This year's bulletin has no breakdown by line."
 
-#: src/features/national-budget/home/components/person-head.tsx:46
+#: src/features/national-budget/home/components/person-head.tsx:44
 msgid "Buletinul acestui an nu are totalurile."
 msgstr "This year's bulletin has no totals."
 
@@ -10402,7 +10452,7 @@ msgid "buletinul nu are coloana acestui buget (buletin PDF)"
 msgstr "the bulletin has no column for this budget (PDF bulletin)"
 
 #: src/features/national-budget/home/components/person-debt.tsx:218
-#: src/features/national-budget/home/components/person-year.tsx:194
+#: src/features/national-budget/home/components/person-year.tsx:203
 msgid "Buletinul nu are deficitul pentru {period}."
 msgstr "The bulletin has no deficit for {period}."
 
@@ -10416,7 +10466,7 @@ msgid "Buletinul nu tipărește coloana acestui buget pentru {when}."
 msgstr "The bulletin does not print this budget's column for {when}."
 
 #. placeholder {0}: view.text
-#: src/features/national-budget/home/components/person-budgets.tsx:411
+#: src/features/national-budget/home/components/person-budgets.tsx:417
 msgid "Buletinul pentru {0} nu tipărește coloanele pe bugete (le au buletinele din 2019 încoace, fără decembrie 2023). Alege alt an din 2019 încoace."
 msgstr "The bulletin for {0} prints no columns by budget (bulletins have them from 2019 on, except December 2023). Choose another year from 2019 on."
 
@@ -10812,6 +10862,7 @@ msgid "Cancelled or refused — the purchase did not go ahead, so no spending is
 msgstr "Cancelled or refused — the purchase did not go ahead, so no spending is counted."
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:789
+#: src/features/legal/components/legislation-search-filters.tsx:164
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:262
 #: src/features/procurement/lib/analytics-questions.ts:37
 msgid "Când"
@@ -11049,6 +11100,10 @@ msgstr "How much did each public budget spend in {when}?"
 msgid "Cât a cheltuit și cât a încasat statul, lună de lună, din 2006, pe categorii și pe bugete, și ce aprobă legile bugetului, pe fonduri, capitole și ministere. Date din buletinele de execuție și legile bugetului ale Ministerului Finanțelor."
 msgstr "How much the state spent and collected, month by month, since 2006, by category and by budget, and what the budget laws approve, by fund, chapter and ministry. Data from the Ministry of Finance's budget execution bulletins and budget laws."
 
+#: src/features/national-budget/home/components/person-receipt.tsx:124
+msgid "Cât a cheltuit statul pe fiecare dintre noi"
+msgstr "What the state spent on each of us"
+
 #. placeholder {0}: formatHubPeriod(from)
 #: src/features/statistics/components/comparison/comparison-result-band.tsx:173
 msgid "Cât a crescut sau a scăzut fiecare loc față de {0}."
@@ -11083,12 +11138,12 @@ msgid "Cât cheltuie primăriile pe bunuri și servicii, an de an?"
 msgstr "How much do town halls spend on goods and services, year by year?"
 
 #: src/features/national-budget/home/components/person-head.tsx:37
-msgid "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât e deficitul."
-msgstr "How much the state spends for each of its {people} residents, on what, where the money comes from and what the deficit is."
+#~ msgid "Cât cheltuie statul pentru fiecare dintre cei {people} de locuitori, pe ce, de unde vin banii și cât e deficitul."
+#~ msgstr "How much the state spends for each of its {people} residents, on what, where the money comes from and what the deficit is."
 
 #: src/features/national-budget/home/components/person-head.tsx:37
-msgid "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât e deficitul."
-msgstr "How much the state spends for each resident, on what, where the money comes from and what the deficit is."
+#~ msgid "Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât e deficitul."
+#~ msgstr "How much the state spends for each resident, on what, where the money comes from and what the deficit is."
 
 #: src/features/national-budget/home/components/home-balance.tsx:88
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:40
@@ -11096,8 +11151,8 @@ msgstr "How much the state spends for each resident, on what, where the money co
 #~ msgstr "How much the state spends beyond what it collects"
 
 #: src/routes/national-budget.index.tsx:45
-msgid "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât e deficitul an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
-msgstr "How much the Romanian state spends for each resident, on what and with what money, which budgets the money passes through, what the deficit is year by year since 2006 and how the year in progress is going. Data from the Ministry of Finance execution bulletins, the state budget execution reported to ANAF and the population according to INS."
+#~ msgid "Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât e deficitul an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
+#~ msgstr "How much the Romanian state spends for each resident, on what and with what money, which budgets the money passes through, what the deficit is year by year since 2006 and how the year in progress is going. Data from the Ministry of Finance execution bulletins, the state budget execution reported to ANAF and the population according to INS."
 
 #: src/features/procurement/components/home/home-context-bands.tsx:114
 msgid "Cât cumpără județul tău"
@@ -11298,6 +11353,12 @@ msgstr "The category with the most direct-purchase money in {year}: {label}, wit
 msgid "Categoria cu cei mai mulți bani din {year} e {label} ({0}); firma vinde și altceva."
 msgstr "The category with the most money in {year} is {label} ({0}); the firm sells other things too."
 
+#. placeholder {0}: searchCategoryLabel(key)
+#: src/features/legal/components/legislation-search-filters.tsx:91
+msgid "Categoria: {0}"
+msgstr "Category: {0}"
+
+#: src/features/legal/components/legislation-search-filters.tsx:200
 #: src/features/procurement/lib/analytics-text.ts:301
 msgid "Categorie"
 msgstr "Category"
@@ -11400,7 +11461,6 @@ msgstr "Rubber and plastics"
 
 #: src/features/justice/components/analysis/analysis-filters.tsx:55
 #: src/features/landing/components/search/landing-search.tsx:669
-#: src/features/legal/components/legislation-act-finder.tsx:247
 #: src/features/legal/components/legislation-shell.tsx:42
 #: src/features/national-budget/analytics/components/analytics-contents.tsx:553
 msgid "Caută"
@@ -11513,9 +11573,8 @@ msgstr "Caută în intervenții"
 msgid "Caută în intervențiile parlamentarului"
 msgstr "Caută în intervențiile parlamentarului"
 
-#: src/features/legal/components/legislation-act-finder.tsx:192
-#: src/features/legal/components/legislation-act-finder.tsx:231
-#: src/features/legal/components/legislation-act-finder.tsx:239
+#: src/features/legal/components/legislation-act-finder.tsx:124
+#: src/features/legal/components/legislation-act-finder.tsx:169
 #: src/features/legal/components/legislation-shell.tsx:43
 #: src/routes/legislation/search.tsx:18
 msgid "Caută în legislație"
@@ -11648,7 +11707,7 @@ msgstr "Search datasets"
 #~ msgid "Caută și analizează întreprinderile publice din România: indicatori AMEPIP, status, ticker și proveniența fiecărei cifre."
 #~ msgstr "Caută și analizează întreprinderile publice din România: indicatori AMEPIP, status, ticker și proveniența fiecărei cifre."
 
-#: src/features/legal/components/legislation-act-finder.tsx:185
+#: src/features/legal/components/legislation-act-finder.tsx:276
 msgid "Caută și în actele abrogate sau ieșite din vigoare"
 msgstr "Also search repealed acts and acts no longer in force"
 
@@ -11738,20 +11797,36 @@ msgid "Căutare și filtre"
 msgstr "Search and filters"
 
 #: src/features/legal/components/legislation-act-finder.tsx:515
-msgid "Căutarea directă nu a găsit nimic — actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă."
-msgstr "Căutarea directă nu a găsit nimic — actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă."
+#~ msgid "Căutarea directă nu a găsit nimic — actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă."
+#~ msgstr "Căutarea directă nu a găsit nimic — actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă."
 
 #: src/features/legal/components/legislation-act-finder.tsx:521
-msgid "Căutarea directă nu a găsit nimic — actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea în textul legilor nu este încă disponibilă."
-msgstr "The direct search found nothing — the acts above are matches by the act’s name or number. Searching the text of laws is not available yet."
+#~ msgid "Căutarea directă nu a găsit nimic — actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea în textul legilor nu este încă disponibilă."
+#~ msgstr "The direct search found nothing — the acts above are matches by the act’s name or number. Searching the text of laws is not available yet."
+
+#: src/features/legal/components/legislation-act-finder.tsx:363
+msgid "Căutarea directă nu a găsit nimic, iar o parte din ea nu a rulat: actele de mai sus sunt potriviri după denumirea sau numărul actului."
+msgstr "The direct search found nothing, and part of it did not run: the acts above match by the act's name or number."
+
+#: src/features/legal/components/legislation-act-finder.tsx:360
+msgid "Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea după sens nu este încă disponibilă."
+msgstr "The direct search found nothing: the acts above match by the act's name or number. Search by meaning is not available yet."
+
+#: src/features/legal/components/legislation-act-finder.tsx:362
+msgid "Căutarea directă nu a găsit nimic: actele de mai sus sunt potriviri după denumirea sau numărul actului. Căutarea în textul legilor nu este încă disponibilă."
+msgstr "The direct search found nothing: the acts above match by the act's name or number. Searching the text of laws is not available yet."
 
 #: src/features/legal/components/legislation-act-finder.tsx:294
 #~ msgid "Căutarea după expresii din textul legilor — de exemplu „concediu de odihnă” sau „salariul minim” — nu este încă disponibilă. Dacă o astfel de căutare nu găsește nimic, asta nu înseamnă că prevederea nu există în legislație."
 #~ msgstr "Searching for phrases in the text of laws — for example “concediu de odihnă” (annual leave) or “salariul minim” (minimum wage) — is not available yet. If such a search finds nothing, that does not mean the provision does not exist in the legislation."
 
 #: src/features/legal/components/legislation-act-finder.tsx:309
-msgid "Căutarea după sens nu este încă disponibilă, iar căutarea în textul legilor depinde de motorul care răspunde — rezultatele spun care a fost. Dacă o căutare nu găsește nimic, asta nu înseamnă că prevederea nu există în legislație."
-msgstr "Căutarea după sens nu este încă disponibilă, iar căutarea în textul legilor depinde de motorul care răspunde — rezultatele spun care a fost. Dacă o căutare nu găsește nimic, asta nu înseamnă că prevederea nu există în legislație."
+#~ msgid "Căutarea după sens nu este încă disponibilă, iar căutarea în textul legilor depinde de motorul care răspunde — rezultatele spun care a fost. Dacă o căutare nu găsește nimic, asta nu înseamnă că prevederea nu există în legislație."
+#~ msgstr "Căutarea după sens nu este încă disponibilă, iar căutarea în textul legilor depinde de motorul care răspunde — rezultatele spun care a fost. Dacă o căutare nu găsește nimic, asta nu înseamnă că prevederea nu există în legislație."
+
+#: src/features/legal/components/legislation-act-finder.tsx:202
+msgid "Căutarea după sens nu este încă disponibilă, iar căutarea în textul legilor depinde de motorul care răspunde: rezultatele spun care a fost."
+msgstr "Search by meaning is not available yet, and searching the text of laws depends on the engine that answers: the results say which one it was."
 
 #: src/features/entity-search/components/entity-empty-state.tsx:176
 msgid "Căutarea este momentan limitată."
@@ -11856,6 +11931,7 @@ msgid "CC"
 msgstr "CC"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:824
+#: src/features/legal/components/legislation-search-filters.tsx:144
 msgid "Ce"
 msgstr "What"
 
@@ -12080,6 +12156,10 @@ msgstr "Which companies sell the most to the state directly?"
 msgid "Ce funcționează în căutare — și ce nu funcționează încă."
 msgstr "What works in search — and what does not work yet."
 
+#: src/features/legal/components/legislation-act-finder.tsx:199
+msgid "Ce găsești aici"
+msgstr "What you can find here"
+
 #: src/features/procurement/components/analytics/analytics-filters.tsx:455
 #: src/features/procurement/components/analytics/analytics-head.tsx:275
 msgid "Ce înregistrări"
@@ -12142,6 +12222,10 @@ msgstr "What works are done through direct purchase?"
 msgid "Ce NU funcționează încă: căutarea după sens. O întrebare formulată liber poate să nu găsească prevederea pe care o cauți. <0>Pagina de căutare</0> spune la fiecare căutare dacă a căutat și în textul legilor sau doar după numărul și denumirea actelor, ca să nu iei o listă goală drept „legea nu există”."
 msgstr "Ce NU funcționează încă: căutarea după sens. O întrebare formulată liber poate să nu găsească prevederea pe care o cauți. <0>Pagina de căutare</0> spune la fiecare căutare dacă a căutat și în textul legilor sau doar după numărul și denumirea actelor, ca să nu iei o listă goală drept „legea nu există”."
 
+#: src/features/legal/components/legislation-act-finder.tsx:201
+msgid "Ce nu găsești încă"
+msgstr "What you cannot find yet"
+
 #: src/features/legal/components/act-provenance-notes.tsx:152
 msgid "Ce nu vă putem spune despre acest act"
 msgstr "What we cannot tell you about this act"
@@ -12159,8 +12243,8 @@ msgid "Ce pagini se deschid și ce funcții se folosesc, ca să știm ce merită
 msgstr "Which pages are opened and which features are used, so we know what is worth improving."
 
 #: src/features/legal/components/legislation-act-finder.tsx:286
-msgid "Ce poți căuta"
-msgstr "What you can search for"
+#~ msgid "Ce poți căuta"
+#~ msgstr "What you can search for"
 
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:240
 msgid "Ce raportează la AMEPIP"
@@ -12180,7 +12264,7 @@ msgstr "What was awarded"
 msgid "Ce s-a cerut"
 msgstr "What was asked for"
 
-#: src/features/national-budget/home/components/person-flow.tsx:82
+#: src/features/national-budget/home/components/person-flow.tsx:83
 msgid "ce s-a cheltuit peste încasări"
 msgstr "what was spent beyond revenue"
 
@@ -12471,8 +12555,8 @@ msgstr "Changes: at least {0} — the total count did not respond"
 
 #. placeholder {0}: formatLegalNumber(result.actsTotal, i18n.locale)
 #: src/features/legal/components/legislation-act-finder.tsx:176
-msgid "cel puțin {0} potriviri"
-msgstr "Matches: at least {0}"
+#~ msgid "cel puțin {0} potriviri"
+#~ msgstr "Matches: at least {0}"
 
 #: src/features/ngos/registry/components/registry-answer.tsx:202
 msgid "Cel puțin {atLeast} de înregistrări: restrânge selecția pentru a o împărți."
@@ -13055,7 +13139,7 @@ msgctxt "national budget classification"
 msgid "Cheltuieli de personal"
 msgstr "Staff costs"
 
-#: src/features/national-budget/home/components/person-year.tsx:197
+#: src/features/national-budget/home/components/person-year.tsx:206
 msgid "cheltuieli față de {previous}"
 msgstr "spending vs {previous}"
 
@@ -13068,7 +13152,7 @@ msgid "Cheltuieli pe locuitor"
 msgstr "Spending per resident"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:733
-#: src/features/national-budget/home/components/person-head.tsx:289
+#: src/features/national-budget/home/components/person-head.tsx:288
 msgid "Cheltuieli publice"
 msgstr "Public spending"
 
@@ -13150,6 +13234,10 @@ msgstr "public spending"
 #: src/features/landing/lib/landing-groups.ts:64
 #~ msgid "Cheltuielile statului pe capitole, de la minister la linie bugetară."
 #~ msgstr "State spending by chapter, from ministry down to budget line."
+
+#: src/features/national-budget/home/components/person-receipt.tsx:124
+msgid "Cheltuielile statului, împărțite la populația țării, rând cu rând, ca pe un bon."
+msgstr "The state's spending, divided by the country's population, line by line, like a receipt."
 
 #: src/features/private-companies/lib/company-analytics-text.ts:43
 msgid "Cheltuielile totale"
@@ -13343,7 +13431,7 @@ msgstr "Figures published on the platform"
 #: src/features/justice/components/hub/justice-hub-bands.tsx:98
 #: src/features/legal/components/hub/legislation-hub.tsx:176
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:679
-#: src/features/national-budget/home/components/person-head.tsx:343
+#: src/features/national-budget/home/components/person-head.tsx:342
 #: src/features/ngos/hub/ngo-hub-page.tsx:96
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:183
 #: src/features/ngos/registry/components/registry-answer.tsx:77
@@ -13512,13 +13600,14 @@ msgid "Cinci firme însumează {0} din valoarea achizițiilor directe din {1}; a
 msgstr "Five firms account for {0} of the value of direct purchases in {1}; {2} sold in all."
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:883
+#: src/features/legal/components/legislation-search-filters.tsx:215
 #: src/features/private-companies/components/analytics/analytics-head.tsx:238
 #: src/features/private-companies/components/analytics/analytics-head.tsx:239
 #: src/features/public-institutions/lib/public-institutions-text.ts:148
 msgid "Cine"
 msgstr "Who"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:393
+#: src/features/national-budget/home/components/person-budgets.tsx:399
 msgid "Cine a dat cui nu e tipărit, de aceea nu legăm bugetele între ele."
 msgstr "Who gave to whom is not printed, so the budgets are not linked to each other."
 
@@ -13625,6 +13714,7 @@ msgid "Cine vinde medicamente instituțiilor?"
 msgstr "Who sells medicines to institutions?"
 
 #: src/features/legal/lib/legal-vocabulary.ts:145
+#: src/features/legal/lib/search-filters.ts:153
 msgid "Circulară"
 msgstr "Circular"
 
@@ -13651,7 +13741,7 @@ msgid "citări primite"
 msgstr "citations received"
 
 #. placeholder {0}: formatLegalNumber(act.inDegree, i18n.locale)
-#. placeholder {0}: formatLegalNumber(hit.act.inDegree, i18n.locale)
+#. placeholder {0}: n(hit.act.inDegree)
 #: src/features/legal/components/legislation-act-finder.tsx:421
 #: src/features/legal/components/legislation-acts-directory.tsx:408
 msgid "citat de {0} ori"
@@ -16663,6 +16753,10 @@ msgstr "dated {dayText}"
 msgid "cu destinație specială"
 msgstr "earmarked"
 
+#: src/features/legal/components/legislation-act-finder.tsx:294
+#~ msgid "Cu domeniul, categoria sau sancțiunile, actele fără rezumat nu apar."
+#~ msgstr "With domain, category or penalties, acts without a summary do not appear."
+
 #. placeholder {0}: formatLegalDate(change.effectiveDate, i18n.locale)
 #: src/features/legal/components/legislation-changes-feed.tsx:526
 msgid "cu efect de la {0}"
@@ -17017,6 +17111,10 @@ msgstr "How the business is doing"
 msgid "Cum răspunde"
 msgstr "How it answers"
 
+#: src/features/legal/components/legislation-act-finder.tsx:319
+msgid "Cum s-a căutat"
+msgstr "How it was searched"
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:510
 msgid "Cum s-a făcut"
 msgstr "How it was done"
@@ -17036,6 +17134,11 @@ msgstr "How the answer is shown"
 #: src/features/statistics/components/territory/territory-derived-list.tsx:183
 msgid "Cum se calculează: {label}"
 msgstr "How it is calculated: {label}"
+
+#: src/features/legal/components/legislation-act-finder.tsx:320
+#: src/features/legal/components/legislation-act-finder.tsx:401
+msgid "Cum se caută"
+msgstr "How the search works"
 
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:384
 msgid "Cum se citește luna"
@@ -17241,6 +17344,10 @@ msgstr "Keywords"
 #: src/features/private-companies/lib/company-analytics-text.ts:111
 msgid "Da"
 msgstr "Yes"
+
+#: src/features/legal/components/legislation-act-finder.tsx:203
+msgid "Dacă o căutare nu găsește nimic, asta nu înseamnă că prevederea nu există în legislație."
+msgstr "If a search finds nothing, that does not mean the provision does not exist in the legislation."
 
 #: src/features/learning/components/cards/LearningPathCard.tsx:168
 msgid "Daily Streak"
@@ -17856,6 +17963,10 @@ msgstr "The data has an edge — changes after it may be missing."
 msgid "Datele din registru"
 msgstr "Register data"
 
+#: src/features/national-budget/home/components/person-receipt.tsx:46
+msgid "Datele disponibile pentru acest an nu au cheltuielile pe rânduri."
+msgstr "The available data for this year don't break spending down by line."
+
 #: src/features/legal/components/analytics/legislation-front-door-bands.tsx:181
 #~ msgid "Datele distincte la care Portalul a listat o versiune consolidată (neoficială)."
 #~ msgstr "Datele distincte la care Portalul a listat o versiune consolidată (neoficială)."
@@ -18153,6 +18264,8 @@ msgstr "from"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:790
 #: src/features/legal/components/legislation-changes-feed.tsx:333
+#: src/features/legal/components/legislation-search-filters.tsx:165
+#: src/features/legal/components/legislation-search-filters.tsx:166
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:171
 #: src/features/procurement/components/analytics/analytics-controls.tsx:100
 #: src/features/procurement/components/analytics/analytics-filters.tsx:90
@@ -18179,9 +18292,13 @@ msgstr "From 1 January"
 #~ msgid "De la 1 ianuarie, mld. lei"
 #~ msgstr "Since 1 January, bn lei"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:66
+#: src/features/national-budget/home/components/person-budgets.tsx:65
 msgid "De la alte bugete"
 msgstr "From other budgets"
+
+#: src/features/legal/components/legislation-search-filters.tsx:166
+#~ msgid "De la anul"
+#~ msgstr "From the year"
 
 #. placeholder {0}: sideWord(side)
 #. placeholder {1}: view.text
@@ -18313,7 +18430,7 @@ msgstr "Worth knowing about these figures: {0}"
 msgid "De unde"
 msgstr "From where"
 
-#: src/features/national-budget/home/components/person-flow.tsx:103
+#: src/features/national-budget/home/components/person-flow.tsx:106
 msgid "De unde au venit"
 msgstr "Where it came from"
 
@@ -18321,15 +18438,15 @@ msgstr "Where it came from"
 msgid "De unde au venit banii publici în {when}?"
 msgstr "Where did public money come from in {when}?"
 
-#: src/features/national-budget/home/components/person-flow.tsx:118
+#: src/features/national-budget/home/components/person-flow.tsx:121
 msgid "De unde au venit cei 100 de lei"
 msgstr "Where the 100 lei came from"
 
-#: src/features/national-budget/home/components/person-head.tsx:195
+#: src/features/national-budget/home/components/person-head.tsx:187
 msgid "De unde și pe ce"
 msgstr "Where from and on what"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:424
+#: src/features/national-budget/home/components/person-budgets.tsx:430
 msgid "De unde și-a luat banii fiecare buget, {period}"
 msgstr "Where each budget got its money, {period}"
 
@@ -18353,7 +18470,15 @@ msgstr "Where the money comes from"
 #~ msgid "De unde vin banii publici"
 #~ msgstr "Where public money comes from"
 
-#: src/features/national-budget/home/components/person-flow.tsx:129
+#: src/routes/national-budget.index.tsx:45
+msgid "De unde vin banii publici ai României și pe ce se duc, prin ce bugete trec, cât e deficitul an de an din 2006, cât revine fiecărui locuitor și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS."
+msgstr "Where Romania's public money comes from and what it goes on, which budgets it passes through, the deficit year by year since 2006, each resident's share and how the year in progress is going. Data from the Ministry of Finance execution bulletins, the state budget execution reported to ANAF and the population according to INS."
+
+#: src/features/national-budget/home/components/person-head.tsx:35
+msgid "De unde vin banii publici și pe ce se duc, prin ce bugete trec, cât e deficitul și cât revine fiecăruia dintre noi, an de an din 2006."
+msgstr "Where public money comes from and what it goes on, which budgets it passes through, what the deficit is and each person's share, year by year since 2006."
+
+#: src/features/national-budget/home/components/person-flow.tsx:132
 msgid "De unde vin banii și pe ce se duc"
 msgstr "Where the money comes from and where it goes"
 
@@ -18478,6 +18603,7 @@ msgid "decizia {number}"
 msgstr "decision {number}"
 
 #: src/features/legal/lib/legal-vocabulary.ts:121
+#: src/features/legal/lib/search-filters.ts:139
 msgid "Decizie"
 msgstr "Decision (decizie)"
 
@@ -18580,6 +18706,7 @@ msgid "decrease"
 msgstr "decrease"
 
 #: src/features/legal/lib/legal-vocabulary.ts:123
+#: src/features/legal/lib/search-filters.ts:141
 msgid "Decret"
 msgstr "Decree"
 
@@ -18637,8 +18764,8 @@ msgstr "Deficit"
 #: src/features/landing/lib/national-facts.ts:109
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:752
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:807
-#: src/features/national-budget/home/components/person-flow.tsx:81
-#: src/features/national-budget/home/components/person-head.tsx:295
+#: src/features/national-budget/home/components/person-flow.tsx:82
+#: src/features/national-budget/home/components/person-head.tsx:294
 msgid "Deficit bugetar (cash)"
 msgstr "Budget deficit (cash)"
 
@@ -18658,7 +18785,7 @@ msgstr "Budget deficit (cash), {0}"
 #~ msgstr "Budget deficit (cash): {0}"
 
 #. placeholder {0}: newest.text
-#: src/features/national-budget/home/components/person-year.tsx:177
+#: src/features/national-budget/home/components/person-year.tsx:186
 msgid "deficit în {0}"
 msgstr "deficit in {0}"
 
@@ -18670,18 +18797,18 @@ msgstr "Planned deficit"
 msgid "Deficit, {year}"
 msgstr "Deficit, {year}"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:70
+#: src/features/national-budget/home/components/person-budgets.tsx:69
 msgid "Deficite înainte de consolidare"
 msgstr "Deficits before consolidation"
 
 #. placeholder {0}: moneyText(borrowed)
 #. placeholder {1}: moneyText(bridge.deficit)
-#: src/features/national-budget/home/components/person-budgets.tsx:395
+#: src/features/national-budget/home/components/person-budgets.tsx:401
 msgid "Deficite înainte de consolidare: ale bugetelor (celelalte bugete socotite împreună), {0} adunate; cu excedentele bugetelor și operațiunile financiare, deficitul bugetar (cash) al bugetului general consolidat e {1}."
 msgstr "Deficits before consolidation: the budgets' own (the other budgets counted together), {0} added up; with the budgets' surpluses and financial operations, the general consolidated budget's cash deficit is {1}."
 
 #. placeholder {0}: moneyText(borrowed)
-#: src/features/national-budget/home/components/person-budgets.tsx:396
+#: src/features/national-budget/home/components/person-budgets.tsx:402
 msgid "Deficite înainte de consolidare: ale bugetelor (celelalte bugete socotite împreună), {0} adunate."
 msgstr "Deficits before consolidation: the budgets' own (the other budgets counted together), {0} added up."
 
@@ -18689,11 +18816,11 @@ msgstr "Deficits before consolidation: the budgets' own (the other budgets count
 msgid "deficitul"
 msgstr "the deficit"
 
-#: src/features/national-budget/home/components/person-head.tsx:198
+#: src/features/national-budget/home/components/person-head.tsx:191
 msgid "Deficitul"
 msgstr "Deficit"
 
-#: src/features/national-budget/home/components/person-year.tsx:222
+#: src/features/national-budget/home/components/person-year.tsx:231
 msgid "Deficitul adunat din ianuarie până la fiecare lună, anul acesta și anul trecut: arată dacă anul merge mai bine sau mai rău decât cel trecut."
 msgstr "The deficit added up from January to each month, this year and last year: it shows whether the year is going better or worse than the last."
 
@@ -18701,7 +18828,7 @@ msgstr "The deficit added up from January to each month, this year and last year
 msgid "Deficitul bugetar, an de an"
 msgstr "The budget deficit, year by year"
 
-#: src/features/national-budget/home/components/person-year.tsx:200
+#: src/features/national-budget/home/components/person-year.tsx:209
 msgid "Deficitul bugetului general consolidat (cash), adunat din ianuarie până la sfârșitul fiecărei luni, cum îl tipărește buletinul lunii."
 msgstr "The general consolidated budget's deficit (cash), added up from January to the end of each month, as that month's bulletin prints it."
 
@@ -18709,11 +18836,11 @@ msgstr "The general consolidated budget's deficit (cash), added up from January 
 msgid "Deficitul bugetului general consolidat (cash)."
 msgstr "The general consolidated budget's deficit (cash)."
 
-#: src/features/national-budget/home/components/person-year.tsx:76
+#: src/features/national-budget/home/components/person-year.tsx:84
 msgid "Deficitul de la începutul anului"
 msgstr "The deficit since the start of the year"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:83
+#: src/features/national-budget/home/components/person-budgets.tsx:82
 msgid "deficitul fiecărui buget înainte de consolidare: ce a cheltuit peste încasări"
 msgstr "each budget's deficit before consolidation: what it spent beyond its revenue"
 
@@ -18722,7 +18849,7 @@ msgid "Deficitul, an de an"
 msgstr "The deficit, year by year"
 
 #: src/features/national-budget/home/components/person-debt.tsx:51
-#: src/features/national-budget/home/components/person-year.tsx:77
+#: src/features/national-budget/home/components/person-year.tsx:85
 msgid "Deficitul, măsurat în"
 msgstr "The deficit, measured in"
 
@@ -18872,8 +18999,8 @@ msgid "denumirea"
 msgstr "the name"
 
 #: src/features/legal/components/legislation-act-finder.tsx:295
-msgid "denumirea actului — „Codul muncii”, „Codul fiscal”, „Codul administrativ”"
-msgstr "the act’s name — “Codul muncii” (Labour Code), “Codul fiscal” (Tax Code), “Codul administrativ” (Administrative Code)"
+#~ msgid "denumirea actului — „Codul muncii”, „Codul fiscal”, „Codul administrativ”"
+#~ msgstr "the act’s name — “Codul muncii” (Labour Code), “Codul fiscal” (Tax Code), “Codul administrativ” (Administrative Code)"
 
 #: src/features/private-companies/components/activity-description.tsx:27
 msgid "denumiri diferite între reviziile nomenclatorului"
@@ -18917,8 +19044,12 @@ msgstr "The names come from the platform's current CAEN classification, in each 
 #~ msgstr "Descriptions come from the CAEN catalog. Where they differ between revisions, each variant is shown with its revision."
 
 #: src/features/legal/components/legislation-act-finder.tsx:495
-msgid "Deocamdată căutarea funcționează după numărul actului (de exemplu „Legea 53/2003”) și după denumirea lui (de exemplu „Codul muncii”). Căutarea după expresii din textul legilor — cum ar fi „concediu de odihnă” — nu este încă disponibilă, așa că lipsa rezultatelor nu spune nimic despre existența prevederii."
-msgstr "For now, search works by the act’s number (for example “Legea 53/2003”) and by its name (for example “Codul muncii”, the Labour Code). Searching for phrases in the text of laws — such as “concediu de odihnă” (annual leave) — is not available yet, so a lack of results says nothing about whether the provision exists."
+#~ msgid "Deocamdată căutarea funcționează după numărul actului (de exemplu „Legea 53/2003”) și după denumirea lui (de exemplu „Codul muncii”). Căutarea după expresii din textul legilor — cum ar fi „concediu de odihnă” — nu este încă disponibilă, așa că lipsa rezultatelor nu spune nimic despre existența prevederii."
+#~ msgstr "For now, search works by the act’s number (for example “Legea 53/2003”) and by its name (for example “Codul muncii”, the Labour Code). Searching for phrases in the text of laws — such as “concediu de odihnă” (annual leave) — is not available yet, so a lack of results says nothing about whether the provision exists."
+
+#: src/features/legal/components/legislation-act-finder.tsx:384
+msgid "Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 53/2003\") și după denumire (de exemplu „Codul muncii\"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă\", nu este încă disponibilă."
+msgstr "For now the search finds an act by its number (for example “Legea 53/2003”) and by its name (for example “Codul muncii”). Searching for phrases in the text of laws, such as “concediu de odihnă”, is not available yet."
 
 #: src/features/budget-map/components/map-page-map.tsx:143
 #: src/features/landing/components/budget-map/budget-map.tsx:114
@@ -19230,6 +19361,7 @@ msgid "Despre ani"
 msgstr "About the years"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:933
+#: src/features/legal/components/legislation-search-filters.tsx:187
 msgid "Despre ce"
 msgstr "About what"
 
@@ -19440,8 +19572,10 @@ msgstr "Dimensions"
 #~ msgstr "from"
 
 #. placeholder {0}: String(q.an.from)
+#. placeholder {0}: filters.from
 #. placeholder {0}: formatDate(saved.updatedAt, 'long')
 #: src/features/legal/components/analytics/legislation-analysis.tsx:231
+#: src/features/legal/components/legislation-search-filters.tsx:80
 #: src/features/privacy/components/cookie-settings-page.tsx:144
 msgid "din {0}"
 msgstr "since {0}"
@@ -19668,7 +19802,7 @@ msgid "din alte materii"
 msgstr "in other matters"
 
 #. placeholder {0}: moneyText(bridge.received)
-#: src/features/national-budget/home/components/person-budgets.tsx:392
+#: src/features/national-budget/home/components/person-budgets.tsx:398
 msgid "Din banii trecuți de la un buget la altul, {0} apar ca subvenții primite („De la alte bugete\"), restul în alte linii de venit ale celor care îi primesc. Cine a dat cui nu e tipărit, de aceea nu legăm bugetele între ele."
 msgstr "Of the money passed from one budget to another, {0} appears as subsidies received (“From other budgets”), the rest in other revenue lines of the budgets receiving it. Who gave to whom is not printed, so the budgets are not linked to each other."
 
@@ -19778,6 +19912,10 @@ msgstr "From ANAF fiscal data, CAEN {edition}. A source observation, not a princ
 msgid "Din datele fiscale ANAF: o observație din sursă, nu o activitate principală. ANAF nu publică revizia CAEN, iar aceleași cifre pot însemna activități diferite în revizii diferite, așa că nu îi dăm o denumire."
 msgstr "From ANAF fiscal data: a source observation, not a principal activity. ANAF does not publish the CAEN revision, and the same digits can mean different activities in different revisions, so we do not name it."
 
+#: src/features/national-budget/home/components/person-receipt.tsx:86
+msgid "din deficit bugetar (cash)"
+msgstr "from the cash budget deficit"
+
 #: src/features/private-companies/components/profile/company-activities-band.tsx:344
 #~ msgid "Din ediția ONRC afișată. Denumirile sunt din nomenclatorul CAEN curent al platformei, pe revizia fiecărei înscrieri; o înscriere fără revizie cunoscută nu are denumire."
 #~ msgstr "From the ONRC edition shown. The names come from the platform’s current CAEN nomenclature, in each entry’s own revision; an entry with no known revision has no name."
@@ -19787,12 +19925,12 @@ msgstr "From ANAF fiscal data: a source observation, not a principal activity. A
 msgid "din familia {0}"
 msgstr "from the {0} family"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:168
+#: src/features/national-budget/home/components/person-budgets.tsx:174
 msgid "din fiecare 100"
 msgstr "of every 100"
 
 #: src/features/national-budget/home/components/person-debt.tsx:227
-#: src/features/national-budget/home/components/person-head.tsx:285
+#: src/features/national-budget/home/components/person-head.tsx:284
 msgid "din fiecare 100 cheltuiți"
 msgstr "of every 100 spent"
 
@@ -19804,7 +19942,7 @@ msgstr "of every 100 spent, beyond revenue"
 #~ msgid "Din fiecare 100 de lei cheltuiți"
 #~ msgstr "Of every 100 lei spent"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:424
+#: src/features/national-budget/home/components/person-budgets.tsx:430
 msgid "Din fiecare 100 de lei cheltuiți de toate bugetele, {period}"
 msgstr "Of every 100 lei spent by all budgets, {period}"
 
@@ -19818,7 +19956,7 @@ msgstr "Of every 100 lei spent by all budgets, {period}"
 
 #. placeholder {0}: totals.fromRevenue
 #. placeholder {1}: totals.borrowed
-#: src/features/national-budget/home/components/person-head.tsx:92
+#: src/features/national-budget/home/components/person-head.tsx:90
 msgid "Din fiecare 100 de lei cheltuiți, {0} au venit din încasări și {1} sunt deficit."
 msgstr "Of every 100 lei spent, {0} came from revenue and {1} are deficit."
 
@@ -19851,6 +19989,10 @@ msgstr "Of the companies registered in {COHORT_YEAR}, {0} are still in business.
 msgid "din granturile PNRR"
 msgstr "from PNRR grants"
 
+#: src/features/national-budget/home/components/person-receipt.tsx:79
+msgid "din încasări"
+msgstr "from revenue"
+
 #. placeholder {0}: countyLabel(county)
 #: src/features/justice/lib/analysis-text.ts:190
 msgid "din județul {0}"
@@ -19882,8 +20024,8 @@ msgid "din orice an"
 msgstr "from any year"
 
 #: src/features/national-budget/home/components/person-debt.tsx:208
-#: src/features/national-budget/home/components/person-head.tsx:300
-#: src/features/national-budget/home/components/person-year.tsx:183
+#: src/features/national-budget/home/components/person-head.tsx:299
+#: src/features/national-budget/home/components/person-year.tsx:192
 msgid "din PIB"
 msgstr "of GDP"
 
@@ -20265,6 +20407,10 @@ msgstr "{0} alone: {1} {2}, Romania {3}. The three-year window smooths small yea
 msgid "Doar {label}"
 msgstr "Only {label}"
 
+#: src/features/legal/components/legislation-search-filters.tsx:211
+msgid "Doar actele care menționează sancțiuni"
+msgstr "Only acts that mention penalties"
+
 #: src/features/statistics/components/uat-map/uat-map-series.ts:177
 #~ msgid "Doar apa distribuită prin rețeaua publică."
 #~ msgstr "Only water supplied through the public network."
@@ -20432,7 +20578,7 @@ msgctxt "national budget classification"
 msgid "Dobânzi"
 msgstr "Interest"
 
-#: src/features/national-budget/home/components/person-head.tsx:305
+#: src/features/national-budget/home/components/person-head.tsx:304
 #: src/features/national-budget/home/lib/home-format.ts:34
 msgid "Dobânzi la datorie"
 msgstr "Interest on debt"
@@ -20551,6 +20697,7 @@ msgid "Domeniile sunt atribuite automat de un model pe baza textului actului —
 msgstr "Domains are assigned automatically by a model from the text of the act — they are not a legal classification. Check the source before relying on them."
 
 #: src/features/legal/components/legislation-acts-directory.tsx:309
+#: src/features/legal/components/legislation-search-filters.tsx:191
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:141
 #: src/features/statistics/components/explorer/dataset-explorer-filter-controls.tsx:65
 #: src/features/statistics/lib/explorer-chips.ts:103
@@ -20564,6 +20711,14 @@ msgstr "Domeniu necunoscut"
 #: src/features/legal/components/analytics/legislation-analysis.tsx:934
 msgid "Domeniul și tema vin după potrivirea pe tot corpusul (în curând)."
 msgstr "Domain and theme come after the match over the whole corpus (coming soon)."
+
+#: src/features/legal/components/legislation-act-finder.tsx:330
+msgid "Domeniul, categoria și sancțiunile vin din rezumate făcute automat: actele fără rezumat nu apar."
+msgstr "Domain, category and penalties come from automatic summaries: acts without a summary do not appear."
+
+#: src/features/legal/components/legislation-search-filters.tsx:189
+msgid "Domeniul, categoria și sancțiunile vin din rezumatele făcute automat ale actelor: un act fără rezumat nu apare când folosești unul dintre aceste filtre."
+msgstr "Domain, category and penalties come from the acts' automatic summaries: an act without a summary does not appear when you use one of these filters."
 
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:135
 #~ msgid "Domestic branches and shareholders are not in the open dump"
@@ -21961,7 +22116,7 @@ msgid "Essentials"
 msgstr "Essentials"
 
 #: src/features/legal/components/hub/legislation-hub.tsx:107
-#: src/features/national-budget/home/components/person-head.tsx:142
+#: src/features/national-budget/home/components/person-head.tsx:136
 msgid "Ești aici"
 msgstr "You are here"
 
@@ -22256,7 +22411,7 @@ msgstr "Surplus, {year}"
 #~ msgstr "Surplus: {0}"
 
 #. placeholder {0}: moneyText(row.surplus)
-#: src/features/national-budget/home/components/person-budgets.tsx:316
+#: src/features/national-budget/home/components/person-budgets.tsx:322
 msgid "Excedent: {0}, încasați și necheltuiți."
 msgstr "Surplus: {0}, collected and not spent."
 
@@ -22361,13 +22516,17 @@ msgstr "Executive: No"
 msgid "Executive: Yes"
 msgstr "Executive: Yes"
 
+#: src/features/legal/components/legislation-act-finder.tsx:131
+msgid "Exemple"
+msgstr "Examples"
+
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:512
 #~ msgid "Exemple mock-first cu profil complet în această interfață."
 #~ msgstr "Exemple mock-first cu profil complet în această interfață."
 
 #: src/features/legal/components/legislation-act-finder.tsx:254
-msgid "Exemple:"
-msgstr "Examples:"
+#~ msgid "Exemple:"
+#~ msgstr "Examples:"
 
 #: src/features/statistics/components/comparison/comparison-rail.tsx:152
 msgid "exemplu"
@@ -23033,6 +23192,10 @@ msgstr "no published winner"
 msgid "Fără categorie CPV"
 msgstr "No CPV category"
 
+#: src/features/legal/components/legislation-search-filters.tsx:158
+msgid "Fără cele abrogate"
+msgstr "Without repealed acts"
+
 #: src/features/ngos/organization/components/profile-parts.tsx:285
 msgid "Fără cifră pe platformă"
 msgstr "No figure on the platform"
@@ -23181,7 +23344,7 @@ msgstr "No data for the selected frequency."
 #~ msgstr "No reported data for: {0}. These territories remain visible as missing data."
 
 #: src/features/national-budget/home/components/person-debt.tsx:218
-#: src/features/national-budget/home/components/person-year.tsx:194
+#: src/features/national-budget/home/components/person-year.tsx:203
 msgid "Fără deficit în {period}."
 msgstr "No deficit in {period}."
 
@@ -23789,12 +23952,12 @@ msgstr "vs {0}"
 #~ msgstr "vs {0}, same months"
 
 #: src/features/national-budget/home/components/person-debt.tsx:230
-#: src/features/national-budget/home/components/person-head.tsx:277
+#: src/features/national-budget/home/components/person-head.tsx:276
 msgid "față de {previous}"
 msgstr "vs {previous}"
 
 #. placeholder {0}: moneyText(totals.deficitBefore)
-#: src/features/national-budget/home/components/person-year.tsx:188
+#: src/features/national-budget/home/components/person-year.tsx:197
 msgid "față de {previous} ({0})"
 msgstr "vs {previous} ({0})"
 
@@ -23914,7 +24077,7 @@ msgstr "Kinds"
 msgid "Feluri ({0})"
 msgstr "Kinds ({0})"
 
-#: src/features/national-budget/home/components/person-flow.tsx:129
+#: src/features/national-budget/home/components/person-flow.tsx:132
 msgid "Fiecare 100 de lei cheltuiți de stat: în stânga de unde au venit, în dreapta pe ce s-au dus."
 msgstr "Every 100 lei the state spent: on the left where they came from, on the right what they went on."
 
@@ -24033,7 +24196,7 @@ msgid "Fiecare instituție, cu raportul ei"
 msgstr "Each institution, with its own report"
 
 #: src/features/national-budget/home/components/home-start.tsx:54
-#: src/features/national-budget/home/components/person-head.tsx:377
+#: src/features/national-budget/home/components/person-head.tsx:376
 msgid "Fiecare întrebare deschide pagina de analize avansate, cu toate cifrele."
 msgstr "Each question opens the advanced analysis page, with all the figures."
 
@@ -24057,7 +24220,7 @@ msgstr "Every NGO, by name, county, legal form and status."
 msgid "Fiecare ordonator principal de credite, cu instituțiile din subordine la un loc"
 msgstr "Each main authorising officer, with its subordinate institutions together"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:196
+#: src/features/national-budget/home/components/person-budgets.tsx:202
 msgid "Fiecare pătrat e un leu din 100."
 msgstr "Each square is one leu out of 100."
 
@@ -24229,6 +24392,9 @@ msgstr "Filtered"
 #: src/features/legal/components/legislation-acts-directory.tsx:209
 #: src/features/legal/components/legislation-changes-feed.tsx:304
 #: src/features/legal/components/legislation-gazette-directory.tsx:223
+#: src/features/legal/components/legislation-search-filters.tsx:58
+#: src/features/legal/components/legislation-search-filters.tsx:65
+#: src/features/legal/components/legislation-search-filters.tsx:141
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:533
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:629
 #: src/features/ngos/registry/components/registry-filters.tsx:417
@@ -24248,7 +24414,12 @@ msgstr "Filters"
 msgid "Filtre ({activeCount} active)"
 msgstr "Filters ({activeCount} active)"
 
+#: src/features/legal/components/legislation-search-filters.tsx:65
+msgid "Filtre ({on})"
+msgstr "Filters ({on})"
+
 #: src/features/entity-search/components/entity-search-page.tsx:310
+#: src/features/legal/components/legislation-search-filters.tsx:97
 #: src/features/public-institutions/components/public-institutions-head.tsx:254
 #: src/features/statistics/components/explorer/statistics-active-filters.tsx:64
 msgid "Filtre active"
@@ -24290,6 +24461,10 @@ msgstr "Filtre indisponibile în v1:"
 #: src/features/landing/components/search/landing-search.tsx:701
 msgid "Filtre sugerate"
 msgstr "Suggested filters"
+
+#: src/features/legal/components/legislation-search-filters.tsx:58
+msgid "Filtre, {on} active"
+msgstr "Filters, {on} active"
 
 #: src/features/procurement/components/procurement-category-bars.tsx:281
 msgid "Filtrează după {label}"
@@ -24334,6 +24509,10 @@ msgstr "Filter the contests"
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:111
 msgid "Filtrează seturile de date"
 msgstr "Filter the datasets"
+
+#: src/features/legal/components/legislation-act-finder.tsx:389
+msgid "Filtrele alese pot fi motivul: scoate-le pe rând."
+msgstr "The chosen filters may be the reason: remove them one at a time."
 
 #: src/features/elections/catalog/election-edition-page.tsx:189
 #: src/features/elections/catalog/elections-catalog-page.tsx:110
@@ -24410,6 +24589,10 @@ msgstr "The “{0}” filter (selected activity) does not exist in this analysis
 #: src/features/private-companies/components/analytics/analytics-notices.tsx:75
 msgid "Filtrul „{0}\" are mai mult de {1} valori, cât primește analiza."
 msgstr "The “{0}” filter has more than {1} values, the most the analysis takes."
+
+#: src/features/legal/components/legislation-search-filters.tsx:217
+msgid "Filtrul după emitent vine curând: întâi fiecare emitent primește un singur nume în date."
+msgstr "The issuer filter is coming soon: first each issuer gets a single name in the data."
 
 #. placeholder {0}: metricLabel(problem.metric)
 #: src/features/private-companies/components/analytics/analytics-notices.tsx:73
@@ -25179,7 +25362,7 @@ msgstr "Flow · what was published"
 msgid "Fluxul <0>modificărilor</0> și <1>directorul Monitorului</1> își afișează fiecare propria margine de acoperire, ca să vezi exact până unde ajung datele."
 msgstr "The <0>changes</0> feed and the <1>Gazette directory</1> each show their own coverage edge, so you can see exactly how far the data reaches."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:417
+#: src/features/national-budget/home/components/person-budgets.tsx:423
 msgid "Fluxul banilor"
 msgstr "Money flow"
 
@@ -25274,7 +25457,7 @@ msgstr "Health fund"
 msgid "Fondul de sănătate (FNUASS)"
 msgstr "Health fund (FNUASS)"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:54
+#: src/features/national-budget/home/components/person-budgets.tsx:53
 msgid "Fondul de sănătate: spitale, medicamente, medicii de familie"
 msgstr "The health fund: hospitals, medicines, family doctors"
 
@@ -25311,7 +25494,7 @@ msgstr "Non-reimbursable external funds"
 #~ msgid "fonduri externe nerambursabile ținute separat"
 #~ msgstr "non-repayable external funds kept separately"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:68
+#: src/features/national-budget/home/components/person-budgets.tsx:67
 msgid "Fonduri UE"
 msgstr "EU funds"
 
@@ -25855,6 +26038,7 @@ msgstr "blank in the bulletin"
 msgid "gol în sursă"
 msgstr "blank in the source"
 
+#: src/features/legal/components/legislation-act-finder.tsx:178
 #: src/features/national-budget/analytics/components/analytics-contents.tsx:390
 msgid "Golește căutarea"
 msgstr "Clear the search"
@@ -26348,8 +26532,13 @@ msgstr "Hold Ctrl/Cmd or Shift while clicking to multi-select."
 #~ msgstr "Home"
 
 #: src/features/legal/lib/legal-vocabulary.ts:117
+#: src/features/legal/lib/search-filters.ts:135
 msgid "Hotărâre"
 msgstr "Decision (hotărâre)"
+
+#: src/features/legal/lib/search-filters.ts:137
+msgid "Hotărâre de Guvern"
+msgstr "Government decision"
 
 #: src/features/justice/components/echr/echr-answer.tsx:195
 msgid "hotărâre ulterioară, într-o cauză judecată"
@@ -26824,7 +27013,7 @@ msgstr "in \"invisible\" consumption taxes."
 #. placeholder {0}: current.year
 #. placeholder {0}: layer.period
 #. placeholder {0}: newest.text
-#: src/features/national-budget/home/components/person-year.tsx:164
+#: src/features/national-budget/home/components/person-year.tsx:173
 #: src/features/private-companies/lib/company-analytics-text.ts:367
 #: src/features/procurement/components/home/home-context-bands.tsx:231
 #: src/features/public-institutions/components/public-institutions-breakdown.tsx:222
@@ -27525,7 +27714,7 @@ msgstr "In SEAP: {count}. The reported value went from {from} to {to}."
 msgid "În SEAP: {count}. Valorile raportate nu se potrivesc cu textul actelor: actul nr. {act} spune {stated}, dar valoarea raportată se schimbă cu {reported}."
 msgstr "In SEAP: {count}. The reported values do not match the amendments' text: amendment no. {act} says {stated}, but the reported value changes by {reported}."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:324
+#: src/features/national-budget/home/components/person-budgets.tsx:330
 msgid "În stânga, de unde vin banii; în dreapta, bugetele, în culorile lor. Treci peste o bandă sau un buget pentru cifre."
 msgstr "On the left, where the money comes from; on the right, the budgets, in their colours. Point at a band or a budget for the figures."
 
@@ -27789,7 +27978,7 @@ msgstr "Back to where you were"
 msgid "Încă {0} nelistate: fără dosar găsit la celălalt capăt, sau peste primele zece."
 msgstr "{0} more not listed: no case found at the other end, or beyond the first ten."
 
-#: src/features/national-budget/home/components/person-rows.tsx:134
+#: src/features/national-budget/home/components/person-rows.tsx:137
 msgid "încă {hidden}"
 msgstr "{hidden} more"
 
@@ -27850,7 +28039,7 @@ msgstr "Loaded in part: {0}. The sources do not say what is missing."
 msgid "încasări nete din taxa pe valoarea adăugată"
 msgstr "net value added tax receipts"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:64
+#: src/features/national-budget/home/components/person-budgets.tsx:63
 msgid "Încasări proprii"
 msgstr "Own revenue"
 
@@ -27858,6 +28047,10 @@ msgstr "Own revenue"
 #: src/features/national-budget/home/components/home-revenue.tsx:37
 #~ msgid "Încasările bugetului general consolidat (toate bugetele publice, fără transferurile dintre ele), {0}. Sursa: buletinele lunare de execuție ale Ministerului Finanțelor. Variația, față de aceeași perioadă a anului trecut, în lei curenți."
 #~ msgstr "Revenue of the general consolidated budget (all public budgets, without the transfers between them), {0}. Source: the Ministry of Finance's monthly execution bulletins. The change is against the same period of the previous year, in current lei."
+
+#: src/features/legal/components/legislation-act-finder.tsx:132
+msgid "Încearcă"
+msgstr "Try"
 
 #: src/components/entities/FloatingEntitySearch.tsx:136
 #: src/components/filters/filter-sheet/filter-sheet-parts.tsx:137
@@ -27876,7 +28069,8 @@ msgstr "Own revenue"
 #: src/features/landing/components/budget-map/budget-map.tsx:129
 #: src/features/landing/components/search/deferred-landing-search.tsx:318
 #: src/features/legal/components/hub/legislation-hub-parts.tsx:50
-#: src/features/legal/components/legislation-act-finder.tsx:332
+#: src/features/legal/components/legislation-act-finder.tsx:250
+#: src/features/legal/components/legislation-act-finder.tsx:351
 #: src/features/legal/components/legislation-acts-directory.tsx:377
 #: src/features/legal/components/legislation-changes-feed.tsx:464
 #: src/features/legal/components/legislation-gazette-directory.tsx:288
@@ -27997,8 +28191,8 @@ msgid "Închiriere și leasing"
 msgstr "Rental and leasing"
 
 #: src/features/legal/components/legislation-act-finder.tsx:277
-msgid "include actele abrogate sau ieșite din vigoare"
-msgstr "includes repealed acts and acts no longer in force"
+#~ msgid "include actele abrogate sau ieșite din vigoare"
+#~ msgstr "includes repealed acts and acts no longer in force"
 
 #: src/features/elections/components/elections-landing-page.tsx:126
 msgid "Include arhiva 1992-2007"
@@ -28096,7 +28290,7 @@ msgid "Independent"
 msgstr "Independent"
 
 #. placeholder {0}: formatLegalDate(result.asOf, i18n.locale)
-#: src/features/legal/components/legislation-act-finder.tsx:213
+#: src/features/legal/components/legislation-act-finder.tsx:310
 msgid "index din {0}"
 msgstr "index from {0}"
 
@@ -30547,6 +30741,7 @@ msgid "Legăturile sunt citite din titluri: trimiteri, nu efecte. Sunt numărate
 msgstr "Links are read from titles: references, not effects. Only those whose target is an act of the corpus are counted."
 
 #: src/features/legal/lib/legal-vocabulary.ts:115
+#: src/features/legal/lib/search-filters.ts:131
 msgid "Lege"
 msgstr "Law"
 
@@ -30580,8 +30775,12 @@ msgstr "Law · bn lei"
 #~ msgstr "Legea 227/2015 · Codul muncii · OUG 57/2019"
 
 #: src/features/legal/components/legislation-act-finder.tsx:240
-msgid "Legea 53/2003 · Codul muncii · OUG 57/2019"
-msgstr "Legea 53/2003 · Codul muncii · OUG 57/2019"
+#~ msgid "Legea 53/2003 · Codul muncii · OUG 57/2019"
+#~ msgstr "Legea 53/2003 · Codul muncii · OUG 57/2019"
+
+#: src/features/legal/components/legislation-act-finder.tsx:170
+msgid "Legea 53/2003, Codul muncii, OUG 57/2019"
+msgstr "Legea 53/2003, Codul muncii, OUG 57/2019"
 
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:243
 #: src/features/national-budget/analytics/lib/analytics-view.ts:532
@@ -32244,7 +32443,7 @@ msgstr "Mostly from e-licitație: compare carefully."
 msgid "mai ales dobânzi la datoria publică; și comisioane, rambursări de împrumuturi"
 msgstr "mostly interest on the public debt; also fees and loan repayments"
 
-#: src/features/national-budget/home/components/person-head.tsx:377
+#: src/features/national-budget/home/components/person-head.tsx:376
 msgid "Mai departe"
 msgstr "Further"
 
@@ -32278,6 +32477,10 @@ msgstr "Mai multe"
 #: src/features/legal/components/analytics/legislation-analysis.tsx:739
 msgid "Mai multe acte"
 msgstr "More acts"
+
+#: src/features/legal/components/legislation-act-finder.tsx:449
+msgid "Mai multe acte poartă acest nume: alege actul"
+msgstr "Several acts bear this name: choose the act"
 
 #: src/features/private-companies/lib/company-activity-text.ts:252
 msgid "Mai multe activități clasificate ONRC, niciuna selectată"
@@ -32984,6 +33187,10 @@ msgstr "Account menu"
 msgid "mentenanță"
 msgstr "maintenance"
 
+#: src/features/legal/components/legislation-search-filters.tsx:94
+msgid "Menționează sancțiuni"
+msgstr "Mentions penalties"
+
 #: src/routes/justitie.instante.$courtId.tsx:338
 #~ msgid "mențiuni"
 #~ msgstr "mențiuni"
@@ -33222,7 +33429,7 @@ msgstr "Ministries"
 #~ msgid "Ministerele care cheltuie cel mai mult"
 #~ msgstr "The ministries that spend the most"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:48
+#: src/features/national-budget/home/components/person-budgets.tsx:47
 msgid "ministerele și instituțiile centrale; o parte o dă altor bugete"
 msgstr "the ministries and central institutions; part of it goes to other budgets"
 
@@ -33262,7 +33469,7 @@ msgstr "Ministry of Education"
 msgid "Ministerul Educației și Cercetării"
 msgstr "Ministry of Education and Research"
 
-#: src/features/national-budget/home/components/person-head.tsx:116
+#: src/features/national-budget/home/components/person-head.tsx:114
 #: src/features/national-budget/home/lib/home-format.ts:121
 #: src/features/private-companies/components/analytics/analytics-source.tsx:30
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:136
@@ -33386,8 +33593,8 @@ msgstr "bn"
 #: src/features/national-budget/analytics/lib/analytics-format.ts:26
 #: src/features/national-budget/home/components/person-debt.tsx:29
 #: src/features/national-budget/home/components/person-debt.tsx:46
-#: src/features/national-budget/home/components/person-head.tsx:331
-#: src/features/national-budget/home/components/person-year.tsx:71
+#: src/features/national-budget/home/components/person-head.tsx:330
+#: src/features/national-budget/home/components/person-year.tsx:79
 #: src/features/national-budget/home/lib/person-format.ts:56
 #: src/features/ngos/hub/ngo-hub-page.tsx:225
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:338
@@ -33728,8 +33935,13 @@ msgstr "The reason given: urgency."
 
 #. placeholder {0}: result.engine
 #: src/features/legal/components/legislation-act-finder.tsx:209
-msgid "motor de căutare: {0}"
-msgstr "search engine: {0}"
+#~ msgid "motor de căutare: {0}"
+#~ msgstr "search engine: {0}"
+
+#. placeholder {0}: result.engine
+#: src/features/legal/components/legislation-act-finder.tsx:309
+msgid "Motor de căutare: {0}"
+msgstr "Search engine: {0}"
 
 #: src/features/entity-search/components/entity-empty-state.tsx:179
 msgid "Motorul de căutare este indisponibil, așa că \"{query}\" nu a putut fi căutat. Asta nu înseamnă că nu există rezultate. Momentan funcționează doar căutarea după cod fiscal exact."
@@ -33990,7 +34202,7 @@ msgstr "Births above deaths"
 #~ msgstr "National"
 
 #: src/features/elections/catalog/elections-catalog-text.ts:88
-#: src/features/national-budget/home/components/person-head.tsx:153
+#: src/features/national-budget/home/components/person-head.tsx:147
 #: src/features/statistics/components/territory/territory-header.tsx:32
 msgid "Național"
 msgstr "National"
@@ -34815,9 +35027,13 @@ msgstr "No amending act in the selection."
 msgid "Niciun act găsit — încearcă numărul și anul (ex. 227/2015)."
 msgstr "No act found — try the number and year (e.g. 227/2015)."
 
+#: src/features/legal/components/legislation-act-finder.tsx:368
+msgid "Niciun act găsit pentru citarea „{q}\""
+msgstr "No act found for the citation “{q}”"
+
 #: src/features/legal/components/legislation-act-finder.tsx:451
-msgid "Niciun act găsit pentru citarea „{q}”."
-msgstr "No act found for the citation “{q}”."
+#~ msgid "Niciun act găsit pentru citarea „{q}”."
+#~ msgstr "No act found for the citation “{q}”."
 
 #: src/features/legal/components/legislation-acts-directory.tsx:384
 msgid "Niciun act nu corespunde filtrelor."
@@ -34826,6 +35042,10 @@ msgstr "No act matches the filters."
 #: src/features/legal/components/analytics/legislation-analysis.tsx:162
 msgid "Niciun act nu se potrivește cu această întrebare. Scoate un filtru."
 msgstr "No act matches this question. Remove a filter."
+
+#: src/features/legal/components/legislation-act-finder.tsx:378
+msgid "Niciun act pentru „{q}\", dar asta nu înseamnă că prevederea nu există"
+msgstr "No act for “{q}”, but that does not mean the provision does not exist"
 
 #: src/features/ngos/registry/components/registry-answer.tsx:558
 msgid "Niciun an de registru în selecție."
@@ -35832,6 +36052,10 @@ msgstr "None"
 msgid "Normă"
 msgstr "Norm"
 
+#: src/features/legal/lib/search-filters.ts:143
+msgid "Normă metodologică"
+msgstr "Methodological norm"
+
 #: src/features/learning/components/interactive/RectificationHistory.tsx:77
 #: src/features/learning/components/interactive/RedFlagCards.tsx:63
 msgid "Normal"
@@ -36186,8 +36410,8 @@ msgstr "Nu am găsit în fixture obiectivul cerut."
 #~ msgstr "Nu am găsit instantaneul de proveniență cerut pentru această sursă ONG."
 
 #: src/features/legal/components/legislation-act-finder.tsx:481
-msgid "Nu am găsit niciun act pentru „{q}” — dar asta nu înseamnă că prevederea nu există în legislație."
-msgstr "We found no act for “{q}” — but that does not mean the provision does not exist in the legislation."
+#~ msgid "Nu am găsit niciun act pentru „{q}” — dar asta nu înseamnă că prevederea nu există în legislație."
+#~ msgstr "We found no act for “{q}” — but that does not mean the provision does not exist in the legislation."
 
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:162
 #: src/routes/ins/seturi/$cod.lazy.tsx:60
@@ -36208,7 +36432,7 @@ msgstr "We found no INS territory for this SIRUTA code."
 #~ msgid "Nu am putut afla până când sunt complete datele SEAP; arătăm până în {0}."
 #~ msgstr "We could not find out through when SEAP data is complete; we show it through {0}."
 
-#: src/features/legal/components/legislation-act-finder.tsx:325
+#: src/features/legal/components/legislation-act-finder.tsx:248
 msgid "Nu am putut căuta în legislație."
 msgstr "We could not search the legislation."
 
@@ -36928,8 +37152,8 @@ msgid "Numărul"
 msgstr "Number"
 
 #: src/features/legal/components/legislation-act-finder.tsx:290
-msgid "numărul actului — „Legea 53/2003”, „OUG 57/2019”, „HG 1/2016”"
-msgstr "the act’s number — “Legea 53/2003”, “OUG 57/2019”, “HG 1/2016”"
+#~ msgid "numărul actului — „Legea 53/2003”, „OUG 57/2019”, „HG 1/2016”"
+#~ msgstr "the act’s number — “Legea 53/2003”, “OUG 57/2019”, “HG 1/2016”"
 
 #. placeholder {0}: read.year
 #: src/features/procurement/components/home/home-context-bands.tsx:446
@@ -36999,6 +37223,10 @@ msgstr "The statements' average headcounts added up: not distinct people."
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:217
 msgid "Numărul mediu, din aceleași bilanțuri"
 msgstr "Average headcount, from the same statements"
+
+#: src/features/legal/components/legislation-act-finder.tsx:300
+msgid "Numărul total de potriviri nu este cunoscut: sunt afișate cele mai potrivite."
+msgstr "The total number of matches is not known: the best matches are shown."
 
 #: src/features/procurement/lib/export.ts:39
 #~ msgid "Number"
@@ -37368,6 +37596,14 @@ msgstr "Part of the text did not load"
 msgid "O parte din aceste cifre nu s-a putut citi acum; reîncarcă pagina pentru restul."
 msgstr "Some of these figures could not be read just now; reload the page for the rest."
 
+#: src/features/legal/components/legislation-act-finder.tsx:385
+msgid "O parte din căutare nu a rulat, iar căutarea după sens nu este încă disponibilă: o prevedere formulată cu alte cuvinte poate lipsi de aici."
+msgstr "Part of the search did not run, and search by meaning is not available yet: a provision worded differently may be missing here."
+
+#: src/features/legal/components/legislation-act-finder.tsx:292
+msgid "O parte din căutare nu a rulat, iar căutarea după sens nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici."
+msgstr "Part of the search did not run, and search by meaning is not available yet: a provision may exist even if it does not appear here."
+
 #: src/features/legal/components/legislation-honesty-notes.tsx:61
 #~ msgid "O parte dintre trimiterile între acte nu se rezolvă la un act anume. Acestea apar ca „potrivire posibilă”, niciodată ca legătură fermă."
 #~ msgstr "O parte dintre trimiterile între acte nu se rezolvă la un act anume. Acestea apar ca „potrivire posibilă”, niciodată ca legătură fermă."
@@ -37393,12 +37629,12 @@ msgid "o populație minimă"
 msgstr "a minimum population"
 
 #: src/features/legal/components/legislation-act-finder.tsx:174
-msgid "o potrivire"
-msgstr "one match"
+#~ msgid "o potrivire"
+#~ msgstr "one match"
 
 #: src/features/legal/components/legislation-act-finder.tsx:170
-msgid "o potrivire afișată — numărul total nu este cunoscut"
-msgstr "one match shown — the total number is not known"
+#~ msgid "o potrivire afișată — numărul total nu este cunoscut"
+#~ msgstr "one match shown — the total number is not known"
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:84
 #~ msgid "O presupunere: codul CAEN din datele fiscale ANAF, potrivit cu activitățile din ediția ONRC. Nu e o informație publicată de ONRC."
@@ -38207,6 +38443,7 @@ msgid "Orașul {name}"
 msgstr "Town of {name}"
 
 #: src/features/legal/lib/legal-vocabulary.ts:119
+#: src/features/legal/lib/search-filters.ts:133
 msgid "Ordin"
 msgstr "Order"
 
@@ -38246,10 +38483,12 @@ msgid "Ordinea legii"
 msgstr "Order in the law"
 
 #: src/features/legal/lib/legal-vocabulary.ts:127
+#: src/features/legal/lib/search-filters.ts:147
 msgid "Ordonanță"
 msgstr "Ordinance"
 
 #: src/features/legal/lib/legal-vocabulary.ts:125
+#: src/features/legal/lib/search-filters.ts:149
 msgid "Ordonanță de urgență"
 msgstr "Emergency ordinance"
 
@@ -38380,6 +38619,10 @@ msgstr "Any"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:199
 #~ msgid "Oricare înscriere publică, inclusiv lângă alte stări"
 #~ msgstr "Any public entry, including beside other statuses"
+
+#: src/features/legal/components/legislation-search-filters.tsx:167
+msgid "orice an"
+msgstr "any year"
 
 #: src/features/landing/lib/search-filters.ts:71
 msgid "orice entitate publică, inclusiv primăriile"
@@ -38698,12 +38941,13 @@ msgstr "Legislation pages"
 #~ msgid "până în"
 #~ msgstr "to"
 
+#. placeholder {0}: filters.to ?? ''
 #. placeholder {0}: lastMonthText(snapshot)
 #. placeholder {0}: lastMonthText(source)
-#. placeholder {0}: lastMonthText(sourceOf(question))
 #: src/features/justice/components/analysis/analysis-view.tsx:28
 #: src/features/justice/components/analysis/analysis-years.tsx:66
 #: src/features/justice/components/echr/echr-view.tsx:31
+#: src/features/legal/components/legislation-search-filters.tsx:81
 #: src/features/national-budget/home/components/person-shell.tsx:48
 #: src/features/procurement/components/profile/profile-years-chart.tsx:103
 #: src/features/procurement/components/profile/profile-years-chart.tsx:105
@@ -38726,6 +38970,10 @@ msgstr "Through {0} it bought only directly, without a tender: no procedure has 
 msgid "până în {partMonth}"
 msgstr "through {partMonth}"
 
+#: src/features/legal/components/legislation-search-filters.tsx:176
+#~ msgid "Până în anul"
+#~ msgstr "Until the year"
+
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:830
 #: src/features/procurement/components/analytics/analytics-filters.tsx:405
 msgid "până la"
@@ -38733,6 +38981,8 @@ msgstr "to"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:805
 #: src/features/legal/components/legislation-changes-feed.tsx:354
+#: src/features/legal/components/legislation-search-filters.tsx:175
+#: src/features/legal/components/legislation-search-filters.tsx:176
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:188
 #: src/features/procurement/components/analytics/analytics-controls.tsx:101
 #: src/features/procurement/components/analytics/analytics-filters.tsx:91
@@ -38748,7 +38998,7 @@ msgid "până la 10.000"
 msgstr "up to 10,000"
 
 #. placeholder {0}: monthName(monthOf(now.year, month))
-#: src/features/national-budget/home/components/person-year.tsx:81
+#: src/features/national-budget/home/components/person-year.tsx:89
 msgid "Până la sfârșitul lui {0}:"
 msgstr "Through the end of {0}:"
 
@@ -39137,8 +39387,8 @@ msgid "Pe bugete, cifrele sunt de la 1 ianuarie, nu ale perioadei alese."
 msgstr "By budget, the figures run from 1 January, not over the chosen period."
 
 #: src/features/national-budget/home/components/person-head.tsx:158
-msgid "pe cap de locuitor"
-msgstr "per resident"
+#~ msgid "pe cap de locuitor"
+#~ msgstr "per resident"
 
 #: src/features/national-budget/analytics/lib/analytics-view.ts:493
 #: src/features/public-institutions/components/public-institutions-breakdown.tsx:170
@@ -39207,8 +39457,8 @@ msgstr "What was spent from the "
 msgid "Pe ce s-au cheltuit banii publici în {when}?"
 msgstr "What was public money spent on in {when}?"
 
-#: src/features/national-budget/home/components/person-flow.tsx:107
-#: src/features/national-budget/home/components/person-flow.tsx:119
+#: src/features/national-budget/home/components/person-flow.tsx:110
+#: src/features/national-budget/home/components/person-flow.tsx:122
 msgid "Pe ce s-au dus"
 msgstr "What it went on"
 
@@ -39320,6 +39570,10 @@ msgstr "by institution"
 #: src/features/national-budget/home/components/person-state.tsx:69
 msgid "Pe instituții"
 msgstr "By institution"
+
+#: src/features/national-budget/home/components/person-head.tsx:152
+msgid "pe înțeles"
+msgstr "made clear"
 
 #: src/features/justice/lib/analysis-text.ts:157
 #: src/features/procurement/lib/analytics-text.ts:276
@@ -39505,7 +39759,7 @@ msgid "Penitenciar"
 msgstr "Prison"
 
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:487
-#: src/features/national-budget/home/components/person-budgets.tsx:36
+#: src/features/national-budget/home/components/person-budgets.tsx:35
 #: src/features/national-budget/home/lib/home-format.ts:68
 msgid "Pensii"
 msgstr "Pensions"
@@ -39518,7 +39772,7 @@ msgstr "pensions paid from the state budget, child benefits, allowances, social 
 msgid "pensii, alocații, indemnizații"
 msgstr "pensions, child benefits, allowances"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:52
+#: src/features/national-budget/home/components/person-budgets.tsx:51
 msgid "pensiile din sistemul public"
 msgstr "public pensions"
 
@@ -40196,6 +40450,12 @@ msgstr "Budget execution payments"
 msgid "Plăți PNRR"
 msgstr "PNRR payments"
 
+#. placeholder {0}: inPeriod(view.text)
+#. placeholder {1}: populationText(view.year) ?? ''
+#: src/features/national-budget/home/components/person-receipt.tsx:115
+msgid "Plățile bugetului general consolidat (toate bugetele publice, fără transferurile dintre ele) {0}, după natura cheltuielii, din buletinele de execuție ale Ministerului Finanțelor, împărțite la cei {1} de locuitori (populația rezidentă de la 1 ianuarie). Nu e ce a plătit fiecare: e cât revine, în medie, fiecărui locuitor. Rândurile sunt rotunjite la leu astfel încât să dea totalul."
+msgstr "Payments of the general consolidated budget (all public budgets, without the transfers between them) {0}, by type of spending, from the Ministry of Finance execution bulletins, divided by the {1} residents (the resident population on 1 January). It isn't what each person paid: it is each resident's average share. The lines are rounded to the leu so that they add up to the total."
+
 #. placeholder {0}: view.text
 #: src/features/national-budget/home/components/home-spending.tsx:36
 #~ msgid "Plățile bugetului general consolidat (toate bugetele publice, fără transferurile dintre ele), {0}, după natura cheltuielii. Sursa: buletinele lunare de execuție ale Ministerului Finanțelor. Variația, față de aceeași perioadă a anului trecut, în lei curenți."
@@ -40274,7 +40534,7 @@ msgid "Plen"
 msgstr "Plen"
 
 #. placeholder {0}: moneyText(totals.deficit)
-#: src/features/national-budget/home/components/person-head.tsx:70
+#: src/features/national-budget/home/components/person-head.tsx:68
 msgid "plus {0} deficit bugetar (cash)"
 msgstr "plus {0} cash budget deficit"
 
@@ -40364,12 +40624,12 @@ msgstr "police, civil protection and firefighters, courts, prisons"
 msgid "Ponderea în PIB e cea tipărită în buletinul anului; pentru {computed}, unde datele încărcate nu au ponderea tipărită, e deficitul împărțit la PIB-ul anual publicat de INS (Tempo CON111B; 2025, provizoriu), deci poate diferi de cea publicată de minister."
 msgstr "The share of GDP is the one printed in the year's bulletin; for {computed}, where the loaded data lacks the printed share, it is the deficit divided by the annual GDP published by INS (Tempo CON111B; 2025 provisional), so it can differ from the one the Ministry published."
 
-#: src/features/national-budget/home/components/person-year.tsx:205
+#: src/features/national-budget/home/components/person-year.tsx:214
 msgid "Ponderea în PIB e cea tipărită în buletinul fiecărei luni, la publicare: deficitul de până atunci împărțit la PIB-ul estimat atunci pentru tot anul, de aceea urcă spre decembrie. Un buletin mai nou poate recalcula o lună cu PIB-ul revizuit."
 msgstr "The share of GDP is the one printed in each month's bulletin when it was published: the deficit so far divided by the GDP then forecast for the whole year, which is why it climbs towards December. A newer bulletin can restate a month with revised GDP."
 
 #. placeholder {0}: unprinted.join(', ')
-#: src/features/national-budget/home/components/person-year.tsx:204
+#: src/features/national-budget/home/components/person-year.tsx:213
 msgid "Ponderea în PIB e cea tipărită în buletinul fiecărei luni, la publicare: deficitul de până atunci împărțit la PIB-ul estimat atunci pentru tot anul, de aceea urcă spre decembrie. Un buletin mai nou poate recalcula o lună cu PIB-ul revizuit. Datele încărcate nu au ponderea pentru {0}; linia trece peste."
 msgstr "The share of GDP is the one printed in each month's bulletin when it was published: the deficit so far divided by the GDP then forecast for the whole year, which is why it climbs towards December. A newer bulletin can restate a month with revised GDP. The loaded data has no share for {0}; the line skips it."
 
@@ -40393,7 +40653,7 @@ msgstr "Registered unemployed share"
 #~ msgid "Ponderea șomerilor înregistrați din 2016 încoace, la nivel național și pe județe."
 #~ msgstr "Ponderea șomerilor înregistrați din 2016 încoace, la nivel național și pe județe."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:416
+#: src/features/national-budget/home/components/person-budgets.tsx:422
 msgid "Ponderi"
 msgstr "Shares"
 
@@ -40772,12 +41032,20 @@ msgstr "Match withheld by a reviewed correction"
 #~ msgstr "potriviri"
 
 #: src/features/legal/components/legislation-act-finder.tsx:340
-msgid "Potriviri după cuvintele din numele, titlul și textul actelor. Căutarea după sens nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
-msgstr "Potriviri după cuvintele din numele, titlul și textul actelor. Căutarea după sens nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
+#~ msgid "Potriviri după cuvintele din numele, titlul și textul actelor. Căutarea după sens nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
+#~ msgstr "Potriviri după cuvintele din numele, titlul și textul actelor. Căutarea după sens nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
+
+#: src/features/legal/components/legislation-act-finder.tsx:296
+msgid "Potriviri după cuvintele din numele, titlul și textul actelor. Căutarea după sens nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici."
+msgstr "Matches by the words in the acts' names, titles and text. Search by meaning is not available yet: a provision may exist even if it does not appear here."
 
 #: src/features/legal/components/legislation-act-finder.tsx:346
-msgid "Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
-msgstr "Matches by the number and name of acts. Searching the text of laws is not available yet — a provision may exist even if it does not appear here."
+#~ msgid "Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
+#~ msgstr "Matches by the number and name of acts. Searching the text of laws is not available yet — a provision may exist even if it does not appear here."
+
+#: src/features/legal/components/legislation-act-finder.tsx:297
+msgid "Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă: o prevedere poate exista chiar dacă nu apare aici."
+msgstr "Matches by the acts' number and name. Searching the text of laws is not available yet: a provision may exist even if it does not appear here."
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:306
 msgid "potrivit cu ONRC"
@@ -40830,7 +41098,7 @@ msgstr "preamble"
 msgid "Precedenta"
 msgstr "Previous"
 
-#: src/features/legal/components/legislation-act-finder.tsx:200
+#: src/features/legal/components/legislation-act-finder.tsx:302
 msgid "Precizări de la server"
 msgstr "Notes from the server"
 
@@ -41185,7 +41453,7 @@ msgstr "Town halls"
 msgid "Primării, ministere, școli și spitale, comparate după venituri și cheltuieli."
 msgstr "Town halls, ministries, schools and hospitals, compared by revenue and spending."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:50
+#: src/features/national-budget/home/components/person-budgets.tsx:49
 msgid "primăriile și consiliile județene"
 msgstr "municipalities and county councils"
 
@@ -41313,7 +41581,7 @@ msgstr "by"
 msgid "prin {0}"
 msgstr "through {0}"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:435
+#: src/features/national-budget/home/components/person-budgets.tsx:441
 msgid "Prin ce bugete trec banii"
 msgstr "Which budgets the money goes through"
 
@@ -41749,7 +42017,7 @@ msgctxt "national budget classification"
 msgid "Proiecte PNRR din împrumuturi"
 msgstr "NRRP projects from loans"
 
-#: src/features/national-budget/home/hooks/use-person-data.ts:66
+#: src/features/national-budget/home/hooks/use-person-data.ts:68
 msgid "proiecte PNRR din împrumuturi, active financiare, rambursări, alte cheltuieli"
 msgstr "PNRR projects financed by loans, financial assets, repayments, other spending"
 
@@ -42553,8 +42821,8 @@ msgid "raportul trimestrial al achizițiilor directe"
 msgstr "the quarterly direct-purchase report"
 
 #: src/features/legal/components/legislation-act-finder.tsx:221
-msgid "răspuns degradat — o parte din căutare nu a rulat"
-msgstr "degraded response — part of the search did not run"
+#~ msgid "răspuns degradat — o parte din căutare nu a rulat"
+#~ msgstr "degraded response — part of the search did not run"
 
 #. placeholder {0}: moneyText(undatedMoney)
 #: src/features/procurement/lib/analytics-text.ts:164
@@ -42564,6 +42832,10 @@ msgstr "Partial answer: {undated, plural, one {# row} other {# rows}} with no da
 #: src/features/procurement/lib/analytics-text.ts:165
 msgid "Răspuns parțial: {undated, plural, one {# rând} few {# rânduri} other {# de rânduri}} fără dată nu intră în nicio perioadă."
 msgstr "Partial answer: {undated, plural, one {# row} other {# rows}} with no date fall outside every period."
+
+#: src/features/legal/components/legislation-act-finder.tsx:315
+msgid "Răspuns parțial: o parte din căutare nu a rulat."
+msgstr "Partial answer: part of the search did not run."
 
 #: src/features/procurement/lib/analytics-text.ts:162
 msgid "Răspuns parțial: sursa nu acoperă toată selecția."
@@ -43297,6 +43569,7 @@ msgid "Regula după care am corectat valoarea nu are încă o descriere publică
 msgstr "The rule we corrected the value by has no public description yet."
 
 #: src/features/legal/lib/legal-vocabulary.ts:133
+#: src/features/legal/lib/search-filters.ts:145
 msgid "Regulament"
 msgstr "Regulation"
 
@@ -44101,7 +44374,7 @@ msgstr "Result, {year}"
 #: src/features/entity-search/components/entity-search-skeleton.tsx:15
 #: src/features/landing/components/search/landing-search.tsx:669
 #: src/features/landing/components/search/landing-search.tsx:719
-#: src/features/legal/components/legislation-act-finder.tsx:395
+#: src/features/legal/components/legislation-act-finder.tsx:406
 #: src/features/private-companies/components/profile/company-main-activity.tsx:376
 #: src/features/private-companies/components/profile/company-years-band.tsx:220
 #: src/features/statistics/components/explorer/dataset-explorer-results.tsx:117
@@ -44535,7 +44808,7 @@ msgstr "Save my choice"
 
 #: src/features/legal/lib/legal-domains.ts:47
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:489
-#: src/features/national-budget/home/components/person-budgets.tsx:38
+#: src/features/national-budget/home/components/person-budgets.tsx:37
 #: src/features/national-budget/home/lib/home-format.ts:65
 #: src/features/ngos/hub/ngo-hub-labels.ts:32
 #: src/features/private-companies/lib/caen-divisions.ts:103
@@ -44552,9 +44825,9 @@ msgstr "Health"
 msgid "Sănătate, social și formare"
 msgstr "Health, social services and training"
 
-#: src/features/public-enterprises/lib/tab-config.ts:51
-#~ msgid "Sancțiuni"
-#~ msgstr "Sancțiuni"
+#: src/features/legal/components/legislation-search-filters.tsx:209
+msgid "Sancțiuni"
+msgstr "Penalties"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1076
 #~ msgid "Sancțiuni AMEPIP"
@@ -44588,7 +44861,7 @@ msgstr "or tap it once more on the map"
 #: src/features/justice/components/hub/justice-hub-hero.tsx:53
 #: src/features/landing/components/landing-page.tsx:317
 #: src/features/legal/components/hub/legislation-hub.tsx:142
-#: src/features/national-budget/home/components/person-head.tsx:167
+#: src/features/national-budget/home/components/person-head.tsx:159
 #: src/features/ngos/hub/ngo-hub-hero.tsx:62
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:70
 #: src/features/procurement/components/home/procurement-home-page.tsx:157
@@ -44729,6 +45002,8 @@ msgid "Scoate filtrul {text}"
 msgstr "Remove the filter {text}"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:943
+#: src/features/legal/components/legislation-search-filters.tsx:102
+#: src/features/legal/components/legislation-search-filters.tsx:222
 msgid "Scoate toate filtrele"
 msgstr "Remove all filters"
 
@@ -44910,7 +45185,7 @@ msgstr "The contest for {office} in {place}: party-level votes and turnout."
 #: src/features/justice/components/hub/justice-hub-hero.tsx:51
 #: src/features/landing/components/landing-page.tsx:313
 #: src/features/legal/components/hub/legislation-hub.tsx:140
-#: src/features/national-budget/home/components/person-head.tsx:166
+#: src/features/national-budget/home/components/person-head.tsx:158
 #: src/features/ngos/hub/ngo-hub-hero.tsx:60
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:68
 #: src/features/procurement/components/home/procurement-home-page.tsx:155
@@ -44990,13 +45265,13 @@ msgstr "Se afișează stenograma integrală a ședinței."
 msgid "se aplică doar esențialele"
 msgstr "only the essentials apply"
 
-#: src/features/statistics/components/hub/hub-place-finder.tsx:36
-#~ msgid "Se caută"
-#~ msgstr "Searching"
+#: src/features/legal/components/legislation-act-finder.tsx:470
+msgid "Se caută"
+msgstr "Searching"
 
 #: src/features/legal/components/legislation-search-skeleton.tsx:15
-msgid "Se caută în legislație"
-msgstr "Searching the legislation"
+#~ msgid "Se caută în legislație"
+#~ msgstr "Searching the legislation"
 
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:90
 msgid "Se caută intervenția…"
@@ -45006,6 +45281,7 @@ msgstr "Se caută intervenția…"
 msgid "Se caută."
 msgstr "Searching."
 
+#: src/features/legal/components/legislation-act-finder.tsx:339
 #: src/features/legal/components/legislation-acts-directory.tsx:470
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:123
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:136
@@ -45773,7 +46049,7 @@ msgstr "section"
 #~ msgstr "Sectiuni profil ONG"
 
 #: src/features/legal/components/hub/legislation-hub-chrome.tsx:115
-#: src/features/national-budget/home/components/person-head.tsx:228
+#: src/features/national-budget/home/components/person-head.tsx:227
 #: src/features/private-companies/components/profile/company-profile-page.tsx:144
 #: src/features/procurement/components/home/home-section-nav.tsx:11
 msgid "Secțiunile paginii"
@@ -46390,6 +46666,14 @@ msgstr "Series with different units will be displayed on separate Y-axes"
 #~ msgid "Served live from the database (search engine not used)."
 #~ msgstr "Served live from the database (search engine not used)."
 
+#: src/features/legal/components/legislation-act-finder.tsx:328
+#~ msgid "Serverul a găsit acte pentru această căutare, dar nu le-a putut încărca acum. Încearcă din nou peste puțin timp."
+#~ msgstr "The server found acts for this search but could not load them now. Try again in a little while."
+
+#: src/features/legal/components/legislation-act-finder.tsx:348
+msgid "Serverul a găsit potriviri pentru această căutare, dar nu le-a putut încărca acum. Încearcă din nou peste puțin timp."
+msgstr "The server found matches for this search but could not load them now. Try again in a little while."
+
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:153
 msgid "Serverul a răspuns, dar a respins această interogare. Filtrele selectate pot fi în afara a ceea ce poate servi; încercați să le simplificați sau reîncercați."
 msgstr "Serverul a răspuns, dar a respins această interogare. Filtrele selectate pot fi în afara a ceea ce poate servi; încercați să le simplificați sau reîncercați."
@@ -46913,6 +47197,10 @@ msgstr "and {0}"
 msgid "și {0} în recurs"
 msgstr "and {0} on second appeal"
 
+#: src/features/legal/components/legislation-search-filters.tsx:86
+msgid "Și actele abrogate"
+msgstr "Repealed acts too"
+
 #: src/features/procurement/lib/direct-purchase-text.ts:210
 msgid "și alte {others}"
 msgstr "and {others} more"
@@ -47410,7 +47698,7 @@ msgstr "The hearings' outcomes and persons' names are not shown here: persons ar
 msgid "Șomaj"
 msgstr "Unemployment"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:56
+#: src/features/national-budget/home/components/person-budgets.tsx:55
 msgid "șomaj, instituții finanțate din venituri proprii, drumuri naționale, alte fonduri"
 msgstr "unemployment, institutions funded from their own revenue, national roads, other funds"
 
@@ -47739,6 +48027,7 @@ msgid "Standard"
 msgstr "Standard"
 
 #: src/features/elections/catalog/election-contest-page.tsx:142
+#: src/features/legal/components/legislation-search-filters.tsx:154
 #: src/features/ngos/organization/components/profile-parts.tsx:603
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:169
 #: src/features/public-enterprises/components/enterprise/public-enterprise-page.tsx:43
@@ -48460,7 +48749,7 @@ msgstr "Subsidies"
 msgid "subvenții pentru agricultori, păduri"
 msgstr "subsidies for farmers, forests"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:79
+#: src/features/national-budget/home/components/person-budgets.tsx:78
 msgid "subvenții primite de la alte bugete, mai ales de la bugetul de stat"
 msgstr "subsidies received from other budgets, mostly from the state budget"
 
@@ -48544,7 +48833,7 @@ msgstr "Amounts being distributed"
 msgid "Sume în lei"
 msgstr "Amounts in lei"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:81
+#: src/features/national-budget/home/components/person-budgets.tsx:80
 msgid "sume primite de la Uniunea Europeană și alți donatori, granturile PNRR incluse"
 msgstr "amounts received from the European Union and other donors, PNRR grants included"
 
@@ -48568,7 +48857,7 @@ msgstr "Amounts are divided by the locality's {year} population."
 msgid "Sumele sunt în lei curenți, neajustați cu inflația."
 msgstr "Amounts are in current lei, not adjusted for inflation."
 
-#: src/features/national-budget/home/components/person-year.tsx:202
+#: src/features/national-budget/home/components/person-year.tsx:211
 msgid "Sumele sunt în lei curenți."
 msgstr "Amounts are in current lei."
 
@@ -48974,7 +49263,7 @@ msgstr "Surse divergente asupra valorii — verifică sursa."
 #~ msgid "Surse și acoperire"
 #~ msgstr "Sources and coverage"
 
-#: src/features/national-budget/home/components/person-head.tsx:114
+#: src/features/national-budget/home/components/person-head.tsx:112
 #: src/features/ngos/hub/ngo-hub-pending.tsx:49
 #: src/features/private-companies/components/profile/company-registry-band.tsx:174
 #: src/features/public-enterprises/components/hub/hub-pending.tsx:80
@@ -49015,7 +49304,7 @@ msgstr "Sources: the ONRC registry, ANAF tax records, financial statements filed
 msgid "Sursele acoperă diferit fiecare an, iar din 2026 rândurile vin mai ales din e-licitație: urmăriți forma, nu nivelul."
 msgstr "The sources cover each year differently, and since 2026 rows come mostly from e-licitație: watch the shape, not the level."
 
-#: src/features/national-budget/home/components/person-budgets.tsx:337
+#: src/features/national-budget/home/components/person-budgets.tsx:343
 msgid "Sursele de bani ale fiecărui buget"
 msgstr "Each budget's sources of money"
 
@@ -49224,7 +49513,7 @@ msgctxt "national budget classification"
 msgid "Taxe vamale"
 msgstr "Customs duties"
 
-#: src/features/national-budget/home/hooks/use-person-data.ts:65
+#: src/features/national-budget/home/hooks/use-person-data.ts:67
 msgid "taxe vamale, alte impozite, venituri din capital, alte sume de la UE"
 msgstr "customs duties, other taxes, capital revenue, other EU amounts"
 
@@ -49232,7 +49521,7 @@ msgstr "customs duties, other taxes, capital revenue, other EU amounts"
 #~ msgid "taxe vamale, alte impozite, venituri din capital, alte sume de la UE, operațiuni financiare; în anii cu buletine PDF, și rândurile pe care acestea nu le detaliază"
 #~ msgstr "customs duties, other taxes, capital revenue, other EU money, financial operations; in years with PDF bulletins, also the lines they don't break down"
 
-#: src/features/national-budget/home/components/person-budgets.tsx:77
+#: src/features/national-budget/home/components/person-budgets.tsx:76
 msgid "taxe, impozite, contribuții, alte venituri ale bugetului"
 msgstr "taxes, contributions, the budget's other revenue"
 
@@ -50259,6 +50548,7 @@ msgstr "Held"
 
 #: src/features/elections/catalog/election-edition-page.tsx:131
 #: src/features/legal/components/analytics/legislation-analysis.tsx:825
+#: src/features/legal/components/legislation-search-filters.tsx:145
 msgid "Tip"
 msgstr "Type"
 
@@ -50279,6 +50569,10 @@ msgstr "Place type"
 #: src/routes/justitie.dosare.$caseId.tsx:270
 #~ msgid "tip necunoscut"
 #~ msgstr "tip necunoscut"
+
+#: src/features/legal/components/legislation-search-filters.tsx:30
+msgid "Tip necunoscut"
+msgstr "Unknown type"
 
 #: src/features/legal/lib/analytics-view.ts:42
 msgid "tip nerecunoscut"
@@ -50449,6 +50743,7 @@ msgstr "all"
 #: src/features/entity-search/components/entity-facet-chips.tsx:80
 #: src/features/justice/components/analysis/analysis-levels.tsx:43
 #: src/features/justice/components/hub/justice-hub-bands.tsx:179
+#: src/features/legal/components/legislation-search-filters.tsx:158
 #: src/features/ngos/registry/model.ts:204
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:739
 #: src/features/private-companies/lib/company-profile-text.ts:231
@@ -51049,6 +51344,7 @@ msgstr "total"
 #: src/features/justice/components/analysis/analysis-table.tsx:203
 #: src/features/justice/components/hub/justice-hub-bands.tsx:240
 #: src/features/national-budget/analytics/components/analytics-law.tsx:368
+#: src/features/national-budget/home/components/person-receipt.tsx:73
 #: src/features/parliament/components/vote-group-votes-table.tsx:316
 #: src/features/private-companies/lib/company-analytics-view.ts:122
 #: src/features/procurement/components/direct-purchase/direct-purchase-receipt.tsx:154
@@ -51375,6 +51671,10 @@ msgstr "Public debt transactions and loans"
 #: src/features/procurement/components/procurement-entity-header.tsx:163
 #~ msgid "Traseu de navigare"
 #~ msgstr "Traseu de navigare"
+
+#: src/features/legal/lib/search-filters.ts:151
+msgid "Tratat"
+msgstr "Treaty"
 
 #: src/components/commitments/IntervalTable.tsx:140
 #: src/lib/commitments-metrics.ts:33
@@ -51847,13 +52147,25 @@ msgstr "A framework agreement sets the most that can be spent. The money is spen
 msgid "Un acord-cadru fixează un plafon, nu o cheltuială."
 msgstr "A framework agreement sets a ceiling, not an expense."
 
+#: src/features/legal/components/legislation-act-finder.tsx:449
+msgid "Un act corespunde acestei căutări"
+msgstr "One act matches this search"
+
 #: src/features/legal/components/legislation-act-finder.tsx:363
-msgid "Un act corespunde acestei căutări:"
-msgstr "One act matches this search:"
+#~ msgid "Un act corespunde acestei căutări:"
+#~ msgstr "One act matches this search:"
+
+#: src/features/legal/components/legislation-act-finder.tsx:214
+msgid "Un act după denumirea lui"
+msgstr "An act by its name"
 
 #: src/features/legal/components/legislation-shell.tsx:44
 msgid "Un act după număr sau după denumire, cu statutul lui actual."
 msgstr "An act by number or by name, with its current status."
+
+#: src/features/legal/components/legislation-act-finder.tsx:208
+msgid "Un act după numărul lui"
+msgstr "An act by its number"
 
 #: src/features/legal/components/legislation-domain-grid.tsx:63
 msgid "Un act poate ține de mai multe domenii, așa că numerele se suprapun — adunate, depășesc numărul real de acte din corpus."
@@ -53517,7 +53829,7 @@ msgctxt "national budget classification"
 msgid "Venituri din servicii și alte activități"
 msgstr "Revenue from services and other activities"
 
-#: src/features/national-budget/home/components/person-year.tsx:196
+#: src/features/national-budget/home/components/person-year.tsx:205
 msgid "venituri față de {previous}"
 msgstr "revenue vs {previous}"
 
@@ -53567,7 +53879,7 @@ msgid "Venituri prevăzute"
 msgstr "Planned revenue"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:733
-#: src/features/national-budget/home/components/person-head.tsx:290
+#: src/features/national-budget/home/components/person-head.tsx:289
 msgid "Venituri publice"
 msgstr "Public revenue"
 
@@ -53749,8 +54061,8 @@ msgid "Verifică serverul local sau încearcă din nou."
 msgstr "Verifică serverul local sau încearcă din nou."
 
 #: src/features/legal/components/legislation-act-finder.tsx:461
-msgid "Verifică și numărul și anul actului — de exemplu „Legea 53/2003”."
-msgstr "Check both the number and the year of the act — for example “Legea 53/2003”."
+#~ msgid "Verifică și numărul și anul actului — de exemplu „Legea 53/2003”."
+#~ msgstr "Check both the number and the year of the act — for example “Legea 53/2003”."
 
 #: src/components/data-trust/page-notice.tsx:54
 msgid "Verificăm datele, așa că unele cifre se pot schimba până terminăm."

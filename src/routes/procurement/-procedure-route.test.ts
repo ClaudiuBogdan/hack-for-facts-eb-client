@@ -85,10 +85,10 @@ describe('/procurement/procedures/$id', () => {
     expect(client.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(procurementProcedureKeys.procedure(sheet.id))
   })
 
-  it('caches only a whole render', () => {
+  it('keeps no render in a shared cache: a whole one private, a failed one no-store (CACHE-002)', () => {
     vi.stubEnv('DEV', false)
     try {
-      expect(route.headers({ loaderData: { id: '1', procedure: sheet } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(route.headers({ loaderData: { id: '1', procedure: sheet } })).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
       for (const loaderData of [{ id: '1' }, { id: '1', procedure: { ...sheet, partial: true } }]) {
         expect(route.headers({ loaderData })['CDN-Cache-Control']).toBe('no-store')
       }

@@ -57,11 +57,13 @@ export type HundredLine = {
   /** Whole lei of every 100. */
   readonly lei: number
   readonly change: string | null
+  /** The same line's official amount a year earlier, as printed; null for „the rest" or a line not printed then. */
+  readonly before: string | null
   readonly rest?: boolean
 }
 
 /** „The rest" of a side; the PNRR (from 2021) only in the years it exists. */
-function restLine(side: 'spending' | 'revenue', year: number): { readonly label: string; readonly hint: string } {
+export function restLine(side: 'spending' | 'revenue', year: number): { readonly label: string; readonly hint: string } {
   if (side === 'revenue') return { label: t`Alte venituri`, hint: t`taxe vamale, alte impozite, venituri din capital, alte sume de la UE` }
   return { label: t`Alte cheltuieli`, hint: year >= 2021 ? t`proiecte PNRR din împrumuturi, active financiare, rambursări, alte cheltuieli` : t`active financiare, rambursări, alte cheltuieli` }
 }
@@ -79,7 +81,8 @@ export function useHundred(view: YearView, side: 'spending' | 'revenue') {
   if (!whole) return { whole: null, before: null, lines: [] as readonly HundredLine[] }
   const named = items.flatMap((itemId) => {
     const exact = lines.now(itemId)?.exact
-    return exact ? [{ key: itemId, label: partName(itemId), hint: partHint(itemId), exact, change: changeText(exact, lines.before(itemId)?.exact) }] : []
+    const before = lines.before(itemId)?.exact ?? null
+    return exact ? [{ key: itemId, label: partName(itemId), hint: partHint(itemId), exact, before, change: changeText(exact, before) }] : []
   })
   return { whole, before: lines.before(total)?.exact ?? null, lines: hundredOf(whole, named, restLine(side, view.year)) }
 }
@@ -99,7 +102,7 @@ export function hundredOf(
   const sorted = [...named].sort((a, b) => (plotOf(b.exact) ?? 0) - (plotOf(a.exact) ?? 0))
   const remainder = restOf(whole, sorted.map((line) => line.exact))
   const share = remainder ? exactPercent(remainder, whole, 1) : null
-  const withRest = remainder && share !== null && share >= 0.5 ? [...sorted, { key: 'rest', ...rest, exact: remainder, change: null, rest: true }] : sorted
+  const withRest = remainder && share !== null && share >= 0.5 ? [...sorted, { key: 'rest', ...rest, exact: remainder, change: null, before: null, rest: true }] : sorted
   const hundreds = outOfHundred(withRest.map((line) => plotOf(line.exact) ?? 0))
   return withRest.map((line, index): HundredLine => ({ ...line, lei: hundreds[index] ?? 0 }))
 }
@@ -250,7 +253,8 @@ export type MonthPoint = {
 export type RunningYear = { readonly year: number; readonly points: readonly MonthPoint[] }
 
 const monthsOfYear = (year: number, count: number) => Array.from({ length: count }, (_, index) => `${year}-${String(index + 1).padStart(2, '0')}`)
-const monthsCovered = (view: YearView) => (view.partial ? Number(view.month.slice(5, 7)) : 12)
+/** The months a year's window covers: 12 for a full year, up to its release's month for the year in progress. */
+export const monthsCovered = (view: YearView) => (view.partial ? Number(view.month.slice(5, 7)) : 12)
 
 export function yearSoFarOptions(client: ReturnType<typeof useQueryClient>, catalog: BudgetNationalCatalog) {
   const newest = newestViewOf(catalog)

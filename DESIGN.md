@@ -879,6 +879,12 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-11-26 — `/national-budget` is back to one hue.** The budgets section („Prin ce bugete trec banii") drew its four budgets in
+  the data-viz palette's blue, orange, aqua and yellow (entry of 25 November below); it now takes four even steps of the page's navy
+  family, the largest the strongest, with the rest grey, and the palette is gone from the page (`lib/chart-palette.ts` removed). The
+  page's other charts were already navy. *Why:* the owner tried the colours and preferred a shade of the main colour. Record:
+  `docs/design/national-budget/design.md` §12.13.
+
 - **2026-11-25 — The not-found and error pages stand on the landing's skin,
   with a page character.** One band (lattice, ruled frame, crossing marks), the
   words on the left, a pixel-art sheet with a cat face on the right

@@ -111,14 +111,14 @@ describe('/public-enterprises/authorities/$cui', () => {
     await expect(route.loader({ params: { cui: '99999999' }, abortController: new AbortController() })).rejects.toThrow('not-found')
   })
 
-  it('caches a render publicly, and never a 404', async () => {
+  it('keeps no render in a shared cache: private, and a 404 no-store (CACHE-002)', async () => {
     const route = await importRoute()
     vi.stubEnv('DEV', false)
     const whole = route.headers({ loaderData: { portfolio: {} } })
     const missing = route.headers({})
     vi.unstubAllEnvs()
-    expect(whole['Cache-Control'] ?? '').toContain('s-maxage=3600')
-    expect(whole.Vary ?? '').toContain('Cookie')
+    expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
+    expect(whole.Vary).toBeUndefined()
     expect(missing['Cache-Control']).toContain('no-store')
     expect(missing['CDN-Cache-Control']).toBe('no-store')
   })

@@ -1593,6 +1593,9 @@ modes (CVD ΔE ≥ 8.4, normal vision ≥ 19.3). Aqua, yellow and magenta are un
 - **One colour, one budget:** the flow's bands take the colour of the budget they feed (state blue, local orange, pensions aqua, health
   yellow, others grey), the same as the squares. The sources are neutral bars, ordered so the bands cross least (borrowed, EU funds, own
   revenue, other budgets). Borrowed money is hatched. Labels give each node's amount and its share of all.
+  *Amended 26 November 2026 (owner: one hue, not four):* the budgets take four even steps of the page's navy family, the largest the
+  strongest, stopping short of the ramp's light end so the smallest stays apart from the grey of the rest; the data-viz palette is gone
+  from the page.
 - **Tooltips:** a card by the pointer that flips near the right edge.
   - *A square:* the budget's lei of 100, its amount, per resident, and what it pays for.
   - *A band:* the source's amount, its share of the budget's money, per resident.

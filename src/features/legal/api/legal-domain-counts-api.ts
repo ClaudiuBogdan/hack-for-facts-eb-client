@@ -1,7 +1,9 @@
 import type { LegalDomainActCounts } from '@/schemas/legal'
 import { isLegalMockEnabled } from '../lib/mock-mode'
 import { fetchDomainActCountsLive } from './legal-domain-counts-api.live'
-import { fetchDomainActCountsMock } from './legal-domain-counts-api.mock'
+
+/** Fixtures only in the development server and the tests: in production this is the constant `false`, so the mock is never emitted. */
+const FIXTURE_BUILD = import.meta.env.DEV || import.meta.env.MODE === 'test'
 
 /**
  * Mock/live dispatcher for the domain grid's counts.
@@ -17,6 +19,6 @@ import { fetchDomainActCountsMock } from './legal-domain-counts-api.mock'
 export async function fetchDomainActCounts(
   options: { readonly signal?: AbortSignal } = {},
 ): Promise<LegalDomainActCounts> {
-  if (isLegalMockEnabled()) return fetchDomainActCountsMock()
+  if (FIXTURE_BUILD && isLegalMockEnabled()) return (await import('./legal-domain-counts-api.mock')).fetchDomainActCountsMock()
   return fetchDomainActCountsLive(options)
 }
