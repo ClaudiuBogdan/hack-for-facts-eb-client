@@ -126,9 +126,10 @@ const NODES: readonly Node[] = [
     type: 'NTA',
     lines: [{ role: 'ttl', text: 'Notă' }],
     flags: { label: 'Notă' },
+    // As served: a note's lines are notes of their own inside it.
     children: [
-      p([act('Articolul XI din ORDONANȚA DE URGENȚĂ nr. 26 din 18 martie 2022', 252718), ', publicată în MONITORUL OFICIAL nr. 272 din 21 martie 2022 prevede:']),
-      p(['(1) Prevederile ', inside('art. I'), ' și ', inside('II'), ' se aplică procedurilor de atribuire inițiate după data intrării în vigoare a prezentei ordonanțe de urgență.']),
+      { kind: 'nota', type: 'NTA', lines: [{ text: [act('Articolul XI din ORDONANȚA DE URGENȚĂ nr. 26 din 18 martie 2022', 252718), ', publicată în MONITORUL OFICIAL nr. 272 din 21 martie 2022 prevede:'] }] },
+      { kind: 'nota', type: 'NTA', lines: [{ text: ['(1) Prevederile ', inside('art. I'), ' și ', inside('II'), ' se aplică procedurilor de atribuire inițiate după data intrării în vigoare a prezentei ordonanțe de urgență.'] }] },
     ],
   },
   p('Parlamentul României adoptă prezenta lege.'),

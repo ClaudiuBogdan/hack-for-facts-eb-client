@@ -191,6 +191,18 @@ const entryLabel = (entry: LegalOutlineEntry): string => entry.label ?? legalNod
 /** An article's short address in the grid: its number, else its label without the word „Articolul". */
 const articleKey = (entry: LegalOutlineEntry): string => entry.numberKey ?? entryLabel(entry).replace(/^Art(?:icolul|\.)\s*/iu, '')
 
+/** „8^1" is how the outline writes article 8¹: the index is drawn raised, as the law prints it. */
+function ArticleNumber({ value }: { readonly value: string }) {
+  const [base, index] = value.split('^')
+  if (index === undefined || base === undefined) return <>{value}</>
+  return (
+    <>
+      {base}
+      <sup className="text-[0.65em]">{index}</sup>
+    </>
+  )
+}
+
 type ContentsRow = { readonly kind: 'heading'; readonly entry: LegalOutlineEntry; readonly level: number } | { readonly kind: 'articles'; readonly entries: readonly LegalOutlineEntry[]; readonly level: number }
 
 /** The served outline as rows: a heading at its nesting level, then the run of articles under it as one grid. */
@@ -306,7 +318,7 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false }: Co
                         activePath === entry.path ? 'bg-foreground font-medium text-background' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                       )}
                     >
-                      {articleKey(entry)}
+                      <ArticleNumber value={articleKey(entry)} />
                     </a>
                   </li>
                 ))}
@@ -374,7 +386,8 @@ function ancestorsOf(outline: readonly LegalOutlineEntry[], path: string | null)
 function headingNames(blocks: readonly TldfBlock[], into: Map<string, string> = new Map()): Map<string, string> {
   for (const block of blocks) {
     const name = block.content.find((run) => run.role === 'den')?.text.trim()
-    if (name !== undefined && name !== '') into.set(block.id, name)
+    // Some outlines already serve the name in the label („Titlul II Impozitul pe profit"): it is not said twice.
+    if (name !== undefined && name !== '' && block.label?.includes(name) !== true) into.set(block.id, name)
     if (block.children !== undefined) headingNames(block.children, into)
   }
   return into
@@ -650,7 +663,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   const { i18n } = useLingui()
   const [face, setFace] = useState<ReadingFace>('serif')
   const [sheet, setSheet] = useState(false)
-  const [copied, setCopied] = useState<string | null>(null)
+  /** One short sentence in the bar, in the place's stead for a moment: a link was copied, or a place could not be reached. */
+  const [said, setSaid] = useState<string | null>(null)
   const names = useMemo(() => headingNames(blocks), [blocks])
   const activePath = useActivePath(outline, blocks)
   const ancestors = useMemo(() => ancestorsOf(outline, activePath), [outline, activePath])
@@ -661,22 +675,32 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
   const go = (path: string) => {
     setSheet(false)
     // After the sheet has let go of the page's scroll.
-    requestAnimationFrame(() => document.getElementById(domAnchorForPath(path))?.scrollIntoView({ block: 'start' }))
+    requestAnimationFrame(() => {
+      const target = document.getElementById(domAnchorForPath(path))
+      if (target !== null) target.scrollIntoView({ block: 'start' })
+      // A text served in parts: the place exists, its part is not on the page yet.
+      else setSaid(t`Locul acesta este într-o parte a textului care nu s-a încărcat încă.`)
+    })
   }
   const copyLink = (block: TldfBlock) => {
     const address = new URL(`/legislation/acts/${act.actId}`, window.location.origin)
     if (shown !== null && shown.documentId !== act.canonical?.documentId) address.searchParams.set('doc', shown.documentId)
     address.searchParams.set('nod', block.id)
     void navigator.clipboard?.writeText(address.toString()).then(
-      () => setCopied(block.label ?? t`articol`),
-      () => setCopied(null),
+      () => setSaid(t`Legătura către ${block.label ?? t`articol`} a fost copiată.`),
+      () => setSaid(t`Legătura nu a putut fi copiată.`),
     )
   }
   useEffect(() => {
-    if (copied === null) return
-    const timer = window.setTimeout(() => setCopied(null), 2500)
+    if (said === null) return
+    const timer = window.setTimeout(() => setSaid(null), 3500)
     return () => window.clearTimeout(timer)
-  }, [copied])
+  }, [said])
+  // In a long contents the lit place is kept in sight, inside the panel only.
+  useEffect(() => {
+    if (activePath === null) return
+    document.querySelector('[data-act-contents] [aria-current=location]')?.scrollIntoView({ block: 'nearest' })
+  }, [activePath])
 
   const contents = (touch: boolean) => <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} />
 
@@ -710,10 +734,8 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
               </Sheet>
             ) : null}
             <p aria-live="polite" className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
-              {copied !== null ? (
-                <span className="text-foreground">
-                  <Trans>Legătura către {copied} a fost copiată.</Trans>
-                </span>
+              {said !== null ? (
+                <span className="text-foreground">{said}</span>
               ) : place.length === 0 ? (
                 act.displayCitation
               ) : (
@@ -742,7 +764,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
 
       <div className={cn(GRID, 'pt-6')}>
         <aside className="hidden lg:block">
-          <div className="sticky top-16 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2">
+          <div data-act-contents className="sticky top-16 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2">
             {outline.length > 0 ? (
               contents(false)
             ) : (

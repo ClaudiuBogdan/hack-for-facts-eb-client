@@ -44,7 +44,8 @@ const RANK =
 /** A heading that follows its parent's heading directly sits close to it, with no rule of its own between them. */
 const FIRST = '[&>[data-role]+[data-kind]]:mt-5 [&>[data-role]+[data-kind]]:border-t-0 [&>[data-role]+[data-kind]]:pt-0'
 /** A marker („(1)", „a)", „1.", „–") hung in the gutter of its own block: numbers line up, the text keeps one edge. */
-const MARKER = '[&>[data-role=ttl]]:float-left [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70'
+// The marker keeps a gap of its own, so a wide one („a^1)") never touches the text.
+const MARKER = '[&>[data-role=ttl]]:float-left [&>[data-role=ttl]]:pr-1.5 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70'
 const ITEM = `mt-2 pl-7 sm:pl-9 ${MARKER} [&>[data-role=ttl]]:-ml-7 [&>[data-role=ttl]]:min-w-7 sm:[&>[data-role=ttl]]:-ml-9 sm:[&>[data-role=ttl]]:min-w-9`
 const QUOTED = 'mt-4 rounded-r-md border-l-2 border-foreground/30 bg-muted/60 py-3 pl-5 pr-4 [&>*:first-child]:mt-0'
 
@@ -63,14 +64,15 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   titlu_act: `${UI} text-xl font-semibold leading-8 tracking-tight`,
   subtitlu_act: `${UI} text-base leading-7 text-muted-foreground`,
   // From `sm` the paragraph's number hangs in the gutter; on a phone it stays in the line, where the width is the text's.
-  alineat: `mt-3 sm:[&:has(>[data-role=ttl])]:pl-10 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70 sm:[&>[data-role=ttl]]:float-left sm:[&>[data-role=ttl]]:-ml-10 sm:[&>[data-role=ttl]]:min-w-10`,
+  alineat: `mt-3 sm:[&:has(>[data-role=ttl])]:pl-10 [&>[data-role=ttl]]:font-medium [&>[data-role=ttl]]:tabular-nums [&>[data-role=ttl]]:text-foreground/70 sm:[&>[data-role=ttl]]:float-left sm:[&>[data-role=ttl]]:-ml-10 sm:[&>[data-role=ttl]]:min-w-10 sm:[&>[data-role=ttl]]:pr-1.5`,
   litera: ITEM,
   punct: ITEM,
   liniuta: ITEM,
   paragraf: 'mt-3',
   citat: QUOTED,
-  // The Portal's notes are apparatus, not provisions: the site's sans, a size down, on a quiet ground.
-  nota: `mt-4 rounded-md bg-muted/60 px-4 py-3 ${UI} text-sm leading-6 text-muted-foreground [&>[data-role=ttl]]:text-foreground [&_[data-kind=paragraf]]:mt-1.5`,
+  // The Portal's notes are apparatus, not provisions: the site's sans, a size down, on a quiet ground. A served note
+  // holds its lines as notes of their own: one ground for the whole, none for the lines.
+  nota: `mt-4 rounded-md bg-muted/60 px-4 py-3 ${UI} text-sm leading-6 text-muted-foreground [&>[data-role=ttl]]:text-foreground [&_[data-kind=paragraf]]:mt-1.5 [&_[data-kind=nota]]:mt-1.5 [&_[data-kind=nota]]:rounded-none [&_[data-kind=nota]]:bg-transparent [&_[data-kind=nota]]:p-0`,
   emitent: `mt-3 ${UI} text-sm leading-6 text-muted-foreground [&>[data-role=ttl]]:font-medium`,
   publicare: `mt-1 ${UI} text-sm leading-6 text-muted-foreground [&>[data-role=ttl]]:font-medium`,
   semnatura: `mt-8 ${UI} text-sm leading-6 text-muted-foreground [&_[data-kind=semnatura]]:mt-0`,

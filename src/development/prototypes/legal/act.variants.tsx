@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { useSearch } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -86,6 +86,15 @@ function PageStates() {
 }
 
 function MoreParts({ loaded, total, pending = false, onMore }: { readonly loaded: number; readonly total: number; readonly pending?: boolean; readonly onMore?: () => void }) {
+  // As on the live page: the next part is read when the reader nears the end of what is shown; the button is the way without scrolling.
+  const sentinel = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const element = sentinel.current
+    if (element === null || onMore === undefined || pending || loaded >= total || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver((entries) => entries.some((entry) => entry.isIntersecting) && onMore(), { rootMargin: '0px 0px 600px 0px' })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [onMore, pending, loaded, total])
   if (loaded >= total) {
     return (
       <p className="pt-8 text-sm text-muted-foreground">
@@ -94,7 +103,7 @@ function MoreParts({ loaded, total, pending = false, onMore }: { readonly loaded
     )
   }
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-8">
+    <div ref={sentinel} className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-8">
       <Button variant="outline" className="h-11 sm:h-10" disabled={pending} onClick={onMore}>
         <Trans>Încarcă partea următoare</Trans>
       </Button>
