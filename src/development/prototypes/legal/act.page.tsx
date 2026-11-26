@@ -15,7 +15,7 @@ import { legalActTypeLabel, legalGazettePartLabel, legalIssuerLabel, legalNodeKi
 import { domAnchorForPath } from '@/features/legal/lib/tldf/nod-resolve'
 import type { TldfBlock, TldfMark } from '@/features/legal/lib/tldf/types'
 import { cn } from '@/lib/utils'
-import type { LegalActDetail, LegalOutlineEntry, LegalReferenceGroup } from '@/schemas/legal'
+import type { LegalActDetail, LegalActDocumentVersion, LegalOutlineEntry, LegalReferenceGroup } from '@/schemas/legal'
 import { ActBlocks } from './act.blocks'
 
 /**
@@ -437,8 +437,16 @@ function headingNames(blocks: readonly TldfBlock[], into: Map<string, string> = 
 
 const formName = (kind: string, date: string | null, locale: string): string => (date === null ? versionKindLabel(kind) : `${formatLegalDate(date, locale)}, ${versionKindLabel(kind)}`)
 
-/** The shown form's date: its version date, else the first publication of the listed version it names. */
+/**
+ * The date a form is named by. A consolidation is named by the Portal's own note's date and by nothing else: the
+ * list's ordering date is not the date its text reflects, and a reader would set it against the date they ask
+ * about (LEG-X3AV, the legislation session's reading, 26 November 2026). No date when the Portal gives none.
+ */
+const listedDate = (form: LegalActDocumentVersion): string | null => (isConsolidationVersion(form) ? form.portalLabelDate : versionDateOf(form))
+
+/** The shown form's date, by the same rule: the Portal's for a consolidation; else its version date or the first publication of the listed version it names. */
 function shownDate(act: LegalActDetail, shown: ShownVersion): string | null {
+  if (isConsolidationVersion(shown)) return shown.portalLabelDate
   if (shown.versionDate !== null) return shown.versionDate
   const listed = act.documents.find((form) => form.documentId === shown.documentId)
   return listed === undefined ? null : versionDateOf(listed)
@@ -482,7 +490,7 @@ function FormSelect({ act, shown, onForm, anchor = false, stacked = false }: Pic
       {forms.length > 1 && onForm !== undefined && forms.some((form) => form.documentId === shown.documentId) ? (
         <ChoiceSelect
           value={shown.documentId}
-          groups={[{ options: forms.map((form) => ({ value: form.documentId, label: formName(form.versionKind, versionDateOf(form), i18n.locale) })) }]}
+          groups={[{ options: forms.map((form) => ({ value: form.documentId, label: formName(form.versionKind, listedDate(form), i18n.locale) })) }]}
           onChange={onForm}
           label={t`Versiunea textului`}
           triggerClassName={cn(CONTROL, 'min-w-0 max-w-full gap-2 text-sm font-medium', stacked ? 'w-full' : 'w-auto')}
@@ -645,7 +653,7 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
               const readable = isSelectableVersion(form)
               return (
                 <li key={form.documentId} className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-baseline gap-x-4 py-2 sm:grid-cols-[9rem_minmax(0,1fr)]">
-                  <span className="tabular-nums text-muted-foreground">{date(versionDateOf(form))}</span>
+                  <span className="tabular-nums text-muted-foreground">{date(listedDate(form))}</span>
                   <span className="flex flex-wrap items-baseline gap-x-3">
                     {readable && !here && onForm !== undefined ? (
                       <button type="button" onClick={() => onForm(form.documentId)} className={cn(LINK, 'text-left')}>
@@ -847,8 +855,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
             </p>
             {shown !== null ? (
               <p className="hidden shrink-0 text-sm text-muted-foreground md:block">
-                {/* For a consolidation the date is the Portal's own note's, never one this page works out (LEG-X3AV). */}
-                <Trans>Forma din {formName(shown.versionKind, isConsolidationVersion(shown) ? shown.portalLabelDate : shownDate(act, shown), i18n.locale)}</Trans>
+                <Trans>Forma din {formName(shown.versionKind, shownDate(act, shown), i18n.locale)}</Trans>
               </p>
             ) : null}
           </div>
