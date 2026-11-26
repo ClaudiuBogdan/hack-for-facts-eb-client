@@ -719,9 +719,19 @@ export type LegalServedForm = z.infer<typeof legalServedFormSchema>
 export const legalSearchSectionHitSchema = z.object({
   actId: z.string(),
   documentId: z.string(),
+  /**
+   * The provision's path in `documentId` (`document_nodes` path, the act page's `?nod=`), so a hit links to its
+   * provision. Null when the engine names none: the hit is then shown without a link.
+   */
+  nodePath: z.string().nullable(),
   nodeLabel: z.string().nullable(),
   snippet: z.string().nullable(),
   servedForm: legalServedFormSchema.nullable(),
+  /**
+   * The act's citation (`act.displayCitation`): a provision whose act is in none of the answer's act rows is drawn
+   * under that name. Optional, so the fixtures and the mock lane, which carry none, still parse.
+   */
+  actCitation: z.string().nullable().optional(),
 })
 export type LegalSearchSectionHit = z.infer<typeof legalSearchSectionHitSchema>
 

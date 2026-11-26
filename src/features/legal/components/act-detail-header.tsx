@@ -131,7 +131,7 @@ export function ActDetailHeader({ act, textSubject = null }: Props) {
           <div className="mt-4 min-w-0">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <LegalStatusBadge status={act.status} />
+                <LegalStatusBadge status={act.status} strong />
                 {isMock ? <DataStatusBadge status="mock" /> : null}
               </div>
 

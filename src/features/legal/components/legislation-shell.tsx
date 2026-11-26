@@ -41,7 +41,7 @@ function legislationPages(): readonly PageSpec[] {
       id: 'cauta',
       label: t`Caută`,
       title: t`Caută în legislație`,
-      lede: t`Un act după număr sau după denumire, cu statutul lui actual.`,
+      lede: t`Un act după număr, după nume sau după cuvinte din textul lui, cu statutul lui actual.`,
       to: '/legislation/search',
     },
     {

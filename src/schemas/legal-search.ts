@@ -104,17 +104,28 @@ export const legalActsBrowseFilterShape = () => ({
  *    recompile-scoped). A search param, not a hash, so the SSR loader can
  *    target the chunk containing it on giant documents.
  */
+/** What an unreadable `doc` is caught as, for the object below to drop its `nod` too; never in the output. */
+const UNREADABLE_DOC = '\u0000unreadable'
+
 export const legalReaderSearchSchema = lazySchema(() =>
-  z.object({
-    // The router JSON-parses search values: `?doc=54260` arrives as a number and
-    // `?doc=%2254260%22` as a string. Both name the same document id.
-    doc: z
-      .union([z.string().min(1), z.number().int().nonnegative()])
-      .transform((value) => String(value))
-      .optional()
-      .catch(undefined),
-    nod: z.string().min(1).optional(),
-  }),
+  z
+    .object({
+      // The router JSON-parses search values: `?doc=54260` arrives as a number and
+      // `?doc=%2254260%22` as a string. Both name the same document id.
+      doc: z
+        .union([z.string().min(1), z.number().int().nonnegative()])
+        .transform((value) => String(value))
+        .optional()
+        .catch(UNREADABLE_DOC),
+      nod: z.string().min(1).optional(),
+    })
+    // A `nod` is a path in the `doc` it came with: when that `doc` is present but unreadable (`?doc=true&nod=r10`),
+    // the same path in the default text may be another provision, so both go. A `nod` alone stays a link into the
+    // default text (review astra-client-12). Both keys are always named: the router merges this result over the
+    // root's passthrough search, where a key left out would keep the address's raw value.
+    .transform(({ doc, nod }): { doc: string | undefined; nod: string | undefined } =>
+      doc === UNREADABLE_DOC ? { doc: undefined, nod: undefined } : { doc, nod },
+    ),
 )
 export type LegalReaderSearch = LazyOutput<typeof legalReaderSearchSchema>
 
@@ -192,10 +203,14 @@ export type LegalChangesSearch = LazyOutput<typeof legalChangesSearchSchema>
  * URL state for `/legislation/search` — the Caută tab, so a search is a
  * shareable link. TanStack Router JSON-parses search params, so a
  * numeric-looking `q` (`?q=227`) arrives as a NUMBER — coerce it back to text
- * rather than dropping a legitimate query, but treat `null`/booleans as junk
+ * rather than dropping a legitimate query, but treat `null` as junk
  * (`z.coerce.string()` alone would turn `?q=null` into the literal text
  * "null" and search for it); the same trap and cure as `entity-search.ts`'s
- * `optionalSearchString`.
+ * `optionalSearchString`. A boolean is the word the reader typed: the router
+ * writes the text "true" as `?q=%22true%22`, so a bare `?q=true` comes from the
+ * page's native form (SEARCH-001) and is kept as "true" (review
+ * astra-client-11). A number's spelling is lost before this schema runs
+ * (`?q=1.10` arrives as 1.1); SEARCH-001 says where it could be kept.
  *
  * `historical: true` widens the search to abrogated / out-of-force acts (the
  * server's `includeHistorical`, default false — which silently zeroes even an
@@ -214,7 +229,7 @@ export const legalFinderSearchSchema = lazySchema(() =>
   z.object({
     q: z
       .preprocess(
-        (value) => (value === null || typeof value === 'boolean' ? undefined : value),
+        (value) => (value === null ? undefined : typeof value === 'boolean' ? String(value) : value),
         z.coerce.string().min(1).max(400).optional(),
       )
       .catch(undefined),

@@ -180,6 +180,26 @@ describe('ActReadingLayout on legal_v2', () => {
     expect(requestedIds()).toEqual(['f900012'])
   })
 
+  it('takes no ?nod= into the default text when the lookup refuses the page id (astra-client-11)', async () => {
+    const nod = (rows[0]?.tldf.blocks as { id: string }[] | undefined)?.[3]?.id ?? ''
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container } = render(
+        <ActReadingLayout act={legalActDetailV2Fixture} docOverride="54260" nod={nod} lead={null} fisa={null} />,
+      )
+      expect(await screen.findByText(/nu aparține acestui act/)).toBeInTheDocument()
+      await waitFor(() => expect(readerText(container).length).toBeGreaterThan(100))
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull()
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      expect(screen.queryByText(/Nu am găsit fragmentul cerut/)).not.toBeInTheDocument()
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
   it("labels the text by the render's servedForm, the authoritative account of what was served", async () => {
     // The version list calls f900011 the original; the server says the text
     // it served is a consolidation — the banner follows the server.

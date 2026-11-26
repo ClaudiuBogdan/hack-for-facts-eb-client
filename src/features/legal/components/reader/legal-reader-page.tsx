@@ -156,6 +156,10 @@ export function ActReadingLayout({
   const render = useLegalRender(documentId, { legalV2: act.dataSource === 'legal_v2' })
   const override = ownId ?? undefined
   const foreignDoc = resolution?.kind === 'foreign' || probeRefused
+  // A `?nod=` belongs to the `?doc=` it came with: when that document is refused, the default text is another
+  // version, where the same path may name another provision. It is then neither resolved, scrolled to, marked
+  // nor said to be missing (review astra-client-11).
+  const targetNod = foreignDoc ? undefined : nod
   // The version on screen. The render's `servedForm` (legal_v2 REST meta) is
   // the authoritative account of the text actually served; the version list
   // fills in what it lacks.
@@ -181,9 +185,9 @@ export function ActReadingLayout({
 
   // `?nod=` resolution over the served outline (null until both arrive).
   const nodResolution = useMemo(() => {
-    if (nod === undefined || outline.length === 0) return null
-    return resolveNod(nod, outline, manifest?.chunks)
-  }, [nod, outline, manifest])
+    if (targetNod === undefined || outline.length === 0) return null
+    return resolveNod(targetNod, outline, manifest?.chunks)
+  }, [targetNod, outline, manifest])
 
   // Deep-link scroll: retried on every DOM growth until the anchor exists
   // (on chunked documents the target group may still be loading). When the
@@ -192,17 +196,17 @@ export function ActReadingLayout({
   // direct DOM anchor, so a shared link still lands. The intent is keyed by
   // DOCUMENT and nod: the same nod on a different `?doc=` is a new scroll,
   // and there is no separate reset effect to erase a fresh landing.
-  const scrollIntentKey = `${documentId ?? ''}::${nod ?? ''}`
+  const scrollIntentKey = `${documentId ?? ''}::${targetNod ?? ''}`
   const scrolledForRef = useRef<string | null>(null)
   useEffect(() => {
-    if (nod === undefined) return
+    if (targetNod === undefined) return
     if (scrolledForRef.current === scrollIntentKey) return
-    if (scrollToNodTarget(nod, nodResolution?.entry.path ?? nod)) {
+    if (scrollToNodTarget(targetNod, nodResolution?.entry.path ?? targetNod)) {
       scrolledForRef.current = scrollIntentKey
-      setActivePath(nodResolution?.entry.path ?? nod)
+      setActivePath(nodResolution?.entry.path ?? targetNod)
       setNodMissed(false)
     }
-  }, [scrollIntentKey, nod, nodResolution, domVersion])
+  }, [scrollIntentKey, targetNod, nodResolution, domVersion])
 
   // An unresolvable nod is an honest notice, never a guessed scroll — but
   // only once the page can actually judge: outline answered, text actually
@@ -215,14 +219,14 @@ export function ActReadingLayout({
   const outlineSettled = outlineQuery.isSuccess || outlineQuery.isError
   useEffect(() => {
     setNodMissed(
-      nod !== undefined &&
+      targetNod !== undefined &&
         renderSettled &&
         outlineSettled &&
         nodResolution === null &&
         scrolledForRef.current !== scrollIntentKey &&
-        document.getElementById(domAnchorForPath(nod)) === null,
+        document.getElementById(domAnchorForPath(targetNod)) === null,
     )
-  }, [nod, scrollIntentKey, renderSettled, outlineSettled, nodResolution, domVersion])
+  }, [targetNod, scrollIntentKey, renderSettled, outlineSettled, nodResolution, domVersion])
 
   // Scroll-position sync: highlight the TOC entry of the heading nearest the
   // top of the viewport. Highlight only — never a URL writeback.
@@ -254,7 +258,9 @@ export function ActReadingLayout({
     (entry: LegalOutlineEntry) => {
       void navigate({
         to: '.',
-        search: (prev: Record<string, unknown>) => ({ ...prev, nod: entry.path }),
+        // After a refused `?doc=`, the provision is chosen in the text on show: that text's id goes with it, so the
+        // choice survives a reload and is resolved (and its chunk loaded) like any link (review astra-client-12).
+        search: (prev: Record<string, unknown>) => ({ ...prev, ...(foreignDoc && documentId !== null ? { doc: documentId } : {}), nod: entry.path }),
         replace: true,
         resetScroll: false,
       })
@@ -263,7 +269,7 @@ export function ActReadingLayout({
       setActivePath(entry.path)
       scrollToNodTarget(entry.path, entry.path)
     },
-    [navigate],
+    [navigate, foreignDoc, documentId],
   )
 
   const onDomGrowth = useCallback(() => setDomVersion((v) => v + 1), [])
