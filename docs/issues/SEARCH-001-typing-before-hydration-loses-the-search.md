@@ -26,8 +26,8 @@ out of 20, with no request sent and no `q` in the address.
 ## Fix (suggested, not started)
 
 1. **`name="q"` on the search inputs**, inside a form whose native submit is a GET to the page. A pre-hydration Enter
-   then loads `…?q=…`, and the server renders the answer. On `/legislation/search` the form exists; the entity search
-   needs one.
+   then loads `…?q=…`, and the server renders the page with the question in the box. On `/legislation/search` the
+   form exists; the entity search needs one.
 2. **On mount, take the DOM value when it differs from the draft.** The search then picks up text typed before
    hydration as soon as React takes over, without a second keystroke.
 
@@ -39,7 +39,13 @@ hydration, then expect the search, or the `q` after Enter.
 Both parts are in `legislation-act-finder.tsx`:
 
 1. The form is a native GET to `/legislation/search`: the input is `name="q"`, and the filters the address holds go
-   with it as hidden fields. A pre-hydration Enter on `…?tip=lege` asks for `…?tip=lege&q=Codul+civil`.
+   with it as hidden fields, as does the language when the address names one (`?lang=en`). A pre-hydration Enter on
+   `…?tip=lege` asks for `…?tip=lege&q=Codul+civil`. The server renders that page with the question in the box and
+   the loading rows; it does not render the answer, which the browser reads once the scripts run (the route has no
+   loader for the search; corrected after review astra-client-11). Without scripts the page stays on the loading
+   rows. Still open: a question the router's codec reads as JSON is changed on that load (`?q=1.10` becomes `1.1`,
+   `?q=true` is dropped). The server's canonical redirect (`router.beforeLoad` in `@tanstack/router-core`) rewrites
+   the address before any route runs, so only the shared codec (`src/lib/router-search-codec.ts`) can keep it.
 2. On mount the field takes the box's DOM value when it differs from the draft, so the text is searched after the
    usual typing pause.
 
