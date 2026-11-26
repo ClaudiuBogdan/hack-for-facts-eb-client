@@ -108,26 +108,33 @@ describe('LegislationActFinder', () => {
       expect(screen.queryByRole('heading', { name: /Niciun act găsit/ })).not.toBeInTheDocument()
     })
 
+    /** The clock moved by hand, promises settled on the way: the answers land, the one-second wait is ours to end. */
+    const pass = (ms: number) =>
+      act(async () => {
+        await vi.advanceTimersByTimeAsync(ms)
+      })
+
     it('waits for the resolver at most a second, then draws the list without it', async () => {
+      vi.useFakeTimers()
       const { resolveLegalActs } = await import('../api/legal-resolve-api')
       vi.mocked(resolveLegalActs).mockImplementationOnce(() => new Promise(() => {}))
       render(<LegislationActFinder search={{ q: 'Legea 53/2003' }} />)
 
       // the search has answered, the resolver has not: the act is not drawn as a row it may have to leave
-      await waitFor(() => expect(screen.getByRole('search')).toBeInTheDocument())
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 200))
-      })
+      await pass(999)
       expect(screen.getByRole('region', { name: 'Se caută' })).toBeInTheDocument()
       expect(screen.queryByRole('link', { name: 'Legea nr. 53/2003' })).not.toBeInTheDocument()
-      expect(await screen.findByRole('link', { name: 'Legea nr. 53/2003' }, { timeout: 3000 })).toBeInTheDocument()
+      await pass(1)
+      expect(screen.getByRole('link', { name: 'Legea nr. 53/2003' })).toBeInTheDocument()
     })
 
     it('does not wait for the resolver when the question is not a citation', async () => {
+      vi.useFakeTimers()
       const { resolveLegalActs } = await import('../api/legal-resolve-api')
       vi.mocked(resolveLegalActs).mockImplementationOnce(() => new Promise(() => {}))
       render(<LegislationActFinder search={{ q: 'codul muncii' }} />)
-      expect(await screen.findByRole('link', { name: 'Legea nr. 53/2003' }, { timeout: 500 })).toBeInTheDocument()
+      await pass(100)
+      expect(screen.getByRole('link', { name: 'Legea nr. 53/2003' })).toBeInTheDocument()
     })
 
     it('leads with no act when the resolver names several the list already holds, and says how to tell them apart', async () => {
@@ -185,8 +192,8 @@ describe('LegislationActFinder', () => {
     const section = heading.closest('section') as HTMLElement
     expect(section).toHaveTextContent(/Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă", nu este încă disponibilă/)
     // It teaches the shapes that DO work…
-    expect(section).toHaveTextContent(/Legea 53\/2003/)
-    expect(section).toHaveTextContent(/Codul muncii/)
+    expect(section).toHaveTextContent(/Legea 98\/2016/)
+    expect(section).toHaveTextContent(/Codul civil/)
     // …offers the historical widening…
     expect(screen.getByRole('button', { name: /Caută și în actele abrogate sau ieșite din vigoare/ })).toBeInTheDocument()
     // …and never shows the citation-miss wording for a phrase.

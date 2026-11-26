@@ -5736,8 +5736,12 @@ msgstr "Acts"
 #~ msgstr "Repealed acts and acts no longer in force are not included in the search by default."
 
 #: src/features/legal/components/legislation-act-finder.tsx:486
-msgid "Actele abrogate sau ieșite din vigoare nu sunt incluse implicit. Verifică și numărul și anul actului, de exemplu „Legea 53/2003\"."
-msgstr "Repealed or expired acts are not included by default. Check the act's number and year too, for example “Legea 53/2003”."
+#~ msgid "Actele abrogate sau ieșite din vigoare nu sunt incluse implicit. Verifică și numărul și anul actului, de exemplu „Legea 53/2003\"."
+#~ msgstr "Repealed or expired acts are not included by default. Check the act's number and year too, for example “Legea 53/2003”."
+
+#: src/features/legal/components/legislation-act-finder.tsx:486
+msgid "Actele abrogate sau ieșite din vigoare nu sunt incluse implicit. Verifică și numărul și anul actului, de exemplu „Legea 98/2016\"."
+msgstr "Repealed or expired acts are not included by default. Check the act's number and year too, for example “Legea 98/2016”."
 
 #: src/features/procurement/components/procurement-institution-page.tsx:392
 #~ msgid "Actele adiționale se raportează ca număr — sumele brute din sursă nu sunt suficient de fiabile pentru a fi însumate."
@@ -19075,8 +19079,12 @@ msgstr "The names come from the platform's current CAEN classification, in each 
 #~ msgstr "For now, search works by the act’s number (for example “Legea 53/2003”) and by its name (for example “Codul muncii”, the Labour Code). Searching for phrases in the text of laws — such as “concediu de odihnă” (annual leave) — is not available yet, so a lack of results says nothing about whether the provision exists."
 
 #: src/features/legal/components/legislation-act-finder.tsx:499
-msgid "Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 53/2003\") și după denumire (de exemplu „Codul muncii\"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă\", nu este încă disponibilă."
-msgstr "For now the search finds an act by its number (for example “Legea 53/2003”) and by its name (for example “Codul muncii”). Searching for phrases in the text of laws, such as “concediu de odihnă”, is not available yet."
+#~ msgid "Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 53/2003\") și după denumire (de exemplu „Codul muncii\"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă\", nu este încă disponibilă."
+#~ msgstr "For now the search finds an act by its number (for example “Legea 53/2003”) and by its name (for example “Codul muncii”). Searching for phrases in the text of laws, such as “concediu de odihnă”, is not available yet."
+
+#: src/features/legal/components/legislation-act-finder.tsx:499
+msgid "Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 98/2016\") și după denumire (de exemplu „Codul civil\"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă\", nu este încă disponibilă."
+msgstr "For now the search finds an act by its number (for example “Legea 98/2016”) and by its name (for example “Codul civil”). Searching for phrases in the text of laws, such as “concediu de odihnă”, is not available yet."
 
 #: src/features/budget-map/components/map-page-map.tsx:143
 #: src/features/landing/components/budget-map/budget-map.tsx:114

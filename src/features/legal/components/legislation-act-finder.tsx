@@ -483,7 +483,7 @@ function Answer({
                 {t`Niciun act găsit pentru citarea „${q}"`}
               </h2>
               <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                {t`Actele abrogate sau ieșite din vigoare nu sunt incluse implicit. Verifică și numărul și anul actului, de exemplu „Legea 53/2003".`}
+                {t`Actele abrogate sau ieșite din vigoare nu sunt incluse implicit. Verifică și numărul și anul actului, de exemplu „Legea 98/2016".`}
               </p>
             </>
           ) : (
@@ -496,7 +496,7 @@ function Answer({
                 {reach === 'text'
                   ? t`Am căutat cuvintele în numele, titlul și textul actelor, dar nu și după sens: o prevedere formulată cu alte cuvinte nu apare.`
                   : reach === 'names'
-                    ? t`Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 53/2003") și după denumire (de exemplu „Codul muncii"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă", nu este încă disponibilă.`
+                    ? t`Deocamdată căutarea găsește un act după numărul lui (de exemplu „Legea 98/2016") și după denumire (de exemplu „Codul civil"). Căutarea după expresii din textul legilor, cum ar fi „concediu de odihnă", nu este încă disponibilă.`
                     : t`O parte din căutare nu a rulat, iar căutarea după sens nu este încă disponibilă: o prevedere formulată cu alte cuvinte poate lipsi de aici.`}
               </p>
             </>
