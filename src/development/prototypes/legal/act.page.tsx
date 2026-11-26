@@ -24,7 +24,7 @@ import { domAnchorForPath } from '@/features/legal/lib/tldf/nod-resolve'
 import type { TldfBlock, TldfMark } from '@/features/legal/lib/tldf/types'
 import { cn } from '@/lib/utils'
 import type { LegalActDetail, LegalActDocumentVersion, LegalOutlineEntry, LegalReferenceGroup } from '@/schemas/legal'
-import { ActBlocks } from './act.blocks'
+import { ActBlocks, type ActTextSkin } from './act.blocks'
 
 /**
  * The act page, rethought (owner, 26 November 2026: header, side panel, closing section and the page's elements).
@@ -126,6 +126,8 @@ export type ActPageModel = {
    */
   readonly tableStyle?: 'plain' | 'hint' | 'open'
   readonly figureStyle?: 'box' | 'line'
+  /** The looks of struck text, quoted text, change notes and signatures: see `ActTextSkin`. The owner's choices when not given. */
+  readonly textSkin?: ActTextSkin
   /** The act's warnings (the live page's component), placed by `apparatus`. */
   readonly warnings?: ReactNode
   /** What must be said about the text before it is read (the live page's own notices), between the form line and the text. */
@@ -141,6 +143,10 @@ const GRID = 'mx-auto grid w-full max-w-6xl grid-cols-1 px-4 sm:px-6 lg:grid-col
 const COLUMN = 'min-w-0 max-w-[42rem]'
 const LINK = 'font-medium text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary'
 const CONTROL = 'h-11 sm:h-10'
+/** The looks of the text's elements the owner chose on 26 November 2026 (see `ActTextSkin`). */
+const TEXT_SKIN: ActTextSkin = { struck: 'mark', quote: 'rule', note: 'plain', signature: 'set' }
+/** The floating way back to the act's start: a floating layer, so the one place a shadow is allowed. */
+const TO_START = 'inline-flex items-center justify-center rounded-md border bg-background text-muted-foreground shadow-sm hover:text-foreground'
 /**
  * The live page's warnings (`ActWarnings`, rows), worn by the side column: its words and its open-on-demand rows as
  * they are, restyled from outside. The headline at the column's reading size and medium weight, the triangle and
@@ -1144,6 +1150,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
     recordStyle = 'folds',
     tableStyle = 'plain',
     figureStyle = 'line',
+    textSkin = TEXT_SKIN,
     textState,
     afterText,
     changedMark = 'none',
@@ -1454,6 +1461,7 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
                 foldNotes={apparatus !== 'full'}
                 tableStyle={tableStyle}
                 figureStyle={figureStyle}
+                skin={textSkin}
                 onCopyLink={copyLink}
               />
             </article>
@@ -1463,6 +1471,22 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
             <ActRecord act={act} shown={shown} onForm={pickForm} />
           </RecordStyle.Provider>
           {children}
+          {/* The floating way back on a wide window (owner, 26 November 2026: "to the right of the text, not at the end of
+              page, as it's too far from the content"): it rides the window's lower edge at the text's right edge, under
+              the side box and above the height of the app's feedback button. */}
+          {away ? (
+            <div className="pointer-events-none sticky bottom-20 z-30 hidden h-0 min-[72rem]:block">
+              <button
+                type="button"
+                onClick={toStart}
+                aria-label={t`Înapoi la începutul actului`}
+                title={t`Înapoi la începutul actului`}
+                className={cn(TO_START, 'pointer-events-auto absolute bottom-0 left-full ml-4 size-10')}
+              >
+                <ArrowUp className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          ) : null}
         </main>
         {apparatus === 'rail' && shown !== null ? (
           <aside aria-label={t`Despre textul afișat`} className={cn('hidden min-[88rem]:block', railBox && '-mt-6')}>
@@ -1488,15 +1512,15 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
           </aside>
         ) : null}
       </div>
-      {/* The same way back, floating (owner, 26 November 2026: both): above the app's feedback button on a desktop,
-          above the zone of the app's bottom menu on a phone. */}
+      {/* The same way back, floating (owner, 26 November 2026: both). On a phone and a narrow window it sits in the
+          corner, above the app's bottom menu and its feedback button; from 72rem it stands beside the text (below). */}
       {away ? (
         <button
           type="button"
           onClick={toStart}
           aria-label={t`Înapoi la începutul actului`}
           title={t`Înapoi la începutul actului`}
-          className="fixed bottom-24 right-4 z-30 inline-flex size-11 items-center justify-center rounded-md border bg-background text-muted-foreground shadow-sm hover:text-foreground sm:bottom-20 sm:right-[2.125rem] sm:size-10"
+          className={cn(TO_START, 'fixed bottom-24 right-4 z-30 size-11 sm:bottom-20 sm:right-[2.125rem] sm:size-10 min-[72rem]:hidden')}
         >
           <ArrowUp className="size-4" aria-hidden="true" />
         </button>

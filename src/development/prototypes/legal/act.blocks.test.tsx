@@ -116,7 +116,16 @@ describe('the act text in the prototype skin', () => {
   })
 
   it("keeps the text unchanged under the tables' and figures' other designs", () => {
-    const { container } = render(<ActBlocks blocks={ACT_SPECIMEN.blocks} marks={ACT_SPECIMEN.marks} containsNonBmp={false} tableStyle="open" figureStyle="line" />)
+    const { container } = render(
+      <ActBlocks
+        blocks={ACT_SPECIMEN.blocks}
+        marks={ACT_SPECIMEN.marks}
+        containsNonBmp={false}
+        tableStyle="open"
+        figureStyle="line"
+        skin={{ struck: 'mark', quote: 'rule', note: 'plain', signature: 'set' }}
+      />,
+    )
     expect(container.textContent).toBe(foldTldfBlocks(ACT_SPECIMEN.blocks))
     expect(container.querySelector('[data-kind=imagine] [role=img]')).toHaveAttribute('data-figure-label')
   })

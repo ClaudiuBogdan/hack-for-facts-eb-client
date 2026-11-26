@@ -176,6 +176,7 @@ function useContentsOptions(): {
   readonly recordStyle: 'rows' | 'stacked' | 'folds'
   readonly tableStyle: 'plain' | 'hint' | 'open'
   readonly figureStyle: 'box' | 'line'
+  readonly textSkin: { readonly struck: 'red' | 'mark'; readonly quote: 'filled' | 'rule'; readonly note: 'ruled' | 'plain'; readonly signature: 'small' | 'set' }
 } {
   const search: {
     readonly cadru?: unknown
@@ -186,6 +187,10 @@ function useContentsOptions(): {
     readonly fisa?: unknown
     readonly tabel?: unknown
     readonly figura?: unknown
+    readonly abrogat?: unknown
+    readonly citat?: unknown
+    readonly note?: unknown
+    readonly semnatura?: unknown
   } = useSearch({ strict: false })
   return {
     // The text's elements. Owner, 26 November 2026: a wide table stays as it was, a figure that is not served takes one
@@ -193,6 +198,15 @@ function useContentsOptions(): {
     // at the window's width), `?figura=cadru` (a frame of the figure's size).
     tableStyle: search.tabel === 'indiciu' ? 'hint' : search.tabel === 'deschide' ? 'open' : 'plain',
     figureStyle: search.figura === 'cadru' ? 'box' : 'line',
+    // Four more elements, chosen by the owner from a picture on 26 November 2026: the repealed state as a ring and a
+    // plain word, the note of a change without its rule, quoted text behind a rule alone, the signatures in the text's
+    // own face. The looks they replace stay to be seen: `?abrogat=rosu`, `?note=linie`, `?citat=fond`, `?semnatura=mic`.
+    textSkin: {
+      struck: search.abrogat === 'rosu' ? 'red' : 'mark',
+      quote: search.citat === 'fond' ? 'filled' : 'rule',
+      note: search.note === 'linie' ? 'ruled' : 'plain',
+      signature: search.semnatura === 'mic' ? 'small' : 'set',
+    },
     // The page's head and its closing record. Owner, 26 November 2026: the named facts at the right, the record in
     // folding sections. Not chosen, kept to be seen: `?antet=linii` / `?antet=banda`, `?fisa=coloana` / `?fisa=titluri`.
     headStyle: search.antet === 'linii' ? 'lines' : search.antet === 'banda' ? 'band' : 'side',

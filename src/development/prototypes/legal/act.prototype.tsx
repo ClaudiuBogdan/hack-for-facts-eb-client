@@ -40,6 +40,10 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * A floating button also goes back to the start (owner: both). The text's elements: a figure that is not served
  * takes one line (`?figura=cadru` keeps the frame); a wide table stays as it was, the owner declined a hint and an
  * open-wide view (`?tabel=indiciu`, `?tabel=deschide` keep them).
+ * Round 5 of the text's elements (owner, from a picture): the repealed state as a ring and a plain word, the note of
+ * a change without its rule, quoted text behind a rule alone, the signatures in the text's own face (`?abrogat=rosu`,
+ * `?note=linie`, `?citat=fond`, `?semnatura=mic` keep what they replace). The floating way back stands beside the
+ * text from 72rem (owner: the page's corner was too far from the content).
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',

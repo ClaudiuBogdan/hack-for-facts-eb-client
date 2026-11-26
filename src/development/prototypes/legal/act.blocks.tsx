@@ -95,6 +95,45 @@ const STRUCK = 'text-muted-foreground line-through decoration-[1.5px]'
 const STATE_LABEL =
   'after:ml-2 after:inline-block after:content-[attr(data-state-label)] after:[font-family:var(--font-family)] after:text-xs after:font-medium after:text-status-blocked-fg'
 
+/**
+ * Other looks of four elements. The owner chose all four from a picture on 26 November 2026; the page asks for
+ * them, and the base classes below are the looks they replace. Each is worn from the text's root, by the
+ * elements' own attributes, so the blocks below stay as they are and the text is the same text.
+ */
+/** Struck text with a thin, pale line, and the repealed state as the site's status mark: a ring and the plain word. */
+const SKIN_STRUCK_MARK = cn(
+  '[&_[data-struck]]:decoration-foreground/40 [&_[data-struck]]:decoration-1 [&_s]:decoration-foreground/40 [&_s]:decoration-1',
+  '[&_[data-state-label]]:after:content-none [&_[data-state-mark]]:inline-flex',
+)
+/**
+ * The repealed state as the site's status mark (`LegalStatusBadge`): colour in the ring alone, the word in plain text.
+ * An empty element, hidden until the look asks for it; its word is generated content, so the text is unchanged.
+ */
+const STATE_MARK = `ml-2 hidden items-center gap-1.5 whitespace-nowrap ${UI} text-xs text-foreground/80 before:size-2.5 before:shrink-0 before:rounded-full before:border-[1.5px] before:border-status-blocked-fg before:content-[''] after:content-[attr(data-label)]`
+/** Text quoted from another act: set in by a rule alone, without the grey field (the Portal's notes keep the grey). */
+const SKIN_QUOTE_RULE =
+  '[&_[data-kind=citat]]:rounded-none [&_[data-kind=citat]]:bg-transparent [&_[data-kind=citat]]:py-0.5 [&_[data-quoted]]:rounded-none [&_[data-quoted]]:bg-transparent [&_[data-quoted]]:py-0.5'
+/** The note of a change as plain small print under its provision, without the tinted rule. */
+// By the attribute alone: an underscore in an arbitrary variant is read as a space, so the value cannot be named.
+const SKIN_NOTE_PLAIN = '[&_[data-annotation]]:border-l-0 [&_[data-annotation]]:pl-0'
+/**
+ * The signatures as the act's closing: in the text's own face and colour, under a short rule. The lines stay one under the
+ * other: the text does not say which line is an office and which a name („Contrasemnează:", an office on two
+ * lines), so pairing them would be a guess.
+ */
+const SKIN_SIGNATURE_SET = cn(
+  '[&_[data-kind=semnatura]]:text-base [&_[data-kind=semnatura]]:leading-7 [&_[data-kind=semnatura]]:text-foreground [&_[data-kind=semnatura]]:[font-family:inherit]',
+  '[&>[data-kind=semnatura]]:w-fit [&>[data-kind=semnatura]]:min-w-56 [&>[data-kind=semnatura]]:border-t [&>[data-kind=semnatura]]:border-foreground/25 [&>[data-kind=semnatura]]:pt-4',
+  '[&_:not([data-kind=semnatura])>[data-kind=semnatura]]:w-fit [&_:not([data-kind=semnatura])>[data-kind=semnatura]]:min-w-56 [&_:not([data-kind=semnatura])>[data-kind=semnatura]]:border-t [&_:not([data-kind=semnatura])>[data-kind=semnatura]]:border-foreground/25 [&_:not([data-kind=semnatura])>[data-kind=semnatura]]:pt-4',
+)
+
+export type ActTextSkin = {
+  readonly struck?: 'red' | 'mark'
+  readonly quote?: 'filled' | 'rule'
+  readonly note?: 'ruled' | 'plain'
+  readonly signature?: 'small' | 'set'
+}
+
 const RUN_ROLE_CLASS: Readonly<Record<string, string>> = { ttl: 'font-semibold', den: '', bdy: '' }
 
 const ownText = (block: TldfBlock): string => block.content.map((run) => (run.sep ?? '') + run.text).join('')
@@ -418,19 +457,21 @@ function BlockView({ block, marks, onCopyLink }: BlockProps) {
   const marker = block.kind === 'element_lista' ? listMarkerOf(block) : undefined
   const note = block.annotation_role === 'amendment_note'
   const changed = block.changed_since_base_form === true && !note
+  const display = note ? undefined : displayClass(block)
   const scroll = block.kind === 'preformatat'
   return (
     <Tag
       id={`tldf-${block.id}`}
       data-kind={block.kind}
       {...(note && { 'data-annotation': 'amendment_note' })}
+      {...(display === QUOTED && { 'data-quoted': '' })}
       {...(marker !== undefined && { 'data-list-marker': marker })}
       {...struckAttrsOf(block)}
       {...(changed && { 'data-changed': 'true', title: t`Modificat față de forma de bază a actului` })}
       {...(scroll && { tabIndex: 0, role: 'region', 'aria-label': t`Text aliniat pe coloane, derulabil orizontal` })}
       className={cn(
         note ? AMENDMENT_NOTE : BLOCK_CLASS[block.kind],
-        !note && displayClass(block),
+        display,
         marker !== undefined && LIST_MARKER_CLASS,
         struckClassOf(block),
         block.struck_repealed === true && STATE_LABEL,
@@ -450,6 +491,7 @@ function BlockView({ block, marks, onCopyLink }: BlockProps) {
         </button>
       ) : null}
       <BlockContent block={block} marks={marks} onCopyLink={onCopyLink} />
+      {block.struck_repealed === true ? <span aria-hidden="true" data-state-mark="" data-label={t`abrogat`} className={STATE_MARK} /> : null}
     </Tag>
   )
 }
@@ -464,6 +506,8 @@ function charCount(blocks: readonly TldfBlock[]): number {
   return total
 }
 
+const NO_SKIN: ActTextSkin = {}
+
 export function ActBlocks({
   blocks,
   marks,
@@ -472,6 +516,7 @@ export function ActBlocks({
   foldNotes = false,
   tableStyle = 'plain',
   figureStyle = 'box',
+  skin = NO_SKIN,
   onCopyLink,
 }: {
   readonly blocks: readonly TldfBlock[]
@@ -485,6 +530,8 @@ export function ActBlocks({
   readonly tableStyle?: 'plain' | 'hint' | 'open'
   /** How a figure that is not served is drawn, see `FigureStyle`. */
   readonly figureStyle?: 'box' | 'line'
+  /** Other looks of struck text, quoted text, change notes and signatures, see `ActTextSkin`. */
+  readonly skin?: ActTextSkin
   /** Given, each article carries a „copy link" control in the gutter. */
   readonly onCopyLink?: (block: TldfBlock) => void
 }) {
@@ -496,6 +543,10 @@ export function ActBlocks({
         'whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-foreground [content-visibility:auto] sm:text-lg sm:leading-[1.75] [&>*:first-child]:mt-0',
         SERIF,
         !changedMark && '[&_[data-changed]]:before:hidden',
+        skin.struck === 'mark' && SKIN_STRUCK_MARK,
+        skin.quote === 'rule' && SKIN_QUOTE_RULE,
+        skin.note === 'plain' && SKIN_NOTE_PLAIN,
+        skin.signature === 'set' && SKIN_SIGNATURE_SET,
       )}
       style={{ containIntrinsicSize: `auto ${String(intrinsicHeight)}px` }}
     >
