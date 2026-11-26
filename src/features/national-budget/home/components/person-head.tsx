@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { ArrowDown, ArrowLeftRight, CalendarDays, HandCoins, Landmark, Layers, type LucideIcon } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, CalendarDays, HandCoins, Landmark, Layers, ReceiptText, type LucideIcon } from 'lucide-react'
 
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CountUpValue } from '@/features/landing/components/count-up'
@@ -18,7 +18,6 @@ import { BORROWED_FILL, leiText, leiWord, perResidentWords, previousText } from 
 import { StartLinks } from './home-start'
 import { Faint, Mark, Section, YearPicker, YearScope } from './person-shell'
 import { usePageYear } from '../hooks/use-page-year'
-import { populationText } from '../lib/person-format'
 
 /**
  * The page's head (promoted from the prototype `national-budget/persoana`,
@@ -29,12 +28,11 @@ import { populationText } from '../lib/person-format'
  * spacing, words in sentence case).
  */
 
+/** What the page holds, said once: no figure in it, so it renders with the title, before any read. */
 function Lede() {
-  const { view } = usePageYear()
-  const people = populationText(view.year)
   return (
     <p className="mt-5 max-w-[50ch] text-balance text-lg leading-relaxed tracking-normal text-muted-foreground sm:text-xl">
-      {people ? t`Cât cheltuie statul pentru fiecare dintre cei ${people} de locuitori, pe ce, de unde vin banii și cât e deficitul.` : t`Cât cheltuie statul pentru fiecare locuitor, pe ce, de unde vin banii și cât e deficitul.`}
+      {t`De unde vin banii publici și pe ce se duc, prin ce bugete trec, cât e deficitul și cât revine fiecăruia dintre noi, an de an din 2006.`}
     </p>
   )
 }
@@ -127,10 +125,6 @@ function SourcesLine({ className }: { readonly className?: string }) {
   )
 }
 
-function TitlePending() {
-  return <div className="mt-5 h-14 w-full max-w-md animate-pulse rounded bg-muted/70" aria-hidden="true" />
-}
-
 export function Hero() {
   return (
     <section className="relative border-b">
@@ -155,11 +149,9 @@ export function Hero() {
             <h1 className="mt-5 text-[clamp(2.2rem,8vw+0.6rem,2.75rem)] font-extrabold leading-[0.96] tracking-[-0.04em] text-foreground [word-spacing:0.06em] sm:text-6xl lg:text-7xl">
               {t`Bugetul țării,`}
               <br />
-              {t`pe cap de locuitor`}
+              {t`pe înțeles`}
             </h1>
-            <YearScope fallback={<TitlePending />}>
-              <Lede />
-            </YearScope>
+            <Lede />
             <YearScope fallback={<div className="mt-6 h-10 w-40 animate-pulse rounded-md bg-muted" aria-hidden="true" />}>
               <YearPicker className="mt-6" />
             </YearScope>
@@ -193,6 +185,7 @@ type SectionLink = { readonly id: string; readonly label: string; readonly icon:
 function pageSections(): readonly SectionLink[] {
   return [
     { id: 'bani', label: t`De unde și pe ce`, icon: ArrowLeftRight },
+    { id: 'bon', label: t`Bonul`, icon: ReceiptText },
     { id: 'bugete', label: t`Bugetele`, icon: Layers },
     { id: 'stat', label: t`Bugetul de stat`, icon: Landmark },
     { id: 'imprumut', label: t`Deficitul`, icon: HandCoins },

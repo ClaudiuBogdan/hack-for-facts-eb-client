@@ -15,6 +15,7 @@ import { BudgetsSection } from './person-budgets'
 import { DebtSection } from './person-debt'
 import { FlowSection } from './person-flow'
 import { FiguresRegion, FurtherSection, Hero, SectionBar } from './person-head'
+import { ReceiptSection } from './person-receipt'
 import { DataNote, YearScope } from './person-shell'
 import { StateSection } from './person-state'
 import { YearSection } from './person-year'
@@ -92,6 +93,7 @@ export function NationalBudgetHomePage() {
       <SectionBar heroVisible={heroVisible} />
       <FiguresRegion />
       <FlowSection />
+      <ReceiptSection />
       <BudgetsSection />
       <StateSection />
       <DebtSection />

@@ -21,7 +21,7 @@ describe('changes', () => {
 
 describe('lei out of 100', () => {
   const REST = { label: 'Alte cheltuieli', hint: '' }
-  const line = (key: string, exact: string) => ({ key, label: key, hint: null, exact, change: null })
+  const line = (key: string, exact: string) => ({ key, label: key, hint: null, exact, change: null, before: null })
 
   it('are none for a total printed without its lines (2008, 2011, 2013), never a whole that is all „the rest"', () => {
     expect(hundredOf('189100000000', [], REST)).toEqual([])

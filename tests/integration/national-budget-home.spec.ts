@@ -33,7 +33,7 @@ test.beforeAll(async () => {
   test.skip(missing, `${api} does not serve the national budget API`)
 })
 
-const SECTIONS = ['bani', 'bugete', 'stat', 'imprumut', 'anul'] as const
+const SECTIONS = ['bani', 'bon', 'bugete', 'stat', 'imprumut', 'anul'] as const
 
 const bar = (page: Page) => page.getByRole('navigation', { name: 'Secțiunile paginii' })
 const params = (page: Page) => Object.fromEntries(new URL(page.url()).searchParams)
