@@ -9,7 +9,10 @@ import {
 } from '../mocks/fixtures/legal-act-detail'
 import { LegalActPage } from './legal-act-page'
 
-vi.mock('@tanstack/react-router', () => ({
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
+  ...(await importOriginal<typeof import('@tanstack/react-router')>()),
+  useRouterState: () => ({}),
   Link: ({
     children,
     to,

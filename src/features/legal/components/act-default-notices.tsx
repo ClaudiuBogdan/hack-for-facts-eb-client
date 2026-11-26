@@ -3,10 +3,10 @@ import { Trans } from '@lingui/react/macro'
 import type { LegalActDetail } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
 import {
-  isConsolidationVersion,
   isSelectableVersion,
   latestUnavailableVersion,
   listedVersionDate,
+  shownVersionDate,
   versionKindLabel,
   type ShownVersion,
 } from '../lib/legal-versions'
@@ -51,8 +51,10 @@ export function ActDefaultNotices({
   // list's ordering date (LEG-X3AV); without one the sentence names no date.
   const latestDate = latest !== null ? date(listedVersionDate(latest)) : null
   const shownKind = shown !== null ? versionKindLabel(shown.versionKind) : null
-  const shownDate =
-    shown === null ? null : date(isConsolidationVersion(shown) ? shown.portalLabelDate : shown.versionDate)
+  // The shown version's date by the page's one rule (the Portal's for a consolidation, else its own or its listed
+  // version's): the date the box and the bar name it by, and the one it is ordered by.
+  const shownDateValue = shown === null ? null : shownVersionDate(act, shown)
+  const shownDate = date(shownDateValue)
   const readableCount = act.documents.filter(isSelectableVersion).length
 
   return (
@@ -84,7 +86,7 @@ export function ActDefaultNotices({
       {onlyReadableDefault && (
         <div className={NOTICE} role="note">
           <p className="text-sm font-medium leading-6 text-foreground">
-            {shown === null || shown.versionDate === null ? (
+            {shownDateValue === null ? (
               readableCount > 1 ? (
                 <Trans>
                   Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de

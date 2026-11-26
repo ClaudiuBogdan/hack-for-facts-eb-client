@@ -53,11 +53,12 @@ export function ActConsolidationBanner({ version }: Props) {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-controls={details}
-        className={cn(ACT_MORE, 'mt-1 inline-flex min-h-11 items-center text-xs sm:min-h-8')}
+        className={cn(ACT_MORE, 'mt-1 inline-flex min-h-11 items-center text-xs sm:min-h-8 print:hidden')}
       >
         {open ? <Trans>Mai puțin</Trans> : <Trans>Detalii</Trans>}
       </button>
-      <div id={details} hidden={!open} className="pb-0.5 text-xs leading-5 text-muted-foreground">
+      {/* Folded by a class, not the `hidden` attribute: on paper the guidance is always printed, as before the fold. */}
+      <div id={details} className={cn('pb-0.5 text-xs leading-5 text-muted-foreground', !open && 'hidden print:block')}>
         <p>
           <Trans>
             Pentru a stabili dispozițiile aplicabile la o dată, consultați în

@@ -4,7 +4,7 @@ import { Trans } from '@lingui/react/macro'
 import { ArrowDown, ArrowRight, ChevronRight, ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { LegalOutlineEntry } from '@/schemas/legal'
-import { articleKey, contentsParents, contentsRows, isArticleEntry, outlineAncestors, tocLabel } from '../../lib/legal-outline'
+import { articleKey, contentsParents, contentsRows, findArticle, isArticleEntry, outlineAncestors, tocLabel } from '../../lib/legal-outline'
 import { domAnchorForPath } from '../../lib/tldf/nod-resolve'
 
 /**
@@ -43,19 +43,18 @@ export function ContentsToggle({
   readonly touch?: boolean
 }) {
   const Icon = collapsed ? ChevronsUpDown : ChevronsDownUp
+  // Named by what it does, in the words it shows: „Arată tot" on a folded list, „Restrânge" on a whole one.
   return (
     <button
       type="button"
       onClick={onToggle}
-      aria-pressed={collapsed}
-      aria-label={t`Cuprins restrâns`}
       className={cn(
         'inline-flex shrink-0 items-center justify-center gap-1 rounded-md px-2 text-xs font-normal text-muted-foreground hover:bg-muted hover:text-foreground',
         touch ? 'h-11' : 'h-8',
       )}
     >
       <Icon className="size-3.5" aria-hidden="true" />
-      <span aria-hidden="true">{collapsed ? t`Arată tot` : t`Restrânge`}</span>
+      <span>{collapsed ? t`Arată tot` : t`Restrânge`}</span>
     </button>
   )
 }
@@ -76,11 +75,10 @@ export function GoToArticle({
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const field = new FormData(event.currentTarget).get('articol')
-    const asked = (typeof field === 'string' ? field : '')
-      .trim()
-      .replace(/^art(?:icolul|icol|\.)?\s*/iu, '')
+    const asked = (typeof field === 'string' ? field : '').trim().replace(/^art(?:icolul|icol|\.)?\s*/iu, '')
     if (asked === '') return
-    const found = entries.find((entry) => isArticleEntry(entry) && articleKey(entry).toLowerCase() === asked.toLowerCase())
+    // As the reader writes it: „8^1", „8¹", „8 1" and „08" all name an article the outline keys „8^1" or „8".
+    const found = findArticle(entries, asked)
     setMissing(found === undefined ? asked : null)
     if (found !== undefined) onSelect(found)
   }
@@ -127,6 +125,8 @@ export function ContentsRecordLink({ onGo, touch = false }: { readonly onGo: () 
     <a
       href="#act-fisa"
       onClick={(event) => {
+        // A new tab or window is the browser's to open, as for the entries above.
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
         event.preventDefault()
         onGo()
       }}

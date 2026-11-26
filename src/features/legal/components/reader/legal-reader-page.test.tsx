@@ -34,7 +34,13 @@ import { ActReadingLayout } from './legal-reader-page'
 import type { TldfChunkPayload, TldfEnvelope } from '../../lib/tldf/types'
 
 const navigateMock = vi.fn()
-vi.mock('@tanstack/react-router', () => ({
+import { parseAppSearch } from '@/lib/router-search-codec'
+import { legalReaderSearchSchema } from '@/schemas/legal-search'
+
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
+  ...(await importOriginal<typeof import('@tanstack/react-router')>()),
+  useRouterState: () => ({}),
   Link: ({
     children,
     to,
@@ -191,9 +197,10 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     // the contents' entries are links now (an address for a new tab; a click is the reader's to answer)
     const entry = within(toc).getAllByRole('link')[0] as HTMLElement
     // the entry's own address, for a new tab or a copied link, names the text actually shown too
-    const address = new URLSearchParams(entry.getAttribute('href') ?? '')
-    expect(address.get('doc')).toBe('100023')
-    expect(address.get('nod')).toBeTruthy()
+    // read as the router reads it and as the route validates it
+    const address = legalReaderSearchSchema.parse(parseAppSearch(entry.getAttribute('href') ?? ''))
+    expect(address.doc).toBe('100023')
+    expect(address.nod).toBeTruthy()
     fireEvent.click(entry)
     const options = navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
     // the refused document leaves the address with the provision chosen in the text actually shown
@@ -201,7 +208,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     expect(next.doc).toBe('100023')
     expect(typeof next.nod).toBe('string')
     expect(next.nod).not.toBe('r10')
-    expect(address.get('nod')).toBe(next.nod)
+    expect(address.nod).toBe(next.nod)
     // and the address written is one the reader accepts on the next render: the act's own text, not refused again
     expect(resolveDocOverride(act, String(next.doc)).kind).toBe('own')
   })

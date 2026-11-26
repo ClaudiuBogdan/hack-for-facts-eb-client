@@ -35,7 +35,10 @@ import {
 import { ActReadingLayout } from './legal-reader-page'
 
 const navigateMock = vi.fn()
-vi.mock('@tanstack/react-router', () => ({
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
+  ...(await importOriginal<typeof import('@tanstack/react-router')>()),
+  useRouterState: () => ({}),
   Link: ({ children, to }: { readonly children: ReactNode; readonly to: string }) => (
     <a href={to}>{children}</a>
   ),
@@ -268,14 +271,20 @@ describe('ActReadingLayout on legal_v2', () => {
     const dated = within(note).getByText(/Portalul Legislativ indică „consolidarea din .*2024.*”\./)
     const guidance = within(note).getByText(/Pentru a stabili dispozițiile aplicabile la o dată/)
     // folded: the first sentence and the Portal's dated note are never inside the folded part
-    expect(first.closest('[hidden]')).toBeNull()
-    expect(dated.closest('[hidden]')).toBeNull()
-    expect(guidance.closest('[hidden]')).not.toBeNull()
-    expect(screen.queryByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ })).toBeNull()
+    expect(first.closest('.hidden')).toBeNull()
+    expect(dated.closest('.hidden')).toBeNull()
+    const fold = guidance.closest('.hidden')
+    expect(fold).not.toBeNull()
+    expect(fold).toContainElement(within(note).getByText(/Forma consolidată pe Portalul Legislativ/))
+    // folded on screen only: on paper the guidance and the link are printed, and the switch is not
+    expect(fold).toHaveClass('print:block')
+    expect(fold).not.toHaveAttribute('hidden')
     const details = within(note).getByRole('button', { name: 'Detalii' })
+    expect(details).toHaveClass('print:hidden')
     expect(details).toHaveAttribute('aria-expanded', 'false')
+    expect(details.getAttribute('aria-controls')).toBe(fold?.id)
     fireEvent.click(details)
-    expect(guidance.closest('[hidden]')).toBeNull()
+    expect(guidance.closest('.hidden')).toBeNull()
     expect(within(note).getByRole('link', { name: /Forma consolidată pe Portalul Legislativ/ })).toBeInTheDocument()
     expect(within(note).getByRole('button', { name: 'Mai puțin' })).toHaveAttribute('aria-expanded', 'true')
   })
@@ -284,10 +293,15 @@ describe('ActReadingLayout on legal_v2', () => {
     render(<ActReadingLayout act={legalActDetailV2Fixture} lead={null} fisa={null} />)
     const about = await screen.findByRole('complementary', { name: 'Despre textul afișat' })
     const select = within(about).getByLabelText(/Versiunea textului/)
-    // the face names the version by the Portal's date and its kind, nothing cut
+    // the face names the version by the Portal's date and its kind, nothing cut: read from the drawn face, not
+    // from the options under it (which say the same and would hide a face left empty)
     const face = select.parentElement as HTMLElement
-    expect(face).toHaveTextContent(/2024/)
-    expect(face).toHaveTextContent(/formă consolidată neoficială/)
+    const drawn = face.firstElementChild as HTMLElement
+    expect(drawn.tagName).toBe('SPAN')
+    expect(drawn).toHaveTextContent(/2024/)
+    expect(drawn).toHaveTextContent(/formă consolidată neoficială/)
+    // the keyboard's ring is on the face (the select itself is unseen): 2 px, and an outline where colours are forced
+    expect(face).toHaveClass('has-[select:focus-visible]:ring-2', 'forced-colors:has-[select:focus-visible]:outline')
     fireEvent.change(select, { target: { value: 'f900011' } })
     expect(navigateMock).toHaveBeenLastCalledWith({
       to: '.',
@@ -488,6 +502,8 @@ describe('ActReadingLayout on legal_v2', () => {
     ])('%s: keeps the no-text state and requests no text', async (_case, act) => {
       render(<ActReadingLayout act={act} lead={null} fisa={null} />)
       expect(await screen.findByText('Fără expresie canonică')).toBeInTheDocument()
+      // an act with no text is not said to be a text without contents
+      expect(screen.queryByText('Acest text nu are un cuprins.')).not.toBeInTheDocument()
       expect(requestedIds()).toEqual([])
       expect(screen.queryByText(/Afișăm versiunea/)).not.toBeInTheDocument()
     })
@@ -504,6 +520,8 @@ describe('ActReadingLayout on legal_v2', () => {
         ),
       ).toBeInTheDocument()
       expect(screen.queryByText('Fără expresie canonică')).not.toBeInTheDocument()
+      // undated: the bar names the version alone („Forma din" needs a date)
+      expect(container.textContent).not.toMatch(/Forma din/)
     })
 
     it('with several readable undated versions, shows the original first and lists the others', async () => {

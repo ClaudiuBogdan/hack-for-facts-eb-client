@@ -40,11 +40,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ExternalLink, TriangleAlert } from 'lucide-react'
+import { stringifyAppSearch } from '@/lib/router-search-codec'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import type { LegalActDetail, LegalOutlineEntry } from '@/schemas/legal'
@@ -131,6 +132,9 @@ type Props = {
  * own text takes the full text colour for as long: muted small print on the
  * tint would fall under 4.5:1.
  */
+/** The text's article: the skip link's target, which must land under the sticky reading bar and not behind it. */
+const READER_CONTENT = 'scroll-mt-16'
+
 const NOD_HIGHLIGHT = ['bg-foreground/10!', 'text-foreground!'] as const
 
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
@@ -214,7 +218,16 @@ export function ActReadingLayout({
   /** Bumped whenever text blocks land in the DOM (envelope render, chunk load). */
   const [domVersion, setDomVersion] = useState(0)
   const [activePath, setActivePath] = useState<string | null>(null)
+  // The folded contents keep the last place open while the reader is in no place of the outline (between two
+  // blocks, in the record): the branch they were in does not shut behind them.
+  const [openPath, setOpenPath] = useState<string | null>(null)
+  if (activePath !== null && activePath !== openPath) setOpenPath(activePath)
   const [nodMissed, setNodMissed] = useState(false)
+  // Another text: its places are its own. Declared before the effect that lands a `?nod=`, which then sets the place.
+  useEffect(() => {
+    setActivePath(null)
+    setOpenPath(null)
+  }, [documentId])
 
   const manifest =
     render.data !== undefined && render.data.kind === 'manifest' ? render.data.tldf : null
@@ -268,24 +281,26 @@ export function ActReadingLayout({
   // top of the viewport. Highlight only — never a URL writeback.
   useEffect(() => {
     if (outline.length === 0 || typeof IntersectionObserver === 'undefined') return
-    const observed: Element[] = []
+    // The observer reports changes only, so the blocks under the band are kept: the place is the last of them in
+    // the outline's order (an article inside its chapter), and none when the band holds no block of the outline
+    // (the reader is past the text, in the record): the bar then stops naming the last article read.
+    const order = new Map(outline.map((entry, index) => [domAnchorForPath(entry.path), index]))
+    const inBand = new Set<string>()
     const observer = new IntersectionObserver(
       (entries) => {
-        const hit = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
-        if (hit !== undefined) {
-          setActivePath(hit.target.id.replace(/^tldf-/, ''))
+        for (const entry of entries) {
+          if (entry.isIntersecting) inBand.add(entry.target.id)
+          else inBand.delete(entry.target.id)
         }
+        let last = -1
+        for (const id of inBand) last = Math.max(last, order.get(id) ?? -1)
+        setActivePath(last >= 0 ? (outline[last]?.path ?? null) : null)
       },
       { rootMargin: '0% 0% -75% 0%' },
     )
-    for (const entry of outline) {
-      const el = document.getElementById(domAnchorForPath(entry.path))
-      if (el !== null) {
-        observer.observe(el)
-        observed.push(el)
-      }
+    for (const id of order.keys()) {
+      const el = document.getElementById(id)
+      if (el !== null) observer.observe(el)
     }
     return () => observer.disconnect()
   }, [outline, domVersion])
@@ -311,13 +326,15 @@ export function ActReadingLayout({
   )
 
   // An entry's own address, for a new tab or a copied link: the same `?doc=`
-  // and `?nod=` a choice in the contents writes.
+  // and `?nod=` a choice in the contents writes, over whatever else the
+  // address holds, and written by the router's own serializer. A path such
+  // as `0.1` or `1` reads back as a number unless it is quoted, and the
+  // route refuses a `nod` that is not text (Codex review, 26 November 2026).
+  const addressSearch = useRouterState({ select: (state) => state.location.search as Record<string, unknown> })
   const tocHref = useCallback(
-    (entry: LegalOutlineEntry) => {
-      const doc = foreignDoc ? documentId : (docOverride ?? null)
-      return `?${new URLSearchParams({ ...(doc !== null && { doc }), nod: entry.path }).toString()}`
-    },
-    [foreignDoc, documentId, docOverride],
+    (entry: LegalOutlineEntry) =>
+      stringifyAppSearch({ ...addressSearch, doc: (foreignDoc ? documentId : docOverride) ?? undefined, nod: entry.path }),
+    [addressSearch, foreignDoc, documentId, docOverride],
   )
 
   // The contents: folded or whole (a long outline starts folded until the
@@ -350,7 +367,7 @@ export function ActReadingLayout({
     const frame = box.getBoundingClientRect()
     const mark = lit.getBoundingClientRect()
     if (mark.top < frame.top + 8 || mark.bottom > frame.bottom - 48) box.scrollTop += mark.top - frame.top - frame.height / 2
-  }, [activePath, collapsed])
+  }, [activePath, collapsed, outline])
 
   // The ways back to the act's start show once its head has left the screen.
   // At once, not as a glide (a code is a hundred screens long), and the focus
@@ -436,7 +453,9 @@ export function ActReadingLayout({
         citation={act.displayCitation}
         outline={outline}
         activePath={activePath}
-        shownName={shownVersion === null ? null : versionName(shownVersion.versionKind, shownVersionDate(act, shownVersion), i18n.locale)}
+        // A text that failed to load is not on the page: the bar names no version as shown.
+        shownName={shownVersion === null || render.isError ? null : versionName(shownVersion.versionKind, shownVersionDate(act, shownVersion), i18n.locale)}
+        shownDated={shownVersion !== null && shownVersionDate(act, shownVersion) !== null}
         about={about}
         away={away}
         onToStart={toStart}
@@ -447,7 +466,8 @@ export function ActReadingLayout({
         sheetContents={
           <>
             <div className="p-4">
-              <LegalReaderToc entries={outline} activePath={activePath} onSelect={onSheetSelect} hrefFor={tocHref} touch collapsed={collapsed} openPath={activePath} />
+              {/* Keyed by the text: what was typed in the jump field, and its answer, belong to one version. */}
+              <LegalReaderToc key={documentId ?? ''} entries={outline} activePath={activePath} onSelect={onSheetSelect} hrefFor={tocHref} touch collapsed={collapsed} openPath={openPath} />
             </div>
             <ContentsRecordLink touch onGo={() => toRecord(true)} />
           </>
@@ -467,14 +487,15 @@ export function ActReadingLayout({
           page header above sits on this same grid, so releasing the column
           would tear the header's left edge away from the text's. */}
       <div className={cn(ACT_GRID, ACT_GRID_THREE, 'pt-6 print:block print:max-w-none')}>
-        <aside key="nav" className={cn('hidden lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:block print:hidden', outline.length > 0 && '-mt-6')}>
+        {/* A plain cell: the contents inside are a named `nav`, and the page's one `aside` is the box about the text. */}
+        <div key="nav" className={cn('hidden lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:block print:hidden', outline.length > 0 && '-mt-6')}>
           {outline.length > 0 ? (
             // A box hung from the reading bar, which is its head: the jump
             // field and the way to the record stay, the list scrolls between.
             <div className="sticky top-[3.125rem] flex max-h-[calc(100dvh-4rem)] flex-col overflow-hidden rounded-md rounded-t-none border border-t-0">
-              {jump ? <GoToArticle entries={outline} onSelect={onTocSelect} ruled /> : null}
+              {jump ? <GoToArticle key={documentId ?? ''} entries={outline} onSelect={onTocSelect} ruled /> : null}
               <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3 [scrollbar-width:thin]">
-                <LegalReaderToc entries={outline} activePath={activePath} onSelect={onTocSelect} hrefFor={tocHref} bare collapsed={collapsed} openPath={activePath} />
+                <LegalReaderToc entries={outline} activePath={activePath} onSelect={onTocSelect} hrefFor={tocHref} bare collapsed={collapsed} openPath={openPath} />
               </div>
               <ContentsRecordLink onGo={() => toRecord(false)} />
             </div>
@@ -484,12 +505,13 @@ export function ActReadingLayout({
                 <div key={width} className={cn('h-3.5 animate-pulse rounded bg-muted motion-reduce:animate-none', width)} />
               ))}
             </div>
-          ) : outlineQuery.isError ? null : (
+          ) : outlineQuery.isError || documentId === null ? null : (
+            // Said of a text only: an act with no text to show has its own card in the reading column.
             <p className="sticky top-16 text-sm leading-6 text-muted-foreground">
               <Trans>Acest text nu are un cuprins.</Trans>
             </p>
           )}
-        </aside>
+        </div>
 
         <div key="lead" className={cn(ACT_COLUMN, 'border-b pb-6 empty:hidden lg:col-start-2 lg:row-start-1')}>
           {leadNode}
@@ -502,6 +524,7 @@ export function ActReadingLayout({
             shown={shownVersion}
             shownDocumentId={shownId}
             consolidation={showConsolidationBanner}
+            textFailed={render.isError}
             {...(warnings !== undefined && { warnings })}
             className="lg:col-start-2 lg:row-start-2 min-[88rem]:col-start-3 min-[88rem]:row-span-3 min-[88rem]:row-start-1 min-[88rem]:-mt-6"
           />
@@ -676,7 +699,7 @@ function EnvelopeReader({
     onRendered()
   }, [onRendered])
   return (
-    <article id="reader-content" lang="ro">
+    <article id="reader-content" lang="ro" className={READER_CONTENT}>
       {/* The act page folds the Portal's long notes to their first lines. */}
       <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} foldNotes />
     </article>
@@ -940,7 +963,7 @@ function ChunkedReader({
     <>
       {/* The article holds ONLY the law's text — find-in-page, copy and
           citation never pick up loading chrome. */}
-      <article id="reader-content" lang="ro">
+      <article id="reader-content" lang="ro" className={READER_CONTENT}>
         {slots.map((slot, i) =>
           slot.state === 'loaded' ? (
             <TldfBlocksView

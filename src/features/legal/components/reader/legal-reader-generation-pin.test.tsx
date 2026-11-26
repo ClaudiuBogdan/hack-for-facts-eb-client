@@ -24,7 +24,10 @@ import type { TldfChunkPayload } from '../../lib/tldf/types'
 import type { ReactNode } from 'react'
 
 const navigateMock = vi.fn()
-vi.mock('@tanstack/react-router', () => ({
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
+  ...(await importOriginal<typeof import('@tanstack/react-router')>()),
+  useRouterState: () => ({}),
   Link: ({
     children,
     to,

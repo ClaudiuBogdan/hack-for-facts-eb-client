@@ -15,8 +15,10 @@ type Props = {
   readonly citation: string
   readonly outline: readonly LegalOutlineEntry[]
   readonly activePath: string | null
-  /** The shown version's one-line name, for „Forma din …"; null when no version is shown. */
+  /** The shown version's one-line name, for „Forma din …"; null when no version's text is on the page. */
   readonly shownName: string | null
+  /** The name starts with a date („Forma din 23 mai 2016, …"). Without one the name stands alone: „din" needs a date. */
+  readonly shownDated: boolean
   /** The box about the text shows: from 88rem it names the version itself, and the bar heads it. */
   readonly about: boolean
   /** The act's head has left the screen: the way back to the start shows. */
@@ -41,6 +43,7 @@ export function ActReadingBar({
   outline,
   activePath,
   shownName,
+  shownDated,
   about,
   away,
   onToStart,
@@ -89,10 +92,11 @@ export function ActReadingBar({
               <span className="truncate">{citation}</span>
             ) : (
               <>
-                {/* The chapter and section give way first: the place itself is never cut. From `sm` only. */}
+                {/* The chapter and section give way first; the place itself is cut only when it alone is wider than
+                    its room (a heading's whole name on a phone). From `sm` only. */}
                 {ancestors.length > 0 ? (
                   <>
-                    <span className="hidden min-w-0 truncate sm:inline">
+                    <span className="hidden min-w-0 shrink-[999] truncate sm:inline">
                       {ancestors
                         .slice(-2)
                         .map((entry) => tocLabel(entry))
@@ -103,7 +107,7 @@ export function ActReadingBar({
                     </span>
                   </>
                 ) : null}
-                <span className="shrink-0 font-medium text-foreground">
+                <span className="min-w-0 truncate font-medium text-foreground">
                   <ArticleNumber value={tocLabel(active)} />
                 </span>
               </>
@@ -112,7 +116,7 @@ export function ActReadingBar({
           {shownName !== null ? (
             // With the box at the right, the box itself names the version on a wide screen.
             <p className={cn('hidden shrink-0 text-sm text-muted-foreground md:block', about && 'min-[88rem]:hidden')}>
-              <Trans>Forma din {shownName}</Trans>
+              {shownDated ? <Trans>Forma din {shownName}</Trans> : shownName}
             </p>
           ) : null}
           {away ? (

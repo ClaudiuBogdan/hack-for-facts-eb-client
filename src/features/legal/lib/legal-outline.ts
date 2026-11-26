@@ -28,6 +28,35 @@ export function articleKey(entry: LegalOutlineEntry): string {
   return entry.numberKey ?? tocLabel(entry).replace(/^Art(?:icolul|icol|\.)\s*/iu, '')
 }
 
+const RAISED_DIGITS = '⁰¹²³⁴⁵⁶⁷⁸⁹'
+
+/**
+ * An article number as a reader may type it, in the outline's own writing: „8^1" for article 8¹. A raised index
+ * (as the law prints it and the contents draw it), a space, a point or a dash between number and index all mean
+ * the caret; the word „art." before it, capitals and leading zeros mean nothing.
+ */
+export function articleNumberAsKey(typed: string): string {
+  return typed
+    .trim()
+    .toLowerCase()
+    .replace(/^art(?:icolul|icol|\.)?\s*/u, '')
+    .replace(/\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+/gu, (run) => `^${[...run.trim()].map((digit) => String(RAISED_DIGITS.indexOf(digit))).join('')}`)
+    .replace(/^(\d+)\s*[\s.-]\s*(\d+)$/u, '$1^$2')
+    .replace(/^0+(?=\d)/u, '')
+}
+
+/** The article a typed number names, if the outline has it. */
+export function findArticle(outline: readonly LegalOutlineEntry[], typed: string): LegalOutlineEntry | undefined {
+  const asked = articleNumberAsKey(typed)
+  if (asked === '') return undefined
+  const articles = outline.filter(isArticleEntry)
+  // As written first: an outline that really numbers an article „8.1" is found by „8.1", and „8¹" finds the
+  // article keyed „8^1" before one keyed „8.1".
+  const literal = typed.trim().toLowerCase().replace(/^art(?:icolul|icol|\.)?\s*/u, '')
+  const keyed = (match: (key: string) => boolean) => articles.find((entry) => match(articleKey(entry).toLowerCase()))
+  return keyed((key) => key === literal) ?? keyed((key) => key === asked) ?? keyed((key) => articleNumberAsKey(key) === asked)
+}
+
 export type ContentsRow =
   | { readonly kind: 'heading'; readonly entry: LegalOutlineEntry; readonly level: number }
   | { readonly kind: 'articles'; readonly entries: readonly LegalOutlineEntry[]; readonly level: number }
@@ -35,15 +64,18 @@ export type ContentsRow =
 /**
  * The outline as rows: a heading at its nesting level, then the run of articles under it as one grid. A heading
  * stays open while the next entries are below its rank AND inside its span of the text: rank alone would nest the
- * title after an annex served mid-articles under that annex (LEG-CEJT).
+ * title after an annex served mid-articles under that annex (LEG-CEJT). Inside means both ends: an annex listed
+ * before its place in the text has a span that ends after everything, and holds nothing that starts before it.
  */
 export function contentsRows(outline: readonly LegalOutlineEntry[]): readonly ContentsRow[] {
   const rows: ContentsRow[] = []
-  const open: { readonly depth: number; readonly end: number | null }[] = []
-  const inside = (parent: { readonly end: number | null }, entry: LegalOutlineEntry) => parent.end === null || entry.charStart === null || entry.charStart < parent.end
+  type Open = { readonly depth: number; readonly start: number | null; readonly end: number | null }
+  const open: Open[] = []
+  const inside = (parent: Open, entry: LegalOutlineEntry) =>
+    entry.charStart === null || ((parent.start === null || entry.charStart >= parent.start) && (parent.end === null || entry.charStart < parent.end))
   let run: LegalOutlineEntry[] | null = null
   for (const entry of outline) {
-    while (open.length > 0 && !inside(open[open.length - 1] ?? { end: null }, entry)) {
+    while (open.length > 0 && !inside(open[open.length - 1] ?? { depth: 0, start: null, end: null }, entry)) {
       open.pop()
       run = null
     }
@@ -58,7 +90,7 @@ export function contentsRows(outline: readonly LegalOutlineEntry[]): readonly Co
     run = null
     while (open.length > 0 && (open[open.length - 1]?.depth ?? 0) >= entry.depth) open.pop()
     rows.push({ kind: 'heading', entry, level: open.length })
-    open.push({ depth: entry.depth, end: entry.charEnd })
+    open.push({ depth: entry.depth, start: entry.charStart, end: entry.charEnd })
   }
   return rows
 }
@@ -85,7 +117,10 @@ export function outlineAncestors(outline: readonly LegalOutlineEntry[], path: st
   for (let cursor = index - 1; cursor >= 0; cursor--) {
     const entry = outline[cursor]
     // Where the outline gives spans, never by rank alone (LEG-CEJT).
-    const around = entry === undefined || entry.charEnd === null || self.charStart === null || self.charStart < entry.charEnd
+    const around =
+      entry === undefined ||
+      self.charStart === null ||
+      ((entry.charStart === null || self.charStart >= entry.charStart) && (entry.charEnd === null || self.charStart < entry.charEnd))
     if (entry !== undefined && entry.depth < depth && around) {
       chain.unshift(entry)
       depth = entry.depth

@@ -23,6 +23,8 @@ type Props = {
   readonly shownDocumentId: string | null
   /** The version on screen, with what the render says it served laid over it: what the control names. */
   readonly shown: ShownVersion
+  /** The text failed to load: a static label then names the version alone, without „afișată" (nothing is shown). */
+  readonly textFailed?: boolean
 }
 
 /**
@@ -37,7 +39,7 @@ type Props = {
  * The control is the browser's own select over a face that names the shown version whole: in the box at the right
  * in two lines (the date, then the kind), in the reading column in one line that wraps. Nothing is cut.
  */
-export function ActVersionSelector({ act, shownDocumentId, shown }: Props) {
+export function ActVersionSelector({ act, shownDocumentId, shown, textFailed = false }: Props) {
   const { i18n } = useLingui()
   const navigate = useNavigate()
   const options = orderVersionsNewestFirst(act.documents.filter(isSelectableVersion))
@@ -46,7 +48,9 @@ export function ActVersionSelector({ act, shownDocumentId, shown }: Props) {
   if (options.length === 0) {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        {t`Versiunea afișată: ${versionName(shown.versionKind, shownVersionDate(act, shown), i18n.locale)}`}
+        {textFailed
+          ? versionName(shown.versionKind, shownVersionDate(act, shown), i18n.locale)
+          : t`Versiunea afișată: ${versionName(shown.versionKind, shownVersionDate(act, shown), i18n.locale)}`}
       </p>
     )
   }
@@ -76,7 +80,7 @@ export function ActVersionSelector({ act, shownDocumentId, shown }: Props) {
   if (only !== undefined) {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        <Trans>Versiunea afișată: {label(only)}</Trans>
+        {textFailed ? label(only) : <Trans>Versiunea afișată: {label(only)}</Trans>}
       </p>
     )
   }
@@ -94,7 +98,7 @@ export function ActVersionSelector({ act, shownDocumentId, shown }: Props) {
       <span aria-hidden className="text-muted-foreground min-[88rem]:hidden">
         <Trans>Versiunea textului</Trans>
       </span>
-      <span className="relative flex min-h-11 w-full min-w-0 max-w-full items-center gap-2 rounded-md border border-input bg-background py-1.5 pl-3 pr-2.5 text-left font-medium leading-5 has-[select:focus-visible]:ring-1 has-[select:focus-visible]:ring-ring sm:min-h-10 sm:w-auto min-[88rem]:w-full">
+      <span className="relative flex min-h-11 w-full min-w-0 max-w-full items-center gap-2 rounded-md border border-input bg-background py-1.5 pl-3 pr-2.5 text-left font-medium leading-5 has-[select:focus-visible]:ring-2 has-[select:focus-visible]:ring-ring has-[select:focus-visible]:ring-offset-2 has-[select:focus-visible]:ring-offset-background forced-colors:has-[select:focus-visible]:outline forced-colors:has-[select:focus-visible]:outline-2 sm:min-h-10 sm:w-auto min-[88rem]:w-full">
         {value === '' ? (
           <span className="min-w-0 flex-1 font-normal text-muted-foreground">{t`alege o versiune`}</span>
         ) : (

@@ -15,6 +15,8 @@ type Props = {
   readonly shownDocumentId: string | null
   /** The shown text is a Portal consolidation that rendered: its LEG-X3AV notice is said. */
   readonly consolidation: boolean
+  /** The text failed to load: the box names the version asked for, never as one „shown". */
+  readonly textFailed?: boolean
   /** The act's warnings (rows), worn by the box. */
   readonly warnings?: ReactNode
   /** Where the page's grid places the box. */
@@ -28,7 +30,7 @@ type Props = {
  *
  * One element in both places, moved by the grid: what it says is in the page once at any width.
  */
-export function ActTextAbout({ act, shown, shownDocumentId, consolidation, warnings, className }: Props) {
+export function ActTextAbout({ act, shown, shownDocumentId, consolidation, textFailed = false, warnings, className }: Props) {
   return (
     <aside aria-label={t`Despre textul afișat`} className={cn('min-w-0 max-w-[42rem] min-[88rem]:max-w-none', className)}>
       <div
@@ -39,7 +41,7 @@ export function ActTextAbout({ act, shown, shownDocumentId, consolidation, warni
           'min-[88rem]:rounded-b-md min-[88rem]:border min-[88rem]:border-t-0 min-[88rem]:px-3 min-[88rem]:pb-2 min-[88rem]:pt-3 [scrollbar-width:thin]',
         )}
       >
-        <ActVersionSelector act={act} shownDocumentId={shownDocumentId} shown={shown} />
+        <ActVersionSelector act={act} shownDocumentId={shownDocumentId} shown={shown} textFailed={textFailed} />
         {consolidation ? <ActConsolidationBanner version={shown} /> : null}
         {warnings !== undefined ? <div className={cn(ACT_ABOUT_WARNINGS, 'empty:hidden')}>{warnings}</div> : null}
       </div>

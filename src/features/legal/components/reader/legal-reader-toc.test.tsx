@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, within } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { LegalOutlineEntry } from '@/schemas/legal'
-import { contentsRows, outlineAncestors } from '../../lib/legal-outline'
-import { LegalReaderToc } from './legal-reader-toc'
+import { articleNumberAsKey, contentsRows, findArticle, outlineAncestors } from '../../lib/legal-outline'
+import { ContentsRecordLink, ContentsToggle, LegalReaderToc } from './legal-reader-toc'
 
 const entry = (
   path: string,
@@ -159,5 +159,89 @@ describe('the outline nests by span, not by rank alone (LEG-CEJT)', () => {
 
   it('names the place\'s ancestors by span as well as rank', () => {
     expect(outlineAncestors(flat, 't1.a1').map((ancestor) => ancestor.path)).toEqual(['t1'])
+  })
+
+  // An annex LISTED before its place in the text: its span lies after the articles that follow it in the list, so
+  // „starts before the annex ends" is true of every one of them. Only „starts inside it" keeps them out.
+  const early: LegalOutlineEntry[] = [
+    entry('t1', 'titlu', 2, 'Titlul I', null, [0, 1000]),
+    entry('anx', 'anexa', 3, 'Anexa 1', null, [900, 950]),
+    entry('t1.a6', 'articol', 7, 'Articolul 6', '6', [300, 320]),
+    entry('t1.a7', 'articol', 7, 'Articolul 7', '7', [320, 340]),
+  ]
+
+  it('holds nothing that starts before the heading does: an annex listed early does not take the articles after it', () => {
+    expect(contentsRows(early).map((row) => [row.kind, row.level])).toEqual([
+      ['heading', 0],
+      ['heading', 1],
+      // under the title, beside the annex: not at level 2, inside it
+      ['articles', 1],
+    ])
+    expect(outlineAncestors(early, 't1.a6').map((ancestor) => ancestor.path)).toEqual(['t1'])
+    // an entry really inside the annex is still held by it
+    const inside = [...early, entry('anx.p1', 'paragraf', 5, 'Punctul 1', null, [910, 920])]
+    expect(outlineAncestors(inside, 'anx.p1').map((ancestor) => ancestor.path)).toEqual(['t1', 'anx'])
+  })
+})
+
+describe('an article number as a reader types it', () => {
+  it.each([
+    ['8^1', '8^1'],
+    ['8¹', '8^1'],
+    ['8 ¹', '8^1'],
+    ['8 1', '8^1'],
+    ['8.1', '8^1'],
+    ['8-1', '8^1'],
+    ['Art. 8', '8'],
+    ['articolul 08', '8'],
+    ['0', '0'],
+    ['III', 'iii'],
+    ['12¹²', '12^12'],
+  ])('reads „%s" as %s', (typed, key) => {
+    expect(articleNumberAsKey(typed)).toBe(key)
+  })
+
+  const articles: LegalOutlineEntry[] = [
+    entry('a8', 'articol', 7, 'Articolul 8', '8'),
+    entry('a81', 'articol', 7, 'Articolul 8^1', '8^1'),
+    entry('a80', 'articol', 7, 'Articolul 81', '81'),
+    entry('c1', 'capitol', 4, 'Capitolul 8', '8'),
+  ]
+
+  it('finds the article however its index is written, and never a heading or another number', () => {
+    for (const typed of ['8^1', '8¹', '8 1', '8.1', 'art. 8¹']) expect(findArticle(articles, typed)?.path).toBe('a81')
+    expect(findArticle(articles, '08')?.path).toBe('a8')
+    expect(findArticle(articles, '81')?.path).toBe('a80')
+    expect(findArticle(articles, '9')).toBeUndefined()
+    expect(findArticle(articles, '  ')).toBeUndefined()
+  })
+
+  it('takes a number as the outline writes it before reading it another way', () => {
+    const dotted = [entry('x', 'articol', 7, 'Articolul 8.1', '8.1'), entry('y', 'articol', 7, 'Articolul 8^1', '8^1')]
+    expect(findArticle(dotted, '8.1')?.path).toBe('x')
+    expect(findArticle(dotted, '8¹')?.path).toBe('y')
+  })
+})
+
+describe('the contents\' small controls', () => {
+  it('names the fold switch by the words it shows (what it does)', () => {
+    const onToggle = vi.fn()
+    const { rerender } = render(<ContentsToggle collapsed onToggle={onToggle} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Arată tot' }))
+    expect(onToggle).toHaveBeenCalledTimes(1)
+    rerender(<ContentsToggle collapsed={false} onToggle={onToggle} />)
+    expect(screen.getByRole('button', { name: 'Restrânge' })).toBeInTheDocument()
+  })
+
+  it('leaves a new-tab click on the way to the record to the browser', () => {
+    const onGo = vi.fn()
+    render(<ContentsRecordLink onGo={onGo} />)
+    const link = screen.getByRole('link', { name: 'Fișa actului' })
+    // fireEvent returns false when the handler prevented the default
+    expect(fireEvent.click(link, { ctrlKey: true })).toBe(true)
+    expect(fireEvent.click(link, { metaKey: true })).toBe(true)
+    expect(onGo).not.toHaveBeenCalled()
+    expect(fireEvent.click(link)).toBe(false)
+    expect(onGo).toHaveBeenCalledTimes(1)
   })
 })
