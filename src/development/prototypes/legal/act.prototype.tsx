@@ -19,6 +19,10 @@ import { ActLivePage, ActSpecimenPage } from './act.variants'
  * unofficial form and the warnings sit in a column at the right on a wide screen that stays in view (owner, from a
  * picture of three layouts); narrower, the notice folds to its first sentence and the Portal's note with its date,
  * and a long note of the Portal shows its first lines. `?aparat=intreg` and `?aparat=pliat` keep the other two.
+ *
+ * Round 3 (same day), the contents: a bordered box with its own title and jump field (owner, from a picture of four
+ * containers; `?cadru=simplu`, `?cadru=fond` and `?cadru=coloana` keep the others). The steps per level stay; article
+ * numbers sit in cells of one width so they line up within a level; a faint line per level says what holds what.
  */
 export const prototype = {
   title: 'Legislație — pagina unui act (prototip, 26 noiembrie)',

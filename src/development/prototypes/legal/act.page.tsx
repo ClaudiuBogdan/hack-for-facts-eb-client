@@ -74,6 +74,13 @@ export type ActPageModel = {
    *   `compact`.
    */
   readonly apparatus?: 'full' | 'compact' | 'rail'
+  /**
+   * What holds the contents on a desktop. The owner chose `panel` on 26 November 2026, from a picture of the four: `plain`, nothing around it; `panel`,
+   * a bordered box with its own head (the title and the jump field) and its own scroll; `tinted`, the same box
+   * filled with the notes' grey and no border; `column`, a full-height column closed by a line at its right, like
+   * a book's margin.
+   */
+  readonly contentsFrame?: 'plain' | 'panel' | 'tinted' | 'column'
   /** The act's warnings (the live page's component), placed by `apparatus`. */
   readonly warnings?: ReactNode
   /** What must be said about the text before it is read (the live page's own notices), between the form line and the text. */
@@ -272,9 +279,11 @@ type ContentsProps = {
   readonly onGo: (path: string) => void
   /** In the phone's sheet: 44px targets. */
   readonly touch?: boolean
+  /** The jump field is drawn by the container (in its own head) and not here. */
+  readonly bare?: boolean
 }
 
-function GoToArticle({ outline, onGo, touch }: Pick<ContentsProps, 'outline' | 'onGo' | 'touch'>) {
+function GoToArticle({ outline, onGo, touch, flush }: Pick<ContentsProps, 'outline' | 'onGo' | 'touch'> & { readonly flush?: 'ruled' | 'filled' }) {
   const [missing, setMissing] = useState<string | null>(null)
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -287,8 +296,8 @@ function GoToArticle({ outline, onGo, touch }: Pick<ContentsProps, 'outline' | '
     if (found !== undefined) onGo(found.path)
   }
   return (
-    <form onSubmit={submit} className="pb-3">
-      <div className="flex items-center rounded-md border focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-ring">
+    <form onSubmit={submit} className={cn(flush === undefined && 'pb-3', flush === 'filled' && 'px-3 pb-1 pt-1.5')}>
+      <div className={cn('flex items-center', flush === 'ruled' ? 'border-b focus-within:bg-muted/50' : cn('rounded-md border focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-ring', flush === 'filled' && 'bg-background'))}>
         <input
           name="articol"
           autoComplete="off"
@@ -300,14 +309,36 @@ function GoToArticle({ outline, onGo, touch }: Pick<ContentsProps, 'outline' | '
           <ArrowRight className="size-4" aria-hidden="true" />
         </button>
       </div>
-      <p role="status" className={cn('text-xs leading-5 text-muted-foreground', missing !== null && 'mt-1.5')}>
+      <p role="status" className={cn('text-xs leading-5 text-muted-foreground', missing !== null && (flush === 'ruled' ? 'border-b px-3 py-1.5' : 'mt-1.5'))}>
         {missing !== null ? <Trans>Forma afișată nu are un articol {missing}.</Trans> : null}
       </p>
     </form>
   )
 }
 
-function Contents({ outline, names, activePath, trail, onGo, touch = false }: ContentsProps) {
+/** One faint line per level a row sits inside, at the left edge of the heading that holds it. */
+function LevelGuides({ level }: { readonly level: number }) {
+  return (
+    <>
+      {Array.from({ length: level }, (_, index) => (
+        <span key={index} aria-hidden="true" className="absolute inset-y-0 w-px bg-border" style={{ left: `${String(index * 0.75 + 0.0625)}rem` }} />
+      ))}
+    </>
+  )
+}
+
+/**
+ * The contents. Each level sits a step further in (owner, 26 November 2026: "the hierarchy space was good"), and the
+ * article numbers sit in cells of one width (same day: "the articles should probably be aligned, at least the ones
+ * on the same level"), so every run of articles at one level falls in the same columns whatever its numbers are.
+ *
+ * A step of 12 px alone did not say what holds what: articles a chapter has after its last paragraph has ended read
+ * as one group with the paragraph's, set crooked (owner: "it looked like they are in the same paragraph. How can we
+ * make it more clear?"). So each level draws a faint line down its left edge for as long as it lasts: the
+ * paragraph's line stops under its last article, and the chapter's own articles hang on the chapter's line, after
+ * a little air.
+ */
+function Contents({ outline, names, activePath, trail, onGo, touch = false, bare = false }: ContentsProps) {
   const rows = useMemo(() => contentsRows(outline), [outline])
   const articleCount = useMemo(() => outline.filter(isArticle).length, [outline])
   const go = (path: string) => (event: { preventDefault: () => void }) => {
@@ -316,11 +347,12 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false }: Co
   }
   return (
     <nav aria-label={t`Cuprinsul actului`} className="text-sm">
-      {articleCount >= 8 ? <GoToArticle outline={outline} onGo={onGo} touch={touch} /> : null}
-      <ol className="space-y-0.5">
-        {rows.map((row) =>
+      {articleCount >= 8 && !bare ? <GoToArticle outline={outline} onGo={onGo} touch={touch} /> : null}
+      <ol>
+        {rows.map((row, index) =>
           row.kind === 'heading' ? (
-            <li key={row.entry.path} style={{ paddingLeft: `${String(row.level * 0.75)}rem` }} className={cn(row.level === 0 && 'pt-2 first:pt-0')}>
+            <li key={row.entry.path} style={{ paddingLeft: `${String(row.level * 0.75)}rem` }} className={cn('relative py-px', row.level === 0 && 'pt-2 first:pt-0')}>
+              <LevelGuides level={row.level} />
               <a
                 href={`#${domAnchorForPath(row.entry.path)}`}
                 onClick={go(row.entry.path)}
@@ -336,12 +368,14 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false }: Co
               </a>
             </li>
           ) : (
-            <li key={row.entries[0]?.path} style={{ paddingLeft: `${String(row.level * 0.75)}rem` }} className="pb-1.5">
-              <ol className="-mx-1 flex flex-wrap items-center gap-0.5" aria-label={t`Articole`}>
-                {/* Owner, 26 November 2026: say what the numbers are, at the grid's top left. The list's own name says it to a screen reader. */}
-                <li aria-hidden="true" className={cn('inline-flex items-center px-1.5 text-xs font-medium text-foreground', touch ? 'h-11' : 'h-8')}>
-                  <Trans>Art.</Trans>
-                </li>
+            // A run that follows another with no heading between them belongs to a level that has just been left: air above it.
+            <li key={row.entries[0]?.path} style={{ paddingLeft: `${String(row.level * 0.75)}rem` }} className={cn('relative flex pb-1.5', rows[index - 1]?.kind === 'articles' && 'pt-2')}>
+              <LevelGuides level={row.level} />
+              {/* Owner, 26 November 2026: say what the numbers are, at the grid's top left. The list's own name says it to a screen reader. */}
+              <span aria-hidden="true" className={cn('flex shrink-0 items-center pl-1.5 text-xs font-medium text-foreground', touch ? 'h-11 w-11' : 'h-8 w-9')}>
+                <Trans>Art.</Trans>
+              </span>
+              <ol className={cn('grid min-w-0 flex-1', touch ? 'grid-cols-[repeat(auto-fill,2.75rem)]' : 'grid-cols-[repeat(auto-fill,2.25rem)]')} aria-label={t`Articole`}>
                 {row.entries.map((entry) => (
                   <li key={entry.path}>
                     <a
@@ -351,8 +385,8 @@ function Contents({ outline, names, activePath, trail, onGo, touch = false }: Co
                       title={names.get(entry.path)}
                       aria-current={activePath === entry.path ? 'location' : undefined}
                       className={cn(
-                        'inline-flex items-center justify-center rounded-md px-1.5 text-[0.8125rem] tabular-nums',
-                        touch ? 'h-11 min-w-11' : 'h-8 min-w-8',
+                        'flex w-full items-center justify-center rounded-md text-[0.8125rem] tabular-nums',
+                        touch ? 'h-11' : 'h-8',
                         activePath === entry.path ? 'bg-foreground font-medium text-background' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                       )}
                     >
@@ -726,7 +760,7 @@ function ActRecord({ act, shown, onForm }: Pick<ActPageModel, 'act' | 'shown' | 
 /* ── the page ────────────────────────────────────────────────────────────── */
 
 export function ActPageView({ model, children }: { readonly model: ActPageModel; readonly children?: ReactNode }) {
-  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', textState, afterText, changedMark = 'none' } = model
+  const { act, subject, shown, blocks, marks, containsNonBmp, outline, outlineState, onReach, mock, onForm, notices, warnings, apparatus = 'rail', contentsFrame = 'panel', textState, afterText, changedMark = 'none' } = model
   const grid = apparatus === 'rail' ? GRID_WIDE : GRID
   const { i18n } = useLingui()
   const [sheet, setSheet] = useState(false)
@@ -795,7 +829,9 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
     if (mark.top < frame.top + 8 || mark.bottom > frame.bottom - 48) panel.scrollTop += mark.top - frame.top - frame.height / 2
   }, [activePath])
 
-  const contents = (touch: boolean) => <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} />
+  const contents = (touch: boolean, bare = false) => <Contents outline={outline} names={names} activePath={activePath} trail={trail} onGo={go} touch={touch} bare={bare} />
+  const panel = (contentsFrame === 'panel' || contentsFrame === 'tinted') && outline.length > 0
+  const tinted = contentsFrame === 'tinted'
 
   return (
     <div className="bg-background pb-24 text-foreground [font-family:var(--font-family)]">
@@ -804,9 +840,10 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
       {/* The reading bar: stays while the text scrolls. */}
       <div className="sticky top-0 z-20 border-y bg-background">
         <div className={cn(grid, 'items-center')}>
-          <p className="hidden text-sm font-medium lg:block">
+          <p className={cn('hidden text-sm font-medium', !panel && 'lg:block')}>
             <Trans>Cuprins</Trans>
           </p>
+          {panel ? <span className="hidden lg:block" aria-hidden="true" /> : null}
           <div className="flex min-h-12 min-w-0 items-center gap-3">
             {outline.length > 0 ? (
               <Sheet open={sheet} onOpenChange={setSheet}>
@@ -864,9 +901,23 @@ export function ActPageView({ model, children }: { readonly model: ActPageModel;
 
       {/* With the side column, from 88rem (1408 px): contents, text, and what is to know about the text, each in its own column. */}
       <div className={cn(grid, 'pt-6', apparatus === 'rail' && 'min-[88rem]:grid-cols-[16rem_minmax(0,42rem)_17rem]')}>
-        <aside className="hidden lg:block">
-          <div data-act-contents className="sticky top-16 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2">
-            {outline.length > 0 ? (
+        <aside className={cn('hidden lg:block', contentsFrame === 'column' && '-mr-6 border-r pr-6')}>
+          <div
+            data-act-contents={panel ? undefined : ''}
+            className={cn('sticky top-16', panel ? cn('flex max-h-[calc(100dvh-5.5rem)] flex-col overflow-hidden rounded-md', tinted ? 'bg-muted/60' : 'border') : 'max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain pb-8 pr-2')}
+          >
+            {panel ? (
+              // A box of its own: the title and the jump field stay, the list scrolls under them.
+              <>
+                <p className={cn('px-3 py-2.5 text-sm font-medium', tinted ? 'pb-1' : 'border-b')}>
+                  <Trans>Cuprins</Trans>
+                </p>
+                {outline.filter(isArticle).length >= 8 ? <GoToArticle outline={outline} onGo={go} flush={tinted ? 'filled' : 'ruled'} /> : null}
+                <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3">
+                  {contents(false, true)}
+                </div>
+              </>
+            ) : outline.length > 0 ? (
               contents(false)
             ) : outlineState === 'pending' ? (
               <div role="status" aria-label={t`Se încarcă cuprinsul…`} className="space-y-3 pt-1">

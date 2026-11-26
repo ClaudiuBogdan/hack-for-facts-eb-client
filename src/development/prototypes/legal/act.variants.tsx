@@ -156,10 +156,20 @@ function useApparatus(): 'full' | 'compact' | 'rail' {
   return search.aparat === 'intreg' ? 'full' : search.aparat === 'pliat' ? 'compact' : 'rail'
 }
 
+/**
+ * What holds the contents on a desktop. Owner, 26 November 2026: the bordered box. The three not chosen stay to be
+ * seen: `?cadru=simplu` (nothing around the list), `?cadru=fond` (a grey box) and `?cadru=coloana` (a line at its right).
+ */
+function useContentsOptions(): { readonly contentsFrame: 'plain' | 'panel' | 'tinted' | 'column' } {
+  const search: { readonly cadru?: unknown } = useSearch({ strict: false })
+  return { contentsFrame: search.cadru === 'simplu' ? 'plain' : search.cadru === 'fond' ? 'tinted' : search.cadru === 'coloana' ? 'column' : 'panel' }
+}
+
 export function ActSpecimenPage() {
   const [documentId, setDocumentId] = useState(SPECIMEN_SHOWN_DOCUMENT_ID)
   const changedMark = useChangedMark()
   const apparatus = useApparatus()
+  const contentsOptions = useContentsOptions()
   return (
     <ActPageView
       model={{
@@ -173,6 +183,7 @@ export function ActSpecimenPage() {
         mock: true,
         changedMark,
         apparatus,
+        ...contentsOptions,
         warnings: <ActWarnings act={SPECIMEN_ACT} variant="row" />,
         onForm: setDocumentId,
       }}
@@ -267,6 +278,7 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
   const served = render.data?.kind === 'envelope' ? render.data.tldf.blocks : partBlocks
   const changedMark = useChangedMark()
   const apparatus = useApparatus()
+  const contentsOptions = useContentsOptions()
   const split = useMemo(() => splitMasthead(served, mastheadFacts(act)), [served, act])
   // A part compiled in another run than the manifest's is never joined to it: the text is read again whole.
   const recompiled = manifest !== null && partQueries.some((query) => query.data !== undefined && query.data.tldf.generation.run_id !== manifest.generation.run_id)
@@ -323,6 +335,7 @@ function LiveText({ act, documentId, picked, reading, onForm }: { readonly act: 
         mock: false,
         changedMark,
         apparatus,
+        ...contentsOptions,
         // The live page's own warnings, unchanged and not yet restyled.
         warnings: <ActWarnings act={act} variant="row" />,
         onForm,
