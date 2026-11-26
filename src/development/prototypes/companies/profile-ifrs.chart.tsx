@@ -399,7 +399,9 @@ export function IfrsYearsChart({
         <div aria-live="polite" className="pointer-events-none absolute inset-x-0 top-0 z-10">
           {reading ? (
             <div
-              className={cn('absolute top-0 w-64 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md', sources === 'citire' && 'pointer-events-auto')}
+              // Only the source link takes the pointer: a tap elsewhere on the box reaches the year under it (a phone's box
+              // covers most of the plot).
+              className="absolute top-0 w-64 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
               style={{ left: `clamp(0px, calc(4rem + (100% - 4rem) * ${(reading.left + reading.width / 2).toFixed(4)} - 8rem), calc(100% - 16rem))` }}
             >
               <span className="flex items-baseline justify-between gap-2">
@@ -433,7 +435,7 @@ export function IfrsYearsChart({
                     href={reading.slot.row.source.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1.5 inline-flex min-h-8 items-center gap-1 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    className="pointer-events-auto mt-1.5 inline-flex min-h-8 items-center gap-1 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                   >
                     {reading.slot.row.source.label}
                     <ArrowUpRight className="size-3.5" aria-hidden="true" />
