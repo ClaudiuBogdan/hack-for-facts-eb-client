@@ -3,7 +3,7 @@
  * legal prototypes: ranked rows with a share bar, acts per year stacked
  * by a lens, two lenses crossed, and the caveats marker. Presentational only: every figure comes in as a prop.
  */
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { TriangleAlert } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -156,18 +156,43 @@ export function StackedYears({
   const rest = lastIsRest ?? labels[labels.length - 1] === 'altele'
   const colour = (j: number) => (rest && j === labels.length - 1 ? STACK_BG[5] : STACK_BG[Math.min(j, 4)])
   const [active, setActive] = useState<number | null>(null)
+  // The year focused from the keyboard: the only one said aloud, so moving the mouse across the columns does not
+  // rewrite the live line at every column (Codex review, round 1).
+  const [spoken, setSpoken] = useState<number | null>(null)
+  const chartRef = useRef<HTMLDivElement>(null)
+  // A tap elsewhere closes the tooltip: a touch keeps it open past the pointer's leaving, and a scroll can end a tap
+  // before any column takes the focus that a blur would then take away (Codex review, round 1).
+  useEffect(() => {
+    if (active === null) return
+    const away = (event: PointerEvent) => {
+      if (!chartRef.current?.contains(event.target as Node | null)) setActive(null)
+    }
+    document.addEventListener('pointerdown', away)
+    return () => document.removeEventListener('pointerdown', away)
+  }, [active])
   const sumOf = (y: { readonly values: readonly number[] }) => y.values.reduce((s, v) => s + v, 0)
   const max = Math.max(1, ...years.map(sumOf))
   const index = active === null ? -1 : years.findIndex((y) => y.year === active)
   const shown = index < 0 ? null : years[index]
+  const said = spoken === null ? null : (years.find((y) => y.year === spoken) ?? null)
+  const pendingLabel = (year: number) => (pendingFrom && year >= pendingFrom.year ? pendingFrom.label : null)
+  // A few columns leave no room beside one (a single chosen year): the tooltip then stands under the chart at every
+  // width, as on a phone (Codex review, round 1).
+  const beside = years.length >= 8
   // Where the tooltip stands from `sm` (custom properties the classes read): beside the column, on the side with room.
   const tipPlace: Record<string, string> =
     index < years.length / 2
       ? { '--tip-left': `calc(${((index + 1) / years.length) * 100}% + 8px)` }
       : { '--tip-right': `calc(${((years.length - index) / years.length) * 100}% + 8px)` }
   // What the tooltip shows, said once to assistive tech: the tooltip itself is drawn for the eye only.
-  const readout = shown
-    ? `${axis ? '' : `${shown.year}: `}${fmt(sumOf(shown))} ${t`acte`} · ${labels.map((l, j) => `${l} ${fmt(shown.values[j] ?? 0)}`).join(' · ')}`
+  const readout = said
+    ? [
+        `${axis ? '' : `${said.year}: `}${fmt(sumOf(said))} ${t`acte`}`,
+        pendingLabel(said.year),
+        ...labels.map((l, j) => `${l} ${fmt(said.values[j] ?? 0)}`),
+      ]
+        .filter((part): part is string => part !== null)
+        .join(' · ')
     : ''
   return (
     <figure>
@@ -177,8 +202,9 @@ export function StackedYears({
       </p>
       {/* The hovered or focused column's figures in a tooltip beside it (owner, 27 November 2026): at the top of the
           chart, on the side with room (right of a column in the left half, left of one in the right half), so it never
-          leaves the chart and never covers the column read. A tap keeps it until the focus leaves the chart. */}
-      <div className="relative mt-3">
+          leaves the chart and never covers the column read; under the chart on a phone and for a few columns. A tap
+          keeps it until a tap elsewhere; Escape puts it away. */}
+      <div ref={chartRef} className="relative mt-3">
         <ol
           className="grid h-48 items-end gap-px border-b border-foreground/20 sm:h-60"
           style={{ gridTemplateColumns: `repeat(${years.length}, minmax(0, 1fr))` }}
@@ -186,7 +212,13 @@ export function StackedYears({
             if (event.pointerType !== 'touch') setActive(null)
           }}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActive(null)
+            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+            setActive(null)
+            setSpoken(null)
+          }}
+          onKeyDown={(event) => {
+            // Escape puts the tooltip away, the focus staying on its year (Codex review, round 1).
+            if (event.key === 'Escape') setActive(null)
           }}
         >
           {years.map((y) => {
@@ -198,7 +230,10 @@ export function StackedYears({
                 tabIndex={0}
                 aria-label={`${y.year}: ${fmt(sum)} ${t`acte`}`}
                 onPointerEnter={() => setActive(y.year)}
-                onFocus={() => setActive(y.year)}
+                onFocus={() => {
+                  setActive(y.year)
+                  setSpoken(y.year)
+                }}
               >
                 <div
                   className={cn('flex flex-col-reverse', active === y.year && 'opacity-80', pendingFrom && y.year >= pendingFrom.year && 'opacity-45 outline-dashed outline-1 outline-foreground/60')}
@@ -220,8 +255,9 @@ export function StackedYears({
               'pointer-events-none absolute z-10 rounded-md border bg-background px-3 py-2 text-xs tabular-nums',
               // A phone has no room beside a column: the tooltip spans the chart just under it, over the axis and
               // the legend, never over a column.
-              'inset-x-0 top-[calc(100%+0.25rem)] sm:inset-x-auto sm:top-0 sm:min-w-44 sm:whitespace-nowrap',
-              index < years.length / 2 ? 'sm:left-[var(--tip-left)]' : 'sm:right-[var(--tip-right)]',
+              'inset-x-0 top-[calc(100%+0.25rem)]',
+              beside && 'sm:inset-x-auto sm:top-0 sm:min-w-44 sm:whitespace-nowrap',
+              beside && (index < years.length / 2 ? 'sm:left-[var(--tip-left)]' : 'sm:right-[var(--tip-right)]'),
             )}
             style={tipPlace as CSSProperties}
           >
@@ -231,7 +267,7 @@ export function StackedYears({
                 {fmt(sumOf(shown))} {t`acte`}
               </span>
             </p>
-            {pendingFrom && shown.year >= pendingFrom.year ? <p className="text-muted-foreground">{pendingFrom.label}</p> : null}
+            {pendingLabel(shown.year) !== null ? <p className="text-muted-foreground">{pendingLabel(shown.year)}</p> : null}
             {/* Top to bottom, as the column is stacked. */}
             <ul className="mt-1.5 space-y-0.5">
               {labels
