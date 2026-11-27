@@ -15,6 +15,8 @@ type Props = {
   readonly strong?: boolean
   /** The mark alone, its word hidden for the eye and given on hover. */
   readonly markOnly?: boolean
+  /** With `markOnly`: classes for the hidden word, to show it where the mark alone would not do (a highlighted row). */
+  readonly wordClassName?: string
   readonly className?: string
 }
 
@@ -82,7 +84,7 @@ function statusWord(status: LegalActStatus): string {
   }
 }
 
-export function LegalStatusBadge({ status, strong = false, markOnly = false, className }: Props) {
+export function LegalStatusBadge({ status, strong = false, markOnly = false, wordClassName, className }: Props) {
   if (status === null) return null
   const mark = MARK[status]
   const word = statusWord(status)
@@ -93,7 +95,7 @@ export function LegalStatusBadge({ status, strong = false, markOnly = false, cla
     return (
       <span title={word} className={cn('inline-flex shrink-0 items-center', className)}>
         <StatusShape shape={mark.shape} className={mark.tone} />
-        <span className="sr-only">{word}</span>
+        <span className={cn('sr-only', wordClassName)}>{word}</span>
       </span>
     )
   }

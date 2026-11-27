@@ -3,7 +3,7 @@ import type { KeyboardEvent, ReactNode, RefObject } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
 import type { BaseUIEvent } from '@base-ui/react/types'
-import { ArrowRight, Loader2, Search, SearchX, X } from 'lucide-react'
+import { Loader2, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { t } from '@lingui/core/macro'
@@ -101,11 +101,11 @@ import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
 export type SearchMore = {
   /** Where the words are searched further. */
   readonly link: (term: string) => { readonly to: string; readonly search: Record<string, unknown> }
-  /** The button's name with no answer, and the row's name for assistive tech. */
+  /** The way on's name: its group's label for assistive tech, and what Enter does when there is no answer. */
   readonly label: string
-  /** Under an answer: the list's last row. */
+  /** The list's last row, under an answer and with none. */
   readonly row: (term: string) => ReactNode
-  /** With no answer: the sentence beside the button. */
+  /** With no answer: the sentence said above the row (not part of the link). */
   readonly empty: (term: string) => ReactNode
 }
 
@@ -728,6 +728,8 @@ export function LandingSearch({
                   in the document. That is the same defect the hand-rolled
                   version shipped, arriving here through the library's wiring
                   instead of through ours. */}
+              {/* With no answer and a way on, the answer is a quiet sentence above the way on's row, never part of the link. */}
+              {moreAlone && more !== undefined ? <Message>{more.empty(moreTerm)}</Message> : null}
               <Autocomplete.List
                 className={cn(
                   // The stale dim fades in. Measured under
@@ -749,18 +751,17 @@ export function LandingSearch({
                           <Autocomplete.Collection>
                             {(item: MoreItem) => {
                               const target = more.link(item.moreTerm)
-                              const alone = moreAlone
                               return (
                                 <Autocomplete.Item
                                   key="more"
                                   value={item}
                                   // Out of date while the answer is (the rows above are too): it would carry words the list does not show.
                                   disabled={!isCurrent}
-                                  data-search-more={alone ? 'empty' : 'row'}
+                                  data-search-more={moreAlone ? 'empty' : 'row'}
                                   className={cn(
                                     'flex cursor-pointer items-center gap-3 px-4 text-sm data-highlighted:bg-muted',
                                     'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-                                    alone ? 'flex-wrap py-3.5 sm:flex-nowrap' : 'border-t py-3',
+                                    'border-t py-3',
                                   )}
                                   onClick={(event) => {
                                     if (!isCurrent) {
@@ -781,22 +782,10 @@ export function LandingSearch({
                                     />
                                   }
                                 >
-                                  {alone ? (
-                                    <>
-                                      <SearchX className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-                                      <span className="min-w-0 flex-1 leading-6 text-muted-foreground">{more.empty(item.moreTerm)}</span>
-                                      {/* Looks like a button; the whole row is the one option and the one link. */}
-                                      <span className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md border bg-background px-3.5 font-medium text-foreground sm:h-10 sm:w-auto">
-                                        {more.label}
-                                        <ArrowRight className="size-4" aria-hidden />
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                                      <span className="min-w-0 flex-1">{more.row(item.moreTerm)}</span>
-                                    </>
-                                  )}
+                                  {/* The same row under an answer and with none: the whole row is the one link (owner, 27 November
+                                      2026, over a button drawn inside it). With none, the answer is said above it, not in it. */}
+                                  <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                                  <span className="min-w-0 flex-1">{more.row(item.moreTerm)}</span>
                                 </Autocomplete.Item>
                               )
                             }}

@@ -105,6 +105,8 @@ function townHallCountyLabel(countyName: string | null): string | null {
 /**
  * A legal act's status as the search serves it: the last part of its subtitle („Legea nr. 98/2009, in-vigoare"),
  * read only when it is one of the act statuses. Anything else is no status: the row then says none.
+ * DEPENDS ON the search projection's subtitle text for acts („<citation>, <status>"), which SearchHit does not type: a
+ * change to that format must lead to no mark, never to a wrong one (root, 27 November 2026; tested).
  */
 export function legalStatusOfHit(subtitle: string | null): LegalActStatus | null {
   const tail = subtitle?.split(',').pop()?.trim() ?? ''
@@ -166,7 +168,13 @@ export function ResultRowContent({
         {/* An act's status as its page says it, the mark alone so the row stays one line (owner, 27 November 2026). */}
         {actStatus !== null ? (
           <span className="flex min-w-0 items-center gap-2">
-            <LegalStatusBadge status={actStatus} markOnly />
+            {/* Three statuses share the ring and differ by colour only: the highlighted row, which the arrows reach
+                without any hover, says the word too (Codex review, round 1). */}
+            <LegalStatusBadge
+              status={actStatus}
+              markOnly
+              wordClassName="group-data-highlighted:not-sr-only group-data-highlighted:ml-1.5 group-data-highlighted:whitespace-nowrap group-data-highlighted:text-xs group-data-highlighted:font-normal group-data-highlighted:text-muted-foreground"
+            />
             <Highlighted
               text={entity.title}
               query={query}
