@@ -1208,12 +1208,15 @@ keeps its own slot beside a hatched gap. Left as is, by decision:
   `longFormOnly`, the server ships first; root knows the client now needs
   them (a server rollback of those fields must take the client with it).
 
-### Not yet live
+### On the dev API (27 November 2026)
 
-- The API serves none of it yet: the page reads `ifrsFormYears` and each
-  year's `reportingForm` as optional (both absent today, so no IFRS mark
-  shows; the reading's publisher and source link are the one change every
-  company would see), and the query and its adapter are wired when the
-  server's contract lands. Then the Sol review and root's note; the views go
-  live after the migration and the audit. Nothing of it ships before.
+- The server's fields are on Chronos dev. Petrom (1590082) reads 7
+  IFRS-form years, 2012–2018 from the Ministry of Finance's file, and its
+  2019–2025 statements carry the IFRS mark from their ANAF layout. The chart
+  draws one IFRS run over 2012–2025 and breaks the people line at 2011→2012
+  only. Each reading names its publisher and links the file or ANAF's query.
+- The server now reports Petrom's 2019–2025 net results (`netResultStatus`
+  REPORTED, no hold reason), so the chart draws them as it does for any
+  company whose net result the server reports.
+- The client ships to dev after root's note and the owner's word.
 
