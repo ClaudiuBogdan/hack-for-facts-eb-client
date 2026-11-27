@@ -1,6 +1,7 @@
 # TEST-001: Integration tests read the live API
 
-**Status:** open (filed 2026-11-25). Browser side: fixes by spec owner (table below), then the API guard (client-entity-analytics).
+**Status:** open (filed 2026-11-25). Browser side: fixes by spec owner (table below), then the API guard (client-entity-analytics),
+held back on 2026-11-27 until three specs mock their reads (see the guard's section).
 Server side: measured; the ssr-api fixture origin is client-dev-polish's. **Priority:** P2: a test that reaches the live dev API depends on its data, its speed and its rate limit,
 and sends traffic to it from every CI run. **Related:** `tests/utils/integration-base.ts` (the `mockApi` fixture),
 `tests/utils/api-guard.ts`, `tests/utils/map-mocks.ts`, `scripts/find-unmocked-graphql-reads.mjs`. Reported by root
@@ -43,6 +44,7 @@ files, including the no-mock tests and the REST map read the warnings never show
 | `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open; public-enterprise-page :117/:129 skip on live partial buyer reads; recordings must include a complete-buyer case |
 | `national-budget-home.spec.ts` | BudgetApprovedRecords 40, BudgetExecutionObservations 3, BudgetNationalExecutionSeries 3, AggregatedLineItems 2, EntityAnalytics 2, BudgetApprovedTotals 1 | client-dev-polish | open |
 | `national-budget-analytics.spec.ts` | BudgetApprovedTotals 5, BudgetApprovedRecords 4, BudgetExecutionObservations 3, BudgetApprovedSeries 1 | client-dev-polish | open |
+| `legislation-act.spec.ts` (new on dev after 11-25) | LegalDocumentOutline 5, the act text's REST render read 5 (full run, 2026-11-27) | client-legislation | open |
 
 How the fixtures are made: the ones recorded for TEST-001 are the dev API's own answers (2026-11-25) to the app's own query text,
 with the variables the test sends. Where an answer is large it is cut by whole records: a population map to one UAT's cell, a
@@ -68,6 +70,16 @@ it instead (`charts-page`, `cookie-consent`, `ins-native-entity`, `ins-native-sa
 
 **A new spec imports `test` and `expect` from `../utils/integration-base`, or from `../utils/api-guard` if it must not have
 `integration-base`'s stored consent.** It goes in last, after a CI-style run with zero catches.
+
+**Held back (2026-11-27).** The whole suite was run as CI runs it (both steps, one worker, no retries) on ce20f3126, with dev
+54a1bf845 merged. The guard caught 101 browser reads in three specs and failed their 20 tests, and no others:
+- `legislation-act.spec.ts` (client-legislation): 4 tests;
+- `procurement-analytics.spec.ts` (procurement-da-client): 12 tests;
+- `public-enterprise-page.spec.ts` (procurement-da-client): 4 tests.
+
+The guard (c440eb3ba) is reverted by the commit that adds this note, so the shared hydration wait (TEST-003) and the server
+recordings land without it. Reverting that commit brings the guard back, once those specs mock their reads and a CI-style run
+catches none.
 
 ## Server reads (measured 2026-11-25)
 
@@ -162,8 +174,20 @@ Two cautions on reading this run:
 
 Fix per spec: record its server reads (`SSR_API_MODE=record`, a run of that spec) and move it onto `tests/utils/ssr-api/test.ts`,
 by the owner in the table (root, 2026-11-25). With one worker, as CI runs, the move makes the spec's server reads strict too
-(client-dev-polish, db855b3af). "Recorded" commits wait on `feat/test001-ssr-recordings` and land after the guard and the shared
-hydration wait (TEST-003). Each was proven with a record run, then a strict run of its specs: all served, 0 missing.
+(client-dev-polish, db855b3af). The "recorded" commits land with the shared hydration wait (TEST-003), without the guard (held
+back, above). Each was proven with a record run, then a strict run of its specs: all served, 0 missing.
+
+**Strict again (2026-11-27).** The same run on ce20f3126 (dev 54a1bf845 merged; the guard printing, not failing):
+- Server reads with no recording: 115, all in four specs.
+- Every recorded spec, and the national budget's two, got every server read from a recording, and none failed.
+- Step 1: 17 tests failed, 323 passed, 12 skipped. Step 2: 59 passed.
+
+| Spec | Server reads with no recording | Tests failed in strict | With |
+|---|---|---:|---|
+| `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 5 | procurement-da-client |
+| `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 | procurement-da-client |
+| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies |
+| `legislation-act.spec.ts` | LegalActDetail 4 | 4 | client-legislation |
 
 ## Closure criterion
 

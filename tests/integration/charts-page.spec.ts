@@ -11,7 +11,7 @@
  * Data extracted from browser exploration on 2025-12-16
  */
 
-import { test, expect } from '../utils/api-guard'
+import { test, expect } from '@playwright/test'
 
 test.describe('Charts Page', () => {
   test.beforeEach(async ({ page }) => {

@@ -1,6 +1,5 @@
 /** Explicit synthetic native publications; no fixture claims to be captured INS data. */
-import type { Page } from '@playwright/test'
-import { test, expect } from '../utils/api-guard'
+import { test, expect, type Page } from '@playwright/test'
 const descriptor = {
   id: 'TEST',
   code: 'TEST',

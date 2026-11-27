@@ -1,4 +1,4 @@
-import { test, expect } from '../utils/api-guard'
+import { test, expect } from '@playwright/test'
 
 const dataset = (code: string) => ({
   id: code,

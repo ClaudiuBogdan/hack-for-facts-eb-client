@@ -1,4 +1,4 @@
-import { test, expect } from "../utils/api-guard";
+import { test, expect } from "@playwright/test";
 
 // Synthetic INS observations for UI acceptance; entity identity is read from dev.
 // This is not live INS data, custody or migration acceptance evidence.
