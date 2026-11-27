@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { parsePublicEnterpriseCuiParam } from '@/features/public-enterprises/lib/enterprise-cui'
 import { PORTFOLIO_SNAPSHOT_VERSION } from '@/features/public-enterprises/lib/portfolio-index'
-import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { createNoStoreHeaders } from '@/lib/http-cache'
 
 const JSON_TYPE = { 'Content-Type': 'application/json; charset=utf-8', 'X-Robots-Tag': 'noindex' }
 
@@ -10,6 +10,17 @@ const json = (status: number, body: unknown, cache: Record<string, string>) => n
 
 /** Never kept, by a browser or an edge that reads only its own header. */
 const UNCACHED = { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
+
+/**
+ * A versioned copy, the same for every reader (it reads no cookie): a day in a
+ * shared cache, five minutes in a browser. Its own header, not the pages'
+ * helper, which never caches publicly since CACHE-002.
+ */
+const VERSIONED = {
+  'Cache-Control': 'public, max-age=300, s-maxage=86400, stale-while-revalidate=86400',
+  'CDN-Cache-Control': 's-maxage=86400, stale-while-revalidate=86400',
+  Vary: 'Accept-Encoding',
+}
 
 /**
  * One authority's part of the portfolio snapshot, as JSON: what a client-side
@@ -29,8 +40,7 @@ async function respond(request: Request, cui: string): Promise<Response> {
   const { readAuthorityPortfolio } = await import('@/features/public-enterprises/api/authority-portfolio-server')
   const portfolio = canonical ? await readAuthorityPortfolio(canonical) : null
   if (!portfolio) return json(404, { error: 'not_found' }, UNCACHED)
-  const cache = asked === null ? UNCACHED : createPublicPageCacheHeaders({ browserMaxAgeSeconds: 300, sharedMaxAgeSeconds: 86_400, staleWhileRevalidateSeconds: 86_400, vary: ['Accept-Encoding'] })
-  return json(200, portfolio, cache)
+  return json(200, portfolio, asked === null ? UNCACHED : VERSIONED)
 }
 
 export const Route = createFileRoute('/public-enterprises/authorities/$cui/portfolio.json')({

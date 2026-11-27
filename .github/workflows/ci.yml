@@ -169,8 +169,10 @@ jobs:
         # that contains src/development/. The Docker build has already excluded
         # that directory, so validating there alone would never catch a leak.
         # Then the built server is asked for /, /map and /entity-analytics with
-        # an English cookie (scripts/check-built-cookie-render.mjs).
-        run: yarn build && yarn build:validate && node scripts/check-built-cookie-render.mjs
+        # an English cookie (scripts/check-built-cookie-render.mjs), and every
+        # page route for a header a shared cache may keep, with the API read
+        # and with it down (scripts/check-built-page-cache-headers.mjs, CACHE-002).
+        run: yarn build && yarn build:validate && node scripts/check-built-cookie-render.mjs && node scripts/check-built-page-cache-headers.mjs
         env:
           NODE_OPTIONS: --max-http-header-size=64384 --max-old-space-size=3072
           VITE_API_URL: https://dev-chronos-api.transparenta.eu

@@ -3,11 +3,15 @@ import {
   legalActDetailRichFixture,
   legalActDetailV2Fixture,
 } from '../mocks/fixtures/legal-act-detail'
+import type { LegalActDocumentVersion } from '@/schemas/legal'
 import {
   isConsolidationVersion,
   isSelectableVersion,
+  listedVersionDate,
+  orderVersionsNewestFirst,
   portalConsolidationNote,
   resolveDocOverride,
+  shownVersionDate,
 } from './legal-versions'
 
 const format = (iso: string) => `[${iso}]`
@@ -89,5 +93,44 @@ describe('version predicates', () => {
     expect(notLoaded && isSelectableVersion(notLoaded)).toBe(false)
     const stub = legalActDetailRichFixture.documents.find((doc) => doc.versionKind === 'stub-header')
     expect(stub && isSelectableVersion(stub)).toBe(false)
+  })
+})
+
+describe('the date a version is named and ordered by (legislation session, 26 November 2026)', () => {
+  const base = legalActDetailV2Fixture.documents[0]
+  if (base === undefined) throw new Error('the legal_v2 fixture lost its versions')
+  const form = (documentId: string, versionKind: string, versionDate: string | null, portalLabelDate: string | null): LegalActDocumentVersion => ({
+    ...base,
+    documentId,
+    versionKind,
+    versionDate,
+    firstPublicationDate: null,
+    portalLabelDate,
+    caveat: null,
+  })
+
+  it("a consolidation goes by the Portal's note's date, any other version by its own", () => {
+    expect(listedVersionDate(form('c', 'consolidare', '2024-03-01', '2023-11-17'))).toBe('2023-11-17')
+    expect(listedVersionDate(form('o', 'original', '2016-05-23', '2099-01-01'))).toBe('2016-05-23')
+  })
+
+  it("a consolidation without the Portal's date falls back to its own date, for the name and for the order", () => {
+    const bare = form('bare', 'consolidare', '2022-07-28', null)
+    expect(listedVersionDate(bare)).toBe('2022-07-28')
+    expect(shownVersionDate({ documents: [bare] }, bare)).toBe('2022-07-28')
+    const ordered = orderVersionsNewestFirst([form('old', 'consolidare', '2099-01-01', '2020-02-12'), bare, form('new', 'consolidare', '2000-01-01', '2024-11-17')])
+    expect(ordered.map((doc) => doc.documentId)).toEqual(['new', 'bare', 'old'])
+  })
+
+  it('orders a list by the dates its names show, undated rows last', () => {
+    const ordered = orderVersionsNewestFirst([
+      form('original', 'original', '2016-05-23', null),
+      form('undated', 'republicare', null, null),
+      // its own date would put it first; the Portal's note dates it between the other two
+      form('middle', 'consolidare', '2025-01-01', '2020-02-12'),
+      form('latest', 'consolidare', '2019-01-01', '2024-11-17'),
+    ])
+    expect(ordered.map((doc) => doc.documentId)).toEqual(['latest', 'middle', 'original', 'undated'])
+    expect(ordered.map((doc) => listedVersionDate(doc))).toEqual(['2024-11-17', '2020-02-12', '2016-05-23', null])
   })
 })

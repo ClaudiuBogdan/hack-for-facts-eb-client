@@ -5,15 +5,16 @@ import { ExternalLink, FileText, FileX2 } from 'lucide-react'
 import type { LegalActDetail } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
 import { legalGazettePartLabel } from '../lib/legal-vocabulary'
-import { LEGISLATION_ACCENT } from '../lib/legislation-theme'
+import { cn } from '@/lib/utils'
 import { ActAccordionItem } from './act-accordion'
+import { ACT_LINK, ACT_RECORD_LINE } from './reader/act-page-grid'
 
 type Props = {
   readonly act: LegalActDetail
 }
 
-const OUT_LINK_CLASS =
-  'inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 hover:text-[var(--pnrr-muted)]'
+/** It leaves the site: the site's blue, and the external-link mark. */
+const OUT_LINK_CLASS = cn(ACT_LINK, 'inline-flex items-center gap-1.5')
 
 /**
  * Rung 3 — the proof of publication.
@@ -35,6 +36,9 @@ const OUT_LINK_CLASS =
  * clustered match is a guess about which issue published this act. When there is
  * no match at all the band is absent and `ActProvenanceNotes` says so — a block
  * with no content does not render (`docs/design/legal/act-detail.md` §2).
+ *
+ * Each publication is a line of the record: its date at the left, the issue and
+ * its PDF at the right.
  */
 export function ActPublicationBand({ act }: Props) {
   const { i18n } = useLingui()
@@ -47,6 +51,9 @@ export function ActPublicationBand({ act }: Props) {
     <ActAccordionItem
       id="act-publication-heading"
       title={t`Unde a fost publicat`}
+      // One of the rows a reader most often needs: open from the first render
+      // (owner, 26 November 2026, the act page's redesign).
+      defaultOpen
       meta={
         <Plural
           value={publications.length}
@@ -65,68 +72,70 @@ export function ActPublicationBand({ act }: Props) {
         </Trans>
       }
     >
-      <div className="flex flex-col gap-4 px-5 py-5 sm:px-6">
+      <ul className="divide-y">
         {publications.map((publication, index) => {
           const hasPdf = publication.pdfUrl !== null
           const isUncertain =
             publication.resolution !== null && publication.resolution !== 'unique'
 
           return (
-            <div
+            <li
               // Unmatched rows carry no issue id, so the index disambiguates
               // rather than every one of them colliding on the same key.
               key={publication.moIssueId ?? `unmatched-${index}`}
-              className="border-l-4 pl-4"
-              style={{ borderLeftColor: LEGISLATION_ACCENT }}
+              className={ACT_RECORD_LINE}
             >
-              <div className="text-base font-bold tabular-nums text-[var(--pnrr-fg)]">
-                {publication.partCode
-                  ? legalGazettePartLabel(publication.partCode)
-                  : t`Monitorul Oficial`}
-                {publication.issueNumber !== null ? (
-                  <>
-                    {' '}
-                    <Trans>nr. {publication.issueNumber}</Trans>
-                  </>
-                ) : null}
-                {publication.issueYear !== null ? `/${publication.issueYear}` : null}
-              </div>
+              {/* The cell stays when there is no date, so the issue keeps its column. */}
+              <span className="tabular-nums text-muted-foreground">
+                {publication.issueDate
+                  ? formatLegalDate(publication.issueDate, i18n.locale)
+                  : null}
+              </span>
 
-              {publication.issueDate ? (
-                <div className="mt-0.5 text-sm text-[var(--pnrr-muted)]">
-                  {formatLegalDate(publication.issueDate, i18n.locale)}
-                </div>
-              ) : null}
+              <span className="min-w-0">
+                <span className="block font-medium tabular-nums">
+                  {publication.partCode
+                    ? legalGazettePartLabel(publication.partCode)
+                    : t`Monitorul Oficial`}
+                  {publication.issueNumber !== null ? (
+                    <>
+                      {' '}
+                      <Trans>nr. {publication.issueNumber}</Trans>
+                    </>
+                  ) : null}
+                  {publication.issueYear !== null ? `/${publication.issueYear}` : null}
+                </span>
 
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-                {hasPdf ? (
-                  <a
-                    href={publication.pdfUrl ?? undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={OUT_LINK_CLASS}
-                  >
-                    <FileText className="h-4 w-4" aria-hidden />
-                    <Trans>PDF oficial</Trans>
-                    <ExternalLink className="h-3 w-3" aria-hidden />
-                  </a>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 text-sm text-[var(--pnrr-muted)]">
-                    <FileX2 className="h-4 w-4" aria-hidden />
-                    <Trans>doar coordonate de publicare</Trans>
-                  </span>
-                )}
+                <span className="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  {hasPdf ? (
+                    <a
+                      href={publication.pdfUrl ?? undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={OUT_LINK_CLASS}
+                    >
+                      <FileText className="size-4" aria-hidden />
+                      <Trans>PDF oficial</Trans>
+                      <ExternalLink className="size-3" aria-hidden />
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                      <FileX2 className="size-4" aria-hidden />
+                      <Trans>doar coordonate de publicare</Trans>
+                    </span>
+                  )}
 
-                {isUncertain ? (
-                  <span className="text-xs text-[var(--pnrr-warning-fg)]">
-                    <Trans>potrivire probabilă cu acest număr</Trans>
-                  </span>
-                ) : null}
-              </div>
-            </div>
+                  {isUncertain ? (
+                    <span className="text-xs text-muted-foreground">
+                      <Trans>potrivire probabilă cu acest număr</Trans>
+                    </span>
+                  ) : null}
+                </span>
+              </span>
+            </li>
           )
         })}
-      </div>
+      </ul>
     </ActAccordionItem>
   )
 }

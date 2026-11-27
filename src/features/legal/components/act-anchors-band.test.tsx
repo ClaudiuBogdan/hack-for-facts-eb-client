@@ -45,6 +45,19 @@ describe('ActAnchorsBand', () => {
     expect(screen.getByText(/document 254102 — fără fișă de act la noi/)).toBeInTheDocument()
   })
 
+  it('sets each anchor as a line, the provision it targets at the left, the cell kept when it names none', () => {
+    render(<ActAnchorsBand group={group} />)
+    fireEvent.click(screen.getByRole('button', { name: /Trimiteri afirmate de portal/ }))
+
+    const targeted = screen.getByText(/țintește art. 291/).closest('li')
+    expect(targeted).toHaveClass('grid')
+    expect(targeted?.firstElementChild).toHaveTextContent('țintește art. 291')
+
+    const untargeted = screen.getByText(/document 254102/).closest('li')
+    expect(untargeted?.children).toHaveLength(2)
+    expect(untargeted?.firstElementChild).toBeEmptyDOMElement()
+  })
+
   it('renders nothing for an empty group', () => {
     const { container } = render(<ActAnchorsBand group={{ totalCount: 0, items: [] }} />)
     expect(container.firstChild).toBeNull()

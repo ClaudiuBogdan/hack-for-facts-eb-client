@@ -40,7 +40,7 @@ files, including the no-mock tests and the REST map read the warnings never show
 | `development-surface.spec.ts` | map grouped-series 1 | client-entity-analytics | fixed, e1f142c3 |
 | `companies-profile.spec.ts` | CompanyAnalysisRelease 7, ProcurementCutoff 7, ProcurementDaRelease 7 | client-companies | fixed, 59820e871 (on dev in 9cdd0b55d) |
 | `procurement-analytics.spec.ts` | AnalyticsFigures 26, ProcurementDaRelease 16, AnalyticsSeries 13, AnalyticsConcentration 9, AnalyticsRanking 8, AnalyticsRecords 5, ProcurementHomeContracts 2 | procurement-da-client | open |
-| `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open |
+| `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open; public-enterprise-page :117/:129 skip on live partial buyer reads; recordings must include a complete-buyer case |
 | `national-budget-home.spec.ts` | BudgetApprovedRecords 40, BudgetExecutionObservations 3, BudgetNationalExecutionSeries 3, AggregatedLineItems 2, EntityAnalytics 2, BudgetApprovedTotals 1 | client-dev-polish | open |
 | `national-budget-analytics.spec.ts` | BudgetApprovedTotals 5, BudgetApprovedRecords 4, BudgetExecutionObservations 3, BudgetApprovedSeries 1 | client-dev-polish | open |
 
@@ -108,8 +108,11 @@ Why a fixture origin, rather than marking the server-render tests as live-depend
 Limit: one server serves every test, so a server render's answer cannot vary per test (it cannot today either).
 
 **Built (client-dev-polish, c50ebe292):** the national budget's two specs run on it (`tests/utils/ssr-api/test.ts`). Their reads are
-recorded in `tests/fixtures/ssr-api/*.json.gz`; national budget reads never pass through. After each test, a check fails on any browser
-read or national budget read not answered from a recording; each check starts where the previous one ended. `SSR_API_MODE=strict`
+recorded in `tests/fixtures/ssr-api/*.json.gz`; national budget reads never pass through. After each test, a check fails on any read not answered from a recording: every browser read and every national budget read
+since the previous test's check ended (a read that lands as a page closes is the next test's), and, with one worker (CI), every
+other server read made during the test (from 25 November 2026, when client-entity-analytics moved specs onto it and found their
+own server reads passing through unchecked). With more workers the app server's reads can't be told apart by test, so only the
+first kind is checked. `SSR_API_MODE=strict`
 forwards nothing; `SSR_API_MODE=record` saves. Every read prints `[ssr-api] <fixture|passthrough|missing|recorded|failed>
 <operation>-<hash> <server|browser>`, and a missing read also prints its variables.
 
@@ -118,6 +121,11 @@ forwards nothing; `SSR_API_MODE=record` saves. Every read prints `[ssr-api] <fix
 `BudgetExecutionObservations-a2e41d9bed50` with no recording, and the test passed, its check having run before the read landed. It
 did not recur in two record runs or two full runs. Its variables weren't logged then (the log line came after); if it recurs, the
 check now fails that test or the next one, and the log names the variables, to record it.
+
+2026-11-26, local only: in a full run on e15dcd069 (CI env, one worker), `chart-builder-comprehensive.spec.ts` :81 („1.2 Config dialog
+opens automatically") and :581 („10.3 Tablet viewport works correctly") each timed out once at 20 s waiting for the config-ready
+marker (:66), then passed on retry in 2 s. CI on the same code (45776216309, 9189c1252) retried neither, nor did 45768571410. If they
+retry in CI, they become their own TEST issue (a config-ready marker timeout under load), with both runs' evidence.
 
 **Ownership:** ssr-api (server reads) is client-dev-polish's; the API guard (browser reads) is client-entity-analytics'.
 

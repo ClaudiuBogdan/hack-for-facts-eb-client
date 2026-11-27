@@ -1,6 +1,6 @@
 import { DisclosureWatch, PublicationScope } from "@/features/procurement/hooks/use-disclosure-watch";
 import { useEffect } from "react";
-import { Outlet, useLocation, useRouter } from "@tanstack/react-router";
+import { Outlet, useLocation, useRouter, useRouterState } from "@tanstack/react-router";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
@@ -48,7 +48,9 @@ export function AppShell({
   const location = useLocation();
   const hasSentryConsent = useSentryConsent();
   const hideMobileBottomDock = shouldHideMobileBottomDock(location.pathname);
-  const pageNotice = pageNoticeScope(location.pathname);
+  // A page that doesn't exist is no page being worked on: the not-found page shows no notice.
+  const notFound = useRouterState({ select: (state) => state.matches.some((match) => match.status === "notFound" || match.globalNotFound) });
+  const pageNotice = notFound ? null : pageNoticeScope(location.pathname);
   useWarmRouteCodeOnIntent();
 
   useEffect(() => {

@@ -34,6 +34,8 @@ export type HundredPart = {
   readonly strong?: boolean
   /** The institution's page, when the line is an institution. */
   readonly cui?: string
+  /** Whole lei per resident when the line belongs to a whole apportioned so (the receipt's); else its own rounding. */
+  readonly resident?: number
 }
 
 export type HundredList = { readonly title: string; readonly parts: readonly HundredPart[] }
@@ -59,7 +61,7 @@ function Rows({ title, parts, previous, swatch }: { readonly title: string; read
       <h3 className="text-sm font-semibold">{title}</h3>
       <ul className="mt-2 divide-y border-y">
         {parts.map((part) => {
-          const resident = residentText(perResident(part.exact, view.year))
+          const resident = residentText(part.resident ?? perResident(part.exact, view.year))
           const details = [part.change ? t`${part.change} față de ${previous}` : null, t`${resident} pe locuitor`, part.hint].filter(Boolean).join(' · ')
           return (
             <li key={part.key} className="grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2">
@@ -128,7 +130,8 @@ export function TwoLists({
           type="button"
           aria-expanded={open}
           onClick={(event) => toggle(event.currentTarget)}
-          className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-md border border-border text-sm font-medium outline-none transition-colors [overflow-anchor:none] hover:border-foreground/30 focus-visible:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring/30"
+          // The lists' last row, across both columns: their rules above and below, no sides; its top rule lies on theirs.
+          className="-mt-px flex h-11 w-full items-center justify-center gap-2 border-y text-sm font-medium outline-none transition-colors [overflow-anchor:none] hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           {open ? t`Arată mai puține rânduri` : t`Arată toate rândurile`}
           {open ? null : <span className="font-normal text-muted-foreground">{t`încă ${hidden}`}</span>}

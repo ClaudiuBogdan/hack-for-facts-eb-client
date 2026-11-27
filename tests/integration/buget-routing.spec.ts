@@ -1,4 +1,11 @@
+import type { Page } from '@playwright/test'
 import { test, expect } from '../utils/ssr-api/test'
+
+/** The site's not-found page, without the notice band a section's real pages carry. */
+async function expectNotFound(page: Page) {
+  await expect(page.getByRole('heading', { level: 1, name: /Fila asta lipsește din dosar|This page is missing from the file/i })).toBeVisible({ timeout: 10000 })
+  await expect(page.getByText(/Lucrăm încă la această pagină|We are still working on this page/i)).toHaveCount(0)
+}
 
 test.describe('Buget Routing', () => {
   test.describe.configure({ mode: 'serial' })
@@ -118,71 +125,55 @@ test.describe('Buget Routing', () => {
     await page.goto('/buget')
 
     await expect(page).toHaveURL(/\/buget$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 
   test('shows not found for removed /buget/cauta routes', async ({ page }) => {
     await page.goto('/buget/cauta')
 
     await expect(page).toHaveURL(/\/buget\/cauta$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 
   test('shows not found for removed /buget/cauta/harta routes', async ({ page }) => {
     await page.goto('/buget/cauta/harta')
 
     await expect(page).toHaveURL(/\/buget\/cauta\/harta$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 
   test('shows not found for removed /buget/forum routes', async ({ page }) => {
     await page.goto('/buget/forum')
 
     await expect(page).toHaveURL(/\/buget\/forum$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 
   test('shows not found for removed entity route roots under /buget', async ({ page }) => {
     await page.goto('/buget/4305857')
 
     await expect(page).toHaveURL(/\/buget\/4305857$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 
   test('shows not found for removed /buget/:cui/primarie routes', async ({ page }) => {
     await page.goto('/buget/4305857/primarie')
 
     await expect(page).toHaveURL(/\/buget\/4305857\/primarie$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 
   test('shows not found for removed /buget/:cui/provocari routes', async ({ page }) => {
     await page.goto('/buget/4305857/provocari')
 
     await expect(page).toHaveURL(/\/buget\/4305857\/provocari$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 
   test('shows not found for the removed buget-primarie path', async ({ page }) => {
     await page.goto('/buget-primarie')
 
     await expect(page).toHaveURL(/\/buget-primarie$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
+    await expectNotFound(page)
   })
 })

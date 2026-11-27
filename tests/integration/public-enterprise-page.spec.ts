@@ -10,6 +10,7 @@
  * (789401) is controlled by Consiliul Local Sibiu in ANAF's list.
  */
 
+import type { Page } from '@playwright/test'
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 
@@ -44,8 +45,11 @@ const readName = (body: { readonly query?: unknown; readonly variables?: unknown
   return named ?? 'anonymous'
 }
 
-/** Only a whole render is cached publicly: a partial one (a live read past its deadline) leaves its part to the browser. */
-const isWhole = (cacheControl: string | undefined) => /s-maxage=/u.test(cacheControl ?? '')
+/**
+ * Whether the server read the page whole: a partial read (a live read past its deadline) leaves its part to the
+ * browser. Said by the page itself (`data-server-read`), not by its cache header: no page is public (CACHE-002).
+ */
+const isWhole = async (page: Page) => (await page.locator('[data-server-read]').getAttribute('data-server-read')) === 'whole'
 
 test.describe('Public enterprise page — the server render', () => {
   test('the page draws its head and every band, in the pinned bar’s order', async ({ page }) => {
@@ -91,11 +95,11 @@ test.describe('Public enterprise page — the server render', () => {
     page.on('request', (request) => {
       if (request.method() === 'POST' && /\/graphql(?:[?#]|$)/u.test(request.url())) reads.push(readName(request.postDataJSON()))
     })
-    const response = await page.goto(ROUTE)
+    await page.goto(ROUTE)
     await waitForPageReady(page)
     await page.waitForTimeout(1000)
-    // Only a whole render is cached publicly; a partial one (a live read past its deadline) is read again in the browser, as it should be.
-    if (isWhole(response?.headers()['cache-control'])) {
+    // A partial render (a live read past its deadline) is read again in the browser, as it should be.
+    if (await isWhole(page)) {
       // No data read; the status check once, or twice when its first answer is older than the key the page was served under.
       // Accepted flake (root, 20 November 2026): for up to a minute after a publish the server can still render under the
       // status it keeps (60 s), the browser's fresh check rightly purges and reads again, and every attempt then fails.
@@ -111,10 +115,10 @@ test.describe('Public enterprise page — the server render', () => {
   })
 
   test('its links leave for the authority’s budget, the company page and the procurement page', async ({ page }) => {
-    const response = await page.goto(ROUTE)
+    await page.goto(ROUTE)
     await waitForPageReady(page)
     // Each link needs its read: on a partial render, the one that failed is the browser's to read again.
-    test.skip(!isWhole(response?.headers()['cache-control']), 'partial server read: the links wait on the browser')
+    test.skip(!(await isWhole(page)), 'partial server read: the links wait on the browser')
 
     await expect(page.locator('section#control a[href="/entities/4270740"]').first()).toBeVisible()
     await expect(page.locator('section#control a[href^="/public-enterprises/"]').first()).toBeVisible()
@@ -123,10 +127,10 @@ test.describe('Public enterprise page — the server render', () => {
   })
 
   test('AMEPIP’s values, year by year, open on a click', async ({ page }) => {
-    const response = await page.goto(ROUTE)
+    await page.goto(ROUTE)
     await waitForPageReady(page)
     // The tables need the indicator pages: on a partial render they may be the browser's to read again.
-    test.skip(!isWhole(response?.headers()['cache-control']), 'partial server read: the indicators wait on the browser')
+    test.skip(!(await isWhole(page)), 'partial server read: the indicators wait on the browser')
 
     const amepip = page.locator('section#amepip')
     await expect(amepip.getByRole('table')).toHaveCount(0)
