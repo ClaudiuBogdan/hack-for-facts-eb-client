@@ -118,12 +118,13 @@ export function CompanyYearsChart({
     return { slot, left, width }
   })
   const yearSlots = placed.flatMap(({ slot, left, width }) => (slot.kind === 'year' ? [{ row: slot.row, slot, left, width }] : []))
-  const [active, setActive] = useState<number | null>(null)
+  // The year being read, by year (not by slot: a refreshed answer with one more year keeps the reading on its year).
+  const [activeYear, setActiveYear] = useState<number | null>(null)
   // A click (a tap) holds its year's reading: a mouse can then travel to the reading's link across other years.
   // Hovering only previews; the held year goes with a click on it again, another year's click or Escape.
   const [held, setHeld] = useState(false)
   // Nothing is read at rest: a reading opens on a pointer, a tap or the keyboard.
-  const shown = active ?? -1
+  const shown = activeYear === null ? -1 : yearSlots.findIndex((entry) => entry.row.year === activeYear)
   const isActive = (slot: Slot) => yearSlots[shown]?.slot === slot
 
   // The IFRS runs: neighbouring IFRS-form years, one rule each.
@@ -163,16 +164,18 @@ export function CompanyYearsChart({
   const reading = yearSlots[shown] ?? null
 
   const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape' && active !== null) {
-      setActive(null)
+    if (event.key === 'Escape' && reading !== null) {
+      // From the reading's link (it goes with the reading): focus back on the chart, never lost to the page.
+      if (event.target !== event.currentTarget) event.currentTarget.focus()
+      setActiveYear(null)
       setHeld(false)
       return
     }
-    const from = active ?? last + 1
+    const from = reading ? shown : last + 1
     const next = event.key === 'ArrowLeft' ? from - 1 : event.key === 'ArrowRight' ? Math.min(from + 1, last) : event.key === 'Home' ? 0 : event.key === 'End' ? last : null
     if (next === null) return
     event.preventDefault()
-    setActive(Math.max(0, Math.min(last, next)))
+    setActiveYear(yearSlots[Math.max(0, Math.min(last, next))]?.row.year ?? null)
   }
 
   const swatch = (className: string) => <span className={cn('inline-block size-2.5 shrink-0 rounded-[2px]', className)} aria-hidden="true" />
@@ -349,7 +352,7 @@ export function CompanyYearsChart({
         aria-label={t`Anii: săgețile stânga și dreapta trec de la un an la altul`}
         onKeyDown={onKey}
         onPointerLeave={(event) => {
-          if (event.pointerType === 'mouse' && !held) setActive(null)
+          if (event.pointerType === 'mouse' && !held) setActiveYear(null)
         }}
         className={cn('relative pl-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', runs.length > 0 ? 'mt-3' : 'mt-4')}
       >
@@ -397,18 +400,18 @@ export function CompanyYearsChart({
 
         {/* Hit areas: a year across every panel. */}
         <div className="absolute inset-y-0 left-16 right-0">
-          {yearSlots.map(({ row, left, width }, position) => (
+          {yearSlots.map(({ row, left, width }) => (
             <div
               key={row.year}
               className="absolute inset-y-0"
               style={{ left: percent(left), width: percent(width) }}
               onPointerEnter={(event) => {
-                if (event.pointerType === 'mouse' && !held) setActive(position)
+                if (event.pointerType === 'mouse' && !held) setActiveYear(row.year)
               }}
               onClick={() => {
                 // A click on the held year lets it go; on any other year, holds that one.
-                const release = held && active === position
-                setActive(position)
+                const release = held && activeYear === row.year
+                setActiveYear(row.year)
                 setHeld(!release)
               }}
               aria-hidden="true"
@@ -427,6 +430,8 @@ export function CompanyYearsChart({
               className="absolute top-0 w-64 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md [@media(hover:hover)]:pointer-events-auto"
               // The plot starts after the 4rem gutter: a point of it is 4rem + fraction × (100% − 4rem).
               style={{ left: `clamp(0px, calc(4rem + (100% - 4rem) * ${(reading.left + reading.width / 2).toFixed(4)} - 8rem), calc(100% - 16rem))` }}
+              // Where the box takes the pointer, a click on it holds the year it reads (it never reaches the year beneath).
+              onClick={() => setHeld(true)}
             >
               <span className="flex items-baseline justify-between gap-2">
                 <span className="font-mono tabular-nums text-muted-foreground">{reading.row.year}</span>

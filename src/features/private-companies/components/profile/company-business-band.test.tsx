@@ -122,6 +122,39 @@ describe('CompanyBusinessBand, the IFRS form', () => {
     expect(band().queryByTestId('company-years-reading')).toBeNull()
   })
 
+  it('returns focus to the chart when Escape closes the reading from its link', () => {
+    render(<CompanyBusinessBand model={buildCompanyProfileModel(formsCompany())} />)
+    readYear(6)
+    const link = band().getByTestId('company-years-reading-source')
+    link.focus()
+    fireEvent.keyDown(link, { key: 'Escape' })
+    expect(band().queryByTestId('company-years-reading')).toBeNull()
+    expect(document.activeElement).toBe(band().getByRole('group', { name: /^Anii:/u }))
+  })
+
+  it('keeps a reading on its year when the answer gains a year', () => {
+    // No 2012–2013 yet: they fold into one hatched column, so 2016 is the seventh year slot (2008–2011, 2014, 2015, 2016).
+    const { rerender } = render(<CompanyBusinessBand model={buildCompanyProfileModel(formsCompany(IFRS_FILE.slice(2)))} />)
+    expect(within(readYear(6)).getByText('2016')).toBeInTheDocument()
+    // The answer now holds 2012–2013: two more slots before it. The reading stays on 2016, never on the slot's new year (2014).
+    rerender(<CompanyBusinessBand model={buildCompanyProfileModel(formsCompany())} />)
+    expect(within(band().getByTestId('company-years-reading').parentElement as HTMLElement).getByText('2016')).toBeInTheDocument()
+  })
+
+  it('never folds an IFRS-file year with no figure into the hatched gap beside it', () => {
+    const company = companyProfile({
+      financials: [typed(2014, 4 * M, 0.3 * M, 40), typed(2019, 6 * M, 0.5 * M, 50)],
+      ifrsFormYears: [fileYear(2018, null, null, null)],
+    })
+    render(<CompanyBusinessBand model={buildCompanyProfileModel(company)} />)
+    // 2015–2017: no statement, no file year — one hatched gap; 2018 keeps its own slot and its reason.
+    expect(band().getByText('Fără valori comparabile pentru 2015–2017.')).toBeInTheDocument()
+    const reading = within(readYear(1))
+    expect(reading.getByText('2018')).toBeInTheDocument()
+    expect(reading.getByText('Raportat pe formularul IFRS')).toBeInTheDocument()
+    expect(reading.getAllByText('Nicio valoare citită din fișierul Ministerului Finanțelor')).toHaveLength(3)
+  })
+
   it('keeps the held result of an IFRS-layout year held, its admitted profit outlined, and links ANAF', () => {
     render(<CompanyBusinessBand model={buildCompanyProfileModel(formsCompany())} />)
     const reading = within(readYear(11))

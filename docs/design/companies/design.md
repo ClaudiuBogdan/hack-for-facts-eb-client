@@ -1189,6 +1189,25 @@ session against its evidence.
   the API nulls its own deltas (`reporting_form_changed`, proposed by
   server-companies to root). Where the API reads no form, nothing changes.
 
+### From the review (Codex `gpt-6.2-sol`, 27 November 2026)
+
+Fixed: a click on the open reading (where it takes the pointer) holds its
+year; the reading follows its year, not its slot, so a refreshed answer with
+one more year cannot move it; Escape from the reading's link returns focus to
+the chart; the section bar marks the first band on its line, so a reversed
+scroll never leaves it unmarked; a test that an IFRS-file year with no figure
+keeps its own slot beside a hatched gap. Left as is, by decision:
+
+- Two neighbouring unmarked years whose figures are all withheld still fold
+  into one hatched column (the owner's chart): their sources stay one click
+  away in „Bilanțurile, an cu an", which lists every statement.
+- The 2019 blank-to-zero sentence states the measured fact for 2019 (227
+  cells), not this company's 2018 cell; the IFRS session confirmed the
+  wording, and every null the views serve today is a blank cell.
+- No fallback query for an API without the IFRS fields: as for
+  `longFormOnly`, the server ships first; root knows the client now needs
+  them (a server rollback of those fields must take the client with it).
+
 ### Not yet live
 
 - The API serves none of it yet: the page reads `ifrsFormYears` and each
