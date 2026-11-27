@@ -37,4 +37,9 @@ act page shows; LEG-95TT moves it to a typed legal_v2 field later.
 **LEG-95TT** (legislation; the data platform owns the search projection): build the search's act rows from legal_v2
 with a typed status carried through `SearchHit`, after legal_v2's "Doc nr. <page id>" and order-number titles are fixed
 (LEG-PDYY, LEG-R2DJ). The client then reads that field and drops `legalStatusOfHit`. If the subtitle's format changes
-first, the worst case is no mark, never a wrong one.
+first, a tail that is not a status draws no mark. Until then, an act with no status whose citation itself ends in a
+status word (", abrogat") would draw that word's mark: the one ambiguity the allow-list cannot remove.
+
+On a phone the word is never shown beside the mark (it would squeeze the title out next to a long identifier); hover
+and screen readers still get it, a touch-only reader sees the mark alone (Codex review, round 2; kept as the owner's
+compact row).

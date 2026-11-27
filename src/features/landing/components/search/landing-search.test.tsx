@@ -995,6 +995,8 @@ describe('LandingSearch — the way on to a fuller search (the legislation hub, 
     const sentence = screen.getByText('Niciun act pentru achizitii publice.')
     expect(sentence.closest('[role=option]')).toBeNull()
     expect(sentence.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // reached by the arrows, the row is described by the answer, which names what this box searches (Codex review, round 2)
+    expect(row).toHaveAccessibleDescription('Niciun act pentru achizitii publice.')
     // said once: the row carries the empty answer, the generic sentence is not drawn under it
     expect(screen.queryByText(/Niciun rezultat pentru/i)).toBeNull()
     // no row is highlighted to say what Enter does: the announcement says it
@@ -1057,8 +1059,14 @@ describe('LandingSearch — an act says its status (owner, 27 November 2026)', (
     const [actRow, ngoRow] = rows()
     expect(actRow).toHaveAccessibleName(/Abrogat parțial/)
     expect(ngoRow).not.toHaveAccessibleName(/Abrogat parțial/)
-    // the word is hidden for the eye at rest, and shown on the highlighted row
-    expect(screen.getByText('Abrogat parțial')).toHaveClass('sr-only', 'group-data-highlighted:not-sr-only')
+    // the word is hidden for the eye at rest, and shown on the highlighted row from sm only, in full contrast: on a
+    // phone it would squeeze the title out beside a long identifier (Codex review, round 2)
+    const word = screen.getByText('Abrogat parțial')
+    expect(word).toHaveClass('sr-only', 'sm:group-data-highlighted:not-sr-only', 'sm:group-data-highlighted:text-foreground')
+    expect(word.className).not.toMatch(/(^|\s)group-data-highlighted:/)
+    expect(word.className).not.toMatch(/text-muted-foreground/)
+    // and the row is not described by an empty answer: only the lone way on is
+    expect(actRow).not.toHaveAttribute('aria-describedby')
   })
 
   it('draws the status the search serves at the end of the subtitle, with the act page\'s mark, and none it does not know', async () => {

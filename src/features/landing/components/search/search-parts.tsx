@@ -106,7 +106,8 @@ function townHallCountyLabel(countyName: string | null): string | null {
  * A legal act's status as the search serves it: the last part of its subtitle („Legea nr. 98/2009, in-vigoare"),
  * read only when it is one of the act statuses. Anything else is no status: the row then says none.
  * DEPENDS ON the search projection's subtitle text for acts („<citation>, <status>"), which SearchHit does not type: a
- * change to that format must lead to no mark, never to a wrong one (root, 27 November 2026; tested).
+ * tail that is not a status draws no mark (root, 27 November 2026; tested). With no status, the projection drops the
+ * part, so a citation that itself ends in „, abrogat" would read as one: ambiguous until LEG-95TT types it (LEGAL-002).
  */
 export function legalStatusOfHit(subtitle: string | null): LegalActStatus | null {
   const tail = subtitle?.split(',').pop()?.trim() ?? ''
@@ -169,11 +170,12 @@ export function ResultRowContent({
         {actStatus !== null ? (
           <span className="flex min-w-0 items-center gap-2">
             {/* Three statuses share the ring and differ by colour only: the highlighted row, which the arrows reach
-                without any hover, says the word too (Codex review, round 1). */}
+                without any hover, says the word too (Codex review, round 1). From sm only: on a phone the word would
+                squeeze the title out beside a long identifier; in full contrast on the highlight (round 2). */}
             <LegalStatusBadge
               status={actStatus}
               markOnly
-              wordClassName="group-data-highlighted:not-sr-only group-data-highlighted:ml-1.5 group-data-highlighted:whitespace-nowrap group-data-highlighted:text-xs group-data-highlighted:font-normal group-data-highlighted:text-muted-foreground"
+              wordClassName="sm:group-data-highlighted:not-sr-only sm:group-data-highlighted:ml-1.5 sm:group-data-highlighted:whitespace-nowrap sm:group-data-highlighted:text-xs sm:group-data-highlighted:font-normal sm:group-data-highlighted:text-foreground"
             />
             <Highlighted
               text={entity.title}
@@ -297,8 +299,8 @@ export function FilterSuggestionContent({ filter }: { readonly filter: SearchFil
 }
 
 /** A quiet single line, for every state that is not a list. */
-export function Message({ children }: { readonly children: React.ReactNode }) {
-  return <p className="px-4 py-6 text-center text-sm text-muted-foreground">{children}</p>
+export function Message({ children, id }: { readonly children: React.ReactNode; readonly id?: string }) {
+  return <p id={id} className="px-4 py-6 text-center text-sm text-muted-foreground">{children}</p>
 }
 
 export function Skeleton() {

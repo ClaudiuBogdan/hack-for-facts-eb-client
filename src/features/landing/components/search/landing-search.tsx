@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, ReactNode, RefObject } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
@@ -382,6 +382,7 @@ export function LandingSearch({
   const moreItem: MoreItem | null =
     more !== undefined && moreTerm !== '' && (status.kind === 'results' || status.kind === 'empty') ? { moreTerm } : null
   const moreAlone = moreItem !== null && status.kind === 'empty'
+  const moreEmptyId = useId()
   const groups: readonly ListGroup[] = [
     ...(suggestions.length > 0 ? [{ value: 'filters', items: suggestions } as const] : []),
     ...(visibleResults.length > 0 ? [{ value: 'results', items: visibleResults } as const] : []),
@@ -729,7 +730,7 @@ export function LandingSearch({
                   version shipped, arriving here through the library's wiring
                   instead of through ours. */}
               {/* With no answer and a way on, the answer is a quiet sentence above the way on's row, never part of the link. */}
-              {moreAlone && more !== undefined ? <Message>{more.empty(moreTerm)}</Message> : null}
+              {moreAlone && more !== undefined ? <Message id={moreEmptyId}>{more.empty(moreTerm)}</Message> : null}
               <Autocomplete.List
                 className={cn(
                   // The stale dim fades in. Measured under
@@ -758,6 +759,8 @@ export function LandingSearch({
                                   // Out of date while the answer is (the rows above are too): it would carry words the list does not show.
                                   disabled={!isCurrent}
                                   data-search-more={moreAlone ? 'empty' : 'row'}
+                                  // The answer above, said when the arrows reach the row: it names what this box searches (Codex review, round 2).
+                                  aria-describedby={moreAlone ? moreEmptyId : undefined}
                                   className={cn(
                                     'flex cursor-pointer items-center gap-3 px-4 text-sm data-highlighted:bg-muted',
                                     'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
