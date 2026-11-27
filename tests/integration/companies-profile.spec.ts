@@ -122,6 +122,8 @@ test.describe('Company profile', () => {
     await expect(page).toHaveURL(/#registru$/)
     const heading = page.getByRole('heading', { level: 2, name: 'Datele din registru' })
     await expect(heading).toBeInViewport()
+    // The band being read is the bar's current one.
+    await expect(bar.getByRole('link', { name: /Registru/ })).toHaveAttribute('aria-current', 'location')
     // The pinned bar does not cover the band's heading.
     await expect
       .poll(async () => {
