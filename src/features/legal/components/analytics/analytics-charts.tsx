@@ -3,7 +3,7 @@
  * legal prototypes: ranked rows with a share bar, acts per year stacked
  * by a lens, two lenses crossed, and the caveats marker. Presentational only: every figure comes in as a prop.
  */
-import { useState, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { TriangleAlert } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -156,48 +156,100 @@ export function StackedYears({
   const rest = lastIsRest ?? labels[labels.length - 1] === 'altele'
   const colour = (j: number) => (rest && j === labels.length - 1 ? STACK_BG[5] : STACK_BG[Math.min(j, 4)])
   const [active, setActive] = useState<number | null>(null)
-  const max = Math.max(1, ...years.map((y) => y.values.reduce((s, v) => s + v, 0)))
-  const shown = active === null ? null : years.find((y) => y.year === active)
+  const sumOf = (y: { readonly values: readonly number[] }) => y.values.reduce((s, v) => s + v, 0)
+  const max = Math.max(1, ...years.map(sumOf))
+  const index = active === null ? -1 : years.findIndex((y) => y.year === active)
+  const shown = index < 0 ? null : years[index]
+  // Where the tooltip stands from `sm` (custom properties the classes read): beside the column, on the side with room.
+  const tipPlace: Record<string, string> =
+    index < years.length / 2
+      ? { '--tip-left': `calc(${((index + 1) / years.length) * 100}% + 8px)` }
+      : { '--tip-right': `calc(${((years.length - index) / years.length) * 100}% + 8px)` }
+  // What the tooltip shows, said once to assistive tech: the tooltip itself is drawn for the eye only.
+  const readout = shown
+    ? `${axis ? '' : `${shown.year}: `}${fmt(sumOf(shown))} ${t`acte`} · ${labels.map((l, j) => `${l} ${fmt(shown.values[j] ?? 0)}`).join(' · ')}`
+    : ''
   return (
     <figure>
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        {plain ? <p className="text-xs text-muted-foreground">{caption}</p> : <MonoLabel className="block text-muted-foreground">{caption}</MonoLabel>}
-        <p className="min-h-5 text-xs tabular-nums text-muted-foreground" aria-live="polite">
-          {shown
-            ? `${axis ? '' : `${shown.year}: `}${fmt(shown.values.reduce((s, v) => s + v, 0))} ${t`acte`} · ${labels
-                .map((l, j) => `${l} ${fmt(shown.values[j] ?? 0)}`)
-                .join(' · ')}`
-            : t`Indică un an pentru cifrele lui.`}
-        </p>
-      </div>
-      <ol
-        className="mt-3 grid h-48 items-end gap-px border-b border-foreground/20 sm:h-60"
-        style={{ gridTemplateColumns: `repeat(${years.length}, minmax(0, 1fr))` }}
-        onPointerLeave={() => setActive(null)}
-      >
-        {years.map((y) => {
-          const sum = y.values.reduce((s, v) => s + v, 0)
-          return (
-            <li
-              key={y.year}
-              className="flex h-full flex-col justify-end"
-              tabIndex={0}
-              aria-label={`${y.year}: ${fmt(sum)} ${t`acte`}`}
-              onPointerEnter={() => setActive(y.year)}
-              onFocus={() => setActive(y.year)}
-            >
-              <div
-                className={cn('flex flex-col-reverse', active === y.year && 'opacity-80', pendingFrom && y.year >= pendingFrom.year && 'opacity-45 outline-dashed outline-1 outline-foreground/60')}
-                style={{ height: `${(sum / max) * 100}%` }}
+      {plain ? <p className="text-xs text-muted-foreground">{caption}</p> : <MonoLabel className="block text-muted-foreground">{caption}</MonoLabel>}
+      <p className="sr-only" aria-live="polite">
+        {readout}
+      </p>
+      {/* The hovered or focused column's figures in a tooltip beside it (owner, 27 November 2026): at the top of the
+          chart, on the side with room (right of a column in the left half, left of one in the right half), so it never
+          leaves the chart and never covers the column read. A tap keeps it until the focus leaves the chart. */}
+      <div className="relative mt-3">
+        <ol
+          className="grid h-48 items-end gap-px border-b border-foreground/20 sm:h-60"
+          style={{ gridTemplateColumns: `repeat(${years.length}, minmax(0, 1fr))` }}
+          onPointerLeave={(event) => {
+            if (event.pointerType !== 'touch') setActive(null)
+          }}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActive(null)
+          }}
+        >
+          {years.map((y) => {
+            const sum = sumOf(y)
+            return (
+              <li
+                key={y.year}
+                className="flex h-full flex-col justify-end outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                tabIndex={0}
+                aria-label={`${y.year}: ${fmt(sum)} ${t`acte`}`}
+                onPointerEnter={() => setActive(y.year)}
+                onFocus={() => setActive(y.year)}
               >
-                {y.values.map((v, j) => (
-                  <div key={j} className={colour(j)} style={{ height: sum ? `${(v / sum) * 100}%` : 0 }} />
+                <div
+                  className={cn('flex flex-col-reverse', active === y.year && 'opacity-80', pendingFrom && y.year >= pendingFrom.year && 'opacity-45 outline-dashed outline-1 outline-foreground/60')}
+                  style={{ height: `${(sum / max) * 100}%` }}
+                >
+                  {y.values.map((v, j) => (
+                    <div key={j} className={colour(j)} style={{ height: sum ? `${(v / sum) * 100}%` : 0 }} />
+                  ))}
+                </div>
+              </li>
+            )
+          })}
+        </ol>
+        {shown ? (
+          <div
+            aria-hidden="true"
+            data-years-tooltip
+            className={cn(
+              'pointer-events-none absolute z-10 rounded-md border bg-background px-3 py-2 text-xs tabular-nums',
+              // A phone has no room beside a column: the tooltip spans the chart just under it, over the axis and
+              // the legend, never over a column.
+              'inset-x-0 top-[calc(100%+0.25rem)] sm:inset-x-auto sm:top-0 sm:min-w-44 sm:whitespace-nowrap',
+              index < years.length / 2 ? 'sm:left-[var(--tip-left)]' : 'sm:right-[var(--tip-right)]',
+            )}
+            style={tipPlace as CSSProperties}
+          >
+            <p className="flex items-baseline justify-between gap-4 font-medium text-foreground">
+              <span>{axis ? null : shown.year}</span>
+              <span>
+                {fmt(sumOf(shown))} {t`acte`}
+              </span>
+            </p>
+            {pendingFrom && shown.year >= pendingFrom.year ? <p className="text-muted-foreground">{pendingFrom.label}</p> : null}
+            {/* Top to bottom, as the column is stacked. */}
+            <ul className="mt-1.5 space-y-0.5">
+              {labels
+                .map((label, j) => ({ label, j }))
+                .reverse()
+                .map(({ label, j }) => (
+                  <li key={label} className="flex items-center justify-between gap-4 text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <span className={cn('size-2 shrink-0', colour(j))} />
+                      {label}
+                    </span>
+                    <span className="text-foreground">{fmt(shown.values[j] ?? 0)}</span>
+                  </li>
                 ))}
-              </div>
-            </li>
-          )
-        })}
-      </ol>
+            </ul>
+          </div>
+        ) : null}
+      </div>
       <div className="mt-1 flex justify-between text-[11px] tabular-nums text-muted-foreground">
         <span>{axis ? axis[0] : years[0]?.year}</span>
         <span>{axis ? axis[1] : years[years.length - 1]?.year}</span>

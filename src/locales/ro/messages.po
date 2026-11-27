@@ -28458,10 +28458,6 @@ msgstr ""
 msgid "Indexul de căutare sau datele firmelor s-au schimbat, așa că paginile încărcate nu mai pot fi arătate împreună. Reia căutarea pentru \"{query}\" de la prima pagină."
 msgstr "Indexul de căutare sau datele firmelor s-au schimbat, așa că paginile încărcate nu mai pot fi arătate împreună. Reia căutarea pentru \"{query}\" de la prima pagină."
 
-#: src/features/legal/components/analytics/analytics-charts.tsx:170
-msgid "Indică un an pentru cifrele lui."
-msgstr "Indică un an pentru cifrele lui."
-
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:161
 msgid "Indicate when your city hall's budget draft was published."
 msgstr "Indică când a fost publicat proiectul de buget al primăriei tale."

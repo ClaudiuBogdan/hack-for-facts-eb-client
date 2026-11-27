@@ -28462,10 +28462,6 @@ msgstr "Indexul de căutare pe tot istoricul nu răspunde. Nu restrângem căuta
 msgid "Indexul de căutare sau datele firmelor s-au schimbat, așa că paginile încărcate nu mai pot fi arătate împreună. Reia căutarea pentru \"{query}\" de la prima pagină."
 msgstr "The search index or the company data changed, so the loaded pages can no longer be shown together. Start the search for \"{query}\" again from the first page."
 
-#: src/features/legal/components/analytics/analytics-charts.tsx:170
-msgid "Indică un an pentru cifrele lui."
-msgstr "Point to a year for its figures."
-
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:161
 msgid "Indicate when your city hall's budget draft was published."
 msgstr "Indicate when your city hall's budget draft was published."
