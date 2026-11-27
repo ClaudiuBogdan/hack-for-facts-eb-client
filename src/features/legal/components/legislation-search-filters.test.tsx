@@ -80,6 +80,12 @@ describe('LegislationFilterPanel', () => {
     expect(onChange).toHaveBeenLastCalledWith({ ...NO_SEARCH_FILTERS, stare: 'abrogat' })
   })
 
+  it('offers the acts whose status the Portal does not give (owner, 27 November 2026)', () => {
+    const { dialog, onChange } = panel()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Statut necunoscut' }))
+    expect(onChange).toHaveBeenLastCalledWith({ ...NO_SEARCH_FILTERS, stare: 'necunoscut' })
+  })
+
   it('closes onto the results from the bar at the bottom, which also takes every filter off', () => {
     const filters = { ...NO_SEARCH_FILTERS, sanctiuni: true }
     const { dialog, onChange, onOpenChange } = panel(filters)
