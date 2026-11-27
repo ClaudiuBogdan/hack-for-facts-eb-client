@@ -37,6 +37,7 @@ import {
   type PrivateCompanyFinancialSummary,
   type PrivateCompanyFinancialTrajectory,
   type PrivateCompanyFinancialYear,
+  type PrivateCompanyIfrsFormYear,
   type PrivateCompanyLongFormStatement,
   type PrivateCompanyMatchConfidence,
   type PrivateCompanyMetricStatus,
@@ -69,6 +70,7 @@ import type {
   RawCompany,
   RawCompanyFinancialYear,
   RawCompanyResolveResult,
+  RawIfrsFormYear,
   RawLongFormStatement,
   RawStatementQualification,
 } from './company-queries'
@@ -473,7 +475,32 @@ function mapFinancialYear(year: RawCompanyFinancialYear): PrivateCompanyFinancia
     originals: mapOriginals(year),
     source: mapStatementSource(year.source),
     qualification: mapQualification(year.qualification),
+    reportingForm: mapReportingForm(year.reportingForm),
   }
+}
+
+/** The publisher's form: IFRS, or unmarked — an unknown value is never read as a form. */
+function mapReportingForm(raw: string | null | undefined): 'ifrs' | null {
+  return raw?.toLowerCase() === 'ifrs' ? 'ifrs' : null
+}
+
+/**
+ * The IFRS-file years as served, oldest first: figures as the source's exact strings (a blank stays null — never 0),
+ * the net result as served (never derived), only a web address linked. Absent or null (an API that cannot read the
+ * IFRS-form views, a recorded answer without the field) stays null: forms unknown, nothing drawn.
+ */
+function mapIfrsFormYears(raw: readonly RawIfrsFormYear[] | null | undefined): PrivateCompanyIfrsFormYear[] | null {
+  if (raw == null) return null
+  return raw
+    .map((entry) => ({
+      fiscalYear: entry.year,
+      publisher: mapPublisher(entry.sourceSystem),
+      turnover: exactText(entry.turnover),
+      netResult: exactText(entry.netResult),
+      employees: exactText(entry.employees),
+      sourceUrl: entry.sourceUrl !== null && HTTPS_URL.test(entry.sourceUrl) ? entry.sourceUrl : null,
+    }))
+    .sort((a, b) => a.fiscalYear - b.fiscalYear)
 }
 
 /**
@@ -672,6 +699,7 @@ export function mapCompanyProfile(
     },
     financials,
     longFormStatements: mapLongFormStatements(response.companyFinancials?.longFormOnly),
+    ifrsFormYears: mapIfrsFormYears(response.companyFinancials?.ifrsFormYears),
     financialTrajectory: mapTrajectory(response.companyFinancials),
     publicMoney: mapPublicMoney(company),
     sources: buildSources(company, registry.registry),

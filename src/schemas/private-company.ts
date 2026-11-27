@@ -276,6 +276,29 @@ export const privateCompanyFinancialYearSchema = z.object({
   originals: z.record(z.enum(FINANCIAL_SOURCE_METRICS), z.string().nullable()),
   source: privateCompanyStatementSourceSchema.nullable(),
   qualification: privateCompanyStatementQualificationSchema,
+  /**
+   * The publisher's form for this year: `ifrs` where it marks the IFRS form (ANAF's IFRS layout from FY2019).
+   * Null or absent: unmarked — never „ordinary", never another form. Absent until the API serves it.
+   */
+  reportingForm: z.literal('ifrs').nullish(),
+})
+
+/**
+ * A year the publisher put on the IFRS form, held only in its own file (the Ministry of Finance's „IR" file,
+ * FY2012–2018), outside the typed history: its figures as filed, in exact strings (employees a count of people).
+ * Source observations with a verified mapping, outside the analytics admission policy — drawn in their own labelled
+ * series, never in a count, trend or comparison, never presented as qualified (scrapper PRIV-ZVPV; owner decisions
+ * of 25 November 2026). The net result is the one served, never derived here.
+ */
+export const privateCompanyIfrsFormYearSchema = z.object({
+  fiscalYear: z.number().int(),
+  /** Null when the API named a publisher this client does not know: never assumed. */
+  publisher: privateCompanyStatementPublisherSchema.nullable(),
+  turnover: z.string().nullable(),
+  netResult: z.string().nullable(),
+  employees: z.string().nullable(),
+  /** The publisher's file; null when none was recorded or it is no web address. */
+  sourceUrl: z.string().nullable(),
 })
 
 /**
@@ -425,6 +448,8 @@ export const privateCompanyProfileSchema = z.object({
    * without a filing.
    */
   longFormStatements: z.array(privateCompanyLongFormStatementSchema).nullish(),
+  /** IFRS-form years held only in the publisher's own file, oldest first. Null or absent: not served (nothing drawn). */
+  ifrsFormYears: z.array(privateCompanyIfrsFormYearSchema).nullish(),
   financialTrajectory: privateCompanyFinancialTrajectorySchema.nullable(),
   /** Null when the company received no public money at all. */
   publicMoney: privateCompanyPublicMoneySchema.nullable(),
@@ -438,6 +463,7 @@ export type PrivateCompanyMetricStatus = z.infer<typeof privateCompanyMetricStat
 export type PrivateCompanyStatementQualification = z.infer<typeof privateCompanyStatementQualificationSchema>
 export type PrivateCompanyStatementSource = z.infer<typeof privateCompanyStatementSourceSchema>
 export type PrivateCompanyLongFormStatement = z.infer<typeof privateCompanyLongFormStatementSchema>
+export type PrivateCompanyIfrsFormYear = z.infer<typeof privateCompanyIfrsFormYearSchema>
 export type PrivateCompanyCaenActivity = z.infer<
   typeof privateCompanyCaenActivitySchema
 >
