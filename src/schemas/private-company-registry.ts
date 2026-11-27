@@ -77,101 +77,38 @@ export const companyRegistryValueSchema = z.object({
 })
 export type CompanyRegistryValue = z.infer<typeof companyRegistryValueSchema>
 
+/** The qualified fields the profile page reads, each with its basis (the server serves more; the page asks for these). */
 export const companyRegistryCuiProfileSchema = z.object({
-  identityObservations: z.number().int(),
-  identifierCount: z.number().int(),
-  unresolvedIdentifierCount: z.number().int(),
-  unidentifiedObservations: z.number().int(),
-  name: companyRegistryValueSchema,
   legalForm: companyRegistryValueSchema,
   /** The date ONRC recorded, `YYYY-MM-DD`; never a founding date. */
   recordedDate: companyRegistryValueSchema,
   countyCode: companyRegistryValueSchema,
-  /** Territory-hub presentation name of the county consensus, not edition evidence. */
-  countyName: z.string().nullable(),
   uatSirutaCode: companyRegistryValueSchema,
-  uatName: z.string().nullable(),
   /** The CUI's complete status consensus; never a priority pick. */
   statusCode: companyRegistryValueSchema,
-  caenCoverage: z.enum(COMPANY_REGISTRY_COVERAGES),
-  statusCoverage: z.enum(COMPANY_REGISTRY_COVERAGES),
 })
 export type CompanyRegistryCuiProfile = z.infer<typeof companyRegistryCuiProfileSchema>
-
-/** Where one original row came from: this edition's manifest only, and an https link or none. */
-export const companyRegistryProvenanceSchema = z.object({
-  resourceKey: z.string(),
-  sourceRowNumber: z.number().int(),
-  sourceRowSha256: z.string(),
-  sourceUrl: z.string().url().nullable(),
-  sourceFileSha256: z.string().nullable(),
-  sourcePublishedAt: z.string().nullable(),
-})
-export type CompanyRegistryProvenance = z.infer<typeof companyRegistryProvenanceSchema>
 
 /** A lookup group of the normalized observed registration identifier: not a legal alias or registration entity. */
 export const companyRegistryIdentifierSchema = z.object({
   id: z.string(),
   identifierKey: z.string(),
-  identityRowCount: z.number().int(),
   statusCodes: z.array(z.string()),
   /** Any public original 1048 on this identifier, also next to a conflicting code. */
   hasActiveObservation: z.boolean(),
   countyCodes: z.array(z.string()),
-  countyBasis: z.string(),
-  caenObservations: z.number().int(),
-  unknownRevisionCaenObservations: z.number().int(),
 })
 export type CompanyRegistryIdentifier = z.infer<typeof companyRegistryIdentifierSchema>
 
-export const companyRegistryIdentityObservationSchema = z.object({
-  id: z.string(),
-  identifierKey: z.string().nullable(),
-  name: z.string().nullable(),
-  legalForm: z.string().nullable(),
-  /** Civil date ONRC recorded on the row, `YYYY-MM-DD`. */
-  recordedDate: z.string().nullable(),
-  recordedDateState: z.string(),
-  countyCode: z.string().nullable(),
-  provenance: companyRegistryProvenanceSchema,
-})
-export type CompanyRegistryIdentityObservation = z.infer<typeof companyRegistryIdentityObservationSchema>
-
-export const companyRegistryCaenObservationSchema = z.object({
-  id: z.string(),
-  identifierKey: z.string(),
-  parseState: z.string(),
-  code: z.string().nullable(),
-  revisionState: z.string(),
-  /** Only a known revision; an unknown one stays null and gets no label. */
-  revision: z.enum(COMPANY_CAEN_REVISIONS).nullable(),
-  /** The CURRENT database catalog's label for (revision, code): attributed, never frozen in the edition; only on a `class` row. */
-  catalogLabel: z.string().nullable(),
-  /** Null when the API did not say (an older API): the row is then shown as before, never assumed a class. */
-  classState: z.enum(COMPANY_CAEN_CLASS_STATES).nullable(),
-  provenance: companyRegistryProvenanceSchema,
-})
-export type CompanyRegistryCaenObservation = z.infer<typeof companyRegistryCaenObservationSchema>
-
-export const companyRegistryStatusObservationSchema = z.object({
-  id: z.string(),
-  identifierKey: z.string(),
-  parseState: z.string(),
-  code: z.string().nullable(),
-  /** The edition's own label; null until a source bundle binding is proved. */
-  label: z.string().nullable(),
-  provenance: companyRegistryProvenanceSchema,
-})
-export type CompanyRegistryStatusObservation = z.infer<typeof companyRegistryStatusObservationSchema>
-
+/**
+ * The registry as the profile page reads it. The edition's original rows (identity, CAEN and status observations
+ * with their provenance) are not read: no page lists them (owner, 14 October 2026; payload trim, 27 November 2026).
+ */
 export const companyRegistryEvidenceSchema = z.object({
   registry: companyRegistryEnvelopeSchema,
   cuiState: z.enum(COMPANY_REGISTRY_CUI_STATES),
   profile: companyRegistryCuiProfileSchema.nullable(),
   identifiers: z.array(companyRegistryIdentifierSchema),
-  identityObservations: z.array(companyRegistryIdentityObservationSchema),
-  caenObservations: z.array(companyRegistryCaenObservationSchema),
-  statusObservations: z.array(companyRegistryStatusObservationSchema),
   observationsTruncated: z.boolean(),
 })
 export type CompanyRegistryEvidence = z.infer<typeof companyRegistryEvidenceSchema>

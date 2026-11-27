@@ -16,12 +16,11 @@ export type PrivateCompanyMatchConfidence = z.infer<
  * The pinned ONRC edition's complete status consensus of the CUI (null on a
  * conflict, partial or unresolved evidence, or a registry that cannot
  * answer). `label` is this application's presentation name for the code, or
- * the code itself (`labelSource`): never a label ONRC published.
+ * the code itself: never a label ONRC published.
  */
 export const privateCompanyStatusSchema = z.object({
   code: z.string(),
   label: z.string(),
-  labelSource: z.enum(['api_nomenclature', 'code']).optional(),
 })
 
 /**
@@ -120,17 +119,6 @@ export const privateCompanyActivitySelectionSchema = z.object({
   agreement: z.enum(COMPANY_ANAF_ONRC_AGREEMENTS),
 })
 export type PrivateCompanyActivitySelection = z.infer<typeof privateCompanyActivitySelectionSchema>
-
-export const privateCompanyRepresentativeSchema = z.object({
-  name: z.string(),
-  role: z.string(),
-})
-
-export const privateCompanyEuBranchSchema = z.object({
-  name: z.string(),
-  country: z.string(),
-  type: z.string().nullable(),
-})
 
 export const privateCompanyGeographySchema = z.object({
   uatSirutaCode: z.string(),
@@ -233,7 +221,6 @@ export const privateCompanyStatementQualificationSchema = z.object({
   netResult: z.string().nullable(),
   /** The reviewed reason of an observation hold on this statement. */
   holdReason: z.string().nullable(),
-  holdDrift: z.array(z.string()),
 })
 
 /** One MFP file line that supplied cells of a statement: its file, row and the indicators it gave. */
@@ -248,10 +235,6 @@ export const privateCompanyStatementContributionSchema = z.object({
 export const privateCompanyStatementSourceSchema = z.object({
   url: z.string().nullable(),
   urlKind: z.enum(['anaf_statement', 'mfp_resource']).nullable(),
-  statementProfileHash: z.string().nullable(),
-  metricRuleVersion: z.string().nullable(),
-  /** The selection ledger's basis (e.g. cross_copy_union); null when not read. */
-  selectionBasis: z.string().nullable(),
   /** MFP: every file line that supplied cells, anchor first; null when the API did not read them. */
   contributingSources: z.array(privateCompanyStatementContributionSchema).nullable(),
 })
@@ -438,8 +421,6 @@ export const privateCompanyProfileSchema = z.object({
   mainActivity: companyMainActivityReadSchema.nullish(),
   /** The API answered a main activity this client cannot read (an unknown value, an answer that does not hold together): said, and every main flag dropped. */
   mainActivityUnreadable: z.boolean().optional(),
-  representatives: z.array(privateCompanyRepresentativeSchema),
-  euBranches: z.array(privateCompanyEuBranchSchema),
   fiscal: privateCompanyFiscalSchema,
   financials: z.array(privateCompanyFinancialYearSchema),
   /**

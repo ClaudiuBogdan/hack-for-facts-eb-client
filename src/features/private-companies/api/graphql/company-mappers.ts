@@ -84,12 +84,7 @@ function mapNameSource(raw: string): 'onrc_edition' | 'core_organization' {
 
 function mapStatus(raw: RawCompany['headlineStatus']): PrivateCompanyProfile['status'] {
   if (!raw) return null
-  const source = raw.labelSource?.toLowerCase()
-  return {
-    code: raw.code,
-    label: raw.label ?? raw.code,
-    labelSource: source === 'api_nomenclature' && raw.label ? 'api_nomenclature' : 'code',
-  }
+  return { code: raw.code, label: raw.label ?? raw.code }
 }
 
 function toNumberOrNull(value: string | number | null | undefined): number | null {
@@ -409,7 +404,6 @@ function mapQualification(raw: RawStatementQualification | null | undefined): Pr
     policyApprovedOn: raw.policyApprovedOn,
     evaluatorVersion: raw.evaluatorVersion,
     holdReason: raw.holdReason,
-    holdDrift: raw.holdDrift,
   }
   const assessment = raw.assessment.toLowerCase()
   if (assessment === 'not_assessed') {
@@ -445,9 +439,6 @@ function mapStatementSource(raw: RawCompanyFinancialYear['source']): PrivateComp
     // A URL only with the kind that says which publisher's it is.
     url: urlKind === null ? null : raw.url,
     urlKind,
-    statementProfileHash: raw.statementProfileHash,
-    metricRuleVersion: raw.metricRuleVersion,
-    selectionBasis: raw.selectionBasis ?? null,
     contributingSources:
       raw.contributingSources?.map((line) => ({
         rowNumber: line.rowNumber,
@@ -681,15 +672,6 @@ export function mapCompanyProfile(
     activitySelection: mapActivitySelection(company.activitySelection, registry.registry),
     ...(main.read !== undefined ? { mainActivity: main.read } : {}),
     ...(main.unreadable ? { mainActivityUnreadable: true } : {}),
-    representatives: company.representatives.map((rep) => ({
-      name: rep.name,
-      role: rep.role,
-    })),
-    euBranches: company.euBranches.map((branch) => ({
-      name: branch.branchName ?? branch.euid ?? '',
-      country: branch.country ?? '',
-      type: null,
-    })),
     fiscal: {
       vatPayer: fiscal?.vatPayer ?? null,
       inactive: fiscal?.declaredFiscallyInactive ?? null,

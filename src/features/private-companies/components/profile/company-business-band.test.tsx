@@ -21,9 +21,6 @@ const M = 1_000_000
 const source = (url: string, kind: 'anaf_statement' | 'mfp_resource'): PrivateCompanyFinancialYear['source'] => ({
   url,
   urlKind: kind,
-  statementProfileHash: null,
-  metricRuleVersion: null,
-  selectionBasis: null,
   contributingSources: null,
 })
 

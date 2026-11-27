@@ -4,7 +4,7 @@ import { privateCompanyProfileSchema } from '@/schemas/private-company'
 import { fetchPrivateCompanyProfileLive } from '../private-company-api.live'
 import { mapActivitySelection, mapCompanyProfile } from './company-mappers'
 import { companyProfileResponseSchema, type RawActivitySelection } from './company-queries'
-import { mapRegistryEnvelope, mapRegistryEvidence, rawRegistryEvidenceSchema, type RawRegistryEnvelope } from './company-registry-graphql'
+import { mapRegistryEnvelope, type RawRegistryEnvelope } from './company-registry-graphql'
 
 /**
  * The derived activity selection and the CAEN class state, from the wire:
@@ -42,29 +42,8 @@ const PUBLISHED: RawRegistryEnvelope = {
   scopeKey: 'onrc:published:7:3:11',
 }
 
-const provenance = (row: number) => ({
-  resourceKey: 'OD_CAEN_AUTORIZAT',
-  sourceRowNumber: row,
-  sourceRowSha256: String(row).padEnd(64, '0'),
-  sourceUrl: null,
-  sourceFileSha256: null,
-  sourcePublishedAt: '2026-09-30',
-})
-
-const caenRow = (row: number, code: string, revision: string | null, classState?: string) => ({
-  id: `7:OD_CAEN_AUTORIZAT:${String(row)}`,
-  identifierKey: 'J1992002621040',
-  parseState: 'code',
-  code,
-  revisionState: revision ? 'known' : 'missing',
-  revision,
-  catalogLabel: revision ? { label: `Eticheta ${code}`, system: `caen_${revision}`, source: 'current_db_catalog' } : null,
-  ...(classState === undefined ? {} : { classState }),
-  provenance: provenance(row),
-})
-
 /** The raw company as the API serializes it; `extra` adds the v3 fields. */
-function rawResponse(extra: Record<string, unknown> = {}, rows: readonly ReturnType<typeof caenRow>[] = [caenRow(1, '4752', 'rev3')]) {
+function rawResponse(extra: Record<string, unknown> = {}) {
   return {
     company: {
       cui: '2816464',
@@ -75,41 +54,27 @@ function rawResponse(extra: Record<string, unknown> = {}, rows: readonly ReturnT
       codInmatriculare: 'J1992002621040',
       registrationDate: '1992-11-05',
       registrationDatePresent: true,
-      headlineStatus: { code: '1048', label: 'funcțiune', labelSource: 'API_NOMENCLATURE' },
+      headlineStatus: { code: '1048', label: 'funcțiune' },
       registry: {
         registry: PUBLISHED,
         cuiState: 'IN_EDITION',
         profile: {
-          identityObservations: 1,
-          identifierCount: 1,
-          unresolvedIdentifierCount: 0,
-          unidentifiedObservations: 0,
-          name: { value: 'DEDEMAN SRL', basis: 'SINGLE_OBSERVATION' },
           legalForm: { value: 'SRL', basis: 'SINGLE_OBSERVATION' },
           recordedDate: { value: '1992-11-05', basis: 'SINGLE_OBSERVATION' },
           countyCode: { value: 'BC', basis: 'SINGLE_OBSERVATION' },
-          countyName: 'Bacău',
           uatSirutaCode: { value: '20297', basis: 'SINGLE_OBSERVATION' },
-          uatName: 'Municipiul Bacău',
           statusCode: { value: '1048', basis: 'SINGLE_OBSERVATION' },
-          caenCoverage: 'COMPLETE',
-          statusCoverage: 'COMPLETE',
         },
         identifiers: [],
-        identityObservations: [],
-        caenObservations: rows,
-        statusObservations: [],
         observationsTruncated: false,
       },
       territory: null,
-      address: { display: '', county: 'Bacău', locality: null },
-      fiscal: { vatPayer: true, declaredFiscallyInactive: false, mainCaenCode: '4752', registeredName: 'DEDEMAN SRL', asOf: '2026-05-18' },
+      address: { county: 'Bacău' },
+      fiscal: { vatPayer: true, declaredFiscallyInactive: false, mainCaenCode: '4752', asOf: '2026-05-18' },
       caenActivities: [
-        { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc', labelSource: 'current_db_catalog' },
-        { code: '4752', rev: null, label: null, source: 'anaf', labelSource: null },
+        { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc' },
+        { code: '4752', rev: null, label: null, source: 'anaf' },
       ],
-      representatives: [],
-      euBranches: [],
       publicMoney: null,
       asOf: { onrc: '2026-09-30', anaf: '2026-05-18' },
       ...extra,
@@ -155,30 +120,16 @@ describe('an older API (no activitySelection, no classState)', () => {
       { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc', labelSource: 'current_db_catalog', classState: null },
       { code: '4752', rev: null, label: null, source: 'anaf', labelSource: null, classState: null },
     ])
-    expect(profile?.registry.caenObservations[0]).toMatchObject({ code: '4752', catalogLabel: 'Eticheta 4752', classState: null })
     expect(() => privateCompanyProfileSchema.parse(profile)).not.toThrow()
   })
 })
 
 describe('class state', () => {
-  it('labels a class row only; a short token, an unknown revision, an unlabeled key and an unparsed row get no label', () => {
-    const evidence = mapRegistryEvidence(
-      rawRegistryEvidenceSchema.parse(
-        rawResponse({}, [caenRow(1, '4752', 'rev3', 'CLASS'), caenRow(2, '4700', 'rev2', 'SHORT_TOKEN'), caenRow(3, '2864', 'rev2', 'UNLABELED_KEY'), caenRow(4, '6201', null, 'UNKNOWN_REVISION'), caenRow(5, '9999', 'rev2', 'UNPARSED')]).company.registry,
-      ),
-    )
-    expect(evidence.caenObservations.map((row) => [row.code, row.classState, row.catalogLabel])).toEqual([
-      ['4752', 'class', 'Eticheta 4752'],
-      ['4700', 'short_token', null],
-      ['2864', 'unlabeled_key', null],
-      ['6201', 'unknown_revision', null],
-      ['9999', 'unparsed', null],
-    ])
-  })
-
   it('reads a class state this client does not know as unparsed — never as a class', () => {
-    const evidence = mapRegistryEvidence(rawRegistryEvidenceSchema.parse(rawResponse({}, [caenRow(1, '4752', 'rev3', 'SOMETHING_NEW')]).company.registry))
-    expect(evidence.caenObservations[0]).toMatchObject({ classState: 'unparsed', catalogLabel: null })
+    const profile = mapCompanyProfile(
+      companyProfileResponseSchema.parse(rawResponse({ caenActivities: [{ code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc', classState: 'SOMETHING_NEW' }] })),
+    )
+    expect(profile?.caenActivities[0]).toMatchObject({ classState: 'unparsed', label: null })
   })
 
   it('keeps an ONRC activity label only for a class row, and no class state on ANAF', () => {
@@ -186,9 +137,9 @@ describe('class state', () => {
       companyProfileResponseSchema.parse(
         rawResponse({
           caenActivities: [
-            { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc', labelSource: 'current_db_catalog', classState: 'CLASS' },
-            { code: '4700', rev: 'rev2', label: 'Împrumutat', source: 'onrc', labelSource: 'current_db_catalog', classState: 'SHORT_TOKEN' },
-            { code: '4752', rev: null, label: null, source: 'anaf', labelSource: null, classState: null },
+            { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc', classState: 'CLASS' },
+            { code: '4700', rev: 'rev2', label: 'Împrumutat', source: 'onrc', classState: 'SHORT_TOKEN' },
+            { code: '4752', rev: null, label: null, source: 'anaf', classState: null },
           ],
         }),
       ),
@@ -337,7 +288,6 @@ describe('a selection the API refuses alone', () => {
       graphQLErrors: [
         { message: 'Cannot query field "classState" on type "CompanyCaenActivity".' },
         { message: 'Cannot query field "activitySelection" on type "Company".' },
-        { message: 'Cannot query field "classState" on type "CompanyRegistryCaenObservation". Did you mean "parseState"?' },
       ],
     })
     transport.answer = (document) => (document.includes('classState') ? Promise.reject(rejected) : Promise.resolve(rawResponse()))
@@ -346,7 +296,7 @@ describe('a selection the API refuses alone', () => {
     expect(transport.calls[1]).not.toMatch(/classState|activitySelection/u)
     expect(profile?.activitySelection).toBeNull()
     expect(profile?.activitySelectionUnavailable).toBeUndefined()
-    expect(profile?.registry.caenObservations[0]?.catalogLabel).toBe('Eticheta 4752')
+    expect(profile?.caenActivities[0]?.label).toBe('Comerț')
   })
 
   it('lets any other error fail the read as before', async () => {

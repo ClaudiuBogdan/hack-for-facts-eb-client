@@ -23,7 +23,7 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
   nameSource: 'onrc_edition',
   legalForm: 'SA',
   registrationDate: '2002-06-15',
-  status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
+  status: { code: '1048', label: 'funcțiune' },
   address: { display: '', county: 'București', locality: null },
   geography: {
     uatSirutaCode: '179141',
@@ -47,8 +47,6 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
     label: 'Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet',
     anafCode: '4791',
   }),
-  representatives: [],
-  euBranches: [],
   fiscal: {
     vatPayer: true,
     inactive: false,
@@ -146,8 +144,6 @@ export const anafNotFoundProfile: PrivateCompanyProfile = {
   address: { display: '', county: null, locality: null },
   geography: null,
   caenActivities: [],
-  representatives: [],
-  euBranches: [],
   fiscal: {
     vatPayer: null,
     inactive: null,
@@ -171,7 +167,7 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
   nameSource: 'onrc_edition',
   legalForm: 'SA',
   registrationDate: '1998-03-20',
-  status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
+  status: { code: '1048', label: 'funcțiune' },
   address: { display: '', county: 'Iași', locality: null },
   geography: {
     uatSirutaCode: '95060',
@@ -194,8 +190,6 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
     observationCount: 2,
     anafCode: '2120',
   }),
-  representatives: [],
-  euBranches: [],
   fiscal: {
     vatPayer: true,
     inactive: false,
@@ -264,7 +258,7 @@ export const struckOffProfile: PrivateCompanyProfile = {
   nameSource: 'onrc_edition',
   legalForm: 'SRL',
   registrationDate: '1994-11-02',
-  status: { code: '1084', label: 'radiată', labelSource: 'api_nomenclature' },
+  status: { code: '1084', label: 'radiată' },
   address: { display: '', county: 'Timiș', locality: null },
   geography: null,
   caenActivities: [
@@ -284,8 +278,6 @@ export const struckOffProfile: PrivateCompanyProfile = {
     observationCount: 4,
     anafCode: '4711',
   }),
-  representatives: [],
-  euBranches: [],
   fiscal: {
     vatPayer: false,
     inactive: true,
@@ -326,7 +318,7 @@ export const insolventProfile: PrivateCompanyProfile = {
   nameSource: 'onrc_edition',
   legalForm: 'SA',
   registrationDate: '2005-07-19',
-  status: { code: '1107', label: 'insolvență', labelSource: 'api_nomenclature' },
+  status: { code: '1107', label: 'insolvență' },
   address: { display: '', county: 'Brașov', locality: null },
   geography: null,
   caenActivities: [
@@ -340,8 +332,6 @@ export const insolventProfile: PrivateCompanyProfile = {
     },
     { code: '4120', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
-  representatives: [],
-  euBranches: [],
   fiscal: {
     vatPayer: true,
     inactive: false,
@@ -388,15 +378,13 @@ export const pfaProfile: PrivateCompanyProfile = {
   nameSource: 'onrc_edition',
   legalForm: 'PFA',
   registrationDate: '2021-04-05',
-  status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
+  status: { code: '1048', label: 'funcțiune' },
   address: { display: '', county: 'Cluj', locality: null },
   geography: null,
   caenActivities: [
     { code: '6201', rev: 'rev2', label: 'Activități de realizare a soft-ului la comandă', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
     { code: '6201', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
-  representatives: [],
-  euBranches: [],
   fiscal: {
     vatPayer: false,
     inactive: false,
@@ -443,8 +431,6 @@ export const bankruptProfile: PrivateCompanyProfile = {
     { code: '4941', rev: 'rev2', label: 'Transporturi rutiere de mărfuri', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
     { code: '4941', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
-  representatives: [],
-  euBranches: [],
   fiscal: {
     vatPayer: true,
     inactive: true,

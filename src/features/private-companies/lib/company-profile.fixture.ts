@@ -86,7 +86,7 @@ export function companyProfile(overrides: Partial<PrivateCompanyProfile> = {}): 
     nameSource: 'onrc_edition',
     legalForm: 'SRL',
     registrationDate: '2007-11-26',
-    status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
+    status: { code: '1048', label: 'funcțiune' },
     address: { display: '', county: 'Cluj', locality: 'Municipiul Gherla' },
     geography: { uatSirutaCode: '55384', uatName: 'Municipiul Gherla', countyName: 'Cluj', matchConfidence: 'safe' },
     caenActivities: [
@@ -109,8 +109,6 @@ export function companyProfile(overrides: Partial<PrivateCompanyProfile> = {}): 
         { code: '5630', revision: 'rev2', label: 'Baruri și alte activități de servire a băuturilor' },
       ],
     }),
-    representatives: [],
-    euBranches: [],
     fiscal: { vatPayer: false, inactive: false, anafFound: true, asOfDate: '2026-07-04', fiscalCaen: { code: '5610', rev: null } },
     financials: [],
     financialTrajectory: null,

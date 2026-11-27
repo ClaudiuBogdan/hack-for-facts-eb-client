@@ -33,7 +33,6 @@ export function notAssessed(reason: string): PrivateCompanyStatementQualificatio
     statuses: null,
     netResult: null,
     holdReason: null,
-    holdDrift: [],
   }
 }
 
