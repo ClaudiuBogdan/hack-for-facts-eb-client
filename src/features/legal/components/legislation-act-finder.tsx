@@ -647,7 +647,9 @@ function Browse({ filters }: { readonly filters: SearchFilters }) {
     staleTime: 5 * 60 * 1000,
     retry: 1,
   })
-  if (list.isError && list.data === undefined) {
+  // A failed refresh keeps the last pages: an empty one would then say „no act matches" (Codex review, round 1). A
+  // failed next page keeps the rows and says so under them.
+  if (list.isError && !list.isFetchNextPageError) {
     return (
       <section>
         <p className="text-base text-foreground">{t`Nu am putut încărca actele.`}</p>

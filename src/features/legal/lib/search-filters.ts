@@ -127,9 +127,11 @@ export function browseFilter(filters: SearchFilters): LegalSearchFilter {
  */
 export function searchOfActsDirectory(search: Record<string, unknown>): Record<string, string | true> {
   const status = search['status']
+  // The old page's year was one year; the search's reader also takes ranges, so only four digits pass (Codex review).
+  const oneYear = /^\d{4}$/u.test(text(search['year'])) ? search['year'] : undefined
   const filters = readSearchFilters({
     tip: search['actType'],
-    an: search['year'],
+    an: oneYear,
     domeniu: search['domain'],
     ...(status === 'toate' ? { historical: true } : { stare: status === undefined ? 'in-vigoare' : status }),
   })

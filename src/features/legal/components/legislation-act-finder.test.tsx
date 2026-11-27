@@ -1010,6 +1010,19 @@ describe('LegislationActFinder — filters with no term list the acts (owner, 27
     await waitFor(() => expect(actLinks()).toEqual(['/legislation/acts/57']))
   })
 
+  it('says the list failed, not that no act matches, when a refresh of an empty list fails (Codex review, round 1)', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    vi.mocked(fetchLegalActsPage).mockResolvedValueOnce(page([], null, 0)).mockRejectedValue(new Error('offline'))
+    const client = createTestQueryClient()
+    renderShared(<LegislationActFinder search={{ tip: 'lege', stare: 'suspendat' }} />, { queryClient: client })
+    expect(await screen.findByText('Niciun act nu corespunde filtrelor.')).toBeInTheDocument()
+    await act(async () => {
+      await client.refetchQueries()
+    })
+    expect(await screen.findByText('Nu am putut încărca actele.', {}, { timeout: 4000 })).toBeInTheDocument()
+    expect(screen.queryByText('Niciun act nu corespunde filtrelor.')).toBeNull()
+  })
+
   it('says no act matches these filters', async () => {
     const { fetchLegalActsPage } = await import('../api/legal-acts-api')
     vi.mocked(fetchLegalActsPage).mockResolvedValue(page([], null, 0))

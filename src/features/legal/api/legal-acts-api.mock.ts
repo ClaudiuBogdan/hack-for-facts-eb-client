@@ -11,10 +11,10 @@ import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overvi
 export async function fetchLegalActsPageMock(
   filter: LegalSearchFilter,
 ): Promise<LegalActsPage> {
-  // Domain, category and penalties are deliberately NOT applied: the fixture
-  // rows carry no summary, and pretending to filter would return the same list
-  // under a claim it cannot honor. Their request shape is pinned by the live
-  // adapter's test instead.
+  // Domain, category and penalties are read from summaries the fixture rows do
+  // not carry, so under one of them no fixture act qualifies (Codex review,
+  // round 1). Their request shape is pinned by the live adapter's test.
+  if (filter.domain?.length || filter.category?.length || filter.penaltiesMentioned) return { items: [], endCursor: null, totalCount: 0 }
   const items = legislationOverviewFixture.mostCitedActs.filter(
     (act) =>
       (filter.actType === undefined || filter.actType.includes(act.actType)) &&

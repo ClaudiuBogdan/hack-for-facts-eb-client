@@ -184,6 +184,12 @@ describe('searchOfActsDirectory (the retired Acte page’s links, owner 27 Novem
     expect(searchOfActsDirectory({ actType: 'anexa' })).toEqual({ stare: 'in-vigoare' })
   })
 
+  it('reads only a four-digit year, as the old page did (Codex review, round 1)', () => {
+    expect(searchOfActsDirectory({ year: '-2020' })).toEqual({ stare: 'in-vigoare' })
+    expect(searchOfActsDirectory({ year: '20202021' })).toEqual({ stare: 'in-vigoare' })
+    expect(searchOfActsDirectory({ year: '2020' })).toEqual({ an: '2020', stare: 'in-vigoare' })
+  })
+
   it('keeps the address’s language', () => {
     expect(searchOfActsDirectory({ lang: 'en', status: 'abrogat' })).toEqual({ lang: 'en', stare: 'abrogat' })
   })
