@@ -114,6 +114,7 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
         netLoss
         employees
         summary
+        reportingForm
         source {
           sourceSystem url urlKind statementProfileHash metricRuleVersion selectionBasis
           contributingSources { sourceSnapshotId rowNumber url indicators { code name } }
@@ -134,6 +135,7 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
         }
       }
       longFormOnly { year sourceSystem filerClass sourceSnapshotId resourceUrl }
+      ifrsFormYears { year sourceSystem turnover netResult employees sourceUrl }
       trajectory {
         fromYear
         toYear
@@ -340,6 +342,23 @@ const rawFinancialYearSchema = z.object({
   /** Optional so a response without them parses; the mapper then says „not assessed". */
   source: rawStatementSourceSchema.nullish(),
   qualification: rawQualificationSchema.nullish(),
+  /** `CompanyReportingForm` (IFRS) or null: not marked, never „ordinary". Optional for recorded answers without it. */
+  reportingForm: z.string().nullish(),
+})
+
+/**
+ * `CompanyFinancials.ifrsFormYears` (server-companies, 26 November 2026): the publisher's IFRS-file years, newest
+ * first, figures as the source's exact strings (null: no figure read — never 0). Null: the API cannot read the
+ * IFRS-form views (forms unknown). Optional as well, for recorded and mocked answers without it — NOT for an older
+ * server, which rejects the field at validation: the server ships before this client.
+ */
+const rawIfrsFormYearSchema = z.object({
+  year: z.number().int(),
+  sourceSystem: z.string(),
+  turnover: moneyString,
+  netResult: moneyString,
+  employees: moneyString,
+  sourceUrl: z.string().nullable(),
 })
 
 const rawTrajectorySchema = z.object({
@@ -375,6 +394,7 @@ export const companyProfileResponseSchema = z.object({
       years: z.array(rawFinancialYearSchema),
       trajectory: rawTrajectorySchema.nullish(),
       longFormOnly: z.array(rawLongFormStatementSchema).nullish(),
+      ifrsFormYears: z.array(rawIfrsFormYearSchema).nullish(),
     })
     .nullable(),
 })
@@ -383,6 +403,7 @@ export type RawCompany = z.infer<typeof rawCompanySchema>
 export type RawActivitySelection = z.infer<typeof rawActivitySelectionSchema>
 export type RawCompanyFinancialYear = z.infer<typeof rawFinancialYearSchema>
 export type RawLongFormStatement = z.infer<typeof rawLongFormStatementSchema>
+export type RawIfrsFormYear = z.infer<typeof rawIfrsFormYearSchema>
 export type RawStatementQualification = z.infer<typeof rawQualificationSchema>
 export type CompanyProfileResponse = z.infer<typeof companyProfileResponseSchema>
 
