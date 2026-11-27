@@ -193,4 +193,11 @@ describe('searchOfActsDirectory (the retired Acte page’s links, owner 27 Novem
   it('keeps the address’s language', () => {
     expect(searchOfActsDirectory({ lang: 'en', status: 'abrogat' })).toEqual({ lang: 'en', stare: 'abrogat' })
   })
+
+  it('lands an old „necunoscut" link exactly, not on the wider live statuses (owner, 27 November 2026)', () => {
+    expect(searchOfActsDirectory({ actType: 'lege', status: 'necunoscut' })).toEqual({ tip: 'lege', stare: 'necunoscut' })
+    const filters = readSearchFilters({ stare: 'necunoscut' })
+    expect(filters.stare).toBe('necunoscut')
+    expect(browseFilter(filters)).toEqual({ status: ['necunoscut'] })
+  })
 })
