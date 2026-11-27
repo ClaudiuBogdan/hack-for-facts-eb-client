@@ -282,6 +282,7 @@ function StartCards() {
       {/* Every act, repealed ones too: the search's list under „Toate" (the Acte page retired into it, owner,
           27 November 2026). The guide's card went with its page. */}
       <StartCard
+        wide
         title={<Trans>Toate actele</Trans>}
         count={head ? plural(head.total, { one: '# act publicat', few: '# acte publicate', other: '# de acte publicate' }) : null}
         link={(children, className) => (
@@ -299,13 +300,16 @@ function StartCard({
   title,
   count,
   link,
+  wide = false,
 }: {
   readonly title: ReactNode
   readonly count: ReactNode
   readonly link: (children: ReactNode, className: string) => ReactNode
+  /** Spans the rest of its row: the last of five cards, so neither two nor three columns leave an empty cell. */
+  readonly wide?: boolean
 }) {
   return (
-    <li>
+    <li className={wide ? 'sm:col-span-2' : undefined}>
       {link(
         <>
           <span className="block pr-6 text-base font-semibold tracking-tight text-foreground">{title}</span>

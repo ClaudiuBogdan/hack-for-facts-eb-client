@@ -236,6 +236,9 @@ describe('LegislationPage, the legislation hub', () => {
     const every = within(start).getByRole('link', { name: /Toate actele/ })
     expect(every).toHaveAttribute('href', '/legislation/search')
     expect(every).toHaveAttribute('data-search', JSON.stringify({ historical: true }))
+    // five cards: the last spans the rest of its row in two and three columns alike, so no cell stays empty (owner)
+    expect(within(start).getAllByRole('listitem')).toHaveLength(5)
+    expect(every.closest('li')).toHaveClass('sm:col-span-2')
     expect(screen.queryByText(/Ghidul legislației/)).toBeNull()
   })
 
