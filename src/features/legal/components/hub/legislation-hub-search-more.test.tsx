@@ -9,6 +9,8 @@ describe('hubSearchMore — the hub search\'s way on to the advanced search (own
     expect(target).toEqual({ to: '/legislation/search', search: { q: '227' } })
     // what the route reads back from the address the router writes: the same words, as text
     const read = parseAppSearch(stringifyAppSearch(target.search)) as Record<string, unknown>
+    // the codec itself keeps it text (the schema below would also coerce a number back)
+    expect(read.q).toBe('227')
     expect(legalFinderSearchSchema.parse(read).q).toBe('227')
   })
 

@@ -8,6 +8,9 @@ import type { EntitySearchHit } from '@/schemas/entity-search'
 import { getDocTypeMeta } from '@/features/entity-search/lib/doc-type-meta'
 import { countyOf, placeOf, statusOf } from '@/features/ngos/organization/model'
 import { statusLabel } from '@/features/ngos/organization/words'
+import { LegalStatusBadge } from '@/features/legal/components/legal-status-badge'
+import type { LegalActStatus } from '@/schemas/legal'
+import { LEGAL_ACT_STATUSES } from '@/schemas/legal-search'
 import { highlightSegments } from '@/features/landing/lib/search-highlight'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
@@ -100,6 +103,15 @@ function townHallCountyLabel(countyName: string | null): string | null {
 }
 
 /**
+ * A legal act's status as the search serves it: the last part of its subtitle („Legea nr. 98/2009, in-vigoare"),
+ * read only when it is one of the act statuses. Anything else is no status: the row then says none.
+ */
+export function legalStatusOfHit(subtitle: string | null): LegalActStatus | null {
+  const tail = subtitle?.split(',').pop()?.trim() ?? ''
+  return (LEGAL_ACT_STATUSES as readonly string[]).includes(tail) ? (tail as LegalActStatus) : null
+}
+
+/**
  * What goes inside a row, whatever the wrapper turns out to be.
  *
  * Reads the active state through `group-data-highlighted:` rather than a prop,
@@ -142,6 +154,7 @@ export function ResultRowContent({
   const unlinked = entity.href === '' ? t`fără profil pe platformă` : null
   const docTypeLabel = townHall ? t`Primărie` : getDocTypeMeta(entity.docType).label
   const place = [showDocType ? docTypeLabel : null, county, closed, unlinked, nameSource].filter(Boolean).join(' · ')
+  const actStatus = entity.docType === 'legal_act' ? legalStatusOfHit(entity.subtitle) : null
 
   return (
     <>
@@ -150,14 +163,26 @@ export function ResultRowContent({
             an INS matrix needs it: its titles share a long stem and differ at
             the end („…pe sexe", „…pe județe"), so one truncated line drew
             three identical rows. */}
-        <Highlighted
-          text={entity.title}
-          query={query}
-          className={cn(
-            'block text-sm font-medium text-card-foreground group-data-highlighted:text-primary',
-            place ? 'truncate' : 'line-clamp-2',
-          )}
-        />
+        {/* An act's status as its page says it, the mark alone so the row stays one line (owner, 27 November 2026). */}
+        {actStatus !== null ? (
+          <span className="flex min-w-0 items-center gap-2">
+            <LegalStatusBadge status={actStatus} markOnly />
+            <Highlighted
+              text={entity.title}
+              query={query}
+              className="min-w-0 truncate text-sm font-medium text-card-foreground group-data-highlighted:text-primary"
+            />
+          </span>
+        ) : (
+          <Highlighted
+            text={entity.title}
+            query={query}
+            className={cn(
+              'block text-sm font-medium text-card-foreground group-data-highlighted:text-primary',
+              place ? 'truncate' : 'line-clamp-2',
+            )}
+          />
+        )}
         {place ? (
           <Highlighted
             text={place}

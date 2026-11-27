@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/react/macro'
+import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
 import type { LegalActStatus } from '@/schemas/legal'
 
@@ -13,6 +13,8 @@ type Props = {
    * contrast (owner, 26 November 2026). Lists keep the quiet mark.
    */
   readonly strong?: boolean
+  /** The mark alone, its word hidden for the eye and given on hover. */
+  readonly markOnly?: boolean
   readonly className?: string
 }
 
@@ -60,28 +62,46 @@ function StatusShape({ shape, className }: { readonly shape: Shape; readonly cla
  * colours did not sit with the pages). Colour is only in the shape; the name is always written, so nothing is
  * said by colour alone. Prototyped in `development/legal/search`, variant `registru`.
  */
-export function LegalStatusBadge({ status, strong = false, className }: Props) {
+/** The status in words, in the reader's language. */
+function statusWord(status: LegalActStatus): string {
+  switch (status) {
+    case 'in-vigoare':
+      return t`În vigoare`
+    case 'modificat':
+      return t`Modificat`
+    case 'abrogat':
+      return t`Abrogat`
+    case 'abrogat-partial':
+      return t`Abrogat parțial`
+    case 'suspendat':
+      return t`Suspendat`
+    case 'iesit-din-vigoare':
+      return t`Ieșit din vigoare`
+    case 'necunoscut':
+      return t`Necunoscut`
+  }
+}
+
+export function LegalStatusBadge({ status, strong = false, markOnly = false, className }: Props) {
   if (status === null) return null
   const mark = MARK[status]
+  const word = statusWord(status)
+
+  // The mark alone, where a row must stay one line (the search's rows, owner 27 November 2026): its word is still
+  // there, hidden for the eye and on hover, so the status is never said by colour and shape only.
+  if (markOnly) {
+    return (
+      <span title={word} className={cn('inline-flex shrink-0 items-center', className)}>
+        <StatusShape shape={mark.shape} className={mark.tone} />
+        <span className="sr-only">{word}</span>
+      </span>
+    )
+  }
 
   return (
     <span className={cn('inline-flex shrink-0 items-center whitespace-nowrap', strong ? 'gap-2 text-base font-semibold text-foreground' : 'gap-1.5 text-sm text-foreground/80', className)}>
       <StatusShape shape={mark.shape} className={cn(mark.tone, strong && 'size-3')} />
-      {status === 'in-vigoare' ? (
-        <Trans>În vigoare</Trans>
-      ) : status === 'modificat' ? (
-        <Trans>Modificat</Trans>
-      ) : status === 'abrogat' ? (
-        <Trans>Abrogat</Trans>
-      ) : status === 'abrogat-partial' ? (
-        <Trans>Abrogat parțial</Trans>
-      ) : status === 'suspendat' ? (
-        <Trans>Suspendat</Trans>
-      ) : status === 'iesit-din-vigoare' ? (
-        <Trans>Ieșit din vigoare</Trans>
-      ) : (
-        <Trans>Necunoscut</Trans>
-      )}
+      {word}
     </span>
   )
 }

@@ -376,11 +376,11 @@ export function LandingSearch({
 
   // Two groups, each present only when it has rows. Suggestions first: they
   // change what the rows below mean, so they are read before the rows are.
-  // The way on, last: under an answer, alone when there is none, and under the „type more" hint too, which a
-  // two-digit act number („98") never gets past here (Codex review, round 1).
+  // The way on, last: under an answer, or alone when there is none. Never before the search has run: not under the
+  // „type more" hint (owner, 27 November 2026, over the round-1 review's case of a two-digit act number).
   const moreTerm = term.trim()
   const moreItem: MoreItem | null =
-    more !== undefined && moreTerm !== '' && (status.kind === 'results' || status.kind === 'empty' || status.kind === 'short') ? { moreTerm } : null
+    more !== undefined && moreTerm !== '' && (status.kind === 'results' || status.kind === 'empty') ? { moreTerm } : null
   const moreAlone = moreItem !== null && status.kind === 'empty'
   const groups: readonly ListGroup[] = [
     ...(suggestions.length > 0 ? [{ value: 'filters', items: suggestions } as const] : []),

@@ -568,7 +568,7 @@ msgid "{0, plural, one {# retrasă} few {# retrase} other {# de retrase}}"
 msgstr "{0, plural, one {# withdrawn} other {# withdrawn}}"
 
 #. placeholder {0}: status.results.length
-#: src/features/landing/components/search/search-parts.tsx:316
+#: src/features/landing/components/search/search-parts.tsx:341
 msgid "{0, plural, one {# rezultat.} few {# rezultate.} other {# de rezultate.}}"
 msgstr "{0, plural, one {# result.} few {# results.} other {# results.}}"
 
@@ -3733,7 +3733,7 @@ msgstr "{registered, plural, one {One registered NGO and {added} new in {year}; 
 msgid "{registeredShare} din selecție"
 msgstr "{registeredShare} of the selection"
 
-#: src/features/landing/components/search/search-parts.tsx:297
+#: src/features/landing/components/search/search-parts.tsx:322
 msgid "{remaining, plural, one {Încă un caracter pentru a căuta.} few {Încă # caractere pentru a căuta.} other {Încă # de caractere pentru a căuta.}}"
 msgstr "{remaining, plural, one {One more character to search.} few {# more characters to search.} other {# more characters to search.}}"
 
@@ -3859,7 +3859,7 @@ msgstr "{shownCount, plural, one {at least # reference} other {at least # refere
 msgid "{statementColumns, plural, one {Un bilanț cu valori.} few {# bilanțuri cu valori, cel mai nou primul.} other {# de bilanțuri cu valori, cel mai nou primul.}}"
 msgstr "{statementColumns, plural, one {One statement with values.} other {# statements with values, newest first.}}"
 
-#: src/features/landing/components/search/search-parts.tsx:308
+#: src/features/landing/components/search/search-parts.tsx:333
 msgid "{suggestionCount, plural, one {Un filtru sugerat.} few {# filtre sugerate.} other {# de filtre sugerate.}}"
 msgstr "{suggestionCount, plural, one {One suggested filter.} few {# suggested filters.} other {# suggested filters.}}"
 
@@ -5018,12 +5018,12 @@ msgstr "full repeal"
 msgid "abrogat"
 msgstr "repealed"
 
-#: src/features/legal/components/legal-status-badge.tsx:75
+#: src/features/legal/components/legal-status-badge.tsx:73
 #: src/features/legal/lib/legal-vocabulary.ts:92
 msgid "Abrogat"
 msgstr "Repealed"
 
-#: src/features/legal/components/legal-status-badge.tsx:77
+#: src/features/legal/components/legal-status-badge.tsx:75
 #: src/features/legal/lib/legal-vocabulary.ts:94
 msgid "Abrogat parțial"
 msgstr "Partially repealed"
@@ -11954,7 +11954,7 @@ msgstr "The search did not respond — try again."
 #: src/components/entities/FloatingEntitySearch.tsx:131
 #: src/features/landing/components/search/deferred-landing-search.tsx:316
 #: src/features/landing/components/search/landing-search.tsx:207
-#: src/features/landing/components/search/search-parts.tsx:335
+#: src/features/landing/components/search/search-parts.tsx:360
 msgid "Căutarea nu a răspuns."
 msgstr "Search did not respond."
 
@@ -19068,7 +19068,7 @@ msgid "Denumire"
 msgstr "Name"
 
 #: src/features/entity-search/components/entity-result-row.tsx:115
-#: src/features/landing/components/search/search-parts.tsx:139
+#: src/features/landing/components/search/search-parts.tsx:151
 msgid "denumire din directorul platformei, nu din ediția ONRC"
 msgstr "name from the platform directory, not from the ONRC edition"
 
@@ -21839,7 +21839,7 @@ msgstr "Elimină filtrul"
 msgid "Elimină filtrul {0}"
 msgstr "Elimină filtrul {0}"
 
-#: src/features/landing/components/search/search-parts.tsx:224
+#: src/features/landing/components/search/search-parts.tsx:249
 #: src/features/procurement/components/procurement-category-bars.tsx:280
 #: src/features/statistics/components/explorer/statistics-active-filters.tsx:87
 msgid "Elimină filtrul {label}"
@@ -23728,7 +23728,7 @@ msgid "Fără profil în ediția ONRC"
 msgstr "No profile in the ONRC edition"
 
 #: src/features/entity-search/components/entity-result-row.tsx:95
-#: src/features/landing/components/search/search-parts.tsx:142
+#: src/features/landing/components/search/search-parts.tsx:154
 msgid "fără profil pe platformă"
 msgstr "no profile on the platform"
 
@@ -24662,7 +24662,7 @@ msgstr "Filters apply straight away. The page URL keeps them."
 msgid "Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 msgstr "Filters are kept in the address — a filtered view is a link you can share."
 
-#: src/features/landing/components/search/search-parts.tsx:260
+#: src/features/landing/components/search/search-parts.tsx:285
 #: src/features/ngos/registry/components/registry-head.tsx:155
 #: src/features/procurement/components/analytics/analytics-controls.tsx:152
 msgid "Filtru"
@@ -26930,7 +26930,7 @@ msgstr "Territorial hierarchy"
 msgid "ieșire din vigoare"
 msgstr "ceasing to be in force"
 
-#: src/features/legal/components/legal-status-badge.tsx:81
+#: src/features/legal/components/legal-status-badge.tsx:79
 #: src/features/legal/lib/legal-vocabulary.ts:98
 msgid "Ieșit din vigoare"
 msgstr "No longer in force"
@@ -27892,7 +27892,7 @@ msgstr "under review"
 #~ msgid "în vigoare"
 #~ msgstr "in force"
 
-#: src/features/legal/components/legal-status-badge.tsx:71
+#: src/features/legal/components/legal-status-badge.tsx:69
 #: src/features/legal/components/legislation-kpi-strip.tsx:54
 #: src/features/legal/lib/legal-vocabulary.ts:88
 msgid "În vigoare"
@@ -30067,7 +30067,7 @@ msgstr "{0} County"
 msgid "jud. {countyReference}<0/> · RO {countryReference}<1/>"
 msgstr "county {countyReference}<0/> · RO {countryReference}<1/>"
 
-#: src/features/landing/components/search/search-parts.tsx:99
+#: src/features/landing/components/search/search-parts.tsx:102
 #: src/features/landing/components/start-here-panel.tsx:113
 #: src/features/ngos/registry/place.ts:47
 #: src/features/procurement/lib/analytics-places.ts:167
@@ -30299,7 +30299,7 @@ msgid "județul instituției"
 msgstr "the institution's county"
 
 #: src/features/entity-search/components/entity-result-row.tsx:77
-#: src/features/landing/components/search/search-parts.tsx:133
+#: src/features/landing/components/search/search-parts.tsx:145
 msgid "județul instituției: {genericCounty}"
 msgstr "institution's county: {genericCounty}"
 
@@ -33968,7 +33968,7 @@ msgstr "Changes"
 msgid "Modificările, abrogările și republicările, după data intrării în vigoare."
 msgstr "Amendments, repeals and republications, by date of entry into force."
 
-#: src/features/legal/components/legal-status-badge.tsx:73
+#: src/features/legal/components/legal-status-badge.tsx:71
 #: src/features/legal/lib/legal-vocabulary.ts:90
 msgid "Modificat"
 msgstr "Amended"
@@ -34547,7 +34547,7 @@ msgstr "Discrepancies"
 msgid "necunoscut"
 msgstr "unknown"
 
-#: src/features/legal/components/legal-status-badge.tsx:83
+#: src/features/legal/components/legal-status-badge.tsx:81
 #: src/features/private-companies/lib/company-analytics-text.ts:113
 #: src/features/private-companies/lib/company-analytics-view.ts:145
 #: src/features/procurement/components/contract-award/procurement-contract-award-page.tsx:170
@@ -35469,7 +35469,7 @@ msgstr "Niciun rezultat pentru \"{query}\"."
 msgid "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau identificatorul.</1>"
 msgstr "No results for <0>{0}</0>. <1>Try the full name or identifier.</1>"
 
-#: src/features/landing/components/search/search-parts.tsx:331
+#: src/features/landing/components/search/search-parts.tsx:356
 msgid "Niciun rezultat."
 msgstr "No results."
 
@@ -37168,7 +37168,7 @@ msgstr "We cannot say there are no results for \"{query}\"."
 msgid "Nu putem spune că nu există rezultate pentru <0>{0}</0>: partea de firme a căutării nu este la zi acum. <1>Încearcă din nou într-un moment.</1>"
 msgstr "We cannot say there are no results for <0>{0}</0>: the company part of the search is not current right now. <1>Try again in a moment.</1>"
 
-#: src/features/landing/components/search/search-parts.tsx:325
+#: src/features/landing/components/search/search-parts.tsx:350
 msgid "Nu putem spune că nu există rezultate."
 msgstr "We cannot say there are no results."
 
@@ -39310,7 +39310,7 @@ msgstr "The company part of the search is not current right now: companies may b
 msgid "Partea de firme a căutării nu este la zi, așa că lipsa rezultatelor nu este un răspuns. Încearcă din nou mai târziu."
 msgstr "The company part of the search is not current, so the absence of results is not an answer. Try again later."
 
-#: src/features/landing/components/search/search-parts.tsx:321
+#: src/features/landing/components/search/search-parts.tsx:346
 msgid "Partea de firme a căutării nu este la zi."
 msgstr "The company part of the search is not current."
 
@@ -41657,7 +41657,7 @@ msgstr "General mayor"
 #~ msgid "Primăria Municipiului Cluj-Napoca"
 #~ msgstr "Primăria Municipiului Cluj-Napoca"
 
-#: src/features/landing/components/search/search-parts.tsx:143
+#: src/features/landing/components/search/search-parts.tsx:155
 #: src/features/landing/components/start-here-panel.tsx:112
 #: src/features/procurement/lib/buyer-text.ts:84
 msgid "Primărie"
@@ -45347,7 +45347,7 @@ msgstr "Type a name to search in <0>{scope}</0>."
 #~ msgid "Scrie un nume pentru a căuta."
 #~ msgstr "Type a name to search."
 
-#: src/features/landing/components/search/search-parts.tsx:327
+#: src/features/landing/components/search/search-parts.tsx:352
 msgid "Scrie un nume sau un identificator pentru a căuta."
 msgstr "Enter a name or identifier to search."
 
@@ -45436,7 +45436,7 @@ msgstr "Keyboard shortcuts"
 
 #: src/features/entity-search/components/entity-empty-state.tsx:149
 #: src/features/landing/components/search/landing-search.tsx:201
-#: src/features/landing/components/search/search-parts.tsx:333
+#: src/features/landing/components/search/search-parts.tsx:358
 msgid "Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele."
 msgstr "Shorten your search to at most 10 words and check the quotation marks."
 
@@ -45448,7 +45448,7 @@ msgstr "SDG 2020"
 msgid "SDG 2030"
 msgstr "SDG 2030"
 
-#: src/features/landing/components/search/search-parts.tsx:315
+#: src/features/landing/components/search/search-parts.tsx:340
 msgid "Se actualizează rezultatele."
 msgstr "Updating results."
 
@@ -45509,7 +45509,7 @@ msgstr "Searching"
 msgid "Se caută intervenția…"
 msgstr "Se caută intervenția…"
 
-#: src/features/landing/components/search/search-parts.tsx:337
+#: src/features/landing/components/search/search-parts.tsx:362
 msgid "Se caută."
 msgstr "Searching."
 
@@ -49548,7 +49548,7 @@ msgstr "suspends"
 msgid "suspendare"
 msgstr "suspension"
 
-#: src/features/legal/components/legal-status-badge.tsx:79
+#: src/features/legal/components/legal-status-badge.tsx:77
 #: src/features/legal/lib/legal-vocabulary.ts:96
 msgid "Suspendat"
 msgstr "Suspended"

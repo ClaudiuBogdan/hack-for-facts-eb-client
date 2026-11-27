@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, waitFor, within } from '@/test/test-utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { LandingSearch } from '@/features/landing/components/search/landing-search'
+import { legalStatusOfHit } from '@/features/landing/components/search/search-parts'
 
 /**
  * Rendered against the real hook, with only the router and the API replaced.
@@ -998,16 +999,15 @@ describe('LandingSearch — the way on to a fuller search (the legislation hub, 
     expect(navigate).toHaveBeenCalledWith({ to: '/legislation/search', search: { q: 'achizitii publice' } })
   })
 
-  it('offers the way on under the „type more" hint, which a two-digit act number never passes', async () => {
+  it('offers no way on before the search has run: not under the „type more" hint (owner, 27 November 2026)', async () => {
     const user = userEvent.setup()
     render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
     const input = screen.getByRole('combobox')
     await user.click(input)
     await user.type(input, '98')
-    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
-    const row = screen.getByRole('option')
-    expect(row).toHaveAttribute('data-search-more', 'row')
-    expect(row).toHaveAttribute('href', '/legislation/search?q=98')
+    await waitFor(() => expect(screen.getByText(/caracter/)).toBeInTheDocument())
+    expect(screen.queryAllByRole('option')).toHaveLength(0)
+    expect(document.querySelector('[data-search-more]')).toBeNull()
     expect(searchEntities).not.toHaveBeenCalled()
   })
 
@@ -1026,5 +1026,49 @@ describe('LandingSearch — the way on to a fuller search (the legislation hub, 
     const last = rows[rows.length - 1]
     expect(last).toHaveAttribute('data-search-more')
     expect(last).toHaveAttribute('aria-disabled', 'true')
+  })
+})
+
+describe('LandingSearch — an act says its status (owner, 27 November 2026)', () => {
+  const act = (subtitle: string | null, id: string): EntitySearchHit => ({
+    ...IASI, id: `legal_act:${id}`, docType: 'legal_act', title: `LEGE nr. ${id}`, href: `/legislation/acts/${id}`,
+    identifiers: [`Legea ${id}/2009`], countyName: null, subtitle,
+  })
+
+  beforeEach(() => {
+    navigate.mockReset()
+    searchEntities.mockReset()
+  })
+
+  it('draws the status the search serves at the end of the subtitle, with the act page\'s mark, and none it does not know', async () => {
+    searchEntities.mockResolvedValue(response([
+      act('Legea nr. 98/2009, in-vigoare', '3825'),
+      act('Legea nr. 227/2015, abrogat-partial', '66150'),
+      act('Legea nr. 1/2000, ceva-nou', '1'),
+      act(null, '2'),
+    ]))
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} />, { queryClient: createTestQueryClient() })
+    await typeAndWait(user, 'legea')
+    const [inForce, partly, unknown, none] = screen.getAllByRole('option')
+    expect(inForce).toHaveTextContent('În vigoare')
+    expect(inForce?.querySelector('svg')).not.toBeNull()
+    // the mark alone before the title, its word hidden for the eye and on hover: the row stays one line
+    expect(inForce?.querySelector('[title="În vigoare"]')).not.toBeNull()
+    expect(screen.getAllByText('În vigoare')[0]).toHaveClass('sr-only')
+    expect(partly).toHaveTextContent('Abrogat parțial')
+    // a value outside the statuses, or no subtitle: no mark, no word
+    expect(unknown?.querySelector('svg')).toBeNull()
+    expect(none?.querySelector('svg')).toBeNull()
+    expect(unknown).not.toHaveTextContent('ceva-nou')
+  })
+})
+
+describe('legalStatusOfHit', () => {
+  it('reads the last part of the subtitle when it is an act status, and nothing else', () => {
+    expect(legalStatusOfHit('Legea nr. 98/2009, in-vigoare')).toBe('in-vigoare')
+    expect(legalStatusOfHit('COD PROCEDURA FISCALA din 24 decembrie 2003 (*republicat*), abrogat')).toBe('abrogat')
+    expect(legalStatusOfHit('HG nr. 1705/2005, modificat')).toBe('modificat')
+    for (const subtitle of [null, '', 'Legea nr. 98/2009', 'Legea nr. 98/2009, In-Vigoare', 'Legea, ceva']) expect(legalStatusOfHit(subtitle)).toBeNull()
   })
 })

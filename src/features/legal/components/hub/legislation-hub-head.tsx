@@ -33,7 +33,7 @@ export function HubHeadSearch() {
   const isMobile = useIsMobile()
   const { hash, search } = useLocation()
   // An explicit language in the address goes on with the words (Codex review, round 1).
-  const lang = (search as Record<string, unknown>).lang
+  const lang = (search as Record<string, unknown> | undefined)?.lang
 
   return (
     <DeferredLandingSearch
