@@ -117,7 +117,7 @@ describe('LegislationActsDirectory', () => {
     })
     paged.mockImplementation((filter) =>
       Promise.resolve(
-        filter.year === 1999
+        filter.yearFrom === 1999
           ? { items: [item('90', 'Legea nr. 9/1999')], endCursor: null, totalCount: 1 }
           : { items: [item('10', 'Legea nr. 1/2015')], endCursor: 'cur-1', totalCount: 2 },
       ),

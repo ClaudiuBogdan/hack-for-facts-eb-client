@@ -1,12 +1,9 @@
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
-import {
-  legalActsPageSchema,
-  type LegalActsBrowseFilter,
-  type LegalActsPage,
-} from '@/schemas/legal'
+import { legalActsPageSchema, type LegalActsPage } from '@/schemas/legal'
+import { legalSearchFilterInput, type LegalSearchFilter } from './legal-search-api.live'
 
 /**
- * Live directory adapter — one `legalActs` page per call, cursor-only (223k
+ * The act list behind the search with no term (owner, 27 November 2026; it was the Acte directory's) — one `legalActs` page per call, cursor-only (223k
  * acts; numbered pages are a lie at that scale). The status filter speaks the
  * DB kebab vocabulary (string-typed filter input); the GraphQL enum mapping
  * belongs to the ACT rows coming back, not to the filter going in.
@@ -50,26 +47,15 @@ type Raw = Record<string, unknown>
 const rec = (value: unknown): Raw =>
   value && typeof value === 'object' ? (value as Raw) : {}
 
-function buildFilter(filter: LegalActsBrowseFilter): Raw | null {
-  const parts: Raw = {}
-  // actType and status are `in`-only filter families (array-typed spec);
-  // only year exposes `eq`. Validated against the real schema by the server's
-  // legal-client-contract test.
-  if (filter.actType !== undefined) parts.actType = { in: [filter.actType] }
-  if (filter.year !== undefined) parts.year = { eq: filter.year }
-  if (filter.status !== undefined) parts.status = { in: [filter.status] }
-  if (filter.domain !== undefined) parts.domain = { in: [filter.domain] }
-  return Object.keys(parts).length > 0 ? parts : null
-}
-
+/** The filter is the search's own (`LegalSearchFilter`), so a list with no term narrows exactly as the search does. */
 export async function fetchLegalActsPageLive(
-  filter: LegalActsBrowseFilter,
+  filter: LegalSearchFilter,
   options: { readonly first?: number; readonly after?: string; readonly signal?: AbortSignal } = {},
 ): Promise<LegalActsPage> {
   const data = await graphqlQuery<{ legalActs: Raw }>(
     ACTS_DIRECTORY_QUERY,
     {
-      filter: buildFilter(filter),
+      filter: legalSearchFilterInput(filter),
       first: options.first ?? 20,
       after: options.after ?? null,
     },

@@ -7,12 +7,12 @@ import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type {
   LegalActListItem,
-  LegalActsBrowseFilter,
   LegalActsBrowseSearch,
   LegalActStatus,
 } from '@/schemas/legal'
 import { legalActStatusSchema, legalDomainSlugSchema } from '@/schemas/legal'
 import { fetchLegalActsPage } from '../api/legal-acts-api'
+import type { LegalSearchFilter } from '../api/legal-search-api.live'
 import { resolveLegalActs } from '../api/legal-resolve-api'
 import { LEGAL_DOMAIN_SLUGS, legalDomainLabel } from '../lib/legal-domains'
 import { formatLegalNumber } from '../lib/legal-format'
@@ -103,11 +103,12 @@ export function LegislationActsDirectory({ filter }: Props) {
 
   // URL absent → the in-force default; 'toate' → no status filter.
   const statusChoice: LegalActStatus | 'toate' = filter.status ?? 'in-vigoare'
-  const queryFilter: LegalActsBrowseFilter = {
-    ...(filter.actType !== undefined && { actType: filter.actType }),
-    ...(filter.year !== undefined && { year: filter.year }),
-    ...(filter.domain !== undefined && { domain: filter.domain }),
-    ...(statusChoice !== 'toate' && { status: statusChoice }),
+  // In the search's filter form: the act list now takes that one (27 November 2026; this page retires with it).
+  const queryFilter: LegalSearchFilter = {
+    ...(filter.actType !== undefined && { actType: [filter.actType] }),
+    ...(filter.year !== undefined && { yearFrom: filter.year, yearTo: filter.year }),
+    ...(filter.domain !== undefined && { domain: [filter.domain] }),
+    ...(statusChoice !== 'toate' && { status: [statusChoice] }),
   }
 
   // The accumulated pages belong to ONE filter. The URL can change without

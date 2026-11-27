@@ -105,6 +105,21 @@ export function searchArgs(filters: SearchFilters): { readonly filter: LegalSear
   }
 }
 
+/**
+ * The statuses the search keeps when „include istorice" is off: the server's `LEGAL_LIVE_STATUSES`
+ * (`src/modules/legal/core/legal-engine-filter.ts`), copied so the act list with no term shows what the search shows.
+ */
+export const LIVE_STATUSES = ['in-vigoare', 'modificat', 'abrogat-partial', 'suspendat', 'necunoscut'] as const
+
+/**
+ * The filters as the act list takes them, when the search has filters and no term (owner, 27 November 2026). The act
+ * list has no „include istorice" switch, so with no status chosen it is asked for the live statuses by name.
+ */
+export function browseFilter(filters: SearchFilters): LegalSearchFilter {
+  const { filter } = searchArgs(filters)
+  return filters.stare === 'implicit' ? { ...filter, status: [...LIVE_STATUSES] } : filter
+}
+
 /** Whether a filter read from the AI summaries is on: then acts without a summary are left out, and the page says so. */
 export function usesSummaries(filters: SearchFilters): boolean {
   return filters.domeniu.length > 0 || filters.categorie.length > 0 || filters.sanctiuni

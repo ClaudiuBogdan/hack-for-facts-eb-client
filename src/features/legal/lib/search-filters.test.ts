@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { legalFinderSearchSchema } from '@/schemas/legal-search'
 import { LEGAL_DOMAIN_SLUGS } from './legal-domains'
 import {
+  LIVE_STATUSES,
   NO_SEARCH_FILTERS,
+  browseFilter,
   activeFilterCount,
   isSearchFiltered,
   portalNameCase,
@@ -136,5 +138,25 @@ describe('the address through the route schema', () => {
     const parsed = legalFinderSearchSchema.parse({ q: 'codul muncii', domeniu })
     expect(parsed.domeniu).toBe(domeniu)
     expect(readSearchFilters(parsed).domeniu).toHaveLength(16)
+  })
+})
+
+describe('browseFilter (the act list with no term, owner 27 November 2026)', () => {
+  it('keeps the live statuses when the reader chose none, as the search without „include istorice" does', () => {
+    expect(browseFilter({ ...NO_SEARCH_FILTERS, tip: ['lege'] })).toEqual({
+      actType: ['lege'],
+      status: ['in-vigoare', 'modificat', 'abrogat-partial', 'suspendat', 'necunoscut'],
+    })
+    expect(LIVE_STATUSES).toEqual(['in-vigoare', 'modificat', 'abrogat-partial', 'suspendat', 'necunoscut'])
+  })
+
+  it('sets no status for „Toate" and the named one when chosen', () => {
+    expect(browseFilter({ ...NO_SEARCH_FILTERS, stare: 'toate', tip: ['lege'] })).toEqual({ actType: ['lege'] })
+    expect(browseFilter({ ...NO_SEARCH_FILTERS, stare: 'abrogat' })).toEqual({ status: ['abrogat'] })
+  })
+
+  it('passes the years and the summary filters through as the search takes them', () => {
+    const filters = { ...NO_SEARCH_FILTERS, stare: 'toate' as const, from: 2020, to: 2024, domeniu: ['sanatate'], categorie: ['tratat'], sanctiuni: true }
+    expect(browseFilter(filters)).toEqual(searchArgs(filters).filter)
   })
 })
