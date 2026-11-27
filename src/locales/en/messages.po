@@ -478,7 +478,7 @@ msgid "{0, plural, one {# contract atribuit în {period}} few {# contracte atrib
 msgstr "{0, plural, one {# contract awarded in {period}} other {# contracts awarded in {period}}}"
 
 #. placeholder {0}: keyDates.length
-#: src/features/legal/components/act-key-dates.tsx:37
+#: src/features/legal/components/act-key-dates.tsx:38
 msgid "{0, plural, one {# dată} few {# date} other {# de date}}"
 msgstr "{0, plural, one {# date} other {# dates}}"
 
@@ -498,7 +498,7 @@ msgid "{0, plural, one {# eveniment} few {# evenimente} other {# de evenimente}}
 msgstr "{0, plural, one {# event} other {# events}}"
 
 #. placeholder {0}: documents.length
-#: src/features/legal/components/act-versions-band.tsx:51
+#: src/features/legal/components/act-versions-band.tsx:71
 msgid "{0, plural, one {# expresie} few {# expresii} other {# de expresii}}"
 msgstr "{0, plural, one {# expression} other {# expressions}}"
 
@@ -558,7 +558,7 @@ msgid "{0, plural, one {# proiect} few {# proiecte} other {# de proiecte}}"
 msgstr "{0, plural, one {# proiect} few {# proiecte} other {# de proiecte}}"
 
 #. placeholder {0}: publications.length
-#: src/features/legal/components/act-publication-band.tsx:51
+#: src/features/legal/components/act-publication-band.tsx:58
 msgid "{0, plural, one {# publicare} few {# publicări} other {# de publicări}}"
 msgstr "{0, plural, one {# publication} other {# publications}}"
 
@@ -568,12 +568,12 @@ msgid "{0, plural, one {# retrasă} few {# retrase} other {# de retrase}}"
 msgstr "{0, plural, one {# withdrawn} other {# withdrawn}}"
 
 #. placeholder {0}: status.results.length
-#: src/features/landing/components/search/search-parts.tsx:316
+#: src/features/landing/components/search/search-parts.tsx:351
 msgid "{0, plural, one {# rezultat.} few {# rezultate.} other {# de rezultate.}}"
 msgstr "{0, plural, one {# result.} few {# results.} other {# results.}}"
 
 #. placeholder {0}: group.totalCount
-#: src/features/legal/components/act-references-band.tsx:68
+#: src/features/legal/components/act-references-band.tsx:69
 msgid "{0, plural, one {# trimitere} few {# trimiteri} other {# de trimiteri}}"
 msgstr "{0, plural, one {# reference} other {# references}}"
 
@@ -1010,7 +1010,7 @@ msgid "{0} — nu e în {year}"
 msgstr "{0} — not in {year}"
 
 #. placeholder {0}: baseLabel(latestUnavailable)
-#: src/features/legal/components/act-version-selector.tsx:105
+#: src/features/legal/components/act-version-selector.tsx:138
 msgid "{0} — text indisponibil"
 msgstr "{0} — text indisponibil"
 
@@ -1050,17 +1050,17 @@ msgid "{0} (Înalta Curte: {1})"
 msgstr "{0} (High Court: {1})"
 
 #. placeholder {0}: shown.name
-#: src/features/public-enterprises/lib/enterprise-text.ts:101
+#: src/features/public-enterprises/lib/enterprise-text.ts:103
 msgid "{0} (numele din anunțurile AMEPIP)"
 msgstr "{0} (the name in AMEPIP’s announcements)"
 
 #. placeholder {0}: shown.name
-#: src/features/public-enterprises/lib/enterprise-text.ts:102
+#: src/features/public-enterprises/lib/enterprise-text.ts:104
 msgid "{0} (numele din fișa ei de buget)"
 msgstr "{0} (the name in its budget record)"
 
 #. placeholder {0}: shown.name
-#: src/features/public-enterprises/lib/enterprise-text.ts:101
+#: src/features/public-enterprises/lib/enterprise-text.ts:103
 msgid "{0} (numele din lista ANAF)"
 msgstr "{0} (the name on ANAF’s list)"
 
@@ -1311,13 +1311,13 @@ msgstr "{0} residents"
 
 #. placeholder {0}: pctOf(s.withText, s.total)
 #. placeholder {1}: fmt(s.total)
-#: src/features/legal/components/hub/legislation-hub-head.tsx:257
+#: src/features/legal/components/hub/legislation-hub-head.tsx:265
 msgid "{0} din {1} acte"
 msgstr "{0} of {1} acts"
 
 #. placeholder {0}: pctOf(s.withVersions, s.total)
 #. placeholder {1}: fmt(s.total)
-#: src/features/legal/components/hub/legislation-hub-head.tsx:288
+#: src/features/legal/components/hub/legislation-hub-head.tsx:296
 msgid "{0} din {1} acte; listate de Portal, neoficiale"
 msgstr "{0} of {1} acts; listed by the Portal, unofficial"
 
@@ -1722,22 +1722,22 @@ msgstr "{0} more issues"
 #~ msgstr "{0} not dated"
 
 #. placeholder {0}: names(apt, rows)
-#: src/features/public-enterprises/lib/enterprise-text.ts:150
+#: src/features/public-enterprises/lib/enterprise-text.ts:152
 msgid "{0} o controlează, după anunțurile de selecție AMEPIP; lista ANAF nu e încărcată acum."
 msgstr "{0} controls it, according to AMEPIP’s selection announcements; ANAF’s list is not loaded just now."
 
 #. placeholder {0}: names(apt, rows)
-#: src/features/public-enterprises/lib/enterprise-text.ts:152
+#: src/features/public-enterprises/lib/enterprise-text.ts:154
 msgid "{0} o controlează, după anunțurile de selecție AMEPIP; lista ANAF nu-i numește autoritatea."
 msgstr "{0} controls it, according to AMEPIP’s selection announcements; ANAF’s list does not name its authority."
 
 #. placeholder {0}: names(apt, rows)
-#: src/features/public-enterprises/lib/enterprise-text.ts:153
+#: src/features/public-enterprises/lib/enterprise-text.ts:155
 msgid "{0} o controlează, după anunțurile de selecție AMEPIP; nu e în lista ANAF."
 msgstr "{0} controls it, according to AMEPIP’s selection announcements; it is not on ANAF’s list."
 
 #. placeholder {0}: names(s1001, rows)
-#: src/features/public-enterprises/lib/enterprise-text.ts:155
+#: src/features/public-enterprises/lib/enterprise-text.ts:157
 msgid "{0} o controlează, după lista ANAF a întreprinderilor publice."
 msgstr "{0} controls it, according to ANAF’s list of public enterprises."
 
@@ -2619,17 +2619,17 @@ msgid "{both, plural, one {Anunțurile de selecție AMEPIP o numesc pentru una d
 msgstr "{both, plural, one {AMEPIP’s selection announcements name it for one of them} other {AMEPIP’s selection announcements name it for # of them}}"
 
 #: src/features/procurement/lib/buyer-text.ts:132
-#: src/features/public-enterprises/lib/enterprise-text.ts:234
+#: src/features/public-enterprises/lib/enterprise-text.ts:236
 msgid "{bought}, și a atribuit {awarded}."
 msgstr "{bought}, and awarded {awarded}."
 
 #: src/features/procurement/lib/buyer-text.ts:134
-#: src/features/public-enterprises/lib/enterprise-text.ts:236
+#: src/features/public-enterprises/lib/enterprise-text.ts:238
 msgid "{bought}, și a semnat {signed}."
 msgstr "{bought}, and signed {signed}."
 
 #: src/features/procurement/lib/buyer-text.ts:128
-#: src/features/public-enterprises/lib/enterprise-text.ts:235
+#: src/features/public-enterprises/lib/enterprise-text.ts:237
 msgid "{bought}; contractele atribuite nu s-au putut citi acum."
 msgstr "{bought}; the contracts it awarded could not be read just now."
 
@@ -2823,6 +2823,10 @@ msgstr "{count, plural, one {# subcontract} few {# subcontracts} other {# subcon
 #: src/features/justice/lib/echr-text.ts:58
 msgid "{count, plural, one {+# cerere} few {+# cereri} other {+# de cereri}}"
 msgstr "{count, plural, one {+# application} other {+# applications}}"
+
+#: src/features/legal/components/act-versions-band.tsx:161
+msgid "{count, plural, one {Arată versiunea} few {Arată toate cele # versiuni} other {Arată toate cele # de versiuni}}"
+msgstr "{count, plural, one {Show the version} other {Show all # versions}}"
 
 #: src/features/ngos/registry/components/registry-county-map.tsx:84
 msgid "{count, plural, one {înregistrare} few {înregistrări} other {de înregistrări}}"
@@ -3258,6 +3262,10 @@ msgstr "{label}, by fiscal year"
 msgid "{label}: {amount}, {countLabel} records"
 msgstr "{label}: {amount}, {countLabel} records"
 
+#: src/features/public-enterprises/lib/enterprise-text.ts:260
+msgid "{label}: {amount}."
+msgstr "{label}: {amount}."
+
 #: src/features/procurement/components/procurement-party-ranking.tsx:327
 msgid "{label}: {countLabel} records"
 msgstr "{label}: {countLabel} records"
@@ -3306,11 +3314,19 @@ msgstr "{label}: at least {0}"
 msgid "{label}: de la {from} în {0} la {to} în {1}"
 msgstr "{label}: from {from} in {0} to {to} in {1}"
 
+#: src/features/public-enterprises/lib/enterprise-text.ts:255
+msgid "{label}: fără valoare publicată."
+msgstr "{label}: no published value."
+
 #. placeholder {0}: boundText(range.min, range, locale)
 #. placeholder {1}: boundText(range.max, range, locale)
 #: src/features/private-companies/lib/company-analytics-scope-text.ts:57
 msgid "{label}: între {0} și {1}"
 msgstr "{label}: between {0} and {1}"
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:258
+msgid "{label}: valoare atribuită de {amount}."
+msgstr "{label}: awarded value of {amount}."
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:346
 msgid "{largeCount, plural, one {# organizație} few {# organizații} other {# de organizații}} cu venituri de peste 1 mil. lei au {largeShare} din bani. {noneCount, plural, one {# n-a avut} other {# n-au avut}} niciun venit în {year}."
@@ -3587,7 +3603,7 @@ msgstr "{native}, with no lei equivalent"
 msgid "{native}, monedă nepublicată"
 msgstr "{native}, currency not published"
 
-#: src/features/legal/components/act-versions-band.tsx:68
+#: src/features/legal/components/act-versions-band.tsx:88
 msgid "{newerNotAvailable, plural, one {O versiune fără text disponibil, de la aceeași dată sau mai nouă decât cea mai recentă versiune cu text.} few {# versiuni fără text disponibil, de la aceeași dată sau mai noi decât cea mai recentă versiune cu text.} other {# de versiuni fără text disponibil, de la aceeași dată sau mai noi decât cea mai recentă versiune cu text.}}"
 msgstr "{newerNotAvailable, plural, one {O versiune fără text disponibil, de la aceeași dată sau mai nouă decât cea mai recentă versiune cu text.} few {# versiuni fără text disponibil, de la aceeași dată sau mai noi decât cea mai recentă versiune cu text.} other {# de versiuni fără text disponibil, de la aceeași dată sau mai noi decât cea mai recentă versiune cu text.}}"
 
@@ -3742,7 +3758,7 @@ msgstr "{registered, plural, one {One registered NGO and {added} new in {year}; 
 msgid "{registeredShare} din selecție"
 msgstr "{registeredShare} of the selection"
 
-#: src/features/landing/components/search/search-parts.tsx:297
+#: src/features/landing/components/search/search-parts.tsx:332
 msgid "{remaining, plural, one {Încă un caracter pentru a căuta.} few {Încă # caractere pentru a căuta.} other {Încă # de caractere pentru a căuta.}}"
 msgstr "{remaining, plural, one {One more character to search.} few {# more characters to search.} other {# more characters to search.}}"
 
@@ -3848,11 +3864,11 @@ msgstr "{share} of the value of contracts awarded in {0} went to consortia of co
 msgid "{share} din valoarea contractelor atribuite în {0} a mers la asocieri de firme."
 msgstr "{share} of the value of contracts awarded in {0} went to consortia of companies."
 
-#: src/features/legal/components/act-anchors-band.tsx:63
+#: src/features/legal/components/act-anchors-band.tsx:64
 msgid "{shownCount, plural, one {cel puțin # ancoră} few {cel puțin # ancore} other {cel puțin # de ancore}}"
 msgstr "{shownCount, plural, one {cel puțin # ancoră} few {cel puțin # ancore} other {cel puțin # de ancore}}"
 
-#: src/features/legal/components/act-references-band.tsx:75
+#: src/features/legal/components/act-references-band.tsx:76
 msgid "{shownCount, plural, one {cel puțin # trimitere} few {cel puțin # trimiteri} other {cel puțin # de trimiteri}}"
 msgstr "{shownCount, plural, one {at least # reference} other {at least # references}}"
 
@@ -3868,19 +3884,19 @@ msgstr "{shownCount, plural, one {at least # reference} other {at least # refere
 msgid "{statementColumns, plural, one {Un bilanț cu valori.} few {# bilanțuri cu valori, cel mai nou primul.} other {# de bilanțuri cu valori, cel mai nou primul.}}"
 msgstr "{statementColumns, plural, one {One statement with values.} other {# statements with values, newest first.}}"
 
-#: src/features/landing/components/search/search-parts.tsx:308
+#: src/features/landing/components/search/search-parts.tsx:343
 msgid "{suggestionCount, plural, one {Un filtru sugerat.} few {# filtre sugerate.} other {# de filtre sugerate.}}"
 msgstr "{suggestionCount, plural, one {One suggested filter.} few {# suggested filters.} other {# suggested filters.}}"
 
-#: src/features/legal/components/act-version-selector.tsx:60
+#: src/features/legal/components/act-version-selector.tsx:75
 msgid "{text} (afișată implicit, nu e curentă)"
 msgstr "{text} (afișată implicit, nu e curentă)"
 
-#: src/features/legal/components/act-version-selector.tsx:61
+#: src/features/legal/components/act-version-selector.tsx:76
 msgid "{text} (afișată implicit)"
 msgstr "{text} (afișată implicit)"
 
-#: src/features/legal/components/act-version-selector.tsx:59
+#: src/features/legal/components/act-version-selector.tsx:74
 msgid "{text} (implicită)"
 msgstr "{text} (implicită)"
 
@@ -3978,7 +3994,7 @@ msgstr "{total, plural, one {One activity in the trade register.} other {# activ
 msgid "{total, plural, one {O înscriere de activitate} few {# înscrieri de activități} other {# de înscrieri de activități}}"
 msgstr "{total, plural, one {One activity entry} other {# activity entries}}"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:179
+#: src/features/public-enterprises/lib/enterprise-text.ts:181
 msgid "{total, plural, one {o întreprindere în liste} few {{n} întreprinderi în liste} other {{n} de întreprinderi în liste}}"
 msgstr "{total, plural, one {one enterprise on the lists} other {{n} enterprises on the lists}}"
 
@@ -4002,7 +4018,7 @@ msgstr "{total}, {mine} to this firm"
 msgid "{total}, niciunul acestei firme"
 msgstr "{total}, none to this firm"
 
-#: src/features/legal/components/act-anchors-band.tsx:61
+#: src/features/legal/components/act-anchors-band.tsx:62
 msgid "{totalCount, plural, one {# ancoră} few {# ancore} other {# de ancore}}"
 msgstr "{totalCount, plural, one {# ancoră} few {# ancore} other {# de ancore}}"
 
@@ -5026,6 +5042,11 @@ msgstr "partial repeal"
 msgid "abrogare totală"
 msgstr "full repeal"
 
+#: src/features/legal/components/reader/tldf-blocks.tsx:933
+#: src/features/legal/components/reader/tldf-blocks.tsx:934
+msgid "abrogat"
+msgstr "repealed"
+
 #: src/features/legal/components/legal-status-badge.tsx:75
 #: src/features/legal/lib/legal-vocabulary.ts:92
 msgid "Abrogat"
@@ -5074,8 +5095,8 @@ msgstr "Home"
 msgid "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 msgstr "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 
-#: src/features/privacy/components/consent-card.tsx:383
-#: src/features/privacy/components/cookie-settings-page.tsx:232
+#: src/features/privacy/components/consent-card.tsx:386
+#: src/features/privacy/components/cookie-settings-page.tsx:234
 msgid "Acceptă tot"
 msgstr "Accept all"
 
@@ -5235,6 +5256,10 @@ msgstr "the same months of {0}"
 #: src/features/ngos/components/ngo-profile-page.tsx:644
 #~ msgid "Acest profil nu are furnizor MMuncii direct."
 #~ msgstr "Acest profil nu are furnizor MMuncii direct."
+
+#: src/features/legal/components/reader/legal-reader-page.tsx:541
+msgid "Acest text nu are un cuprins."
+msgstr "This text has no table of contents."
 
 #: src/features/procurement/components/contract/contract-context.tsx:111
 msgid "acesta"
@@ -5408,7 +5433,7 @@ msgstr "Procurement"
 msgid "Achiziții publice / SEAP"
 msgstr "Public procurement / SEAP"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:222
+#: src/features/public-enterprises/lib/enterprise-text.ts:224
 msgid "Achizițiile din {period} nu s-au putut citi acum."
 msgstr "The purchases of {period} could not be read just now."
 
@@ -5438,7 +5463,7 @@ msgstr "The largest direct purchases finalized in {0}, the newest complete month
 msgid "Achizițiile directe cu cea mai mare valoare, fără TVA."
 msgstr "The direct purchases of the highest value, excluding VAT."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:238
+#: src/features/public-enterprises/lib/enterprise-text.ts:240
 msgid "Achizițiile directe din {period} nu s-au putut citi acum."
 msgstr "The direct purchases of {period} could not be read just now."
 
@@ -5469,8 +5494,8 @@ msgstr "The public procurement of {name}: what it buys, from which firms and cou
 msgid "Achizițiile publice ale unei instituții: ce cumpără, de la ce firme și din ce județe, când și cum, din SEAP."
 msgstr "The public procurement of an institution: what it buys, from which firms and counties, when and how, from SEAP."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:107
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:116
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:97
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:106
 msgid "Achizițiile, pe pagina de achiziții"
 msgstr "Its purchases, on the procurement page"
 
@@ -5648,7 +5673,7 @@ msgstr "act"
 msgid "Act adițional"
 msgstr "Amendment"
 
-#: src/features/legal/components/act-references-band.tsx:158
+#: src/features/legal/components/act-references-band.tsx:159
 msgid "act din afara corpusului — fără pagină la noi"
 msgstr "act outside the corpus — no page here"
 
@@ -5666,8 +5691,9 @@ msgid "Act normativ"
 msgstr "Legal act"
 
 #: src/features/legal/components/analytics/analytics-charts.tsx:86
-#: src/features/legal/components/analytics/analytics-charts.tsx:167
-#: src/features/legal/components/analytics/analytics-charts.tsx:185
+#: src/features/legal/components/analytics/analytics-charts.tsx:192
+#: src/features/legal/components/analytics/analytics-charts.tsx:236
+#: src/features/legal/components/analytics/analytics-charts.tsx:272
 msgid "acte"
 msgstr "acts"
 
@@ -5740,7 +5766,7 @@ msgstr "Acts per year, from {YEARS_FROM}"
 msgid "acte pe an, după {0}"
 msgstr "acts per year, by {0}"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:232
+#: src/features/legal/components/hub/legislation-hub-head.tsx:240
 msgid "Acte publicate"
 msgstr "Acts published"
 
@@ -5769,7 +5795,7 @@ msgstr "Repealed or expired acts are not included by default. Check the act's nu
 #~ msgid "Actele adiționale se raportează ca număr — sumele brute din sursă nu sunt suficient de fiabile pentru a fi însumate."
 #~ msgstr "Actele adiționale se raportează ca număr — sumele brute din sursă nu sunt suficient de fiabile pentru a fi însumate."
 
-#: src/features/legal/components/act-references-band.tsx:91
+#: src/features/legal/components/act-references-band.tsx:92
 msgid "Actele care fac trimitere la acesta."
 msgstr "The acts that refer to this one."
 
@@ -5824,7 +5850,7 @@ msgstr "The laws cited in the case's object or hearings. Those the legislation r
 msgid "Actele numărate: ce fac, cine le emite, cum se schimbă și cum se leagă între ele."
 msgstr "Acts counted: what they do, who issues them, how they change and how they link to one another."
 
-#: src/features/legal/components/act-references-band.tsx:90
+#: src/features/legal/components/act-references-band.tsx:91
 msgid "Actele pe care acesta le modifică, abrogă, aprobă sau la care face referire."
 msgstr "The acts this one amends, repeals, approves or refers to."
 
@@ -5858,7 +5884,7 @@ msgstr "General economic, commercial and labour affairs"
 #~ msgid "Activ"
 #~ msgstr "Activ"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:64
+#: src/features/public-enterprises/lib/enterprise-text.ts:66
 msgid "activă"
 msgstr "active"
 
@@ -6448,11 +6474,11 @@ msgstr "Amendment no. {number}"
 msgid "Actul cu acest număr"
 msgstr "The act with this number"
 
-#: src/features/legal/components/legal-act-page.tsx:75
+#: src/features/legal/components/legal-act-page.tsx:78
 msgid "Actul nu există în Portal Legislativ sau identificatorul din adresă este greșit."
 msgstr "The act does not exist in Portal Legislativ, or the identifier in the address is wrong."
 
-#: src/features/legal/components/act-relevance-band.tsx:115
+#: src/features/legal/components/act-relevance-band.tsx:102
 msgid "Actul prevede sancțiuni."
 msgstr "The act provides for sanctions."
 
@@ -6758,7 +6784,7 @@ msgstr "Advanced: pin the source"
 msgid "Afacerea"
 msgstr "Business"
 
-#: src/features/legal/components/act-default-notices.tsx:71
+#: src/features/legal/components/act-default-notices.tsx:79
 msgid "Afișăm cea mai recentă versiune cu text, care nu este versiunea curentă."
 msgstr "Afișăm cea mai recentă versiune cu text, care nu este versiunea curentă."
 
@@ -6766,19 +6792,19 @@ msgstr "Afișăm cea mai recentă versiune cu text, care nu este versiunea curen
 #~ msgid "Afișăm metadata publică despre dosare, nu documente sau căutare în textul soluțiilor."
 #~ msgstr "Afișăm metadata publică despre dosare, nu documente sau căutare în textul soluțiilor."
 
-#: src/features/legal/components/act-default-notices.tsx:66
+#: src/features/legal/components/act-default-notices.tsx:74
 msgid "Afișăm versiunea din {shownDate} ({shownKind}), care nu este versiunea curentă."
 msgstr "Afișăm versiunea din {shownDate} ({shownKind}), care nu este versiunea curentă."
 
-#: src/features/legal/components/act-versions-band.tsx:135
+#: src/features/legal/components/act-versions-band.tsx:211
 msgid "afișată implicit"
 msgstr "afișată implicit"
 
-#: src/features/legal/components/act-versions-band.tsx:130
+#: src/features/legal/components/act-versions-band.tsx:206
 msgid "afișată implicit — nu este versiunea curentă"
 msgstr "afișată implicit — nu este versiunea curentă"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:854
+#: src/features/legal/components/reader/legal-reader-page.tsx:1044
 msgid "Afișate {loadedCount} din {groupCount} părți — derulează sau apasă pentru restul."
 msgstr "Parts shown: {loadedCount} of {groupCount} — scroll or press for the rest."
 
@@ -6791,7 +6817,7 @@ msgstr "Afișate <0>{0}</0> din <1>{total}</1> intervenții"
 msgid "Afișate <0>{shown}</0> din <1>{total}</1> intervenții"
 msgstr "Afișate <0>{shown}</0> din <1>{total}</1> intervenții"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:421
+#: src/features/legal/components/reader/legal-reader-page.tsx:596
 msgid "Afișezi o versiune anume a textului."
 msgstr "You are viewing a specific version of the text."
 
@@ -7039,7 +7065,7 @@ msgstr "Alege anul"
 msgid "Alege ce arată seria"
 msgstr "Choose what the series shows"
 
-#: src/features/privacy/components/consent-card.tsx:314
+#: src/features/privacy/components/consent-card.tsx:317
 msgid "Alege ce pornești"
 msgstr "Choose what to turn on"
 
@@ -7094,7 +7120,8 @@ msgstr "Choose a unit"
 msgid "Alege o valoare pentru: {label}"
 msgstr "Choose a value for: {label}"
 
-#: src/features/legal/components/act-version-selector.tsx:102
+#: src/features/legal/components/act-version-selector.tsx:103
+#: src/features/legal/components/act-version-selector.tsx:135
 msgid "alege o versiune"
 msgstr "alege o versiune"
 
@@ -7123,7 +7150,7 @@ msgstr "Choose an indicator"
 msgid "Alegere"
 msgstr "Election"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:138
+#: src/features/privacy/components/cookie-settings-page.tsx:140
 msgid "Alegere proprie"
 msgstr "Your own choice"
 
@@ -7148,6 +7175,11 @@ msgstr "The election has no ballot day on {0}."
 #: src/features/elections/catalog/election-edition-page.tsx:209
 msgid "Alegerea nu are zile de vot în date."
 msgstr "The election has no ballot days in the data."
+
+#: src/features/privacy/components/consent-card.tsx:393
+#: src/features/privacy/components/cookie-settings-page.tsx:258
+msgid "Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă."
+msgstr "Your choice could not be saved. Optional tracking is off in this tab."
 
 #: src/components/sidebar/nav-main.tsx:81
 #: src/features/elections/catalog/elections-catalog-page.tsx:43
@@ -7192,7 +7224,7 @@ msgstr "Elections in the data"
 msgid "Alegerile din România cu rezultate publicate pe platformă, la nivel de partid: zilele de vot, scrutinele, voturile și prezența la vot."
 msgstr "Romania’s elections with results published on the platform, at party level: ballot days, contests, votes and turnout."
 
-#: src/features/privacy/components/cookie-settings-page.tsx:157
+#: src/features/privacy/components/cookie-settings-page.tsx:159
 msgid "Alegerile tale"
 msgstr "Your choices"
 
@@ -7571,7 +7603,7 @@ msgstr "other"
 #: src/features/legal/lib/legal-domains.ts:65
 #: src/features/legal/lib/search-filters.ts:155
 #: src/features/procurement/lib/home-categories.ts:52
-#: src/features/public-enterprises/lib/enterprise-text.ts:208
+#: src/features/public-enterprises/lib/enterprise-text.ts:210
 msgid "Altele"
 msgstr "Other"
 
@@ -7629,7 +7661,7 @@ msgstr "Noted."
 msgid "Am publicat o versiune nouă a site-ului cât timp citeai. Reîncarcă pagina ca s-o primești."
 msgstr "We published a new version of the site while you were reading. Reload the page to get it."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:626
+#: src/features/legal/components/reader/legal-reader-page.tsx:815
 msgid "Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum."
 msgstr "We declined to show a partial reading. A regeneration is usually on its way."
 
@@ -7684,15 +7716,15 @@ msgid "AMEPIP {year}: {status}"
 msgstr "AMEPIP {year}: {status}"
 
 #. placeholder {0}: yearRanges(tables.withheldFormYears)
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:227
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:217
 msgid "AMEPIP are pentru ea doar trei valori din formular, pe {0} (dividende, investiții, cercetare); nu sunt arătate: un 0 de acolo poate fi o căsuță goală."
 msgstr "AMEPIP has only three form values for it, for {0} (dividends, investment, research); they are not shown: a 0 there may be an empty cell."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:268
+#: src/features/public-enterprises/lib/enterprise-text.ts:294
 msgid "AMEPIP notează „%” și fracții (0,0113), și procente (50). Cinci rate calculate din bilanț (marja netă, ROE, ROA, creșterea cifrei de afaceri și a profitului, aceasta verificată pe anii cu profit) sunt fracții: comparate cu bilanțurile a 40 de întreprinderi, 809 din 818 valori se potrivesc, așa că sunt arătate ca procente. Restul, cu „%” în galben, rămân cum sunt scrise: scara lor nu e spusă."
 msgstr "AMEPIP marks both fractions (0.0113) and percents (50) with “%”. Five ratios calculated from the accounts (net margin, ROE, ROA, turnover and profit growth, the latter checked on years with a profit) are fractions: checked against the accounts of 40 enterprises, 809 of 818 values match, so they are shown as percents. The rest, with “%” in amber, stay as written: their scale is not said."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:228
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:218
 msgid "AMEPIP nu are indicatori pentru această întreprindere."
 msgstr "AMEPIP has no indicators for this enterprise."
 
@@ -7759,7 +7791,7 @@ msgstr "year"
 #: src/features/legal/components/analytics/legislation-analysis.tsx:664
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:157
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:309
-#: src/features/private-companies/components/profile/company-years-chart.tsx:475
+#: src/features/private-companies/components/profile/company-years-chart.tsx:480
 #: src/features/statistics/components/detail/detail-observations-table.tsx:271
 msgid "An"
 msgstr "Year"
@@ -8076,7 +8108,7 @@ msgstr "Court case analysis"
 msgid "Analize avansate"
 msgstr "Advanced analysis"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:368
+#: src/components/budget-explorer/BudgetTreemap.tsx:370
 #: src/components/entities/grouped-item-analytics.ts:63
 #: src/components/ui/FloatingQuickNav.tsx:251
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1245
@@ -8162,7 +8194,7 @@ msgstr "PNRR commitments"
 msgid "angajați"
 msgstr "employees"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:198
+#: src/features/public-enterprises/lib/enterprise-text.ts:200
 msgid "Angajați"
 msgstr "Employees"
 
@@ -8228,7 +8260,7 @@ msgstr "Years with a financial statement"
 msgid "Anii dinainte de {JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele portalului modificate mai târziu (preluarea a mers după data modificării): o parte necunoscută, nu volumul instanțelor."
 msgstr "The years before {JUSTICE_FIRST_WHOLE_YEAR} hold only the portal's cases modified later (the capture went by modification date): an unknown part, not the courts' volume."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:122
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:112
 msgid "Anii dinainte, pe pagina de achiziții"
 msgstr "The earlier years, on the procurement page"
 
@@ -8240,7 +8272,11 @@ msgstr "Years by"
 msgid "Anii nu s-au putut citi acum."
 msgstr "The years could not be read right now."
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:349
+#: src/features/public-enterprises/lib/enterprise-text.ts:264
+msgid "Anii: {period}."
+msgstr "Years: {period}."
+
+#: src/features/private-companies/components/profile/company-years-chart.tsx:352
 msgid "Anii: săgețile stânga și dreapta trec de la un an la altul"
 msgstr "The years: the left and right arrows move from one year to the next"
 
@@ -8638,13 +8674,13 @@ msgstr "The selection announcements cover only the selections AMEPIP published: 
 
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:255
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:285
-#: src/features/public-enterprises/lib/enterprise-text.ts:121
-#: src/features/public-enterprises/lib/enterprise-text.ts:252
+#: src/features/public-enterprises/lib/enterprise-text.ts:123
+#: src/features/public-enterprises/lib/enterprise-text.ts:278
 #: src/features/public-enterprises/lib/hub-text.ts:203
 msgid "anunțurile de selecție AMEPIP"
 msgstr "AMEPIP’s selection announcements"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:35
+#: src/features/public-enterprises/lib/enterprise-text.ts:37
 msgid "Anunțurile de selecție AMEPIP"
 msgstr "AMEPIP’s selection announcements"
 
@@ -8652,22 +8688,22 @@ msgstr "AMEPIP’s selection announcements"
 msgid "Anunțurile de selecție AMEPIP nu erau încărcate la citire."
 msgstr "AMEPIP’s selection announcements were not loaded when this was read."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:156
+#: src/features/public-enterprises/lib/enterprise-text.ts:158
 msgid "Anunțurile de selecție AMEPIP nu sunt încărcate acum."
 msgstr "AMEPIP’s selection announcements are not loaded just now."
 
 #. placeholder {0}: names(others, rows)
-#: src/features/public-enterprises/lib/enterprise-text.ts:161
+#: src/features/public-enterprises/lib/enterprise-text.ts:163
 msgid "Anunțurile de selecție AMEPIP numesc altă autoritate: {0}."
 msgstr "AMEPIP’s selection announcements name another authority: {0}."
 
 #. placeholder {0}: names(apt, rows)
-#: src/features/public-enterprises/lib/enterprise-text.ts:164
+#: src/features/public-enterprises/lib/enterprise-text.ts:166
 msgid "Anunțurile de selecție AMEPIP numesc doar: {0}."
 msgstr "AMEPIP’s selection announcements name only: {0}."
 
 #. placeholder {0}: names(uncoded, rows)
-#: src/features/public-enterprises/lib/enterprise-text.ts:162
+#: src/features/public-enterprises/lib/enterprise-text.ts:164
 msgid "Anunțurile de selecție AMEPIP numesc și, fără CUI: {0}."
 msgstr "AMEPIP’s selection announcements also name, with no CUI: {0}."
 
@@ -8743,14 +8779,14 @@ msgid "Apărare și securitate"
 msgstr "Defence and security"
 
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:89
-msgid "Apare în contracte și plăți publice fără valoare publicată."
-msgstr "It appears in public contracts and payments with no published value."
+#~ msgid "Apare în contracte și plăți publice fără valoare publicată."
+#~ msgstr "It appears in public contracts and payments with no published value."
 
 #: src/features/ngos/components/ngo-profile-page.tsx:249
 #~ msgid "apare si ca firma"
 #~ msgstr "apare si ca firma"
 
-#: src/features/legal/components/act-publication-band.tsx:60
+#: src/features/legal/components/act-publication-band.tsx:67
 msgid "Apariția în Monitorul Oficial dovedește publicarea actului. Data de la care actul produce efecte e cea stabilită în act sau prin lege."
 msgstr "Its appearance in Monitorul Oficial proves the act was published. The date from which the act takes effect is the one set in the act or by law."
 
@@ -8995,16 +9031,22 @@ msgstr "Show the county's localities"
 msgid "Arată mai multe"
 msgstr "Show more"
 
-#: src/features/legal/components/act-plain-summary.tsx:169
+#: src/features/legal/components/act-plain-summary.tsx:135
+#: src/features/legal/components/reader/tldf-blocks.tsx:1045
 #: src/features/procurement/components/procurement-answerability-notice.tsx:90
 #: src/features/statistics/components/detail/detail-definition.tsx:95
 #: src/features/statistics/components/detail/detail-observations-table.tsx:237
 msgid "Arată mai puțin"
 msgstr "Show less"
 
+#: src/features/legal/components/reader/tldf-blocks.tsx:1044
+msgid "Arată mai puțin din notă"
+msgstr "Show less of the note"
+
 #: src/features/justice/components/hub/justice-hub-bands.tsx:331
 #: src/features/justice/components/hub/justice-hub-hero.tsx:133
-#: src/features/legal/components/act-timeline-band.tsx:142
+#: src/features/legal/components/act-timeline-band.tsx:136
+#: src/features/legal/components/act-versions-band.tsx:159
 #: src/features/ngos/hub/ngo-hub-page.tsx:170
 #: src/features/ngos/organization/components/purpose-section.tsx:131
 #: src/features/ngos/organization/components/service-lists.tsx:180
@@ -9037,12 +9079,16 @@ msgstr "Arată stenograma integrală"
 msgid "Arată sursele hărții"
 msgstr "Show map sources"
 
+#: src/features/legal/components/reader/tldf-blocks.tsx:958
+msgid "Arată toată nota"
+msgstr "Show the whole note"
+
 #: src/features/ngos/registry/components/registry-answer.tsx:520
 msgid "Arată toate ({rowCount})"
 msgstr "Show all ({rowCount})"
 
 #. placeholder {0}: formatLegalNumber(ordered.length, i18n.locale)
-#: src/features/legal/components/act-timeline-band.tsx:144
+#: src/features/legal/components/act-timeline-band.tsx:138
 msgid "Arată toate cele {0} evenimente"
 msgstr "Show all {0} events"
 
@@ -9054,9 +9100,10 @@ msgstr "Show all {count}"
 msgid "Arată toate rândurile"
 msgstr "Show all rows"
 
+#: src/features/legal/components/reader/legal-reader-toc.tsx:57
 #: src/features/procurement/components/procurement-answerability-notice.tsx:92
 msgid "Arată tot"
-msgstr "Arată tot"
+msgstr "Show all"
 
 #: src/features/statistics/components/detail/detail-empty-state.tsx:43
 msgid "Arată tot intervalul"
@@ -9153,6 +9200,10 @@ msgstr "the army"
 msgid "Arrears"
 msgstr "Arrears"
 
+#: src/features/legal/components/reader/legal-reader-toc.tsx:251
+msgid "Art."
+msgstr "Art."
+
 #: src/features/private-companies/lib/caen-divisions.ts:106
 msgid "Arte și spectacole"
 msgstr "Arts and entertainment"
@@ -9160,6 +9211,10 @@ msgstr "Arts and entertainment"
 #: src/features/legal/lib/legal-vocabulary.ts:422
 msgid "articol"
 msgstr "article"
+
+#: src/features/legal/components/reader/legal-reader-toc.tsx:253
+msgid "Articole"
+msgstr "Articles"
 
 #: src/components/charts/components/filters-details/CompaniesSeriesFilter.tsx:27
 msgid "as of the release"
@@ -9177,7 +9232,7 @@ msgstr "hide contents"
 #~ msgid "Ascunde dovada"
 #~ msgstr "Ascunde dovada"
 
-#: src/features/legal/components/act-relevance-band.tsx:128
+#: src/features/legal/components/act-relevance-band.tsx:115
 msgid "Ascunde impactul fiscal"
 msgstr "Hide the fiscal impact"
 
@@ -9185,7 +9240,7 @@ msgstr "Hide the fiscal impact"
 msgid "Ascunde istoricul"
 msgstr "Hide the history"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:246
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:236
 msgid "Ascunde valorile, pe ani"
 msgstr "Hide the values, by year"
 
@@ -9475,7 +9530,7 @@ msgstr "Local authority"
 #~ msgstr "autoritate, BVB, RegAS, sancțiuni"
 
 #. placeholder {0}: row.authorityCui
-#: src/features/public-enterprises/lib/enterprise-text.ts:88
+#: src/features/public-enterprises/lib/enterprise-text.ts:90
 msgid "Autoritatea cu CUI {0}"
 msgstr "The authority with CUI {0}"
 
@@ -9781,7 +9836,7 @@ msgstr "Road money mostly goes to consortiums: that is why we count, not add up 
 
 #: src/components/sidebar/nav-main.tsx:56
 #: src/features/landing/lib/landing-groups.ts:60
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:194
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:184
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:358
 msgid "Banii publici"
 msgstr "Public money"
@@ -11367,7 +11422,7 @@ msgstr "The SEAP catalogue lists {family} export files up to {year}. This is wha
 msgid "Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019."
 msgstr "How many direct purchases, contracts and framework agreements, for how many lei, at which institutions, companies, categories and places: ask and compare, from SEAP, since 2019."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:164
+#: src/features/legal/components/hub/legislation-hub-head.tsx:172
 msgid "Câte alte acte din corpus îl citează."
 msgstr "How many other acts of the corpus cite it."
 
@@ -11472,13 +11527,13 @@ msgstr "Categorii cumpărate"
 #~ msgstr "Categorii și stadii"
 
 #: src/features/procurement/components/buyer/buyer-bands.tsx:144
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:147
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:137
 msgid "Categoriile achizițiilor nu s-au putut citi acum."
 msgstr "The purchases’ categories could not be read just now."
 
 #: src/features/procurement/components/buyer/buyer-bands.tsx:164
 #: src/features/procurement/components/supplier/supplier-bands.tsx:181
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:162
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:152
 msgid "Categoriile adună codurile CPV ale achizițiilor; valorile sunt fără TVA."
 msgstr "The categories group the purchases' CPV codes; values exclude VAT."
 
@@ -11498,7 +11553,7 @@ msgstr "The categories group the CPV codes of every contract, including those wo
 msgid "Categoriile grupează codurile CPV ale achizițiilor."
 msgstr "The categories group the purchases’ CPV codes."
 
-#: src/features/legal/components/act-relevance-band.tsx:64
+#: src/features/legal/components/act-relevance-band.tsx:61
 msgid "Categoriile, domeniile și cuvintele-cheie sunt atribuite automat de un model pe baza textului actului — nu sunt o clasificare legală."
 msgstr "Categories, domains and keywords are assigned automatically by a model from the text of the act — they are not a legal classification."
 
@@ -11533,11 +11588,15 @@ msgstr "Rubber and plastics"
 #~ msgstr "Cauta"
 
 #: src/features/justice/components/analysis/analysis-filters.tsx:55
-#: src/features/landing/components/search/landing-search.tsx:669
+#: src/features/landing/components/search/landing-search.tsx:717
 #: src/features/legal/components/legislation-shell.tsx:42
 #: src/features/national-budget/analytics/components/analytics-contents.tsx:553
 msgid "Caută"
 msgstr "Search"
+
+#: src/features/legal/components/hub/legislation-hub-search-more.tsx:11
+msgid "Caută „{term}” în <0>căutarea avansată</0>"
+msgstr "Search “{term}” in the <0>advanced search</0>"
 
 #: src/features/procurement/lib/analytics-questions.ts:74
 msgid "Caută „laptop\" în titlu: un coș numit altfel nu apare."
@@ -11762,7 +11821,7 @@ msgstr "Caută obiective"
 
 #: src/features/landing/components/landing-page.tsx:117
 #: src/features/landing/components/search/deferred-landing-search.tsx:148
-#: src/features/landing/components/search/landing-search.tsx:255
+#: src/features/landing/components/search/landing-search.tsx:283
 msgid "Caută primării, firme, legi…"
 msgstr "Town halls, firms, laws…"
 
@@ -11844,10 +11903,14 @@ msgid "Caută…"
 msgstr "Search…"
 
 #: src/features/landing/components/search/deferred-landing-search.tsx:238
-#: src/features/landing/components/search/landing-search.tsx:423
+#: src/features/landing/components/search/landing-search.tsx:460
 #: src/routes/investitii-publice/route.tsx:66
 msgid "Căutare"
 msgstr "Search"
+
+#: src/features/legal/components/hub/legislation-hub-search-more.tsx:9
+msgid "Căutare avansată"
+msgstr "Advanced search"
 
 #: src/routes/justitie.dosare.$caseId.tsx:98
 #~ msgid "Căutare cauze"
@@ -11951,8 +12014,8 @@ msgstr "The search did not respond — try again."
 
 #: src/components/entities/FloatingEntitySearch.tsx:131
 #: src/features/landing/components/search/deferred-landing-search.tsx:316
-#: src/features/landing/components/search/landing-search.tsx:182
-#: src/features/landing/components/search/search-parts.tsx:335
+#: src/features/landing/components/search/landing-search.tsx:207
+#: src/features/landing/components/search/search-parts.tsx:370
 msgid "Căutarea nu a răspuns."
 msgstr "Search did not respond."
 
@@ -12058,8 +12121,8 @@ msgid "Ce a prevăzut fiecare lege pentru fiecare an, din 2016."
 msgstr "What each law provided for each year, since 2016."
 
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:93
-msgid "Ce a primit de la stat"
-msgstr "What it received from the state"
+#~ msgid "Ce a primit de la stat"
+#~ msgstr "What it received from the state"
 
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:129
 msgid "Ce act s-a schimbat, prin ce act și de când. Data e cea a intrării în vigoare, așa cum o înregistrează sursa."
@@ -12132,7 +12195,7 @@ msgstr "What the legislation module contains and where the data comes from."
 msgid "Ce cumpără"
 msgstr "What it buys"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:140
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:130
 msgid "Ce cumpără direct, {period}"
 msgstr "What it buys directly, {period}"
 
@@ -12183,8 +12246,8 @@ msgstr "What they do and where"
 #~ msgid "Ce fac<0/>firmele în funcțiune"
 #~ msgstr "What active<0/>companies do"
 
-#: src/features/legal/components/act-references-band.tsx:50
-#: src/features/legal/components/act-references-band.tsx:86
+#: src/features/legal/components/act-references-band.tsx:51
+#: src/features/legal/components/act-references-band.tsx:87
 msgid "Ce face acest act"
 msgstr "What this act does"
 
@@ -12323,7 +12386,7 @@ msgstr "Which pages are opened and which features are used, so we know what is w
 msgid "Ce poți căuta"
 msgstr "What you can search for"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:240
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:230
 msgid "Ce raportează la AMEPIP"
 msgstr "What it reports to AMEPIP"
 
@@ -12416,7 +12479,7 @@ msgid "Ce spun listele oficiale, în edițiile încărcate. O licență sau un c
 msgstr "What the official lists say, in the editions loaded. A licence or certificate in a list does not prove it is valid today; the place is the service's, not the organisation's seat."
 
 #: src/features/public-enterprises/components/authority/authority-hero.tsx:43
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:285
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:275
 msgid "Ce spune fiecare sursă"
 msgstr "What each source says"
 
@@ -12440,7 +12503,7 @@ msgstr "What transfers are"
 msgid "Ce text citești aici — și unde e forma oficială"
 msgstr "What text you are reading here — and where the official form is"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:112
+#: src/features/privacy/components/cookie-settings-page.tsx:114
 msgid "Ce ține minte browserul tău"
 msgstr "What your browser remembers"
 
@@ -12520,11 +12583,11 @@ msgstr "The most recent change already in force is dated {0} — changes made af
 msgid "cea mai recentă revizie potrivită; candidați: {list}"
 msgstr "latest matching revision; candidates: {list}"
 
-#: src/features/legal/components/act-default-notices.tsx:58
+#: src/features/legal/components/act-default-notices.tsx:66
 msgid "Cea mai recentă versiune a actului ({latestKind}, {latestDate}) nu are încă text disponibil."
 msgstr "Cea mai recentă versiune a actului ({latestKind}, {latestDate}) nu are încă text disponibil."
 
-#: src/features/legal/components/act-default-notices.tsx:63
+#: src/features/legal/components/act-default-notices.tsx:71
 msgid "Cea mai recentă versiune a actului nu are încă text disponibil."
 msgstr "Cea mai recentă versiune a actului nu are încă text disponibil."
 
@@ -12681,7 +12744,7 @@ msgstr "The 16 domains the corpus covers."
 msgid "Cele 17 obiective ONU, până în 2030"
 msgstr "The 17 UN goals, to 2030"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:71
+#: src/features/legal/components/hub/legislation-hub-head.tsx:79
 msgid "Cele mai citate acte"
 msgstr "Most cited acts"
 
@@ -12783,7 +12846,7 @@ msgstr "Lowest values"
 msgid "Cele mai modificate"
 msgstr "Most amended"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:71
+#: src/features/legal/components/hub/legislation-hub-head.tsx:79
 #: src/features/legal/components/hub/legislation-hub.tsx:276
 msgid "Cele mai modificate acte"
 msgstr "Most amended acts"
@@ -13406,9 +13469,9 @@ msgstr "turnover"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:609
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:103
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:173
-#: src/features/private-companies/components/profile/company-years-chart.tsx:291
-#: src/features/private-companies/components/profile/company-years-chart.tsx:310
-#: src/features/private-companies/components/profile/company-years-chart.tsx:477
+#: src/features/private-companies/components/profile/company-years-chart.tsx:294
+#: src/features/private-companies/components/profile/company-years-chart.tsx:313
+#: src/features/private-companies/components/profile/company-years-chart.tsx:482
 #: src/features/private-companies/lib/company-analytics-text.ts:33
 #: src/features/private-companies/lib/company-profile-text.ts:233
 #: src/features/private-companies/lib/company-profile-text.ts:551
@@ -13429,7 +13492,7 @@ msgstr "Turnover from the financial statements, in nominal lei, not adjusted for
 msgid "Cifra de afaceri e aici doar ca măsură a mărimii firmei. Nu o împărțim la vânzările către stat: un contract se întinde pe mai mulți ani, iar valoarea lui nu e o plată."
 msgstr "The turnover is here only as a measure of the firm’s size. We do not divide it by the sales to the state: a contract spans several years, and its value is not a payment."
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:291
+#: src/features/private-companies/components/profile/company-years-chart.tsx:294
 msgid "Cifra de afaceri netă"
 msgstr "Net turnover"
 
@@ -13476,7 +13539,7 @@ msgstr "Turnover, net result and employees"
 #~ msgid "Cifra de afaceri, rezultatul net și salariații, {0}–{1}"
 #~ msgstr "Turnover, net result and employees, {0}–{1}"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:298
+#: src/features/private-companies/components/profile/company-years-chart.tsx:301
 msgid "Cifra de afaceri, rezultatul net și salariații, pe ani"
 msgstr "Turnover, net result and employees, by year"
 
@@ -13484,7 +13547,7 @@ msgstr "Turnover, net result and employees, by year"
 msgid "Cifra de afaceri, rezultatul sau profitul net și salariații"
 msgstr "Turnover, net result or net profit, and employees"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:329
+#: src/features/legal/components/hub/legislation-hub-head.tsx:337
 msgid "Cifra nu s-a încărcat."
 msgstr "The figure did not load."
 
@@ -13755,8 +13818,8 @@ msgstr "Who buys laptops?"
 msgid "Cine face achiziții directe de cel puțin 100.000 lei?"
 msgstr "Who makes direct purchases of at least 100,000 lei?"
 
-#: src/features/legal/components/act-references-band.tsx:50
-#: src/features/legal/components/act-references-band.tsx:86
+#: src/features/legal/components/act-references-band.tsx:51
+#: src/features/legal/components/act-references-band.tsx:87
 msgid "Cine îl citează"
 msgstr "Who cites it"
 
@@ -13776,7 +13839,7 @@ msgstr "Who controls them"
 msgid "cine modifică ce: actul care modifică (rând) × actul modificat (coloană)"
 msgstr "who amends what: the amending act (row) × the amended act (column)"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:54
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:53
 msgid "Cine o controlează"
 msgstr "Who controls it"
 
@@ -13808,12 +13871,12 @@ msgid "Citare sau nume uzual"
 msgstr "Citation or common name"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:692
-#: src/features/legal/components/hub/legislation-hub-head.tsx:115
+#: src/features/legal/components/hub/legislation-hub-head.tsx:123
 msgid "citări"
 msgstr "citations"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:663
-#: src/features/legal/components/hub/legislation-hub-head.tsx:78
+#: src/features/legal/components/hub/legislation-hub-head.tsx:86
 msgid "Citări"
 msgstr "Citations"
 
@@ -13826,7 +13889,7 @@ msgstr "citations received"
 msgid "citat de {0} ori"
 msgstr "citations: {0}"
 
-#: src/features/legal/components/act-versions-band.tsx:173
+#: src/features/legal/components/act-versions-band.tsx:244
 msgid "Citește această versiune"
 msgstr "Read this version"
 
@@ -13838,7 +13901,7 @@ msgstr "Read the full definition"
 msgid "Citește stenograma"
 msgstr "Citește stenograma"
 
-#: src/features/legal/components/act-plain-summary.tsx:179
+#: src/features/legal/components/act-plain-summary.tsx:145
 msgid "Citește tot rezumatul"
 msgstr "Read the full summary"
 
@@ -13954,7 +14017,7 @@ msgstr "Rankings"
 #~ msgid "Clasamentul acoperă {0} din {1} atribuit. Alte {2} provin din contracte încredințate unor asocieri cu mai mulți membri, unde repartiția pe furnizori nu este publicată."
 #~ msgstr "Clasamentul acoperă {0} din {1} atribuit. Alte {2} provin din contracte încredințate unor asocieri cu mai mulți membri, unde repartiția pe furnizori nu este publicată."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:75
+#: src/features/legal/components/hub/legislation-hub-head.tsx:83
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:607
 #: src/features/procurement/components/home/procurement-home-page.tsx:289
 msgid "Clasamentul după"
@@ -13980,7 +14043,7 @@ msgstr "The ranking could not be read."
 msgid "Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări."
 msgstr "Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:156
+#: src/features/legal/components/hub/legislation-hub-head.tsx:164
 msgid "Clasamentul se încarcă cu JavaScript. Toate actele, în director"
 msgstr "The ranking loads with JavaScript. All acts, in the directory"
 
@@ -14154,7 +14217,7 @@ msgid "Click UATs on the map, or Command-drag to add many."
 msgstr "Click UATs on the map, or Command-drag to add many."
 
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:286
-#: src/features/public-enterprises/lib/enterprise-text.ts:206
+#: src/features/public-enterprises/lib/enterprise-text.ts:208
 msgid "Clienți"
 msgstr "Clients"
 
@@ -15043,7 +15106,7 @@ msgstr "The export's national completeness has not been independently verified."
 msgid "completul {0}"
 msgstr "panel {0}"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:48
+#: src/features/public-enterprises/lib/enterprise-text.ts:50
 #: src/features/statistics/components/uat-map/uat-map-series.ts:60
 #: src/features/statistics/lib/comparison-format.ts:84
 msgid "comună"
@@ -15122,7 +15185,7 @@ msgstr "Concursuri"
 msgid "Condition {0}"
 msgstr "Condition {0}"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:196
+#: src/features/public-enterprises/lib/enterprise-text.ts:198
 msgid "Conducere"
 msgstr "Governance"
 
@@ -15309,7 +15372,7 @@ msgstr "Superior Council of Magistracy, plenum"
 msgid "Consiliul Superior al Magistraturii, secția pentru judecători"
 msgstr "Superior Council of Magistracy, section for judges"
 
-#: src/features/legal/components/act-versions-band.tsx:60
+#: src/features/legal/components/act-versions-band.tsx:80
 msgid "Consolidările portalului sunt reproduceri neoficiale; forma autentică este cea din Monitorul Oficial."
 msgstr "The portal’s consolidations are unofficial reproductions; the authentic form is the one in the Official Gazette."
 
@@ -15723,13 +15786,13 @@ msgstr "contracts and subsequent contracts"
 
 #. placeholder {0}: companyMoneyText(money.received)
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:87
-msgid "Contracte și plăți publice de {0}, {period}."
-msgstr "Public contracts and payments of {0}, {period}."
+#~ msgid "Contracte și plăți publice de {0}, {period}."
+#~ msgstr "Public contracts and payments of {0}, {period}."
 
 #. placeholder {0}: companyMoneyText(money.received)
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:88
-msgid "Contracte și plăți publice de {0}."
-msgstr "Public contracts and payments of {0}."
+#~ msgid "Contracte și plăți publice de {0}."
+#~ msgstr "Public contracts and payments of {0}."
 
 #: src/features/private-companies/components/profile/company-money-band.tsx:193
 #~ msgid "Contracte și plăți publice pe an"
@@ -15993,7 +16056,7 @@ msgstr "Cookie consent required"
 #~ msgid "Cookie Settings"
 #~ msgstr "Cookie Settings"
 
-#: src/features/privacy/components/consent-card.tsx:285
+#: src/features/privacy/components/consent-card.tsx:288
 msgid "Cookie-uri puține, la vedere"
 msgstr "Few cookies, in plain view"
 
@@ -16291,7 +16354,7 @@ msgstr "Could not copy series to clipboard"
 msgid "Could not delete the conversation. Please try again."
 msgstr "Could not delete the conversation. Please try again."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2954
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2955
 msgid "Could not load {periodLabel}. Showing {overviewPeriodLabel}."
 msgstr "Could not load {periodLabel}. Showing {overviewPeriodLabel}."
 
@@ -16931,7 +16994,7 @@ msgstr "with status {0}"
 msgid "cu statut „modificat”"
 msgstr "with status “amended”"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:254
+#: src/features/legal/components/hub/legislation-hub-head.tsx:262
 msgid "Cu text de citit"
 msgstr "With text to read"
 
@@ -16943,7 +17006,7 @@ msgstr "including VAT"
 msgid "cu ultima etapă în această zi"
 msgstr "cu ultima etapă în această zi"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:285
+#: src/features/legal/components/hub/legislation-hub-head.tsx:293
 msgid "Cu versiuni consolidate"
 msgstr "With consolidated versions"
 
@@ -17340,17 +17403,22 @@ msgid "Cunoaștem structura acestei matrice din catalogul INS, dar nu i-am înc�
 msgstr "We know this matrix's structure from the INS catalog, but its data has not been loaded yet. You can request that it be prioritized."
 
 #. placeholder {0}: act.aliases.join(', ')
-#: src/features/legal/components/act-detail-header.tsx:107
+#: src/features/legal/components/act-detail-header.tsx:230
 msgid "cunoscut și ca {0}"
 msgstr "also known as {0}"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:367
-#: src/features/legal/components/reader/legal-reader-toc.tsx:154
+#: src/features/legal/components/reader/act-reading-bar.tsx:66
+#: src/features/legal/components/reader/act-reading-bar.tsx:75
+#: src/features/legal/components/reader/act-reading-bar.tsx:81
 #: src/features/national-budget/analytics/components/analytics-contents.tsx:515
 msgid "Cuprins"
 msgstr "Contents"
 
-#: src/features/legal/components/reader/legal-reader-toc.tsx:151
+#: src/features/legal/components/reader/legal-reader-toc.tsx:51
+#~ msgid "Cuprins restrâns"
+#~ msgstr "Contents folded"
+
+#: src/features/legal/components/reader/legal-reader-toc.tsx:217
 msgid "Cuprinsul actului"
 msgstr "Contents of the act"
 
@@ -17358,7 +17426,7 @@ msgstr "Contents of the act"
 msgid "Cuprinsul nu s-a încărcat — închide și redeschide ediția."
 msgstr "The contents did not load — close and reopen the issue."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:403
+#: src/features/legal/components/reader/legal-reader-page.tsx:578
 msgid "Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos."
 msgstr "The table of contents could not be loaded — the full text remains below."
 
@@ -17439,7 +17507,7 @@ msgstr "Custom Series Value"
 msgid "Cuvântul listei ANAF, apoi cifrele admise din bilanțurile pe {year}. Ce spun celelalte surse, când nu e „în funcțiune”, stă sub nume."
 msgstr "ANAF’s list’s word, then the admitted figures from the {year} statements. What the other sources say, when it is not “in business”, sits under the name."
 
-#: src/features/legal/components/act-relevance-band.tsx:144
+#: src/features/legal/components/act-relevance-band.tsx:131
 msgid "Cuvinte-cheie"
 msgstr "Keywords"
 
@@ -17488,11 +17556,11 @@ msgctxt "day"
 msgid "Data"
 msgstr "Date"
 
-#: src/features/legal/components/act-default-notices.tsx:89
+#: src/features/legal/components/act-default-notices.tsx:97
 msgid "Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de celelalte versiuni. Afișăm singurul text disponibil."
 msgstr "Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de celelalte versiuni. Afișăm singurul text disponibil."
 
-#: src/features/legal/components/act-default-notices.tsx:83
+#: src/features/legal/components/act-default-notices.tsx:91
 msgid "Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de celelalte versiuni. Afișăm una dintre versiunile cu text; celelalte se pot alege din listă."
 msgstr "Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de celelalte versiuni. Afișăm una dintre versiunile cu text; celelalte se pot alege din listă."
 
@@ -17788,7 +17856,7 @@ msgstr "Date and time"
 msgid "date ascunse"
 msgstr "hidden data"
 
-#: src/features/legal/components/act-key-dates.tsx:35
+#: src/features/legal/components/act-key-dates.tsx:36
 msgid "Date cheie"
 msgstr "Key dates"
 
@@ -18299,7 +18367,7 @@ msgstr "on social insurance"
 #~ msgid "De câte ori actul e citat de alte acte din corpus."
 #~ msgstr "How many times the act is cited by other acts of the corpus."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:166
+#: src/features/legal/components/hub/legislation-hub-head.tsx:174
 msgid "De câte ori actul e numit ca țintă în titlul unui act care îl modifică."
 msgstr "How many times the act is named as the target in the title of an act that amends it."
 
@@ -18353,11 +18421,11 @@ msgstr "on personal insolvency"
 msgid "de instituțiile {where}"
 msgstr "by the institutions {where}"
 
-#: src/features/legal/components/analytics/analytics-charts.tsx:206
+#: src/features/legal/components/analytics/analytics-charts.tsx:299
 msgid "de jos în sus"
 msgstr "bottom to top"
 
-#: src/features/legal/components/analytics/analytics-charts.tsx:206
+#: src/features/legal/components/analytics/analytics-charts.tsx:299
 msgid "De jos în sus:"
 msgstr "Bottom to top:"
 
@@ -18430,7 +18498,7 @@ msgstr "From whom"
 msgid "De la cine cumpără"
 msgstr "Who it buys from"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:151
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:141
 msgid "De la cine cumpără direct, {period}"
 msgstr "Who it buys from directly, {period}"
 
@@ -19086,7 +19154,7 @@ msgid "Denumire"
 msgstr "Name"
 
 #: src/features/entity-search/components/entity-result-row.tsx:115
-#: src/features/landing/components/search/search-parts.tsx:139
+#: src/features/landing/components/search/search-parts.tsx:154
 msgid "denumire din directorul platformei, nu din ediția ONRC"
 msgstr "name from the platform directory, not from the ONRC edition"
 
@@ -19395,7 +19463,7 @@ msgstr "the description"
 msgid "Descrierea publicată de INS pentru această matrice nu are forma așteptată, așa că seria nu poate fi citită în siguranță. Am înregistrat problema."
 msgstr "The description INS publishes for this matrix is not in the expected shape, so the series cannot be read safely. The problem has been logged."
 
-#: src/features/legal/components/act-plain-summary.tsx:195
+#: src/features/legal/components/act-plain-summary.tsx:156
 msgid "Descrierea și rezumatul sunt generate de AI din textul actului — un strat explicativ, nu textul legii și nu consultanță juridică."
 msgstr "The description and summary are generated by AI from the text of the act — an explanatory layer, not the text of the law and not legal advice."
 
@@ -19521,6 +19589,10 @@ msgstr "About Monitorul Oficial"
 msgid "Despre starea din registru"
 msgstr "About the registry status"
 
+#: src/features/legal/components/reader/act-text-about.tsx:35
+msgid "Despre textul afișat"
+msgstr "About the text shown"
+
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:129
 msgid "Detail level"
 msgstr "Detail level"
@@ -19562,11 +19634,12 @@ msgid "Detaliat"
 msgstr "Detailed"
 
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:122
+#: src/features/legal/components/act-consolidation-banner.tsx:58
 #: src/features/public-investments/components/ObjectiveListRow.tsx:44
 msgid "Detalii"
 msgstr "Details"
 
-#: src/features/legal/components/legal-act-page.tsx:118
+#: src/features/legal/components/legal-act-page.tsx:126
 msgid "Detalii despre acest act"
 msgstr "Details about this act"
 
@@ -19696,7 +19769,7 @@ msgstr "Dimensions"
 #. placeholder {0}: formatDate(saved.updatedAt, 'long')
 #: src/features/legal/components/analytics/legislation-analysis.tsx:231
 #: src/features/legal/components/legislation-search-filters.tsx:112
-#: src/features/privacy/components/cookie-settings-page.tsx:144
+#: src/features/privacy/components/cookie-settings-page.tsx:146
 msgid "din {0}"
 msgstr "since {0}"
 
@@ -19926,7 +19999,7 @@ msgstr "in other matters"
 msgid "Din banii trecuți de la un buget la altul, {0} apar ca subvenții primite („De la alte bugete\"), restul în alte linii de venit ale celor care îi primesc. Cine a dat cui nu e tipărit, de aceea nu legăm bugetele între ele."
 msgstr "Of the money passed from one budget to another, {0} appears as subsidies received (“From other budgets”), the rest in other revenue lines of the budgets receiving it. Who gave to whom is not printed, so the budgets are not linked to each other."
 
-#: src/features/privacy/components/cookie-settings-page.tsx:142
+#: src/features/privacy/components/cookie-settings-page.tsx:144
 msgid "din browserul tău"
 msgstr "from your browser"
 
@@ -20159,7 +20232,7 @@ msgstr "Of GDP"
 #~ msgid "din PIB-ul estimat pe tot anul"
 #~ msgstr "of the GDP estimated for the full year"
 
-#: src/features/legal/components/analytics/analytics-charts.tsx:272
+#: src/features/legal/components/analytics/analytics-charts.tsx:365
 msgid "din rând"
 msgstr "of the row"
 
@@ -20553,7 +20626,7 @@ msgstr "Catalog only"
 #~ msgid "Doar companii și instituții publice, cu etichete de încredere."
 #~ msgstr "Doar companii și instituții publice, cu etichete de încredere."
 
-#: src/features/legal/components/act-publication-band.tsx:116
+#: src/features/legal/components/act-publication-band.tsx:124
 #: src/features/legal/components/legislation-gazette-directory.tsx:343
 msgid "doar coordonate de publicare"
 msgstr "publication details only"
@@ -20566,9 +20639,9 @@ msgstr "Only the decisions captured so far, not all of the Court's; no date, onl
 msgid "doar ele"
 msgstr "only transfers"
 
-#: src/features/privacy/components/consent-card.tsx:372
-#: src/features/privacy/components/cookie-settings-page.tsx:137
-#: src/features/privacy/components/cookie-settings-page.tsx:225
+#: src/features/privacy/components/consent-card.tsx:375
+#: src/features/privacy/components/cookie-settings-page.tsx:139
+#: src/features/privacy/components/cookie-settings-page.tsx:227
 msgid "Doar esențiale"
 msgstr "Essentials only"
 
@@ -20728,7 +20801,7 @@ msgid "Document"
 msgstr "Document"
 
 #. placeholder {0}: anchor.sourceDocumentId
-#: src/features/legal/components/act-anchors-band.tsx:119
+#: src/features/legal/components/act-anchors-band.tsx:122
 msgid "document {0} — fără fișă de act la noi"
 msgstr "document {0} — no act page here"
 
@@ -20764,11 +20837,11 @@ msgstr "Documents up to {0}"
 msgid "Documentul"
 msgstr "Document"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:742
+#: src/features/legal/components/reader/legal-reader-page.tsx:931
 msgid "Documentul a fost recompilat între încărcări — se reîncarcă varianta curentă."
 msgstr "The document was recompiled between loads — reloading the current version."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:410
+#: src/features/legal/components/reader/legal-reader-page.tsx:585
 msgid "Documentul cerut nu aparține acestui act, așa că afișăm forma textului afișată în mod normal."
 msgstr "The requested document does not belong to this act, so we show the form of the text normally shown."
 
@@ -20791,7 +20864,7 @@ msgstr "US dollars"
 #~ msgid "domenii"
 #~ msgstr "domains"
 
-#: src/features/legal/components/act-relevance-band.tsx:92
+#: src/features/legal/components/act-relevance-band.tsx:86
 #: src/features/legal/components/legislation-domain-grid.tsx:52
 msgid "Domenii"
 msgstr "Domains"
@@ -21387,11 +21460,11 @@ msgstr "Dwellings per 1,000 inhabitants signals housing capacity relative to res
 msgid "E a întregului acord-cadru, cu {firms}: instituția cumpără de la oricare dintre ele."
 msgstr "It is the whole framework agreement's, with {firms}: the institution buys from any of them."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:142
+#: src/features/public-enterprises/lib/enterprise-text.ts:144
 msgid "E în lista ANAF, care nu-i numește autoritatea; anunțurile de selecție AMEPIP nu sunt încărcate acum."
 msgstr "It is on ANAF’s list, which does not name its authority; AMEPIP’s selection announcements are not loaded just now."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:145
+#: src/features/public-enterprises/lib/enterprise-text.ts:147
 msgid "E în lista ANAF, dar nicio listă nu-i numește autoritatea."
 msgstr "It is on ANAF’s list, but no list names its authority."
 
@@ -21835,7 +21908,7 @@ msgstr "Effective Date"
 msgid "Effective Spending"
 msgstr "Effective Spending"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:200
+#: src/features/public-enterprises/lib/enterprise-text.ts:202
 msgid "Egalitate de gen"
 msgstr "Gender equality"
 
@@ -21864,7 +21937,7 @@ msgstr "Elimină filtrul"
 msgid "Elimină filtrul {0}"
 msgstr "Elimină filtrul {0}"
 
-#: src/features/landing/components/search/search-parts.tsx:224
+#: src/features/landing/components/search/search-parts.tsx:259
 #: src/features/procurement/components/procurement-category-bars.tsx:280
 #: src/features/statistics/components/explorer/statistics-active-filters.tsx:87
 msgid "Elimină filtrul {label}"
@@ -21906,7 +21979,7 @@ msgstr "Elimină filtrul de vorbitor"
 msgid "Elimină filtrul de zi"
 msgstr "Elimină filtrul de zi"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:415
+#: src/features/legal/components/reader/legal-reader-page.tsx:590
 msgid "Elimină parametrul din adresă"
 msgstr "Remove the parameter from the address"
 
@@ -21932,6 +22005,7 @@ msgstr "Email updates for all entities in this campaign"
 msgid "Emigrants (POP309E)"
 msgstr "Emigrants (POP309E)"
 
+#: src/features/legal/components/act-detail-header.tsx:131
 #: src/features/legal/components/analytics/legislation-analysis.tsx:902
 msgid "Emitent"
 msgstr "Issuer"
@@ -22106,6 +22180,11 @@ msgstr "Enter text content…"
 msgid "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
 msgstr "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
 
+#. placeholder {0}: more.label
+#: src/features/landing/components/search/landing-search.tsx:669
+msgid "Enter: {0}."
+msgstr "Enter: {0}."
+
 #: src/components/charts/components/series-config/SeriesFilter.tsx:833
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1047
 #: src/components/filters/EntityAnalyticsFilter.tsx:467
@@ -22136,7 +22215,7 @@ msgstr "Entity analytics – Transparenta.eu"
 msgid "Entity Details"
 msgstr "Entity Details"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2619
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2620
 msgid "Entity not found"
 msgstr "Entity not found"
 
@@ -22180,7 +22259,7 @@ msgstr "Equal width"
 msgid "equals"
 msgstr "equals"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:627
+#: src/features/legal/components/reader/legal-reader-page.tsx:816
 msgid "Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă."
 msgstr "Network or server error — whether the text exists remains an open question."
 
@@ -22197,7 +22276,7 @@ msgid "Error Loading Chart Data"
 msgstr "Error Loading Chart Data"
 
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:185
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2817
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2818
 msgid "Error loading data"
 msgstr "Error loading data"
 
@@ -22233,11 +22312,11 @@ msgstr "Errors"
 msgid "Esențiale"
 msgstr "Essential"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:175
+#: src/features/privacy/components/cookie-settings-page.tsx:177
 msgid "Esențiale, mereu active"
 msgstr "Essential, always on"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:115
+#: src/features/privacy/components/cookie-settings-page.tsx:117
 msgid "Esențialul rămâne la tine, în browser. Restul pornește numai dacă îl pornești — și se vede mai jos, rând cu rând, ce anume."
 msgstr "The essentials stay with you, in your browser. The rest runs only if you switch it on — and what exactly is listed below, row by row."
 
@@ -22875,7 +22954,7 @@ msgstr "Export failed. Try again."
 msgid "Exportul curent al registrului național ONG nu are o intrare cu acest număr. Numărul se caută exact cum e scris în registru (de exemplu 1471/A/2012); în registru o organizație se poate găsi și după nume."
 msgstr "The current export of the National NGO Registry has no entry with this number. The number is looked up exactly as the registry writes it (for example 1471/A/2012); in the registry, an organisation can also be found by name."
 
-#: src/features/legal/components/act-versions-band.tsx:58
+#: src/features/legal/components/act-versions-band.tsx:78
 msgid "Expresiile de text pe care le ținem pentru acest act, cu data lor și ce anume putem afișa."
 msgstr "The text expressions we hold for this act, with their date and what we can show of each."
 
@@ -22885,8 +22964,8 @@ msgstr "External link"
 
 #. placeholder {0}: tocLabel(node.entry)
 #: src/features/legal/components/reader/legal-reader-toc.tsx:108
-msgid "Extinde {0}"
-msgstr "Expand {0}"
+#~ msgid "Extinde {0}"
+#~ msgstr "Expand {0}"
 
 #: src/features/private-companies/lib/caen-divisions.ts:31
 msgid "Extracția cărbunelui"
@@ -22902,7 +22981,7 @@ msgctxt "CAEN Rev.3 division"
 msgid "Extracţia minereurilor metalifere"
 msgstr "Mining of metal ores"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:625
+#: src/features/legal/components/reader/legal-reader-page.tsx:814
 msgid "Extracția nu a produs un text servibil pentru această expresie."
 msgstr "The extraction did not produce a servable text for this expression."
 
@@ -23367,6 +23446,10 @@ msgstr "No CAEN code in the ANAF observation"
 msgid "Fără cod CPV"
 msgstr "No CPV code"
 
+#: src/components/budget-explorer/budget-transform.ts:155
+msgid "Fără cod de clasificație"
+msgstr "No classification code"
+
 #: src/features/private-companies/lib/company-activity-text.ts:68
 #: src/features/private-companies/lib/company-main-activity-text.ts:318
 msgid "fără cod în sursă"
@@ -23402,8 +23485,8 @@ msgstr "no contents in the archive"
 #: src/features/justice/components/case/justice-case-page.tsx:210
 #: src/features/justice/components/company-litigation.tsx:121
 #: src/features/justice/components/court/justice-court-cases.tsx:55
-#: src/features/legal/components/act-timeline-band.tsx:116
-#: src/features/legal/components/act-versions-band.tsx:142
+#: src/features/legal/components/act-timeline-band.tsx:110
+#: src/features/legal/components/act-versions-band.tsx:193
 #: src/features/legal/components/legislation-changes-feed.tsx:263
 #: src/features/procurement/components/contract/contract-block.tsx:393
 #: src/features/procurement/components/procedure/procedure-block.tsx:527
@@ -23418,7 +23501,7 @@ msgstr "Fără dată"
 msgid "fără dată de intrare în vigoare"
 msgstr "no entry-into-force date"
 
-#: src/features/legal/components/act-key-dates.tsx:69
+#: src/features/legal/components/act-key-dates.tsx:62
 msgid "fără dată exactă"
 msgstr "no exact date"
 
@@ -23524,7 +23607,7 @@ msgstr "without transfers"
 msgid "fără emitent"
 msgstr "no issuer"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:441
+#: src/features/legal/components/reader/legal-reader-page.tsx:615
 msgid "Fără expresie canonică"
 msgstr "No canonical expression"
 
@@ -23552,7 +23635,7 @@ msgstr "No company record"
 msgid "Fără fișă de firmă: nicio situație financiară."
 msgstr "No company record: no financial statements."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:77
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:76
 msgid "Fără fișă de firmă: nu se știe ce a vândut instituțiilor."
 msgstr "No company record: what it sold to institutions is not known."
 
@@ -23747,7 +23830,7 @@ msgid "Fără profil în ediția ONRC"
 msgstr "No profile in the ONRC edition"
 
 #: src/features/entity-search/components/entity-result-row.tsx:95
-#: src/features/landing/components/search/search-parts.tsx:142
+#: src/features/landing/components/search/search-parts.tsx:157
 msgid "fără profil pe platformă"
 msgstr "no profile on the platform"
 
@@ -23853,7 +23936,7 @@ msgstr "No statement, or no employees reported"
 
 #: src/features/public-enterprises/components/enterprise/enterprise-parts.tsx:275
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:160
-#: src/features/public-enterprises/lib/enterprise-text.ts:63
+#: src/features/public-enterprises/lib/enterprise-text.ts:65
 msgid "fără stare"
 msgstr "no status"
 
@@ -23915,7 +23998,7 @@ msgstr "No procedure type"
 msgid "Fără tip în sursă"
 msgstr "No type in the source"
 
-#: src/features/legal/components/reader/legal-reader-toc.tsx:54
+#: src/features/legal/lib/legal-outline.ts:23
 msgid "fără titlu"
 msgstr "untitled"
 
@@ -24404,11 +24487,11 @@ msgstr "Fiecare sumă critică are dovadă de sursă."
 #~ msgid "Fiecare sursă,<0/>într-un singur loc"
 #~ msgstr "Every source,<0/>in one place"
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:679
+#: src/features/legal/components/reader/tldf-blocks.tsx:794
 msgid "Figură din actul original (imagine indisponibilă)"
 msgstr "Figure from the original act (image unavailable)"
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:678
+#: src/features/legal/components/reader/tldf-blocks.tsx:793
 msgid "Figură din actul original: {alt}"
 msgstr "Figure from the original act: {alt}"
 
@@ -24596,7 +24679,7 @@ msgstr "Filtre indisponibile în v1:"
 #~ msgid "Filtre servicii"
 #~ msgstr "Filtre servicii"
 
-#: src/features/landing/components/search/landing-search.tsx:701
+#: src/features/landing/components/search/landing-search.tsx:801
 msgid "Filtre sugerate"
 msgstr "Suggested filters"
 
@@ -24685,7 +24768,7 @@ msgstr "Filters apply straight away. The page URL keeps them."
 msgid "Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 msgstr "Filters are kept in the address — a filtered view is a link you can share."
 
-#: src/features/landing/components/search/search-parts.tsx:260
+#: src/features/landing/components/search/search-parts.tsx:295
 #: src/features/ngos/registry/components/registry-head.tsx:155
 #: src/features/procurement/components/analytics/analytics-controls.tsx:152
 msgid "Filtru"
@@ -24837,7 +24920,7 @@ msgstr "Financial Trends"
 msgid "Finanțarea"
 msgstr "Funding"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:194
+#: src/features/public-enterprises/lib/enterprise-text.ts:196
 #: src/features/statistics/lib/landing-constants.ts:31
 msgid "Finanțe"
 msgstr "Finance"
@@ -25226,7 +25309,7 @@ msgstr "Companies with losses, by county"
 #~ msgid "Firmele cu situație financiară pe {year}, după județul comun al firmei în ediția ONRC"
 #~ msgstr "Companies with a financial statement for {year}, by the company’s common county in the ONRC edition"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:157
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:147
 msgid "Firmele de la care a cumpărat nu s-au putut citi acum."
 msgstr "The companies it bought from could not be read just now."
 
@@ -25371,7 +25454,8 @@ msgstr "First value only"
 msgid "First value only: keep one deterministic row (fallback/debug)."
 msgstr "First value only: keep one deterministic row (fallback/debug)."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:518
+#: src/features/legal/components/reader/legal-reader-page.tsx:700
+#: src/features/legal/components/reader/legal-reader-toc.tsx:147
 msgid "Fișa actului"
 msgstr "Act page"
 
@@ -25431,7 +25515,7 @@ msgstr "Fiscal years"
 #~ msgid "Fișele autorităților nu s-au putut citi acum: fără tipul lor și fără celelalte întreprinderi pe care le au."
 #~ msgstr "The authorities’ records could not be read just now: without their kind and the other enterprises they have."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:64
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:63
 msgid "Fișele autorităților nu s-au putut citi acum: tipul lor și celelalte întreprinderi pe care le au lipsesc de aici."
 msgstr "The authorities’ records could not be read just now: their kind and the other enterprises they have are missing here."
 
@@ -25472,7 +25556,7 @@ msgid "Fișierul nu a putut fi făcut. Încearcă din nou."
 msgstr "The file could not be made. Try again."
 
 #: src/features/private-companies/components/profile/company-years-band.tsx:467
-#: src/features/private-companies/components/profile/company-years-chart.tsx:293
+#: src/features/private-companies/components/profile/company-years-chart.tsx:296
 msgid "Fișierul pe data.gov.ro"
 msgstr "The file on data.gov.ro"
 
@@ -25564,7 +25648,7 @@ msgstr "Use Ctrl + scroll to zoom the map"
 msgid "Folosește două degete pentru a muta harta"
 msgstr "Use two fingers to move the map"
 
-#: src/features/privacy/components/consent-card.tsx:297
+#: src/features/privacy/components/consent-card.tsx:300
 msgid "Folosim doar ce e nevoie ca site-ul să meargă. Statisticile de utilizare și rapoartele de erori pornesc numai dacă alegi tu."
 msgstr "We use only what the site needs to work. Usage statistics and error reports turn on only if you choose them."
 
@@ -25676,25 +25760,33 @@ msgstr "form {0}"
 #~ msgid "forma afișată"
 #~ msgstr "form shown"
 
-#: src/features/legal/components/act-versions-band.tsx:125
+#: src/features/legal/components/act-versions-band.tsx:201
 msgid "forma afișată implicit"
 msgstr "forma afișată implicit"
+
+#: src/features/legal/components/reader/legal-reader-toc.tsx:105
+msgid "Forma afișată nu are un articol {missing}."
+msgstr "The version shown has no article {missing}."
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:176
 msgid "Forma codului din sursă nu permite o potrivire exactă cu o activitate ONRC; codul nu e completat cu zerouri."
 msgstr "The source code's form allows no exact match with an ONRC activity; the code is not padded with zeros."
 
-#: src/features/legal/components/act-consolidation-banner.tsx:39
+#: src/features/legal/components/act-consolidation-banner.tsx:44
 msgid "Formă consolidată neoficială, cu caracter informativ."
 msgstr "Formă consolidată neoficială, cu caracter informativ."
 
-#: src/features/legal/components/act-consolidation-banner.tsx:60
+#: src/features/legal/components/act-consolidation-banner.tsx:73
 msgid "Forma consolidată pe Portalul Legislativ"
 msgstr "Forma consolidată pe Portalul Legislativ"
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:312
 msgid "formă de cod fără corespondent ONRC"
 msgstr "code form with no ONRC counterpart"
+
+#: src/features/legal/components/reader/act-reading-bar.tsx:124
+msgid "Forma din {shownName}"
+msgstr "Version of {shownName}"
 
 #: src/features/ngos/registry/components/registry-filters.tsx:320
 msgid "Forma este număr/literă/an: 3446/A/2026."
@@ -25737,15 +25829,15 @@ msgstr "Formula:"
 #~ msgid "Formular"
 #~ msgstr "Formular"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:476
+#: src/features/private-companies/components/profile/company-years-chart.tsx:481
 msgid "Formularul"
 msgstr "Form"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:271
+#: src/features/public-enterprises/lib/enterprise-text.ts:297
 msgid "Formularul AMEPIP e raportat de întreprindere și nu e verificat; unele valori ies din unitatea lor; „%” în galben e scris cum îl dă sursa."
 msgstr "The AMEPIP form is reported by the enterprise and not checked; some values do not fit their unit; a “%” in amber is written as the source gives it."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:257
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:247
 msgid "Formularul AMEPIP, pe ani"
 msgstr "The AMEPIP form, by year"
 
@@ -25754,11 +25846,11 @@ msgid "formularul bilanțului nu e verificat"
 msgstr "the statement’s form is not verified"
 
 #. placeholder {0}: panel.year
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:230
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:220
 msgid "Formularul pe {0}, cum l-a raportat întreprinderea: consiliul de administrație, oamenii, dividendele."
 msgstr "The form for {0}, as the enterprise reported it: the board, the people, the dividends."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:257
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:247
 msgid "Formularul raportat de întreprindere"
 msgstr "The form the enterprise reported"
 
@@ -26143,7 +26235,7 @@ msgstr "Go to Entity Table"
 msgid "Go to homepage"
 msgstr "Go to homepage"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1124
+#: src/components/budget-explorer/BudgetTreemap.tsx:1130
 msgid "Go to Main Categories"
 msgstr "Go to Main Categories"
 
@@ -26848,7 +26940,7 @@ msgstr "Jan"
 #~ msgid "Identification"
 #~ msgstr "Identification"
 
-#: src/features/landing/components/search/landing-search.tsx:671
+#: src/features/landing/components/search/landing-search.tsx:719
 msgid "Identificator"
 msgstr "Identifier"
 
@@ -27266,39 +27358,39 @@ msgstr "in {countyGroups} county groups"
 msgid "în {period}"
 msgstr "in {period}"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:238
+#: src/features/public-enterprises/lib/enterprise-text.ts:240
 msgid "În {period} a atribuit {awarded}; achizițiile directe nu s-au putut citi acum."
 msgstr "In {period} it awarded {awarded}; its direct purchases could not be read just now."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:239
+#: src/features/public-enterprises/lib/enterprise-text.ts:241
 msgid "În {period} a atribuit {awarded}."
 msgstr "In {period} it awarded {awarded}."
 
 #. placeholder {0}: directPurchasesCount(direct)
-#: src/features/public-enterprises/lib/enterprise-text.ts:228
+#: src/features/public-enterprises/lib/enterprise-text.ts:230
 msgid "În {period} a făcut {0}"
 msgstr "In {period} it made {0}"
 
 #. placeholder {0}: directPurchasesCount(direct)
 #. placeholder {1}: moneyText(profile.direct.value)
-#: src/features/public-enterprises/lib/enterprise-text.ts:227
+#: src/features/public-enterprises/lib/enterprise-text.ts:229
 msgid "În {period} a făcut {0}, de {1} fără TVA"
 msgstr "In {period} it made {0}, worth {1} excluding VAT"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:240
+#: src/features/public-enterprises/lib/enterprise-text.ts:242
 msgid "În {period} a semnat {signed}; contractele atribuite nu s-au putut citi acum."
 msgstr "In {period} it signed {signed}; the contracts it awarded could not be read just now."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:240
+#: src/features/public-enterprises/lib/enterprise-text.ts:242
 msgid "În {period} a semnat {signed}."
 msgstr "In {period} it signed {signed}."
 
 #: src/features/procurement/lib/buyer-text.ts:128
-#: src/features/public-enterprises/lib/enterprise-text.ts:241
+#: src/features/public-enterprises/lib/enterprise-text.ts:243
 msgid "În {period} nu are achiziții directe publicate în SEAP; contractele atribuite nu s-au putut citi acum."
 msgstr "In {period} it has no direct purchases published in SEAP; the contracts it awarded could not be read just now."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:242
+#: src/features/public-enterprises/lib/enterprise-text.ts:244
 msgid "În {period} nu are achiziții publicate în SEAP."
 msgstr "In {period} it has no purchases published in SEAP."
 
@@ -27504,7 +27596,7 @@ msgid "În analiza bilanțurilor nu e grupată la o activitate."
 msgstr "In the companies analysis it is grouped under no activity."
 
 #. placeholder {0}: yearRanges(tables.withheldFormYears)
-#: src/features/public-enterprises/lib/enterprise-text.ts:275
+#: src/features/public-enterprises/lib/enterprise-text.ts:301
 msgid "În anii fără formular ({0}), AMEPIP are totuși valori pentru dividende, investiții și cercetare; nu sunt arătate: un 0 de acolo poate fi o căsuță goală."
 msgstr "In the years with no form ({0}), AMEPIP still has values for dividends, investment and research; they are not shown: a 0 there may be an empty cell."
 
@@ -27662,7 +27754,7 @@ msgid "în fond"
 msgstr "at first instance"
 
 #. placeholder {0}: tables.form.years[tables.form.years.length - 1] ?? ''
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:236
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:226
 msgid "În formularul pe {0}, rândurile despre consiliu, oameni și dividende sunt goale."
 msgstr "In the {0} form, the rows on the board, the people and the dividends are empty."
 
@@ -27795,13 +27887,13 @@ msgstr "in the acts’ names, titles and text"
 msgid "In one year, you will pay"
 msgstr "In one year, you will pay"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:240
+#: src/features/legal/components/hub/legislation-hub-head.tsx:248
 msgid "În Portalul Legislativ"
 msgstr "In Portalul Legislativ"
 
 #. placeholder {0}: h.years.min
 #. placeholder {1}: h.years.max
-#: src/features/legal/components/hub/legislation-hub-head.tsx:236
+#: src/features/legal/components/hub/legislation-hub-head.tsx:244
 msgid "În Portalul Legislativ, {0}–{1}"
 msgstr "In Portalul Legislativ, {0}–{1}"
 
@@ -27921,10 +28013,14 @@ msgstr "under review"
 msgid "În vigoare"
 msgstr "In force"
 
+#: src/features/legal/components/act-detail-header.tsx:132
+msgid "În vigoare din"
+msgstr "In force since"
+
 #. placeholder {0}: formatLegalDate(act.entryIntoForce, i18n.locale)
 #: src/features/legal/components/act-detail-header.tsx:104
-msgid "în vigoare din {0}"
-msgstr "in force since {0}"
+#~ msgid "în vigoare din {0}"
+#~ msgstr "in force since {0}"
 
 #: src/features/procurement/lib/procedure-text.ts:100
 msgid "în ziua contractului"
@@ -27944,7 +28040,7 @@ msgstr "Fiscally inactive"
 msgid "inactiv fiscal: {0}"
 msgstr "fiscally inactive: {0}"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:65
+#: src/features/public-enterprises/lib/enterprise-text.ts:67
 msgid "inactivă"
 msgstr "inactive"
 
@@ -28066,6 +28162,12 @@ msgstr "Înapoi"
 #~ msgid "Înapoi la căutare"
 #~ msgstr "Înapoi la căutare"
 
+#: src/features/legal/components/reader/act-reading-bar.tsx:132
+#: src/features/legal/components/reader/act-reading-bar.tsx:159
+#: src/features/legal/components/reader/act-reading-bar.tsx:159
+msgid "Înapoi la începutul actului"
+msgstr "Back to the start of the act"
+
 #: src/features/parliament/components/parliament-stenogram-scroll-top.tsx:97
 msgid "Înapoi la începutul stenogramei"
 msgstr "Înapoi la începutul stenogramei"
@@ -28078,7 +28180,7 @@ msgstr "Înapoi la începutul stenogramei"
 #~ msgid "Înapoi la introducere"
 #~ msgstr "Înapoi la introducere"
 
-#: src/features/legal/components/legal-act-page.tsx:81
+#: src/features/legal/components/legal-act-page.tsx:84
 msgid "Înapoi la Legislație"
 msgstr "Back to Legislation"
 
@@ -28133,7 +28235,7 @@ msgstr "Back to statistics"
 msgid "Înapoi sus"
 msgstr "Înapoi sus"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:105
+#: src/features/privacy/components/cookie-settings-page.tsx:107
 msgid "Înapoi unde erai"
 msgstr "Back to where you were"
 
@@ -28194,7 +28296,7 @@ msgstr "Load more"
 msgid "Încarcă mai multe intervenții"
 msgstr "Încarcă mai multe intervenții"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:867
+#: src/features/legal/components/reader/legal-reader-page.tsx:1057
 msgid "Încarcă partea următoare"
 msgstr "Load the next part"
 
@@ -28250,7 +28352,7 @@ msgstr "Own revenue"
 #: src/features/legal/components/legislation-acts-directory.tsx:377
 #: src/features/legal/components/legislation-changes-feed.tsx:464
 #: src/features/legal/components/legislation-gazette-directory.tsx:288
-#: src/features/legal/components/reader/legal-reader-page.tsx:636
+#: src/features/legal/components/reader/legal-reader-page.tsx:825
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:509
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:76
 #: src/features/ngos/registry/components/filter-parts.tsx:165
@@ -28273,7 +28375,7 @@ msgstr "Try again"
 msgid "Încearcă din nou fără să pierzi filtrele curente."
 msgstr "Try again without losing your current filters."
 
-#: src/features/landing/components/search/landing-search.tsx:185
+#: src/features/landing/components/search/landing-search.tsx:210
 msgid "Încearcă din nou într-un moment."
 msgstr "Try again in a moment."
 
@@ -28483,8 +28585,8 @@ msgid "Indexul de căutare sau datele firmelor s-au schimbat, așa că paginile 
 msgstr "The search index or the company data changed, so the loaded pages can no longer be shown together. Start the search for \"{query}\" again from the first page."
 
 #: src/features/legal/components/analytics/analytics-charts.tsx:170
-msgid "Indică un an pentru cifrele lui."
-msgstr "Point to a year for its figures."
+#~ msgid "Indică un an pentru cifrele lui."
+#~ msgstr "Point to a year for its figures."
 
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:161
 msgid "Indicate when your city hall's budget draft was published."
@@ -28520,7 +28622,7 @@ msgstr "An indicator without territories"
 #~ msgid "Indicatori AMEPIP pe ani"
 #~ msgstr "Indicatori AMEPIP pe ani"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:252
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:242
 msgid "Indicatori calculați din bilanț"
 msgstr "Indicators calculated from the accounts"
 
@@ -28536,7 +28638,7 @@ msgstr "Indicators per inhabitant"
 #~ msgid "Indicatorii afișează valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă."
 #~ msgstr "Indicatorii afișează valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:222
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:212
 msgid "Indicatorii AMEPIP nu s-au putut citi acum."
 msgstr "The AMEPIP indicators could not be read just now."
 
@@ -28544,18 +28646,18 @@ msgstr "The AMEPIP indicators could not be read just now."
 #~ msgid "Indicatorii AMEPIP sunt afișați fără scalare în client și nu înlocuiesc bilanțurile ONRC/ANAF."
 #~ msgstr "Indicatorii AMEPIP sunt afișați fără scalare în client și nu înlocuiesc bilanțurile ONRC/ANAF."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:252
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:242
 msgid "Indicatorii calculați de AMEPIP, pe ani"
 msgstr "The indicators AMEPIP calculated, by year"
 
 #. placeholder {0}: panel.year
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:234
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:224
 msgid "Indicatorii calculați din bilanț pe {0}; AMEPIP nu are formular pentru ea."
 msgstr "The indicators calculated from the {0} accounts; AMEPIP has no form for it."
 
 #. placeholder {0}: panel.year
 #. placeholder {1}: tables.form.years[tables.form.years.length - 1] ?? panel.year
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:232
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:222
 msgid "Indicatorii calculați din bilanț pe {0}; în formularul pe {1}, rândurile despre consiliu, oameni și dividende sunt goale."
 msgstr "The indicators calculated from the {0} accounts; in the {1} form, the rows on the board, the people and the dividends are empty."
 
@@ -28715,7 +28817,7 @@ msgstr "Inflation Adjustment"
 msgid "Inflation adjustment is ignored for % of GDP."
 msgstr "Inflation adjustment is ignored for % of GDP."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3413
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3414
 msgid "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 msgstr "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 
@@ -28785,7 +28887,7 @@ msgstr "overnight stays a year, per inhabitant"
 msgid "Înnoptări turistice"
 msgstr "Tourist overnight stays"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:204
+#: src/features/public-enterprises/lib/enterprise-text.ts:206
 msgid "Inovare"
 msgstr "Innovation"
 
@@ -29490,7 +29592,7 @@ msgid "Intermedieri financiare, cu excepţia activităţilor de asigurări şi a
 msgstr "Financial service activities, except insurance and pension funding"
 
 #: src/features/private-companies/components/profile/company-years-band.tsx:467
-#: src/features/private-companies/components/profile/company-years-chart.tsx:293
+#: src/features/private-companies/components/profile/company-years-chart.tsx:296
 msgid "Interoghează ANAF pentru {year}"
 msgstr "Query ANAF for {year}"
 
@@ -30082,7 +30184,7 @@ msgstr "{0} County"
 msgid "jud. {countyReference}<0/> · RO {countryReference}<1/>"
 msgstr "county {countyReference}<0/> · RO {countryReference}<1/>"
 
-#: src/features/landing/components/search/search-parts.tsx:99
+#: src/features/landing/components/search/search-parts.tsx:102
 #: src/features/landing/components/start-here-panel.tsx:113
 #: src/features/ngos/registry/place.ts:47
 #: src/features/procurement/lib/analytics-places.ts:167
@@ -30113,7 +30215,7 @@ msgstr "the local courts"
 #~ msgid "Judet"
 #~ msgstr "Judet"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:42
+#: src/features/public-enterprises/lib/enterprise-text.ts:44
 #: src/features/statistics/components/comparison/comparison-pickers.tsx:180
 #: src/features/statistics/hooks/use-comparison-reading.ts:91
 #: src/features/statistics/lib/comparison-format.ts:37
@@ -30314,7 +30416,7 @@ msgid "județul instituției"
 msgstr "the institution's county"
 
 #: src/features/entity-search/components/entity-result-row.tsx:77
-#: src/features/landing/components/search/search-parts.tsx:133
+#: src/features/landing/components/search/search-parts.tsx:148
 msgid "județul instituției: {genericCounty}"
 msgstr "institution's county: {genericCounty}"
 
@@ -30580,6 +30682,10 @@ msgstr "At first instance, {0}"
 #: src/features/justice/lib/analysis-text.ts:146
 msgid "la Înalta Curte"
 msgstr "at the High Court"
+
+#: src/features/legal/components/reader/act-reading-bar.tsx:137
+msgid "La început"
+msgstr "To the start"
 
 #: src/features/justice/lib/analysis-text.ts:148
 msgid "la instanțele militare"
@@ -30893,7 +30999,7 @@ msgstr "Links between acts"
 msgid "Legături nerezolvate: lista poate fi incompletă."
 msgstr "Links unresolved: the list may be incomplete."
 
-#: src/features/legal/components/act-anchors-band.tsx:71
+#: src/features/legal/components/act-anchors-band.tsx:72
 msgid "Legături pe care portalul legislativ le afirmă în textul actelor care citează acest act — cu formularea exactă din pagina-sursă."
 msgstr "Links that the legislation portal states in the text of the acts that cite this act — with the exact wording from the source page."
 
@@ -30909,7 +31015,7 @@ msgstr "The links (ordinance → law, decree → law, act → the act it amends,
 msgid "Legăturile documentelor legii sunt în așteptare; fiecare document are amprenta SHA-256."
 msgstr "Links to the law's documents are pending; each document has its SHA-256 fingerprint."
 
-#: src/features/legal/components/act-references-band.tsx:53
+#: src/features/legal/components/act-references-band.tsx:54
 msgid "Legăturile nu sunt disponibile pentru acest act."
 msgstr "Legăturile nu sunt disponibile pentru acest act."
 
@@ -31153,7 +31259,7 @@ msgstr "The laws and their years"
 msgid "legislația așa cum este"
 msgstr "legislation as it stands"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:274
+#: src/features/legal/components/hub/legislation-hub-head.tsx:282
 msgid "Legislația de bază"
 msgstr "Core legislation"
 
@@ -31161,7 +31267,7 @@ msgstr "Core legislation"
 msgid "Legislația de bază, după felul actului"
 msgstr "Core legislation, by kind of act"
 
-#: src/features/legal/components/act-detail-header.tsx:121
+#: src/features/legal/components/act-detail-header.tsx:150
 #: src/features/legal/components/hub/legislation-hub.tsx:174
 #: src/routes/legislation/index.tsx:65
 msgid "Legislația României"
@@ -31181,7 +31287,7 @@ msgstr "Romania's<0/>legislation"
 #: src/features/landing/components/landing-page.tsx:73
 #: src/features/landing/lib/landing-groups.ts:126
 #: src/features/landing/lib/search-filters.ts:115
-#: src/features/legal/components/hub/legislation-hub-head.tsx:37
+#: src/features/legal/components/hub/legislation-hub-head.tsx:41
 #: src/features/legal/components/hub/legislation-hub.tsx:114
 #: src/features/legal/components/legislation-shell.tsx:104
 msgid "Legislație"
@@ -31565,7 +31671,7 @@ msgid "Lista alegerilor nu s-a încărcat."
 msgstr "The list of elections did not load."
 
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:254
-#: src/features/public-enterprises/lib/enterprise-text.ts:117
+#: src/features/public-enterprises/lib/enterprise-text.ts:119
 #: src/features/public-enterprises/lib/hub-text.ts:201
 msgid "lista ANAF"
 msgstr "ANAF’s list"
@@ -31574,7 +31680,7 @@ msgstr "ANAF’s list"
 #: src/features/public-enterprises/components/enterprise/enterprise-parts.tsx:260
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:328
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:235
-#: src/features/public-enterprises/lib/enterprise-text.ts:35
+#: src/features/public-enterprises/lib/enterprise-text.ts:37
 msgid "Lista ANAF"
 msgstr "ANAF’s list"
 
@@ -31584,12 +31690,12 @@ msgstr "ANAF’s list of public enterprises"
 
 #: src/features/public-enterprises/components/authority/authority-hero.tsx:38
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:284
-#: src/features/public-enterprises/lib/enterprise-text.ts:250
+#: src/features/public-enterprises/lib/enterprise-text.ts:276
 msgid "Lista ANAF a întreprinderilor publice"
 msgstr "ANAF’s list of public enterprises"
 
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:284
-#: src/features/public-enterprises/lib/enterprise-text.ts:250
+#: src/features/public-enterprises/lib/enterprise-text.ts:276
 msgid "Lista ANAF a întreprinderilor publice din {listDate}"
 msgstr "ANAF’s list of public enterprises of {listDate}"
 
@@ -31601,11 +31707,11 @@ msgstr "ANAF’s list of public enterprises was not loaded when this was read."
 msgid "Lista ANAF nu e încărcată acum"
 msgstr "ANAF’s list is not loaded just now"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:139
+#: src/features/public-enterprises/lib/enterprise-text.ts:141
 msgid "Lista ANAF nu e încărcată acum; anunțurile de selecție AMEPIP nu-i numesc autoritatea."
 msgstr "ANAF’s list is not loaded just now; AMEPIP’s selection announcements do not name its authority."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:173
+#: src/features/public-enterprises/lib/enterprise-text.ts:175
 msgid "Lista ANAF și anunțurile de selecție AMEPIP numesc aceeași autoritate."
 msgstr "ANAF’s list and AMEPIP’s selection announcements name the same authority."
 
@@ -31613,7 +31719,7 @@ msgstr "ANAF’s list and AMEPIP’s selection announcements name the same autho
 msgid "Lista ANAF: {listWord}"
 msgstr "ANAF’s list: {listWord}"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:262
+#: src/features/privacy/components/cookie-settings-page.tsx:269
 msgid "Lista completă a ce se scrie în browserul tău, cu durata fiecărei chei, este în politica de cookie-uri."
 msgstr "The full list of what is written to your browser, with the lifetime of each key, is in the cookie policy."
 
@@ -31677,7 +31783,7 @@ msgstr "the list is not loaded just now"
 msgid "Lista nu era încărcată la citire"
 msgstr "The list was not loaded when this was read"
 
-#: src/features/legal/components/act-timeline-band.tsx:101
+#: src/features/legal/components/act-timeline-band.tsx:95
 msgid "Lista nu este completă: actul are mai multe evenimente decât s-au putut încărca."
 msgstr "This list is incomplete: the act has more events than could be loaded."
 
@@ -31725,7 +31831,7 @@ msgstr "Lista sincronizata cu harta va fi conectata dupa API."
 #~ msgid "Listate cu ticker"
 #~ msgstr "Listate cu ticker"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:138
+#: src/features/public-enterprises/lib/enterprise-text.ts:140
 msgid "Listele care îi numesc autoritatea nu sunt încărcate acum."
 msgstr "The lists that name its authority are not loaded just now."
 
@@ -32737,6 +32843,10 @@ msgstr "Mai mulți parlamentari poartă acest nume în legislatura respectivă; 
 msgid "mai puțin"
 msgstr "less"
 
+#: src/features/legal/components/act-consolidation-banner.tsx:58
+msgid "Mai puțin"
+msgstr "Less"
+
 #. placeholder {0}: previousText(period)
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:738
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:763
@@ -32764,7 +32874,7 @@ msgstr "Main aggregated"
 #~ msgid "Main CAEN code"
 #~ msgstr "Main CAEN code"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1037
+#: src/components/budget-explorer/BudgetTreemap.tsx:1043
 msgid "Main Categories"
 msgstr "Main Categories"
 
@@ -33071,7 +33181,7 @@ msgstr "INS quality flags"
 #~ msgid "Marcaje din sursă"
 #~ msgstr "Source flags"
 
-#: src/features/legal/components/act-publication-band.tsx:62
+#: src/features/legal/components/act-publication-band.tsx:69
 msgid "Marcajul se referă doar la existența PDF-ului oficial pe monitoruloficial.ro, nu la disponibilitatea textului la noi."
 msgstr "The mark only says that the official PDF exists on monitoruloficial.ro, not that the text is available here."
 
@@ -33332,7 +33442,7 @@ msgid "medii pe 3 ani"
 msgstr "3-year averages"
 
 #: src/features/legal/lib/legal-domains.ts:55
-#: src/features/public-enterprises/lib/enterprise-text.ts:202
+#: src/features/public-enterprises/lib/enterprise-text.ts:204
 msgid "Mediu"
 msgstr "Environment"
 
@@ -33386,11 +33496,11 @@ msgstr "Mentions penalties"
 msgid "Menu"
 msgstr "Menu"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:172
+#: src/features/privacy/components/cookie-settings-page.tsx:174
 msgid "Mereu"
 msgstr "Always"
 
-#: src/features/privacy/components/consent-card.tsx:335
+#: src/features/privacy/components/consent-card.tsx:338
 msgid "Mereu pornite"
 msgstr "Always on"
 
@@ -33401,6 +33511,18 @@ msgstr "Merge UATs in this workspace"
 #: src/components/ui/pagination.tsx:170
 msgid "Mergi la"
 msgstr "Go to"
+
+#: src/features/legal/components/reader/legal-reader-toc.tsx:97
+msgid "Mergi la articol"
+msgstr "Go to article"
+
+#: src/features/legal/components/reader/legal-reader-toc.tsx:91
+msgid "Mergi la articolul cu numărul"
+msgstr "Go to the article numbered"
+
+#: src/features/legal/components/reader/legal-reader-toc.tsx:92
+msgid "Mergi la articolul…"
+msgstr "Go to article…"
 
 #: src/components/ui/pagination.tsx:185
 msgid "Mergi la pagina"
@@ -33437,7 +33559,7 @@ msgstr "Metadata"
 msgid "Metadatele de acoperire nu sunt disponibile; zilele și totalurile sunt afișate ca neconfirmate."
 msgstr "Metadatele de acoperire nu sunt disponibile; zilele și totalurile sunt afișate ca neconfirmate."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:624
+#: src/features/legal/components/reader/legal-reader-page.tsx:813
 msgid "Metadatele rămân publice; textul se consultă la sursa oficială."
 msgstr "The metadata stays public; consult the text at the official source."
 
@@ -33927,13 +34049,13 @@ msgstr "amendment"
 msgid "Modificare de preț"
 msgstr "Price change"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:115
+#: src/features/legal/components/hub/legislation-hub-head.tsx:123
 msgid "modificări"
 msgstr "amendments"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:660
 #: src/features/legal/components/hub/legislation-hub-bands.tsx:398
-#: src/features/legal/components/hub/legislation-hub-head.tsx:77
+#: src/features/legal/components/hub/legislation-hub-head.tsx:85
 #: src/features/legal/components/hub/legislation-hub-lib.ts:167
 #: src/features/legal/components/hub/legislation-hub.tsx:151
 #: src/features/legal/components/legislation-changes-feed.tsx:476
@@ -33946,7 +34068,7 @@ msgstr "Changes"
 msgid "Modificări legislative"
 msgstr "Legislative changes"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:248
+#: src/features/privacy/components/cookie-settings-page.tsx:250
 msgid "Modificări nesalvate"
 msgstr "Unsaved changes"
 
@@ -34061,8 +34183,9 @@ msgid "Monitor this institution"
 msgstr "Monitor this institution"
 
 #: src/features/entity-search/lib/doc-type-meta.ts:80
-#: src/features/legal/components/act-publication-band.tsx:85
-#: src/features/legal/components/act-timeline-band.tsx:124
+#: src/features/legal/components/act-detail-header.tsx:122
+#: src/features/legal/components/act-publication-band.tsx:99
+#: src/features/legal/components/act-timeline-band.tsx:117
 #: src/features/legal/components/hub/legislation-hub-lib.ts:172
 #: src/features/legal/components/hub/legislation-hub.tsx:154
 #: src/features/legal/components/legislation-shell.tsx:70
@@ -34071,6 +34194,10 @@ msgstr "Monitor this institution"
 #: src/routes/legislation/gazette.tsx:18
 msgid "Monitorul Oficial"
 msgstr "Official Gazette"
+
+#: src/features/legal/components/act-detail-header.tsx:133
+msgid "Monitorul Oficial {moCitation}"
+msgstr "Monitorul Oficial {moCitation}"
 
 #: src/components/commitments/commitments-trends.tsx:205
 #: src/components/entities/EntityFinancialTrends.tsx:190
@@ -34279,7 +34406,7 @@ msgid "municipii, orașe, comune și sectoare"
 msgstr "municipalities, towns, communes and sectors"
 
 #: src/features/procurement/lib/analytics-places.ts:144
-#: src/features/public-enterprises/lib/enterprise-text.ts:44
+#: src/features/public-enterprises/lib/enterprise-text.ts:46
 #: src/features/statistics/components/uat-map/uat-map-series.ts:64
 #: src/features/statistics/hooks/use-comparison-reading.ts:65
 #: src/features/statistics/lib/comparison-format.ts:77
@@ -34689,7 +34816,7 @@ msgstr "not recognised in the registry"
 #~ msgid "nerezolvat"
 #~ msgstr "nerezolvat"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:198
+#: src/features/privacy/components/cookie-settings-page.tsx:200
 msgid "nesalvat"
 msgstr "unsaved"
 
@@ -34907,7 +35034,7 @@ msgstr "No activity selected"
 #~ msgid "Nicio agregare judeteana pentru filtrele curente."
 #~ msgstr "Nicio agregare judeteana pentru filtrele curente."
 
-#: src/features/privacy/components/cookie-settings-page.tsx:133
+#: src/features/privacy/components/cookie-settings-page.tsx:135
 msgid "Nicio alegere încă"
 msgstr "No choice yet"
 
@@ -34915,7 +35042,7 @@ msgstr "No choice yet"
 msgid "Nicio alegere nu corespunde filtrelor"
 msgstr "Nicio alegere nu corespunde filtrelor"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:251
+#: src/features/privacy/components/cookie-settings-page.tsx:253
 msgid "Nicio alegere salvată"
 msgstr "No choice saved"
 
@@ -35036,7 +35163,7 @@ msgstr "No budget law in the data."
 msgid "Nicio lege nu tipărește acest total."
 msgstr "No law prints this total."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:145
+#: src/features/public-enterprises/lib/enterprise-text.ts:147
 msgid "Nicio listă nu numește autoritatea care o controlează."
 msgstr "No list names the authority that controls it."
 
@@ -35280,6 +35407,10 @@ msgstr "No act matches this question. Remove a filter."
 msgid "Niciun act pentru „{q}\", dar asta nu înseamnă că prevederea nu există"
 msgstr "No act for “{q}”, but that does not mean the provision does not exist"
 
+#: src/features/legal/components/hub/legislation-hub-search-more.tsx:16
+msgid "Niciun act pentru <0>{term}</0>. <1>Aici se caută după nume și număr.</1>"
+msgstr "No act for <0>{term}</0>. <1>This box searches names and numbers.</1>"
+
 #: src/features/ngos/registry/components/registry-answer.tsx:558
 msgid "Niciun an de registru în selecție."
 msgstr "No registry year in the selection."
@@ -35459,11 +35590,11 @@ msgstr "Niciun rezultat pentru \"{query}\"."
 #~ msgstr "No results for <0>{0}</0>. <1>Try the full name or the CUI.</1>"
 
 #. placeholder {0}: status.term
-#: src/features/landing/components/search/landing-search.tsx:167
+#: src/features/landing/components/search/landing-search.tsx:192
 msgid "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau identificatorul.</1>"
 msgstr "No results for <0>{0}</0>. <1>Try the full name or identifier.</1>"
 
-#: src/features/landing/components/search/search-parts.tsx:331
+#: src/features/landing/components/search/search-parts.tsx:366
 msgid "Niciun rezultat."
 msgstr "No results."
 
@@ -35581,7 +35712,7 @@ msgstr "Nothing matches."
 msgid "Nivel"
 msgstr "Level"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:57
+#: src/features/public-enterprises/lib/enterprise-text.ts:59
 msgid "nivel central"
 msgstr "central level"
 
@@ -35593,7 +35724,7 @@ msgstr "Level of detail"
 #~ msgid "Nivel instanță"
 #~ msgstr "Nivel instanță"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:57
+#: src/features/public-enterprises/lib/enterprise-text.ts:59
 msgid "nivel local"
 msgstr "local level"
 
@@ -35868,7 +35999,7 @@ msgstr "No data series yet."
 msgid "No data to export."
 msgstr "No data to export."
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1114
+#: src/components/budget-explorer/BudgetTreemap.tsx:1120
 msgid "No data within the selected range."
 msgstr "No data within the selected range."
 
@@ -36508,7 +36639,7 @@ msgstr "Now"
 #. placeholder {0}: issue.issueLabel
 #. placeholder {0}: publication.issueNumber
 #. placeholder {0}: row.no
-#: src/features/legal/components/act-publication-band.tsx:89
+#: src/features/legal/components/act-publication-band.tsx:103
 #: src/features/legal/components/legislation-gazette-directory.tsx:333
 #: src/features/procurement/components/procedure/procedure-block.tsx:660
 msgid "nr. {0}"
@@ -36566,11 +36697,11 @@ msgstr "did not answer in time"
 msgid "Nu a vândut nimic instituțiilor publice prin SEAP în {year}."
 msgstr "It sold nothing to public institutions through SEAP in {year}."
 
-#: src/features/privacy/components/consent-card.tsx:264
+#: src/features/privacy/components/consent-card.tsx:267
 msgid "Nu acum — rămâne doar esențialul, întrebăm data viitoare"
 msgstr "Not now — essentials only, we'll ask next time"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:619
+#: src/features/legal/components/reader/legal-reader-page.tsx:808
 msgid "Nu afișăm o formă consolidată fără mențiunea Portalului Legislativ și data ei, care lipsesc încă pentru această versiune."
 msgstr "Nu afișăm o formă consolidată fără mențiunea Portalului Legislativ și data ei, care lipsesc încă pentru această versiune."
 
@@ -36578,7 +36709,7 @@ msgstr "Nu afișăm o formă consolidată fără mențiunea Portalului Legislati
 msgid "Nu am găsit această ședință"
 msgstr "Nu am găsit această ședință"
 
-#: src/features/legal/components/legal-act-page.tsx:72
+#: src/features/legal/components/legal-act-page.tsx:75
 msgid "Nu am găsit acest act"
 msgstr "We could not find this act"
 
@@ -36594,7 +36725,7 @@ msgstr "We could not find this act"
 #~ msgid "Nu am găsit cauze publicabile pentru aceste filtre"
 #~ msgstr "Nu am găsit cauze publicabile pentru aceste filtre"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:451
+#: src/features/legal/components/reader/legal-reader-page.tsx:625
 msgid "Nu am găsit fragmentul cerut în acest text."
 msgstr "We did not find the requested passage in this text."
 
@@ -36834,7 +36965,7 @@ msgstr "We could not load the territory"
 msgid "Nu am putut încărca teritoriul."
 msgstr "Nu am putut încărca teritoriul."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:612
+#: src/features/legal/components/reader/legal-reader-page.tsx:801
 msgid "Nu am putut încărca textul"
 msgstr "We could not load the text"
 
@@ -36867,8 +36998,8 @@ msgid "Nu apare ca furnizor în achizițiile publice (SEAP) din {DIRECT_COMPARAB
 msgstr "It does not appear as a supplier in public procurement (SEAP) since {DIRECT_COMPARABLE_FROM}."
 
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:79
-msgid "Nu apare ca furnizor plătit din bani publici."
-msgstr "It does not appear as a supplier paid from public money."
+#~ msgid "Nu apare ca furnizor plătit din bani publici."
+#~ msgstr "It does not appear as a supplier paid from public money."
 
 #: src/features/private-companies/components/profile/company-business-band.tsx:106
 #~ msgid "Nu apare în bilanț"
@@ -36930,7 +37061,7 @@ msgstr "Nu avem un link public functional pentru aceasta resursa; lacuna este pa
 msgid "Nu avem un rezumat generat pentru acest act — stratul explicativ lipsește; textul și fișa rămân complete."
 msgstr "We do not have a generated summary for this act — the explanatory layer is missing; the text and the act page remain complete."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:610
+#: src/features/legal/components/reader/legal-reader-page.tsx:799
 msgid "Nu avem un text servibil pentru acest act"
 msgstr "We do not have a servable text for this act"
 
@@ -36956,7 +37087,7 @@ msgstr "Not on the list"
 msgid "Nu e în lista ANAF"
 msgstr "Not on ANAF’s list"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:143
+#: src/features/public-enterprises/lib/enterprise-text.ts:145
 msgid "Nu e în lista ANAF; anunțurile de selecție AMEPIP nu sunt încărcate acum."
 msgstr "It is not on ANAF’s list; AMEPIP’s selection announcements are not loaded just now."
 
@@ -37117,7 +37248,7 @@ msgstr "There is no contest with the key {contestKey}."
 #~ msgid "Nu există un scrutin public cu cheia {contestKey}."
 #~ msgstr "There is no public contest with the key {contestKey}."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:608
+#: src/features/legal/components/reader/legal-reader-page.tsx:797
 msgid "Nu există un text servit pentru acest document"
 msgstr "There is no text served for this document"
 
@@ -37133,7 +37264,7 @@ msgstr "That is not dissolution: the registry status is separate."
 msgid "Nu intră în totaluri."
 msgstr "Not included in totals."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:131
+#: src/features/public-enterprises/lib/enterprise-text.ts:133
 msgid "Nu mai apare în nicio listă a întreprinderilor publice."
 msgstr "It no longer appears on any list of public enterprises."
 
@@ -37158,15 +37289,15 @@ msgid "Nu putem spune că nu există rezultate pentru \"{query}\"."
 msgstr "We cannot say there are no results for \"{query}\"."
 
 #. placeholder {0}: status.term
-#: src/features/landing/components/search/landing-search.tsx:146
+#: src/features/landing/components/search/landing-search.tsx:169
 msgid "Nu putem spune că nu există rezultate pentru <0>{0}</0>: partea de firme a căutării nu este la zi acum. <1>Încearcă din nou într-un moment.</1>"
 msgstr "We cannot say there are no results for <0>{0}</0>: the company part of the search is not current right now. <1>Try again in a moment.</1>"
 
-#: src/features/landing/components/search/search-parts.tsx:325
+#: src/features/landing/components/search/search-parts.tsx:360
 msgid "Nu putem spune că nu există rezultate."
 msgstr "We cannot say there are no results."
 
-#: src/features/legal/components/act-default-notices.tsx:95
+#: src/features/legal/components/act-default-notices.tsx:103
 msgid "Nu putem stabili versiunea curentă a actului. Afișăm un text disponibil, care poate să nu fie versiunea curentă."
 msgstr "Nu putem stabili versiunea curentă a actului. Afișăm un text disponibil, care poate să nu fie versiunea curentă."
 
@@ -37244,7 +37375,7 @@ msgstr "Nu servim niciun bloc de text pentru această ședință. Adresa oficial
 msgid "Nu spune cum e împărțit între gospodării. Recalculat după Recensământul 2021: seria se rupe în 2021."
 msgstr "It does not say how it is shared between households. Recalculated after the 2021 Census: the series breaks in 2021."
 
-#: src/features/legal/components/act-timeline-band.tsx:94
+#: src/features/legal/components/act-timeline-band.tsx:91
 msgid "Nu știm dacă lista este completă."
 msgstr "Nu știm dacă lista este completă."
 
@@ -37261,7 +37392,7 @@ msgstr "No contract awards to show"
 #~ msgstr "No comparable values are available for this period."
 
 #. placeholder {0}: down.map(laneName).join(', ')
-#: src/features/public-enterprises/lib/enterprise-text.ts:265
+#: src/features/public-enterprises/lib/enterprise-text.ts:291
 msgid "Nu sunt încărcate acum: {0}. Pagina nu spune nimic din ele."
 msgstr "Not loaded just now: {0}. The page says nothing from them."
 
@@ -37281,7 +37412,7 @@ msgstr "Not loaded just now: {0}. The page says nothing from them."
 msgid "nu-i numește autoritatea"
 msgstr "names no authority for it"
 
-#: src/features/legal/components/analytics/analytics-charts.tsx:284
+#: src/features/legal/components/analytics/analytics-charts.tsx:377
 msgid "Nuanța: ponderea celulei în rândul ei. Coloana „altele\" ține valorile nearătate ale rândurilor de aici."
 msgstr "Shade: the cell's share of its row. The \"other\" column holds the values of these rows not shown."
 
@@ -37495,7 +37626,7 @@ msgstr "Number of UATs"
 msgid "nume din altă sursă"
 msgstr "name from another source"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:93
+#: src/features/public-enterprises/lib/enterprise-text.ts:95
 msgid "nume din anunțurile AMEPIP"
 msgstr "name from AMEPIP’s announcements"
 
@@ -37503,11 +37634,11 @@ msgstr "name from AMEPIP’s announcements"
 #~ msgid "nume din directorul platformei"
 #~ msgstr "name from the platform’s directory"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:94
+#: src/features/public-enterprises/lib/enterprise-text.ts:96
 msgid "nume din fișa de buget"
 msgstr "name from the budget record"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:93
+#: src/features/public-enterprises/lib/enterprise-text.ts:95
 msgid "nume din lista ANAF"
 msgstr "name from ANAF’s list"
 
@@ -37552,16 +37683,16 @@ msgstr "Name or tax ID"
 msgid "Nume sau CUI..."
 msgstr "Name or CUI..."
 
-#: src/features/landing/components/search/landing-search.tsx:124
+#: src/features/landing/components/search/landing-search.tsx:147
 msgid "Nume sau identificator."
 msgstr "Name or identifier."
 
 #: src/features/landing/components/search/deferred-landing-search.tsx:287
-#: src/features/landing/components/search/landing-search.tsx:582
+#: src/features/landing/components/search/landing-search.tsx:628
 msgid "Nume sau identificator..."
 msgstr "Name or identifier..."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:39
+#: src/features/legal/components/hub/legislation-hub-head.tsx:43
 msgid "Nume sau nr…"
 msgstr "Name or no.…"
 
@@ -37597,7 +37728,7 @@ msgstr "Name contains “{typed}”"
 #~ msgid "Numele diviziunilor vin din nomenclatorul CAEN Rev.2; cifrele grupează codurile din toate revizuirile."
 #~ msgstr "Division names come from the CAEN Rev.2 nomenclature; the figures group codes from every revision."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:163
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:153
 msgid "Numele firmelor nu s-au putut citi acum: firmele apar cu codul fiscal."
 msgstr "The companies’ names could not be read just now: the companies appear by their tax code."
 
@@ -37711,11 +37842,11 @@ msgid "o asociere apare o dată pentru fiecare membru, cu valoarea o singură da
 msgstr "a consortium appears once per member, its value only once"
 
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:266
-#: src/features/public-enterprises/lib/enterprise-text.ts:261
+#: src/features/public-enterprises/lib/enterprise-text.ts:287
 msgid "O autoritate „controlează” o întreprindere așa cum o scrie sursa: nu e o cotă de proprietate."
 msgstr "An authority “controls” an enterprise as the source writes it: it is not a share of ownership."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:88
+#: src/features/public-enterprises/lib/enterprise-text.ts:90
 msgid "O autoritate fără nume în sursă"
 msgstr "An authority with no name in the source"
 
@@ -37820,11 +37951,11 @@ msgstr "A month or a quarter is the difference between two cumulative bulletins,
 msgid "o modificare înregistrată"
 msgstr "one recorded change"
 
-#: src/features/legal/components/act-versions-band.tsx:155
+#: src/features/legal/components/act-versions-band.tsx:226
 msgid "O pagină a Portalului atribuită acestei forme este încă în verificare."
 msgstr "O pagină a Portalului atribuită acestei forme este încă în verificare."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:828
+#: src/features/legal/components/reader/legal-reader-page.tsx:1018
 msgid "O parte a textului nu s-a încărcat"
 msgstr "Part of the text did not load"
 
@@ -37846,8 +37977,8 @@ msgstr "Part of the search did not run, and search by meaning is not available y
 #~ msgstr "O parte dintre trimiterile între acte nu se rezolvă la un act anume. Acestea apar ca „potrivire posibilă”, niciodată ca legătură fermă."
 
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:90
-msgid "O parte nu are valoare publicată: suma e o limită de jos."
-msgstr "Some have no published value: the sum is a lower bound."
+#~ msgid "O parte nu are valoare publicată: suma e o limită de jos."
+#~ msgstr "Some have no published value: the sum is a lower bound."
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:821
 msgid "O perioadă lasă deoparte actele fără an."
@@ -38580,7 +38711,7 @@ msgstr "provisional"
 msgid "Operator"
 msgstr "Operator"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:194
+#: src/features/privacy/components/cookie-settings-page.tsx:196
 msgid "Oprit"
 msgstr "Off"
 
@@ -38660,7 +38791,7 @@ msgstr "OR"
 #~ msgstr "The fiscal data's retrieval time is stored at millisecond precision, with the microsecond fraction removed (raw time: {raw}). This shows compatibility with the documented older import, not who wrote the row nor the original HTTP exchange; no retrieval time is a legal date."
 
 #: src/features/procurement/lib/analytics-places.ts:142
-#: src/features/public-enterprises/lib/enterprise-text.ts:46
+#: src/features/public-enterprises/lib/enterprise-text.ts:48
 #: src/features/statistics/components/uat-map/uat-map-series.ts:62
 #: src/features/statistics/lib/comparison-format.ts:82
 msgid "oraș"
@@ -39316,7 +39447,7 @@ msgstr "Part VI"
 msgid "Partea a VII-a"
 msgstr "Part VII"
 
-#: src/features/landing/components/search/landing-search.tsx:138
+#: src/features/landing/components/search/landing-search.tsx:161
 msgid "Partea de firme a căutării nu este la zi acum: pot lipsi firme din listă."
 msgstr "The company part of the search is not current right now: companies may be missing from the list."
 
@@ -39324,7 +39455,7 @@ msgstr "The company part of the search is not current right now: companies may b
 msgid "Partea de firme a căutării nu este la zi, așa că lipsa rezultatelor nu este un răspuns. Încearcă din nou mai târziu."
 msgstr "The company part of the search is not current, so the absence of results is not an answer. Try again later."
 
-#: src/features/landing/components/search/search-parts.tsx:321
+#: src/features/landing/components/search/search-parts.tsx:356
 msgid "Partea de firme a căutării nu este la zi."
 msgstr "The company part of the search is not current."
 
@@ -39546,7 +39677,7 @@ msgstr "Security and cleaning"
 msgid "Pază și protecție"
 msgstr "Security services"
 
-#: src/features/legal/components/act-publication-band.tsx:110
+#: src/features/legal/components/act-publication-band.tsx:118
 msgid "PDF oficial"
 msgstr "Official PDF"
 
@@ -39728,7 +39859,7 @@ msgstr "At which step"
 msgid "Pe ce treaptă sunt dosarele"
 msgstr "At which step the cases are"
 
-#: src/features/legal/components/act-relevance-band.tsx:57
+#: src/features/legal/components/act-relevance-band.tsx:54
 msgid "Pe cine privește"
 msgstr "Who it concerns"
 
@@ -39933,8 +40064,7 @@ msgstr "by region"
 msgid "pe regiunile firmelor"
 msgstr "by the companies' region"
 
-#: src/features/legal/components/act-plain-summary.tsx:111
-#: src/features/legal/components/act-plain-summary.tsx:126
+#: src/features/legal/components/act-plain-summary.tsx:96
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:181
 msgid "Pe scurt"
 msgstr "In brief"
@@ -40134,7 +40264,7 @@ msgstr "For {said}, the IFRS-form figures come from the Ministry of Finance's fi
 #~ msgid "Pentru {year}, legea bugetului de stat a aprobat cheltuieli de {0}."
 #~ msgstr "For {year}, the state budget law approved spending of {0}."
 
-#: src/features/legal/components/act-consolidation-banner.tsx:46
+#: src/features/legal/components/act-consolidation-banner.tsx:63
 msgid "Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante."
 msgstr "Pentru a stabili dispozițiile aplicabile la o dată, consultați în Monitorul Oficial actul, republicările, actele modificatoare și dispozițiile tranzitorii relevante."
 
@@ -40575,7 +40705,7 @@ msgstr "Loss"
 msgid "Pierdere brută"
 msgstr "Gross loss"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:319
+#: src/features/private-companies/components/profile/company-years-chart.tsx:322
 #: src/features/private-companies/lib/company-profile-text.ts:555
 msgid "Pierdere netă"
 msgstr "Net loss"
@@ -40851,13 +40981,13 @@ msgid "politica de calificare nu poate fi aplicată"
 msgstr "the qualification policy cannot be applied"
 
 #: src/components/footer/AppFooter.tsx:68
-#: src/features/privacy/components/cookie-settings-page.tsx:275
+#: src/features/privacy/components/cookie-settings-page.tsx:282
 msgid "Politica de confidențialitate"
 msgstr "Privacy policy"
 
 #: src/components/footer/AppFooter.tsx:70
-#: src/features/privacy/components/consent-card.tsx:390
-#: src/features/privacy/components/cookie-settings-page.tsx:270
+#: src/features/privacy/components/consent-card.tsx:399
+#: src/features/privacy/components/cookie-settings-page.tsx:277
 msgid "Politica de cookie-uri"
 msgstr "Cookie policy"
 
@@ -41084,7 +41214,7 @@ msgstr "Population, its sorting and filters use the latest selected year's verif
 msgid "Pornești sau oprești fiecare opțiune oricând din Setări cookie-uri."
 msgstr "You can switch each option on or off any time in Cookie settings."
 
-#: src/features/privacy/components/cookie-settings-page.tsx:194
+#: src/features/privacy/components/cookie-settings-page.tsx:196
 msgid "Pornit"
 msgstr "On"
 
@@ -41092,7 +41222,7 @@ msgstr "On"
 msgid "pornită pe {started}"
 msgstr "started on {started}"
 
-#: src/features/legal/components/act-timeline-band.tsx:125
+#: src/features/legal/components/act-timeline-band.tsx:118
 msgid "Portal"
 msgstr "Portal"
 
@@ -41139,8 +41269,12 @@ msgstr "The portal was read by the cases' last modification date. Before {firstW
 #~ msgid "Portalul instanțelor nu are o instanță cu codul {code}."
 #~ msgstr "The courts' portal has no court with the code {code}."
 
-#: src/features/legal/components/act-consolidation-banner.tsx:43
-#: src/features/legal/components/act-versions-band.tsx:149
+#: src/features/legal/components/act-detail-header.tsx:121
+msgid "Portalul legislativ"
+msgstr "Legislative Portal"
+
+#: src/features/legal/components/act-consolidation-banner.tsx:48
+#: src/features/legal/components/act-versions-band.tsx:220
 msgid "Portalul Legislativ indică „{note}”."
 msgstr "Portalul Legislativ indică „{note}”."
 
@@ -41251,11 +41385,11 @@ msgstr "You can browse the acts in the <0>acts directory</0> and the Official Ga
 #~ msgid "Potrivire largă: codul în orice revizie CAEN, printre activitățile înscrise în ediția ONRC afișată (nu din ediții mai vechi și nu codul CAEN fiscal ANAF). Aceleași cifre pot însemna activități diferite în revizii diferite."
 #~ msgstr "Broad match: the code in any CAEN revision, among the activities recorded in the ONRC edition shown (not from older editions and not the ANAF fiscal CAEN code). The same digits can mean different activities in different revisions."
 
-#: src/features/legal/components/act-references-band.tsx:160
+#: src/features/legal/components/act-references-band.tsx:161
 msgid "potrivire posibilă — nu am identificat actul exact"
 msgstr "possible match — we have not identified the exact act"
 
-#: src/features/legal/components/act-publication-band.tsx:122
+#: src/features/legal/components/act-publication-band.tsx:130
 msgid "potrivire probabilă cu acest număr"
 msgstr "probable match with this issue"
 
@@ -41686,7 +41820,7 @@ msgstr "General mayor"
 #~ msgid "Primăria Municipiului Cluj-Napoca"
 #~ msgstr "Primăria Municipiului Cluj-Napoca"
 
-#: src/features/landing/components/search/search-parts.tsx:143
+#: src/features/landing/components/search/search-parts.tsx:158
 #: src/features/landing/components/start-here-panel.tsx:112
 #: src/features/procurement/lib/buyer-text.ts:84
 msgid "Primărie"
@@ -41794,7 +41928,7 @@ msgstr "First framework agreements, signed"
 #~ msgstr "Top five territories in each direction. Percentages are rounded to one decimal; ranking uses exact values."
 
 #. placeholder {0}: status.term
-#: src/features/landing/components/search/landing-search.tsx:155
+#: src/features/landing/components/search/landing-search.tsx:178
 msgid "Primele rezultate pentru <0>{0}</0> nu pot fi afișate aici, dar căutarea are mai multe. <1>Încearcă numele complet sau identificatorul.</1>"
 msgstr "The first results for <0>{0}</0> cannot be shown here, but the search has more. <1>Try the full name or the identifier.</1>"
 
@@ -42148,7 +42282,7 @@ msgstr "Gross profit"
 msgid "Profit net"
 msgstr "Net profit"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:325
+#: src/features/private-companies/components/profile/company-years-chart.tsx:328
 msgid "Profit net (rezultatul net reținut)"
 msgstr "Net profit (net result held)"
 
@@ -42584,9 +42718,13 @@ msgstr "Public procurement for this institution — contracts, direct acquisitio
 #~ msgid "publicat {0}"
 #~ msgstr "published {0}"
 
+#: src/features/legal/components/act-detail-header.tsx:133
+msgid "Publicat în"
+msgstr "Published in"
+
 #: src/features/legal/components/act-detail-header.tsx:156
-msgid "Publicat în Monitorul Oficial {moCitation}"
-msgstr "Published in the Official Gazette {moCitation}"
+#~ msgid "Publicat în Monitorul Oficial {moCitation}"
+#~ msgstr "Published in the Official Gazette {moCitation}"
 
 #: src/components/shared/procurement-data/freshness-badge.tsx:28
 #: src/components/shared/procurement-data/source-provenance-drawer.tsx:102
@@ -42630,7 +42768,7 @@ msgstr "published by the Ministry of Finance"
 #. placeholder {0}: partial.join(', ')
 #. placeholder {0}: partial.map(laneName).join(', ')
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:271
-#: src/features/public-enterprises/lib/enterprise-text.ts:263
+#: src/features/public-enterprises/lib/enterprise-text.ts:289
 msgid "Publicate parțial: {0}; sursa nu spune ce lipsește."
 msgstr "Published in part: {0}; the source does not say what is missing."
 
@@ -42929,7 +43067,7 @@ msgid "Rândurile listei, cu „Restul\" și cele necunoscute, se adună la tota
 msgstr "The list's rows, with “The rest” and the unknown ones, add up to the total."
 
 #. placeholder {0}: fmt(outside)
-#: src/features/legal/components/analytics/analytics-charts.tsx:285
+#: src/features/legal/components/analytics/analytics-charts.tsx:378
 msgid "Rândurile nearătate: alte {0} acte."
 msgstr "Rows not shown: another {0} acts."
 
@@ -43404,7 +43542,7 @@ msgstr "Referendum"
 #~ msgid "Referință din registru"
 #~ msgstr "Referință din registru"
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:311
+#: src/features/legal/components/reader/tldf-blocks.tsx:407
 msgid "Referință legislativă (fără țintă navigabilă)"
 msgstr "Legislative reference (no navigable target)"
 
@@ -43578,8 +43716,8 @@ msgstr "The registry"
 #: src/features/public-enterprises/components/hub/public-enterprise-hub-page.tsx:153
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:256
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:286
-#: src/features/public-enterprises/lib/enterprise-text.ts:119
-#: src/features/public-enterprises/lib/enterprise-text.ts:251
+#: src/features/public-enterprises/lib/enterprise-text.ts:121
+#: src/features/public-enterprises/lib/enterprise-text.ts:277
 #: src/features/public-enterprises/lib/hub-text.ts:202
 msgid "registrul AMEPIP"
 msgstr "the AMEPIP register"
@@ -43589,11 +43727,11 @@ msgid "Registrul AMEPIP"
 msgstr "AMEPIP register"
 
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:286
-#: src/features/public-enterprises/lib/enterprise-text.ts:251
+#: src/features/public-enterprises/lib/enterprise-text.ts:277
 msgid "registrul AMEPIP din {amepipDate}"
 msgstr "the AMEPIP register of {amepipDate}"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:225
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:215
 msgid "Registrul AMEPIP nu e încărcat acum."
 msgstr "The AMEPIP register is not loaded just now."
 
@@ -43613,7 +43751,7 @@ msgstr "The registry holds several status codes for the company, among them \"in
 msgid "Registrul are mai multe coduri de stare pentru firmă; unele pot fi mențiuni, nu stări. Toate sunt listate în secțiunea Registru, niciunul nu e ales."
 msgstr "The registry holds several status codes for the company; some may be annotations, not states. All are listed in the Registry section; none is chosen."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:253
+#: src/features/public-enterprises/lib/enterprise-text.ts:279
 msgid "registrul comerțului"
 msgstr "the trade register"
 
@@ -43666,7 +43804,7 @@ msgstr "The trade register has changed since you opened the page (a new edition 
 msgid "registrul comerțului și {0}"
 msgstr "the trade register and {0}"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:253
+#: src/features/public-enterprises/lib/enterprise-text.ts:279
 msgid "registrul comerțului și {statements}"
 msgstr "the trade register and {statements}"
 
@@ -43876,7 +44014,7 @@ msgid "Reîncearcă"
 msgstr "Retry"
 
 #. placeholder {0}: failedIndex + 1
-#: src/features/legal/components/reader/legal-reader-page.tsx:836
+#: src/features/legal/components/reader/legal-reader-page.tsx:1026
 msgid "Reîncearcă partea {0}"
 msgstr "Retry part {0}"
 
@@ -43896,7 +44034,7 @@ msgstr "Related Categories"
 #~ msgid "Relații deduse automat din textul actelor — nu afirmate de portal (acelea apar la „Trimiteri afirmate de portal”). Doar potrivirile sigure sunt legături. Din 1.103.595 de trimiteri între acte, 400.368 (36,3%) nu se rezolvă la un act anume și rămân text citat."
 #~ msgstr "Relations inferred automatically from the text of the acts — not stated by the portal (those appear under “References stated by the portal”). Only confident matches are links. Of 1,103,595 references between acts, 400,368 (36.3%) do not resolve to a specific act and remain cited text."
 
-#: src/features/legal/components/act-references-band.tsx:94
+#: src/features/legal/components/act-references-band.tsx:95
 msgid "Relații deduse automat din textul actelor — nu afirmate de portal (acelea apar la „Trimiteri afirmate de portal”). Doar potrivirile sigure sunt legături. O trimitere care nu se rezolvă la un act anume rămâne text citat."
 msgstr "Relații deduse automat din textul actelor — nu afirmate de portal (acelea apar la „Trimiteri afirmate de portal”). Doar potrivirile sigure sunt legături. O trimitere care nu se rezolvă la un act anume rămâne text citat."
 
@@ -44200,7 +44338,7 @@ msgstr "Reselect dataset"
 msgid "Reset"
 msgstr "Reset"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1133
+#: src/components/budget-explorer/BudgetTreemap.tsx:1139
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:189
 msgid "Reset amount filter"
 msgstr "Reset amount filter"
@@ -44302,13 +44440,12 @@ msgstr "Restore"
 msgid "Restore this version?"
 msgstr "Restore this version?"
 
+#: src/features/legal/components/reader/legal-reader-toc.tsx:57
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:337
 msgid "Restrânge"
 msgstr "Collapse"
 
 #. placeholder {0}: row.label
-#. placeholder {0}: tocLabel(node.entry)
-#: src/features/legal/components/reader/legal-reader-toc.tsx:107
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:631
 msgid "Restrânge {0}"
 msgstr "Collapse {0}"
@@ -44489,7 +44626,7 @@ msgstr "Review Path"
 #~ msgid "Review signals are not wired to search yet. They will filter results when the API republishes same-day and repeated-pair candidates — until then this control stays disabled so it cannot pretend to narrow the list."
 #~ msgstr "Review signals are not wired to search yet. They will filter results when the API republishes same-day and repeated-pair candidates — until then this control stays disabled so it cannot pretend to narrow the list."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:423
+#: src/features/legal/components/reader/legal-reader-page.tsx:598
 msgid "Revino la forma afișată în mod normal"
 msgstr "Return to the form normally shown"
 
@@ -44596,7 +44733,7 @@ msgstr "Result"
 msgid "Rezultat de vot"
 msgstr "Rezultat de vot"
 
-#: src/features/private-companies/components/profile/company-years-chart.tsx:314
+#: src/features/private-companies/components/profile/company-years-chart.tsx:317
 #: src/features/private-companies/lib/company-profile-text.ts:235
 #: src/features/private-companies/lib/company-profile-text.ts:256
 #: src/features/private-companies/lib/company-profile-text.ts:309
@@ -44633,8 +44770,8 @@ msgstr "Result, {year}"
 #: src/features/elections/components/contest-result-explorer-page.tsx:166
 #: src/features/entity-search/components/entity-results-header.tsx:43
 #: src/features/entity-search/components/entity-search-skeleton.tsx:15
-#: src/features/landing/components/search/landing-search.tsx:669
-#: src/features/landing/components/search/landing-search.tsx:719
+#: src/features/landing/components/search/landing-search.tsx:717
+#: src/features/landing/components/search/landing-search.tsx:819
 #: src/features/legal/components/legislation-act-finder.tsx:616
 #: src/features/private-companies/components/profile/company-main-activity.tsx:379
 #: src/features/private-companies/components/profile/company-years-band.tsx:220
@@ -44714,7 +44851,7 @@ msgstr "No outcome is linked to this notice: an award, if there is one, is a sep
 msgid "Rezumat"
 msgstr "Rezumat"
 
-#: src/features/legal/components/act-plain-summary.tsx:201
+#: src/features/legal/components/act-plain-summary.tsx:162
 msgid "Rezumat generat de AI din textul actului. Este un strat explicativ, nu textul legii și nu consultanță juridică."
 msgstr "Summary generated by AI from the text of the act. It is an explanatory layer, not the text of the law and not legal advice."
 
@@ -44976,9 +45113,9 @@ msgstr "employees"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:610
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:115
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:133
-#: src/features/private-companies/components/profile/company-years-chart.tsx:306
-#: src/features/private-companies/components/profile/company-years-chart.tsx:449
-#: src/features/private-companies/components/profile/company-years-chart.tsx:479
+#: src/features/private-companies/components/profile/company-years-chart.tsx:309
+#: src/features/private-companies/components/profile/company-years-chart.tsx:454
+#: src/features/private-companies/components/profile/company-years-chart.tsx:484
 #: src/features/private-companies/lib/company-profile-text.ts:237
 #: src/features/private-companies/lib/company-profile-text.ts:557
 #: src/features/private-companies/lib/hub-economy.ts:35
@@ -45054,12 +45191,12 @@ msgstr "Salary Calculation"
 msgid "Salubrizare și deșeuri"
 msgstr "Sanitation and waste"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:246
+#: src/features/privacy/components/cookie-settings-page.tsx:248
 msgid "Salvat"
 msgstr "Saved"
 
-#: src/features/privacy/components/consent-card.tsx:379
-#: src/features/privacy/components/cookie-settings-page.tsx:238
+#: src/features/privacy/components/consent-card.tsx:382
+#: src/features/privacy/components/cookie-settings-page.tsx:240
 msgid "Salvează alegerea"
 msgstr "Save my choice"
 
@@ -45098,7 +45235,7 @@ msgstr "Penalties"
 msgid "Sankey Chart (Aggregated)"
 msgstr "Sankey Chart (Aggregated)"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:338
+#: src/features/legal/components/reader/legal-reader-page.tsx:478
 msgid "Sari la textul actului"
 msgstr "Skip to the text of the act"
 
@@ -45374,7 +45511,7 @@ msgstr "Type a county (“Cluj”), a locality, a legal form (“SRL”), a stat
 msgid "Scrie un număr întreg de salariați."
 msgstr "Write a whole number of employees."
 
-#: src/features/landing/components/search/landing-search.tsx:112
+#: src/features/landing/components/search/landing-search.tsx:135
 msgid "Scrie un nume pentru a căuta în <0>{scope}</0>."
 msgstr "Type a name to search in <0>{scope}</0>."
 
@@ -45382,7 +45519,7 @@ msgstr "Type a name to search in <0>{scope}</0>."
 #~ msgid "Scrie un nume pentru a căuta."
 #~ msgstr "Type a name to search."
 
-#: src/features/landing/components/search/search-parts.tsx:327
+#: src/features/landing/components/search/search-parts.tsx:362
 msgid "Scrie un nume sau un identificator pentru a căuta."
 msgstr "Enter a name or identifier to search."
 
@@ -45470,8 +45607,8 @@ msgid "Scurtături tastatură"
 msgstr "Keyboard shortcuts"
 
 #: src/features/entity-search/components/entity-empty-state.tsx:149
-#: src/features/landing/components/search/landing-search.tsx:176
-#: src/features/landing/components/search/search-parts.tsx:333
+#: src/features/landing/components/search/landing-search.tsx:201
+#: src/features/landing/components/search/search-parts.tsx:368
 msgid "Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele."
 msgstr "Shorten your search to at most 10 words and check the quotation marks."
 
@@ -45483,19 +45620,19 @@ msgstr "SDG 2020"
 msgid "SDG 2030"
 msgstr "SDG 2030"
 
-#: src/features/landing/components/search/search-parts.tsx:315
+#: src/features/landing/components/search/search-parts.tsx:350
 msgid "Se actualizează rezultatele."
 msgstr "Updating results."
 
 #. placeholder {0}: formatLegalNumber(shownCount, i18n.locale)
 #. placeholder {1}: formatLegalNumber(totalCount, i18n.locale)
-#: src/features/legal/components/act-anchors-band.tsx:87
+#: src/features/legal/components/act-anchors-band.tsx:88
 msgid "Se afișează {0} din {1}."
 msgstr "Showing {0} of {1}."
 
 #. placeholder {0}: formatLegalNumber(shownCount, i18n.locale)
 #. placeholder {1}: formatLegalNumber(group.totalCount, i18n.locale)
-#: src/features/legal/components/act-references-band.tsx:114
+#: src/features/legal/components/act-references-band.tsx:115
 msgid "Se afișează {0} din {1}. Lista completă apare odată cu directorul de acte."
 msgstr "Showing {0} of {1}. The full list will come with the acts directory."
 
@@ -45520,7 +45657,7 @@ msgstr "Se afișează {visibleCount} din {totalCount} luări de cuvânt ale șed
 #~ msgstr "Se afiseaza datele initiale ale rutei, daca exista."
 
 #. placeholder {0}: formatLegalNumber(shownCount, i18n.locale)
-#: src/features/legal/components/act-references-band.tsx:120
+#: src/features/legal/components/act-references-band.tsx:121
 msgid "Se afișează primele {0}. Lista completă apare odată cu directorul de acte."
 msgstr "Showing the first {0}. The full list will come with the acts directory."
 
@@ -45528,7 +45665,7 @@ msgstr "Showing the first {0}. The full list will come with the acts directory."
 msgid "Se afișează stenograma integrală a ședinței."
 msgstr "Se afișează stenograma integrală a ședinței."
 
-#: src/features/privacy/components/cookie-settings-page.tsx:145
+#: src/features/privacy/components/cookie-settings-page.tsx:147
 msgid "se aplică doar esențialele"
 msgstr "only the essentials apply"
 
@@ -45544,7 +45681,7 @@ msgstr "Searching"
 msgid "Se caută intervenția…"
 msgstr "Se caută intervenția…"
 
-#: src/features/landing/components/search/search-parts.tsx:337
+#: src/features/landing/components/search/search-parts.tsx:372
 msgid "Se caută."
 msgstr "Searching."
 
@@ -45577,7 +45714,7 @@ msgstr "Reading page {pageText}…"
 msgid "Se citește proveniența…"
 msgstr "Reading the provenance…"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:131
+#: src/features/privacy/components/cookie-settings-page.tsx:133
 msgid "Se citește…"
 msgstr "Reading…"
 
@@ -45607,7 +45744,7 @@ msgstr "Loading the purchase"
 msgid "Se încarcă actele…"
 msgstr "Loading acts…"
 
-#: src/features/legal/components/legal-act-skeleton.tsx:10
+#: src/features/legal/components/legal-act-skeleton.tsx:12
 msgid "Se încarcă actul normativ"
 msgstr "Loading the legal act"
 
@@ -45703,7 +45840,7 @@ msgid "Se încarcă pagina cerută. Rândurile de mai jos sunt cele afișate ant
 msgstr "Loading the requested page. The rows below are the ones shown before."
 
 #. placeholder {0}: Math.min(loadedCount + 1, groupCount)
-#: src/features/legal/components/reader/legal-reader-page.tsx:850
+#: src/features/legal/components/reader/legal-reader-page.tsx:1040
 msgid "Se încarcă partea {0} din {groupCount}…"
 msgstr "Loading part {0} of {groupCount}…"
 
@@ -45759,7 +45896,7 @@ msgstr "Loading the breakdown"
 msgid "Se încarcă tabelul…"
 msgstr "Loading the table…"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:458
+#: src/features/legal/components/reader/legal-reader-page.tsx:632
 msgid "Se încarcă textul…"
 msgstr "Loading the text…"
 
@@ -45808,7 +45945,7 @@ msgstr "Checking the company directory's edition…"
 #~ msgstr "Checking the trade register edition…"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:457
-#: src/features/public-enterprises/lib/enterprise-text.ts:254
+#: src/features/public-enterprises/lib/enterprise-text.ts:280
 msgid "SEAP"
 msgstr "SEAP"
 
@@ -46347,7 +46484,7 @@ msgstr "sector"
 msgid "Sector / creditor"
 msgstr "Sector / creditor"
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:50
+#: src/features/public-enterprises/lib/enterprise-text.ts:52
 msgid "sector al Bucureștiului"
 msgstr "a Bucharest sector"
 
@@ -47107,7 +47244,7 @@ msgid "Set the basic properties for your chart"
 msgstr "Set the basic properties for your chart"
 
 #: src/components/sidebar/nav-user.tsx:133
-#: src/features/privacy/components/cookie-settings-page.tsx:109
+#: src/features/privacy/components/cookie-settings-page.tsx:111
 msgid "Setări"
 msgstr "Settings"
 
@@ -47209,7 +47346,7 @@ msgstr "Sewer network length per 1,000 inhabitants approximates sanitation infra
 msgid "Sfârșitul comparației"
 msgstr "End of the comparison"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:875
+#: src/features/legal/components/reader/legal-reader-page.tsx:1065
 msgid "Sfârșitul textului — {groupCount} părți afișate integral."
 msgstr "End of the text — {groupCount, plural, one {# part shown in full} other {# parts shown in full}}."
 
@@ -47443,7 +47580,7 @@ msgstr "Shows only the funds transferred to other public administration units."
 #: src/features/private-companies/lib/company-profile-text.ts:479
 #: src/features/procurement/lib/direct-purchase-value-text.ts:111
 #: src/features/procurement/lib/home-text.ts:119
-#: src/features/public-enterprises/lib/enterprise-text.ts:110
+#: src/features/public-enterprises/lib/enterprise-text.ts:112
 msgid "și"
 msgstr "and"
 
@@ -47977,7 +48114,7 @@ msgstr "Unemployment, month by month"
 msgid "Some data issues were automatically resolved"
 msgstr "Some data issues were automatically resolved"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3410
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3411
 msgid "Some display settings are not available on this page yet."
 msgstr "Some display settings are not available on this page yet."
 
@@ -48239,7 +48376,7 @@ msgstr "Natural change per 1,000 inhabitants, {year}"
 msgid "stabilesc reguli (încadrate ferm)"
 msgstr "set rules (firmly placed)"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:275
+#: src/features/legal/components/hub/legislation-hub-head.tsx:283
 msgid "Stabilesc reguli de sine stătătoare; definiție provizorie"
 msgstr "Set rules that stand on their own; provisional definition"
 
@@ -48433,15 +48570,15 @@ msgstr "The enterprises’ status, by each source"
 #~ msgid "Starea registrului"
 #~ msgstr "The state of the register"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:126
+#: src/features/privacy/components/cookie-settings-page.tsx:128
 msgid "Starea ta"
 msgstr "Your status"
 
-#: src/features/legal/components/act-detail-header.tsx:171
+#: src/features/legal/components/act-detail-header.tsx:243
 msgid "Starea, legăturile și rezumatul nu sunt disponibile pentru acest act: corpusul anterior nu îl conține."
 msgstr "Starea, legăturile și rezumatul nu sunt disponibile pentru acest act: corpusul anterior nu îl conține."
 
-#: src/features/legal/components/act-detail-header.tsx:167
+#: src/features/legal/components/act-detail-header.tsx:239
 msgid "Starea, legăturile și rezumatul provin din corpusul anterior."
 msgstr "Starea, legăturile și rezumatul provin din corpusul anterior."
 
@@ -48742,7 +48879,7 @@ msgid "Șterge anii din adresă"
 msgstr "Clear the years from the address"
 
 #: src/features/landing/components/search/deferred-landing-search.tsx:296
-#: src/features/landing/components/search/landing-search.tsx:600
+#: src/features/landing/components/search/landing-search.tsx:646
 #: src/features/statistics/components/uat-map/uat-map-finder.tsx:105
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:133
 msgid "Șterge căutarea"
@@ -48866,8 +49003,8 @@ msgid "Structura acestei matrice nu poate fi verificată"
 msgstr "This matrix's structure cannot be verified"
 
 #: src/features/legal/components/reader/legal-reader-toc.tsx:160
-msgid "Structura actului"
-msgstr "Structure of the act"
+#~ msgid "Structura actului"
+#~ msgstr "Structure of the act"
 
 #: src/features/public-institutions/components/public-institutions-breakdown.tsx:229
 msgid "Structura nu a putut fi citită."
@@ -49378,7 +49515,7 @@ msgstr "Source: <0>National NGO Registry</0>, Ministry of Justice, export of {ca
 #~ msgid "Sursă: AMEPIP (OUG 109/2011)"
 #~ msgstr "Sursă: AMEPIP (OUG 109/2011)"
 
-#: src/features/legal/components/act-anchors-band.tsx:73
+#: src/features/legal/components/act-anchors-band.tsx:74
 msgid "Sursa: ancorele marcate de portal în textul actelor, nu deduceri automate. Graful dedus din citări apare separat, la „Cine îl citează”."
 msgstr "Source: the anchors the portal marks in the text of acts, not automatic inferences. The graph inferred from citations appears separately, under “Who cites it”."
 
@@ -49538,7 +49675,7 @@ msgstr "Surse divergente asupra valorii — verifică sursa."
 msgid "Surse:"
 msgstr "Sources:"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:181
+#: src/features/legal/components/hub/legislation-hub-head.tsx:189
 msgid "Surse: <0>Portalul Legislativ</0>, <1>Monitorul Oficial</1>"
 msgstr "Sources: <0>Portalul Legislativ</0>, <1>Monitorul Oficial</1>"
 
@@ -49570,6 +49707,10 @@ msgstr "Sources: the ONRC registry, ANAF tax records, financial statements filed
 #: src/features/procurement/lib/analytics-questions.ts:83
 msgid "Sursele acoperă diferit fiecare an, iar din 2026 rândurile vin mai ales din e-licitație: urmăriți forma, nu nivelul."
 msgstr "The sources cover each year differently, and since 2026 rows come mostly from e-licitație: watch the shape, not the level."
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:251
+msgid "Sursele consultate nu au înregistrări pentru această firmă."
+msgstr "The sources consulted have no records for this company."
 
 #: src/features/national-budget/home/components/person-budgets.tsx:343
 msgid "Sursele de bani ale fiecărui buget"
@@ -49796,7 +49937,7 @@ msgstr "taxes, contributions, the budget's other revenue"
 msgid "Taxes"
 msgstr "Taxes"
 
-#: src/features/legal/components/act-relevance-band.tsx:74
+#: src/features/legal/components/act-relevance-band.tsx:71
 msgid "Te privește dacă ești"
 msgstr "Groups this act concerns"
 
@@ -49972,9 +50113,13 @@ msgstr "Test error"
 msgid "Text"
 msgstr "Text"
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:785
+#: src/features/legal/components/reader/tldf-blocks.tsx:898
 msgid "Text abrogat"
 msgstr "Repealed text"
+
+#: src/features/legal/components/reader/tldf-blocks.tsx:1115
+msgid "Text aliniat pe coloane, derulabil orizontal"
+msgstr "Text aligned in columns, scrolls sideways"
 
 #: src/features/ngos/organization/components/purpose-section.tsx:60
 msgid "Text ascuns în registru"
@@ -49996,15 +50141,15 @@ msgstr "Text hidden in the registry"
 msgid "Textile"
 msgstr "Textiles"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:617
+#: src/features/legal/components/reader/legal-reader-page.tsx:806
 msgid "Textul acestei versiuni are mai multe părți (antet și corp), pe care nu le afișăm încă împreună."
 msgstr "Textul acestei versiuni are mai multe părți (antet și corp), pe care nu le afișăm încă împreună."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:609
+#: src/features/legal/components/reader/legal-reader-page.tsx:798
 msgid "Textul acestui document este restricționat"
 msgstr "The text of this document is restricted"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:393
+#: src/features/legal/components/reader/legal-reader-page.tsx:568
 msgid "Textul actului"
 msgstr "Text of the act"
 
@@ -50038,11 +50183,11 @@ msgstr "Textul afișat implicit este o formă consolidată neoficială, cu carac
 msgid "Textul integral al ședinței, în ordinea din stenograma oficială."
 msgstr "Textul integral al ședinței, în ordinea din stenograma oficială."
 
-#: src/features/legal/components/act-versions-band.tsx:177
+#: src/features/legal/components/act-versions-band.tsx:248
 msgid "textul nu este încă disponibil"
 msgstr "textul nu este încă disponibil"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:606
+#: src/features/legal/components/reader/legal-reader-page.tsx:795
 msgid "Textul nu este încă disponibil"
 msgstr "Textul nu este încă disponibil"
 
@@ -50078,11 +50223,11 @@ msgstr "Textul ședinței este disponibil, dar sursa nu a tipărit numele vorbit
 #~ msgid "Textul servit este versiunea publicată, nu forma consolidată la zi."
 #~ msgstr "The text served is the published version, not the up-to-date consolidated form."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:611
+#: src/features/legal/components/reader/legal-reader-page.tsx:800
 msgid "Textul stocat este momentan inconsistent"
 msgstr "The stored text is currently inconsistent"
 
-#: src/features/legal/components/act-plain-summary.tsx:217
+#: src/features/legal/components/act-plain-summary.tsx:178
 msgid "Textul, pe legislatie.just.ro"
 msgstr "Textul, pe legislatie.just.ro"
 
@@ -50783,11 +50928,11 @@ msgstr "The time from application to judgment is computed by Transparenta.eu fro
 msgid "Ține apăsat Ctrl (⌘ pe Mac) și rotița ca să apropii harta"
 msgstr "Hold Ctrl (⌘ on a Mac) and scroll to zoom the map"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:623
+#: src/features/legal/components/reader/legal-reader-page.tsx:812
 msgid "Ținem actul, dar nicio generare de text pentru această expresie."
 msgstr "We hold the act, but no text rendering for this expression."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:442
+#: src/features/legal/components/reader/legal-reader-page.tsx:616
 msgid "Ținem metadatele acestui act, dar nu o expresie de text căreia să îi servim conținutul."
 msgstr "We hold this act’s metadata, but no text expression whose content we can serve."
 
@@ -50805,7 +50950,7 @@ msgid "ținta legală: 26 m²/locuitor, termen 2013 (OUG 114/2007)"
 msgstr "legal target: 26 m² per inhabitant, due 2013 (GEO 114/2007)"
 
 #. placeholder {0}: anchor.targetFragment
-#: src/features/legal/components/act-anchors-band.tsx:102
+#: src/features/legal/components/act-anchors-band.tsx:104
 msgid "țintește {0}"
 msgstr "targets {0}"
 
@@ -50814,6 +50959,7 @@ msgid "Ținut"
 msgstr "Held"
 
 #: src/features/elections/catalog/election-edition-page.tsx:131
+#: src/features/legal/components/act-detail-header.tsx:130
 #: src/features/legal/components/analytics/legislation-analysis.tsx:825
 #: src/features/legal/components/legislation-search-filters.tsx:300
 msgid "Tip"
@@ -51054,7 +51200,7 @@ msgstr "Every direct purchase in {0}"
 msgid "Toate achizițiile directe din {year} au venit de la {topName}."
 msgstr "All direct purchases in {year} came from {topName}."
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:166
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:156
 msgid "Toate achizițiile, pe pagina de achiziții"
 msgstr "All its purchases, on the procurement page"
 
@@ -51066,7 +51212,7 @@ msgstr "All the framework agreements between them"
 msgid "Toate actele din Portal Legislativ: filtrează după tip, an și statut, ordonate după cât de citate sunt."
 msgstr "All acts in Portal Legislativ: filter by type, year and status, ordered by how often they are cited."
 
-#: src/features/legal/components/analytics/analytics-charts.tsx:285
+#: src/features/legal/components/analytics/analytics-charts.tsx:378
 msgid "Toate actele selecției sunt în aceste rânduri."
 msgstr "Every act of the selection is in these rows."
 
@@ -51074,11 +51220,11 @@ msgstr "Every act of the selection is in these rows."
 #~ msgid "Toate actele, de filtrat după tip, an și statut."
 #~ msgstr "All acts, to filter by type, year and status."
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:160
+#: src/features/legal/components/hub/legislation-hub-head.tsx:168
 msgid "Toate actele, după citări"
 msgstr "All acts, by citations"
 
-#: src/features/legal/components/hub/legislation-hub-head.tsx:160
+#: src/features/legal/components/hub/legislation-hub-head.tsx:168
 msgid "Toate actele, după modificări"
 msgstr "All acts, by amendments"
 
@@ -51265,6 +51411,10 @@ msgstr "All the judgments, year by year"
 msgid "Toate înregistrările din județ, din toți anii"
 msgstr "All the county's entries, of every year"
 
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:83
+msgid "Toate înregistrările, pe pagina firmei"
+msgstr "All records, on the company's page"
+
 #: src/features/justice/components/hub/justice-hub-hero.tsx:60
 msgid "Toate instanțele"
 msgstr "All courts"
@@ -51367,7 +51517,7 @@ msgstr "All procedures"
 msgid "Toate secțiunile"
 msgstr "All sections"
 
-#: src/features/privacy/components/consent-card.tsx:393
+#: src/features/privacy/components/consent-card.tsx:402
 msgid "Toate setările"
 msgstr "All settings"
 
@@ -51408,7 +51558,7 @@ msgstr "Toate stenogramele"
 msgid "toate valorile admise"
 msgstr "all values admitted"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:246
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:236
 msgid "Toate valorile AMEPIP, pe ani"
 msgstr "All AMEPIP values, by year"
 
@@ -51600,7 +51750,7 @@ msgstr "full text"
 msgid "total"
 msgstr "total"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1191
+#: src/components/budget-explorer/BudgetTreemap.tsx:1197
 #: src/components/charts/components/series-config/SeriesFilter.tsx:417
 #: src/components/commitments/DetailTable.tsx:706
 #: src/components/common/NormalizationSelector.tsx:21
@@ -51777,7 +51927,7 @@ msgstr "All authorising officers in {0}"
 msgid "Toți vorbitorii — stenograma integrală"
 msgstr "Toți vorbitorii — stenograma integrală"
 
-#: src/features/privacy/components/cookie-settings-page.tsx:135
+#: src/features/privacy/components/cookie-settings-page.tsx:137
 msgid "Totul pornit"
 msgstr "Everything on"
 
@@ -52019,12 +52169,12 @@ msgstr "Send request"
 msgid "Trimite feedback"
 msgstr "Send feedback"
 
-#: src/features/legal/components/act-references-band.tsx:154
+#: src/features/legal/components/act-references-band.tsx:155
 msgid "trimitere nerezolvată"
 msgstr "unresolved reference"
 
-#: src/features/legal/components/act-anchors-band.tsx:42
-#: src/features/legal/components/act-anchors-band.tsx:58
+#: src/features/legal/components/act-anchors-band.tsx:43
+#: src/features/legal/components/act-anchors-band.tsx:59
 msgid "Trimiteri afirmate de portal"
 msgstr "References stated by the portal"
 
@@ -52036,7 +52186,7 @@ msgstr "References stated by the portal"
 msgid "Trimiteri din titlul deciziilor, nu efecte."
 msgstr "References from the title of decisions, not effects."
 
-#: src/features/legal/components/act-anchors-band.tsx:44
+#: src/features/legal/components/act-anchors-band.tsx:45
 msgid "Trimiterile afirmate de portal nu sunt disponibile pentru acest act."
 msgstr "Trimiterile afirmate de portal nu sunt disponibile pentru acest act."
 
@@ -52064,9 +52214,9 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:493
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2642
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2822
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2957
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2643
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2823
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2958
 #: src/features/learning/components/assessment/Quiz.tsx:179
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
@@ -52268,7 +52418,7 @@ msgstr "Last"
 #~ msgstr "Ultima actualizare:"
 
 #. placeholder {0}: formatDate(saved.updatedAt, 'short')
-#: src/features/privacy/components/cookie-settings-page.tsx:250
+#: src/features/privacy/components/cookie-settings-page.tsx:252
 msgid "Ultima alegere · {0}"
 msgstr "Last choice · {0}"
 
@@ -52650,7 +52800,7 @@ msgstr "Unavailable"
 msgid "Unde"
 msgstr "Where"
 
-#: src/features/legal/components/act-publication-band.tsx:49
+#: src/features/legal/components/act-publication-band.tsx:53
 msgid "Unde a fost publicat"
 msgstr "Where it was published"
 
@@ -52795,6 +52945,10 @@ msgstr "Some filters in the address are not applied"
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:630
 #~ msgid "Unele filtre sunt gated până când lane-urile ajung live."
 #~ msgstr "Unele filtre sunt gated până când lane-urile ajung live."
+
+#: src/features/public-enterprises/lib/enterprise-text.ts:266
+msgid "Unele înregistrări nu au valoare publicată, deci totalurile disponibile sunt limite inferioare."
+msgstr "Some records have no published value, so the available totals are lower bounds."
 
 #: src/features/elections/catalog/contest-figures.ts:59
 #~ msgid "Unele procente lipsesc: acele voturi nu numără aceiași votanți ca voturile valabile."
@@ -53211,7 +53365,7 @@ msgstr "Usable amounts cover only {coverage} of {grain} — too few for an hones
 msgid "USD"
 msgstr "USD"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3416
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3417
 msgid "USD values are not available yet; the amounts shown are in RON."
 msgstr "USD values are not available yet; the amounts shown are in RON."
 
@@ -53783,7 +53937,7 @@ msgstr "This year's values come from {0} MF files published separately; check ea
 msgid "Valorile anunțului sunt fără TVA."
 msgstr "The notice's values exclude VAT."
 
-#: src/features/public-enterprises/lib/enterprise-text.ts:278
+#: src/features/public-enterprises/lib/enterprise-text.ts:304
 msgid "Valorile din SEAP sunt cele atribuite, nu plățile efective."
 msgstr "SEAP values are the amounts awarded, not what was actually paid."
 
@@ -54384,17 +54538,21 @@ msgstr "Version restored"
 #~ msgstr "Versiune parser"
 
 #. placeholder {0}: label(only)
-#: src/features/legal/components/act-version-selector.tsx:68
+#. placeholder {0}: versionName(shown.versionKind, shownVersionDate(act, shown), i18n.locale)
+#: src/features/legal/components/act-version-selector.tsx:53
+#: src/features/legal/components/act-version-selector.tsx:83
 msgid "Versiunea afișată: {0}"
 msgstr "Versiunea afișată: {0}"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:621
+#: src/features/legal/components/reader/legal-reader-page.tsx:810
 msgid "Versiunea există pe Portalul Legislativ, dar textul ei nu este încă încărcat aici."
 msgstr "Versiunea există pe Portalul Legislativ, dar textul ei nu este încă încărcat aici."
 
-#: src/features/legal/components/act-version-selector.tsx:82
+#: src/features/legal/components/act-version-selector.tsx:99
+#: src/features/legal/components/act-version-selector.tsx:117
+#: src/features/legal/components/reader/act-reading-bar.tsx:144
 msgid "Versiunea textului"
-msgstr "Versiunea textului"
+msgstr "Version of the text"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:662
 #: src/features/legal/components/analytics/legislation-analysis.tsx:864
@@ -54409,11 +54567,11 @@ msgstr "Versions listed by the Portal: the distinct dates on which the Portal li
 msgid "Versiuni listate de Portal: datele distincte la care Portalul a listat o versiune consolidată (neoficială)."
 msgstr "Versions listed by the Portal: the distinct dates on which the Portal listed a consolidated (unofficial) version."
 
-#: src/features/legal/components/act-default-notices.tsx:105
+#: src/features/legal/components/act-default-notices.tsx:113
 msgid "Versiunile cu aceeași dată au fost ordonate după o regulă fixă, nu de un verificator."
 msgstr "Versiunile cu aceeași dată au fost ordonate după o regulă fixă, nu de un verificator."
 
-#: src/features/legal/components/act-versions-band.tsx:49
+#: src/features/legal/components/act-versions-band.tsx:66
 msgid "Versiunile textului"
 msgstr "Versions of the text"
 
@@ -54472,7 +54630,7 @@ msgstr "Vezi documentul"
 #~ msgid "Vezi firmele"
 #~ msgstr "See the firms"
 
-#: src/features/legal/components/act-relevance-band.tsx:128
+#: src/features/legal/components/act-relevance-band.tsx:115
 msgid "Vezi impactul fiscal"
 msgstr "Show the fiscal impact"
 
@@ -54529,7 +54687,7 @@ msgstr "See also in other sections"
 #~ msgid "Vezi sursa: {0}, {dateText}"
 #~ msgstr "Vezi sursa: {0}, {dateText}"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:561
+#: src/features/legal/components/reader/legal-reader-page.tsx:750
 msgid "Vezi textul pe legislatie.just.ro"
 msgstr "View the text on legislatie.just.ro"
 
@@ -54595,7 +54753,7 @@ msgstr "View all classifications"
 msgid "View all reports"
 msgstr "View all reports"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1201
+#: src/components/budget-explorer/BudgetTreemap.tsx:1207
 msgid "View as Chart"
 msgstr "View as Chart"
 
@@ -54610,7 +54768,7 @@ msgstr "View as table"
 msgid "View Chart"
 msgstr "View Chart"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1105
+#: src/components/budget-explorer/BudgetTreemap.tsx:1111
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:196
 #: src/features/learning/components/cards/LearningPathCard.tsx:69
 msgid "View Details"
@@ -54652,7 +54810,7 @@ msgstr "Viewing:"
 msgid "viitoare"
 msgstr "upcoming"
 
-#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:201
+#: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:191
 msgid "Vinde instituțiilor"
 msgstr "Sells to institutions"
 
@@ -54840,13 +54998,13 @@ msgstr "We cannot confirm whether requests are still open right now. Please try 
 #~ msgid "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 #~ msgstr "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2622
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2623
 msgid "We could not find an entity for this CUI. Check the identifier or search for another entity."
 msgstr "We could not find an entity for this CUI. Check the identifier or search for another entity."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2633
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2828
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2955
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2634
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2829
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2956
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 

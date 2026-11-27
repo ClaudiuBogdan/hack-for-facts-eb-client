@@ -6,13 +6,8 @@ import { cn } from '@/lib/utils'
 import type { LegalActSummaryData } from '@/schemas/legal'
 import { legalDomainLabelLoose } from '../lib/legal-domains'
 import { legalAudienceLabel } from '../lib/legal-vocabulary'
-import {
-  LEGISLATION_ACCENT,
-  legislationChipClassName,
-  legislationLinkClassName,
-  legislationQuietChipClassName,
-} from '../lib/legislation-theme'
 import { ActAccordionItem } from './act-accordion'
+import { ACT_RECORD_LINE, ACT_RECORD_MORE } from './reader/act-page-grid'
 
 type Props = {
   readonly summary: LegalActSummaryData
@@ -28,9 +23,11 @@ const KEYWORD_LIMIT = 12
  * Three taxonomies live here — audiences, domains, keywords — and they used to
  * arrive in three different chip shapes, so the reader had to work out whether
  * a 2px border, an accent bar and a hairline meant three kinds of thing. They
- * meant one kind of thing at three levels of importance, which is what fill
- * weight says without inventing a shape for it. Keywords drop out of chips
- * entirely: they are the act's index terms, read as a line, not scanned.
+ * meant one kind of thing at three levels of importance. Now they are plain
+ * text in the record's two columns (owner, 26 November 2026: no tinted chips),
+ * the label at the left, the values at the right, and weight says the level:
+ * the audiences in medium weight, the domains plain, the keywords — the act's
+ * index terms, read as a line, not scanned — in the muted colour.
  *
  * **The audiences are the row's description, so the relevance check survives
  * the row being closed.** This rung's whole job is to answer "does this concern
@@ -67,49 +64,39 @@ export function ActRelevanceBand({ summary }: Props) {
         </Trans>
       }
     >
-      <div className="flex flex-col gap-5 px-5 py-5 sm:px-6">
+      <div className="divide-y">
         {hasAudiences ? (
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
+          <div className={ACT_RECORD_LINE}>
+            <h4 className="text-muted-foreground">
               <Trans>Te privește dacă ești</Trans>
-            </h3>
-            <div className="mt-2.5 flex flex-wrap gap-2">
+            </h4>
+            <ul>
               {summary.affectedAudiences.map((slug) => (
-                <span
-                  key={slug}
-                  className={cn(legislationChipClassName, 'font-semibold')}
-                >
+                <li key={slug} className="font-medium">
                   {legalAudienceLabel(slug)}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         ) : null}
 
         {hasDomains ? (
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
+          <div className={ACT_RECORD_LINE}>
+            <h4 className="text-muted-foreground">
               <Trans>Domenii</Trans>
-            </h3>
-            <div className="mt-2.5 flex flex-wrap gap-2">
+            </h4>
+            <ul>
               {summary.domains.map((slug) => (
-                <span key={slug} className={legislationQuietChipClassName}>
-                  <span
-                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: LEGISLATION_ACCENT }}
-                    aria-hidden
-                  />
-                  {legalDomainLabelLoose(slug)}
-                </span>
+                <li key={slug}>{legalDomainLabelLoose(slug)}</li>
               ))}
-            </div>
+            </ul>
           </div>
         ) : null}
 
         {summary.penaltiesMentioned === true ? (
-          <p className="flex items-center gap-2 text-sm font-medium text-[var(--pnrr-fg)]">
+          <p className="flex items-center gap-2 py-2 font-medium">
             <AlertTriangle
-              className="h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
+              className="size-4 shrink-0 text-status-partial-fg"
               aria-hidden
             />
             <Trans>Actul prevede sancțiuni.</Trans>
@@ -117,20 +104,20 @@ export function ActRelevanceBand({ summary }: Props) {
         ) : null}
 
         {summary.fiscalImpact !== null ? (
-          <div>
+          <div className="pb-1">
             <button
               type="button"
               onClick={() => setShowFiscal((open) => !open)}
-              className={legislationLinkClassName}
+              className={ACT_RECORD_MORE}
               aria-expanded={showFiscal}
-              aria-controls="act-fiscal-impact"
+              aria-controls={showFiscal ? 'act-fiscal-impact' : undefined}
             >
               {showFiscal ? t`Ascunde impactul fiscal` : t`Vezi impactul fiscal`}
             </button>
             {showFiscal ? (
               <p
                 id="act-fiscal-impact"
-                className="mt-3 max-w-[46rem] border-l-2 border-[var(--pnrr-subtle)] pl-4 text-sm leading-7 text-[var(--pnrr-fg)]"
+                className="mb-2 mt-1 max-w-prose border-l-2 border-border pl-4"
               >
                 {summary.fiscalImpact}
               </p>
@@ -139,11 +126,11 @@ export function ActRelevanceBand({ summary }: Props) {
         ) : null}
 
         {hasKeywords ? (
-          <p className="text-xs leading-6 text-[var(--pnrr-muted)]">
-            <span className="font-semibold uppercase tracking-wide">
+          <p className={cn(ACT_RECORD_LINE, 'text-muted-foreground')}>
+            <span>
               <Trans>Cuvinte-cheie</Trans>
-            </span>{' '}
-            {summary.keywords.slice(0, KEYWORD_LIMIT).join(' · ')}
+            </span>
+            <span>{summary.keywords.slice(0, KEYWORD_LIMIT).join(' · ')}</span>
           </p>
         ) : null}
       </div>

@@ -92,6 +92,37 @@ describe('budget-transform', () => {
   })
 
   describe('buildTreemapDataV2', () => {
+    it('keeps transfer spending and signed corrections in the expense breakdown', () => {
+      const data = [
+        createNode('65.01', 'Education', '20.01', 'Goods', 120, 1),
+        createNode('65.02', 'Education', '51.01', 'Transfers', 40, 1),
+        createNode('65', 'Education', '20.02', 'Goods', -30, 1),
+        createNode('65.03', 'Education', '', '', -15, 1),
+      ]
+
+      const economic = buildTreemapDataV2({ data, primary: 'ec', path: [], preserveUnclassified: true })
+      expect(economic).toEqual(expect.arrayContaining([
+        expect.objectContaining({ code: '51', value: 40 }),
+        expect.objectContaining({ code: 'unclassified', value: -15, terminal: true }),
+      ]))
+      const functional = buildTreemapDataV2({ data, primary: 'fn', path: ['65'], preserveUnclassified: true })
+      expect(functional).toContainEqual(expect.objectContaining({ code: '65', value: -30, terminal: true }))
+      expect(economic.reduce((sum, node) => sum + node.value, 0)).toBe(115)
+      expect(functional.reduce((sum, node) => sum + node.value, 0)).toBe(115)
+    })
+
+    it('adds no terminal copy of a 3-part economic code, where the depth is capped', () => {
+      const data = [
+        createNode('65.02', 'Education', '20.01.01', 'Supplies', 100, 1),
+        createNode('65.02', 'Education', '20.01', 'Goods', -10, 1),
+      ]
+      expect(buildTreemapDataV2({ data, primary: 'ec', path: ['20', '20.01', '20.01.01'], preserveUnclassified: true })).toEqual([])
+      expect(buildTreemapDataV2({ data, primary: 'ec', path: ['20', '20.01'], preserveUnclassified: true })).toEqual(expect.arrayContaining([
+        expect.objectContaining({ code: '20.01.01', value: 100 }),
+        expect.objectContaining({ code: '20.01', value: -10, terminal: true }),
+      ]))
+    })
+
     const sampleData: AggregatedNode[] = [
       createNode('51.01.01', 'Executive Functions', '10.01.01', 'Base Salaries', 100000, 5),
       createNode('51.01.01', 'Executive Functions', '10.01.02', 'Bonuses', 50000, 3),

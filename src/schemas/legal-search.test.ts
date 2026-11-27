@@ -48,6 +48,26 @@ describe('legalReaderSearchSchema', () => {
     expect(legalReaderSearchSchema.parse({ doc: -3, nod: 'r10' })).toStrictEqual({ doc: undefined, nod: undefined })
   })
 
+  it('drops a nod that is not text and opens the text without a jump, keeping the doc it came with (LEGAL-001)', () => {
+    // hand-typed, the router reads these as numbers, a boolean, nothing: none is a path
+    for (const address of ['?nod=1', '?nod=0.1', '?nod=1.10', '?nod=1e3', '?nod=true', '?nod=null', '?nod=']) {
+      expect(pageSearch(address)).toStrictEqual({ doc: undefined, nod: undefined })
+    }
+    // what the router does not read as a number is still the text typed
+    expect(pageSearch('?nod=01')).toStrictEqual({ doc: undefined, nod: '01' })
+    expect(pageSearch('?nod=0.1.1')).toStrictEqual({ doc: undefined, nod: '0.1.1' })
+    expect(pageSearch('?doc=f900011&nod=1')).toStrictEqual({ doc: 'f900011', nod: undefined })
+    expect(pageSearch('?doc=54260&nod=1')).toStrictEqual({ doc: '54260', nod: undefined })
+    // an unreadable doc still takes its nod with it, text or not
+    expect(pageSearch('?doc=true&nod=1')).toStrictEqual({ doc: undefined, nod: undefined })
+  })
+
+  it.each(['0.1', '1', '1.10', '01', 'true', '0.1.1', 'r10'])('keeps the path „%s" when the app writes the link: it is quoted, and comes back as the text it was', (nod) => {
+    const address = stringifyAppSearch({ nod })
+    expect(pageSearch(address)).toStrictEqual({ doc: undefined, nod })
+    expect(pageSearch(stringifyAppSearch({ doc: 'f900011', nod }))).toStrictEqual({ doc: 'f900011', nod })
+  })
+
   it('keeps a nod on its own, and a nod with a doc it reads', () => {
     expect(pageSearch('?nod=r10')).toStrictEqual({ doc: undefined, nod: 'r10' })
     expect(pageSearch('?doc=54260&nod=r10')).toStrictEqual({ doc: '54260', nod: 'r10' })

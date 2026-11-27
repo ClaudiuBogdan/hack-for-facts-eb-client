@@ -6,6 +6,7 @@ import type { LegalIncomingAnchor, LegalIncomingAnchorGroup } from '@/schemas/le
 import { formatLegalNumber } from '../lib/legal-format'
 import { LegalStatusBadge } from './legal-status-badge'
 import { ActAccordionItem } from './act-accordion'
+import { ACT_LINK, ACT_RECORD_LINE } from './reader/act-page-grid'
 
 type Props = {
   /** Null when the anchors are not available for this act (bridged on legal_v2). */
@@ -40,7 +41,7 @@ export function ActAnchorsBand({ group, available = true }: Props) {
   ) {
     return (
       <ActAccordionItem id="act-anchors-heading" title={t`Trimiteri afirmate de portal`}>
-        <p className="px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p className="text-muted-foreground">
           <Trans>Trimiterile afirmate de portal nu sunt disponibile pentru acest act.</Trans>
         </p>
       </ActAccordionItem>
@@ -76,14 +77,14 @@ export function ActAnchorsBand({ group, available = true }: Props) {
         </Trans>
       }
     >
-      <ul className="flex flex-col">
+      <ul className="divide-y">
         {group.items.map((anchor, index) => (
           <AnchorRow key={`${anchor.sourceDocumentId}-${index}`} anchor={anchor} />
         ))}
       </ul>
 
       {totalCount !== null && shownCount < totalCount ? (
-        <p className="border-t border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
           <Trans>
             Se afișează {formatLegalNumber(shownCount, i18n.locale)} din{' '}
             {formatLegalNumber(totalCount, i18n.locale)}.
@@ -96,33 +97,36 @@ export function ActAnchorsBand({ group, available = true }: Props) {
 
 function AnchorRow({ anchor }: { readonly anchor: LegalIncomingAnchor }) {
   return (
-    <li className="flex flex-col gap-1.5 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:px-6">
-      {anchor.targetFragment !== null && (
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
+    <li className={ACT_RECORD_LINE}>
+      {/* The cell stays when the anchor names no provision, so the source keeps its column. */}
+      <span className="text-muted-foreground">
+        {anchor.targetFragment !== null && (
           <Trans>țintește {anchor.targetFragment}</Trans>
-        </span>
-      )}
+        )}
+      </span>
 
-      {anchor.sourceAct !== null ? (
-        <span className="flex flex-wrap items-center gap-2">
-          <Link
-            to="/legislation/acts/$actId"
-            params={{ actId: anchor.sourceAct.actId }}
-            className="text-base font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 hover:text-[var(--pnrr-muted)]"
-          >
-            {anchor.sourceAct.displayCitation}
-          </Link>
-          <LegalStatusBadge status={anchor.sourceAct.status} />
-        </span>
-      ) : (
-        <span className="text-base text-[var(--pnrr-fg)]">
-          <Trans>document {anchor.sourceDocumentId} — fără fișă de act la noi</Trans>
-        </span>
-      )}
+      <span className="flex min-w-0 flex-col gap-0.5">
+        {anchor.sourceAct !== null ? (
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+            <Link
+              to="/legislation/acts/$actId"
+              params={{ actId: anchor.sourceAct.actId }}
+              className={ACT_LINK}
+            >
+              {anchor.sourceAct.displayCitation}
+            </Link>
+            <LegalStatusBadge status={anchor.sourceAct.status} />
+          </span>
+        ) : (
+          <span>
+            <Trans>document {anchor.sourceDocumentId} — fără fișă de act la noi</Trans>
+          </span>
+        )}
 
-      {anchor.linkText !== null && (
-        <q className="text-sm text-[var(--pnrr-muted)]">{anchor.linkText}</q>
-      )}
+        {anchor.linkText !== null && (
+          <q className="text-muted-foreground">{anchor.linkText}</q>
+        )}
+      </span>
     </li>
   )
 }

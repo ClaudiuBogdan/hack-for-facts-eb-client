@@ -160,25 +160,25 @@ export function ActProvenanceNotes({ act, mastheadInHeader = false }: Props) {
       }
       description={t`Limitele acestor date, spuse pe față.`}
     >
-      <ul className="flex flex-col gap-4 px-5 py-5 sm:px-6">
+      <ul className="divide-y">
         {notes.map((note) => (
-          <li key={note.key} className="flex gap-3">
+          <li key={note.key} className="flex gap-3 py-2">
             {note.tone === 'warning' ? (
               <AlertTriangle
-                className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
+                className="mt-1 size-4 shrink-0 text-status-partial-fg"
                 aria-hidden
               />
             ) : (
               <Info
-                className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-muted)]"
+                className="mt-1 size-4 shrink-0 text-muted-foreground"
                 aria-hidden
               />
             )}
             <p
               className={
                 note.tone === 'warning'
-                  ? 'max-w-prose text-sm font-medium text-[var(--pnrr-fg)]'
-                  : 'max-w-prose text-sm text-[var(--pnrr-fg)]'
+                  ? 'max-w-prose font-medium'
+                  : 'max-w-prose'
               }
             >
               {note.body}

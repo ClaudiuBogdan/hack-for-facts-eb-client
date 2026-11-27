@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { createRootRouteWithContext, Scripts } from "@tanstack/react-router";
 import GlobalErrorPage from "@/components/errors/GlobalErrorPage";
 import { NotFoundPage } from "@/components/errors/not-found-page";
@@ -65,29 +66,42 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   },
   errorComponent: ({ error }) => <GlobalErrorPage error={error} />,
   notFoundComponent: NotFoundPage,
+  shellComponent: RootDocument,
   component: RootComponent,
 });
 
-function RootComponent() {
-  const { queryClient, ssrTheme, ssrCurrency, ssrInflationAdjusted } =
-    Route.useRouteContext();
-  const themeClass = ssrTheme || DEFAULT_THEME;
+/**
+ * The document, around everything the root renders: the app, and the error
+ * page when the root itself fails, which renders in place of `RootComponent`
+ * (ERR-002). Its `beforeLoad` context is then missing, so the theme falls back.
+ */
+function RootDocument({ children }: { readonly children: ReactNode }) {
+  const ssrTheme = Route.useRouteContext({ select: (context) => context.ssrTheme as ResolvedTheme | undefined });
 
   return (
-    <html lang={i18n.locale || DEFAULT_LOCALE} className={themeClass}>
+    <html lang={i18n.locale || DEFAULT_LOCALE} className={ssrTheme ?? DEFAULT_THEME}>
       <head>
         <AppHeadContent />
       </head>
       <body>
-        <AppShell
-          queryClient={queryClient}
-          ssrTheme={ssrTheme}
-          ssrCurrency={ssrCurrency}
-          ssrInflationAdjusted={ssrInflationAdjusted}
-        />
+        {children}
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function RootComponent() {
+  const { queryClient, ssrTheme, ssrCurrency, ssrInflationAdjusted } =
+    Route.useRouteContext();
+
+  return (
+    <AppShell
+      queryClient={queryClient}
+      ssrTheme={ssrTheme}
+      ssrCurrency={ssrCurrency}
+      ssrInflationAdjusted={ssrInflationAdjusted}
+    />
   );
 }
 

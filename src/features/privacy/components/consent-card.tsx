@@ -140,6 +140,7 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
   const { draft, patch, save, essentialOnly, everything } = useConsentDraft()
   const [view, setView] = useState<CardView>('ask')
   const [phase, setPhase] = useState<CardPhase>('entering')
+  const [saveFailed, setSaveFailed] = useState(false)
   // The decision the confirmation is showing. Read once at the click rather
   // than derived from storage, so the picture answers the button that was
   // pressed even if a second tab changes the stored answer meanwhile.
@@ -227,8 +228,10 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [view])
 
-  const decide = (action: () => void, outcome: CookieState) => {
-    action()
+  const decide = (action: () => boolean, outcome: CookieState) => {
+    const saved = action()
+    setSaveFailed(!saved)
+    if (!saved) return
     setDecided(outcome)
     setView('saved')
   }
@@ -384,6 +387,12 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
                 </Button>
               )}
             </div>
+
+            {saveFailed ? (
+              <p role="alert" className="mt-3 text-sm text-destructive">
+                <Trans>Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă.</Trans>
+              </p>
+            ) : null}
 
             <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
               <Link to="/cookie-policy" className={FOOT_LINK_CLASS}>

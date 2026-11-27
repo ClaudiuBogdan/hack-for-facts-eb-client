@@ -40,20 +40,18 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
+import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ChevronDown, ExternalLink, TriangleAlert } from 'lucide-react'
+import { ExternalLink, TriangleAlert } from 'lucide-react'
+import { stringifyAppSearch } from '@/lib/router-search-codec'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
 import type { LegalActDetail, LegalOutlineEntry } from '@/schemas/legal'
 import { useQueryClient } from '@tanstack/react-query'
 import { fetchLegalRender } from '../../api/legal-render-api'
+import { useAwayFromHead } from '../../hooks/use-away-from-head'
 import { useLegalOutline } from '../../hooks/use-legal-outline'
 import { legalRenderQueryKey, useLegalRender } from '../../hooks/use-legal-render'
 import { useLegalResolveDocument } from '../../hooks/use-legal-resolve-document'
@@ -62,31 +60,53 @@ import {
   LegalRenderFailureError,
 } from '../../lib/legal-render-error'
 import type { LegalRenderFailure } from '../../lib/legal-render-error'
-import { uniqueGazettePublication } from '../../lib/act-facts'
+import { headPublication } from '../../lib/act-facts'
+import { CONTENTS_FOLD_FROM, isArticleEntry } from '../../lib/legal-outline'
 import {
   defaultReadingOf,
   findVersion,
   isConsolidationVersion,
   resolveDocOverride,
+  shownVersionDate,
+  versionName,
   withServedForm,
 } from '../../lib/legal-versions'
-import { ActConsolidationBanner } from '../act-consolidation-banner'
 import { ActDefaultNotices } from '../act-default-notices'
-import { ActVersionSelector } from '../act-version-selector'
 import { legalIssuerLabel } from '../../lib/legal-vocabulary'
 import { splitMasthead } from '../../lib/tldf/masthead'
 import type { MastheadFactsInHeader, MastheadSplit } from '../../lib/tldf/masthead'
+import { FOLDED_NOTE_ATTR, revealFoldedNote } from '../../lib/tldf/folded-note'
 import { domAnchorForPath, resolveNod } from '../../lib/tldf/nod-resolve'
 import type { TldfChunkPayload, TldfManifestPayload } from '../../lib/tldf/types'
-import { LegalReaderToc } from './legal-reader-toc'
+import { ACT_COLUMN, ACT_GRID, ACT_GRID_THREE, ACT_TITLE_ID } from './act-page-grid'
+import { ActReadingBar, ActToStartButton } from './act-reading-bar'
+import { ActTextAbout } from './act-text-about'
+import { ContentsRecordLink, GoToArticle, LegalReaderToc } from './legal-reader-toc'
 import { TldfBlocksView } from './tldf-blocks'
+
+/** The articles from which the contents' box carries the field that jumps to one. */
+const JUMP_FROM = 8
 
 type Props = {
   readonly act: LegalActDetail
-  /** The page lead — warnings and the plain-language summary, no heading. */
-  readonly lead: React.ReactNode
-  /** The fișa — the detail accordion, rendered under its own section H2. */
-  readonly fisa: React.ReactNode
+  /**
+   * The page lead — the plain-language summary, no heading. As a function it is
+   * told whether the act's warnings are its to show: they are, only when the
+   * box about the text shown (which wears them) is not on the page.
+   */
+  readonly lead: React.ReactNode | ((placement: { readonly withWarnings: boolean }) => React.ReactNode)
+  /**
+   * The act's warnings, as rows: worn by the box about the text shown whenever
+   * it is on the page (the reading column below 88rem, the right column from
+   * there), so they are said once at any width.
+   */
+  readonly warnings?: React.ReactNode
+  /**
+   * The fișa — the detail accordion, rendered under its own section H2. As a function it is told which of the act's
+   * versions the address asks for, as the reader resolved it: `ownDocumentId` is the act's own document id (an old
+   * page id on legal_v2 is looked up first), or null when the address asks for none or for one that was refused.
+   */
+  readonly fisa: React.ReactNode | ((text: { readonly ownDocumentId: string | null }) => React.ReactNode)
   /**
    * `?doc=` — read this expression instead of the canonical document. Honoured
    * only when it is one of `act.documents`; another act's document is refused.
@@ -108,21 +128,45 @@ type Props = {
   ) => void
 }
 
+/**
+ * The deep link's passing highlight, important: a note nested in a note would
+ * otherwise lose it to the parent note's `[&_[data-kind=nota]]:bg-transparent`.
+ * A light tint of the text's own colour: the theme's `accent` is black on the
+ * light theme, and 60% of it hid the very passage it pointed at. The block's
+ * own text takes the full text colour for as long: muted small print on the
+ * tint would fall under 4.5:1.
+ */
+/** The text's article: the skip link's target, which must land under the sticky reading bar and not behind it. */
+const READER_CONTENT = 'scroll-mt-16'
+
+const NOD_HIGHLIGHT = ['bg-foreground/10!', 'text-foreground!'] as const
+
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
 function scrollToNodTarget(nod: string, anchorPath: string): boolean {
   const target =
     document.getElementById(domAnchorForPath(nod)) ??
     document.getElementById(domAnchorForPath(anchorPath))
   if (target === null) return false
-  target.scrollIntoView({ block: 'start' })
-  target.classList.add('bg-accent/60')
-  window.setTimeout(() => target.classList.remove('bg-accent/60'), 1600)
+  // A folded note of the Portal that holds the target opens first: a target
+  // near its start would be reached without the clipped box scrolling at all.
+  // Its control commits the opening at once (`flushSync`), which React refuses
+  // inside an effect — where a deep link lands — so the opening and the
+  // scroll then wait for the effect to end.
+  const reveal = () => {
+    revealFoldedNote(target)
+    target.scrollIntoView({ block: 'start' })
+  }
+  if (target.closest(`[${FOLDED_NOTE_ATTR}="closed"]`) !== null) queueMicrotask(reveal)
+  else reveal()
+  target.classList.add(...NOD_HIGHLIGHT)
+  window.setTimeout(() => target.classList.remove(...NOD_HIGHLIGHT), 1600)
   return true
 }
 
 export function ActReadingLayout({
   act,
   lead,
+  warnings,
   fisa,
   docOverride,
   nod,
@@ -178,7 +222,20 @@ export function ActReadingLayout({
   /** Bumped whenever text blocks land in the DOM (envelope render, chunk load). */
   const [domVersion, setDomVersion] = useState(0)
   const [activePath, setActivePath] = useState<string | null>(null)
+  // The folded contents keep the last place open while the reader is in no place of the outline (between two
+  // blocks, in the record): the branch they were in does not shut behind them.
+  const [openPath, setOpenPath] = useState<string | null>(null)
+  if (activePath !== null && activePath !== openPath) setOpenPath(activePath)
   const [nodMissed, setNodMissed] = useState(false)
+  const scrolledForRef = useRef<string | null>(null)
+  // Another text: its places are its own. Declared before the effect that lands a `?nod=`, which then sets the place.
+  // The landing done there is forgotten too: back to a text at the place it was left (A at x, B, then A at x again
+  // through history) is a landing of its own (Codex review, round 2).
+  useEffect(() => {
+    setActivePath(null)
+    setOpenPath(null)
+    scrolledForRef.current = null
+  }, [documentId])
 
   const manifest =
     render.data !== undefined && render.data.kind === 'manifest' ? render.data.tldf : null
@@ -197,7 +254,6 @@ export function ActReadingLayout({
   // DOCUMENT and nod: the same nod on a different `?doc=` is a new scroll,
   // and there is no separate reset effect to erase a fresh landing.
   const scrollIntentKey = `${documentId ?? ''}::${targetNod ?? ''}`
-  const scrolledForRef = useRef<string | null>(null)
   useEffect(() => {
     if (targetNod === undefined) return
     if (scrolledForRef.current === scrollIntentKey) return
@@ -232,30 +288,32 @@ export function ActReadingLayout({
   // top of the viewport. Highlight only — never a URL writeback.
   useEffect(() => {
     if (outline.length === 0 || typeof IntersectionObserver === 'undefined') return
-    const observed: Element[] = []
+    // The observer reports changes only, so the blocks under the band are kept: the place is the last of them in
+    // the outline's order (an article inside its chapter), and none when the band holds no block of the outline
+    // (the reader is past the text, in the record): the bar then stops naming the last article read.
+    const order = new Map(outline.map((entry, index) => [domAnchorForPath(entry.path), index]))
+    const inBand = new Set<string>()
     const observer = new IntersectionObserver(
       (entries) => {
-        const hit = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
-        if (hit !== undefined) {
-          setActivePath(hit.target.id.replace(/^tldf-/, ''))
+        for (const entry of entries) {
+          if (entry.isIntersecting) inBand.add(entry.target.id)
+          else inBand.delete(entry.target.id)
         }
+        let last = -1
+        for (const id of inBand) last = Math.max(last, order.get(id) ?? -1)
+        setActivePath(last >= 0 ? (outline[last]?.path ?? null) : null)
       },
       { rootMargin: '0% 0% -75% 0%' },
     )
-    for (const entry of outline) {
-      const el = document.getElementById(domAnchorForPath(entry.path))
-      if (el !== null) {
-        observer.observe(el)
-        observed.push(el)
-      }
+    for (const id of order.keys()) {
+      const el = document.getElementById(id)
+      if (el !== null) observer.observe(el)
     }
     return () => observer.disconnect()
   }, [outline, domVersion])
 
   const onTocSelect = useCallback(
-    (entry: LegalOutlineEntry) => {
+    (entry: LegalOutlineEntry, options?: { readonly deferScroll?: boolean }) => {
       void navigate({
         to: '.',
         // After a refused `?doc=`, the provision is chosen in the text on show: that text's id goes with it, so the
@@ -266,11 +324,88 @@ export function ActReadingLayout({
       })
       // Same-nod reselection still deserves a scroll.
       scrolledForRef.current = null
-      setActivePath(entry.path)
-      scrollToNodTarget(entry.path, entry.path)
+      // The branch chosen opens at once; the place is lit only once the reader is there. A provision whose part of
+      // the text has not loaded is reached (and lit) by the landing above when it arrives, and one that never
+      // arrives is never named as the place (Codex review, round 2).
+      setOpenPath(entry.path)
+      const land = () => {
+        if (scrollToNodTarget(entry.path, entry.path)) setActivePath(entry.path)
+      }
+      // From the phone's sheet the scroll waits a frame, until the closing sheet has let go of the page's scroll.
+      if (options?.deferScroll === true) requestAnimationFrame(land)
+      else land()
     },
     [navigate, foreignDoc, documentId],
   )
+
+  // An entry's own address, for a new tab or a copied link: the same `?doc=`
+  // and `?nod=` a choice in the contents writes, over whatever else the
+  // address holds, and written by the router's own serializer. A path such
+  // as `0.1` or `1` reads back as a number unless it is quoted, and the
+  // route refuses a `nod` that is not text (Codex review, 26 November 2026).
+  // Each entry's address is written once for an address: moving the lit place re-renders a long contents, and
+  // must not serialize every entry's search again (Codex review, round 2).
+  const addressSearch = useRouterState({ select: (state) => state.location.search as Record<string, unknown> })
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const linkSearch = useMemo(
+    () => ({ ...addressSearch, doc: (foreignDoc ? documentId : docOverride) ?? undefined }),
+    [addressSearch, foreignDoc, documentId, docOverride],
+  )
+  const tocHref = useMemo(() => {
+    const written = new Map<string, string>()
+    return (entry: LegalOutlineEntry) => {
+      let href = written.get(entry.path)
+      if (href === undefined) {
+        href = stringifyAppSearch({ ...linkSearch, nod: entry.path })
+        written.set(entry.path, href)
+      }
+      return href
+    }
+  }, [linkSearch])
+  // The record's address for a new tab: the text on show, without the place, so the new tab stays at the record
+  // instead of being taken back to the provision when its part of the text arrives (Codex review, round 2).
+  const recordHref = `${pathname}${stringifyAppSearch({ ...linkSearch, nod: undefined })}#act-fisa`
+
+  // The contents: folded or whole (a long outline starts folded until the
+  // reader chooses), and the phone's sheet that carries them.
+  const [folded, setFolded] = useState<boolean | null>(null)
+  const collapsed = folded ?? outline.length > CONTENTS_FOLD_FROM
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const onSheetSelect = useCallback(
+    (entry: LegalOutlineEntry) => {
+      setSheetOpen(false)
+      onTocSelect(entry, { deferScroll: true })
+    },
+    [onTocSelect],
+  )
+  const toRecord = useCallback((fromSheet: boolean) => {
+    setSheetOpen(false)
+    const go = () => document.getElementById('act-fisa')?.scrollIntoView({ block: 'start' })
+    if (fromSheet) requestAnimationFrame(go)
+    else go()
+  }, [])
+
+  // In a long contents the lit place is kept in sight, inside the box only:
+  // the box's own scroll is moved, never the window's (`scrollIntoView` would
+  // move both).
+  useEffect(() => {
+    if (activePath === null) return
+    const box = document.querySelector('[data-act-contents]')
+    const lit = box?.querySelector('[aria-current=location]')
+    if (box == null || lit == null) return
+    const frame = box.getBoundingClientRect()
+    const mark = lit.getBoundingClientRect()
+    if (mark.top < frame.top + 8 || mark.bottom > frame.bottom - 48) box.scrollTop += mark.top - frame.top - frame.height / 2
+  }, [activePath, collapsed, outline])
+
+  // The ways back to the act's start show once its head has left the screen.
+  // At once, not as a glide (a code is a hundred screens long), and the focus
+  // goes to the act's title.
+  const { markerRef, away } = useAwayFromHead()
+  const toStart = useCallback(() => {
+    window.scrollTo({ top: 0 })
+    document.getElementById(ACT_TITLE_ID)?.focus({ preventScroll: true })
+  }, [])
 
   const onDomGrowth = useCallback(() => setDomVersion((v) => v + 1), [])
 
@@ -285,7 +420,7 @@ export function ActReadingLayout({
     if (override !== undefined) {
       return { den: null, issuerLabel: null, issueNumber: null, issueYear: null }
     }
-    const publication = uniqueGazettePublication(act)
+    const publication = headPublication(act)
     const issueDate = publication?.issueDate ?? null
     return {
       den: act.canonical?.den ?? null,
@@ -324,13 +459,18 @@ export function ActReadingLayout({
     if (envelopeSplit !== null) handleMasthead(envelopeSplit)
   }, [envelopeSplit, handleMasthead])
 
-  const toc =
-    outline.length > 0 ? (
-      <LegalReaderToc entries={outline} activePath={activePath} onSelect={onTocSelect} />
-    ) : null
+  const { i18n } = useLingui()
+  // The box about the text shown is on the page whenever a version is shown;
+  // it then wears the warnings, and the lead does not.
+  const about = shownVersion !== null
+  const leadNode = typeof lead === 'function' ? lead({ withWarnings: !about }) : lead
+  const outlinePending = probePending || (documentId !== null && outlineQuery.isPending)
+  const jump = outline.filter(isArticleEntry).length >= JUMP_FROM
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 print:max-w-none">
+    <div className="pb-24 print:pb-0">
+      {/* Right under the act's head: the ways back to the start show once it has left the screen. */}
+      <div ref={markerRef} aria-hidden />
       <a
         href="#reader-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:px-3 focus:py-2"
@@ -338,103 +478,137 @@ export function ActReadingLayout({
         <Trans>Sari la textul actului</Trans>
       </a>
 
-      {/* The aside/main pair keeps ONE tree position whether or not a TOC
-          exists — flipping between layouts would remount the reader and wipe
-          already-loaded chunk state (measured: the TOC arriving mid-read reset
-          a chunked document to part 1). Keys pin the reconciliation, so the
-          rail collapsing below cannot cost the reader loaded chunks. */}
-      {/* No `items-start`: the aside CELL must stretch the full row height so
-          the sticky inner nav has room to travel alongside the whole read. */}
-      {/* The rail column is UNCONDITIONAL even when the outline settles
-          empty: the page header above sits on this same grid, so releasing
-          the column here would tear the header's left edge away from the
-          text's and shift the whole read after settle. An empty gutter on
-          outline-less documents is the price of one shared edge. */}
-      <div className="lg:grid lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-10">
-        <aside key="nav" className="print:hidden">
-          {/* Mobile: the Cuprins as a disclosure above the content. */}
-          {toc !== null && (
-            <div className="mb-4 lg:hidden">
-              <Collapsible>
-                <CollapsibleTrigger asChild>
-                  {/* In the module's control language — 2px near-black,
-                      square — not the app-default rounded outline. */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-between rounded-none border-2 border-[var(--pnrr-border)]"
-                  >
-                    <Trans>Cuprins</Trans>
-                    <ChevronDown className="size-4" aria-hidden />
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2 rounded-none border border-[var(--pnrr-subtle)] p-3">
-                  {toc}
-                </CollapsibleContent>
-              </Collapsible>
+      <ActReadingBar
+        citation={act.displayCitation}
+        outline={outline}
+        activePath={activePath}
+        // A text that failed to load is not on the page: the bar names no version as shown.
+        shownName={shownVersion === null || render.isError ? null : versionName(shownVersion.versionKind, shownVersionDate(act, shownVersion), i18n.locale)}
+        shownDated={shownVersion !== null && shownVersionDate(act, shownVersion) !== null}
+        about={about}
+        away={away}
+        onToStart={toStart}
+        collapsed={collapsed}
+        onToggleFold={() => setFolded(!collapsed)}
+        sheetOpen={sheetOpen}
+        onSheetOpenChange={setSheetOpen}
+        sheetContents={
+          <>
+            <div className="p-4">
+              {/* Keyed by the text: what was typed in the jump field, and its answer, belong to one version. */}
+              <LegalReaderToc key={documentId ?? ''} entries={outline} activePath={activePath} onSelect={onSheetSelect} hrefFor={tocHref} touch collapsed={collapsed} openPath={openPath} />
             </div>
+            <ContentsRecordLink touch href={recordHref} onGo={() => toRecord(true)} />
+          </>
+        }
+      />
+
+      {/* One grid for the contents, the reading column and, from 88rem, the
+          box about the text shown. Its children keep ONE tree position each
+          whether or not an outline exists or a version is shown — flipping
+          between layouts would remount the reader and wipe already-loaded
+          chunk state (measured: the TOC arriving mid-read reset a chunked
+          document to part 1). Keys pin the reconciliation, and the cells are
+          moved by grid placement, never by remounting. */}
+      {/* No `items-start`: the side cells span every row, so their sticky
+          boxes have room to travel alongside the whole read. The contents'
+          column is UNCONDITIONAL even when the outline settles empty: the
+          page header above sits on this same grid, so releasing the column
+          would tear the header's left edge away from the text's. */}
+      <div className={cn(ACT_GRID, ACT_GRID_THREE, 'pt-6 print:block print:max-w-none')}>
+        {/* A plain cell: the contents inside are a named `nav`, and the page's one `aside` is the box about the text. */}
+        <div key="nav" className={cn('hidden lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:block print:hidden', outline.length > 0 && '-mt-6')}>
+          {outline.length > 0 ? (
+            // A box hung from the reading bar, which is its head: the jump
+            // field and the way to the record stay, the list scrolls between.
+            <div className="sticky top-[3.125rem] flex max-h-[calc(100dvh-4rem)] flex-col overflow-hidden rounded-md rounded-t-none border border-t-0">
+              {jump ? <GoToArticle key={documentId ?? ''} entries={outline} onSelect={onTocSelect} ruled /> : null}
+              <div data-act-contents className="overflow-y-auto overscroll-contain px-3 py-3 [scrollbar-width:thin]">
+                <LegalReaderToc entries={outline} activePath={activePath} onSelect={onTocSelect} hrefFor={tocHref} bare collapsed={collapsed} openPath={openPath} />
+              </div>
+              <ContentsRecordLink href={recordHref} onGo={() => toRecord(false)} />
+            </div>
+          ) : outlinePending ? (
+            <div aria-hidden className="sticky top-16 space-y-3 pt-1">
+              {['w-2/3', 'w-full', 'w-5/6', 'w-1/2'].map((width) => (
+                <div key={width} className={cn('h-3.5 animate-pulse rounded bg-muted motion-reduce:animate-none', width)} />
+              ))}
+            </div>
+          ) : outlineQuery.isError || !render.isSuccess ? null : (
+            // Said of a text on the page only: an act with no text to show, or a text that failed to load, has its
+            // own card in the reading column (Codex review, round 2).
+            <p className="sticky top-16 text-sm leading-6 text-muted-foreground">
+              <Trans>Acest text nu are un cuprins.</Trans>
+            </p>
           )}
+        </div>
 
-          {/* Desktop: only the served Cuprins, sticky alongside the whole
-              read — the "Pe această pagină" section rail is gone (user
-              decision 2026-08-11: one navigation grain, the law's own). */}
-          <div className="hidden lg:sticky lg:top-20 lg:block">{toc}</div>
-        </aside>
+        <div key="lead" className={cn(ACT_COLUMN, 'border-b pb-6 empty:hidden lg:col-start-2 lg:row-start-1')}>
+          {leadNode}
+        </div>
 
-        {/* One 44rem column for everything in main: section rules end where
-            the text measure ends, instead of 190px past it. */}
-        <main key="content" className="min-w-0 max-w-[44rem]">
-          {lead}
+        {shownVersion !== null ? (
+          <ActTextAbout
+            key="about"
+            act={act}
+            shown={shownVersion}
+            shownDocumentId={shownId}
+            consolidation={showConsolidationBanner}
+            textFailed={render.isError}
+            {...(warnings !== undefined && { warnings })}
+            className="lg:col-start-2 lg:row-start-2 min-[88rem]:col-start-3 min-[88rem]:row-span-3 min-[88rem]:row-start-1 min-[88rem]:-mt-6"
+          />
+        ) : null}
 
+        <main key="content" className={cn(ACT_COLUMN, 'lg:col-start-2 lg:row-start-3 print:max-w-none')}>
           {/* No "Textul actului" heading (user decision 2026-08-11): the page
               header IS the text's masthead now, and the chrome between them
               only restated it. The section keeps its id — external links and
               the versions band still target #act-text. */}
-          <section id="act-text" aria-label={t`Textul actului`} className="mt-10 scroll-mt-24">
+          <section id="act-text" aria-label={t`Textul actului`} className="scroll-mt-24 pt-5">
             {/* No standing fidelity caption (user decision 2026-08-12): the
                 provenance story lives in the summary footer and the fișa.
-                Only CONTEXTUAL notices render here — and the version
-                selector, which names the text below. */}
-            <ActVersionSelector act={act} shownDocumentId={shownId} />
-            {(outlineQuery.isError || docOverride !== undefined) && (
-              <div className="mb-4 space-y-1">
-                {outlineQuery.isError && (
-                  <p className="text-xs text-[var(--pnrr-muted)]">
-                    <Trans>
-                      Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos.
-                    </Trans>
-                  </p>
-                )}
-                {foreignDoc && (
-                  <p role="status" className="text-xs text-[var(--pnrr-muted)]">
-                    <Trans>
-                      Documentul cerut nu aparține acestui act, așa că afișăm forma
-                      textului afișată în mod normal.
-                    </Trans>{' '}
-                    <Link to="." search={{}} className="underline underline-offset-2">
-                      <Trans>Elimină parametrul din adresă</Trans>
-                    </Link>
-                  </p>
-                )}
-                {override !== undefined && (
-                  <p className="text-xs text-[var(--pnrr-muted)]">
-                    <Trans>Afișezi o versiune anume a textului.</Trans>{' '}
-                    <Link to="." search={{}} className="underline underline-offset-2">
-                      <Trans>Revino la forma afișată în mod normal</Trans>
-                    </Link>
-                  </p>
-                )}
-              </div>
-            )}
+                Only CONTEXTUAL notices render here; the version itself is
+                named in the box about the text shown. */}
+            <div className="space-y-4 pb-5 empty:hidden">
+              {(outlineQuery.isError || docOverride !== undefined) && (
+                <div className="space-y-1">
+                  {outlineQuery.isError && (
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      <Trans>
+                        Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos.
+                      </Trans>
+                    </p>
+                  )}
+                  {foreignDoc && (
+                    <p role="status" className="text-xs leading-5 text-muted-foreground">
+                      <Trans>
+                        Documentul cerut nu aparține acestui act, așa că afișăm forma
+                        textului afișată în mod normal.
+                      </Trans>{' '}
+                      <Link to="." search={{}} className="underline underline-offset-2 hover:text-foreground">
+                        <Trans>Elimină parametrul din adresă</Trans>
+                      </Link>
+                    </p>
+                  )}
+                  {override !== undefined && (
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      <Trans>Afișezi o versiune anume a textului.</Trans>{' '}
+                      <Link to="." search={{}} className="underline underline-offset-2 hover:text-foreground">
+                        <Trans>Revino la forma afișată în mod normal</Trans>
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              )}
 
-            <ActDefaultNotices
-              act={act}
-              shown={shownVersion}
-              notCurrentDefault={notCurrentDefault}
-              onlyReadableDefault={onlyReadableDefault}
-            />
-
-            {showConsolidationBanner && <ActConsolidationBanner version={shownVersion} />}
+              <ActDefaultNotices
+                act={act}
+                shown={shownVersion}
+                notCurrentDefault={notCurrentDefault}
+                onlyReadableDefault={onlyReadableDefault}
+              />
+            </div>
 
             <div>
               {documentId === null && !probePending && (
@@ -447,7 +621,7 @@ export function ActReadingLayout({
                 </StateCard>
               )}
               {nodMissed && (
-                <p className="mb-4 rounded-none border border-[var(--pnrr-subtle)] bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                <p role="note" className="mb-4 border-l-2 border-status-blocked-fg py-0.5 pl-4 text-sm font-medium leading-6 text-foreground">
                   <Trans>Nu am găsit fragmentul cerut în acest text.</Trans>
                 </p>
               )}
@@ -477,7 +651,16 @@ export function ActReadingLayout({
               {render.data !== undefined &&
                 render.data.kind === 'envelope' &&
                 envelopeSplit !== null && (
+                  // Keyed by document: what a reader opened in one version's
+                  // text (a folded note) must not stay open in another cached
+                  // version whose block has the same path. Not by generation:
+                  // a revalidation that brings a new generation of the SAME
+                  // document must not remount the text under the reader, shut
+                  // the note a jump has just opened and leave the jump counted
+                  // as done (the chunked reader differs: its chunk slots
+                  // belong to one generation).
                   <EnvelopeReader
+                    key={documentId ?? ''}
                     blocks={envelopeSplit.blocks}
                     marks={render.data.tldf.marks}
                     containsNonBmp={render.data.tldf.contains_non_bmp}
@@ -510,17 +693,22 @@ export function ActReadingLayout({
               who wants the record — publication, versions, references — has
               already decided the text isn't what they came for, and the
               header carries the identity facts a first glance needs. */}
-          <section id="act-fisa" aria-labelledby="act-fisa-heading" className="mt-16 scroll-mt-24">
-            <h2
-              id="act-fisa-heading"
-              className="mb-4 border-b-2 border-[var(--pnrr-border)] pb-3 text-3xl font-black tracking-tight text-[var(--pnrr-fg)]"
-            >
+          {/* The record closes the page under a strong rule; its rows open
+              with hairlines of their own (owner, 26 November 2026). */}
+          <section id="act-fisa" aria-labelledby="act-fisa-heading" className="mt-20 scroll-mt-24 border-t-2 border-foreground pt-6">
+            <h2 id="act-fisa-heading" className="pb-5 text-xl font-semibold tracking-tight">
               <Trans>Fișa actului</Trans>
             </h2>
-            {fisa}
+            {typeof fisa === 'function' ? fisa({ ownDocumentId: ownId }) : fisa}
           </section>
+
+          {/* The floating way back, beside the text from 72rem. */}
+          {away ? <ActToStartButton placement="column" onToStart={toStart} /> : null}
         </main>
       </div>
+
+      {/* The same way back below 72rem, in the window's corner. */}
+      {away ? <ActToStartButton placement="corner" onToStart={toStart} /> : null}
     </div>
   )
 }
@@ -541,8 +729,9 @@ function EnvelopeReader({
     onRendered()
   }, [onRendered])
   return (
-    <article id="reader-content" lang="ro">
-      <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} />
+    <article id="reader-content" lang="ro" className={READER_CONTENT}>
+      {/* The act page folds the Portal's long notes to their first lines. */}
+      <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} foldNotes />
     </article>
   )
 }
@@ -573,7 +762,7 @@ function StateCard({
   readonly children: React.ReactNode
 }) {
   return (
-    <div className="rounded-none border border-[var(--pnrr-subtle)] bg-muted/30 p-6">
+    <div className="rounded-md border bg-muted/30 p-6">
       <p className="flex items-center gap-2 font-medium">
         <TriangleAlert className="size-4 text-muted-foreground" aria-hidden />
         {title}
@@ -804,7 +993,7 @@ function ChunkedReader({
     <>
       {/* The article holds ONLY the law's text — find-in-page, copy and
           citation never pick up loading chrome. */}
-      <article id="reader-content" lang="ro">
+      <article id="reader-content" lang="ro" className={READER_CONTENT}>
         {slots.map((slot, i) =>
           slot.state === 'loaded' ? (
             <TldfBlocksView
@@ -818,6 +1007,7 @@ function ChunkedReader({
               }
               marks={manifest.marks}
               containsNonBmp={manifest.contains_non_bmp}
+              foldNotes
             />
           ) : null,
         )}

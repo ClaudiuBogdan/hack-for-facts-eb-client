@@ -1,6 +1,8 @@
 import { plural, t } from '@lingui/core/macro'
 
-import { yearRanges } from '@/features/private-companies/lib/company-profile-format'
+import { moneyText as companyMoneyText, yearRanges } from '@/features/private-companies/lib/company-profile-format'
+import type { CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
+import { flowLabel, moneyPeriod } from '@/features/private-companies/lib/company-profile-text'
 import type { BuyerProfile } from '@/features/procurement/lib/buyer-model'
 import { frameworksCount } from '@/features/procurement/lib/contract-text'
 import { contractsCount, directPurchasesCount, moneyText } from '@/features/procurement/lib/home-format'
@@ -240,6 +242,30 @@ export function spendingLede(profile: BuyerProfile): string {
   if (signed) return awards === null ? t`În ${period} a semnat ${signed}; contractele atribuite nu s-au putut citi acum.` : t`În ${period} a semnat ${signed}.`
   if (awards === null) return t`În ${period} nu are achiziții directe publicate în SEAP; contractele atribuite nu s-au putut citi acum.`
   return t`În ${period} nu are achiziții publicate în SEAP.`
+}
+
+/** Keep each published instrument apart in the seller summary. */
+export function sellerLede(model: CompanyProfileModel): string {
+  const { money } = model
+  const receipts = money.flows.filter((flow) => flow.receipt && flow.count > 0)
+  if (receipts.length === 0) return t`Sursele consultate nu au înregistrări pentru această firmă.`
+
+  const sentences = receipts.map((flow) => {
+    const label = flowLabel(flow.flowType)
+    if (flow.total === null) return t`${label}: fără valoare publicată.`
+    const amount = companyMoneyText(flow.total)
+    if (flow.flowType === 'procurement_contract' || flow.flowType === 'direct_acquisition') {
+      return t`${label}: valoare atribuită de ${amount}.`
+    }
+    return t`${label}: ${amount}.`
+  })
+
+  const period = moneyPeriod(model)
+  if (period) sentences.push(t`Anii: ${period}.`)
+  if (money.unvaluedCount > 0 && receipts.some((flow) => flow.total !== null)) {
+    sentences.push(t`Unele înregistrări nu au valoare publicată, deci totalurile disponibile sunt limite inferioare.`)
+  }
+  return sentences.join(' ')
 }
 
 /** The source line: each source with its date, once per page. */

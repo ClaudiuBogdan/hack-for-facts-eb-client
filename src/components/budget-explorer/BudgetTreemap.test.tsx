@@ -144,7 +144,8 @@ vi.mock('recharts', () => ({
           <g
             key={item.code}
             data-testid={`treemap-node-${item.code}`}
-            onClick={() => onClick?.({ code: item.code })}
+            // As Recharts does: the node's own fields, and the original datum under `payload`.
+            onClick={() => onClick?.({ code: item.code, payload: item })}
           >
             {content?.({
               name: item.name,
@@ -634,6 +635,38 @@ describe('BudgetTreemap Component', () => {
 
       expect(onAnalyticsRequest).toHaveBeenCalledTimes(1)
       expect(onNodeClick).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Terminal blocks (signed corrections, uncoded records)', () => {
+    it('neither navigates nor offers analytics for a terminal block; a classified one does both', () => {
+      const onNodeClick = vi.fn()
+      render(
+        <BudgetTreemap
+          data={[
+            { name: 'Primary education', value: 1000000, code: '65.02', isLeaf: true, children: [] },
+            { name: 'Posted at the parent', value: -30000, code: '65', isLeaf: true, children: [], terminal: true },
+            { name: 'No classification code', value: -15000, code: 'unclassified', isLeaf: true, children: [], terminal: true },
+          ]}
+          primary="fn"
+          path={[{ code: '65', label: 'Education', type: 'fn' }]}
+          onNodeClick={onNodeClick}
+          onAnalyticsRequest={vi.fn()}
+        />,
+      )
+
+      fireEvent.click(screen.getByTestId('treemap-node-65'))
+      fireEvent.click(screen.getByTestId('treemap-node-unclassified'))
+      expect(onNodeClick).not.toHaveBeenCalled()
+      for (const code of ['65', 'unclassified']) {
+        fireEvent.pointerEnter(getRenderedTreemapContentNode(code))
+        expect(screen.queryByRole('button', { name: `Open mock classification ${code}` })).toBeNull()
+      }
+
+      fireEvent.pointerEnter(getRenderedTreemapContentNode('65.02'))
+      expect(getTreemapInfoTrigger('65.02')).toBeInTheDocument()
+      fireEvent.click(screen.getByTestId('treemap-node-65.02'))
+      expect(onNodeClick).toHaveBeenCalledWith('65.02')
     })
   })
 
