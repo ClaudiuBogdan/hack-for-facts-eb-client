@@ -96,18 +96,11 @@ export function companyProfile(overrides: Partial<PrivateCompanyProfile> = {}): 
     ],
     registry: mockRegistryEvidence({
       identifier: 'J12/3094/2007',
-      name: '66 JACK SRL',
       legalForm: 'SRL',
       recordedDate: '2007-11-26',
       countyCode: 'CJ',
-      countyName: 'Cluj',
       uatSirutaCode: '55384',
-      uatName: 'Municipiul Gherla',
       statusCodes: ['1048'],
-      caen: [
-        { code: '5610', revision: 'rev2', label: 'Restaurante' },
-        { code: '5630', revision: 'rev2', label: 'Baruri și alte activități de servire a băuturilor' },
-      ],
     }),
     fiscal: { vatPayer: false, inactive: false, anafFound: true, asOfDate: '2026-07-04', fiscalCaen: { code: '5610', rev: null } },
     financials: [],

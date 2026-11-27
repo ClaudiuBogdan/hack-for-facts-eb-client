@@ -116,15 +116,11 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
   ],
   registry: mockRegistryEvidence({
     identifier: 'J40/1234/2020',
-    name: 'DANTE INTERNATIONAL SA',
     legalForm: 'SA',
     recordedDate: '2002-06-15',
     countyCode: 'B',
-    countyName: 'București',
     uatSirutaCode: '179141',
-    uatName: 'Municipiul București',
     statusCodes: ['1048'],
-    caen: [{ code: '4791', revision: 'rev2', label: 'Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet' }],
   }),
 }
 
@@ -227,18 +223,11 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
   ],
   registry: mockRegistryEvidence({
     identifier: 'J22/1234/1998',
-    name: 'ANTIBIOTICE SA',
     legalForm: 'SA',
     recordedDate: '1998-03-20',
     countyCode: 'IS',
-    countyName: 'Iași',
     uatSirutaCode: '95060',
-    uatName: 'Municipiul Iași',
     statusCodes: ['1048'],
-    caen: [
-      { code: '2120', revision: 'rev2', label: 'Fabricarea preparatelor farmaceutice' },
-      { code: '2442', revision: 'rev1', label: 'Fabricarea preparatelor farmaceutice (Rev.1)' },
-    ],
   }),
 }
 
@@ -294,18 +283,10 @@ export const struckOffProfile: PrivateCompanyProfile = {
   ],
   registry: mockRegistryEvidence({
     identifier: 'J35/210/1994',
-    name: 'MAGAZINUL VECHI SRL',
     legalForm: 'SRL',
     recordedDate: '1994-11-02',
     countyCode: 'TM',
-    countyName: 'Timiș',
     statusCodes: ['1084'],
-    caen: [
-      { code: '4711', revision: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate' },
-      { code: '5211', revision: 'rev0', label: 'Comerț cu amănuntul în magazine nespecializate (Rev.0)' },
-      { code: '4711', revision: null, label: null },
-      { code: '4700', revision: 'rev2', label: null, classState: 'short_token' },
-    ],
   }),
 }
 
@@ -359,13 +340,10 @@ export const insolventProfile: PrivateCompanyProfile = {
   ],
   registry: mockRegistryEvidence({
     identifier: 'J08/77/2005',
-    name: 'CONSTRUCT BRASOV SA',
     legalForm: 'SA',
     recordedDate: '2005-07-19',
     countyCode: 'BV',
-    countyName: 'Brașov',
     statusCodes: ['1107'],
-    caen: [{ code: '4120', revision: 'rev2', label: 'Lucrări de construcții a clădirilor rezidențiale și nerezidențiale' }],
   }),
 }
 
@@ -401,13 +379,10 @@ export const pfaProfile: PrivateCompanyProfile = {
   ],
   registry: mockRegistryEvidence({
     identifier: 'F12/501/2021',
-    name: 'POPA IOANA PFA',
     legalForm: 'PFA',
     recordedDate: '2021-04-05',
     countyCode: 'CJ',
-    countyName: 'Cluj',
     statusCodes: ['1048'],
-    caen: [{ code: '6201', revision: 'rev2', label: 'Activități de realizare a soft-ului la comandă' }],
   }),
 }
 
@@ -447,13 +422,10 @@ export const bankruptProfile: PrivateCompanyProfile = {
   ],
   registry: mockRegistryEvidence({
     identifier: 'J16/44/1996',
-    name: 'TRANSPORT OLTENIA SNC',
     legalForm: 'SNC',
     recordedDate: '1996-02-28',
     countyCode: 'DJ',
-    countyName: 'Dolj',
     statusCodes: ['1048', '1070'],
-    caen: [{ code: '4941', revision: 'rev2', label: 'Transporturi rutiere de mărfuri' }],
   }),
 }
 

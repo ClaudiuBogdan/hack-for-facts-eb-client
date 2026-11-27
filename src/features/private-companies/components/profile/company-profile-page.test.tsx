@@ -637,16 +637,10 @@ describe('CompanyProfilePage — the derived activity selection', () => {
       ],
       registry: mockRegistryEvidence({
         identifier: 'J12/3094/2007',
-        name: '66 JACK SRL',
         legalForm: 'SRL',
         recordedDate: '2007-11-26',
         countyCode: 'CJ',
-        countyName: 'Cluj',
         statusCodes: ['1048'],
-        caen: [
-          { code: '5610', revision: 'rev2', label: 'Restaurante' },
-          { code: '5600', revision: 'rev2', label: 'Împrumutat', classState: 'short_token' },
-        ],
         observationsTruncated: true,
       }),
     })

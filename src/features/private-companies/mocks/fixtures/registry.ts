@@ -1,6 +1,4 @@
 import type {
-  CompanyCaenClassState,
-  CompanyCaenRevision,
   CompanyRegistryCapabilities,
   CompanyRegistryEnvelope,
   CompanyRegistryEvidence,
@@ -51,26 +49,17 @@ function single(value: string | null): CompanyRegistryValue {
 
 export interface MockRegistrySpec {
   readonly identifier: string
-  readonly name: string
   readonly legalForm: string | null
   readonly recordedDate: string | null
   readonly countyCode: string | null
-  readonly countyName: string | null
   readonly uatSirutaCode?: string | null
-  readonly uatName?: string | null
   /** Every public status code on the identifier; two different codes are a conflict. */
   readonly statusCodes: readonly string[]
-  /** `classState` defaults to `class` for a row with a revision, `unknown_revision` without one; only a class row keeps its label. */
-  readonly caen: readonly { readonly code: string; readonly revision: CompanyCaenRevision | null; readonly label: string | null; readonly classState?: CompanyCaenClassState }[]
   /** The edition holds more rows than the bounded list carries. */
   readonly observationsTruncated?: boolean
 }
 
-/**
- * One mock CUI in the mock edition: a single identifier and the consensus the page reads. The spec's name, county
- * name, UAT name and CAEN rows describe the mock company for its other fixtures; the registry part keeps only what
- * the profile page reads (no original rows: the page asks for none).
- */
+/** One mock CUI in the mock edition: a single identifier and the consensus the profile page reads (no original rows). */
 export function mockRegistryEvidence(spec: MockRegistrySpec, registry: CompanyRegistryEnvelope = MOCK_REGISTRY_ENVELOPE): CompanyRegistryEvidence {
   const statuses = [...new Set(spec.statusCodes)]
   const statusCode: CompanyRegistryValue =

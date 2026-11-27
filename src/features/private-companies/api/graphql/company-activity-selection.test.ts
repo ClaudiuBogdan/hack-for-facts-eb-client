@@ -139,6 +139,9 @@ describe('class state', () => {
           caenActivities: [
             { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc', classState: 'CLASS' },
             { code: '4700', rev: 'rev2', label: 'Împrumutat', source: 'onrc', classState: 'SHORT_TOKEN' },
+            { code: '2864', rev: 'rev2', label: 'Fără clasă', source: 'onrc', classState: 'UNLABELED_KEY' },
+            { code: '6201', rev: null, label: 'Fără revizie', source: 'onrc', classState: 'UNKNOWN_REVISION' },
+            { code: '9999', rev: 'rev2', label: 'Necitit', source: 'onrc', classState: 'UNPARSED' },
             { code: '4752', rev: null, label: null, source: 'anaf', classState: null },
           ],
         }),
@@ -147,6 +150,9 @@ describe('class state', () => {
     expect(profile?.caenActivities.map((row) => [row.code, row.source, row.label, row.classState])).toEqual([
       ['4752', 'onrc', 'Comerț', 'class'],
       ['4700', 'onrc', null, 'short_token'],
+      ['2864', 'onrc', null, 'unlabeled_key'],
+      ['6201', 'onrc', null, 'unknown_revision'],
+      ['9999', 'onrc', null, 'unparsed'],
       ['4752', 'anaf', null, null],
     ])
   })

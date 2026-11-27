@@ -4,12 +4,10 @@
  * the mappers onto `@/schemas/private-company-registry`.
  *
  * Every mapper fails closed. An unknown state reads as `unavailable`, an
- * unknown basis as `unresolved` with no value, an unknown revision as none
- * (so no catalog label), a catalog label only for the row's own known
- * revision from the current database catalog — and, where the API names the
- * row's class state, only on a `class` row — and a source link only when it
- * is an https URL. Enum values stay strings in the raw schemas so one new
- * server value degrades one field instead of failing the whole page.
+ * unknown basis as `unresolved` with no value, an unknown revision as none and
+ * an unknown CAEN class state as `unparsed` (never a class). Enum values stay
+ * strings in the raw schemas so one new server value degrades one field
+ * instead of failing the whole page.
  *
  * Server typedefs (read-only reference):
  *   hack-for-facts-eb-server/src/modules/companies/shell/graphql/typedefs.ts
@@ -210,17 +208,6 @@ export function mapRegistryEnvelope(raw: RawRegistryEnvelope, mode: CompanyRegis
     accessEpoch: raw.accessEpoch,
     reason: raw.reason,
     scopeKey: raw.scopeKey,
-  }
-}
-
-/** Only an absolute https link is ever rendered; anything else is no link. */
-export function safeSourceUrl(raw: string | null): string | null {
-  if (raw === null) return null
-  try {
-    const url = new URL(raw)
-    return url.protocol === 'https:' ? url.toString() : null
-  } catch {
-    return null
   }
 }
 

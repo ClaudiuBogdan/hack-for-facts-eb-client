@@ -1220,3 +1220,16 @@ keeps its own slot beside a hatched gap. Left as is, by decision:
   company whose net result the server reports.
 - The client ships to dev after root's note and the owner's word.
 
+## The profile's payload (27 November 2026)
+
+- The `CompanyProfile` document asks only for what a page reads (server-companies' proposal, step 1). Not asked any
+  more: the registry's original rows and their provenance, the representatives, the EU branches, the registry
+  profile's unread names and counters, each year's source hashes, rule version and selection basis, and the
+  qualification's drift list. The server still serves all of it, for MCP and anyone auditing a profile.
+- Petrom's answer fell from 244,608 to 76,135 bytes (gzip 27,311 to 10,292); an ordinary company's by 10 to 30 per
+  cent. The company, supplier and public-enterprise pages read the same text as before.
+- Not asking for the representatives also stops sending people's names to pages that never show them.
+- Kept: the registry envelope (other reads share it), the fields other features' fixtures build (`orgId`,
+  `matchConfidence`, `address.county`, `flowCount`), and the IFRS, trajectory and long-format fields.
+- Later, once this is measured on dev (steps 2a and 2b): a year's Ministry files and the activity names read when
+  a year or a domain is opened.
