@@ -1,5 +1,5 @@
-import { expect, type Page } from '@playwright/test'
-import { test } from '../utils/integration-base'
+import type { Page } from '@playwright/test'
+import { test, expect } from '../utils/ssr-api/test'
 
 /** The site's not-found page, without the notice band a section's real pages carry. */
 async function expectNotFound(page: Page) {

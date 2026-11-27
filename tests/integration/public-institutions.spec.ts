@@ -9,8 +9,7 @@
  * amounts.
  */
 
-import { expect } from '@playwright/test'
-import { test } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForHydration } from '../utils/test-helpers'
 
 const HEADLINE = { level: 1 } as const

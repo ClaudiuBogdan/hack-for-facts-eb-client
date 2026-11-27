@@ -8,7 +8,7 @@
  * - Footer navigation
  */
 
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForHydration } from '../utils/test-helpers'
 import { mockMapReads } from '../utils/map-mocks'
 
