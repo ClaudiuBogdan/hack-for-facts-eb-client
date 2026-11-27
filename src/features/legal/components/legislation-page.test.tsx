@@ -9,8 +9,8 @@ let search: Record<string, unknown> = {}
 const navigateMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, search: _search, params: _params, hash: _hash, preload: _preload, ...props }: Record<string, unknown> & { readonly children: ReactNode; readonly to: string }) => (
-    <a href={to} {...props}>
+  Link: ({ children, to, search, params: _params, hash: _hash, preload: _preload, ...props }: Record<string, unknown> & { readonly children: ReactNode; readonly to: string }) => (
+    <a href={to} data-search={search === undefined || typeof search === 'function' ? undefined : JSON.stringify(search)} {...props}>
       {children}
     </a>
   ),
@@ -153,7 +153,7 @@ describe('LegislationPage, the legislation hub', () => {
 
   it('names the sections by their data, with no running numbers', async () => {
     renderPage()
-    for (const title of ['Ultimele modificări', 'Actele după fel', 'Actele după emitent', 'Acte după anul actului', 'Legături între acte', 'Numerele Monitorului Oficial']) {
+    for (const title of ['Ultimele modificări', 'Actele după fel', 'Actele după emitent', 'Acte după anul actului', 'Legături între acte']) {
       expect(await screen.findByRole('heading', { level: 2, name: title })).toBeInTheDocument()
     }
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
@@ -161,7 +161,7 @@ describe('LegislationPage, the legislation hub', () => {
     expect(within(bar).getByRole('link', { name: 'Fel' })).toHaveAttribute('href', '#feluri')
     // each section after its icon, as the national budget page's bar; the icon is decoration
     const links = within(bar).getAllByRole('link')
-    expect(links).toHaveLength(6)
+    expect(links).toHaveLength(5)
     for (const link of links) expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
   })
 
@@ -222,13 +222,21 @@ describe('LegislationPage, the legislation hub', () => {
     expect(sources).not.toHaveTextContent(/generat pe (November 24|24 noiembrie)/)
   })
 
-  it('opens the Monitorul Oficial note on the publication alone', async () => {
+  it('has no Monitorul Oficial section and no way to the retired pages, and its Acte shortcut opens the search for the acts in force (owner, 27 November 2026)', async () => {
     renderPage()
-    const gazette = await screen.findByRole('region', { name: 'Numerele Monitorului Oficial' })
-    fireEvent.click(within(gazette).getByRole('button', { name: 'Despre Monitorul Oficial' }))
-    const note = await screen.findByRole('dialog', { name: 'Despre Monitorul Oficial' })
-    expect(note).toHaveTextContent('Numerele din date, toate părțile. Un număr arată când a fost publicat un act.')
-    expect(note).not.toHaveTextContent(/efecte|în vigoare|scrisă în act/)
+    await screen.findByRole('heading', { level: 2, name: 'Legături între acte' })
+    expect(screen.queryByRole('region', { name: 'Numerele Monitorului Oficial' })).toBeNull()
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href') ?? '')
+    expect(hrefs.filter((href) => /^\/legislation\/(gazette|guide|acts)(\?|$)/.test(href))).toEqual([])
+    const acts = screen.getByRole('link', { name: 'Acte' })
+    expect(acts).toHaveAttribute('href', '/legislation/search')
+    expect(acts).toHaveAttribute('data-search', JSON.stringify({ stare: 'in-vigoare' }))
+    // every act, repealed ones too, is the search's list with „Toate"; the guide's card and link are gone
+    const start = await screen.findByTestId('legal-hub-start')
+    const every = within(start).getByRole('link', { name: /Toate actele/ })
+    expect(every).toHaveAttribute('href', '/legislation/search')
+    expect(every).toHaveAttribute('data-search', JSON.stringify({ historical: true }))
+    expect(screen.queryByText(/Ghidul legislației/)).toBeNull()
   })
 
   it('makes each start card its name and its count, the stock with its provisional definition', async () => {
@@ -236,12 +244,6 @@ describe('LegislationPage, the legislation hub', () => {
     const start = await screen.findByTestId('legal-hub-start')
     await waitFor(() => expect(start).toHaveTextContent(`${ro(head.totals.inStock)} de acte, definiție provizorie`))
     expect(start).not.toHaveTextContent('Analiză')
-  })
-
-  it('never says a Monitorul Oficial issue makes its acts take effect', async () => {
-    renderPage()
-    const gazette = await screen.findByRole('region', { name: 'Numerele Monitorului Oficial' })
-    expect(gazette).not.toHaveTextContent(/produce efecte/)
   })
 
   it('says under mock mode that the data is a fixture', () => {

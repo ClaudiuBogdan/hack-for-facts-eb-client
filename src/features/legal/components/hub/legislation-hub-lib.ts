@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro'
-import { CalendarDays, FilePenLine, Landmark, Network, Newspaper, Shapes, type LucideIcon } from 'lucide-react'
+import { CalendarDays, FilePenLine, Landmark, Network, Shapes, type LucideIcon } from 'lucide-react'
 import type { HomeSection } from '@/features/procurement/lib/home-links'
 import type { LegalAnalyticsActRow, LegalAnalyticsArgs, LegalAnalyticsLinks, LegalAnalyticsSeries } from '@/schemas/legal-analytics'
 import { DEFAULT_QUESTION, searchOfQuestion, type Question } from '../../lib/analytics-question'
@@ -169,6 +169,5 @@ export function legalHubSections(): readonly LegalHubSection[] {
     { id: 'emitenti', label: t`Emitenți`, icon: Landmark },
     { id: 'ani', label: t`Ani`, icon: CalendarDays },
     { id: 'legaturi', label: t`Legături`, icon: Network },
-    { id: 'monitor', label: t`Monitorul Oficial`, icon: Newspaper },
   ]
 }

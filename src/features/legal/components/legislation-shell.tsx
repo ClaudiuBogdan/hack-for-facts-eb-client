@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import type { DataStatus } from '@/schemas/elections'
 import { formatLegalDate } from '../lib/legal-format'
 
-export type LegislationTab = 'analiza' | 'cauta' | 'acte' | 'modificari' | 'monitorul' | 'ghid'
+export type LegislationTab = 'analiza' | 'cauta' | 'modificari'
 
 type Props = {
   readonly activeTab: LegislationTab
@@ -31,10 +31,10 @@ type PageSpec = {
   readonly label: string
   readonly title: string
   readonly lede: string
-  readonly to: '/legislation/search' | '/legislation/acts' | '/legislation/analytics' | '/legislation/changes' | '/legislation/gazette' | '/legislation/guide'
+  readonly to: '/legislation/search' | '/legislation/analytics' | '/legislation/changes'
 }
 
-/** Built on render, so the strings follow the reader's language. */
+/** Built on render, so the strings follow the reader's language. Acte, Monitorul Oficial and Ghid retired (owner, 27 November 2026). */
 function legislationPages(): readonly PageSpec[] {
   return [
     {
@@ -43,13 +43,6 @@ function legislationPages(): readonly PageSpec[] {
       title: t`Caută în legislație`,
       lede: t`Un act după număr, după nume sau după cuvinte din textul lui, cu statutul lui actual.`,
       to: '/legislation/search',
-    },
-    {
-      id: 'acte',
-      label: t`Acte`,
-      title: t`Actele`,
-      lede: t`Fiecare act din Portal Legislativ, cu tipul, anul și statutul lui.`,
-      to: '/legislation/acts',
     },
     {
       id: 'analiza',
@@ -64,20 +57,6 @@ function legislationPages(): readonly PageSpec[] {
       title: t`Modificările`,
       lede: t`Ce act s-a schimbat, prin ce act, felul schimbării și data intrării în vigoare.`,
       to: '/legislation/changes',
-    },
-    {
-      id: 'monitorul',
-      label: t`Monitorul Oficial`,
-      title: t`Monitorul Oficial`,
-      lede: t`Edițiile Monitorului Oficial: numărul, data, partea și PDF-ul oficial.`,
-      to: '/legislation/gazette',
-    },
-    {
-      id: 'ghid',
-      label: t`Ghid`,
-      title: t`Ghidul legislației`,
-      lede: t`Cum găsești o lege, cum îi citești statutul și ce nu îți pot spune aceste date.`,
-      to: '/legislation/guide',
     },
   ]
 }
@@ -98,7 +77,7 @@ export function LegislationShell({ activeTab, measuredAt, dataStatus, children }
       <header className="relative border-b">
         <RuledFrame className="py-8 sm:py-10">
           <MonoLabel className="flex flex-wrap items-center gap-2 text-muted-foreground">
-            {/* exact: on /legislation/guide the way home is not the current page */}
+            {/* exact: on /legislation/changes the way home is not the current page */}
             <Link to="/legislation" activeOptions={{ exact: true }} className="group inline-flex min-h-11 items-center gap-1.5 hover:text-foreground sm:min-h-0">
               <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
               <span>{t`Legislație`}</span>
