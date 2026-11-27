@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useLingui } from '@lingui/react'
 import { plural, t } from '@lingui/core/macro'
 import { ArrowRight, LoaderCircle, Search, X } from 'lucide-react'
@@ -10,12 +10,13 @@ import { cn } from '@/lib/utils'
 import { legalFinderSearchSchema } from '@/schemas/legal-search'
 import type { LegalActStatus, LegalFinderSearch, LegalResolveHit, LegalSearchActHit, LegalSearchResultData } from '@/schemas/legal'
 import { LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT, legalActStatusSchema } from '@/schemas/legal'
+import { fetchLegalActsPage } from '../api/legal-acts-api'
 import { fetchLegalSearch } from '../api/legal-search-api'
 import { resolveLegalActs } from '../api/legal-resolve-api'
 import { labelCarriesCitation, parseExactCitation, parseLegalCitationShape } from '../lib/legal-citation'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import { legalIssuerLabel } from '../lib/legal-vocabulary'
-import { isSearchFiltered, readSearchFilters, searchArgs, searchHitName, searchOfFilters, usesSummaries, type SearchFilters } from '../lib/search-filters'
+import { browseFilter, isSearchFiltered, readSearchFilters, searchArgs, searchHitName, searchOfFilters, usesSummaries, type SearchFilters } from '../lib/search-filters'
 import { groupProvisions, markWords, questionWords, type ProvisionGroup } from '../lib/search-marks'
 import { LegalInfoNote } from './hub/legislation-hub-chrome'
 import { LegalStatusBadge } from './legal-status-badge'
@@ -243,6 +244,8 @@ export function LegislationActFinder({ search: address, lang = null }: Props) {
       <div className="mt-8">
         {asked ? (
           <Answer q={q} filters={filters} onFilters={setFilters} search={search} resolveHits={resolve.data ?? []} resolving={resolve.isPending && waited !== q} />
+        ) : isSearchFiltered(filters) ? (
+          <Browse filters={filters} />
         ) : (
           <Ways onExample={run} />
         )}
@@ -253,7 +256,7 @@ export function LegislationActFinder({ search: address, lang = null }: Props) {
         open={panel}
         onOpenChange={setPanel}
         returnFocus={() => filterButton.current?.focus()}
-        asked={asked}
+        asked={asked || isSearchFiltered(filters)}
       />
     </div>
   )
@@ -622,6 +625,66 @@ function Answer({
         </section>
       )}
     </div>
+  )
+}
+
+/** One page of the act list with no term: as many rows as the search draws. */
+const BROWSE_PAGE = 20
+
+/**
+ * Filters with no term (owner, 27 November 2026; the job of the retired Acte page): the acts those filters hold,
+ * most cited first, in the search's own rows. The act list is cursor-paged (223k acts): more rows come on asking,
+ * never as numbered pages. A filter change starts the list over: the pages are keyed on the filter.
+ */
+function Browse({ filters }: { readonly filters: SearchFilters }) {
+  const { i18n } = useLingui()
+  const filter = browseFilter(filters)
+  const list = useInfiniteQuery({
+    queryKey: ['legal', 'finder-browse', filter],
+    queryFn: ({ pageParam, signal }) => fetchLegalActsPage(filter, { first: BROWSE_PAGE, after: pageParam ?? undefined, signal }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.endCursor,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  })
+  if (list.isError && list.data === undefined) {
+    return (
+      <section>
+        <p className="text-base text-foreground">{t`Nu am putut încărca actele.`}</p>
+        <Button variant="outline" className="mt-4" disabled={list.isFetching} onClick={() => void list.refetch()}>
+          {t`Încearcă din nou`}
+        </Button>
+      </section>
+    )
+  }
+  if (list.data === undefined) return <PendingRows />
+  const acts = list.data.pages.flatMap((one) => one.items)
+  if (acts.length === 0) return <p className="text-base text-muted-foreground">{t`Niciun act nu corespunde filtrelor.`}</p>
+  const total = list.data.pages[0]?.totalCount ?? null
+  const shown = total !== null ? formatLegalNumber(total, i18n.locale) : null
+  return (
+    <section aria-labelledby="search-browse-title">
+      <div className="border-b pb-3">
+        <h2 id="search-browse-title" className="text-base font-semibold text-foreground">
+          {total === null || shown === null
+            ? t`Actele, cele mai citate întâi`
+            : plural(total, { one: `${shown} act, cele mai citate întâi`, few: `${shown} acte, cele mai citate întâi`, other: `${shown} de acte, cele mai citate întâi` })}
+        </h2>
+      </div>
+      <ol aria-label={t`Acte`} className="divide-y border-b">
+        {acts.map((act) => (
+          <ActRow key={act.actId} hit={{ score: 0, act, description: null, name: null }} words={[]} provisions={[]} />
+        ))}
+      </ol>
+      {list.hasNextPage ? (
+        <div className="mt-6">
+          {list.isFetchNextPageError ? <p className="mb-3 text-sm text-muted-foreground">{t`Pagina următoare nu s-a încărcat.`}</p> : null}
+          <Button variant="outline" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()}>
+            {list.isFetchingNextPage ? t`Se încarcă…` : t`Încarcă mai multe`}
+          </Button>
+        </div>
+      ) : null}
+    </section>
   )
 }
 

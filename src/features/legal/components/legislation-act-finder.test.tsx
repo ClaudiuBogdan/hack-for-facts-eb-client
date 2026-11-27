@@ -14,6 +14,10 @@ vi.mock('../api/legal-search-api', async (importOriginal) => {
   const original = await importOriginal<typeof import('../api/legal-search-api')>()
   return { ...original, fetchLegalSearch: vi.fn(original.fetchLegalSearch) }
 })
+vi.mock('../api/legal-acts-api', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../api/legal-acts-api')>()
+  return { ...original, fetchLegalActsPage: vi.fn(original.fetchLegalActsPage) }
+})
 vi.mock('../api/legal-resolve-api', async (importOriginal) => {
   const original = await importOriginal<typeof import('../api/legal-resolve-api')>()
   return { ...original, resolveLegalActs: vi.fn(original.resolveLegalActs) }
@@ -937,5 +941,88 @@ describe('LegislationActFinder', () => {
       expect(section).toHaveTextContent(/Am căutat cuvintele în numele, titlul și textul actelor/)
       expect(section).not.toHaveTextContent(/nu este încă disponibilă/)
     })
+  })
+})
+
+describe('LegislationActFinder — filters with no term list the acts (owner, 27 November 2026)', () => {
+  const listed = (actId: string, displayCitation: string) => ({
+    actId, displayCitation, actType: 'lege', actNumber: actId, actYear: 2020, issuerSlug: 'parlamentul', status: 'in-vigoare' as const, inDegree: 3,
+  })
+  const page = (items: ReturnType<typeof listed>[], endCursor: string | null, totalCount: number | null) => ({ items, endCursor, totalCount })
+  const actLinks = () => screen.getAllByRole('link').map((link) => link.getAttribute('href')).filter((href) => href?.startsWith('/legislation/acts/'))
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('lists the acts most cited first when filters are set and no term is typed', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    vi.mocked(fetchLegalActsPage).mockResolvedValue(page([listed('305', 'Legea nr. 305/2022'), listed('163', 'Legea nr. 163/2021')], null, 2))
+    render(<LegislationActFinder search={{ tip: 'lege', stare: 'in-vigoare' }} />)
+    expect(await screen.findByText('2 acte, cele mai citate întâi')).toBeInTheDocument()
+    expect(actLinks()).toEqual(['/legislation/acts/305', '/legislation/acts/163'])
+    expect(vi.mocked(fetchLegalActsPage).mock.calls[0]?.[0]).toEqual({ actType: ['lege'], status: ['in-vigoare'] })
+  })
+
+  it('asks for the live statuses when no status is chosen', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    vi.mocked(fetchLegalActsPage).mockResolvedValue(page([], null, 0))
+    render(<LegislationActFinder search={{ tip: 'lege' }} />)
+    await waitFor(() => expect(fetchLegalActsPage).toHaveBeenCalled())
+    expect(vi.mocked(fetchLegalActsPage).mock.calls[0]?.[0]).toEqual({ actType: ['lege'], status: ['in-vigoare', 'modificat', 'abrogat-partial', 'suspendat', 'necunoscut'] })
+  })
+
+  it('shows the examples and lists nothing with no term and no filter', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    render(<LegislationActFinder search={{}} />)
+    expect(await screen.findByText(/Legea 98\/2016/)).toBeInTheDocument()
+    expect(fetchLegalActsPage).not.toHaveBeenCalled()
+  })
+
+  it('answers by relevance once a term is typed, and lists again when the term is cleared', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    const { fetchLegalSearch } = await import('../api/legal-search-api')
+    vi.mocked(fetchLegalActsPage).mockResolvedValue(page([listed('305', 'Legea nr. 305/2022')], null, 1))
+    const { rerender } = render(<LegislationActFinder search={{ q: 'codul', tip: 'lege' }} />)
+    await waitFor(() => expect(fetchLegalSearch).toHaveBeenCalled())
+    expect(fetchLegalActsPage).not.toHaveBeenCalled()
+    rerender(<LegislationActFinder search={{ tip: 'lege' }} />)
+    expect(await screen.findByText('1 act, cele mai citate întâi')).toBeInTheDocument()
+  })
+
+  it('loads more with the cursor, and starts over when a filter changes', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    vi.mocked(fetchLegalActsPage).mockImplementation((filter, options) =>
+      Promise.resolve(
+        filter.actType?.includes('oug')
+          ? page([listed('57', 'OUG nr. 57/2019')], null, 1)
+          : options?.after === 'c1'
+            ? page([listed('3', 'Legea nr. 3/2020')], null, 3)
+            : page([listed('1', 'Legea nr. 1/2020'), listed('2', 'Legea nr. 2/2020')], 'c1', 3),
+      ),
+    )
+    const { rerender } = render(<LegislationActFinder search={{ tip: 'lege' }} />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Încarcă mai multe' }))
+    await waitFor(() => expect(actLinks()).toEqual(['/legislation/acts/1', '/legislation/acts/2', '/legislation/acts/3']))
+    const calls = vi.mocked(fetchLegalActsPage).mock.calls
+    expect(calls[calls.length - 1]?.[1]).toMatchObject({ after: 'c1' })
+    rerender(<LegislationActFinder search={{ tip: 'oug' }} />)
+    await waitFor(() => expect(actLinks()).toEqual(['/legislation/acts/57']))
+  })
+
+  it('says no act matches these filters', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    vi.mocked(fetchLegalActsPage).mockResolvedValue(page([], null, 0))
+    render(<LegislationActFinder search={{ tip: 'lege', stare: 'suspendat' }} />)
+    expect(await screen.findByText('Niciun act nu corespunde filtrelor.')).toBeInTheDocument()
+  })
+
+  it('offers to see the results from the filter panel when a filter is set and no term is typed', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    vi.mocked(fetchLegalActsPage).mockResolvedValue(page([], null, 0))
+    render(<LegislationActFinder search={{ tip: 'lege' }} />)
+    fireEvent.click(screen.getByRole('button', { name: /^Filtre/ }))
+    const dialog = await screen.findByRole('dialog', { name: 'Filtre' })
+    expect(within(dialog).getAllByRole('button', { name: 'Vezi rezultatele' }).length).toBeGreaterThan(0)
   })
 })
