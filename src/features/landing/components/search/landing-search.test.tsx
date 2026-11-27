@@ -24,8 +24,9 @@ const navigate = vi.fn()
 const searchEntities = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, ...props }: { readonly children: ReactNode; readonly to: string }) => (
-    <a href={typeof to === 'string' ? to : '#'} {...props}>
+  // The search object goes into the href, so a link that drops it shows (Codex review, round 1).
+  Link: ({ children, to, search, ...props }: { readonly children: ReactNode; readonly to: string; readonly search?: Record<string, string> }) => (
+    <a href={typeof to === 'string' ? `${to}${search ? `?${new URLSearchParams(search).toString()}` : ''}` : '#'} {...props}>
       {children}
     </a>
   ),
@@ -965,7 +966,7 @@ describe('LandingSearch — the way on to a fuller search (the legislation hub, 
     const last = options[2]
     expect(last).toHaveAttribute('data-search-more', 'row')
     expect(last).toHaveTextContent('Caută „legea 98” în căutarea avansată')
-    expect(last).toHaveAttribute('href', '/legislation/search')
+    expect(last).toHaveAttribute('href', '/legislation/search?q=legea+98')
     // the arrows reach it like any row
     await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}')
     expect(input.getAttribute('aria-activedescendant')).toBe(last?.id)
@@ -991,7 +992,39 @@ describe('LandingSearch — the way on to a fuller search (the legislation hub, 
     expect(row).toHaveTextContent('Căutare avansată')
     // said once: the row carries the empty answer, the generic sentence is not drawn under it
     expect(screen.queryByText(/Niciun rezultat pentru/i)).toBeNull()
+    // no row is highlighted to say what Enter does: the announcement says it
+    expect(screen.getByText(/Enter: Căutare avansată\./)).toBeInTheDocument()
     await user.keyboard('{Enter}')
     expect(navigate).toHaveBeenCalledWith({ to: '/legislation/search', search: { q: 'achizitii publice' } })
+  })
+
+  it('offers the way on under the „type more" hint, which a two-digit act number never passes', async () => {
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = screen.getByRole('combobox')
+    await user.click(input)
+    await user.type(input, '98')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
+    const row = screen.getByRole('option')
+    expect(row).toHaveAttribute('data-search-more', 'row')
+    expect(row).toHaveAttribute('href', '/legislation/search?q=98')
+    expect(searchEntities).not.toHaveBeenCalled()
+  })
+
+  it('disables the way on while the answer is out of date, and leaves the search as it is on a new-tab click', async () => {
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = await typeAndWait(user, 'legea 98')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3))
+    // a new tab: the words and the list stay here
+    fireEvent.click(screen.getAllByRole('option')[2] as HTMLElement, { ctrlKey: true })
+    expect(input).toHaveValue('legea 98')
+    expect(screen.getAllByRole('option')).toHaveLength(3)
+    // more words: until the answer catches up, the way on carries words the list does not show, so it is off
+    await user.type(input, ' x')
+    const rows = screen.getAllByRole('option')
+    const last = rows[rows.length - 1]
+    expect(last).toHaveAttribute('data-search-more')
+    expect(last).toHaveAttribute('aria-disabled', 'true')
   })
 })

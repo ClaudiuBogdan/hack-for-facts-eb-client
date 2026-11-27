@@ -376,10 +376,12 @@ export function LandingSearch({
 
   // Two groups, each present only when it has rows. Suggestions first: they
   // change what the rows below mean, so they are read before the rows are.
-  // The way on, last: under an answer, or alone when there is none. Only for words the search has answered.
+  // The way on, last: under an answer, alone when there is none, and under the „type more" hint too, which a
+  // two-digit act number („98") never gets past here (Codex review, round 1).
   const moreTerm = term.trim()
   const moreItem: MoreItem | null =
-    more !== undefined && moreTerm !== '' && (status.kind === 'results' || status.kind === 'empty') ? { moreTerm } : null
+    more !== undefined && moreTerm !== '' && (status.kind === 'results' || status.kind === 'empty' || status.kind === 'short') ? { moreTerm } : null
+  const moreAlone = moreItem !== null && status.kind === 'empty'
   const groups: readonly ListGroup[] = [
     ...(suggestions.length > 0 ? [{ value: 'filters', items: suggestions } as const] : []),
     ...(visibleResults.length > 0 ? [{ value: 'results', items: visibleResults } as const] : []),
@@ -662,6 +664,8 @@ export function LandingSearch({
 
         <p aria-live="polite" className="sr-only">
           {isDropdownOpen ? announcement(status, suggestions.length) : ''}
+          {/* With no answer, Enter takes the words on: said, since no row is highlighted to say it (Codex review, round 1). */}
+          {isDropdownOpen && moreAlone && more !== undefined ? ` ${t`Enter: ${more.label}.`}` : ''}
         </p>
       </div>
 
@@ -745,22 +749,37 @@ export function LandingSearch({
                           <Autocomplete.Collection>
                             {(item: MoreItem) => {
                               const target = more.link(item.moreTerm)
-                              const alone = visibleResults.length === 0
+                              const alone = moreAlone
                               return (
                                 <Autocomplete.Item
                                   key="more"
                                   value={item}
+                                  // Out of date while the answer is (the rows above are too): it would carry words the list does not show.
+                                  disabled={!isCurrent}
                                   data-search-more={alone ? 'empty' : 'row'}
                                   className={cn(
                                     'flex cursor-pointer items-center gap-3 px-4 text-sm data-highlighted:bg-muted',
                                     'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
                                     alone ? 'flex-wrap py-3.5 sm:flex-nowrap' : 'border-t py-3',
                                   )}
-                                  onClick={() => {
+                                  onClick={(event) => {
+                                    if (!isCurrent) {
+                                      event.preventDefault()
+                                      return
+                                    }
+                                    // A new tab or window leaves this search as it is (Codex review, round 1).
+                                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
                                     reset()
                                     setIsOpen(false)
                                   }}
-                                  render={<Link to={target.to as '/'} search={target.search as never} preload={false} />}
+                                  render={
+                                    <Link
+                                      to={target.to as '/'}
+                                      search={target.search as never}
+                                      preload={false}
+                                      onClick={(event) => { if (!isCurrent) event.preventDefault() }}
+                                    />
+                                  }
                                 >
                                   {alone ? (
                                     <>
