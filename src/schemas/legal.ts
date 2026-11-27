@@ -521,7 +521,9 @@ export type LegalActDetail = z.infer<typeof legalActDetailSchema>
  * is a page size — different resolvers, different honesty).
  */
 export const legalActsPageSchema = z.object({
-  items: z.array(legalActListItemSchema),
+  // `name`: the Portal's name of the act's canonical document, read where the citation names nothing („Doc nr."), as
+  // the search's hits carry it (Codex review, 27 November 2026).
+  items: z.array(legalActListItemSchema.extend({ name: z.string().nullable() })),
   endCursor: z.string().nullable(),
   totalCount: z.number().int().nullable(),
 })

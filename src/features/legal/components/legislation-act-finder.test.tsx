@@ -946,7 +946,7 @@ describe('LegislationActFinder', () => {
 
 describe('LegislationActFinder — filters with no term list the acts (owner, 27 November 2026)', () => {
   const listed = (actId: string, displayCitation: string) => ({
-    actId, displayCitation, actType: 'lege', actNumber: actId, actYear: 2020, issuerSlug: 'parlamentul', status: 'in-vigoare' as const, inDegree: 3,
+    actId, displayCitation, actType: 'lege', actNumber: actId, actYear: 2020, issuerSlug: 'parlamentul', status: 'in-vigoare' as const, inDegree: 3, name: null as string | null,
   })
   const page = (items: ReturnType<typeof listed>[], endCursor: string | null, totalCount: number | null) => ({ items, endCursor, totalCount })
   const actLinks = () => screen.getAllByRole('link').map((link) => link.getAttribute('href')).filter((href) => href?.startsWith('/legislation/acts/'))
@@ -1021,6 +1021,34 @@ describe('LegislationActFinder — filters with no term list the acts (owner, 27
     })
     expect(await screen.findByText('Nu am putut încărca actele.', {}, { timeout: 4000 })).toBeInTheDocument()
     expect(screen.queryByText('Niciun act nu corespunde filtrelor.')).toBeNull()
+  })
+
+  it('names a bare „Doc nr." act in the list by the Portal name, as the search does (Codex review, round 2)', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    vi.mocked(fetchLegalActsPage).mockResolvedValue(page([{ ...listed('47355', 'Doc nr. 47355'), name: 'CONSTITUȚIA ROMÂNIEI din 21 noiembrie 1991' }], null, 1))
+    render(<LegislationActFinder search={{ historical: true }} />)
+    // in the search's own sentence case (`portalNameCase`), not „Doc nr. 47355"
+    expect(await screen.findByRole('link', { name: 'Constituția româniei din 21 noiembrie 1991' })).toHaveAttribute('href', '/legislation/acts/47355')
+    expect(screen.queryByText('Doc nr. 47355')).toBeNull()
+  })
+
+  it('keeps „Încarcă mai multe" off while the shown pages are refreshed (Codex review, round 2)', async () => {
+    const { fetchLegalActsPage } = await import('../api/legal-acts-api')
+    let finish: (value: ReturnType<typeof page>) => void = () => {}
+    vi.mocked(fetchLegalActsPage)
+      .mockResolvedValueOnce(page([listed('1', 'Legea nr. 1/2020')], 'c1', 2))
+      .mockImplementation(() => new Promise((resolve) => { finish = resolve }))
+    const client = createTestQueryClient()
+    renderShared(<LegislationActFinder search={{ tip: 'lege' }} />, { queryClient: client })
+    const more = await screen.findByRole('button', { name: 'Încarcă mai multe' })
+    expect(more).toBeEnabled()
+    act(() => {
+      void client.refetchQueries()
+    })
+    await waitFor(() => expect(more).toBeDisabled())
+    await act(async () => {
+      finish(page([listed('1', 'Legea nr. 1/2020')], 'c1', 2))
+    })
   })
 
   it('says no act matches these filters', async () => {

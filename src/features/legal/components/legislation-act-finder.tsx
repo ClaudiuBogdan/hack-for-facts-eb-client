@@ -675,13 +675,15 @@ function Browse({ filters }: { readonly filters: SearchFilters }) {
       </div>
       <ol aria-label={t`Acte`} className="divide-y border-b">
         {acts.map((act) => (
-          <ActRow key={act.actId} hit={{ score: 0, act, description: null, name: null }} words={[]} provisions={[]} />
+          <ActRow key={act.actId} hit={{ score: 0, act, description: null, name: act.name }} words={[]} provisions={[]} />
         ))}
       </ol>
       {list.hasNextPage ? (
         <div className="mt-6">
           {list.isFetchNextPageError ? <p className="mb-3 text-sm text-muted-foreground">{t`Pagina următoare nu s-a încărcat.`}</p> : null}
-          <Button variant="outline" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()}>
+          {/* Off while the shown pages refresh too: a next page asked then would cancel the refresh and land on old rows
+              (Codex review, round 2). */}
+          <Button variant="outline" disabled={list.isFetching} onClick={() => void list.fetchNextPage()}>
             {list.isFetchingNextPage ? t`Se încarcă…` : t`Încarcă mai multe`}
           </Button>
         </div>

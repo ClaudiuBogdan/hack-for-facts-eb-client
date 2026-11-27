@@ -1,6 +1,6 @@
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { legalActsPageSchema, type LegalActsPage } from '@/schemas/legal'
-import { legalSearchFilterInput, type LegalSearchFilter } from './legal-search-api.live'
+import { legalSearchFilterInput, nonblank, type LegalSearchFilter } from './legal-search-api.live'
 
 /**
  * The act list behind the search with no term (owner, 27 November 2026; it was the Acte directory's) — one `legalActs` page per call, cursor-only (223k
@@ -26,6 +26,10 @@ const ACTS_DIRECTORY_QUERY = /* GraphQL */ `
           issuerSlug
           status
           inDegree
+          canonical {
+            den
+            title
+          }
         }
       }
     }
@@ -84,6 +88,8 @@ export async function fetchLegalActsPageLive(
         typeof node.inDegree === 'number' && Number.isFinite(node.inDegree)
           ? Math.trunc(node.inDegree)
           : null,
+      // The Portal's name, for an act whose citation names nothing (LEG-PDYY): its `den`, else its short title.
+      name: nonblank(rec(node.canonical).den) ?? nonblank(rec(node.canonical).title),
     }
   })
 
