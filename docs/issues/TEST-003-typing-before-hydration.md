@@ -1,8 +1,9 @@
 # TEST-003: The entity-search spec types before the page has hydrated
 
-**Status:** fixed in the spec (25 November 2026). **Owner:** client-legislation, at root's request. **Priority:** P2: a
+**Status:** fixed in the spec (25 November 2026), then for every spec in the shared helpers (27 November 2026).
+**Owner:** client-legislation, at root's request; the shared helpers are client-entity-analytics'. **Priority:** P2: a
 flaky integration test, about 1 run in 20–30. **Related:** `tests/integration/experimental-search.spec.ts`,
-`tests/utils/test-helpers.ts` (`waitForPageReady`, `waitForHydration`). Reported by client-dev-polish on `44215a01f`,
+`tests/utils/test-helpers.ts` (`waitForPageReady`, `waitForHydration`, `waitForElementHydration`). Reported by client-dev-polish on `44215a01f`,
 through root (refactor-architecture).
 
 ## What happens
@@ -36,9 +37,20 @@ On a build with CI's integration env (`342df9183`), served on its own port, one 
 
 ## Fix
 
-The spec's `hydratedSearchBox(page)` waits, by polling, until the search box carries React's `__reactProps$` key. React
-attaches that key to an element when it hydrates it. Every test that types gets the box from this helper. No timeout
-was raised. The national-budget specs already read React's `__reactFiber$` keys the same way.
+**Now in the shared helpers (27 November 2026).**
+- **The page.** `waitForHydration`, which `waitForPageReady` calls, waits until React owns the body and every input,
+  textarea, select and button. It counts none inside the map libraries' containers (`.leaflet-container`,
+  `.maplibregl-map`), whose zoom buttons React never owns. After 15 s it fails, naming the controls that are not
+  React's.
+- **One element.** `waitForElementHydration(locator)` waits for a single control.
+- **Where it landed.** `cc9689676` and `670514ff5`, on dev in `c07941c31`. CI run 46027690433 passed.
+- **The spec.** `hydratedSearchBox` was dropped from it afterwards, in a follow-up. Its tests keep `waitForPageReady`,
+  which now covers them.
+
+**How the fix was first proven, in the spec (25 November 2026).** The spec's `hydratedSearchBox(page)` waited, by
+polling, until the search box carried React's `__reactProps$` key. React attaches that key to an element when it
+hydrates it. Every test that typed got the box from this helper. No timeout was raised. The national-budget specs
+already read React's `__reactFiber$` keys the same way.
 
 A/B on the same build, `--repeat-each=20` (200 runs per spec), no retries, one worker:
 
@@ -53,9 +65,10 @@ shows that the fix holds under the spec's own timing.
 
 ## Likely the same elsewhere (not checked)
 
-Any spec that types into a server-rendered input right after `waitForPageReady` or `waitForHydration` has the same
-gap. Those helpers wait for the network and the skeletons, not for React. Candidates include the landing page's
-search and the companies hub's search.
+Any spec that typed into a server-rendered input right after `waitForPageReady` or `waitForHydration` had the same
+gap. Those helpers then waited for the network and the skeletons, not for React. Candidates included the landing
+page's search and the companies hub's search. Since 27 November the helpers wait for React too (Fix, above), so every
+spec that calls them is covered. A spec that types without calling them is not.
 
 ## Open observation: one run where the box never hydrated (26 November 2026)
 
@@ -80,9 +93,12 @@ Root took the push with this open (26 November 2026): one timeout in 100 runs un
 
 ## Follow-ups
 
-- **A shared helper for the tests.** A shared "wait until this element is hydrated" in `tests/utils/test-helpers.ts`
-  would close the gap for every spec. Root has given it to client-entity-analytics, which owns the integration test
-  infrastructure, after its API guard.
+- **A shared helper for the tests: done (27 November 2026).** Root gave it to client-entity-analytics, which owns the
+  integration test infrastructure. `waitForHydration`/`waitForPageReady` now wait for React to own the page, and
+  `waitForElementHydration` waits for one element (`cc9689676`, `670514ff5`, on dev in `c07941c31`). The spec's own
+  `hydratedSearchBox` was dropped afterwards.
+  - On a timeout, the shared helper names the controls React does not own. Like the spec's helper, it records no
+    console errors or failed requests, so the open observation above still applies.
 - **A product fix: the same gap hits readers**, filed as SEARCH-001. The proof above is not only about tests. A reader on a slow phone
   who types before the page hydrates gets the same silence: the text stays in the box and no search runs.
   - **What exists now.** On `/legislation/search` the search input has no `name`, so pressing Enter before
