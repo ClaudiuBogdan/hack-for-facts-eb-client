@@ -117,10 +117,10 @@ describe('/justice/courts/$code', () => {
     expect(client.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(justiceKeys.court(FIXTURE_COURT, FIXTURE_YEAR))
   })
 
-  it('caches only a whole render', () => {
+  it('keeps no render in a shared cache: a whole one private, a failed one no-store (CACHE-002)', () => {
     vi.stubEnv('DEV', false)
     try {
-      expect(courtRoute.headers({ loaderData: { court } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(courtRoute.headers({ loaderData: { court } })).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
       for (const loaderData of [{ code: FIXTURE_COURT }, { court: courtSheetFixture('failed') }]) expect(courtRoute.headers({ loaderData })['CDN-Cache-Control']).toBe('no-store')
     } finally {
       vi.unstubAllEnvs()
@@ -186,10 +186,10 @@ describe('/justice/cases/$code/$', () => {
     expect(client.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(justiceKeys.case(FIXTURE_CASE.code, FIXTURE_CASE.number))
   })
 
-  it('caches only a whole render', () => {
+  it('keeps no render in a shared cache: a whole one private, a failed one no-store (CACHE-002)', () => {
     vi.stubEnv('DEV', false)
     try {
-      expect(caseRoute.headers({ loaderData: { sheet } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(caseRoute.headers({ loaderData: { sheet } })).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
       expect(caseRoute.headers({ loaderData: { sheet: caseSheetFixture('failed') } })['CDN-Cache-Control']).toBe('no-store')
     } finally {
       vi.unstubAllEnvs()
@@ -246,10 +246,10 @@ describe('/justice/analytics', () => {
     expect(readAnalysis).toHaveBeenCalledTimes(1)
   })
 
-  it('caches only a whole render', () => {
+  it('keeps no render in a shared cache: a whole one private, a failed one no-store (CACHE-002)', () => {
     vi.stubEnv('DEV', false)
     try {
-      expect(analysisRoute.headers({ loaderData: { seed: [], complete: true } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(analysisRoute.headers({ loaderData: { seed: [], complete: true } })).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
       expect(analysisRoute.headers({ loaderData: { seed: [], complete: false } })['CDN-Cache-Control']).toBe('no-store')
       expect(analysisRoute.headers({})['CDN-Cache-Control']).toBe('no-store')
     } finally {
@@ -283,12 +283,12 @@ describe('/justice/echr', () => {
     expect(echrRoute.validateSearch({ an: ['2018'] })).toEqual({ an: '["2018"]' })
   })
 
-  it('is cached publicly: it reads nothing, and keys on the cookie its render follows', () => {
+  it('is private: its render follows the reader’s cookies (CACHE-002)', () => {
     vi.stubEnv('DEV', false)
     try {
       const headers = echrRoute.headers()
-      expect(headers['CDN-Cache-Control']).toContain('s-maxage=3600')
-      expect(headers.Vary).toContain('Cookie')
+      expect(headers).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
+      expect(headers.Vary).toBeUndefined()
     } finally {
       vi.unstubAllEnvs()
     }

@@ -86,11 +86,11 @@ describe('/procurement/contracts/$id', () => {
     expect(client.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(procurementContractKeys.contract(sheet.id))
   })
 
-  it('caches only a whole render under a known publication, ten minutes at most, never stale across a publish (D6)', () => {
+  it('keeps no render in a shared cache, whatever its publication (CACHE-002, D6)', () => {
     vi.stubEnv('DEV', false)
     try {
       const whole = route.headers({ loaderData: { id: '1', contract: sheet, context: ctContext(), disclosure: 'off:-:nod6:-' } })
-      expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
       expect(whole['CDN-Cache-Control']).not.toMatch(/stale-while-revalidate=[1-9]/u)
       // Read under an unknown publication: kept nowhere.
       expect(route.headers({ loaderData: { id: '1', contract: sheet, context: ctContext(), disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
@@ -103,7 +103,7 @@ describe('/procurement/contracts/$id', () => {
         expect(route.headers({ loaderData })['CDN-Cache-Control']).toBe('no-store')
       }
       // With no context to read (no CUI for a side, no date, before 2019) the server says so — `null` — and the contract alone is whole.
-      expect(route.headers({ loaderData: { id: '1', contract: sheet, context: null, disclosure: 'off:-:nod6:-' } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(route.headers({ loaderData: { id: '1', contract: sheet, context: null, disclosure: 'off:-:nod6:-' } })).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
     } finally {
       vi.unstubAllEnvs()
     }

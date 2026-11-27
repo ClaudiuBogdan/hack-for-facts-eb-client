@@ -7,7 +7,7 @@
  * next bulletin would change, and never to a read the browser makes.
  */
 
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { Page } from '@playwright/test'
 
@@ -33,7 +33,7 @@ test.beforeAll(async () => {
   test.skip(missing, `${api} does not serve the national budget API`)
 })
 
-const SECTIONS = ['bani', 'bugete', 'stat', 'imprumut', 'anul'] as const
+const SECTIONS = ['bani', 'bon', 'bugete', 'stat', 'imprumut', 'anul'] as const
 
 const bar = (page: Page) => page.getByRole('navigation', { name: 'Secțiunile paginii' })
 const params = (page: Page) => Object.fromEntries(new URL(page.url()).searchParams)

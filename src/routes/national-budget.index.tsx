@@ -42,7 +42,7 @@ export const Route = createFileRoute('/national-budget/')({
     const bare = an === undefined
     const title = translator._(msg`Bugetul național: de unde vin banii publici și pe ce se duc — Transparenta.eu`)
     const description = translator._(
-      msg`Cât cheltuie statul român pentru fiecare locuitor, pe ce și din ce bani, prin ce bugete trec banii, cât e deficitul an de an din 2006 și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS.`,
+      msg`De unde vin banii publici ai României și pe ce se duc, prin ce bugete trec, cât e deficitul an de an din 2006, cât revine fiecărui locuitor și cum merge anul în curs. Date din buletinele de execuție ale Ministerului Finanțelor, execuția bugetului de stat raportată la ANAF și populația după INS.`,
     )
     const canonical = `${getSiteUrl()}/national-budget`
     // The share card for the year and language shown (server-made, `/national-budget/share-image.png`).

@@ -115,14 +115,14 @@ describe('/public-enterprises/$cui', () => {
     ])
   })
 
-  it('caches a whole render publicly, and never a failed or partial one', async () => {
+  it('keeps no render in a shared cache: a whole one private, a failed or partial one no-store (CACHE-002)', async () => {
     const route = await importRoute()
     vi.stubEnv('DEV', false)
     const whole = route.headers({ loaderData: { complete: true } })
     const partial = route.headers({ loaderData: { complete: false } })
     vi.unstubAllEnvs()
-    expect(whole['Cache-Control'] ?? '').toContain('s-maxage=600')
-    expect(whole.Vary ?? '').toContain('Cookie')
+    expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
+    expect(whole.Vary).toBeUndefined()
     // D6: its buyer band ranks direct purchases' suppliers — no stale copy outlives a publish.
     expect(whole['Cache-Control'] ?? '').not.toMatch(/stale-while-revalidate=[1-9]/)
     expect(partial['Cache-Control']).toContain('no-store')

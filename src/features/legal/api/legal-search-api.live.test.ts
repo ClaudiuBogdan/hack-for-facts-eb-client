@@ -62,9 +62,39 @@ describe('fetchLegalSearchLive', () => {
     const [, variables] = graphqlQueryMock.mock.calls[0]
     expect(variables).toEqual({
       q: 'codul muncii',
+      filter: null,
       includeHistorical: false,
       limit: 20,
     })
+  })
+
+  it('sends a filter in LegalActsFilter shape, and none when every field is empty', async () => {
+    graphqlQueryMock.mockResolvedValue(served() as never)
+
+    await fetchLegalSearchLive('codul muncii', {
+      historical: true,
+      filter: { actType: ['lege'], status: ['in-vigoare'], yearFrom: 2015, yearTo: 2024, domain: ['munca-si-protectie-sociala'], category: ['lege'], penaltiesMentioned: true },
+    })
+    await fetchLegalSearchLive('codul muncii', { filter: { actType: [], domain: [] } })
+
+    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
+      filter: {
+        actType: { in: ['lege'] },
+        status: { in: ['in-vigoare'] },
+        yearFrom: { gte: 2015 },
+        yearTo: { lte: 2024 },
+        domain: { in: ['munca-si-protectie-sociala'] },
+        category: { in: ['lege'] },
+        penaltiesMentioned: { eq: true },
+      },
+      includeHistorical: true,
+    })
+    expect(graphqlQueryMock.mock.calls[1]?.[1]).toMatchObject({ filter: null })
+    // the document binds the filter and asks for the canonical document's name
+    const document = String(graphqlQueryMock.mock.calls[0]?.[0])
+    expect(document).toMatch(/\$filter: LegalActsFilter/)
+    expect(document).toMatch(/legalSearch\(q: \$q, filter: \$filter,/)
+    expect(document).toMatch(/canonical \{\s*den\s+title\s*\}/)
   })
 
   it('widens to historical acts only when asked', async () => {
@@ -75,14 +105,16 @@ describe('fetchLegalSearchLive', () => {
     const [, variables] = graphqlQueryMock.mock.calls[0]
     expect(variables).toEqual({
       q: 'legea 571/2003',
+      filter: null,
       includeHistorical: true,
       limit: 20,
     })
   })
 
   const sectionHit = (overrides: Record<string, unknown> = {}) => ({
-    act: { actId: '900002' },
+    act: { actId: '900002', displayCitation: 'Hotărârea nr. 206/1996' },
     documentId: 'f900012',
+    nodePath: 'r10',
     nodeLabel: 'Articol unic',
     snippet: 'Se aprobă <em>renunțarea</em>',
     servedForm: {
@@ -105,6 +137,10 @@ describe('fetchLegalSearchLive', () => {
     const [query] = graphqlQueryMock.mock.calls[0]
     expect(query).toMatch(/channel:\s*auto/)
     expect(query).toMatch(/sections \{/)
+    // the provision's path, so a hit links to its provision
+    expect(query).toMatch(/sections \{[^]*nodePath/)
+    // the act's citation, to name a provision's act when the act is in no row
+    expect(query).toMatch(/sections \{\s*act \{\s*actId\s*displayCitation/)
     expect(query).toMatch(/servedForm \{[^}]*caveat[^}]*portalLabelDate/s)
   })
 
@@ -116,7 +152,9 @@ describe('fetchLegalSearchLive', () => {
     expect(result.sections).toEqual([
       {
         actId: '900002',
+        actCitation: 'Hotărârea nr. 206/1996',
         documentId: 'f900012',
+        nodePath: 'r10',
         nodeLabel: 'Articol unic',
         snippet: 'Se aprobă <em>renunțarea</em>',
         servedForm: {
@@ -141,7 +179,8 @@ describe('fetchLegalSearchLive', () => {
     graphqlQueryMock.mockResolvedValue(
       served({
         acts: [
-          docHit(),
+          // the canonical document's den wins over its short title
+          docHit({ act: { ...docHit().act, canonical: { den: 'CODUL MUNCII din 24 ianuarie 2003', title: 'LEGE 53 24/01/2003' } } }),
           docHit({
             score: 0.4,
             act: {
@@ -153,9 +192,13 @@ describe('fetchLegalSearchLive', () => {
               issuerSlug: null,
               status: 'ABROGAT',
               inDegree: 1154,
+              // a blank den: the short title stands in
+              canonical: { den: '   ', title: ' COD FISCAL 22/12/2003 ' },
             },
             summary: null,
           }),
+          // no canonical document read: no name
+          docHit({ score: 0.2, act: { ...docHit().act, actId: '30413' } }),
         ],
         caveats: ['semantic search unavailable', 'alt avertisment'],
       }) as never,
@@ -177,6 +220,7 @@ describe('fetchLegalSearchLive', () => {
           inDegree: 1980,
         },
         description: 'Codul muncii reglementează raporturile de muncă.',
+        name: 'CODUL MUNCII din 24 ianuarie 2003',
       },
       {
         score: 0.4,
@@ -192,7 +236,9 @@ describe('fetchLegalSearchLive', () => {
         },
         // summary null → no snippet, never an empty-string one.
         description: null,
+        name: 'COD FISCAL 22/12/2003',
       },
+      expect.objectContaining({ act: expect.objectContaining({ actId: '30413' }), name: null }),
     ])
     expect(result.caveats).toEqual([
       'semantic search unavailable',

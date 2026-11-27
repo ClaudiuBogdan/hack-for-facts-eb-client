@@ -101,8 +101,8 @@ describe('/procurement/analytics', () => {
       expect(failed['CDN-Cache-Control']).toBe('no-store')
       expect(route.headers({})['CDN-Cache-Control']).toBe('no-store')
       const whole = route.headers({ loaderData: { seed: [], complete: true } })
-      expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
-      expect(whole.Vary).toBe('Accept-Encoding, Cookie')
+      expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
+      expect(whole.Vary).toBeUndefined()
     } finally {
       vi.unstubAllEnvs()
     }

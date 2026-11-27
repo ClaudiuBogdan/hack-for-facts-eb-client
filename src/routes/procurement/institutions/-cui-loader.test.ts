@@ -138,15 +138,15 @@ describe('/procurement/institutions/$cui', () => {
     ])
   })
 
-  it('caches a whole render publicly, and never a failed or partial one', async () => {
+  it('keeps no render in a shared cache: a whole one private, a failed or partial one no-store (CACHE-002)', async () => {
     const route = await importRoute()
     vi.stubEnv('DEV', false)
     try {
       const whole = route.headers({ loaderData: { choice: 2025, profile: PROFILE, records: { contracts: [], direct: [] }, disclosure: 'v1' } })
       // D6: a render whose publication is unknown is kept nowhere.
       expect(route.headers({ loaderData: { choice: 2025, profile: PROFILE, records: { contracts: [], direct: [] }, disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
-      expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
-      expect(whole.Vary).toBe('Accept-Encoding, Cookie')
+      expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
+      expect(whole.Vary).toBeUndefined()
       for (const loaderData of [
         { choice: 2025, records: { contracts: [], direct: [] } },
         { choice: 2025, profile: PROFILE },

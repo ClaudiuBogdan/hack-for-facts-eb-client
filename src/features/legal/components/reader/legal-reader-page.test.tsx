@@ -15,6 +15,7 @@ import {
   screen,
   fireEvent,
   waitFor,
+  within,
   createTestQueryClient,
 } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
@@ -28,6 +29,7 @@ import {
   legalActDetailFixture,
 } from '../../mocks/fixtures/legal-act-detail'
 import { foldTldfBlocks } from '../../lib/tldf/fold'
+import { resolveDocOverride } from '../../lib/legal-versions'
 import { ActReadingLayout } from './legal-reader-page'
 import type { TldfChunkPayload, TldfEnvelope } from '../../lib/tldf/types'
 
@@ -139,6 +141,63 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       .map((query) => JSON.stringify(query.queryKey))
     expect(keys.some((key) => key.includes('100023'))).toBe(true)
     expect(keys.filter((key) => key.includes('100019'))).toEqual([])
+  })
+
+  it('takes no ?nod= into the default text when the ?doc= it was meant for is refused (astra-client-11)', async () => {
+    // A provision link into another act's document: the default text (100023) has a node at the same path.
+    const nod = envelope.blocks[3]?.id ?? ''
+    const act = {
+      ...legalActDetailFixture,
+      canonical:
+        legalActDetailFixture.canonical === null
+          ? null
+          : { ...legalActDetailFixture.canonical, documentId: '100023' },
+    }
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container } = render(
+        <ActReadingLayout act={act} docOverride="100019" nod={nod} lead={null} fisa={null} />,
+      )
+      await waitFor(() => {
+        expect(container.querySelector('#reader-content')).not.toBeNull()
+      })
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull()
+      expect(screen.getByRole('status')).toHaveTextContent(/nu aparține acestui act/)
+      // Settled: the outline answered and the text is on screen; nothing was scrolled to or marked as the match.
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      expect(container.querySelector('.bg-accent\\/60')).toBeNull()
+      // nor is the provision said to be missing from a text it was never meant for
+      expect(screen.queryByText(/Nu am găsit fragmentul cerut/)).toBeNull()
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('writes the text on show with a provision chosen in the contents after a refused ?doc= (astra-client-12)', async () => {
+    // the default text is one of the act's own documents, as on a real act
+    const act = {
+      ...owning('100023'),
+      canonical:
+        legalActDetailFixture.canonical === null
+          ? null
+          : { ...legalActDetailFixture.canonical, documentId: '100023' },
+    }
+    navigateMock.mockClear()
+    render(<ActReadingLayout act={act} docOverride="100019" nod="r10" lead={null} fisa={null} />)
+    const toc = await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+    const entry = within(toc).getAllByRole('button').find((button) => button.getAttribute('aria-expanded') === null) as HTMLElement
+    fireEvent.click(entry)
+    const options = navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    // the refused document leaves the address with the provision chosen in the text actually shown
+    const next = options.search({ doc: '100019', nod: 'r10' })
+    expect(next.doc).toBe('100023')
+    expect(typeof next.nod).toBe('string')
+    expect(next.nod).not.toBe('r10')
+    // and the address written is one the reader accepts on the next render: the act's own text, not refused again
+    expect(resolveDocOverride(act, String(next.doc)).kind).toBe('own')
   })
 
   it('honours an override that is one of the act\'s own expressions', async () => {

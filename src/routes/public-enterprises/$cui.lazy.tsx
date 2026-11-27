@@ -38,5 +38,10 @@ function PublicEnterpriseRoutePage() {
 
   if (!read) return enterprise.isError ? <PublicEnterpriseLoadError onRetry={() => void enterprise.refetch()} /> : <PublicEnterprisePending />
   if (!read.profile) return <PublicEnterpriseNotFound cui={cui} />
-  return <PublicEnterprisePage read={read} company={companyState} buyer={stateOf(buyer)} />
+  // Whether the server read it all: the one signal of a whole render, now that every page is private (CACHE-002), for the specs.
+  return (
+    <div className="contents" data-server-read={served?.complete ? 'whole' : 'partial'}>
+      <PublicEnterprisePage read={read} company={companyState} buyer={stateOf(buyer)} />
+    </div>
+  )
 }

@@ -22,8 +22,8 @@ import {
  * so "Legea 571/2003" is zero hits until the caller widens it.
  */
 const FINDER_SEARCH_QUERY = /* GraphQL */ `
-  query LegislationFinderSearch($q: String!, $includeHistorical: Boolean!, $limit: Int!) {
-    legalSearch(q: $q, includeHistorical: $includeHistorical, channel: auto, limit: $limit) {
+  query LegislationFinderSearch($q: String!, $filter: LegalActsFilter, $includeHistorical: Boolean!, $limit: Int!) {
+    legalSearch(q: $q, filter: $filter, includeHistorical: $includeHistorical, channel: auto, limit: $limit) {
       acts {
         score
         act {
@@ -35,6 +35,10 @@ const FINDER_SEARCH_QUERY = /* GraphQL */ `
           issuerSlug
           status
           inDegree
+          canonical {
+            den
+            title
+          }
         }
         summary {
           description
@@ -43,8 +47,10 @@ const FINDER_SEARCH_QUERY = /* GraphQL */ `
       sections {
         act {
           actId
+          displayCitation
         }
         documentId
+        nodePath
         nodeLabel
         snippet
         servedForm {
@@ -87,10 +93,48 @@ const rec = (value: unknown): Raw =>
 const str = (value: unknown): string | null =>
   typeof value === 'string' && value.length > 0 ? value : null
 
+/** A name with something in it, trimmed: a blank `den` gives way to the title. */
+const nonblank = (value: unknown): string | null => {
+  const text = typeof value === 'string' ? value.trim() : ''
+  return text.length > 0 ? text : null
+}
+
+/**
+ * The search's filters, each one the engine expresses (measured on the dev API, 25 November 2026: act type,
+ * status, a year range, domain, category and penalties narrow the answer; `exclude` and `fiscalImpactNull` are
+ * refused, so they are not offered). Values speak the filter's vocabularies: the status in the DB's kebab form,
+ * domain and category as the summaries' slugs. Domain, category and penalties are read from the AI summaries:
+ * an act without a summary carries none of them, so a filter on them leaves it out.
+ */
+export type LegalSearchFilter = {
+  readonly actType?: readonly string[]
+  readonly status?: readonly string[]
+  readonly yearFrom?: number
+  readonly yearTo?: number
+  readonly domain?: readonly string[]
+  readonly category?: readonly string[]
+  readonly penaltiesMentioned?: boolean
+}
+
+/** The filter in `LegalActsFilter`'s shape, or null when nothing narrows the search (the server's own default). */
+export function legalSearchFilterInput(filter: LegalSearchFilter | undefined): Raw | null {
+  if (!filter) return null
+  const parts: Raw = {}
+  if (filter.actType?.length) parts.actType = { in: [...filter.actType] }
+  if (filter.status?.length) parts.status = { in: [...filter.status] }
+  if (filter.yearFrom !== undefined) parts.yearFrom = { gte: filter.yearFrom }
+  if (filter.yearTo !== undefined) parts.yearTo = { lte: filter.yearTo }
+  if (filter.domain?.length) parts.domain = { in: [...filter.domain] }
+  if (filter.category?.length) parts.category = { in: [...filter.category] }
+  if (filter.penaltiesMentioned !== undefined) parts.penaltiesMentioned = { eq: filter.penaltiesMentioned }
+  return Object.keys(parts).length > 0 ? parts : null
+}
+
 export async function fetchLegalSearchLive(
   q: string,
   options: {
     readonly historical?: boolean
+    readonly filter?: LegalSearchFilter
     readonly limit?: number
     readonly signal?: AbortSignal
   } = {},
@@ -99,6 +143,7 @@ export async function fetchLegalSearchLive(
     FINDER_SEARCH_QUERY,
     {
       q,
+      filter: legalSearchFilterInput(options.filter),
       includeHistorical: options.historical === true,
       limit: options.limit ?? 20,
     },
@@ -138,6 +183,8 @@ export async function fetchLegalSearchLive(
             : null,
       },
       description: str(summary.description),
+      // The Portal's name, for an act whose citation names nothing (LEG-PDYY): its `den`, else its short title.
+      name: nonblank(rec(act.canonical).den) ?? nonblank(rec(act.canonical).title),
     }
   })
 
@@ -159,7 +206,9 @@ export async function fetchLegalSearchLive(
           return [
             {
               actId,
+              actCitation: str(rec(raw.act).displayCitation),
               documentId,
+              nodePath: str(raw.nodePath),
               nodeLabel: str(raw.nodeLabel),
               snippet: str(raw.snippet),
               servedForm:
