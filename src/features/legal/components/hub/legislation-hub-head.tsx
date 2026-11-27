@@ -7,6 +7,7 @@ import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { CountUpValue, countUpWithin } from '@/features/landing/components/count-up'
 import { DeferredLandingSearch } from '@/features/landing/components/search/deferred-landing-search'
+import { hubSearchMore } from './legislation-hub-search-more'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
@@ -30,7 +31,10 @@ const META_CLASS = 'text-xs leading-4 text-muted-foreground'
  */
 export function HubHeadSearch() {
   const isMobile = useIsMobile()
-  const { hash } = useLocation()
+  const { hash, search } = useLocation()
+  // An explicit language in the address goes on with the words (Codex review, round 1).
+  const lang = (search as Record<string, unknown> | undefined)?.lang
+
   return (
     <DeferredLandingSearch
       docTypes={['legal_act']}
@@ -39,6 +43,10 @@ export function HubHeadSearch() {
       placeholder={t`Nume sau nr…`}
       autoFocus={!isMobile && !hash}
       scrollToTopOnFocus={isMobile}
+      // This search reads names and numbers only: the words go on to the advanced search, which also reads the laws'
+      // text. As the list's last row under an answer, and beside the sentence when there is none (owner, 27 November
+      // 2026, chosen from a picture of three).
+      more={hubSearchMore(lang)}
     />
   )
 }
