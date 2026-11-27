@@ -19,15 +19,12 @@ import type { DataStatus } from '@/schemas/elections'
  * a slot and this file goes.
  */
 
-/** The sibling pages, as `LegislationShell` lists them. */
+/** The sibling pages, as `LegislationShell` lists them (Acte, Monitorul Oficial and Ghid retired, 27 November 2026). */
 function pages() {
   return [
     { id: 'cauta', label: t`Caută`, to: '/legislation/search' },
-    { id: 'acte', label: t`Acte`, to: '/legislation/acts' },
     { id: 'analiza', label: t`Analiză`, to: '/legislation/analytics' },
     { id: 'modificari', label: t`Modificări`, to: '/legislation/changes' },
-    { id: 'monitorul', label: t`Monitorul Oficial`, to: '/legislation/gazette' },
-    { id: 'ghid', label: t`Ghid`, to: '/legislation/guide' },
   ] as const
 }
 

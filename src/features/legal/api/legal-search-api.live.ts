@@ -94,7 +94,7 @@ const str = (value: unknown): string | null =>
   typeof value === 'string' && value.length > 0 ? value : null
 
 /** A name with something in it, trimmed: a blank `den` gives way to the title. */
-const nonblank = (value: unknown): string | null => {
+export const nonblank = (value: unknown): string | null => {
   const text = typeof value === 'string' ? value.trim() : ''
   return text.length > 0 ? text : null
 }

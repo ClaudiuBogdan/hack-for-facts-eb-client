@@ -56,6 +56,8 @@ describe('ActReferencesBand', () => {
     render(<ActReferencesBand group={legalActDetailRichFixture.inLinks} direction="in" />)
     fireEvent.click(screen.getByRole('button', { name: /Cine îl citează/ }))
     expect(screen.getByText(/Se afișează 1 din 2[.,]621/)).toBeInTheDocument()
+    // and promises no list from the retired act directory (Codex review, 27 November 2026)
+    expect(screen.queryByText(/directorul de acte/)).toBeNull()
     // A cluster match is not a firm link.
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })

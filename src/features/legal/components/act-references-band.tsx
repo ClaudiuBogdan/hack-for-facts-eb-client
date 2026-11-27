@@ -114,14 +114,10 @@ export function ActReferencesBand({ group, direction, available = true }: Props)
           {group.totalCount !== null ? (
             <Trans>
               Se afișează {formatLegalNumber(shownCount, i18n.locale)} din{' '}
-              {formatLegalNumber(group.totalCount, i18n.locale)}. Lista completă
-              apare odată cu directorul de acte.
+              {formatLegalNumber(group.totalCount, i18n.locale)}.
             </Trans>
           ) : (
-            <Trans>
-              Se afișează primele {formatLegalNumber(shownCount, i18n.locale)}.
-              Lista completă apare odată cu directorul de acte.
-            </Trans>
+            <Trans>Se afișează primele {formatLegalNumber(shownCount, i18n.locale)}.</Trans>
           )}
         </p>
       ) : null}

@@ -84,18 +84,6 @@ export const LEGAL_EVENT_KINDS = [
 export const LEGAL_EVENT_SOURCES = ['portal', 'monitorul-oficial'] as const
 
 /**
- * The fields the acts directory filters by: the server's filter
- * (`legalActsBrowseFilterSchema` in `legal.ts`) and the directory's URL state
- * below are both built from it. A function, so nothing is built until called.
- */
-export const legalActsBrowseFilterShape = () => ({
-  actType: z.string().optional(),
-  year: z.number().int().optional(),
-  status: z.enum(LEGAL_ACT_STATUSES).optional(),
-  domain: z.enum(LEGAL_DOMAIN_SLUGS).optional(),
-})
-
-/**
  * Act page search params (`/legislation/acts/$actId` — the text lives ON the
  * act page; the old `/text` sibling 301-redirects here).
  *  - `doc` — read a specific (non-canonical) expression instead of the act's
@@ -132,35 +120,6 @@ export const legalReaderSearchSchema = lazySchema(() =>
     ),
 )
 export type LegalReaderSearch = LazyOutput<typeof legalReaderSearchSchema>
-
-/**
- * The directory's URL state. `status` additionally admits the sentinel
- * `'toate'`: an absent status DEFAULTS to `in-vigoare` (law in force is what
- * people mean by "the acts"), so "no status filter" must be a stated choice
- * in the URL, never the silent fallback.
- */
-export const legalActsBrowseSearchSchema = lazySchema(() =>
-  z.object(legalActsBrowseFilterShape()).extend({
-    status: z.enum(LEGAL_ACT_STATUSES).or(z.literal('toate')).optional(),
-  }),
-)
-export type LegalActsBrowseSearch = LazyOutput<typeof legalActsBrowseSearchSchema>
-
-/**
- * URL state for `/legislation/gazette` — filters plus the server's own page
- * number, so a filtered page is a shareable link. `.catch(undefined)` drops a
- * malformed param to its default instead of erroring the route; the year's
- * corpus bounds are enforced by the component (the valid range is a measured
- * constant in `legal-coverage.ts`, which schemas do not import).
- */
-export const gazetteBrowseSearchSchema = lazySchema(() =>
-  z.object({
-    year: z.number().int().optional().catch(undefined),
-    part: z.enum(GAZETTE_PART_CODES).optional().catch(undefined),
-    page: z.number().int().min(1).optional().catch(undefined),
-  }),
-)
-export type GazetteBrowseSearch = LazyOutput<typeof gazetteBrowseSearchSchema>
 
 /**
  * A calendar-valid `YYYY-MM-DD`. The round-trip guards V8's lenient parse:

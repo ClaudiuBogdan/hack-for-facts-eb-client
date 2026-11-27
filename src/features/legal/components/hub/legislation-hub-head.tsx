@@ -159,11 +159,6 @@ export function HubHeadActs({ ranking, onRanking }: { readonly ranking: HubRanki
           ))}
         </ol>
       )}
-      <noscript>
-        <a href="/legislation/acts?status=toate" className={LEADERS_MORE_CLASS}>
-          {t`Clasamentul se încarcă cu JavaScript. Toate actele, în director`} →
-        </a>
-      </noscript>
       <Link to="/legislation/analytics" search={analysisSearch({ ordine: cited ? 'citari' : 'modificari' })} hash="acte" className={LEADERS_MORE_CLASS}>
         {cited ? <Trans>Toate actele, după citări</Trans> : <Trans>Toate actele, după modificări</Trans>} →
       </Link>
@@ -251,7 +246,7 @@ export function HubFiguresBand() {
         head,
       ),
       link: (label, className) => (
-        <Link to="/legislation/acts" search={{ status: 'toate' }} className={className}>
+        <Link to="/legislation/search" search={{ historical: true }} className={className}>
           {label}
         </Link>
       ),
@@ -269,7 +264,7 @@ export function HubFiguresBand() {
         summary,
       ),
       link: (label, className) => (
-        <Link to="/legislation/acts" search={{ status: 'toate' }} className={className}>
+        <Link to="/legislation/search" search={{ historical: true }} className={className}>
           {label}
         </Link>
       ),
