@@ -5,20 +5,17 @@ import { useLingui } from '@lingui/react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { fetchRecentChangesCount, fetchRecentChangesPage } from '../../api/legal-changes-api'
-import { fetchGazetteIssuesPage } from '../../api/legal-gazette-api'
-import { useLegislationFreshness } from '../../hooks/use-legislation'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import { fmt, pctOf } from '../../lib/analytics-format'
 import { GROUP_LABEL, labelOf } from '../../lib/analytics-labels'
 import { readingSentence } from '../../lib/analytics-notes-text'
 import { labelOfKey } from '../../lib/analytics-view'
 import { formatLegalDate, localIsoDate } from '../../lib/legal-format'
-import { legalEventKindLabel, legalGazettePartLabel } from '../../lib/legal-vocabulary'
+import { legalEventKindLabel } from '../../lib/legal-vocabulary'
 import { StackedYears } from '../analytics/analytics-charts'
 import {
   CHANGES_SHOWN,
   CHANGES_WINDOW_DAYS,
-  GAZETTE_SHOWN,
   ISSUERS_SHOWN,
   LEGAL_HUB_SERVER_READS,
   LINK_KINDS,
@@ -39,7 +36,7 @@ import { Band, BandNote, BarRows, CAPTION_CLASS, Figure, MORE_LINK_CLASS, Pendin
  *
  * Each reads through the feature's own hooks and modules, keeps a skeleton its own size while it loads, and
  * says in one line when its read failed; the rest of the page stays. The summary, the issuers and the years
- * arrive rendered by the server; the changes, the links and the gazette are read in the browser.
+ * arrive rendered by the server; the changes and the links are read in the browser.
  */
 
 /** A day as a list writes it („25 sept. 2026"): the source's civil date, never the viewer's timezone. */
@@ -234,9 +231,6 @@ export function FelulBand() {
       <div className="flex flex-wrap gap-x-6">
         <Link to="/legislation/analytics" search={analysisSearch({ vedere: 'felul' })} className={MORE_LINK_CLASS}>
           <Trans>Deschide în analiză, după felul actului</Trans> →
-        </Link>
-        <Link to="/legislation/guide" className={MORE_LINK_CLASS}>
-          <Trans>Ghidul legislației: cum citești corect aceste date</Trans> →
         </Link>
       </div>
     </Band>
@@ -500,88 +494,6 @@ export function LinksBand() {
       )}
       <Link to="/legislation/analytics" search={analysisSearch({ vedere: 'legaturi' })} className={MORE_LINK_CLASS}>
         <Trans>Deschide în analiză, legăturile</Trans> →
-      </Link>
-    </Band>
-  )
-}
-
-// ───────────────────────────────────────────────────── gazette ──
-
-/**
- * The newest Monitorul Oficial issues. The server browses the gazette a year at a time, so the year is the
- * newest issue's (the freshness read the page already makes), or the clock's when that read failed. The section
- * says an issue exists, its part and its day: nothing about its text, and nothing about when its acts take
- * effect (an act can name a later date).
- */
-export function GazetteBand() {
-  const { i18n } = useLingui()
-  const freshness = useLegislationFreshness()
-  const latest = freshness.data?.latestIssueDate ?? null
-  const year = latest !== null ? Number(latest.slice(0, 4)) : freshness.isPending ? null : Number(localIsoDate().slice(0, 4))
-  const issues = useQuery({
-    queryKey: ['legal', 'landing', 'gazette', year] as const,
-    queryFn: ({ signal }) => {
-      if (year === null) throw new Error('unreachable: query disabled')
-      return fetchGazetteIssuesPage({ year }, { pageSize: GAZETTE_SHOWN, signal })
-    },
-    enabled: year !== null,
-    staleTime: 5 * 60 * 1000,
-  })
-  const rows = issues.data?.items ?? []
-  const total = issues.data?.total ?? null
-  const newest = rows[0]?.issueDate ?? null
-  return (
-    <Band
-      id="monitor"
-      title={<Trans>Numerele Monitorului Oficial</Trans>}
-      lede={
-        issues.data && total !== null && total > 0 && year !== null ? (
-          <>
-            <Figure>{fmt(total)}</Figure> {plural(total, { one: `număr apărut în ${year}`, few: `numere apărute în ${year}`, other: `de numere apărute în ${year}` })}
-            {newest ? (
-              <>
-                , <Trans>cel mai recent pe {formatLegalDate(newest, i18n.locale)}</Trans>
-              </>
-            ) : null}
-            .
-          </>
-        ) : issues.error || issues.data ? (
-          <Trans>Numerele Monitorului Oficial din date: dovada publicării actelor.</Trans>
-        ) : (
-          <PendingBar className="w-4/5" />
-        )
-      }
-      infoLabel={t`Despre Monitorul Oficial`}
-      info={<p>{t`Numerele din date, toate părțile. Un număr arată când a fost publicat un act.`}</p>}
-    >
-      {issues.error ? (
-        <BandNote error={issues.error} onRetry={() => void issues.refetch()} />
-      ) : issues.data ? (
-        <div data-testid="legal-hub-gazette">
-          <TwoColumns
-            items={rows}
-            render={(part) => (
-              <ol className={LIST_CLASS}>
-                {part.map((issue) => (
-                  <li key={issue.moIssueId} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 py-2">
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium tabular-nums text-foreground">
-                        <Trans>Nr. {issue.issueLabel}</Trans>
-                      </span>
-                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">{legalGazettePartLabel(issue.partCode)}</span>
-                    </span>
-                    <span className="text-sm tabular-nums text-muted-foreground">{issue.issueDate ? shortDay(issue.issueDate, i18n.locale) : issue.issueYear}</span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          />
-        </div>
-      ) : (
-        <PendingRows rows={GAZETTE_SHOWN / 2} />
-      )}
-      <Link to="/legislation/gazette" className={MORE_LINK_CLASS}>
-        <Trans>Toate numerele</Trans> →
       </Link>
     </Band>
   )

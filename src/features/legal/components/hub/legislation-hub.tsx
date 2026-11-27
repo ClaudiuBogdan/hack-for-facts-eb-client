@@ -15,7 +15,7 @@ import { useLegislationFreshness } from '../../hooks/use-legislation'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import { formatLegalDate } from '../../lib/legal-format'
 import { AnalyticsProblem } from '../analytics/analytics-notes'
-import { ChangesBand, FelulBand, GazetteBand, IssuersBand, LinksBand, YearsBand } from './legislation-hub-bands'
+import { ChangesBand, FelulBand, IssuersBand, LinksBand, YearsBand } from './legislation-hub-bands'
 import { LegalSectionHead, LegalSectionNav } from './legislation-hub-chrome'
 import { HubFiguresBand, HubHeadActs, HubHeadSearch, HubHeadSources } from './legislation-hub-head'
 import {
@@ -38,9 +38,10 @@ import {
  * - The head: the way home, the title, the site's search scoped to legislation with one row of shortcuts, and
  *   the five leading acts in the hubs' leaders' card. Its sources are their names alone.
  * - The pinned bar without running numbers (`LegalSectionNav`), then four figures in their own band.
- * - Six bands, each a summary with the link to the page that holds the rest: what changed, what the acts do,
- *   who issues them, the acts year by year, how they link, what appeared in Monitorul Oficial.
- * - Six places to start, how the Felul reading is to be read, and the full sources line.
+ * - Five bands, each a summary with the link to the page that holds the rest: what changed, what the acts do,
+ *   who issues them, the acts year by year, how they link (the Monitorul Oficial band retired with its page, owner,
+ *   27 November 2026).
+ * - Five places to start, how the Felul reading is to be read, and the full sources line.
  *
  * Type as the site's landing sets it: the headline's tracking, word spacing and leading; the lede's normal
  * tracking; round commas (`ss03`); words in Inter in their own casing, mono capitals only on short labels.
@@ -136,12 +137,13 @@ export function LegislationHub({
               </div>
               {/* The landing's shortcut row: the label is a sentence that runs into the links, so it is set in
                   their voice and shares their baseline; on a phone it has its own line and each shortcut is a
-                  44px row. Four short names, so a phone keeps them on one line. */}
+                  44px row. Three short names, so a phone keeps them on one line. „Acte" is the search for the acts in
+                  force: the Acte page retired into it (owner, 27 November 2026). */}
               <nav aria-label={t`Scurtături`} className="mt-4 flex flex-wrap items-baseline gap-x-4 sm:gap-x-5 sm:gap-y-1.5">
                 <span className="basis-full text-sm text-muted-foreground sm:basis-auto">
                   <Trans>Sau mergi direct la</Trans>
                 </span>
-                <Link to="/legislation/acts" search={{ status: 'toate' }} preload="intent" className={SHORTCUT_LINK_CLASS}>
+                <Link to="/legislation/search" search={{ stare: 'in-vigoare' }} preload="intent" className={SHORTCUT_LINK_CLASS}>
                   <Trans>Acte</Trans>
                 </Link>
                 <Link to="/legislation/analytics" preload="intent" className={SHORTCUT_LINK_CLASS}>
@@ -149,9 +151,6 @@ export function LegislationHub({
                 </Link>
                 <Link to="/legislation/changes" preload="intent" className={SHORTCUT_LINK_CLASS}>
                   <Trans>Modificări</Trans>
-                </Link>
-                <Link to="/legislation/gazette" preload="intent" className={SHORTCUT_LINK_CLASS}>
-                  <Trans>Monitorul Oficial</Trans>
                 </Link>
               </nav>
             </div>
@@ -190,7 +189,6 @@ export function LegislationHub({
       <IssuersBand />
       <YearsBand />
       <LinksBand />
-      <GazetteBand />
 
       <section aria-labelledby="legal-hub-start-title" className="border-b">
         <RuledFrame className="py-14 sm:py-20">
@@ -230,9 +228,9 @@ function useOneLayer(ranking: HubRanking) {
 // ───────────────────────────────────────────────────── start cards ──
 
 /**
- * Six places to start, each its name and its count (owner, 25 November 2026, as the companies hub's): four
- * questions the analysis page answers as they are (each address written by the page's own writer), the acts
- * directory and the guide. A count keeps its unit and its population, from an answer the page already holds;
+ * Five places to start, each its name and its count (owner, 25 November 2026, as the companies hub's): four
+ * questions the analysis page answers as they are (each address written by the page's own writer), and every act
+ * in the search's list (the guide's card retired with its page, 27 November 2026). A count keeps its unit and its population, from an answer the page already holds;
  * without the answer the card is its name alone.
  */
 function StartCards() {
@@ -281,20 +279,14 @@ function StartCards() {
           </Link>
         )}
       />
+      {/* Every act, repealed ones too: the search's list under „Toate" (the Acte page retired into it, owner,
+          27 November 2026). The guide's card went with its page. */}
       <StartCard
-        title={<Trans>Directorul actelor</Trans>}
+        wide
+        title={<Trans>Toate actele</Trans>}
         count={head ? plural(head.total, { one: '# act publicat', few: '# acte publicate', other: '# de acte publicate' }) : null}
         link={(children, className) => (
-          <Link to="/legislation/acts" search={{ status: 'toate' }} className={className}>
-            {children}
-          </Link>
-        )}
-      />
-      <StartCard
-        title={<Trans>Ghidul legislației</Trans>}
-        count={null}
-        link={(children, className) => (
-          <Link to="/legislation/guide" className={className}>
+          <Link to="/legislation/search" search={{ historical: true }} className={className}>
             {children}
           </Link>
         )}
@@ -308,13 +300,16 @@ function StartCard({
   title,
   count,
   link,
+  wide = false,
 }: {
   readonly title: ReactNode
   readonly count: ReactNode
   readonly link: (children: ReactNode, className: string) => ReactNode
+  /** Spans the rest of its row: the last of five cards, so neither two nor three columns leave an empty cell. */
+  readonly wide?: boolean
 }) {
   return (
-    <li>
+    <li className={wide ? 'sm:col-span-2' : undefined}>
       {link(
         <>
           <span className="block pr-6 text-base font-semibold tracking-tight text-foreground">{title}</span>

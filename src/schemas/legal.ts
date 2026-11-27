@@ -6,21 +6,16 @@ import {
   LEGAL_DOMAIN_SLUGS,
   LEGAL_EVENT_KINDS,
   LEGAL_EVENT_SOURCES,
-  legalActsBrowseFilterShape,
 } from './legal-search'
 
 // The routes' URL contract (search params), lazy and apart so the route tree
 // does not carry this module: `legal-search.ts`, re-exported here.
 export {
-  gazetteBrowseSearchSchema,
-  legalActsBrowseSearchSchema,
   legalChangesSearchSchema,
   legalFinderSearchSchema,
   legalReaderSearchSchema,
 } from './legal-search'
 export type {
-  GazetteBrowseSearch,
-  LegalActsBrowseSearch,
   LegalChangesSearch,
   LegalFinderSearch,
   LegalReaderSearch,
@@ -526,15 +521,13 @@ export type LegalActDetail = z.infer<typeof legalActDetailSchema>
  * is a page size — different resolvers, different honesty).
  */
 export const legalActsPageSchema = z.object({
-  items: z.array(legalActListItemSchema),
+  // `name`: the Portal's name of the act's canonical document, read where the citation names nothing („Doc nr."), as
+  // the search's hits carry it (Codex review, 27 November 2026).
+  items: z.array(legalActListItemSchema.extend({ name: z.string().nullable() })),
   endCursor: z.string().nullable(),
   totalCount: z.number().int().nullable(),
 })
 export type LegalActsPage = z.infer<typeof legalActsPageSchema>
-
-/** Filters the directory sends to the server — verified filter families. */
-export const legalActsBrowseFilterSchema = z.object(legalActsBrowseFilterShape())
-export type LegalActsBrowseFilter = z.infer<typeof legalActsBrowseFilterSchema>
 
 /** `MoPartCode` — the eight gazette parts the server serves (`GAZETTE_PART_CODES`). */
 export const gazettePartCodeSchema = z.enum(GAZETTE_PART_CODES)

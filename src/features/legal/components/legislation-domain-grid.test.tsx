@@ -64,10 +64,9 @@ describe('LegislationDomainGrid', () => {
         name: new RegExp(`^${label}`),
       })
       expect(within(cell).getByText(formatted)).toBeInTheDocument()
-      expect(cell).toHaveAttribute(
-        'data-search',
-        JSON.stringify({ domain: slug }),
-      )
+      // the search's list of that domain's acts in force: the Acte page retired into it (27 November 2026)
+      expect(cell).toHaveAttribute('href', '/legislation/search')
+      expect(cell).toHaveAttribute('data-search', JSON.stringify({ domeniu: slug, stare: 'in-vigoare' }))
     }
   })
 

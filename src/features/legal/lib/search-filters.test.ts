@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { legalFinderSearchSchema } from '@/schemas/legal-search'
 import { LEGAL_DOMAIN_SLUGS } from './legal-domains'
 import {
+  LIVE_STATUSES,
   NO_SEARCH_FILTERS,
+  browseFilter,
+  searchOfActsDirectory,
   activeFilterCount,
   isSearchFiltered,
   portalNameCase,
@@ -136,5 +139,58 @@ describe('the address through the route schema', () => {
     const parsed = legalFinderSearchSchema.parse({ q: 'codul muncii', domeniu })
     expect(parsed.domeniu).toBe(domeniu)
     expect(readSearchFilters(parsed).domeniu).toHaveLength(16)
+  })
+})
+
+describe('browseFilter (the act list with no term, owner 27 November 2026)', () => {
+  it('keeps the live statuses when the reader chose none, as the search without „include istorice" does', () => {
+    expect(browseFilter({ ...NO_SEARCH_FILTERS, tip: ['lege'] })).toEqual({
+      actType: ['lege'],
+      status: ['in-vigoare', 'modificat', 'abrogat-partial', 'suspendat', 'necunoscut'],
+    })
+    expect(LIVE_STATUSES).toEqual(['in-vigoare', 'modificat', 'abrogat-partial', 'suspendat', 'necunoscut'])
+  })
+
+  it('sets no status for „Toate" and the named one when chosen', () => {
+    expect(browseFilter({ ...NO_SEARCH_FILTERS, stare: 'toate', tip: ['lege'] })).toEqual({ actType: ['lege'] })
+    expect(browseFilter({ ...NO_SEARCH_FILTERS, stare: 'abrogat' })).toEqual({ status: ['abrogat'] })
+  })
+
+  it('passes the years and the summary filters through as the search takes them', () => {
+    const filters = { ...NO_SEARCH_FILTERS, stare: 'toate' as const, from: 2020, to: 2024, domeniu: ['sanatate'], categorie: ['tratat'], sanctiuni: true }
+    expect(browseFilter(filters)).toEqual(searchArgs(filters).filter)
+  })
+})
+
+describe('searchOfActsDirectory (the retired Acte page’s links, owner 27 November 2026)', () => {
+  it('reads a bare link as the old page’s default: the acts in force', () => {
+    expect(searchOfActsDirectory({})).toEqual({ stare: 'in-vigoare' })
+  })
+
+  it('reads „toate" as every act, repealed ones too', () => {
+    expect(searchOfActsDirectory({ status: 'toate' })).toEqual({ historical: true })
+  })
+
+  it('carries the type, the year, the domain and a named status over in the search’s keys', () => {
+    expect(searchOfActsDirectory({ actType: 'lege', year: 2020, domain: 'sanatate', status: 'abrogat' })).toEqual({
+      tip: 'lege',
+      an: '2020',
+      domeniu: 'sanatate',
+      stare: 'abrogat',
+    })
+  })
+
+  it('drops a type the search does not know, and keeps the acts in force', () => {
+    expect(searchOfActsDirectory({ actType: 'anexa' })).toEqual({ stare: 'in-vigoare' })
+  })
+
+  it('reads only a four-digit year, as the old page did (Codex review, round 1)', () => {
+    expect(searchOfActsDirectory({ year: '-2020' })).toEqual({ stare: 'in-vigoare' })
+    expect(searchOfActsDirectory({ year: '20202021' })).toEqual({ stare: 'in-vigoare' })
+    expect(searchOfActsDirectory({ year: '2020' })).toEqual({ an: '2020', stare: 'in-vigoare' })
+  })
+
+  it('keeps the address’s language', () => {
+    expect(searchOfActsDirectory({ lang: 'en', status: 'abrogat' })).toEqual({ lang: 'en', stare: 'abrogat' })
   })
 })

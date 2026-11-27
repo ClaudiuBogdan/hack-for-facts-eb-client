@@ -18,17 +18,15 @@ import { PROTOTYPE_MARKER } from './landing.lib'
 type Sibling = {
   readonly key: string
   readonly label: string
-  readonly to: '/legislation/search' | '/legislation/acts' | '/legislation/analytics' | '/legislation/changes' | '/legislation/gazette' | '/legislation/guide'
+  readonly to: '/legislation/search' | '/legislation/analytics' | '/legislation/changes'
 }
 
+/** The section's pages since the owner retired Acte, Monitorul Oficial and Ghid (27 November 2026). */
 function siblings(): readonly Sibling[] {
   return [
     { key: 'cauta', label: t`Caută`, to: '/legislation/search' },
-    { key: 'acte', label: t`Acte`, to: '/legislation/acts' },
     { key: 'analiza', label: t`Analiză`, to: '/legislation/analytics' },
     { key: 'modificari', label: t`Modificări`, to: '/legislation/changes' },
-    { key: 'monitor', label: t`Monitorul Oficial`, to: '/legislation/gazette' },
-    { key: 'ghid', label: t`Ghid`, to: '/legislation/guide' },
   ]
 }
 
