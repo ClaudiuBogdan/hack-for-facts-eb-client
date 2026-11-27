@@ -39,6 +39,24 @@ export function HubHeadSearch() {
       placeholder={t`Nume sau nr…`}
       autoFocus={!isMobile && !hash}
       scrollToTopOnFocus={isMobile}
+      // This search reads names and numbers only: the words go on to the advanced search, which also reads the laws'
+      // text. As the list's last row under an answer, and beside the sentence when there is none (owner, 27 November
+      // 2026, chosen from a picture of three).
+      more={{
+        link: (term) => ({ to: '/legislation/search', search: { q: term } }),
+        label: t`Căutare avansată`,
+        row: (term) => (
+          <Trans>
+            Caută „{term}” în <span className="font-medium text-primary underline decoration-primary/30 underline-offset-4">căutarea avansată</span>
+          </Trans>
+        ),
+        empty: (term) => (
+          <Trans>
+            Niciun act pentru <strong className="font-medium text-foreground">{term}</strong>.{' '}
+            <span className="text-muted-foreground/70">Aici se caută după nume și număr.</span>
+          </Trans>
+        ),
+      }}
     />
   )
 }

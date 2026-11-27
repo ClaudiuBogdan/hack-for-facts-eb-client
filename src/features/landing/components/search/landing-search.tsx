@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { KeyboardEvent, RefObject } from 'react'
-import { Link } from '@tanstack/react-router'
+import type { KeyboardEvent, ReactNode, RefObject } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
 import type { BaseUIEvent } from '@base-ui/react/types'
-import { Loader2, Search, X } from 'lucide-react'
+import { ArrowRight, Loader2, Search, SearchX, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { t } from '@lingui/core/macro'
@@ -94,17 +94,40 @@ import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
  * broke silently when its internals moved.
  */
 
-/** What the list can hold: a filter to accept, or an entity to open. */
-type ListItem = SearchFilter | EntitySearchHit
+/**
+ * The way on from this search to a fuller one, with the words typed (the legislation hub's advanced search; owner,
+ * 27 November 2026). The caller's, copy and all: this component owns no words for it.
+ */
+export type SearchMore = {
+  /** Where the words are searched further. */
+  readonly link: (term: string) => { readonly to: string; readonly search: Record<string, unknown> }
+  /** The button's name with no answer, and the row's name for assistive tech. */
+  readonly label: string
+  /** Under an answer: the list's last row. */
+  readonly row: (term: string) => ReactNode
+  /** With no answer: the sentence beside the button. */
+  readonly empty: (term: string) => ReactNode
+}
+
+/** The way on, as a row of the list: reached by the arrows and Enter like any other. */
+type MoreItem = { readonly moreTerm: string }
+
+/** What the list can hold: a filter to accept, an entity to open, or the way on. */
+type ListItem = SearchFilter | EntitySearchHit | MoreItem
 type ListGroup =
   | { readonly value: 'filters'; readonly items: readonly SearchFilter[] }
   | { readonly value: 'results'; readonly items: readonly EntitySearchHit[] }
+  | { readonly value: 'more'; readonly items: readonly MoreItem[] }
 
 function isFilterItem(item: ListItem | undefined): item is SearchFilter {
   return item !== undefined && 'triggers' in item
 }
 
-function SearchStatusView({ status, scope }: { readonly status: SearchStatus; readonly scope: string }) {
+function isMoreItem(item: ListItem | undefined): item is MoreItem {
+  return item !== undefined && 'moreTerm' in item
+}
+
+function SearchStatusView({ status, scope, more = false }: { readonly status: SearchStatus; readonly scope: string; readonly more?: boolean }) {
   switch (status.kind) {
     case 'scoped':
       return (
@@ -162,6 +185,8 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
       )
 
     case 'empty':
+      // With a way on, the empty answer is said by its row in the list (the sentence beside the button).
+      if (more) return null
       return (
         <Message>
           <Trans>
@@ -206,6 +231,7 @@ export function LandingSearch({
   fixedScope,
   hrefOf,
   handover,
+  more,
 }: {
   readonly className?: string
   /**
@@ -250,6 +276,8 @@ export function LandingSearch({
    * keyboard brought it — is taken back at mount. Read at mount only.
    */
   readonly handover?: SearchHandover
+  /** A way on to a fuller search, as the list's last row and, with no answer, beside the sentence. None without it. */
+  readonly more?: SearchMore
 }) {
   const { i18n } = useLingui()
   const placeholder = placeholderProp ?? t`Caută primării, firme, legi…`
@@ -257,6 +285,7 @@ export function LandingSearch({
     term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, isRankingUats,
   } = useSearchResults({ docTypes, entityTags, roles, suggestions: fixedScope === undefined, initialTerm: handover?.term })
   const commit = useEntitySelection({ onSelect })
+  const navigate = useNavigate()
 
   const [isOpen, setIsOpen] = useState(false)
   // Whether focus reached the input from the keyboard. The browser cannot say:
@@ -347,9 +376,14 @@ export function LandingSearch({
 
   // Two groups, each present only when it has rows. Suggestions first: they
   // change what the rows below mean, so they are read before the rows are.
+  // The way on, last: under an answer, or alone when there is none. Only for words the search has answered.
+  const moreTerm = term.trim()
+  const moreItem: MoreItem | null =
+    more !== undefined && moreTerm !== '' && (status.kind === 'results' || status.kind === 'empty') ? { moreTerm } : null
   const groups: readonly ListGroup[] = [
     ...(suggestions.length > 0 ? [{ value: 'filters', items: suggestions } as const] : []),
     ...(visibleResults.length > 0 ? [{ value: 'results', items: visibleResults } as const] : []),
+    ...(moreItem !== null ? [{ value: 'more', items: [moreItem] } as const] : []),
   ]
 
   /**
@@ -408,7 +442,7 @@ export function LandingSearch({
         // arrives with nothing open, so the input handler below clears.
         if (details.reason === 'escape-key' && !isDropdownOpen) reset()
       }}
-      itemToStringValue={(item: ListItem) => (isFilterItem(item) ? i18n._(item.label) : item.title)}
+      itemToStringValue={(item: ListItem) => (isFilterItem(item) ? i18n._(item.label) : isMoreItem(item) ? item.moreTerm : item.title)}
       onItemHighlighted={(item) => {
         highlightedRef.current = item
       }}
@@ -559,7 +593,16 @@ export function LandingSearch({
               // rather than a side effect of results arriving.
               if (!isCurrent) return
               const top = results[0]
-              if (!top) return
+              if (!top) {
+                // No answer: Enter takes the words on to the fuller search, where there is one.
+                if (more === undefined || moreItem === null) return
+                event.preventDefault()
+                const target = more.link(moreItem.moreTerm)
+                void navigate({ to: target.to as '/', search: target.search as never })
+                reset()
+                setIsOpen(false)
+                return
+              }
               const first = pointed(top)
               // The first row is the answer to what was typed (an exact CUI comes
               // first); one no page holds opens nothing, and the list stays open on it
@@ -695,7 +738,53 @@ export function LandingSearch({
               >
                 {(group: ListGroup) => (
                   <Autocomplete.Group key={group.value} items={group.items}>
-                    {group.value === 'filters' ? (
+                    {group.value === 'more' ? (
+                      more === undefined ? null : (
+                        <>
+                          <Autocomplete.GroupLabel className="sr-only">{more.label}</Autocomplete.GroupLabel>
+                          <Autocomplete.Collection>
+                            {(item: MoreItem) => {
+                              const target = more.link(item.moreTerm)
+                              const alone = visibleResults.length === 0
+                              return (
+                                <Autocomplete.Item
+                                  key="more"
+                                  value={item}
+                                  data-search-more={alone ? 'empty' : 'row'}
+                                  className={cn(
+                                    'flex cursor-pointer items-center gap-3 px-4 text-sm data-highlighted:bg-muted',
+                                    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+                                    alone ? 'flex-wrap py-3.5 sm:flex-nowrap' : 'border-t py-3',
+                                  )}
+                                  onClick={() => {
+                                    reset()
+                                    setIsOpen(false)
+                                  }}
+                                  render={<Link to={target.to as '/'} search={target.search as never} preload={false} />}
+                                >
+                                  {alone ? (
+                                    <>
+                                      <SearchX className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+                                      <span className="min-w-0 flex-1 leading-6 text-muted-foreground">{more.empty(item.moreTerm)}</span>
+                                      {/* Looks like a button; the whole row is the one option and the one link. */}
+                                      <span className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md border bg-background px-3.5 font-medium text-foreground sm:h-10 sm:w-auto">
+                                        {more.label}
+                                        <ArrowRight className="size-4" aria-hidden />
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                                      <span className="min-w-0 flex-1">{more.row(item.moreTerm)}</span>
+                                    </>
+                                  )}
+                                </Autocomplete.Item>
+                              )
+                            }}
+                          </Autocomplete.Collection>
+                        </>
+                      )
+                    ) : group.value === 'filters' ? (
                       <>
                         <Autocomplete.GroupLabel className="sr-only">
                           <Trans>Filtre sugerate</Trans>
@@ -763,7 +852,7 @@ export function LandingSearch({
                 )}
               </Autocomplete.List>
 
-              <SearchStatusView status={status} scope={scope} />
+              <SearchStatusView status={status} scope={scope} more={moreItem !== null} />
             </div>
           </Autocomplete.Popup>
         </Autocomplete.Positioner>

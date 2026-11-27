@@ -926,3 +926,72 @@ it('accepts an INS keyword chip and renders a matrix code linked to its detail p
   expect(screen.getByRole('option')).toHaveTextContent('POP107D')
   expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: ['ins_dataset'], limit: 8 }, expect.any(AbortSignal))
 })
+
+describe('LandingSearch — the way on to a fuller search (the legislation hub, owner 27 November 2026)', () => {
+  const more = {
+    link: (term: string) => ({ to: '/legislation/search', search: { q: term } }),
+    label: 'Căutare avansată',
+    row: (term: string) => `Caută „${term}” în căutarea avansată`,
+    empty: (term: string) => `Niciun act pentru ${term}.`,
+  }
+
+  beforeEach(() => {
+    navigate.mockReset()
+    searchEntities.mockReset()
+    searchEntities.mockResolvedValue(response([IASI, CLUJ]))
+  })
+
+  it('adds nothing without the prop: no row after an answer, the plain empty sentence, and Enter on no answer stays', async () => {
+    const { user, input } = setup()
+    await typeAndWait(user, 'iasi')
+    expect(screen.getAllByRole('option')).toHaveLength(2)
+    expect(document.querySelector('[data-search-more]')).toBeNull()
+    expect(screen.queryByText(/căutarea avansată/)).toBeNull()
+    searchEntities.mockResolvedValue(response([]))
+    await user.clear(input)
+    await user.type(input, 'qqxzzv')
+    await waitFor(() => expect(screen.getByText(/Niciun rezultat pentru/i)).toBeInTheDocument())
+    expect(screen.queryAllByRole('option')).toHaveLength(0)
+    await user.keyboard('{Enter}')
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it('ends an answer with the way on, as the last option, reached by the arrows, with the words typed', async () => {
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = await typeAndWait(user, 'legea 98')
+    const options = screen.getAllByRole('option')
+    expect(options).toHaveLength(3)
+    const last = options[2]
+    expect(last).toHaveAttribute('data-search-more', 'row')
+    expect(last).toHaveTextContent('Caută „legea 98” în căutarea avansată')
+    expect(last).toHaveAttribute('href', '/legislation/search')
+    // the arrows reach it like any row
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}')
+    expect(input.getAttribute('aria-activedescendant')).toBe(last?.id)
+    // Enter with nothing highlighted still opens the first result, as before
+    await user.keyboard('{ArrowUp}{ArrowUp}{ArrowUp}{ArrowUp}')
+    expect(input.getAttribute('aria-activedescendant')).toBeFalsy()
+    await user.keyboard('{Enter}')
+    expect(navigate).toHaveBeenCalledTimes(1)
+    expect(navigate).not.toHaveBeenCalledWith(expect.objectContaining({ to: '/legislation/search' }))
+  })
+
+  it('with no answer, says so beside the button, and Enter takes the words on', async () => {
+    searchEntities.mockResolvedValue(response([]))
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = screen.getByRole('combobox')
+    await user.click(input)
+    await user.type(input, 'achizitii publice')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
+    const row = screen.getByRole('option')
+    expect(row).toHaveAttribute('data-search-more', 'empty')
+    expect(row).toHaveTextContent('Niciun act pentru achizitii publice.')
+    expect(row).toHaveTextContent('Căutare avansată')
+    // said once: the row carries the empty answer, the generic sentence is not drawn under it
+    expect(screen.queryByText(/Niciun rezultat pentru/i)).toBeNull()
+    await user.keyboard('{Enter}')
+    expect(navigate).toHaveBeenCalledWith({ to: '/legislation/search', search: { q: 'achizitii publice' } })
+  })
+})
