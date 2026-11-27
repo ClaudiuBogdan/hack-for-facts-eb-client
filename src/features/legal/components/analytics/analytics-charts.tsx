@@ -162,14 +162,16 @@ export function StackedYears({
   const chartRef = useRef<HTMLDivElement>(null)
   // A tap elsewhere closes the tooltip: a touch keeps it open past the pointer's leaving, and a scroll can end a tap
   // before any column takes the focus that a blur would then take away (Codex review, round 1).
+  // Keyed on whether a tooltip is open, not on which year: moving across the columns does not re-add it (round 2).
+  const open = active !== null
   useEffect(() => {
-    if (active === null) return
+    if (!open) return
     const away = (event: PointerEvent) => {
       if (!chartRef.current?.contains(event.target as Node | null)) setActive(null)
     }
     document.addEventListener('pointerdown', away)
     return () => document.removeEventListener('pointerdown', away)
-  }, [active])
+  }, [open])
   const sumOf = (y: { readonly values: readonly number[] }) => y.values.reduce((s, v) => s + v, 0)
   const max = Math.max(1, ...years.map(sumOf))
   const index = active === null ? -1 : years.findIndex((y) => y.year === active)
@@ -218,7 +220,10 @@ export function StackedYears({
           }}
           onKeyDown={(event) => {
             // Escape puts the tooltip away, the focus staying on its year (Codex review, round 1).
-            if (event.key === 'Escape') setActive(null)
+            if (event.key !== 'Escape') return
+            setActive(null)
+            // nor said any more: a refresh of the figures would otherwise be announced for a tooltip put away (round 2)
+            setSpoken(null)
           }}
         >
           {years.map((y) => {

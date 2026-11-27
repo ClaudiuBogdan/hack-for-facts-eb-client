@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@/test/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { RankedTable, StackedYears } from './analytics-charts'
 
 const rows = [
@@ -105,5 +105,20 @@ describe('StackedYears — the hovered year in a tooltip (owner, 27 November 202
     expect(tip(container)?.querySelector('p')?.textContent).toContain('2023')
     fireEvent.keyDown(column(2023), { key: 'Escape' })
     expect(tip(container)).toBeNull()
+    // put away, and no longer said (Codex review, round 2)
+    expect(live(container)).toBe('')
+  })
+
+  it('listens for a tap elsewhere once while open, not again at every column crossed', () => {
+    const added = vi.spyOn(document, 'addEventListener')
+    try {
+      draw()
+      const taps = () => added.mock.calls.filter(([type]) => type === 'pointerdown').length
+      expect(taps()).toBe(0)
+      for (const year of [2018, 2019, 2020, 2021]) fireEvent.pointerEnter(column(year), { pointerType: 'mouse' })
+      expect(taps()).toBe(1)
+    } finally {
+      added.mockRestore()
+    }
   })
 })
