@@ -10,13 +10,21 @@ export function useActiveSection(ids: readonly string[]): string | null {
   const [active, setActive] = useState<string | null>(null)
   const key = ids.join(' ')
   useEffect(() => {
+    // Every section on the line, the first of them in page order the current one: two neighbours can both touch the
+    // line, and when one of them leaves the other is still there (a reversed scroll never leaves the bar unmarked).
+    const order = key.split(' ')
+    const onLine = new Set<string>()
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) setActive((was) => (entry.isIntersecting ? entry.target.id : was === entry.target.id ? null : was))
+        for (const entry of entries) {
+          if (entry.isIntersecting) onLine.add(entry.target.id)
+          else onLine.delete(entry.target.id)
+        }
+        setActive(order.find((id) => onLine.has(id)) ?? null)
       },
       { rootMargin: '-25% 0px -74% 0px' },
     )
-    for (const id of key.split(' ')) {
+    for (const id of order) {
       const element = document.getElementById(id)
       if (element) observer.observe(element)
     }
