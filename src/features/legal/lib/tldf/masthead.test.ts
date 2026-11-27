@@ -50,6 +50,16 @@ describe('splitMasthead', () => {
     expect(split.blocks.map((b) => b.id)).toEqual(['p', 'body-1'])
   })
 
+  it('reads the issue after „nr." only: a day equal to the number is no match, leading zeros are', () => {
+    const shown = { ...NONE_SHOWN, issueNumber: 5, issueYear: 2020 }
+    // issue 42, of the 5th: not the head's issue 5 (Codex review, 26 November 2026)
+    const other = [block('publicare', 'p', 'Publicat în MONITORUL OFICIAL nr. 42 din 5 februarie 2020'), block('articol', 'a1')]
+    expect(splitMasthead(other, shown).blocks.map((b) => b.id)).toEqual(['p', 'a1'])
+    // „nr. 005" is issue 5
+    const padded = [block('publicare', 'p', 'Publicat în MONITORUL OFICIAL nr. 005 din 7 ianuarie 2020'), block('articol', 'a1')]
+    expect(splitMasthead(padded, shown).blocks.map((b) => b.id)).toEqual(['a1'])
+  })
+
   it('matches separator-bearing MO numbers ("nr. 1.027")', () => {
     const late = [
       block('publicare', 'p', 'Publicat în MONITORUL OFICIAL nr. 1.027 din 27 decembrie 2016'),

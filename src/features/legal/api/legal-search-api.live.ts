@@ -47,8 +47,10 @@ const FINDER_SEARCH_QUERY = /* GraphQL */ `
       sections {
         act {
           actId
+          displayCitation
         }
         documentId
+        nodePath
         nodeLabel
         snippet
         servedForm {
@@ -204,7 +206,9 @@ export async function fetchLegalSearchLive(
           return [
             {
               actId,
+              actCitation: str(rec(raw.act).displayCitation),
               documentId,
+              nodePath: str(raw.nodePath),
               nodeLabel: str(raw.nodeLabel),
               snippet: str(raw.snippet),
               servedForm:

@@ -144,10 +144,14 @@ describe('legalFinderSearchSchema', () => {
     expect(legalFinderSearchSchema.parse({ q: 227 }).q).toBe('227')
   })
 
-  it('drops null/boolean q as junk, never as the literal text "null"', () => {
+  it('drops a null q as junk, never as the literal text "null"', () => {
     expect(legalFinderSearchSchema.parse({ q: null }).q).toBeUndefined()
-    expect(legalFinderSearchSchema.parse({ q: true }).q).toBeUndefined()
     expect(legalFinderSearchSchema.parse({ q: '' }).q).toBeUndefined()
+  })
+
+  it('keeps a boolean q as the word typed: only a native form sends it bare (astra-client-11)', () => {
+    expect(legalFinderSearchSchema.parse({ q: true }).q).toBe('true')
+    expect(legalFinderSearchSchema.parse({ q: false }).q).toBe('false')
   })
 
   it('drops an oversized q instead of erroring the route', () => {

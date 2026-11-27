@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, waitFor, within } from '@/test/test-utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { LandingSearch } from '@/features/landing/components/search/landing-search'
+import { legalStatusOfHit } from '@/features/landing/components/search/search-parts'
 
 /**
  * Rendered against the real hook, with only the router and the API replaced.
@@ -24,8 +25,9 @@ const navigate = vi.fn()
 const searchEntities = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, ...props }: { readonly children: ReactNode; readonly to: string }) => (
-    <a href={typeof to === 'string' ? to : '#'} {...props}>
+  // The search object goes into the href, so a link that drops it shows (Codex review, round 1).
+  Link: ({ children, to, search, ...props }: { readonly children: ReactNode; readonly to: string; readonly search?: Record<string, string> }) => (
+    <a href={typeof to === 'string' ? `${to}${search ? `?${new URLSearchParams(search).toString()}` : ''}` : '#'} {...props}>
       {children}
     </a>
   ),
@@ -925,4 +927,198 @@ it('accepts an INS keyword chip and renders a matrix code linked to its detail p
   expect(screen.getByRole('option')).toHaveAttribute('href', '/ins/seturi/POP107D')
   expect(screen.getByRole('option')).toHaveTextContent('POP107D')
   expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: ['ins_dataset'], limit: 8 }, expect.any(AbortSignal))
+})
+
+describe('LandingSearch — the way on to a fuller search (the legislation hub, owner 27 November 2026)', () => {
+  const more = {
+    link: (term: string) => ({ to: '/legislation/search', search: { q: term } }),
+    label: 'Căutare avansată',
+    row: (term: string) => `Caută „${term}” în căutarea avansată`,
+    empty: (term: string) => `Niciun act pentru ${term}.`,
+  }
+
+  beforeEach(() => {
+    navigate.mockReset()
+    searchEntities.mockReset()
+    searchEntities.mockResolvedValue(response([IASI, CLUJ]))
+  })
+
+  it('adds nothing without the prop: no row after an answer, the plain empty sentence, and Enter on no answer stays', async () => {
+    const { user, input } = setup()
+    await typeAndWait(user, 'iasi')
+    expect(screen.getAllByRole('option')).toHaveLength(2)
+    expect(document.querySelector('[data-search-more]')).toBeNull()
+    expect(screen.queryByText(/căutarea avansată/)).toBeNull()
+    searchEntities.mockResolvedValue(response([]))
+    await user.clear(input)
+    await user.type(input, 'qqxzzv')
+    await waitFor(() => expect(screen.getByText(/Niciun rezultat pentru/i)).toBeInTheDocument())
+    expect(screen.queryAllByRole('option')).toHaveLength(0)
+    await user.keyboard('{Enter}')
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it('ends an answer with the way on, as the last option, reached by the arrows, with the words typed', async () => {
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = await typeAndWait(user, 'legea 98')
+    const options = screen.getAllByRole('option')
+    expect(options).toHaveLength(3)
+    const last = options[2]
+    expect(last).toHaveAttribute('data-search-more', 'row')
+    expect(last).toHaveTextContent('Caută „legea 98” în căutarea avansată')
+    expect(last).toHaveAttribute('href', '/legislation/search?q=legea+98')
+    // the arrows reach it like any row
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}')
+    expect(input.getAttribute('aria-activedescendant')).toBe(last?.id)
+    // Enter with nothing highlighted still opens the first result, as before
+    await user.keyboard('{ArrowUp}{ArrowUp}{ArrowUp}{ArrowUp}')
+    expect(input.getAttribute('aria-activedescendant')).toBeFalsy()
+    await user.keyboard('{Enter}')
+    expect(navigate).toHaveBeenCalledTimes(1)
+    expect(navigate).not.toHaveBeenCalledWith(expect.objectContaining({ to: '/legislation/search' }))
+  })
+
+  it('with no answer, says so beside the button, and Enter takes the words on', async () => {
+    searchEntities.mockResolvedValue(response([]))
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = screen.getByRole('combobox')
+    await user.click(input)
+    await user.type(input, 'achizitii publice')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
+    const row = screen.getByRole('option')
+    expect(row).toHaveAttribute('data-search-more', 'empty')
+    // the answer is said above the row, not in the link; the row is the one under results (owner, 27 November 2026)
+    expect(row).toHaveTextContent('Caută „achizitii publice” în căutarea avansată')
+    expect(row).not.toHaveTextContent('Niciun act')
+    const sentence = screen.getByText('Niciun act pentru achizitii publice.')
+    expect(sentence.closest('[role=option]')).toBeNull()
+    expect(sentence.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // reached by the arrows, the row is described by the answer, which names what this box searches (Codex review, round 2)
+    expect(row).toHaveAccessibleDescription('Niciun act pentru achizitii publice.')
+    // said once: the row carries the empty answer, the generic sentence is not drawn under it
+    expect(screen.queryByText(/Niciun rezultat pentru/i)).toBeNull()
+    // no row is highlighted to say what Enter does: the announcement says it
+    expect(screen.getByText(/Enter: Căutare avansată\./)).toBeInTheDocument()
+    await user.keyboard('{Enter}')
+    expect(navigate).toHaveBeenCalledWith({ to: '/legislation/search', search: { q: 'achizitii publice' } })
+  })
+
+  it('offers no way on before the search has run: not under the „type more" hint (owner, 27 November 2026)', async () => {
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = screen.getByRole('combobox')
+    await user.click(input)
+    await user.type(input, '98')
+    await waitFor(() => expect(screen.getByText(/caracter/)).toBeInTheDocument())
+    // past the debounce: a two-character query that became eligible would have fired by now (Codex review, round 1)
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    expect(screen.queryAllByRole('option')).toHaveLength(0)
+    expect(document.querySelector('[data-search-more]')).toBeNull()
+    expect(searchEntities).not.toHaveBeenCalled()
+  })
+
+  it('disables the way on while the answer is out of date, and leaves the search as it is on a new-tab click', async () => {
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} more={more} />, { queryClient: createTestQueryClient() })
+    const input = await typeAndWait(user, 'legea 98')
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3))
+    // a new tab: the words and the list stay here
+    fireEvent.click(screen.getAllByRole('option')[2] as HTMLElement, { ctrlKey: true })
+    expect(input).toHaveValue('legea 98')
+    expect(screen.getAllByRole('option')).toHaveLength(3)
+    // more words: until the answer catches up, the way on carries words the list does not show, so it is off
+    await user.type(input, ' x')
+    const rows = screen.getAllByRole('option')
+    const last = rows[rows.length - 1]
+    expect(last).toHaveAttribute('data-search-more')
+    expect(last).toHaveAttribute('aria-disabled', 'true')
+  })
+})
+
+describe('LandingSearch — an act says its status (owner, 27 November 2026)', () => {
+  const act = (subtitle: string | null, id: string): EntitySearchHit => ({
+    ...IASI, id: `legal_act:${id}`, docType: 'legal_act', title: `LEGE nr. ${id}`, href: `/legislation/acts/${id}`,
+    identifiers: [`Legea ${id}/2009`], countyName: null, subtitle,
+  })
+
+  beforeEach(() => {
+    navigate.mockReset()
+    searchEntities.mockReset()
+  })
+
+  it('reads the last part of a subtitle with several commas, only on an act, and puts the word in the option\'s accessible name', async () => {
+    const ngo: EntitySearchHit = { ...IASI, id: 'organization:7', title: 'Regulament ONG', subtitle: 'Regulament, anexa 2, abrogat-partial' }
+    searchEntities.mockResolvedValue(response([act('Regulament, anexa 2, abrogat-partial', '77'), ngo]))
+    const user = userEvent.setup()
+    render(<LandingSearch />, { queryClient: createTestQueryClient() })
+    await typeAndWait(user, 'regulament')
+    const rows = () => screen.getAllByRole('option').filter((option) => option.hasAttribute('href'))
+    await waitFor(() => expect(rows()).toHaveLength(2))
+    const [actRow, ngoRow] = rows()
+    expect(actRow).toHaveAccessibleName(/Abrogat parțial/)
+    expect(ngoRow).not.toHaveAccessibleName(/Abrogat parțial/)
+    // the word is hidden for the eye at rest, and shown on the highlighted row from sm only, in full contrast: on a
+    // phone it would squeeze the title out beside a long identifier (Codex review, round 2)
+    const word = screen.getByText('Abrogat parțial')
+    expect(word).toHaveClass('sr-only', 'sm:group-data-highlighted:not-sr-only', 'sm:group-data-highlighted:text-foreground')
+    expect(word.className).not.toMatch(/(^|\s)group-data-highlighted:/)
+    expect(word.className).not.toMatch(/text-muted-foreground/)
+    // and the row is not described by an empty answer: only the lone way on is
+    expect(actRow).not.toHaveAttribute('aria-describedby')
+  })
+
+  it('draws the status the search serves at the end of the subtitle, with the act page\'s mark, and none it does not know', async () => {
+    searchEntities.mockResolvedValue(response([
+      act('Legea nr. 98/2009, in-vigoare', '3825'),
+      act('Legea nr. 227/2015, abrogat-partial', '66150'),
+      act('Legea nr. 1/2000, ceva-nou', '1'),
+      act(null, '2'),
+    ]))
+    const user = userEvent.setup()
+    render(<LandingSearch docTypes={['legal_act']} fixedScope={{ label: 'Legislație', Icon: Building2 }} />, { queryClient: createTestQueryClient() })
+    await typeAndWait(user, 'legea')
+    const [inForce, partly, unknown, none] = screen.getAllByRole('option')
+    expect(inForce).toHaveTextContent('În vigoare')
+    expect(inForce?.querySelector('svg')).not.toBeNull()
+    // the mark alone before the title, its word hidden for the eye and on hover: the row stays one line
+    expect(inForce?.querySelector('[title="În vigoare"]')).not.toBeNull()
+    expect(screen.getAllByText('În vigoare')[0]).toHaveClass('sr-only')
+    expect(partly).toHaveTextContent('Abrogat parțial')
+    // a value outside the statuses, or no subtitle: no mark, no word
+    expect(unknown?.querySelector('svg')).toBeNull()
+    expect(none?.querySelector('svg')).toBeNull()
+    expect(unknown).not.toHaveTextContent('ceva-nou')
+  })
+})
+
+describe('LandingSearch — rows that are not an act with a known status are drawn as before (root, 27 November 2026)', () => {
+  it('draws an act with no status, an act with an unknown last part and a non-act row whose subtitle ends like a status exactly as a row with no subtitle', async () => {
+    const actRow = (subtitle: string | null): EntitySearchHit => ({ ...IASI, id: `legal_act:${String(subtitle)}`, docType: 'legal_act', title: 'LEGE nr. 1', href: '/legislation/acts/1', identifiers: ['Legea 1/2000'], countyName: null, subtitle })
+    const ngo: EntitySearchHit = { ...IASI, id: 'organization:9', subtitle: 'Asociația X, in-vigoare' }
+    searchEntities.mockResolvedValue(response([actRow(null), actRow('Legea nr. 1/2000, ceva-nou'), actRow('Legea nr. 1/2000'), ngo, { ...ngo, id: 'organization:10', subtitle: null }]))
+    const user = userEvent.setup()
+    render(<LandingSearch />, { queryClient: createTestQueryClient() })
+    await typeAndWait(user, 'lege')
+    // the result rows only (the word also brings a filter suggestion, first and sooner)
+    const resultRows = () => screen.getAllByRole('option').filter((option) => option.hasAttribute('href'))
+    await waitFor(() => expect(resultRows()).toHaveLength(5))
+    const [noSubtitle, unknown, noStatus, ngoRow, ngoBare] = resultRows()
+    // no mark anywhere, and each act row's markup equals the one with no subtitle at all
+    // the status mark is the 12-unit shape (the unscoped rows carry their kind's own icon besides)
+    for (const row of [noSubtitle, unknown, noStatus, ngoRow, ngoBare]) expect(row?.querySelector('svg[viewBox="0 0 12 12"]')).toBeNull()
+    expect(unknown?.innerHTML).toBe(noSubtitle?.innerHTML)
+    expect(noStatus?.innerHTML).toBe(noSubtitle?.innerHTML)
+    expect(ngoRow?.innerHTML).toBe(ngoBare?.innerHTML)
+  })
+})
+
+describe('legalStatusOfHit', () => {
+  it('reads the last part of the subtitle when it is an act status, and nothing else', () => {
+    expect(legalStatusOfHit('Legea nr. 98/2009, in-vigoare')).toBe('in-vigoare')
+    expect(legalStatusOfHit('COD PROCEDURA FISCALA din 24 decembrie 2003 (*republicat*), abrogat')).toBe('abrogat')
+    expect(legalStatusOfHit('HG nr. 1705/2005, modificat')).toBe('modificat')
+    for (const subtitle of [null, '', 'Legea nr. 98/2009', 'Legea nr. 98/2009, In-Vigoare', 'Legea, ceva']) expect(legalStatusOfHit(subtitle)).toBeNull()
+  })
 })

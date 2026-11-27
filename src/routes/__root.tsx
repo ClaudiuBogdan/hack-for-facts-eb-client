@@ -1,12 +1,7 @@
-import {
-  createRootRouteWithContext,
-  Link,
-  Scripts,
-} from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import { createRootRouteWithContext, Scripts } from "@tanstack/react-router";
 import GlobalErrorPage from "@/components/errors/GlobalErrorPage";
-import { Button } from "@/components/ui/button";
-import { Home, FileQuestion } from "lucide-react";
-import { t } from "@lingui/core/macro";
+import { NotFoundPage } from "@/components/errors/not-found-page";
 import { i18n } from "@lingui/core";
 import { globalSearchSchema } from "@/lib/global-search-schema";
 import type { RouterContext } from "@/router-context";
@@ -71,55 +66,42 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   },
   errorComponent: ({ error }) => <GlobalErrorPage error={error} />,
   notFoundComponent: NotFoundPage,
+  shellComponent: RootDocument,
   component: RootComponent,
 });
 
-function RootComponent() {
-  const { queryClient, ssrTheme, ssrCurrency, ssrInflationAdjusted } =
-    Route.useRouteContext();
-  const themeClass = ssrTheme || DEFAULT_THEME;
+/**
+ * The document, around everything the root renders: the app, and the error
+ * page when the root itself fails, which renders in place of `RootComponent`
+ * (ERR-002). Its `beforeLoad` context is then missing, so the theme falls back.
+ */
+function RootDocument({ children }: { readonly children: ReactNode }) {
+  const ssrTheme = Route.useRouteContext({ select: (context) => context.ssrTheme as ResolvedTheme | undefined });
 
   return (
-    <html lang={i18n.locale || DEFAULT_LOCALE} className={themeClass}>
+    <html lang={i18n.locale || DEFAULT_LOCALE} className={ssrTheme ?? DEFAULT_THEME}>
       <head>
         <AppHeadContent />
       </head>
       <body>
-        <AppShell
-          queryClient={queryClient}
-          ssrTheme={ssrTheme}
-          ssrCurrency={ssrCurrency}
-          ssrInflationAdjusted={ssrInflationAdjusted}
-        />
+        {children}
         <Scripts />
       </body>
     </html>
   );
 }
 
-function NotFoundPage() {
+function RootComponent() {
+  const { queryClient, ssrTheme, ssrCurrency, ssrInflationAdjusted } =
+    Route.useRouteContext();
+
   return (
-    <div className="min-h-[60vh] flex items-center justify-center p-6">
-      <div className="w-full max-w-md text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-          <FileQuestion className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {t`Page not found`}
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          {t`The page you are looking for doesn't exist or has been moved.`}
-        </p>
-        <div className="mt-6">
-          <Link to="/">
-            <Button>
-              <Home className="mr-2 h-4 w-4" />
-              {t`Go to homepage`}
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
+    <AppShell
+      queryClient={queryClient}
+      ssrTheme={ssrTheme}
+      ssrCurrency={ssrCurrency}
+      ssrInflationAdjusted={ssrInflationAdjusted}
+    />
   );
 }
 

@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { KeyboardEvent, RefObject } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import type { KeyboardEvent, ReactNode, RefObject } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
 import type { BaseUIEvent } from '@base-ui/react/types'
 import { Loader2, Search, X } from 'lucide-react'
@@ -94,17 +94,40 @@ import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
  * broke silently when its internals moved.
  */
 
-/** What the list can hold: a filter to accept, or an entity to open. */
-type ListItem = SearchFilter | EntitySearchHit
+/**
+ * The way on from this search to a fuller one, with the words typed (the legislation hub's advanced search; owner,
+ * 27 November 2026). The caller's, copy and all: this component owns no words for it.
+ */
+export type SearchMore = {
+  /** Where the words are searched further. */
+  readonly link: (term: string) => { readonly to: string; readonly search: Record<string, unknown> }
+  /** The way on's name: its group's label for assistive tech, and what Enter does when there is no answer. */
+  readonly label: string
+  /** The list's last row, under an answer and with none. */
+  readonly row: (term: string) => ReactNode
+  /** With no answer: the sentence said above the row (not part of the link). */
+  readonly empty: (term: string) => ReactNode
+}
+
+/** The way on, as a row of the list: reached by the arrows and Enter like any other. */
+type MoreItem = { readonly moreTerm: string }
+
+/** What the list can hold: a filter to accept, an entity to open, or the way on. */
+type ListItem = SearchFilter | EntitySearchHit | MoreItem
 type ListGroup =
   | { readonly value: 'filters'; readonly items: readonly SearchFilter[] }
   | { readonly value: 'results'; readonly items: readonly EntitySearchHit[] }
+  | { readonly value: 'more'; readonly items: readonly MoreItem[] }
 
 function isFilterItem(item: ListItem | undefined): item is SearchFilter {
   return item !== undefined && 'triggers' in item
 }
 
-function SearchStatusView({ status, scope }: { readonly status: SearchStatus; readonly scope: string }) {
+function isMoreItem(item: ListItem | undefined): item is MoreItem {
+  return item !== undefined && 'moreTerm' in item
+}
+
+function SearchStatusView({ status, scope, more = false }: { readonly status: SearchStatus; readonly scope: string; readonly more?: boolean }) {
   switch (status.kind) {
     case 'scoped':
       return (
@@ -162,6 +185,8 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
       )
 
     case 'empty':
+      // With a way on, the empty answer is said by its row in the list (the sentence beside the button).
+      if (more) return null
       return (
         <Message>
           <Trans>
@@ -206,6 +231,7 @@ export function LandingSearch({
   fixedScope,
   hrefOf,
   handover,
+  more,
 }: {
   readonly className?: string
   /**
@@ -250,6 +276,8 @@ export function LandingSearch({
    * keyboard brought it — is taken back at mount. Read at mount only.
    */
   readonly handover?: SearchHandover
+  /** A way on to a fuller search, as the list's last row and, with no answer, beside the sentence. None without it. */
+  readonly more?: SearchMore
 }) {
   const { i18n } = useLingui()
   const placeholder = placeholderProp ?? t`Caută primării, firme, legi…`
@@ -257,6 +285,7 @@ export function LandingSearch({
     term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, isRankingUats,
   } = useSearchResults({ docTypes, entityTags, roles, suggestions: fixedScope === undefined, initialTerm: handover?.term })
   const commit = useEntitySelection({ onSelect })
+  const navigate = useNavigate()
 
   const [isOpen, setIsOpen] = useState(false)
   // Whether focus reached the input from the keyboard. The browser cannot say:
@@ -347,9 +376,17 @@ export function LandingSearch({
 
   // Two groups, each present only when it has rows. Suggestions first: they
   // change what the rows below mean, so they are read before the rows are.
+  // The way on, last: under an answer, or alone when there is none. Never before the search has run: not under the
+  // „type more" hint (owner, 27 November 2026, over the round-1 review's case of a two-digit act number).
+  const moreTerm = term.trim()
+  const moreItem: MoreItem | null =
+    more !== undefined && moreTerm !== '' && (status.kind === 'results' || status.kind === 'empty') ? { moreTerm } : null
+  const moreAlone = moreItem !== null && status.kind === 'empty'
+  const moreEmptyId = useId()
   const groups: readonly ListGroup[] = [
     ...(suggestions.length > 0 ? [{ value: 'filters', items: suggestions } as const] : []),
     ...(visibleResults.length > 0 ? [{ value: 'results', items: visibleResults } as const] : []),
+    ...(moreItem !== null ? [{ value: 'more', items: [moreItem] } as const] : []),
   ]
 
   /**
@@ -408,7 +445,7 @@ export function LandingSearch({
         // arrives with nothing open, so the input handler below clears.
         if (details.reason === 'escape-key' && !isDropdownOpen) reset()
       }}
-      itemToStringValue={(item: ListItem) => (isFilterItem(item) ? i18n._(item.label) : item.title)}
+      itemToStringValue={(item: ListItem) => (isFilterItem(item) ? i18n._(item.label) : isMoreItem(item) ? item.moreTerm : item.title)}
       onItemHighlighted={(item) => {
         highlightedRef.current = item
       }}
@@ -559,7 +596,16 @@ export function LandingSearch({
               // rather than a side effect of results arriving.
               if (!isCurrent) return
               const top = results[0]
-              if (!top) return
+              if (!top) {
+                // No answer: Enter takes the words on to the fuller search, where there is one.
+                if (more === undefined || moreItem === null) return
+                event.preventDefault()
+                const target = more.link(moreItem.moreTerm)
+                void navigate({ to: target.to as '/', search: target.search as never })
+                reset()
+                setIsOpen(false)
+                return
+              }
               const first = pointed(top)
               // The first row is the answer to what was typed (an exact CUI comes
               // first); one no page holds opens nothing, and the list stays open on it
@@ -619,6 +665,8 @@ export function LandingSearch({
 
         <p aria-live="polite" className="sr-only">
           {isDropdownOpen ? announcement(status, suggestions.length) : ''}
+          {/* With no answer, Enter takes the words on: said, since no row is highlighted to say it (Codex review, round 1). */}
+          {isDropdownOpen && moreAlone && more !== undefined ? ` ${t`Enter: ${more.label}.`}` : ''}
         </p>
       </div>
 
@@ -681,6 +729,8 @@ export function LandingSearch({
                   in the document. That is the same defect the hand-rolled
                   version shipped, arriving here through the library's wiring
                   instead of through ours. */}
+              {/* With no answer and a way on, the answer is a quiet sentence above the way on's row, never part of the link. */}
+              {moreAlone && more !== undefined ? <Message id={moreEmptyId}>{more.empty(moreTerm)}</Message> : null}
               <Autocomplete.List
                 className={cn(
                   // The stale dim fades in. Measured under
@@ -695,7 +745,57 @@ export function LandingSearch({
               >
                 {(group: ListGroup) => (
                   <Autocomplete.Group key={group.value} items={group.items}>
-                    {group.value === 'filters' ? (
+                    {group.value === 'more' ? (
+                      more === undefined ? null : (
+                        <>
+                          <Autocomplete.GroupLabel className="sr-only">{more.label}</Autocomplete.GroupLabel>
+                          <Autocomplete.Collection>
+                            {(item: MoreItem) => {
+                              const target = more.link(item.moreTerm)
+                              return (
+                                <Autocomplete.Item
+                                  key="more"
+                                  value={item}
+                                  // Out of date while the answer is (the rows above are too): it would carry words the list does not show.
+                                  disabled={!isCurrent}
+                                  data-search-more={moreAlone ? 'empty' : 'row'}
+                                  // The answer above, said when the arrows reach the row: it names what this box searches (Codex review, round 2).
+                                  aria-describedby={moreAlone ? moreEmptyId : undefined}
+                                  className={cn(
+                                    'flex cursor-pointer items-center gap-3 px-4 text-sm data-highlighted:bg-muted',
+                                    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+                                    'border-t py-3',
+                                  )}
+                                  onClick={(event) => {
+                                    if (!isCurrent) {
+                                      event.preventDefault()
+                                      return
+                                    }
+                                    // A new tab or window leaves this search as it is (Codex review, round 1).
+                                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+                                    reset()
+                                    setIsOpen(false)
+                                  }}
+                                  render={
+                                    <Link
+                                      to={target.to as '/'}
+                                      search={target.search as never}
+                                      preload={false}
+                                      onClick={(event) => { if (!isCurrent) event.preventDefault() }}
+                                    />
+                                  }
+                                >
+                                  {/* The same row under an answer and with none: the whole row is the one link (owner, 27 November
+                                      2026, over a button drawn inside it). With none, the answer is said above it, not in it. */}
+                                  <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                                  <span className="min-w-0 flex-1">{more.row(item.moreTerm)}</span>
+                                </Autocomplete.Item>
+                              )
+                            }}
+                          </Autocomplete.Collection>
+                        </>
+                      )
+                    ) : group.value === 'filters' ? (
                       <>
                         <Autocomplete.GroupLabel className="sr-only">
                           <Trans>Filtre sugerate</Trans>
@@ -763,7 +863,7 @@ export function LandingSearch({
                 )}
               </Autocomplete.List>
 
-              <SearchStatusView status={status} scope={scope} />
+              <SearchStatusView status={status} scope={scope} more={moreItem !== null} />
             </div>
           </Autocomplete.Popup>
         </Autocomplete.Positioner>

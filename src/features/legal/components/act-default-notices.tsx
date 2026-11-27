@@ -5,11 +5,14 @@ import { formatLegalDate } from '../lib/legal-format'
 import {
   isSelectableVersion,
   latestUnavailableVersion,
-  versionDateOf,
+  listedVersionDate,
+  shownVersionDate,
   versionKindLabel,
   type ShownVersion,
 } from '../lib/legal-versions'
-import { legislationAlertClassName } from '../lib/legislation-theme'
+
+/** A notice about the text shown: a rule in the caution colour, the sentence in full weight, no box. */
+const NOTICE = 'border-l-2 border-status-partial-fg py-0.5 pl-4'
 
 type Props = {
   readonly act: LegalActDetail
@@ -44,16 +47,21 @@ export function ActDefaultNotices({
   const date = (value: string | null) => (value === null ? null : formatLegalDate(value, i18n.locale))
   const latest = latestUnavailableVersion(act)
   const latestKind = latest !== null ? versionKindLabel(latest.versionKind) : null
-  const latestDate = latest !== null ? date(versionDateOf(latest)) : null
+  // A consolidation is dated by the Portal's own note's date, never by the
+  // list's ordering date (LEG-X3AV); without one the sentence names no date.
+  const latestDate = latest !== null ? date(listedVersionDate(latest)) : null
   const shownKind = shown !== null ? versionKindLabel(shown.versionKind) : null
-  const shownDate = shown !== null ? date(shown.versionDate) : null
+  // The shown version's date by the page's one rule (the Portal's for a consolidation, else its own or its listed
+  // version's): the date the box and the bar name it by, and the one it is ordered by.
+  const shownDateValue = shown === null ? null : shownVersionDate(act, shown)
+  const shownDate = date(shownDateValue)
   const readableCount = act.documents.filter(isSelectableVersion).length
 
   return (
     <>
       {notCurrentDefault && (
-        <div className={`${legislationAlertClassName} mb-4`} role="note">
-          <p className="text-sm font-medium leading-6 text-[var(--pnrr-fg)]">
+        <div className={NOTICE} role="note">
+          <p className="text-sm font-medium leading-6 text-foreground">
             {latestKind !== null && latestDate !== null ? (
               <Trans>
                 Cea mai recentă versiune a actului ({latestKind}, {latestDate}) nu are
@@ -76,9 +84,9 @@ export function ActDefaultNotices({
         </div>
       )}
       {onlyReadableDefault && (
-        <div className={`${legislationAlertClassName} mb-4`} role="note">
-          <p className="text-sm font-medium leading-6 text-[var(--pnrr-fg)]">
-            {shown === null || shown.versionDate === null ? (
+        <div className={NOTICE} role="note">
+          <p className="text-sm font-medium leading-6 text-foreground">
+            {shownDateValue === null ? (
               readableCount > 1 ? (
                 <Trans>
                   Data acestei versiuni nu este cunoscută, deci nu o putem ordona față de
@@ -101,7 +109,7 @@ export function ActDefaultNotices({
         </div>
       )}
       {act.defaultOrderReviewed === false && (
-        <p className="mb-4 text-xs text-[var(--pnrr-muted)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           <Trans>
             Versiunile cu aceeași dată au fost ordonate după o regulă fixă, nu de un
             verificator.
