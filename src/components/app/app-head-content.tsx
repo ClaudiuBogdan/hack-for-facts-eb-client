@@ -25,8 +25,9 @@ const inlinedStylesheet = createIsomorphicFn()
  * HTML and waits only for the stylesheet, so a cold visit paints without a
  * second request. The choice is made once per document and kept through
  * client navigation, so the full stylesheet stays in the head whichever
- * route the reader moves to, and through the root's error page (see
- * `InlineStylesheet`). Every other document links the cacheable file.
+ * route the reader moves to, and through a failed root's page, which the
+ * browser renders again (see `InlineStylesheet`). Every other document links
+ * the cacheable file.
  * See docs/performance/2026-11-17-landing/inline-landing-css.md.
  */
 function BuildHeadContent() {
