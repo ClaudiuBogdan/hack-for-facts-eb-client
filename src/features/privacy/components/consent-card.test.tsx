@@ -54,6 +54,29 @@ describe('ConsentCard', () => {
     expect(screen.queryByRole('button', { name: 'Acceptă tot' })).not.toBeInTheDocument()
   })
 
+  it('says a choice it could not save, keeps optional telemetry off, and lets the reader try again', async () => {
+    const user = userEvent.setup()
+    await renderOpen()
+    const setItem = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage blocked', 'QuotaExceededError')
+    })
+    try {
+      await user.click(screen.getByRole('button', { name: 'Acceptă tot' }))
+
+      expect(screen.getByRole('alert')).toHaveTextContent('Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă.')
+      expect(getConsent()).toMatchObject({ analytics: false, sentry: false })
+      expect(screen.queryByRole('heading', { name: 'Mulțumim!' })).not.toBeInTheDocument()
+    } finally {
+      setItem.mockRestore()
+    }
+
+    // Storage works again: the same button saves, and the warning goes.
+    await user.click(screen.getByRole('button', { name: 'Acceptă tot' }))
+    expect(getConsent()).toMatchObject({ analytics: true, sentry: true })
+    expect(screen.getByRole('heading', { name: 'Mulțumim!' })).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('refuses as easily as it accepts', async () => {
     const user = userEvent.setup()
     render(<ConsentCard onGone={vi.fn()} />)

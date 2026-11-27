@@ -42,9 +42,7 @@ export function useConsentDraft() {
     setDraft((current) => ({ ...current, ...change }))
   }, [])
 
-  const save = useCallback(() => {
-    setConsent(draft)
-  }, [draft])
+  const save = useCallback(() => setConsent(draft), [draft])
 
   const isDirty = draft.analytics !== saved.analytics || draft.sentry !== saved.sentry
 

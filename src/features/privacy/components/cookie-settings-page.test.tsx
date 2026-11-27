@@ -63,6 +63,32 @@ describe('CookieSettingsPage', () => {
     expect(onReturn).toHaveBeenCalledTimes(1)
   })
 
+  it('turns optional telemetry off when a change cannot be saved, says so, and stays for a retry', async () => {
+    setConsent({ ...getDefaultConsent(), analytics: true, sentry: true })
+    const user = userEvent.setup()
+    const onReturn = vi.fn()
+    render(<CookieSettingsPage redirect="/charts" onReturn={onReturn} />)
+    const setItem = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage blocked', 'QuotaExceededError')
+    })
+    try {
+      await user.click(screen.getByRole('button', { name: 'Doar esențiale' }))
+
+      // The earlier "everything" is not left running in this tab.
+      expect(getConsent()).toMatchObject({ analytics: false, sentry: false })
+      expect(screen.getByRole('alert')).toHaveTextContent('Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă.')
+      expect(screen.queryByText('Salvat')).not.toBeInTheDocument()
+      expect(onReturn).not.toHaveBeenCalled()
+    } finally {
+      setItem.mockRestore()
+    }
+
+    await user.click(screen.getByRole('button', { name: 'Doar esențiale' }))
+    expect(hasStoredConsentDecision()).toBe(true)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(onReturn).toHaveBeenCalledTimes(1)
+  })
+
   it('stays put without a redirect', async () => {
     const user = userEvent.setup()
     const onReturn = vi.fn()
