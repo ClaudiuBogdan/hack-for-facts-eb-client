@@ -694,6 +694,48 @@ describe('mapCompanyProfile — long-format-only statements (B5c)', () => {
   })
 })
 
+// server-companies' contract, 26 November 2026: newest first, exact strings, null = no figure read, null list = forms unknown.
+describe('mapCompanyProfile — IFRS-form years and each year’s form (PRIV-ZVPV)', () => {
+  const withIfrs = (ifrsFormYears: unknown, years: RawCompanyFinancialYear[] = dedemanResponse.companyFinancials!.years): CompanyProfileResponse =>
+    companyProfileResponseSchema.parse({ ...dedemanResponse, companyFinancials: { years, trajectory: null, longFormOnly: [], ifrsFormYears } })
+  const file = (year: number, fields: Record<string, unknown> = {}) => ({
+    year,
+    sourceSystem: 'mfp',
+    turnover: '14764836448',
+    netResult: '2399947986',
+    employees: '13322',
+    sourceUrl: `https://data.gov.ro/web_ir_an${year}.txt`,
+    ...fields,
+  })
+
+  it('maps the file years oldest first, their figures as the exact strings served, a loss negative, a blank null', () => {
+    const profile = mapCompanyProfile(withIfrs([file(2016, { turnover: null, netResult: '-630646624' }), file(2015, { employees: '0' })]))!
+    expect(profile.ifrsFormYears).toEqual([
+      { fiscalYear: 2015, publisher: 'mfp', turnover: '14764836448', netResult: '2399947986', employees: '0', sourceUrl: 'https://data.gov.ro/web_ir_an2015.txt' },
+      { fiscalYear: 2016, publisher: 'mfp', turnover: null, netResult: '-630646624', employees: '13322', sourceUrl: 'https://data.gov.ro/web_ir_an2016.txt' },
+    ])
+    expect(() => privateCompanyProfileSchema.parse(profile)).not.toThrow()
+  })
+
+  it('keeps unknown apart from none, links only a web address, and assumes no publisher', () => {
+    expect(mapCompanyProfile(dedemanResponse)!.ifrsFormYears).toBeNull()
+    expect(mapCompanyProfile(withIfrs(null))!.ifrsFormYears).toBeNull()
+    expect(mapCompanyProfile(withIfrs([]))!.ifrsFormYears).toEqual([])
+    const [odd] = mapCompanyProfile(withIfrs([file(2014, { sourceSystem: 'other', sourceUrl: 'javascript:alert(1)' })]))!.ifrsFormYears!
+    expect(odd).toMatchObject({ publisher: null, sourceUrl: null })
+  })
+
+  it('reads a year’s form as IFRS or unmarked, never another form', () => {
+    const [newest, older] = dedemanResponse.companyFinancials!.years
+    const profile = mapCompanyProfile(withIfrs([], [{ ...newest!, reportingForm: 'IFRS' }, { ...older!, reportingForm: 'ORDINARY' }]))!
+    expect(profile.financials.map((year) => [year.fiscalYear, year.reportingForm])).toEqual([
+      [2024, 'ifrs'],
+      [2022, null],
+    ])
+    expect(mapCompanyProfile(dedemanResponse)!.financials.every((year) => year.reportingForm === null)).toBe(true)
+  })
+})
+
 describe('public money and DA supplier names (root ruling 2026-11-22 under 22a47bb2)', () => {
   it('a company with incoming direct purchases marks the render; one without does not', async () => {
     const { installDaSupplierNameSink } = await import('@/lib/da-supplier-name-mark')

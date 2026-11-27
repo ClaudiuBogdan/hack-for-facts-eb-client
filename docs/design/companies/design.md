@@ -859,11 +859,11 @@ Dacia before any of it was built.
 
 ### Left for the data owners
 
-- The 464d layout's two „PIERDERE BRUTĂ" lines (I17, I19): no evidence yet
-  that I19 is the net loss (CFR 2025: I17 = 534.337.056, I19 = 548.897.866,
-  profit 0). Until a form dictionary or filings settle it, these companies'
-  net results stay held, and the hub's national net result leaves them out
-  (it says how many statements it counts each year).
+- The 464d layout's two „PIERDERE BRUTĂ" lines (I17, I19): settled by the
+  data owners (PRIV-Z2VJ, closed 27 November 2026). Release 19 reports the FY2019–2025
+  IFRS-layout gross loss, net loss and net result, so these companies' net
+  results are drawn like any other. The handling of a held result above
+  (`admittedNet`) stays for any year the evaluator still holds.
 - A three-digit ANAF token („610") and the same code in two revisions: their
   qualification needs source evidence; padding alone would still leave OMV's
   0610 in both Rev.2 and Rev.3.
@@ -1142,4 +1142,81 @@ under `src/development/prototypes/companies/` (`profile-head`,
 
 - The public-money band is procurement-da-client's (its v3 reads land
   separately); the page passes it an empty `index`.
+
+## The IFRS form in the company chart (26 November 2026)
+
+The scrapper's labelled IFRS-form series (PRIV-ZVPV; the owner's decisions of
+25 November 2026, „show IFRS-form figures as a labelled series" and „label
+IFRS-form years per company-year"), drawn in the business chart. Prototyped
+on OMV Petrom's live profile with its FY2012–2018 rows as the view returns
+them, and on two fictitious companies marked as mock (`profile-ifrs`,
+variants `curat`, `banda`, `fundal`, `ambele`, `surse`, and `pagina`, the
+page's own band with the API's fields injected). Wording checked by the IFRS
+session against its evidence.
+
+### Decisions
+
+- **Each year in the series of its own form.** A year the publisher put on
+  the IFRS form — its own file's (the Ministry's „IR" file, FY2012–2018) or
+  ANAF's IFRS layout (FY2019+) — is labelled „Raportat pe formularul IFRS"
+  (the form, never the company's accounting); every other year carries no
+  form label (unmarked is never „ordinary"). The people line joins only
+  consecutive years on the same form: it breaks at a change of form, a missing
+  year and a blank. A zero is a zero; a Ministry blank is said as such.
+- **Clean, a short mention** (owner: „I prefer a clean option, I don't want
+  to add too much text, just a short mention"): a thin rule named „IFRS" over
+  each run; the legend's „Raportat pe formularul IFRS" is the only mention,
+  its ⓘ holding the turnover note (the form's „Cifra de afaceri netă" row,
+  not the IFRS sales line) and the publishers' seam (the company's own
+  Ministry years, then ANAF from 2019; where a 2018 blank meets a 2019 zero,
+  that it is no fall). No text under the chart but the real gaps.
+- **Sources in the reading, for every company** (owner): each year's reading
+  names its publisher and links its source — the Ministry's file or ANAF's
+  answer for the year. On a touch screen only the link takes the pointer, so a
+  tap under the box reaches the year beneath (checked at 360). With a mouse,
+  hovering previews a year and a click holds it, so the pointer can travel to
+  the link across other years (checked for the newest, a middle and the first
+  year at 1440); a click on it again, another year or Escape lets it go. Tab
+  from the chart lands on the link.
+- **Nothing derived reads the IFRS-file figures**: not the lede, the loss
+  years, the figures band or a comparison — source observations outside the
+  admission policy, never qualified (tested: the same lede, counts and figures
+  with and without them). FY2019+ IFRS-layout years keep their held result:
+  an admitted profit outlined, a loss year „rezultatul net nu se știe".
+- **No year-on-year note across a change of form**: where exactly one of the
+  newest two statements is marked IFRS, the lede, the figures' „față de" and
+  the net-change note compare nothing — as the chart's line breaks there and
+  the API nulls its own deltas (`reporting_form_changed`, proposed by
+  server-companies to root). Where the API reads no form, nothing changes.
+
+### From the review (Codex `gpt-6.2-sol`, 27 November 2026)
+
+Fixed: a click on the open reading (where it takes the pointer) holds its
+year; the reading follows its year, not its slot, so a refreshed answer with
+one more year cannot move it; Escape from the reading's link returns focus to
+the chart; the section bar marks the first band on its line, so a reversed
+scroll never leaves it unmarked; a test that an IFRS-file year with no figure
+keeps its own slot beside a hatched gap. Left as is, by decision:
+
+- Two neighbouring unmarked years whose figures are all withheld still fold
+  into one hatched column (the owner's chart): their sources stay one click
+  away in „Bilanțurile, an cu an", which lists every statement.
+- The 2019 blank-to-zero sentence states the measured fact for 2019 (227
+  cells), not this company's 2018 cell; the IFRS session confirmed the
+  wording, and every null the views serve today is a blank cell.
+- No fallback query for an API without the IFRS fields: as for
+  `longFormOnly`, the server ships first; root knows the client now needs
+  them (a server rollback of those fields must take the client with it).
+
+### On the dev API (27 November 2026)
+
+- The server's fields are on Chronos dev. Petrom (1590082) reads 7
+  IFRS-form years, 2012–2018 from the Ministry of Finance's file, and its
+  2019–2025 statements carry the IFRS mark from their ANAF layout. The chart
+  draws one IFRS run over 2012–2025 and breaks the people line at 2011→2012
+  only. Each reading names its publisher and links the file or ANAF's query.
+- The server now reports Petrom's 2019–2025 net results (`netResultStatus`
+  REPORTED, no hold reason), so the chart draws them as it does for any
+  company whose net result the server reports.
+- The client ships to dev after root's note and the owner's word.
 

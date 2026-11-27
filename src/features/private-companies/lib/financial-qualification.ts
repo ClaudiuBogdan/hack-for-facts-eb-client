@@ -89,6 +89,15 @@ export function admittedNet(year: PrivateCompanyFinancialYear): { readonly value
   return null
 }
 
+/**
+ * Two statements on the same form: both marked IFRS, or both unmarked. A year-on-year note never compares across a
+ * change of form (the chart's line breaks there too; the API nulls its deltas with `reporting_form_changed`). Where
+ * the API reads no form at all, every year is unmarked and nothing changes.
+ */
+export function sameReportingForm(a: PrivateCompanyFinancialYear, b: PrivateCompanyFinancialYear): boolean {
+  return (a.reportingForm ?? null) === (b.reportingForm ?? null)
+}
+
 /** Two statements may be compared only under one policy, evaluator and release. */
 export function comparable(a: PrivateCompanyFinancialYear, b: PrivateCompanyFinancialYear): boolean {
   const left = a.qualification
