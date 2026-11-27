@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
+import { ChevronDown } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
@@ -336,12 +337,13 @@ function ActivitySpread({ model, limit = 6 }: { readonly model: CompanyProfileMo
                 <MonoLabel className="pt-1 tabular-nums text-muted-foreground">{group.division ?? ''}</MonoLabel>
                 <span className="min-w-0">
                   <span className="text-sm leading-snug text-foreground">{group.label}</span>
+                  {headed ? <span className="ml-2 text-xs text-muted-foreground">{revisionName(group.revision)}</span> : null}
+                  {/* Its own line under the name: a box inside the name broke it apart on a phone. */}
                   {group.key === selected ? (
-                    <span className="ml-2 inline-block rounded-sm border border-primary/40 px-1.5 text-xs font-medium text-primary">
+                    <span className="mt-0.5 block text-xs font-medium text-primary">
                       {marked.presumed ? <Trans>aici e activitatea principală presupusă</Trans> : <Trans>aici e activitatea selectată</Trans>}
                     </span>
                   ) : null}
-                  {headed ? <span className="ml-2 text-xs text-muted-foreground">{revisionName(group.revision)}</span> : null}
                   <span className="mt-1.5 block h-1 bg-muted/70" aria-hidden="true">
                     <span className="block h-full bg-primary/60" style={{ width: `${Math.max(2, (count / largest) * 100).toFixed(1)}%` }} />
                   </span>
@@ -379,9 +381,10 @@ function ActivitySpread({ model, limit = 6 }: { readonly model: CompanyProfileMo
           type="button"
           aria-expanded={all}
           onClick={() => setAll((current) => !current)}
-          className="mt-3 inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
+          className="mt-3 inline-flex min-h-9 items-center gap-1 text-sm font-medium text-foreground underline-offset-4 hover:underline"
         >
           {all ? <Trans>Doar primele {limit} domenii</Trans> : plural(groups.length, { one: 'Un domeniu', few: 'Toate cele # domenii', other: 'Toate cele # de domenii' })}
+          <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', all && 'rotate-180')} aria-hidden="true" />
         </button>
       ) : null}
       {model.registry.observationsTruncated ? (

@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { BuyerProfile } from '@/features/procurement/lib/buyer-model'
 import { controlRows, indicatorTables } from './enterprise-model'
-import { controlLede, controlSentence, listDateText, originMark, pageCaveats, peersText, s1001Word, shownName, sourceLine, spendingLede } from './enterprise-text'
+import { buildCompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
+import { companyProfile } from '@/features/private-companies/lib/company-profile.fixture'
+import { controlLede, controlSentence, listDateText, originMark, pageCaveats, peersText, s1001Word, sellerLede, shownName, sourceLine, spendingLede } from './enterprise-text'
 import { TURSIB_PROFILE, enterpriseReadFixture } from './test/enterprise-fixture'
 
 // Procurement's formatters follow the reader's locale.
@@ -189,5 +191,44 @@ describe('the enterprise page’s sentences', () => {
     expect(pageCaveats(enterpriseReadFixture({ profile: { ...TURSIB_PROFILE, authorityEdges: [], sources: [] } }), [], null)).toEqual([
       'Valorile din SEAP sunt cele atribuite, nu plățile efective.',
     ])
+  })
+})
+
+describe('sellerLede: what the enterprise sold to the state, by instrument', () => {
+  const sellerOf = (publicMoney: NonNullable<Parameters<typeof companyProfile>[0]>['publicMoney']) => sellerLede(buildCompanyProfileModel(companyProfile({ cui: '789401', publicMoney })))
+
+  it('says an instrument with no published total as such, never as zero, and adds no lower bound for it alone', () => {
+    const text = sellerOf({
+      totalRon: null,
+      flowCount: 0,
+      byFlowType: [{ flowType: 'procurement_contract', totalRon: null, count: 3 }],
+      byYear: [{ year: 2025, flowType: 'procurement_contract', totalRon: null, count: 3 }],
+    })
+    expect(text).toContain('Contracte de achiziție publică: fără valoare publicată.')
+    expect(text).not.toMatch(/0\slei|limite inferioare/u)
+  })
+
+  it('calls an award an awarded value, keeps a payment apart, and says a partly valued total is a lower bound', () => {
+    const text = sellerOf({
+      totalRon: null,
+      flowCount: 0,
+      byFlowType: [
+        { flowType: 'direct_acquisition', totalRon: 60_000, count: 2 },
+        { flowType: 'pnrr_payment', totalRon: 90_000, count: 1 },
+        { flowType: 'pnrr_commitment', totalRon: 500_000, count: 1 },
+      ],
+      byYear: [
+        { year: 2025, flowType: 'direct_acquisition', totalRon: 60_000, count: 1 },
+        { year: 2025, flowType: 'direct_acquisition', totalRon: null, count: 1 },
+        { year: 2024, flowType: 'pnrr_payment', totalRon: 90_000, count: 1 },
+      ],
+    })
+    expect(text).toMatch(/Achiziții directe: valoare atribuită de 60\.000\slei\./u)
+    expect(text).toMatch(/Plăți PNRR: 90\.000\slei\./u)
+    expect(text).not.toMatch(/Plăți PNRR: valoare atribuită/u)
+    expect(text).toContain('Anii: 2024–2025.')
+    expect(text).toContain('Unele înregistrări nu au valoare publicată, deci totalurile disponibile sunt limite inferioare.')
+    // A commitment is an obligation, not money received: it is not listed.
+    expect(text).not.toMatch(/Angajamente PNRR/u)
   })
 })

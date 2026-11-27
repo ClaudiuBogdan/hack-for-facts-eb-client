@@ -70,6 +70,7 @@ export function useTreemapDrilldown({
   initialPrimary = 'fn',
   initialPath = [],
   rootDepth = 2,
+  preserveUnclassified = false,
   excludeEcCodes = [],
   excludeFnCodes = [],
   onPrimaryChange,
@@ -79,6 +80,7 @@ export function useTreemapDrilldown({
   initialPrimary?: 'fn' | 'ec'
   initialPath?: string[]
   rootDepth?: 2 | 4 | 6
+  preserveUnclassified?: boolean
   excludeEcCodes?: string[]
   excludeFnCodes?: string[]
   onPrimaryChange?: (primary: 'fn' | 'ec') => void
@@ -140,10 +142,11 @@ export function useTreemapDrilldown({
       path: currentPath,
       constraint,
       rootDepth: effectiveRootDepth,
+      preserveUnclassified,
       excludeEcCodes,
       excludeFnCodes,
     })
-  }, [nodes, activePrimary, currentPath, constraint, effectiveRootDepth, excludeEcCodes, excludeFnCodes])
+  }, [nodes, activePrimary, currentPath, constraint, effectiveRootDepth, preserveUnclassified, excludeEcCodes, excludeFnCodes])
 
   const excludedItemsSummary = useMemo(() => {
     const hasEcExclusions = excludeEcCodes && excludeEcCodes.length > 0
@@ -185,7 +188,8 @@ export function useTreemapDrilldown({
     let depth = (currentCode ? (currentCode.split('.').length + 1) * 2 : nextRootDepth) as 2 | 4 | 6 | 8
 
     // Mirror buildTreemapDataV2 behavior for economic classifications.
-    if (nextActive === 'ec' && depth > 6) {
+    const depthCapped = nextActive === 'ec' && depth > 6
+    if (depthCapped) {
       depth = 6
     }
     if (depth > 6) return false
@@ -213,7 +217,10 @@ export function useTreemapDrilldown({
       }
 
       const activeCode = nextActive === 'fn' ? fnCode : ecCode
-      if (!activeCode) continue
+      if (!activeCode) {
+        if (preserveUnclassified && !currentCode && item.amount) return true
+        continue
+      }
       if (currentCode && !activeCode.startsWith(currentCode)) continue
 
       const codeParts = activeCode.split('.')
@@ -224,13 +231,15 @@ export function useTreemapDrilldown({
           : codeParts.slice(0, 3).join('.')
 
       if (!groupCode) continue
-      if (currentCode && groupCode === currentCode) continue
+      // A posting at the drilled code opens a level only where the tree goes deeper;
+      // at a capped depth every record matches the drilled code itself.
+      if (currentCode && groupCode === currentCode && (depthCapped || !(preserveUnclassified && item.amount))) continue
 
       return true
     }
 
     return false
-  }, [evaluateForPath, nodes, normalizedExcludeEcCodes, normalizedExcludeFnCodes])
+  }, [evaluateForPath, nodes, normalizedExcludeEcCodes, normalizedExcludeFnCodes, preserveUnclassified])
 
   const onNodeClick = useCallback(
     (code: string | null) => {

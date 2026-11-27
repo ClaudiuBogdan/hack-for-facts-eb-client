@@ -66,16 +66,18 @@ export function CookieSettingsPage({
   // the "last changed" date take over. Local, since a save from another tab
   // is not this reader's click.
   const [justSaved, setJustSaved] = useState(false)
+  const [saveFailed, setSaveFailed] = useState(false)
   useEffect(() => {
     if (!justSaved) return
     const timer = setTimeout(() => setJustSaved(false), SAVED_FLASH_MS)
     return () => clearTimeout(timer)
   }, [justSaved])
 
-  const commit = (action: () => void) => {
-    action()
-    setJustSaved(true)
-    if (redirect) onReturn()
+  const commit = (action: () => boolean) => {
+    const saved = action()
+    setJustSaved(saved)
+    setSaveFailed(!saved)
+    if (saved && redirect) onReturn()
   }
 
   const cookieState = cookieStateFor(saved, hasDecision)
@@ -251,6 +253,11 @@ export function CookieSettingsPage({
                     : t`Nicio alegere salvată`}
             </MonoLabel>
           </div>
+          {saveFailed ? (
+            <p role="alert" className="mt-3 text-sm text-destructive">
+              <Trans>Alegerea nu s-a putut salva. Urmărirea opțională este oprită în această filă.</Trans>
+            </p>
+          ) : null}
         </RuledFrame>
       </section>
 

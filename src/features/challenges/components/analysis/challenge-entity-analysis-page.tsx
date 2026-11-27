@@ -1752,6 +1752,7 @@ export function ChallengeEntityAnalysisPage({
     onBreadcrumbClick,
   } = useTreemapDrilldown({
     nodes: treemapNodes,
+    preserveUnclassified: treemapAccountCategory === 'ch',
     initialPrimary: treemapPrimary,
     initialPath: [...treemapPath],
     rootDepth:

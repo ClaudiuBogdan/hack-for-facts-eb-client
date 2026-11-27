@@ -127,7 +127,7 @@ export function useTreemapChartLink({
     }
 
     // Create series for each visible group (child items)
-    const sortedData = [...data].sort((a, b) => b.value - a.value)
+    const sortedData = data.filter((item) => !item.terminal).sort((a, b) => b.value - a.value)
     const limitedData = sortedData.slice(0, maxTotalSeries)
 
     for (let index = 0; index < limitedData.length; index += 1) {
