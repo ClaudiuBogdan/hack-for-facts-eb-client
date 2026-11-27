@@ -44,7 +44,7 @@ files, including the no-mock tests and the REST map read the warnings never show
 | `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open; public-enterprise-page :117/:129 skip on live partial buyer reads; recordings must include a complete-buyer case |
 | `national-budget-home.spec.ts` | BudgetApprovedRecords 40, BudgetExecutionObservations 3, BudgetNationalExecutionSeries 3, AggregatedLineItems 2, EntityAnalytics 2, BudgetApprovedTotals 1 | client-dev-polish | open |
 | `national-budget-analytics.spec.ts` | BudgetApprovedTotals 5, BudgetApprovedRecords 4, BudgetExecutionObservations 3, BudgetApprovedSeries 1 | client-dev-polish | open |
-| `legislation-act.spec.ts` (new on dev after 11-25) | LegalDocumentOutline 5, the act text's REST render read 5 (full run, 2026-11-27) | client-legislation | open; client-legislation is mocking both reads |
+| `legislation-act.spec.ts` (new on dev after 11-25) | LegalDocumentOutline 5, the act text's REST render read 5 (full run, 2026-11-27) | client-legislation | recorded, a95a702f3 (the outline through ssr-api, the render reads from `tests/fixtures/legislation-act-flow`) |
 
 How the fixtures are made: the ones recorded for TEST-001 are the dev API's own answers (2026-11-25) to the app's own query text,
 with the variables the test sends. Where an answer is large it is cut by whole records: a population map to one UAT's cell, a
@@ -76,8 +76,8 @@ run with zero catches.
 
 **Held back (2026-11-27).** The whole suite was run as CI runs it (both steps, one worker, no retries) on ce20f3126, with dev
 54a1bf845 merged. The guard caught 101 browser reads in three specs and failed their 20 tests, and no others:
-- `legislation-act.spec.ts` (client-legislation): 4 tests. client-legislation is mocking the outline and render reads; the
-  guard comes back after that lands.
+- `legislation-act.spec.ts` (client-legislation): 4 tests. Its outline and render reads are recorded in a95a702f3; the
+  guard comes back for it after that lands.
 - `procurement-analytics.spec.ts` (procurement-da-client): 12 tests;
 - `public-enterprise-page.spec.ts` (procurement-da-client): 4 tests.
 
@@ -192,7 +192,7 @@ specs: all served, 0 missing.
 | `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 5 | procurement-da-client |
 | `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 | procurement-da-client |
 | `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies |
-| `legislation-act.spec.ts` | LegalActDetail 4 | 4 | client-legislation |
+| `legislation-act.spec.ts` | LegalActDetail 4 | 4 | client-legislation: recorded, a95a702f3 |
 
 ## Closure criterion
 
