@@ -13,8 +13,31 @@ import type { Page, Locator } from '@playwright/test'
 import { expect } from '@playwright/test'
 
 /**
- * Wait for the page to be fully hydrated and interactive.
- * This ensures React has mounted and hydrated all components.
+ * React attaches its props to an element when it hydrates it (or renders it). A server-rendered control without
+ * them is not React's yet: text typed into it stays in the box but never reaches React (React 19 hydrates an input
+ * without a change event), and a click on it does nothing (TEST-003).
+ */
+const HYDRATED_KEY = '__reactProps$'
+
+/**
+ * The page's controls React does not own yet, named for an error message; empty once the page is hydrated. The map
+ * libraries build their own controls (Leaflet's and MapLibre's zoom buttons), which React never owns: not counted.
+ */
+function unhydratedControls(): string[] {
+  const owned = (element: Element) => Object.keys(element).some((key) => key.startsWith('__reactProps$'))
+  const name = (element: Element) =>
+    `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ''}${element.getAttribute('aria-label') ? `[aria-label="${element.getAttribute('aria-label')}"]` : ''}`
+  const stray = [...document.querySelectorAll('input, textarea, select, button')]
+    .filter((element) => !element.closest('.leaflet-container, .maplibregl-map') && !owned(element))
+    .map(name)
+  return owned(document.body) ? stray : ['body', ...stray]
+}
+
+/**
+ * Wait for the page to be fully hydrated and interactive: the network idle, the loading skeletons gone, and React
+ * owning the page — the body and every form control and button carry React's props (TEST-003), except the controls
+ * the map libraries build themselves. The body alone is not enough: React 19 hydrates a page boundary by boundary,
+ * and its controls follow. Fails, naming the controls, if React has not taken the page within 15 s.
  */
 export async function waitForHydration(page: Page): Promise<void> {
   // Wait for network to settle (API calls complete)
@@ -27,6 +50,32 @@ export async function waitForHydration(page: Page): Promise<void> {
   await skeleton.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {
     // Skeleton might not exist, continue
   })
+
+  // Wait for React to own the page (the map libraries' own controls aside, as in unhydratedControls).
+  await page.waitForFunction(() => {
+    const owned = (element: Element) => Object.keys(element).some((key) => key.startsWith('__reactProps$'))
+    const controls = [...document.querySelectorAll('input, textarea, select, button')].filter((element) => !element.closest('.leaflet-container, .maplibregl-map'))
+    return owned(document.body) && controls.every(owned)
+  }, undefined, { timeout: 15000 }).catch(async (error: unknown) => {
+    // A page that failed outright also lands here; its own error is the cause.
+    const stray = await page.evaluate(unhydratedControls).catch(() => [])
+    throw new Error(`React has not hydrated the page within 15 s (TEST-003); not yet React's: ${stray.slice(0, 8).join(', ') || 'unknown'}`, { cause: error })
+  })
+
+  // React writes the props key while it renders a boundary and commits it after; listeners added in effects (a
+  // keyboard shortcut, say) come later still. Two frames and a task give the last boundary its commit and effects.
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0)))))
+}
+
+/**
+ * Wait until React has hydrated one element (TEST-003): its own props are on it. For a control a test types into
+ * or clicks before anything else on a page that is still hydrating.
+ */
+export async function waitForElementHydration(locator: Locator, timeout = 15000): Promise<void> {
+  await expect
+    // A reload or a re-render between polls can detach the element: not hydrated yet, poll again.
+    .poll(() => locator.evaluate((element, key) => Object.keys(element).some((name) => name.startsWith(key)), HYDRATED_KEY).catch(() => false), { timeout })
+    .toBe(true)
 }
 
 /**

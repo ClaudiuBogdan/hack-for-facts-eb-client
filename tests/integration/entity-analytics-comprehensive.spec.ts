@@ -21,7 +21,7 @@
  * - Specific selectors for faster element location
  */
 
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { clickToggleWithUrlVerification, waitForHydration } from '../utils/test-helpers'
 
 // Constants for test data

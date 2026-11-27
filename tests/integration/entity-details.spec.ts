@@ -5,7 +5,7 @@
  * /entities/:cui. Legacy entity tabs are intentionally not asserted here.
  */
 
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import type { Page } from '@playwright/test'
 import type { MockApiFixture } from '../utils/types'
 import { waitForHydration } from '../utils/test-helpers'

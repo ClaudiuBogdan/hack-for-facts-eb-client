@@ -26,6 +26,8 @@ import { CompanyMoneyBand, type ProcurementState } from './company-money-band'
 import { CompanyProfileHead } from './company-profile-head'
 import { CompanyProfileError, CompanyProfileRegistryMoved, CompanyProfileSkeleton } from './company-profile-states'
 import { CompanyRegistryBand } from './company-registry-band'
+import { PROFILE_SECTIONS } from './company-profile-sections'
+import { ProfileSectionBar } from './company-section-bar'
 import { CompanyYearsBand } from './company-years-band'
 
 /**
@@ -48,18 +50,6 @@ import { CompanyYearsBand } from './company-years-band'
  * cached from an earlier visit included. The SEAP names behind the public
  * money arrive after it, each with its own pending state.
  */
-
-type SectionId = 'afacerea' | 'bani-publici' | 'activitati' | 'litigii' | 'an-cu-an' | 'registru'
-
-// The owner's order (25 November 2026): what the company does and its statements right under its chart.
-const SECTIONS: readonly { readonly id: SectionId; readonly label: () => string }[] = [
-  { id: 'afacerea', label: () => t`Afacerea` },
-  { id: 'activitati', label: () => t`Activități` },
-  { id: 'an-cu-an', label: () => t`An cu an` },
-  { id: 'bani-publici', label: () => t`Bani publici` },
-  { id: 'litigii', label: () => t`Litigii` },
-  { id: 'registru', label: () => t`Registru` },
-]
 
 function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
@@ -131,7 +121,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   const onGrain = (grain: CompanyPaymentGrain) => choose({ plati: grain === grains[0] ? undefined : grain })
 
   const years = model.qualification.statements.length > 0
-  const sections = SECTIONS.filter((section) => (section.id !== 'litigii' || litigation) && (section.id !== 'an-cu-an' || years))
+  const sections = PROFILE_SECTIONS.filter((section) => (section.id !== 'litigii' || litigation) && (section.id !== 'an-cu-an' || years))
   const figures = companyFigures(model, { business: 'afacerea', money: 'bani-publici' })
 
   return (
@@ -141,20 +131,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
 
       <CompanyProfileHead model={model} />
 
-      <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
-        <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
-          <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground md:block md:max-w-72">{model.displayName}</span>
-          <ol className="flex shrink-0 gap-4 sm:gap-5 md:ml-auto">
-            {sections.map((section) => (
-              <li key={section.id}>
-                <a href={`#${section.id}`} className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground">
-                  {section.label()}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </RuledFrame>
-      </nav>
+      <ProfileSectionBar name={model.displayName} sections={sections} />
 
       {figures.length > 0 ? (
         <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
