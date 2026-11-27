@@ -4,7 +4,7 @@
 held back on 2026-11-27 until three specs mock their reads (see the guard's section).
 Server side: measured; the ssr-api fixture origin is client-dev-polish's. **Priority:** P2: a test that reaches the live dev API depends on its data, its speed and its rate limit,
 and sends traffic to it from every CI run. **Related:** `tests/utils/integration-base.ts` (the `mockApi` fixture),
-`tests/utils/api-guard.ts`, `tests/utils/map-mocks.ts`, `scripts/find-unmocked-graphql-reads.mjs`. Reported by root
+`tests/utils/api-guard.ts` (c440eb3ba; not on dev while held back), `tests/utils/map-mocks.ts`, `scripts/find-unmocked-graphql-reads.mjs`. Reported by root
 (refactor-architecture), after a flaky-spec report on `entity-analytics.spec.ts`.
 
 ## What happens
@@ -44,7 +44,7 @@ files, including the no-mock tests and the REST map read the warnings never show
 | `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open; public-enterprise-page :117/:129 skip on live partial buyer reads; recordings must include a complete-buyer case |
 | `national-budget-home.spec.ts` | BudgetApprovedRecords 40, BudgetExecutionObservations 3, BudgetNationalExecutionSeries 3, AggregatedLineItems 2, EntityAnalytics 2, BudgetApprovedTotals 1 | client-dev-polish | open |
 | `national-budget-analytics.spec.ts` | BudgetApprovedTotals 5, BudgetApprovedRecords 4, BudgetExecutionObservations 3, BudgetApprovedSeries 1 | client-dev-polish | open |
-| `legislation-act.spec.ts` (new on dev after 11-25) | LegalDocumentOutline 5, the act text's REST render read 5 (full run, 2026-11-27) | client-legislation | open |
+| `legislation-act.spec.ts` (new on dev after 11-25) | LegalDocumentOutline 5, the act text's REST render read 5 (full run, 2026-11-27) | client-legislation | recorded, a95a702f3 (the outline through ssr-api, the render reads from `tests/fixtures/legislation-act-flow`) |
 
 How the fixtures are made: the ones recorded for TEST-001 are the dev API's own answers (2026-11-25) to the app's own query text,
 with the variables the test sends. Where an answer is large it is cut by whole records: a population map to one UAT's cell, a
@@ -57,6 +57,8 @@ matches the request's granularity and, series by series, its id and filter, so a
 
 ## The API guard (browser side)
 
+Held back, so not on dev (see the note at the end of this section). As written in c440eb3ba:
+
 `tests/utils/api-guard.ts`, an auto fixture: `integration-base` builds on it, and the six specs that import Playwright directly import
 it instead (`charts-page`, `cookie-consent`, `ins-native-entity`, `ins-native-saved-chart`, `statistics-comparisons`,
 `statistics-ins-native-outcomes`).
@@ -68,18 +70,20 @@ it instead (`charts-page`, `cookie-consent`, `ins-native-entity`, `ins-native-sa
   pages, so a read the page starts as the test ends counts too. Locally it prints `[api-guard] no mock: …` with the spec and
   test, and lets the request through.
 
-**A new spec imports `test` and `expect` from `../utils/integration-base`, or from `../utils/api-guard` if it must not have
-`integration-base`'s stored consent.** It goes in last, after a CI-style run with zero catches.
+**A new spec imports `test` and `expect` from `../utils/integration-base`.** Once the guard is back, a spec that must not
+have `integration-base`'s stored consent imports them from `../utils/api-guard`. The guard goes in last, after a CI-style
+run with zero catches.
 
 **Held back (2026-11-27).** The whole suite was run as CI runs it (both steps, one worker, no retries) on ce20f3126, with dev
 54a1bf845 merged. The guard caught 101 browser reads in three specs and failed their 20 tests, and no others:
-- `legislation-act.spec.ts` (client-legislation): 4 tests;
+- `legislation-act.spec.ts` (client-legislation): 4 tests. Its outline and render reads are recorded in a95a702f3; the
+  guard comes back for it after that lands.
 - `procurement-analytics.spec.ts` (procurement-da-client): 12 tests;
 - `public-enterprise-page.spec.ts` (procurement-da-client): 4 tests.
 
-The guard (c440eb3ba) is reverted by the commit that adds this note, so the shared hydration wait (TEST-003) and the server
-recordings land without it. Reverting that commit brings the guard back, once those specs mock their reads and a CI-style run
-catches none.
+The guard (c440eb3ba) was reverted in d70dda656, so the shared hydration wait (TEST-003) and the server recordings landed
+without it (on dev in c07941c31, 2026-11-27). Reverting d70dda656 brings the guard back, once those specs mock their reads
+and a CI-style run catches none.
 
 ## Server reads (measured 2026-11-25)
 
@@ -153,17 +157,17 @@ Each `[ssr-api]` line is given to the test result printed after it.
 
 | Spec | Server reads with no recording | Tests failed in strict | With | State |
 |---|---|---:|---|---|
-| `entity-analytics-comprehensive.spec.ts` | EntityAnalytics 62 | 0 | client-entity-analytics | recorded, 0710bfb58 |
+| `entity-analytics-comprehensive.spec.ts` | EntityAnalytics 62 | 0 | client-entity-analytics | on dev, 0710bfb58 (in c07941c31) |
 | `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 3 | procurement-da-client | open |
 | `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 | procurement-da-client | open |
-| `entity-analytics.spec.ts` | EntityAnalytics 42 | 1 | client-entity-analytics | recorded, 0710bfb58 |
-| `public-institutions.spec.ts` | EntityAnalytics 14, GetExecutionLineItemsAnalytics 14 | 0 | client-entity-analytics | recorded, ca1a1b75c |
-| `justice.spec.ts` | JusticeAnalysisCaseload 12, JudicialCourtPage 3, JudicialCasePage 2, JudicialCaseExists 1 | 5 | client-entity-analytics | recorded, 39a8f0f25 |
+| `entity-analytics.spec.ts` | EntityAnalytics 42 | 1 | client-entity-analytics | on dev, 0710bfb58 (in c07941c31) |
+| `public-institutions.spec.ts` | EntityAnalytics 14, GetExecutionLineItemsAnalytics 14 | 0 | client-entity-analytics | on dev, ca1a1b75c (in c07941c31) |
+| `justice.spec.ts` | JusticeAnalysisCaseload 12, JudicialCourtPage 3, JudicialCasePage 2, JudicialCaseExists 1 | 5 | client-entity-analytics | on dev, 39a8f0f25 (in c07941c31) |
 | `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies | open |
-| `entity-details.spec.ts` | GetEntityMetadata 12 | 6 | client-entity-analytics | recorded, 08cc11803 |
-| `entity-exploration.spec.ts` | GetEntityMetadata 8 | 2 | client-entity-analytics | recorded, 08cc11803 |
-| `buget-routing.spec.ts` | GetEntityLineItems 4, GetEntityMetadata 2 | 1 | client-entity-analytics | recorded, 050883290 |
-| `landing-page.spec.ts` | ElectionEvents 1 | 0 | client-entity-analytics | recorded, 9058876f3 |
+| `entity-details.spec.ts` | GetEntityMetadata 12 | 6 | client-entity-analytics | on dev, 08cc11803 (in c07941c31) |
+| `entity-exploration.spec.ts` | GetEntityMetadata 8 | 2 | client-entity-analytics | on dev, 08cc11803 (in c07941c31) |
+| `buget-routing.spec.ts` | GetEntityLineItems 4, GetEntityMetadata 2 | 1 | client-entity-analytics | on dev, 050883290 (in c07941c31) |
+| `landing-page.spec.ts` | ElectionEvents 1 | 0 | client-entity-analytics | on dev, 9058876f3 (in c07941c31) |
 
 Two cautions on reading this run:
 - A spec with no failures here still reads the live API in CI's default (passthrough) mode. Its page fell back to the browser's
@@ -174,8 +178,9 @@ Two cautions on reading this run:
 
 Fix per spec: record its server reads (`SSR_API_MODE=record`, a run of that spec) and move it onto `tests/utils/ssr-api/test.ts`,
 by the owner in the table (root, 2026-11-25). With one worker, as CI runs, the move makes the spec's server reads strict too
-(client-dev-polish, db855b3af). The "recorded" commits land with the shared hydration wait (TEST-003), without the guard (held
-back, above). Each was proven with a record run, then a strict run of its specs: all served, 0 missing.
+(client-dev-polish, db855b3af). The recorded specs landed with the shared hydration wait (TEST-003), without the guard (held
+back, above), on dev in c07941c31 (CI run 46027690433 green). Each was proven with a record run, then a strict run of its
+specs: all served, 0 missing.
 
 **Strict again (2026-11-27).** The same run on ce20f3126 (dev 54a1bf845 merged; the guard printing, not failing):
 - Server reads with no recording: 115, all in four specs.
@@ -187,7 +192,7 @@ back, above). Each was proven with a record run, then a strict run of its specs:
 | `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 5 | procurement-da-client |
 | `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 | procurement-da-client |
 | `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies |
-| `legislation-act.spec.ts` | LegalActDetail 4 | 4 | client-legislation |
+| `legislation-act.spec.ts` | LegalActDetail 4 | 4 | client-legislation: recorded, a95a702f3 |
 
 ## Closure criterion
 

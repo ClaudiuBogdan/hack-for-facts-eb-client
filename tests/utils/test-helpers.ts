@@ -9,7 +9,7 @@
  * 4. Use Playwright's auto-retry assertions
  */
 
-import type { Page, Locator } from '@playwright/test'
+import type { Page, Locator, Request } from '@playwright/test'
 import { expect } from '@playwright/test'
 
 /**
@@ -31,6 +31,42 @@ function unhydratedControls(): string[] {
     .filter((element) => !element.closest('.leaflet-container, .maplibregl-map') && !owned(element))
     .map(name)
   return owned(document.body) ? stray : ['body', ...stray]
+}
+
+/**
+ * Why a page may not have hydrated, for the error. It lists the page's uncaught errors and console errors since it was
+ * last loaded, and its recent requests that failed or were answered 400 or more (a script chunk that never came, or
+ * Chromium's ERR_NETWORK_CHANGED on a busy host). A page that never hydrates looks the same in a snapshot whatever
+ * the cause (TEST-003, the open observation of 26 November).
+ */
+async function whatThePageSaid(page: Page): Promise<string> {
+  const [errors, messages, requests] = await Promise.all([
+    page.pageErrors({ filter: 'since-navigation' }).catch(() => []),
+    page.consoleMessages({ filter: 'since-navigation' }).catch(() => []),
+    page.requests().catch(() => []),
+  ])
+  // A request still open (a stream) has no response yet, and asking for one would wait for it: a second is enough.
+  const responseOf = (request: Request) =>
+    Promise.race([request.response().catch(() => null), new Promise<null>((resolve) => setTimeout(() => resolve(null), 1000))])
+  const badRequests = await Promise.all(
+    requests.map(async (request) => {
+      const failure = request.failure()?.errorText
+      const status = failure ? null : ((await responseOf(request))?.status() ?? null)
+      const outcome = failure ?? (status !== null && status >= 400 ? `HTTP ${status}` : null)
+      return outcome ? `request ${request.method()} ${request.url().split('?')[0]}: ${outcome}` : null
+    }),
+  )
+  // The requests before the console: they name the URL, which the console's "Failed to load resource" leaves out.
+  const lines = [
+    ...errors.map((pageError) => `page error: ${pageError.message}`),
+    ...badRequests.filter((line) => line !== null),
+    ...messages.filter((message) => message.type() === 'error').map((message) => `console error: ${message.text()}`),
+  ].map((line) => line.slice(0, 300))
+  if (lines.length === 0) return '\nThe page reported no error, console error or failed request.'
+  const counts = new Map<string, number>()
+  for (const line of lines) counts.set(line, (counts.get(line) ?? 0) + 1)
+  const listed = [...counts].slice(0, 12).map(([line, count]) => `  - ${line}${count > 1 ? ` (×${count})` : ''}`)
+  return `\nWhat the page reported:\n${listed.join('\n')}`
 }
 
 /**
@@ -59,7 +95,7 @@ export async function waitForHydration(page: Page): Promise<void> {
   }, undefined, { timeout: 15000 }).catch(async (error: unknown) => {
     // A page that failed outright also lands here; its own error is the cause.
     const stray = await page.evaluate(unhydratedControls).catch(() => [])
-    throw new Error(`React has not hydrated the page within 15 s (TEST-003); not yet React's: ${stray.slice(0, 8).join(', ') || 'unknown'}`, { cause: error })
+    throw new Error(`React has not hydrated the page within 15 s (TEST-003); not yet React's: ${stray.slice(0, 8).join(', ') || 'unknown'}${await whatThePageSaid(page)}`, { cause: error })
   })
 
   // React writes the props key while it renders a boundary and commits it after; listeners added in effects (a

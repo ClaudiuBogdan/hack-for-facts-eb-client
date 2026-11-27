@@ -12,7 +12,11 @@ import { LEGAL_DOMAIN_SLUGS } from './legal-domains'
 
 /** The act types the filter accepts (the API's 18; `doc`, `codul` and `proiect` are not among them: LEG-PDYY). */
 export const SEARCH_TYPES = ['lege', 'oug', 'og', 'hotarare', 'ordin', 'decizie', 'decret', 'norma', 'regulament', 'rectificare', 'metodologie', 'comunicat', 'procedura', 'acord', 'circulara', 'instructiuni', 'raport', 'unknown'] as const
-export const SEARCH_STATUSES = ['in-vigoare', 'modificat', 'abrogat-partial', 'abrogat', 'suspendat', 'iesit-din-vigoare'] as const
+/**
+ * The statuses a reader can choose. „necunoscut" (the Portal gives none) is one since 27 November 2026 (owner): the
+ * retired Acte page offered it, so its old links land on it exactly.
+ */
+export const SEARCH_STATUSES = ['in-vigoare', 'modificat', 'abrogat-partial', 'abrogat', 'suspendat', 'iesit-din-vigoare', 'necunoscut'] as const
 /** The summaries' 13 categories: a different vocabulary from the act type, which it often repeats. */
 export const SEARCH_CATEGORIES = ['lege', 'ordin', 'hotarare', 'hotarare-de-guvern', 'decizie', 'decret', 'norma-metodologica', 'regulament', 'ordonanta', 'ordonanta-de-urgenta', 'tratat', 'circulara', 'altele'] as const
 
