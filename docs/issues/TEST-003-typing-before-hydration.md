@@ -91,14 +91,33 @@ failed and 49 passed. The same step run again on the same commit passed 50 of 50
 Root took the push with this open (26 November 2026): one timeout in 100 runs under load against the earlier 1 in
 20–30.
 
+**It showed again, and now names its cause (27 November 2026).** The spec ran with only the shared wait, 20 times over
+(200 runs each), one worker, no retries.
+- **First pass, 16:14 UTC.** 199 passed and 1 failed, while client-legislation's full gates ran on the same host. The
+  whole page stayed server HTML: the error listed `body` first among the controls React did not own. There was no
+  console or request record.
+- **The capture.** The shared helper's failure path now lists what the page reported: its uncaught errors, its
+  console errors, and its recent requests that failed or got 400 or more (`whatThePageSaid`). A probe that aborted the
+  page's scripts, then one that answered them 404, named the script chunk and its error each time.
+- **Second pass, 16:46 UTC.** 193 passed and 7 failed. All 7 fell in one burst of consecutive tests, and every one
+  reported `net::ERR_NETWORK_CHANGED`. Chromium raises that when the host's network interfaces change. Docker's veth
+  devices coming and going on this host are a likely source, not checked. client-legislation had already seen the
+  same signature under load, where a reload hydrated the page.
+- **Third pass, 17:08 UTC, with no other heavy run on the host.** 195 passed and 5 failed, again in one burst of
+  consecutive tests. The capture now named the requests: the page's script chunks (`/assets/*.js`), each failing with
+  `net::ERR_NETWORK_CHANGED`.
+
+So a page that never hydrates on this host is, so far, the host's network, not the page. The capture tells the two
+apart from now on. A longer timeout would still hide a real failure.
+
 ## Follow-ups
 
 - **A shared helper for the tests: done (27 November 2026).** Root gave it to client-entity-analytics, which owns the
   integration test infrastructure. `waitForHydration`/`waitForPageReady` now wait for React to own the page, and
   `waitForElementHydration` waits for one element (`cc9689676`, `670514ff5`, on dev in `c07941c31`). The spec's own
   `hydratedSearchBox` was dropped afterwards.
-  - On a timeout, the shared helper names the controls React does not own. Like the spec's helper, it records no
-    console errors or failed requests, so the open observation above still applies.
+  - On a timeout, the shared helper names the controls React does not own and what the page reported (see the open
+    observation above, 27 November).
 - **A product fix: the same gap hits readers**, filed as SEARCH-001. The proof above is not only about tests. A reader on a slow phone
   who types before the page hydrates gets the same silence: the text stays in the box and no search runs.
   - **What exists now.** On `/legislation/search` the search input has no `name`, so pressing Enter before
