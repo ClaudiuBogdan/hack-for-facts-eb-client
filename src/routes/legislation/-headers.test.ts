@@ -12,16 +12,13 @@ const routes: readonly (readonly [string, () => Promise<{ readonly Route: unknow
   ['/legislation', () => import('./index')],
   ['/legislation/analytics', () => import('./analytics')],
   ['/legislation/search', () => import('./search')],
-  ['/legislation/acts/', () => import('./acts/index')],
   ['/legislation/changes', () => import('./changes')],
-  ['/legislation/gazette', () => import('./gazette')],
-  ['/legislation/guide', () => import('./guide')],
 ]
 
 const PRIVATE = { 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' }
 
 /**
- * The seven pages of the legislation section are never stored by a shared cache, on every path (root, 25 November
+ * The four pages of the legislation section are never stored by a shared cache, on every path (root, 25 November
  * 2026; CACHE-001): they render in the reader's language from a cookie, and the CDN does not key on `Vary: Cookie`.
  */
 describe.each(routes)('%s headers', (_name, load) => {

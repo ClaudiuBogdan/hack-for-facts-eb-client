@@ -6,21 +6,16 @@ import {
   LEGAL_DOMAIN_SLUGS,
   LEGAL_EVENT_KINDS,
   LEGAL_EVENT_SOURCES,
-  legalActsBrowseFilterShape,
 } from './legal-search'
 
 // The routes' URL contract (search params), lazy and apart so the route tree
 // does not carry this module: `legal-search.ts`, re-exported here.
 export {
-  gazetteBrowseSearchSchema,
-  legalActsBrowseSearchSchema,
   legalChangesSearchSchema,
   legalFinderSearchSchema,
   legalReaderSearchSchema,
 } from './legal-search'
 export type {
-  GazetteBrowseSearch,
-  LegalActsBrowseSearch,
   LegalChangesSearch,
   LegalFinderSearch,
   LegalReaderSearch,
@@ -531,10 +526,6 @@ export const legalActsPageSchema = z.object({
   totalCount: z.number().int().nullable(),
 })
 export type LegalActsPage = z.infer<typeof legalActsPageSchema>
-
-/** Filters the directory sends to the server — verified filter families. */
-export const legalActsBrowseFilterSchema = z.object(legalActsBrowseFilterShape())
-export type LegalActsBrowseFilter = z.infer<typeof legalActsBrowseFilterSchema>
 
 /** `MoPartCode` — the eight gazette parts the server serves (`GAZETTE_PART_CODES`). */
 export const gazettePartCodeSchema = z.enum(GAZETTE_PART_CODES)

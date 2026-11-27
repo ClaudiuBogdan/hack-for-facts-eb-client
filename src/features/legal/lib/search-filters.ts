@@ -120,6 +120,24 @@ export function browseFilter(filters: SearchFilters): LegalSearchFilter {
   return filters.stare === 'implicit' ? { ...filter, status: [...LIVE_STATUSES] } : filter
 }
 
+/**
+ * A link to the retired Acte page (`/legislation/acts?actType=&year=&domain=&status=`), read as the search's keys
+ * (owner, 27 November 2026). The page showed the acts in force when it named no status, so a bare link asks for those;
+ * `status=toate` was every act. A value the search does not take drops; the address's language goes along.
+ */
+export function searchOfActsDirectory(search: Record<string, unknown>): Record<string, string | true> {
+  const status = search['status']
+  const filters = readSearchFilters({
+    tip: search['actType'],
+    an: search['year'],
+    domeniu: search['domain'],
+    ...(status === 'toate' ? { historical: true } : { stare: status === undefined ? 'in-vigoare' : status }),
+  })
+  const keys = Object.entries(searchOfFilters(filters)).filter((entry): entry is [string, string | true] => entry[1] !== undefined)
+  const lang = search['lang']
+  return { ...(typeof lang === 'string' ? { lang } : {}), ...Object.fromEntries(keys) }
+}
+
 /** Whether a filter read from the AI summaries is on: then acts without a summary are left out, and the page says so. */
 export function usesSummaries(filters: SearchFilters): boolean {
   return filters.domeniu.length > 0 || filters.categorie.length > 0 || filters.sanctiuni

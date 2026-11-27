@@ -5,6 +5,7 @@ import {
   LIVE_STATUSES,
   NO_SEARCH_FILTERS,
   browseFilter,
+  searchOfActsDirectory,
   activeFilterCount,
   isSearchFiltered,
   portalNameCase,
@@ -158,5 +159,32 @@ describe('browseFilter (the act list with no term, owner 27 November 2026)', () 
   it('passes the years and the summary filters through as the search takes them', () => {
     const filters = { ...NO_SEARCH_FILTERS, stare: 'toate' as const, from: 2020, to: 2024, domeniu: ['sanatate'], categorie: ['tratat'], sanctiuni: true }
     expect(browseFilter(filters)).toEqual(searchArgs(filters).filter)
+  })
+})
+
+describe('searchOfActsDirectory (the retired Acte page’s links, owner 27 November 2026)', () => {
+  it('reads a bare link as the old page’s default: the acts in force', () => {
+    expect(searchOfActsDirectory({})).toEqual({ stare: 'in-vigoare' })
+  })
+
+  it('reads „toate" as every act, repealed ones too', () => {
+    expect(searchOfActsDirectory({ status: 'toate' })).toEqual({ historical: true })
+  })
+
+  it('carries the type, the year, the domain and a named status over in the search’s keys', () => {
+    expect(searchOfActsDirectory({ actType: 'lege', year: 2020, domain: 'sanatate', status: 'abrogat' })).toEqual({
+      tip: 'lege',
+      an: '2020',
+      domeniu: 'sanatate',
+      stare: 'abrogat',
+    })
+  })
+
+  it('drops a type the search does not know, and keeps the acts in force', () => {
+    expect(searchOfActsDirectory({ actType: 'anexa' })).toEqual({ stare: 'in-vigoare' })
+  })
+
+  it('keeps the address’s language', () => {
+    expect(searchOfActsDirectory({ lang: 'en', status: 'abrogat' })).toEqual({ lang: 'en', stare: 'abrogat' })
   })
 })
