@@ -859,11 +859,11 @@ Dacia before any of it was built.
 
 ### Left for the data owners
 
-- The 464d layout's two „PIERDERE BRUTĂ" lines (I17, I19): no evidence yet
-  that I19 is the net loss (CFR 2025: I17 = 534.337.056, I19 = 548.897.866,
-  profit 0). Until a form dictionary or filings settle it, these companies'
-  net results stay held, and the hub's national net result leaves them out
-  (it says how many statements it counts each year).
+- The 464d layout's two „PIERDERE BRUTĂ" lines (I17, I19): settled by the
+  data owners (PRIV-Z2VJ, closed 27 November 2026). Release 19 reports the FY2019–2025
+  IFRS-layout gross loss, net loss and net result, so these companies' net
+  results are drawn like any other. The handling of a held result above
+  (`admittedNet`) stays for any year the evaluator still holds.
 - A three-digit ANAF token („610") and the same code in two revisions: their
   qualification needs source evidence; padding alone would still leave OMV's
   0610 in both Rev.2 and Rev.3.
