@@ -1,6 +1,7 @@
 /**
- * Companies E2E — runs against the redesign GraphQL API via the dev server
- * (localhost:3000 → VITE_API_URL :3001). Tolerant of the API being down:
+ * Companies E2E — runs against the redesign GraphQL API, on the site the
+ * config serves (a local build, or E2E_BASE_URL's deployed site, as the
+ * nightly reads the dev site). Tolerant of the API being down:
  * the suite skips rather than fails when the live profile cannot load, so it
  * does not red-bar CI when the tunnels/server are offline.
  *
@@ -40,15 +41,12 @@ test.describe('Companies — live profile', () => {
     const ready = await gotoProfile(page, DEDEMAN_CUI)
     test.skip(!ready, 'Live company profile unavailable (API/tunnel down)')
 
-    // The newest statement's balance sheet heads the band's table; DEDEMAN
-    // files every year, so it is a recent one.
+    // The band draws the statements' years in one chart (money and people at once, no measure switch); every
+    // statement opens under „Bilanțurile, an cu an". DEDEMAN files every year, so the newest is a recent one.
     const business = page.locator('#afacerea')
-    await expect(business.getByText(/^Bilanț, 20(2[4-9]|[3-9]\d)$/).first()).toBeVisible({
-      timeout: 15000,
-    })
-    await expect(
-      business.getByRole('radiogroup', { name: 'Graficul arată' }),
-    ).toBeVisible()
+    await expect(business.getByRole('group', { name: /^Anii:/ })).toBeVisible({ timeout: 15000 })
+    const years = page.getByRole('region', { name: 'Bilanțurile, an cu an' })
+    await expect(years.getByRole('button', { name: /^Bilanțul pe 20(2[4-9]|[3-9]\d)/ }).first()).toBeVisible()
   })
 })
 

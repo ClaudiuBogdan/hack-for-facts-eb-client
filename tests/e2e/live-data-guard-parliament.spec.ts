@@ -162,9 +162,9 @@ test.describe('Live-data guard (parliament)', () => {
       .catch(() => false)
     test.skip(!ready, 'Live bill detail unavailable (API/tunnel down)')
 
-    const bodyText = (await page.locator('body').textContent()) ?? ''
-    // The live bill became Legea 423/2023; mock bills never carry this number.
-    expect(bodyText).toContain('423/2023')
+    // The live bill became Legea 423/2023; mock bills never carry this number. The h1 above is the section's
+    // („Proiecte legislative"), drawn before the bill arrives, so wait for the bill itself.
+    await expect(page.getByText('423/2023').first()).toBeVisible({ timeout: 20000 })
   })
 
   test('member Inițiative tab renders live initiatives, newest-first', async ({
@@ -198,9 +198,10 @@ test.describe('Live-data guard (parliament)', () => {
     // chamberCode (CD 46 / SE 4 / PA 6) + one adoptare event recording vote
     // cdep:22196. The etape page is a 3-COLUMN passage tracker — Camera/Senat/
     // Parlament columns driven by the REAL chamberCode (NOT a string heuristic),
-    // with routine steps grouped + an outcome summary.
+    // with routine steps grouped + an outcome summary. The tab opens on the timeline; the tracker is the
+    // `camere` reading.
     const response = await page
-      .goto('/parlament/proiecte/17605/etape')
+      .goto('/parlament/proiecte/17605/etape?vedere=camere')
       .catch(() => null)
     test.skip(!response, 'Bill etape route unavailable')
 
@@ -212,7 +213,8 @@ test.describe('Live-data guard (parliament)', () => {
       .catch(() => false)
     test.skip(!ready, 'Live bill etape unavailable (API/tunnel down)')
 
-    await page.waitForTimeout(2000)
+    // The h1 is the section's, drawn before the bill: wait for the outcome the bill carries.
+    await expect(page.getByText('78/2020').first()).toBeVisible({ timeout: 20000 })
     const bodyText = (await page.locator('body').textContent()) ?? ''
     expect(bodyText).toContain('Parcurs legislativ') // tracker header
     expect(bodyText).toContain('78/2020') // becomes-law outcome
@@ -484,8 +486,11 @@ test.describe('Live-data guard (parliament)', () => {
     // 2026-07-06). See prod-db notes for the live number.
     expect(total).toBeGreaterThanOrEqual(83)
 
-    // Active-day cells are buttons labelled "… — N intervenții"; year buttons are
-    // labelled with the bare year, so this selector counts only day cells.
+    // The heatmap sits in a disclosure, closed at first („Activitatea în plen pe zile (2026)"): open it. Active-day
+    // cells are buttons labelled "… — N intervenții"; the year is a combobox („Anul ședințelor: …"), so this
+    // selector counts only day cells.
+    const disclosure = page.locator('summary', { hasText: /Activitatea în plen pe zile/ })
+    if (await disclosure.count()) await disclosure.first().click()
     const cells = page.locator('button[aria-label*="intervenți"]')
     const painted = await cells
       .first()
@@ -495,9 +500,10 @@ test.describe('Live-data guard (parliament)', () => {
     test.skip(!painted, 'Heatmap not painted (API/tunnel down)')
     expect(await cells.count()).toBeGreaterThanOrEqual(1)
 
-    // availableYears carries 2025 and 2026 (the member spoke in both).
-    expect(await page.getByRole('button', { name: '2025' }).count()).toBeGreaterThan(0)
-    expect(await page.getByRole('button', { name: '2026' }).count()).toBeGreaterThan(0)
+    // availableYears carries 2025 and 2026 (the member spoke in both): the year combobox offers both.
+    await page.getByRole('combobox', { name: /Anul ședințelor/ }).click()
+    await expect(page.getByRole('option', { name: '2025', exact: true })).toBeVisible()
+    await expect(page.getByRole('option', { name: '2026', exact: true })).toBeVisible()
   })
 
   test('member 1:2024:79 /interventii ?from=2025-01-01&to=2025-12-31 filters to the 2025 total (61 exact)', async ({
