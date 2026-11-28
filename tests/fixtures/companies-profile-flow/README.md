@@ -17,6 +17,12 @@ Browser GraphQL answers for `tests/integration/companies-profile.spec.ts`. The p
 - `procurement-da-release`: `ProcurementDaRelease`, no variables — the procurement release's status;
 - `procurement-cutoff`: `ProcurementCutoff` for 2026-01–2027-12 — SEAP's national monthly counts, mocked for any range the page asks.
 
+**Re-recorded on 28 November 2026** from the dev API, through the page's own queries:
+- `procurement-da-release`, `procurement-cutoff` (now asked for 2025-01–2026-12);
+- `abc-da-newest`, `ideatica-da-newest`, `abc-winner-awards`.
+
+The procurement release's stamp moved on 26 November. The server render's recorded `ProcurementDaRelease` (tests/fixtures/ssr-api) carries the new one, and the band's D6 check refuses browser answers stamped with an older key, so every release-keyed browser answer must carry the same stamp. Apart from the stamp, the answers are unchanged, except the cutoff's newer monthly counts. `ideatica-winner-awards` came back identical.
+
 **Curated, synthetic.** Added in October 2026 when the contract grew. None of this is an observation of the September recording, and none of it is ONRC, ANAF or MFP authority:
 - **Registry scope.** One published edition, `41` with epochs `3`/`7` (`scopeKey` `onrc:published:41:3:7`). It uses the server's real version names, and its publication date is the recorded `asOf.onrc` (2026-07-18). It appears in `company-registry.json`, in each profile's `registry` and in each `*-registration-diff.json`.
 - **Registry evidence** for each CUI. It is `IN_EDITION`, with one identifier (the recorded registration code), one identity row and one status row (the recorded headline code). There is one CAEN row per recorded ONRC CAEN activity. Each value has single-observation bases, and coverage is complete. Provenance row hashes are synthetic digests, and source URLs are null.
