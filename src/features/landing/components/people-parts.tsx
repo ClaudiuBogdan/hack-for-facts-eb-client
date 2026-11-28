@@ -249,7 +249,7 @@ export function ContributorGrid({ className }: { readonly className?: string }) 
           )
 
         return (
-          <li key={contributor.id}>
+          <li key={contributor.id} data-reveal>
             {contributor.url === undefined || contributor.url === '#' ? (
               <span className={AVATAR_CLASS} title={label}>
                 {picture}
@@ -273,7 +273,7 @@ export function ContributorGrid({ className }: { readonly className?: string }) 
       {/* The open seat, on the same 56px circle so the wall stays one row of one
           shape. It is the only cell that says what it is in words, because it is
           the only one that is not a person. */}
-      <li>
+      <li data-reveal>
         <a
           href={REPO_URL}
           target="_blank"
