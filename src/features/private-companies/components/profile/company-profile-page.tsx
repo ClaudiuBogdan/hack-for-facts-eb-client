@@ -143,7 +143,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
 
       <CompanyBusinessBand model={model} />
       <CompanyActivitiesBand model={model} onCompanyGone={reportGone} onAnafWithdrawn={setAnafWithdrawnUnder} />
-      {years ? <CompanyYearsBand model={model} /> : null}
+      {years ? <CompanyYearsBand model={model} cui={cui} /> : null}
       {/* The money band numbers its head by `index`, which the page no longer sets: an empty caption draws none. */}
       <CompanyMoneyBand model={model} index="" procurement={procurement} onGrain={onGrain} />
       {litigation ? <CompanyLitigationBand cui={cui} litigation={litigation} /> : null}

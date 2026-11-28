@@ -136,9 +136,7 @@ export function PeopleBand() {
         <MonoLabel data-reveal className="block text-primary">
           <Trans>Contribuitori</Trans>
         </MonoLabel>
-        <div data-reveal>
-          <ContributorGrid className="mt-6" />
-        </div>
+        <ContributorGrid className="mt-6 [--tpz-reveal-rise:5px] [--tpz-reveal-duration:420ms]" />
       </div>
     </>
   )

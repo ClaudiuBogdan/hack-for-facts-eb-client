@@ -2,7 +2,7 @@ import { t } from '@lingui/core/macro'
 
 import { plotOf } from '@/features/national-budget/analytics/lib/exact'
 import { cn } from '@/lib/utils'
-import { changeText, restLine, useHundred, useOfficialTotals, type HundredLine } from '../hooks/use-person-data'
+import { changeText, useHundred, useOfficialTotals, type HundredLine } from '../hooks/use-person-data'
 import { moneyText } from '../lib/home-format'
 import { outOfHundred } from '../lib/per-resident'
 import { residentLinesOf } from '../lib/receipt'
@@ -91,7 +91,7 @@ function Flow() {
     : []
   const left = [...partsOf(revenue.lines, fromRevenue), ...borrowed]
   // Per resident, the spending rows print the receipt's figures, so a line reads the same in both sections.
-  const residents = new Map(residentLinesOf({ lines: spending.lines, whole: spending.whole, year: view.year, rest: restLine('spending', view.year) })?.lines.map((line) => [line.key, line.perResident]))
+  const residents = new Map(residentLinesOf({ lines: spending.lines, whole: spending.whole, year: view.year, rest: spending.rest })?.lines.map((line) => [line.key, line.perResident]))
   const right = partsOf(
     spending.lines,
     spending.lines.map((line) => line.lei),

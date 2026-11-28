@@ -21,7 +21,6 @@ const M = 1_000_000
 const source = (url: string, kind: 'anaf_statement' | 'mfp_resource'): PrivateCompanyFinancialYear['source'] => ({
   url,
   urlKind: kind,
-  contributingSources: null,
 })
 
 /** An ordinary statement up to 2018 (the Ministry's file), ANAF's from 2019 (its answer for the year). */

@@ -6,7 +6,7 @@
  * A registry-bound read carries the scope the page pinned; an answer under
  * another one is refused (`CompanyRegistryScopeMovedError`), never kept.
  */
-import type { PrivateCompanyProfile } from '@/schemas/private-company'
+import type { PrivateCompanyProfile, PrivateCompanyStatementFiles } from '@/schemas/private-company'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import type { CompanyResolveRequest, CompanyResolveResult } from '@/schemas/private-company-search'
 import type { CompanyMainActivityHistoryKind, CompanyMainActivityHistoryResult } from '@/schemas/private-company-main-activity'
@@ -18,11 +18,13 @@ import {
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN,
   COMPANY_RESOLVE_RESULT_QUERY,
+  COMPANY_STATEMENT_FILES_QUERY,
   companyMainActivityHistoryResponseSchema,
   companyProfileResponseSchema,
   companyResolveResultResponseSchema,
+  companyStatementFilesResponseSchema,
 } from './graphql/company-queries'
-import { mapCompanyProfile, mapCompanyResolveResult } from './graphql/company-mappers'
+import { mapCompanyProfile, mapCompanyResolveResult, mapCompanyStatementFiles } from './graphql/company-mappers'
 import { mapRegistryEnvelope } from './graphql/company-registry-graphql'
 import { assertRegistryScope, classifyRegistryError } from './company-registry-errors'
 
@@ -167,6 +169,15 @@ export function isMainActivityMovedError(error: unknown): boolean {
 
 /** How many entries a history page asks for (the API bounds it to 1..50). */
 export const MAIN_ACTIVITY_HISTORY_PAGE = 10
+
+/**
+ * A company's Ministry statements' file lines (CQA-14), read when a reader opens a Ministry year (trim step 2a).
+ * Every failure is a failure, never an empty list: the year then says its files did not load.
+ */
+export async function fetchCompanyStatementFilesLive(cui: string, signal?: AbortSignal): Promise<readonly PrivateCompanyStatementFiles[]> {
+  const data = await graphqlQuery<unknown>(COMPANY_STATEMENT_FILES_QUERY, { cui }, { operationName: 'companyStatementFiles', signal })
+  return mapCompanyStatementFiles(companyStatementFilesResponseSchema.parse(data))
+}
 
 /**
  * One page of the ANAF-assumed main activity's history, newest first. The

@@ -5,6 +5,7 @@ import { isRegistryPublished } from '@/schemas/private-company-registry'
 import { fetchCompanyRegistrationDiff } from '../api/company-registry-api'
 import { isRegistryParentMissing, isRegistryRefusal, retryRegistryRead } from '../api/company-registry-errors'
 import { removeMainActivityHistory } from './use-company-main-activity-history'
+import { removeCompanyStatementFiles } from './use-company-statement-files'
 import { privateCompanyProfileQueryKey } from './use-private-company-profile'
 import { boundScopeKey, useRegistryReadLedger, useReportRegistryMove, type CompanyRegistryScope } from './use-company-registry-scope'
 
@@ -89,6 +90,8 @@ export function useProfileRegistryScope(
     // Every main-activity history page of the company goes too (a read in flight is cancelled): the page that
     // shows it is unmounted by this withdrawal and can no longer purge it itself.
     removeMainActivityHistory(queryClient, cui)
+    // And its statements' file lines, read when a Ministry year was opened.
+    removeCompanyStatementFiles(queryClient, cui)
     if (rereadUnder.current === pinned) {
       setUnsettled(true)
       return
