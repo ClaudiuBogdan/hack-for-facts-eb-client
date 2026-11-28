@@ -137,22 +137,21 @@ const changesFeedDate = () =>
     })
 
 /**
- * URL state for `/legislation/changes`. `.catch(undefined)` drops a malformed
- * param to its default instead of erroring the route (gazette pattern).
- *
- * `view` names the feed's cohorts — the effective-date dimension has real
- * populations a bare window cannot reach (measured 2026-08-26):
- *  - absent (default): already-in-force events, `until = today` (63.210);
- *  - `viitoare`: future-dated events, `since = tomorrow` (8);
- *  - `toate`: the feed exactly as served — future first, undated trailing;
- *  - `nedatate`: the 21.266 events with NO effective date (`undatedOnly`),
- *    which every since/until window excludes.
- * An explicit `since`/`until` is the custom-window mode; when a hand-edited
- * URL carries BOTH a `view` and a window, the component lets `view` win and
- * never sends the rejected `undatedOnly`+window combination to the server.
+ * URL state for `/legislation/changes` (the redesign, owner 28 November 2026). `.catch(undefined)` drops a
+ * malformed param to its default instead of erroring the route.
+ *  - `fila`: the tab — absent = changes to existing acts, `legi-noi` = new laws and approved ordinances,
+ *    `fara-data` = the changes with no date of entry into force;
+ *  - `fel`: the chosen kinds, comma-joined (read and checked by `features/legal/lib/legal-changes-address.ts`);
+ *  - `de` / `pana`: the period, calendar-valid `YYYY-MM-DD`.
+ * The page's earlier keys (`view`, `since`, `until`, `kind`, `source`) are still read, only so the route can forward
+ * an old link to the new keys (`changesSearchOfOld`); the page never writes them.
  */
 export const legalChangesSearchSchema = lazySchema(() =>
   z.object({
+    fila: z.enum(['legi-noi', 'fara-data']).optional().catch(undefined),
+    fel: z.string().min(1).max(400).optional().catch(undefined),
+    de: changesFeedDate().optional().catch(undefined),
+    pana: changesFeedDate().optional().catch(undefined),
     view: z.enum(['viitoare', 'toate', 'nedatate']).optional().catch(undefined),
     since: changesFeedDate().optional().catch(undefined),
     until: changesFeedDate().optional().catch(undefined),

@@ -36,6 +36,7 @@ const CHANGES_FEED_QUERY = /* GraphQL */ `
           sourceAct {
             actId
             displayCitation
+            summary { description }
           }
           actId
           displayCitation
@@ -79,7 +80,7 @@ const str = (value: unknown): string | null =>
  * last layer before the wire, no matter what the component hands over:
  *  - `kinds` is only ever present as a non-empty array — the server REJECTS
  *    `kinds: []` and blank-only entries as invalid input, never reads them as
- *    "all kinds"; "no kind chosen" means the key is ABSENT;
+ *    "all kinds"; "no kind chosen" (absent or empty) means the key is ABSENT;
  *  - `undatedOnly` strips `since`/`until` — the server refuses the
  *    combination outright (undated events fail every date comparison).
  */
@@ -88,7 +89,7 @@ function buildFeedVariables(filter: LegalChangesFilter): Raw {
   return {
     ...(!undated && filter.since !== undefined && { since: filter.since }),
     ...(!undated && filter.until !== undefined && { until: filter.until }),
-    ...(filter.kind !== undefined && { kinds: [filter.kind] }),
+    ...(filter.kinds !== undefined && filter.kinds.length > 0 && { kinds: [...filter.kinds] }),
     ...(filter.source !== undefined && { eventSource: filter.source }),
     ...(undated && { undatedOnly: true }),
   }
@@ -133,6 +134,7 @@ export async function fetchRecentChangesPageLive(
           ? {
               actId: sourceActId,
               displayCitation: str(sourceAct.displayCitation) ?? sourceActId,
+              description: str(rec(sourceAct.summary).description),
             }
           : null,
       actId: String(node.actId ?? ''),

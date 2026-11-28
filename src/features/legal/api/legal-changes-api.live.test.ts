@@ -45,14 +45,14 @@ describe('fetchRecentChangesPageLive', () => {
     graphqlQueryMock.mockReset()
   })
 
-  it('sends the full filter, with the single kind as a one-entry kinds array', async () => {
+  it('sends the full filter, the kinds as a list', async () => {
     graphqlQueryMock.mockResolvedValue(connection([]) as never)
 
     await fetchRecentChangesPageLive(
       {
         since: '2026-01-01',
         until: '2026-08-26',
-        kind: 'modificare',
+        kinds: ['modificare', 'completare'],
         source: 'portal',
       },
       { first: 20 },
@@ -62,10 +62,35 @@ describe('fetchRecentChangesPageLive', () => {
     expect(variables).toEqual({
       since: '2026-01-01',
       until: '2026-08-26',
-      kinds: ['modificare'],
+      kinds: ['modificare', 'completare'],
       eventSource: 'portal',
       first: 20,
     })
+  })
+
+  it('sends no kinds when none are asked, nor for an empty list', async () => {
+    graphqlQueryMock.mockResolvedValue(connection([]) as never)
+
+    await fetchRecentChangesPageLive({ kinds: [] })
+
+    const [, variables] = graphqlQueryMock.mock.calls[0]
+    expect(variables).toEqual({ first: 20 })
+  })
+
+  it('reads the changing act description, null without a summary', async () => {
+    graphqlQueryMock.mockResolvedValue(
+      connection([
+        { node: changeNode({ sourceAct: { actId: '167442', displayCitation: 'Legea nr. 2/2026', summary: { description: 'Legea reglementează pensiile private.' } } }) },
+        { node: changeNode({ eventId: '2', sourceAct: { actId: '9', displayCitation: 'Ordinul nr. 9/2026', summary: null } }) },
+      ]) as never,
+    )
+
+    const page = await fetchRecentChangesPageLive({})
+
+    const [query] = graphqlQueryMock.mock.calls[0]
+    expect(query).toMatch(/summary\s*\{\s*description\s*\}/)
+    expect(page.items[0].sourceAct).toEqual({ actId: '167442', displayCitation: 'Legea nr. 2/2026', description: 'Legea reglementează pensiile private.' })
+    expect(page.items[1].sourceAct?.description).toBeNull()
   })
 
   it('omits every unset filter key — kinds is NEVER present as []', async () => {
@@ -148,7 +173,7 @@ describe('fetchRecentChangesPageLive', () => {
         eventKind: 'completare',
         effectiveDate: '2027-01-05',
         eventSource: 'portal',
-        sourceAct: { actId: '167442', displayCitation: 'Legea nr. 2/2026' },
+        sourceAct: { actId: '167442', displayCitation: 'Legea nr. 2/2026', description: null },
         actId: '208259',
         displayCitation: 'Legea nr. 204/2006',
         status: 'modificat',
@@ -193,7 +218,7 @@ describe('fetchRecentChangesCountLive', () => {
     const count = await fetchRecentChangesCountLive({
       undated: true,
       since: '2026-01-01',
-      kind: 'promulgare',
+      kinds: ['promulgare'],
     })
 
     expect(count).toBe(84484)

@@ -627,8 +627,10 @@ export const legalRecentChangeSchema = z.object({
   eventKind: z.string(),
   effectiveDate: z.string().nullable(),
   eventSource: z.string(),
+  // The acting act, with its automatic summary's description (null when it has none) — the Modificări page says
+  // what each changing act is about (owner, 28 November 2026).
   sourceAct: z
-    .object({ actId: z.string(), displayCitation: z.string() })
+    .object({ actId: z.string(), displayCitation: z.string(), description: z.string().nullable() })
     .nullable(),
   actId: z.string(),
   displayCitation: z.string(),
@@ -661,7 +663,8 @@ export type LegalChangesPage = z.infer<typeof legalChangesPageSchema>
 export const legalChangesFilterSchema = z.object({
   since: z.string().optional(),
   until: z.string().optional(),
-  kind: legalEventKindSchema.optional(),
+  /** Absent or empty = every kind. */
+  kinds: z.array(legalEventKindSchema).readonly().optional(),
   source: legalEventSourceSchema.optional(),
   undated: z.boolean().optional(),
 })
