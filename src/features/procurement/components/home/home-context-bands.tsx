@@ -16,11 +16,11 @@ import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
 import { categoryOfCode } from '../../lib/home-categories'
 import { contractsCount, countText, moneyFigure, moneyText, monthText, percentText } from '../../lib/home-format'
 import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, perResidents, procedureLabel, type NationalRead, type RecentRecord } from '../../lib/home-model'
-import { countyLede, directAverageLede, growthLede, unpublishedLede } from '../../lib/home-text'
+import { contractListComingText, countyLede, directAverageLede, growthLede, unpublishedLede } from '../../lib/home-text'
 import type { AnalyticsUrlSearch } from '../../lib/analytics-model'
 import { countyRecordsSearch, startSearches } from '../../lib/home-links'
 import { HOME_RECENT_RECORDS } from '../../hooks/use-procurement-home'
-import { Bone, HomeBand, ProvisionalMark, RULED_NOTE_CLASS, TextPending, type NationalState } from './home-chrome'
+import { Bone, HomeBand, RULED_NOTE_CLASS, TextPending, type NationalState } from './home-chrome'
 import { PendingRows, RecordRows } from './home-rows'
 
 /** A lede the national read writes, until it lands: two lines, three on a phone. */
@@ -476,23 +476,18 @@ export function HomeRecentBand({
 }) {
   const { i18n } = useLingui()
   const records = recent.data
+  // The contracts are not listed until the national list is served (`contractListComingText`): no month, no read.
+  const coming = kind === 'contracte'
   const categoryOf = (record: RecentRecord) => (record.cpvCode ? i18n._(categoryOfCode(record.cpvCode).label) : null)
   return (
     <HomeBand id="recente" labelledBy="procurement-home-recent-title">
       <HubSectionHead
         titleId="procurement-home-recent-title"
         index={index}
-        title={month ? <Trans>Cele mai mari din {monthText(month)}</Trans> : <Trans>Cele mai noi</Trans>}
+        title={month && !coming ? <Trans>Cele mai mari din {monthText(month)}</Trans> : <Trans>Cele mai noi</Trans>}
         lede={
-          month ? (
-            kind === 'contracte' ? (
-              <>
-                <Trans>Contractele cu cea mai mare valoare semnate în {monthText(month)}, cea mai nouă lună completă din SEAP.</Trans>{' '}
-                <ProvisionalMark />
-              </>
-            ) : (
-              <Trans>Achizițiile directe cu cea mai mare valoare finalizate în {monthText(month)}, cea mai nouă lună completă din SEAP, fără TVA.</Trans>
-            )
+          coming ? null : month ? (
+            <Trans>Achizițiile directe cu cea mai mare valoare finalizate în {monthText(month)}, cea mai nouă lună completă din SEAP, fără TVA.</Trans>
           ) : month === undefined && !national.isError ? (
             NATIONAL_LEDE_PENDING
           ) : null
@@ -510,7 +505,9 @@ export function HomeRecentBand({
         }
       />
       <div className="mt-8" data-reveal>
-        {month === undefined ? (
+        {coming ? (
+          <p className="border-y py-4 text-sm text-muted-foreground">{contractListComingText()}</p>
+        ) : month === undefined ? (
           national.isError ? (
             <HubLoadError onRetry={national.retry} />
           ) : (

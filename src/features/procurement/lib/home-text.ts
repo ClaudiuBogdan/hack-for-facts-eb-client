@@ -106,21 +106,13 @@ export function consortiumLede(read: NationalRead, roads: { readonly withheld: n
   return `${lead} ${t`SEAP publică valoarea întregului contract, nu partea fiecărei firme, așa că niciun clasament al firmelor nu o poate arăta.`}`
 }
 
-/** „Spedition UMB și Tehnostrade apar fiecare în 4 dintre cele 8 mai mari contracte din 2025." */
-export function frequentLede(frequent: { readonly names: readonly string[]; readonly times: number }, of: number, year: number): string {
-  const { times } = frequent
-  if (frequent.names.length === 1) {
-    const name = frequent.names[0] ?? ''
-    return plural(times, {
-      one: `${name} apare într-unul dintre cele ${of} mai mari contracte din ${year}.`,
-      other: `${name} apare în # dintre cele ${of} mai mari contracte din ${year}.`,
-    })
-  }
-  const names = `${frequent.names.slice(0, -1).join(', ')} ${t`și`} ${frequent.names[frequent.names.length - 1] ?? ''}`
-  return plural(times, {
-    one: `${names} apar fiecare într-unul dintre cele ${of} mai mari contracte din ${year}.`,
-    other: `${names} apar fiecare în # dintre cele ${of} mai mari contracte din ${year}.`,
-  })
+/**
+ * The national lists of contract awards, the year's largest and the newest month's: the legacy list they read is
+ * retired, and procurement v3 serves no national list yet. The owner put it after the launch (26 and 28 November 2026),
+ * so the bands say it is coming rather than show an error or an empty list.
+ */
+export function contractListComingText(): string {
+  return t`Lista națională a contractelor atribuite vine în curând.`
 }
 
 /** The county that buys most per resident and the one that buys least, against the country. */

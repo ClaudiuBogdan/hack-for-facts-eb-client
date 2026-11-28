@@ -330,19 +330,3 @@ export function completeContracts(contracts: readonly RecentRecord[], pageFull: 
   return contracts.filter((contract) => contract.value > lastValue)
 }
 
-/** The firms named most often among the largest contracts, when a few stand out. */
-export function frequentWinners(contracts: readonly RecentRecord[], atLeast = 3): { readonly names: readonly string[]; readonly times: number } | null {
-  const tally = new Map<string, { readonly name: string; times: number }>()
-  for (const contract of contracts) {
-    for (const winner of contract.winners) {
-      const key = partyKey(winner)
-      const entry = tally.get(key) ?? { name: winner.name, times: 0 }
-      entry.times += 1
-      tally.set(key, entry)
-    }
-  }
-  const most = Math.max(0, ...[...tally.values()].map((entry) => entry.times))
-  if (most < atLeast) return null
-  const names = [...tally.values()].filter((entry) => entry.times === most).map((entry) => entry.name)
-  return names.length <= 3 ? { names, times: most } : null
-}

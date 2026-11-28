@@ -356,36 +356,6 @@ export async function fetchGroupedContracts(filter: Record<string, unknown>, lim
   throw new Error(`${operationName}: no contract is whole after ${MAX_CONTRACT_PAGES} pages`)
 }
 
-/** The year's largest contract awards, one row per contract with every winner named. */
-export async function fetchProcurementHomeBigContracts(year: number, limit: number, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
-  return fetchGroupedContracts(
-    {
-      contractDate: { gte: `${year}-01-01`, lte: `${year}-12-31` },
-      recordKind: { in: ['contract_award'] },
-      valueState: { in: ACCEPTED_VALUE_STATES },
-    },
-    limit,
-    'ProcurementHomeContracts',
-    signal,
-  )
-}
-
-function monthBounds(month: string): { readonly gte: string; readonly lte: string } {
-  const [year = 2000, index = 1] = month.split('-').map(Number)
-  const last = new Date(Date.UTC(year, index, 0)).getUTCDate()
-  return { gte: `${month}-01`, lte: `${month}-${String(last).padStart(2, '0')}` }
-}
-
-/** The largest contract awards signed in one month, grouped by contract. */
-export async function fetchProcurementHomeRecentContracts(month: string, limit: number, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
-  return fetchGroupedContracts(
-    { contractDate: monthBounds(month), recordKind: { in: ['contract_award'] }, valueState: { in: ACCEPTED_VALUE_STATES } },
-    limit,
-    'ProcurementHomeRecentContracts',
-    signal,
-  )
-}
-
 /**
  * The largest direct purchases finalized in one month, from the analysis's
  * own records (`procurement-direct-records.ts`): ranked by the value its

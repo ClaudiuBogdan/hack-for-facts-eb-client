@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { describe, expect, it, vi } from 'vitest'
 import { OTHER_CATEGORY } from './home-categories'
 import { categoriesRead, nationalRead } from './home.fixture'
-import { consortiumLede, countyLede, directAverageLede, directPurchasesNote, frameworksNote, frequentLede, growthLede, unpublishedLede, whatLede } from './home-text'
+import { consortiumLede, countyLede, directAverageLede, directPurchasesNote, contractListComingText, frameworksNote, growthLede, unpublishedLede, whatLede } from './home-text'
 
 // Pin the page language: figures read with Romanian separators.
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
@@ -65,9 +65,8 @@ describe('the other ledes', () => {
     expect(countyLede([{ code: 'B', value: 1 }], 1, (code) => code)).toBeNull()
   })
 
-  it('name the firms that recur among the largest contracts', () => {
-    expect(frequentLede({ names: ['Spedition UMB', 'Tehnostrade'], times: 4 }, 8, 2025)).toBe('Spedition UMB și Tehnostrade apar fiecare în 4 dintre cele 8 mai mari contracte din 2025.')
-    expect(frequentLede({ names: ['Tehnostrade'], times: 3 }, 8, 2025)).toBe('Tehnostrade apare în 3 dintre cele 8 mai mari contracte din 2025.')
+  it('say the national contract-award list is coming, never that there are none', () => {
+    expect(contractListComingText()).toBe('Lista națională a contractelor atribuite vine în curând.')
   })
 })
 

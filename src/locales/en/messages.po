@@ -55763,3 +55763,7 @@ msgstr "All have a published value."
 #: src/features/private-companies/components/profile/company-money-band.tsx:360
 msgid "Valoarea e publicată pentru {0} din {awards}."
 msgstr "A value is published for {0} of {awards}."
+
+#: src/features/procurement/lib/home-text.ts:115
+msgid "Lista națională a contractelor atribuite vine în curând."
+msgstr "The national list of contract awards is coming soon."
