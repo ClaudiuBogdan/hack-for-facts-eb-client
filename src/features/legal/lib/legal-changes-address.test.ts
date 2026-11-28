@@ -56,6 +56,8 @@ describe('old Modificări links', () => {
 
   it('forwards kind=promulgare to the new-laws tab', () => {
     expect(changesSearchOfOld({ kind: 'promulgare' })).toEqual({ fila: 'legi-noi', fel: 'promulgare' })
+    // A new-law kind wins over the undated view: no new law is undated, and the undated tab would widen to every kind.
+    expect(changesSearchOfOld({ view: 'nedatate', kind: 'promulgare' })).toEqual({ fila: 'legi-noi', fel: 'promulgare' })
     expect(changesSearchOfOld({ kind: 'modificare', since: '2026-01-01', until: '2026-06-30' })).toEqual({ fel: 'modificare', de: '2026-01-01', pana: '2026-06-30' })
   })
 

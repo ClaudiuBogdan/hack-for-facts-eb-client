@@ -1417,7 +1417,7 @@ msgid "{0} direct-acquisition value, excluding VAT"
 msgstr "{0} valoarea achizițiilor directe, fără TVA"
 
 #. placeholder {0}: n(filteredCount.data)
-#: src/features/legal/components/changes/legislation-changes-page.tsx:150
+#: src/features/legal/components/changes/legislation-changes-page.tsx:183
 msgid "{0} după filtre"
 msgstr "{0} după filtre"
 
@@ -12462,7 +12462,7 @@ msgstr "ce s-a publicat"
 msgid "Ce s-a schimbat<0/>din {since} încoace"
 msgstr "Ce s-a schimbat<0/>din {since} încoace"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:101
+#: src/features/legal/components/changes/legislation-changes-page.tsx:125
 msgid "Ce schimbări"
 msgstr "Ce schimbări"
 
@@ -12587,7 +12587,7 @@ msgid "Cea mai mare valoare a contractelor din {year} e la {label}."
 msgstr "Cea mai mare valoare a contractelor din {year} e la {label}."
 
 #. placeholder {0}: formatLegalDate(frontier, i18n.locale)
-#: src/features/legal/components/changes/legislation-changes-page.tsx:97
+#: src/features/legal/components/changes/legislation-changes-page.tsx:121
 msgid "Cea mai nouă schimbare intrată în vigoare din date: {0}."
 msgstr "Cea mai nouă schimbare intrată în vigoare din date: {0}."
 
@@ -19495,7 +19495,7 @@ msgstr "Descrie ce arată această hartă..."
 msgid "descrierea"
 msgstr "descrierea"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:185
+#: src/features/legal/components/changes/legislation-changes-page.tsx:219
 msgid "Descrierea fiecărui act vine din rezumatul făcut automat al textului lui."
 msgstr "Descrierea fiecărui act vine din rezumatul făcut automat al textului lui."
 
@@ -23531,10 +23531,10 @@ msgstr "Fără CUI legat"
 msgid "fără dată"
 msgstr "fără dată"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:92
+#: src/features/legal/components/changes/legislation-changes-page.tsx:116
 #: src/features/parliament/lib/stenogram-presentation.ts:164
 msgid "Fără dată"
-msgstr ""
+msgstr "Fără dată"
 
 #: src/features/legal/components/legislation-changes-feed.tsx:514
 #~ msgid "fără dată de intrare în vigoare"
@@ -24653,7 +24653,7 @@ msgstr "Filtrat"
 #: src/features/justice/components/analysis/analysis-head.tsx:140
 #: src/features/legal/components/analytics/legislation-analysis.tsx:124
 #: src/features/legal/components/analytics/legislation-analysis.tsx:783
-#: src/features/legal/components/changes/legislation-changes-page.tsx:131
+#: src/features/legal/components/changes/legislation-changes-page.tsx:156
 #: src/features/legal/components/changes/legislation-changes-panel.tsx:90
 #: src/features/legal/components/legislation-search-filters.tsx:70
 #: src/features/legal/components/legislation-search-filters.tsx:77
@@ -24681,7 +24681,7 @@ msgstr "Filtre ({activeCount} active)"
 msgid "Filtre ({on})"
 msgstr "Filtre ({on})"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:131
+#: src/features/legal/components/changes/legislation-changes-page.tsx:156
 msgid "Filtre (active)"
 msgstr "Filtre (active)"
 
@@ -28327,7 +28327,7 @@ msgstr "încadrare nesigură"
 msgid "Încarcă mai mult"
 msgstr ""
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:181
+#: src/features/legal/components/changes/legislation-changes-page.tsx:215
 #: src/features/legal/components/legislation-act-finder.tsx:687
 msgid "Încarcă mai multe"
 msgstr "Încarcă mai multe"
@@ -28387,7 +28387,8 @@ msgstr "Încasări proprii"
 #: src/features/landing/components/budget-map/budget-map-section.tsx:75
 #: src/features/landing/components/budget-map/budget-map.tsx:129
 #: src/features/landing/components/search/deferred-landing-search.tsx:318
-#: src/features/legal/components/changes/legislation-changes-page.tsx:159
+#: src/features/legal/components/changes/legislation-changes-page.tsx:166
+#: src/features/legal/components/changes/legislation-changes-page.tsx:192
 #: src/features/legal/components/hub/legislation-hub-parts.tsx:50
 #: src/features/legal/components/legislation-act-finder.tsx:426
 #: src/features/legal/components/legislation-act-finder.tsx:556
@@ -29776,7 +29777,7 @@ msgstr "Intrări, {years}"
 msgid "Intrările calculului"
 msgstr "Intrările calculului"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:148
+#: src/features/legal/components/changes/legislation-changes-page.tsx:181
 msgid "Intrate în vigoare"
 msgstr "Intrate în vigoare"
 
@@ -31254,11 +31255,11 @@ msgstr "Legi care aprobă o ordonanță."
 msgid "Legi care resping o ordonanță."
 msgstr "Legi care resping o ordonanță."
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:148
+#: src/features/legal/components/changes/legislation-changes-page.tsx:181
 msgid "Legi noi și ordonanțe aprobate"
 msgstr "Legi noi și ordonanțe aprobate"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:91
+#: src/features/legal/components/changes/legislation-changes-page.tsx:115
 msgid "Legi noi și OUG aprobate"
 msgstr "Legi noi și OUG aprobate"
 
@@ -35273,7 +35274,7 @@ msgstr "Nicio proveniență pentru această valoare."
 #~ msgid "Nicio publicație înregistrată în cuprinsul acestei ediții."
 #~ msgstr "Nicio publicație înregistrată în cuprinsul acestei ediții."
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:163
+#: src/features/legal/components/changes/legislation-changes-page.tsx:196
 msgid "Nicio schimbare nu corespunde filtrelor."
 msgstr "Nicio schimbare nu corespunde filtrelor."
 
@@ -36993,7 +36994,11 @@ msgstr ""
 msgid "Nu am putut încărca rezultatele."
 msgstr ""
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:157
+#: src/features/legal/components/changes/legislation-changes-page.tsx:164
+msgid "Nu am putut încărca schimbările care urmează."
+msgstr "Nu am putut încărca schimbările care urmează."
+
+#: src/features/legal/components/changes/legislation-changes-page.tsx:190
 msgid "Nu am putut încărca schimbările."
 msgstr "Nu am putut încărca schimbările."
 
@@ -39322,7 +39327,7 @@ msgstr "Pagina următoare"
 #~ msgid "Pagina următoare de opțiuni"
 #~ msgstr ""
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:172
+#: src/features/legal/components/changes/legislation-changes-page.tsx:206
 #: src/features/legal/components/legislation-act-finder.tsx:683
 msgid "Pagina următoare nu s-a încărcat."
 msgstr "Pagina următoare nu s-a încărcat."
@@ -39406,8 +39411,8 @@ msgid "până la"
 msgstr "până la"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:805
-#: src/features/legal/components/changes/legislation-changes-panel.tsx:129
-#: src/features/legal/components/changes/legislation-changes-panel.tsx:132
+#: src/features/legal/components/changes/legislation-changes-panel.tsx:130
+#: src/features/legal/components/changes/legislation-changes-panel.tsx:133
 #: src/features/legal/components/legislation-search-filters.tsx:324
 #: src/features/legal/components/legislation-search-filters.tsx:325
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:188
@@ -40513,7 +40518,7 @@ msgstr "Perioada cerută e după ultimele date; arătăm ultimele 12 luni (pân�
 msgid "Perioada nu este inclusă în istoricul încărcat. Verifică seria completă."
 msgstr "Perioada nu este inclusă în istoricul încărcat. Verifică seria completă."
 
-#: src/features/legal/components/changes/legislation-changes-panel.tsx:140
+#: src/features/legal/components/changes/legislation-changes-panel.tsx:141
 msgid "Perioada privește schimbările intrate deja în vigoare; cele care urmează sunt mereu sus."
 msgstr "Perioada privește schimbările intrate deja în vigoare; cele care urmează sunt mereu sus."
 
@@ -45432,15 +45437,15 @@ msgstr "Schimbare"
 #~ msgid "Schimbări"
 #~ msgstr "Schimbări"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:90
+#: src/features/legal/components/changes/legislation-changes-page.tsx:114
 msgid "Schimbări ale actelor"
 msgstr "Schimbări ale actelor"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:148
+#: src/features/legal/components/changes/legislation-changes-page.tsx:181
 msgid "Schimbări fără dată de intrare în vigoare"
 msgstr "Schimbări fără dată de intrare în vigoare"
 
-#: src/features/legal/components/changes/legislation-changes-panel.tsx:143
+#: src/features/legal/components/changes/legislation-changes-panel.tsx:144
 msgid "Schimbările fără dată nu pot fi alese după perioadă."
 msgstr "Schimbările fără dată nu pot fi alese după perioadă."
 
@@ -45505,7 +45510,7 @@ msgstr "Scoate toate"
 
 #: src/features/legal/components/analytics/legislation-analysis.tsx:943
 #: src/features/legal/components/changes/legislation-changes-panel.tsx:53
-#: src/features/legal/components/changes/legislation-changes-panel.tsx:155
+#: src/features/legal/components/changes/legislation-changes-panel.tsx:156
 #: src/features/legal/components/legislation-search-filters.tsx:139
 #: src/features/legal/components/legislation-search-filters.tsx:375
 msgid "Scoate toate filtrele"
@@ -46006,7 +46011,7 @@ msgstr "Se încarcă tabelul…"
 msgid "Se încarcă textul…"
 msgstr "Se încarcă textul…"
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:181
+#: src/features/legal/components/changes/legislation-changes-page.tsx:215
 #: src/features/legal/components/legislation-act-finder.tsx:687
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:509
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:76
@@ -53458,7 +53463,7 @@ msgstr "Urmează {0}, cu {1}."
 msgid "Urmează grupele {0} ({1}) și {2} ({3})."
 msgstr "Urmează grupele {0} ({1}) și {2} ({3})."
 
-#: src/features/legal/components/changes/legislation-changes-page.tsx:140
+#: src/features/legal/components/changes/legislation-changes-page.tsx:173
 msgid "Urmează să intre în vigoare"
 msgstr "Urmează să intre în vigoare"
 
@@ -54783,7 +54788,7 @@ msgstr ""
 msgid "Vezi rezultatele"
 msgstr "Vezi rezultatele"
 
-#: src/features/legal/components/changes/legislation-changes-panel.tsx:148
+#: src/features/legal/components/changes/legislation-changes-panel.tsx:149
 msgid "Vezi schimbările"
 msgstr "Vezi schimbările"
 

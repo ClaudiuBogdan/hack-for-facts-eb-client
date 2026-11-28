@@ -122,7 +122,8 @@ export function ChangesPanel({
                   aria-label={t`De la`}
                   className={FIELD}
                   value={state.since ?? ''}
-                  max={state.until ?? undefined}
+                  // On the first tab the period ends today at the latest, so it cannot start later.
+                  max={state.tab === 'schimbari' ? (state.until !== null && state.until < today ? state.until : today) : (state.until ?? undefined)}
                   onChange={(event) => onChange({ ...state, since: date(event.target.value) })}
                 />
               </Row>

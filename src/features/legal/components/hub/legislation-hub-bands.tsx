@@ -68,12 +68,12 @@ export function ChangesBand() {
   const { i18n } = useLingui()
   const { since, until } = changesWindow(localIsoDate())
   const feed = useQuery({
-    queryKey: ['legal', 'landing', 'changes', until] as const,
+    queryKey: ['legal', 'landing', 'changes', CHANGE_KINDS, until] as const,
     queryFn: ({ signal }) => fetchRecentChangesPage({ kinds: CHANGE_KINDS, until }, { first: CHANGES_SHOWN, signal }),
     staleTime: 5 * 60 * 1000,
   })
   const count = useQuery({
-    queryKey: ['legal', 'landing', 'changes-count', since, until] as const,
+    queryKey: ['legal', 'landing', 'changes-count', CHANGE_KINDS, since, until] as const,
     queryFn: ({ signal }) => fetchRecentChangesCount({ kinds: CHANGE_KINDS, since, until }, { signal }),
     staleTime: 5 * 60 * 1000,
   })

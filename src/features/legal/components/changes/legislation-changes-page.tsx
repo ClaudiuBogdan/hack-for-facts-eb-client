@@ -11,7 +11,8 @@ import { fetchRecentChangesCount, fetchRecentChangesPage } from '../../api/legal
 import { useLegislationFreshness } from '../../hooks/use-legislation'
 import { changesSearchOf, changesStateOf, type ChangesState, type ChangesTab } from '../../lib/legal-changes-address'
 import { CHANGE_KINDS, NEW_LAW_KINDS, groupChanges, narrowKinds } from '../../lib/legal-changes-blocks'
-import { formatLegalDate, formatLegalNumber, localIsoDate } from '../../lib/legal-format'
+import { bucharestToday } from '../../lib/legal-coverage'
+import { formatLegalDate, formatLegalNumber } from '../../lib/legal-format'
 import { ChangeBlocks, ChangeRows, ChangesSkeleton } from './legislation-changes-blocks'
 import { ChangesActiveFilters, ChangesPanel } from './legislation-changes-panel'
 
@@ -24,6 +25,10 @@ import { ChangesActiveFilters, ChangesPanel } from './legislation-changes-panel'
  */
 
 const PAGE = 20
+/** The upcoming changes are few (7 on 28 November 2026); every page is read, up to this many. */
+const UPCOMING_PAGES = 10
+
+const dayAfter = (iso: string): string => new Date(Date.parse(`${iso}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10)
 const kindsOf = (tab: ChangesTab): readonly LegalEventKind[] => (tab === 'legi-noi' ? NEW_LAW_KINDS : CHANGE_KINDS)
 
 function useCount(filter: LegalChangesFilter, enabled = true) {
@@ -39,12 +44,15 @@ function useCount(filter: LegalChangesFilter, enabled = true) {
 export function LegislationChangesPage({ search }: { readonly search: LegalChangesSearch }) {
   const { i18n } = useLingui()
   const navigate = useNavigate()
-  const today = localIsoDate()
-  const tomorrow = localIsoDate(1)
+  // "Already in force" is a Bucharest day, whatever the reader's clock says.
+  const today = bucharestToday()
+  const tomorrow = dayAfter(today)
   const frontier = useLegislationFreshness().data?.latestEffectiveChangeDate ?? null
 
   const state = changesStateOf(search)
-  const setState = (next: ChangesState) => void navigate({ to: '/legislation/changes', search: changesSearchOf(next) as never, replace: true })
+  // The page's keys over the current address, so the root's own keys (the language) survive every choice.
+  const setState = (next: ChangesState) =>
+    void navigate({ to: '/legislation/changes', search: ((prev: Record<string, unknown>) => ({ ...prev, ...changesSearchOf(next) })) as never, replace: true })
   const [panelOpen, setPanelOpen] = useState(false)
   const filterButton = useRef<HTMLButtonElement>(null)
 
@@ -53,6 +61,8 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
   const filtered = state.kinds.some((kind) => tabKinds.includes(kind)) || state.since !== null || state.until !== null
   // The period's end is capped at today on the first tab: what comes later is in the upcoming group above.
   const rangeEnd = state.until !== null && state.until < today ? state.until : today
+  // A period that starts after today has nothing in force: no read, never a backwards range.
+  const nothingInForce = state.tab === 'schimbari' && state.since !== null && state.since > rangeEnd
 
   // The three tabs' totals, unfiltered.
   const changesTotal = useCount({ kinds: CHANGE_KINDS, until: today })
@@ -72,17 +82,31 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
     getNextPageParam: (last) => last.endCursor ?? undefined,
     staleTime: 5 * 60 * 1000,
     retry: 1,
+    enabled: !nothingInForce,
   })
-  const filteredCount = useCount(listFilter, filtered)
+  const filteredCount = useCount(listFilter, filtered && !nothingInForce)
   const upcoming = useQuery({
     queryKey: ['legal', 'changes-upcoming', kinds, tomorrow],
-    queryFn: ({ signal }) => fetchRecentChangesPage({ kinds, since: tomorrow }, { first: 50, signal }),
+    queryFn: async ({ signal }) => {
+      const items = []
+      let after: string | undefined
+      for (let page = 0; page < UPCOMING_PAGES; page++) {
+        const read = await fetchRecentChangesPage({ kinds, since: tomorrow }, { first: 50, ...(after !== undefined && { after }), signal })
+        items.push(...read.items)
+        if (read.endCursor === null) break
+        after = read.endCursor
+      }
+      return items
+    },
     staleTime: 5 * 60 * 1000,
     enabled: state.tab === 'schimbari',
   })
 
-  const rows = list.data?.pages.flatMap((page) => page.items) ?? []
-  const upcomingRows = state.tab === 'schimbari' ? (upcoming.data?.items ?? []) : []
+  const rows = nothingInForce ? [] : (list.data?.pages.flatMap((page) => page.items) ?? [])
+  const upcomingRows = state.tab === 'schimbari' ? (upcoming.data ?? []) : []
+  const upcomingBlocks = groupChanges(upcomingRows)
+  const listBlocks = state.tab === 'schimbari' ? groupChanges(rows) : []
+  const described = [...upcomingBlocks, ...listBlocks].some((block) => Boolean(block.source?.description))
   const n = (value: number) => formatLegalNumber(value, i18n.locale)
   const total = (query: { readonly isSuccess: boolean; readonly data?: number | null }) => (query.isSuccess && typeof query.data === 'number' ? query.data : null)
 
@@ -98,15 +122,16 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
 
       <div className="flex items-end justify-between gap-x-3 border-b">
         {/* One line on every width: on a phone the tabs scroll sideways inside their row, the page never does. */}
-        <div role="tablist" aria-label={t`Ce schimbări`} className="-mb-px flex min-w-0 gap-x-5 overflow-x-auto [scrollbar-width:none]">
+        <div role="group" aria-label={t`Ce schimbări`} className="-mb-px flex min-w-0 gap-x-5 overflow-x-auto [scrollbar-width:none]">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
-              role="tab"
-              aria-selected={state.tab === tab.id}
-              // A new tab keeps the period but not the kinds, which belong to the tab.
-              onClick={() => setState({ ...state, tab: tab.id, kinds: [] })}
+              aria-pressed={state.tab === tab.id}
+              // A new tab keeps the period but not the kinds, which belong to the tab; the open one stays as it is.
+              onClick={() => {
+                if (tab.id !== state.tab) setState({ ...state, tab: tab.id, kinds: [] })
+              }}
               className={cn(
                 'inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
                 state.tab === tab.id ? 'border-foreground font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -134,12 +159,20 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
 
       {filtered ? <ChangesActiveFilters state={state} tabKinds={tabKinds} onChange={setState} locale={i18n.locale} /> : null}
 
+      {state.tab === 'schimbari' && upcoming.isError ? (
+        <div className="rounded-lg border p-4 text-sm">
+          <p>{t`Nu am putut încărca schimbările care urmează.`}</p>
+          <button type="button" onClick={() => void upcoming.refetch()} className="mt-2 underline underline-offset-2">
+            {t`Încearcă din nou`}
+          </button>
+        </div>
+      ) : null}
       {upcomingRows.length > 0 ? (
         <section aria-labelledby="changes-upcoming" className="flex flex-col gap-2">
           <h2 id="changes-upcoming" className="text-sm font-semibold">
             {t`Urmează să intre în vigoare`} <span className="font-normal tabular-nums text-muted-foreground">{n(upcomingRows.length)}</span>
           </h2>
-          <ChangeBlocks blocks={groupChanges(upcomingRows)} today={today} locale={i18n.locale} />
+          <ChangeBlocks blocks={upcomingBlocks} today={today} locale={i18n.locale} />
         </section>
       ) : null}
 
@@ -151,7 +184,7 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
           ) : null}
         </h2>
 
-        {list.isPending ? <ChangesSkeleton /> : null}
+        {list.isPending && !nothingInForce ? <ChangesSkeleton /> : null}
         {list.isError && !list.isFetchNextPageError ? (
           <div className="rounded-lg border p-4 text-sm">
             <p>{t`Nu am putut încărca schimbările.`}</p>
@@ -160,17 +193,18 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
             </button>
           </div>
         ) : null}
-        {list.isSuccess && rows.length === 0 ? <p className="text-sm text-muted-foreground">{t`Nicio schimbare nu corespunde filtrelor.`}</p> : null}
-        {list.isSuccess && rows.length > 0 ? (
+        {(list.isSuccess || nothingInForce) && rows.length === 0 ? <p className="text-sm text-muted-foreground">{t`Nicio schimbare nu corespunde filtrelor.`}</p> : null}
+        {/* The rows already loaded stay when a next page fails (the query then reports an error, not success). */}
+        {rows.length > 0 ? (
           state.tab === 'schimbari' ? (
-            <ChangeBlocks blocks={groupChanges(rows)} today={today} locale={i18n.locale} />
+            <ChangeBlocks blocks={listBlocks} today={today} locale={i18n.locale} />
           ) : (
             <ChangeRows rows={rows} today={today} locale={i18n.locale} />
           )
         ) : null}
 
         {list.isFetchNextPageError ? <p className="text-sm text-muted-foreground">{t`Pagina următoare nu s-a încărcat.`}</p> : null}
-        {list.hasNextPage ? (
+        {list.hasNextPage && !nothingInForce ? (
           <div>
             <button
               type="button"
@@ -182,7 +216,7 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
             </button>
           </div>
         ) : null}
-        {state.tab === 'schimbari' && rows.length > 0 ? <p className="text-xs text-muted-foreground">{t`Descrierea fiecărui act vine din rezumatul făcut automat al textului lui.`}</p> : null}
+        {described ? <p className="text-xs text-muted-foreground">{t`Descrierea fiecărui act vine din rezumatul făcut automat al textului lui.`}</p> : null}
       </section>
 
       <ChangesPanel
