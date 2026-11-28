@@ -178,20 +178,23 @@ describe('the CompanyProfile document', () => {
 })
 
 describe('the CompanyStatementFiles document (trim step 2a)', () => {
-  it('asks every key its raw schema requires, and each year’s own link beside its files', () => {
+  it('asks every key its raw schema requires, each year’s own link beside its files, and nothing more', () => {
     const selection = selectionOf(COMPANY_STATEMENT_FILES_QUERY)
     expect(unselectedRequired(companyStatementFilesResponseSchema, selection, 'data')).toEqual([])
-    expect(pathsOf(selection)).toEqual(
-      expect.arrayContaining([
-        'companyFinancials.years.year',
-        'companyFinancials.years.source.url',
-        'companyFinancials.years.source.contributingSources.rowNumber',
-        'companyFinancials.years.source.contributingSources.url',
-        'companyFinancials.years.source.contributingSources.indicators.code',
-        'companyFinancials.years.source.contributingSources.indicators.name',
-      ]),
-    )
-    // Nothing of the statement itself: its values come with the profile.
-    expect(pathsOf(selection).filter((path) => /summary|qualification|turnover|netProfit/u.test(path))).toEqual([])
+    // Exactly these: nothing of the statement's values (they come with the profile), no snapshot ids.
+    expect(pathsOf(selection).sort()).toEqual([
+      'companyFinancials',
+      'companyFinancials.years',
+      'companyFinancials.years.source',
+      'companyFinancials.years.source.contributingSources',
+      'companyFinancials.years.source.contributingSources.indicators',
+      'companyFinancials.years.source.contributingSources.indicators.code',
+      'companyFinancials.years.source.contributingSources.indicators.name',
+      'companyFinancials.years.source.contributingSources.rowNumber',
+      'companyFinancials.years.source.contributingSources.url',
+      'companyFinancials.years.source.url',
+      'companyFinancials.years.year',
+    ])
   })
+
 })

@@ -400,19 +400,30 @@ function ContributingFiles({ lines }: { readonly lines: PrivateCompanyStatementF
 /**
  * A Ministry statement's file lines, read when its year is opened, not with the profile (trim step 2a, owner,
  * 28 November 2026). Nothing while they are read — most statements came from one file, and then nothing is added —
- * the list when the statement came from more than one, and only beside the statement they belong to (the read's
- * link is the profile's own). A failed read says so, with a way to read again: silence would hide that half of
- * the values cannot be checked in the linked file.
+ * the list when the statement came from more than one, and only beside the statement they belong to: the read's
+ * link for the year is the profile's own (the year's bulk file; a year whose link the API could not read takes
+ * only files read without one, as the page showed them before). A failed read, with nothing read before, says so
+ * with a way to read again: silence would hide that some values cannot be checked in the linked file.
  */
 function StatementFiles({ cui, year, sourceUrl }: { readonly cui: string; readonly year: number; readonly sourceUrl: string | null }) {
   const files = useCompanyStatementFiles(cui, true)
-  if (files.isError) {
+  if (files.isError && files.data === undefined) {
     return (
       <p className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">
-        <Trans>Fișierele MF ale acestui an nu s-au încărcat.</Trans>{' '}
-        <button type="button" onClick={() => void files.refetch()} className="font-medium text-foreground underline-offset-4 hover:underline">
-          <Trans>Încearcă din nou</Trans>
-        </button>
+        <Trans>Fișierele MF ale acestui an nu s-au încărcat.</Trans>
+        {files.isFetching ? null : (
+          <>
+            {' '}
+            <button
+              type="button"
+              // A second click while a read runs never restarts it.
+              onClick={() => void files.refetch({ cancelRefetch: false })}
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              <Trans>Încearcă din nou</Trans>
+            </button>
+          </>
+        )}
       </p>
     )
   }
@@ -506,7 +517,8 @@ function StatementDetail({
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </a>
       ) : null}
-      {source?.urlKind === 'mfp_resource' && cui ? <StatementFiles cui={cui} year={year} sourceUrl={source.url} /> : null}
+      {/* The Ministry's statements, whether or not their link was read: the API reads their files apart from it. */}
+      {statement.publisher === 'mfp' && cui ? <StatementFiles cui={cui} year={year} sourceUrl={source?.url ?? null} /> : null}
       {source?.url && source.urlKind === 'anaf_statement' ? (
         // ANAF's link asks it again for this CUI and year: today's answer, not the copy read here.
         <p className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">

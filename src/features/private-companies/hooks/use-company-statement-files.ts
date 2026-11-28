@@ -2,9 +2,12 @@ import { useQuery, type QueryClient } from '@tanstack/react-query'
 import { fetchCompanyStatementFiles } from '../api/private-company-api'
 
 /**
- * A company's Ministry statements' file lines (CQA-14), read when a reader opens a Ministry year and kept for the
- * visit: trim step 2a (owner, 28 November 2026). One read per company answers every year; nothing is read on a page
- * nobody opens a Ministry year on, and never on the server (an opened year is the reader's own state).
+ * A company's Ministry statements' file lines (CQA-14), read when a reader opens a Ministry year: trim step 2a
+ * (owner, 28 November 2026). One read per company answers every year, fresh for five minutes and kept as long as
+ * the query cache keeps an unwatched answer; nothing is read on a page nobody opens a Ministry year on, and never
+ * on the server (an opened year is the reader's own state). Keyed by the company alone: the files of a statement
+ * change only with a new release of the data, and the page shows them only beside the statement whose link they
+ * carry.
  */
 
 const FILES_ROOT = 'company-statement-files'
