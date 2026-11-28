@@ -80,18 +80,29 @@ test.describe('Companies hub', () => {
     await expect(page).toHaveURL(/#domenii$/)
     await expect(bar.getByRole('link', { name: /Domenii/ })).toHaveAttribute('aria-current', 'location')
 
-    // On a phone the list scrolls sideways; reading the last band, its link is brought into the bar's view.
+    // On a phone the list scrolls sideways: from the head, where no band is marked, the last band's link starts
+    // past its edge, and reading that band brings it into the list's own view.
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
     await page.setViewportSize({ width: 360, height: 740 })
-    await page.evaluate(() => document.getElementById('infiintari')?.scrollIntoView({ block: 'start' }))
+    await expect(bar.locator('[aria-current]')).toHaveCount(0)
+    const lastInList = () =>
+      page.evaluate(() => {
+        const list = document.querySelector('nav[aria-label="Secțiunile paginii"] ol')
+        const link = list?.querySelector('a[href="#infiintari"]')
+        if (!list || !link) return null
+        const [box, item] = [list.getBoundingClientRect(), link.getBoundingClientRect()]
+        return { inside: item.left >= box.left - 1 && item.right <= box.right + 1, scrolled: list.scrollLeft }
+      })
+    expect((await lastInList())?.inside).toBe(false)
+    const focusNow = () => page.evaluate(() => document.activeElement?.getAttribute('href') ?? document.activeElement?.tagName ?? null)
+    const focusBefore = await focusNow()
+    await page.evaluate(() => document.getElementById('infiintari')?.scrollIntoView({ block: 'start', behavior: 'instant' }))
     const last = bar.getByRole('link', { name: /Firme noi/ })
     await expect(last).toHaveAttribute('aria-current', 'location')
-    await expect
-      .poll(async () => {
-        const [link, nav] = await Promise.all([last.boundingBox(), bar.boundingBox()])
-        return link !== null && nav !== null && link.x >= nav.x - 1 && link.x + link.width <= nav.x + nav.width + 1
-      })
-      .toBe(true)
-    // Only the list scrolled: the page has no sideways scroll.
+    await expect.poll(async () => (await lastInList())?.inside).toBe(true)
+    expect((await lastInList())?.scrolled).toBeGreaterThan(0)
+    // Only the list scrolled: focus stayed where it was, and the page has no sideways scroll.
+    expect(await focusNow()).toBe(focusBefore)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
   })
 

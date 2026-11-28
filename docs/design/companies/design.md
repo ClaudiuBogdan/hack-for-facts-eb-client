@@ -1254,6 +1254,10 @@ hub's polish (their sessions described it), and chose:
 - **The county map's readout stays the country's figure**; a county under
   the pointer, under focus or tapped is read in a tooltip by its label (its
   figure, its place, how it compares with Romania; after a tap, its link). The
-  readout had grown from two lines to three on a hover and moved the map.
+  readout had grown from two lines to three on a hover and moved the map. The
+  tooltip goes above the label where it fits inside the map, else below
+  (measured: a fixed rule let it climb over the readout on a phone); a tap
+  anywhere off the map lets a tapped county go, and a mouse passing over the
+  map gives the outline back to the county under keyboard focus.
 - Not taken: the legislation search's „Căutare avansată" way on. The
   companies analysis has no name filter, so typed words have nowhere to go.

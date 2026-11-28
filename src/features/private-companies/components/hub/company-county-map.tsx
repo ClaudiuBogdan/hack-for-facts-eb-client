@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useInView } from 'react-intersection-observer'
@@ -75,17 +75,19 @@ export function CompanyCountyMap({
   const ranks = useMemo(() => new Map(rankCounties(layer.values).map((county, index) => [county.code, index + 1])), [layer.values])
   const [pinned, setPinned] = useState<string>()
   const pointerType = useRef('mouse')
-  const figureRef = useRef<HTMLElement>(null)
+  // The county the keyboard is on: a mouse passing over the map and off it gives the outline back to it.
+  const focused = useRef<string | undefined>(undefined)
+  const mapRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const tooltipId = useId()
   const [renderedWidth, setRenderedWidth] = useState<number>()
 
-  // A tapped county stays shown until the next tap elsewhere; a phone that
-  // does not focus links on tap (Safari) never blurs it.
+  // A tapped county stays shown until the next tap off the map and its tooltip (the readout and the legend
+  // included); a phone that does not focus links on tap (Safari) never blurs it.
   useEffect(() => {
     if (!pinned) return
     const release = (event: globalThis.PointerEvent) => {
-      if (event.target instanceof Node && figureRef.current?.contains(event.target)) return
+      if (event.target instanceof Node && mapRef.current?.contains(event.target)) return
       setPinned(undefined)
       onActiveChange?.(undefined)
     }
@@ -135,10 +137,10 @@ export function CompanyCountyMap({
   }
 
   return (
-    <figure ref={figureRef} className={cn('w-full', className)}>
+    <figure className={cn('w-full', className)}>
       <NationalReadout layer={layer} digits={digits} />
       {shapes ? (
-        <div className="relative mt-3 sm:mt-4">
+        <div ref={mapRef} className="relative mt-3 sm:mt-4">
           {/* A group, not an image: the counties are links and stay in the accessibility tree. */}
           <svg
             ref={svgRef}
@@ -147,7 +149,7 @@ export function CompanyCountyMap({
             role="group"
             aria-label={legend}
             onClick={(event) => {
-              // A tap beside the counties puts the readout back to Romania.
+              // A tap beside the counties lets the county shown go.
               if (event.target === event.currentTarget) release()
             }}
           >
@@ -185,9 +187,13 @@ export function CompanyCountyMap({
                     pointerType.current = event.pointerType
                   }}
                   onPointerEnter={(event) => hoverOnly(event, shape.code)}
-                  onPointerLeave={(event) => hoverOnly(event, undefined)}
-                  onFocus={() => onActiveChange?.(shape.code)}
+                  onPointerLeave={(event) => hoverOnly(event, focused.current)}
+                  onFocus={() => {
+                    focused.current = shape.code
+                    onActiveChange?.(shape.code)
+                  }}
                   onBlur={(event) => {
+                    focused.current = undefined
                     // Chrome on Android focuses the tooltip's link on the tap
                     // that follows; clearing here would take it away before its click.
                     if (event.relatedTarget instanceof Node && document.getElementById(tooltipId)?.contains(event.relatedTarget)) return
@@ -210,7 +216,7 @@ export function CompanyCountyMap({
                   {path}
                 </Link>
               ) : (
-                <g key={shape.code} onPointerEnter={(event) => hoverOnly(event, shape.code)} onPointerLeave={(event) => hoverOnly(event, undefined)}>
+                <g key={shape.code} onPointerEnter={(event) => hoverOnly(event, shape.code)} onPointerLeave={(event) => hoverOnly(event, focused.current)}>
                   {path}
                 </g>
               )
@@ -266,6 +272,7 @@ export function CompanyCountyMap({
               digits={digits}
               countyLink={countyLink}
               at={[(active.label[0] / COUNTY_MAP_WIDTH) * 100, (active.label[1] / shapes.height) * 100]}
+              onLeave={release}
             />
           ) : null}
         </div>
@@ -299,11 +306,16 @@ function NationalReadout({ layer, digits }: { readonly layer: HubCountyLayer; re
   )
 }
 
+/** The room between a county's label and its tooltip: the `0.75rem` of the box's transform. */
+const TOOLTIP_GAP_PX = 12
+
 /**
  * A county as the pointer, focus or a tap finds it: its figure, its place among the counties and how it
- * compares with the country, in a box by its label, above it (below one near the map's top), kept inside the
- * map's width. The pointer passes through it to the counties beneath; after a tap, its link to the county's
- * companies takes the next tap.
+ * compares with the country, in a box by its label, kept inside the map: above the label where the box fits
+ * between it and the map's top, else below. The box is measured, as its height changes with the words, the
+ * width and the link a tap adds; a fixed threshold let it climb over the readout on a phone (Codex review). The
+ * pointer passes through it to the counties beneath; after a tap, its link to the county's companies takes the
+ * next tap, and focus leaving that link lets the county go.
  */
 function CountyTooltip({
   id,
@@ -315,6 +327,7 @@ function CountyTooltip({
   digits,
   countyLink,
   at,
+  onLeave,
 }: {
   readonly id: string
   readonly layer: HubCountyLayer
@@ -326,15 +339,29 @@ function CountyTooltip({
   readonly countyLink: (code: string) => Record<string, unknown>
   /** The county's label point, in per cent of the map's width and height. */
   readonly at: readonly [number, number]
+  readonly onLeave: () => void
 }) {
   const formatted = county ? formatHubValue(county.value, layer.unit, { digits }) : null
   // The INS map's wording, so the two hubs read the same in every language.
   const total = layer.values.length
   const caption = county && rank ? t`${countyName(county.code)} · locul ${rank} din ${total}` : countyName(code)
   const note = county ? describeAgainstNational(county.value, layer.national, layer.unit, digits) : null
-  const above = at[1] > 30
+  const box = useRef<HTMLDivElement>(null)
+  const [above, setAbove] = useState(true)
+  const labelY = at[1]
+  // Before the paint, so the box is never seen on the wrong side.
+  useLayoutEffect(() => {
+    const node = box.current
+    const map = node?.parentElement
+    if (!node || !map) return
+    const label = (labelY / 100) * map.clientHeight
+    const fitsAbove = label - TOOLTIP_GAP_PX - node.offsetHeight >= 0
+    const fitsBelow = label + TOOLTIP_GAP_PX + node.offsetHeight <= map.clientHeight
+    setAbove(fitsAbove || (!fitsBelow && label > map.clientHeight / 2))
+  }, [labelY, code, pinned])
   return (
     <div
+      ref={box}
       id={id}
       className="pointer-events-none absolute z-10 w-60 max-w-full rounded-sm border bg-popover px-3 py-2 text-popover-foreground shadow-md"
       style={{
@@ -362,6 +389,7 @@ function CountyTooltip({
         <Link
           to="/companies/analytics"
           search={countyLink(county.code)}
+          onBlur={onLeave}
           className="pointer-events-auto mt-1 inline-flex min-h-8 items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
           <Trans>Firmele județului</Trans> →

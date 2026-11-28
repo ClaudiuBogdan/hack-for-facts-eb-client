@@ -21,6 +21,8 @@ describe('CompanyHubPending', () => {
     const bar = screen.getByText('Județe').closest('[aria-hidden="true"]')
     expect(bar).not.toBeNull()
     expect(bar?.querySelector('a')).toBeNull()
+    // Inert too: its sideways-scrolling list takes neither focus nor a drag.
+    expect(bar).toHaveAttribute('inert')
     // The counties first, as the procurement and NGO hubs open.
     expect(bar).toHaveTextContent('JudețeDomeniiMărimeAniFirme noi')
     // No running numbers on this page: none in the bar, none over the first band's title.

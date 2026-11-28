@@ -41,7 +41,7 @@ function HeadSources({ className }: { readonly className?: string }) {
         {t`Ministerul Finanțelor`}
       </a>
       ,{' '}
-      <a href="http://statistici.insse.ro:8077/tempo-online/#/pages/tables/insse-table" target="_blank" rel="noreferrer" className={SOURCE_LINK_CLASS}>
+      <a href="https://insse.ro" target="_blank" rel="noreferrer" className={SOURCE_LINK_CLASS}>
         INS
       </a>
     </p>

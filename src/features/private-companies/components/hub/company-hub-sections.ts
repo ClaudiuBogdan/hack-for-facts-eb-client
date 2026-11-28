@@ -7,7 +7,7 @@ import type { CompanyBarSection } from '../company-section-bar'
 /**
  * The page's bands, in order: the pinned bar's links, each after its icon, as the national budget and the
  * legislation hubs draw theirs. The counties first, as the procurement and NGO hubs open. Short names, so the
- * bar holds all of them on a phone; each band's title says the rest. The ids are the page's anchors
+ * bar's sideways list stays short on a phone; each band's title says the rest. The ids are the page's anchors
  * (`#domenii`), kept as they were. Resolved at render, so the words follow the reader's language.
  */
 export function companyHubSections(): readonly CompanyBarSection[] {

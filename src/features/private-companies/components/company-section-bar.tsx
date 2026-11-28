@@ -76,12 +76,13 @@ export function CompanySectionBar({ name, sections }: { readonly name: ReactNode
 }
 
 /**
- * The bar while the page loads: the same frame and words, inert (no anchor offers a band that has not arrived),
- * the icons faint. `name` may be a pulse while the page's name is not known.
+ * The bar while the page loads: the same frame and words, inert (no anchor offers a band that has not arrived,
+ * and its scrolling list takes neither focus nor a drag), the icons faint. `name` may be a pulse while the
+ * page's name is not known.
  */
 export function CompanySectionBarPending({ name, sections }: { readonly name: ReactNode; readonly sections: readonly CompanyBarSection[] }) {
   return (
-    <div className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur" aria-hidden="true">
+    <div className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur" aria-hidden="true" inert>
       <BarFrame name={name}>
         {sections.map((section) => (
           <li key={section.id} className="shrink-0">

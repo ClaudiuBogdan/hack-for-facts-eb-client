@@ -110,6 +110,7 @@ describe('CompanyCountyMap', () => {
     const tooltip = document.getElementById(cj.getAttribute('aria-describedby') ?? '')
     expect(tooltip).not.toBeNull()
     expect(tooltip).toHaveTextContent('Cluj · locul 2 din 3')
+    expect(tooltip).toHaveTextContent('136,0 la 1.000 de locuitori')
     expect(tooltip).toHaveTextContent('+44,1 față de România')
     // The readout over the map still says the country: it never changes, so the map never moves.
     expect(within(figure()).getByText('România', { selector: 'p' })).toBeInTheDocument()
@@ -135,6 +136,30 @@ describe('CompanyCountyMap', () => {
     expect(JSON.parse(open.getAttribute('data-search') ?? '{}')).toEqual({ an: 2025, judet: 'CJ' })
     fireEvent.pointerDown(cj, { pointerType: 'touch' })
     expect(fireEvent.click(cj, { detail: 1 })).toBe(true)
+  })
+
+  it('lets a tapped county go on a tap off the map, the readout or the legend included', () => {
+    render(<Harness layer={DENSITY} />)
+    const cj = countyLink(/Cluj/)
+    fireEvent.pointerDown(cj, { pointerType: 'touch' })
+    fireEvent.click(cj, { detail: 1 })
+    expect(within(figure()).getByRole('link', { name: /Firmele județului/ })).toBeInTheDocument()
+    fireEvent.pointerDown(within(figure()).getByText('România', { selector: 'p' }), { pointerType: 'touch' })
+    expect(within(figure()).queryByRole('link', { name: /Firmele județului/ })).toBeNull()
+    expect(cj).not.toHaveAttribute('aria-describedby')
+  })
+
+  it('gives the county under focus back its tooltip when a passing mouse leaves the map', () => {
+    render(<Harness layer={DENSITY} />)
+    const cj = countyLink(/Cluj/)
+    fireEvent.focus(cj)
+    const vs = countyLink(/Vaslui/)
+    fireEvent.pointerEnter(vs, { pointerType: 'mouse' })
+    expect(document.getElementById(vs.getAttribute('aria-describedby') ?? '')).toHaveTextContent('Vaslui · locul 3 din 3')
+    fireEvent.pointerLeave(vs, { pointerType: 'mouse' })
+    expect(document.getElementById(cj.getAttribute('aria-describedby') ?? '')).toHaveTextContent('Cluj · locul 2 din 3')
+    fireEvent.blur(cj)
+    expect(cj).not.toHaveAttribute('aria-describedby')
   })
 
   it('opens a county at once from a mouse or the keyboard', () => {
