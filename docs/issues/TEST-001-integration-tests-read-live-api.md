@@ -163,7 +163,7 @@ Each `[ssr-api]` line is given to the test result printed after it.
 | `entity-analytics.spec.ts` | EntityAnalytics 42 | 1 | client-entity-analytics | on dev, 0710bfb58 (in c07941c31) |
 | `public-institutions.spec.ts` | EntityAnalytics 14, GetExecutionLineItemsAnalytics 14 | 0 | client-entity-analytics | on dev, ca1a1b75c (in c07941c31) |
 | `justice.spec.ts` | JusticeAnalysisCaseload 12, JudicialCourtPage 3, JudicialCasePage 2, JudicialCaseExists 1 | 5 | client-entity-analytics | on dev, 39a8f0f25 (in c07941c31) |
-| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies | open |
+| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies | recorded, f6e556f6a |
 | `entity-details.spec.ts` | GetEntityMetadata 12 | 6 | client-entity-analytics | on dev, 08cc11803 (in c07941c31) |
 | `entity-exploration.spec.ts` | GetEntityMetadata 8 | 2 | client-entity-analytics | on dev, 08cc11803 (in c07941c31) |
 | `buget-routing.spec.ts` | GetEntityLineItems 4, GetEntityMetadata 2 | 1 | client-entity-analytics | on dev, 050883290 (in c07941c31) |
@@ -191,7 +191,7 @@ specs: all served, 0 missing.
 |---|---|---:|---|
 | `public-enterprise-page.spec.ts` | ProcurementDaRelease 10; CompanyProfile, ProcurementBuyerCategories, -Figures, -Frameworks, -Identity, -Keys, ProcurementCutoff, PublicEnterpriseProfile 5 each | 5 | procurement-da-client |
 | `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 | procurement-da-client |
-| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies |
+| `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies: recorded, f6e556f6a |
 | `legislation-act.spec.ts` | LegalActDetail 4 | 4 | client-legislation: recorded, a95a702f3 |
 
 ## Closure criterion
