@@ -5,6 +5,7 @@ import { useLingui } from '@lingui/react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { fetchRecentChangesCount, fetchRecentChangesPage } from '../../api/legal-changes-api'
+import { CHANGE_KINDS } from '../../lib/legal-changes-blocks'
 import { useLegalAnalytics } from '../../hooks/use-legislation-analytics'
 import { fmt, pctOf } from '../../lib/analytics-format'
 import { GROUP_LABEL, labelOf } from '../../lib/analytics-labels'
@@ -57,8 +58,9 @@ const LIST_CLASS = 'divide-y divide-border/70 border-y border-border/70'
 type ChangeRow = Awaited<ReturnType<typeof fetchRecentChangesPage>>['items'][number]
 
 /**
- * The newest changes already in force, and how many came into force in the last thirty days (today and the
- * twenty-nine before it). The count is its own read (the server scans for it), so its failure leaves the list.
+ * The newest changes to existing acts already in force, and how many came into force in the last thirty days (today
+ * and the twenty-nine before it). New laws and approved ordinances are left out, as on the Modificări page (owner,
+ * 28 November 2026: "Same rule now"). The count is its own read (the server scans for it), so its failure leaves the list.
  * When the newest change is older than the window the count is zero by construction: the sentence says the
  * date instead.
  */
@@ -67,12 +69,12 @@ export function ChangesBand() {
   const { since, until } = changesWindow(localIsoDate())
   const feed = useQuery({
     queryKey: ['legal', 'landing', 'changes', until] as const,
-    queryFn: ({ signal }) => fetchRecentChangesPage({ until }, { first: CHANGES_SHOWN, signal }),
+    queryFn: ({ signal }) => fetchRecentChangesPage({ kinds: CHANGE_KINDS, until }, { first: CHANGES_SHOWN, signal }),
     staleTime: 5 * 60 * 1000,
   })
   const count = useQuery({
     queryKey: ['legal', 'landing', 'changes-count', since, until] as const,
-    queryFn: ({ signal }) => fetchRecentChangesCount({ since, until }, { signal }),
+    queryFn: ({ signal }) => fetchRecentChangesCount({ kinds: CHANGE_KINDS, since, until }, { signal }),
     staleTime: 5 * 60 * 1000,
   })
   const rows = feed.data?.items ?? []
@@ -123,7 +125,7 @@ export function ChangesBand() {
       title={<Trans>Ultimele modificări</Trans>}
       lede={lede}
       infoLabel={t`Despre modificări`}
-      info={<p>{t`Ce act s-a schimbat, prin ce act și de când. Data e cea a intrării în vigoare, așa cum o înregistrează sursa.`}</p>}
+      info={<p>{t`Ce act s-a schimbat, prin ce act și de când. Data e cea a intrării în vigoare, așa cum o înregistrează sursa. Legile noi și ordonanțele aprobate sunt pe pagina Modificări, în fila lor.`}</p>}
     >
       {feed.error ? (
         <BandNote error={feed.error} onRetry={() => void feed.refetch()} />

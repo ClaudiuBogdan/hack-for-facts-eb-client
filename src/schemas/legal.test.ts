@@ -71,11 +71,10 @@ describe('legalChangesSearchSchema', () => {
     )
   })
 
-  it('parses a view combined with a window — precedence is the component contract', () => {
-    // A hand-edited URL can carry both; the SCHEMA keeps them (each is valid
-    // alone) and the COMPONENT lets the view win, never sending the server
-    // the undatedOnly+window combination it rejects — pinned in
-    // legislation-changes-feed.test.tsx, not here.
+  it('parses an old view combined with a window — the route forwards it', () => {
+    // An old link can carry both; the SCHEMA keeps them (each is valid alone)
+    // and the route forwards them to the new keys, the undated tab without
+    // its window — pinned in legal-changes-address.test.ts, not here.
     expect(
       legalChangesSearchSchema.parse({ view: 'nedatate', since: '2026-01-01' }),
     ).toEqual({ view: 'nedatate', since: '2026-01-01' })
