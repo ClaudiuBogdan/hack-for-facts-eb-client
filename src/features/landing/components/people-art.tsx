@@ -219,33 +219,6 @@ export function PeopleArtStyles() {
   return (
     <style>{`
 /*
- * The portrait keeps '.tpz-pic-img' because that is the selector the reveal hook
- * waits on — 'block.querySelector(".tpz-pic-img")', then 'img.decode()'. It does
- * not keep that class's *layout*: the hook's CSS pins it 'absolute; inset: 0;
- * height: 100%', which is right for a picture that fills a cell and wrong for a
- * layer whose own box is a share of the collage. Pinned, the layer's div has no
- * height and the face renders at zero pixels. Two classes beat one, so this
- * wins without touching the hook.
- */
-.tpz-collage .tpz-pic-img {
-  position: static;
-  inset: auto;
-  width: 100%;
-  height: auto;
-  /*
-   * And not the phone's closer crop either. The hook's CSS multiplies a
-   * viewport factor of 1.16 into every '.tpz-pic-img' below 40rem, which is
-   * right for a group picture in a cell that clips and wrong for a portrait
-   * whose box is the collage: measured at 390 the founder rendered 390 by 471
-   * in a 336 by 406 slot, ran 20px past the frame on both sides and 32px over
-   * his own name. Both factors are pinned to 1 here at the same specificity
-   * that pins the layout, so the slot decides the size on every screen.
-   */
-  --tpz-pic-zoom-base: 1;
-  --tpz-pic-zoom-viewport: 1;
-}
-
-/*
  * The person casts onto the backdrop behind them.
  *
  * On the wrapper, not on the image, and that is not a preference. The picture

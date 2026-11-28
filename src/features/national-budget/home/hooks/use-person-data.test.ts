@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { plotOf } from '@/features/national-budget/analytics/lib/exact'
-import { sumDecimals } from '@/lib/exact-decimal'
+import { compareDecimal, sumDecimals } from '@/lib/exact-decimal'
+import { SAFE_SPENDING_ITEM, SPENDING_PARTS } from '../lib/home-data'
 import { budgetsFrom, changeText, hundredOf } from './use-person-data'
 
 describe('changes', () => {
@@ -25,6 +26,20 @@ describe('lei out of 100', () => {
 
   it('are none for a total printed without its lines (2008, 2011, 2013), never a whole that is all „the rest"', () => {
     expect(hundredOf('189100000000', [], REST)).toEqual([])
+  })
+
+  it('shows October SAFE separately and deducts its exact value from other spending', () => {
+    expect(SPENDING_PARTS.filter((item) => item === SAFE_SPENDING_ITEM)).toHaveLength(1)
+    const whole = '678197841261.93903'
+    const otherNamed = line('other named spending', '643274055105.4166316')
+    const safe = line(SAFE_SPENDING_ITEM, '6358483536.8999993')
+    const withSafe = hundredOf(whole, [otherNamed, safe], REST)
+    expect(withSafe.find((item) => item.key === SAFE_SPENDING_ITEM)).toMatchObject({ exact: safe.exact, lei: 1, change: null })
+    expect(withSafe.find((item) => item.rest)?.exact).toBe('28565302619.6223991')
+    expect(compareDecimal(sumDecimals(withSafe.map((item) => item.exact)) ?? '0', whole)).toBe(0)
+    expect(withSafe.reduce((sum, item) => sum + item.lei, 0)).toBe(100)
+    const withoutSafe = hundredOf(whole, [otherNamed], REST)
+    expect(withoutSafe.find((item) => item.rest)?.exact).toBe('34923786156.5223984')
   })
 
   it('make 100 with the rest, largest first, and leave a rest under half a percent out', () => {

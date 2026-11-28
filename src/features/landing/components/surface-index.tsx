@@ -27,13 +27,8 @@ type GroupImage = {
   /** The art's own pixels. See `GroupPicture` — the cell reserves the box. */
   readonly width: number
   readonly height: number
-  /** How far forward the picture sits. See `GroupPicture`. */
-  readonly zoom?: number
-  /**
-   * `object-position`, and the point the zoom grows from. Load-bearing under
-   * `cover`, where the crop decides what survives.
-   */
-  readonly position: string
+  /** Responsive width and horizontal alignment of the artwork. */
+  readonly framing: string
   /** Which side of the entries the picture sits on. */
   readonly side: 'left' | 'right'
   /**
@@ -48,18 +43,9 @@ type GroupImage = {
  * Illustrations, keyed by group. Skin rather than content, so they live here
  * and not in `landing-groups.ts`, which describes what the surfaces *are*.
  *
- * Two things worth carrying with this map.
- *
- * Allegory generates safely; real institutions do not. A Justitia, a stone lion
- * and an Atlas have no referent to get wrong. A rendered Palace of the
- * Parliament that is almost right would undercut the one thing this platform
- * sells — that what you are shown is the actual record.
- *
- * And these are cropped to their alpha bounding box before encoding. Under
- * `contain` it is the empty margin in the file, not any CSS, that decides how
- * large the subject renders; trimming it there enlarges the subject at every
- * breakpoint, where a CSS scale could only do the same by risking a clip
- * wherever the cell is narrowest.
+ * The assets are trimmed to their silhouettes. Their widths leave room for
+ * the complete subject in a tall cell and keep the focal point on screen when
+ * a short cell crops the bottom.
  */
 const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // The leu, in both senses — the stone lion and the currency.
@@ -68,18 +54,9 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     avif: leuAvif,
     width: 760,
     height: 942,
-    // A portrait, cropped from the top: the head is always whole and the
-    // cell's edge takes the plinth. `12px` rather than `0%`: the file is
-    // trimmed to the figure's outline, and the length is the air above the
-    // mane. It was fitted and zoomed 1.2 from its centre, which cut the plinth
-    // on a desktop and the head as well on a phone.
-    position: '50% 12px',
-    // At 1 the desktop cell, about square, cuts the figure exactly along the
-    // paws, which reads as a mistake. A little closer and the cut falls across
-    // the legs there and on a phone, and under the paws on a tablet.
-    zoom: 1.12,
+    // Center the mane on phones and keep the paws above the desktop crop.
+    framing: 'w-[88%] max-sm:-translate-x-[4%] sm:w-[94%] lg:max-w-77',
     side: 'left',
-    // 4:5 against the source's own 0.807, so a phone crops almost nothing.
     mobileAspect: 'aspect-4/5',
   },
   // On the right, so the three pictures alternate down the page rather than
@@ -92,45 +69,18 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     avif: atlasAvif,
     width: 760,
     height: 1250,
-    /*
-     * The one whose proportions fight the cell: the desktop cell comes out
-     * about square — 363x365 beside three entries — and this source is 0.608.
-     * Fitted whole it would be 221px wide in a 363px box, a small statue
-     * marooned in white space. Cropped, it fills the cell at the price of the
-     * pedestal.
-     *
-     * Worth the price: what is lost is the base, and what survives is the globe
-     * and the figure carrying it, which is the whole of what the picture is
-     * for. Cropped from the top, with `14px` of air above the globe (the file
-     * is trimmed to the figure's outline): the group's tab stands right over
-     * this cell, and at the earlier `15%` the globe's crown was cut flat
-     * against the tab's underside. The cut now falls across the shin on a
-     * desktop and under the plinth on a tablet.
-     */
-    position: '50% 14px',
+    // Leave room for both the globe and Atlas's shoulders on a phone.
+    framing: 'w-4/5 max-sm:-translate-x-[6%] sm:w-[92%]',
     side: 'right',
-    /*
-     * 4:5, which crops on a phone exactly as it does on the desktop row.
-     *
-     * It was 3:5 — near enough the source's own 0.608 that mobile got the whole
-     * figure, pedestal included, which was the point. Measured on a 390x844
-     * screen that box is 582px tall: 69% of the viewport for one decorative
-     * picture, with the entries it illustrates pushed off the bottom entirely.
-     * 4:5 brings it to 423 — half the screen — and costs the pedestal, which
-     * the desktop crop had already given up.
-     */
     mobileAspect: 'aspect-4/5',
   },
-  // Anchored to the very top. Centring lands on drapery, and anything below the
-  // top edge slices the head off at desktop widths, where the cell is at its
-  // shortest and the visible window is a thin band. The source carries a little
-  // air above the head, so '0%' reads as headroom rather than a crop.
   lege: {
     src: justitia,
     avif: justitiaAvif,
     width: 760,
     height: 1140,
-    position: '50% 0%',
+    // Anchor the desktop zoom on the raised scales and crop at the cell edge.
+    framing: 'w-[90%] sm:w-[92%] lg:mt-0 lg:w-[max(92%,18.5rem)] lg:self-end lg:origin-top-right lg:-translate-x-1 lg:-translate-y-1 lg:scale-[1.22] lg:[&>img]:origin-top-right',
     side: 'left',
     mobileAspect: 'aspect-4/3',
   },
@@ -253,21 +203,9 @@ export function SurfaceIndex({ groups }: { readonly groups: readonly LandingGrou
                 <div
                   {...{ [PICTURE_ATTR]: '' }}
                   className={cn(
-                    // `max-h` only bites on a phone, where the cell takes its
-                    // height from an aspect ratio rather than from the entries
-                    // beside it. At 4:5 on a 390px screen the picture is 437px
-                    // tall and pushes its own list off the bottom of the
-                    // viewport; capped, the group arrives as one thing. The
-                    // base zoom in `image-reveal.tsx` spends the height that
-                    // buys back on the subject.
-                    //
-                    // `w-full` is load-bearing, not decoration. An element with
-                    // an `aspect-ratio` and a `max-height` satisfies the ratio
-                    // by *narrowing* when it is allowed to, so the cell came out
-                    // 218px wide in a 349px column with the picture stranded
-                    // beside a stripe of nothing. Fixing the width makes the cap
-                    // do what it says.
-                    'relative -ml-px -mt-px w-full max-h-[70vw] overflow-hidden border-l border-t sm:aspect-auto sm:max-h-none',
+                    // The stacked cell has a height cap so the entries stay
+                    // close to their illustration on wider phones.
+                    'relative -ml-px -mt-px w-full max-h-[min(70vw,22rem)] overflow-hidden border-l border-t sm:aspect-auto sm:max-h-none',
                     image.mobileAspect,
                     ROW_SPAN[group.entries.length],
                     // The picture stays first in the DOM either way, so it
@@ -281,10 +219,9 @@ export function SurfaceIndex({ groups }: { readonly groups: readonly LandingGrou
                   <GroupPicture
                     src={image.src}
                     avif={image.avif}
-                    position={image.position}
+                    framing={image.framing}
                     width={image.width}
                     height={image.height}
-                    zoom={image.zoom}
                   />
                 </div>
               ) : null}

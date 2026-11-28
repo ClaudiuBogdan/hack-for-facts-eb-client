@@ -85,6 +85,7 @@ const LINE_LABELS: Readonly<Record<string, () => string>> = {
   'alte cheltuieli': () => t({ message: `Alte cheltuieli`, context: 'national budget classification' }),
   'proiecte cu finantare din sumele reprezentand asistenta financiara nerambursabila aferenta pnrr': () => t({ message: `Proiecte PNRR din granturi`, context: 'national budget classification' }),
   'proiecte cu finantare din sumele aferente componentei de imprumut a pnrr': () => t({ message: `Proiecte PNRR din împrumuturi`, context: 'national budget classification' }),
+  'cheltuieli aferente planului safe': () => t({ message: `SAFE programme`, context: 'national budget classification' }),
   'cheltuieli aferente programelor cu finantare rambursabila': () => t({ message: `Programe cu finanțare rambursabilă`, context: 'national budget classification' }),
   'cheltuieli de capital': () => t({ message: `Cheltuieli de capital`, context: 'national budget classification' }),
   'active nefinanciare': () => t({ message: `Active nefinanciare`, context: 'national budget classification' }),

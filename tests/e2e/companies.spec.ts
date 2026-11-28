@@ -1,6 +1,7 @@
 /**
- * Companies E2E — runs against the redesign GraphQL API via the dev server
- * (localhost:3000 → VITE_API_URL :3001). Tolerant of the API being down:
+ * Companies E2E — runs against the redesign GraphQL API, on the site the
+ * config serves (a local build, or E2E_BASE_URL's deployed site, as the
+ * nightly reads the dev site). Tolerant of the API being down:
  * the suite skips rather than fails when the live profile cannot load, so it
  * does not red-bar CI when the tunnels/server are offline.
  *
@@ -8,7 +9,7 @@
  * prod (companies.registrations / companies.financials) on 2026-06-17.
  */
 import { test, expect, type Page } from '@playwright/test'
-import { waitForPageReady } from '../utils/test-helpers'
+import { waitForHydration, waitForPageReady } from '../utils/test-helpers'
 
 const DEDEMAN_CUI = '2816464'
 const DEDEMAN_NAME = /DEDEMAN SRL/i
@@ -36,19 +37,23 @@ test.describe('Companies — live profile', () => {
     await expect(page.getByText(new RegExp(DEDEMAN_CUI)).first()).toBeVisible()
   })
 
-  test('the business band shows a real ANAF balance sheet', async ({ page }) => {
+  test('the business band charts the years, and a recent ANAF balance sheet opens', async ({ page }) => {
     const ready = await gotoProfile(page, DEDEMAN_CUI)
     test.skip(!ready, 'Live company profile unavailable (API/tunnel down)')
 
-    // The newest statement's balance sheet heads the band's table; DEDEMAN
-    // files every year, so it is a recent one.
+    // The band draws the statements' years in one chart (money and people at once, no measure switch); every
+    // statement opens under „Bilanțurile, an cu an". DEDEMAN files every year, so the newest is a recent one.
     const business = page.locator('#afacerea')
-    await expect(business.getByText(/^Bilanț, 20(2[4-9]|[3-9]\d)$/).first()).toBeVisible({
-      timeout: 15000,
-    })
-    await expect(
-      business.getByRole('radiogroup', { name: 'Graficul arată' }),
-    ).toBeVisible()
+    await expect(business.getByRole('group', { name: /^Anii:/ })).toBeVisible({ timeout: 15000 })
+    const years = page.getByRole('region', { name: 'Bilanțurile, an cu an' })
+    const recent = years.getByRole('button', { name: /^Bilanțul pe 20(2[4-9]|[3-9]\d)/ }).first()
+    await expect(recent).toBeVisible()
+    // Opened (after hydration: a click on the server's button does nothing), the statement names its publisher.
+    await waitForHydration(page)
+    const year = ((await recent.getAttribute('aria-label')) ?? (await recent.textContent()) ?? '').match(/20\d\d/)?.[0]
+    await recent.click()
+    await expect(recent).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByRole('region', { name: `Bilanțul pe ${year}` })).toContainText('ANAF')
   })
 })
 

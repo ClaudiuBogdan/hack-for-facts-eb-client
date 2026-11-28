@@ -55760,6 +55760,15 @@ msgstr "Toate au valoarea publicată."
 msgid "Valoarea e publicată pentru {0} din {awards}."
 msgstr "Valoarea e publicată pentru {0} din {awards}."
 
+#: src/features/national-budget/analytics/lib/analytics-format.ts:88
+msgctxt "national budget classification"
+msgid "SAFE programme"
+msgstr "Programul SAFE"
+
+#: src/features/national-budget/home/lib/home-format.ts:38
+msgid "spending reported by the Ministry of Finance for the SAFE programme"
+msgstr "cheltuieli raportate de Ministerul Finanțelor pentru planul SAFE"
+
 #: src/features/procurement/lib/home-text.ts:115
 msgid "Lista națională a contractelor atribuite vine în curând."
 msgstr "Lista națională a contractelor atribuite vine în curând."

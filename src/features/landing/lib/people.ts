@@ -8,22 +8,18 @@ import angel3Webp from '@/assets/images/people/portrait-angel-3.webp'
 import angel3Avif from '@/assets/images/people/portrait-angel-3.avif'
 import angel4Webp from '@/assets/images/people/portrait-angel-4.webp'
 import angel4Avif from '@/assets/images/people/portrait-angel-4.avif'
-import ghClaudiu from '@/assets/images/people/gh-claudiubogdan.webp'
+import oanaManKesselheim from '@/assets/images/people/contributor-oana-man-kesselheim.webp'
+import raduIamandi from '@/assets/images/people/contributor-radu-iamandi.webp'
+import valerianBanu from '@/assets/images/people/contributor-valerian-banu.webp'
+import danielFerecatu from '@/assets/images/people/contributor-daniel-ferecatu.webp'
+import danielUrsu from '@/assets/images/people/contributor-daniel-ursu.webp'
+import vladGrumazescu from '@/assets/images/people/contributor-vlad-grumazescu.webp'
+import ionutHodina from '@/assets/images/people/contributor-ionut-hodina.webp'
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
 
 /**
- * The people on the landing's people band.
- *
- * Three tiers, because they are three different claims: the person who is
- * accountable for the platform, the handful who kept it alive, and everyone who
- * put something in: feedback, ideas, data or code. Flattening them into one grid
- * would say they are the same claim, and the second tier is the one that carries
- * the gratitude.
- *
- * **The people are real now** — names, photographs, institutions and links, all
- * supplied rather than invented. What is still stand-in is the contributor tier
- * below them, which is a list this file holds and which has one human in it.
+ * The founder, supporters and contributors shown in the landing page's people section.
  */
 
 export type SocialLinks = {
@@ -157,60 +153,56 @@ export const ANGELS: readonly Person[] = [
 export type Contributor = {
   readonly id: string
   readonly name: string
-  /** What they gave. Not a job title — the thing they actually did. */
-  readonly role: MessageDescriptor
   /** A square crop. Absent means the seat is taken but the picture is not in. */
   readonly avatar?: string
   /** Where a click goes: LinkedIn, Facebook, GitHub — whichever they use. */
   readonly url?: string
 }
 
-/**
- * Everyone who put something in, not only the people with commits.
- *
- * The code tier is measurable and small: on 8 September 2026, across client,
- * server and scrapper, one human with 6,128 commits. The other two accounts are
- * release machinery — and the filter for them is *not* `type !== 'Bot'`. GitHub
- * types `github-actions[bot]` as a bot but `actions-user`, which pushes the
- * compiled catalogs here and on the server, as a plain `User`. Trusting the
- * field would have put a robot in the grid with 385 commits to its name.
- *
- * So the grid stopped being a mirror of the GitHub API and became a list this
- * file holds: translations, checked figures, a door opened, a bug reported. That
- * cannot be derived from a repository, which is the point — most of what kept
- * this going was never a commit.
- *
- * Only real people are in this list.
- *
- * It used to carry six invented ones — 'Nume Prenume', 'Al Cincilea Nume' —
- * to give the wall its shape before the real names arrived. They were never
- * drawn with a name on screen, so they looked like anonymous placeholders, but
- * the name went to `title` and to an `sr-only` span: a screen reader read six
- * fabricated people, with roles, off the band whose whole subject is who is
- * really behind this. On a site about verifiable public money that is the one
- * place to get this wrong. `DESIGN.md` §Mock-First Contract says it plainly —
- * never present stand-in data as served truth.
- *
- * The shape is kept by `OPEN_SEATS` instead, which claims nothing about anyone.
- */
+/** The curated list credits contributions both inside and outside the repositories. */
 export const CONTRIBUTORS: readonly Contributor[] = [
   {
-    id: 'claudiu',
-    name: 'Claudiu Bogdan',
-    role: msg`Cod și date`,
-    avatar: ghClaudiu,
-    url: 'https://github.com/ClaudiuBogdan',
+    id: 'oana-man-kesselheim',
+    name: 'Oana Man-Kesselheim',
+    avatar: oanaManKesselheim,
+    url: 'https://www.linkedin.com/in/oana-man-kesselheim/',
+  },
+  {
+    id: 'radu-iamandi',
+    name: 'Radu Iamandi',
+    avatar: raduIamandi,
+    url: 'https://www.linkedin.com/in/raduiamandi',
+  },
+  {
+    id: 'valerian-banu',
+    name: 'Valerian Banu',
+    avatar: valerianBanu,
+    url: 'https://www.linkedin.com/in/valibanu/',
+  },
+  {
+    id: 'daniel-ferecatu',
+    name: 'Daniel Ferecatu',
+    avatar: danielFerecatu,
+    url: 'https://www.linkedin.com/in/danielferecatu',
+  },
+  {
+    id: 'daniel-ursu',
+    name: 'Daniel Ursu',
+    avatar: danielUrsu,
+    url: 'https://www.linkedin.com/in/ursudaniel/',
+  },
+  {
+    id: 'vlad-grumazescu',
+    name: 'Vlad Grumazescu',
+    avatar: vladGrumazescu,
+    url: 'https://www.linkedin.com/in/vladgrumazescu/',
+  },
+  {
+    id: 'ionut-hodina',
+    name: 'Ionuț Hodină',
+    avatar: ionutHodina,
+    url: 'https://www.linkedin.com/in/ionut-hodina/',
   },
 ]
-
-/**
- * Empty chairs drawn after the real faces, so the wall reads as a wall.
- *
- * Not people and not pretending to be: no name, no role, no link, and
- * `aria-hidden`, so nothing is announced and nothing is claimed. They say the
- * list is open — which is true — where six invented names said it was already
- * full, which was not.
- */
-export const OPEN_SEATS = 6
 
 export const REPO_URL = 'https://github.com/ClaudiuBogdan/hack-for-facts-eb-client'
