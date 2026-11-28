@@ -241,6 +241,37 @@ describe('useDisclosureWatch', () => {
   })
 })
 
+describe('the watch and the pages it watches', () => {
+  it('never updates while another component renders: a page whose read is added to the cache in its render logs no React warning', async () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    try {
+      const client = newClient()
+      function Page() {
+        // A watched read created during this component's render, as the procurement home and the county band do.
+        useQuery({ queryKey: ['procurement', 'home'], queryFn: () => new Promise(() => undefined) })
+        return null
+      }
+      // The watch is mounted with the app shell, long before a page renders (a navigation).
+      const tree = (page: boolean) => (
+        <QueryClientProvider client={client}>
+          <DisclosureWatch />
+          {page ? <Page /> : null}
+        </QueryClientProvider>
+      )
+      const { rerender } = render(tree(false))
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
+      rerender(tree(true))
+      await waitFor(() => expect(client.getQueryCache().find({ queryKey: ['procurement', 'home'] })).toBeDefined())
+      const warned = errors.mock.calls.some((args) => args.some((arg) => typeof arg === 'string' && arg.includes('Cannot update a component')))
+      expect(warned).toBe(false)
+    } finally {
+      errors.mockRestore()
+    }
+  })
+})
+
 describe('privacy fails closed (root, 19 November 2026)', () => {
   afterEach(() => {
     vi.useRealTimers()

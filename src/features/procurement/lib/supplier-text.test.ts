@@ -96,6 +96,16 @@ describe('whereLede', () => {
 })
 
 describe('howLede', () => {
+  it('says contracts it cannot read are unreadable, never that the firm sold only directly (PROC-001)', () => {
+    const none = { ...supplierProfile().contracts, count: 0 }
+    expect(howLede(supplierProfile({ contracts: none, procedures: [], contractsUnavailable: true }))).toBe(
+      'În 2025, 11 achiziții directe, adică vânzări fără licitație. Contractele câștigate printr-o procedură nu pot fi citite acum.',
+    )
+    expect(howLede(supplierProfile({ contracts: none, procedures: [], contractsUnavailable: true, direct: { ...supplierProfile().direct, count: 0 } }))).toBe(
+      'Contractele câștigate printr-o procedură nu pot fi citite acum.',
+    )
+  })
+
   it('names both routes in plain words, and the contracts negotiated without a notice', () => {
     expect(howLede(supplierProfile())).toBe(
       'În 2025, 11 achiziții directe, adică vânzări fără licitație, și 1 contract câștigat printr-o procedură: licitație, negociere sau alta.',

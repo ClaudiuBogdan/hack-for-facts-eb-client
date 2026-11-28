@@ -14,8 +14,8 @@ import { isNaturalPersonKey } from '../lib/withheld-party'
 import type {
   AuthorityProcurementSlice,
   ProcurementRecordSummary,
+  ProcurementGrainAnalytics,
   ProcurementSearchPage,
-  SupplierProcurementSlice,
   SupplierRecordsPage,
 } from '@/schemas/procurement'
 import {
@@ -51,8 +51,8 @@ import {
   mapModification,
   mapProcedure,
   mapSearchPage,
+  mapGrainAnalytics,
   mapSupplierRecords,
-  mapSupplierSlice,
 } from './graphql/procurement-mappers'
 import {
   buildContractsFilter,
@@ -139,6 +139,9 @@ async function loadAggregates(
     readonly includeSuppliers?: boolean
     readonly includeCategories?: boolean
     readonly rankBy?: 'count' | 'value'
+    readonly signal?: AbortSignal
+    /** D6: the newest disclosure key when the codes in the scope were read (`graphqlQuery`'s `disclosureSeen`). */
+    readonly disclosureSeen?: string | null
   } = {},
 ) {
   const data = await graphqlQuery<unknown>(
@@ -151,7 +154,7 @@ async function loadAggregates(
       includeSuppliers: options.includeSuppliers ?? true,
       includeCategories: options.includeCategories ?? true,
     },
-    { operationName: 'ProcurementAggregates' },
+    { operationName: 'ProcurementAggregates', ...(options.signal ? { signal: options.signal } : {}), ...(options.disclosureSeen !== undefined ? { disclosureSeen: options.disclosureSeen } : {}) },
   )
   return procurementAggregatesResponseSchema.parse(data)
 }
@@ -397,39 +400,22 @@ export async function fetchSupplierRecordsLive(
   )
 }
 
-export async function fetchSupplierProcurementSliceLive(
-  cui: string,
-  scope: ProcurementSliceScope = {},
-  signal?: AbortSignal,
-): Promise<SupplierProcurementSlice> {
-  const [aggregates, divisions, recentRecords, supplierName] =
-    await Promise.all([
-      loadAggregates(buildScopeFilter({ supplierCui: cui, ...scope }), {
-        includeSuppliers: false,
-        // A dimension the scope already pins is not a breakdown; the server
-        // rejects `breakdown(cpvDivision)` under a cpvDivision scope.
-        includeCategories: scope.cpvDivision === undefined,
-        // Money order; the gate reports what it could actually serve.
-        rankBy: 'value',
-      }),
-      loadCpvDivisions(),
-      fetchSupplierRecordsLive(cui),
-      resolvePartyName(cui, 'supplier'),
-    ])
+/**
+ * A firm's direct purchases as the supplier analysis reads them — served from
+ * procurement v3 — with the paying institutions named (the company profile's
+ * band, PROC-001). Only that grain is asked: legacy procurement is switched
+ * off, and the contract grain abstains.
+ */
+export async function fetchSupplierDirectAnalyticsLive(cui: string, signal?: AbortSignal, disclosureSeen?: string | null): Promise<ProcurementGrainAnalytics> {
+  const [aggregates, divisions] = await Promise.all([
+    // Money order; the gate reports what it could actually serve. D6: the scope carries the firm's code.
+    loadAggregates(buildScopeFilter({ supplierCui: cui, grain: 'direct_acquisition' }), { includeSuppliers: false, rankBy: 'value', signal, disclosureSeen }),
+    loadCpvDivisions(),
+  ])
   // A read cancelled meanwhile (a purge, D6) asks nothing more: the names lookup would carry codes from the first round.
   signal?.throwIfAborted()
   const partyNames = new Map(await loadPartyNames(aggregates, signal))
-  if (supplierName) {
-    partyNames.set(`supplier:${cui}`, supplierName)
-  }
-  return mapSupplierSlice({
-    supplierCui: cui,
-    supplierName,
-    aggregates,
-    divisions,
-    recentRecords,
-    partyNames,
-  })
+  return mapGrainAnalytics(aggregates, divisions, 'direct_acquisition', partyNames)
 }
 
 /** Recent contracts for an authority (first page) — used on institution pages. */

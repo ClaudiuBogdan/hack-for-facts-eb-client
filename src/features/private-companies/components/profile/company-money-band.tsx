@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -9,13 +10,12 @@ import { HUB_BESIDE_TITLE_CLASS, HubLoadError, HubPending, HubSectionHead } from
 import { cn } from '@/lib/utils'
 import type { CompanyPaymentGrain } from '@/schemas/private-company'
 import { useSeapCutoff } from '../../hooks/use-seap-cutoff'
-import {
-  grainAuthorities,
-  grainCategories,
-  grainStats,
-  type CompanyProcurementRead,
-  type ProcurementAuthorityRow,
-  type ProcurementRecordRow,
+import type {
+  CompanyContractsRead,
+  CompanyDirectRead,
+  CompanyProcurementRead,
+  ProcurementAuthorityRow,
+  ProcurementRecordRow,
 } from '../../lib/company-procurement-read'
 import { count, dateText, moneyCell, moneyText, moneyTick, monthText, percent } from '../../lib/company-profile-format'
 import type { CompanyProfileModel } from '../../lib/company-profile-model'
@@ -48,6 +48,8 @@ export type ProcurementState =
       readonly grains: readonly CompanyPaymentGrain[]
       /** The grain shown: the URL's when the company has records in it, else the first it has. */
       readonly grain: CompanyPaymentGrain | null
+      /** Reads the band again: a part that failed fails only its own tab. */
+      readonly retry: () => void
     }
 
 /** The flows SEAP names institutions for: only these have payers and categories to show. */
@@ -67,18 +69,29 @@ export function CompanyMoneyBand({
   onGrain,
 }: {
   readonly model: CompanyProfileModel
-  readonly index: string
+  /** The band's caption, when the page numbers its bands; none, and no offset beside the title for it. */
+  readonly index?: string
   readonly procurement: ProcurementState
   readonly onGrain: (grain: CompanyPaymentGrain) => void
 }) {
   const title = <Trans>Contracte, achiziții și PNRR</Trans>
   const { money } = model
   const seapGrains = procurement.status === 'ready' ? procurement.grains.length : 0
-  if (money.receivedCount === 0 && money.commitments.count === 0 && seapGrains === 0) {
+  // Nothing is said absent until the SEAP read has answered that it has nothing too: pending or failed is not none.
+  if (money.receivedCount === 0 && money.commitments.count === 0 && procurement.status === 'ready' && seapGrains === 0) {
     return (
       <ProfileBand id="bani-publici" titleId={TITLE_ID}>
-        <HubSectionHead titleId={TITLE_ID} index={index} title={title} />
+        <HubSectionHead titleId={TITLE_ID} index={index ?? ''} title={title} />
         <NoPublicMoney className="mt-5" />
+      </ProfileBand>
+    )
+  }
+  if (money.receivedCount === 0 && money.commitments.count === 0 && procurement.status !== 'ready') {
+    // No public money in the profile, and the SEAP read, which may list records the profile lacks, has not answered: its state alone.
+    return (
+      <ProfileBand id="bani-publici" titleId={TITLE_ID}>
+        <HubSectionHead titleId={TITLE_ID} index={index ?? ''} title={title} />
+        <SeapDetail model={model} procurement={procurement} onGrain={onGrain} />
       </ProfileBand>
     )
   }
@@ -90,14 +103,14 @@ export function CompanyMoneyBand({
     <ProfileBand id="bani-publici" titleId={TITLE_ID}>
       <div className={BAND_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-5">
-          <HubSectionHead titleId={TITLE_ID} index={index} title={title} lede={moneyLede(model)} />
+          <HubSectionHead titleId={TITLE_ID} index={index ?? ''} title={title} lede={moneyLede(model)} />
           <MoneyFlows model={model} className="mt-8" />
         </div>
         {charted ? (
-          <div className={cn('min-w-0 lg:col-span-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-            <MonoLabel className="block text-muted-foreground">
+          <div className={cn('min-w-0 lg:col-span-7', index && HUB_BESIDE_TITLE_CLASS)} data-reveal>
+            <p className="text-xs text-muted-foreground">
               <Trans>Pe an, după anul contractului sau al achiziției</Trans>
-            </MonoLabel>
+            </p>
             <MoneyChart model={model} className="mt-4" />
           </div>
         ) : null}
@@ -144,10 +157,10 @@ function MoneyFlows({ model, className }: { readonly model: CompanyProfileModel;
             <span className={cn('size-2.5 shrink-0 rounded-[2px]', BUCKET_SWATCH[flowBucket(flow.flowType)])} aria-hidden="true" />
             <span className="min-w-0">
               {flowLabel(flow.flowType)}
-              <MonoLabel className="mt-1 block text-muted-foreground">
+              <span className="mt-1 block text-xs text-muted-foreground">
                 {flowCount(flow.flowType, flow.count)}
                 {flow.receipt ? null : <>, {t`nu plăți`}</>}
-              </MonoLabel>
+              </span>
             </span>
           </dt>
           <dd className={cn('text-right tabular-nums', flow.total === null ? 'text-sm text-muted-foreground' : 'text-base font-semibold text-foreground')}>
@@ -269,48 +282,104 @@ function SeapDetail({
       </div>
     )
   }
-  const { read, grains, grain } = procurement
+  const { read, grains, grain, retry } = procurement
   if (!grain) {
-    // The profile counts SEAP records the supplier read did not return: say so rather than drop the section.
+    // Both parts answered, and neither has records for the company's code, though the profile counts some: said, not dropped.
     return (
       <p className="mt-14 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">
         <Trans>Căutarea în SEAP după CUI-ul firmei nu a întors înregistrări, așa că cumpărătorii nu pot fi numiți aici.</Trans>
       </p>
     )
   }
+  const toggle =
+    grains.length > 1 ? (
+      <IndicatorToggle label={t`Înregistrările SEAP`} options={grains.map((key) => ({ key, label: grainLabel(key) }))} value={grain} onChange={onGrain} />
+    ) : (
+      <span className="text-xs text-muted-foreground">{grainLabel(grain)}</span>
+    )
+  const part = grain === 'contracte' ? read.contracts : read.directAcquisitions
+  if (part.status === 'failed') {
+    // Only this tab's read failed: the other stands, and the retry reads the band again.
+    return (
+      <div className="mt-14">
+        <div className="flex justify-end">
+          <div className="w-full sm:w-fit">{toggle}</div>
+        </div>
+        <div className="mt-4">
+          <HubLoadError onRetry={retry} />
+        </div>
+      </div>
+    )
+  }
+  const cui = model.profile.cui
+  if (grain === 'contracte') {
+    const contracts = read.contracts.status === 'ready' ? read.contracts.value : null
+    if (!contracts) return null
+    return <ContractsDetail contracts={contracts} cui={cui} toggle={toggle} />
+  }
+  if (read.directAcquisitions.status !== 'ready') return null
+  const direct = read.directAcquisitions.value
   return (
     <div className={cn('mt-14', BAND_GRID_CLASS)} data-reveal>
       <div className="min-w-0 lg:col-span-7">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <MonoLabel className="text-primary">
+          <p className="text-xs text-muted-foreground">
             <Trans>Cine cumpără</Trans>
-          </MonoLabel>
-          <div className="w-full sm:w-fit">
-            {grains.length > 1 ? (
-              <IndicatorToggle
-                label={t`Înregistrările SEAP`}
-                options={grains.map((key) => ({ key, label: grainLabel(key) }))}
-                value={grain}
-                onChange={onGrain}
-              />
-            ) : (
-              <MonoLabel className="text-muted-foreground">{grainLabel(grain)}</MonoLabel>
-            )}
-          </div>
+          </p>
+          <div className="w-full sm:w-fit">{toggle}</div>
         </div>
-        <PayerList read={read} grain={grain} className="mt-4" />
-        <CoverageNote read={read} grain={grain} className="mt-3" />
+        <PayerList direct={direct} className="mt-4" />
+        <CoverageNote direct={direct} className="mt-3" />
       </div>
       <div className="min-w-0 lg:col-span-5">
-        <MonoLabel className="block text-primary">
+        <p className="text-xs text-muted-foreground">
           <Trans>Pentru ce</Trans>
-        </MonoLabel>
-        <CategoryList read={read} grain={grain} className="mt-5" />
-        <MonoLabel className="mt-10 block text-primary">
+        </p>
+        <CategoryList direct={direct} className="mt-5" />
+        <p className="mt-10 text-xs text-muted-foreground">
           <Trans>Cele mai recente</Trans>
-        </MonoLabel>
-        <RecentRecords records={read.recent} className="mt-4" />
-        {model.profile.cui ? <ProcurementLinks cui={model.profile.cui} grain={grain} className="mt-3" /> : null}
+        </p>
+        <RecentRecords records={direct.recent} className="mt-4" />
+        {cui ? <ProcurementLinks cui={cui} grain={grain} className="mt-3" /> : null}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The contract awards the company won, as the winner reads serve them: how
+ * many, how many carry a value, the date the data runs to, and the newest.
+ * No ranking of buyers or categories is served for a winner: the winner's
+ * own list carries them.
+ */
+function ContractsDetail({ contracts, cui, toggle }: { readonly contracts: CompanyContractsRead; readonly cui: string | null; readonly toggle: ReactNode }) {
+  const from = contracts.floor.slice(0, 4)
+  const awards = plural(contracts.count, { one: '# contract atribuit', few: '# contracte atribuite', other: '# de contracte atribuite' })
+  const parts = [
+    t`Din ${from}, SEAP numește firma câștigătoare în ${awards}.`,
+    contracts.withValue < contracts.count ? t`Valoarea e publicată pentru ${count(contracts.withValue)} din ${awards}.` : t`Toate au valoarea publicată.`,
+    t`Date până la ${dateText(contracts.dataAsOf.slice(0, 10))}.`,
+  ].filter((part): part is string => part !== null)
+  return (
+    <div className={cn('mt-14', BAND_GRID_CLASS)} data-reveal>
+      <div className="min-w-0 lg:col-span-7">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <p className="text-xs text-muted-foreground">
+            <Trans>Contracte atribuite</Trans>
+          </p>
+          <div className="w-full sm:w-fit">{toggle}</div>
+        </div>
+        <p className="mt-4 max-w-[60ch] text-sm leading-relaxed text-foreground">{parts.join(' ')}</p>
+        <p className="mt-3 max-w-[60ch] text-xs text-muted-foreground">
+          <Trans>Instituțiile care au atribuit contractele și categoriile lor sunt în lista contractelor atribuite firmei.</Trans>
+        </p>
+      </div>
+      <div className="min-w-0 lg:col-span-5">
+        <p className="text-xs text-muted-foreground">
+          <Trans>Cele mai recente</Trans>
+        </p>
+        <RecentRecords records={contracts.recent} className="mt-4" />
+        {cui ? <ProcurementLinks cui={cui} grain="contracte" className="mt-3" /> : null}
       </div>
     </div>
   )
@@ -319,17 +388,24 @@ function SeapDetail({
 const OUT_LINK_CLASS = 'inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline'
 
 /**
- * Where the procurement pages take the company further: its records of the
- * grain shown, on the analytics page — from the year that page compares from,
- * said in the link — and the firm as the state's supplier.
+ * Where the procurement pages take the company further: its contract awards
+ * on the winner's list, or its direct purchases on the analytics page — from
+ * the year that page compares from, said in the link — and the firm as the
+ * state's supplier.
  */
 function ProcurementLinks({ cui, grain, className }: { readonly cui: string; readonly grain: CompanyPaymentGrain; readonly className?: string }) {
   const from = DIRECT_COMPARABLE_FROM
   return (
     <div className={cn('flex flex-col items-start', className)}>
-      <Link to="/procurement/analytics" search={supplierRecordsSearch(cui, null, grain === 'contracte' ? 'contract' : 'direct')} className={OUT_LINK_CLASS}>
-        {grain === 'contracte' ? <Trans>Contractele firmei din {from} →</Trans> : <Trans>Achizițiile directe ale firmei din {from} →</Trans>}
-      </Link>
+      {grain === 'contracte' ? (
+        <Link to="/procurement/contract-awards/winners/$cui" params={{ cui }} className={OUT_LINK_CLASS}>
+          <Trans>Contractele atribuite firmei →</Trans>
+        </Link>
+      ) : (
+        <Link to="/procurement/analytics" search={supplierRecordsSearch(cui, null, 'direct')} className={OUT_LINK_CLASS}>
+          <Trans>Achizițiile directe ale firmei din {from} →</Trans>
+        </Link>
+      )}
       <Link to="/procurement/suppliers/$cui" params={{ cui }} className={OUT_LINK_CLASS}>
         <Trans>Firma ca furnizor al statului →</Trans>
       </Link>
@@ -343,13 +419,15 @@ function ProcurementLinks({ cui, grain, className }: { readonly cui: string; rea
  * how much of it carries a published value when both counts are known, and
  * what the ranking is by when it cannot be money.
  */
-function CoverageNote({ read, grain, className }: { readonly read: CompanyProcurementRead; readonly grain: CompanyPaymentGrain; readonly className?: string }) {
-  const cutoff = useSeapCutoff().data
-  const through = cutoff ? (grain === 'contracte' ? cutoff.contract : cutoff.direct) : null
-  const stats = grainStats(read, grain)
+function CoverageNote({ direct, className }: { readonly direct: CompanyDirectRead; readonly className?: string }) {
+  const grain: CompanyPaymentGrain = 'achizitii-directe'
+  const through = useSeapCutoff().data?.direct ?? null
+  const stats = direct.stats
   // The cutoff is SEAP's last month complete enough to read; a record in a thinner month after it would
   // put the company's newest month past „the data's end", so the date is said only when it is not.
-  const seapMonth = through && !(stats.lastMonth && stats.lastMonth > through) ? monthText(through) : null
+  // The release's newest purchases count too: one listed after the cutoff month would sit beside an earlier „end".
+  const newest = [stats.lastMonth, ...direct.recent.map((record) => record.date?.slice(0, 7) ?? null)].reduce<string | null>((latest, month) => (month !== null && (latest === null || month > latest) ? month : latest), null)
+  const seapMonth = through && !(newest && newest > through) ? monthText(through) : null
   const window = stats.firstMonth && stats.lastMonth ? `${monthText(stats.firstMonth)} – ${monthText(stats.lastMonth)}` : null
   const lowerBound =
     stats.count !== null && stats.withValue !== null && stats.withValue < stats.count
@@ -371,20 +449,11 @@ function CoverageNote({ read, grain, className }: { readonly read: CompanyProcur
  * of it is published, else by the number of records — the bars follow the
  * same measure, so a row with no published amount is never drawn as nothing.
  */
-function PayerList({
-  read,
-  grain,
-  limit = 8,
-  className,
-}: {
-  readonly read: CompanyProcurementRead
-  readonly grain: CompanyPaymentGrain
-  readonly limit?: number
-  readonly className?: string
-}) {
-  const rows = grainAuthorities(read, grain).slice(0, limit)
+function PayerList({ direct, limit = 8, className }: { readonly direct: CompanyDirectRead; readonly limit?: number; readonly className?: string }) {
+  const grain: CompanyPaymentGrain = 'achizitii-directe'
+  const rows = direct.topAuthorities.slice(0, limit)
   if (rows.length === 0) return null
-  const byValue = grainStats(read, grain).authoritiesRankedBy === 'value'
+  const byValue = direct.stats.authoritiesRankedBy === 'value'
   const measure = (row: ProcurementAuthorityRow) => (byValue ? (row.amountRon ?? 0) : row.count)
   const max = Math.max(...rows.map(measure), 1)
   return (
@@ -401,7 +470,7 @@ function PayerList({
                   style={{ width: `${Math.max(0.8, (measure(row) / max) * 100).toFixed(1)}%` }}
                 />
               </span>
-              <MonoLabel className="mt-1.5 block tabular-nums text-muted-foreground">{grainCount(grain, row.count)}</MonoLabel>
+              <span className="mt-1.5 block text-xs tabular-nums text-muted-foreground">{grainCount(grain, row.count)}</span>
             </span>
             <span className="self-start text-right text-sm font-semibold tabular-nums text-foreground">
               {row.amountRon === null ? '—' : moneyCell(row.amountRon)}
@@ -425,9 +494,9 @@ function PayerList({
   )
 }
 
-function CategoryList({ read, grain, className }: { readonly read: CompanyProcurementRead; readonly grain: CompanyPaymentGrain; readonly className?: string }) {
+function CategoryList({ direct, className }: { readonly direct: CompanyDirectRead; readonly className?: string }) {
   const { i18n } = useLingui()
-  const rows = grainCategories(read, grain)
+  const rows = direct.topCategories
   if (rows.length === 0) return null
   const english = i18n.locale === 'en'
   return (
@@ -449,7 +518,7 @@ function CategoryList({ read, grain, className }: { readonly read: CompanyProcur
 
 function recordLink(record: ProcurementRecordRow) {
   return record.grain === 'contract'
-    ? ({ to: '/procurement/contracts/$id', params: { id: record.id } } as const)
+    ? ({ to: '/procurement/contract-awards/$id', params: { id: record.id } } as const)
     : ({ to: '/procurement/direct-acquisitions/$id', params: { id: record.id } } as const)
 }
 
@@ -463,7 +532,7 @@ function RecentRecords({ records, limit = 5, className }: { readonly records: re
           <Link {...recordLink(record)} className={cn('grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 py-3', ROW_LINK_CLASS)}>
             <span className="min-w-0">
               <MonoLabel className="block text-muted-foreground">
-                {dateText(record.date)} · {record.grain === 'contract' ? t`contract` : t`achiziție directă`}
+                {dateText(record.date)} · {record.grain === 'direct_acquisition' ? t`achiziție directă` : record.framework ? t`acord-cadru` : t`contract atribuit`}
               </MonoLabel>
               <span className="mt-1.5 block text-sm text-foreground sm:truncate">{record.title || t`Fără titlu publicat`}</span>
               <span className="mt-0.5 block text-xs text-muted-foreground sm:truncate">{institutionName(record.authority.name, record.authority.cui)}</span>

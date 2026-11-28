@@ -4,7 +4,8 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
-import type { SupplierProcurementSlice } from '@/schemas/procurement'
+import type { CompanyProcurement } from '@/features/procurement/api/procurement-company-read'
+import { rawRow, rawWinnerAwards } from '@/features/procurement/lib/contract-award.fixture'
 import { FINANCIAL_METRICS, type PrivateCompanyProfile, type PrivateCompanySearchState } from '@/schemas/private-company'
 import type { CompanyCaenClassState } from '@/schemas/private-company-registry'
 import { mapCompanyProfile } from '../../api/graphql/company-mappers'
@@ -14,12 +15,11 @@ import {
   authorityRow,
   balanceSummary,
   categoryRow,
+  companyProcurement,
   companyProfile,
-  contract,
-  directAcquisition,
   financialYear,
   grainAnalytics,
-  supplierSlice,
+  newestPurchase,
 } from '../../lib/company-profile.fixture'
 import { monthText } from '../../lib/company-profile-format'
 import { notAssessed } from '../../lib/financial-qualification'
@@ -48,7 +48,7 @@ afterEach(async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 })
 const slice = vi.hoisted(() => ({
-  current: { data: undefined as SupplierProcurementSlice | undefined, isError: false, refetch: vi.fn() },
+  current: { data: undefined as CompanyProcurement | undefined, isError: false, refetch: vi.fn() },
 }))
 const litigation = vi.hoisted(() => ({ current: null as import('@/schemas/judicial').JudicialCompanyLitigation | null }))
 
@@ -151,21 +151,24 @@ function builder(): PrivateCompanyProfile {
   })
 }
 
-function builderSlice(): SupplierProcurementSlice {
-  return supplierSlice({
-    window: { from: '2016-07', to: '2025-09' },
-    contract: grainAnalytics('contract', {
-      records: 62,
-      withValue: 24,
-      months: ['2016-07', '2025-09'],
-      authorities: [authorityRow('3409370', 'MUNICIPIUL DOROHOI', 1, '21200000.00'), authorityRow('4839270', 'COMUNA BREBENI', 1, '16800000.00')],
-      categories: [categoryRow('45', 'Lucrări de construcții', 62, '1.0000')],
+const AWARD_ID = 'e_licitatie:ca:100655743:108089363'
+const PURCHASE_ID = 'f'.repeat(64)
+
+/** The builder's SEAP read: 62 contract awards (24 with a value) by winner, and its direct purchases from the analysis and the release. */
+function builderSlice(): CompanyProcurement {
+  return companyProcurement({
+    contracts: rawWinnerAwards({
+      summary: { recordCount: 62, valuedCount: 24 },
+      rows: [{ ...rawRow({ recordId: AWARD_ID, title: 'Execuție lucrări pentru obiectivul „Extindere rețea"' }), buyer: { fiscalCode: '3409370', displayKind: 'authority', name: 'MUNICIPIUL DOROHOI' } }],
     }),
     directAcquisition: grainAnalytics('direct_acquisition', {
       records: 29,
+      withValue: 20,
+      months: ['2019-07', '2026-04'],
       authorities: [authorityRow('4540712', 'SPITALUL MUNICIPAL DOROHOI', 1, '262349.00')],
+      categories: [categoryRow('45', 'Lucrări de construcții', 29, '1.0000')],
     }),
-    recentRecords: [contract('2311757', { title: 'Execuție lucrări pentru obiectivul „Extindere rețea"' }), directAcquisition('14547799')],
+    newest: [newestPurchase(PURCHASE_ID, { title: 'Materiale de construcții', date: '2026-04-20' })],
   })
 }
 
@@ -252,35 +255,52 @@ describe('CompanyProfilePage', () => {
     expect(within(band).getByText(/^litigation cases /)).toBeInTheDocument()
   })
 
-  it('names who paid, for what, and the newest records once SEAP answers', async () => {
+  it('says the contract awards by winner first: how many, how many with a value, the date, the newest — and links the winner’s list (PROC-001)', async () => {
     slice.current = { data: builderSlice(), isError: false, refetch: vi.fn() }
     render(page(builder()))
     await registryPinned()
     const money = document.getElementById('bani-publici') as HTMLElement
-    const payers = within(money).getByRole('link', { name: /MUNICIPIUL DOROHOI/ })
-    expect(payers.getAttribute('href')).toBe('/procurement/institutions/3409370')
+    expect(within(money).getByText(/Din 2021, SEAP numește firma câștigătoare în 62 de contracte atribuite\./)).toBeInTheDocument()
+    expect(within(money).getByText(/Valoarea e publicată pentru 24 din 62 de contracte atribuite\./)).toBeInTheDocument()
+    expect(within(money).getByText(/Date până la /)).toBeInTheDocument()
+    // The newest award leads to its own page; its buyer named as served.
+    expect(within(money).getByRole('link', { name: /Extindere rețea/ }).getAttribute('href')).toBe(`/procurement/contract-awards/${AWARD_ID}`)
+    expect(within(money).getByText('contract atribuit', { exact: false })).toBeInTheDocument()
+    // No ranking of buyers or categories for contracts: the winner's list carries them, and the analytics' contract grain is not offered.
+    expect(within(money).queryByText('Cine cumpără')).toBeNull()
+    expect(within(money).queryByText('Pentru ce')).toBeNull()
+    expect(within(money).getByRole('link', { name: /Contractele atribuite firmei/ }).getAttribute('href')).toBe('/procurement/contract-awards/winners/23617561')
+    expect(within(money).queryByRole('link', { name: /Contractele firmei din/ })).toBeNull()
+    expect(within(money).getByRole('link', { name: /Firma ca furnizor al statului/ }).getAttribute('href')).toBe('/procurement/suppliers/23617561')
+    // The contract tab is named for what it counts.
+    expect(within(screen.getByRole('radiogroup', { name: 'Înregistrările SEAP' })).getByRole('radio', { name: 'Contracte atribuite' })).toBeInTheDocument()
+  })
+
+  it('names who paid for the direct purchases, for what, and the newest, once SEAP answers', async () => {
+    slice.current = { data: builderSlice(), isError: false, refetch: vi.fn() }
+    render(page(builder(), { plati: 'achizitii-directe' }))
+    await registryPinned()
+    const money = document.getElementById('bani-publici') as HTMLElement
+    expect(within(money).getByRole('link', { name: /SPITALUL MUNICIPAL DOROHOI/ }).getAttribute('href')).toBe('/procurement/institutions/4540712')
     // CPV divisions in the reader's language: the test environment reads English.
     expect(within(money).getByText('Lucrări de construcții (en)')).toBeInTheDocument()
-    expect(within(money).getByRole('link', { name: /Extindere rețea/ }).getAttribute('href')).toBe('/procurement/contracts/2311757')
-    // Further: the firm's contracts on the analytics page, from the year it compares from (a digits-only value travels as a number), and the firm as a supplier.
-    const records = within(money).getByRole('link', { name: /Contractele firmei din 2019/ })
-    expect(JSON.parse(records.getAttribute('data-search') ?? '{}')).toMatchObject({ tip: 'contracte', furnizor: 23617561, dupa: 'inregistrari' })
-    expect(within(money).getByRole('link', { name: /Firma ca furnizor al statului/ }).getAttribute('href')).toBe('/procurement/suppliers/23617561')
-    // 24 of 62 contracts carry a value: the sums are a lower bound. The months are the company's records, not SEAP's coverage.
-    expect(within(money).getByText(/Valoarea e publicată pentru 24 din 62 de contracte/)).toBeInTheDocument()
+    expect(within(money).getByRole('link', { name: /Materiale de construcții/ }).getAttribute('href')).toBe(`/procurement/direct-acquisitions/${PURCHASE_ID}`)
+    // Further: the firm's direct purchases on the analytics page, from the year it compares from (a digits-only value travels as a number).
+    const records = within(money).getByRole('link', { name: /Achizițiile directe ale firmei din 2019/ })
+    expect(JSON.parse(records.getAttribute('data-search') ?? '{}')).toMatchObject({ furnizor: 23617561, dupa: 'inregistrari' })
+    // 20 of 29 carry a value: the sums are a lower bound. The months are the company's records, not SEAP's coverage.
+    expect(within(money).getByText(/Valoarea e publicată pentru 20 din 29 de achiziții directe/)).toBeInTheDocument()
     expect(within(money).getByText(/Înregistrările firmei în SEAP/)).toBeInTheDocument()
-    // Beside them, the month SEAP's contracts run to — the population shown.
-    expect(within(money).getByText(new RegExp(`Date SEAP până în ${monthText('2026-04')}\\.`))).toBeInTheDocument()
-    // The company's last record month is not a partial year: only the calendar year in progress is.
-    expect(within(money).queryByText(/anul în curs/)).toBeNull()
-    expect(screen.getByText(/înregistrările firmei în SEAP din 2016/)).toBeInTheDocument()
+    // Beside them, the month SEAP's direct purchases run to — the population shown.
+    expect(within(money).getByText(new RegExp(`Date SEAP până în ${monthText('2026-05')}\\.`))).toBeInTheDocument()
+    expect(screen.getByText(/înregistrările firmei în SEAP din 2019/)).toBeInTheDocument()
   })
 
   it('says SEAP’s date only when the company’s own months do not run past it, and not without it', async () => {
     slice.current = { data: builderSlice(), isError: false, refetch: vi.fn() }
     // A record in a month after the cutoff (a thin one, still filling) would read past „the data's end".
-    seap.cutoff = { ...SEAP_CUTOFF, contract: '2016-01' }
-    const { unmount } = render(page(builder()))
+    seap.cutoff = { ...SEAP_CUTOFF, direct: '2019-01' }
+    const { unmount } = render(page(builder(), { plati: 'achizitii-directe' }))
     await registryPinned()
     const money = () => document.getElementById('bani-publici') as HTMLElement
     expect(within(money()).getByText(/Înregistrările firmei în SEAP/)).toBeInTheDocument()
@@ -288,17 +308,28 @@ describe('CompanyProfilePage', () => {
     unmount()
     // A cutoff that could not be read is left out, never guessed.
     seap.cutoff = undefined
-    render(page(builder()))
+    render(page(builder(), { plati: 'achizitii-directe' }))
     await registryPinned()
     expect(within(money()).getByText(/Înregistrările firmei în SEAP/)).toBeInTheDocument()
     expect(within(money()).queryByText(/Date SEAP până în/)).toBeNull()
   })
 
+  it('leaves SEAP’s date out when a listed purchase is newer than it, the analysis months notwithstanding', async () => {
+    const data = builderSlice()
+    if (data.direct.status !== 'ready') throw new Error('the fixture answers the direct purchases')
+    slice.current = { data: { ...data, direct: { status: 'ready', value: { ...data.direct.value, newest: [newestPurchase(PURCHASE_ID, { date: '2026-09-03' })] } } }, isError: false, refetch: vi.fn() }
+    render(page(builder(), { plati: 'achizitii-directe' }))
+    await registryPinned()
+    expect(within(document.getElementById('bani-publici') as HTMLElement).queryByText(/Date SEAP până în/)).toBeNull()
+  })
+
   it('says a lower bound only when both counts are known', async () => {
     const data = builderSlice()
-    const unknown = { ...data.analysisByGrain.contract, stats: { ...data.analysisByGrain.contract.stats, withValueCount: null } }
-    slice.current = { data: { ...data, analysisByGrain: { ...data.analysisByGrain, contract: unknown } }, isError: false, refetch: vi.fn() }
-    render(page(builder()))
+    if (data.direct.status !== 'ready') throw new Error('the fixture answers the direct purchases')
+    const { analytics } = data.direct.value
+    const unknown = { ...analytics, stats: { ...analytics.stats, withValueCount: null } }
+    slice.current = { data: { ...data, direct: { status: 'ready', value: { ...data.direct.value, analytics: unknown } } }, isError: false, refetch: vi.fn() }
+    render(page(builder(), { plati: 'achizitii-directe' }))
     await registryPinned()
     expect(screen.queryByText(/Valoarea e publicată pentru/)).toBeNull()
   })
@@ -323,14 +354,14 @@ describe('CompanyProfilePage', () => {
     expect(screen.queryByText(/fără an și fără valoare publicată/)).toBeNull()
   })
 
-  it('says so when SEAP returns nothing for records the profile counts', async () => {
-    slice.current = { data: supplierSlice(), isError: false, refetch: vi.fn() }
+  it('says so when SEAP returns nothing for records the profile counts: both parts answered, neither has any', async () => {
+    slice.current = { data: companyProcurement(), isError: false, refetch: vi.fn() }
     render(page(builder()))
     await registryPinned()
     expect(screen.getByText(/Căutarea în SEAP după CUI-ul firmei nu a întors înregistrări/)).toBeInTheDocument()
   })
 
-  it('switches the payers to direct purchases and back, keeping the company’s own first choice out of the URL', async () => {
+  it('switches between contract awards and direct purchases, keeping the company’s own first choice out of the URL', async () => {
     slice.current = { data: builderSlice(), isError: false, refetch: vi.fn() }
     const { rerender } = render(page(builder()))
     await registryPinned()
@@ -340,8 +371,25 @@ describe('CompanyProfilePage', () => {
 
     rerender(page(builder(), { plati: 'achizitii-directe' }))
     expect(screen.getByRole('link', { name: /SPITALUL MUNICIPAL DOROHOI/ })).toBeInTheDocument()
-    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Înregistrările SEAP' })).getByRole('radio', { name: 'Contracte' }))
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Înregistrările SEAP' })).getByRole('radio', { name: 'Contracte atribuite' }))
     expect(navigated({ plati: 'achizitii-directe' })).toEqual({ plati: undefined })
+  })
+
+  it('fails one part alone: its tab says so and offers the read again, the other tab stands (PROC-001)', async () => {
+    const refetch = vi.fn()
+    const data = builderSlice()
+    slice.current = { data: { ...data, contracts: { status: 'failed' } }, isError: false, refetch }
+    const { rerender } = render(page(builder()))
+    await registryPinned()
+    const money = () => document.getElementById('bani-publici') as HTMLElement
+    // The contracts tab is kept, said as failed: never dropped as if the company had none.
+    expect(within(screen.getByRole('radiogroup', { name: 'Înregistrările SEAP' })).getByRole('radio', { name: 'Contracte atribuite' })).toBeInTheDocument()
+    fireEvent.click(within(money()).getByRole('button', { name: 'Încearcă din nou' }))
+    expect(refetch).toHaveBeenCalledTimes(1)
+    // The direct purchases stand.
+    rerender(page(builder(), { plati: 'achizitii-directe' }))
+    expect(within(money()).getByRole('link', { name: /SPITALUL MUNICIPAL DOROHOI/ })).toBeInTheDocument()
+    expect(within(money()).queryByRole('button', { name: 'Încearcă din nou' })).toBeNull()
   })
 
   it('says a failed SEAP read and offers it again, the sums above it still standing', async () => {
@@ -368,6 +416,8 @@ describe('CompanyProfilePage', () => {
 
 
   it('says in a line what a company with no statement and no public money does not have', async () => {
+    // SEAP answered too, with nothing: both parts empty.
+    slice.current = { data: companyProcurement(), isError: false, refetch: vi.fn() }
     render(page(companyProfile({ cui: '47387800', legalName: 'A & B IDEATICA S.R.L.' })))
     await registryPinned()
     expect(screen.getByRole('heading', { level: 1, name: 'A & B Ideatica S.R.L.' })).toBeInTheDocument()
@@ -384,6 +434,29 @@ describe('CompanyProfilePage', () => {
     expect(screen.queryByText('Ultimii 5 ani cu bilanț')).toBeNull()
     // Nothing to wait for from SEAP either.
     expect(screen.queryByText('Se încarcă înregistrările din SEAP')).toBeNull()
+  })
+
+  it('never says a company is absent from SEAP before its SEAP read answers: pending or failed is not none (PROC-001)', async () => {
+    const absent = 'Firma nu apare în datele de aici ca furnizor în contracte sau achiziții publice (SEAP) și nici ca beneficiar PNRR.'
+    slice.current = { data: undefined, isError: false, refetch: vi.fn() }
+    const { unmount } = render(page(companyProfile({ cui: '47387800', legalName: 'A & B IDEATICA S.R.L.' })))
+    await registryPinned()
+    expect(screen.queryByText(absent)).toBeNull()
+    expect(screen.getByRole('status', { name: 'Se încarcă înregistrările din SEAP' })).toBeInTheDocument()
+    unmount()
+    slice.current = { data: undefined, isError: true, refetch: vi.fn() }
+    render(page(companyProfile({ cui: '47387800', legalName: 'A & B IDEATICA S.R.L.' })))
+    await registryPinned()
+    expect(screen.queryByText(absent)).toBeNull()
+    expect(screen.getByRole('button', { name: 'Încearcă din nou' })).toBeInTheDocument()
+  })
+
+  it('shows direct purchases the release lists though the profile and the analysis count none', async () => {
+    const id = 'c'.repeat(64)
+    slice.current = { data: companyProcurement({ newest: [newestPurchase(id, { title: 'Hârtie copiator' })] }), isError: false, refetch: vi.fn() }
+    render(page(companyProfile({ cui: '47387800', legalName: 'A & B IDEATICA S.R.L.' })))
+    await registryPinned()
+    expect(screen.getByRole('link', { name: /Hârtie copiator/ }).getAttribute('href')).toBe(`/procurement/direct-acquisitions/${id}`)
   })
 
   it('leads back to the hub and to the county’s companies in the analysis — ANAF’s activity is no registry sector', async () => {

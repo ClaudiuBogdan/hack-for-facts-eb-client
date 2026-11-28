@@ -3,7 +3,7 @@ import { endsUnreadable, isDisclosureUnreadable, isPastBound, isSeedCurrent, las
 import { DA_DISCLOSURE_CHANGE_BOUND_SECONDS, removeDaQueriesWhenUnshown } from '../lib/disclosure-cache'
 import { noteKey, subscribeNewestKey } from '@/lib/disclosure-key'
 import { createElement, Fragment, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { useQuery, useQueryClient, type Query, type QueryClient, type QueryFunction, type QueryFunctionContext } from '@tanstack/react-query'
+import { notifyManager, useQuery, useQueryClient, type Query, type QueryClient, type QueryFunction, type QueryFunctionContext } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { readDisclosureNow } from '../api/procurement-da-release-status'
 
@@ -58,10 +58,16 @@ export function watchIntervalOf(failures: number): number {
   return Math.min(WATCH_INTERVAL_MS * 2 ** Math.max(0, failures), WATCH_MAX_BACKOFF_MS)
 }
 
-/** Whether the cache holds anything to watch for. */
+/**
+ * Whether the cache holds anything to watch for. A page's `useQuery` adds its
+ * query to the cache while that page renders, and the cache tells its
+ * listeners at once: the change is passed on through TanStack's batching, as
+ * its own `useIsFetching` does, so the watch never updates in the middle of
+ * another component's render.
+ */
 function useHoldsWatched(client: QueryClient): boolean {
   return useSyncExternalStore(
-    (notify) => client.getQueryCache().subscribe(notify),
+    (notify) => client.getQueryCache().subscribe(notifyManager.batchCalls(notify)),
     () => client.getQueryCache().getAll().some(isWatchedQuery),
     () => false,
   )

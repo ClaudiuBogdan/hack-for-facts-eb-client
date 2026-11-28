@@ -13,6 +13,22 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
+import { readFileSync } from 'node:fs'
+
+/**
+ * Every GraphQL read the page's browser makes, answered from fixtures (TEST-001: no integration test reads the live API).
+ * Recorded on 25 November 2026 from the dev API through the app's own queries, one fixture per read and its variables;
+ * the list says which: `tests/fixtures/public-enterprise-page-flow/browser-reads.json`.
+ */
+const BROWSER_READS = JSON.parse(readFileSync(new URL('../fixtures/public-enterprise-page-flow/browser-reads.json', import.meta.url), 'utf8')) as readonly {
+  readonly operation: string
+  readonly variables: Readonly<Record<string, unknown>>
+  readonly fixture: string
+}[]
+
+test.beforeEach(async ({ mockApi }) => {
+  for (const read of BROWSER_READS) await mockApi.mockGraphQL(read.operation, read.fixture, { variables: read.variables })
+})
 
 const ROUTE = '/public-enterprises/789401'
 const BANDS = ['control', 'bani', 'amepip', 'stare'] as const

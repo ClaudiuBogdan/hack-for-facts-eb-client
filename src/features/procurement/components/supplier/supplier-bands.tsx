@@ -58,6 +58,13 @@ function GrainToggle({ value, onChange }: { readonly value: ProcurementSupplierG
 
 // ─────────────────────────────────────────────────────── who buys ──
 
+/** A period with nothing listed: no sale at all, or — with the contracts unreadable (PROC-001) — no direct purchase, the contracts unknown. */
+function noSalesText(profile: SupplierView): string {
+  return profile.contractsUnavailable
+    ? t`Nicio achiziție directă în ${periodText(profile.period)}; contractele nu pot fi citite acum.`
+    : t`Nicio vânzare în ${periodText(profile.period)}.`
+}
+
 export function SupplierClientsBand({ profile, index }: { readonly profile: SupplierView; readonly index: string }) {
   const contracts = contractClients(profile)
   const hasDirect = profile.directClients.rows.length > 0
@@ -83,11 +90,7 @@ export function SupplierClientsBand({ profile, index }: { readonly profile: Supp
             <ClientRows className="mt-3" profile={profile} ranking={contracts} grain="contract" />
           </div>
         ) : null}
-        {!hasDirect && !hasContracts ? (
-          <p className={EMPTY}>
-            <Trans>Nicio vânzare în {periodText(profile.period)}.</Trans>
-          </p>
-        ) : null}
+        {!hasDirect && !hasContracts ? <p className={EMPTY}>{noSalesText(profile)}</p> : null}
       </div>
       {matrix.length > 1 ? (
         <div className="mt-12" data-reveal>
@@ -224,7 +227,7 @@ export function SupplierWhereBand({ profile, index }: { readonly profile: Suppli
             home={profile.county}
             homeLabel={t`județul firmei`}
             searchOf={searchOf}
-            empty={t`Nicio vânzare în ${periodText(profile.period)}.`}
+            empty={noSalesText(profile)}
           />
         </div>
       </div>
@@ -268,7 +271,12 @@ export function SupplierHowBand({ profile, index }: { readonly profile: Supplier
           <MonoLabel className="block text-muted-foreground">
             <Trans>Contracte câștigate în {periodText(profile.period)}, după procedură</Trans>
           </MonoLabel>
-          <ProcedureRows className="mt-3" procedures={profile.procedures} unlisted={profile.proceduresUnlisted} empty={t`Niciun contract în ${periodText(profile.period)}.`} />
+          <ProcedureRows
+            className="mt-3"
+            procedures={profile.procedures}
+            unlisted={profile.proceduresUnlisted}
+            empty={profile.contractsUnavailable ? t`Contractele nu pot fi citite acum.` : t`Niciun contract în ${periodText(profile.period)}.`}
+          />
           {listed > 0 && listed < profile.contracts.count ? (
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{t`SEAP dă procedura pentru ${contractsCount(listed)} din ${profile.contracts.count}.`}</p>
           ) : null}

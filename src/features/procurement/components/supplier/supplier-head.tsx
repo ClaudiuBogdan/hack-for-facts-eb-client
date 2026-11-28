@@ -84,7 +84,8 @@ function SupplierTopRow({
         value={choice}
         latest={profile?.latest ?? homeYear()}
         recent={recentOptionOf(profile ? { period: profile.period, cutoff: profile.cutoff, directValue: profile.direct.value, contracts: profile.contracts.count } : null)}
-        emptyLabel={t`fără vânzări`}
+        // Contracts unreadable (PROC-001): a year without direct purchases is not one without sales.
+        emptyLabel={profile?.contractsUnavailable ? t`fără achiziții directe` : t`fără vânzări`}
         onChoice={onChoice}
       />
     </ProfileTopRow>
