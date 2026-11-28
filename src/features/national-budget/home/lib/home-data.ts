@@ -156,6 +156,15 @@ export const REVENUE_PARTS = [
 ] as const
 
 /** What the money is spent on, by its nature: printed lines under „current" and „capital" spending. */
+export const SAFE_SPENDING_ITEM = E('safe_programme')
+
+/** SAFE is optional during the transition to the v2 catalog. */
+export function availableHomeSeriesItems(catalog: BudgetNationalCatalog, itemIds: readonly string[]): readonly string[] {
+  return catalog.execution.seriesItems.some((item) => item.itemId === SAFE_SPENDING_ITEM)
+    ? itemIds
+    : itemIds.filter((itemId) => itemId !== SAFE_SPENDING_ITEM)
+}
+
 export const SPENDING_PARTS = [
   E('social_assistance'),
   E('personnel'),
@@ -167,6 +176,7 @@ export const SPENDING_PARTS = [
   E('eu_2014_2020_modernisation_projects'),
   E('pnrr_grant_projects'),
   E('pnrr_loan_projects'),
+  SAFE_SPENDING_ITEM,
   E('other_transfers'),
   E('subsidies'),
 ] as const

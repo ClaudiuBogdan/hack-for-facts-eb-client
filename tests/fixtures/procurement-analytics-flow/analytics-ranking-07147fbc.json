@@ -1,0 +1,22 @@
+{
+  "data": null,
+  "errors": [
+    {
+      "message": "supplier geography is withheld: the organization registry does not currently classify every servable supplier identifier as public",
+      "locations": [
+        {
+          "line": 1,
+          "column": 77
+        }
+      ],
+      "path": [
+        "r"
+      ],
+      "extensions": {
+        "code": "INVALID_INPUT",
+        "type": "InvalidInput",
+        "field": "supplierSiruta"
+      }
+    }
+  ]
+}

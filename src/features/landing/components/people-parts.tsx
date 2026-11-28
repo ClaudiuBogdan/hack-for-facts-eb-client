@@ -1,8 +1,8 @@
 import { Plus } from 'lucide-react'
 import { t } from '@lingui/core/macro'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
-import { CONTRIBUTORS, OPEN_SEATS, REPO_URL, type Person, type Portrait } from '@/features/landing/lib/people'
+import { CONTRIBUTORS, REPO_URL, type Person, type Portrait } from '@/features/landing/lib/people'
 
 /**
  * The parts the people band and the about page are built from: the social
@@ -221,25 +221,18 @@ const AVATAR_LINK_CLASS = cn(
  * keyboard — so `aria-label` carries the name and `title` is the sighted
  * mouse-user's copy of it.
  *
- * A face with a profile is a link and opens it; a face without one is a plain
- * image with its name as `alt`. Nothing is dimmed for the difference — someone
- * whose social account we do not have is not a lesser contributor.
- *
- * Then `OPEN_SEATS` unfilled chairs, and the door at the end. The chairs were
- * already drawn as blank silhouettes, so nothing here looks different — what
- * changed is that they no longer carry an invented name in `title` and
- * `sr-only`, which is all a screen reader ever had of them.
+ * A face with a profile links to it. Other contributors have a plain image
+ * with a screen-reader label.
  *
  * Condensed to a 56px avatar at a 6px gap: this is the lightest of the three
  * tiers and the only one meant to grow, so it has to still read as one object
  * at thirty faces rather than only at eight.
  */
 export function ContributorGrid({ className }: { readonly className?: string }) {
-  const { i18n } = useLingui()
   return (
     <ul className={cn('flex flex-wrap gap-1.5', className)}>
       {CONTRIBUTORS.map((contributor) => {
-        const label = `${contributor.name} — ${i18n._(contributor.role)}`
+        const label = contributor.name
         const picture =
           contributor.avatar === undefined ? (
             <PendingAvatar />
@@ -277,17 +270,6 @@ export function ContributorGrid({ className }: { readonly className?: string }) 
           </li>
         )
       })}
-      {/* The unfilled chairs. Nothing is claimed about anyone: no name, no
-          title, no link, and `aria-hidden`, so the wall reads as a wall to the
-          eye and announces only the real people to everyone else. */}
-      {Array.from({ length: OPEN_SEATS }, (_, seat) => (
-        <li key={`seat-${seat}`} aria-hidden="true">
-          <span className={AVATAR_CLASS}>
-            <PendingAvatar />
-          </span>
-        </li>
-      ))}
-
       {/* The open seat, on the same 56px circle so the wall stays one row of one
           shape. It is the only cell that says what it is in words, because it is
           the only one that is not a person. */}

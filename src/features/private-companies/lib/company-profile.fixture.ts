@@ -4,10 +4,12 @@ import type {
   DirectAcquisitionRecordSummary,
   ProcurementAnswerMeta,
   ProcurementGrainAnalytics,
-  SupplierProcurementSlice,
   TopPartyRow,
   ValueResolution,
 } from '@/schemas/procurement'
+import type { RawWinnerContractAwards } from '@/features/procurement/api/graphql/procurement-contract-award-queries'
+import type { CompanyDirectRow, CompanyProcurement } from '@/features/procurement/api/procurement-company-read'
+import { mapWinnerContractAwards } from '@/features/procurement/lib/contract-award-model'
 import type { PrivateCompanyFinancialYear, PrivateCompanyProfile } from '@/schemas/private-company'
 import { admittedQualification, originalsOf } from '../mocks/fixtures/qualification'
 import { mockRegistryEvidence } from '../mocks/fixtures/registry'
@@ -285,30 +287,43 @@ export function contract(id: string, fields: Partial<ContractRecordSummary> = {}
   }
 }
 
-export function supplierSlice(fields: {
-  readonly window?: { readonly from: string | null; readonly to: string | null }
-  readonly contract?: ProcurementGrainAnalytics
-  readonly directAcquisition?: ProcurementGrainAnalytics
-  readonly recentRecords?: SupplierProcurementSlice['recentRecords']
-} = {}): SupplierProcurementSlice {
+/** One of the firm's newest release purchases, as the band's read maps it (a counted purchase in lei by default). */
+export function newestPurchase(id: string, fields: Partial<CompanyDirectRow> = {}): CompanyDirectRow {
   return {
-    supplierCui: '22202108',
-    supplierName: null,
-    summary: {
-      window: { from: fields.window?.from ?? null, to: fields.window?.to ?? null },
-      contractValueRon: null,
-      directAcquisitionValueRon: null,
-      buyersCount: null,
-      contractsCount: fields.contract?.stats.recordCount ?? '0',
-      directAcquisitionsCount: fields.directAcquisition?.stats.recordCount ?? '0',
-      firstSeen: null,
-      lastSeen: null,
-    },
-    analysisByGrain: {
-      contract: fields.contract ?? grainAnalytics('contract'),
-      directAcquisition: fields.directAcquisition ?? grainAnalytics('direct_acquisition'),
-    },
-    recentRecords: [...(fields.recentRecords ?? [])],
-    crossDomain: null,
+    id,
+    code: `DA${id.slice(0, 8)}`,
+    title: 'Benzină',
+    titlePublic: true,
+    value: 300.14,
+    inLei: true,
+    date: '2026-09-03',
+    done: true,
+    buyer: { cui: '10755066', name: 'SC Locativ SA' },
+    ...fields,
+  }
+}
+
+/**
+ * The band's two reads (PROC-001): the direct purchases (the analysis and the
+ * release's newest) and the contract awards by winner, each answered or
+ * failed on its own. By default: no direct purchase, and no contract award
+ * listed for the code.
+ */
+export function companyProcurement(
+  fields: {
+    readonly directAcquisition?: ProcurementGrainAnalytics
+    readonly newest?: readonly CompanyDirectRow[]
+    readonly direct?: 'failed'
+    /** A winner answer (`rawWinnerAwards`), `missing`, or `failed`. */
+    readonly contracts?: RawWinnerContractAwards | 'missing' | 'failed'
+  } = {},
+): CompanyProcurement {
+  const contracts = fields.contracts ?? 'missing'
+  return {
+    direct: fields.direct === 'failed' ? { status: 'failed' } : { status: 'ready', value: { analytics: fields.directAcquisition ?? grainAnalytics('direct_acquisition'), newest: [...(fields.newest ?? [])] } },
+    contracts:
+      contracts === 'failed'
+        ? { status: 'failed' }
+        : { status: 'ready', value: contracts === 'missing' ? { kind: 'missing' } : { kind: 'found', awards: mapWinnerContractAwards(contracts) } },
   }
 }

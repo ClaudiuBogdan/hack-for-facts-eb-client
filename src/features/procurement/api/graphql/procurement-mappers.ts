@@ -398,7 +398,7 @@ export function mapMonthly(
   }))
 }
 
-function mapGrainAnalytics(
+export function mapGrainAnalytics(
   aggregates: RawProcurementAggregates,
   divisions: readonly RawProcurementCpvDivision[],
   grain: ProcurementGrainAnalytics['grain'],

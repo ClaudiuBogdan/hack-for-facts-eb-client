@@ -1,0 +1,132 @@
+{
+  "data": {
+    "newest": {
+      "dataAsOf": "2026-11-26T11:34:06.658728Z",
+      "meta": {
+        "disclosureKey": "2026-11-26T11:34:06.658728Z"
+      },
+      "items": [
+        {
+          "purchaseId": "22bea485ab61dced4101e83765591db5b03f0c5b2ba20a7fe00f54871a1bbb64",
+          "code": "DA37826937",
+          "outcome": "accepted",
+          "publicationDay": "2025-04-03",
+          "finalizationDay": "2025-04-03",
+          "reportedValue": "262349.42",
+          "counted": true,
+          "countedValue": "262349.42",
+          "notCountedReason": null,
+          "valueCorrected": false,
+          "correctedValue": null,
+          "reviewRule": null,
+          "symbolicPrice": false,
+          "title": "Bransamente energie instalatii si canalizare spalatorie",
+          "titleWithheld": null,
+          "categoryLabel": "71315000-9 - Instalatii tehnice de constructii (Rev.2)",
+          "buyer": {
+            "displayKind": "authority",
+            "partyId": "99",
+            "name": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+            "fiscalCode": "13727320"
+          }
+        },
+        {
+          "purchaseId": "9ea628183a22817a7b852c53d0d8fdacf47c080d69c911dcca711ff5c239c4e8",
+          "code": "DA36361240",
+          "outcome": "accepted",
+          "publicationDay": "2024-08-28",
+          "finalizationDay": "2024-08-28",
+          "reportedValue": "485294.41",
+          "counted": true,
+          "countedValue": "485294.41",
+          "notCountedReason": null,
+          "valueCorrected": false,
+          "correctedValue": null,
+          "reviewRule": null,
+          "symbolicPrice": false,
+          "title": "Bransament instalatii termice - Pav. Chirurgie si Pav. Interne",
+          "titleWithheld": null,
+          "categoryLabel": "45262600-7 - Diverse lucrari specializate de constructii (Rev.2)",
+          "buyer": {
+            "displayKind": "authority",
+            "partyId": "99",
+            "name": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+            "fiscalCode": "13727320"
+          }
+        },
+        {
+          "purchaseId": "9e43ec1bd911767680f1e8cad67df62d01026ec3d9f516a0c7297014901ccd46",
+          "code": "DA36357468",
+          "outcome": "accepted",
+          "publicationDay": "2024-08-28",
+          "finalizationDay": "2024-08-28",
+          "reportedValue": "485294.41",
+          "counted": true,
+          "countedValue": "485294.41",
+          "notCountedReason": null,
+          "valueCorrected": false,
+          "correctedValue": null,
+          "reviewRule": null,
+          "symbolicPrice": false,
+          "title": "Bransament instalatii termice - Pavilion Chirurgie si Pavilion Interne",
+          "titleWithheld": null,
+          "categoryLabel": "45000000-7 - Lucrari de constructii (Rev.2)",
+          "buyer": {
+            "displayKind": "authority",
+            "partyId": "99",
+            "name": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+            "fiscalCode": "13727320"
+          }
+        },
+        {
+          "purchaseId": "57de07a4d5c77fdb4cd01d456919f0bbecc1597910674f2c7583ce275fce3991",
+          "code": "DA36151618",
+          "outcome": "accepted",
+          "publicationDay": "2024-07-17",
+          "finalizationDay": "2024-07-17",
+          "reportedValue": "899122.32",
+          "counted": true,
+          "countedValue": "899122.32",
+          "notCountedReason": null,
+          "valueCorrected": false,
+          "correctedValue": null,
+          "reviewRule": null,
+          "symbolicPrice": false,
+          "title": "Lucrari de Construire copertina intrare CPU pavilion materno-infantil",
+          "titleWithheld": null,
+          "categoryLabel": "45000000-7 - Lucrari de constructii (Rev.2)",
+          "buyer": {
+            "displayKind": "authority",
+            "partyId": "99",
+            "name": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+            "fiscalCode": "13727320"
+          }
+        },
+        {
+          "purchaseId": "db118ff574e1823ee923bfbcbb5a7e4edfe4d9b7b6cdd370b67ed416d46cbeb4",
+          "code": "DA35785162",
+          "outcome": "accepted",
+          "publicationDay": "2024-05-23",
+          "finalizationDay": "2024-05-23",
+          "reportedValue": "451292.25",
+          "counted": true,
+          "countedValue": "451292.25",
+          "notCountedReason": null,
+          "valueCorrected": false,
+          "correctedValue": null,
+          "reviewRule": null,
+          "symbolicPrice": false,
+          "title": "Lucrări de amenajare exterioară sală de sport Văculești",
+          "titleWithheld": null,
+          "categoryLabel": "45111291-4 - Lucrari de amenajare a terenului (Rev.2)",
+          "buyer": {
+            "displayKind": "authority",
+            "partyId": "24112",
+            "name": "COMUNA VACULESTI",
+            "fiscalCode": "3503686"
+          }
+        }
+      ]
+    }
+  }
+}

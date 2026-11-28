@@ -129,6 +129,12 @@ export interface SupplierProfile {
   /** The first year with any record since 2019. */
   readonly firstYear: number | null
   readonly names: ReadonlyMap<string, string>
+  /**
+   * The API serves no contract rows now (legacy procurement switched off,
+   * PROC-001): the contract figures are unknown, never zero, and the page says
+   * they cannot be read. The direct purchases stand.
+   */
+  readonly contractsUnavailable: boolean
   /** Some part could not be read (the registry, names, the matrix, the weights, the partners): served once, never kept. */
   readonly partial: boolean
 }
@@ -153,7 +159,8 @@ export function hasAnyRecord(profile: Pick<SupplierProfile, 'directYears' | 'con
 }
 
 export function isEmptyYear(profile: SupplierProfile): boolean {
-  return (profile.direct.count ?? 0) === 0 && profile.contracts.count === 0
+  // Contracts that cannot be read are not none: the year is not called empty.
+  return (profile.direct.count ?? 0) === 0 && profile.contracts.count === 0 && !profile.contractsUnavailable
 }
 
 /** The contract clients to show: every row's when all were read, else the analysis's. */

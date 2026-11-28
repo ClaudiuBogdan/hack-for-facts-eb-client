@@ -31,8 +31,22 @@ function contractsWon(value: number): string {
   return plural(value, { one: '# contract câștigat', few: '# contracte câștigate', other: '# de contracte câștigate' })
 }
 
-/** What the firm sold to the state in the page's period (the last twelve months said with their months), in one sentence: the head's, after the registry's. */
+/**
+ * What the firm sold to the state in the page's period (the last twelve months
+ * said with their months), in one sentence: the head's, after the registry's.
+ * Contracts that cannot be read (PROC-001) are said so, never counted as none.
+ */
 export function headSentence(profile: SupplierProfile): string {
+  if (!profile.contractsUnavailable) return soldSentence(profile)
+  const unreadable = t`Contractele câștigate printr-o procedură nu pot fi citite acum.`
+  if ((profile.direct.count ?? 0) > 0) return `${soldSentence(profile)} ${unreadable}`
+  const none = profile.directYears.some((point) => (point.count ?? 0) > 0)
+    ? t`Nicio achiziție directă în ${periodLongText(profile.period)}.`
+    : t`Nu apare în achizițiile directe (SEAP) din ${DIRECT_COMPARABLE_FROM} încoace.`
+  return `${none} ${unreadable}`
+}
+
+function soldSentence(profile: SupplierProfile): string {
   const year = periodLongText(profile.period)
   if (!hasAnyRecord(profile)) return t`Nu apare ca furnizor în achizițiile publice (SEAP) din ${DIRECT_COMPARABLE_FROM} încoace.`
   const directCount = profile.direct.count ?? 0
@@ -202,6 +216,12 @@ export function howLede(profile: SupplierProfile): string | null {
   const direct = profile.direct.count ?? 0
   const contracts = profile.contracts.count
   const parts: string[] = []
+  if (profile.contractsUnavailable) {
+    // Unknown, never none: the direct purchases said, the contracts said unreadable (PROC-001).
+    if (direct > 0) parts.push(t`În ${year}, ${directPurchasesCount(direct)}, adică vânzări fără licitație.`)
+    parts.push(t`Contractele câștigate printr-o procedură nu pot fi citite acum.`)
+    return parts.join(' ')
+  }
   if (direct > 0 && contracts > 0) {
     parts.push(t`În ${year}, ${directPurchasesCount(direct)}, adică vânzări fără licitație, și ${contractsWon(contracts)} printr-o procedură: licitație, negociere sau alta.`)
   } else if (direct > 0) {

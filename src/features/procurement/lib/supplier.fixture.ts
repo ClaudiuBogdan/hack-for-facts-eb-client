@@ -162,6 +162,7 @@ export function supplierProfile(overrides: Partial<SupplierProfile> = {}): Suppl
       ['2665900', 'Compania Regională de Apă Bacău SA'],
       ['16054368', 'Compania Națională de Administrare a Infrastructurii Rutiere SA'],
     ]),
+    contractsUnavailable: false,
     partial: false,
     ...overrides,
   }

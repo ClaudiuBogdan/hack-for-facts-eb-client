@@ -1,0 +1,285 @@
+{
+  "data": {
+    "r": [
+      {
+        "rankedBy": "value",
+        "valueWithheldAssociationSum": null,
+        "buckets": [
+          {
+            "key": "45",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "8873",
+            "withValueCount": "8314",
+            "valueSum": "580062462.94",
+            "shareOfScope": "0.2511"
+          },
+          {
+            "key": "71",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "10741",
+            "withValueCount": "10014",
+            "valueSum": "229844538.18",
+            "shareOfScope": "0.0995"
+          },
+          {
+            "key": "79",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "14723",
+            "withValueCount": "13957",
+            "valueSum": "220787723.18",
+            "shareOfScope": "0.0956"
+          },
+          {
+            "key": "33",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "53021",
+            "withValueCount": "48209",
+            "valueSum": "134555253.41",
+            "shareOfScope": "0.0583"
+          },
+          {
+            "key": "39",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "25222",
+            "withValueCount": "24370",
+            "valueSum": "103346815.57",
+            "shareOfScope": "0.0447"
+          },
+          {
+            "key": "50",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "21357",
+            "withValueCount": "20686",
+            "valueSum": "100531500.91",
+            "shareOfScope": "0.0435"
+          },
+          {
+            "key": "44",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "28695",
+            "withValueCount": "27862",
+            "valueSum": "82911776.20",
+            "shareOfScope": "0.0359"
+          },
+          {
+            "key": "72",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "6205",
+            "withValueCount": "5718",
+            "valueSum": "78053158.02",
+            "shareOfScope": "0.0338"
+          },
+          {
+            "key": "15",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "53353",
+            "withValueCount": "52330",
+            "valueSum": "74005135.42",
+            "shareOfScope": "0.0320"
+          },
+          {
+            "key": "34",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "9112",
+            "withValueCount": "8724",
+            "valueSum": "68842947.47",
+            "shareOfScope": "0.0298"
+          },
+          {
+            "key": "30",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "21969",
+            "withValueCount": "21246",
+            "valueSum": "61624792.58",
+            "shareOfScope": "0.0267"
+          },
+          {
+            "key": "90",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "3946",
+            "withValueCount": "3755",
+            "valueSum": "56313980.23",
+            "shareOfScope": "0.0244"
+          },
+          {
+            "key": "55",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "1953",
+            "withValueCount": "1851",
+            "valueSum": "43669498.15",
+            "shareOfScope": "0.0189"
+          },
+          {
+            "key": "77",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "912",
+            "withValueCount": "839",
+            "valueSum": "37330559.94",
+            "shareOfScope": "0.0162"
+          },
+          {
+            "key": "09",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "2778",
+            "withValueCount": "2641",
+            "valueSum": "35050735.83",
+            "shareOfScope": "0.0152"
+          },
+          {
+            "key": "03",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "12500",
+            "withValueCount": "12201",
+            "valueSum": "31223599.59",
+            "shareOfScope": "0.0135"
+          },
+          {
+            "key": "42",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "4373",
+            "withValueCount": "4190",
+            "valueSum": "29473893.66",
+            "shareOfScope": "0.0128"
+          },
+          {
+            "key": "31",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "7125",
+            "withValueCount": "6885",
+            "valueSum": "27001169.92",
+            "shareOfScope": "0.0117"
+          },
+          {
+            "key": "22",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "8515",
+            "withValueCount": "8231",
+            "valueSum": "22352333.38",
+            "shareOfScope": "0.0097"
+          },
+          {
+            "key": "32",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "2670",
+            "withValueCount": "2545",
+            "valueSum": "21921630.76",
+            "shareOfScope": "0.0095"
+          },
+          {
+            "key": "85",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "3365",
+            "withValueCount": "3176",
+            "valueSum": "21574478.84",
+            "shareOfScope": "0.0093"
+          },
+          {
+            "key": "48",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "2092",
+            "withValueCount": "1994",
+            "valueSum": "21121006.66",
+            "shareOfScope": "0.0091"
+          },
+          {
+            "key": "98",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "2082",
+            "withValueCount": "2002",
+            "valueSum": "20424132.38",
+            "shareOfScope": "0.0088"
+          },
+          {
+            "key": "24",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "6451",
+            "withValueCount": "6122",
+            "valueSum": "19634649.03",
+            "shareOfScope": "0.0085"
+          },
+          {
+            "key": "14",
+            "kind": "top",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "1664",
+            "withValueCount": "1585",
+            "valueSum": "16676062.53",
+            "shareOfScope": "0.0072"
+          },
+          {
+            "key": null,
+            "kind": "other",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "24710",
+            "withValueCount": "23611",
+            "valueSum": "171465400.58",
+            "shareOfScope": "0.0742"
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "displayKind": null,
+            "displayName": null,
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueSum": null,
+            "shareOfScope": "0.0000"
+          }
+        ],
+        "meta": {
+          "disclosureKey": "2026-11-21T23:13:07.212166Z"
+        }
+      }
+    ]
+  }
+}

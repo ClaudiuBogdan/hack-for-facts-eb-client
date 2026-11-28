@@ -11,6 +11,7 @@ import {
   type SupplierRow,
 } from './graphql/procurement-supplier-queries'
 import { acceptedValue, partyOf } from './procurement-home-api'
+import { isLegacyRetired } from './procurement-legacy-retired'
 import { readerCategories, type CategoryFigure } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, tidyName, tidyTitle, type HomeParty, type RecentRecord } from '../lib/home-model'
 import type { CountyFigureRow } from '../lib/profile-model'
@@ -106,6 +107,12 @@ export interface SupplierRowsRead {
   readonly years: ReadonlyMap<number, number | null>
   /** Award rows per month of the year in progress (null: not counted). */
   readonly partMonths: ReadonlyMap<string, number | null>
+  /**
+   * The API serves no contract rows (legacy procurement switched off, PROC-001):
+   * no rows, every count unknown — never zero — and the page says the
+   * contracts cannot be read rather than that there are none.
+   */
+  readonly unavailable?: true
 }
 
 export async function readSupplierRows(cui: string, period: Period, latest: number, signal?: AbortSignal): Promise<SupplierRowsRead> {
@@ -124,7 +131,16 @@ export async function readSupplierRows(cui: string, period: Period, latest: numb
     variables[`m${index}`] = { ...own, contractDate: { gte: `${month}-01`, lte: lastDayOf(month) } }
   }
   const aliases = [...years.map((year) => `y${year}`), ...months.map((_, index) => `m${index + 1}`)]
-  const raw = await graphqlQuery<Raw>(supplierRowsQuery(SUPPLIER_ROWS_READ, aliases), variables, { operationName: 'ProcurementSupplierRows', signal, legacy: true })
+  let raw: Raw
+  try {
+    raw = await graphqlQuery<Raw>(supplierRowsQuery(SUPPLIER_ROWS_READ, aliases), variables, { operationName: 'ProcurementSupplierRows', signal, legacy: true })
+  } catch (error) {
+    // Legacy switched off: the page stands on its direct purchases, the contracts said unavailable (PROC-001).
+    if (!signal?.aborted && isLegacyRetired(error)) {
+      return { total: 0, counted: false, rows: [], years: new Map(years.map((year) => [year, null])), partMonths: new Map(months.map((month) => [month, null])), unavailable: true }
+    }
+    throw error
+  }
   const list = supplierRowsListSchema.parse(raw.rows)
   return {
     total: list.total ?? list.items.length,

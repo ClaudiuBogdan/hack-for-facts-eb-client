@@ -7,7 +7,7 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
-import { HomeBand, HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
+import { HomeBand } from '@/features/procurement/components/home/home-section-nav'
 import { HubTwoLineChart } from '@/features/statistics/components/hub/hub-charts'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
@@ -32,6 +32,7 @@ import type { HubActivityRow } from '../../lib/hub-snapshot-types'
 import { useHubFirstVisit } from '../../lib/hub-first-visit'
 import { hubCountyLayer, registrationSeries, survivalShare } from '../../lib/hub-view'
 import { CompanyHubHero, CompanyLeadersFrame } from './company-hub-hero'
+import { CompanySectionBar } from '../company-section-bar'
 import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, companyHubSections } from './company-hub-sections'
 import { HubEconomyChart, HubEconomySpan } from './hub-economy-years'
 import { HubInfoNote } from './hub-info-note'
@@ -251,7 +252,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
       />
 
       {/* No running numbers on this page (owner, 25 November 2026), as on the landing: each band's title names it. */}
-      <HomeSectionNav title={t`Firmele din România`} sections={sections} numbered={false} />
+      <CompanySectionBar name={t`Firmele din România`} sections={sections} />
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>

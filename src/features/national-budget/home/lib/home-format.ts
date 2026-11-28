@@ -37,6 +37,7 @@ const PART_WORDS: Readonly<Record<string, { readonly name: () => string; readonl
   [E('eu_2014_2020_modernisation_projects')]: { name: () => t`Proiecte UE 2014–2020 și Fondul de modernizare`, hint: () => t`proiectele cadrului 2014–2020 și ale Fondului de modernizare` },
   [E('pnrr_grant_projects')]: { name: () => t`Proiecte PNRR – granturi`, hint: () => t`din granturile PNRR` },
   [E('pnrr_loan_projects')]: { name: () => t`Proiecte PNRR – împrumuturi`, hint: () => t`din împrumuturile PNRR` },
+  [E('safe_programme')]: { name: () => lineLabel('cheltuieli aferente planului safe'), hint: () => t`spending reported by the Ministry of Finance for the SAFE programme` },
   [E('other_transfers')]: { name: () => t`Alte transferuri`, hint: () => t`de exemplu, transferuri către organizații internaționale și contribuția la bugetul UE` },
   [E('subsidies')]: { name: () => t`Subvenții`, hint: () => t`pentru agricultură, transport, energie` },
 }

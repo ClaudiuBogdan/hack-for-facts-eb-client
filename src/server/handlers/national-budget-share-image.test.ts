@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { SPENDING_PARTS, TOTAL_ITEMS, viewOfYear } from '@/features/national-budget/home/lib/home-data'
+import { SAFE_SPENDING_ITEM, SPENDING_PARTS, TOTAL_ITEMS, viewOfYear } from '@/features/national-budget/home/lib/home-data'
 import { partName } from '@/features/national-budget/home/lib/home-format'
 import { perResident } from '@/features/national-budget/home/lib/per-resident'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
@@ -69,6 +69,7 @@ const VALUES_BY_DATE: Readonly<Record<string, Readonly<Record<string, string>>>>
     [E('social_assistance')]: '190000000000',
     [E('personnel')]: '130000000000',
     [E('goods_services')]: '75000000000',
+    [SAFE_SPENDING_ITEM]: '100000000',
   },
   // 2012: the bulletins don't finish it (no value, a reason).
 }
@@ -239,11 +240,13 @@ describe('buildNationalBudgetShareImageViewModel', () => {
     expect(buildNationalBudgetShareImageViewModel(null, 'en').note).toBe('Data unavailable right now')
   })
 
-  it("names every spending line as the page does: its Romanian name is the page's, and it has an English one", () => {
+  it('names every spending line as the page does in its source language', () => {
     for (const itemId of SPENDING_PARTS) {
-      expect(SPENDING_PART_LABELS[itemId]?.ro, itemId).toBe(partName(itemId))
+      const sourceLanguage = itemId === SAFE_SPENDING_ITEM ? 'en' : 'ro'
+      expect(SPENDING_PART_LABELS[itemId]?.[sourceLanguage], itemId).toBe(partName(itemId))
       expect(SPENDING_PART_LABELS[itemId]?.en, itemId).toBeTruthy()
     }
+    expect(SPENDING_PART_LABELS[SAFE_SPENDING_ITEM]?.ro).toBe('Programul SAFE')
   })
 })
 
@@ -262,10 +265,27 @@ describe('readNationalBudgetShareFacts', () => {
     expect(facts?.spending).toBe('727316168300.94974')
     expect(facts?.balance).toBe('-152717412186.84975')
     const reads = gridReads()
-    // Fourteen lines: two requests of at most twelve.
+    // Fourteen lines (SAFE left out: this catalog does not offer it): two requests of at most twelve.
     expect(reads.map((read) => read.itemIds.length)).toEqual([12, 2])
-    expect(reads.flatMap((read) => read.itemIds)).toEqual([TOTAL_ITEMS.spending, TOTAL_ITEMS.balance, ...SPENDING_PARTS])
+    expect(reads.flatMap((read) => read.itemIds)).toEqual([TOTAL_ITEMS.spending, TOTAL_ITEMS.balance, ...SPENDING_PARTS.filter((id) => id !== SAFE_SPENDING_ITEM)])
     for (const read of reads) expect(read).toMatchObject({ basis: 'FULL_YEAR', type: 'YEAR', dates: ['2023', '2024'], expectedSnapshot: SNAPSHOT })
+  })
+
+  it('reads SAFE from the v2 catalog and keeps it as a separate spending line', async () => {
+    const v2: BudgetNationalCatalog = {
+      ...catalog,
+      execution: {
+        ...catalog.execution,
+        seriesItems: [{ itemId: SAFE_SPENDING_ITEM, section: 'EXPENDITURE', sourceLabel: 'cheltuieli aferente planului safe', relatedScopeItemId: null }],
+      },
+    }
+    answerGraphql({ catalogRead: () => ({ budgetNationalCatalog: v2 }) })
+
+    const facts = await readNationalBudgetShareFacts(2026)
+
+    expect(gridReads().map((read) => read.itemIds.length)).toEqual([12, 3])
+    expect(facts?.parts).toContainEqual({ itemId: SAFE_SPENDING_ITEM, exact: '100000000' })
+    expect(facts?.spending).toBe('600000000000')
   })
 
   it('reads the default year for a year the page does not offer', async () => {
