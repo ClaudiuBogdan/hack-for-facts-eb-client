@@ -113,7 +113,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   const read = slice.data ? toCompanyProcurementRead(slice.data) : null
   const grains = read ? paymentGrainsOf(read) : []
   const procurement: ProcurementState = read
-    ? { status: 'ready', read, grains, grain: effectiveGrain(grains, search.plati) }
+    ? { status: 'ready', read, grains, grain: effectiveGrain(grains, search.plati), retry: () => void slice.refetch() }
     : slice.isError
       ? { status: 'failed', retry: () => void slice.refetch() }
       : { status: 'pending' }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PROCUREMENT_DA_AROUND_QUERY, PROCUREMENT_DA_LOOKUP_QUERY, PROCUREMENT_DA_PURCHASES_QUERY, PROCUREMENT_DA_PURCHASE_QUERY, PROCUREMENT_DA_TOTALS_QUERY } from './procurement-da-release-queries'
 import { PROCUREMENT_DA_DETAIL_QUERY, PROCUREMENT_DA_RECORD_QUERY, PROCUREMENT_DIRECT_ACQUISITIONS_QUERY, PROCUREMENT_SUPPLIER_RECORDS_QUERY } from './procurement-queries'
-import { DIRECT_PURCHASE_AROUND_QUERY } from './procurement-direct-purchase-queries'
+import { supplierDirectNamesQuery } from './procurement-supplier-queries'
 
 /**
  * D6 (API doc 10, live on Chronos dev 19 November 2026): every direct-purchase
@@ -19,7 +19,7 @@ const DA_QUERIES: Readonly<Record<string, string>> = {
   PROCUREMENT_DA_DETAIL_QUERY,
   PROCUREMENT_DA_RECORD_QUERY,
   PROCUREMENT_SUPPLIER_RECORDS_QUERY,
-  DIRECT_PURCHASE_AROUND_QUERY,
+  SUPPLIER_DIRECT_NAMES: supplierDirectNamesQuery(3),
 }
 
 const ROOT_FIELD = /\b(procurementDaPurchases?|procurementDaTotals|procurementDirectAcquisitions?|procurementSupplierRecords)\s*\(/gu

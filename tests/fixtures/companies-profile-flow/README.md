@@ -5,9 +5,10 @@ Browser GraphQL answers for `tests/integration/companies-profile.spec.ts`. The p
 ## What was recorded, and what is curated
 
 **Recorded** from the dev API on 24 September 2026 and kept byte for byte:
-- `abc-aggregates`, `abc-authority-names`, `abc-records`, `abc-supplier-name`, `cpv-divisions`;
-- `ideatica-aggregates`, `ideatica-records`, `ideatica-supplier-name`;
+- `abc-aggregates`, `abc-authority-names`, `abc-supplier-name`, `cpv-divisions`;
+- `ideatica-aggregates`, `ideatica-supplier-name`;
 - `abc-litigation`, `ideatica-litigation`: the judicial API's company-litigation summary, recorded on 7 October 2026 (no link published: `caseCount` 0, `coverage` 0, so the page shows no litigation band);
+- `abc-da-newest`, `ideatica-da-newest` (the release's newest accepted purchases, `ProcurementDaSupplierNewest`) and `abc-winner-awards`, `ideatica-winner-awards` (contract awards by winner, `ProcurementWinnerContractAwards`), recorded on 25 November 2026 when the band moved off the retired legacy reads (client PROC-001). Ideatica's winner answer is the API's `NOT_FOUND`: no contract award listed for its code. The legacy `*-records` fixtures (`ProcurementSupplierRecords`) were removed with that read. The band's aggregates are now asked on the `direct_acquisition` grain alone, and the recorded `*-aggregates` answer it unchanged;
 - in the two `*-profile.json`, every company value: CUI, organisation id, name, legal form, registration code and recorded date, headline status code and label, territory, fiscal record, CAEN rows, public money and as-of dates;
 - every financial statement value of ABC's 18 years (turnover, profit, loss, employees and the balance-sheet summary), and the trajectory deltas.
 
@@ -15,6 +16,12 @@ Browser GraphQL answers for `tests/integration/companies-profile.spec.ts`. The p
 - `company-analysis-release`: `CompanyAnalysisRelease`, no variables — the companies analysis's active release (its metadata, dimensions and limits; no company);
 - `procurement-da-release`: `ProcurementDaRelease`, no variables — the procurement release's status;
 - `procurement-cutoff`: `ProcurementCutoff` for 2026-01–2027-12 — SEAP's national monthly counts, mocked for any range the page asks.
+
+**Re-recorded on 28 November 2026** from the dev API, through the page's own queries:
+- `procurement-da-release`, `procurement-cutoff` (now asked for 2025-01–2026-12);
+- `abc-da-newest`, `ideatica-da-newest`, `abc-winner-awards`.
+
+The procurement release's stamp moved on 26 November. The server render's recorded `ProcurementDaRelease` (tests/fixtures/ssr-api) carries the new one, and the band's D6 check refuses browser answers stamped with an older key, so every release-keyed browser answer must carry the same stamp. Apart from the stamp, the answers are unchanged, except the cutoff's newer monthly counts. `ideatica-winner-awards` came back identical.
 
 **Curated, synthetic.** Added in October 2026 when the contract grew. None of this is an observation of the September recording, and none of it is ONRC, ANAF or MFP authority:
 - **Registry scope.** One published edition, `41` with epochs `3`/`7` (`scopeKey` `onrc:published:41:3:7`). It uses the server's real version names, and its publication date is the recorded `asOf.onrc` (2026-07-18). It appears in `company-registry.json`, in each profile's `registry` and in each `*-registration-diff.json`.

@@ -1,0 +1,37 @@
+[
+  {
+    "operation": "ProcurementBuyerDirectCategories",
+    "variables": {
+      "directDivisions": {
+        "authorityCui": "789401",
+        "from": "2025-12",
+        "to": "2026-11",
+        "grain": "direct_acquisition"
+      },
+      "directGroups": {
+        "authorityCui": "789401",
+        "from": "2025-12",
+        "to": "2026-11",
+        "grain": "direct_acquisition"
+      },
+      "directClasses": {
+        "authorityCui": "789401",
+        "from": "2025-12",
+        "to": "2026-11",
+        "grain": "direct_acquisition"
+      },
+      "directCategories": {
+        "authorityCui": "789401",
+        "from": "2025-12",
+        "to": "2026-11",
+        "grain": "direct_acquisition"
+      }
+    },
+    "fixture": "procurement-buyer-direct-categories-a3e8647c"
+  },
+  {
+    "operation": "ProcurementDaRelease",
+    "variables": {},
+    "fixture": "procurement-da-release"
+  }
+]

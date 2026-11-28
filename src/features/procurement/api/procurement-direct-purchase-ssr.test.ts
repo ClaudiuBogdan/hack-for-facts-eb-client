@@ -13,6 +13,8 @@ const release = vi.hoisted(() => ({ fetchPurchaseForPage: vi.fn() }))
 vi.mock('./procurement-da-release-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./procurement-da-release-api')>()),
   fetchPurchaseForPage: release.fetchPurchaseForPage,
+  // The D6 gate in front of it is the release API's own (tested there): here, the legacy read itself.
+  fetchLegacyPurchase: (id: string, signal?: AbortSignal) => api.fetchDirectPurchase(id, signal),
 }))
 vi.mock('../lib/direct-purchase-model', async (importOriginal) => {
   const real = await importOriginal<typeof import('../lib/direct-purchase-model')>()

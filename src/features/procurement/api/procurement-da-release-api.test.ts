@@ -160,6 +160,40 @@ describe('fetchPurchaseForPage', () => {
     await expect(resolveLegacyLink('16957145')).resolves.toEqual({ kind: 'legacy' })
   })
 
+  it('a legacy link whose record legacy-off refuses stays legacy, never a failed read retried (PROC-001)', async () => {
+    const legacyOff = new GraphQLRequestError('no', { graphQLErrors: [{ message: 'legacy procurement data is not served by this API; use the direct-acquisition release (procurementDa*) or procurementTotals', extensions: { code: 'SERVICE_UNAVAILABLE' } }] })
+    answer({
+      ProcurementDaRelease: release(true),
+      ProcurementDirectAcquisitionRecord: () => {
+        throw legacyOff
+      },
+    })
+    await expect(resolveLegacyLink('16957145')).resolves.toEqual({ kind: 'legacy' })
+    // And the page's read then takes the legacy surface, which says whether it has the record.
+    legacy.fetchDirectPurchase.mockResolvedValue(null)
+    await expect(fetchPurchaseForPage('16957145')).resolves.toBeNull()
+    expect(legacy.fetchDirectPurchase).toHaveBeenCalledWith('16957145', undefined)
+  })
+
+  it('looks no legacy link up while D6 fails closed: a failed read on the server’s path, as on the browser’s', async () => {
+    answer({ ProcurementDaRelease: () => ({ procurementDaRelease: { enabled: true, dataAsOf: '2026-11-18T04:00:00Z', privacyEnforced: true, privacyAsOf: null } }) })
+    await expect(resolveLegacyLink('16957145')).resolves.toEqual({ kind: 'failed' })
+    expect(graphqlQuery.mock.calls.map((call) => (call[2] as { readonly operationName: string }).operationName)).toEqual(['ProcurementDaRelease'])
+  })
+
+  it('reads a legacy purchase for the server’s render under the page’s own D6 gate: closed, nothing is read (PROC-001)', async () => {
+    const { fetchLegacyPurchase } = await import('./procurement-da-release-api')
+    answer({ ProcurementDaRelease: () => ({ procurementDaRelease: { enabled: true, dataAsOf: '2026-11-18T04:00:00Z', privacyEnforced: true, privacyAsOf: null } }) })
+    await expect(fetchLegacyPurchase('16957145')).rejects.toThrow('supplier-privacy publication is unreadable')
+    await expect(fetchPurchaseForPage('16957145')).rejects.toThrow('supplier-privacy publication is unreadable')
+    expect(legacy.fetchDirectPurchase).not.toHaveBeenCalled()
+    // Open: the legacy read answers, a record or none (legacy switched off is none: the not-found on both paths).
+    resetDaReleaseForTests()
+    answer({ ProcurementDaRelease: release(true) })
+    legacy.fetchDirectPurchase.mockResolvedValue(null)
+    await expect(fetchLegacyPurchase('16957145')).resolves.toBeNull()
+  })
+
   it('a legacy link whose lookup is refused while the release stays on is a failed read', async () => {
     answer({
       ProcurementDaRelease: release(true),
