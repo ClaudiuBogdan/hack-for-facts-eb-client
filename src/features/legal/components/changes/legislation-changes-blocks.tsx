@@ -15,9 +15,12 @@ import { LegalStatusBadge } from '../legal-status-badge'
 
 const linkClass = 'font-medium text-foreground underline underline-offset-2 decoration-foreground/30 hover:decoration-foreground'
 
+/** The address's language goes with the reader to the act (`?lang=`), and nothing else of this page's address. */
+const keepLanguage = (prev: Record<string, unknown>) => (typeof prev.lang === 'string' ? { lang: prev.lang } : {})
+
 function ActLink({ actId, children }: { readonly actId: string; readonly children: ReactNode }) {
   return (
-    <Link to="/legislation/acts/$actId" params={{ actId }} className={linkClass}>
+    <Link to="/legislation/acts/$actId" params={{ actId }} search={keepLanguage as never} className={linkClass}>
       {children}
     </Link>
   )
@@ -103,10 +106,10 @@ export function ChangeRows({ rows, today, locale }: { readonly rows: readonly Le
   )
 }
 
-export function ChangesSkeleton({ className }: { readonly className?: string }) {
+export function ChangesSkeleton({ rows = 3, className }: { readonly rows?: number; readonly className?: string }) {
   return (
     <div className={cn('flex flex-col gap-2', className)} aria-hidden="true">
-      {[0, 1, 2].map((i) => (
+      {Array.from({ length: rows }, (_, i) => (
         <div key={i} className="h-20 animate-pulse rounded-lg border bg-muted/40 motion-reduce:animate-none" />
       ))}
     </div>

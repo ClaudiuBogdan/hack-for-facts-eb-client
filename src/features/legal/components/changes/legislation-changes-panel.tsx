@@ -18,14 +18,20 @@ function rangeLabel(since: string | null, until: string | null, locale: string):
   return since !== null ? t`din ${formatLegalDate(since, locale)}` : t`până la ${formatLegalDate(until ?? '', locale)}`
 }
 
+/** On the first tab the period ends today at the latest: the chip and the field say the end that is read. */
+const shownEnd = (state: ChangesState, today: string): string | null =>
+  state.tab === 'schimbari' && state.until !== null && state.until > today ? today : state.until
+
 export function ChangesActiveFilters({
   state,
   tabKinds,
+  today,
   onChange,
   locale,
 }: {
   readonly state: ChangesState
   readonly tabKinds: readonly LegalEventKind[]
+  readonly today: string
   readonly onChange: (next: ChangesState) => void
   readonly locale: string
 }) {
@@ -44,7 +50,7 @@ export function ChangesActiveFilters({
   return (
     <div role="group" aria-label={t`Filtre active`} className="flex flex-wrap items-center gap-x-2 gap-y-4">
       {state.kinds.filter((kind) => tabKinds.includes(kind)).map((kind) => chip(kind, legalEventKindLabel(kind), () => onChange({ ...state, kinds: state.kinds.filter((k) => k !== kind) })))}
-      {state.since !== null || state.until !== null ? chip('range', rangeLabel(state.since, state.until, locale), () => onChange({ ...state, since: null, until: null })) : null}
+      {state.since !== null || state.until !== null ? chip('range', rangeLabel(state.since, shownEnd(state, today), locale), () => onChange({ ...state, since: null, until: null })) : null}
       <button
         type="button"
         onClick={() => onChange({ ...state, kinds: [], since: null, until: null })}
@@ -132,9 +138,11 @@ export function ChangesPanel({
                   type="date"
                   aria-label={t`Până la`}
                   className={FIELD}
-                  value={state.until ?? ''}
+                  value={shownEnd(state, today) ?? ''}
                   min={state.since ?? undefined}
                   max={state.tab === 'schimbari' ? today : undefined}
+                  // A start after today leaves no end to choose on the first tab: the start is what needs changing.
+                  disabled={state.tab === 'schimbari' && state.since !== null && state.since > today}
                   onChange={(event) => onChange({ ...state, until: date(event.target.value) })}
                 />
               </Row>

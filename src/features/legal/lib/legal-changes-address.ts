@@ -41,8 +41,9 @@ export function changesStateOf(search: LegalChangesSearch): ChangesState {
 }
 
 /**
- * The address of a state. Every key of the page is named — the old ones as `undefined` — because the router merges
- * a child's search over the passthrough root's: a key left out would survive from the previous address.
+ * The page's keys for a state. Every key is named — the old ones as `undefined` — so that, spread over the current
+ * address (the page navigates with `prev => ({ ...prev, ...changesSearchOf(next) })`), it clears what the state does
+ * not hold and keeps the root's own keys, such as the language.
  */
 export function changesSearchOf(state: ChangesState): LegalChangesSearch {
   const undated = state.tab === 'fara-data'
@@ -62,10 +63,12 @@ export function changesSearchOf(state: ChangesState): LegalChangesSearch {
 const OLD_KEYS = ['view', 'since', 'until', 'kind', 'source'] as const
 
 /**
- * An old link's address in the new keys, or null when the link has no old key. `view=nedatate` is the undated tab, unless a new-law
- * `kind` sends the link to its tab (its window dropped: the server refuses the pair); `view=viitoare|toate` are gone (the upcoming changes are always
- * on top); `kind` becomes `fel`, on the new-laws tab when it is one of its kinds; `since`/`until` become `de`/`pana`;
- * `source` is gone; `lang` is kept. Junk values are dropped as the schema drops them.
+ * An old link's address in the new keys, or null when the link has no old key:
+ *  - `view=nedatate` is the undated tab, its window dropped (the server refuses the pair) — unless a new-law `kind`
+ *    sends the link to the new-laws tab;
+ *  - `view=viitoare|toate` are gone (the upcoming changes are always on top);
+ *  - `kind` becomes `fel`; `since`/`until` become `de`/`pana`; `source` is gone; `lang` is kept.
+ * Junk values are dropped as the schema drops them.
  */
 export function changesSearchOfOld(raw: Record<string, unknown>): Record<string, string> | null {
   if (!OLD_KEYS.some((key) => raw[key] !== undefined)) return null

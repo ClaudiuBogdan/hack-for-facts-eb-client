@@ -25,8 +25,8 @@ import { ChangesActiveFilters, ChangesPanel } from './legislation-changes-panel'
  */
 
 const PAGE = 20
-/** The upcoming changes are few (7 on 28 November 2026); every page is read, up to this many. */
-const UPCOMING_PAGES = 10
+/** The upcoming changes are few (7 on 28 November 2026); every page is read, up to this safety cap (2,000 rows). */
+const UPCOMING_PAGES = 40
 
 const dayAfter = (iso: string): string => new Date(Date.parse(`${iso}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10)
 const kindsOf = (tab: ChangesTab): readonly LegalEventKind[] => (tab === 'legi-noi' ? NEW_LAW_KINDS : CHANGE_KINDS)
@@ -61,8 +61,12 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
   const filtered = state.kinds.some((kind) => tabKinds.includes(kind)) || state.since !== null || state.until !== null
   // The period's end is capped at today on the first tab: what comes later is in the upcoming group above.
   const rangeEnd = state.until !== null && state.until < today ? state.until : today
-  // A period that starts after today has nothing in force: no read, never a backwards range.
-  const nothingInForce = state.tab === 'schimbari' && state.since !== null && state.since > rangeEnd
+  // A period that starts after its end has nothing: no read, never a backwards range (the server's answer to one is
+  // not ours to guess). On the first tab the end is capped at today, so a start after today is such a period.
+  const emptyPeriod =
+    state.tab === 'schimbari'
+      ? state.since !== null && state.since > rangeEnd
+      : state.tab === 'legi-noi' && state.since !== null && state.until !== null && state.since > state.until
 
   // The three tabs' totals, unfiltered.
   const changesTotal = useCount({ kinds: CHANGE_KINDS, until: today })
@@ -82,28 +86,32 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
     getNextPageParam: (last) => last.endCursor ?? undefined,
     staleTime: 5 * 60 * 1000,
     retry: 1,
-    enabled: !nothingInForce,
+    enabled: !emptyPeriod,
   })
-  const filteredCount = useCount(listFilter, filtered && !nothingInForce)
+  const filteredCount = useCount(listFilter, filtered && !emptyPeriod)
   const upcoming = useQuery({
-    queryKey: ['legal', 'changes-upcoming', kinds, tomorrow],
+    queryKey: ['legal', 'changes-upcoming-all', kinds, tomorrow],
     queryFn: async ({ signal }) => {
       const items = []
       let after: string | undefined
       for (let page = 0; page < UPCOMING_PAGES; page++) {
         const read = await fetchRecentChangesPage({ kinds, since: tomorrow }, { first: 50, ...(after !== undefined && { after }), signal })
         items.push(...read.items)
-        if (read.endCursor === null) break
+        if (read.endCursor === null) return { items, more: false }
         after = read.endCursor
       }
-      return items
+      // Stopped at the cap with pages left: the count says „at least".
+      return { items, more: true }
     },
     staleTime: 5 * 60 * 1000,
     enabled: state.tab === 'schimbari',
   })
 
-  const rows = nothingInForce ? [] : (list.data?.pages.flatMap((page) => page.items) ?? [])
-  const upcomingRows = state.tab === 'schimbari' ? (upcoming.data ?? []) : []
+  // Rows show while the list is good, or when only its next page failed (the earlier pages stay); a failed reload of
+  // the first page shows its error alone, never the previous answer under it.
+  const listUsable = list.isSuccess || list.isFetchNextPageError
+  const rows = emptyPeriod || !listUsable ? [] : (list.data?.pages.flatMap((page) => page.items) ?? [])
+  const upcomingRows = state.tab === 'schimbari' ? (upcoming.data?.items ?? []) : []
   const upcomingBlocks = groupChanges(upcomingRows)
   const listBlocks = state.tab === 'schimbari' ? groupChanges(rows) : []
   const described = [...upcomingBlocks, ...listBlocks].some((block) => Boolean(block.source?.description))
@@ -157,12 +165,13 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
         </button>
       </div>
 
-      {filtered ? <ChangesActiveFilters state={state} tabKinds={tabKinds} onChange={setState} locale={i18n.locale} /> : null}
+      {filtered ? <ChangesActiveFilters state={state} tabKinds={tabKinds} today={today} onChange={setState} locale={i18n.locale} /> : null}
 
+      {state.tab === 'schimbari' && upcoming.isPending ? <ChangesSkeleton rows={1} /> : null}
       {state.tab === 'schimbari' && upcoming.isError ? (
         <div className="rounded-lg border p-4 text-sm">
-          <p>{t`Nu am putut încărca schimbările care urmează.`}</p>
-          <button type="button" onClick={() => void upcoming.refetch()} className="mt-2 underline underline-offset-2">
+          <p id="changes-upcoming-error">{t`Nu am putut încărca schimbările care urmează.`}</p>
+          <button type="button" aria-describedby="changes-upcoming-error" onClick={() => void upcoming.refetch()} className="mt-2 underline underline-offset-2">
             {t`Încearcă din nou`}
           </button>
         </div>
@@ -170,7 +179,11 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
       {upcomingRows.length > 0 ? (
         <section aria-labelledby="changes-upcoming" className="flex flex-col gap-2">
           <h2 id="changes-upcoming" className="text-sm font-semibold">
-            {t`Urmează să intre în vigoare`} <span className="font-normal tabular-nums text-muted-foreground">{n(upcomingRows.length)}</span>
+            {t`Urmează să intre în vigoare`}{' '}
+            <span className="font-normal tabular-nums text-muted-foreground">
+              {n(upcomingRows.length)}
+              {upcoming.data?.more ? '+' : ''}
+            </span>
           </h2>
           <ChangeBlocks blocks={upcomingBlocks} today={today} locale={i18n.locale} />
         </section>
@@ -184,16 +197,16 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
           ) : null}
         </h2>
 
-        {list.isPending && !nothingInForce ? <ChangesSkeleton /> : null}
+        {list.isPending && !emptyPeriod ? <ChangesSkeleton /> : null}
         {list.isError && !list.isFetchNextPageError ? (
           <div className="rounded-lg border p-4 text-sm">
-            <p>{t`Nu am putut încărca schimbările.`}</p>
-            <button type="button" onClick={() => void list.refetch()} className="mt-2 underline underline-offset-2">
+            <p id="changes-list-error">{t`Nu am putut încărca schimbările.`}</p>
+            <button type="button" aria-describedby="changes-list-error" onClick={() => void list.refetch()} className="mt-2 underline underline-offset-2">
               {t`Încearcă din nou`}
             </button>
           </div>
         ) : null}
-        {(list.isSuccess || nothingInForce) && rows.length === 0 ? <p className="text-sm text-muted-foreground">{t`Nicio schimbare nu corespunde filtrelor.`}</p> : null}
+        {(list.isSuccess || emptyPeriod) && rows.length === 0 ? <p className="text-sm text-muted-foreground">{t`Nicio schimbare nu corespunde filtrelor.`}</p> : null}
         {/* The rows already loaded stay when a next page fails (the query then reports an error, not success). */}
         {rows.length > 0 ? (
           state.tab === 'schimbari' ? (
@@ -204,7 +217,7 @@ export function LegislationChangesPage({ search }: { readonly search: LegalChang
         ) : null}
 
         {list.isFetchNextPageError ? <p className="text-sm text-muted-foreground">{t`Pagina următoare nu s-a încărcat.`}</p> : null}
-        {list.hasNextPage && !nothingInForce ? (
+        {list.hasNextPage && listUsable && !emptyPeriod ? (
           <div>
             <button
               type="button"

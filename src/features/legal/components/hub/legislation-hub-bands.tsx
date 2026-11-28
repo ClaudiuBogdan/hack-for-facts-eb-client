@@ -11,7 +11,8 @@ import { fmt, pctOf } from '../../lib/analytics-format'
 import { GROUP_LABEL, labelOf } from '../../lib/analytics-labels'
 import { readingSentence } from '../../lib/analytics-notes-text'
 import { labelOfKey } from '../../lib/analytics-view'
-import { formatLegalDate, localIsoDate } from '../../lib/legal-format'
+import { bucharestToday } from '../../lib/legal-coverage'
+import { formatLegalDate } from '../../lib/legal-format'
 import { legalEventKindLabel } from '../../lib/legal-vocabulary'
 import { StackedYears } from '../analytics/analytics-charts'
 import {
@@ -66,7 +67,8 @@ type ChangeRow = Awaited<ReturnType<typeof fetchRecentChangesPage>>['items'][num
  */
 export function ChangesBand() {
   const { i18n } = useLingui()
-  const { since, until } = changesWindow(localIsoDate())
+  // The Bucharest day, as on the Modificări page: "already in force" does not depend on the reader's clock.
+  const { since, until } = changesWindow(bucharestToday())
   const feed = useQuery({
     queryKey: ['legal', 'landing', 'changes', CHANGE_KINDS, until] as const,
     queryFn: ({ signal }) => fetchRecentChangesPage({ kinds: CHANGE_KINDS, until }, { first: CHANGES_SHOWN, signal }),

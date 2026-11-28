@@ -11,8 +11,20 @@ const SOON = dayAfter(TODAY, 40)
 
 const navigateMock = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, params, to: _to, ...rest }: { readonly children: ReactNode; readonly params?: { actId?: string }; readonly to?: string }) => (
-    <a href={`/legislation/acts/${params?.actId ?? ''}`} {...rest}>
+  Link: ({
+    children,
+    params,
+    search,
+    to: _to,
+    ...rest
+  }: {
+    readonly children: ReactNode
+    readonly params?: { actId?: string }
+    readonly search?: (prev: Record<string, unknown>) => Record<string, unknown>
+    readonly to?: string
+  }) => (
+    // What the link would carry from an address in English with the page's own keys.
+    <a href={`/legislation/acts/${params?.actId ?? ''}`} data-search={JSON.stringify(search?.({ lang: 'en', fila: 'legi-noi', fel: 'promulgare' }) ?? null)} {...rest}>
       {children}
     </a>
   ),
@@ -137,11 +149,42 @@ describe('LegislationChangesPage', () => {
     expect(pageMock.mock.calls.every(([f]) => f.kinds === undefined || f.kinds.length > 0)).toBe(true)
   })
 
-  it('caps the range at today', async () => {
+  it('caps the range at today, and says the end it uses', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-28T10:00:00Z'))
+    try {
+      answer()
+      view({ de: '2026-01-01', pana: '2099-12-31' })
+      await screen.findByRole('link', { name: 'Legea nr. 33/2026' })
+      expect(pageMock).toHaveBeenCalledWith(expect.objectContaining({ since: '2026-01-01', until: '2026-11-28' }), expect.anything())
+      // The chip names the period actually read (the test locale formats dates in English).
+      expect(screen.getByRole('button', { name: /Scoate .*Nov(ember)? 28, 2026/ })).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('carries the address’s language to the acts, nothing else', async () => {
     answer()
-    view({ de: '2026-01-01', pana: '2099-12-31' })
+    view()
+    expect(await screen.findByRole('link', { name: 'Legea nr. 236/2022' })).toHaveAttribute('data-search', JSON.stringify({ lang: 'en' }))
+  })
+
+  it('shows no stale rows under a failed reload', async () => {
+    let fail = false
+    pageMock.mockImplementation(async (f) => {
+      if (isUpcoming(f)) return { items: [], endCursor: null }
+      if (fail) throw new Error('timeout')
+      return { items: IN_FORCE, endCursor: 'p2' }
+    })
+    const queryClient = createTestQueryClient()
+    render(<LegislationChangesPage search={{}} />, { queryClient })
     await screen.findByRole('link', { name: 'Legea nr. 33/2026' })
-    expect(pageMock).toHaveBeenCalledWith(expect.objectContaining({ since: '2026-01-01', until: TODAY }), expect.anything())
+    fail = true
+    await queryClient.refetchQueries({ queryKey: ['legal', 'changes-list'] })
+    expect(await screen.findByText('Nu am putut încărca schimbările.')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Legea nr. 33/2026' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Încarcă mai multe' })).toBeNull()
   })
 
   it('follows the address', async () => {
@@ -226,9 +269,11 @@ describe('LegislationChangesPage', () => {
   })
 
   it('takes today as the Bucharest day, not the browser’s', async () => {
+    // A reader in New York at 20:30 on 28 November: it is already 29 November in Bucharest.
+    const zone = process.env.TZ
+    process.env.TZ = 'America/New_York'
     vi.useFakeTimers({ toFake: ['Date'] })
-    // 23:30 UTC on 28 November is already 29 November in Bucharest.
-    vi.setSystemTime(new Date('2026-11-28T23:30:00Z'))
+    vi.setSystemTime(new Date('2026-11-29T01:30:00Z'))
     try {
       answer()
       view()
@@ -237,6 +282,23 @@ describe('LegislationChangesPage', () => {
       expect(pageMock).toHaveBeenCalledWith(expect.objectContaining({ since: '2026-11-30' }), expect.anything())
     } finally {
       vi.useRealTimers()
+      process.env.TZ = zone
     }
   })
+
+  it('sends no backwards range on the new-laws tab either', async () => {
+    answer()
+    view({ fila: 'legi-noi', de: '2026-06-01', pana: '2026-01-01' })
+    expect(await screen.findByText('Nicio schimbare nu corespunde filtrelor.')).toBeInTheDocument()
+    expect(pageMock.mock.calls.some(([f]) => f.since !== undefined && f.until !== undefined && f.since > f.until)).toBe(false)
+  })
+
+  it('stops the start of the period at today on the first tab', async () => {
+    answer()
+    view()
+    await screen.findByRole('link', { name: 'Legea nr. 33/2026' })
+    fireEvent.click(screen.getByRole('button', { name: /^Filtre/ }))
+    expect(await screen.findByLabelText('De la')).toHaveAttribute('max', TODAY)
+  })
+
 })
