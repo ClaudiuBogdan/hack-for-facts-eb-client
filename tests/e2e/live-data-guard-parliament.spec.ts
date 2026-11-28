@@ -164,7 +164,7 @@ test.describe('Live-data guard (parliament)', () => {
 
     // The live bill became Legea 423/2023; mock bills never carry this number. The h1 above is the section's
     // („Proiecte legislative"), drawn before the bill arrives, so wait for the bill itself.
-    await expect(page.getByText('423/2023').first()).toBeVisible({ timeout: 20000 })
+    await expect(page.getByText(/\b423\/2023\b/).first()).toBeVisible({ timeout: 20000 })
   })
 
   test('member Inițiative tab renders live initiatives, newest-first', async ({
@@ -185,7 +185,8 @@ test.describe('Live-data guard (parliament)', () => {
       .catch(() => false)
     test.skip(!ready, 'Live member initiatives unavailable (API/tunnel down)')
 
-    await page.waitForTimeout(2000)
+    // The rows come after the heading: wait for a recent one rather than a fixed time.
+    await expect(page.getByText(/mai 2026/).first()).toBeVisible({ timeout: 20000 })
     const bodyText = (await page.locator('body').textContent()) ?? ''
     expect(bodyText).toContain('Inițiative legislative')
     expect(bodyText).toMatch(/mai 2026/) // real recent registration dates
@@ -213,8 +214,9 @@ test.describe('Live-data guard (parliament)', () => {
       .catch(() => false)
     test.skip(!ready, 'Live bill etape unavailable (API/tunnel down)')
 
-    // The h1 is the section's, drawn before the bill: wait for the outcome the bill carries.
+    // The h1 is the section's, drawn before the bill: wait for the outcome the bill carries, in the tracker's reading.
     await expect(page.getByText('78/2020').first()).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('combobox', { name: 'Vizualizare' })).toHaveText(/Camere unificate/)
     const bodyText = (await page.locator('body').textContent()) ?? ''
     expect(bodyText).toContain('Parcurs legislativ') // tracker header
     expect(bodyText).toContain('78/2020') // becomes-law outcome
@@ -341,11 +343,10 @@ test.describe('Live-data guard (parliament)', () => {
       .catch(() => false)
     test.skip(!ready, 'Live committees page unavailable (API/tunnel down)')
 
-    await page.waitForTimeout(1500)
-    // At least one committee row links to a detail page.
-    const rowCount = await page
-      .locator('a[href*="/parlament/comisii/"]')
-      .count()
+    // At least one committee row links to a detail page; the rows come after the heading.
+    const rows = page.locator('a[href*="/parlament/comisii/"]')
+    await rows.first().waitFor({ state: 'attached', timeout: 20000 }).catch(() => undefined)
+    const rowCount = await rows.count()
     test.skip(rowCount === 0, 'No committees returned (API/tunnel down or empty)')
     expect(rowCount).toBeGreaterThan(0)
   })
@@ -471,7 +472,7 @@ test.describe('Live-data guard (parliament)', () => {
     return Number(raw.replace(/\./g, ''))
   }
 
-  test('member 1:2024:79 /interventii renders the speech-activity heatmap + year buttons (2025 & 2026)', async ({
+  test('member 1:2024:79 /interventii renders the speech-activity heatmap + year combobox (2025 & 2026)', async ({
     page,
   }) => {
     const response = await page
@@ -489,8 +490,9 @@ test.describe('Live-data guard (parliament)', () => {
     // The heatmap sits in a disclosure, closed at first („Activitatea în plen pe zile (2026)"): open it. Active-day
     // cells are buttons labelled "… — N intervenții"; the year is a combobox („Anul ședințelor: …"), so this
     // selector counts only day cells.
-    const disclosure = page.locator('summary', { hasText: /Activitatea în plen pe zile/ })
-    if (await disclosure.count()) await disclosure.first().click()
+    const disclosure = page.locator('summary', { hasText: /Activitatea în plen pe zile/ }).first()
+    await expect(disclosure).toBeVisible({ timeout: 20000 })
+    await disclosure.click()
     const cells = page.locator('button[aria-label*="intervenți"]')
     const painted = await cells
       .first()

@@ -39,6 +39,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     video: 'on-first-retry',
   },
+  // A deployed site serves the live suite alone: the mocked one needs the local server the override drops.
   projects: [
     // Integration tests (mocked API, fast)
     // Use tablet viewport (below md breakpoint 768px) to hide sidebar and avoid overlap issues
@@ -58,7 +59,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       timeout: 60000, // Longer timeout for live API
     },
-  ],
+  ].filter((project) => !E2E_BASE_URL || project.name === 'e2e'),
   webServer: E2E_BASE_URL ? undefined : [
     {
       command: 'node tests/utils/ssr-api/server.mjs',

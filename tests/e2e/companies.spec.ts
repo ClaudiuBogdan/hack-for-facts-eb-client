@@ -9,7 +9,7 @@
  * prod (companies.registrations / companies.financials) on 2026-06-17.
  */
 import { test, expect, type Page } from '@playwright/test'
-import { waitForPageReady } from '../utils/test-helpers'
+import { waitForHydration, waitForPageReady } from '../utils/test-helpers'
 
 const DEDEMAN_CUI = '2816464'
 const DEDEMAN_NAME = /DEDEMAN SRL/i
@@ -37,7 +37,7 @@ test.describe('Companies — live profile', () => {
     await expect(page.getByText(new RegExp(DEDEMAN_CUI)).first()).toBeVisible()
   })
 
-  test('the business band shows a real ANAF balance sheet', async ({ page }) => {
+  test('the business band charts the years, and a recent ANAF balance sheet opens', async ({ page }) => {
     const ready = await gotoProfile(page, DEDEMAN_CUI)
     test.skip(!ready, 'Live company profile unavailable (API/tunnel down)')
 
@@ -46,7 +46,14 @@ test.describe('Companies — live profile', () => {
     const business = page.locator('#afacerea')
     await expect(business.getByRole('group', { name: /^Anii:/ })).toBeVisible({ timeout: 15000 })
     const years = page.getByRole('region', { name: 'Bilanțurile, an cu an' })
-    await expect(years.getByRole('button', { name: /^Bilanțul pe 20(2[4-9]|[3-9]\d)/ }).first()).toBeVisible()
+    const recent = years.getByRole('button', { name: /^Bilanțul pe 20(2[4-9]|[3-9]\d)/ }).first()
+    await expect(recent).toBeVisible()
+    // Opened (after hydration: a click on the server's button does nothing), the statement names its publisher.
+    await waitForHydration(page)
+    const year = ((await recent.getAttribute('aria-label')) ?? (await recent.textContent()) ?? '').match(/20\d\d/)?.[0]
+    await recent.click()
+    await expect(recent).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByRole('region', { name: `Bilanțul pe ${year}` })).toContainText('ANAF')
   })
 })
 
