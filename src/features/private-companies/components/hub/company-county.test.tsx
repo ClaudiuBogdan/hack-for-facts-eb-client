@@ -102,13 +102,20 @@ describe('CompanyCountyMap', () => {
     expect(legend.map((label) => label.getAttribute('style'))).toEqual(['left: 20%;', 'left: 40%;', 'left: 60%;', 'left: 80%;'])
   })
 
-  it('reads out the county under the mouse: its rate, its place and its distance from the country', () => {
+  it('reads out the county under the mouse in a tooltip, the country staying over the map', () => {
     render(<Harness layer={DENSITY} />)
-    fireEvent.pointerEnter(countyLink(/Cluj/), { pointerType: 'mouse' })
-    expect(within(figure()).getByText('Cluj · locul 2 din 3')).toBeInTheDocument()
-    expect(within(figure()).getByText('+44,1 față de România')).toBeInTheDocument()
-    fireEvent.pointerLeave(countyLink(/Cluj/), { pointerType: 'mouse' })
+    const cj = countyLink(/Cluj/)
+    fireEvent.pointerEnter(cj, { pointerType: 'mouse' })
+    // The county: its rate, its place and its distance from the country, in the box its link points to.
+    const tooltip = document.getElementById(cj.getAttribute('aria-describedby') ?? '')
+    expect(tooltip).not.toBeNull()
+    expect(tooltip).toHaveTextContent('Cluj · locul 2 din 3')
+    expect(tooltip).toHaveTextContent('+44,1 față de România')
+    // The readout over the map still says the country: it never changes, so the map never moves.
     expect(within(figure()).getByText('România', { selector: 'p' })).toBeInTheDocument()
+    expect(within(figure()).getByText('91,9', { selector: 'p' })).toBeInTheDocument()
+    fireEvent.pointerLeave(cj, { pointerType: 'mouse' })
+    expect(within(figure()).queryByText('Cluj · locul 2 din 3')).toBeNull()
   })
 
   it('reads a count as its share of the total, with no national tick on the legend', () => {

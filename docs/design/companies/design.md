@@ -989,6 +989,7 @@ and chose, from a question dialog, all of the following.
   under each title repeated the title.
 - **The sources are said once, at the foot of the page.** The line at the
   head's foot is gone; each of the four figures names its source under it.
+  (Changed on 28 November 2026: a short line of names is back in the head, below.)
 - **No section numbers on this page, and the notes under the four figures in
   plain text** (owner: „Drop on companies only"). They come from the shared hub
   chrome, so they are opt-in switches there, approved by root; the other hubs
@@ -1233,3 +1234,26 @@ keeps its own slot beside a hatched gap. Left as is, by decision:
   `matchConfidence`, `address.county`, `flowCount`), and the IFRS, trajectory and long-format fields.
 - Later, once this is measured on dev (steps 2a and 2b): a year's Ministry files and the activity names read when
   a year or a domain is opened.
+
+## The hub's polish (28 November 2026)
+
+The owner asked for the hub to get the national budget's and the legislation
+hub's polish (their sessions described it), and chose:
+
+- **The pinned bar shows each band after its icon** (Județe, Domenii, Mărime,
+  Ani, Firme noi), underlines the one being read and, on a phone, slides its
+  link to the middle of the list when the band changes: the list alone, never
+  the page, smoothly unless reduced motion is asked for. It is one component
+  for the hub and the company page (`CompanySectionBar`), so the company
+  page's bar follows on a phone too. The loading state's bar is inert.
+- **The way home over the title** (← Acasă / Firme), as legislation's hub.
+- **The leaders card is solid with a light shadow**, as both hubs' hero cards.
+- **A short line of sources in the head** (Surse: ONRC, ANAF, Ministerul
+  Finanțelor, INS), chosen from a picture of two; the full line, with the
+  edition, the statements and the population's dates, still closes the page.
+- **The county map's readout stays the country's figure**; a county under
+  the pointer, under focus or tapped is read in a tooltip by its label (its
+  figure, its place, how it compares with Romania; after a tap, its link). The
+  readout had grown from two lines to three on a hover and moved the map.
+- Not taken: the legislation search's „Căutare avansată" way on. The
+  companies analysis has no name filter, so typed words have nowhere to go.

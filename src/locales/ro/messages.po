@@ -910,7 +910,7 @@ msgstr "{0, plural, one {Un domeniu} few {Toate cele # domenii} other {Toate cel
 
 #. placeholder {0}: layer.missingCounties.length
 #. placeholder {0}: missing.length
-#: src/features/private-companies/components/hub/company-county-map.tsx:390
+#: src/features/private-companies/components/hub/company-county-map.tsx:415
 #: src/features/statistics/components/county-map/county-map.tsx:430
 msgid "{0, plural, one {un județ fără valoare} few {# județe fără valoare} other {# de județe fără valoare}}"
 msgstr "{0, plural, one {un județ fără valoare} few {# județe fără valoare} other {# de județe fără valoare}}"
@@ -1027,7 +1027,7 @@ msgstr "{0} · lei pe locuitor"
 
 #. placeholder {0}: county.name
 #. placeholder {0}: countyName(county.code)
-#: src/features/private-companies/components/hub/company-county-map.tsx:308
+#: src/features/private-companies/components/hub/company-county-map.tsx:333
 #: src/features/statistics/components/county-map/county-map.tsx:339
 msgid "{0} · locul {rank} din {total}"
 msgstr "{0} · locul {rank} din {total}"
@@ -2389,7 +2389,7 @@ msgid "{0}: fără date"
 msgstr "{0}: fără date"
 
 #. placeholder {0}: countyName(code)
-#: src/features/private-companies/components/hub/company-county-map.tsx:124
+#: src/features/private-companies/components/hub/company-county-map.tsx:126
 msgid "{0}: fără valoare"
 msgstr "{0}: fără valoare"
 
@@ -5087,7 +5087,7 @@ msgstr ""
 #: src/components/sidebar/nav-main.tsx:45
 #: src/features/legal/components/hub/legislation-hub.tsx:111
 #: src/features/national-budget/home/components/person-head.tsx:138
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:58
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:89
 #: src/features/public-institutions/components/public-institutions-head.tsx:175
 msgid "Acasă"
 msgstr "Acasă"
@@ -5429,7 +5429,7 @@ msgstr ""
 msgid "Achiziții publice"
 msgstr "Achiziții publice"
 
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:95
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:126
 msgctxt "companies hub shortcut"
 msgid "Achiziții publice"
 msgstr "Achiziții publice"
@@ -8035,7 +8035,7 @@ msgstr "Analiză"
 #~ msgid "Analiza bilanțurilor"
 #~ msgstr "Analiza bilanțurilor"
 
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:92
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:123
 msgctxt "companies hub shortcut"
 msgid "Analiza bilanțurilor"
 msgstr "Analiza bilanțurilor"
@@ -13526,7 +13526,7 @@ msgstr "Cifra de afaceri, {0}"
 msgid "Cifra de afaceri, {year}"
 msgstr "Cifra de afaceri, {year}"
 
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:77
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:108
 msgid "Cifră de afaceri, profit și salariați, din registrul comerțului și bilanțurile anuale."
 msgstr "Cifră de afaceri, profit și salariați, din registrul comerțului și bilanțurile anuale."
 
@@ -16045,7 +16045,7 @@ msgstr "Contribuții înregistrate"
 msgid "Control"
 msgstr "Control"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:109
+#: src/features/private-companies/components/hub/company-county-map.tsx:111
 #: src/features/statistics/components/county-map/county-map.tsx:118
 #: src/features/statistics/components/hub/hub-county-band.tsx:353
 msgid "Conturul județelor nu s-a încărcat."
@@ -22337,7 +22337,7 @@ msgstr "Esențiale"
 
 #: src/features/legal/components/hub/legislation-hub.tsx:108
 #: src/features/national-budget/home/components/person-head.tsx:136
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:51
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:82
 msgid "Ești aici"
 msgstr "Ești aici"
 
@@ -24063,7 +24063,7 @@ msgstr "fără valoare"
 msgid "Fără valoare"
 msgstr "Fără valoare"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:328
+#: src/features/private-companies/components/hub/company-county-map.tsx:358
 msgctxt "county map readout"
 msgid "Fără valoare"
 msgstr "Fără valoare"
@@ -25070,8 +25070,8 @@ msgstr "firme"
 #: src/features/private-companies/components/analytics/analytics-axis.tsx:148
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:340
 #: src/features/private-companies/components/analytics/analytics-head.tsx:75
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:61
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:138
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:92
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:170
 #: src/features/private-companies/components/hub/hub-search.tsx:23
 #: src/features/private-companies/components/hub/hub-sectors.tsx:192
 #: src/features/private-companies/components/hub/hub-sectors.tsx:267
@@ -25368,7 +25368,7 @@ msgstr "Firmele din România"
 msgid "Firmele din România, {0}"
 msgstr "Firmele din România, {0}"
 
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:68
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:99
 msgid "Firmele din<0/>România"
 msgstr "Firmele din<0/>România"
 
@@ -25388,7 +25388,7 @@ msgstr "Firmele în funcțiune fără bilanț"
 #~ msgid "Firmele înregistrate în {YEAR}, pe domenii"
 #~ msgstr "Firmele înregistrate în {YEAR}, pe domenii"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:340
+#: src/features/private-companies/components/hub/company-county-map.tsx:367
 msgid "Firmele județului"
 msgstr "Firmele județului"
 
@@ -28355,7 +28355,7 @@ msgstr "Încasări proprii"
 #: src/features/ngos/registry/components/registry-answer.tsx:417
 #: src/features/private-companies/components/analytics/analytics-notices.tsx:57
 #: src/features/private-companies/components/analytics/analytics-records.tsx:130
-#: src/features/private-companies/components/hub/company-county-map.tsx:116
+#: src/features/private-companies/components/hub/company-county-map.tsx:118
 #: src/features/private-companies/components/profile/company-profile-states.tsx:230
 #: src/features/procurement/components/analytics/analytics-answer.tsx:353
 #: src/features/public-institutions/components/public-institutions-breakdown.tsx:231
@@ -33798,6 +33798,7 @@ msgstr "Ministerul Educației și Cercetării"
 #: src/features/national-budget/home/components/person-head.tsx:114
 #: src/features/national-budget/home/lib/home-format.ts:121
 #: src/features/private-companies/components/analytics/analytics-source.tsx:30
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:41
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:136
 #: src/features/private-companies/lib/company-profile-text.ts:296
 #: src/features/private-companies/lib/company-profile-text.ts:643
@@ -37671,7 +37672,7 @@ msgstr ""
 msgid "Nume sau CUI"
 msgstr "Nume sau CUI"
 
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:140
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:172
 #: src/features/private-companies/components/hub/hub-search.tsx:24
 msgid "Nume sau CUI..."
 msgstr "Nume sau CUI..."
@@ -44898,8 +44899,8 @@ msgstr "Detectare robustă a anomaliilor bazată pe deviația absolută mediană
 #~ msgstr "Rol"
 
 #: src/features/elections/catalog/elections-catalog-text.ts:99
-#: src/features/private-companies/components/hub/company-county-map.tsx:308
-#: src/features/private-companies/components/hub/company-county-map.tsx:411
+#: src/features/private-companies/components/hub/company-county-map.tsx:288
+#: src/features/private-companies/components/hub/company-county-map.tsx:436
 #: src/features/statistics/components/county-map/county-map.tsx:341
 #: src/features/statistics/components/territory/territory-derived-list.tsx:115
 #: src/features/statistics/components/territory/territory-derived-list.tsx:257
@@ -45252,7 +45253,7 @@ msgstr "sau atinge-o încă o dată pe hartă"
 #: src/features/legal/components/hub/legislation-hub.tsx:144
 #: src/features/national-budget/home/components/person-head.tsx:159
 #: src/features/ngos/hub/ngo-hub-hero.tsx:62
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:86
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:117
 #: src/features/procurement/components/home/procurement-home-page.tsx:157
 #: src/features/public-enterprises/components/hub/hub-hero.tsx:55
 #: src/features/statistics/pages/statistics-hub-page.tsx:170
@@ -45582,7 +45583,7 @@ msgstr "Scrutinul pentru funcția {office} în {place}: voturile la nivel de par
 #: src/features/legal/components/hub/legislation-hub.tsx:142
 #: src/features/national-budget/home/components/person-head.tsx:158
 #: src/features/ngos/hub/ngo-hub-hero.tsx:60
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:84
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:115
 #: src/features/procurement/components/home/procurement-home-page.tsx:155
 #: src/features/public-enterprises/components/hub/hub-hero.tsx:54
 #: src/features/statistics/pages/statistics-hub-page.tsx:168
@@ -49665,6 +49666,7 @@ msgstr ""
 
 #: src/features/national-budget/home/components/person-head.tsx:112
 #: src/features/ngos/hub/ngo-hub-pending.tsx:49
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:31
 #: src/features/private-companies/components/profile/company-registry-band.tsx:174
 #: src/features/public-enterprises/components/hub/hub-pending.tsx:80
 #: src/features/public-enterprises/components/hub/public-enterprise-hub-page.tsx:149
@@ -51384,7 +51386,7 @@ msgstr "Toate firmele"
 #~ msgid "Toate firmele în funcțiune"
 #~ msgstr "Toate firmele în funcțiune"
 
-#: src/features/private-companies/components/hub/company-hub-hero.tsx:89
+#: src/features/private-companies/components/hub/company-hub-hero.tsx:120
 msgctxt "companies hub shortcut"
 msgid "Toate firmele în funcțiune"
 msgstr "Toate firmele în funcțiune"

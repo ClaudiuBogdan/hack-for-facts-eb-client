@@ -17,6 +17,37 @@ const SHORTCUT_LINK_CLASS = 'inline-flex min-h-11 items-center text-sm font-medi
 /** The companies in business in the analysis, on its own year: the loading state's, drawn before the snapshot is read. */
 const IN_BUSINESS = urlSearchOfText({ stare: STATUS_ACTIVE })
 
+/** A source's name in the head's line: the national budget's and the legislation hub's link style. */
+const SOURCE_LINK_CLASS = 'font-medium text-foreground underline-offset-4 hover:underline'
+
+/**
+ * The head's few words of sources, as the national budget's and the legislation hub's heads say theirs: the
+ * names, each a link (owner, 28 November 2026). Which edition, statements and population each figure uses, and
+ * when, are in the page's last line. The links are the ones the site already gives for these sources.
+ */
+function HeadSources({ className }: { readonly className?: string }) {
+  return (
+    <p className={cn('text-sm text-muted-foreground', className)}>
+      {t`Surse:`}{' '}
+      <a href="https://data.gov.ro/ro/organization/onrc" target="_blank" rel="noreferrer" className={SOURCE_LINK_CLASS}>
+        ONRC
+      </a>
+      ,{' '}
+      <a href="https://www.anaf.ro" target="_blank" rel="noreferrer" className={SOURCE_LINK_CLASS}>
+        ANAF
+      </a>
+      ,{' '}
+      <a href="https://mfinante.gov.ro" target="_blank" rel="noreferrer" className={SOURCE_LINK_CLASS}>
+        {t`Ministerul Finanțelor`}
+      </a>
+      ,{' '}
+      <a href="http://statistici.insse.ro:8077/tempo-online/#/pages/tables/insse-table" target="_blank" rel="noreferrer" className={SOURCE_LINK_CLASS}>
+        INS
+      </a>
+    </p>
+  )
+}
+
 /** The landing's address keeps only the site's own key (the language): the hub's choices mean nothing there. */
 const siteKeys = (previous: Record<string, unknown>): Record<string, unknown> => (typeof previous.lang === 'string' ? { lang: previous.lang } : {})
 
@@ -43,7 +74,7 @@ export function CompanyHubHero({
       <TwoLayerLattice idPrefix="companies-hub" />
       <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20">
         <CornerTicks />
-        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8 lg:pb-10">
           {/* Centred against the leaders' card from a wide screen, where the card is the taller of the two: the
               head no longer ends in an empty block under the shortcuts (owner, 25 November 2026). */}
           <div className="min-w-0 lg:col-span-7 lg:self-center">
@@ -96,8 +127,9 @@ export function CompanyHubHero({
               </Link>
             </nav>
           </div>
-          {/* No sources line here: each figure under the head names its source, and the full line closes the page. */}
           <div className="min-w-0 lg:col-span-5">{leaders}</div>
+          {/* The sources' names at the head's foot, as the other hubs; the full line still closes the page. */}
+          <HeadSources className="min-w-0 lg:absolute lg:inset-x-8 lg:bottom-6" />
         </div>
         {/* The crux on the head's bottom rule, where the pinned bar begins; above the bar, which would cover its lower half. */}
         <span className="absolute inset-x-0 top-full z-30 mt-px" aria-hidden="true">
