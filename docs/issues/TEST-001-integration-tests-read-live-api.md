@@ -40,8 +40,8 @@ files, including the no-mock tests and the REST map read the warnings never show
 | `entity-exploration.spec.ts` | map grouped-series 4, MapPopulation 2 | client-entity-analytics | fixed, e1f142c3 |
 | `development-surface.spec.ts` | map grouped-series 1 | client-entity-analytics | fixed, e1f142c3 |
 | `companies-profile.spec.ts` | CompanyAnalysisRelease 7, ProcurementCutoff 7, ProcurementDaRelease 7 | client-companies | fixed, 59820e871 (on dev in 9cdd0b55d) |
-| `procurement-analytics.spec.ts` | AnalyticsFigures 26, ProcurementDaRelease 16, AnalyticsSeries 13, AnalyticsConcentration 9, AnalyticsRanking 8, AnalyticsRecords 5, ProcurementHomeContracts 2 | procurement-da-client | open |
-| `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | open; public-enterprise-page :117/:129 skip on live partial buyer reads; recordings must include a complete-buyer case |
+| `procurement-analytics.spec.ts` | AnalyticsFigures 26, ProcurementDaRelease 16, AnalyticsSeries 13, AnalyticsConcentration 9, AnalyticsRanking 8, AnalyticsRecords 5, ProcurementHomeContracts 2 | procurement-da-client | fixed: on the ssr-api store with its server reads (2026-11-28, below) |
+| `public-enterprise-page.spec.ts` | ProcurementBuyerDirectCategories 8, ProcurementDaRelease 4 | procurement-da-client | fixed: on the ssr-api store (2026-11-28, below); two tests still skip on a partial buyer read, see there |
 | `national-budget-home.spec.ts` | BudgetApprovedRecords 40, BudgetExecutionObservations 3, BudgetNationalExecutionSeries 3, AggregatedLineItems 2, EntityAnalytics 2, BudgetApprovedTotals 1 | client-dev-polish | open |
 | `national-budget-analytics.spec.ts` | BudgetApprovedTotals 5, BudgetApprovedRecords 4, BudgetExecutionObservations 3, BudgetApprovedSeries 1 | client-dev-polish | open |
 | `legislation-act.spec.ts` (new on dev after 11-25) | LegalDocumentOutline 5, the act text's REST render read 5 (full run, 2026-11-27) | client-legislation | recorded, a95a702f3 (the outline through ssr-api, the render reads from `tests/fixtures/legislation-act-flow`) |
@@ -193,6 +193,23 @@ specs: all served, 0 missing.
 | `procurement-analytics.spec.ts` | ProcurementDaRelease 13; AnalyticsCpvDivisions, ProcurementCutoff, ProcurementGeographyOptions 11 each; ProcurementHomeCategories, -Contracts, -National 1 each | 2 | procurement-da-client |
 | `companies-profile.spec.ts` | CompanyProfile 6, ProcurementDaRelease 6 | 6 | client-companies: recorded, f6e556f6a |
 | `legislation-act.spec.ts` | LegalActDetail 4 | 4 | client-legislation: recorded, a95a702f3 |
+
+**Procurement specs recorded (2026-11-28, procurement-da-client).** `procurement-analytics.spec.ts` and
+`public-enterprise-page.spec.ts` run on `tests/utils/ssr-api/test.ts`. Every read, the server render's and the browser's, answers
+from `tests/fixtures/ssr-api`: 102 recordings made with `SSR_API_MODE=record` from the dev API in one snapshot (analysis build
+1795692846658728), so the browser asks with the build the server read. Their earlier browser fixtures, keyed on a build that
+moved, are removed. Strict, one worker, each test twice: 32 passed, 6 skipped, 0 missing (265 server reads, 168 browser reads
+from recordings). Notes:
+- **Removed first:** the front door's legacy `ProcurementHomeContracts`. The API answers it with the legacy-off error, and the
+  store records no error answer (PROC-KB0Z step 4, landed just before).
+- **Mocked, not recorded:** the place-search test's 5 reads by supplier geography. The API refuses them (`INVALID_INPUT`,
+  `supplierSiruta`), so they answer from the API's recorded refusals through `mockApi`
+  (`tests/fixtures/procurement-analytics-flow`). The filter itself goes with PROC-002.
+- **Waited for:** the two filter-sheet tests end on a change of question. They now wait until no GraphQL read is in flight;
+  `networkidle` returned at once and closed the page before those reads answered.
+- **Still skipping:** public-enterprise-page's links test and AMEPIP test, while the buyer read is partial. That's every time
+  legacy is off: the buyer's contract figures abstain (`awards.count` null). They run again when the buyer profile's contract
+  figures come from procurement v3 (PROC-KB0Z).
 
 ## Closure criterion
 
