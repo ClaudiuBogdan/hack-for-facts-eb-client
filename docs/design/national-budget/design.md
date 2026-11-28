@@ -1558,7 +1558,7 @@ into the working version.
   images.
 
 **In the working version:** the borrowing chart's % view has the EU's 3% reference line, with a note that the EU applies it to the ESA
-deficit, not the cash one. The interest figure has interest per resident for every full year since 2006 (117 lei in 2006, 2.652 lei in
+deficit, not the cash one. *Removed 28 November 2026 (owner, §14): the line drew the ESA reference on a cash series.* The interest figure has interest per resident for every full year since 2006 (117 lei in 2006, 2.652 lei in
 2025).
 
 **Not built, and why:**
@@ -1746,3 +1746,25 @@ Four read-only reviewers of the preview, forwarded by the owner; each finding ch
 December shares with the full year while asking another period (months from January, or the year). Both reads are now keyed by the filter they
 send, in full (`anafReadKey`), and their query keys carry `partial`; a unit test pins it.
 
+
+## 14. PNRR grants and loans apart; cash against ESA 2010 (owner, 28 November 2026)
+
+Owner's handoff `nb-release-client-20261128-01`, after an audit of dev-chronos (snapshot `e1.fe393d8b…`, bulletins to September 2026).
+
+- **PNRR, two lines.** The spending lines take the bulletin's `pnrr_loan_projects` beside `pnrr_grant_projects`: „Proiecte PNRR –
+  granturi" and „Proiecte PNRR – împrumuturi", in the 100 lei, the receipt and the share card. The loans were in „Alte cheltuieli", whose
+  hint no longer names them: a year without their line (2021) says nothing of what the rest holds. 2025: grants 4 lei of 100 and 1.510
+  lei per resident, loans 2 and 720. The rest falls from 4 to 3 lei of 100 (1.870 to 1.149 per resident); the largest remainders move
+  subsidies from 2 to 1 lei of 100 (still 659 per resident) and the EU 2014–2020 projects and Modernisation Fund from 751 to 752 lei per
+  resident, its own rounding. The totals stay 100 and 42.468. Every spending read changes with the extra item, so the two national
+  budget specs' fixtures were recorded again (new files only; the dev API on snapshot `e1.fe393d8b…`).
+- **No 3% line on the cash chart.** The chart is the consolidated budget's cash deficit (146,03 mld. lei and 7,65% of the Ministry's GDP
+  for 2025, release of 27 January 2026); the EU's 3% reference applies to the general government deficit under ESA 2010 (Eurostat,
+  second notification of 21 October 2026: 7,8% for Romania in 2025). The chart's title says „Deficit bugetar (cash)", and „Cum am
+  calculat" beside it (the analysis page's popover) explains timing (payments against economic events), scope (the bulletin's budgets
+  against every unit classified in general government) and the GDP's vintage, with the Ministry's bulletins and 2025 release and
+  Eurostat's method and notification. No ESA series is read.
+- **Wording.** The section's lede no longer says the whole cash gap is borrowed. It says what the chart shows and that the debt's
+  interest is paid from later budgets; how the gap is financed is not said (owner: none of the sources state it). The budgets' squares say their 100 lei are „înainte de
+  consolidare", and the line under them uses the same words where it said „înainte de transferuri" (the analysis page still says
+  „înainte de transferuri").

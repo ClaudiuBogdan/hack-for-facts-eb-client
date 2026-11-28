@@ -231,12 +231,21 @@ export const privateCompanyStatementContributionSchema = z.object({
   indicators: z.array(z.object({ code: z.string(), name: z.string().nullable() })),
 })
 
+/**
+ * A Ministry statement's file lines, read when its year is opened (`CompanyStatementFiles`), not with the profile:
+ * every line that supplied cells, anchor first, and the link of the statement they belong to as that read gave it.
+ */
+export const privateCompanyStatementFilesSchema = z.object({
+  fiscalYear: z.number().int(),
+  /** The statement's own link in the same read: the files are shown only beside the statement the profile shows. */
+  sourceUrl: z.string().nullable(),
+  lines: z.array(privateCompanyStatementContributionSchema),
+})
+
 /** Where the statement was published; the URL only when the API recorded it, never guessed. */
 export const privateCompanyStatementSourceSchema = z.object({
   url: z.string().nullable(),
   urlKind: z.enum(['anaf_statement', 'mfp_resource']).nullable(),
-  /** MFP: every file line that supplied cells, anchor first; null when the API did not read them. */
-  contributingSources: z.array(privateCompanyStatementContributionSchema).nullable(),
 })
 
 export const privateCompanyFinancialYearSchema = z.object({
@@ -443,6 +452,7 @@ export type PrivateCompanyProfile = z.infer<typeof privateCompanyProfileSchema>
 export type PrivateCompanyMetricStatus = z.infer<typeof privateCompanyMetricStatusSchema>
 export type PrivateCompanyStatementQualification = z.infer<typeof privateCompanyStatementQualificationSchema>
 export type PrivateCompanyStatementSource = z.infer<typeof privateCompanyStatementSourceSchema>
+export type PrivateCompanyStatementFiles = z.infer<typeof privateCompanyStatementFilesSchema>
 export type PrivateCompanyLongFormStatement = z.infer<typeof privateCompanyLongFormStatementSchema>
 export type PrivateCompanyIfrsFormYear = z.infer<typeof privateCompanyIfrsFormYearSchema>
 export type PrivateCompanyCaenActivity = z.infer<

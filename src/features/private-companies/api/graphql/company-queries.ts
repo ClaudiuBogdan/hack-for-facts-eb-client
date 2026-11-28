@@ -112,10 +112,7 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
         employees
         summary
         reportingForm
-        source {
-          url urlKind
-          contributingSources { rowNumber url indicators { code name } }
-        }
+        source { url urlKind }
         qualification {
           assessment
           reason
@@ -145,6 +142,48 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
     }
   }
 `
+
+/**
+ * The file lines each Ministry of Finance statement came from (CQA-14), read when a reader opens such a year, not
+ * with the profile (trim step 2a, owner, 28 November 2026): a few kilobytes per company that only an opened year
+ * shows, and an opened year is never in the server's HTML. Every year at once (the API reads them per company), with
+ * each year's own link, so the page shows the files only beside the statement they belong to.
+ */
+export const COMPANY_STATEMENT_FILES_QUERY = /* GraphQL */ `
+  query CompanyStatementFiles($cui: CUI!) {
+    companyFinancials(cui: $cui) {
+      years {
+        year
+        source {
+          url
+          contributingSources { rowNumber url indicators { code name } }
+        }
+      }
+    }
+  }
+`
+
+/** One MFP file line that supplied cells of a statement (CQA-14). */
+const rawStatementContributionSchema = z.object({
+  rowNumber: z.string().nullable(),
+  url: z.string().nullable(),
+  indicators: z.array(z.object({ code: z.string(), name: z.string().nullable() })),
+})
+
+export const companyStatementFilesResponseSchema = z.object({
+  companyFinancials: z
+    .object({
+      years: z.array(
+        z.object({
+          year: z.number().int(),
+          source: z.object({ url: z.string().nullable(), contributingSources: z.array(rawStatementContributionSchema).nullable() }).nullable(),
+        }),
+      ),
+    })
+    .nullable(),
+})
+
+export type RawCompanyStatementFiles = z.infer<typeof companyStatementFilesResponseSchema>
 
 export const COMPANY_PROFILE_QUERY = companyProfileQuery('current', true)
 /** The profile without the main activity: asked only when an API from before it rejected its fields at validation. */
@@ -291,18 +330,10 @@ const rawQualificationSchema = z.object({
   holdReason: z.string().nullable(),
 })
 
-/** One MFP file line that supplied cells of a statement (CQA-14); optional so older recordings parse. */
-const rawStatementContributionSchema = z.object({
-  rowNumber: z.string().nullable(),
-  url: z.string().nullable(),
-  indicators: z.array(z.object({ code: z.string(), name: z.string().nullable() })),
-})
-
-/** The statement's link and, for a Ministry year, the file lines it came from (what the page shows, nothing more). */
+/** The statement's link and its kind (what the page shows at once; a Ministry year's files are read when it opens). */
 const rawStatementSourceSchema = z.object({
   url: z.string().nullable(),
   urlKind: z.string().nullable(),
-  contributingSources: z.array(rawStatementContributionSchema).nullish(),
 })
 
 const rawFinancialYearSchema = z.object({

@@ -8,7 +8,7 @@ import type { CompanyProcurement } from '@/features/procurement/api/procurement-
 import { rawRow, rawWinnerAwards } from '@/features/procurement/lib/contract-award.fixture'
 import { FINANCIAL_METRICS, type PrivateCompanyProfile, type PrivateCompanySearchState } from '@/schemas/private-company'
 import type { CompanyCaenClassState } from '@/schemas/private-company-registry'
-import { mapCompanyProfile } from '../../api/graphql/company-mappers'
+import { mapCompanyProfile, mapCompanyStatementFiles } from '../../api/graphql/company-mappers'
 import type { RawCompanyFinancialYear, RawLongFormStatement, RawStatementQualification } from '../../api/graphql/company-queries'
 import { buildCompanyProfileModel } from '../../lib/company-profile-model'
 import {
@@ -107,6 +107,19 @@ vi.mock('../../hooks/use-seap-cutoff', () => ({
 
 vi.mock('../../hooks/use-company-litigation-shown', () => ({
   useCompanyLitigationShown: () => litigation.current,
+}))
+
+// A Ministry year's files, read when it opens (trim step 2a): none unless a test sets them, or a failed read.
+const statementFiles = vi.hoisted(() => ({
+  current: [] as readonly import('@/schemas/private-company').PrivateCompanyStatementFiles[] | 'failed',
+  refetch: (() => undefined) as () => void,
+}))
+vi.mock('../../hooks/use-company-statement-files', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../hooks/use-company-statement-files')>()),
+  useCompanyStatementFiles: () =>
+    statementFiles.current === 'failed'
+      ? { isError: true, data: undefined, refetch: statementFiles.refetch }
+      : { isError: false, data: statementFiles.current, refetch: statementFiles.refetch },
 }))
 
 vi.mock('@/features/justice/components/company-litigation', () => ({
@@ -1235,28 +1248,27 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     expect(longForm()).toBeNull()
   })
 
+  // The files come from their own read when a Ministry year opens (trim step 2a); the profile carries none.
+  const ANCHOR = 'https://data.gov.ro/dataset/5c57f607/resource/99a5b745/download/webblbsslan2009.txt'
+  const COMPLEMENT = 'https://data.gov.ro/dataset/5c57f607/resource/9a037f07/download/web2009.txt'
+  const SPLIT_LINES = [
+    { rowNumber: '76930', url: ANCHOR, indicators: [{ code: 'I1', name: 'ACTIVE IMOBILIZATE - TOTAL' }, { code: 'I2', name: null }] },
+    { rowNumber: '609557', url: COMPLEMENT, indicators: [{ code: 'I3', name: 'STOCURI' }] },
+  ]
+  const mfpYear = (year: number, url = ANCHOR): RawCompanyFinancialYear => ({ ...ANAF_2024, year, sourceSystem: 'mfp', source: { url, urlKind: 'mfp_resource' } })
+  type FileLine = { rowNumber: string | null; url: string | null; indicators: { code: string; name: string | null }[] }
+  const filesRead = (years: readonly { readonly year: number; readonly url: string | null; readonly lines: FileLine[] }[]) =>
+    mapCompanyStatementFiles({ companyFinancials: { years: years.map(({ year, url, lines }) => ({ year, source: { url, contributingSources: lines } })) } })
+  afterEach(() => {
+    statementFiles.current = []
+  })
+
   it('lists every MF file of a statement published split across files, each with the indicators it gave (CQA-14)', async () => {
-    const ANCHOR = 'https://data.gov.ro/dataset/5c57f607/resource/99a5b745/download/webblbsslan2009.txt'
-    const COMPLEMENT = 'https://data.gov.ro/dataset/5c57f607/resource/9a037f07/download/web2009.txt'
-    const MFP_2009: RawCompanyFinancialYear = {
-      ...ANAF_2024,
-      year: 2009,
-      sourceSystem: 'mfp',
-      source: {
-        url: ANCHOR,
-        urlKind: 'mfp_resource',
-        contributingSources: [
-          { rowNumber: '76930', url: ANCHOR, indicators: [{ code: 'I1', name: 'ACTIVE IMOBILIZATE - TOTAL' }, { code: 'I2', name: null }] },
-          { rowNumber: '609557', url: COMPLEMENT, indicators: [{ code: 'I3', name: 'STOCURI' }] },
-        ],
-      },
-    }
-    const MFP_2010: RawCompanyFinancialYear = {
-      ...MFP_2009,
-      year: 2010,
-      source: { ...MFP_2009.source!, contributingSources: [MFP_2009.source!.contributingSources![0]!] },
-    }
-    render(page(mapped([MFP_2010, MFP_2009], [])))
+    statementFiles.current = filesRead([
+      { year: 2009, url: ANCHOR, lines: SPLIT_LINES },
+      { year: 2010, url: ANCHOR, lines: [SPLIT_LINES[0]!] },
+    ])
+    render(page(mapped([mfpYear(2010), mfpYear(2009)], [])))
     await registryPinned()
     const years = within(screen.getByRole('region', { name: 'Bilanțurile, an cu an' }))
     fireEvent.click(years.getByRole('button', { name: /^Bilanțul pe 2009/u }))
@@ -1273,18 +1285,34 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     expect(single.queryByText(/fișiere MF publicate separat/u)).toBeNull()
   })
 
+  it('shows a year’s files only beside the statement they came with, and says when they did not load', async () => {
+    const refetch = vi.fn()
+    statementFiles.refetch = refetch
+    // The files read answered for another statement of 2009 than the one the profile shows: no list.
+    statementFiles.current = filesRead([{ year: 2009, url: COMPLEMENT, lines: SPLIT_LINES }])
+    const { unmount } = render(page(mapped([mfpYear(2009)], [])))
+    await registryPinned()
+    fireEvent.click(within(screen.getByRole('region', { name: 'Bilanțurile, an cu an' })).getByRole('button', { name: /^Bilanțul pe 2009/u }))
+    expect(within(screen.getByRole('region', { name: 'Bilanțul pe 2009' })).queryByText(/fișiere MF publicate separat/u)).toBeNull()
+    unmount()
+    // A failed read: said, with a way to read again — never silence.
+    statementFiles.current = 'failed'
+    render(page(mapped([mfpYear(2009)], [])))
+    await registryPinned()
+    fireEvent.click(within(screen.getByRole('region', { name: 'Bilanțurile, an cu an' })).getByRole('button', { name: /^Bilanțul pe 2009/u }))
+    const detail = within(screen.getByRole('region', { name: 'Bilanțul pe 2009' }))
+    expect(detail.getByText('Fișierele MF ale acestui an nu s-au încărcat.')).toBeInTheDocument()
+    fireEvent.click(detail.getByRole('button', { name: 'Încearcă din nou' }))
+    expect(refetch).toHaveBeenCalledTimes(1)
+  })
+
   it('never links a contributing file that is not https (CQA-14)', async () => {
     const lines = [
       { rowNumber: '1', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'A' }] },
       { rowNumber: null, url: 'javascript:alert(1)', indicators: [{ code: 'I3', name: 'B' }] },
     ]
-    const year: RawCompanyFinancialYear = {
-      ...ANAF_2024,
-      year: 2009,
-      sourceSystem: 'mfp',
-      source: { url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', contributingSources: lines },
-    }
-    render(page(mapped([year], [])))
+    statementFiles.current = filesRead([{ year: 2009, url: 'https://data.gov.ro/a.txt', lines }])
+    render(page(mapped([mfpYear(2009, 'https://data.gov.ro/a.txt')], [])))
     await registryPinned()
     fireEvent.click(within(screen.getByRole('region', { name: 'Bilanțurile, an cu an' })).getByRole('button', { name: /^Bilanțul pe 2009/u }))
     const detail = within(screen.getByRole('region', { name: 'Bilanțul pe 2009' }))

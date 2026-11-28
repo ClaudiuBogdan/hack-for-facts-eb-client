@@ -10,7 +10,9 @@ import {
   COMPANY_PROFILE_QUERY_WITHOUT_MAIN,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN,
+  COMPANY_STATEMENT_FILES_QUERY,
   companyProfileResponseSchema,
+  companyStatementFilesResponseSchema,
 } from './company-queries'
 
 const DOCUMENTS = {
@@ -101,8 +103,9 @@ const NEVER_ASKED = [
   'companyFinancials.years.source.statementProfileHash',
   'companyFinancials.years.source.metricRuleVersion',
   'companyFinancials.years.source.selectionBasis',
-  'companyFinancials.years.source.contributingSources.sourceSnapshotId',
   'companyFinancials.years.qualification.holdDrift',
+  // Read when a Ministry year opens (trim step 2a, 28 November 2026), by CompanyStatementFiles.
+  'companyFinancials.years.source.contributingSources',
 ]
 
 /** What the page's gates and bands read; most are nullable in the raw schema, so only this list keeps them asked. */
@@ -119,7 +122,6 @@ const ALWAYS_ASKED = [
   'companyFinancials.years.reportingForm',
   'companyFinancials.years.source.url',
   'companyFinancials.years.source.urlKind',
-  'companyFinancials.years.source.contributingSources.indicators.name',
   ...['assessment', 'reason', 'releaseId', 'policyVersion', 'policySha256', 'policyApprovedOn', 'evaluatorVersion', 'netResultStatus', 'netResult', 'holdReason'].map(
     (field) => `companyFinancials.years.qualification.${field}`,
   ),
@@ -173,4 +175,26 @@ describe('the CompanyProfile document', () => {
       statusCode: { value: true, basis: true },
     })
   })
+})
+
+describe('the CompanyStatementFiles document (trim step 2a)', () => {
+  it('asks every key its raw schema requires, each year’s own link beside its files, and nothing more', () => {
+    const selection = selectionOf(COMPANY_STATEMENT_FILES_QUERY)
+    expect(unselectedRequired(companyStatementFilesResponseSchema, selection, 'data')).toEqual([])
+    // Exactly these: nothing of the statement's values (they come with the profile), no snapshot ids.
+    expect(pathsOf(selection).sort()).toEqual([
+      'companyFinancials',
+      'companyFinancials.years',
+      'companyFinancials.years.source',
+      'companyFinancials.years.source.contributingSources',
+      'companyFinancials.years.source.contributingSources.indicators',
+      'companyFinancials.years.source.contributingSources.indicators.code',
+      'companyFinancials.years.source.contributingSources.indicators.name',
+      'companyFinancials.years.source.contributingSources.rowNumber',
+      'companyFinancials.years.source.contributingSources.url',
+      'companyFinancials.years.source.url',
+      'companyFinancials.years.year',
+    ])
+  })
+
 })

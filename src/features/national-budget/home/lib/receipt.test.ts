@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { HundredLine } from '../hooks/use-person-data'
+import { hundredOf, type HundredLine } from '../hooks/use-person-data'
 import { receiptOf } from './receipt'
 
 const line = (key: string, exact: string, options: { readonly rest?: boolean; readonly before?: string } = {}): HundredLine => ({
@@ -59,5 +59,47 @@ describe('receiptOf', () => {
     expect(receiptOf({ ...YEAR, lines: [] })).toBeNull()
     expect(receiptOf({ ...YEAR, year: 1990 })).toBeNull()
     expect(receiptOf({ ...YEAR, whole: null })).toBeNull()
+  })
+})
+
+describe('2025 as the API serves it, with the PNRR grants and loans apart', () => {
+  // Snapshot e1.fe393d8b64562ac4d4925039fff5bd97: the spending lines the API serves for 2025 (the 2014–2020 projects
+  // line on its own is unavailable that year).
+  const E = (key: string) => `mfin.bgc.expenditure.${key}`
+  const PRINTED: Readonly<Record<string, string>> = {
+    [E('social_assistance')]: '250878858021.00002',
+    [E('personnel')]: '167715883910',
+    [E('goods_services')]: '100634391118',
+    [E('nonfinancial_assets')]: '63961295094.999994',
+    [E('interest')]: '50498241738.189994',
+    [E('external_grant_projects')]: '47211241948.999996',
+    [E('eu_2014_2020_modernisation_projects')]: '14311419593.910003',
+    [E('pnrr_grant_projects')]: '28748537346.000012',
+    [E('pnrr_loan_projects')]: '13720288186.999998',
+    [E('other_transfers')]: '36611489714.000003',
+    [E('subsidies')]: '12553933000.000001',
+  }
+  const WHOLE = '808731414960.09985'
+  const named = Object.entries(PRINTED).map(([key, exact]) => ({ key, label: key, hint: null, exact, change: null, before: null }))
+  const lines = hundredOf(WHOLE, named, REST)
+
+  it('makes 100 lei of every 100 with the rest, both PNRR lines named', () => {
+    expect(lines.reduce((sum, each) => sum + each.lei, 0)).toBe(100)
+    expect(lines.filter((each) => each.key.includes('pnrr')).map((each) => [each.key, each.lei])).toEqual([
+      [E('pnrr_grant_projects'), 4],
+      [E('pnrr_loan_projects'), 2],
+    ])
+    expect(lines.find((each) => each.rest)?.lei).toBe(3)
+  })
+
+  it('makes the receipt 42.468 lei per resident, both PNRR lines on it', () => {
+    const receipt = receiptOf({ ...YEAR, lines })!
+    expect(receipt.total).toBe(42_468)
+    expect(receipt.lines.reduce((sum, each) => sum + each.perResident, 0)).toBe(42_468)
+    expect(receipt.lines.filter((each) => each.key.includes('pnrr')).map((each) => [each.key, each.perResident])).toEqual([
+      [E('pnrr_grant_projects'), 1_510],
+      [E('pnrr_loan_projects'), 720],
+    ])
+    expect(receipt.lines.find((each) => each.rest)?.perResident).toBe(1_149)
   })
 })

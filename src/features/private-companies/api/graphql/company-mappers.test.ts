@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { FINANCIAL_METRICS, privateCompanyProfileSchema } from '@/schemas/private-company'
+import { FINANCIAL_METRICS, privateCompanyProfileSchema, privateCompanyStatementFilesSchema } from '@/schemas/private-company'
 import { qualifiedNet, reportedNumber } from '../../lib/financial-qualification'
 import {
   companyProfileResponseSchema,
@@ -7,7 +7,7 @@ import {
   type RawCompanyFinancialYear,
   type RawStatementQualification,
 } from './company-queries'
-import { mapCompanyProfile } from './company-mappers'
+import { mapCompanyProfile, mapCompanyStatementFiles } from './company-mappers'
 import { mapRegistryEnvelope, type RawRegistryEnvelope, type RawRegistryEvidence } from './company-registry-graphql'
 
 const PUBLISHED: RawRegistryEnvelope = {
@@ -540,26 +540,34 @@ describe('mapCompanyProfile — statement qualification (CD-14)', () => {
     expect(unknownKind.source).toMatchObject({ url: null, urlKind: null })
   })
 
-  it('carries a split statement’s contributing files, https links only, and null when not read (CQA-14)', () => {
+  it('reads a split statement’s files from their own read: https links only, each year with its own link (CQA-14)', () => {
     const lines = [
       { rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
       { rowNumber: null, url: 'http://data.gov.ro/b.txt', indicators: [{ code: 'I3', name: null }] },
     ]
-    const split = one(
-      statement(2009, {
-        source: { url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', contributingSources: lines },
-        sourceSystem: 'mfp',
-      }),
-    )
-    expect(split.source).toMatchObject({
-      contributingSources: [
-        { rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
-        { rowNumber: null, url: null, indicators: [{ code: 'I3', name: null }] },
-      ],
+    const files = mapCompanyStatementFiles({
+      companyFinancials: {
+        years: [
+          { year: 2009, source: { url: 'https://data.gov.ro/a.txt', contributingSources: lines } },
+          // ANAF's answer and a year read without files: no entry, never an empty list of files.
+          { year: 2019, source: { url: 'https://anaf.ro/x', contributingSources: null } },
+          { year: 2014, source: null },
+        ],
+      },
     })
-    const unread = one(statement(2014, { source: { url: null, urlKind: null } }))
-    expect(unread.source).toMatchObject({ contributingSources: null })
-    expect(() => privateCompanyProfileSchema.parse(mapCompanyProfile(withYears([statement(2009, { source: split.source as never })])))).not.toThrow()
+    expect(files).toEqual([
+      {
+        fiscalYear: 2009,
+        sourceUrl: 'https://data.gov.ro/a.txt',
+        lines: [
+          { rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
+          { rowNumber: null, url: null, indicators: [{ code: 'I3', name: null }] },
+        ],
+      },
+    ])
+    expect(files.map((entry) => privateCompanyStatementFilesSchema.parse(entry))).toHaveLength(1)
+    // No company: no files, not an error.
+    expect(mapCompanyStatementFiles({ companyFinancials: null })).toEqual([])
   })
 
   it('round-trips through the UI schema', () => {

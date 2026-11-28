@@ -48,6 +48,7 @@ const VALUES_2025: Readonly<Record<string, string>> = {
   [E('external_grant_projects')]: '47211241948.999996',
   [E('eu_2014_2020_modernisation_projects')]: '14311419593.910003',
   [E('pnrr_grant_projects')]: '28748537346.000012',
+  [E('pnrr_loan_projects')]: '13720288186.999998',
   [E('other_transfers')]: '36611489714.000003',
 }
 
@@ -264,8 +265,8 @@ describe('readNationalBudgetShareFacts', () => {
     expect(facts?.spending).toBe('727316168300.94974')
     expect(facts?.balance).toBe('-152717412186.84975')
     const reads = gridReads()
-    // Thirteen lines: two requests of at most twelve.
-    expect(reads.map((read) => read.itemIds.length)).toEqual([12, 1])
+    // Fourteen lines (SAFE left out: this catalog does not offer it): two requests of at most twelve.
+    expect(reads.map((read) => read.itemIds.length)).toEqual([12, 2])
     expect(reads.flatMap((read) => read.itemIds)).toEqual([TOTAL_ITEMS.spending, TOTAL_ITEMS.balance, ...SPENDING_PARTS.filter((id) => id !== SAFE_SPENDING_ITEM)])
     for (const read of reads) expect(read).toMatchObject({ basis: 'FULL_YEAR', type: 'YEAR', dates: ['2023', '2024'], expectedSnapshot: SNAPSHOT })
   })
@@ -282,7 +283,7 @@ describe('readNationalBudgetShareFacts', () => {
 
     const facts = await readNationalBudgetShareFacts(2026)
 
-    expect(gridReads().map((read) => read.itemIds.length)).toEqual([12, 2])
+    expect(gridReads().map((read) => read.itemIds.length)).toEqual([12, 3])
     expect(facts?.parts).toContainEqual({ itemId: SAFE_SPENDING_ITEM, exact: '100000000' })
     expect(facts?.spending).toBe('600000000000')
   })

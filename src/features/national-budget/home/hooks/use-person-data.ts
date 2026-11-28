@@ -62,10 +62,13 @@ export type HundredLine = {
   readonly rest?: boolean
 }
 
-/** „The rest" of a side; the PNRR (from 2021) only in the years it exists. */
-export function restLine(side: 'spending' | 'revenue', year: number): { readonly label: string; readonly hint: string } {
+/**
+ * „The rest" of a side. The PNRR's loan-funded projects have their own line wherever the bulletin prints it; a year
+ * without it says nothing of what the rest holds, so the rest never names them.
+ */
+export function restLine(side: 'spending' | 'revenue'): { readonly label: string; readonly hint: string } {
   if (side === 'revenue') return { label: t`Alte venituri`, hint: t`taxe vamale, alte impozite, venituri din capital, alte sume de la UE` }
-  return { label: t`Alte cheltuieli`, hint: year >= 2021 ? t`proiecte PNRR din împrumuturi, active financiare, rambursări, alte cheltuieli` : t`active financiare, rambursări, alte cheltuieli` }
+  return { label: t`Alte cheltuieli`, hint: t`active financiare, rambursări, alte cheltuieli` }
 }
 
 /**
@@ -78,13 +81,15 @@ export function useHundred(view: YearView, side: 'spending' | 'revenue') {
   const items: readonly string[] = side === 'spending' ? SPENDING_PARTS : REVENUE_PARTS
   const lines = useYearLines(view, [total, ...items])
   const whole = lines.now(total)?.exact ?? null
-  if (!whole) return { whole: null, before: null, lines: [] as readonly HundredLine[] }
   const named = items.flatMap((itemId) => {
     const exact = lines.now(itemId)?.exact
     const before = lines.before(itemId)?.exact ?? null
     return exact ? [{ key: itemId, label: partName(itemId), hint: partHint(itemId), exact, before, change: changeText(exact, before) }] : []
   })
-  return { whole, before: lines.before(total)?.exact ?? null, lines: hundredOf(whole, named, restLine(side, view.year)) }
+  // „The rest"'s words, also for a rest the 100-lei lists leave out (the receipt keeps it).
+  const rest = restLine(side)
+  if (!whole) return { whole: null, before: null, lines: [] as readonly HundredLine[], rest }
+  return { whole, before: lines.before(total)?.exact ?? null, lines: hundredOf(whole, named, rest), rest }
 }
 
 /**
