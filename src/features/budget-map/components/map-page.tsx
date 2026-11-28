@@ -78,8 +78,9 @@ const siteKeys = (previous: Record<string, unknown>): Record<string, unknown> =>
 function WayHome() {
   return (
     <nav aria-label={t`Ești aici`} className="text-sm text-muted-foreground">
-      {/* A 44px target that does not grow the line. */}
-      <Link to="/" search={siteKeys as never} className="-my-3 inline-block py-3 transition-colors hover:text-foreground">
+      {/* Taller to a finger without growing the line: 12px up, into the bar's padding (32px in all). Not down: the title
+          sits right under it, and the national budget's 44px would need a gap the bar does not have. */}
+      <Link to="/" search={siteKeys as never} className="-mt-3 inline-block pt-3 transition-colors hover:text-foreground">
         {t`Acasă`}
       </Link>
       <span aria-hidden="true" className="mx-2 text-muted-foreground/50">

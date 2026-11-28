@@ -176,11 +176,15 @@ the landing links to; for the map, only those rules, with its design kept
 - **A plain way home above the title** („Acasă / Hartă", 14 px, muted, the
   page's name in the text's colour; no arrow, no mono, no capitals), copied
   from the national budget's head. „Acasă" goes to `/` keeping only the
-  address's `lang`, and is a 44 px target without growing its line. The owner
-  chose it over two one-line versions („Acasă /" or „Acasă / Hartă" before the
-  title), which kept the desktop bar's height but read less like the rest of the
-  site. The bar is 8 px taller (65 → 73 px on a desktop, 161 → 169 px on a
-  phone), and the map 8 px shorter.
+  address's `lang`. Its target reaches 12 px up into the bar's padding, 32 px in
+  all (above WCAG's 24 px), but not down: the title sits right under it, and the
+  national budget's 44 px would need a gap the bar does not have (Codex). The
+  owner chose it over two one-line versions („Acasă /" or „Acasă / Hartă"
+  before the title), which kept the desktop bar's height but read less like the
+  rest of the site. The bar is
+  8 px taller (65 → 73 px on a desktop, 161 → 169 px on a phone). On a desktop
+  the map is 8 px shorter; on a phone it keeps its height (`62dvh`) and starts
+  8 px lower.
 - **Mono:** none to drop. The table's „#" column keeps its mono digits
   (figures that line up in a column, which DESIGN.md allows). „PROIECT" and
   „LEGAL" are the shared site footer's.
