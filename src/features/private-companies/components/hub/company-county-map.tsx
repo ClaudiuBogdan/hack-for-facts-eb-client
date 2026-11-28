@@ -272,6 +272,7 @@ export function CompanyCountyMap({
               digits={digits}
               countyLink={countyLink}
               at={[(active.label[0] / COUNTY_MAP_WIDTH) * 100, (active.label[1] / shapes.height) * 100]}
+              mapWidth={renderedWidth}
               onLeave={release}
             />
           ) : null}
@@ -306,7 +307,7 @@ function NationalReadout({ layer, digits }: { readonly layer: HubCountyLayer; re
   )
 }
 
-/** The room between a county's label and its tooltip: the `0.75rem` of the box's transform. */
+/** The room between a county's label and its tooltip, in the measurement and in the box's transform alike. */
 const TOOLTIP_GAP_PX = 12
 
 /**
@@ -327,6 +328,7 @@ function CountyTooltip({
   digits,
   countyLink,
   at,
+  mapWidth,
   onLeave,
 }: {
   readonly id: string
@@ -339,6 +341,8 @@ function CountyTooltip({
   readonly countyLink: (code: string) => Record<string, unknown>
   /** The county's label point, in per cent of the map's width and height. */
   readonly at: readonly [number, number]
+  /** The map's drawn width: a resize while a county is shown places its box again. */
+  readonly mapWidth: number | undefined
   readonly onLeave: () => void
 }) {
   const formatted = county ? formatHubValue(county.value, layer.unit, { digits }) : null
@@ -358,7 +362,7 @@ function CountyTooltip({
     const fitsAbove = label - TOOLTIP_GAP_PX - node.offsetHeight >= 0
     const fitsBelow = label + TOOLTIP_GAP_PX + node.offsetHeight <= map.clientHeight
     setAbove(fitsAbove || (!fitsBelow && label > map.clientHeight / 2))
-  }, [labelY, code, pinned])
+  }, [labelY, code, pinned, mapWidth])
   return (
     <div
       ref={box}
@@ -367,7 +371,7 @@ function CountyTooltip({
       style={{
         left: `clamp(0px, calc(${at[0].toFixed(2)}% - 7.5rem), calc(100% - 15rem))`,
         top: `${at[1].toFixed(2)}%`,
-        transform: above ? 'translateY(calc(-100% - 0.75rem))' : 'translateY(0.75rem)',
+        transform: above ? `translateY(calc(-100% - ${TOOLTIP_GAP_PX}px))` : `translateY(${TOOLTIP_GAP_PX}px)`,
       }}
     >
       <p className="text-xs leading-relaxed text-muted-foreground">{caption}</p>

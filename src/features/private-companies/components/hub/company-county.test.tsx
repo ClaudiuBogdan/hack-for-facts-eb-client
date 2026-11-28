@@ -138,15 +138,37 @@ describe('CompanyCountyMap', () => {
     expect(fireEvent.click(cj, { detail: 1 })).toBe(true)
   })
 
-  it('lets a tapped county go on a tap off the map, the readout or the legend included', () => {
+  it.each([
+    ['the readout', () => within(figure()).getByText('România', { selector: 'p' })],
+    ['the legend', () => within(figure()).getByText('Firme în funcțiune la 1.000 de locuitori', { selector: 'p' })],
+  ])('lets a tapped county go on a tap off the map: %s', (_, target) => {
     render(<Harness layer={DENSITY} />)
     const cj = countyLink(/Cluj/)
     fireEvent.pointerDown(cj, { pointerType: 'touch' })
     fireEvent.click(cj, { detail: 1 })
     expect(within(figure()).getByRole('link', { name: /Firmele județului/ })).toBeInTheDocument()
-    fireEvent.pointerDown(within(figure()).getByText('România', { selector: 'p' }), { pointerType: 'touch' })
+    fireEvent.pointerDown(target(), { pointerType: 'touch' })
     expect(within(figure()).queryByRole('link', { name: /Firmele județului/ })).toBeNull()
     expect(cj).not.toHaveAttribute('aria-describedby')
+  })
+
+  it('keeps a tapped county while focus moves to its tooltip’s link, and lets it go when focus moves on', () => {
+    render(<Harness layer={DENSITY} />)
+    const cj = countyLink(/Cluj/)
+    fireEvent.pointerDown(cj, { pointerType: 'touch' })
+    fireEvent.focus(cj)
+    fireEvent.click(cj, { detail: 1 })
+    const open = within(figure()).getByRole('link', { name: /Firmele județului/ })
+    // Chrome on Android: the next tap focuses the tooltip's link before its click.
+    fireEvent.blur(cj, { relatedTarget: open })
+    fireEvent.focus(open)
+    expect(within(figure()).getByRole('link', { name: /Firmele județului/ })).toBe(open)
+    // Focus moving on from the link lets the tapped county go; the county it lands on is the one shown.
+    const vs = countyLink(/Vaslui/)
+    fireEvent.blur(open, { relatedTarget: vs })
+    fireEvent.focus(vs)
+    expect(within(figure()).queryByRole('link', { name: /Firmele județului/ })).toBeNull()
+    expect(document.getElementById(vs.getAttribute('aria-describedby') ?? '')).toHaveTextContent('Vaslui · locul 3 din 3')
   })
 
   it('gives the county under focus back its tooltip when a passing mouse leaves the map', () => {

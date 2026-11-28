@@ -94,15 +94,17 @@ test.describe('Companies hub', () => {
         return { inside: item.left >= box.left - 1 && item.right <= box.right + 1, scrolled: list.scrollLeft }
       })
     expect((await lastInList())?.inside).toBe(false)
-    const focusNow = () => page.evaluate(() => document.activeElement?.getAttribute('href') ?? document.activeElement?.tagName ?? null)
-    const focusBefore = await focusNow()
+    // Focus on a known control, to see that the list's scroll never takes it.
+    const first = bar.getByRole('link', { name: /Județe/ })
+    await first.evaluate((element: HTMLElement) => element.focus({ preventScroll: true }))
+    await expect(first).toBeFocused()
     await page.evaluate(() => document.getElementById('infiintari')?.scrollIntoView({ block: 'start', behavior: 'instant' }))
     const last = bar.getByRole('link', { name: /Firme noi/ })
     await expect(last).toHaveAttribute('aria-current', 'location')
     await expect.poll(async () => (await lastInList())?.inside).toBe(true)
     expect((await lastInList())?.scrolled).toBeGreaterThan(0)
     // Only the list scrolled: focus stayed where it was, and the page has no sideways scroll.
-    expect(await focusNow()).toBe(focusBefore)
+    await expect(first).toBeFocused()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
   })
 
