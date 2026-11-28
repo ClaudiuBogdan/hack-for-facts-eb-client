@@ -92,11 +92,13 @@ export function PartyRows({
             {unlinked ? (
               <div className={cn(ROW, dense ? 'py-2' : 'py-2.5')}>{body}</div>
             ) : kind === 'authority' ? (
-              <Link to="/procurement/institutions/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} className={className}>
+              // No preload on hover or focus (PROC-KB0Z): the profile's loader still sends legacy reads the API refuses, and a
+              // reader who only passes over the list should not send them. Back on once the profiles read procurement v3 only.
+              <Link to="/procurement/institutions/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} preload={false} className={className}>
                 {body}
               </Link>
             ) : (
-              <Link to="/procurement/suppliers/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} className={className}>
+              <Link to="/procurement/suppliers/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} preload={false} className={className}>
                 {body}
               </Link>
             )}

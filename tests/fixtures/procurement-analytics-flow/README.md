@@ -1,16 +1,12 @@
 # procurement-analytics-flow fixtures
 
-Every GraphQL read the browser makes in `tests/integration/procurement-analytics.spec.ts`, so the spec reads no live API (TEST-001).
+`tests/integration/procurement-analytics.spec.ts` reads everything else, the server render's reads and the browser's, from the
+recorded ssr-api store (`tests/fixtures/ssr-api`, TEST-001).
 
-- `browser-reads.json` lists each read: its operation, its exact variables as the app sends them, and the fixture that answers
-  it. The spec registers one mock per entry.
-- Each fixture is the dev API's answer to the app's own query, with those variables. They were recorded on 25 November 2026 over
-  repeated local runs, until a run in mock mode left no read unmatched. Mocked answers make the page read further than live ones,
-  and some reads leave as a test ends, so a single recording is not enough.
-- No personal data: no 13-digit run is in any fixture. The analytics answers are aggregates and CPV rankings, with no party names.
-- Legacy reads are answered as the API now answers them (`SERVICE_UNAVAILABLE`, legacy procurement switched off). They go away
-  with the reads (client PROC-001).
+These five are the exception. They are the dev API's answers to the reads the place-search test makes once a firm's place is
+picked: contracts and framework agreements by supplier geography. The API refuses them while D6 withholds supplier geography
+(`INVALID_INPUT` on `supplierSiruta`, "supplier geography is withheld…"), and the ssr-api store records no error answer, so the
+test answers them through `mockApi`. `supplier-place-withheld.json` lists each one's operation, variables and fixture.
 
-To re-record after the page's reads change: run the spec in mock mode. List every "[mockApi] No mock found" operation with its
-variables, answer each from the dev API with the app's own query, and add it to `browser-reads.json`. Check for 13-digit runs
-before committing.
+Recorded on 28 November 2026, through the page's own queries, at the analysis build the store's recorded `ProcurementCutoff`
+gives (the browser asks with it). Re-record them together with the store when that build changes.

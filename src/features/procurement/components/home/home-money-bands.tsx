@@ -8,12 +8,10 @@ import { HUB_BESIDE_TITLE_CLASS, HubLoadError, HubSectionHead } from '@/features
 import { cn } from '@/lib/utils'
 import type { ProcurementHomeMoney, ProcurementHomeSellers } from '@/schemas/procurement-home'
 import type { HomeCategoriesRead } from '../../api/procurement-home-api'
-import { HOME_BIG_CONTRACTS } from '../../hooks/use-procurement-home'
-import { categoryOfCode, frequentWinners } from '../../lib/home-categories'
-import type { NationalRead, RecentRecord } from '../../lib/home-model'
-import { consortiumLede, frequentLede, whatLede } from '../../lib/home-text'
-import { HomeBand, ProvisionalMark, RULED_NOTE_CLASS, SHOW_MORE_CLASS, ShowMorePending, TextPending, type NationalState } from './home-chrome'
-import { CategoryRows, PARTY_ROWS, PartyRows, PendingRows, RecordRows } from './home-rows'
+import type { NationalRead } from '../../lib/home-model'
+import { consortiumLede, contractListComingText, whatLede } from '../../lib/home-text'
+import { HomeBand, ProvisionalMark, SHOW_MORE_CLASS, ShowMorePending, TextPending, type NationalState } from './home-chrome'
+import { CategoryRows, PARTY_ROWS, PartyRows, PendingRows } from './home-rows'
 
 /** A lede about contract money carries its provisional mark beside it. */
 function withMark(text: string | null): ReactNode {
@@ -131,7 +129,6 @@ export function HomeSellersBand({
   read,
   national,
   index,
-  bigContracts,
   roadsConsortium,
   sellers,
   onSellers,
@@ -142,15 +139,10 @@ export function HomeSellersBand({
   /** The national read failed: the direct sellers come from it. */
   readonly national: NationalState
   readonly index: string
-  readonly bigContracts: ReadState<readonly RecentRecord[]>
   readonly roadsConsortium: HomeCategoriesRead['roadsConsortium']
   readonly sellers: ProcurementHomeSellers
   readonly onSellers: (sellers: ProcurementHomeSellers) => void
 }) {
-  const { i18n } = useLingui()
-  const frequent = bigContracts.data ? frequentWinners(bigContracts.data) : null
-  // A contract whose title SEAP left empty is named by what it bought.
-  const categoryOf = (record: RecentRecord) => (record.cpvCode ? i18n._(categoryOfCode(record.cpvCode).label) : null)
   return (
     <HomeBand id="cine-vinde" labelledBy="procurement-home-sellers-title">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -167,15 +159,6 @@ export function HomeSellersBand({
             }
             lede={read ? withMark(consortiumLede(read, roadsConsortium)) : national.isError ? null : MONEY_LEDE_PENDING}
           />
-          {frequent && bigContracts.data ? (
-            <p className={RULED_NOTE_CLASS} data-reveal>
-              {frequentLede(frequent, bigContracts.data.length, year)}
-            </p>
-          ) : !bigContracts.data && !bigContracts.isError ? (
-            <p className={RULED_NOTE_CLASS}>
-              <TextPending lines={2} narrow={3} />
-            </p>
-          ) : null}
         </div>
         <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
           <div className="sm:w-fit">
@@ -203,29 +186,18 @@ export function HomeSellersBand({
             ) : (
               <PendingRows className="mt-5" shape="party" rows={PARTY_ROWS} />
             )
-          ) : bigContracts.isError && !bigContracts.data ? (
-            <div className="mt-5">
-              <HubLoadError onRetry={bigContracts.retry} />
-            </div>
-          ) : bigContracts.data ? (
-            <RecordRows className="mt-5" records={bigContracts.data} lead="winners" fallbackTitle={categoryOf} />
           ) : (
-            <PendingRows className="mt-5" shape="record" rows={HOME_BIG_CONTRACTS} />
+            <p className="mt-5 border-y py-4 text-sm text-muted-foreground">{contractListComingText()}</p>
           )}
-          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-            {sellers === 'directe' ? (
-              read?.directSellers?.rankedBy === 'count' ? (
+          {sellers === 'directe' ? (
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              {read?.directSellers?.rankedBy === 'count' ? (
                 <Trans>Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, fără licitație.</Trans>
               ) : (
                 <Trans>Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, fără licitație.</Trans>
-              )
-            ) : (
-              <>
-                <Trans>Contractele atribuite în {year}, după valoare, cu toate firmele câștigătoare; valoarea e a întregului contract.</Trans>{' '}
-                <ProvisionalMark />
-              </>
-            )}
-          </p>
+              )}
+            </p>
+          ) : null}
         </div>
       </div>
     </HomeBand>

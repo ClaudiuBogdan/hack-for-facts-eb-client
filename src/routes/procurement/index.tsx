@@ -1,8 +1,8 @@
-import { DA_DISCLOSURE_CACHE, DA_ROUTE_CACHE } from '@/features/procurement/lib/disclosure-cache'
+import { DA_ROUTE_CACHE } from '@/features/procurement/lib/disclosure-cache'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
-import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { createNoStoreHeaders } from '@/lib/http-cache'
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import { explorerSearchOf, parseProcurementHomeSearch, PROCUREMENT_HOME_KEYS } from '@/schemas/procurement-home'
@@ -17,9 +17,10 @@ import type { ProcurementHomeInitialData } from '@/features/procurement/componen
  * door's own choices — the idiom `/companies` uses for the retired
  * company directory's links.
  *
- * The national picture, the categories and the year's largest contracts are
- * read on the server (kept there for ten minutes, under a deadline — see
- * `procurement-home-ssr.ts`) and seed the page's queries; on a client-side
+ * The national picture and the categories are read on the server, each
+ * under its own deadline (`procurement-home-ssr.ts`), and seed the page's
+ * queries; the national contract-award lists are not read (PROC-KB0Z: the
+ * bands say they are coming). On a client-side
  * navigation the loader starts them and returns at once, so the page frame
  * paints and the bands fill in.
  */
@@ -47,7 +48,6 @@ export const Route = createFileRoute('/procurement/')({
     if (!shouldBlockLoaderForSsr()) {
       void context.queryClient.prefetchQuery(hooks.procurementHomeNationalQueryOptions(year)).catch(() => undefined)
       void context.queryClient.prefetchQuery(hooks.procurementHomeCategoriesQueryOptions(year)).catch(() => undefined)
-      void context.queryClient.prefetchQuery(hooks.procurementHomeBigContractsQueryOptions(year)).catch(() => undefined)
       return { year }
     }
     // Read directly, not through the query client: a query created on the
@@ -58,19 +58,10 @@ export const Route = createFileRoute('/procurement/')({
     const { seededUnder } = await import('@/features/procurement/api/procurement-da-release-status')
     return seededUnder(() => readProcurementHomeForSsr(year))
   },
-  // A render with a failed read is not worth caching for everyone: it is
-  // served once and the next request reads again. The document follows the
-  // locale and theme cookies, so a shared cache keys on them.
-  headers: ({ loaderData }) =>
-    // D6: a render whose publication is unknown is kept nowhere.
-    !loaderData?.national || !loaderData.categories || !loaderData.bigContracts || !loaderData.disclosure
-      ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
-        { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
-      : createPublicPageCacheHeaders({
-          // D6: within one publish (`disclosure-cache.ts`).
-          ...DA_DISCLOSURE_CACHE,
-          vary: ['Accept-Encoding', 'Cookie'],
-        }),
+  // Never kept by a shared cache, whatever the loader read (CACHE-002, root 25 November 2026): the page renders from the
+  // reader's cookies, and the owner left edge caching for later (28 November). The layout's cache headers merge key by key,
+  // so the CDN directive is set here too: one of the layout's own would outlive this one.
+  headers: () => ({ ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }),
   // In the request's own language: the shared Lingui instance may hold another
   // request's by the time a head that waited on its loader runs.
   head: ({ match }) => {

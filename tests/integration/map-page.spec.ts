@@ -73,6 +73,7 @@ test.describe('Map page', () => {
       expect(series.filter.exclude).toBeUndefined()
     }
     await expect(page.getByRole('heading', { level: 1, name: 'Harta bugetelor locale' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Ești aici' }).getByRole('link', { name: 'Acasă' })).toHaveAttribute('href', '/')
     await expect(page.getByRole('combobox', { name: /Harta afișată: Sold bugetar/ })).toBeVisible()
     await expect(radio(page, 'Total')).toHaveAttribute('data-state', 'on')
     await expect(radio(page, 'Primării')).toHaveAttribute('data-state', 'on')

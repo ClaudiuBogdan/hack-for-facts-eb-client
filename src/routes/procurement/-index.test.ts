@@ -38,18 +38,16 @@ describe('/procurement', () => {
     await expect(route.beforeLoad({ abortController: new AbortController(), location: { search: { cumparatori: 'contracte', lang: 'en' } } })).resolves.toBeUndefined()
   })
 
-  it('never caches a render with a failed read for everyone', () => {
+  it('is kept by no shared cache, whatever its loader read (CACHE-002)', () => {
     vi.stubEnv('DEV', false)
     try {
-      const failed = route.headers({ loaderData: { national: {}, categories: {} } })
-      expect(failed['Cache-Control']).toBe('no-store')
-      expect(failed['CDN-Cache-Control']).toBe('no-store')
-      expect(route.headers({})['CDN-Cache-Control']).toBe('no-store')
-      const whole = route.headers({ loaderData: { national: {}, categories: {}, bigContracts: [], disclosure: 'v1' } })
-      // D6: a render whose publication is unknown is kept nowhere.
-      expect(route.headers({ loaderData: { national: {}, categories: {}, bigContracts: [], disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
-      expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
-      expect(whole.Vary).toBeUndefined()
+      const whole = { national: {}, categories: {}, disclosure: 'v1' }
+      // `bigContracts`: the shape that once made a render public.
+      for (const loaderData of [undefined, { national: {}, categories: {} }, whole, { ...whole, bigContracts: [] }, { ...whole, disclosure: null }]) {
+        const headers = route.headers(loaderData === undefined ? {} : { loaderData })
+        expect(headers).toMatchObject({ 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' })
+        expect(headers.Vary).toBeUndefined()
+      }
     } finally {
       vi.unstubAllEnvs()
     }

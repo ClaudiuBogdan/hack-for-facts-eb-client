@@ -163,6 +163,33 @@ Nitro route cache (turned off separately), and the label lag below.
   before. A real fix colours the shapes through feature state (no tile
   rebuild), a change to the shared engine and so to the landing.
 
+## The site-wide rules (owner, 28 November 2026)
+
+The owner asked for the national budget polish's site-wide rules on every page
+the landing links to; for the map, only those rules, with its design kept
+(relayed by client-dev-polish, `agent-sessions/landing-polish-20261128/SPEC.md`).
+
+- **Round commas:** `[font-feature-settings:'ss03']` on the page's root, so
+  the bar, the legend, the hover card and the table take Inter's round commas,
+  „ș" and „ț", as on the landing. The picker's and the year's menus are
+  portalled out of the page and keep the plain ones, as on the national budget.
+- **A plain way home above the title** („Acasă / Hartă", 14 px, muted, the
+  page's name in the text's colour; no arrow, no mono, no capitals), copied
+  from the national budget's head. „Acasă" goes to `/` keeping only the
+  address's `lang`. Its target reaches 12 px up into the bar's padding, 32 px in
+  all (above WCAG's 24 px), but not down: the title sits right under it, and the
+  national budget's 44 px would need a gap the bar does not have (Codex). The
+  owner chose it over two one-line versions („Acasă /" or „Acasă / Hartă"
+  before the title), which kept the desktop bar's height but read less like the
+  rest of the site. The bar is
+  8 px taller (65 → 73 px on a desktop, 161 → 169 px on a phone). On a desktop
+  the map is 8 px shorter; on a phone it keeps its height (`62dvh`) and starts
+  8 px lower.
+- **Mono:** none to drop. The table's „#" column keeps its mono digits
+  (figures that line up in a column, which DESIGN.md allows). „PROIECT" and
+  „LEGAL" are the shared site footer's.
+- No headline spacing: the map has no hero.
+
 ## Not done / open
 
 - When the year changes while zoomed in, MapLibre may draw the previous

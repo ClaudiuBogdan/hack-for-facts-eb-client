@@ -1,27 +1,20 @@
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { queryOptions, skipToken, useQuery } from '@tanstack/react-query'
 import { DA_QUERY_CACHE } from '../lib/disclosure-cache'
 import {
-  fetchProcurementHomeBigContracts,
   fetchProcurementHomeCategories,
   fetchProcurementHomeNational,
-  fetchProcurementHomeRecentContracts,
   fetchProcurementHomeRecentDirect,
   type HomeCategoriesRead,
 } from '../api/procurement-home-api'
-import type { HomeGrain, NationalRead, RecentRecord } from '../lib/home-model'
+import type { HomeGrain, NationalRead } from '../lib/home-model'
 
 /**
  * The front door's reads, each its own query so a failure stays in its band.
- * The route loader reads the first three on the server and seeds them here,
+ * The route loader reads the first two on the server and seeds them here,
  * so the server and the first client render agree; the newest records wait
  * for the national read's cutoff month and are read in the browser.
  */
 
-/** SEAP loads daily at most; an hour keeps a return visit from reading again. */
-const STALE_TIME = 60 * 60 * 1000
-
-/** How many of the year's largest contracts „Cine vinde" lists. */
-export const HOME_BIG_CONTRACTS = 8
 /** How many records of the newest month „Cele mai noi" lists. */
 export const HOME_RECENT_RECORDS = 8
 
@@ -29,7 +22,6 @@ export const procurementHomeKeys = {
   all: ['procurement', 'home'] as const,
   national: (year: number) => [...procurementHomeKeys.all, 'national', year] as const,
   categories: (year: number) => [...procurementHomeKeys.all, 'categories', year] as const,
-  bigContracts: (year: number, limit: number) => [...procurementHomeKeys.all, 'big-contracts', year, limit] as const,
   recent: (grain: HomeGrain, month: string, limit: number) => [...procurementHomeKeys.all, 'recent', grain, month, limit] as const,
 }
 
@@ -53,15 +45,6 @@ export function procurementHomeCategoriesQueryOptions(year: number, initialData?
   })
 }
 
-export function procurementHomeBigContractsQueryOptions(year: number, initialData?: readonly RecentRecord[]) {
-  return queryOptions({
-    queryKey: procurementHomeKeys.bigContracts(year, HOME_BIG_CONTRACTS),
-    queryFn: ({ signal }) => fetchProcurementHomeBigContracts(year, HOME_BIG_CONTRACTS, signal),
-    staleTime: STALE_TIME,
-    ...(initialData ? { initialData } : {}),
-  })
-}
-
 export function useProcurementHomeNational(year: number, initialData?: NationalRead) {
   return useQuery(procurementHomeNationalQueryOptions(year, initialData))
 }
@@ -70,23 +53,18 @@ export function useProcurementHomeCategories(year: number, initialData?: HomeCat
   return useQuery(procurementHomeCategoriesQueryOptions(year, initialData))
 }
 
-export function useProcurementHomeBigContracts(year: number, initialData?: readonly RecentRecord[]) {
-  return useQuery(procurementHomeBigContractsQueryOptions(year, initialData))
-}
-
 /**
- * One population's largest records of its own newest complete month; waits
- * for the month the national read derives, and reads nothing without one.
+ * The direct purchases' largest records of their own newest complete month;
+ * waits for the month the national read derives, and reads nothing without
+ * one. The contracts read nothing: the national contract-award list is not
+ * served yet, and the band says it is coming (`contractListComingText`).
  */
 export function useProcurementHomeRecent(grain: HomeGrain, month: string | null) {
   return useQuery({
     queryKey: procurementHomeKeys.recent(grain, month ?? '', HOME_RECENT_RECORDS),
-    queryFn: ({ signal }) =>
-      grain === 'contract'
-        ? fetchProcurementHomeRecentContracts(month ?? '', HOME_RECENT_RECORDS, signal)
-        : fetchProcurementHomeRecentDirect(month ?? '', HOME_RECENT_RECORDS, signal),
-    enabled: month !== null,
+    // No fetch function at all, not just a disabled one: a refetch can't read under the contracts' key, or without a month.
+    queryFn: grain === 'direct' && month !== null ? ({ signal }) => fetchProcurementHomeRecentDirect(month, HOME_RECENT_RECORDS, signal) : skipToken,
     // D6: the direct purchases' recent records are never kept past their read.
-    ...(grain === 'direct' ? DA_QUERY_CACHE : { staleTime: STALE_TIME }),
+    ...DA_QUERY_CACHE,
   })
 }

@@ -10,7 +10,7 @@ vi.mock('./procurement-da-release-status', async (importOriginal) => ({
 const graphqlQuery = vi.fn()
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
 
-const { fetchProcurementHomeBigContracts, fetchProcurementHomeNational, fetchProcurementHomeRecentDirect, mapProcurementHomeCategories } = await import('./procurement-home-api')
+const { fetchGroupedContracts, fetchProcurementHomeNational, fetchProcurementHomeRecentDirect, mapProcurementHomeCategories } = await import('./procurement-home-api')
 const { procurementHomeCategoriesResponseSchema } = await import('./graphql/procurement-home-queries')
 
 const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })) }]
@@ -129,10 +129,11 @@ describe('mapProcurementHomeCategories', () => {
   })
 })
 
-describe('fetchProcurementHomeBigContracts', () => {
+// The buyer page's largest contracts read through it (the front door's lists are not read: PROC-KB0Z).
+describe('fetchGroupedContracts', () => {
   beforeEach(() => graphqlQuery.mockReset())
 
-  it('reads the year’s accepted-value awards and groups a consortium into one contract', async () => {
+  it('reads the filter’s awards and groups a consortium into one contract', async () => {
     const item = (id: string, supplier: string, value = '6143000000') => ({
       id,
       contractNo: '101/1888',
@@ -148,7 +149,7 @@ describe('fetchProcurementHomeBigContracts', () => {
         items: [item('1', 'TEHNOSTRADE S.R.L.'), item('2', 'SPEDITION UMB'), { ...item('3', 'X'), value: { valueAccepted: false, valueRonComparable: '999' } }],
       },
     })
-    const contracts = await fetchProcurementHomeBigContracts(2025, 8)
+    const contracts = await fetchGroupedContracts({ contractDate: { gte: '2025-01-01', lte: '2025-12-31' }, recordKind: { in: ['contract_award'] } }, 8, 'Test')
     const [, variables] = graphqlQuery.mock.calls[0] as [string, { filter: Record<string, unknown>; rows: number }]
     expect(variables.filter).toMatchObject({ contractDate: { gte: '2025-01-01', lte: '2025-12-31' }, recordKind: { in: ['contract_award'] } })
     expect(variables.rows).toBe(48)
@@ -174,16 +175,18 @@ describe('fetchProcurementHomeBigContracts', () => {
     graphqlQuery
       .mockResolvedValueOnce(page(Array.from({ length: 6 }, (_, index) => row(`a${index}`, 'A', 900))))
       .mockResolvedValueOnce(page([row('a6', 'A', 900), row('b', 'B', 500), row('c', 'C', 400), row('d', 'D', 300), row('e', 'E', 200), row('f', 'F', 100)]))
-    const contracts = await fetchProcurementHomeBigContracts(2025, 1)
+    const contracts = await fetchGroupedContracts({ contractDate: { gte: '2025-01-01', lte: '2025-12-31' }, recordKind: { in: ['contract_award'] } }, 1, 'Test')
     expect(graphqlQuery).toHaveBeenCalledTimes(2)
+    expect(graphqlQuery.mock.calls.map(([, variables]) => (variables as { page: number }).page)).toEqual([1, 2])
     expect(contracts).toHaveLength(1)
     expect(contracts[0]?.winners).toHaveLength(7)
   })
 
   it('fails instead of claiming no contracts when every page read ends in one tie', async () => {
     graphqlQuery.mockResolvedValue(page(Array.from({ length: 6 }, (_, index) => row(`t${index}`, `T${index}`, 700))))
-    await expect(fetchProcurementHomeBigContracts(2025, 1)).rejects.toThrow('no contract is whole')
+    await expect(fetchGroupedContracts({ contractDate: { gte: '2025-01-01', lte: '2025-12-31' }, recordKind: { in: ['contract_award'] } }, 1, 'Test')).rejects.toThrow('no contract is whole')
     expect(graphqlQuery).toHaveBeenCalledTimes(3)
+    expect(graphqlQuery.mock.calls.map(([, variables]) => (variables as { page: number }).page)).toEqual([1, 2, 3])
   })
 })
 

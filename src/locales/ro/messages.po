@@ -55877,6 +55877,10 @@ msgstr "Programul SAFE"
 msgid "spending reported by the Ministry of Finance for the SAFE programme"
 msgstr "cheltuieli raportate de Ministerul Finanțelor pentru planul SAFE"
 
+#: src/features/procurement/lib/home-text.ts:115
+msgid "Lista națională a contractelor atribuite vine în curând."
+msgstr "Lista națională a contractelor atribuite vine în curând."
+
 #. placeholder {0}: countyName(judet ?? '')
 #: src/features/elections/analytics/components/mandate-view.tsx:54
 msgid "{0}: mandatele nu sunt încă în date."

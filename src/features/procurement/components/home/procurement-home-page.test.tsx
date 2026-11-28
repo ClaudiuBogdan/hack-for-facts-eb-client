@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { ProcurementHomeSearch } from '@/schemas/procurement-home'
-import { bigContract, categoriesRead, nationalRead } from '../../lib/home.fixture'
+import { categoriesRead, nationalRead } from '../../lib/home.fixture'
 import { ProcurementHomePage, type ProcurementHomeInitialData } from './procurement-home-page'
 
 /**
@@ -52,8 +52,6 @@ vi.mock('@/hooks/useGeoJson', () => ({ useGeoJsonData: () => ({ data: undefined,
 vi.mock('../../api/procurement-home-api', () => ({
   fetchProcurementHomeNational: vi.fn(() => new Promise(() => undefined)),
   fetchProcurementHomeCategories: vi.fn(() => new Promise(() => undefined)),
-  fetchProcurementHomeBigContracts: vi.fn(() => new Promise(() => undefined)),
-  fetchProcurementHomeRecentContracts: vi.fn(() => new Promise(() => undefined)),
   fetchProcurementHomeRecentDirect: vi.fn(() => new Promise(() => undefined)),
 }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
@@ -62,10 +60,6 @@ const INITIAL: ProcurementHomeInitialData = {
   year: 2025,
   national: nationalRead(),
   categories: categoriesRead(),
-  bigContracts: [
-    bigContract(),
-    bigContract({ id: '2', title: null, winners: [{ cui: '17042060', name: 'Tehnostrade' }], value: 1_000_000_000 }),
-  ],
 }
 
 function page(search: ProcurementHomeSearch = {}, initial: ProcurementHomeInitialData = INITIAL) {
@@ -100,9 +94,8 @@ describe('ProcurementHomePage', () => {
     // Where the money goes, who gets it, and the consortia's share.
     expect(html).toContain('La drumuri, poduri și autostrăzi a mers 37%')
     expect(html).toContain('52% din valoarea contractelor atribuite în 2025 a mers la asocieri de firme; la drumuri, 89%.')
-    expect(html).toContain('Makyol Insaat · Ozaltin Insaat')
-    // A contract SEAP left untitled is named by what it bought.
-    expect(html).toContain('Drumuri, poduri și autostrăzi')
+    // The year's largest contracts: the national contract-award list is coming (PROC-KB0Z), never an error or none.
+    expect(html).toContain('Lista națională a contractelor atribuite vine în curând.')
     // The source once, with the month the records are complete to.
     expect(html).toContain('date până în mai 2026')
   })
@@ -123,11 +116,43 @@ describe('ProcurementHomePage', () => {
     expect(screen.getByText('05 / Cum se cumpără')).toBeInTheDocument()
   })
 
-  it('opens a buyer’s and a contract’s procurement pages', () => {
+  it('opens a buyer’s procurement page', () => {
     render(page())
     expect(screen.getByRole('link', { name: /Regia Națională a Pădurilor Romsilva/ }).getAttribute('href')).toBe('/procurement/institutions/1590120')
-    expect(screen.getByRole('link', { name: /Makyol Insaat · Ozaltin Insaat/ }).getAttribute('href')).toBe('/procurement/contracts/51107356')
   })
+
+  it('reads no national contract list: the largest and the newest contracts say it is coming, whatever the national read', async () => {
+    const api = await import('../../api/procurement-home-api')
+    vi.mocked(api.fetchProcurementHomeRecentDirect).mockClear()
+    const states: readonly ProcurementHomeInitialData[] = [
+      INITIAL,
+      // The national read pending (no seed, never answering) or with no month for the contracts.
+      { year: 2025, categories: categoriesRead() },
+      { ...INITIAL, national: nationalRead({ cutoff: { contract: null, direct: '2026-05' } }) },
+    ]
+    for (const initial of states) {
+      const { unmount } = render(page({ recente: 'contracte' }, initial))
+      for (const band of ['cine-vinde', 'recente']) {
+        const section = document.getElementById(band) as HTMLElement
+        // The coming line, alone: no load error, no rows, no claim of none.
+        expect(within(section).getByText('Lista națională a contractelor atribuite vine în curând.')).toBeInTheDocument()
+        expect(within(section).queryByRole('button', { name: 'Încearcă din nou' })).toBeNull()
+        expect(within(section).queryByText(/nu are încă/u)).toBeNull()
+        expect(section.querySelector('a[href^="/procurement/contracts/"]')).toBeNull()
+      }
+      unmount()
+    }
+    expect(vi.mocked(api.fetchProcurementHomeRecentDirect)).not.toHaveBeenCalled()
+  })
+
+  it('still reads and lists the newest direct purchases', async () => {
+    const api = await import('../../api/procurement-home-api')
+    vi.mocked(api.fetchProcurementHomeRecentDirect).mockClear()
+    render(page({ recente: 'directe' }))
+    await waitFor(() => expect(vi.mocked(api.fetchProcurementHomeRecentDirect)).toHaveBeenCalledWith('2026-05', 8, expect.anything()))
+    expect(within(document.getElementById('recente') as HTMLElement).queryByText('Lista națională a contractelor atribuite vine în curând.')).toBeNull()
+  })
+
 
   it('writes each choice to the URL, leaving the default out', () => {
     render(page())
@@ -179,10 +204,9 @@ describe('ProcurementHomePage', () => {
 })
 
 describe('ProcurementHomePage without the national read', () => {
-  it('keeps the categories and the largest contracts, and every band’s anchor', () => {
-    const html = renderToStaticMarkup(page({}, { year: 2025, categories: categoriesRead(), bigContracts: [bigContract()] }))
+  it('keeps the categories, and every band’s anchor', () => {
+    const html = renderToStaticMarkup(page({}, { year: 2025, categories: categoriesRead() }))
     expect(html).toContain('La drumuri, poduri și autostrăzi a mers 37%')
-    expect(html).toContain('Makyol Insaat · Ozaltin Insaat')
     for (const id of ['ce', 'cine-vinde', 'judete', 'in-timp', 'cum', 'recente']) expect(html).toContain(`id="${id}"`)
   })
 })
