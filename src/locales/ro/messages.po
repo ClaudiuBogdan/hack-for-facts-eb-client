@@ -910,7 +910,7 @@ msgstr "{0, plural, one {Un domeniu} few {Toate cele # domenii} other {Toate cel
 
 #. placeholder {0}: layer.missingCounties.length
 #. placeholder {0}: missing.length
-#: src/features/private-companies/components/hub/company-county-map.tsx:415
+#: src/features/private-companies/components/hub/company-county-map.tsx:447
 #: src/features/statistics/components/county-map/county-map.tsx:430
 msgid "{0, plural, one {un județ fără valoare} few {# județe fără valoare} other {# de județe fără valoare}}"
 msgstr "{0, plural, one {un județ fără valoare} few {# județe fără valoare} other {# de județe fără valoare}}"
@@ -1027,7 +1027,7 @@ msgstr "{0} · lei pe locuitor"
 
 #. placeholder {0}: county.name
 #. placeholder {0}: countyName(county.code)
-#: src/features/private-companies/components/hub/company-county-map.tsx:333
+#: src/features/private-companies/components/hub/company-county-map.tsx:351
 #: src/features/statistics/components/county-map/county-map.tsx:339
 msgid "{0} · locul {rank} din {total}"
 msgstr "{0} · locul {rank} din {total}"
@@ -2394,7 +2394,7 @@ msgid "{0}: fără date"
 msgstr "{0}: fără date"
 
 #. placeholder {0}: countyName(code)
-#: src/features/private-companies/components/hub/company-county-map.tsx:126
+#: src/features/private-companies/components/hub/company-county-map.tsx:128
 msgid "{0}: fără valoare"
 msgstr "{0}: fără valoare"
 
@@ -16074,7 +16074,7 @@ msgstr "Contribuții înregistrate"
 msgid "Control"
 msgstr "Control"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:111
+#: src/features/private-companies/components/hub/company-county-map.tsx:113
 #: src/features/statistics/components/county-map/county-map.tsx:118
 #: src/features/statistics/components/hub/hub-county-band.tsx:353
 msgid "Conturul județelor nu s-a încărcat."
@@ -24100,7 +24100,7 @@ msgstr "fără valoare"
 msgid "Fără valoare"
 msgstr "Fără valoare"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:358
+#: src/features/private-companies/components/hub/company-county-map.tsx:389
 msgctxt "county map readout"
 msgid "Fără valoare"
 msgstr "Fără valoare"
@@ -25435,7 +25435,7 @@ msgstr "Firmele în funcțiune fără bilanț"
 #~ msgid "Firmele înregistrate în {YEAR}, pe domenii"
 #~ msgstr "Firmele înregistrate în {YEAR}, pe domenii"
 
-#: src/features/private-companies/components/hub/company-county-map.tsx:367
+#: src/features/private-companies/components/hub/company-county-map.tsx:399
 msgid "Firmele județului"
 msgstr "Firmele județului"
 
@@ -28403,7 +28403,7 @@ msgstr "Încasări proprii"
 #: src/features/ngos/registry/components/registry-answer.tsx:417
 #: src/features/private-companies/components/analytics/analytics-notices.tsx:57
 #: src/features/private-companies/components/analytics/analytics-records.tsx:130
-#: src/features/private-companies/components/hub/company-county-map.tsx:118
+#: src/features/private-companies/components/hub/company-county-map.tsx:120
 #: src/features/private-companies/components/profile/company-profile-states.tsx:230
 #: src/features/procurement/components/analytics/analytics-answer.tsx:353
 #: src/features/public-institutions/components/public-institutions-breakdown.tsx:231
@@ -44997,8 +44997,8 @@ msgstr "Detectare robustă a anomaliilor bazată pe deviația absolută mediană
 #~ msgstr "Rol"
 
 #: src/features/elections/catalog/elections-catalog-text.ts:99
-#: src/features/private-companies/components/hub/company-county-map.tsx:288
-#: src/features/private-companies/components/hub/company-county-map.tsx:436
+#: src/features/private-companies/components/hub/company-county-map.tsx:296
+#: src/features/private-companies/components/hub/company-county-map.tsx:468
 #: src/features/statistics/components/county-map/county-map.tsx:341
 #: src/features/statistics/components/territory/territory-derived-list.tsx:115
 #: src/features/statistics/components/territory/territory-derived-list.tsx:257
