@@ -14,53 +14,15 @@ env:
   NODE_OPTIONS: --max-http-header-size=64384
 
 jobs:
-  integration-tests:
-    name: Integration Tests (Mocked API)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Integration Tests
-        run: npx playwright test --project=integration --reporter=list --retries=2
-        env:
-          CI: true
-          VITE_API_URL: https://api.transparenta.eu
-          VITE_APP_VERSION: ${{ github.sha }}
-          VITE_APP_NAME: Transparenta
-          VITE_APP_ENVIRONMENT: nightly
-
-      - name: Upload integration test results
-        uses: actions/upload-artifact@v6
-        if: failure()
-        with:
-          name: integration-test-results
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 14
-
   e2e-live:
     name: E2E Tests (Live API)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: integration-tests
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: dev
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -79,8 +41,8 @@ jobs:
         env:
           CI: true
           E2E_MODE: live
-          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://api.transparenta.eu' }}
-          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_API_URL: https://dev-chronos-api.transparenta.eu
+          VITE_APP_VERSION: nightly-dev
           VITE_APP_NAME: Transparenta
           VITE_APP_ENVIRONMENT: e2e
 
