@@ -6,21 +6,16 @@ import {
   LEGAL_DOMAIN_SLUGS,
   LEGAL_EVENT_KINDS,
   LEGAL_EVENT_SOURCES,
-  legalActsBrowseFilterShape,
 } from './legal-search'
 
 // The routes' URL contract (search params), lazy and apart so the route tree
 // does not carry this module: `legal-search.ts`, re-exported here.
 export {
-  gazetteBrowseSearchSchema,
-  legalActsBrowseSearchSchema,
   legalChangesSearchSchema,
   legalFinderSearchSchema,
   legalReaderSearchSchema,
 } from './legal-search'
 export type {
-  GazetteBrowseSearch,
-  LegalActsBrowseSearch,
   LegalChangesSearch,
   LegalFinderSearch,
   LegalReaderSearch,
@@ -526,15 +521,13 @@ export type LegalActDetail = z.infer<typeof legalActDetailSchema>
  * is a page size — different resolvers, different honesty).
  */
 export const legalActsPageSchema = z.object({
-  items: z.array(legalActListItemSchema),
+  // `name`: the Portal's name of the act's canonical document, read where the citation names nothing („Doc nr."), as
+  // the search's hits carry it (Codex review, 27 November 2026).
+  items: z.array(legalActListItemSchema.extend({ name: z.string().nullable() })),
   endCursor: z.string().nullable(),
   totalCount: z.number().int().nullable(),
 })
 export type LegalActsPage = z.infer<typeof legalActsPageSchema>
-
-/** Filters the directory sends to the server — verified filter families. */
-export const legalActsBrowseFilterSchema = z.object(legalActsBrowseFilterShape())
-export type LegalActsBrowseFilter = z.infer<typeof legalActsBrowseFilterSchema>
 
 /** `MoPartCode` — the eight gazette parts the server serves (`GAZETTE_PART_CODES`). */
 export const gazettePartCodeSchema = z.enum(GAZETTE_PART_CODES)
@@ -634,8 +627,10 @@ export const legalRecentChangeSchema = z.object({
   eventKind: z.string(),
   effectiveDate: z.string().nullable(),
   eventSource: z.string(),
+  // The acting act, with its automatic summary's description (null when it has none) — the Modificări page says
+  // what each changing act is about (owner, 28 November 2026).
   sourceAct: z
-    .object({ actId: z.string(), displayCitation: z.string() })
+    .object({ actId: z.string(), displayCitation: z.string(), description: z.string().nullable() })
     .nullable(),
   actId: z.string(),
   displayCitation: z.string(),
@@ -668,7 +663,8 @@ export type LegalChangesPage = z.infer<typeof legalChangesPageSchema>
 export const legalChangesFilterSchema = z.object({
   since: z.string().optional(),
   until: z.string().optional(),
-  kind: legalEventKindSchema.optional(),
+  /** Absent or empty = every kind. */
+  kinds: z.array(legalEventKindSchema).readonly().optional(),
   source: legalEventSourceSchema.optional(),
   undated: z.boolean().optional(),
 })
@@ -719,9 +715,19 @@ export type LegalServedForm = z.infer<typeof legalServedFormSchema>
 export const legalSearchSectionHitSchema = z.object({
   actId: z.string(),
   documentId: z.string(),
+  /**
+   * The provision's path in `documentId` (`document_nodes` path, the act page's `?nod=`), so a hit links to its
+   * provision. Null when the engine names none: the hit is then shown without a link.
+   */
+  nodePath: z.string().nullable(),
   nodeLabel: z.string().nullable(),
   snippet: z.string().nullable(),
   servedForm: legalServedFormSchema.nullable(),
+  /**
+   * The act's citation (`act.displayCitation`): a provision whose act is in none of the answer's act rows is drawn
+   * under that name. Optional, so the fixtures and the mock lane, which carry none, still parse.
+   */
+  actCitation: z.string().nullable().optional(),
 })
 export type LegalSearchSectionHit = z.infer<typeof legalSearchSectionHitSchema>
 

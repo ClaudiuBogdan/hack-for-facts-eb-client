@@ -1,10 +1,23 @@
 import { useId, useState, type KeyboardEvent } from 'react'
 import { t } from '@lingui/core/macro'
+import { ArrowUpRight } from 'lucide-react'
 import { niceScale } from '@/features/statistics/lib/period-chart'
 import { count, moneyText, moneyTick } from '../../lib/company-profile-format'
-import type { CompanyProfileModel, NetPoint } from '../../lib/company-profile-model'
-import { measureLabel, netChartLabel, netPointLabel } from '../../lib/company-profile-text'
+import type { CompanyProfileModel } from '../../lib/company-profile-model'
+import {
+  ifrsBlankZeroNote,
+  ifrsFormLabel,
+  ifrsNotesLabel,
+  ifrsSeamNote,
+  ifrsTurnoverNote,
+  measureLabel,
+  netChartLabel,
+  netPointLabel,
+  publisherName,
+} from '../../lib/company-profile-text'
+import { isEmptyRow, sameStretch, yearRowsOf, type YearRow } from '../../lib/company-years-rows'
 import { cn } from '@/lib/utils'
+import { HubInfoNote } from '../hub/hub-info-note'
 
 /**
  * A company's years as one figure (owner, 25 November 2026: „focus on a good
@@ -17,40 +30,48 @@ import { cn } from '@/lib/utils'
  *   small loss takes only the room it needs below zero.
  * - People, below and shorter: the average headcount as a line, from zero.
  *
- * Years with no comparable values in a row collapse into one narrow hatched
- * column named by its span, so seven empty years do not take half the width.
- * Nothing is read at rest; pointing at a year (a tap; the arrow keys) marks it
- * across both panels and reads its three figures. The same figures are a table
+ * Each year is drawn in the series of its own form (owner, 25–26 November
+ * 2026, „curat"): the years the publisher put on the IFRS form — its own file's
+ * (the Ministry's, FY2012–2018) or ANAF's IFRS layout — are named by a thin
+ * rule „IFRS" over each run and the legend's „Raportat pe formularul IFRS",
+ * whose ⓘ holds the turnover note and the publishers' seam; every other year
+ * carries no form label. The line joins only consecutive years on the same
+ * form: it breaks at a change of form, at a missing year and at a blank. A zero
+ * is a zero.
+ *
+ * Years with nothing to draw in a row (unmarked ones) collapse into one narrow
+ * hatched column named by its span. Nothing is read at rest; pointing at a year
+ * (a tap; the arrow keys) marks it across both panels and reads its form, its
+ * publisher, its three figures and its source. The same figures are a table
  * for assistive technology.
  */
 
-type Slot = { readonly kind: 'year'; readonly index: number; readonly year: number } | { readonly kind: 'gap'; readonly from: number; readonly to: number }
+type Slot = { readonly kind: 'year'; readonly row: YearRow } | { readonly kind: 'gap'; readonly from: number; readonly to: number }
 
-/** A year a slot of its own; a run of two or more years with no comparable values one narrow slot. */
-function slotsOf(span: readonly number[], missing: ReadonlySet<number>): readonly Slot[] {
+/** A year a slot of its own; a run of two or more unmarked years with nothing to draw, one narrow slot. */
+function slotsOf(rows: readonly YearRow[]): readonly Slot[] {
   const slots: Slot[] = []
-  let run: number[] = []
+  let run: YearRow[] = []
   const flush = () => {
-    if (run.length >= 2) slots.push({ kind: 'gap', from: run[0]!, to: run[run.length - 1]! })
-    else for (const year of run) slots.push({ kind: 'year', index: span.indexOf(year), year })
+    if (run.length >= 2) slots.push({ kind: 'gap', from: run[0]!.year, to: run[run.length - 1]!.year })
+    else for (const row of run) slots.push({ kind: 'year', row })
     run = []
   }
-  span.forEach((year, index) => {
-    if (missing.has(year)) {
-      run.push(year)
-      return
+  for (const row of rows) {
+    if (isEmptyRow(row) && row.form === null) {
+      run.push(row)
+      continue
     }
     flush()
-    slots.push({ kind: 'year', index, year })
-  })
+    slots.push({ kind: 'year', row })
+  }
   flush()
   return slots
 }
 
 const GAP_WIDTH = 0.8
 
-
-type PanelKind = 'money' | 'turnover' | 'net' | 'people'
+type PanelKind = 'money' | 'people'
 type Panel = { readonly kind: PanelKind; readonly height: string; readonly allTicks: boolean }
 
 /** About `count` ticks over zero and the values; a small negative part takes whole steps of the positive scale, never half the panel. */
@@ -81,18 +102,13 @@ export function CompanyYearsChart({
 }: {
   readonly model: CompanyProfileModel
   /** Why a year's figure is not drawn, said in its reading in place of the figure. */
-  readonly reasonOf?: (index: number, metric: ChartMetric) => string
+  readonly reasonOf?: (year: number, metric: ChartMetric) => string
   readonly className?: string
 }) {
   const id = useId()
-  const span = model.span
-  const turnover = model.series.turnover.map((point) => point.value)
-  const net = model.series.net
-  const netValues = net.map((point) => point.value)
-  const employees = model.series.employees.map((point) => point.value)
-  // A year with nothing to draw — no statement, or one whose values are all left out — joins a run of empty years.
-  const blank = new Set(span.filter((_, index) => turnover[index] == null && netValues[index] == null && employees[index] == null))
-  const slots = slotsOf(span, blank)
+  const rows = yearRowsOf(model)
+  const net = rows.map((row) => row.net)
+  const slots = slotsOf(rows)
   const units = slots.reduce((sum, slot) => sum + (slot.kind === 'gap' ? GAP_WIDTH : 1), 0)
   let cursor = 0
   const placed = slots.map((slot) => {
@@ -101,11 +117,37 @@ export function CompanyYearsChart({
     cursor += width
     return { slot, left, width }
   })
-  const yearSlots = placed.filter((entry) => entry.slot.kind === 'year')
-  const [active, setActive] = useState<number | null>(null)
+  const yearSlots = placed.flatMap(({ slot, left, width }) => (slot.kind === 'year' ? [{ row: slot.row, slot, left, width }] : []))
+  // The year being read, by year (not by slot: a refreshed answer with one more year keeps the reading on its year).
+  const [activeYear, setActiveYear] = useState<number | null>(null)
+  // A click (a tap) holds its year's reading: a mouse can then travel to the reading's link across other years.
+  // Hovering only previews; the held year goes with a click on it again, another year's click or Escape.
+  const [held, setHeld] = useState(false)
   // Nothing is read at rest: a reading opens on a pointer, a tap or the keyboard.
-  const shown = active ?? -1
+  const shown = activeYear === null ? -1 : yearSlots.findIndex((entry) => entry.row.year === activeYear)
   const isActive = (slot: Slot) => yearSlots[shown]?.slot === slot
+
+  // The IFRS runs: neighbouring IFRS-form years, one rule each.
+  const runs: { left: number; right: number; from: number; to: number }[] = []
+  for (const entry of yearSlots) {
+    if (entry.row.form !== 'ifrs') continue
+    const run = runs[runs.length - 1]
+    if (run && run.to === entry.row.year - 1) {
+      run.right = entry.left + entry.width
+      run.to = entry.row.year
+    } else {
+      runs.push({ left: entry.left, right: entry.left + entry.width, from: entry.row.year, to: entry.row.year })
+    }
+  }
+  // The publishers' seam: IFRS-form years from the Ministry's file and from ANAF.
+  const ministryIfrsYears = rows.filter((row) => row.form === 'ifrs' && row.ifrsFile && row.publisher === 'mfp').map((row) => row.year)
+  const seam = ministryIfrsYears.length > 0 && rows.some((row) => row.form === 'ifrs' && row.year >= 2019)
+  const blankThenZero = (() => {
+    const before = rows.find((row) => row.year === 2018 && row.form === 'ifrs')
+    const after = rows.find((row) => row.year === 2019 && row.form === 'ifrs')
+    if (!before || !after) return false
+    return (before.turnover === null && after.turnover === 0) || (before.employees === null && after.employees === 0)
+  })()
 
   const panels: readonly Panel[] = [
     { kind: 'money', height: 'h-64 sm:h-80', allTicks: true },
@@ -119,53 +161,61 @@ export function CompanyYearsChart({
   const labelled = (position: number) => yearSlots.length <= 12 || position % 2 === last % 2
   const phoneLabelled = (position: number) => position % 3 === last % 3
 
-  const reading = (() => {
-    const entry = yearSlots[shown]
-    if (!entry || entry.slot.kind !== 'year') return null
-    const index = entry.slot.index
-    return { entry, index, year: entry.slot.year, turnover: turnover[index] ?? null, net: net[index] as NetPoint | undefined, employees: employees[index] ?? null }
-  })()
+  const reading = yearSlots[shown] ?? null
 
   const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    const last = yearSlots.length - 1
-    const from = active ?? last + 1
+    if (event.key === 'Escape' && reading !== null) {
+      // From the reading's link (it goes with the reading): focus back on the chart, never lost to the page.
+      if (event.target !== event.currentTarget) event.currentTarget.focus()
+      setActiveYear(null)
+      setHeld(false)
+      return
+    }
+    const from = reading ? shown : last + 1
     const next = event.key === 'ArrowLeft' ? from - 1 : event.key === 'ArrowRight' ? Math.min(from + 1, last) : event.key === 'Home' ? 0 : event.key === 'End' ? last : null
     if (next === null) return
     event.preventDefault()
-    setActive(Math.max(0, Math.min(last, next)))
+    setActiveYear(yearSlots[Math.max(0, Math.min(last, next))]?.row.year ?? null)
   }
 
   const swatch = (className: string) => <span className={cn('inline-block size-2.5 shrink-0 rounded-[2px]', className)} aria-hidden="true" />
-  const netTone = (point: NetPoint | undefined) =>
-    point?.value != null && point.value < 0 ? 'bg-destructive' : point?.kind === 'profit' ? 'bg-background ring-2 ring-inset ring-primary' : 'bg-primary'
+  const netTone = (row: YearRow) =>
+    row.net.value != null && row.net.value < 0 ? 'bg-destructive' : row.net.kind === 'profit' ? 'bg-background ring-2 ring-inset ring-primary' : 'bg-primary'
 
-  /** A run of points, broken at every year without a value and at every gap. */
-  const runsOf = (values: readonly (number | null)[], y: (value: number) => number) => {
-    const runs: { readonly x: number; readonly y: number }[][] = []
-    let run: { x: number; y: number }[] = []
+  /** The people line in stretches: broken at every blank, every gap and wherever two years are no stretch (`sameStretch`). */
+  const stretchesOf = (y: (value: number) => number) => {
+    const stretches: { readonly x: number; readonly y: number }[][] = []
+    let stretch: { x: number; y: number }[] = []
+    let previous: YearRow | null = null
     for (const { slot, left, width } of placed) {
-      const value = slot.kind === 'year' ? (values[slot.index] ?? null) : null
-      if (value === null) {
-        if (run.length) runs.push(run)
-        run = []
+      const row = slot.kind === 'year' ? slot.row : null
+      if (row === null || row.employees === null) {
+        if (stretch.length) stretches.push(stretch)
+        stretch = []
+        previous = null
         continue
       }
-      run.push({ x: (left + width / 2) * 1000, y: y(value) * 100 })
+      if (previous && !sameStretch(previous, row)) {
+        stretches.push(stretch)
+        stretch = []
+      }
+      stretch.push({ x: (left + width / 2) * 1000, y: y(row.employees) * 100 })
+      previous = row
     }
-    if (run.length) runs.push(run)
-    return runs
+    if (stretch.length) stretches.push(stretch)
+    return stretches
   }
 
   const renderPanel = (panel: Panel, position: number) => {
     const values = (
-      panel.kind === 'money' ? [...turnover, ...netValues] : panel.kind === 'turnover' ? turnover : panel.kind === 'net' ? netValues : employees
+      panel.kind === 'money' ? rows.flatMap((row) => [row.turnover, row.net.value]) : rows.map((row) => row.employees)
     ).filter((value): value is number => value !== null)
     const scale = panel.kind === 'people' ? niceScale(0, Math.max(1, ...values), panel.allTicks ? 4 : 3) : scaleOf(values, panel.allTicks ? 4 : 3)
     const y = (value: number) => (scale.to - value) / (scale.to - scale.from || 1)
     const zero = y(0)
     const ticks = panel.allTicks ? scale.ticks : [...new Set([scale.from, 0, scale.to])].filter((tick) => tick >= scale.from && tick <= scale.to)
     const format = panel.kind === 'people' ? (value: number) => count(value) : moneyTick
-    // A value that is not zero is at least 2px tall, from the zero line outwards: never rounded away.
+    // A value is at least 2px tall, from the zero line outwards: never rounded away; a zero is a 2px mark on the line.
     const bar = (left: number, width: number, from: number, to: number, share: number) => ({
       left: percent(left + (width * (1 - share)) / 2),
       width: percent(width * share),
@@ -186,48 +236,50 @@ export function CompanyYearsChart({
           slot.kind === 'gap' ? (
             <div key={`gap-${slot.from}`} className={cn('absolute inset-y-0', HATCH)} style={{ left: percent(left), width: percent(width) }} aria-hidden="true" />
           ) : isActive(slot) ? (
-            <div key={`hl-${slot.year}`} className="absolute inset-y-0 bg-muted/70" style={{ left: percent(left), width: percent(width) }} aria-hidden="true" />
+            <div key={`hl-${slot.row.year}`} className="absolute inset-y-0 bg-muted/70" style={{ left: percent(left), width: percent(width) }} aria-hidden="true" />
           ) : null,
         )}
         {/* Bars. */}
-        {panel.kind !== 'people'
+        {panel.kind === 'money'
           ? placed.map(({ slot, left, width }) => {
               if (slot.kind !== 'year') return null
-              const turn = turnover[slot.index] ?? null
-              const point = net[slot.index]
-              const value = point?.value ?? null
-              const drawTurnover = panel.kind === 'money' || panel.kind === 'turnover'
-              const drawNet = panel.kind === 'money' || panel.kind === 'net'
-              const netShare = panel.kind === 'net' ? 0.55 : 0.3
+              const { turnover } = slot.row
+              const value = slot.row.net.value
               return (
-                <div key={slot.year} aria-hidden="true">
-                  {drawTurnover && turn !== null ? (
-                    <div className={cn('absolute rounded-t-[3px]', panel.kind === 'turnover' ? 'bg-primary/35' : 'bg-primary/20')} style={bar(left, width, zero, y(turn), 0.7)} />
-                  ) : null}
-                  {drawNet && value !== null ? (
-                    <div className={cn('absolute', value < 0 ? 'rounded-b-[3px]' : 'rounded-t-[3px]', netTone(point))} style={bar(left, width, zero, y(value), netShare)} />
+                <div key={slot.row.year} aria-hidden="true">
+                  {turnover !== null ? <div className="absolute rounded-t-[3px] bg-primary/20" style={bar(left, width, zero, y(turnover), 0.7)} /> : null}
+                  {value !== null ? (
+                    <div className={cn('absolute', value < 0 ? 'rounded-b-[3px]' : 'rounded-t-[3px]', netTone(slot.row))} style={bar(left, width, zero, y(value), 0.3)} />
                   ) : null}
                 </div>
               )
             })
           : null}
-        {/* People: a line and its points. */}
+        {/* People: a line in stretches and its points. */}
         {panel.kind === 'people' ? (
           <>
             <svg viewBox="0 0 1000 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 size-full overflow-visible" aria-hidden="true">
-              {runsOf(employees, y).map((points, key) => (
-                <polyline key={key} points={points.map((point) => `${point.x},${point.y}`).join(' ')} fill="none" className="stroke-amber-500" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-              ))}
+              {stretchesOf(y).map((points, key) =>
+                points.length > 1 ? (
+                  <polyline
+                    key={key}
+                    points={points.map((point) => `${point.x},${point.y}`).join(' ')}
+                    fill="none"
+                    className="stroke-amber-500"
+                    strokeWidth={2}
+                    vectorEffect="non-scaling-stroke"
+                    data-testid="company-years-people-stretch"
+                  />
+                ) : null,
+              )}
             </svg>
             {placed.map(({ slot, left, width }) => {
-              if (slot.kind !== 'year') return null
-              const value = employees[slot.index] ?? null
-              if (value === null) return null
+              if (slot.kind !== 'year' || slot.row.employees === null) return null
               return (
                 <span
-                  key={slot.year}
+                  key={slot.row.year}
                   className={cn('absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-500 ring-2 ring-background', isActive(slot) ? 'size-3' : 'size-2')}
-                  style={{ left: percent(left + width / 2), top: percent(y(value)) }}
+                  style={{ left: percent(left + width / 2), top: percent(y(slot.row.employees)) }}
                   aria-hidden="true"
                 />
               )
@@ -237,6 +289,11 @@ export function CompanyYearsChart({
       </div>
     )
   }
+
+  const reasonFor = (row: YearRow, metric: ChartMetric) => reasonOf?.(row.year, metric)
+  const turnoverLabel = (row: YearRow) => (row.form === 'ifrs' ? t`Cifra de afaceri netă` : t`Cifra de afaceri`)
+  // The statements band's words for the same links.
+  const sourceLabel = ({ year, source }: YearRow) => (source?.kind === 'mfp_resource' ? t`Fișierul pe data.gov.ro` : t`Interoghează ANAF pentru ${year}`)
 
   return (
     <figure className={cn('w-full', className)} aria-labelledby={`${id}-title`}>
@@ -271,6 +328,22 @@ export function CompanyYearsChart({
             {t`Profit net (rezultatul net reținut)`}
           </li>
         ) : null}
+        {/* The only words the IFRS form adds (owner, 26 November 2026: „just a short mention"); its notes behind the ⓘ. */}
+        {runs.length > 0 ? (
+          <li className="inline-flex items-center gap-1.5 text-foreground" data-testid="company-years-ifrs-legend">
+            <span className="inline-flex h-2.5 w-4 border-t-2 border-primary" aria-hidden="true" />
+            {ifrsFormLabel()}
+            <HubInfoNote label={ifrsNotesLabel()}>
+              <p>{ifrsTurnoverNote()}</p>
+              {seam ? (
+                <p>
+                  {ifrsSeamNote(ministryIfrsYears)}
+                  {blankThenZero ? ` ${ifrsBlankZeroNote()}` : null}
+                </p>
+              ) : null}
+            </HubInfoNote>
+          </li>
+        ) : null}
       </ul>
 
       <div
@@ -279,10 +352,21 @@ export function CompanyYearsChart({
         aria-label={t`Anii: săgețile stânga și dreapta trec de la un an la altul`}
         onKeyDown={onKey}
         onPointerLeave={(event) => {
-          if (event.pointerType === 'mouse') setActive(null)
+          if (event.pointerType === 'mouse' && !held) setActiveYear(null)
         }}
-        className="relative mt-4 pl-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className={cn('relative pl-16 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', runs.length > 0 ? 'mt-3' : 'mt-4')}
       >
+        {/* The IFRS runs, each named by a rule over it; the full label is the legend's. */}
+        {runs.length > 0 ? (
+          <div className="relative mb-2 h-5" aria-hidden="true">
+            {runs.map((run) => (
+              <div key={run.from} className="absolute bottom-0 border-t-2 border-primary" style={{ left: percent(run.left), width: percent(run.right - run.left) }}>
+                <span className="absolute bottom-full left-0 mb-0.5 whitespace-nowrap text-[10px] font-semibold leading-none text-primary">IFRS</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
         {panels.map(renderPanel)}
 
         {/* The years. */}
@@ -300,7 +384,7 @@ export function CompanyYearsChart({
             if (!labelled(position)) return null
             return (
               <span
-                key={slot.year}
+                key={slot.row.year}
                 className={cn(
                   'absolute -translate-x-1/2 font-mono text-[11px] tabular-nums',
                   isActive(slot) ? 'font-semibold text-foreground' : 'text-muted-foreground',
@@ -308,7 +392,7 @@ export function CompanyYearsChart({
                 )}
                 style={{ left: percent(left + width / 2) }}
               >
-                {slot.year}
+                {slot.row.year}
               </span>
             )
           })}
@@ -316,70 +400,98 @@ export function CompanyYearsChart({
 
         {/* Hit areas: a year across every panel. */}
         <div className="absolute inset-y-0 left-16 right-0">
-          {yearSlots.map(({ slot, left, width }, position) => (
+          {yearSlots.map(({ row, left, width }) => (
             <div
-              key={slot.kind === 'year' ? slot.year : position}
+              key={row.year}
               className="absolute inset-y-0"
               style={{ left: percent(left), width: percent(width) }}
               onPointerEnter={(event) => {
-                if (event.pointerType === 'mouse') setActive(position)
+                if (event.pointerType === 'mouse' && !held) setActiveYear(row.year)
               }}
-              onClick={() => setActive(position)}
+              onClick={() => {
+                // A click on the held year lets it go; on any other year, holds that one.
+                const release = held && activeYear === row.year
+                setActiveYear(row.year)
+                setHeld(!release)
+              }}
               aria-hidden="true"
             />
           ))}
         </div>
 
-        {/* The year's reading: all three figures, whatever the panels draw. One width, centred over its year and kept
-            inside the plot, so a phone shows all of it. The live region stays mounted, so its first reading is announced. */}
+        {/* The year's reading: its form, its publisher, all three figures whatever the panels draw, its source. One width,
+            centred over its year and kept inside the plot, so a phone shows all of it. The live region stays mounted, so
+            its first reading is announced. Where a pointer hovers, the box holds it, so the reading stays while the mouse
+            travels to its link; on a touch screen only the link takes it, so a tap elsewhere on the box reaches the year
+            under it (on a phone the box covers most of the plot). */}
         <div aria-live="polite" className="pointer-events-none absolute inset-x-0 top-0 z-10">
           {reading ? (
             <div
-              className="absolute top-0 w-60 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+              className="absolute top-0 w-64 max-w-full rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md [@media(hover:hover)]:pointer-events-auto"
               // The plot starts after the 4rem gutter: a point of it is 4rem + fraction × (100% − 4rem).
-              style={{ left: `clamp(0px, calc(4rem + (100% - 4rem) * ${(reading.entry.left + reading.entry.width / 2).toFixed(4)} - 7.5rem), calc(100% - 15rem))` }}
+              style={{ left: `clamp(0px, calc(4rem + (100% - 4rem) * ${(reading.left + reading.width / 2).toFixed(4)} - 8rem), calc(100% - 16rem))` }}
+              // Where the box takes the pointer, a click on it holds the year it reads (it never reaches the year beneath).
+              onClick={() => setHeld(true)}
             >
-              <span className="block font-mono tabular-nums text-muted-foreground">{reading.year}</span>
+              <span className="flex items-baseline justify-between gap-2">
+                <span className="font-mono tabular-nums text-muted-foreground">{reading.row.year}</span>
+                {reading.row.form === 'ifrs' ? <span className="font-medium text-primary">{ifrsFormLabel()}</span> : null}
+              </span>
+              {reading.row.publisher ? <span className="mt-0.5 block text-muted-foreground">{publisherName(reading.row.publisher)}</span> : null}
               <dl className="mt-1.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1" data-testid="company-years-reading">
                 <dt className="inline-flex items-center gap-1.5">
                   {swatch('bg-primary/20')}
-                  {t`Cifra de afaceri`}
+                  {turnoverLabel(reading.row)}
                 </dt>
-                <Figure value={reading.turnover === null ? null : moneyText(reading.turnover)} reason={() => reasonOf?.(reading.index, 'turnover')} />
+                <Figure value={reading.row.turnover === null ? null : moneyText(reading.row.turnover)} reason={() => reasonFor(reading.row, 'turnover')} />
                 <dt className="inline-flex items-center gap-1.5">
-                  {swatch(netTone(reading.net))}
-                  {netPointLabel(reading.net)}
+                  {swatch(netTone(reading.row))}
+                  {netPointLabel(reading.row.net)}
                 </dt>
-                <Figure value={reading.net?.value == null ? null : moneyText(reading.net.value)} reason={() => reasonOf?.(reading.index, 'net')} />
+                <Figure value={reading.row.net.value === null ? null : moneyText(reading.row.net.value)} reason={() => reasonFor(reading.row, 'net')} />
                 <dt className="inline-flex items-center gap-1.5">
                   <span className="inline-block h-0.5 w-2.5 bg-amber-500" aria-hidden="true" />
                   {t`Salariați`}
                 </dt>
-                <Figure value={reading.employees === null ? null : count(reading.employees)} reason={() => reasonOf?.(reading.index, 'employees')} />
+                <Figure value={reading.row.employees === null ? null : count(reading.row.employees)} reason={() => reasonFor(reading.row, 'employees')} />
               </dl>
+              {reading.row.source ? (
+                <a
+                  href={reading.row.source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pointer-events-auto mt-1.5 inline-flex min-h-8 items-center gap-1 rounded-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  data-testid="company-years-reading-source"
+                >
+                  {sourceLabel(reading.row)}
+                  <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                </a>
+              ) : null}
             </div>
           ) : null}
         </div>
       </div>
 
-      {/* The same figures, read out as a table. */}
+      {/* The same figures, read out as a table; the form is a column only where a year is on the IFRS form. */}
       <table className="sr-only">
         <caption>{netChartLabel(net)}</caption>
         <thead>
           <tr>
             <th scope="col">{t`An`}</th>
+            {runs.length > 0 ? <th scope="col">{t`Formularul`}</th> : null}
             <th scope="col">{t`Cifra de afaceri`}</th>
             <th scope="col">{measureLabel('profit', net)}</th>
             <th scope="col">{t`Salariați`}</th>
           </tr>
         </thead>
         <tbody>
-          {span.map((year, index) => (
-            <tr key={year}>
-              <th scope="row">{year}</th>
-              <td>{turnover[index] == null ? (reasonOf?.(index, 'turnover') ?? '—') : moneyText(turnover[index]!)}</td>
-              <td>{net[index]?.value == null ? (reasonOf?.(index, 'net') ?? '—') : `${moneyText(net[index]!.value!)} (${netPointLabel(net[index])})`}</td>
-              <td>{employees[index] == null ? (reasonOf?.(index, 'employees') ?? '—') : count(employees[index]!)}</td>
+          {rows.map((row) => (
+            <tr key={row.year}>
+              <th scope="row">{row.year}</th>
+              {runs.length > 0 ? <td>{row.form === 'ifrs' ? ifrsFormLabel() : ''}</td> : null}
+              <td>{row.turnover === null ? (reasonFor(row, 'turnover') ?? '—') : moneyText(row.turnover)}</td>
+              <td>{row.net.value === null ? (reasonFor(row, 'net') ?? '—') : `${moneyText(row.net.value)} (${netPointLabel(row.net)})`}</td>
+              <td>{row.employees === null ? (reasonFor(row, 'employees') ?? '—') : count(row.employees)}</td>
             </tr>
           ))}
         </tbody>
@@ -393,4 +505,3 @@ function Figure({ value, reason }: { readonly value: string | null; readonly rea
   if (value !== null) return <dd className="text-right font-medium tabular-nums">{value}</dd>
   return <dd className="text-right text-muted-foreground">{reason() ?? '—'}</dd>
 }
-

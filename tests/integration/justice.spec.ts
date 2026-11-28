@@ -11,7 +11,7 @@
  * `src/features/justice/**`.
  */
 
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForPageReady } from '../utils/test-helpers'
 
 test.describe('Justice pages', () => {

@@ -84,18 +84,6 @@ export const LEGAL_EVENT_KINDS = [
 export const LEGAL_EVENT_SOURCES = ['portal', 'monitorul-oficial'] as const
 
 /**
- * The fields the acts directory filters by: the server's filter
- * (`legalActsBrowseFilterSchema` in `legal.ts`) and the directory's URL state
- * below are both built from it. A function, so nothing is built until called.
- */
-export const legalActsBrowseFilterShape = () => ({
-  actType: z.string().optional(),
-  year: z.number().int().optional(),
-  status: z.enum(LEGAL_ACT_STATUSES).optional(),
-  domain: z.enum(LEGAL_DOMAIN_SLUGS).optional(),
-})
-
-/**
  * Act page search params (`/legislation/acts/$actId` — the text lives ON the
  * act page; the old `/text` sibling 301-redirects here).
  *  - `doc` — read a specific (non-canonical) expression instead of the act's
@@ -104,48 +92,34 @@ export const legalActsBrowseFilterShape = () => ({
  *    recompile-scoped). A search param, not a hash, so the SSR loader can
  *    target the chunk containing it on giant documents.
  */
+/** What an unreadable `doc` is caught as, for the object below to drop its `nod` too; never in the output. */
+const UNREADABLE_DOC = '\u0000unreadable'
+
 export const legalReaderSearchSchema = lazySchema(() =>
-  z.object({
-    // The router JSON-parses search values: `?doc=54260` arrives as a number and
-    // `?doc=%2254260%22` as a string. Both name the same document id.
-    doc: z
-      .union([z.string().min(1), z.number().int().nonnegative()])
-      .transform((value) => String(value))
-      .optional()
-      .catch(undefined),
-    nod: z.string().min(1).optional(),
-  }),
+  z
+    .object({
+      // The router JSON-parses search values: `?doc=54260` arrives as a number and
+      // `?doc=%2254260%22` as a string. Both name the same document id.
+      doc: z
+        .union([z.string().min(1), z.number().int().nonnegative()])
+        .transform((value) => String(value))
+        .optional()
+        .catch(UNREADABLE_DOC),
+      // A path is text. The router has already read a bare `?nod=1.10` as the number 1.1: its spelling is lost,
+      // and writing the number back as text could name another provision (`1.1`). Such a `nod` is
+      // dropped, so the page opens on the text without a jump instead of failing (it answered 500). The app's own
+      // links quote a path that looks like a number (`stringifyAppSearch`), so they keep their jump. LEGAL-001.
+      nod: z.string().min(1).optional().catch(undefined),
+    })
+    // A `nod` is a path in the `doc` it came with: when that `doc` is present but unreadable (`?doc=true&nod=r10`),
+    // the same path in the default text may be another provision, so both go. A `nod` alone stays a link into the
+    // default text (review astra-client-12). Both keys are always named: the router merges this result over the
+    // root's passthrough search, where a key left out would keep the address's raw value.
+    .transform(({ doc, nod }): { doc: string | undefined; nod: string | undefined } =>
+      doc === UNREADABLE_DOC ? { doc: undefined, nod: undefined } : { doc, nod },
+    ),
 )
 export type LegalReaderSearch = LazyOutput<typeof legalReaderSearchSchema>
-
-/**
- * The directory's URL state. `status` additionally admits the sentinel
- * `'toate'`: an absent status DEFAULTS to `in-vigoare` (law in force is what
- * people mean by "the acts"), so "no status filter" must be a stated choice
- * in the URL, never the silent fallback.
- */
-export const legalActsBrowseSearchSchema = lazySchema(() =>
-  z.object(legalActsBrowseFilterShape()).extend({
-    status: z.enum(LEGAL_ACT_STATUSES).or(z.literal('toate')).optional(),
-  }),
-)
-export type LegalActsBrowseSearch = LazyOutput<typeof legalActsBrowseSearchSchema>
-
-/**
- * URL state for `/legislation/gazette` — filters plus the server's own page
- * number, so a filtered page is a shareable link. `.catch(undefined)` drops a
- * malformed param to its default instead of erroring the route; the year's
- * corpus bounds are enforced by the component (the valid range is a measured
- * constant in `legal-coverage.ts`, which schemas do not import).
- */
-export const gazetteBrowseSearchSchema = lazySchema(() =>
-  z.object({
-    year: z.number().int().optional().catch(undefined),
-    part: z.enum(GAZETTE_PART_CODES).optional().catch(undefined),
-    page: z.number().int().min(1).optional().catch(undefined),
-  }),
-)
-export type GazetteBrowseSearch = LazyOutput<typeof gazetteBrowseSearchSchema>
 
 /**
  * A calendar-valid `YYYY-MM-DD`. The round-trip guards V8's lenient parse:
@@ -163,22 +137,21 @@ const changesFeedDate = () =>
     })
 
 /**
- * URL state for `/legislation/changes`. `.catch(undefined)` drops a malformed
- * param to its default instead of erroring the route (gazette pattern).
- *
- * `view` names the feed's cohorts — the effective-date dimension has real
- * populations a bare window cannot reach (measured 2026-08-26):
- *  - absent (default): already-in-force events, `until = today` (63.210);
- *  - `viitoare`: future-dated events, `since = tomorrow` (8);
- *  - `toate`: the feed exactly as served — future first, undated trailing;
- *  - `nedatate`: the 21.266 events with NO effective date (`undatedOnly`),
- *    which every since/until window excludes.
- * An explicit `since`/`until` is the custom-window mode; when a hand-edited
- * URL carries BOTH a `view` and a window, the component lets `view` win and
- * never sends the rejected `undatedOnly`+window combination to the server.
+ * URL state for `/legislation/changes` (the redesign, owner 28 November 2026). `.catch(undefined)` drops a
+ * malformed param to its default instead of erroring the route.
+ *  - `fila`: the tab — absent = changes to existing acts, `legi-noi` = new laws and approved ordinances,
+ *    `fara-data` = the changes with no date of entry into force;
+ *  - `fel`: the chosen kinds, comma-joined (read and checked by `features/legal/lib/legal-changes-address.ts`);
+ *  - `de` / `pana`: the period, calendar-valid `YYYY-MM-DD`.
+ * The page's earlier keys (`view`, `since`, `until`, `kind`, `source`) are still read, only so the route can forward
+ * an old link to the new keys (`changesSearchOfOld`); the page never writes them.
  */
 export const legalChangesSearchSchema = lazySchema(() =>
   z.object({
+    fila: z.enum(['legi-noi', 'fara-data']).optional().catch(undefined),
+    fel: z.string().min(1).max(400).optional().catch(undefined),
+    de: changesFeedDate().optional().catch(undefined),
+    pana: changesFeedDate().optional().catch(undefined),
     view: z.enum(['viitoare', 'toate', 'nedatate']).optional().catch(undefined),
     since: changesFeedDate().optional().catch(undefined),
     until: changesFeedDate().optional().catch(undefined),
@@ -192,10 +165,14 @@ export type LegalChangesSearch = LazyOutput<typeof legalChangesSearchSchema>
  * URL state for `/legislation/search` — the Caută tab, so a search is a
  * shareable link. TanStack Router JSON-parses search params, so a
  * numeric-looking `q` (`?q=227`) arrives as a NUMBER — coerce it back to text
- * rather than dropping a legitimate query, but treat `null`/booleans as junk
+ * rather than dropping a legitimate query, but treat `null` as junk
  * (`z.coerce.string()` alone would turn `?q=null` into the literal text
  * "null" and search for it); the same trap and cure as `entity-search.ts`'s
- * `optionalSearchString`.
+ * `optionalSearchString`. A boolean is the word the reader typed: the router
+ * writes the text "true" as `?q=%22true%22`, so a bare `?q=true` comes from the
+ * page's native form (SEARCH-001) and is kept as "true" (review
+ * astra-client-11). A number's spelling is lost before this schema runs
+ * (`?q=1.10` arrives as 1.1); SEARCH-001 says where it could be kept.
  *
  * `historical: true` widens the search to abrogated / out-of-force acts (the
  * server's `includeHistorical`, default false — which silently zeroes even an
@@ -214,7 +191,7 @@ export const legalFinderSearchSchema = lazySchema(() =>
   z.object({
     q: z
       .preprocess(
-        (value) => (value === null || typeof value === 'boolean' ? undefined : value),
+        (value) => (value === null ? undefined : typeof value === 'boolean' ? String(value) : value),
         z.coerce.string().min(1).max(400).optional(),
       )
       .catch(undefined),

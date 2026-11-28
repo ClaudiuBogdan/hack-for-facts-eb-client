@@ -4,6 +4,7 @@ import {
   type LegalActDocumentVersion,
   type LegalDocument,
 } from '@/schemas/legal'
+import { formatLegalDate } from './legal-format'
 import type { LegalServedForm } from './tldf/schemas'
 
 /**
@@ -65,13 +66,46 @@ export function versionDateOf(doc: LegalActDocumentVersion): string | null {
   return doc.versionDate ?? doc.firstPublicationDate
 }
 
-/** Newest first; undated rows sink to the end rather than faking an epoch. */
+/**
+ * The date a version is NAMED and ORDERED by. A consolidation goes by the date of the Portal's own note
+ * (`portalLabelDate`): that is the date its text reflects, the one a reader sets against the date they ask about
+ * (LEG-X3AV), and the server's own ordering date for consolidations (on the production snapshot of 26 November 2026
+ * every consolidation has one, equal to its ordering date). Should a load ever serve a consolidation without it, the
+ * version's own date stands in, so it still has a name and a place in the list (the legislation session's ruling,
+ * 26 November 2026). Any other version goes by its own date.
+ */
+export function listedVersionDate(doc: LegalActDocumentVersion): string | null {
+  return (isConsolidationVersion(doc) ? doc.portalLabelDate : null) ?? versionDateOf(doc)
+}
+
+/** The shown version's date, by the same rule: the Portal's for a consolidation, else its own or its listed version's. */
+export function shownVersionDate(
+  act: Pick<LegalActDetail, 'documents'>,
+  shown: ShownVersion,
+): string | null {
+  if (isConsolidationVersion(shown) && shown.portalLabelDate !== null) return shown.portalLabelDate
+  if (shown.versionDate !== null) return shown.versionDate
+  const listed = act.documents.find((doc) => doc.documentId === shown.documentId)
+  return listed === undefined ? null : versionDateOf(listed)
+}
+
+/** A version's name in one line: the date it is named by, then its kind. */
+export function versionName(kind: string, date: string | null, locale: string): string {
+  return date === null
+    ? versionKindLabel(kind)
+    : `${formatLegalDate(date, locale)}, ${versionKindLabel(kind)}`
+}
+
+/**
+ * Newest first, by the date each version is named by (`listedVersionDate`), so a list and the names in it cannot
+ * disagree; undated rows sink to the end rather than faking an epoch.
+ */
 export function orderVersionsNewestFirst(
   documents: readonly LegalActDocumentVersion[],
 ): LegalActDocumentVersion[] {
   return [...documents].sort((a, b) => {
-    const aDate = versionDateOf(a)
-    const bDate = versionDateOf(b)
+    const aDate = listedVersionDate(a)
+    const bDate = listedVersionDate(b)
     if (aDate === null && bDate === null) return 0
     if (aDate === null) return 1
     if (bDate === null) return -1

@@ -47,8 +47,10 @@ const FINDER_SEARCH_QUERY = /* GraphQL */ `
       sections {
         act {
           actId
+          displayCitation
         }
         documentId
+        nodePath
         nodeLabel
         snippet
         servedForm {
@@ -92,7 +94,7 @@ const str = (value: unknown): string | null =>
   typeof value === 'string' && value.length > 0 ? value : null
 
 /** A name with something in it, trimmed: a blank `den` gives way to the title. */
-const nonblank = (value: unknown): string | null => {
+export const nonblank = (value: unknown): string | null => {
   const text = typeof value === 'string' ? value.trim() : ''
   return text.length > 0 ? text : null
 }
@@ -204,7 +206,9 @@ export async function fetchLegalSearchLive(
           return [
             {
               actId,
+              actCitation: str(rec(raw.act).displayCitation),
               documentId,
+              nodePath: str(raw.nodePath),
               nodeLabel: str(raw.nodeLabel),
               snippet: str(raw.snippet),
               servedForm:

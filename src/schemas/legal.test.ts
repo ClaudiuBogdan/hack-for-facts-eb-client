@@ -1,54 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
-  gazetteBrowseSearchSchema,
   legalChangesSearchSchema,
   legalFinderSearchSchema,
   legalReaderSearchSchema,
 } from './legal'
-
-/**
- * `/legislation/gazette` URL params run through `validateSearch`: a throwing
- * schema would error the whole route on junk someone pasted into the address
- * bar. `.catch(undefined)` degrades each bad param to its default instead —
- * verified in the browser (`?year=abc&page=0&part=ZZ` renders the default
- * view); pinned here so the behaviour cannot regress silently.
- */
-describe('gazetteBrowseSearchSchema', () => {
-  it('passes valid filters and page through unchanged', () => {
-    expect(
-      gazetteBrowseSearchSchema.parse({ year: 2010, part: 'PIM', page: 2 }),
-    ).toEqual({ year: 2010, part: 'PIM', page: 2 })
-  })
-
-  it('parses an empty search to all-defaults', () => {
-    expect(gazetteBrowseSearchSchema.parse({})).toEqual({})
-  })
-
-  it('drops junk params to their defaults instead of erroring the route', () => {
-    const parsed = gazetteBrowseSearchSchema.parse({
-      year: 'abc',
-      page: 0,
-      part: 'ZZ',
-    })
-    expect(parsed.year).toBeUndefined()
-    expect(parsed.page).toBeUndefined()
-    expect(parsed.part).toBeUndefined()
-  })
-
-  it('rejects a below-one page and a fractional year without throwing', () => {
-    expect(gazetteBrowseSearchSchema.parse({ page: -3 }).page).toBeUndefined()
-    expect(
-      gazetteBrowseSearchSchema.parse({ year: 2010.5 }).year,
-    ).toBeUndefined()
-  })
-
-  it('admits only the eight real part codes', () => {
-    expect(gazetteBrowseSearchSchema.parse({ part: 'PVII' }).part).toBe('PVII')
-    expect(
-      gazetteBrowseSearchSchema.parse({ part: 'PVIII' }).part,
-    ).toBeUndefined()
-  })
-})
 
 /**
  * `/legislation/changes` URL params, same contract: junk pasted into the
@@ -116,11 +71,10 @@ describe('legalChangesSearchSchema', () => {
     )
   })
 
-  it('parses a view combined with a window — precedence is the component contract', () => {
-    // A hand-edited URL can carry both; the SCHEMA keeps them (each is valid
-    // alone) and the COMPONENT lets the view win, never sending the server
-    // the undatedOnly+window combination it rejects — pinned in
-    // legislation-changes-feed.test.tsx, not here.
+  it('parses an old view combined with a window — the route forwards it', () => {
+    // An old link can carry both; the SCHEMA keeps them (each is valid alone)
+    // and the route forwards them to the new keys, the undated tab without
+    // its window — pinned in legal-changes-address.test.ts, not here.
     expect(
       legalChangesSearchSchema.parse({ view: 'nedatate', since: '2026-01-01' }),
     ).toEqual({ view: 'nedatate', since: '2026-01-01' })
@@ -144,10 +98,14 @@ describe('legalFinderSearchSchema', () => {
     expect(legalFinderSearchSchema.parse({ q: 227 }).q).toBe('227')
   })
 
-  it('drops null/boolean q as junk, never as the literal text "null"', () => {
+  it('drops a null q as junk, never as the literal text "null"', () => {
     expect(legalFinderSearchSchema.parse({ q: null }).q).toBeUndefined()
-    expect(legalFinderSearchSchema.parse({ q: true }).q).toBeUndefined()
     expect(legalFinderSearchSchema.parse({ q: '' }).q).toBeUndefined()
+  })
+
+  it('keeps a boolean q as the word typed: only a native form sends it bare (astra-client-11)', () => {
+    expect(legalFinderSearchSchema.parse({ q: true }).q).toBe('true')
+    expect(legalFinderSearchSchema.parse({ q: false }).q).toBe('false')
   })
 
   it('drops an oversized q instead of erroring the route', () => {

@@ -15,7 +15,7 @@ import {
   companyMainActivityEvidenceEntrySchema,
   companyMainActivityOutcomeSchema,
 } from '@/schemas/private-company-main-activity'
-import { REGISTRY_ENVELOPE_FIELDS, rawRegistryEnvelopeSchema, rawRegistryEvidenceSchema, registryEvidenceFields } from './company-registry-graphql'
+import { REGISTRY_ENVELOPE_FIELDS, REGISTRY_EVIDENCE_FIELDS, rawRegistryEnvelopeSchema, rawRegistryEvidenceSchema } from './company-registry-graphql'
 
 /** Money/BigInt scalars serialize as strings over the wire; coerce on parse. */
 const moneyString = z.union([z.string(), z.number()]).nullable()
@@ -82,21 +82,18 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
       codInmatriculare
       registrationDate
       registrationDatePresent
-      headlineStatus { code label labelSource }
+      headlineStatus { code label }
       territory { sirutaCode uatName countyName matchConfidence }
-      address { display county locality }
+      address { county }
       fiscal {
         vatPayer
         declaredFiscallyInactive
         mainCaenCode
         mainCaenRev
-        registeredName
         asOf
       }
-      caenActivities { code rev label source labelSource${shape === 'legacy' ? '' : ' classState'}${main ? MAIN_FLAG_FIELDS : ''} }${shape === 'current' ? ACTIVITY_SELECTION_FIELDS : ''}${main ? MAIN_ACTIVITY_FIELDS : ''}
-      representatives { name role }
-      euBranches { branchName country euid fiscalCode }
-      registry { ${registryEvidenceFields(shape === 'legacy')} }
+      caenActivities { code rev label source${shape === 'legacy' ? '' : ' classState'}${main ? MAIN_FLAG_FIELDS : ''} }${shape === 'current' ? ACTIVITY_SELECTION_FIELDS : ''}${main ? MAIN_ACTIVITY_FIELDS : ''}
+      registry { ${REGISTRY_EVIDENCE_FIELDS} }
       publicMoney {
         totalRon
         flowCount
@@ -114,9 +111,10 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
         netLoss
         employees
         summary
+        reportingForm
         source {
-          sourceSystem url urlKind statementProfileHash metricRuleVersion selectionBasis
-          contributingSources { sourceSnapshotId rowNumber url indicators { code name } }
+          url urlKind
+          contributingSources { rowNumber url indicators { code name } }
         }
         qualification {
           assessment
@@ -130,10 +128,10 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
           netResultStatus
           netResult
           holdReason
-          holdDrift
         }
       }
       longFormOnly { year sourceSystem filerClass sourceSnapshotId resourceUrl }
+      ifrsFormYears { year sourceSystem turnover netResult employees sourceUrl }
       trajectory {
         fromYear
         toYear
@@ -158,9 +156,7 @@ export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN = companyProfileQue
 /** The profile as an API from before the derived activity serves it: asked only when that API rejected the new fields. */
 export const COMPANY_PROFILE_QUERY_LEGACY = companyProfileQuery('legacy', false)
 
-const rawCompanyStatusSchema = z
-  .object({ code: z.string(), label: z.string().nullable(), labelSource: z.string().nullish() })
-  .nullable()
+const rawCompanyStatusSchema = z.object({ code: z.string(), label: z.string().nullable() }).nullable()
 
 /**
  * `Company.activitySelection` (the derived activity). Enum values stay
@@ -211,18 +207,14 @@ const rawCompanySchema = z.object({
       matchConfidence: z.string(),
     })
     .nullable(),
-  address: z.object({
-    display: z.string(),
-    county: z.string().nullable(),
-    locality: z.string().nullable(),
-  }),
+  /** Only the county, as a fallback: no address is served (the mapper keeps the display empty and no locality). */
+  address: z.object({ county: z.string().nullable() }),
   fiscal: z
     .object({
       vatPayer: z.boolean().nullable(),
       declaredFiscallyInactive: z.boolean().nullable(),
       mainCaenCode: z.string().nullable(),
       mainCaenRev: z.string().nullable().optional(),
-      registeredName: z.string().nullable(),
       asOf: z.string().nullable(),
     })
     .nullable(),
@@ -232,7 +224,6 @@ const rawCompanySchema = z.object({
       rev: z.string().nullable(),
       label: z.string().nullable(),
       source: z.string(),
-      labelSource: z.string().nullish(),
       classState: z.string().nullish(),
       isMainCaen: z.boolean().nullish(),
       matchesAssumedMainCode: z.boolean().nullish(),
@@ -245,15 +236,6 @@ const rawCompanySchema = z.object({
    * profile lost, never a value read as a nearby one.
    */
   mainActivity: z.unknown().optional(),
-  representatives: z.array(z.object({ name: z.string(), role: z.string() })),
-  euBranches: z.array(
-    z.object({
-      branchName: z.string().nullable(),
-      country: z.string().nullable(),
-      euid: z.string().nullable(),
-      fiscalCode: z.string().nullable(),
-    }),
-  ),
   publicMoney: z
     .object({
       totalRon: moneyString,
@@ -307,24 +289,19 @@ const rawQualificationSchema = z.object({
   netResultStatus: z.string().nullable(),
   netResult: moneyString,
   holdReason: z.string().nullable(),
-  holdDrift: z.array(z.string()),
 })
 
 /** One MFP file line that supplied cells of a statement (CQA-14); optional so older recordings parse. */
 const rawStatementContributionSchema = z.object({
-  sourceSnapshotId: z.string(),
   rowNumber: z.string().nullable(),
   url: z.string().nullable(),
   indicators: z.array(z.object({ code: z.string(), name: z.string().nullable() })),
 })
 
+/** The statement's link and, for a Ministry year, the file lines it came from (what the page shows, nothing more). */
 const rawStatementSourceSchema = z.object({
-  sourceSystem: z.string(),
   url: z.string().nullable(),
   urlKind: z.string().nullable(),
-  statementProfileHash: z.string().nullable(),
-  metricRuleVersion: z.string().nullable(),
-  selectionBasis: z.string().nullish(),
   contributingSources: z.array(rawStatementContributionSchema).nullish(),
 })
 
@@ -340,6 +317,23 @@ const rawFinancialYearSchema = z.object({
   /** Optional so a response without them parses; the mapper then says „not assessed". */
   source: rawStatementSourceSchema.nullish(),
   qualification: rawQualificationSchema.nullish(),
+  /** `CompanyReportingForm` (IFRS) or null: not marked, never „ordinary". Optional for recorded answers without it. */
+  reportingForm: z.string().nullish(),
+})
+
+/**
+ * `CompanyFinancials.ifrsFormYears` (server-companies, 26 November 2026): the publisher's IFRS-file years, newest
+ * first, figures as the source's exact strings (null: no figure read — never 0). Null: the API cannot read the
+ * IFRS-form views (forms unknown). Optional as well, for recorded and mocked answers without it — NOT for an older
+ * server, which rejects the field at validation: the server ships before this client.
+ */
+const rawIfrsFormYearSchema = z.object({
+  year: z.number().int(),
+  sourceSystem: z.string(),
+  turnover: moneyString,
+  netResult: moneyString,
+  employees: moneyString,
+  sourceUrl: z.string().nullable(),
 })
 
 const rawTrajectorySchema = z.object({
@@ -375,6 +369,7 @@ export const companyProfileResponseSchema = z.object({
       years: z.array(rawFinancialYearSchema),
       trajectory: rawTrajectorySchema.nullish(),
       longFormOnly: z.array(rawLongFormStatementSchema).nullish(),
+      ifrsFormYears: z.array(rawIfrsFormYearSchema).nullish(),
     })
     .nullable(),
 })
@@ -383,6 +378,7 @@ export type RawCompany = z.infer<typeof rawCompanySchema>
 export type RawActivitySelection = z.infer<typeof rawActivitySelectionSchema>
 export type RawCompanyFinancialYear = z.infer<typeof rawFinancialYearSchema>
 export type RawLongFormStatement = z.infer<typeof rawLongFormStatementSchema>
+export type RawIfrsFormYear = z.infer<typeof rawIfrsFormYearSchema>
 export type RawStatementQualification = z.infer<typeof rawQualificationSchema>
 export type CompanyProfileResponse = z.infer<typeof companyProfileResponseSchema>
 

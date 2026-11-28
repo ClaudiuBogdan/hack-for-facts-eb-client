@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { t } from '@lingui/core/macro'
 import { HubInfoNote } from '../hub/hub-info-note'
@@ -357,9 +358,11 @@ function MainActivityHistory({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
+        className="inline-flex min-h-9 items-center gap-1 text-sm font-medium text-foreground underline-offset-4 hover:underline"
       >
         {open ? <Trans>Ascunde istoricul</Trans> : <Trans>Istoricul activității principale presupuse</Trans>}
+        {/* Without it the closed button read as a heading over nothing. */}
+        <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')} aria-hidden="true" />
       </button>
       {open ? (
         <div id={panelId} className="mt-2 border-l pl-3" data-testid="company-main-activity-history">

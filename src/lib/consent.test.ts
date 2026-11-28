@@ -110,10 +110,10 @@ describe('getConsent', () => {
     })
   })
 
-  it('coerces missing and non-boolean flags to booleans', () => {
+  it('requires explicit boolean opt-in for optional telemetry', () => {
     store({ version: 1, updatedAt: '2026-01-15T10:00:00.000Z', analytics: 'yes' })
     const consent = getConsent()
-    expect(consent.analytics).toBe(true)
+    expect(consent.analytics).toBe(false)
     expect(consent.sentry).toBe(false)
     expect(consent.version).toBe(1)
     expect(consent.essential).toBe(true)
@@ -167,6 +167,30 @@ describe('getConsent', () => {
 })
 
 describe('setConsent', () => {
+  it('keeps optional telemetry off when storage cannot persist the choice', () => {
+    store(decision({ analytics: true, sentry: true }))
+    const setItem = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage blocked', 'QuotaExceededError')
+    })
+    const removeItem = vi.spyOn(window.localStorage, 'removeItem').mockImplementation(() => {
+      throw new DOMException('Storage blocked', 'SecurityError')
+    })
+    const listener = vi.fn()
+    const unsubscribe = onConsentChange(listener)
+
+    try {
+      expect(declineAll()).toBe(false)
+      expect(hasStoredConsentDecision()).toBe(false)
+      expect(getConsent()).toMatchObject({ analytics: false, sentry: false })
+      expect(listener).toHaveBeenCalledWith(expect.objectContaining({ analytics: false, sentry: false }))
+    } finally {
+      setItem.mockRestore()
+      removeItem.mockRestore()
+      unsubscribe()
+      declineAll()
+    }
+  })
+
   it('persists the decision, forcing version, essential and a fresh timestamp', () => {
     setConsent({
       version: 1,

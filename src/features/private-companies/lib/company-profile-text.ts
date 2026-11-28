@@ -13,7 +13,7 @@ import { legalFormIsFeminine } from './company-legal-forms'
 import { count, moneyText, percent, yearRanges } from './company-profile-format'
 import { caenEdition, type CompanyProfileModel, type NetPoint, type SizeClass, type StatementValues } from './company-profile-model'
 import { cuiStateText } from './company-registry-text'
-import { admittedNet, comparable, reportedNumber, reportedSummary } from './financial-qualification'
+import { admittedNet, comparable, reportedNumber, reportedSummary, sameReportingForm } from './financial-qualification'
 import { formatHubNumber } from './hub-format'
 
 /**
@@ -194,7 +194,7 @@ export function changeNote(from: number | null | undefined, to: number | null | 
  * result, in either direction.
  */
 export function netChangeNote(previous: PrivateCompanyFinancialYear | null, latest: PrivateCompanyFinancialYear): string | null {
-  if (!previous || !comparable(previous, latest)) return null
+  if (!previous || !comparable(previous, latest) || !sameReportingForm(previous, latest)) return null
   const was = admittedNet(previous)
   const is = admittedNet(latest)
   if (!was || !is || was.kind !== is.kind) return null
@@ -264,6 +264,47 @@ export function netChartLabel(points: readonly NetPoint[]): string {
 }
 
 /** One year's bottom line by its own metric, as a reading of that year names it: a profit is never the result. */
+// ── The IFRS form in the company chart (owner, 25–26 November 2026; wording checked by the scrapper's IFRS session) ──
+
+/** The label of a year the publisher put on the IFRS form: the form, never the company's accounting. */
+export const ifrsFormLabel = () => t`Raportat pe formularul IFRS`
+
+/** The name of the note behind the legend's ⓘ. */
+export const ifrsNotesLabel = () => t`Despre anii pe formularul IFRS`
+
+/** Turnover on that form: the form's own row, not the sales line of the company's IFRS statements. */
+export const ifrsTurnoverNote = () =>
+  t`Pe formularul IFRS, cifra de afaceri este rândul „Cifra de afaceri netă" din formularul depus, nu linia de venituri din vânzări din situația IFRS a companiei.`
+
+/** The publishers' seam, with the company's own years in the Ministry's file (as they are, never first–last). */
+export const ifrsSeamNote = (years: readonly number[]) => {
+  const said = yearsSaid(years)
+  return t`Pentru ${said}, cifrele formularului IFRS vin din fișierul Ministerului Finanțelor; din 2019, de la ANAF.`
+}
+
+/** Where a 2018 blank meets a 2019 zero: the difference as measured on 2019, the year both publishers cover. */
+export const ifrsBlankZeroNote = () => t`În 2019, unde fișierul Ministerului avea celula goală, ANAF a publicat 0: trecerea de la gol la 0 nu e o scădere.`
+
+/**
+ * Why a figure of a Ministry IFRS-file year is not drawn: no figure was read — a blank cell in the file, or a layout
+ * without exactly one verified rule (server-companies, contract item 11). Never a zero, and never said as a blank alone.
+ */
+export const ifrsFileBlankReason = () => t`Nicio valoare citită din fișierul Ministerului Finanțelor`
+
+/** A statement's publisher, by name. */
+export function publisherName(publisher: 'anaf' | 'mfp'): string {
+  return publisher === 'mfp' ? t`Ministerul Finanțelor` : 'ANAF'
+}
+
+/** Years as ranges, the last joined by „și" („2014 și 2016–2018"): only the years there are; commas run into a sentence's own. */
+export function yearsSaid(years: readonly number[]): string {
+  const ranges = yearRanges(years).split(', ').filter(Boolean)
+  if (ranges.length < 2) return ranges[0] ?? ''
+  const head = ranges.slice(0, -1).join(', ')
+  const last = ranges[ranges.length - 1]!
+  return t`${head} și ${last}`
+}
+
 export function netPointLabel(point: Pick<NetPoint, 'kind'> | undefined): string {
   return point?.kind === 'profit' ? t`Profit net` : t`Rezultat net`
 }

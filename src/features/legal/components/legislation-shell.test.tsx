@@ -14,14 +14,11 @@ vi.mock('@tanstack/react-router', () => ({
 
 const PAGES: ReadonlyArray<readonly [LegislationTab, string, string, string]> = [
   ['cauta', 'Caută în legislație', 'Caută', '/legislation/search'],
-  ['acte', 'Actele', 'Acte', '/legislation/acts'],
   ['analiza', 'Analiza legislației', 'Analiză', '/legislation/analytics'],
   ['modificari', 'Modificările', 'Modificări', '/legislation/changes'],
-  ['monitorul', 'Monitorul Oficial', 'Monitorul Oficial', '/legislation/gazette'],
-  ['ghid', 'Ghidul legislației', 'Ghid', '/legislation/guide'],
 ]
 
-/** The slim head of the six pages other than the landing: back to it, the page's title, one pinned row. */
+/** The slim head of the three pages other than the landing (owner, 27 November 2026): back to it, the page's title, one pinned row. */
 describe('LegislationShell', () => {
   it.each(PAGES)('names %s in the head and marks it in the pinned row', (tab, title, label, href) => {
     render(
@@ -32,7 +29,7 @@ describe('LegislationShell', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(title)
     expect(screen.getByRole('link', { name: 'Legislație' })).toHaveAttribute('href', '/legislation')
     const nav = screen.getByRole('navigation', { name: 'Paginile legislației' })
-    expect(within(nav).getAllByRole('link')).toHaveLength(6)
+    expect(within(nav).getAllByRole('link')).toHaveLength(3)
     const own = within(nav).getByRole('link', { name: label })
     expect(own).toHaveAttribute('href', href)
     expect(own).toHaveAttribute('aria-current', 'page')
@@ -52,9 +49,9 @@ describe('LegislationShell', () => {
     expect(screen.getByText(/Date demonstrative \(mock\)|Demo data/)).toBeInTheDocument()
   })
 
-  it('names the sources with neither a date nor a status (the guide, a cold read of the acts)', () => {
+  it('names the sources with neither a date nor a status (a cold read of the acts)', () => {
     render(
-      <LegislationShell activeTab="ghid">
+      <LegislationShell activeTab="cauta">
         <p>conținut</p>
       </LegislationShell>,
     )

@@ -710,16 +710,10 @@ describe('CompanyProfilePage — the derived activity selection', () => {
       ],
       registry: mockRegistryEvidence({
         identifier: 'J12/3094/2007',
-        name: '66 JACK SRL',
         legalForm: 'SRL',
         recordedDate: '2007-11-26',
         countyCode: 'CJ',
-        countyName: 'Cluj',
         statusCodes: ['1048'],
-        caen: [
-          { code: '5610', revision: 'rev2', label: 'Restaurante' },
-          { code: '5600', revision: 'rev2', label: 'Împrumutat', classState: 'short_token' },
-        ],
         observationsTruncated: true,
       }),
     })
@@ -1011,24 +1005,19 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
         codInmatriculare: 'J12/3094/2007',
         registrationDate: '2007-11-26',
         registrationDatePresent: true,
-        headlineStatus: { code: '1048', label: 'funcțiune', labelSource: 'API_NOMENCLATURE' },
+        headlineStatus: { code: '1048', label: 'funcțiune' },
         // The page's pinned scope: the same edition the response was read under.
         registry: {
           registry: { ...companyProfile().registry.registry, source: 'onrc', state: 'PUBLISHED' },
           cuiState: 'NOT_IN_EDITION',
           profile: null,
           identifiers: [],
-          identityObservations: [],
-          caenObservations: [],
-          statusObservations: [],
           observationsTruncated: false,
         },
         territory: null,
-        address: { display: '', county: 'Cluj', locality: 'Municipiul Gherla' },
+        address: { county: 'Cluj' },
         fiscal: null,
         caenActivities: [],
-        representatives: [],
-        euBranches: [],
         publicMoney: null,
         asOf: { onrc: '2026-07-08', anaf: null },
       },
@@ -1050,7 +1039,6 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     netResultStatus: statuses.net_result ?? 'MISSING',
     netResult: null,
     holdReason: null,
-    holdDrift: [],
   })
 
   it('keeps every year’s source values readable when the API sent no qualification at all (D1-C01)', async () => {
@@ -1215,11 +1203,8 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     netLoss: '0.00',
     employees: '12',
     source: {
-      sourceSystem: 'anaf',
       url: 'https://webservicesp.anaf.ro/bilant?an=2024&cui=22202108',
       urlKind: 'anaf_statement',
-      statementProfileHash: 'c3'.repeat(32),
-      metricRuleVersion: 'anaf-bilant-metric-v1',
     },
   }
   const longForm = () => screen.queryByRole('region', { name: 'Bilanțuri doar în format lung' })
@@ -1258,22 +1243,18 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
       year: 2009,
       sourceSystem: 'mfp',
       source: {
-        sourceSystem: 'mfp',
         url: ANCHOR,
         urlKind: 'mfp_resource',
-        statementProfileHash: 'c3'.repeat(32),
-        metricRuleVersion: 'anaf-bilant-metric-v1',
-        selectionBasis: 'cross_copy_union',
         contributingSources: [
-          { sourceSnapshotId: 'mfp:a', rowNumber: '76930', url: ANCHOR, indicators: [{ code: 'I1', name: 'ACTIVE IMOBILIZATE - TOTAL' }, { code: 'I2', name: null }] },
-          { sourceSnapshotId: 'mfp:b', rowNumber: '609557', url: COMPLEMENT, indicators: [{ code: 'I3', name: 'STOCURI' }] },
+          { rowNumber: '76930', url: ANCHOR, indicators: [{ code: 'I1', name: 'ACTIVE IMOBILIZATE - TOTAL' }, { code: 'I2', name: null }] },
+          { rowNumber: '609557', url: COMPLEMENT, indicators: [{ code: 'I3', name: 'STOCURI' }] },
         ],
       },
     }
     const MFP_2010: RawCompanyFinancialYear = {
       ...MFP_2009,
       year: 2010,
-      source: { ...MFP_2009.source!, selectionBasis: 'sole_candidate', contributingSources: [MFP_2009.source!.contributingSources![0]!] },
+      source: { ...MFP_2009.source!, contributingSources: [MFP_2009.source!.contributingSources![0]!] },
     }
     render(page(mapped([MFP_2010, MFP_2009], [])))
     await registryPinned()
@@ -1294,14 +1275,14 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
 
   it('never links a contributing file that is not https (CQA-14)', async () => {
     const lines = [
-      { sourceSnapshotId: 'mfp:a', rowNumber: '1', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'A' }] },
-      { sourceSnapshotId: 'mfp:b', rowNumber: null, url: 'javascript:alert(1)', indicators: [{ code: 'I3', name: 'B' }] },
+      { rowNumber: '1', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'A' }] },
+      { rowNumber: null, url: 'javascript:alert(1)', indicators: [{ code: 'I3', name: 'B' }] },
     ]
     const year: RawCompanyFinancialYear = {
       ...ANAF_2024,
       year: 2009,
       sourceSystem: 'mfp',
-      source: { sourceSystem: 'mfp', url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', statementProfileHash: null, metricRuleVersion: 'r', selectionBasis: 'cross_copy_union', contributingSources: lines },
+      source: { url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', contributingSources: lines },
     }
     render(page(mapped([year], [])))
     await registryPinned()

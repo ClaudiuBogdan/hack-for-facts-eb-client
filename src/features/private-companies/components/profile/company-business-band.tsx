@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils'
 import { yearRanges } from '../../lib/company-profile-format'
 import type { FinancialMetric } from '@/schemas/private-company'
 import type { CompanyProfileModel } from '../../lib/company-profile-model'
-import { capitalised, financialLede, netResultStatusLabel, notAssessedNotice } from '../../lib/company-profile-text'
+import { capitalised, financialLede, ifrsFileBlankReason, netResultStatusLabel, notAssessedNotice } from '../../lib/company-profile-text'
+import { blankYearsOf, yearRowsOf, type YearRow } from '../../lib/company-years-rows'
 import { metricStatus, reportedNumber } from '../../lib/financial-qualification'
 import { ProfileBand } from './company-profile-band'
 import { CompanyYearsChart, type ChartMetric } from './company-years-chart'
@@ -29,7 +30,10 @@ export function CompanyBusinessBand({
   readonly index?: string
 }) {
   const title = <Trans>Cum merge afacerea</Trans>
-  if (!model.latest) {
+  const rows = yearRowsOf(model)
+  // A company with IFRS-file years and no typed statement still has a chart: only its IFRS series (no lede — nothing
+  // derived reads those figures).
+  if (!model.latest && model.ifrsForm.fileYears.length === 0) {
     return (
       <ProfileBand id="afacerea" titleId={TITLE_ID}>
         <HubSectionHead titleId={TITLE_ID} index={index} title={title} />
@@ -39,15 +43,16 @@ export function CompanyBusinessBand({
     )
   }
   // The newest statement could not be assessed: said where its figures would be. Every value it published is in the years' band.
-  const notAssessed = notAssessedNotice(model)
-  // The years the chart has nothing to draw for: no statement, or one whose values are all left out (their reasons in each year's reading).
-  const blank = model.span.filter((_, index) => model.series.turnover[index]?.value == null && model.series.net[index]?.value == null && model.series.employees[index]?.value == null)
+  const notAssessed = model.latest ? notAssessedNotice(model) : null
+  // The years the chart has nothing to draw for: no statement, or one whose values are all left out (their reasons in each
+  // year's reading); never a year of the publisher's IFRS file, whose blanks are said as such.
+  const blank = blankYearsOf(rows)
   const gaps = blank.length > 0 ? yearRanges(blank) : null
   return (
     <ProfileBand id="afacerea" titleId={TITLE_ID}>
-      <HubSectionHead titleId={TITLE_ID} index={index} title={title} lede={financialLede(model)} />
+      <HubSectionHead titleId={TITLE_ID} index={index} title={title} lede={model.latest ? financialLede(model) : null} />
       <div className="mt-8" data-reveal>
-        <CompanyYearsChart model={model} reasonOf={(index, metric) => gapReason(model, index, metric)} />
+        <CompanyYearsChart model={model} reasonOf={(year, metric) => gapReason(model, rows, year, metric)} />
         {/* A gap says only what the data cannot know: no comparable values, never „no statement". */}
         {gaps ? (
           <p className="mt-3 text-xs text-muted-foreground">
@@ -82,8 +87,10 @@ const METRIC: Record<ChartMetric, FinancialMetric> = { turnover: 'turnover', net
  * another basis, the net result's own hold, a value held out of the chart, or
  * no typed value.
  */
-function gapReason(model: CompanyProfileModel, index: number, metric: ChartMetric): string {
-  const statement = model.profile.financials.find((year) => year.fiscalYear === model.span[index])
+function gapReason(model: CompanyProfileModel, rows: readonly YearRow[], year: number, metric: ChartMetric): string {
+  // A year of the publisher's IFRS file: its cell was left blank there (a filed value, never qualified, never held).
+  if (rows.find((row) => row.year === year)?.ifrsFile) return ifrsFileBlankReason()
+  const statement = model.profile.financials.find((entry) => entry.fiscalYear === year)
   if (!statement) return t`Fără valori comparabile pentru acest an`
   if (statement.qualification.assessment !== 'assessed') return t`Bilanț necalificat: valorile lui nu intră în grafic`
   if (model.qualification.otherBasisYears.includes(statement.fiscalYear)) return t`Calificat după altă politică sau ediție: nu se compară cu ceilalți ani`

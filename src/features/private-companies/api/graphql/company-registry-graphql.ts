@@ -4,12 +4,10 @@
  * the mappers onto `@/schemas/private-company-registry`.
  *
  * Every mapper fails closed. An unknown state reads as `unavailable`, an
- * unknown basis as `unresolved` with no value, an unknown revision as none
- * (so no catalog label), a catalog label only for the row's own known
- * revision from the current database catalog — and, where the API names the
- * row's class state, only on a `class` row — and a source link only when it
- * is an https URL. Enum values stay strings in the raw schemas so one new
- * server value degrades one field instead of failing the whole page.
+ * unknown basis as `unresolved` with no value, an unknown revision as none and
+ * an unknown CAEN class state as `unparsed` (never a class). Enum values stay
+ * strings in the raw schemas so one new server value degrades one field
+ * instead of failing the whole page.
  *
  * Server typedefs (read-only reference):
  *   hack-for-facts-eb-server/src/modules/companies/shell/graphql/typedefs.ts
@@ -19,7 +17,6 @@ import {
   COMPANY_CAEN_CLASS_STATES,
   COMPANY_CAEN_REVISIONS,
   COMPANY_REGISTRY_BASES,
-  COMPANY_REGISTRY_COVERAGES,
   COMPANY_REGISTRY_CUI_STATES,
   COMPANY_REGISTRY_DIFF_STATUSES,
   COMPANY_REGISTRY_STATES,
@@ -28,11 +25,9 @@ import {
   type CompanyRegistrationDiff,
   type CompanyRegistryBasis,
   type CompanyRegistryCapabilities,
-  type CompanyRegistryCoverage,
   type CompanyRegistryCuiState,
   type CompanyRegistryEnvelope,
   type CompanyRegistryEvidence,
-  type CompanyRegistryProvenance,
   type CompanyRegistryState,
   type CompanyRegistryValue,
 } from '@/schemas/private-company-registry'
@@ -44,34 +39,23 @@ export const REGISTRY_ENVELOPE_FIELDS = /* GraphQL */ `
   dimensionPolicyVersion eligibilityPolicyVersion publicationEpoch accessEpoch reason scopeKey
 `
 
-const PROVENANCE_FIELDS = /* GraphQL */ `
-  provenance { resourceKey sourceRowNumber sourceRowSha256 sourceUrl sourceFileSha256 sourcePublishedAt }
-`
-
 /**
- * `Company.registry`: the envelope, the CUI's state, its qualified profile and every public observation.
- * `classState` is asked unless `legacy` (an API from before the CAEN class state, which rejects the field).
+ * `Company.registry` as the profile page reads it: the envelope, the CUI's state, the qualified fields it shows
+ * (each with its basis), the registration identifiers it lists and whether the edition's lists were shortened. The
+ * edition's original rows (`identityObservations`, `caenObservations`, `statusObservations`, their provenance) are
+ * not asked: no page lists them (owner, 14 October 2026), and they were most of the profile's bytes (payload trim,
+ * 27 November 2026). The server still serves them, for MCP and anyone auditing a profile.
  */
-export const registryEvidenceFields = (legacy = false) => /* GraphQL */ `
+export const REGISTRY_EVIDENCE_FIELDS = /* GraphQL */ `
   registry { ${REGISTRY_ENVELOPE_FIELDS} }
   cuiState
   profile {
-    identityObservations identifierCount unresolvedIdentifierCount unidentifiedObservations
-    name { value basis } legalForm { value basis } recordedDate { value basis }
-    countyCode { value basis } countyName uatSirutaCode { value basis } uatName
-    statusCode { value basis } caenCoverage statusCoverage
+    legalForm { value basis } recordedDate { value basis } countyCode { value basis }
+    uatSirutaCode { value basis } statusCode { value basis }
   }
-  identifiers {
-    id identifierKey identityRowCount statusCodes hasActiveObservation countyCodes countyBasis
-    caenObservations unknownRevisionCaenObservations
-  }
-  identityObservations { id identifierKey name legalForm recordedDate recordedDateState countyCode ${PROVENANCE_FIELDS} }
-  caenObservations { id identifierKey parseState code revisionState revision catalogLabel { label system source } ${legacy ? '' : 'classState'} ${PROVENANCE_FIELDS} }
-  statusObservations { id identifierKey parseState code label ${PROVENANCE_FIELDS} }
+  identifiers { id identifierKey statusCodes hasActiveObservation countyCodes }
   observationsTruncated
 `
-
-export const REGISTRY_EVIDENCE_FIELDS = registryEvidenceFields()
 
 export const COMPANY_REGISTRY_QUERY = /* GraphQL */ `
   query CompanyRegistry {
@@ -123,83 +107,25 @@ export const rawRegistryEnvelopeSchema = z.object({
 
 const rawValueSchema = z.object({ value: z.string().nullable(), basis: z.string() })
 
-const rawProvenanceSchema = z.object({
-  resourceKey: z.string(),
-  sourceRowNumber: z.number().int(),
-  sourceRowSha256: z.string(),
-  sourceUrl: z.string().nullable(),
-  sourceFileSha256: z.string().nullable(),
-  sourcePublishedAt: z.string().nullable(),
-})
-
 export const rawRegistryEvidenceSchema = z.object({
   registry: rawRegistryEnvelopeSchema,
   cuiState: z.string(),
   profile: z
     .object({
-      identityObservations: z.number().int(),
-      identifierCount: z.number().int(),
-      unresolvedIdentifierCount: z.number().int(),
-      unidentifiedObservations: z.number().int(),
-      name: rawValueSchema,
       legalForm: rawValueSchema,
       recordedDate: rawValueSchema,
       countyCode: rawValueSchema,
-      countyName: z.string().nullable(),
       uatSirutaCode: rawValueSchema,
-      uatName: z.string().nullable(),
       statusCode: rawValueSchema,
-      caenCoverage: z.string(),
-      statusCoverage: z.string(),
     })
     .nullable(),
   identifiers: z.array(
     z.object({
       id: z.string(),
       identifierKey: z.string(),
-      identityRowCount: z.number().int(),
       statusCodes: z.array(z.string()),
       hasActiveObservation: z.boolean(),
       countyCodes: z.array(z.string()),
-      countyBasis: z.string(),
-      caenObservations: z.number().int(),
-      unknownRevisionCaenObservations: z.number().int(),
-    }),
-  ),
-  identityObservations: z.array(
-    z.object({
-      id: z.string(),
-      identifierKey: z.string().nullable(),
-      name: z.string().nullable(),
-      legalForm: z.string().nullable(),
-      recordedDate: z.string().nullable(),
-      recordedDateState: z.string(),
-      countyCode: z.string().nullable(),
-      provenance: rawProvenanceSchema,
-    }),
-  ),
-  caenObservations: z.array(
-    z.object({
-      id: z.string(),
-      identifierKey: z.string(),
-      parseState: z.string(),
-      code: z.string().nullable(),
-      revisionState: z.string(),
-      revision: z.string().nullable(),
-      catalogLabel: z.object({ label: z.string(), system: z.string(), source: z.string() }).nullable(),
-      /** Optional: a recorded or mocked answer without it still parses (the row is then read as before). */
-      classState: z.string().nullish(),
-      provenance: rawProvenanceSchema,
-    }),
-  ),
-  statusObservations: z.array(
-    z.object({
-      id: z.string(),
-      identifierKey: z.string(),
-      parseState: z.string(),
-      code: z.string().nullable(),
-      label: z.string().nullable(),
-      provenance: rawProvenanceSchema,
     }),
   ),
   observationsTruncated: z.boolean(),
@@ -265,10 +191,6 @@ export function mapRegistryValue(raw: { readonly value: string | null; readonly 
   return { value: carries ? raw.value : null, basis }
 }
 
-function mapCoverage(raw: string): CompanyRegistryCoverage {
-  return member(COMPANY_REGISTRY_COVERAGES, raw) ?? 'unresolved'
-}
-
 /** A state the client does not know, or a published state without an edition, is unavailable. */
 export function mapRegistryEnvelope(raw: RawRegistryEnvelope, mode: CompanyRegistryEnvelope['mode'] = 'live'): CompanyRegistryEnvelope {
   const known: CompanyRegistryState = member(COMPANY_REGISTRY_STATES, raw.state) ?? 'unavailable'
@@ -286,28 +208,6 @@ export function mapRegistryEnvelope(raw: RawRegistryEnvelope, mode: CompanyRegis
     accessEpoch: raw.accessEpoch,
     reason: raw.reason,
     scopeKey: raw.scopeKey,
-  }
-}
-
-/** Only an absolute https link is ever rendered; anything else is no link. */
-export function safeSourceUrl(raw: string | null): string | null {
-  if (raw === null) return null
-  try {
-    const url = new URL(raw)
-    return url.protocol === 'https:' ? url.toString() : null
-  } catch {
-    return null
-  }
-}
-
-function mapProvenance(raw: z.infer<typeof rawProvenanceSchema>): CompanyRegistryProvenance {
-  return {
-    resourceKey: raw.resourceKey,
-    sourceRowNumber: raw.sourceRowNumber,
-    sourceRowSha256: raw.sourceRowSha256,
-    sourceUrl: safeSourceUrl(raw.sourceUrl),
-    sourceFileSha256: raw.sourceFileSha256,
-    sourcePublishedAt: raw.sourcePublishedAt,
   }
 }
 
@@ -348,64 +248,20 @@ export function mapRegistryEvidence(raw: RawRegistryEvidence, mode: CompanyRegis
     cuiState,
     profile: profile
       ? {
-          identityObservations: profile.identityObservations,
-          identifierCount: profile.identifierCount,
-          unresolvedIdentifierCount: profile.unresolvedIdentifierCount,
-          unidentifiedObservations: profile.unidentifiedObservations,
-          name: mapRegistryValue(profile.name),
           legalForm: mapRegistryValue(profile.legalForm),
           recordedDate: mapRegistryValue(profile.recordedDate),
           countyCode: mapRegistryValue(profile.countyCode),
-          countyName: profile.countyName,
           uatSirutaCode: mapRegistryValue(profile.uatSirutaCode),
-          uatName: profile.uatName,
           statusCode: mapRegistryValue(profile.statusCode),
-          caenCoverage: mapCoverage(profile.caenCoverage),
-          statusCoverage: mapCoverage(profile.statusCoverage),
         }
       : null,
-    identifiers: inEdition ? raw.identifiers.map((identifier) => ({ ...identifier })) : [],
-    identityObservations: inEdition
-      ? raw.identityObservations.map((row) => ({
-          id: row.id,
-          identifierKey: row.identifierKey,
-          name: row.name,
-          legalForm: row.legalForm,
-          recordedDate: row.recordedDate,
-          recordedDateState: row.recordedDateState,
-          countyCode: row.countyCode,
-          provenance: mapProvenance(row.provenance),
-        }))
-      : [],
-    caenObservations: inEdition
-      ? raw.caenObservations.map((row) => {
-          const revision = mapCaenRevision(row.revision)
-          const catalog = row.catalogLabel
-          const classState = mapCaenClassState(row.classState)
-          // A label only from the current catalog of the row's OWN known revision, and only on a class row when the API says which.
-          const attributed =
-            revision !== null && catalog !== null && catalog.system === `caen_${revision}` && catalog.source === 'current_db_catalog' && (classState === null || classState === 'class')
-          return {
-            id: row.id,
-            identifierKey: row.identifierKey,
-            parseState: row.parseState,
-            code: row.code,
-            revisionState: row.revisionState,
-            revision,
-            catalogLabel: attributed ? catalog.label : null,
-            classState,
-            provenance: mapProvenance(row.provenance),
-          }
-        })
-      : [],
-    statusObservations: inEdition
-      ? raw.statusObservations.map((row) => ({
-          id: row.id,
-          identifierKey: row.identifierKey,
-          parseState: row.parseState,
-          code: row.code,
-          label: row.label,
-          provenance: mapProvenance(row.provenance),
+    identifiers: inEdition
+      ? raw.identifiers.map((identifier) => ({
+          id: identifier.id,
+          identifierKey: identifier.identifierKey,
+          statusCodes: [...identifier.statusCodes],
+          hasActiveObservation: identifier.hasActiveObservation,
+          countyCodes: [...identifier.countyCodes],
         }))
       : [],
     observationsTruncated: inEdition && raw.observationsTruncated,

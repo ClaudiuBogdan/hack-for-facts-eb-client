@@ -201,13 +201,10 @@ describe('CompanyProfilePage under the ONRC registry contract', () => {
   it('lists an „în funcțiune" observation beside a conflicting one, choosing neither', async () => {
     const conflict = mockRegistryEvidence({
       identifier: 'J16/44/1996',
-      name: '66 JACK SRL',
       legalForm: 'SRL',
       recordedDate: '1996-02-28',
       countyCode: 'CJ',
-      countyName: 'Cluj',
       statusCodes: ['1048', '1070'],
-      caen: [],
     })
     render(page(companyProfile({ status: null, registry: conflict })))
     // The head's chip and the registry facts both say it; neither names a status.

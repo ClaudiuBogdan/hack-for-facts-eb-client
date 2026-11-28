@@ -81,8 +81,8 @@ export function LegislationDomainGrid() {
           return (
             <Link
               key={slug}
-              to="/legislation/acts"
-              search={{ domain: slug }}
+              to="/legislation/search"
+              search={{ domeniu: slug, stare: 'in-vigoare' }}
               className={cn(
                 legislationCellClassName,
                 'transition-colors hover:bg-[var(--pnrr-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',

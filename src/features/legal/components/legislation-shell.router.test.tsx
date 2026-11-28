@@ -8,22 +8,22 @@ import { LegislationShell } from './legislation-shell'
  * router's default match is a prefix), and only the open page is current in the pinned row.
  */
 describe('LegislationShell on the router', () => {
-  it('marks only the guide as current on /legislation/guide', async () => {
+  it('marks only the changes page as current on /legislation/changes', async () => {
     const root = createRootRoute({ component: Outlet })
     const landing = createRoute({ getParentRoute: () => root, path: 'legislation', component: Outlet })
     const landingIndex = createRoute({ getParentRoute: () => landing, path: '/', component: () => <p>pornire</p> })
-    const guide = createRoute({
+    const changes = createRoute({
       getParentRoute: () => landing,
-      path: 'guide',
+      path: 'changes',
       component: () => (
-        <LegislationShell activeTab="ghid">
-          <p>ghid</p>
+        <LegislationShell activeTab="modificari">
+          <p>modificări</p>
         </LegislationShell>
       ),
     })
     const router = createRouter({
-      routeTree: root.addChildren([landing.addChildren([landingIndex, guide])]),
-      history: createMemoryHistory({ initialEntries: ['/legislation/guide'] }),
+      routeTree: root.addChildren([landing.addChildren([landingIndex, changes])]),
+      history: createMemoryHistory({ initialEntries: ['/legislation/changes'] }),
     })
     render(<RouterProvider router={router} />)
 
@@ -34,7 +34,7 @@ describe('LegislationShell on the router', () => {
     const current = within(nav)
       .getAllByRole('link')
       .filter((link) => link.getAttribute('aria-current') === 'page')
-    expect(current.map((link) => link.textContent)).toEqual(['Ghid'])
-    expect(document.querySelectorAll('[aria-current="page"]')).toHaveLength(current.length + 1) // + the trail's „Ghid"
+    expect(current.map((link) => link.textContent)).toEqual(['Modificări'])
+    expect(document.querySelectorAll('[aria-current="page"]')).toHaveLength(current.length + 1) // + the trail's „Modificări"
   })
 })

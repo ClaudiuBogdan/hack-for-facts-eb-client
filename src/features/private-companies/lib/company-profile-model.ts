@@ -14,7 +14,7 @@ import { caenDivisionLabel } from './caen-divisions'
 import { commaBelow, displayCompanyName } from './company-name-display'
 import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE, STATUS_STRUCK_OFF } from './company-status-codes'
 import { foldCountyName } from './county-names'
-import { admittedNet, comparable, metricStatus, qualifiedNet, reportedNumber, sourceValues, type AdmittedNetKind, type SourceValue } from './financial-qualification'
+import { admittedNet, comparable, metricStatus, qualifiedNet, reportedNumber, sameReportingForm, sourceValues, type AdmittedNetKind, type SourceValue } from './financial-qualification'
 import { isReceiptFlow } from './public-money-display'
 import { legalFormName } from './company-legal-forms'
 import { assumedMainOf, withAnafWithdrawn, type AssumedMainView } from './company-main-activity-model'
@@ -49,6 +49,41 @@ export interface YearValue {
  */
 export interface NetPoint extends YearValue {
   readonly kind: AdmittedNetKind | null
+}
+
+/**
+ * A year on the IFRS form held only in its publisher's file: its figures as filed (source observations, never
+ * qualified), as numbers for drawing. A value that is no plain number is null — said as not drawn, never as zero.
+ */
+export interface IfrsFileYear {
+  readonly year: number
+  readonly publisher: 'anaf' | 'mfp' | null
+  readonly turnover: number | null
+  readonly netResult: number | null
+  readonly employees: number | null
+  readonly sourceUrl: string | null
+}
+
+/** An exact amount or count as served, for drawing: a plain decimal or nothing. */
+function filedNumber(value: string | null): number | null {
+  if (value === null || !/^-?\d+(?:\.\d+)?$/u.test(value.trim())) return null
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
+/** The IFRS-file years, oldest first; a year that also has a typed statement keeps the statement (one selection per CUI and year). */
+function ifrsFileYearsOf(profile: PrivateCompanyProfile, typed: ReadonlySet<number>): readonly IfrsFileYear[] {
+  return (profile.ifrsFormYears ?? [])
+    .filter((entry) => !typed.has(entry.fiscalYear))
+    .map((entry) => ({
+      year: entry.fiscalYear,
+      publisher: entry.publisher,
+      turnover: filedNumber(entry.turnover),
+      netResult: filedNumber(entry.netResult),
+      employees: filedNumber(entry.employees),
+      sourceUrl: entry.sourceUrl,
+    }))
+    .sort((a, b) => a.year - b.year)
 }
 
 /**
@@ -270,6 +305,13 @@ export interface CompanyProfileModel {
    * or count. Null: unknown (said as nothing, never as „none").
    */
   readonly longForm: readonly PrivateCompanyLongFormStatement[] | null
+  /**
+   * The IFRS form (owner, 25 November 2026): the years held only in the publisher's IFRS file (`fileYears`, the
+   * Ministry's FY2012–2018), and the typed years the publisher marks as on that form (`markedYears`, ANAF's IFRS
+   * layout). Beside the series, never in them: no lede, count, figure, comparison or trend reads it — only the
+   * chart, in its own labelled series. Both empty until the API serves them.
+   */
+  readonly ifrsForm: { readonly fileYears: readonly IfrsFileYear[]; readonly markedYears: readonly number[] }
   /**
    * The statements' qualification. Every series, trend, count and comparison
    * on the page shares ONE basis: the newest assessed statement's policy,
@@ -731,7 +773,8 @@ export function buildCompanyProfileModel(
     statementSources: statementSourcesOf(years),
     latest,
     previous,
-    comparable: latest !== null && previous !== null && comparable(latest, previous),
+    // One policy and one form: never a year-on-year note across a change of form.
+    comparable: latest !== null && previous !== null && comparable(latest, previous) && sameReportingForm(latest, previous),
     stale: latest !== null && latest.fiscalYear < now.getFullYear() - 2,
     span,
     missingYears: span.filter((year) => !byYear.has(year)),
@@ -747,6 +790,10 @@ export function buildCompanyProfileModel(
     lossYears: netResult.filter((point) => point.value !== null && point.value < 0).length,
     sizeClass: sizeClassOf(latest ? employeesOf(latest) : null),
     longForm: profile.longFormStatements ?? null,
+    ifrsForm: {
+      fileYears: ifrsFileYearsOf(profile, new Set(byYear.keys())),
+      markedYears: years.filter((year) => year.reportingForm === 'ifrs').map((year) => year.fiscalYear),
+    },
     qualification: {
       policy: basis ? { version: basis.qualification.policyVersion, approvedOn: basis.qualification.policyApprovedOn } : null,
       latestNotAssessed: latest && latest.qualification.assessment !== 'assessed' ? (latest.qualification.reason ?? 'qualification_missing') : null,

@@ -33,7 +33,6 @@ export function notAssessed(reason: string): PrivateCompanyStatementQualificatio
     statuses: null,
     netResult: null,
     holdReason: null,
-    holdDrift: [],
   }
 }
 
@@ -87,6 +86,15 @@ export function admittedNet(year: PrivateCompanyFinancialYear): { readonly value
   // `missing`: no typed loss value — not a loss held, refused or unassessed. It does not prove the filing has no loss line.
   if (profit !== null && profit > 0 && metricStatus(year, 'net_loss') === 'missing') return { value: profit, kind: 'profit' }
   return null
+}
+
+/**
+ * Two statements on the same form: both marked IFRS, or both unmarked. A year-on-year note never compares across a
+ * change of form (the chart's line breaks there too; the API nulls its deltas with `reporting_form_changed`). Where
+ * the API reads no form at all, every year is unmarked and nothing changes.
+ */
+export function sameReportingForm(a: PrivateCompanyFinancialYear, b: PrivateCompanyFinancialYear): boolean {
+  return (a.reportingForm ?? null) === (b.reportingForm ?? null)
 }
 
 /** Two statements may be compared only under one policy, evaluator and release. */

@@ -61,7 +61,6 @@ export function admittedQualification(
     statuses,
     netResult: statuses.net_result === 'reported' && net !== null ? String(net) : null,
     holdReason: null,
-    holdDrift: [],
   }
 }
 

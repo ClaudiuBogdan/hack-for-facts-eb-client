@@ -11,8 +11,7 @@
  * Data extracted from browser exploration on 2025-12-16
  */
 
-import { expect } from '@playwright/test'
-import { test } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForHydration } from '../utils/test-helpers'
 
 test.describe('Entity Analytics Page', () => {

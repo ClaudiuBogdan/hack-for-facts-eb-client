@@ -139,8 +139,13 @@ const publicareMatchesIssue = (
   // Both number AND year must be shown and match: issue numbers repeat
   // every year, so a number alone identifies nothing.
   if (issueNumber === null || issueYear === null) return false
-  const numbers = numbersIn(blockText(block))
-  return numbers.has(String(issueNumber)) && numbers.has(String(issueYear))
+  // The number after „nr." (thousands points folded, leading zeros no matter) and a year after it: any number of the
+  // line would take the day of „nr. 42 din 5 februarie 2020" for issue 5 (Codex review, 26 November 2026).
+  const text = blockText(block)
+  const issue = /\bnr\.\s*(\d{1,3}(?:\.\d{3})+|\d+)/iu.exec(text)
+  if (issue === null) return false
+  const after = text.slice(issue.index + issue[0].length)
+  return Number((issue[1] ?? '').replace(/\./gu, '')) === issueNumber && numbersIn(after).has(String(issueYear))
 }
 
 /**

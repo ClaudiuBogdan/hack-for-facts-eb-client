@@ -319,7 +319,7 @@ function Answer({
   )
 
   return (
-    <div className={cn('space-y-10 transition-opacity', search.isPlaceholderData && 'opacity-60')} aria-busy={search.isPlaceholderData}>
+    <div className={cn('space-y-10 transition-opacity', search.isPlaceholderData && 'opacity-80')} aria-busy={search.isPlaceholderData}>
       {filtered ? (
         <div className="space-y-2">
           <ActiveFilters filters={filters} onChange={onFilters} />
@@ -427,7 +427,7 @@ function ChooseAct({ hits, several }: { readonly hits: readonly { readonly value
           return (
             <li key={`${hit.value}-${hit.label}`}>
               <Link to="/legislation/acts/$actId" params={{ actId: hit.value }} className="group flex min-h-11 items-center justify-between gap-4 py-2.5">
-                <span className="min-w-0 truncate text-base font-medium text-foreground group-hover:underline group-hover:underline-offset-4">{hit.label}</span>
+                <span className="min-w-0 text-base font-medium text-foreground group-hover:underline group-hover:underline-offset-4 sm:truncate">{hit.label}</span>
                 {status.success ? <LegalStatusBadge status={status.data} /> : hit.hint !== null ? <span className="shrink-0 text-xs text-muted-foreground">{hit.hint}</span> : null}
               </Link>
             </li>

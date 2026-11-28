@@ -36,74 +36,25 @@ const UNPUBLISHED: RawRegistryEnvelope = {
   scopeKey: 'onrc:unpublished:-:-:11',
 }
 
-const provenance = (resourceKey: string, row: number, sourceUrl: string | null = null) => ({
-  resourceKey,
-  sourceRowNumber: row,
-  sourceRowSha256: `${resourceKey}-${String(row)}`.padEnd(64, '0'),
-  sourceUrl,
-  sourceFileSha256: null,
-  sourcePublishedAt: '2026-09-30',
-})
-
-/** DEDEMAN's evidence as the API serializes it: one identifier, one status, one CAEN row. */
+/** DEDEMAN's evidence as the profile asks for it: one identifier with its status, the qualified fields. */
 const dedemanEvidence = (fields: Partial<RawRegistryEvidence> = {}): RawRegistryEvidence => ({
   registry: PUBLISHED,
   cuiState: 'IN_EDITION',
   profile: {
-    identityObservations: 1,
-    identifierCount: 1,
-    unresolvedIdentifierCount: 0,
-    unidentifiedObservations: 0,
-    name: { value: 'DEDEMAN SRL', basis: 'SINGLE_OBSERVATION' },
     legalForm: { value: 'SRL', basis: 'SINGLE_OBSERVATION' },
     recordedDate: { value: '1992-11-05', basis: 'SINGLE_OBSERVATION' },
     countyCode: { value: 'BC', basis: 'SINGLE_OBSERVATION' },
-    countyName: 'Bacău',
     uatSirutaCode: { value: '20297', basis: 'SINGLE_OBSERVATION' },
-    uatName: 'Municipiul Bacău',
     statusCode: { value: '1048', basis: 'SINGLE_OBSERVATION' },
-    caenCoverage: 'COMPLETE',
-    statusCoverage: 'COMPLETE',
   },
   identifiers: [
     {
       id: '7:J1992002621040',
       identifierKey: 'J1992002621040',
-      identityRowCount: 1,
       statusCodes: ['1048'],
       hasActiveObservation: true,
       countyCodes: ['BC'],
-      countyBasis: 'single_observation',
-      caenObservations: 1,
-      unknownRevisionCaenObservations: 0,
     },
-  ],
-  identityObservations: [
-    {
-      id: '7:OD_FIRME:12',
-      identifierKey: 'J1992002621040',
-      name: 'DEDEMAN SRL',
-      legalForm: 'SRL',
-      recordedDate: '1992-11-05',
-      recordedDateState: 'date',
-      countyCode: 'BC',
-      provenance: provenance('OD_FIRME', 12),
-    },
-  ],
-  caenObservations: [
-    {
-      id: '7:OD_CAEN_AUTORIZAT:40',
-      identifierKey: 'J1992002621040',
-      parseState: 'code',
-      code: '4752',
-      revisionState: 'known',
-      revision: 'rev3',
-      catalogLabel: { label: 'Comerț', system: 'caen_rev3', source: 'current_db_catalog' },
-      provenance: provenance('OD_CAEN_AUTORIZAT', 40),
-    },
-  ],
-  statusObservations: [
-    { id: '7:OD_STARE_FIRMA:9', identifierKey: 'J1992002621040', parseState: 'code', code: '1048', label: null, provenance: provenance('OD_STARE_FIRMA', 9) },
   ],
   observationsTruncated: false,
   ...fields,
@@ -120,7 +71,7 @@ const dedemanResponse: CompanyProfileResponse = {
     codInmatriculare: 'J1992002621040',
     registrationDate: '1992-11-05',
     registrationDatePresent: true,
-    headlineStatus: { code: '1048', label: 'funcțiune', labelSource: 'API_NOMENCLATURE' },
+    headlineStatus: { code: '1048', label: 'funcțiune' },
     registry: dedemanEvidence(),
     territory: {
       sirutaCode: '20297',
@@ -128,19 +79,16 @@ const dedemanResponse: CompanyProfileResponse = {
       countyName: 'JUDEŢUL BACĂU',
       matchConfidence: 'SAFE',
     },
-    address: { display: '', county: 'Bacău', locality: 'Municipiul Bacău' },
+    address: { county: 'Bacău' },
     fiscal: {
       vatPayer: true,
       declaredFiscallyInactive: false,
       mainCaenCode: '4752',
-      registeredName: 'DEDEMAN SRL',
       asOf: '2026-05-18',
     },
     caenActivities: [
-      { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc', labelSource: 'current_db_catalog' },
+      { code: '4752', rev: 'rev3', label: 'Comerț', source: 'onrc' },
     ],
-    representatives: [],
-    euBranches: [],
     publicMoney: null,
     asOf: { onrc: '2026-05-17', anaf: '2026-05-18' },
   },
@@ -316,22 +264,17 @@ describe('mapCompanyProfile — the pinned ONRC edition (API19)', () => {
     const conflict = dedemanEvidence({
       profile: { ...dedemanEvidence().profile!, statusCode: { value: null, basis: 'MULTIPLE_VALUES' } },
       identifiers: [{ ...dedemanEvidence().identifiers[0]!, statusCodes: ['1048', '1070'] }],
-      statusObservations: [
-        dedemanEvidence().statusObservations[0]!,
-        { id: '7:OD_STARE_FIRMA:10', identifierKey: 'J1992002621040', parseState: 'code', code: '1070', label: null, provenance: provenance('OD_STARE_FIRMA', 10) },
-      ],
     })
     const profile = mapCompanyProfile(withEvidence(conflict, { headlineStatus: null }))!
     expect(profile.status).toBeNull()
     expect(profile.registry.profile?.statusCode).toEqual({ value: null, basis: 'multiple_values' })
     expect(profile.registry.identifiers[0]).toMatchObject({ statusCodes: ['1048', '1070'], hasActiveObservation: true })
-    expect(profile.registry.statusObservations.map((row) => row.id)).toEqual(['7:OD_STARE_FIRMA:9', '7:OD_STARE_FIRMA:10'])
     expect(() => privateCompanyProfileSchema.parse(profile)).not.toThrow()
   })
 
   it('reads no older scalar as current for a CUI outside the edition', () => {
     // A response still carrying registry scalars beside NOT_IN_EDITION: none of them is believed.
-    const outside = { ...dedemanEvidence(), cuiState: 'NOT_IN_EDITION', profile: null, identifiers: [], identityObservations: [], caenObservations: [], statusObservations: [] }
+    const outside = { ...dedemanEvidence(), cuiState: 'NOT_IN_EDITION', profile: null, identifiers: [] }
     const profile = mapCompanyProfile(
       withEvidence(outside, { caenActivities: [...dedemanResponse.company!.caenActivities, { code: '4752', rev: null, label: null, source: 'anaf' }] }),
     )!
@@ -349,7 +292,7 @@ describe('mapCompanyProfile — the pinned ONRC edition (API19)', () => {
     expect(profile.registry.registry.state).toBe('unpublished')
     expect(profile.registry.cuiState).toBe('unpublished')
     expect(profile.registry.profile).toBeNull()
-    expect(profile.registry.statusObservations).toEqual([])
+    expect(profile.registry.identifiers).toEqual([])
     expect(profile.sources.map((source) => source.id)).toEqual(['anaf'])
   })
 
@@ -361,38 +304,11 @@ describe('mapCompanyProfile — the pinned ONRC edition (API19)', () => {
     expect(mapCompanyProfile(withEvidence(strange))!.registry.profile?.legalForm).toEqual({ value: null, basis: 'unresolved' })
   })
 
-  it('names a CAEN row only from the current catalog of its OWN known revision, Rev.0 included', () => {
-    const rows = [
-      { ...dedemanEvidence().caenObservations[0]!, id: 'a', revision: 'rev0', code: '1111', catalogLabel: { label: 'Rev.0 class', system: 'caen_rev0', source: 'current_db_catalog' } },
-      { ...dedemanEvidence().caenObservations[0]!, id: 'b', revision: null, revisionState: 'missing', catalogLabel: { label: 'Borrowed', system: 'caen_rev2', source: 'current_db_catalog' } },
-      { ...dedemanEvidence().caenObservations[0]!, id: 'c', revision: 'rev2', catalogLabel: { label: 'Other revision', system: 'caen_rev3', source: 'current_db_catalog' } },
-      { ...dedemanEvidence().caenObservations[0]!, id: 'd', revision: 'rev9', catalogLabel: { label: 'Unknown', system: 'caen_rev9', source: 'current_db_catalog' } },
-    ]
-    const caen = mapCompanyProfile(withEvidence(dedemanEvidence({ caenObservations: rows })))!.registry.caenObservations
-    expect(caen.map((row) => [row.id, row.revision, row.catalogLabel])).toEqual([
-      ['a', 'rev0', 'Rev.0 class'],
-      ['b', null, null],
-      ['c', 'rev2', null],
-      ['d', null, null],
-    ])
-  })
-
-  it('links a source row only to an https resource of the edition; anything else is no link', () => {
-    const rows = [
-      { ...dedemanEvidence().identityObservations[0]!, id: 'https', provenance: provenance('OD_FIRME', 1, 'https://data.gov.ro/dataset/firme.csv') },
-      { ...dedemanEvidence().identityObservations[0]!, id: 'http', provenance: provenance('OD_FIRME', 2, 'http://data.gov.ro/firme.csv') },
-      { ...dedemanEvidence().identityObservations[0]!, id: 'script', provenance: provenance('OD_FIRME', 3, 'javascript:alert(1)') },
-      { ...dedemanEvidence().identityObservations[0]!, id: 'object', provenance: provenance('OD_FIRME', 4, 's3://bucket/raw.csv') },
-    ]
-    const identity = mapCompanyProfile(withEvidence(dedemanEvidence({ identityObservations: rows })))!.registry.identityObservations
-    expect(identity.map((row) => row.provenance.sourceUrl)).toEqual(['https://data.gov.ro/dataset/firme.csv', null, null, null])
-  })
-
   it('keeps the recorded date as ONRC’s civil date text, never shifted by a time zone', () => {
     const profile = mapCompanyProfile(dedemanResponse)!
     expect(profile.registrationDate).toBe('1992-11-05')
     expect(profile.registry.profile?.recordedDate).toEqual({ value: '1992-11-05', basis: 'single_observation' })
-    expect(profile.status).toEqual({ code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' })
+    expect(profile.status).toEqual({ code: '1048', label: 'funcțiune' })
   })
 })
 
@@ -535,7 +451,6 @@ describe('mapCompanyProfile — statement qualification (CD-14)', () => {
     netResultStatus: statuses.net_result ?? 'REPORTED',
     netResult,
     holdReason: null,
-    holdDrift: [],
     ...extra,
   })
   const one = (year: RawCompanyFinancialYear) => mapCompanyProfile(withYears([year]))!.financials[0]!
@@ -613,38 +528,37 @@ describe('mapCompanyProfile — statement qualification (CD-14)', () => {
   it('links the statement’s own published source, never a guessed one', () => {
     const mfp = one(
       statement(2014, {
-        source: { metricRuleVersion: 'r', sourceSystem: 'mfp', statementProfileHash: null, url: 'https://data.gov.ro/x.txt', urlKind: 'mfp_resource' },
+        source: { url: 'https://data.gov.ro/x.txt', urlKind: 'mfp_resource' },
         sourceSystem: 'mfp',
       }),
     )
     expect(mfp.sourceSystem).toBe('mfp')
     expect(mfp.source).toMatchObject({ url: 'https://data.gov.ro/x.txt', urlKind: 'mfp_resource' })
     const unknownKind = one(
-      statement(2014, { source: { metricRuleVersion: 'r', sourceSystem: 'mfp', statementProfileHash: null, url: 'https://example.org', urlKind: 'other' } }),
+      statement(2014, { source: { url: 'https://example.org', urlKind: 'other' } }),
     )
     expect(unknownKind.source).toMatchObject({ url: null, urlKind: null })
   })
 
   it('carries a split statement’s contributing files, https links only, and null when not read (CQA-14)', () => {
     const lines = [
-      { sourceSnapshotId: 'mfp:a', rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
-      { sourceSnapshotId: 'mfp:b', rowNumber: null, url: 'http://data.gov.ro/b.txt', indicators: [{ code: 'I3', name: null }] },
+      { rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
+      { rowNumber: null, url: 'http://data.gov.ro/b.txt', indicators: [{ code: 'I3', name: null }] },
     ]
     const split = one(
       statement(2009, {
-        source: { metricRuleVersion: 'r', sourceSystem: 'mfp', statementProfileHash: null, url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', selectionBasis: 'cross_copy_union', contributingSources: lines },
+        source: { url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', contributingSources: lines },
         sourceSystem: 'mfp',
       }),
     )
     expect(split.source).toMatchObject({
-      selectionBasis: 'cross_copy_union',
       contributingSources: [
         { rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
         { rowNumber: null, url: null, indicators: [{ code: 'I3', name: null }] },
       ],
     })
-    const unread = one(statement(2014, { source: { metricRuleVersion: 'r', sourceSystem: 'mfp', statementProfileHash: null, url: null, urlKind: null } }))
-    expect(unread.source).toMatchObject({ selectionBasis: null, contributingSources: null })
+    const unread = one(statement(2014, { source: { url: null, urlKind: null } }))
+    expect(unread.source).toMatchObject({ contributingSources: null })
     expect(() => privateCompanyProfileSchema.parse(mapCompanyProfile(withYears([statement(2009, { source: split.source as never })])))).not.toThrow()
   })
 
@@ -691,6 +605,48 @@ describe('mapCompanyProfile — long-format-only statements (B5c)', () => {
       [2013, null, 'ir', OMV_2013.resourceUrl],
       [2012, 'mfp', null, null],
     ])
+  })
+})
+
+// server-companies' contract, 26 November 2026: newest first, exact strings, null = no figure read, null list = forms unknown.
+describe('mapCompanyProfile — IFRS-form years and each year’s form (PRIV-ZVPV)', () => {
+  const withIfrs = (ifrsFormYears: unknown, years: RawCompanyFinancialYear[] = dedemanResponse.companyFinancials!.years): CompanyProfileResponse =>
+    companyProfileResponseSchema.parse({ ...dedemanResponse, companyFinancials: { years, trajectory: null, longFormOnly: [], ifrsFormYears } })
+  const file = (year: number, fields: Record<string, unknown> = {}) => ({
+    year,
+    sourceSystem: 'mfp',
+    turnover: '14764836448',
+    netResult: '2399947986',
+    employees: '13322',
+    sourceUrl: `https://data.gov.ro/web_ir_an${year}.txt`,
+    ...fields,
+  })
+
+  it('maps the file years oldest first, their figures as the exact strings served, a loss negative, a blank null', () => {
+    const profile = mapCompanyProfile(withIfrs([file(2016, { turnover: null, netResult: '-630646624' }), file(2015, { employees: '0' })]))!
+    expect(profile.ifrsFormYears).toEqual([
+      { fiscalYear: 2015, publisher: 'mfp', turnover: '14764836448', netResult: '2399947986', employees: '0', sourceUrl: 'https://data.gov.ro/web_ir_an2015.txt' },
+      { fiscalYear: 2016, publisher: 'mfp', turnover: null, netResult: '-630646624', employees: '13322', sourceUrl: 'https://data.gov.ro/web_ir_an2016.txt' },
+    ])
+    expect(() => privateCompanyProfileSchema.parse(profile)).not.toThrow()
+  })
+
+  it('keeps unknown apart from none, links only a web address, and assumes no publisher', () => {
+    expect(mapCompanyProfile(dedemanResponse)!.ifrsFormYears).toBeNull()
+    expect(mapCompanyProfile(withIfrs(null))!.ifrsFormYears).toBeNull()
+    expect(mapCompanyProfile(withIfrs([]))!.ifrsFormYears).toEqual([])
+    const [odd] = mapCompanyProfile(withIfrs([file(2014, { sourceSystem: 'other', sourceUrl: 'javascript:alert(1)' })]))!.ifrsFormYears!
+    expect(odd).toMatchObject({ publisher: null, sourceUrl: null })
+  })
+
+  it('reads a year’s form as IFRS or unmarked, never another form', () => {
+    const [newest, older] = dedemanResponse.companyFinancials!.years
+    const profile = mapCompanyProfile(withIfrs([], [{ ...newest!, reportingForm: 'IFRS' }, { ...older!, reportingForm: 'ORDINARY' }]))!
+    expect(profile.financials.map((year) => [year.fiscalYear, year.reportingForm])).toEqual([
+      [2024, 'ifrs'],
+      [2022, null],
+    ])
+    expect(mapCompanyProfile(dedemanResponse)!.financials.every((year) => year.reportingForm === null)).toBe(true)
   })
 })
 

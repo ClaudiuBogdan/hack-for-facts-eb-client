@@ -48,8 +48,8 @@ describe('/procurement', () => {
       const whole = route.headers({ loaderData: { national: {}, categories: {}, bigContracts: [], disclosure: 'v1' } })
       // D6: a render whose publication is unknown is kept nowhere.
       expect(route.headers({ loaderData: { national: {}, categories: {}, bigContracts: [], disclosure: null } })['CDN-Cache-Control']).toBe('no-store')
-      expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
-      expect(whole.Vary).toBe('Accept-Encoding, Cookie')
+      expect(whole).toMatchObject({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' })
+      expect(whole.Vary).toBeUndefined()
     } finally {
       vi.unstubAllEnvs()
     }

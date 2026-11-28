@@ -15,6 +15,7 @@ import {
   screen,
   fireEvent,
   waitFor,
+  within,
   createTestQueryClient,
 } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
@@ -28,11 +29,19 @@ import {
   legalActDetailFixture,
 } from '../../mocks/fixtures/legal-act-detail'
 import { foldTldfBlocks } from '../../lib/tldf/fold'
+import { resolveDocOverride } from '../../lib/legal-versions'
 import { ActReadingLayout } from './legal-reader-page'
 import type { TldfChunkPayload, TldfEnvelope } from '../../lib/tldf/types'
 
 const navigateMock = vi.fn()
-vi.mock('@tanstack/react-router', () => ({
+import { parseAppSearch } from '@/lib/router-search-codec'
+import { legalReaderSearchSchema } from '@/schemas/legal-search'
+
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  // The real module under the stand-ins: the contents' links are written by the app's own search serializer.
+  ...(await importOriginal<typeof import('@tanstack/react-router')>()),
+  // The stand-in reads the state the way the app asks for it (`select`), from an address of the act's page.
+  useRouterState: ({ select }: { readonly select: (state: unknown) => unknown }) => select({ location: { pathname: '/legislation/acts/1', search: {} } }),
   Link: ({
     children,
     to,
@@ -139,6 +148,131 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
       .map((query) => JSON.stringify(query.queryKey))
     expect(keys.some((key) => key.includes('100023'))).toBe(true)
     expect(keys.filter((key) => key.includes('100019'))).toEqual([])
+  })
+
+  it('takes no ?nod= into the default text when the ?doc= it was meant for is refused (astra-client-11)', async () => {
+    // A provision link into another act's document: the default text (100023) has a node at the same path.
+    const nod = envelope.blocks[3]?.id ?? ''
+    const act = {
+      ...legalActDetailFixture,
+      canonical:
+        legalActDetailFixture.canonical === null
+          ? null
+          : { ...legalActDetailFixture.canonical, documentId: '100023' },
+    }
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container } = render(
+        <ActReadingLayout act={act} docOverride="100019" nod={nod} lead={null} fisa={null} />,
+      )
+      await waitFor(() => {
+        expect(container.querySelector('#reader-content')).not.toBeNull()
+      })
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).not.toBeNull()
+      expect(screen.getByRole('status')).toHaveTextContent(/nu aparține acestui act/)
+      // Settled: the outline answered and the text is on screen; nothing was scrolled to or marked as the match.
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      expect(container.querySelector('.bg-foreground\\/10\\!')).toBeNull()
+      // nor is the provision said to be missing from a text it was never meant for
+      expect(screen.queryByText(/Nu am găsit fragmentul cerut/)).toBeNull()
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('writes the text on show with a provision chosen in the contents after a refused ?doc= (astra-client-12)', async () => {
+    // the default text is one of the act's own documents, as on a real act
+    const act = {
+      ...owning('100023'),
+      canonical:
+        legalActDetailFixture.canonical === null
+          ? null
+          : { ...legalActDetailFixture.canonical, documentId: '100023' },
+    }
+    navigateMock.mockClear()
+    render(<ActReadingLayout act={act} docOverride="100019" nod="r10" lead={null} fisa={null} />)
+    const toc = await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+    // the contents' entries are links now (an address for a new tab; a click is the reader's to answer)
+    const entry = within(toc).getAllByRole('link')[0] as HTMLElement
+    // the entry's own address, for a new tab or a copied link, names the text actually shown too
+    // read as the router reads it and as the route validates it
+    const address = legalReaderSearchSchema.parse(parseAppSearch(entry.getAttribute('href') ?? ''))
+    expect(address.doc).toBe('100023')
+    expect(address.nod).toBeTruthy()
+    fireEvent.click(entry)
+    const options = navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    // the refused document leaves the address with the provision chosen in the text actually shown
+    const next = options.search({ doc: '100019', nod: 'r10' })
+    expect(next.doc).toBe('100023')
+    expect(typeof next.nod).toBe('string')
+    expect(next.nod).not.toBe('r10')
+    expect(address.nod).toBe(next.nod)
+    // and the address written is one the reader accepts on the next render: the act's own text, not refused again
+    expect(resolveDocOverride(act, String(next.doc)).kind).toBe('own')
+  })
+
+  it('ends the contents with a fixed way to the act\'s record', async () => {
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container } = render(
+        <ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={<p>fișa</p>} />,
+      )
+      await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+      const toRecord = screen.getByRole('link', { name: 'Fișa actului' })
+      // for a new tab: the page's own address and the text on show (a number-like id quoted, so it reads back as
+      // text), at the record
+      expect(toRecord).toHaveAttribute('href', '/legislation/acts/1?doc=%22100023%22#act-fisa')
+      // outside the contents' own list, so folding the list never takes it away
+      expect(toRecord.closest('nav')).toBeNull()
+      scrollIntoView.mockClear()
+      fireEvent.click(toRecord)
+      expect(scrollIntoView).toHaveBeenCalledTimes(1)
+      expect(scrollIntoView.mock.contexts[0]).toBe(container.querySelector('#act-fisa'))
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  })
+
+  it('lands again on a place it left, after another text in between (history back)', async () => {
+    const nod = envelope.blocks[3]?.id ?? ''
+    const scrollIntoView = vi.fn()
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+    try {
+      const { container, rerender } = render(
+        <ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />,
+      )
+      const landed = () => scrollIntoView.mock.contexts.filter((element) => (element as Element).id === `tldf-${nod}`).length
+      await waitFor(() => expect(landed()).toBe(1))
+      // another text, with no place
+      rerender(<ActReadingLayout act={owning('100019')} docOverride="100019" lead={null} fisa={null} />)
+      await waitFor(() => expect(container.querySelector(`[id="tldf-${nod}"]`)).toBeNull(), { timeout: 15_000 })
+      // back to the first text at the same place: a landing of its own (Codex review, round 2)
+      rerender(<ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />)
+      await waitFor(() => expect(landed()).toBe(2), { timeout: 15_000 })
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
+  }, 60_000)
+
+  it('marks a deep-linked block for a moment, over any note style', async () => {
+    const nod = envelope.blocks[3]?.id ?? ''
+    const { container } = render(
+      <ActReadingLayout act={owning('100023')} docOverride="100023" nod={nod} lead={null} fisa={null} />,
+    )
+    await waitFor(() => {
+      expect(container.querySelector(`[id="tldf-${nod}"]`)).toHaveClass('bg-foreground/10!', 'text-foreground!')
+    })
+    // for a moment only: both classes are gone after 1.6 s
+    await new Promise((resolve) => setTimeout(resolve, 1700))
+    const block = container.querySelector(`[id="tldf-${nod}"]`)
+    expect(block).not.toHaveClass('bg-foreground/10!')
+    expect(block).not.toHaveClass('text-foreground!')
   })
 
   it('honours an override that is one of the act\'s own expressions', async () => {

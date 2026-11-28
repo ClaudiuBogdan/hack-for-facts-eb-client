@@ -5,16 +5,15 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, stopCounting } from '@/features/landing/components/count-up'
 import { BandRead } from '@/features/national-budget/analytics/components/analytics-parts'
 import { t } from '@lingui/core/macro'
-import { cn } from '@/lib/utils'
 import { useHomePrefetch, useUnfinishedYears } from '../hooks/use-home-data'
 import { useAskedYear, useHomeYear, useShownYear } from '../hooks/use-home-year'
 import { useInView } from '../hooks/use-page-year'
 import { usePersonPrefetch } from '../hooks/use-person-data'
-import { VIZ_PALETTE } from '../lib/chart-palette'
 import { BudgetsSection } from './person-budgets'
 import { DebtSection } from './person-debt'
 import { FlowSection } from './person-flow'
 import { FiguresRegion, FurtherSection, Hero, SectionBar } from './person-head'
+import { ReceiptSection } from './person-receipt'
 import { DataNote, YearScope } from './person-shell'
 import { StateSection } from './person-state'
 import { YearSection } from './person-year'
@@ -78,7 +77,7 @@ export function NationalBudgetHomePage() {
   // The count-up driver is module state; an unmount mid-flight would leave it ticking against nodes that are gone.
   useEffect(() => () => stopCounting(), [])
   return (
-    <div className={cn("relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']", VIZ_PALETTE)}>
+    <div className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']">
       <RevealStyles />
       <SmearFilters />
       <YearNotice />
@@ -92,6 +91,7 @@ export function NationalBudgetHomePage() {
       <SectionBar heroVisible={heroVisible} />
       <FiguresRegion />
       <FlowSection />
+      <ReceiptSection />
       <BudgetsSection />
       <StateSection />
       <DebtSection />

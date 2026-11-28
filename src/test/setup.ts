@@ -43,9 +43,20 @@ Object.defineProperty(globalThis, "CustomEvent", {
   value: window.CustomEvent,
 });
 
-// Cleanup after each test case (e.g. clearing jsdom)
-afterEach(() => {
+// Taken before any test can install fake timers.
+const realSetTimeout = globalThis.setTimeout;
+
+// Cleanup after each test case (e.g. clearing jsdom), then wait one real
+// macrotask. Radix FocusScope (menus, popovers, dialogs) hands focus back from
+// a setTimeout(0) after it unmounts, and a synchronous test never yields to it:
+// after a file's last test it could fire once jsdom was torn down, where
+// CustomEvent is Node's again and dispatchEvent throws (TEST-002). Waiting here
+// runs it inside its own test, while the window is alive.
+afterEach(async () => {
   cleanup();
+  await new Promise<void>((resolve) => {
+    realSetTimeout(resolve, 0);
+  });
 });
 
 // Mock window.matchMedia

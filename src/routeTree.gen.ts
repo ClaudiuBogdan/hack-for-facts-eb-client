@@ -547,16 +547,12 @@ const LegislationGazetteRoute = LegislationGazetteRouteImport.update({
   id: '/legislation/gazette',
   path: '/legislation/gazette',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/legislation/gazette.lazy').then((d) => d.Route),
-)
+} as any)
 const LegislationGuideRoute = LegislationGuideRouteImport.update({
   id: '/legislation/guide',
   path: '/legislation/guide',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/legislation/guide.lazy').then((d) => d.Route),
-)
+} as any)
 const LegislationSearchRoute = LegislationSearchRouteImport.update({
   id: '/legislation/search',
   path: '/legislation/search',
@@ -911,9 +907,7 @@ const LegislationActsIndexRoute = LegislationActsIndexRouteImport.update({
   id: '/legislation/acts/',
   path: '/legislation/acts/',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/legislation/acts/index.lazy').then((d) => d.Route),
-)
+} as any)
 const LegislationActsActIdRoute = LegislationActsActIdRouteImport.update({
   id: '/legislation/acts/$actId',
   path: '/legislation/acts/$actId',

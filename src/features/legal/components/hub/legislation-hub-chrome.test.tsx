@@ -80,7 +80,7 @@ describe('LegalSectionNav', () => {
   it('draws each section after its hidden icon', () => {
     renderBar()
     const links = within(screen.getByRole('navigation', { name: 'Secțiunile paginii' })).getAllByRole('link')
-    expect(links).toHaveLength(6)
+    expect(links).toHaveLength(5)
     for (const link of links) {
       const first = link.firstElementChild
       expect(first?.tagName.toLowerCase()).toBe('svg')
@@ -92,7 +92,7 @@ describe('LegalSectionNav', () => {
     renderBar()
     // 844 px: the band starts at 211 px and is 2 px tall
     expect(observers[observers.length - 1]?.margin).toBe('-211px 0px -631px 0px')
-    expect(observers[observers.length - 1]?.targets.map((target) => target.id)).toEqual(['schimbari', 'feluri', 'emitenti', 'ani', 'legaturi', 'monitor'])
+    expect(observers[observers.length - 1]?.targets.map((target) => target.id)).toEqual(['schimbari', 'feluri', 'emitenti', 'ani', 'legaturi'])
   })
 
   it('keeps one section current through an overlap and an exit in either direction', () => {

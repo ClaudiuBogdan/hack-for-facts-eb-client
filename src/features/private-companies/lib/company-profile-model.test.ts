@@ -291,13 +291,10 @@ describe('buildCompanyProfileModel', () => {
   it('keeps an „în funcțiune" observation beside a conflicting one a conflict, choosing neither', () => {
     const registry = mockRegistryEvidence({
       identifier: 'J16/44/1996',
-      name: 'TRANSPORT OLTENIA SNC',
       legalForm: 'SNC',
       recordedDate: '1996-02-28',
       countyCode: 'DJ',
-      countyName: 'Dolj',
       statusCodes: ['1048', '1070'],
-      caen: [],
     })
     const model = buildCompanyProfileModel(companyProfile({ status: null, registry }))
     expect(model.status).toEqual({ kind: 'conflict', label: null })

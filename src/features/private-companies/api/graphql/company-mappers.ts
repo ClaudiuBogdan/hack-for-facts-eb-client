@@ -37,6 +37,7 @@ import {
   type PrivateCompanyFinancialSummary,
   type PrivateCompanyFinancialTrajectory,
   type PrivateCompanyFinancialYear,
+  type PrivateCompanyIfrsFormYear,
   type PrivateCompanyLongFormStatement,
   type PrivateCompanyMatchConfidence,
   type PrivateCompanyMetricStatus,
@@ -69,6 +70,7 @@ import type {
   RawCompany,
   RawCompanyFinancialYear,
   RawCompanyResolveResult,
+  RawIfrsFormYear,
   RawLongFormStatement,
   RawStatementQualification,
 } from './company-queries'
@@ -82,12 +84,7 @@ function mapNameSource(raw: string): 'onrc_edition' | 'core_organization' {
 
 function mapStatus(raw: RawCompany['headlineStatus']): PrivateCompanyProfile['status'] {
   if (!raw) return null
-  const source = raw.labelSource?.toLowerCase()
-  return {
-    code: raw.code,
-    label: raw.label ?? raw.code,
-    labelSource: source === 'api_nomenclature' && raw.label ? 'api_nomenclature' : 'code',
-  }
+  return { code: raw.code, label: raw.label ?? raw.code }
 }
 
 function toNumberOrNull(value: string | number | null | undefined): number | null {
@@ -407,7 +404,6 @@ function mapQualification(raw: RawStatementQualification | null | undefined): Pr
     policyApprovedOn: raw.policyApprovedOn,
     evaluatorVersion: raw.evaluatorVersion,
     holdReason: raw.holdReason,
-    holdDrift: raw.holdDrift,
   }
   const assessment = raw.assessment.toLowerCase()
   if (assessment === 'not_assessed') {
@@ -443,9 +439,6 @@ function mapStatementSource(raw: RawCompanyFinancialYear['source']): PrivateComp
     // A URL only with the kind that says which publisher's it is.
     url: urlKind === null ? null : raw.url,
     urlKind,
-    statementProfileHash: raw.statementProfileHash,
-    metricRuleVersion: raw.metricRuleVersion,
-    selectionBasis: raw.selectionBasis ?? null,
     contributingSources:
       raw.contributingSources?.map((line) => ({
         rowNumber: line.rowNumber,
@@ -473,7 +466,32 @@ function mapFinancialYear(year: RawCompanyFinancialYear): PrivateCompanyFinancia
     originals: mapOriginals(year),
     source: mapStatementSource(year.source),
     qualification: mapQualification(year.qualification),
+    reportingForm: mapReportingForm(year.reportingForm),
   }
+}
+
+/** The publisher's form: IFRS, or unmarked — an unknown value is never read as a form. */
+function mapReportingForm(raw: string | null | undefined): 'ifrs' | null {
+  return raw?.toLowerCase() === 'ifrs' ? 'ifrs' : null
+}
+
+/**
+ * The IFRS-file years as served, oldest first: figures as the source's exact strings (a blank stays null — never 0),
+ * the net result as served (never derived), only a web address linked. Absent or null (an API that cannot read the
+ * IFRS-form views, a recorded answer without the field) stays null: forms unknown, nothing drawn.
+ */
+function mapIfrsFormYears(raw: readonly RawIfrsFormYear[] | null | undefined): PrivateCompanyIfrsFormYear[] | null {
+  if (raw == null) return null
+  return raw
+    .map((entry) => ({
+      fiscalYear: entry.year,
+      publisher: mapPublisher(entry.sourceSystem),
+      turnover: exactText(entry.turnover),
+      netResult: exactText(entry.netResult),
+      employees: exactText(entry.employees),
+      sourceUrl: entry.sourceUrl !== null && HTTPS_URL.test(entry.sourceUrl) ? entry.sourceUrl : null,
+    }))
+    .sort((a, b) => a.fiscalYear - b.fiscalYear)
 }
 
 /**
@@ -654,15 +672,6 @@ export function mapCompanyProfile(
     activitySelection: mapActivitySelection(company.activitySelection, registry.registry),
     ...(main.read !== undefined ? { mainActivity: main.read } : {}),
     ...(main.unreadable ? { mainActivityUnreadable: true } : {}),
-    representatives: company.representatives.map((rep) => ({
-      name: rep.name,
-      role: rep.role,
-    })),
-    euBranches: company.euBranches.map((branch) => ({
-      name: branch.branchName ?? branch.euid ?? '',
-      country: branch.country ?? '',
-      type: null,
-    })),
     fiscal: {
       vatPayer: fiscal?.vatPayer ?? null,
       inactive: fiscal?.declaredFiscallyInactive ?? null,
@@ -672,6 +681,7 @@ export function mapCompanyProfile(
     },
     financials,
     longFormStatements: mapLongFormStatements(response.companyFinancials?.longFormOnly),
+    ifrsFormYears: mapIfrsFormYears(response.companyFinancials?.ifrsFormYears),
     financialTrajectory: mapTrajectory(response.companyFinancials),
     publicMoney: mapPublicMoney(company),
     sources: buildSources(company, registry.registry),

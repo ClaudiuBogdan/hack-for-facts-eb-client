@@ -6,6 +6,7 @@ import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { cn } from '@/lib/utils'
 import { useOfficialTotals, useYearSoFar, type MonthPoint, type RunningYear } from '../hooks/use-person-data'
 import { monthShort, moneyText } from '../lib/home-format'
+import { gapOf, type Plotted } from '../lib/line-gap'
 import { moneyParts, percentText, previousText } from '../lib/person-format'
 import type { Measure } from './person-debt'
 import { Mark, Note, Section, Stat } from './person-shell'
@@ -40,7 +41,19 @@ function ticksOf(max: number): readonly number[] {
   return Array.from({ length: Math.ceil(Math.max(max, 1) / step) + 1 }, (_, index) => index * step)
 }
 
-/** The two years' lines; the newest month read out above them, or the month under the pointer. */
+const plottedOf = (year: RunningYear, measure: Measure): readonly Plotted[] =>
+  year.points.flatMap((point) => {
+    const value = valueOf(point, measure)
+    return value === null ? [] : [{ month: point.month, value }]
+  })
+
+/**
+ * The gap between the years (`gapOf`): the deficit's navy hatch, faint, over a tint of it. Drawn in CSS, clipped
+ * to the gap, rather than in the stretched SVG, so the hatch keeps its angle at every width.
+ */
+const GAP_FILL = 'bg-primary/[0.08] bg-[repeating-linear-gradient(135deg,hsl(var(--primary)/0.4)_0_1px,transparent_1px_6px)]'
+
+/** The two years' lines, the gap between them hatched; the newest month read out above them, or the month under the pointer. */
 function Lines({ now, before, measure, onMeasure }: { readonly now: RunningYear; readonly before: RunningYear; readonly measure: Measure; readonly onMeasure: (measure: Measure) => void }) {
   const last = Math.max(1, ...now.points.filter((point) => valueOf(point, measure) !== null).map((point) => point.month))
   const [pointed, setPointed] = useState<number | null>(null)
@@ -52,16 +65,11 @@ function Lines({ now, before, measure, onMeasure }: { readonly now: RunningYear;
   const x = (at: number) => ((at - 0.5) / 12) * 100
   const y = (value: number) => ((top - value) / (top - bottom)) * 100
   const lines = [
-    { year: before, className: 'text-muted-foreground/70', width: 2 },
-    { year: now, className: 'text-primary', width: 3 },
+    { year: before, plotted: plottedOf(before, measure), className: 'text-muted-foreground/70', width: 2 },
+    { year: now, plotted: plottedOf(now, measure), className: 'text-primary', width: 3 },
   ]
-  const pointsOf = (year: RunningYear) =>
-    year.points
-      .flatMap((point) => {
-        const value = valueOf(point, measure)
-        return value === null ? [] : [`${x(point.month)},${y(value)}`]
-      })
-      .join(' ')
+  const pointsOf = (plotted: readonly Plotted[]) => plotted.map((point) => `${x(point.month)},${y(point.value)}`).join(' ')
+  const gap = gapOf(lines[1].plotted, lines[0].plotted, x, y)
   const point = (event: PointerEvent<HTMLDivElement>) => {
     const box = event.currentTarget.getBoundingClientRect()
     setPointed(Math.min(12, Math.max(1, Math.floor(((event.clientX - box.left) / box.width) * 12) + 1)))
@@ -101,12 +109,13 @@ function Lines({ now, before, measure, onMeasure }: { readonly now: RunningYear;
               <span className="absolute right-full top-0 -translate-y-1/2 pr-2 text-[0.6875rem] tabular-nums text-muted-foreground">{formatHubNumber(tick, { digits: 0 })}</span>
             </div>
           ))}
+          {gap ? <div aria-hidden="true" className={cn('absolute inset-0', GAP_FILL)} style={{ clipPath: gap }} /> : null}
           <span aria-hidden="true" className="absolute inset-y-0 w-px bg-foreground/15" style={{ left: `${x(month)}%` }} />
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full overflow-visible" aria-hidden="true">
             {lines.map((line) => (
               <polyline
                 key={line.year.year}
-                points={pointsOf(line.year)}
+                points={pointsOf(line.plotted)}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={line.width}

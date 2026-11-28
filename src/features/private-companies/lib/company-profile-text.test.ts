@@ -101,7 +101,7 @@ describe('status', () => {
   })
 
   it('says several status codes neutrally — some may be annotations — naming the „în funcțiune" one, choosing none', () => {
-    const registry = mockRegistryEvidence({ identifier: 'J1', name: 'X SRL', legalForm: 'SRL', recordedDate: null, countyCode: null, countyName: null, statusCodes: ['1048', '1084'], caen: [] })
+    const registry = mockRegistryEvidence({ identifier: 'J1', legalForm: 'SRL', recordedDate: null, countyCode: null, statusCodes: ['1048', '1084'] })
     const model = buildCompanyProfileModel(companyProfile({ status: null, registry }))
     expect(statusText(model)).toBe('Mai multe coduri de stare ONRC')
     expect(statusNotice(model)).toBe(

@@ -1,24 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
-import { legalActsBrowseSearchSchema } from '@/schemas/legal-search'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { searchOfActsDirectory } from '@/features/legal/lib/search-filters'
 
 /**
- * The acts directory — the `Acte` tab. Filters live in the URL
- * (actType/year/status, all optional) so a filtered view is a shareable
- * link; paging stays cursor-only and in memory, never a URL page number.
+ * The retired Acte page (owner, 27 November 2026): its one job, listing acts by filter, is now the search's when
+ * filters are set and no term is typed. Its links forward for good, their filters read as the search's keys
+ * (`searchOfActsDirectory`), so shared links and the server's tool links keep working.
  */
 export const Route = createFileRoute('/legislation/acts/')({
-  validateSearch: legalActsBrowseSearchSchema,
-  // Never stored by a shared cache, on every path (root, 25 November 2026; CACHE-001): the page renders in the
-  // reader's language from their cookie, and the CDN does not key on `Vary: Cookie`.
-  headers: () => ({ 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store' }),
-  head: () => ({
-    meta: [
-      { title: `${t`Directorul actelor`} — Transparenta.eu` },
-      {
-        name: 'description',
-        content: t`Toate actele din Portal Legislativ: filtrează după tip, an și statut, ordonate după cât de citate sunt.`,
-      },
-    ],
-  }),
+  beforeLoad: ({ search }) => {
+    throw redirect({ to: '/legislation/search', search: searchOfActsDirectory(search as Record<string, unknown>) as never, replace: true, statusCode: 301 })
+  },
 })

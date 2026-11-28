@@ -114,7 +114,28 @@ describe('PublicEnterprisePage', () => {
     // A company the API names links to its procurement page (PROC-KR9T: only such a supplier does).
     expect(within(firms!).getAllByRole('link')).toHaveLength(5)
     expect(within(money).getByRole('link', { name: /Toate achizițiile, pe pagina de achiziții/u })).toHaveAttribute('href', '/procurement/institutions/789401')
-    expect(within(money).getByText('Nu apare ca furnizor plătit din bani publici.')).toBeInTheDocument()
+    expect(within(money).getByText('Sursele consultate nu au înregistrări pentru această firmă.')).toBeInTheDocument()
+  })
+
+  it('shows contract awards and payments independently in the seller summary', () => {
+    const publicMoney = {
+      totalRon: null,
+      flowCount: 0,
+      byFlowType: [
+        { flowType: 'procurement_contract', totalRon: 180_000, count: 1 },
+        { flowType: 'direct_acquisition', totalRon: 60_000, count: 2 },
+        { flowType: 'pnrr_payment', totalRon: 90_000, count: 1 },
+      ],
+      byYear: [],
+    }
+    renderPage({ company: ready(companyProfile({ cui: '789401', legalName: 'TURSIB SA', publicMoney })) })
+    const money = band('bani')
+
+    const summary = within(money).getByText(/Contracte de achiziție publică: valoare atribuită de 180\.000\slei/u)
+    expect(summary).toHaveTextContent(/Achiziții directe: valoare atribuită de 60\.000\slei/u)
+    expect(summary).toHaveTextContent(/Plăți PNRR: 90\.000\slei/u)
+    expect(within(money).getByRole('link', { name: /Toate înregistrările, pe pagina firmei/u }))
+      .toHaveAttribute('href', '/companies/789401#bani-publici')
   })
 
   it('opens AMEPIP on the newest form’s board answers, every value one click away', () => {
