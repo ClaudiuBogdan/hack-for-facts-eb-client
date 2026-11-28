@@ -207,6 +207,21 @@ from recordings). Notes:
   (`tests/fixtures/procurement-analytics-flow`). The filter itself goes with PROC-002.
 - **Waited for:** the two filter-sheet tests end on a change of question. They now wait until no GraphQL read is in flight;
   `networkidle` returned at once and closed the page before those reads answered.
+
+**Re-recorded (2026-11-28, evening, procurement-da-client).** The dev API began serving the contract grain from the money build at
+14:57Z (buyer award stats, the cutoff's `nationalAwardMonths`). That moved the shared `ProcurementCutoff` recording and its build,
+which the analytics reads carry, and made the public enterprise page's server render whole. Its buyer (789401) now has direct
+purchases in the window, so the browser reads `ProcurementBuyerDirectCategories`. That read is by design: the owner ruled on
+23 November that it is never read on the server.
+- `public-enterprise-page.spec.ts`: "the browser reads nothing" now allows that one read, at most once, beside the status check.
+  Client dev CI 46157269782 saw it twice: a mock miss fell through to the network, failed, and the app retried once.
+- Both procurement specs were re-recorded in one snapshot. The two public-enterprise tests that skipped on a partial render now
+  run.
+- Strict afterwards, every spec on the ssr-api store, one worker: 167 passed, 5 skipped, 6 failed. All six fail in
+  `procurement-analytics.spec.ts`. They filter the contract tabs by fields the money build refuses for now (buyer place, title
+  words, value range, supplier place). The recorder keeps no error answer, so those reads have no fixture. That spec runs in
+  passthrough only until PROC-003 is fixed, and the guard stays off for it. `public-enterprise-page.spec.ts` passes strict and
+  passthrough.
 - **Still skipping:** public-enterprise-page's links test and AMEPIP test, while the buyer read is partial. That's every time
   legacy is off: the buyer's contract figures abstain (`awards.count` null). They run again when the buyer profile's contract
   figures come from procurement v3 (PROC-KB0Z).
