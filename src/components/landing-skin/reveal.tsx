@@ -89,7 +89,7 @@ const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
 const CSS = `
 [${REVEAL_ATTR}='pending'] {
   opacity: 0;
-  translate: 0 12px;
+  translate: 0 var(--tpz-reveal-rise, 12px);
 }
 
 [${REVEAL_ATTR}='shown'] {
@@ -102,8 +102,8 @@ const CSS = `
      'translate' property, and a transition naming 'transform' would silently
      animate opacity alone. */
   transition:
-    opacity ${DURATION_MS}ms ${EASE} var(--tpz-reveal-delay, 0ms),
-    translate ${DURATION_MS}ms ${EASE} var(--tpz-reveal-delay, 0ms);
+    opacity var(--tpz-reveal-duration, ${DURATION_MS}ms) ${EASE} var(--tpz-reveal-delay, 0ms),
+    translate var(--tpz-reveal-duration, ${DURATION_MS}ms) ${EASE} var(--tpz-reveal-delay, 0ms);
 }
 
 /* The arrival is a flourish; the text is the point. Reduced motion keeps the
