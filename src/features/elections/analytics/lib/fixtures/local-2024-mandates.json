@@ -1,0 +1,6321 @@
+{
+ "mandates": {
+  "mayor": {
+   "tallies": [
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "3044531",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:uat:63286"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "2547708",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:uat:63286"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1674",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1133",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "200",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democrata-maghiara-din-romania",
+      "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "43",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "independents_bucket",
+      "actorKey": null,
+      "label": "INDEPENDENT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "30",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "alianta-pentru-unirea-romanilor",
+      "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "28",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "24",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD PNL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "10",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "uniunea-salvati-romania",
+      "label": "UNIUNEA SALVAȚI ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "forumul-democrat-al-germanilor-din-romania",
+      "label": "FORUMUL DEMOCRAT AL GERMANILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD-PUSL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-umanist-social-liberal",
+      "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "forta-dreptei",
+      "label": "FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+      "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "asociatia-partida-romilor-pro-europa",
+      "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ UIPS - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU ÎNTORSURA BUZĂULUI - USR PNL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU ȘAG"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA TIMIȘOARA UNITĂ USR - PMP - FORȚA DREPTEI - UDMR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "BLOCUL SUVERANIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "FORȚA CIVICĂ MAGHIARĂ - MAGYAR POLGÁRI ERŐ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-ecologist-roman",
+      "label": "PARTIDUL ECOLOGIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotii-poporului-roman",
+      "label": "PARTIDUL PATRIOȚII POPORULUI ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-in-actiune",
+      "label": "PARTIDUL ROMÂNIA ÎN ACȚIUNE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democratica-a-slovacilor-si-cehilor-din-romania",
+      "label": "UNIUNEA DEMOCRATICĂ A SLOVACILOR ȘI CEHILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-ucrainenilor-din-romania",
+      "label": "UNIUNEA UCRAINENILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "comunitatea-rusilor-lipoveni-din-romania",
+      "label": "COMUNITATEA RUȘILOR LIPOVENI DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ACȚIUNEA CONSERVATORILOR ROMÂNI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PARTIDUL SOCIAL DEMOCRAT + PARTIDUL VERDE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PNL - PUSL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ETOCRATĂ PENTRU REFORMĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL CREȘTINĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL ȚĂRĂNISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NOI SUNTEM MANGALIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU AGIGEA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU MEDGIDIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA UNIȚI PENTRU BRAȘOV"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA UNIȚI PENTRU FLOREȘTI USR + ARI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA USR - SENS"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "DREPTATE ȘI RESPECT ÎN EUROPA PENTRU TOȚI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "GRUPUL DE ACŢIUNE LOCALĂ BERCENI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "INDEPENDENȚII COMUNEI MOȘNIȚA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "MIŞCAREA PENTRU COMUNĂ - MOZGALOM A KŐZSÉGÉRT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "NAȚIUNE OAMENI ÎMPREUNĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "PACT PENTRU GALAȚI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ROMÂNIA SOCIALISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "UNIUNEA CREȘTIN DEMOCRATĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "UNIUNEA NAȚIUNII ROMÂNE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-acum",
+      "label": "PARTIDUL ACUM"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-adevar-democratie-educatie-reconstructie",
+      "label": "PARTIDUL ADEVĂR, DEMOCRAȚIE, EDUCAȚIE, RECONSTRUCȚIE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alianta-renasterea-nationala",
+      "label": "PARTIDUL ALIANȚA RENAȘTEREA NAȚIONALĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-dreapta",
+      "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-pentru-demnitate-nationala",
+      "label": "PARTIDUL ALTERNATIVA PENTRU DEMNITATE NATIONALĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-conservator-democrat",
+      "label": "PARTIDUL CONSERVATOR DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-dacismului-autonom-conservator",
+      "label": "PARTIDUL DACISMULUI AUTONOM CONSERVATOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-democratiei-si-solidaritatii-demos",
+      "label": "PARTIDUL DEMOCRAȚIEI ȘI SOLIDARITAȚII-DEMOS"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-ialomitenilor",
+      "label": "PARTIDUL IALOMIȚENILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-lege-educatie-unitate",
+      "label": "PARTIDUL LEGE EDUCAȚIE UNITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-liga-actiunii-nationale",
+      "label": "PARTIDUL LIGA ACȚIUNII NAȚIONALE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-populara",
+      "label": "PARTIDUL MIȘCAREA POPULARĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-romania-suverana",
+      "label": "PARTIDUL MIȘCAREA ROMÂNIA SUVERANĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-conservator-roman",
+      "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-de-centru",
+      "label": "PARTIDUL NAȚIONAL DE CENTRU"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-taranesc-maniu-mihalache",
+      "label": "PARTIDUL NAȚIONAL ȚĂRĂNESC MANIU-MIHALACHE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-vatra-romaneasca",
+      "label": "PARTIDUL NAȚIONAL VATRA ROMÂNEASCĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-neamul-romanesc",
+      "label": "PARTIDUL NEAMUL ROMÂNESC"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-noua-dreapta",
+      "label": "PARTIDUL NOUA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-credinciosi",
+      "label": "PARTIDUL OAMENILOR CREDINCIOȘI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-liberi",
+      "label": "PARTIDUL OAMENILOR LIBERI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-tineri",
+      "label": "PARTIDUL OAMENILOR TINERI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oltenilor",
+      "label": "PARTIDUL OLTENILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotilor",
+      "label": "PARTIDUL PATRIOȚILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotilor-qanon",
+      "label": "PARTIDUL PATRIOȚILOR QANON"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-pentru-odorheiu-secuiesc",
+      "label": "PARTIDUL PENTRU ODORHEIU SECUIESC"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-phralipe-al-romilor",
+      "label": "PARTIDUL PHRALIPE AL ROMILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-polul-suveranist",
+      "label": "PARTIDUL POLUL SUVERANIST"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-pro-romania",
+      "label": "PARTIDUL PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-progresist",
+      "label": "PARTIDUL PROGRESIST"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reduta-respect-educatie-demnitate-unitate-traditie-adevar",
+      "label": "PARTIDUL REDUTA-RESPECT,EDUCAȚIE, DEMNITATE, UNITATE, TRADIȚIE, ADEVĂR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romani-pentru-romania",
+      "label": "PARTIDUL ROMÂNI PENTRU ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-echitate-comunitate-onestitate",
+      "label": "PARTIDUL ROMÂNIA - ECHITATE, COMUNITATE, ONESTITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-mare",
+      "label": "PARTIDUL ROMÂNIA MARE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-noastra",
+      "label": "PARTIDUL ROMÂNIA NOASTRĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-puternica",
+      "label": "PARTIDUL ROMÂNIA PUTERNICĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "SUSPECT",
+     "issues": [
+      "CONTAINS_ANNULLED_CONTEST",
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-s-o-s-romania",
+      "label": "PARTIDUL S.O.S. ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-sanatate-educatie-natura-sustenabilitate",
+      "label": "PARTIDUL SĂNĂTATE EDUCAŢIE NATURĂ SUSTENABILITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-satului-romanesc",
+      "label": "PARTIDUL SATULUI ROMÂNESC"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-socialist-roman",
+      "label": "PARTIDUL SOCIALIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-societatii-iesene",
+      "label": "PARTIDUL SOCIETĂȚII IEȘENE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verde",
+      "label": "PARTIDUL VERDE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verticala-noua",
+      "label": "PARTIDUL VERTICALA NOUĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-viitorul-tarii-fagarasului",
+      "label": "PARTIDUL VIITORUL ȚĂRII FĂGĂRAȘULUI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-volt-romania",
+      "label": "PARTIDUL VOLT ROMANIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-bulgara-din-banat-romania",
+      "label": "UNIUNEA BULGARĂ DIN BANAT- ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-croatilor-din-romania",
+      "label": "UNIUNEA CROAȚILOR DIN ROMÂNIA"
+     }
+    }
+   ]
+  },
+  "council": {
+   "tallies": [
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "2830129",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "2273927",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "16509",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "12802",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3509",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "alianta-pentru-unirea-romanilor",
+      "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2525",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democrata-maghiara-din-romania",
+      "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "907",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "830",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "uniunea-salvati-romania",
+      "label": "UNIUNEA SALVAȚI ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "255",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "forta-dreptei",
+      "label": "FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "238",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-populara",
+      "label": "PARTIDUL MIȘCAREA POPULARĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "234",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD PNL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "216",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-umanist-social-liberal",
+      "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "176",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "independents_bucket",
+      "actorKey": null,
+      "label": "INDEPENDENT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "172",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "149",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-s-o-s-romania",
+      "label": "PARTIDUL S.O.S. ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "128",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "124",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "asociatia-partida-romilor-pro-europa",
+      "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "111",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-pro-romania",
+      "label": "PARTIDUL PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "79",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-ecologist-roman",
+      "label": "PARTIDUL ECOLOGIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "56",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD-PUSL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "52",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "forumul-democrat-al-germanilor-din-romania",
+      "label": "FORUMUL DEMOCRAT AL GERMANILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "48",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-in-actiune",
+      "label": "PARTIDUL ROMÂNIA ÎN ACȚIUNE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "47",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-ucrainenilor-din-romania",
+      "label": "UNIUNEA UCRAINENILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "46",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+      "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "38",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verde",
+      "label": "PARTIDUL VERDE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "26",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "FORȚA CIVICĂ MAGHIARĂ - MAGYAR POLGÁRI ERŐ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "24",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democratica-a-slovacilor-si-cehilor-din-romania",
+      "label": "UNIUNEA DEMOCRATICĂ A SLOVACILOR ȘI CEHILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "23",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotilor",
+      "label": "PARTIDUL PATRIOȚILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "22",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-mare",
+      "label": "PARTIDUL ROMÂNIA MARE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "19",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-sarbilor-din-romania",
+      "label": "UNIUNEA SÂRBILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "18",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-romania-suverana",
+      "label": "PARTIDUL MIȘCAREA ROMÂNIA SUVERANĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "17",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "comunitatea-rusilor-lipoveni-din-romania",
+      "label": "COMUNITATEA RUȘILOR LIPOVENI DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "17",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "14",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-conservator-roman",
+      "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "13",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "13",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL ȚĂRĂNISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "13",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA TIMIȘOARA UNITĂ USR - PMP - FORȚA DREPTEI - UDMR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "11",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA UNIȚI PENTRU BRAȘOV"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "11",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-tineri",
+      "label": "PARTIDUL OAMENILOR TINERI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "9",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU ÎNTORSURA BUZĂULUI - USR PNL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "9",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU ȘAG"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "9",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-taranesc-maniu-mihalache",
+      "label": "PARTIDUL NAȚIONAL ȚĂRĂNESC MANIU-MIHALACHE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "9",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-bulgara-din-banat-romania",
+      "label": "UNIUNEA BULGARĂ DIN BANAT- ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "7",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "BLOCUL SUVERANIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "7",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-viitorul-tarii-fagarasului",
+      "label": "PARTIDUL VIITORUL ȚĂRII FĂGĂRAȘULUI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "7",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-volt-romania",
+      "label": "PARTIDUL VOLT ROMANIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "6",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU AGIGEA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "6",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-culturala-a-rutenilor-din-romania",
+      "label": "UNIUNEA CULTURALĂ A RUTENILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "forumul-cehilor-din-romania",
+      "label": "FORUMUL CEHILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PNL - PUSL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA UNIȚI PENTRU FLOREȘTI USR + ARI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-ialomitenilor",
+      "label": "PARTIDUL IALOMIȚENILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-liberi",
+      "label": "PARTIDUL OAMENILOR LIBERI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotii-poporului-roman",
+      "label": "PARTIDUL PATRIOȚII POPORULUI ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-puternica",
+      "label": "PARTIDUL ROMÂNIA PUTERNICĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ UIPS - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "UNIUNEA CREȘTIN DEMOCRATĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alianta-renasterea-nationala",
+      "label": "PARTIDUL ALIANȚA RENAȘTEREA NAȚIONALĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-dreapta",
+      "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-pentru-demnitate-nationala",
+      "label": "PARTIDUL ALTERNATIVA PENTRU DEMNITATE NATIONALĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-noi-ploiestenii",
+      "label": "PARTIDUL MIŞCAREA NOI, PLOIEŞTENII"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-croatilor-din-romania",
+      "label": "UNIUNEA CROAȚILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PARTIDUL SOCIAL DEMOCRAT + PARTIDUL VERDE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PNL - PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL CREȘTINĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "GRUPUL DE ACŢIUNE LOCALĂ BERCENI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "MIŞCAREA PENTRU COMUNĂ - MOZGALOM A KŐZSÉGÉRT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "PACT PENTRU GALAȚI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-campina-curata",
+      "label": "PARTIDUL CÂMPINA CURATĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-lege-educatie-unitate",
+      "label": "PARTIDUL LEGE EDUCAȚIE UNITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-neamul-romanesc",
+      "label": "PARTIDUL NEAMUL ROMÂNESC"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-pentru-odorheiu-secuiesc",
+      "label": "PARTIDUL PENTRU ODORHEIU SECUIESC"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-echitate-comunitate-onestitate",
+      "label": "PARTIDUL ROMÂNIA - ECHITATE, COMUNITATE, ONESTITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verticala-noua",
+      "label": "PARTIDUL VERTICALA NOUĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "3",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-polonezilor-din-romania",
+      "label": "UNIUNEA POLONEZILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA USR - SENS"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "INDEPENDENȚII COMUNEI MOȘNIȚA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-liberal-timis",
+      "label": "PARTIDUL LIBERAL TIMIȘ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-phralipe-al-romilor",
+      "label": "PARTIDUL PHRALIPE AL ROMILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romani-pentru-romania",
+      "label": "PARTIDUL ROMÂNI PENTRU ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-socialist-roman",
+      "label": "PARTIDUL SOCIALIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU LUGAȘ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANŢA PENTRU REFORMĂ ECHITATE SOCIALĂ EMANCIPARE ŞI LIBERTATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "DREPTATE ȘI RESPECT ÎN EUROPA PENTRU TOȚI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "NAȚIUNE OAMENI ÎMPREUNĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-acum",
+      "label": "PARTIDUL ACUM"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-democratiei-si-solidaritatii-demos",
+      "label": "PARTIDUL DEMOCRAȚIEI ȘI SOLIDARITAȚII-DEMOS"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-taranesc-crestin-democrat",
+      "label": "PARTIDUL NAȚIONAL ȚĂRĂNESC CREȘTIN DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-progresist",
+      "label": "PARTIDUL PROGRESIST"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-revolutionar-crestin-democrat",
+      "label": "PARTIDUL REVOLUȚIONAR CREȘTIN DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-noastra",
+      "label": "PARTIDUL ROMÂNIA NOASTRĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-satului-romanesc",
+      "label": "PARTIDUL SATULUI ROMÂNESC"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-solidaritatii-sociale",
+      "label": "PARTIDUL SOLIDARITĂȚII SOCIALE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-uniunea-geto-dacilor",
+      "label": "PARTIDUL UNIUNEA GETO-DACILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ACȚIUNEA CONSERVATORILOR ROMÂNI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ETOCRATĂ PENTRU REFORMĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NOI SUNTEM MANGALIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU DEZVOLTARE TÂRGU SECUIESC"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PENTRU MEDGIDIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA POPORULUI SUVERAN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA TINERILOR DEMOCRAȚI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "LIGA PENTRU DEȘTEPTAREA ROMÂNIEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "LIGA PENTRU UNIFICAREA PATRIOȚILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ROMÂNIA SOCIALISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "SIGHIȘOARA PUTERNICĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "TRADIȚIE, ONOARE, DISCIPLINĂ, EXCELENȚĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "UNIUNEA NAȚIUNII ROMÂNE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-adevar-democratie-educatie-reconstructie",
+      "label": "PARTIDUL ADEVĂR, DEMOCRAȚIE, EDUCAȚIE, RECONSTRUCȚIE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-conservator-democrat",
+      "label": "PARTIDUL CONSERVATOR DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-dacismului-autonom-conservator",
+      "label": "PARTIDUL DACISMULUI AUTONOM CONSERVATOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-liga-actiunii-nationale",
+      "label": "PARTIDUL LIGA ACȚIUNII NAȚIONALE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-makedonarmanilor-din-romania",
+      "label": "PARTIDUL MAKEDONARMÂNILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-de-centru",
+      "label": "PARTIDUL NAȚIONAL DE CENTRU"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-vatra-romaneasca",
+      "label": "PARTIDUL NAȚIONAL VATRA ROMÂNEASCĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-noua-dreapta",
+      "label": "PARTIDUL NOUA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-credinciosi",
+      "label": "PARTIDUL OAMENILOR CREDINCIOȘI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oltenilor",
+      "label": "PARTIDUL OLTENILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotilor-qanon",
+      "label": "PARTIDUL PATRIOȚILOR QANON"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-pentru-natura-oameni-si-animale",
+      "label": "PARTIDUL PENTRU NATURĂ, OAMENI ŞI ANIMALE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-polul-suveranist",
+      "label": "PARTIDUL POLUL SUVERANIST"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reduta-respect-educatie-demnitate-unitate-traditie-adevar",
+      "label": "PARTIDUL REDUTA-RESPECT,EDUCAȚIE, DEMNITATE, UNITATE, TRADIȚIE, ADEVĂR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-renasterii-si-dezvoltarii-maramuresului",
+      "label": "PARTIDUL RENAŞTERII ŞI DEZVOLTĂRII MARAMUREŞULUI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-sanatate-educatie-natura-sustenabilitate",
+      "label": "PARTIDUL SĂNĂTATE EDUCAŢIE NATURĂ SUSTENABILITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-societatii-iesene",
+      "label": "PARTIDUL SOCIETĂȚII IEȘENE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-uniunea-nationala-crestina-a-romilor-din-romania",
+      "label": "PARTIDUL UNIUNEA NAȚIONALĂ CREȘTINĂ A ROMILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-uniunea-pentru-reforma-statului-si-protectia-drepturilor-fundamentale",
+      "label": "PARTIDUL UNIUNEA PENTRU REFORMA STATULUI ȘI PROTECȚIA DREPTURILOR FUNDAMENTALE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "final",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [
+      "MISSING_SCOPE:county:B"
+     ],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-armenilor-din-romania",
+      "label": "UNIUNEA ARMENILOR DIN ROMÂNIA"
+     }
+    }
+   ]
+  },
+  "county": {
+   "tallies": [
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "2640850",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "2178075",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "503",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "393",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "137",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "alianta-pentru-unirea-romanilor",
+      "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "99",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democrata-maghiara-din-romania",
+      "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "67",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "40",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD PNL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "13",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD-PUSL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "forumul-democrat-al-germanilor-din-romania",
+      "label": "FORUMUL DEMOCRAT AL GERMANILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "uniunea-salvati-romania",
+      "label": "UNIUNEA SALVAȚI ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "asociatia-partida-romilor-pro-europa",
+      "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "forta-dreptei",
+      "label": "FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ETOCRATĂ PENTRU REFORMĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA MIȘCAREA, NOI PLOIEȘTENII - REPER"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL CREȘTINĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL ȚĂRĂNISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PUSL + PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "FORȚA CIVICĂ MAGHIARĂ - MAGYAR POLGÁRI ERŐ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "PACT PENTRU GALAȚI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ROMÂNIA SOCIALISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-dreapta",
+      "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-conservator-democrat",
+      "label": "PARTIDUL CONSERVATOR DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-ecologist-roman",
+      "label": "PARTIDUL ECOLOGIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-lege-educatie-unitate",
+      "label": "PARTIDUL LEGE EDUCAȚIE UNITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-liga-actiunii-nationale",
+      "label": "PARTIDUL LIGA ACȚIUNII NAȚIONALE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-populara",
+      "label": "PARTIDUL MIȘCAREA POPULARĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-romania-suverana",
+      "label": "PARTIDUL MIȘCAREA ROMÂNIA SUVERANĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-conservator-roman",
+      "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-taranesc-maniu-mihalache",
+      "label": "PARTIDUL NAȚIONAL ȚĂRĂNESC MANIU-MIHALACHE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-liberi",
+      "label": "PARTIDUL OAMENILOR LIBERI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oltenilor",
+      "label": "PARTIDUL OLTENILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotii-poporului-roman",
+      "label": "PARTIDUL PATRIOȚII POPORULUI ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotilor",
+      "label": "PARTIDUL PATRIOȚILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-pro-romania",
+      "label": "PARTIDUL PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+      "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-echitate-comunitate-onestitate",
+      "label": "PARTIDUL ROMÂNIA - ECHITATE, COMUNITATE, ONESTITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-in-actiune",
+      "label": "PARTIDUL ROMÂNIA ÎN ACȚIUNE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-mare",
+      "label": "PARTIDUL ROMÂNIA MARE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-puternica",
+      "label": "PARTIDUL ROMÂNIA PUTERNICĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-s-o-s-romania",
+      "label": "PARTIDUL S.O.S. ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-socialist-roman",
+      "label": "PARTIDUL SOCIALIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-umanist-social-liberal",
+      "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verde",
+      "label": "PARTIDUL VERDE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verticala-noua",
+      "label": "PARTIDUL VERTICALA NOUĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-croatilor-din-romania",
+      "label": "UNIUNEA CROAȚILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-ucrainenilor-din-romania",
+      "label": "UNIUNEA UCRAINENILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "independents_bucket",
+      "actorKey": null,
+      "label": "INDEPENDENT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "22",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "alianta-pentru-unirea-romanilor",
+      "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "19",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "18",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "8",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democrata-maghiara-din-romania",
+      "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "2",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD PNL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "forumul-democrat-al-germanilor-din-romania",
+      "label": "FORUMUL DEMOCRAT AL GERMANILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "uniunea-salvati-romania",
+      "label": "UNIUNEA SALVAȚI ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "asociatia-partida-romilor-pro-europa",
+      "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "forta-dreptei",
+      "label": "FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ELECTORALĂ PSD-PUSL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA ETOCRATĂ PENTRU REFORMĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA MIȘCAREA, NOI PLOIEȘTENII - REPER"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL CREȘTINĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA NAȚIONAL ȚĂRĂNISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA PUSL + PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "FORȚA CIVICĂ MAGHIARĂ - MAGYAR POLGÁRI ERŐ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "PACT PENTRU GALAȚI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ROMÂNIA SOCIALISTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-dreapta",
+      "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-conservator-democrat",
+      "label": "PARTIDUL CONSERVATOR DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-ecologist-roman",
+      "label": "PARTIDUL ECOLOGIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-lege-educatie-unitate",
+      "label": "PARTIDUL LEGE EDUCAȚIE UNITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-liga-actiunii-nationale",
+      "label": "PARTIDUL LIGA ACȚIUNII NAȚIONALE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-populara",
+      "label": "PARTIDUL MIȘCAREA POPULARĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-miscarea-romania-suverana",
+      "label": "PARTIDUL MIȘCAREA ROMÂNIA SUVERANĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-conservator-roman",
+      "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-taranesc-maniu-mihalache",
+      "label": "PARTIDUL NAȚIONAL ȚĂRĂNESC MANIU-MIHALACHE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oamenilor-liberi",
+      "label": "PARTIDUL OAMENILOR LIBERI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-oltenilor",
+      "label": "PARTIDUL OLTENILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotii-poporului-roman",
+      "label": "PARTIDUL PATRIOȚII POPORULUI ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-patriotilor",
+      "label": "PARTIDUL PATRIOȚILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-pro-romania",
+      "label": "PARTIDUL PRO ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+      "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-echitate-comunitate-onestitate",
+      "label": "PARTIDUL ROMÂNIA - ECHITATE, COMUNITATE, ONESTITATE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-in-actiune",
+      "label": "PARTIDUL ROMÂNIA ÎN ACȚIUNE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-mare",
+      "label": "PARTIDUL ROMÂNIA MARE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-puternica",
+      "label": "PARTIDUL ROMÂNIA PUTERNICĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-s-o-s-romania",
+      "label": "PARTIDUL S.O.S. ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-socialist-roman",
+      "label": "PARTIDUL SOCIALIST ROMÂN"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-umanist-social-liberal",
+      "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verde",
+      "label": "PARTIDUL VERDE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-verticala-noua",
+      "label": "PARTIDUL VERTICALA NOUĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-croatilor-din-romania",
+      "label": "UNIUNEA CROAȚILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-ucrainenilor-din-romania",
+      "label": "UNIUNEA UCRAINENILOR DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "independents_bucket",
+      "actorKey": null,
+      "label": "INDEPENDENT"
+     }
+    }
+   ]
+  },
+  "mayorCounties": {
+   "total": 42,
+   "hasMore": false,
+   "items": [
+    {
+     "place": {
+      "countyCode": "AB",
+      "name": "ALBA"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "89577",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "42175",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "56",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "15",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "alianta-pentru-unirea-romanilor",
+        "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "2",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "independents_bucket",
+        "actorKey": null,
+        "label": "INDEPENDENT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "forta-dreptei",
+        "label": "FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-conservator-roman",
+        "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-oamenilor-tineri",
+        "label": "PARTIDUL OAMENILOR TINERI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-phralipe-al-romilor",
+        "label": "PARTIDUL PHRALIPE AL ROMILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-romania-mare",
+        "label": "PARTIDUL ROMÂNIA MARE"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-s-o-s-romania",
+        "label": "PARTIDUL S.O.S. ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-umanist-social-liberal",
+        "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "uniunea-salvati-romania",
+        "label": "UNIUNEA SALVAȚI ROMÂNIA"
+       }
+      }
+     ]
+    },
+    {
+     "place": {
+      "countyCode": "B",
+      "name": "MUNICIPIUL BUCUREȘTI"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "361440",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA ELECTORALĂ PSD PNL"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "179986",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+       }
+      }
+     ]
+    },
+    {
+     "place": {
+      "countyCode": "CJ",
+      "name": "CLUJ"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "130945",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "43041",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "51",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "17",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "7",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "independents_bucket",
+        "actorKey": null,
+        "label": "INDEPENDENT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "2",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "alianta-pentru-unirea-romanilor",
+        "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "forta-dreptei",
+        "label": "FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA UNIȚI PENTRU FLOREȘTI USR + ARI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "UNIUNEA CREȘTIN DEMOCRATĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-alternativa-dreapta",
+        "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-ecologist-roman",
+        "label": "PARTIDUL ECOLOGIST ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-miscarea-populara",
+        "label": "PARTIDUL MIȘCAREA POPULARĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-conservator-roman",
+        "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-taranesc-maniu-mihalache",
+        "label": "PARTIDUL NAȚIONAL ȚĂRĂNESC MANIU-MIHALACHE"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-vatra-romaneasca",
+        "label": "PARTIDUL NAȚIONAL VATRA ROMÂNEASCĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-patriotilor",
+        "label": "PARTIDUL PATRIOȚILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-pro-romania",
+        "label": "PARTIDUL PRO ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+        "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-romania-mare",
+        "label": "PARTIDUL ROMÂNIA MARE"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-s-o-s-romania",
+        "label": "PARTIDUL S.O.S. ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-socialist-roman",
+        "label": "PARTIDUL SOCIALIST ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-umanist-social-liberal",
+        "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-verde",
+        "label": "PARTIDUL VERDE"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "uniunea-salvati-romania",
+        "label": "UNIUNEA SALVAȚI ROMÂNIA"
+       }
+      }
+     ]
+    },
+    {
+     "place": {
+      "countyCode": "CV",
+      "name": "COVASNA"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "59945",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "6007",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "independents_bucket",
+        "actorKey": null,
+        "label": "INDEPENDENT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "34",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "independents_bucket",
+        "actorKey": null,
+        "label": "INDEPENDENT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "asociatia-partida-romilor-pro-europa",
+        "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA PENTRU ÎNTORSURA BUZĂULUI - USR PNL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "alianta-pentru-unirea-romanilor",
+        "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA NAȚIONAL ȚĂRĂNISTĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "FORȚA CIVICĂ MAGHIARĂ - MAGYAR POLGÁRI ERŐ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-miscarea-populara",
+        "label": "PARTIDUL MIȘCAREA POPULARĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-miscarea-romania-suverana",
+        "label": "PARTIDUL MIȘCAREA ROMÂNIA SUVERANĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "uniunea-salvati-romania",
+        "label": "UNIUNEA SALVAȚI ROMÂNIA"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "councilCounties": {
+   "total": 42,
+   "hasMore": false,
+   "items": [
+    {
+     "place": {
+      "countyCode": "AB",
+      "name": "ALBA"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "76256",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "40286",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "450",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "237",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "118",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "alianta-pentru-unirea-romanilor",
+        "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "33",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "33",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "uniunea-salvati-romania",
+        "label": "UNIUNEA SALVAȚI ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "8",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "forta-dreptei",
+        "label": "FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "8",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "7",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "independents_bucket",
+        "actorKey": null,
+        "label": "INDEPENDENT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-umanist-social-liberal",
+        "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "2",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-s-o-s-romania",
+        "label": "PARTIDUL S.O.S. ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "asociatia-partida-romilor-pro-europa",
+        "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-conservator-roman",
+        "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-oamenilor-tineri",
+        "label": "PARTIDUL OAMENILOR TINERI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-patriotilor",
+        "label": "PARTIDUL PATRIOȚILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-pro-romania",
+        "label": "PARTIDUL PRO ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-phralipe-al-romilor",
+        "label": "PARTIDUL PHRALIPE AL ROMILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-romania-mare",
+        "label": "PARTIDUL ROMÂNIA MARE"
+       }
+      }
+     ]
+    },
+    {
+     "place": {
+      "countyCode": "B",
+      "name": "MUNICIPIUL BUCUREȘTI"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "293710",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA ELECTORALĂ PSD PNL"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "210886",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+       }
+      }
+     ]
+    },
+    {
+     "place": {
+      "countyCode": "CJ",
+      "name": "CLUJ"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "100639",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "51366",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "376",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "236",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "124",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "101",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "alianta-pentru-unirea-romanilor",
+        "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "55",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "16",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "uniunea-salvati-romania",
+        "label": "UNIUNEA SALVAȚI ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "10",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "asociatia-partida-romilor-pro-europa",
+        "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "9",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "independents_bucket",
+        "actorKey": null,
+        "label": "INDEPENDENT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "8",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-miscarea-populara",
+        "label": "PARTIDUL MIȘCAREA POPULARĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "8",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-umanist-social-liberal",
+        "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "5",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA UNIȚI PENTRU FLOREȘTI USR + ARI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "4",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-pro-romania",
+        "label": "PARTIDUL PRO ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+        "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "3",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-verde",
+        "label": "PARTIDUL VERDE"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "2",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "forta-dreptei",
+        "label": "FORȚA DREPTEI"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "2",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-alternativa-dreapta",
+        "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-conservator-roman",
+        "label": "PARTIDUL NAȚIONAL CONSERVATOR ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-patriotilor",
+        "label": "PARTIDUL PATRIOȚILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "UNIUNEA CREȘTIN DEMOCRATĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-ecologist-roman",
+        "label": "PARTIDUL ECOLOGIST ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-taranesc-maniu-mihalache",
+        "label": "PARTIDUL NAȚIONAL ȚĂRĂNESC MANIU-MIHALACHE"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-vatra-romaneasca",
+        "label": "PARTIDUL NAȚIONAL VATRA ROMÂNEASCĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-romania-mare",
+        "label": "PARTIDUL ROMÂNIA MARE"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-s-o-s-romania",
+        "label": "PARTIDUL S.O.S. ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-socialist-roman",
+        "label": "PARTIDUL SOCIALIST ROMÂN"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-armenilor-din-romania",
+        "label": "UNIUNEA ARMENILOR DIN ROMÂNIA"
+       }
+      }
+     ]
+    },
+    {
+     "place": {
+      "countyCode": "CV",
+      "name": "COVASNA"
+     },
+     "tallies": [
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "57192",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "votes",
+       "allocationPhase": "none",
+       "value": "6431",
+       "status": "VERIFIED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "377",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "uniunea-democrata-maghiara-din-romania",
+        "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "45",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-social-democrat",
+        "label": "PARTIDUL SOCIAL DEMOCRAT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "37",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-national-liberal",
+        "label": "PARTIDUL NAȚIONAL LIBERAL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "34",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA MAGHIARĂ DIN TRANSILVANIA - ERDÉLYI MAGYAR SZÖVETSÉG"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "17",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "alianta-pentru-unirea-romanilor",
+        "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "11",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "minority_org",
+        "actorKey": "asociatia-partida-romilor-pro-europa",
+        "label": "ASOCIAȚIA PARTIDA ROMILOR \"PRO-EUROPA\""
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "10",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "FORȚA CIVICĂ MAGHIARĂ - MAGYAR POLGÁRI ERŐ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "9",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA PENTRU ÎNTORSURA BUZĂULUI - USR PNL"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "4",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "independents_bucket",
+        "actorKey": null,
+        "label": "INDEPENDENT"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "2",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "uniunea-salvati-romania",
+        "label": "UNIUNEA SALVAȚI ROMÂNIA"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA NAȚIONAL ȚĂRĂNISTĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-miscarea-populara",
+        "label": "PARTIDUL MIȘCAREA POPULARĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "1",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-miscarea-romania-suverana",
+        "label": "PARTIDUL MIȘCAREA ROMÂNIA SUVERANĂ"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "list",
+        "actorKey": null,
+        "label": "ALIANȚA PENTRU DEZVOLTARE TÂRGU SECUIESC"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-patriotilor",
+        "label": "PARTIDUL PATRIOȚILOR"
+       }
+      },
+      {
+       "measure": "mandates",
+       "allocationPhase": "final",
+       "value": "0",
+       "status": "UNCHECKED",
+       "issues": [],
+       "competitor": {
+        "kind": "party",
+        "actorKey": "partidul-pro-romania",
+        "label": "PARTIDUL PRO ROMÂNIA"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "countyCouncilCJ": {
+  "electionResult": {
+   "tallies": [
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "96479",
+     "status": "VERIFIED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "votes",
+     "allocationPhase": "none",
+     "value": "53445",
+     "status": "VERIFIED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "12",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "7",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "5",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democrata-maghiara-din-romania",
+      "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "4",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "alianta-pentru-unirea-romanilor",
+      "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-dreapta",
+      "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+      "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-mare",
+      "label": "PARTIDUL ROMÂNIA MARE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-s-o-s-romania",
+      "label": "PARTIDUL S.O.S. ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_1",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-umanist-social-liberal",
+      "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "list",
+      "actorKey": null,
+      "label": "ALIANȚA DREAPTA UNITĂ USR - PMP - FORȚA DREPTEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-national-liberal",
+      "label": "PARTIDUL NAȚIONAL LIBERAL"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "1",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "minority_org",
+      "actorKey": "uniunea-democrata-maghiara-din-romania",
+      "label": "UNIUNEA DEMOCRATĂ MAGHIARĂ DIN ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "alianta-pentru-unirea-romanilor",
+      "label": "ALIANȚA PENTRU UNIREA ROMÂNILOR"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-alternativa-dreapta",
+      "label": "PARTIDUL ALTERNATIVA DREAPTĂ"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-reinnoim-proiectul-european-al-romaniei",
+      "label": "PARTIDUL REÎNNOIM PROIECTUL EUROPEAN AL ROMÂNIEI"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-romania-mare",
+      "label": "PARTIDUL ROMÂNIA MARE"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-s-o-s-romania",
+      "label": "PARTIDUL S.O.S. ROMÂNIA"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-social-democrat",
+      "label": "PARTIDUL SOCIAL DEMOCRAT"
+     }
+    },
+    {
+     "measure": "mandates",
+     "allocationPhase": "man_2",
+     "value": "0",
+     "status": "UNCHECKED",
+     "issues": [],
+     "competitor": {
+      "kind": "party",
+      "actorKey": "partidul-umanist-social-liberal",
+      "label": "PARTIDUL UMANIST SOCIAL LIBERAL"
+     }
+    }
+   ]
+  }
+ }
+}

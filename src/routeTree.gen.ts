@@ -41,6 +41,7 @@ import { Route as AchizitiiCautareRouteImport } from './routes/achizitii/cautare
 import { Route as AchizitiiMetodologieRouteImport } from './routes/achizitii/metodologie'
 import { Route as AlegeriIndexRouteImport } from './routes/alegeri/index'
 import { Route as AlegeriElectionKeyRouteImport } from './routes/alegeri/$electionKey'
+import { Route as AlegeriAnalizeRouteImport } from './routes/alegeri/analize'
 import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
@@ -378,6 +379,13 @@ const AlegeriElectionKeyRoute = AlegeriElectionKeyRouteImport.update({
   getParentRoute: () => AlegeriRouteRoute,
 } as any).lazy(() =>
   import('./routes/alegeri/$electionKey.lazy').then((d) => d.Route),
+)
+const AlegeriAnalizeRoute = AlegeriAnalizeRouteImport.update({
+  id: '/analize',
+  path: '/analize',
+  getParentRoute: () => AlegeriRouteRoute,
+} as any).lazy(() =>
+  import('./routes/alegeri/analize.lazy').then((d) => d.Route),
 )
 const AlertsAlertIdRouteRoute = AlertsAlertIdRouteRouteImport.update({
   id: '/alerts/$alertId',
@@ -1595,6 +1603,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/cautare': typeof AchizitiiCautareRoute
   '/achizitii/metodologie': typeof AchizitiiMetodologieRoute
   '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
+  '/alegeri/analize': typeof AlegeriAnalizeRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -1782,6 +1791,7 @@ export interface FileRoutesByTo {
   '/achizitii/cautare': typeof AchizitiiCautareRoute
   '/achizitii/metodologie': typeof AchizitiiMetodologieRoute
   '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
+  '/alegeri/analize': typeof AlegeriAnalizeRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -1977,6 +1987,7 @@ export interface FileRoutesById {
   '/achizitii/cautare': typeof AchizitiiCautareRoute
   '/achizitii/metodologie': typeof AchizitiiMetodologieRoute
   '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
+  '/alegeri/analize': typeof AlegeriAnalizeRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -2178,6 +2189,7 @@ export interface FileRouteTypes {
     | '/achizitii/cautare'
     | '/achizitii/metodologie'
     | '/alegeri/$electionKey'
+    | '/alegeri/analize'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -2365,6 +2377,7 @@ export interface FileRouteTypes {
     | '/achizitii/cautare'
     | '/achizitii/metodologie'
     | '/alegeri/$electionKey'
+    | '/alegeri/analize'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -2559,6 +2572,7 @@ export interface FileRouteTypes {
     | '/achizitii/cautare'
     | '/achizitii/metodologie'
     | '/alegeri/$electionKey'
+    | '/alegeri/analize'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -3060,6 +3074,13 @@ declare module '@tanstack/react-router' {
       path: '/$electionKey'
       fullPath: '/alegeri/$electionKey'
       preLoaderRoute: typeof AlegeriElectionKeyRouteImport
+      parentRoute: typeof AlegeriRouteRoute
+    }
+    '/alegeri/analize': {
+      id: '/alegeri/analize'
+      path: '/analize'
+      fullPath: '/alegeri/analize'
+      preLoaderRoute: typeof AlegeriAnalizeRouteImport
       parentRoute: typeof AlegeriRouteRoute
     }
     '/alerts/$alertId': {
@@ -4253,12 +4274,14 @@ const AchizitiiRouteRouteWithChildren = AchizitiiRouteRoute._addFileChildren(
 
 interface AlegeriRouteRouteChildren {
   AlegeriElectionKeyRoute: typeof AlegeriElectionKeyRoute
+  AlegeriAnalizeRoute: typeof AlegeriAnalizeRoute
   AlegeriIndexRoute: typeof AlegeriIndexRoute
   AlegeriContestContestKeyRoute: typeof AlegeriContestContestKeyRoute
 }
 
 const AlegeriRouteRouteChildren: AlegeriRouteRouteChildren = {
   AlegeriElectionKeyRoute: AlegeriElectionKeyRoute,
+  AlegeriAnalizeRoute: AlegeriAnalizeRoute,
   AlegeriIndexRoute: AlegeriIndexRoute,
   AlegeriContestContestKeyRoute: AlegeriContestContestKeyRoute,
 }

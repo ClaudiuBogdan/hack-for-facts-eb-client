@@ -55871,3 +55871,329 @@ msgstr "All have a published value."
 #: src/features/private-companies/components/profile/company-money-band.tsx:360
 msgid "Valoarea e publicată pentru {0} din {awards}."
 msgstr "A value is published for {0} of {awards}."
+
+#. placeholder {0}: countyName(judet ?? '')
+#: src/features/elections/analytics/components/mandate-view.tsx:57
+msgid "{0}: mandatele nu sunt încă în date."
+msgstr "{0}: the mandates are not in the data yet."
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:137
+msgid "{name}: egalitate"
+msgstr "{name}: tie"
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:137
+msgid "{name}: nu e încă în date"
+msgstr "{name}: not in the data yet"
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:103
+msgid "A doua repartizare"
+msgstr "Second allocation"
+
+#. placeholder {0}: format.n(total(scoped.second))
+#: src/features/elections/analytics/components/mandate-view.tsx:48
+msgid "a doua repartizare: {0}; nu se adună"
+msgstr "second allocation: {0}; not added up"
+
+#: src/features/elections/analytics/components/mandate-view.tsx:48
+msgid "a doua repartizare: nu e încă în date"
+msgstr "second allocation: not in the data yet"
+
+#: src/features/elections/analytics/lib/mandate-notes.ts:15
+msgid "Alianțele Dreapta Unită și PSD + PNL sunt linii proprii; celelalte alianțe și partidele mici sunt „Alte partide\"."
+msgstr "The United Right Alliance and PSD + PNL are lines of their own; the other alliances and the small parties are “Other parties”."
+
+#: src/features/elections/analytics/lib/lines.ts:135
+msgid "Alte partide"
+msgstr "Other parties"
+
+#: src/routes/alegeri/analize.tsx:45
+msgid "Analiza alegerilor locale 2024 — Transparenta.eu"
+msgstr "Local elections 2024: analysis — Transparenta.eu"
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:52
+msgid "Analiza alegerilor: partide, mandate, hartă, prezență, curse"
+msgstr "Election analysis: parties, mandates, map, turnout, races"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:23
+msgid "Camera și Senatul, 2020 → 2024; anii dinainte apar când sunt publicați."
+msgstr "The Chamber and the Senate, 2020 → 2024; earlier years appear when they are published."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:58
+msgid "Candidați"
+msgstr "Candidates"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:25
+msgid "Câștiguri"
+msgstr "Gains"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:25
+msgid "Câștigurile și pierderile fiecărui partid, 2020 → 2024."
+msgstr "Each party’s gains and losses, 2020 → 2024."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:40
+msgid "Cât a câștigat sau a pierdut un partid între 2020 și 2024 (Camera), pe județe."
+msgstr "How much a party gained or lost between 2020 and 2024 (Chamber), by county."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:69
+msgid "Cât de strânse au fost cursele pentru primărie"
+msgstr "How close the mayoral races were"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:68
+msgid "Câți au votat, unde și când"
+msgstr "How many voted, where and when"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:58
+msgid "Câți candidați a avut fiecare cursă."
+msgstr "How many candidates each race had."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:57
+msgid "Cele mai strânse curse, pe partide; un independent apare ca „independent\"."
+msgstr "The closest races, by party; an independent appears as “independent”."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:66
+msgid "Cine a obținut mandatele la alegerile locale din 2024"
+msgstr "Who won the mandates in the 2024 local elections"
+
+#: src/routes/alegeri/analize.tsx:46
+msgid "Cine a obținut primăriile și mandatele de consilier la alegerile locale din 2024, pe partide și pe județe, din rezultatele oficiale."
+msgstr "Who won the mayoralties and council seats in Romania’s 2024 local elections, by party and by county, from the official results."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:34
+msgid "Cine are cele mai multe primării, pe județe"
+msgstr "Who holds the most mayoralties, by county"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:27
+msgid "Clasamentul primăriilor 2016 / 2020 / 2024 așteaptă localele din 2016 și 2020."
+msgstr "The mayoralties ranking for 2016 / 2020 / 2024 waits for the 2016 and 2020 local elections."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:47
+msgid "Consilieri județeni, prima repartizare"
+msgstr "County councillors, first allocation"
+
+#: src/features/elections/analytics/components/mandate-view.tsx:40
+#: src/features/elections/analytics/lib/analytics-views.ts:35
+msgid "Consilieri locali"
+msgstr "Local councillors"
+
+#: src/features/elections/analytics/components/mandate-view.tsx:80
+msgid "Consilierii locali"
+msgstr "The local councillors"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:35
+msgid "Consilierii locali, pe partide"
+msgstr "Local councillors, by party"
+
+#: src/features/elections/analytics/lib/mandate-notes.ts:13
+msgid "Consiliile județene au două repartizări de mandate, arătate separat: nu se adună."
+msgstr "County councils have two allocations of mandates, shown apart: they are not added up."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:33
+msgid "Consiliile județene, cele două repartizări"
+msgstr "County councils, the two allocations"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:33
+msgid "Consiliul județean"
+msgstr "County council"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:65
+msgid "Cum au votat românii partidele, de la o alegere la alta"
+msgstr "How Romanians voted for the parties, from one election to the next"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:69
+msgid "Curse"
+msgstr "Races"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:44
+msgid "Diferența dintre primii doi la primărie, 2024, în interiorul unui județ."
+msgstr "The gap between the top two for mayor, 2024, within a county."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:44
+#: src/features/elections/analytics/lib/analytics-views.ts:56
+msgid "Diferențe"
+msgstr "Gaps"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:56
+msgid "Diferențele dintre primii doi, toate localitățile, 2024."
+msgstr "The gaps between the top two, every locality, 2024."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:54
+msgid "din 41 și București"
+msgstr "of 41 and Bucharest"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:50
+msgid "Distribuția pe localități, județ cu județ."
+msgstr "The spread by locality, county by county."
+
+#. placeholder {0}: data.missing.map((code) => countyNameRo(code) ?? code).join(', ')
+#: src/features/elections/analytics/lib/mandate-notes.ts:8
+msgid "Fără {0}: nu e încă în date, iar totalurile pe țară nu îl cuprind."
+msgstr "Without {0}: not in the data yet, and the national totals leave it out."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:37
+msgid "fără București"
+msgstr "without Bucharest"
+
+#: src/features/elections/analytics/components/mandate-view.tsx:92
+msgid "Fiecare județ în culoarea partidului cu cele mai multe primării. Un județ fără date e punctat, la fel o egalitate. Alege un județ ca să vezi doar cifrele lui."
+msgstr "Each county in the colour of the party with the most mayoralties. A county without data is dashed, as is a tie. Pick a county to see only its figures."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:24
+msgid "Fișa fiecărui partid: voturi și mandate în 2024, schimbarea față de 2020."
+msgstr "Each party’s card: votes and mandates in 2024, the change from 2020."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:24
+msgid "Fișe"
+msgstr "Cards"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:42
+msgid "Fluxuri"
+msgstr "Flows"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:42
+msgid "Fluxurile între partide așteaptă aceleași date."
+msgstr "The flows between parties wait for the same data."
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:166
+msgid "În curând"
+msgstr "Coming soon"
+
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:126
+msgid "în toată țara"
+msgstr "across the country"
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:166
+msgid "Încă nu e în date"
+msgstr "Not in the data yet"
+
+#: src/features/elections/analytics/lib/lines.ts:134
+msgid "Independenți"
+msgstr "Independents"
+
+#: src/features/elections/analytics/lib/mandate-notes.ts:14
+msgid "Independenții sunt o singură linie, fără nume; numele de pe buletin rămân pe pagina fiecărei curse."
+msgstr "Independents are one line, without names; the names on the ballot stay on each race’s page."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:54
+msgid "Județe cu date"
+msgstr "Counties with data"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:49
+msgid "Județele comparate, la fiecare alegere."
+msgstr "The counties compared, at each election."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:99
+msgid "Localele din 2016 nu sunt încă în date."
+msgstr "The 2016 local elections are not in the data yet."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:100
+msgid "Localele din 2020 nu sunt încă în date."
+msgstr "The 2020 local elections are not in the data yet."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:75
+msgid "Nu am putut citi mandatele."
+msgstr "We couldn’t read the mandates."
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:57
+msgid "Nu e încă în date."
+msgstr "Not in the data yet."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:65
+msgid "Partide"
+msgstr "Parties"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:32
+msgid "Pe alegeri"
+msgstr "By election"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:59
+msgid "Ponderea partidelor după felul localității."
+msgstr "The parties’ shares by type of locality."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:39
+msgid "Ponderea unui partid pe județe; pe localități, în interiorul unui județ."
+msgstr "A party’s share by county; by locality, within a county."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:26
+msgid "Ponderile partidelor la fiecare alegere: parlamentare, europarlamentare, locale."
+msgstr "The parties’ shares at each election: parliamentary, European, local."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:52
+msgid "Prezența după felul localității: municipiu, oraș, comună."
+msgstr "Turnout by type of locality: city, town, commune."
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:102
+msgid "Prima repartizare"
+msgstr "First allocation"
+
+#: src/features/elections/analytics/components/mandate-view.tsx:39
+msgid "Primari"
+msgstr "Mayors"
+
+#: src/features/elections/analytics/components/mandate-view.tsx:78
+msgid "Primarii"
+msgstr "The mayors"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:41
+msgid "Primăriile păstrate sau schimbate așteaptă localele din 2016 și 2020 și primarul pe localitate."
+msgstr "Mayoralties kept or changed wait for the 2016 and 2020 local elections and the mayor by locality."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:32
+msgid "Primăriile, la ultimele trei alegeri locale"
+msgstr "Mayoralties, at the last three local elections"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:31
+msgid "Primăriile, pe partide"
+msgstr "Mayoralties, by party"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:39
+msgid "Putere"
+msgstr "Strength"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:43
+msgid "Schimbarea prezenței între două zile de vot, pe județe."
+msgstr "The change in turnout between two ballot days, by county."
+
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:186
+msgid "Secțiunile vederii"
+msgstr "The view’s sections"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:51
+msgid "Străinătate"
+msgstr "Abroad"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:57
+msgid "Strânse"
+msgstr "Close"
+
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:68
+msgid "Surse: rezultatele oficiale, publicate în platformă pe {day}."
+msgstr "Sources: the official results, published on the platform on {day}."
+
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:68
+msgid "Surse: rezultatele oficiale."
+msgstr "Sources: the official results."
+
+#. placeholder {0}: format.n(per)
+#: src/features/elections/analytics/components/analytics-charts.tsx:41
+msgid "Un pătrat = {0} mandate"
+msgstr "One square = {0} mandates"
+
+#: src/features/elections/analytics/components/analytics-charts.tsx:41
+msgid "Un pătrat = un mandat"
+msgstr "One square = one mandate"
+
+#: src/features/elections/analytics/lib/analytics-views.ts:67
+msgid "Unde e puternic fiecare partid"
+msgstr "Where each party is strong"
+
+#: src/features/elections/analytics/lib/mandate-notes.ts:9
+msgid "Unele cifre au un defect cunoscut (cuprind contestații anulate); sunt marcate acolo unde apar."
+msgstr "Some figures have a known defect (they include annulled contests); they are marked where they appear."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:51
+msgid "Votul din străinătate, față de cel din țară."
+msgstr "The vote abroad, against the vote at home."
+
+#: src/features/elections/analytics/lib/analytics-views.ts:48
+msgid "Zilele de vot din 2020–2025; anii 1992–2019 apar când sunt publicați."
+msgstr "The ballot days of 2020–2025; the years 1992–2019 appear when they are published."

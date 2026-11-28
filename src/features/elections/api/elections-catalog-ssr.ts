@@ -34,7 +34,7 @@ const isNotFound = (error: unknown) =>
   error instanceof GraphQLRequestError && error.graphQLErrors.some((entry) => entry.extensions?.code === 'NOT_FOUND')
 
 /** The read's result, or `undefined` when it failed: a failure is never an absent record or an empty list. */
-async function settle<T>(what: string, read: () => Promise<T>): Promise<T | undefined> {
+export async function settle<T>(what: string, read: () => Promise<T>): Promise<T | undefined> {
   try {
     return await read()
   } catch (error) {
@@ -45,7 +45,8 @@ async function settle<T>(what: string, read: () => Promise<T>): Promise<T | unde
   }
 }
 
-const deadline = (signal: AbortSignal) => withDeadline(signal, SSR_DEADLINE_MS) ?? signal
+/** The request's signal, aborted at the elections pages' deadline too. */
+export const deadline = (signal: AbortSignal) => withDeadline(signal, SSR_DEADLINE_MS) ?? signal
 
 export async function readElectionEventsForSsr(search: ElectionsCatalogSearch, signal: AbortSignal): Promise<ElectionEventPage | undefined> {
   return settle('events', () => fetchElectionEvents(search, deadline(signal)))

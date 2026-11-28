@@ -84,3 +84,45 @@ export type ElectionContestsSearch = LazyOutput<typeof electionContestsSearchSch
 export function parseElectionContestsSearch(search: unknown): ElectionContestsSearch {
   return electionContestsSearchSchema.parse(search ?? {})
 }
+
+/**
+ * `/alegeri/analize`: the view (`tip`), the section within it (`dupa`) and the
+ * county (`judet`). The vocabularies are plain keys, so the route carries no
+ * labels or icons; the page names them. Every key is returned, an unreadable
+ * one as `undefined`: the root's search is merged under a child's, and a key
+ * left out would keep its raw value. `partid` joins with the Partide view.
+ */
+export const ELECTIONS_ANALYTICS_VIEWS = {
+  partide: ['timp', 'fise', 'castiguri', 'ponderi', 'clasament'],
+  mandate: ['primarii', 'alegeri', 'consiliu', 'judete', 'consilieri'],
+  harta: ['putere', 'schimbare', 'primarii', 'fluxuri', 'prezenta', 'diferente'],
+  prezenta: ['timp', 'judete', 'localitati', 'strainatate', 'tip'],
+  curse: ['diferente', 'stranse', 'candidati', 'tip'],
+} as const
+export type ElectionsAnalyticsView = keyof typeof ELECTIONS_ANALYTICS_VIEWS
+export const ELECTIONS_ANALYTICS_VIEW_ORDER: readonly ElectionsAnalyticsView[] = ['partide', 'mandate', 'harta', 'prezenta', 'curse']
+/** The view a bare address opens: the one drawn first. */
+export const ELECTIONS_ANALYTICS_DEFAULT_VIEW: ElectionsAnalyticsView = 'mandate'
+
+/** The 41 counties and București, by the codes the API writes. */
+const COUNTY_CODES: readonly string[] = [
+  'AB', 'AR', 'AG', 'BC', 'BH', 'BN', 'BT', 'BR', 'BV', 'B', 'BZ', 'CL', 'CS', 'CJ', 'CT', 'CV', 'DB', 'DJ', 'GL', 'GR', 'GJ',
+  'HR', 'HD', 'IL', 'IS', 'IF', 'MM', 'MH', 'MS', 'NT', 'OT', 'PH', 'SJ', 'SM', 'SB', 'SV', 'TR', 'TM', 'TL', 'VL', 'VS', 'VN',
+]
+
+export type ElectionsAnalyticsSearch = {
+  readonly tip: ElectionsAnalyticsView | undefined
+  readonly dupa: string | undefined
+  readonly judet: string | undefined
+}
+
+const isView = (value: unknown): value is ElectionsAnalyticsView => typeof value === 'string' && Object.prototype.hasOwnProperty.call(ELECTIONS_ANALYTICS_VIEWS, value)
+
+export function parseElectionsAnalyticsSearch(search: unknown): ElectionsAnalyticsSearch {
+  const raw = (search ?? {}) as Record<string, unknown>
+  const tip = isView(raw.tip) ? raw.tip : undefined
+  const tabs: readonly string[] = ELECTIONS_ANALYTICS_VIEWS[tip ?? ELECTIONS_ANALYTICS_DEFAULT_VIEW]
+  const dupa = typeof raw.dupa === 'string' && tabs.includes(raw.dupa) ? raw.dupa : undefined
+  const judet = typeof raw.judet === 'string' && COUNTY_CODES.includes(raw.judet) ? raw.judet : undefined
+  return { tip, dupa, judet }
+}

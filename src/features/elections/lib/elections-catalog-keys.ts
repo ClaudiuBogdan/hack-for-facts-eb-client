@@ -38,6 +38,13 @@ export const electionsCatalogKeys = {
     [...ALL, 'result', target.contestKey, { occurrenceKey: target.occurrenceKey, office: target.office, placeKey: target.placeKey }] as const,
 }
 
+/** The analysis page's reads: the local elections' mandates, and one county's council. */
+export const electionsAnalyticsKeys = {
+  all: ['elections-analytics'] as const,
+  localMandates: (occurrenceKey: string) => ['elections-analytics', 'local-mandates', occurrenceKey] as const,
+  countyCouncil: (occurrenceKey: string, county: string) => ['elections-analytics', 'county-council', occurrenceKey, county] as const,
+}
+
 /** A key as one string: a server read seeds the page only when it was read for the key the page asks under. */
 export function seedKeyOf(queryKey: readonly unknown[]): string {
   return JSON.stringify(queryKey)

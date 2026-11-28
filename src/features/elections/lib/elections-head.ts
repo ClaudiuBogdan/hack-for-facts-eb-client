@@ -8,18 +8,30 @@ import { createNoStoreHeaders } from '@/lib/http-cache'
  * site, and a deeper route keeps them unless it sets the same name, so each
  * page names itself in all three.
  */
-export function electionsPageHead({ title, description, canonical }: { readonly title: string; readonly description: string; readonly canonical: string }) {
+export function electionsPageHead({
+  title,
+  description,
+  canonical,
+  indexed = true,
+}: {
+  readonly title: string
+  readonly description: string
+  readonly canonical: string
+  /** False for a reader's own question (an analysis page with a key set): kept out of the index, with no canonical. */
+  readonly indexed?: boolean
+}) {
   return {
     meta: [
       { title },
       { name: 'description', content: description },
+      ...(indexed ? [] : [{ name: 'robots', content: 'noindex, follow' }]),
       { property: 'og:title', content: title },
       { property: 'og:description', content: description },
-      { property: 'og:url', content: canonical },
+      ...(indexed ? [{ property: 'og:url', content: canonical }] : []),
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: description },
     ],
-    links: [{ rel: 'canonical', href: canonical }],
+    links: indexed ? [{ rel: 'canonical', href: canonical }] : [],
   }
 }
 

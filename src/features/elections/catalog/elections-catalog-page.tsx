@@ -44,6 +44,13 @@ export function ElectionsCatalogPage({
         <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground">
           <Trans>Alegerile cu rezultate publicate pe platformă, la nivel de partid: fiecare cu zilele ei de vot și scrutinele lor.</Trans>
         </p>
+        <Link
+          to="/alegeri/analize"
+          search={((previous: Record<string, unknown>) => (typeof previous.lang === 'string' ? { lang: previous.lang } : {})) as never}
+          className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-foreground underline decoration-muted-foreground/40 underline-offset-4 hover:decoration-foreground sm:min-h-0"
+        >
+          <Trans>Analiza alegerilor: partide, mandate, hartă, prezență, curse</Trans>
+        </Link>
       </ElectionsPageHead>
 
       <HomeBand id={BAND_ID} labelledBy="elections-catalog-title">

@@ -33,8 +33,9 @@ All of these were taken by the owner in the session on 28 November 2026.
   - **Body:** the pinned bar, the figures band, the six bands (each with one link onward), then the start cards.
   - **Today's list:** the event list now at `/alegeri` becomes the „Toate alegerile" band. Its only URL key,
     `pagina`, is dropped, because six events fit in one band.
-- **Analytics, `/alegeri/analize`.** The URL keys are `tip` (view), `dupa` (tab), `judet` and `partid`. Every
-  key is written on every link (the router merge trap).
+- **Analytics, `/alegeri/analize`.** The URL keys are `tip` (view), `dupa` (tab) and `judet`; `partid` joins with
+  the Partide view. Every key is written on every link (the router merge trap). `dupa` scrolls the page to its
+  section; the county is read only by the views that take one (Mandate today).
 - **Details pages** (an election, a race, a place). Legislation's slim head without the sibling row: the way
   home, the title, one sentence and the sources line. The bodies don't change in this round.
 
