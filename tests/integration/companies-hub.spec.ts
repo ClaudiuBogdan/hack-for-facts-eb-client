@@ -8,7 +8,7 @@
  */
 
 import { test, expect } from '../utils/integration-base'
-import { waitForPageReady } from '../utils/test-helpers'
+import { waitForHydration, waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
@@ -69,6 +69,30 @@ test.describe('Companies hub', () => {
     await expect(
       page.getByRole('radiogroup', { name: 'Domeniile după' }).getByRole('radio', { name: 'Salariați' }),
     ).toHaveAttribute('aria-checked', 'true')
+  })
+
+  test('the section bar marks the band being read, and on a phone keeps it in view', async ({ page }) => {
+    await page.goto('/companies')
+    await waitForHydration(page)
+
+    const bar = page.getByRole('navigation', { name: 'Secțiunile paginii' })
+    await bar.getByRole('link', { name: /Domenii/ }).click()
+    await expect(page).toHaveURL(/#domenii$/)
+    await expect(bar.getByRole('link', { name: /Domenii/ })).toHaveAttribute('aria-current', 'location')
+
+    // On a phone the list scrolls sideways; reading the last band, its link is brought into the bar's view.
+    await page.setViewportSize({ width: 360, height: 740 })
+    await page.evaluate(() => document.getElementById('infiintari')?.scrollIntoView({ block: 'start' }))
+    const last = bar.getByRole('link', { name: /Firme noi/ })
+    await expect(last).toHaveAttribute('aria-current', 'location')
+    await expect
+      .poll(async () => {
+        const [link, nav] = await Promise.all([last.boundingBox(), bar.boundingBox()])
+        return link !== null && nav !== null && link.x >= nav.x - 1 && link.x + link.width <= nav.x + nav.width + 1
+      })
+      .toBe(true)
+    // Only the list scrolled: the page has no sideways scroll.
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
   })
 
   test('a county row opens its companies in the analysis', async ({ page }) => {
