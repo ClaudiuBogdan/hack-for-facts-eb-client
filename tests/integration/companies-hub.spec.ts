@@ -8,7 +8,7 @@
  */
 
 import { test, expect } from '../utils/integration-base'
-import { waitForPageReady } from '../utils/test-helpers'
+import { waitForHydration, waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
@@ -69,6 +69,43 @@ test.describe('Companies hub', () => {
     await expect(
       page.getByRole('radiogroup', { name: 'Domeniile după' }).getByRole('radio', { name: 'Salariați' }),
     ).toHaveAttribute('aria-checked', 'true')
+  })
+
+  test('the section bar marks the band being read, and on a phone keeps it in view', async ({ page }) => {
+    await page.goto('/companies')
+    await waitForHydration(page)
+
+    const bar = page.getByRole('navigation', { name: 'Secțiunile paginii' })
+    await bar.getByRole('link', { name: /Domenii/ }).click()
+    await expect(page).toHaveURL(/#domenii$/)
+    await expect(bar.getByRole('link', { name: /Domenii/ })).toHaveAttribute('aria-current', 'location')
+
+    // On a phone the list scrolls sideways: from the head, where no band is marked, the last band's link starts
+    // past its edge, and reading that band brings it into the list's own view.
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    await page.setViewportSize({ width: 360, height: 740 })
+    await expect(bar.locator('[aria-current]')).toHaveCount(0)
+    const lastInList = () =>
+      page.evaluate(() => {
+        const list = document.querySelector('nav[aria-label="Secțiunile paginii"] ol')
+        const link = list?.querySelector('a[href="#infiintari"]')
+        if (!list || !link) return null
+        const [box, item] = [list.getBoundingClientRect(), link.getBoundingClientRect()]
+        return { inside: item.left >= box.left - 1 && item.right <= box.right + 1, scrolled: list.scrollLeft }
+      })
+    expect((await lastInList())?.inside).toBe(false)
+    // Focus on a known control, to see that the list's scroll never takes it.
+    const first = bar.getByRole('link', { name: /Județe/ })
+    await first.evaluate((element: HTMLElement) => element.focus({ preventScroll: true }))
+    await expect(first).toBeFocused()
+    await page.evaluate(() => document.getElementById('infiintari')?.scrollIntoView({ block: 'start', behavior: 'instant' }))
+    const last = bar.getByRole('link', { name: /Firme noi/ })
+    await expect(last).toHaveAttribute('aria-current', 'location')
+    await expect.poll(async () => (await lastInList())?.inside).toBe(true)
+    expect((await lastInList())?.scrolled).toBeGreaterThan(0)
+    // Only the list scrolled: focus stayed where it was, and the page has no sideways scroll.
+    await expect(first).toBeFocused()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
   })
 
   test('a county row opens its companies in the analysis', async ({ page }) => {
