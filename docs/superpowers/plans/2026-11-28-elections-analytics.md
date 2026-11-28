@@ -72,7 +72,7 @@ Search: `tip ∈ views`, `dupa ∈ that view's tabs`, `judet ∈ ROMANIA_COUNTIE
 - Test: `src/features/elections/analytics/components/elections-analytics-page.test.tsx`, `src/features/elections/analytics/components/analytics-charts.test.tsx`
 - Integration: `tests/integration/elections-analytics.spec.ts`
 
-Reuse: `NotesMarker`, `ShareIcon` (national budget), `HubFiguresBand` (`plain`, `arrow`), `RuledFrame`, `TwoLayerLattice`, `CornerTicks`, `CruxMarks`. View change: `navigate({ search: { tip, dupa: undefined, judet }, resetScroll: false })`. Jump row: `<Link search={{ ...every key, dupa }} hash={id} replace resetScroll={false}>`.
+Reuse: `NotesMarker`, `ShareIcon` (national budget), `HubFiguresBand` (`plain`, `arrow`), `RuledFrame`, `TwoLayerLattice`, `CornerTicks`, `CruxMarks`. View change: `navigate({ search: { tip, dupa: undefined, judet }, resetScroll: false })`. Jump row and figure links: `<Link search={{ ...every key, dupa }} replace resetScroll={false}>`, no hash; the page scrolls by `dupa` (an effect on change, a direct scroll when the same section is clicked again).
 
 - [ ] Tests: the review-focus cases above; the bar lists five views; Mandate draws four figures and five sections.
 - [ ] Implement; Lingui extract after telling root; `yarn check`; integration spec under the heavy lock; commit.

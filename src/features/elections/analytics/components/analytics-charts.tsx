@@ -157,7 +157,7 @@ export function CountyTiles({
             >
               {code}
               {/* The status mark: a small amber shape in the corner, named in the tile's label. */}
-              {suspect ? <span aria-hidden="true" className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-amber-500 ring-1 ring-background" /> : null}
+              {suspect ? <span aria-hidden="true" className="absolute right-1 top-1 size-2 rounded-full bg-amber-600 ring-2 ring-background" /> : null}
             </button>
           </li>
         )
