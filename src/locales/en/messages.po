@@ -11278,12 +11278,16 @@ msgid "Cât a încasat fiecare buget public în {when}?"
 msgstr "How much did each public budget collect in {when}?"
 
 #: src/features/national-budget/home/components/person-debt.tsx:305
-msgid "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori."
-msgstr "What the state paid out beyond what it collected, year by year. The gap is covered by borrowing or from money the state already held in its accounts; interest on the debt is paid from the budgets of the years that follow."
+#~ msgid "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori."
+#~ msgstr "What the state paid out beyond what it collected, year by year. The gap is covered by borrowing or from money the state already held in its accounts; interest on the debt is paid from the budgets of the years that follow."
 
 #: src/features/national-budget/home/components/person-debt.tsx:301
 #~ msgid "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă mai ales din împrumuturi, dar și din banii pe care statul îi avea deja în conturi; împrumuturile se dau înapoi, cu dobândă, din bugetele anilor următori."
 #~ msgstr "What the state paid out beyond what it collected, year by year. The gap is covered mostly by borrowing, but also from money the state already held in its accounts; the loans are repaid, with interest, from the budgets of the years that follow."
+
+#: src/features/national-budget/home/components/person-debt.tsx:305
+msgid "Cât a plătit statul peste ce a încasat, an de an. Dobânzile la datorie se plătesc din bugetele anilor următori."
+msgstr "What the state paid out beyond what it collected, year by year. Interest on the debt is paid from the budgets of the years that follow."
 
 #: src/features/private-companies/components/profile/company-economy-band.tsx:39
 #~ msgid "Cât cântărește în economie"

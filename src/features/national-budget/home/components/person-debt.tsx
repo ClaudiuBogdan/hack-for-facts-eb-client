@@ -302,7 +302,7 @@ export function DebtSection() {
     <Section
       id="imprumut"
       title={t`Deficitul, an de an`}
-      lede={t`Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori.`}
+      lede={t`Cât a plătit statul peste ce a încasat, an de an. Dobânzile la datorie se plătesc din bugetele anilor următori.`}
     >
       <Debt />
     </Section>

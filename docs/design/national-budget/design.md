@@ -1764,7 +1764,7 @@ Owner's handoff `nb-release-client-20261128-01`, after an audit of dev-chronos (
   calculat" beside it (the analysis page's popover) explains timing (payments against economic events), scope (the bulletin's budgets
   against every unit classified in general government) and the GDP's vintage, with the Ministry's bulletins and 2025 release and
   Eurostat's method and notification. No ESA series is read.
-- **Wording.** The section's lede no longer says the whole cash gap is borrowed: it is covered by borrowing or from money already in the
-  state's accounts, and the debt's interest is paid from later budgets. The budgets' squares say their 100 lei are „înainte de
+- **Wording.** The section's lede no longer says the whole cash gap is borrowed. It says what the chart shows and that the debt's
+  interest is paid from later budgets; how the gap is financed is not said (owner: none of the sources state it). The budgets' squares say their 100 lei are „înainte de
   consolidare", and the line under them uses the same words where it said „înainte de transferuri" (the analysis page still says
   „înainte de transferuri").

@@ -11278,12 +11278,16 @@ msgid "Cât a încasat fiecare buget public în {when}?"
 msgstr "Cât a încasat fiecare buget public în {when}?"
 
 #: src/features/national-budget/home/components/person-debt.tsx:305
-msgid "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori."
-msgstr "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori."
+#~ msgid "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori."
+#~ msgstr "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori."
 
 #: src/features/national-budget/home/components/person-debt.tsx:301
 #~ msgid "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă mai ales din împrumuturi, dar și din banii pe care statul îi avea deja în conturi; împrumuturile se dau înapoi, cu dobândă, din bugetele anilor următori."
 #~ msgstr "Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă mai ales din împrumuturi, dar și din banii pe care statul îi avea deja în conturi; împrumuturile se dau înapoi, cu dobândă, din bugetele anilor următori."
+
+#: src/features/national-budget/home/components/person-debt.tsx:305
+msgid "Cât a plătit statul peste ce a încasat, an de an. Dobânzile la datorie se plătesc din bugetele anilor următori."
+msgstr "Cât a plătit statul peste ce a încasat, an de an. Dobânzile la datorie se plătesc din bugetele anilor următori."
 
 #: src/features/private-companies/components/profile/company-economy-band.tsx:39
 #~ msgid "Cât cântărește în economie"
