@@ -9,6 +9,7 @@ import {
 } from './graphql/procurement-da-release-queries'
 import { PROCUREMENT_DA_RECORD_QUERY, procurementDaRecordResponseSchema } from './graphql/procurement-queries'
 import { fetchDirectPurchase, readNames } from './procurement-direct-purchase-api'
+import { isLegacyRetired } from './procurement-legacy-retired'
 import { readDaRelease } from './procurement-da-release-status'
 
 export { readDaRelease, resetDaReleaseForTests, type DaReleaseStatus } from './procurement-da-release-status'
@@ -78,6 +79,8 @@ export async function resolveLegacyLink(legacyId: string, signal?: AbortSignal):
   try {
     const release = await readDaRelease()
     if (!release.enabled) return { kind: 'legacy' }
+    // D6 fails closed: with its supplier-privacy publication unreadable, nothing is looked up — a failed read, as the page's own.
+    if (release.privacyEnforced && release.privacyAsOf === null) return { kind: 'failed' }
     const legacy = await graphqlQuery<unknown>(PROCUREMENT_DA_RECORD_QUERY, { id: legacyId }, { operationName: 'ProcurementDirectAcquisitionRecord', signal, legacy: true })
     const record = procurementDaRecordResponseSchema.parse(legacy).procurementDirectAcquisition?.directAcquisition
     const code = record?.sourceSystem === 'elicitatie_da' ? record.uniqueCode?.trim() : null
@@ -88,6 +91,9 @@ export async function resolveLegacyLink(legacyId: string, signal?: AbortSignal):
     return id ? { kind: 'release', id } : { kind: 'legacy' }
   } catch (error) {
     if (signal?.aborted) throw error
+    // Legacy switched off: no legacy record to find the portal code on, so no release purchase to lead to. The legacy
+    // page stands, and it has no record either: the page's not-found (PROC-001), never a failed read retried.
+    if (isLegacyRetired(error)) return { kind: 'legacy' }
     // The release switched off since its status was read (a rollback): the legacy page stands, as with the release off.
     if (hasCode(error, 'SERVICE_UNAVAILABLE')) {
       const now = await readDaRelease({ fresh: true }).catch(() => null)
@@ -95,6 +101,20 @@ export async function resolveLegacyLink(legacyId: string, signal?: AbortSignal):
     }
     return { kind: 'failed' }
   }
+}
+
+/**
+ * A legacy purchase, read under the same D6 gate as the page's own read
+ * (`fetchPurchaseForPage`): with D6 on and its supplier-privacy publication
+ * unreadable, nothing is read. The server's render uses it once the link
+ * resolved to the legacy page, so the server and the browser decide alike:
+ * no record (legacy switched off included) is not-found on both, a gated read
+ * is a failed read on both.
+ */
+export async function fetchLegacyPurchase(id: string, signal?: AbortSignal): Promise<DirectPurchase | null> {
+  const status = await readDaRelease()
+  if (status.privacyEnforced && status.privacyAsOf === null) throw new Error('Direct purchases cannot be read while the supplier-privacy publication is unreadable.')
+  return fetchDirectPurchase(id, signal)
 }
 
 /** The release id a legacy link leads to, or null — a failed read included (callers that must tell them apart use `resolveLegacyLink`). */

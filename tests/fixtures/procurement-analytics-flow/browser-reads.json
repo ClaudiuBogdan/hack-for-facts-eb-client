@@ -1,0 +1,899 @@
+[
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-0238cdeb"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-07147fbc"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-3b85690f"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop",
+        "valueMin": 1000
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-6691736e"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerCounty": "SB",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-98ba0864"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerRegion": "Centru",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-9a66053c"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-c2cf126d"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-c5a868fa"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-ced32fa4"
+  },
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerSiruta": "143450",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-concentration-d003401d"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerSiruta": "143450",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-01364114"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "direct_acquisition",
+        "buyerRegion": "Centru",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "before": {
+        "grain": "direct_acquisition",
+        "buyerRegion": "Centru",
+        "from": "2024-12",
+        "to": "2025-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-0e2ba4d0"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "direct_acquisition",
+        "buyerCounty": "SB",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "before": {
+        "grain": "direct_acquisition",
+        "buyerCounty": "SB",
+        "from": "2024-12",
+        "to": "2025-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-149baafc"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-18b699ca"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-1a7244a0"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-35ca25b9"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-3ef2b5f4"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerRegion": "Centru",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-46bed3ca"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-509e9479"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerSiruta": "143450",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-52d5d27d"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerRegion": "Centru",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-671568de"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "direct_acquisition",
+        "buyerSiruta": "143450",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "before": {
+        "grain": "direct_acquisition",
+        "buyerSiruta": "143450",
+        "from": "2024-12",
+        "to": "2025-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-823b3ac1"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "direct_acquisition",
+        "buyerCounty": "SB",
+        "from": "2025-12",
+        "to": "2026-11",
+        "valueMin": 1000
+      },
+      "before": {
+        "grain": "direct_acquisition",
+        "buyerCounty": "SB",
+        "from": "2024-12",
+        "to": "2025-11",
+        "valueMin": 1000
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-97f2fc98"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-a25ffd1b"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop",
+        "valueMin": 1000
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-adc98060"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-ae789cc6"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-bafd1a9a"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop",
+        "valueMin": 1000
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-c755775f"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-dcd5c1e8"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "direct_acquisition",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "before": {
+        "grain": "direct_acquisition",
+        "from": "2024-12",
+        "to": "2025-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-dcf36c74"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-figures-f6a250eb"
+  },
+  {
+    "operation": "AnalyticsNames",
+    "variables": {
+      "cuis": [],
+      "codes": [
+        "09",
+        "15",
+        "22",
+        "24",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "37",
+        "39",
+        "42",
+        "44",
+        "45",
+        "48",
+        "50",
+        "55",
+        "64",
+        "66",
+        "71",
+        "72",
+        "77",
+        "79",
+        "90"
+      ],
+      "withOrgs": false,
+      "withCpv": true
+    },
+    "fixture": "analytics-names-58807b6e"
+  },
+  {
+    "operation": "AnalyticsNames",
+    "variables": {
+      "cuis": [],
+      "codes": [
+        "03",
+        "09",
+        "14",
+        "15",
+        "22",
+        "24",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "39",
+        "42",
+        "44",
+        "45",
+        "48",
+        "50",
+        "55",
+        "71",
+        "72",
+        "77",
+        "79",
+        "85",
+        "90",
+        "98"
+      ],
+      "withOrgs": false,
+      "withCpv": true
+    },
+    "fixture": "analytics-names-a2d36d93"
+  },
+  {
+    "operation": "AnalyticsNames",
+    "variables": {
+      "cuis": [],
+      "codes": [
+        "03",
+        "09",
+        "15",
+        "22",
+        "24",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "38",
+        "39",
+        "42",
+        "44",
+        "45",
+        "48",
+        "50",
+        "55",
+        "64",
+        "66",
+        "71",
+        "72",
+        "79",
+        "90"
+      ],
+      "withOrgs": false,
+      "withCpv": true
+    },
+    "fixture": "analytics-names-b381f2e1"
+  },
+  {
+    "operation": "AnalyticsRanking",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-ranking-07147fbc"
+  },
+  {
+    "operation": "AnalyticsRanking",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerCounty": "SB",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-ranking-98ba0864"
+  },
+  {
+    "operation": "AnalyticsRanking",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerRegion": "Centru",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-ranking-9a66053c"
+  },
+  {
+    "operation": "AnalyticsRanking",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-ranking-c5a868fa"
+  },
+  {
+    "operation": "AnalyticsRanking",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerSiruta": "143450",
+        "from": "2025-12",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-ranking-d003401d"
+  },
+  {
+    "operation": "AnalyticsRecords",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-records-0238cdeb"
+  },
+  {
+    "operation": "AnalyticsRecords",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-records-3b85690f"
+  },
+  {
+    "operation": "AnalyticsRecords",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop",
+        "valueMin": 1000
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-records-6691736e"
+  },
+  {
+    "operation": "AnalyticsRecords",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-records-c2cf126d"
+  },
+  {
+    "operation": "AnalyticsRecords",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2025-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-records-ced32fa4"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2021-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-1211d55a"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "from": "2021-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-3fd11269"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "from": "2021-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-55231d7a"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerSiruta": "143450",
+        "from": "2019-01",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-5ed4feed"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "buyerCounty": "SB",
+        "from": "2021-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-66669c3b"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2021-01",
+        "to": "2025-12",
+        "q": "laptop",
+        "valueMin": 1000
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-6692d01c"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerRegion": "Centru",
+        "from": "2019-01",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-9e848e3a"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2021-01",
+        "to": "2025-12"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-a6bb8acb"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "buyerCounty": "SB",
+        "from": "2021-01",
+        "to": "2025-12",
+        "q": "laptop"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-bb8be467"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "direct_acquisition",
+        "buyerCounty": "SB",
+        "from": "2019-01",
+        "to": "2026-11"
+      },
+      "build": "1795302787212166"
+    },
+    "fixture": "analytics-series-f4531d88"
+  },
+  {
+    "operation": "ProcurementDaRelease",
+    "variables": {},
+    "fixture": "procurement-da-release"
+  },
+  {
+    "operation": "ProcurementHomeContracts",
+    "variables": {
+      "filter": {
+        "contractDate": {
+          "gte": "2025-01-01",
+          "lte": "2025-12-31"
+        },
+        "recordKind": {
+          "in": [
+            "contract_award"
+          ]
+        },
+        "valueState": {
+          "in": [
+            "official_exact",
+            "official_ron_equivalent",
+            "cross_source_exact",
+            "official_document_recovered"
+          ]
+        }
+      },
+      "page": 1,
+      "rows": 48
+    },
+    "fixture": "procurement-home-contracts-17c0fc6b"
+  }
+]

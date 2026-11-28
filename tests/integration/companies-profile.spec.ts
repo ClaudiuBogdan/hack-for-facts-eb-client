@@ -15,9 +15,10 @@
  * test). It stands only until the page's own registry read answers. The page
  * then pins the mocked registry scope and shows the mocked profile under it,
  * so every browser read the page makes is mocked:
- * the registry, the profile, its registration diff, the SEAP slice, the
- * court-litigation summary (no link published, so no litigation band), the
- * analysis release, the procurement release's status and SEAP's cutoff.
+ * the registry, the profile, its registration diff, the SEAP band's reads
+ * (the direct purchases' analysis and newest, the contract awards by winner),
+ * the court-litigation summary (no link published, so no litigation band),
+ * the analysis release, the procurement release's status and SEAP's cutoff.
  */
 
 import type { Page } from '@playwright/test'
@@ -28,12 +29,16 @@ import type { MockApiFixture } from '../utils/types'
 const ABC = '23617561'
 const IDEATICA = '47387800'
 
-/** The profile, its registration diff under the pinned scope and the five reads behind the supplier slice, for one company. */
+/**
+ * The profile, its registration diff under the pinned scope and the reads behind the SEAP band, for one company (PROC-001):
+ * the direct purchases' analysis (its own grain) and the release's newest, and the contract awards by winner.
+ */
 async function mockCompany(mockApi: MockApiFixture, name: 'abc' | 'ideatica', cui: string): Promise<void> {
   await mockApi.mockGraphQL('CompanyProfile', `${name}-profile`, { variables: { cui } })
   await mockApi.mockGraphQL('CompanyRegistrationDiff', `${name}-registration-diff`, { variables: { cui } })
-  await mockApi.mockGraphQL('ProcurementAggregates', `${name}-aggregates`, { variables: { scope: { supplierCui: cui } } })
-  await mockApi.mockGraphQL('ProcurementSupplierRecords', `${name}-records`, { variables: { supplierCui: cui } })
+  await mockApi.mockGraphQL('ProcurementAggregates', `${name}-aggregates`, { variables: { scope: { supplierCui: cui, grain: 'direct_acquisition' } } })
+  await mockApi.mockGraphQL('ProcurementDaSupplierNewest', `${name}-da-newest`, { variables: { filter: { supplierFiscalCode: cui, outcomes: ['accepted'] } } })
+  await mockApi.mockGraphQL('ProcurementWinnerContractAwards', `${name}-winner-awards`, { variables: { winnerFiscalCode: cui } })
   await mockApi.mockGraphQL('ProcurementPartyNames', `${name}-supplier-name`, { variables: { supplierCuis: [cui] } })
   if (name === 'abc') await mockApi.mockGraphQL('ProcurementPartyNames', 'abc-authority-names', { variables: { supplierCuis: [] } })
   await mockApi.mockGraphQL('ProcurementCpvDivisions', 'cpv-divisions')
@@ -77,10 +82,18 @@ test.describe('Company profile', () => {
     await expect(page.getByText('În procedura insolvenței.')).toBeVisible()
     await expect(page.getByRole('region', { name: 'Cifre-cheie' })).toContainText('Pierdere netă, 2025')
 
+    // The contract awards by winner first: the newest award leads to its own page, and the winner's list is linked.
     const money = page.locator('#bani-publici')
-    await expect(money.getByRole('link', { name: /MUNICIPIUL DOROHOI/ })).toHaveAttribute('href', '/procurement/institutions/4112945', { timeout: 30000 })
-    await expect(money.getByRole('link', { name: /Extindere retea de canalizare/ })).toHaveAttribute('href', '/procurement/contracts/2311757')
-    expect(operations).toEqual(expect.arrayContaining(['ProcurementAggregates', 'ProcurementSupplierRecords']))
+    await expect(money.getByRole('link', { name: /Extindere retea de canalizare/ })).toHaveAttribute(
+      'href',
+      // The router escapes the record id's colons in a path parameter.
+      `/procurement/contract-awards/${encodeURIComponent('elicitatie_api_pub:ca:100560733:106565171')}`,
+      { timeout: 30000 },
+    )
+    await expect(money.getByRole('link', { name: /Contractele atribuite firmei/ })).toHaveAttribute('href', `/procurement/contract-awards/winners/${ABC}`)
+    expect(operations).toEqual(expect.arrayContaining(['ProcurementAggregates', 'ProcurementDaSupplierNewest', 'ProcurementWinnerContractAwards']))
+    // No legacy read (PROC-001).
+    expect(operations).not.toContain('ProcurementSupplierRecords')
   })
 
   test('shows direct purchases when asked, in the URL, and reads them back', async ({ page }) => {
@@ -139,7 +152,7 @@ test.describe('Company profile', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(`/companies/${ABC}`)
     await waitForHydration(page)
-    await expect(page.locator('#bani-publici').getByRole('link', { name: /MUNICIPIUL DOROHOI/ })).toBeVisible({ timeout: 30000 })
+    await expect(page.locator('#bani-publici').getByRole('link', { name: /Extindere retea de canalizare/ })).toBeVisible({ timeout: 30000 })
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
     expect(overflow).toBeLessThanOrEqual(0)

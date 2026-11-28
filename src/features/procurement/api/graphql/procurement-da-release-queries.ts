@@ -235,6 +235,22 @@ export const procurementDaAroundSchema = z.object({
 })
 export type RawDaAround = z.infer<typeof procurementDaAroundSchema>
 
+/**
+ * A firm's newest purchases in the release, by finalization, with the buyer
+ * as served (the company profile's band, PROC-001). Variables: `filter`
+ * (`supplierFiscalCode`, `outcomes`), `pageSize`.
+ */
+export const PROCUREMENT_DA_SUPPLIER_NEWEST_QUERY = /* GraphQL */ `
+  query ProcurementDaSupplierNewest($filter: ProcurementDaPurchaseFilter!, $pageSize: Int!) {
+    newest: procurementDaPurchases(filter: $filter, sort: finalizationDesc, pageSize: $pageSize) { dataAsOf meta { disclosureKey } items { ${AROUND_FIELDS} buyer { ${PARTY_FIELDS} } } }
+  }
+`
+
+export const procurementDaSupplierNewestSchema = z.object({
+  newest: z.object({ dataAsOf: z.string(), items: z.array(rawDaAroundItemSchema.extend({ buyer: rawDaPartySchema.nullable() })) }),
+})
+export type RawDaSupplierNewestItem = z.infer<typeof procurementDaSupplierNewestSchema>['newest']['items'][number]
+
 // ─────────────────────────────────────────────────────────────── totals ──
 
 export type DaTotalsGroupBy = 'buyer' | 'supplier' | 'cpvDivision' | 'month' | 'year'

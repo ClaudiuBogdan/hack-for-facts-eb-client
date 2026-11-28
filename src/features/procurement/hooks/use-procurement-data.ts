@@ -4,10 +4,9 @@ import {
   fetchProcurementAuthoritySlice,
   fetchProcurementSearch,
   fetchProcurementSupplierRecords,
-  fetchProcurementSupplierSlice,
   type ProcurementAuthoritySliceScope,
-  type ProcurementSliceScope,
 } from '../api/procurement-api'
+import { fetchCompanyProcurement } from '../api/procurement-company-read'
 import type { AuthorityProcurementSlice } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 
@@ -30,24 +29,19 @@ export function useProcurementSearch(
  * Options rather than an inlined query so the company profile's loader can
  * start the *same* cache entry the page reads, alongside the profile.
  */
-export function procurementSupplierSliceQueryOptions(
-  cui: string,
-  scope?: ProcurementSliceScope,
-) {
+export function procurementSupplierSliceQueryOptions(cui: string) {
   return queryOptions({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui, scope ?? null] as const,
-    queryFn: ({ signal }) => fetchProcurementSupplierSlice(cui, scope, signal),
-    // D6: the slice reads the supplier-records connection, which carries no publication yet: kept only while shown.
+    // The company profile's band (PROC-001): direct purchases and contract awards, each read on its own.
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'company-procurement', cui] as const,
+    queryFn: ({ signal }) => fetchCompanyProcurement(cui, signal),
+    // D6: direct-purchase reads and a winner's contract awards are kept only while shown.
     ...DA_QUERY_CACHE,
   })
 }
 
-export function useProcurementSupplierSlice(
-  cui: string,
-  scope?: ProcurementSliceScope,
-) {
+export function useProcurementSupplierSlice(cui: string) {
   return useQuery({
-    ...procurementSupplierSliceQueryOptions(cui, scope),
+    ...procurementSupplierSliceQueryOptions(cui),
     enabled: Boolean(cui),
   })
 }

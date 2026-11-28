@@ -1,7 +1,7 @@
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { contextInputOf, type DirectPurchase, type DpContext } from '../lib/direct-purchase-model'
-import { DaReleaseOffError, fetchPurchaseForPage, isReleaseId, resolveLegacyLink, type LegacyLink } from './procurement-da-release-api'
-import { fetchDirectPurchase, fetchDirectPurchaseContext } from './procurement-direct-purchase-api'
+import { DaReleaseOffError, fetchLegacyPurchase, fetchPurchaseForPage, isReleaseId, resolveLegacyLink, type LegacyLink } from './procurement-da-release-api'
+import { fetchDirectPurchaseContext } from './procurement-direct-purchase-api'
 
 /**
  * A direct purchase page's server reads, for the route loader only.
@@ -44,7 +44,7 @@ export function resolveLegacyLinkForSsr(id: string): Promise<LegacyLink> {
 export async function readProcurementDirectPurchaseForSsr(id: string): Promise<ProcurementDirectPurchaseServerRead> {
   let purchase: DirectPurchase | null
   try {
-    purchase = await (isReleaseId(id) ? fetchPurchaseForPage(id, deadline()) : fetchDirectPurchase(id, deadline()))
+    purchase = await (isReleaseId(id) ? fetchPurchaseForPage(id, deadline()) : fetchLegacyPurchase(id, deadline()))
   } catch (error) {
     if (error instanceof DaReleaseOffError) return { id, releaseOff: true }
     return { id }

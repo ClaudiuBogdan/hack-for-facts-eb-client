@@ -55697,3 +55697,65 @@ msgstr "Σ POP201D / Σ POP108D × 1.000"
 #: src/features/statistics/lib/territory-derived.ts:134
 msgid "Σ POP206D / Σ POP108D × 1.000"
 msgstr "Σ POP206D / Σ POP108D × 1.000"
+
+#. placeholder {0}: contracts.count
+#: src/features/private-companies/components/profile/company-money-band.tsx:357
+msgid "{0, plural, one {# contract atribuit} few {# contracte atribuite} other {# de contracte atribuite}}"
+msgstr "{0, plural, one {# contract atribuit} few {# contracte atribuite} other {# de contracte atribuite}}"
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:535
+msgid "contract atribuit"
+msgstr "contract atribuit"
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:402
+msgid "Contractele atribuite firmei →"
+msgstr "Contractele atribuite firmei →"
+
+#: src/features/procurement/lib/supplier-text.ts:41
+#: src/features/procurement/lib/supplier-text.ts:222
+msgid "Contractele câștigate printr-o procedură nu pot fi citite acum."
+msgstr "Contractele câștigate printr-o procedură nu pot fi citite acum."
+
+#: src/features/procurement/components/supplier/supplier-bands.tsx:278
+msgid "Contractele nu pot fi citite acum."
+msgstr "Contractele nu pot fi citite acum."
+
+#. placeholder {0}: dateText(contracts.dataAsOf.slice(0, 10))
+#: src/features/private-companies/components/profile/company-money-band.tsx:361
+msgid "Date până la {0}."
+msgstr "Date până la {0}."
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:359
+msgid "Din {from}, SEAP numește firma câștigătoare în {awards}."
+msgstr "Din {from}, SEAP numește firma câștigătoare în {awards}."
+
+#: src/features/procurement/components/supplier/supplier-head.tsx:88
+msgid "fără achiziții directe"
+msgstr "fără achiziții directe"
+
+#. placeholder {0}: directPurchasesCount(direct)
+#: src/features/procurement/lib/supplier-text.ts:221
+msgid "În {year}, {0}, adică vânzări fără licitație."
+msgstr "În {year}, {0}, adică vânzări fără licitație."
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:374
+msgid "Instituțiile care au atribuit contractele și categoriile lor sunt în lista contractelor atribuite firmei."
+msgstr "Instituțiile care au atribuit contractele și categoriile lor sunt în lista contractelor atribuite firmei."
+
+#. placeholder {0}: periodText(profile.period)
+#: src/features/procurement/components/supplier/supplier-bands.tsx:64
+msgid "Nicio achiziție directă în {0}; contractele nu pot fi citite acum."
+msgstr "Nicio achiziție directă în {0}; contractele nu pot fi citite acum."
+
+#: src/features/procurement/lib/supplier-text.ts:45
+msgid "Nu apare în achizițiile directe (SEAP) din {DIRECT_COMPARABLE_FROM} încoace."
+msgstr "Nu apare în achizițiile directe (SEAP) din {DIRECT_COMPARABLE_FROM} încoace."
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:360
+msgid "Toate au valoarea publicată."
+msgstr "Toate au valoarea publicată."
+
+#. placeholder {0}: count(contracts.withValue)
+#: src/features/private-companies/components/profile/company-money-band.tsx:360
+msgid "Valoarea e publicată pentru {0} din {awards}."
+msgstr "Valoarea e publicată pentru {0} din {awards}."

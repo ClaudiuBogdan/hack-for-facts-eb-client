@@ -1,0 +1,70 @@
+{
+  "data": {
+    "now": {
+      "blocks": [
+        {
+          "recordCount": "28095",
+          "withValueCount": "26957",
+          "valueAwardedSum": "133109750.61",
+          "avgValueAwarded": "4937.85",
+          "meta": {
+            "answerability": "served",
+            "provisional": false,
+            "caveats": [
+              "no coverage verdict for estimated value on grain 'direct_acquisition' — money abstains (never served unvetted)",
+              "direct acquisitions (release 1): money is the counted value, lei excluding VAT — a corrected value where an approved correction applies; purchases the data platform does not count (refused or expired, removed from the portal, value not confirmed (currency and VAT basis), reviewed entry errors) are in recordCount and add no money; every withheld (natural-person) supplier is one supplier, key natural_person"
+            ],
+            "undatedInScope": {
+              "count": "0",
+              "valueRon": null
+            },
+            "disclosureKey": "2026-11-21T23:13:07.212166Z"
+          },
+          "moneyVerdicts": [
+            {
+              "measure": "valueAwardedSum",
+              "answerability": "served"
+            },
+            {
+              "measure": "valueEstimatedSum",
+              "answerability": "abstained"
+            }
+          ]
+        }
+      ]
+    },
+    "before": {
+      "blocks": [
+        {
+          "recordCount": "28588",
+          "withValueCount": "27395",
+          "valueAwardedSum": "131206757.13",
+          "avgValueAwarded": "4789.44",
+          "meta": {
+            "answerability": "served",
+            "provisional": false,
+            "caveats": [
+              "no coverage verdict for estimated value on grain 'direct_acquisition' — money abstains (never served unvetted)",
+              "direct acquisitions (release 1): money is the counted value, lei excluding VAT — a corrected value where an approved correction applies; purchases the data platform does not count (refused or expired, removed from the portal, value not confirmed (currency and VAT basis), reviewed entry errors) are in recordCount and add no money; every withheld (natural-person) supplier is one supplier, key natural_person"
+            ],
+            "undatedInScope": {
+              "count": "0",
+              "valueRon": null
+            },
+            "disclosureKey": "2026-11-21T23:13:07.212166Z"
+          },
+          "moneyVerdicts": [
+            {
+              "measure": "valueAwardedSum",
+              "answerability": "served"
+            },
+            {
+              "measure": "valueEstimatedSum",
+              "answerability": "abstained"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

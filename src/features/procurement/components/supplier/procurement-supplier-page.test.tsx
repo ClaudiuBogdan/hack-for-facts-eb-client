@@ -173,6 +173,26 @@ describe('ProcurementSupplierPage', () => {
     expect(document.getElementById('cu-cine')?.textContent).toContain('Cel mai des, cu Dexamart: 6 contracte.')
   })
 
+  it('never says a firm sold nothing when its contracts cannot be read: no direct purchases, contracts unknown (PROC-001)', () => {
+    const base = supplierProfile()
+    const profile = supplierProfile({
+      contractsUnavailable: true,
+      direct: { ...base.direct, count: 0, valued: 0, value: null, clients: 0 },
+      directYears: base.directYears.map((point) => ({ ...point, count: 0, value: null })),
+      contractYears: base.contractYears.map((point) => ({ ...point, count: null })),
+      contracts: { ...base.contracts, count: 0, clients: null, categories: null, counties: null, largest: [], partners: [], together: 0, scanned: 0, unresolved: 0 },
+      directClients: { ...base.directClients, rows: [] },
+      analysisClients: { ...base.analysisClients, rows: [] },
+      counties: [],
+      procedures: [],
+      proceduresUnlisted: 0,
+    })
+    const html = renderToStaticMarkup(page({}, { choice: 2025, profile, direct: supplierDirect() }))
+    expect(html).toContain('Nu apare în achizițiile directe (SEAP) din 2019 încoace. Contractele câștigate printr-o procedură nu pot fi citite acum.')
+    expect(html).toContain('Nicio achiziție directă în 2025; contractele nu pot fi citite acum.')
+    expect(html).not.toMatch(/Nu apare ca furnizor|Nicio vânzare|Nu a vândut nimic|doar prin achiziții directe|fără vânzări/u)
+  })
+
   it('makes a year from the chart the page’s, the year in progress included, and writes it out', () => {
     render(page({}, { choice: 2025, profile: supplierProfile({ partYear: 2026, directYears: [...supplierProfile().directYears, { year: 2026, value: 1_000_000, count: 3 }] }) }))
     fireEvent.click(screen.getByRole('button', { name: /^2019:/ }))

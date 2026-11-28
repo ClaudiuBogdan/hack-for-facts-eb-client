@@ -10,7 +10,7 @@ import { withProcurementSearchDefaults } from '@/schemas/procurement-search'
 import {
   fetchAuthorityProcurementSliceLive,
   fetchProcurementSearchLive,
-  fetchSupplierProcurementSliceLive,
+  fetchSupplierDirectAnalyticsLive,
   fetchSupplierRecordsLive,
   resetProcurementLiveCachesForTests,
 } from './procurement-api.live'
@@ -45,12 +45,12 @@ function answerMeta(grain: (typeof grains)[number]) {
   }
 }
 
-function aggregateResponse() {
+function aggregateResponse(keyed: (typeof grains)[number] = 'contract') {
   const breakdown = (dimension: string, key?: string) => grains.map((grain) => ({
     grain,
     dimension,
     rankedBy: 'count',
-    buckets: grain === 'contract' && key ? [{
+    buckets: grain === keyed && key ? [{
       key, kind: 'top', recordCount: '1', withValueCount: '1',
       valueAwardedSum: '10.00', valueSum: '10.00', shareOfScope: '1.0000',
     }] : [],
@@ -77,11 +77,11 @@ function aggregateResponse() {
 }
 
 /** Each read answered by its operation, as the API would: the aggregates, the divisions, the names, an empty contract list. */
-function answerByOperation(names: { readonly authorities?: readonly unknown[]; readonly suppliers?: readonly unknown[] } = {}) {
+function answerByOperation(names: { readonly authorities?: readonly unknown[]; readonly suppliers?: readonly unknown[] } = {}, keyed: (typeof grains)[number] = 'contract') {
   graphqlQueryMock.mockImplementation(async (_query, _variables, options) => {
     switch ((options as { operationName?: string } | undefined)?.operationName) {
       case 'ProcurementAggregates':
-        return aggregateResponse()
+        return aggregateResponse(keyed)
       case 'ProcurementCpvDivisions':
         return { procurementCpvDivisions: [{ divisionCode: '45', labelEn: 'Construction work', labelRo: 'Lucrări de construcții' }] }
       case 'ProcurementPartyNames':
@@ -136,14 +136,19 @@ describe('live procurement adapter', () => {
     expect(page.records[0]?.grain).toBe('contract')
   })
 
-  it('names a firm’s buyers through the identity spine: a state company among them', async () => {
-    answerByOperation({
-      authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }],
-    })
+  it('names a firm’s direct-purchase buyers through the identity spine, asking that grain alone (PROC-001)', async () => {
+    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] }, 'direct_acquisition')
 
-    const slice = await fetchSupplierProcurementSliceLive('222')
+    const analytics = await fetchSupplierDirectAnalyticsLive('222')
 
-    expect(slice.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    expect(analytics.grain).toBe('direct_acquisition')
+    expect(analytics.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    expect((callsOf('ProcurementAggregates')[0]?.[1] as { scope: Record<string, unknown> }).scope).toMatchObject({ supplierCui: '222', grain: 'direct_acquisition' })
+    // The scope carries the firm's code: no D6 key given, none set; the signal travels with it.
+    expect(callsOf('ProcurementAggregates')[0]?.[2]).not.toHaveProperty('disclosureSeen')
+    // No legacy read: no contract list, no supplier records.
+    expect(callsOf('ProcurementSupplierRecords')).toHaveLength(0)
+    expect(callsOf('ProcurementContracts')).toHaveLength(0)
     const names = callsOf('ProcurementPartyNames').map((call) => String(call[0]))
     expect(names.some((query) => query.includes('authorities: organizationLabels'))).toBe(true)
     for (const query of names) {
@@ -180,17 +185,27 @@ describe('live procurement adapter', () => {
   })
 })
 
+describe('the firm’s direct analytics under D6', () => {
+  it('sends the aggregates with the caller’s disclosure key and signal', async () => {
+    answerByOperation({}, 'direct_acquisition')
+    const reader = new AbortController()
+    await fetchSupplierDirectAnalyticsLive('222', reader.signal, '2026-11-19T03:10:00.123456Z')
+    expect(callsOf('ProcurementAggregates')[0]?.[2]).toMatchObject({ disclosureSeen: '2026-11-19T03:10:00.123456Z', signal: reader.signal })
+  })
+})
+
 describe('a cancelled slice read (D6 purge)', () => {
   it('asks no names after its first round once its signal is aborted', async () => {
-    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] })
-    await fetchSupplierProcurementSliceLive('222')
+    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] }, 'direct_acquisition')
+    await fetchSupplierDirectAnalyticsLive('222')
     const whole = callsOf('ProcurementPartyNames').length
+    expect(whole).toBeGreaterThan(0)
     graphqlQueryMock.mockClear()
     resetProcurementLiveCachesForTests()
-    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] })
+    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] }, 'direct_acquisition')
     const cancelled = new AbortController()
     cancelled.abort()
-    await expect(fetchSupplierProcurementSliceLive('222', {}, cancelled.signal)).rejects.toThrow()
+    await expect(fetchSupplierDirectAnalyticsLive('222', cancelled.signal)).rejects.toThrow()
     expect(callsOf('ProcurementPartyNames').length).toBeLessThan(whole)
   })
 })
@@ -205,21 +220,21 @@ describe('live procurement reference caches', () => {
   it('keeps the parties’ names and the CPV divisions for six hours, then reads them again', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(0)
-    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] })
-    await fetchSupplierProcurementSliceLive('222')
+    answerByOperation({ authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }] }, 'direct_acquisition')
+    await fetchSupplierDirectAnalyticsLive('222')
     const namesRead = callsOf('ProcurementPartyNames').length
     expect(namesRead).toBeGreaterThan(0)
     expect(callsOf('ProcurementCpvDivisions')).toHaveLength(1)
 
     vi.setSystemTime(SIX_HOURS - 1)
-    const kept = await fetchSupplierProcurementSliceLive('222')
-    expect(kept.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    const kept = await fetchSupplierDirectAnalyticsLive('222')
+    expect(kept.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
     expect(callsOf('ProcurementPartyNames')).toHaveLength(namesRead)
     expect(callsOf('ProcurementCpvDivisions')).toHaveLength(1)
 
     vi.setSystemTime(SIX_HOURS)
-    const again = await fetchSupplierProcurementSliceLive('222')
-    expect(again.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    const again = await fetchSupplierDirectAnalyticsLive('222')
+    expect(again.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
     // The names are read again with the page; the divisions are served stale while one read refreshes them.
     expect(callsOf('ProcurementPartyNames')).toHaveLength(2 * namesRead)
     expect(callsOf('ProcurementCpvDivisions')).toHaveLength(2)
@@ -265,15 +280,15 @@ describe('live procurement reference caches', () => {
         const variables = call[1] as { readonly authorityCuis?: readonly string[]; readonly supplierCuis?: readonly string[] }
         return [...(variables.authorityCuis ?? []), ...(variables.supplierCuis ?? [])].includes(cui)
       }).length
-    // Each firm's own name is one key; the first page also keeps the aggregates' ranked buyer and firm.
-    for (let cui = 1; cui <= 5_000; cui += 1) await fetchSupplierProcurementSliceLive(String(100_000 + cui))
+    // Each institution's own name is one key; the first page also keeps the aggregates' ranked buyer and firm.
+    for (let cui = 1; cui <= 5_000; cui += 1) await fetchAuthorityProcurementSliceLive(String(100_000 + cui))
     expect(namesAskedFor('105000')).toBe(1)
     expect(namesAskedFor('100001')).toBe(1)
     // Still kept: the newest firm's name.
-    await fetchSupplierProcurementSliceLive('105000')
+    await fetchAuthorityProcurementSliceLive('105000')
     expect(namesAskedFor('105000')).toBe(1)
     // Evicted: the first firm's, the oldest key.
-    await fetchSupplierProcurementSliceLive('100001')
+    await fetchAuthorityProcurementSliceLive('100001')
     expect(namesAskedFor('100001')).toBe(2)
   })
 })

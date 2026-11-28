@@ -74,15 +74,22 @@ export function supplierDaysQuery(count: number): string {
   return `query ProcurementSupplierPartners(${declarations}) {\n  ${body}\n}`
 }
 
-/** One direct purchase per institution (`n0`, `n1`, …) by the firm: its record names the institution. */
+/**
+ * One release purchase per institution (`n0`, `n1`, …) by the firm: the
+ * release names its buyer as it serves it. Variables: one
+ * `ProcurementDaPurchaseFilter` per alias, the firm's and the institution's
+ * codes (PROC-001: the legacy list is retired).
+ */
 export function supplierDirectNamesQuery(count: number): string {
   const aliases = Array.from({ length: count }, (_, index) => `n${index}`)
-  const declarations = aliases.map((alias) => `$${alias}: ProcurementDirectAcquisitionsFilter`).join(', ')
-  const body = aliases.map((alias) => `${alias}: procurementDirectAcquisitions(filter: $${alias}, page: 1, pageSize: 1) { meta { disclosureKey } items { authority { cui name displayName } } }`).join('\n  ')
+  const declarations = aliases.map((alias) => `$${alias}: ProcurementDaPurchaseFilter!`).join(', ')
+  const body = aliases.map((alias) => `${alias}: procurementDaPurchases(filter: $${alias}, pageSize: 1) { meta { disclosureKey } items { buyer { fiscalCode name } } }`).join('\n  ')
   return `query ProcurementSupplierDirectNames(${declarations}) {\n  ${body}\n}`
 }
 
-export const supplierDirectNameSchema = z.object({ items: z.array(z.object({ authority: party })) })
+export const supplierDirectNameSchema = z.object({
+  items: z.array(z.object({ buyer: z.object({ fiscalCode: z.string().nullable(), name: z.string().nullable() }).nullable() })),
+})
 
 /** The spine's labels for the page's institutions (and the firm), positional. Variables: `cuis`. */
 export const SUPPLIER_NAMES_QUERY = `query ProcurementSupplierNames($cuis: [String!]!) {
