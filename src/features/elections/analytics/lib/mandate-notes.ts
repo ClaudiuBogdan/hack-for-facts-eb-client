@@ -12,7 +12,8 @@ export function mandateNotes(data: LocalMandates | undefined): { readonly alerts
     facts: [
       t`Consiliile județene au două repartizări de mandate, arătate separat: nu se adună.`,
       t`Independenții sunt o singură linie, fără nume; numele de pe buletin rămân pe pagina fiecărei curse.`,
-      t`Alianțele Dreapta Unită și PSD + PNL sunt linii proprii; celelalte alianțe și partidele mici sunt „Alte partide".`,
+      // Owner, 2026-11-28: only the full alliance's list is ADU; its partial lists stay with the other alliances.
+      t`Alianța Dreapta Unită USR - PMP - Forța Dreptei și Alianța PSD + PNL sunt linii proprii; celelalte alianțe (și listele Dreapta Unită cu mai puține partide) și partidele mici sunt „Alte partide".`,
     ],
   }
 }

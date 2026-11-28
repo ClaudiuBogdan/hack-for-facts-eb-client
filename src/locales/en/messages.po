@@ -55898,9 +55898,9 @@ msgstr "second allocation: {0}; not added up"
 msgid "a doua repartizare: nu e încă în date"
 msgstr "second allocation: not in the data yet"
 
-#: src/features/elections/analytics/lib/mandate-notes.ts:15
-msgid "Alianțele Dreapta Unită și PSD + PNL sunt linii proprii; celelalte alianțe și partidele mici sunt „Alte partide\"."
-msgstr "The United Right Alliance and PSD + PNL are lines of their own; the other alliances and the small parties are “Other parties”."
+#: src/features/elections/analytics/lib/mandate-notes.ts:16
+msgid "Alianța Dreapta Unită USR - PMP - Forța Dreptei și Alianța PSD + PNL sunt linii proprii; celelalte alianțe (și listele Dreapta Unită cu mai puține partide) și partidele mici sunt „Alte partide\"."
+msgstr "The United Right Alliance USR - PMP - Forța Dreptei and the PSD + PNL Alliance are lines of their own; the other alliances (including the United Right lists with fewer parties) and the small parties are “Other parties”."
 
 #: src/features/elections/analytics/lib/lines.ts:135
 msgid "Alte partide"

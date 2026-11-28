@@ -55903,9 +55903,9 @@ msgstr "a doua repartizare: {0}; nu se adună"
 msgid "a doua repartizare: nu e încă în date"
 msgstr "a doua repartizare: nu e încă în date"
 
-#: src/features/elections/analytics/lib/mandate-notes.ts:15
-msgid "Alianțele Dreapta Unită și PSD + PNL sunt linii proprii; celelalte alianțe și partidele mici sunt „Alte partide\"."
-msgstr "Alianțele Dreapta Unită și PSD + PNL sunt linii proprii; celelalte alianțe și partidele mici sunt „Alte partide\"."
+#: src/features/elections/analytics/lib/mandate-notes.ts:16
+msgid "Alianța Dreapta Unită USR - PMP - Forța Dreptei și Alianța PSD + PNL sunt linii proprii; celelalte alianțe (și listele Dreapta Unită cu mai puține partide) și partidele mici sunt „Alte partide\"."
+msgstr "Alianța Dreapta Unită USR - PMP - Forța Dreptei și Alianța PSD + PNL sunt linii proprii; celelalte alianțe (și listele Dreapta Unită cu mai puține partide) și partidele mici sunt „Alte partide\"."
 
 #: src/features/elections/analytics/lib/lines.ts:135
 msgid "Alte partide"
