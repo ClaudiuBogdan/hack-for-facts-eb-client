@@ -31,6 +31,32 @@ test.describe('Elections analysis — the server render', () => {
     await expect(page.locator('#mandate-consiliu')).toContainText('A doua repartizare')
   })
 
+  test('the server sends the figures in the document, and the browser does not read them again', async ({ page }) => {
+    // The document itself, before any script runs: the mandates are in it, folded into party lines.
+    const document = await (await page.request.get(ROUTE)).text()
+    expect(document).toMatch(/role="img" aria-label="PSD [\d.,]+, PNL [\d.,]+/u)
+    expect(document).toContain('Prima repartizare')
+    expect(document).not.toContain('~independent')
+
+    const browserReads: string[] = []
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && request.url().includes('/graphql') && (request.postData() ?? '').includes('ElectionsLocalMandates')) browserReads.push(request.url())
+    })
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+    expect(browserReads).toEqual([])
+  })
+
+  test('a figure leads to its section, written in the address', async ({ page }) => {
+    await page.goto(`${ROUTE}?dupa=consilieri`)
+    await waitForPageReady(page)
+
+    await page.getByRole('region', { name: 'Cifre-cheie' }).getByRole('link', { name: 'Primari' }).click()
+    await expect(page).toHaveURL(/dupa=primarii/u)
+    expect(new URL(page.url()).hash).toBe('')
+    await expect(page.locator('#mandate-primarii h2')).toBeInViewport()
+  })
+
   test('an unreadable address opens the default question and keeps none of its values', async ({ page }) => {
     await page.goto(`${ROUTE}?tip=nimic&dupa=nimic&judet=XX`)
     await waitForPageReady(page)

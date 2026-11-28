@@ -55873,15 +55873,15 @@ msgid "Valoarea e publicată pentru {0} din {awards}."
 msgstr "A value is published for {0} of {awards}."
 
 #. placeholder {0}: countyName(judet ?? '')
-#: src/features/elections/analytics/components/mandate-view.tsx:57
+#: src/features/elections/analytics/components/mandate-view.tsx:54
 msgid "{0}: mandatele nu sunt încă în date."
 msgstr "{0}: the mandates are not in the data yet."
 
-#: src/features/elections/analytics/components/analytics-charts.tsx:137
+#: src/features/elections/analytics/components/analytics-charts.tsx:142
 msgid "{name}: egalitate"
 msgstr "{name}: tie"
 
-#: src/features/elections/analytics/components/analytics-charts.tsx:137
+#: src/features/elections/analytics/components/analytics-charts.tsx:140
 msgid "{name}: nu e încă în date"
 msgstr "{name}: not in the data yet"
 
@@ -55890,11 +55890,11 @@ msgid "A doua repartizare"
 msgstr "Second allocation"
 
 #. placeholder {0}: format.n(total(scoped.second))
-#: src/features/elections/analytics/components/mandate-view.tsx:48
+#: src/features/elections/analytics/components/mandate-view.tsx:45
 msgid "a doua repartizare: {0}; nu se adună"
 msgstr "second allocation: {0}; not added up"
 
-#: src/features/elections/analytics/components/mandate-view.tsx:48
+#: src/features/elections/analytics/components/mandate-view.tsx:45
 msgid "a doua repartizare: nu e încă în date"
 msgstr "second allocation: not in the data yet"
 
@@ -55966,16 +55966,16 @@ msgstr "Who holds the most mayoralties, by county"
 msgid "Clasamentul primăriilor 2016 / 2020 / 2024 așteaptă localele din 2016 și 2020."
 msgstr "The mayoralties ranking for 2016 / 2020 / 2024 waits for the 2016 and 2020 local elections."
 
-#: src/features/elections/analytics/components/mandate-view.tsx:47
+#: src/features/elections/analytics/components/mandate-view.tsx:44
 msgid "Consilieri județeni, prima repartizare"
 msgstr "County councillors, first allocation"
 
-#: src/features/elections/analytics/components/mandate-view.tsx:40
+#: src/features/elections/analytics/components/mandate-view.tsx:37
 #: src/features/elections/analytics/lib/analytics-views.ts:35
 msgid "Consilieri locali"
 msgstr "Local councillors"
 
-#: src/features/elections/analytics/components/mandate-view.tsx:80
+#: src/features/elections/analytics/components/mandate-view.tsx:77
 msgid "Consilierii locali"
 msgstr "The local councillors"
 
@@ -56016,7 +56016,7 @@ msgstr "Gaps"
 msgid "Diferențele dintre primii doi, toate localitățile, 2024."
 msgstr "The gaps between the top two, every locality, 2024."
 
-#: src/features/elections/analytics/components/mandate-view.tsx:54
+#: src/features/elections/analytics/components/mandate-view.tsx:51
 msgid "din 41 și București"
 msgstr "of 41 and Bucharest"
 
@@ -56029,13 +56029,9 @@ msgstr "The spread by locality, county by county."
 msgid "Fără {0}: nu e încă în date, iar totalurile pe țară nu îl cuprind."
 msgstr "Without {0}: not in the data yet, and the national totals leave it out."
 
-#: src/features/elections/analytics/components/mandate-view.tsx:37
-msgid "fără București"
-msgstr "without Bucharest"
-
-#: src/features/elections/analytics/components/mandate-view.tsx:92
-msgid "Fiecare județ în culoarea partidului cu cele mai multe primării. Un județ fără date e punctat, la fel o egalitate. Alege un județ ca să vezi doar cifrele lui."
-msgstr "Each county in the colour of the party with the most mayoralties. A county without data is dashed, as is a tie. Pick a county to see only its figures."
+#: src/features/elections/analytics/components/mandate-view.tsx:89
+msgid "Fiecare județ în culoarea partidului cu cele mai multe primării. Un județ fără date e punctat, la fel o egalitate; un punct portocaliu marchează un defect cunoscut. Alege un județ ca să vezi doar cifrele lui."
+msgstr "Each county in the colour of the party with the most mayoralties. A county without data is dashed, as is a tie; an orange dot marks a known defect. Pick a county to see only its figures."
 
 #: src/features/elections/analytics/lib/analytics-views.ts:24
 msgid "Fișa fiecărui partid: voturi și mandate în 2024, schimbarea față de 2020."
@@ -56053,15 +56049,15 @@ msgstr "Flows"
 msgid "Fluxurile între partide așteaptă aceleași date."
 msgstr "The flows between parties wait for the same data."
 
-#: src/features/elections/analytics/components/analytics-charts.tsx:166
+#: src/features/elections/analytics/components/analytics-charts.tsx:173
 msgid "În curând"
 msgstr "Coming soon"
 
-#: src/features/elections/analytics/components/elections-analytics-page.tsx:126
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:129
 msgid "în toată țara"
 msgstr "across the country"
 
-#: src/features/elections/analytics/components/analytics-charts.tsx:166
+#: src/features/elections/analytics/components/analytics-charts.tsx:173
 msgid "Încă nu e în date"
 msgstr "Not in the data yet"
 
@@ -56073,7 +56069,7 @@ msgstr "Independents"
 msgid "Independenții sunt o singură linie, fără nume; numele de pe buletin rămân pe pagina fiecărei curse."
 msgstr "Independents are one line, without names; the names on the ballot stay on each race’s page."
 
-#: src/features/elections/analytics/components/mandate-view.tsx:54
+#: src/features/elections/analytics/components/mandate-view.tsx:51
 msgid "Județe cu date"
 msgstr "Counties with data"
 
@@ -56081,15 +56077,15 @@ msgstr "Counties with data"
 msgid "Județele comparate, la fiecare alegere."
 msgstr "The counties compared, at each election."
 
-#: src/features/elections/analytics/components/mandate-view.tsx:99
+#: src/features/elections/analytics/components/mandate-view.tsx:96
 msgid "Localele din 2016 nu sunt încă în date."
 msgstr "The 2016 local elections are not in the data yet."
 
-#: src/features/elections/analytics/components/mandate-view.tsx:100
+#: src/features/elections/analytics/components/mandate-view.tsx:97
 msgid "Localele din 2020 nu sunt încă în date."
 msgstr "The 2020 local elections are not in the data yet."
 
-#: src/features/elections/analytics/components/mandate-view.tsx:75
+#: src/features/elections/analytics/components/mandate-view.tsx:72
 msgid "Nu am putut citi mandatele."
 msgstr "We couldn’t read the mandates."
 
@@ -56125,11 +56121,11 @@ msgstr "Turnout by type of locality: city, town, commune."
 msgid "Prima repartizare"
 msgstr "First allocation"
 
-#: src/features/elections/analytics/components/mandate-view.tsx:39
+#: src/features/elections/analytics/components/mandate-view.tsx:36
 msgid "Primari"
 msgstr "Mayors"
 
-#: src/features/elections/analytics/components/mandate-view.tsx:78
+#: src/features/elections/analytics/components/mandate-view.tsx:75
 msgid "Primarii"
 msgstr "The mayors"
 
@@ -56153,7 +56149,7 @@ msgstr "Strength"
 msgid "Schimbarea prezenței între două zile de vot, pe județe."
 msgstr "The change in turnout between two ballot days, by county."
 
-#: src/features/elections/analytics/components/elections-analytics-page.tsx:186
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:189
 msgid "Secțiunile vederii"
 msgstr "The view’s sections"
 
@@ -56165,13 +56161,17 @@ msgstr "Abroad"
 msgid "Strânse"
 msgstr "Close"
 
-#: src/features/elections/analytics/components/elections-analytics-page.tsx:68
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:71
 msgid "Surse: rezultatele oficiale, publicate în platformă pe {day}."
 msgstr "Sources: the official results, published on the platform on {day}."
 
-#: src/features/elections/analytics/components/elections-analytics-page.tsx:68
+#: src/features/elections/analytics/components/elections-analytics-page.tsx:71
 msgid "Surse: rezultatele oficiale."
 msgstr "Sources: the official results."
+
+#: src/features/elections/analytics/components/mandate-view.tsx:33
+msgid "toată țara"
+msgstr "the whole country"
 
 #. placeholder {0}: format.n(per)
 #: src/features/elections/analytics/components/analytics-charts.tsx:41

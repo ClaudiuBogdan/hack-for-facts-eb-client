@@ -133,9 +133,14 @@ export function CountyTiles({
       {Object.entries(COUNTY_TILES).map(([code, [column, row]]) => {
         const leader = leaderOf(counties.get(code) ?? null)
         const name = countyNameRo(code) ?? code
-        const title =
-          leader === null ? t`${name}: nu e încă în date` : leader === 'tie' ? t`${name}: egalitate` : `${name}: ${lineLabel(leader.line)} ${format.n(leader.value)}`
         const filled = leader !== null && leader !== 'tie'
+        const suspect = filled && leader.suspect
+        const title =
+          leader === null
+            ? t`${name}: nu e încă în date`
+            : leader === 'tie'
+              ? t`${name}: egalitate`
+              : `${name}: ${lineLabel(leader.line)} ${format.n(leader.value)}${suspect ? `, ${t`defect cunoscut`}` : ''}`
         return (
           <li key={code} style={{ gridColumn: column + 1, gridRow: row + 1 }}>
             <button
@@ -145,12 +150,14 @@ export function CountyTiles({
               aria-pressed={chosen === code}
               onClick={() => onChoose(code)}
               className={cn(
-                'grid aspect-square w-full place-items-center rounded-[2px] font-mono text-[10px] font-medium',
+                'relative grid aspect-square w-full place-items-center rounded-[2px] font-mono text-[10px] font-medium',
                 filled ? cn(lineStyle(leader.line).swatch, onSwatch(leader.line)) : 'border border-dashed text-muted-foreground',
                 chosen === code && 'ring-2 ring-foreground ring-offset-1 ring-offset-background',
               )}
             >
               {code}
+              {/* The status mark: a small amber shape in the corner, named in the tile's label. */}
+              {suspect ? <span aria-hidden="true" className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-amber-500 ring-1 ring-background" /> : null}
             </button>
           </li>
         )

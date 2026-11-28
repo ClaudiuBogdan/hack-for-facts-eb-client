@@ -121,6 +121,25 @@ describe('the analysis page', () => {
     expect(onSearchChange).toHaveBeenCalledWith({ ...BARE, judet: 'CJ' })
   })
 
+  it('marks a tile whose leading party has a known defect, in its label and on the tile', () => {
+    const counties = MANDATES.counties.map((county) =>
+      county.code === 'CJ' ? { ...county, mayors: (county.mayors ?? []).map((row, index) => (index === 0 ? { ...row, suspect: true } : row)) } : county,
+    )
+    renderPage({}, { ...MANDATES, counties })
+    const tiles = document.getElementById('mandate-judete') as HTMLElement
+    expect(within(tiles).getByRole('button', { name: 'Cluj: PNL 51, defect cunoscut' })).toBeInTheDocument()
+    expect(within(tiles).getByRole('button', { name: 'Covasna: UDMR 34' })).toBeInTheDocument()
+  })
+
+  it('says what the national figures leave out, as the API names it', () => {
+    const { unmount } = renderPage()
+    expect(screen.getByRole('region', { name: 'Cifre-cheie' })).toHaveTextContent('fără București')
+    unmount()
+    renderPage({}, { ...MANDATES, missing: ['B', 'CJ'] })
+    expect(screen.getByRole('region', { name: 'Cifre-cheie' })).toHaveTextContent('fără București, Cluj')
+    expect(screen.getByRole('button', { name: /2 atenționări/u })).toBeInTheDocument()
+  })
+
   it('lists every section of a view not drawn yet, each saying what it will draw, with no figures band', () => {
     renderPage({ tip: 'harta', judet: 'CJ' })
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Unde e puternic fiecare partid')

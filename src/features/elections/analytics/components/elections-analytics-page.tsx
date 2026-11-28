@@ -11,9 +11,10 @@ import { useElectionEvents } from '../../hooks/use-elections-catalog'
 import { useLocalMandates } from '../hooks/use-elections-analytics'
 import { sectionId, viewSpec, viewSpecs, type SectionSpec } from '../lib/analytics-views'
 import type { LocalMandates } from '../lib/mandates'
+import { useAnalyticsFormat } from '../lib/analytics-format'
 import { SectionPending } from './analytics-charts'
 import { mandateNotes } from '../lib/mandate-notes'
-import { MandateFigures, MandateSection } from './mandate-view'
+import { MandateFigures, MandateSection, type SectionLink } from './mandate-view'
 
 /**
  * `/alegeri/analize` in the national budget's analysis head (owner,
@@ -63,8 +64,10 @@ const scrollToSection = (id: string) => document.getElementById(id)?.scrollIntoV
 /** The day the local elections' figures were published on the platform: the sources line's only date. */
 function SourcesLine() {
   const events = useElectionEvents({})
+  const { locale } = useAnalyticsFormat()
   const at = events.data?.items.find((event) => event.eventKey === 'ro:local:2024')?.publication?.activatedAt
-  const day = at ? new Intl.DateTimeFormat('ro-RO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Bucharest' }).format(new Date(at)) : null
+  // In the reader's language, dated in Romania's zone: the same on the server and in any browser.
+  const day = at ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Bucharest' }).format(new Date(at)) : null
   return <p className="text-sm text-muted-foreground">{day ? t`Surse: rezultatele oficiale, publicate în platformă pe ${day}.` : t`Surse: rezultatele oficiale.`}</p>
 }
 
@@ -190,13 +193,11 @@ function Bar({
               const id = sectionId(view, section.key)
               return (
                 <li key={section.key} className="shrink-0">
-                  <Link
-                    to="/alegeri/analize"
-                    search={((previous: Record<string, unknown>) => ({ ...previous, tip: search.tip, judet: search.judet, dupa: section.key })) as never}
-                    replace
-                    resetScroll={false}
-                    onClick={() => onSection(section.key)}
-                    aria-current={active === id ? 'location' : undefined}
+                  <SectionLinkTo
+                    search={search}
+                    section={section.key}
+                    onSection={onSection}
+                    current={active === id}
                     className={cn(
                       'relative inline-flex h-10 items-center gap-1.5 px-2.5 text-sm transition-colors hover:text-foreground',
                       'after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:bg-primary after:opacity-0',
@@ -204,7 +205,7 @@ function Bar({
                     )}
                   >
                     {section.label}
-                  </Link>
+                  </SectionLinkTo>
                 </li>
               )
             })}
@@ -212,6 +213,40 @@ function Bar({
         </RuledFrame>
       </nav>
     </div>
+  )
+}
+
+/**
+ * A link to a section of the current view: the address with every page key and `dupa` set to it, so the link
+ * shared or opened in a new tab lands on the section; the page scrolls by `dupa` alone (no hash beside it).
+ */
+function SectionLinkTo({
+  search,
+  section,
+  onSection,
+  current = false,
+  className,
+  children,
+}: {
+  readonly search: ElectionsAnalyticsSearch
+  readonly section: string
+  readonly onSection: (section: string) => void
+  readonly current?: boolean
+  readonly className: string
+  readonly children: ReactNode
+}) {
+  return (
+    <Link
+      to="/alegeri/analize"
+      search={((previous: Record<string, unknown>) => ({ ...previous, tip: search.tip, judet: search.judet, dupa: section })) as never}
+      replace
+      resetScroll={false}
+      onClick={() => onSection(section)}
+      aria-current={current ? 'location' : undefined}
+      className={className}
+    >
+      {children}
+    </Link>
   )
 }
 
@@ -259,24 +294,27 @@ export function ElectionsAnalyticsPage({
   useEffect(() => {
     if (dupa) scrollToSection(sectionId(view, dupa))
   }, [view, dupa])
+  // The same section again: the address doesn't change, so the page scrolls here.
+  const onSection = (section: string) => {
+    if (section === dupa) scrollToSection(sectionId(view, section))
+  }
+  const sectionLink: SectionLink = (section) =>
+    function FigureLink(label: ReactNode, className: string) {
+      return (
+        <SectionLinkTo search={search} section={section} onSection={onSection} className={className}>
+          {label}
+        </SectionLinkTo>
+      )
+    }
 
   return (
     <div className="relative w-full overflow-x-clip bg-background [font-feature-settings:'ss03']">
       <Head view={view} judet={judet} notes={view === 'mandate' ? mandateNotes(mandates.data) : null} onJudet={onJudet} />
-      <Bar
-        view={view}
-        search={search}
-        active={active}
-        onView={(next) => onSearchChange({ tip: next, dupa: undefined, judet: search.judet })}
-        onSection={(section) => {
-          // The same section again: the address doesn't change, so the page scrolls here.
-          if (section === dupa) scrollToSection(sectionId(view, section))
-        }}
-      />
+      <Bar view={view} search={search} active={active} onView={(next) => onSearchChange({ tip: next, dupa: undefined, judet: search.judet })} onSection={onSection} />
       {view === 'mandate' ? (
         <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
           <RuledFrame>
-            <MandateFigures judet={judet} initial={initialMandates} />
+            <MandateFigures judet={judet} initial={initialMandates} sectionLink={sectionLink} />
           </RuledFrame>
         </section>
       ) : null}

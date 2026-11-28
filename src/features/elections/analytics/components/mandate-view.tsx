@@ -7,7 +7,6 @@ import { useScopedMandates } from '../hooks/use-scoped-mandates'
 import { useAnalyticsFormat } from '../lib/analytics-format'
 import { total } from '../lib/lines'
 import type { LocalMandates } from '../lib/mandates'
-import { sectionId } from '../lib/analytics-views'
 import { Absent, CountyTiles, PhasePair, Waffle } from './analytics-charts'
 
 /**
@@ -19,22 +18,20 @@ import { Absent, CountyTiles, PhasePair, Waffle } from './analytics-charts'
 
 const countyName = (code: string) => countyNameRo(code) ?? code
 
-const jump = (section: string) =>
-  function JumpLink(label: ReactNode, className: string) {
-    return (
-      <a href={`#${sectionId('mandate', section)}`} className={className}>
-        {label}
-      </a>
-    )
-  }
+/** A link to one of the view's sections, written by the page as its jump row writes them (every key, `dupa` set). */
+export type SectionLink = (section: string) => (label: ReactNode, className: string) => ReactNode
 
 /** Four figures over the sections; a missing one is left out, never shown as 0. */
-export function MandateFigures({ judet, initial }: { readonly judet: string | undefined; readonly initial?: LocalMandates }) {
+export function MandateFigures({ judet, initial, sectionLink }: { readonly judet: string | undefined; readonly initial?: LocalMandates; readonly sectionLink: SectionLink }) {
   const format = useAnalyticsFormat()
   const scoped = useScopedMandates(judet, initial)
   if (scoped.status === 'pending') return <div className="h-36 animate-pulse bg-muted/30" aria-hidden="true" />
   if (scoped.status === 'error') return null
-  const where = judet === 'B' ? t`în București` : judet ? t`în județul ${countyName(judet)}` : t`fără București`
+  const jump = sectionLink
+  // The national totals say what they leave out, as the API names it; a county's figures are that county's.
+  const missing = scoped.data?.missing ?? []
+  const national = missing.length ? t`fără ${missing.map(countyName).join(', ')}` : t`toată țara`
+  const where = judet === 'B' ? t`în București` : judet ? t`în județul ${countyName(judet)}` : national
   const facts: HubFact[] = [
     ...(scoped.mayors ? [{ key: 'primari', value: total(scoped.mayors), digits: 0, label: t`Primari`, note: where, link: jump('primarii') }] : []),
     ...(scoped.councillors ? [{ key: 'consilieri', value: total(scoped.councillors), digits: 0, label: t`Consilieri locali`, note: where, link: jump('consilieri') }] : []),
@@ -89,7 +86,7 @@ export function MandateSection({
             onChoose={(code) => onJudet(code === judet ? undefined : code)}
           />
           <p className="max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
-            {t`Fiecare județ în culoarea partidului cu cele mai multe primării. Un județ fără date e punctat, la fel o egalitate. Alege un județ ca să vezi doar cifrele lui.`}
+            {t`Fiecare județ în culoarea partidului cu cele mai multe primării. Un județ fără date e punctat, la fel o egalitate; un punct portocaliu marchează un defect cunoscut. Alege un județ ca să vezi doar cifrele lui.`}
           </p>
         </div>
       )
