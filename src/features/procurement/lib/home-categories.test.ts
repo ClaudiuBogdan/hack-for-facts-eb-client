@@ -7,7 +7,6 @@ import {
   cpvScope,
   cpvSearch,
   levelCpvLeaves,
-  frequentWinners,
   groupContracts,
   readerCategories,
   type ContractRow,
@@ -196,25 +195,6 @@ describe('groupContracts', () => {
     const rows = [row('1', 'A', { contractNo: null }), row('2', 'B', { contractNo: null }), row('3', 'C', { contractNo: '9', value: 5 })]
     expect(groupContracts(rows, 10)).toHaveLength(3)
     expect(groupContracts(rows, 2)).toHaveLength(2)
-  })
-})
-
-describe('frequentWinners', () => {
-  it('names the firms that recur, when they recur three times or more', () => {
-    const recurring = [{ cui: '1', name: 'Tehnostrade' }]
-    const contracts = [
-      bigContract({ id: 'a', winners: recurring }),
-      bigContract({ id: 'b', winners: recurring }),
-      bigContract({ id: 'c', winners: [...recurring, { cui: '2', name: 'Arcada' }] }),
-    ]
-    expect(frequentWinners(contracts)).toEqual({ names: ['Tehnostrade'], times: 3 })
-    expect(frequentWinners(contracts.slice(0, 2))).toBeNull()
-  })
-
-  it('says nothing when more than three firms tie', () => {
-    const winners = ['A', 'B', 'C', 'D'].map((name, index) => ({ cui: String(index), name }))
-    const contracts = [1, 2, 3].map((id) => bigContract({ id: String(id), winners }))
-    expect(frequentWinners(contracts)).toBeNull()
   })
 })
 

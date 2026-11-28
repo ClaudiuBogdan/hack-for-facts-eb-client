@@ -45,6 +45,7 @@ import {
   type PrivateCompanyPublicMoney,
   type PrivateCompanySource,
   type PrivateCompanyStatementPublisher,
+  type PrivateCompanyStatementFiles,
   type PrivateCompanyStatementQualification,
   type PrivateCompanyStatementSource,
 } from '@/schemas/private-company'
@@ -70,6 +71,7 @@ import type {
   RawCompany,
   RawCompanyFinancialYear,
   RawCompanyResolveResult,
+  RawCompanyStatementFiles,
   RawIfrsFormYear,
   RawLongFormStatement,
   RawStatementQualification,
@@ -439,14 +441,26 @@ function mapStatementSource(raw: RawCompanyFinancialYear['source']): PrivateComp
     // A URL only with the kind that says which publisher's it is.
     url: urlKind === null ? null : raw.url,
     urlKind,
-    contributingSources:
-      raw.contributingSources?.map((line) => ({
-        rowNumber: line.rowNumber,
-        // A file link only as an https URL: never another scheme.
-        url: line.url?.startsWith('https://') ? line.url : null,
-        indicators: line.indicators,
-      })) ?? null,
   }
+}
+
+/**
+ * `CompanyStatementFiles`: each year that has file lines, with the statement's own link as the read gave it (raw,
+ * to compare with the profile's link like with like) and its lines anchor first. A file link only as an https URL,
+ * never another scheme. No company or no files: an empty list, never an error.
+ */
+export function mapCompanyStatementFiles(raw: RawCompanyStatementFiles): readonly PrivateCompanyStatementFiles[] {
+  return (raw.companyFinancials?.years ?? []).flatMap((year) => {
+    const lines = year.source?.contributingSources ?? []
+    if (lines.length === 0) return []
+    return [
+      {
+        fiscalYear: year.year,
+        sourceUrl: year.source?.url ?? null,
+        lines: lines.map((line) => ({ rowNumber: line.rowNumber, url: line.url?.startsWith('https://') ? line.url : null, indicators: line.indicators })),
+      },
+    ]
+  })
 }
 
 function mapFinancialYear(year: RawCompanyFinancialYear): PrivateCompanyFinancialYear {

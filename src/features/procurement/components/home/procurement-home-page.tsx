@@ -21,13 +21,12 @@ import {
 } from '@/schemas/procurement-home'
 import type { HomeCategoriesRead } from '../../api/procurement-home-api'
 import {
-  useProcurementHomeBigContracts,
   useProcurementHomeCategories,
   useProcurementHomeNational,
   useProcurementHomeRecent,
 } from '../../hooks/use-procurement-home'
 import { countText } from '../../lib/home-format'
-import type { NationalRead, RecentRecord } from '../../lib/home-model'
+import type { NationalRead } from '../../lib/home-model'
 import { directPurchasesNote, frameworksNote } from '../../lib/home-text'
 import { sectionIndex, type HomeSection } from '../../lib/home-links'
 import {
@@ -69,7 +68,6 @@ export interface ProcurementHomeInitialData {
   readonly year: number
   readonly national?: NationalRead
   readonly categories?: HomeCategoriesRead
-  readonly bigContracts?: readonly RecentRecord[]
 }
 
 function startArrivalEffects(block: Element, delay: number) {
@@ -85,7 +83,6 @@ export function ProcurementHomePage({ search, initial }: { readonly search: Proc
   const year = initial.year
   const national = useProcurementHomeNational(year, initial.national)
   const categories = useProcurementHomeCategories(year, initial.categories)
-  const bigContracts = useProcurementHomeBigContracts(year, initial.bigContracts)
   const read = national.data
   // A client-side navigation mounts on skeletons: the blocks arrive, and count up, with the read.
   useRevealOnView(rootRef, startArrivalEffects, read !== undefined)
@@ -207,7 +204,7 @@ export function ProcurementHomePage({ search, initial }: { readonly search: Proc
         indicator={pick.indicator}
         onIndicator={(value) => choose('indicator', value)}
       />
-      {/* The categories and the largest contracts are reads of their own: they stand whatever the national read does. */}
+      {/* The categories are a read of their own: they stand whatever the national read does. */}
       <HomeWhatBand
         year={year}
         index={sectionIndex(sections, 'ce')}
@@ -220,7 +217,6 @@ export function ProcurementHomePage({ search, initial }: { readonly search: Proc
         read={read}
         national={nationalState}
         index={sectionIndex(sections, 'cine-vinde')}
-        bigContracts={{ data: bigContracts.data, isError: bigContracts.isError, retry: retry(bigContracts) }}
         roadsConsortium={categories.data?.roadsConsortium ?? null}
         sellers={pick.firme}
         onSellers={(value) => choose('firme', value)}

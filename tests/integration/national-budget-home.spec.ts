@@ -93,6 +93,38 @@ test.describe('National budget — the server render', () => {
     await expect(section.locator('svg[role="img"]')).toBeVisible()
   })
 
+  test('the receipt names the PNRR’s grants and loans apart', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    const receipt = page.locator('section#bon')
+    await expect(receipt.getByText('Proiecte PNRR – granturi', { exact: true }).first()).toBeVisible({ timeout: 30000 })
+    await expect(receipt.getByText('Proiecte PNRR – împrumuturi', { exact: true }).first()).toBeVisible()
+  })
+
+  test('the deficit chart counts cash, draws no EU threshold, and says how it counts from the keyboard', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    const section = page.locator('section#imprumut')
+    await expect(section.getByText('Deficit bugetar (cash), an de an')).toBeVisible({ timeout: 30000 })
+    // The EU's 3% applies to the ESA 2010 deficit, never to the cash one: no line, no label.
+    await expect(section.getByText(/pragul UE/u)).toHaveCount(0)
+    await expect(section.locator('figure .border-dashed')).toHaveCount(0)
+    const method = section.getByRole('button', { name: 'Cum am calculat' })
+    const dialog = page.getByRole('dialog', { name: 'Cum am calculat' })
+    await expect(async () => {
+      await method.focus()
+      await page.keyboard.press('Enter')
+      await expect(dialog).toBeVisible({ timeout: 2000 })
+    }).toPass({ timeout: 30000 })
+    await expect(dialog).toContainText('ESA 2010')
+    await expect(dialog.getByRole('link')).toHaveCount(4)
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(method).toBeFocused()
+  })
+
   test('the year is the page’s: chosen in the head, it is written in the address', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
@@ -154,6 +186,33 @@ test.describe('National budget — the server render', () => {
         })
       }),
     ).toEqual([true, true, true])
+  })
+})
+
+test.describe('National budget — on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true })
+
+  test('how the deficit is counted opens with a tap, inside the screen', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    const method = page.locator('section#imprumut').getByRole('button', { name: 'Cum am calculat' })
+    await method.scrollIntoViewIfNeeded()
+    const dialog = page.getByRole('dialog', { name: 'Cum am calculat' })
+    await expect(async () => {
+      await method.tap()
+      await expect(dialog).toBeVisible({ timeout: 2000 })
+    }).toPass({ timeout: 30000 })
+    const box = await dialog.boundingBox()
+    expect(box).not.toBeNull()
+    expect(box!.x).toBeGreaterThanOrEqual(0)
+    expect(box!.x + box!.width).toBeLessThanOrEqual(390)
+    expect(box!.y).toBeGreaterThanOrEqual(0)
+    expect(box!.y + box!.height).toBeLessThanOrEqual(844)
+    // A panel taller than the room scrolls inside: its last source is reachable.
+    const last = dialog.getByRole('link').last()
+    await last.scrollIntoViewIfNeeded()
+    await expect(last).toBeInViewport()
   })
 })
 

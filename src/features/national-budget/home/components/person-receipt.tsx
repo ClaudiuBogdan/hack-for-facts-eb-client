@@ -3,7 +3,7 @@ import { t } from '@lingui/core/macro'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { cn } from '@/lib/utils'
 import { usePageYear } from '../hooks/use-page-year'
-import { monthsCovered, restLine, useHundred, useOfficialTotals } from '../hooks/use-person-data'
+import { monthsCovered, useHundred, useOfficialTotals } from '../hooks/use-person-data'
 import { BORROWED_FILL, REST_FILL, inPeriod, leiText, leiWord, populationText, previousText, toneOf } from '../lib/person-format'
 import { receiptOf } from '../lib/receipt'
 import { Note, Section } from './person-shell'
@@ -41,7 +41,7 @@ function Receipt() {
     balance: totals.balance,
     year: view.year,
     months: monthsCovered(view),
-    rest: restLine('spending', view.year),
+    rest: spending.rest,
   })
   if (!receipt) return <p className="text-sm text-muted-foreground">{t`Datele disponibile pentru acest an nu au cheltuielile pe rânduri.`}</p>
 

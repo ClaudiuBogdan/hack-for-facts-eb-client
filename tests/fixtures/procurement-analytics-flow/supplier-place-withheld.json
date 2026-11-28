@@ -1,0 +1,73 @@
+[
+  {
+    "operation": "AnalyticsConcentration",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795692846658728"
+    },
+    "fixture": "analytics-concentration-supplier-place-c11639ca"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "framework_agreement",
+        "frameworkRole": "framework_ceiling",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795692846658728"
+    },
+    "fixture": "analytics-figures-supplier-place-dbd2a8bd"
+  },
+  {
+    "operation": "AnalyticsFigures",
+    "variables": {
+      "now": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795692846658728"
+    },
+    "fixture": "analytics-figures-supplier-place-3bccd621"
+  },
+  {
+    "operation": "AnalyticsRanking",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2025-01",
+        "to": "2025-12"
+      },
+      "build": "1795692846658728"
+    },
+    "fixture": "analytics-ranking-supplier-place-c11639ca"
+  },
+  {
+    "operation": "AnalyticsSeries",
+    "variables": {
+      "s": {
+        "grain": "contract",
+        "recordKind": "contract_award",
+        "supplierSiruta": "54975",
+        "from": "2021-01",
+        "to": "2025-12"
+      },
+      "build": "1795692846658728"
+    },
+    "fixture": "analytics-series-supplier-place-76574e77"
+  }
+]

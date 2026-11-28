@@ -20,7 +20,7 @@ export function validateNationalBudgetHomeSearch(search: Record<string, unknown>
 /**
  * `/national-budget`: the national budget at one person's scale — where the
  * money comes from and what it goes on, the budgets it passes through, what
- * the state budget pays and through whom, how much is borrowed year by year
+ * the state budget pays and through whom, the cash deficit year by year
  * and how the year in progress goes; one year at a time. Its questions open `/national-budget/analytics`.
  * Rendered on the server: the bands' suspense reads run there and reach the
  * browser through the router's query integration.

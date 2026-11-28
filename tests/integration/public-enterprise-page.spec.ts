@@ -11,24 +11,14 @@
  */
 
 import type { Page } from '@playwright/test'
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForPageReady } from '../utils/test-helpers'
-import { readFileSync } from 'node:fs'
 
 /**
- * Every GraphQL read the page's browser makes, answered from fixtures (TEST-001: no integration test reads the live API).
- * Recorded on 25 November 2026 from the dev API through the app's own queries, one fixture per read and its variables;
- * the list says which: `tests/fixtures/public-enterprise-page-flow/browser-reads.json`.
+ * TEST-001: every GraphQL read the page makes, the server render's and the browser's, is answered from
+ * tests/fixtures/ssr-api (recorded from the dev API with SSR_API_MODE=record, one snapshot, so the browser asks
+ * with the build the server read), and an unrecorded read fails the test.
  */
-const BROWSER_READS = JSON.parse(readFileSync(new URL('../fixtures/public-enterprise-page-flow/browser-reads.json', import.meta.url), 'utf8')) as readonly {
-  readonly operation: string
-  readonly variables: Readonly<Record<string, unknown>>
-  readonly fixture: string
-}[]
-
-test.beforeEach(async ({ mockApi }) => {
-  for (const read of BROWSER_READS) await mockApi.mockGraphQL(read.operation, read.fixture, { variables: read.variables })
-})
 
 const ROUTE = '/public-enterprises/789401'
 const BANDS = ['control', 'bani', 'amepip', 'stare'] as const
@@ -55,6 +45,8 @@ test.beforeAll(async () => {
 
 /** The D6 watch's status check (`procurementDaRelease`), with no variables; any other GraphQL read is named by its operation, or `anonymous`. */
 const DISCLOSURE_STATUS = 'ProcurementDaRelease'
+/** The buyer's direct purchases by category: read in the browser only, by design. */
+const DIRECT_CATEGORIES = 'ProcurementBuyerDirectCategories'
 const readName = (body: { readonly query?: unknown; readonly variables?: unknown; readonly operationName?: unknown } | null): string => {
   const named = typeof body?.operationName === 'string' ? body.operationName : typeof body?.query === 'string' ? /^\s*query\s+(\w+)/u.exec(body.query)?.[1] : undefined
   if (named === DISCLOSURE_STATUS) return JSON.stringify(body?.variables ?? {}) === '{}' ? DISCLOSURE_STATUS : `${DISCLOSURE_STATUS} with variables`
@@ -119,8 +111,11 @@ test.describe('Public enterprise page — the server render', () => {
       // No data read; the status check once, or twice when its first answer is older than the key the page was served under.
       // Accepted flake (root, 20 November 2026): for up to a minute after a publish the server can still render under the
       // status it keeps (60 s), the browser's fresh check rightly purges and reads again, and every attempt then fails.
-      expect(reads.filter((read) => read !== DISCLOSURE_STATUS)).toEqual([])
-      expect([1, 2]).toContain(reads.length)
+      // The one data read the browser makes by design: the direct purchases by category, for a buyer that has some, are
+      // never read on the server (the API can take past the render's deadline for them: owner, 23 November 2026).
+      expect(reads.filter((read) => read !== DISCLOSURE_STATUS && read !== DIRECT_CATEGORIES)).toEqual([])
+      expect(reads.filter((read) => read === DIRECT_CATEGORIES).length).toBeLessThanOrEqual(1)
+      expect([1, 2]).toContain(reads.filter((read) => read === DISCLOSURE_STATUS).length)
     } else test.info().annotations.push({ type: 'note', description: `partial server read: the browser read ${reads.join(', ') || 'nothing'}` })
     const kept = await page.evaluate(() => {
       const caught = (window as unknown as { __serverNodes: Element[] }).__serverNodes
