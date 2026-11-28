@@ -35,7 +35,8 @@ const PART_WORDS: Readonly<Record<string, { readonly name: () => string; readonl
   [E('external_grant_projects')]: { name: () => t`Proiecte cu fonduri UE`, hint: () => t`proiecte cu bani europeni nerambursabili, în afara cadrului 2014–2020` },
   [E('eu_2014_2020_projects')]: { name: () => t`Proiecte UE, cadrul 2014–2020`, hint: () => t`proiectele cu fonduri europene din cadrul 2014–2020` },
   [E('eu_2014_2020_modernisation_projects')]: { name: () => t`Proiecte UE 2014–2020 și Fondul de modernizare`, hint: () => t`proiectele cadrului 2014–2020 și ale Fondului de modernizare` },
-  [E('pnrr_grant_projects')]: { name: () => t`Proiecte PNRR`, hint: () => t`din granturile PNRR` },
+  [E('pnrr_grant_projects')]: { name: () => t`Proiecte PNRR – granturi`, hint: () => t`din granturile PNRR` },
+  [E('pnrr_loan_projects')]: { name: () => t`Proiecte PNRR – împrumuturi`, hint: () => t`din împrumuturile PNRR` },
   [E('other_transfers')]: { name: () => t`Alte transferuri`, hint: () => t`de exemplu, transferuri către organizații internaționale și contribuția la bugetul UE` },
   [E('subsidies')]: { name: () => t`Subvenții`, hint: () => t`pentru agricultură, transport, energie` },
 }

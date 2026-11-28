@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { plotOf } from '@/features/national-budget/analytics/lib/exact'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { cn } from '@/lib/utils'
@@ -14,12 +15,59 @@ import { usePageYear } from '../hooks/use-page-year'
 import { monthName } from '../lib/person-format'
 
 /**
- * Borrowing over time (owner: the evolution matters most; against GDP,
- * with a switch to the amounts): one bar a year, the deficit as a share of
- * GDP or in lei, the EU's 3% as a dashed line; a bar picks its year for the
- * whole page. Under the chart, the chosen year's deficit and the debt
- * interest, with interest per resident since 2006.
+ * The cash deficit over time (owner: the evolution matters most; against
+ * GDP, with a switch to the amounts): one bar a year, the deficit as a share
+ * of GDP or in lei; a bar picks its year for the whole page. Under the chart,
+ * the chosen year's deficit and the debt interest, with interest per resident
+ * since 2006. No 3% line (owner, 28 November 2026): the EU's reference value
+ * applies to the ESA 2010 deficit, not to the cash one; „Cum am calculat"
+ * says why.
  */
+
+const SOURCE_LINK = 'font-medium text-foreground underline underline-offset-4'
+
+/** Cash against ESA 2010: what the chart counts, and why the EU's 3% is not drawn on it. */
+function CashMethod() {
+  return (
+    <Popover>
+      <PopoverTrigger className="min-h-11 text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground sm:min-h-0">{t`Cum am calculat`}</PopoverTrigger>
+      <PopoverContent
+        align="start"
+        aria-label={t`Cum am calculat`}
+        className="max-h-[var(--radix-popover-content-available-height)] w-[min(92vw,32rem)] space-y-2 overflow-y-auto text-sm text-muted-foreground"
+      >
+        <p>{t`Graficul arată deficitul cash al bugetului general consolidat, din buletinele de execuție ale Ministerului Finanțelor: cât au depășit plățile încasările, fiecare socotită în luna în care banii ies din conturile statului sau intră în ele.`}</p>
+        <p>
+          {t`Uniunea Europeană evaluează deficitul după altă metodă, ESA 2010, și doar acestuia i se aplică valoarea de referință de 3% din PIB. ESA socotește veniturile și cheltuielile când are loc faptul economic (o taxă datorată, o lucrare făcută), nu când se mută banii, și cuprinde unitățile pe care regulile ei le clasifică în administrația publică, un perimetru stabilit altfel decât bugetele din buletin. De aceea graficul nu arată pragul de 3%.`}
+        </p>
+        <p>{t`Unde buletinul tipărește ponderea în PIB, ministerul o calculează față de PIB-ul estimat atunci; Eurostat împarte la PIB-ul din notificare, publicat mai târziu, deci și numitorul poate diferi.`}</p>
+        <p>{t`Pentru 2025, cifrele cash sunt cele din buletinul pe decembrie 2025, publicat de minister în ianuarie 2026. Deficitul după ESA 2010, publicat de Eurostat pe 21 octombrie 2026 (a doua notificare din 2026), e 7,8% din PIB.`}</p>
+        <ul className="space-y-1 pt-1">
+          <li>
+            <a href="https://mfinante.gov.ro/domenii/bugetul-de-stat/informatii-executie-bugetara" target="_blank" rel="noreferrer" className={SOURCE_LINK}>
+              {t`Buletinele de execuție bugetară, Ministerul Finanțelor`}
+            </a>
+          </li>
+          <li>
+            <a href="https://agerpres.ro/comunicate/2026/01/27/comunicat-de-presa---ministerul-finantelor--1522459" target="_blank" rel="noreferrer" className={SOURCE_LINK}>
+              {t`Comunicatul ministerului pentru 2025 (27 ianuarie 2026)`}
+            </a>
+          </li>
+          <li>
+            <a href="https://ec.europa.eu/eurostat/web/government-finance-statistics/excessive-deficit-procedure" target="_blank" rel="noreferrer" className={SOURCE_LINK}>
+              {t`Metoda Eurostat: procedura de deficit excesiv`}
+            </a>
+          </li>
+          <li>
+            <a href="https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap" target="_blank" rel="noreferrer" className={SOURCE_LINK}>
+              {t`Eurostat: deficitul pe 2025, a doua notificare (21 octombrie 2026)`}
+            </a>
+          </li>
+        </ul>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 export type Measure = 'pib' | 'lei'
 
@@ -47,15 +95,13 @@ function Chart({ years, chosen, onPick, measure, onMeasure }: { readonly years: 
   return (
     <figure>
       <figcaption className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <span className="text-sm font-semibold">{t`Deficitul bugetar, an de an`}</span>
+        <span className="flex flex-wrap items-center gap-x-3">
+          <span className="text-sm font-semibold">{t`Deficit bugetar (cash), an de an`}</span>
+          <CashMethod />
+        </span>
         <IndicatorToggle label={t`Deficitul, măsurat în`} options={measures()} value={measure} onChange={onMeasure} />
       </figcaption>
       <div className="relative mt-5 flex h-64 items-end gap-[3px] border-b">
-        {measure === 'pib' && ceiling > 3 ? (
-          <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 z-10 border-t border-dashed border-foreground/55" style={{ bottom: `${(3 / ceiling) * 100}%` }}>
-            <span className="absolute bottom-0.5 left-0 rounded-[2px] bg-background/85 px-1 text-[0.6875rem] text-muted-foreground">{t`pragul UE: 3% din PIB`}</span>
-          </span>
-        ) : null}
         {years.map((row) => {
           const picked = row.year === chosen
           const value = valueOf(row, measure)
@@ -241,7 +287,6 @@ function Debt() {
       </div>
       <Note>
         {t`Deficitul bugetului general consolidat (cash).`}{' '}
-        {measure === 'pib' ? `${t`Linia punctată e valoarea de referință din tratatele UE, 3% din PIB; UE o aplică deficitului calculat după metoda ei (ESA), puțin diferit de cel cash.`} ` : ''}
         {measure === 'lei' ? `${t`Sumele sunt în lei curenți, neajustați cu inflația.`} ` : ''}
         {measure === 'pib' && running ? `${t`Pentru ${running.year}, deficitul de până în ${monthName(running.month)} e împărțit la PIB-ul estimat pentru tot anul.`} ` : ''}
         {computed
@@ -254,7 +299,11 @@ function Debt() {
 
 export function DebtSection() {
   return (
-    <Section id="imprumut" title={t`Deficitul, an de an`} lede={t`Ce cheltuie statul peste încasări se acoperă din împrumuturi, care se dau înapoi cu dobândă din bugetele anilor următori.`}>
+    <Section
+      id="imprumut"
+      title={t`Deficitul, an de an`}
+      lede={t`Cât a plătit statul peste ce a încasat, an de an. Diferența se acoperă din împrumuturi sau din banii pe care statul îi avea deja în conturi; dobânzile la datorie se plătesc din bugetele anilor următori.`}
+    >
       <Debt />
     </Section>
   )

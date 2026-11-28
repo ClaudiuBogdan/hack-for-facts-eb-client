@@ -166,6 +166,7 @@ export const SPENDING_PARTS = [
   E('eu_2014_2020_projects'),
   E('eu_2014_2020_modernisation_projects'),
   E('pnrr_grant_projects'),
+  E('pnrr_loan_projects'),
   E('other_transfers'),
   E('subsidies'),
 ] as const

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { plotOf } from '@/features/national-budget/analytics/lib/exact'
 import { sumDecimals } from '@/lib/exact-decimal'
-import { budgetsFrom, changeText, hundredOf } from './use-person-data'
+import { budgetsFrom, changeText, hundredOf, restLine } from './use-person-data'
 
 describe('changes', () => {
   it('are rounded once from the exact amounts, one decimal under ten', () => {
@@ -36,6 +36,12 @@ describe('lei out of 100', () => {
     ])
     expect(lines[2]).toMatchObject({ exact: '100', rest: true })
     expect(hundredOf('1000', [line('a', '996'), line('b', '1')], REST).map((entry) => entry.key)).toEqual(['a', 'b'])
+  })
+})
+
+describe('the spending rest', () => {
+  it('never names the PNRR loan projects: they have their own line wherever the bulletin prints it', () => {
+    expect(restLine('spending').hint).not.toMatch(/PNRR/u)
   })
 })
 
