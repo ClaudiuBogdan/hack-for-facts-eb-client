@@ -1,20 +1,22 @@
+import { BriefcaseBusiness, CalendarDays, ChartBarStacked, MapPin, Sprout } from 'lucide-react'
 import { t } from '@lingui/core/macro'
-import type { HomeSection } from '@/features/procurement/lib/home-links'
+import type { CompanyBarSection } from '../company-section-bar'
 
 /** The hub's layout constants, shared by the page and its loading state so the two draw the same head. */
 
 /**
- * The page's bands, in order: the pinned bar's links. The counties first, as the
- * procurement and NGO hubs open. Short names, so the bar holds all of them on a phone; each band's title
- * says the rest. The ids are the page's anchors (`#domenii`), kept as they were.
+ * The page's bands, in order: the pinned bar's links, each after its icon, as the national budget and the
+ * legislation hubs draw theirs. The counties first, as the procurement and NGO hubs open. Short names, so the
+ * bar's sideways list stays short on a phone; each band's title says the rest. The ids are the page's anchors
+ * (`#domenii`), kept as they were. Resolved at render, so the words follow the reader's language.
  */
-export function companyHubSections(): readonly HomeSection[] {
+export function companyHubSections(): readonly CompanyBarSection[] {
   return [
-    { id: 'judete', label: t({ message: 'Județe', context: 'companies hub section' }) },
-    { id: 'domenii', label: t({ message: 'Domenii', context: 'companies hub section' }) },
-    { id: 'marime', label: t({ message: 'Mărime', context: 'companies hub section' }) },
-    { id: 'economie', label: t({ message: 'Ani', context: 'companies hub section' }) },
-    { id: 'infiintari', label: t({ message: 'Firme noi', context: 'companies hub section' }) },
+    { id: 'judete', label: t({ message: 'Județe', context: 'companies hub section' }), icon: MapPin },
+    { id: 'domenii', label: t({ message: 'Domenii', context: 'companies hub section' }), icon: BriefcaseBusiness },
+    { id: 'marime', label: t({ message: 'Mărime', context: 'companies hub section' }), icon: ChartBarStacked },
+    { id: 'economie', label: t({ message: 'Ani', context: 'companies hub section' }), icon: CalendarDays },
+    { id: 'infiintari', label: t({ message: 'Firme noi', context: 'companies hub section' }), icon: Sprout },
   ]
 }
 

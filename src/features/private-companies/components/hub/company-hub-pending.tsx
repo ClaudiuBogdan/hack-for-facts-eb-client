@@ -2,10 +2,10 @@ import { useRouterState } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { CompanyHubHero, CompanyLeaderRowsPending, CompanyLeadersFrame, CompanySearchShell, PendingBar } from './company-hub-hero'
+import { CompanySectionBarPending } from '../company-section-bar'
 import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, companyHubSections } from './company-hub-sections'
 
 /** `IndicatorToggle`'s option box, so the switch's place is its size at every width. */
@@ -49,7 +49,7 @@ export function CompanyHubPending() {
         }
       />
 
-      <HomeSectionNav title={t`Firmele din România`} sections={sections} numbered={false} />
+      <CompanySectionBarPending name={t`Firmele din România`} sections={sections} />
 
       {/* The four figures' cells, as the figures band draws them. */}
       <section className="border-b bg-muted/20" aria-hidden="true">
