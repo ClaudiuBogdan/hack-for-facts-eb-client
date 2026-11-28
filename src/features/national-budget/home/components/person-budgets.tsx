@@ -216,13 +216,13 @@ function bridgeText(bridge: BudgetBridge): string {
   const before = moneyText(bridge.before)
   const consolidated = moneyText(bridge.consolidated)
   const passed = moneyText(bridge.passed)
-  if (bridge.operations === null) return t`Bugetele au cheltuit împreună ${before} înainte de transferuri; cheltuielile publice, fără banii trecuți de la un buget la altul, sunt ${consolidated}.`
+  if (bridge.operations === null) return t`Bugetele au cheltuit împreună ${before} înainte de consolidare; cheltuielile publice, fără banii trecuți de la un buget la altul, sunt ${consolidated}.`
   const operations = plotOf(bridge.operations) ?? 0
   const amount = moneyText(bridge.operations.replace(/^-/u, ''))
-  if (operations === 0) return t`Bugetele au cheltuit împreună ${before} înainte de transferuri. Fără cei ${passed} trecuți de la un buget la altul, care apar la amândouă, cheltuielile publice sunt ${consolidated}.`
+  if (operations === 0) return t`Bugetele au cheltuit împreună ${before} înainte de consolidare. Fără cei ${passed} trecuți de la un buget la altul, care apar la amândouă, cheltuielile publice sunt ${consolidated}.`
   return operations < 0
-    ? t`Bugetele au cheltuit împreună ${before} înainte de transferuri. Fără cei ${passed} trecuți de la un buget la altul, care apar la amândouă, și fără ${amount} din operațiunile financiare, cheltuielile publice sunt ${consolidated}.`
-    : t`Bugetele au cheltuit împreună ${before} înainte de transferuri. Fără cei ${passed} trecuți de la un buget la altul, care apar la amândouă, și adăugând ${amount} din operațiunile financiare, cheltuielile publice sunt ${consolidated}.`
+    ? t`Bugetele au cheltuit împreună ${before} înainte de consolidare. Fără cei ${passed} trecuți de la un buget la altul, care apar la amândouă, și fără ${amount} din operațiunile financiare, cheltuielile publice sunt ${consolidated}.`
+    : t`Bugetele au cheltuit împreună ${before} înainte de consolidare. Fără cei ${passed} trecuți de la un buget la altul, care apar la amândouă, și adăugând ${amount} din operațiunile financiare, cheltuielile publice sunt ${consolidated}.`
 }
 
 // ────────────────────────────────────────────────────────────────── flow ──
@@ -427,7 +427,7 @@ function Budgets() {
   const period = inPeriod(view.text)
   const caption = (
     <span className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-      <span className="text-sm font-semibold">{flow ? t`De unde și-a luat banii fiecare buget, ${period}` : t`Din fiecare 100 de lei cheltuiți de toate bugetele, ${period}`}</span>
+      <span className="text-sm font-semibold">{flow ? t`De unde și-a luat banii fiecare buget, ${period}` : t`Din fiecare 100 de lei cheltuiți de toate bugetele, înainte de consolidare, ${period}`}</span>
       {options.length ? <IndicatorToggle label={t`Arată`} options={options} value={shown} onChange={setShown} /> : null}
     </span>
   )
