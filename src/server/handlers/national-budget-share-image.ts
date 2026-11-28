@@ -7,11 +7,12 @@ import satori from 'satori'
 import { fetchExecutionGrid, fetchNationalCatalog } from '@/features/national-budget/analytics/api/national-budget-api'
 import { cellsOf } from '@/features/national-budget/analytics/lib/analytics-data'
 import { absDecimal, canonicalDecimal, isNegative } from '@/features/national-budget/analytics/lib/exact'
-import { SPENDING_PARTS, TOTAL_ITEMS, defaultYear, viewOfYear, type YearView } from '@/features/national-budget/home/lib/home-data'
+import { SAFE_SPENDING_ITEM, SPENDING_PARTS, TOTAL_ITEMS, availableHomeSeriesItems, defaultYear, viewOfYear, type YearView } from '@/features/national-budget/home/lib/home-data'
 import { perResident, populationOf } from '@/features/national-budget/home/lib/per-resident'
 import { compareDecimal } from '@/lib/exact-decimal'
 import { createLogger } from '@/lib/logger'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
+import type { BudgetNationalCatalog } from '@/schemas/national-budget-api'
 
 /*
  * The /national-budget share card: the reader's share of the year's public
@@ -62,6 +63,7 @@ export const SPENDING_PART_LABELS: Readonly<Record<string, Readonly<Record<Share
     en: 'EU 2014–2020 projects and the Modernisation Fund',
   },
   'mfin.bgc.expenditure.pnrr_grant_projects': { ro: 'Proiecte PNRR', en: 'PNRR projects' },
+  [SAFE_SPENDING_ITEM]: { ro: 'Programul SAFE', en: 'SAFE programme' },
   'mfin.bgc.expenditure.other_transfers': { ro: 'Alte transferuri', en: 'Other transfers' },
   'mfin.bgc.expenditure.subsidies': { ro: 'Subvenții', en: 'Subsidies' },
 }
@@ -151,8 +153,10 @@ export function askedYearOf(value: string | null): number | undefined {
 const LINE_ITEMS: readonly string[] = [TOTAL_ITEMS.spending, TOTAL_ITEMS.balance, ...SPENDING_PARTS]
 
 /** One year's lines, with the page's input: the year's basis and period, the year and the same window a year earlier. */
-async function readYearLines(view: YearView, snapshot: string, signal: AbortSignal | undefined): Promise<NationalBudgetShareFacts> {
-  const grid = await fetchExecutionGrid({ itemIds: LINE_ITEMS, basis: view.basis, period: { type: view.type, dates: [view.previous, view.label] } }, snapshot, signal)
+async function readYearLines(view: YearView, catalog: BudgetNationalCatalog, signal: AbortSignal | undefined): Promise<NationalBudgetShareFacts> {
+  const snapshot = catalog.snapshots.execution
+  const itemIds = availableHomeSeriesItems(catalog, LINE_ITEMS)
+  const grid = await fetchExecutionGrid({ itemIds, basis: view.basis, period: { type: view.type, dates: [view.previous, view.label] } }, snapshot, signal)
   const exactOf = (itemId: string): string | null => {
     const result = grid.results.find((entry) => entry.item.itemId === itemId)
     // Amounts in lei only: a figure in another unit is no amount to divide by residents.
@@ -184,13 +188,12 @@ export async function readNationalBudgetShareFacts(
   const signal = withDeadline(undefined, deadlineMs)
   try {
     const catalog = await fetchNationalCatalog(signal)
-    const snapshot = catalog.snapshots.execution
     // As on the page: a year without its population opens the default year.
     const offered = viewOfYear(catalog, asked)
     const view = populationOf(offered.year) === null ? viewOfYear(catalog, undefined) : offered
-    const facts = await readYearLines(view, snapshot, signal)
+    const facts = await readYearLines(view, catalog, signal)
     if (facts.spending === null && !view.partial && view.year !== defaultYear(catalog)) {
-      return await readYearLines(viewOfYear(catalog, undefined), snapshot, signal)
+      return await readYearLines(viewOfYear(catalog, undefined), catalog, signal)
     }
     return facts
   } catch (error) {
