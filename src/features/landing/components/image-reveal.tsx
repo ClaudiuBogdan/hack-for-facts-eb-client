@@ -3,6 +3,7 @@
    CSS and the attribute state machine drift apart. */
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
+import { cn } from '@/lib/utils'
 
 /**
  * How the illustrations arrive.
@@ -190,55 +191,18 @@ const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
 const DECODE_GRACE_MS = 1200
 
 const CSS = `
-.tpz-pic {
-  position: absolute;
-  inset: 0;
-}
-
 .tpz-pic-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
   /*
-   * Zoom lives on 'transform'. The arrival owns 'translate', 'scale' and
-   * 'filter' on this same element, and those are separate properties that
-   * compose — so a picture can still be arriving while the pointer is over it
-   * and neither has to know about the other.
-   *
-   * Two factors, multiplied, because they answer different questions. The base
-   * is a picture's own, for art that has to come forward on every screen. The
-   * viewport factor is the phone's closer crop. Kept apart, neither has to
-   * know the other's value, and hover multiplies both rather than replacing
-   * either — so a laptop with a touchscreen does not quietly lose the phone's
-   * framing.
-   *
-   * (No backticks in here: the whole block is a template literal.)
+   * The hover transform composes with the arrival's individual translate
+   * and scale properties.
    */
-  --tpz-pic-zoom-base: 1;
-  --tpz-pic-zoom-viewport: 1;
-  transform: scale(calc(var(--tpz-pic-zoom-base) * var(--tpz-pic-zoom-viewport)));
+  transform: scale(1);
   transition: transform ${ZOOM_MS}ms ${EASE};
-}
-
-/*
- * A phone gets a closer crop.
- *
- * The cells are capped shorter there — a picture the height of a phone screen
- * pushes the list it belongs to off the bottom. Scaling the picture up spends
- * the space on the subject, and the cell already clips.
- */
-@media (max-width: 40rem) {
-  .tpz-pic-img {
-    --tpz-pic-zoom-viewport: 1.16;
-  }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   [${PICTURE_ATTR}]:hover .tpz-pic-img {
-    transform: scale(
-      calc(var(--tpz-pic-zoom-base) * var(--tpz-pic-zoom-viewport) * 1.06)
-    );
+    transform: scale(1.06);
   }
 }
 
@@ -550,28 +514,8 @@ type GroupPictureProps = {
   readonly src: string
   /** The same picture in AVIF, offered first. Same crop, same pixel size. */
   readonly avif: string
-  /**
-   * `object-position`, and the point the zoom grows from as well: the phone's
-   * closer crop and the hover zoom push the picture out of the cell away from
-   * its anchor, so a figure anchored by its head keeps its head.
-   */
-  readonly position: string
-  /**
-   * How far forward this picture sits before anything is hovered. Per picture
-   * because the right amount depends on the art: it moves where the cell's
-   * edge cuts the figure.
-   */
-  readonly zoom?: number
-  /**
-   * The art's own pixels.
-   *
-   * Not what reserves the box, despite that being the usual reason to write
-   * them: `.tpz-pic-img` is `width: 100%; height: 100%`, which overrides the
-   * attributes and the intrinsic ratio they would imply. The cell's own
-   * `aspect-ratio` holds the space, as it did before these existed. They are
-   * here because they are true, and because the moment this stops being
-   * absolutely positioned they start doing the job again.
-   */
+  readonly framing: string
+  /** Intrinsic dimensions so the portrait keeps its proportions. */
   readonly width: number
   readonly height: number
 }
@@ -583,9 +527,9 @@ type GroupPictureProps = {
  * above sets, and waiting for the bytes belongs to the hook too, because only it
  * knows when the picture has actually been reached.
  */
-export function GroupPicture({ src, avif, position, width, height, zoom }: GroupPictureProps) {
+export function GroupPicture({ src, avif, framing, width, height }: GroupPictureProps) {
   return (
-    <div className="tpz-pic">
+    <div className="absolute inset-0 flex flex-col items-center py-3 sm:py-4">
       {/*
         AVIF first, WebP behind it.
 
@@ -609,7 +553,9 @@ export function GroupPicture({ src, avif, position, width, height, zoom }: Group
         built from the sources and why the alpha plane is kept at 90 rather
         than the 80 that would have saved another 10KB.
       */}
-      <picture>
+      {/* Auto margins center shorter artwork. In a short cell they collapse
+          so the top stays visible and the surrounding cell crops the base. */}
+      <picture className={cn('my-auto block shrink-0 max-sm:max-w-108', framing)}>
         <source type="image/avif" srcSet={avif} />
         <img
           src={src}
@@ -634,8 +580,7 @@ export function GroupPicture({ src, avif, position, width, height, zoom }: Group
            * load early in local testing and why that is not evidence of a bug.
            */
           fetchPriority="low"
-          className="tpz-pic-img object-cover"
-          style={{ objectPosition: position, transformOrigin: position, ['--tpz-pic-zoom-base' as string]: zoom ?? 1 }}
+          className="tpz-pic-img block h-auto w-full origin-top"
         />
       </picture>
     </div>

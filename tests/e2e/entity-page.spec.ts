@@ -100,9 +100,10 @@ test.describe('Landing Page', () => {
   test('loads with navigation elements', async ({ page }) => {
     await page.goto('/')
 
-    // Verify main heading
+    // Verify main heading: the landing's line about the data („Date publice, pe înțeles"), not the site's name,
+    // which the header carries. Its second half has changed before; the first has not.
     await expect(
-      page.getByRole('heading', { name: /transparenta/i, level: 1 })
+      page.getByRole('heading', { name: /date publice|public data/i, level: 1 })
     ).toBeVisible({ timeout: 10000 })
 
     // Verify navigation cards

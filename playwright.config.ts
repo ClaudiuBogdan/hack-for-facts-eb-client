@@ -11,6 +11,12 @@ const SSR_API_PORT = Number(process.env.PLAYWRIGHT_SSR_API_PORT ?? 3199)
 const LIVE = process.env.E2E_MODE === 'live' || process.env.E2E_MODE === 'record'
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL ?? (LIVE ? undefined : `http://127.0.0.1:${SSR_API_PORT}`)
 
+// A deployed site for the live E2E (the nightly reads the dev site): its address, and no local server built or
+// started. A local build cannot read the dev API from the browser, which allows only the dev site's own origin.
+// Live runs only: the mocked suites need the local server and its recorded API.
+const E2E_BASE_URL = process.env.E2E_BASE_URL ? new URL(process.env.E2E_BASE_URL).origin : undefined
+if (E2E_BASE_URL && !LIVE) throw new Error('E2E_BASE_URL is for live runs: set E2E_MODE=live (or record) with it')
+
 /**
  * Playwright Configuration
  *
@@ -29,10 +35,11 @@ export default defineConfig({
     ['html', { open: 'never' }],
   ],
   use: {
-    baseURL: `http://localhost:${APP_PORT}`,
+    baseURL: E2E_BASE_URL ?? `http://localhost:${APP_PORT}`,
     trace: 'on-first-retry',
     video: 'on-first-retry',
   },
+  // A deployed site serves the live suite alone: the mocked one needs the local server the override drops.
   projects: [
     // Integration tests (mocked API, fast)
     // Use tablet viewport (below md breakpoint 768px) to hide sidebar and avoid overlap issues
@@ -52,8 +59,8 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       timeout: 60000, // Longer timeout for live API
     },
-  ],
-  webServer: [
+  ].filter((project) => !E2E_BASE_URL || project.name === 'e2e'),
+  webServer: E2E_BASE_URL ? undefined : [
     {
       command: 'node tests/utils/ssr-api/server.mjs',
       url: `http://127.0.0.1:${SSR_API_PORT}/__ssr-api/health`,
