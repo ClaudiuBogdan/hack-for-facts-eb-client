@@ -282,7 +282,8 @@ describe('LegislationChangesPage', () => {
       expect(pageMock).toHaveBeenCalledWith(expect.objectContaining({ since: '2026-11-30' }), expect.anything())
     } finally {
       vi.useRealTimers()
-      process.env.TZ = zone
+      if (zone === undefined) delete process.env.TZ
+      else process.env.TZ = zone
     }
   })
 

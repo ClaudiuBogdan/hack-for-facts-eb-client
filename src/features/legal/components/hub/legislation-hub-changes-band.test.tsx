@@ -53,7 +53,8 @@ describe('the hub changes band', () => {
       expect(pageMock).toHaveBeenCalledWith(expect.objectContaining({ until: '2026-11-29' }), expect.anything())
     } finally {
       vi.useRealTimers()
-      process.env.TZ = zone
+      if (zone === undefined) delete process.env.TZ
+      else process.env.TZ = zone
     }
   })
 })
