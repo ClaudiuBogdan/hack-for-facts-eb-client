@@ -110,7 +110,7 @@ export function LegislationChangesFeed({ search }: Props) {
       ...(search.since !== undefined && { since: search.since }),
       ...(search.until !== undefined && { until: search.until }),
     }),
-    ...(search.kind !== undefined && { kind: search.kind }),
+    ...(search.kind !== undefined && { kinds: [search.kind] }),
     ...(search.source !== undefined && { source: search.source }),
   }
 

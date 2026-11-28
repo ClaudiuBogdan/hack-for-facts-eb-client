@@ -14,7 +14,7 @@ function matches(
   row: (typeof legislationChangesFixture)[number],
   filter: LegalChangesFilter,
 ): boolean {
-  if (filter.kind !== undefined && row.eventKind !== filter.kind) return false
+  if (filter.kinds !== undefined && filter.kinds.length > 0 && !filter.kinds.some((kind) => kind === row.eventKind)) return false
   if (filter.source !== undefined && row.eventSource !== filter.source)
     return false
   if (filter.undated === true) return row.effectiveDate === null
