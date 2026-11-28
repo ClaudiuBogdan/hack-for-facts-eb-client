@@ -9,17 +9,19 @@
  * 24 September 2026 and refreshed to the current contract with curated
  * synthetic additions — registry evidence, statement qualification and
  * source metadata — as that folder's README says). The first render is the
- * server's, which reads the profile from `VITE_API_URL`, as on every
- * server-rendered profile here; it stands only until the page's own registry
- * read answers. The page then pins the mocked registry scope and shows the
- * mocked profile under it, so every browser read the page makes is mocked:
+ * server's, which reads the profile and the procurement release from the
+ * recordings in tests/fixtures/ssr-api (TEST-001: the ssr-api harness, recorded
+ * from the dev API with SSR_API_MODE=record; an unrecorded read fails the
+ * test). It stands only until the page's own registry read answers. The page
+ * then pins the mocked registry scope and shows the mocked profile under it,
+ * so every browser read the page makes is mocked:
  * the registry, the profile, its registration diff, the SEAP slice, the
  * court-litigation summary (no link published, so no litigation band), the
  * analysis release, the procurement release's status and SEAP's cutoff.
  */
 
 import type { Page } from '@playwright/test'
-import { test, expect } from '../utils/integration-base'
+import { test, expect } from '../utils/ssr-api/test'
 import { waitForHydration } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
