@@ -26,6 +26,7 @@ import {
   TOTAL_ITEMS,
   anafAuthoritiesOptions,
   anafChaptersOptions,
+  availableHomeSeriesItems,
   gdpOf,
   previousView,
   unfinishedYearsOf,
@@ -55,7 +56,8 @@ function totalsHistoryOptions(client: QueryClient, catalog: BudgetNationalCatalo
 }
 
 function yearLinesOptions(client: QueryClient, catalog: BudgetNationalCatalog, view: YearView, itemIds: readonly string[]) {
-  return executionGridOptions(client, catalog.snapshots.execution, { itemIds, basis: view.basis, period: { type: view.type, dates: [view.previous, view.label] } })
+  const supported = availableHomeSeriesItems(catalog, itemIds)
+  return executionGridOptions(client, catalog.snapshots.execution, { itemIds: supported, basis: view.basis, period: { type: view.type, dates: [view.previous, view.label] } })
 }
 
 /** The three totals' shares, as the BGC prints them: not the release's fifty share rows. */
