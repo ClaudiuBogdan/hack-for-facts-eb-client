@@ -22,6 +22,7 @@ import type { BudgetApprovedEdition, BudgetNationalCatalog } from '@/schemas/nat
 import {
   ANAF_FIRST_YEAR,
   REVENUE_PARTS,
+  SAFE_SPENDING_ITEM,
   SPENDING_PARTS,
   TOTAL_ITEMS,
   anafAuthoritiesOptions,
@@ -55,7 +56,9 @@ function totalsHistoryOptions(client: QueryClient, catalog: BudgetNationalCatalo
 }
 
 function yearLinesOptions(client: QueryClient, catalog: BudgetNationalCatalog, view: YearView, itemIds: readonly string[]) {
-  return executionGridOptions(client, catalog.snapshots.execution, { itemIds, basis: view.basis, period: { type: view.type, dates: [view.previous, view.label] } })
+  const hasSafe = catalog.execution.seriesItems.some((item) => item.itemId === SAFE_SPENDING_ITEM)
+  const supported = hasSafe ? itemIds : itemIds.filter((itemId) => itemId !== SAFE_SPENDING_ITEM)
+  return executionGridOptions(client, catalog.snapshots.execution, { itemIds: supported, basis: view.basis, period: { type: view.type, dates: [view.previous, view.label] } })
 }
 
 /** The three totals' shares, as the BGC prints them: not the release's fifty share rows. */

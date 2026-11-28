@@ -55697,3 +55697,12 @@ msgstr "Σ POP201D / Σ POP108D × 1.000"
 #: src/features/statistics/lib/territory-derived.ts:134
 msgid "Σ POP206D / Σ POP108D × 1.000"
 msgstr "Σ POP206D / Σ POP108D × 1.000"
+
+#: src/features/national-budget/analytics/lib/analytics-format.ts:88
+msgctxt "national budget classification"
+msgid "SAFE programme"
+msgstr "Programul SAFE"
+
+#: src/features/national-budget/home/lib/home-format.ts:38
+msgid "spending reported by the Ministry of Finance for the SAFE programme"
+msgstr "cheltuieli raportate de Ministerul Finanțelor pentru planul SAFE"

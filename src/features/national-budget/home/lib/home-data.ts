@@ -156,6 +156,8 @@ export const REVENUE_PARTS = [
 ] as const
 
 /** What the money is spent on, by its nature: printed lines under „current" and „capital" spending. */
+export const SAFE_SPENDING_ITEM = E('safe_programme')
+
 export const SPENDING_PARTS = [
   E('social_assistance'),
   E('personnel'),
@@ -166,6 +168,7 @@ export const SPENDING_PARTS = [
   E('eu_2014_2020_projects'),
   E('eu_2014_2020_modernisation_projects'),
   E('pnrr_grant_projects'),
+  SAFE_SPENDING_ITEM,
   E('other_transfers'),
   E('subsidies'),
 ] as const
