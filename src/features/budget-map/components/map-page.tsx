@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Map as MapIcon, Table as TableIcon } from 'lucide-react'
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
@@ -17,7 +18,7 @@ import type { View } from '../lib/map-page-search'
 import { MapPageTable } from './map-page-table'
 
 /**
- * The map page (`/map`): a slim bar — the title, the map picker, the year,
+ * The map page (`/map`): a slim bar — the way home over the title, the map picker, the year,
  * totals or per inhabitant, primării or counties, map or table — and the map
  * filling the rest of the window, its legend on its corner. On a phone the bar
  * takes three rows, the map most of the screen and the legend sits under it.
@@ -70,6 +71,25 @@ function MapFailed({ error }: { readonly error: Error }) {
   )
 }
 
+/** The address's keys that are the site's, not this page's (`lang`): all the way home carries. */
+const siteKeys = (previous: Record<string, unknown>): Record<string, unknown> => (typeof previous.lang === 'string' ? { lang: previous.lang } : {})
+
+/** The way home, plain as the national budget's (`Hero` in `person-head.tsx`), above the title (owner, 28 November 2026). */
+function WayHome() {
+  return (
+    <nav aria-label={t`Ești aici`} className="text-sm text-muted-foreground">
+      {/* A 44px target that does not grow the line. */}
+      <Link to="/" search={siteKeys as never} className="-my-3 inline-block py-3 transition-colors hover:text-foreground">
+        {t`Acasă`}
+      </Link>
+      <span aria-hidden="true" className="mx-2 text-muted-foreground/50">
+        /
+      </span>
+      <span className="text-foreground">{t`Hartă`}</span>
+    </nav>
+  )
+}
+
 function Segments<T extends string>({
   value,
   onChange,
@@ -109,10 +129,14 @@ export function MapPage() {
   useEffect(() => setMounted(true), [])
 
   return (
-    // The map's view fills the window from `md`; the table's grows with its rows.
-    <div className={cn('flex flex-col', view === 'map' && 'md:h-dvh')} data-map-page>
+    // The map's view fills the window from `md`; the table's grows with its rows. Inter's round commas, „ș" and „ț",
+    // as on the landing (menus portalled out of this frame keep the plain ones).
+    <div className={cn("flex flex-col [font-feature-settings:'ss03']", view === 'map' && 'md:h-dvh')} data-map-page>
       <header className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-4 py-3 md:px-6">
-        <h1 className="mr-auto text-xl font-semibold tracking-tight md:mr-3">{t`Harta bugetelor locale`}</h1>
+        <div className="mr-auto min-w-0 md:mr-3">
+          <WayHome />
+          <h1 className="text-xl font-semibold tracking-tight">{t`Harta bugetelor locale`}</h1>
+        </div>
         {/* First on a phone, beside the title; last on a desktop, at the bar's far end. */}
         <Segments<View>
           value={view}
